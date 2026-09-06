@@ -1,0 +1,6093 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "final-candidate-benchmark-step30a",
+  "phase": "B",
+  "status": "EVALUATION_COMPLETE",
+  "ruleSha256": "9251be51fc3fc8cc3a3b9570a0b3902c01e653754389da55852bdd4e83ab803d",
+  "phaseAPreregistrationSha256": "2abab8c30d4a45c6d2925155e5114663c1de1af73ad6ca24268e9f7179a9db8c",
+  "phaseBPreregistrationSha256": "dae4e7bb448ba9070198c88e51aa9a896f7b2acf2e1e343fac5950a17ec0208f",
+  "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+  "observationFiles": {
+    "data/research/step15/noaa-gdp-hourly-qc/KE-2010-q1.csv": "294a91008e0ec8b8ad28b39b82f7bf0524c0479e804870c63df8b06de842c430",
+    "data/research/step15/noaa-gdp-hourly-qc/KE-2010-q2.csv": "c2cdced4cd1aaaca9bde94da4bec0ef1ba7472241631252fba15a437d9b87d17",
+    "data/research/step15/noaa-gdp-hourly-qc/KE-2010-q3.csv": "3e200cc2a1c49248b4052d67fd0be9a8a1e710346b810c07d6f9d40d323d2355",
+    "data/research/step15/noaa-gdp-hourly-qc/KE-2010-q4.csv": "7f900d79331aabcba48a624f251753859f9aabe863321ef03516b90ba8bcff99",
+    "data/research/step15/noaa-gdp-hourly-qc/AG-2015-q1.csv": "017bebf6d0b44f6a8a4f5e81acc1f722bc50ae525a1301558e8921efeb337191",
+    "data/research/step15/noaa-gdp-hourly-qc/AG-2015-q2.csv": "344fda06e3da9e55c0b7822a06ed04c28510b626e7d3af5e073326de3376788d",
+    "data/research/step15/noaa-gdp-hourly-qc/AG-2015-q3.csv": "b5f320eb94cf9bfc1029a45b36d842d11ac6705f99dc3d53e0c95204bf2a45dd",
+    "data/research/step15/noaa-gdp-hourly-qc/AG-2015-q4.csv": "b7b2c4354b765d2d19866626cc85f5d6e4072ef96eaf79f815d4a548276c0f2d"
+  },
+  "frozenInputs": {
+    "docs/research/step25c-paired-table.csv": "3a5c6b1a339c050a053279514299004a7be5bd614cf6e542433953888c78e002",
+    "docs/research/step25c-evaluation.json": "974073b81757f47f2f205ffdd49b46dda37733f1163b5169709d6b373d5894f5",
+    "docs/research/step25c-summary.json": "42965f31980b47ca9f5dedecc9976a969a6e00d22e9bf227464fbbeea460e78d",
+    "docs/research/step25c-test02-protocol.json": "7ff8468ea8399b8bf9d563980a184203b1b69c55a52cf7a493d1c140c97901ab",
+    "docs/research/step29-stokes-paired-table.csv": "972ec47f28c637a8116e2f107f71c2e0a64cc10e2421a96181c2242f1ac9c568",
+    "docs/research/step29-stokes-evaluation.json": "acb1a5389e64e6e2f31207f7c32af4ed8f02c4a681ec3c349f96163ba9e2813b",
+    "docs/research/step29-stokes-summary.json": "921783b2db14cb069f4578cb4a7aff29edf0672866c61eb495b7883a20a61e1f",
+    "docs/research/step29-stokes-manifest.json": "8906b46090db07a9254382b6fa953f871833d611ad6958eac44e9f5c7459e936",
+    "docs/research/step29-stokes-forcing-manifest.json": "a38e1672472592bd1e90c6c671514178e501b613033dad17f9cd970d3dad7d44",
+    "data/research/step29/trajectories/KE-1/treatment-alpha0.002/trajectories.csv": "4de8920fad4548f3b818f57d78d90c6d8cdb40b9ee41a5e17419a32caa9ae234",
+    "data/research/step20/calibration/KE-1/alpha0.002.trajectories.csv": "cc38b0d7fd171f187b990f16f9ab3a18d836ea2a7a6913e0d8dce996a1915069",
+    "data/research/step29/trajectories/KE-2/treatment-alpha0.002/trajectories.csv": "9ac0aaa9c4560b4089cd15232b0381c939b7df995e33a8d986f8f9535ca7a479",
+    "data/research/step20/calibration/KE-2/alpha0.002.trajectories.csv": "e2c8ca1336b3ef967e08a2b641579158e61617ec5c0b770762919769b416aa99",
+    "data/research/step29/trajectories/AG-1/treatment-alpha0.002/trajectories.csv": "19629ab74541ea4c579e1a083aeb98320172baa23be0d4f8ff9e851ccbee8f1c",
+    "data/research/step20/calibration/AG-1/alpha0.002.trajectories.csv": "58f9ca262b7e74d1fba1daac951b51e9f32847e7b500ec87bb9e7d75f716976b",
+    "data/research/step29/trajectories/AG-2/treatment-alpha0.002/trajectories.csv": "87d00536ab3d379a5bdcc4090eb7abc2be21bab242707eb92dda872fc5b2622c",
+    "data/research/step20/calibration/AG-2/alpha0.002.trajectories.csv": "afc98cf9d2e1d66f97d1c3f2637ae9c0e7c24bdfdade8d2dc785a10f990ba0e2",
+    "data/research/step29/trajectories/KE-H1/treatment-alpha0.002/trajectories.csv": "d1c1de2b6f37d2f2ed02f2ad1ac5ad3251fa841d749b9d9624c5fe0329e0b659",
+    "data/research/step20/holdout/trajectories/KE-H1/alpha0.002.trajectories.csv": "5f68152824cf8b548187181fed37b06b6c3b3482d024c72ecd1ce679bc580d18",
+    "data/research/step29/trajectories/KE-H3/treatment-alpha0.002/trajectories.csv": "38b382264c3152ddb2d1aa77c124b1afd038ed290b3984cc4ca0ad36a0daf03e",
+    "data/research/step20/holdout/trajectories/KE-H3/alpha0.002.trajectories.csv": "00d9db9f183b53e2d7261cc42e4db997a06b7b8b9d0a1e421f73f4517a723fd6"
+  },
+  "inputTrajectories": [
+    {
+      "window": "KE-1",
+      "side": "candidate",
+      "file": "data/research/step29/trajectories/KE-1/treatment-alpha0.002/trajectories.csv",
+      "expected": "4de8920fad4548f3b818f57d78d90c6d8cdb40b9ee41a5e17419a32caa9ae234",
+      "actual": "4de8920fad4548f3b818f57d78d90c6d8cdb40b9ee41a5e17419a32caa9ae234",
+      "verified": true,
+      "alphaValues": [
+        "0.002"
+      ],
+      "runIds": [
+        "step29-treatment-alpha0.002-KE-1"
+      ],
+      "drifters": 8
+    },
+    {
+      "window": "KE-1",
+      "side": "baseline",
+      "file": "data/research/step20/calibration/KE-1/alpha0.002.trajectories.csv",
+      "expected": "cc38b0d7fd171f187b990f16f9ab3a18d836ea2a7a6913e0d8dce996a1915069",
+      "actual": "cc38b0d7fd171f187b990f16f9ab3a18d836ea2a7a6913e0d8dce996a1915069",
+      "verified": true,
+      "alphaValues": [
+        "0.002"
+      ],
+      "runIds": [
+        "step20-cal-alpha0.002-KE-1"
+      ],
+      "drifters": 8
+    },
+    {
+      "window": "KE-2",
+      "side": "candidate",
+      "file": "data/research/step29/trajectories/KE-2/treatment-alpha0.002/trajectories.csv",
+      "expected": "9ac0aaa9c4560b4089cd15232b0381c939b7df995e33a8d986f8f9535ca7a479",
+      "actual": "9ac0aaa9c4560b4089cd15232b0381c939b7df995e33a8d986f8f9535ca7a479",
+      "verified": true,
+      "alphaValues": [
+        "0.002"
+      ],
+      "runIds": [
+        "step29-treatment-alpha0.002-KE-2"
+      ],
+      "drifters": 5
+    },
+    {
+      "window": "KE-2",
+      "side": "baseline",
+      "file": "data/research/step20/calibration/KE-2/alpha0.002.trajectories.csv",
+      "expected": "e2c8ca1336b3ef967e08a2b641579158e61617ec5c0b770762919769b416aa99",
+      "actual": "e2c8ca1336b3ef967e08a2b641579158e61617ec5c0b770762919769b416aa99",
+      "verified": true,
+      "alphaValues": [
+        "0.002"
+      ],
+      "runIds": [
+        "step20-cal-alpha0.002-KE-2"
+      ],
+      "drifters": 5
+    },
+    {
+      "window": "AG-1",
+      "side": "candidate",
+      "file": "data/research/step29/trajectories/AG-1/treatment-alpha0.002/trajectories.csv",
+      "expected": "19629ab74541ea4c579e1a083aeb98320172baa23be0d4f8ff9e851ccbee8f1c",
+      "actual": "19629ab74541ea4c579e1a083aeb98320172baa23be0d4f8ff9e851ccbee8f1c",
+      "verified": true,
+      "alphaValues": [
+        "0.002"
+      ],
+      "runIds": [
+        "step29-treatment-alpha0.002-AG-1"
+      ],
+      "drifters": 9
+    },
+    {
+      "window": "AG-1",
+      "side": "baseline",
+      "file": "data/research/step20/calibration/AG-1/alpha0.002.trajectories.csv",
+      "expected": "58f9ca262b7e74d1fba1daac951b51e9f32847e7b500ec87bb9e7d75f716976b",
+      "actual": "58f9ca262b7e74d1fba1daac951b51e9f32847e7b500ec87bb9e7d75f716976b",
+      "verified": true,
+      "alphaValues": [
+        "0.002"
+      ],
+      "runIds": [
+        "step20-cal-alpha0.002-AG-1"
+      ],
+      "drifters": 9
+    },
+    {
+      "window": "AG-2",
+      "side": "candidate",
+      "file": "data/research/step29/trajectories/AG-2/treatment-alpha0.002/trajectories.csv",
+      "expected": "87d00536ab3d379a5bdcc4090eb7abc2be21bab242707eb92dda872fc5b2622c",
+      "actual": "87d00536ab3d379a5bdcc4090eb7abc2be21bab242707eb92dda872fc5b2622c",
+      "verified": true,
+      "alphaValues": [
+        "0.002"
+      ],
+      "runIds": [
+        "step29-treatment-alpha0.002-AG-2"
+      ],
+      "drifters": 1
+    },
+    {
+      "window": "AG-2",
+      "side": "baseline",
+      "file": "data/research/step20/calibration/AG-2/alpha0.002.trajectories.csv",
+      "expected": "afc98cf9d2e1d66f97d1c3f2637ae9c0e7c24bdfdade8d2dc785a10f990ba0e2",
+      "actual": "afc98cf9d2e1d66f97d1c3f2637ae9c0e7c24bdfdade8d2dc785a10f990ba0e2",
+      "verified": true,
+      "alphaValues": [
+        "0.002"
+      ],
+      "runIds": [
+        "step20-cal-alpha0.002-AG-2"
+      ],
+      "drifters": 1
+    },
+    {
+      "window": "KE-H1",
+      "side": "candidate",
+      "file": "data/research/step29/trajectories/KE-H1/treatment-alpha0.002/trajectories.csv",
+      "expected": "d1c1de2b6f37d2f2ed02f2ad1ac5ad3251fa841d749b9d9624c5fe0329e0b659",
+      "actual": "d1c1de2b6f37d2f2ed02f2ad1ac5ad3251fa841d749b9d9624c5fe0329e0b659",
+      "verified": true,
+      "alphaValues": [
+        "0.002"
+      ],
+      "runIds": [
+        "step29-treatment-alpha0.002-KE-H1"
+      ],
+      "drifters": 5
+    },
+    {
+      "window": "KE-H1",
+      "side": "baseline",
+      "file": "data/research/step20/holdout/trajectories/KE-H1/alpha0.002.trajectories.csv",
+      "expected": "5f68152824cf8b548187181fed37b06b6c3b3482d024c72ecd1ce679bc580d18",
+      "actual": "5f68152824cf8b548187181fed37b06b6c3b3482d024c72ecd1ce679bc580d18",
+      "verified": true,
+      "alphaValues": [
+        "0.002"
+      ],
+      "runIds": [
+        "step20-hold-alpha0.002-KE-H1"
+      ],
+      "drifters": 5
+    },
+    {
+      "window": "KE-H3",
+      "side": "candidate",
+      "file": "data/research/step29/trajectories/KE-H3/treatment-alpha0.002/trajectories.csv",
+      "expected": "38b382264c3152ddb2d1aa77c124b1afd038ed290b3984cc4ca0ad36a0daf03e",
+      "actual": "38b382264c3152ddb2d1aa77c124b1afd038ed290b3984cc4ca0ad36a0daf03e",
+      "verified": true,
+      "alphaValues": [
+        "0.002"
+      ],
+      "runIds": [
+        "step29-treatment-alpha0.002-KE-H3"
+      ],
+      "drifters": 7
+    },
+    {
+      "window": "KE-H3",
+      "side": "baseline",
+      "file": "data/research/step20/holdout/trajectories/KE-H3/alpha0.002.trajectories.csv",
+      "expected": "00d9db9f183b53e2d7261cc42e4db997a06b7b8b9d0a1e421f73f4517a723fd6",
+      "actual": "00d9db9f183b53e2d7261cc42e4db997a06b7b8b9d0a1e421f73f4517a723fd6",
+      "verified": true,
+      "alphaValues": [
+        "0.002"
+      ],
+      "runIds": [
+        "step20-hold-alpha0.002-KE-H3"
+      ],
+      "drifters": 7
+    }
+  ],
+  "modelRunCount": 0,
+  "newData": 0,
+  "pairingRule": "exact drifter_id and exact UTC timestamp; both sources and the observation valid; no interpolation, no nearest matching, no imputation",
+  "perDrifter": [
+    {
+      "drifter_id": "127198",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 68.808,
+      "error_HYCOM_24h": 143.319,
+      "delta_24h": -74.511,
+      "sep_CAND_HYCOM_24h": 75.156,
+      "threeway_A_HYCOM_24h": 143.319,
+      "threeway_B_GLORYS_24h": 69.677,
+      "threeway_C_STOKES_24h": 68.808,
+      "error_CAND_48h": 127.627,
+      "error_HYCOM_48h": 238.223,
+      "delta_48h": -110.597,
+      "sep_CAND_HYCOM_48h": 180.414,
+      "threeway_A_HYCOM_48h": 238.223,
+      "threeway_B_GLORYS_48h": 124.876,
+      "threeway_C_STOKES_48h": 127.627,
+      "error_CAND_72h": 151.486,
+      "error_HYCOM_72h": 323.38,
+      "delta_72h": -171.894,
+      "sep_CAND_HYCOM_72h": 253.811,
+      "threeway_A_HYCOM_72h": 323.38,
+      "threeway_B_GLORYS_72h": 147.7,
+      "threeway_C_STOKES_72h": 151.486,
+      "endpoint_CAND_72h": 162.399,
+      "path_CAND": 175.276,
+      "endpoint_HYCOM_72h": 210.616,
+      "path_HYCOM": 241.654,
+      "observed_72h": 308.466
+    },
+    {
+      "drifter_id": "127199",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 70.192,
+      "error_HYCOM_24h": 144.38,
+      "delta_24h": -74.188,
+      "sep_CAND_HYCOM_24h": 74.754,
+      "threeway_A_HYCOM_24h": 144.38,
+      "threeway_B_GLORYS_24h": 71.146,
+      "threeway_C_STOKES_24h": 70.192,
+      "error_CAND_48h": 127.746,
+      "error_HYCOM_48h": 237.391,
+      "delta_48h": -109.645,
+      "sep_CAND_HYCOM_48h": 179.862,
+      "threeway_A_HYCOM_48h": 237.391,
+      "threeway_B_GLORYS_48h": 125.036,
+      "threeway_C_STOKES_48h": 127.746,
+      "error_CAND_72h": 150.141,
+      "error_HYCOM_72h": 319.828,
+      "delta_72h": -169.687,
+      "sep_CAND_HYCOM_72h": 250.741,
+      "threeway_A_HYCOM_72h": 319.828,
+      "threeway_B_GLORYS_72h": 146.416,
+      "threeway_C_STOKES_72h": 150.141,
+      "endpoint_CAND_72h": 163.947,
+      "path_CAND": 177.137,
+      "endpoint_HYCOM_72h": 209.404,
+      "path_HYCOM": 240.659,
+      "observed_72h": 308.854
+    },
+    {
+      "drifter_id": "127272",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 21.655,
+      "error_HYCOM_24h": 27.47,
+      "delta_24h": -5.815,
+      "sep_CAND_HYCOM_24h": 23.708,
+      "threeway_A_HYCOM_24h": 27.47,
+      "threeway_B_GLORYS_24h": 18.05,
+      "threeway_C_STOKES_24h": 21.655,
+      "error_CAND_48h": 63.744,
+      "error_HYCOM_48h": 55.056,
+      "delta_48h": 8.687,
+      "sep_CAND_HYCOM_48h": 39.756,
+      "threeway_A_HYCOM_48h": 55.056,
+      "threeway_B_GLORYS_48h": 52.823,
+      "threeway_C_STOKES_48h": 63.744,
+      "error_CAND_72h": 101.871,
+      "error_HYCOM_72h": 106.115,
+      "delta_72h": -4.244,
+      "sep_CAND_HYCOM_72h": 41.986,
+      "threeway_A_HYCOM_72h": 106.115,
+      "threeway_B_GLORYS_72h": 96.523,
+      "threeway_C_STOKES_72h": 101.871,
+      "endpoint_CAND_72h": 175.164,
+      "path_CAND": 175.376,
+      "endpoint_HYCOM_72h": 186.183,
+      "path_HYCOM": 188.312,
+      "observed_72h": 80.755
+    },
+    {
+      "drifter_id": "127313",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 129.183,
+      "error_HYCOM_24h": 63.55,
+      "delta_24h": 65.633,
+      "sep_CAND_HYCOM_24h": 66.26,
+      "threeway_A_HYCOM_24h": 63.55,
+      "threeway_B_GLORYS_24h": 131.891,
+      "threeway_C_STOKES_24h": 129.183,
+      "error_CAND_48h": 281.682,
+      "error_HYCOM_48h": 142.936,
+      "delta_48h": 138.746,
+      "sep_CAND_HYCOM_48h": 151.428,
+      "threeway_A_HYCOM_48h": 142.936,
+      "threeway_B_GLORYS_48h": 289.961,
+      "threeway_C_STOKES_48h": 281.682,
+      "error_CAND_72h": 408.388,
+      "error_HYCOM_72h": 238.212,
+      "delta_72h": 170.176,
+      "sep_CAND_HYCOM_72h": 222.842,
+      "threeway_A_HYCOM_72h": 238.212,
+      "threeway_B_GLORYS_72h": 416.26,
+      "threeway_C_STOKES_72h": 408.388,
+      "endpoint_CAND_72h": 62.328,
+      "path_CAND": 62.727,
+      "endpoint_HYCOM_72h": 240.965,
+      "path_HYCOM": 255.853,
+      "observed_72h": 449.489
+    },
+    {
+      "drifter_id": "127314",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 42.785,
+      "error_HYCOM_24h": 47.299,
+      "delta_24h": -4.515,
+      "sep_CAND_HYCOM_24h": 7.66,
+      "threeway_A_HYCOM_24h": 47.299,
+      "threeway_B_GLORYS_24h": 45.859,
+      "threeway_C_STOKES_24h": 42.785,
+      "error_CAND_48h": 65.841,
+      "error_HYCOM_48h": 60.676,
+      "delta_48h": 5.165,
+      "sep_CAND_HYCOM_48h": 12.106,
+      "threeway_A_HYCOM_48h": 60.676,
+      "threeway_B_GLORYS_48h": 77.404,
+      "threeway_C_STOKES_48h": 65.841,
+      "error_CAND_72h": 57.069,
+      "error_HYCOM_72h": 45.89,
+      "delta_72h": 11.179,
+      "sep_CAND_HYCOM_72h": 13.037,
+      "threeway_A_HYCOM_72h": 45.89,
+      "threeway_B_GLORYS_72h": 63.504,
+      "threeway_C_STOKES_72h": 57.069,
+      "endpoint_CAND_72h": 132.163,
+      "path_CAND": 171.581,
+      "endpoint_HYCOM_72h": 128.458,
+      "path_HYCOM": 166.418,
+      "observed_72h": 98.763
+    },
+    {
+      "drifter_id": "127315",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 38.567,
+      "error_HYCOM_24h": 23.293,
+      "delta_24h": 15.274,
+      "sep_CAND_HYCOM_24h": 61.695,
+      "threeway_A_HYCOM_24h": 23.293,
+      "threeway_B_GLORYS_24h": 34.539,
+      "threeway_C_STOKES_24h": 38.567,
+      "error_CAND_48h": 94.203,
+      "error_HYCOM_48h": 44.649,
+      "delta_48h": 49.554,
+      "sep_CAND_HYCOM_48h": 110.564,
+      "threeway_A_HYCOM_48h": 44.649,
+      "threeway_B_GLORYS_48h": 83.472,
+      "threeway_C_STOKES_48h": 94.203,
+      "error_CAND_72h": 151.598,
+      "error_HYCOM_72h": 56.37,
+      "delta_72h": 95.228,
+      "sep_CAND_HYCOM_72h": 177.941,
+      "threeway_A_HYCOM_72h": 56.37,
+      "threeway_B_GLORYS_72h": 143.744,
+      "threeway_C_STOKES_72h": 151.598,
+      "endpoint_CAND_72h": 330.868,
+      "path_CAND": 341.736,
+      "endpoint_HYCOM_72h": 182.984,
+      "path_HYCOM": 186.979,
+      "observed_72h": 181.032
+    },
+    {
+      "drifter_id": "132511",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 43.539,
+      "error_HYCOM_24h": 39.952,
+      "delta_24h": 3.587,
+      "sep_CAND_HYCOM_24h": 49.299,
+      "threeway_A_HYCOM_24h": 39.952,
+      "threeway_B_GLORYS_24h": 45.029,
+      "threeway_C_STOKES_24h": 43.539,
+      "error_CAND_48h": 100.565,
+      "error_HYCOM_48h": 55.875,
+      "delta_48h": 44.69,
+      "sep_CAND_HYCOM_48h": 137.618,
+      "threeway_A_HYCOM_48h": 55.875,
+      "threeway_B_GLORYS_48h": 99.332,
+      "threeway_C_STOKES_48h": 100.565,
+      "error_CAND_72h": 144.8,
+      "error_HYCOM_72h": 105.167,
+      "delta_72h": 39.633,
+      "sep_CAND_HYCOM_72h": 219.233,
+      "threeway_A_HYCOM_72h": 105.167,
+      "threeway_B_GLORYS_72h": 151.207,
+      "threeway_C_STOKES_72h": 144.8,
+      "endpoint_CAND_72h": 231.805,
+      "path_CAND": 242.234,
+      "endpoint_HYCOM_72h": 122.398,
+      "path_HYCOM": 125.485,
+      "observed_72h": 90.051
+    },
+    {
+      "drifter_id": "132528",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 36.645,
+      "error_HYCOM_24h": 25.126,
+      "delta_24h": 11.519,
+      "sep_CAND_HYCOM_24h": 29.894,
+      "threeway_A_HYCOM_24h": 25.126,
+      "threeway_B_GLORYS_24h": 41.109,
+      "threeway_C_STOKES_24h": 36.645,
+      "error_CAND_48h": 89.126,
+      "error_HYCOM_48h": 19.304,
+      "delta_48h": 69.822,
+      "sep_CAND_HYCOM_48h": 72.995,
+      "threeway_A_HYCOM_48h": 19.304,
+      "threeway_B_GLORYS_48h": 99.499,
+      "threeway_C_STOKES_48h": 89.126,
+      "error_CAND_72h": 63.063,
+      "error_HYCOM_72h": 65.919,
+      "delta_72h": -2.857,
+      "sep_CAND_HYCOM_72h": 124.785,
+      "threeway_A_HYCOM_72h": 65.919,
+      "threeway_B_GLORYS_72h": 66.626,
+      "threeway_C_STOKES_72h": 63.063,
+      "endpoint_CAND_72h": 22.569,
+      "path_CAND": 27.746,
+      "endpoint_HYCOM_72h": 146.033,
+      "path_HYCOM": 152.088,
+      "observed_72h": 85.528
+    },
+    {
+      "drifter_id": "132634",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 27.528,
+      "error_HYCOM_24h": 34.178,
+      "delta_24h": -6.65,
+      "sep_CAND_HYCOM_24h": 10.485,
+      "threeway_A_HYCOM_24h": 34.178,
+      "threeway_B_GLORYS_24h": 27.383,
+      "threeway_C_STOKES_24h": 27.528,
+      "error_CAND_48h": 46.098,
+      "error_HYCOM_48h": 75.794,
+      "delta_48h": -29.696,
+      "sep_CAND_HYCOM_48h": 29.805,
+      "threeway_A_HYCOM_48h": 75.794,
+      "threeway_B_GLORYS_48h": 53.507,
+      "threeway_C_STOKES_48h": 46.098,
+      "error_CAND_72h": 83.442,
+      "error_HYCOM_72h": 123.195,
+      "delta_72h": -39.753,
+      "sep_CAND_HYCOM_72h": 52.906,
+      "threeway_A_HYCOM_72h": 123.195,
+      "threeway_B_GLORYS_72h": 101.496,
+      "threeway_C_STOKES_72h": 83.442,
+      "endpoint_CAND_72h": 117.637,
+      "path_CAND": 154.233,
+      "endpoint_HYCOM_72h": 88.772,
+      "path_HYCOM": 108.383,
+      "observed_72h": 135.1
+    },
+    {
+      "drifter_id": "127281",
+      "unit": "AG-2",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 25.469,
+      "error_HYCOM_24h": 116.865,
+      "delta_24h": -91.396,
+      "sep_CAND_HYCOM_24h": 116.815,
+      "threeway_A_HYCOM_24h": 116.865,
+      "threeway_B_GLORYS_24h": 28.432,
+      "threeway_C_STOKES_24h": 25.469,
+      "error_CAND_48h": "NOT_AVAILABLE",
+      "error_HYCOM_48h": 232.889,
+      "delta_48h": "NOT_AVAILABLE",
+      "sep_CAND_HYCOM_48h": "NOT_AVAILABLE",
+      "threeway_A_HYCOM_48h": 232.889,
+      "threeway_B_GLORYS_48h": "NOT_AVAILABLE",
+      "threeway_C_STOKES_48h": "NOT_AVAILABLE",
+      "error_CAND_72h": "NOT_AVAILABLE",
+      "error_HYCOM_72h": 331.318,
+      "delta_72h": "NOT_AVAILABLE",
+      "sep_CAND_HYCOM_72h": "NOT_AVAILABLE",
+      "threeway_A_HYCOM_72h": 331.318,
+      "threeway_B_GLORYS_72h": "NOT_AVAILABLE",
+      "threeway_C_STOKES_72h": "NOT_AVAILABLE",
+      "endpoint_CAND_72h": "NOT_AVAILABLE",
+      "path_CAND": 266.832,
+      "endpoint_HYCOM_72h": 23.912,
+      "path_HYCOM": 49.933,
+      "observed_72h": 352.788
+    },
+    {
+      "drifter_id": "71155",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 74.23,
+      "error_HYCOM_24h": 18.379,
+      "delta_24h": 55.852,
+      "sep_CAND_HYCOM_24h": 56.006,
+      "threeway_A_HYCOM_24h": 18.379,
+      "threeway_B_GLORYS_24h": 76.952,
+      "threeway_C_STOKES_24h": 74.23,
+      "error_CAND_48h": 179.449,
+      "error_HYCOM_48h": 37.036,
+      "delta_48h": 142.413,
+      "sep_CAND_HYCOM_48h": 142.669,
+      "threeway_A_HYCOM_48h": 37.036,
+      "threeway_B_GLORYS_48h": 169.072,
+      "threeway_C_STOKES_48h": 179.449,
+      "error_CAND_72h": 335.192,
+      "error_HYCOM_72h": 102.331,
+      "delta_72h": 232.861,
+      "sep_CAND_HYCOM_72h": 234.01,
+      "threeway_A_HYCOM_72h": 102.331,
+      "threeway_B_GLORYS_72h": 325.969,
+      "threeway_C_STOKES_72h": 335.192,
+      "endpoint_CAND_72h": 357.029,
+      "path_CAND": 382.227,
+      "endpoint_HYCOM_72h": 172.16,
+      "path_HYCOM": 184.774,
+      "observed_72h": 127.48
+    },
+    {
+      "drifter_id": "81801",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 49.903,
+      "error_HYCOM_24h": 6.03,
+      "delta_24h": 43.872,
+      "sep_CAND_HYCOM_24h": 53.91,
+      "threeway_A_HYCOM_24h": 6.03,
+      "threeway_B_GLORYS_24h": 46.234,
+      "threeway_C_STOKES_24h": 49.903,
+      "error_CAND_48h": 89.97,
+      "error_HYCOM_48h": 18.216,
+      "delta_48h": 71.754,
+      "sep_CAND_HYCOM_48h": 92.499,
+      "threeway_A_HYCOM_48h": 18.216,
+      "threeway_B_GLORYS_48h": 80.256,
+      "threeway_C_STOKES_48h": 89.97,
+      "error_CAND_72h": 100.746,
+      "error_HYCOM_72h": 16.207,
+      "delta_72h": 84.539,
+      "sep_CAND_HYCOM_72h": 104.569,
+      "threeway_A_HYCOM_72h": 16.207,
+      "threeway_B_GLORYS_72h": 89.781,
+      "threeway_C_STOKES_72h": 100.746,
+      "endpoint_CAND_72h": 67.251,
+      "path_CAND": 71.696,
+      "endpoint_HYCOM_72h": 70.923,
+      "path_HYCOM": 87.431,
+      "observed_72h": 78.333
+    },
+    {
+      "drifter_id": "81805",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 21.952,
+      "error_HYCOM_24h": 11.633,
+      "delta_24h": 10.319,
+      "sep_CAND_HYCOM_24h": 14.297,
+      "threeway_A_HYCOM_24h": 11.633,
+      "threeway_B_GLORYS_24h": 22.646,
+      "threeway_C_STOKES_24h": 21.952,
+      "error_CAND_48h": 27.596,
+      "error_HYCOM_48h": 33.386,
+      "delta_48h": -5.79,
+      "sep_CAND_HYCOM_48h": 18.219,
+      "threeway_A_HYCOM_48h": 33.386,
+      "threeway_B_GLORYS_48h": 30.398,
+      "threeway_C_STOKES_48h": 27.596,
+      "error_CAND_72h": 20.494,
+      "error_HYCOM_72h": 43.692,
+      "delta_72h": -23.198,
+      "sep_CAND_HYCOM_72h": 40.597,
+      "threeway_A_HYCOM_72h": 43.692,
+      "threeway_B_GLORYS_72h": 28.201,
+      "threeway_C_STOKES_72h": 20.494,
+      "endpoint_CAND_72h": 66.081,
+      "path_CAND": 77.104,
+      "endpoint_HYCOM_72h": 60.868,
+      "path_HYCOM": 68.908,
+      "observed_72h": 47.347
+    },
+    {
+      "drifter_id": "81807",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 5.354,
+      "error_HYCOM_24h": 10.165,
+      "delta_24h": -4.812,
+      "sep_CAND_HYCOM_24h": 6.672,
+      "threeway_A_HYCOM_24h": 10.165,
+      "threeway_B_GLORYS_24h": 8.196,
+      "threeway_C_STOKES_24h": 5.354,
+      "error_CAND_48h": 6.398,
+      "error_HYCOM_48h": 18.678,
+      "delta_48h": -12.28,
+      "sep_CAND_HYCOM_48h": 23.163,
+      "threeway_A_HYCOM_48h": 18.678,
+      "threeway_B_GLORYS_48h": 15.75,
+      "threeway_C_STOKES_48h": 6.398,
+      "error_CAND_72h": 17.333,
+      "error_HYCOM_72h": 31.862,
+      "delta_72h": -14.529,
+      "sep_CAND_HYCOM_72h": 43.379,
+      "threeway_A_HYCOM_72h": 31.862,
+      "threeway_B_GLORYS_72h": 32.042,
+      "threeway_C_STOKES_72h": 17.333,
+      "endpoint_CAND_72h": 35.496,
+      "path_CAND": 37.925,
+      "endpoint_HYCOM_72h": 11.989,
+      "path_HYCOM": 44.318,
+      "observed_72h": 21.291
+    },
+    {
+      "drifter_id": "81811",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 44.357,
+      "error_HYCOM_24h": 26.129,
+      "delta_24h": 18.228,
+      "sep_CAND_HYCOM_24h": 27.544,
+      "threeway_A_HYCOM_24h": 26.129,
+      "threeway_B_GLORYS_24h": 40.522,
+      "threeway_C_STOKES_24h": 44.357,
+      "error_CAND_48h": 49.24,
+      "error_HYCOM_48h": 39.026,
+      "delta_48h": 10.214,
+      "sep_CAND_HYCOM_48h": 51.501,
+      "threeway_A_HYCOM_48h": 39.026,
+      "threeway_B_GLORYS_48h": 46.395,
+      "threeway_C_STOKES_48h": 49.24,
+      "error_CAND_72h": 22.779,
+      "error_HYCOM_72h": 59.055,
+      "delta_72h": -36.276,
+      "sep_CAND_HYCOM_72h": 76.277,
+      "threeway_A_HYCOM_72h": 59.055,
+      "threeway_B_GLORYS_72h": 18.783,
+      "threeway_C_STOKES_72h": 22.779,
+      "endpoint_CAND_72h": 38.858,
+      "path_CAND": 73.271,
+      "endpoint_HYCOM_72h": 55.94,
+      "path_HYCOM": 104.989,
+      "observed_72h": 41.423
+    },
+    {
+      "drifter_id": "81813",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 2.639,
+      "error_HYCOM_24h": 12.387,
+      "delta_24h": -9.748,
+      "sep_CAND_HYCOM_24h": 14.352,
+      "threeway_A_HYCOM_24h": 12.387,
+      "threeway_B_GLORYS_24h": 2.66,
+      "threeway_C_STOKES_24h": 2.639,
+      "error_CAND_48h": 11.787,
+      "error_HYCOM_48h": 21.735,
+      "delta_48h": -9.948,
+      "sep_CAND_HYCOM_48h": 10.326,
+      "threeway_A_HYCOM_48h": 21.735,
+      "threeway_B_GLORYS_48h": 11.886,
+      "threeway_C_STOKES_48h": 11.787,
+      "error_CAND_72h": 28.966,
+      "error_HYCOM_72h": 19.63,
+      "delta_72h": 9.335,
+      "sep_CAND_HYCOM_72h": 33.325,
+      "threeway_A_HYCOM_72h": 19.63,
+      "threeway_B_GLORYS_72h": 26.913,
+      "threeway_C_STOKES_72h": 28.966,
+      "endpoint_CAND_72h": 87.923,
+      "path_CAND": 99.595,
+      "endpoint_HYCOM_72h": 81.699,
+      "path_HYCOM": 85.65,
+      "observed_72h": 99.084
+    },
+    {
+      "drifter_id": "81814",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 20.643,
+      "error_HYCOM_24h": 15.61,
+      "delta_24h": 5.032,
+      "sep_CAND_HYCOM_24h": 29.339,
+      "threeway_A_HYCOM_24h": 15.61,
+      "threeway_B_GLORYS_24h": 19.585,
+      "threeway_C_STOKES_24h": 20.643,
+      "error_CAND_48h": 41.838,
+      "error_HYCOM_48h": 5.112,
+      "delta_48h": 36.725,
+      "sep_CAND_HYCOM_48h": 37.634,
+      "threeway_A_HYCOM_48h": 5.112,
+      "threeway_B_GLORYS_48h": 41.577,
+      "threeway_C_STOKES_48h": 41.838,
+      "error_CAND_72h": "NOT_AVAILABLE",
+      "error_HYCOM_72h": 48.22,
+      "delta_72h": "NOT_AVAILABLE",
+      "sep_CAND_HYCOM_72h": "NOT_AVAILABLE",
+      "threeway_A_HYCOM_72h": 48.22,
+      "threeway_B_GLORYS_72h": "NOT_AVAILABLE",
+      "threeway_C_STOKES_72h": "NOT_AVAILABLE",
+      "endpoint_CAND_72h": "NOT_AVAILABLE",
+      "path_CAND": 205.977,
+      "endpoint_HYCOM_72h": 172.172,
+      "path_HYCOM": 193.528,
+      "observed_72h": 204.736
+    },
+    {
+      "drifter_id": "81816",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 23.073,
+      "error_HYCOM_24h": 17.762,
+      "delta_24h": 5.311,
+      "sep_CAND_HYCOM_24h": 37.479,
+      "threeway_A_HYCOM_24h": 17.762,
+      "threeway_B_GLORYS_24h": 25.44,
+      "threeway_C_STOKES_24h": 23.073,
+      "error_CAND_48h": 37.007,
+      "error_HYCOM_48h": 34.649,
+      "delta_48h": 2.358,
+      "sep_CAND_HYCOM_48h": 62.539,
+      "threeway_A_HYCOM_48h": 34.649,
+      "threeway_B_GLORYS_48h": 47.664,
+      "threeway_C_STOKES_48h": 37.007,
+      "error_CAND_72h": 44.652,
+      "error_HYCOM_72h": 55.641,
+      "delta_72h": -10.989,
+      "sep_CAND_HYCOM_72h": 92.294,
+      "threeway_A_HYCOM_72h": 55.641,
+      "threeway_B_GLORYS_72h": 63.535,
+      "threeway_C_STOKES_72h": 44.652,
+      "endpoint_CAND_72h": 58.566,
+      "path_CAND": 59.099,
+      "endpoint_HYCOM_72h": 39.353,
+      "path_HYCOM": 67.807,
+      "observed_72h": 16.535
+    },
+    {
+      "drifter_id": "48965",
+      "unit": "KE-2",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 9.865,
+      "error_HYCOM_24h": 9.828,
+      "delta_24h": 0.037,
+      "sep_CAND_HYCOM_24h": 1.118,
+      "threeway_A_HYCOM_24h": 9.828,
+      "threeway_B_GLORYS_24h": 9.577,
+      "threeway_C_STOKES_24h": 9.865,
+      "error_CAND_48h": 5.273,
+      "error_HYCOM_48h": 21.001,
+      "delta_48h": -15.728,
+      "sep_CAND_HYCOM_48h": 15.859,
+      "threeway_A_HYCOM_48h": 21.001,
+      "threeway_B_GLORYS_48h": 7.082,
+      "threeway_C_STOKES_48h": 5.273,
+      "error_CAND_72h": 12.056,
+      "error_HYCOM_72h": 20.569,
+      "delta_72h": -8.514,
+      "sep_CAND_HYCOM_72h": 32.597,
+      "threeway_A_HYCOM_72h": 20.569,
+      "threeway_B_GLORYS_72h": 10.262,
+      "threeway_C_STOKES_72h": 12.056,
+      "endpoint_CAND_72h": 52.209,
+      "path_CAND": 54.257,
+      "endpoint_HYCOM_72h": 53.817,
+      "path_HYCOM": 57.527,
+      "observed_72h": 49.759
+    },
+    {
+      "drifter_id": "81802",
+      "unit": "KE-2",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 13.945,
+      "error_HYCOM_24h": 1.487,
+      "delta_24h": 12.458,
+      "sep_CAND_HYCOM_24h": 15.091,
+      "threeway_A_HYCOM_24h": 1.487,
+      "threeway_B_GLORYS_24h": 14.04,
+      "threeway_C_STOKES_24h": 13.945,
+      "error_CAND_48h": 34.31,
+      "error_HYCOM_48h": 7.466,
+      "delta_48h": 26.844,
+      "sep_CAND_HYCOM_48h": 26.998,
+      "threeway_A_HYCOM_48h": 7.466,
+      "threeway_B_GLORYS_48h": 33.725,
+      "threeway_C_STOKES_48h": 34.31,
+      "error_CAND_72h": 49.226,
+      "error_HYCOM_72h": 26.706,
+      "delta_72h": 22.519,
+      "sep_CAND_HYCOM_72h": 26.453,
+      "threeway_A_HYCOM_72h": 26.706,
+      "threeway_B_GLORYS_72h": 50.99,
+      "threeway_C_STOKES_72h": 49.226,
+      "endpoint_CAND_72h": 76.63,
+      "path_CAND": 80.157,
+      "endpoint_HYCOM_72h": 98.344,
+      "path_HYCOM": 100.092,
+      "observed_72h": 108.571
+    },
+    {
+      "drifter_id": "90141",
+      "unit": "KE-2",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 12.078,
+      "error_HYCOM_24h": 28.443,
+      "delta_24h": -16.365,
+      "sep_CAND_HYCOM_24h": 34.325,
+      "threeway_A_HYCOM_24h": 28.443,
+      "threeway_B_GLORYS_24h": 4.427,
+      "threeway_C_STOKES_24h": 12.078,
+      "error_CAND_48h": 29.476,
+      "error_HYCOM_48h": 77.943,
+      "delta_48h": -48.468,
+      "sep_CAND_HYCOM_48h": 83.518,
+      "threeway_A_HYCOM_48h": 77.943,
+      "threeway_B_GLORYS_48h": 15.402,
+      "threeway_C_STOKES_48h": 29.476,
+      "error_CAND_72h": 39.643,
+      "error_HYCOM_72h": 158.931,
+      "delta_72h": -119.287,
+      "sep_CAND_HYCOM_72h": 141.397,
+      "threeway_A_HYCOM_72h": 158.931,
+      "threeway_B_GLORYS_72h": 14.977,
+      "threeway_C_STOKES_72h": 39.643,
+      "endpoint_CAND_72h": 70.983,
+      "path_CAND": 72.271,
+      "endpoint_HYCOM_72h": 93.295,
+      "path_HYCOM": 100.217,
+      "observed_72h": 70.905
+    },
+    {
+      "drifter_id": "90142",
+      "unit": "KE-2",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 18.575,
+      "error_HYCOM_24h": 14.072,
+      "delta_24h": 4.502,
+      "sep_CAND_HYCOM_24h": 16.903,
+      "threeway_A_HYCOM_24h": 14.072,
+      "threeway_B_GLORYS_24h": 20.568,
+      "threeway_C_STOKES_24h": 18.575,
+      "error_CAND_48h": 31.996,
+      "error_HYCOM_48h": 30.812,
+      "delta_48h": 1.185,
+      "sep_CAND_HYCOM_48h": 32.633,
+      "threeway_A_HYCOM_48h": 30.812,
+      "threeway_B_GLORYS_48h": 37.503,
+      "threeway_C_STOKES_48h": 31.996,
+      "error_CAND_72h": 40.552,
+      "error_HYCOM_72h": 44.239,
+      "delta_72h": -3.687,
+      "sep_CAND_HYCOM_72h": 50.924,
+      "threeway_A_HYCOM_72h": 44.239,
+      "threeway_B_GLORYS_72h": 51.677,
+      "threeway_C_STOKES_72h": 40.552,
+      "endpoint_CAND_72h": 5.685,
+      "path_CAND": 10.346,
+      "endpoint_HYCOM_72h": 45.298,
+      "path_HYCOM": 49.12,
+      "observed_72h": 37.048
+    },
+    {
+      "drifter_id": "90145",
+      "unit": "KE-2",
+      "role": "CALIBRATION",
+      "error_CAND_24h": 17.041,
+      "error_HYCOM_24h": 27.992,
+      "delta_24h": -10.951,
+      "sep_CAND_HYCOM_24h": 36.101,
+      "threeway_A_HYCOM_24h": 27.992,
+      "threeway_B_GLORYS_24h": 11.536,
+      "threeway_C_STOKES_24h": 17.041,
+      "error_CAND_48h": 14.916,
+      "error_HYCOM_48h": 69.708,
+      "delta_48h": -54.792,
+      "sep_CAND_HYCOM_48h": 75.004,
+      "threeway_A_HYCOM_48h": 69.708,
+      "threeway_B_GLORYS_48h": 8.884,
+      "threeway_C_STOKES_48h": 14.916,
+      "error_CAND_72h": 16.414,
+      "error_HYCOM_72h": 104.183,
+      "delta_72h": -87.769,
+      "sep_CAND_HYCOM_72h": 89.667,
+      "threeway_A_HYCOM_72h": 104.183,
+      "threeway_B_GLORYS_72h": 21.727,
+      "threeway_C_STOKES_72h": 16.414,
+      "endpoint_CAND_72h": 120.676,
+      "path_CAND": 134.66,
+      "endpoint_HYCOM_72h": 139.966,
+      "path_HYCOM": 150.073,
+      "observed_72h": 131.458
+    },
+    {
+      "drifter_id": "48985",
+      "unit": "KE-H1",
+      "role": "HOLDOUT",
+      "error_CAND_24h": 7.63,
+      "error_HYCOM_24h": 8.223,
+      "delta_24h": -0.593,
+      "sep_CAND_HYCOM_24h": 7.94,
+      "threeway_A_HYCOM_24h": 8.223,
+      "threeway_B_GLORYS_24h": 10.273,
+      "threeway_C_STOKES_24h": 7.63,
+      "error_CAND_48h": 8.517,
+      "error_HYCOM_48h": 21.544,
+      "delta_48h": -13.026,
+      "sep_CAND_HYCOM_48h": 21.512,
+      "threeway_A_HYCOM_48h": 21.544,
+      "threeway_B_GLORYS_48h": 11.849,
+      "threeway_C_STOKES_48h": 8.517,
+      "error_CAND_72h": 19.343,
+      "error_HYCOM_72h": 48.81,
+      "delta_72h": -29.467,
+      "sep_CAND_HYCOM_72h": 52.322,
+      "threeway_A_HYCOM_72h": 48.81,
+      "threeway_B_GLORYS_72h": 22.839,
+      "threeway_C_STOKES_72h": 19.343,
+      "endpoint_CAND_72h": 19.017,
+      "path_CAND": 24.536,
+      "endpoint_HYCOM_72h": 40.051,
+      "path_HYCOM": 55.705,
+      "observed_72h": 31.456
+    },
+    {
+      "drifter_id": "81806",
+      "unit": "KE-H1",
+      "role": "HOLDOUT",
+      "error_CAND_24h": 5.975,
+      "error_HYCOM_24h": 1.941,
+      "delta_24h": 4.034,
+      "sep_CAND_HYCOM_24h": 7.292,
+      "threeway_A_HYCOM_24h": 1.941,
+      "threeway_B_GLORYS_24h": 2.992,
+      "threeway_C_STOKES_24h": 5.975,
+      "error_CAND_48h": 7.566,
+      "error_HYCOM_48h": 6.096,
+      "delta_48h": 1.469,
+      "sep_CAND_HYCOM_48h": 13.516,
+      "threeway_A_HYCOM_48h": 6.096,
+      "threeway_B_GLORYS_48h": 4.796,
+      "threeway_C_STOKES_48h": 7.566,
+      "error_CAND_72h": 5.529,
+      "error_HYCOM_72h": 12.091,
+      "delta_72h": -6.563,
+      "sep_CAND_HYCOM_72h": 17.525,
+      "threeway_A_HYCOM_72h": 12.091,
+      "threeway_B_GLORYS_72h": 7.037,
+      "threeway_C_STOKES_72h": 5.529,
+      "endpoint_CAND_72h": 51.833,
+      "path_CAND": 51.982,
+      "endpoint_HYCOM_72h": 45.351,
+      "path_HYCOM": 47.599,
+      "observed_72h": 48.477
+    },
+    {
+      "drifter_id": "90135",
+      "unit": "KE-H1",
+      "role": "HOLDOUT",
+      "error_CAND_24h": 33.569,
+      "error_HYCOM_24h": 21.517,
+      "delta_24h": 12.052,
+      "sep_CAND_HYCOM_24h": 18.828,
+      "threeway_A_HYCOM_24h": 21.517,
+      "threeway_B_GLORYS_24h": 31.961,
+      "threeway_C_STOKES_24h": 33.569,
+      "error_CAND_48h": 59.283,
+      "error_HYCOM_48h": 27.504,
+      "delta_48h": 31.779,
+      "sep_CAND_HYCOM_48h": 41.686,
+      "threeway_A_HYCOM_48h": 27.504,
+      "threeway_B_GLORYS_48h": 56.083,
+      "threeway_C_STOKES_48h": 59.283,
+      "error_CAND_72h": 58.57,
+      "error_HYCOM_72h": 24.444,
+      "delta_72h": 34.125,
+      "sep_CAND_HYCOM_72h": 35.87,
+      "threeway_A_HYCOM_72h": 24.444,
+      "threeway_B_GLORYS_72h": 57.508,
+      "threeway_C_STOKES_72h": 58.57,
+      "endpoint_CAND_72h": 122.244,
+      "path_CAND": 128.254,
+      "endpoint_HYCOM_72h": 101.547,
+      "path_HYCOM": 106.154,
+      "observed_72h": 104.782
+    },
+    {
+      "drifter_id": "90149",
+      "unit": "KE-H1",
+      "role": "HOLDOUT",
+      "error_CAND_24h": 12.722,
+      "error_HYCOM_24h": 4.089,
+      "delta_24h": 8.633,
+      "sep_CAND_HYCOM_24h": 15.284,
+      "threeway_A_HYCOM_24h": 4.089,
+      "threeway_B_GLORYS_24h": 15.025,
+      "threeway_C_STOKES_24h": 12.722,
+      "error_CAND_48h": 21.517,
+      "error_HYCOM_48h": 8.88,
+      "delta_48h": 12.637,
+      "sep_CAND_HYCOM_48h": 29.655,
+      "threeway_A_HYCOM_48h": 8.88,
+      "threeway_B_GLORYS_48h": 26.378,
+      "threeway_C_STOKES_48h": 21.517,
+      "error_CAND_72h": 26.355,
+      "error_HYCOM_72h": 17.603,
+      "delta_72h": 8.753,
+      "sep_CAND_HYCOM_72h": 42.85,
+      "threeway_A_HYCOM_72h": 17.603,
+      "threeway_B_GLORYS_72h": 30.524,
+      "threeway_C_STOKES_72h": 26.355,
+      "endpoint_CAND_72h": 38.362,
+      "path_CAND": 39.71,
+      "endpoint_HYCOM_72h": 79.693,
+      "path_HYCOM": 83.845,
+      "observed_72h": 62.188
+    },
+    {
+      "drifter_id": "90150",
+      "unit": "KE-H1",
+      "role": "HOLDOUT",
+      "error_CAND_24h": 37.918,
+      "error_HYCOM_24h": 23.705,
+      "delta_24h": 14.213,
+      "sep_CAND_HYCOM_24h": 46.232,
+      "threeway_A_HYCOM_24h": 23.705,
+      "threeway_B_GLORYS_24h": 34.495,
+      "threeway_C_STOKES_24h": 37.918,
+      "error_CAND_48h": 61.804,
+      "error_HYCOM_48h": 58.664,
+      "delta_48h": 3.14,
+      "sep_CAND_HYCOM_48h": 91.64,
+      "threeway_A_HYCOM_48h": 58.664,
+      "threeway_B_GLORYS_48h": 58.905,
+      "threeway_C_STOKES_48h": 61.804,
+      "error_CAND_72h": 64.032,
+      "error_HYCOM_72h": 89.37,
+      "delta_72h": -25.338,
+      "sep_CAND_HYCOM_72h": 122.794,
+      "threeway_A_HYCOM_72h": 89.37,
+      "threeway_B_GLORYS_72h": 69.208,
+      "threeway_C_STOKES_72h": 64.032,
+      "endpoint_CAND_72h": 65.113,
+      "path_CAND": 69.466,
+      "endpoint_HYCOM_72h": 125.215,
+      "path_HYCOM": 128.243,
+      "observed_72h": 112.667
+    },
+    {
+      "drifter_id": "89898",
+      "unit": "KE-H3",
+      "role": "HOLDOUT",
+      "error_CAND_24h": 1.764,
+      "error_HYCOM_24h": 13.802,
+      "delta_24h": -12.038,
+      "sep_CAND_HYCOM_24h": 15.376,
+      "threeway_A_HYCOM_24h": 13.802,
+      "threeway_B_GLORYS_24h": 6.807,
+      "threeway_C_STOKES_24h": 1.764,
+      "error_CAND_48h": 17.904,
+      "error_HYCOM_48h": 17.08,
+      "delta_48h": 0.824,
+      "sep_CAND_HYCOM_48h": 31.382,
+      "threeway_A_HYCOM_48h": 17.08,
+      "threeway_B_GLORYS_48h": 26.06,
+      "threeway_C_STOKES_48h": 17.904,
+      "error_CAND_72h": 34.389,
+      "error_HYCOM_72h": 10.265,
+      "delta_72h": 24.124,
+      "sep_CAND_HYCOM_72h": 43.779,
+      "threeway_A_HYCOM_72h": 10.265,
+      "threeway_B_GLORYS_72h": 52.084,
+      "threeway_C_STOKES_72h": 34.389,
+      "endpoint_CAND_72h": 112.497,
+      "path_CAND": 120.412,
+      "endpoint_HYCOM_72h": 150.297,
+      "path_HYCOM": 173.068,
+      "observed_72h": 140.071
+    },
+    {
+      "drifter_id": "90146",
+      "unit": "KE-H3",
+      "role": "HOLDOUT",
+      "error_CAND_24h": 12.534,
+      "error_HYCOM_24h": 16.625,
+      "delta_24h": -4.091,
+      "sep_CAND_HYCOM_24h": 19.656,
+      "threeway_A_HYCOM_24h": 16.625,
+      "threeway_B_GLORYS_24h": 6.766,
+      "threeway_C_STOKES_24h": 12.534,
+      "error_CAND_48h": 22.032,
+      "error_HYCOM_48h": 22.74,
+      "delta_48h": -0.708,
+      "sep_CAND_HYCOM_48h": 39.81,
+      "threeway_A_HYCOM_48h": 22.74,
+      "threeway_B_GLORYS_48h": 19.158,
+      "threeway_C_STOKES_48h": 22.032,
+      "error_CAND_72h": 10.81,
+      "error_HYCOM_72h": 29.497,
+      "delta_72h": -18.687,
+      "sep_CAND_HYCOM_72h": 39.087,
+      "threeway_A_HYCOM_72h": 29.497,
+      "threeway_B_GLORYS_72h": 31.665,
+      "threeway_C_STOKES_72h": 10.81,
+      "endpoint_CAND_72h": 71.561,
+      "path_CAND": 72.025,
+      "endpoint_HYCOM_72h": 101.085,
+      "path_HYCOM": 141.661,
+      "observed_72h": 81.357
+    },
+    {
+      "drifter_id": "92981",
+      "unit": "KE-H3",
+      "role": "HOLDOUT",
+      "error_CAND_24h": 8.827,
+      "error_HYCOM_24h": 13.072,
+      "delta_24h": -4.245,
+      "sep_CAND_HYCOM_24h": 20.449,
+      "threeway_A_HYCOM_24h": 13.072,
+      "threeway_B_GLORYS_24h": 14.439,
+      "threeway_C_STOKES_24h": 8.827,
+      "error_CAND_48h": 22.746,
+      "error_HYCOM_48h": 12.402,
+      "delta_48h": 10.344,
+      "sep_CAND_HYCOM_48h": 31.941,
+      "threeway_A_HYCOM_48h": 12.402,
+      "threeway_B_GLORYS_48h": 31.834,
+      "threeway_C_STOKES_48h": 22.746,
+      "error_CAND_72h": 27.923,
+      "error_HYCOM_72h": 33.118,
+      "delta_72h": -5.195,
+      "sep_CAND_HYCOM_72h": 25.065,
+      "threeway_A_HYCOM_72h": 33.118,
+      "threeway_B_GLORYS_72h": 36.862,
+      "threeway_C_STOKES_72h": 27.923,
+      "endpoint_CAND_72h": 127.336,
+      "path_CAND": 141.253,
+      "endpoint_HYCOM_72h": 140.511,
+      "path_HYCOM": 174.169,
+      "observed_72h": 154.559
+    },
+    {
+      "drifter_id": "98996",
+      "unit": "KE-H3",
+      "role": "HOLDOUT",
+      "error_CAND_24h": 29.53,
+      "error_HYCOM_24h": 12.299,
+      "delta_24h": 17.231,
+      "sep_CAND_HYCOM_24h": 23.437,
+      "threeway_A_HYCOM_24h": 12.299,
+      "threeway_B_GLORYS_24h": 19.701,
+      "threeway_C_STOKES_24h": 29.53,
+      "error_CAND_48h": 62.962,
+      "error_HYCOM_48h": 35.126,
+      "delta_48h": 27.836,
+      "sep_CAND_HYCOM_48h": 42.083,
+      "threeway_A_HYCOM_48h": 35.126,
+      "threeway_B_GLORYS_48h": 46.89,
+      "threeway_C_STOKES_48h": 62.962,
+      "error_CAND_72h": 97.454,
+      "error_HYCOM_72h": 90.497,
+      "delta_72h": 6.958,
+      "sep_CAND_HYCOM_72h": 52.116,
+      "threeway_A_HYCOM_72h": 90.497,
+      "threeway_B_GLORYS_72h": 83.052,
+      "threeway_C_STOKES_72h": 97.454,
+      "endpoint_CAND_72h": 46.77,
+      "path_CAND": 50.507,
+      "endpoint_HYCOM_72h": 12.233,
+      "path_HYCOM": 37.045,
+      "observed_72h": 79.433
+    },
+    {
+      "drifter_id": "98997",
+      "unit": "KE-H3",
+      "role": "HOLDOUT",
+      "error_CAND_24h": 11.802,
+      "error_HYCOM_24h": 17.752,
+      "delta_24h": -5.95,
+      "sep_CAND_HYCOM_24h": 21.482,
+      "threeway_A_HYCOM_24h": 17.752,
+      "threeway_B_GLORYS_24h": 17.993,
+      "threeway_C_STOKES_24h": 11.802,
+      "error_CAND_48h": 25.269,
+      "error_HYCOM_48h": 33.816,
+      "delta_48h": -8.547,
+      "sep_CAND_HYCOM_48h": 39.078,
+      "threeway_A_HYCOM_48h": 33.816,
+      "threeway_B_GLORYS_48h": 36.955,
+      "threeway_C_STOKES_48h": 25.269,
+      "error_CAND_72h": 44.746,
+      "error_HYCOM_72h": 37.114,
+      "delta_72h": 7.632,
+      "sep_CAND_HYCOM_72h": 53.829,
+      "threeway_A_HYCOM_72h": 37.114,
+      "threeway_B_GLORYS_72h": 51.988,
+      "threeway_C_STOKES_72h": 44.746,
+      "endpoint_CAND_72h": 56.756,
+      "path_CAND": 59.614,
+      "endpoint_HYCOM_72h": 42.506,
+      "path_HYCOM": 70.311,
+      "observed_72h": 12.151
+    },
+    {
+      "drifter_id": "98998",
+      "unit": "KE-H3",
+      "role": "HOLDOUT",
+      "error_CAND_24h": 2.164,
+      "error_HYCOM_24h": 22.802,
+      "delta_24h": -20.638,
+      "sep_CAND_HYCOM_24h": 21.366,
+      "threeway_A_HYCOM_24h": 22.802,
+      "threeway_B_GLORYS_24h": 8.506,
+      "threeway_C_STOKES_24h": 2.164,
+      "error_CAND_48h": 12.355,
+      "error_HYCOM_48h": 43.279,
+      "delta_48h": -30.924,
+      "sep_CAND_HYCOM_48h": 36.49,
+      "threeway_A_HYCOM_48h": 43.279,
+      "threeway_B_GLORYS_48h": 9.4,
+      "threeway_C_STOKES_48h": 12.355,
+      "error_CAND_72h": 18.179,
+      "error_HYCOM_72h": 58.451,
+      "delta_72h": -40.272,
+      "sep_CAND_HYCOM_72h": 42.135,
+      "threeway_A_HYCOM_72h": 58.451,
+      "threeway_B_GLORYS_72h": 14.309,
+      "threeway_C_STOKES_72h": 18.179,
+      "endpoint_CAND_72h": 56.236,
+      "path_CAND": 64.618,
+      "endpoint_HYCOM_72h": 66.716,
+      "path_HYCOM": 82.714,
+      "observed_72h": 51.185
+    },
+    {
+      "drifter_id": "99006",
+      "unit": "KE-H3",
+      "role": "HOLDOUT",
+      "error_CAND_24h": 3.181,
+      "error_HYCOM_24h": 7.39,
+      "delta_24h": -4.209,
+      "sep_CAND_HYCOM_24h": 10.087,
+      "threeway_A_HYCOM_24h": 7.39,
+      "threeway_B_GLORYS_24h": 5.228,
+      "threeway_C_STOKES_24h": 3.181,
+      "error_CAND_48h": 20.494,
+      "error_HYCOM_48h": 14.086,
+      "delta_48h": 6.407,
+      "sep_CAND_HYCOM_48h": 26.473,
+      "threeway_A_HYCOM_48h": 14.086,
+      "threeway_B_GLORYS_48h": 11.096,
+      "threeway_C_STOKES_48h": 20.494,
+      "error_CAND_72h": 29.904,
+      "error_HYCOM_72h": 11.846,
+      "delta_72h": 18.058,
+      "sep_CAND_HYCOM_72h": 29.885,
+      "threeway_A_HYCOM_72h": 11.846,
+      "threeway_B_GLORYS_72h": 24.151,
+      "threeway_C_STOKES_72h": 29.904,
+      "endpoint_CAND_72h": 12.575,
+      "path_CAND": 22.578,
+      "endpoint_HYCOM_72h": 31.281,
+      "path_HYCOM": 50.781,
+      "observed_72h": 26.356
+    }
+  ],
+  "crossCheck": {
+    "items": [
+      {
+        "unit": "KE-1",
+        "drifter_id": "71155",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 18.379,
+        "frozen": "18.379",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "71155",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 74.23,
+        "frozen": "74.23",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "71155",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 37.036,
+        "frozen": "37.036",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "71155",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 179.449,
+        "frozen": "179.449",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "71155",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 102.331,
+        "frozen": "102.331",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "71155",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 335.192,
+        "frozen": "335.192",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81801",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 6.03,
+        "frozen": "6.03",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81801",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 49.903,
+        "frozen": "49.903",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81801",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 18.216,
+        "frozen": "18.216",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81801",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 89.97,
+        "frozen": "89.97",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81801",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 16.207,
+        "frozen": "16.207",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81801",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 100.746,
+        "frozen": "100.746",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81805",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 11.633,
+        "frozen": "11.633",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81805",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 21.952,
+        "frozen": "21.952",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81805",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 33.386,
+        "frozen": "33.386",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81805",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 27.596,
+        "frozen": "27.596",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81805",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 43.692,
+        "frozen": "43.692",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81805",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 20.494,
+        "frozen": "20.494",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81807",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 10.165,
+        "frozen": "10.165",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81807",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 5.354,
+        "frozen": "5.354",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81807",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 18.678,
+        "frozen": "18.678",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81807",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 6.398,
+        "frozen": "6.398",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81807",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 31.862,
+        "frozen": "31.862",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81807",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 17.333,
+        "frozen": "17.333",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81811",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 26.129,
+        "frozen": "26.129",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81811",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 44.357,
+        "frozen": "44.357",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81811",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 39.026,
+        "frozen": "39.026",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81811",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 49.24,
+        "frozen": "49.24",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81811",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 59.055,
+        "frozen": "59.055",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81811",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 22.779,
+        "frozen": "22.779",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81813",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 12.387,
+        "frozen": "12.387",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81813",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 2.639,
+        "frozen": "2.639",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81813",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 21.735,
+        "frozen": "21.735",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81813",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 11.787,
+        "frozen": "11.787",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81813",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 19.63,
+        "frozen": "19.63",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81813",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 28.966,
+        "frozen": "28.966",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81814",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 15.61,
+        "frozen": "15.61",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81814",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 20.643,
+        "frozen": "20.643",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81814",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 5.112,
+        "frozen": "5.112",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81814",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 41.838,
+        "frozen": "41.838",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81814",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 48.22,
+        "frozen": "48.22",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81814",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": "NOT_AVAILABLE",
+        "frozen": "NOT_AVAILABLE",
+        "absDiffKm": "NOT_AVAILABLE",
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81816",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 17.762,
+        "frozen": "17.762",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81816",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 23.073,
+        "frozen": "23.073",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81816",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 34.649,
+        "frozen": "34.649",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81816",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 37.007,
+        "frozen": "37.007",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81816",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 55.641,
+        "frozen": "55.641",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-1",
+        "drifter_id": "81816",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 44.652,
+        "frozen": "44.652",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "48965",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 9.828,
+        "frozen": "9.828",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "48965",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 9.865,
+        "frozen": "9.865",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "48965",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 21.001,
+        "frozen": "21.001",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "48965",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 5.273,
+        "frozen": "5.273",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "48965",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 20.569,
+        "frozen": "20.569",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "48965",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 12.056,
+        "frozen": "12.056",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "81802",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 1.487,
+        "frozen": "1.487",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "81802",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 13.945,
+        "frozen": "13.945",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "81802",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 7.466,
+        "frozen": "7.466",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "81802",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 34.31,
+        "frozen": "34.31",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "81802",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 26.706,
+        "frozen": "26.706",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "81802",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 49.226,
+        "frozen": "49.226",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "90141",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 28.443,
+        "frozen": "28.443",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "90141",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 12.078,
+        "frozen": "12.078",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "90141",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 77.943,
+        "frozen": "77.943",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "90141",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 29.476,
+        "frozen": "29.476",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "90141",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 158.931,
+        "frozen": "158.931",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "90141",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 39.643,
+        "frozen": "39.643",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "90142",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 14.072,
+        "frozen": "14.072",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "90142",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 18.575,
+        "frozen": "18.575",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "90142",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 30.812,
+        "frozen": "30.812",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "90142",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 31.996,
+        "frozen": "31.996",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "90142",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 44.239,
+        "frozen": "44.239",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "90142",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 40.552,
+        "frozen": "40.552",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "90145",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 27.992,
+        "frozen": "27.992",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "90145",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 17.041,
+        "frozen": "17.041",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "90145",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 69.708,
+        "frozen": "69.708",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "90145",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 14.916,
+        "frozen": "14.916",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "90145",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 104.183,
+        "frozen": "104.183",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-2",
+        "drifter_id": "90145",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 16.414,
+        "frozen": "16.414",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127198",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 143.319,
+        "frozen": "143.319",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127198",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 68.808,
+        "frozen": "68.808",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127198",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 238.223,
+        "frozen": "238.223",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127198",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 127.627,
+        "frozen": "127.627",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127198",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 323.38,
+        "frozen": "323.38",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127198",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 151.486,
+        "frozen": "151.486",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127199",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 144.38,
+        "frozen": "144.38",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127199",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 70.192,
+        "frozen": "70.192",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127199",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 237.391,
+        "frozen": "237.391",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127199",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 127.746,
+        "frozen": "127.746",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127199",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 319.828,
+        "frozen": "319.828",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127199",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 150.141,
+        "frozen": "150.141",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127272",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 27.47,
+        "frozen": "27.47",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127272",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 21.655,
+        "frozen": "21.655",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127272",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 55.056,
+        "frozen": "55.056",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127272",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 63.744,
+        "frozen": "63.744",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127272",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 106.115,
+        "frozen": "106.115",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127272",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 101.871,
+        "frozen": "101.871",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127313",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 63.55,
+        "frozen": "63.55",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127313",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 129.183,
+        "frozen": "129.183",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127313",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 142.936,
+        "frozen": "142.936",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127313",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 281.682,
+        "frozen": "281.682",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127313",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 238.212,
+        "frozen": "238.212",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127313",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 408.388,
+        "frozen": "408.388",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127314",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 47.299,
+        "frozen": "47.299",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127314",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 42.785,
+        "frozen": "42.785",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127314",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 60.676,
+        "frozen": "60.676",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127314",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 65.841,
+        "frozen": "65.841",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127314",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 45.89,
+        "frozen": "45.89",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127314",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 57.069,
+        "frozen": "57.069",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127315",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 23.293,
+        "frozen": "23.293",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127315",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 38.567,
+        "frozen": "38.567",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127315",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 44.649,
+        "frozen": "44.649",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127315",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 94.203,
+        "frozen": "94.203",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127315",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 56.37,
+        "frozen": "56.37",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "127315",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 151.598,
+        "frozen": "151.598",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "132511",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 39.952,
+        "frozen": "39.952",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "132511",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 43.539,
+        "frozen": "43.539",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "132511",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 55.875,
+        "frozen": "55.875",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "132511",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 100.565,
+        "frozen": "100.565",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "132511",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 105.167,
+        "frozen": "105.167",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "132511",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 144.8,
+        "frozen": "144.8",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "132528",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 25.126,
+        "frozen": "25.126",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "132528",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 36.645,
+        "frozen": "36.645",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "132528",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 19.304,
+        "frozen": "19.304",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "132528",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 89.126,
+        "frozen": "89.126",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "132528",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 65.919,
+        "frozen": "65.919",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "132528",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 63.063,
+        "frozen": "63.063",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "132634",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 34.178,
+        "frozen": "34.178",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "132634",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 27.528,
+        "frozen": "27.528",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "132634",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 75.794,
+        "frozen": "75.794",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "132634",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 46.098,
+        "frozen": "46.098",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "132634",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 123.195,
+        "frozen": "123.195",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-1",
+        "drifter_id": "132634",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 83.442,
+        "frozen": "83.442",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-2",
+        "drifter_id": "127281",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 116.865,
+        "frozen": "116.865",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-2",
+        "drifter_id": "127281",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 25.469,
+        "frozen": "25.469",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-2",
+        "drifter_id": "127281",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 232.889,
+        "frozen": "232.889",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-2",
+        "drifter_id": "127281",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": "NOT_AVAILABLE",
+        "frozen": "NOT_AVAILABLE",
+        "absDiffKm": "NOT_AVAILABLE",
+        "agree": true
+      },
+      {
+        "unit": "AG-2",
+        "drifter_id": "127281",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 331.318,
+        "frozen": "331.318",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "AG-2",
+        "drifter_id": "127281",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": "NOT_AVAILABLE",
+        "frozen": "NOT_AVAILABLE",
+        "absDiffKm": "NOT_AVAILABLE",
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "48985",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 8.223,
+        "frozen": "8.223",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "48985",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 7.63,
+        "frozen": "7.63",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "48985",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 21.544,
+        "frozen": "21.544",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "48985",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 8.517,
+        "frozen": "8.517",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "48985",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 48.81,
+        "frozen": "48.81",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "48985",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 19.343,
+        "frozen": "19.343",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "81806",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 1.941,
+        "frozen": "1.941",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "81806",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 5.975,
+        "frozen": "5.975",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "81806",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 6.096,
+        "frozen": "6.096",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "81806",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 7.566,
+        "frozen": "7.566",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "81806",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 12.091,
+        "frozen": "12.091",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "81806",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 5.529,
+        "frozen": "5.529",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "90135",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 21.517,
+        "frozen": "21.517",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "90135",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 33.569,
+        "frozen": "33.569",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "90135",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 27.504,
+        "frozen": "27.504",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "90135",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 59.283,
+        "frozen": "59.283",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "90135",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 24.444,
+        "frozen": "24.444",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "90135",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 58.57,
+        "frozen": "58.57",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "90149",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 4.089,
+        "frozen": "4.089",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "90149",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 12.722,
+        "frozen": "12.722",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "90149",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 8.88,
+        "frozen": "8.88",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "90149",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 21.517,
+        "frozen": "21.517",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "90149",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 17.603,
+        "frozen": "17.603",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "90149",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 26.355,
+        "frozen": "26.355",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "90150",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 23.705,
+        "frozen": "23.705",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "90150",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 37.918,
+        "frozen": "37.918",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "90150",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 58.664,
+        "frozen": "58.664",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "90150",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 61.804,
+        "frozen": "61.804",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "90150",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 89.37,
+        "frozen": "89.37",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H1",
+        "drifter_id": "90150",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 64.032,
+        "frozen": "64.032",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "89898",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 13.802,
+        "frozen": "13.802",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "89898",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 1.764,
+        "frozen": "1.764",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "89898",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 17.08,
+        "frozen": "17.08",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "89898",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 17.904,
+        "frozen": "17.904",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "89898",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 10.265,
+        "frozen": "10.265",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "89898",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 34.389,
+        "frozen": "34.389",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "90146",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 16.625,
+        "frozen": "16.625",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "90146",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 12.534,
+        "frozen": "12.534",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "90146",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 22.74,
+        "frozen": "22.74",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "90146",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 22.032,
+        "frozen": "22.032",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "90146",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 29.497,
+        "frozen": "29.497",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "90146",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 10.81,
+        "frozen": "10.81",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "92981",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 13.072,
+        "frozen": "13.072",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "92981",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 8.827,
+        "frozen": "8.827",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "92981",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 12.402,
+        "frozen": "12.402",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "92981",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 22.746,
+        "frozen": "22.746",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "92981",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 33.118,
+        "frozen": "33.118",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "92981",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 27.923,
+        "frozen": "27.923",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "98996",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 12.299,
+        "frozen": "12.299",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "98996",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 29.53,
+        "frozen": "29.53",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "98996",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 35.126,
+        "frozen": "35.126",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "98996",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 62.962,
+        "frozen": "62.962",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "98996",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 90.497,
+        "frozen": "90.497",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "98996",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 97.454,
+        "frozen": "97.454",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "98997",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 17.752,
+        "frozen": "17.752",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "98997",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 11.802,
+        "frozen": "11.802",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "98997",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 33.816,
+        "frozen": "33.816",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "98997",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 25.269,
+        "frozen": "25.269",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "98997",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 37.114,
+        "frozen": "37.114",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "98997",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 44.746,
+        "frozen": "44.746",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "98998",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 22.802,
+        "frozen": "22.802",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "98998",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 2.164,
+        "frozen": "2.164",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "98998",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 43.279,
+        "frozen": "43.279",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "98998",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 12.355,
+        "frozen": "12.355",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "98998",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 58.451,
+        "frozen": "58.451",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "98998",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 18.179,
+        "frozen": "18.179",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "99006",
+        "horizon": 24,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 7.39,
+        "frozen": "7.39",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "99006",
+        "horizon": 24,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 3.181,
+        "frozen": "3.181",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "99006",
+        "horizon": 48,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 14.086,
+        "frozen": "14.086",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "99006",
+        "horizon": 48,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 20.494,
+        "frozen": "20.494",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "99006",
+        "horizon": 72,
+        "comparison": "HYCOM_vs_step25c_error_H002",
+        "recomputed": 11.846,
+        "frozen": "11.846",
+        "absDiffKm": 0.0,
+        "agree": true
+      },
+      {
+        "unit": "KE-H3",
+        "drifter_id": "99006",
+        "horizon": 72,
+        "comparison": "candidate_vs_step29_error_T002",
+        "recomputed": 29.904,
+        "frozen": "29.904",
+        "absDiffKm": 0.0,
+        "agree": true
+      }
+    ],
+    "compared": 210,
+    "disagreements": 0,
+    "allAgree": true
+  },
+  "summary": {
+    "ruleId": "final-candidate-benchmark-step30a",
+    "phase": "B",
+    "status": "STEP30A_COMPLETE",
+    "comparison": "STEP 30A = C (GLORYS + Stokes, STEP 29 treatment alpha 0.002) vs A (HYCOM, STEP 25C / STEP 20 alpha 0.002)",
+    "baseline": "HYCOM STEP25C",
+    "candidate": "GLORYS + Stokes STEP29",
+    "alpha": 0.002,
+    "stokesCoefficient": 1.0,
+    "candidateDepthMeters": 15.81007,
+    "baselineDepthMeters": 15.0,
+    "modelRunCount": 0,
+    "newData": 0,
+    "horizons": [
+      24,
+      48,
+      72
+    ],
+    "tieToleranceKm": 1e-06,
+    "deltaDefinition": "error_candidate - error_HYCOM (km); negative = candidate lower error",
+    "windows": [
+      "KE-1",
+      "KE-2",
+      "AG-1",
+      "AG-2",
+      "KE-H1",
+      "KE-H3"
+    ],
+    "excluded": {
+      "KE-H2": {
+        "paired": false,
+        "reason": "frozen HYCOM baseline unavailable (STEP 20)"
+      },
+      "AG-holdout": "UNAVAILABLE"
+    },
+    "strata": {
+      "overall": {
+        "n_drifters": 35,
+        "24h": {
+          "n": 35,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 35,
+            "median": 21.655,
+            "mean": 28.161,
+            "min": 1.764,
+            "max": 129.183
+          },
+          "error_HYCOM": {
+            "n": 35,
+            "median": 17.762,
+            "mean": 29.388,
+            "min": 1.487,
+            "max": 144.38
+          },
+          "delta": {
+            "n": 35,
+            "median": 0.037,
+            "mean": -1.226,
+            "min": -91.396,
+            "max": 65.633
+          },
+          "wins_candidate": 17,
+          "losses_candidate": 18,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 35,
+            "k": 17,
+            "p_nominal": 1.0,
+            "reported": true,
+            "role": "descriptive context only; not the decision rule"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 35,
+            "median": 21.482,
+            "mean": 31.037,
+            "min": 1.118,
+            "max": 116.815
+          },
+          "unpairedAvailability": {
+            "candidate": 35,
+            "HYCOM": 35
+          },
+          "threeWayFrozen": {
+            "n_allThree": 35,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 35,
+              "median": 17.762,
+              "mean": 29.388,
+              "min": 1.487,
+              "max": 144.38
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 35,
+              "median": 19.701,
+              "mean": 28.277,
+              "min": 2.66,
+              "max": 131.891
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 35,
+              "median": 21.655,
+              "mean": 28.161,
+              "min": 1.764,
+              "max": 129.183
+            },
+            "median_C_minus_A_step30a": 0.037,
+            "median_B_minus_A_step25c": 1.367,
+            "median_C_minus_B_step29": -0.869,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "TOWARD_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "48h": {
+          "n": 34,
+          "notAvailable": 1,
+          "error_candidate": {
+            "n": 34,
+            "median": 35.658,
+            "mean": 55.833,
+            "min": 5.273,
+            "max": 281.682
+          },
+          "error_HYCOM": {
+            "n": 34,
+            "median": 33.601,
+            "mean": 48.408,
+            "min": 5.112,
+            "max": 238.223
+          },
+          "delta": {
+            "n": 34,
+            "median": 2.749,
+            "mean": 7.425,
+            "min": -110.597,
+            "max": 142.413
+          },
+          "wins_candidate": 13,
+          "losses_candidate": 21,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 34,
+            "k": 13,
+            "p_nominal": 0.229481,
+            "reported": true,
+            "role": "descriptive context only; not the decision rule"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 34,
+            "median": 39.417,
+            "mean": 59.776,
+            "min": 10.326,
+            "max": 180.414
+          },
+          "unpairedAvailability": {
+            "candidate": 34,
+            "HYCOM": 35
+          },
+          "threeWayFrozen": {
+            "n_allThree": 34,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 34,
+              "median": 33.601,
+              "mean": 48.409,
+              "min": 5.112,
+              "max": 238.223
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 34,
+              "median": 39.54,
+              "mean": 55.615,
+              "min": 4.796,
+              "max": 289.961
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 34,
+              "median": 35.659,
+              "mean": 55.833,
+              "min": 5.273,
+              "max": 281.682
+            },
+            "median_C_minus_A_step30a": 2.749,
+            "median_B_minus_A_step25c": 4.915,
+            "median_C_minus_B_step29": 0.909,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "TOWARD_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "72h": {
+          "n": 33,
+          "notAvailable": 2,
+          "error_candidate": {
+            "n": 33,
+            "median": 44.652,
+            "mean": 75.065,
+            "min": 5.529,
+            "max": 408.388
+          },
+          "error_HYCOM": {
+            "n": 33,
+            "median": 48.81,
+            "mean": 76.674,
+            "min": 10.265,
+            "max": 323.38
+          },
+          "delta": {
+            "n": 33,
+            "median": -4.244,
+            "mean": -1.609,
+            "min": -171.894,
+            "max": 232.861
+          },
+          "wins_candidate": 19,
+          "losses_candidate": 14,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 33,
+            "k": 14,
+            "p_nominal": 0.48685,
+            "reported": true,
+            "role": "descriptive context only; not the decision rule"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 33,
+            "median": 52.116,
+            "mean": 87.274,
+            "min": 13.037,
+            "max": 253.811
+          },
+          "unpairedAvailability": {
+            "candidate": 33,
+            "HYCOM": 35
+          },
+          "threeWayFrozen": {
+            "n_allThree": 33,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 33,
+              "median": 48.81,
+              "mean": 76.674,
+              "min": 10.265,
+              "max": 323.38
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 33,
+              "median": 51.988,
+              "mean": 77.259,
+              "min": 7.037,
+              "max": 416.26
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 33,
+              "median": 44.652,
+              "mean": 75.065,
+              "min": 5.529,
+              "max": 408.388
+            },
+            "median_C_minus_A_step30a": -4.244,
+            "median_B_minus_A_step25c": 2.168,
+            "median_C_minus_B_step29": -3.496,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "AWAY_FROM_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "M1_endpoint72h": {
+          "candidate": {
+            "n": 33,
+            "median": 67.251,
+            "mean": 97.472,
+            "min": 5.685,
+            "max": 357.029
+          },
+          "HYCOM": {
+            "n": 35,
+            "median": 93.295,
+            "mean": 102.058,
+            "min": 11.989,
+            "max": 240.965
+          }
+        },
+        "M2_totalPath": {
+          "candidate": {
+            "n": 35,
+            "median": 73.271,
+            "mean": 114.241,
+            "min": 10.346,
+            "max": 382.227
+          },
+          "HYCOM": {
+            "n": 35,
+            "median": 104.989,
+            "mean": 118.9,
+            "min": 37.045,
+            "max": 255.853
+          }
+        },
+        "M4_separation72h": {
+          "n": 33,
+          "median": 52.116,
+          "mean": 87.274,
+          "min": 13.037,
+          "max": 253.811
+        },
+        "M5_observed72h": {
+          "n": 35,
+          "median": 85.528,
+          "mean": 115.128,
+          "min": 12.151,
+          "max": 449.489
+        }
+      },
+      "calibration": {
+        "n_drifters": 23,
+        "24h": {
+          "n": 23,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 23,
+            "median": 25.469,
+            "mean": 35.566,
+            "min": 2.639,
+            "max": 129.183
+          },
+          "error_HYCOM": {
+            "n": 23,
+            "median": 25.126,
+            "mean": 37.624,
+            "min": 1.487,
+            "max": 144.38
+          },
+          "delta": {
+            "n": 23,
+            "median": 3.587,
+            "mean": -2.058,
+            "min": -91.396,
+            "max": 65.633
+          },
+          "wins_candidate": 10,
+          "losses_candidate": 13,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 23,
+            "k": 10,
+            "p_nominal": 0.677639,
+            "reported": true,
+            "role": "descriptive context only; not the decision rule"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 23,
+            "median": 29.894,
+            "mean": 37.342,
+            "min": 1.118,
+            "max": 116.815
+          },
+          "unpairedAvailability": {
+            "candidate": 23,
+            "HYCOM": 23
+          },
+          "threeWayFrozen": {
+            "n_allThree": 23,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 23,
+              "median": 25.126,
+              "mean": 37.624,
+              "min": 1.487,
+              "max": 144.38
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 23,
+              "median": 27.383,
+              "mean": 35.456,
+              "min": 2.66,
+              "max": 131.891
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 23,
+              "median": 25.469,
+              "mean": 35.566,
+              "min": 2.639,
+              "max": 129.183
+            },
+            "median_C_minus_A_step30a": 3.587,
+            "median_B_minus_A_step25c": 3.975,
+            "median_C_minus_B_step29": -0.694,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "TOWARD_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "48h": {
+          "n": 22,
+          "notAvailable": 1,
+          "error_candidate": {
+            "n": 22,
+            "median": 47.669,
+            "mean": 70.722,
+            "min": 5.273,
+            "max": 281.682
+          },
+          "error_HYCOM": {
+            "n": 22,
+            "median": 38.031,
+            "mean": 61.121,
+            "min": 5.112,
+            "max": 238.223
+          },
+          "delta": {
+            "n": 22,
+            "median": 3.761,
+            "mean": 9.601,
+            "min": -110.597,
+            "max": 142.413
+          },
+          "wins_candidate": 9,
+          "losses_candidate": 13,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 22,
+            "k": 9,
+            "p_nominal": 0.523467,
+            "reported": true,
+            "role": "descriptive context only; not the decision rule"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 22,
+            "median": 57.02,
+            "mean": 72.141,
+            "min": 10.326,
+            "max": 180.414
+          },
+          "unpairedAvailability": {
+            "candidate": 22,
+            "HYCOM": 23
+          },
+          "threeWayFrozen": {
+            "n_allThree": 22,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 22,
+              "median": 38.031,
+              "mean": 61.121,
+              "min": 5.112,
+              "max": 238.223
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 22,
+              "median": 50.243,
+              "mean": 70.523,
+              "min": 7.082,
+              "max": 289.961
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 22,
+              "median": 47.669,
+              "mean": 70.722,
+              "min": 5.273,
+              "max": 281.682
+            },
+            "median_C_minus_A_step30a": 3.761,
+            "median_B_minus_A_step25c": 7.03,
+            "median_C_minus_B_step29": 0.423,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "TOWARD_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "72h": {
+          "n": 21,
+          "notAvailable": 2,
+          "error_candidate": {
+            "n": 21,
+            "median": 57.069,
+            "mean": 97.139,
+            "min": 12.056,
+            "max": 408.388
+          },
+          "error_HYCOM": {
+            "n": 21,
+            "median": 59.055,
+            "mean": 98.434,
+            "min": 16.207,
+            "max": 323.38
+          },
+          "delta": {
+            "n": 21,
+            "median": -4.244,
+            "mean": -1.296,
+            "min": -171.894,
+            "max": 232.861
+          },
+          "wins_candidate": 13,
+          "losses_candidate": 8,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 21,
+            "k": 8,
+            "p_nominal": 0.38331,
+            "reported": true,
+            "role": "descriptive context only; not the decision rule"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 21,
+            "median": 89.667,
+            "mean": 110.608,
+            "min": 13.037,
+            "max": 253.811
+          },
+          "unpairedAvailability": {
+            "candidate": 21,
+            "HYCOM": 23
+          },
+          "threeWayFrozen": {
+            "n_allThree": 21,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 21,
+              "median": 59.055,
+              "mean": 98.434,
+              "min": 16.207,
+              "max": 323.38
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 21,
+              "median": 63.535,
+              "mean": 98.492,
+              "min": 10.262,
+              "max": 416.26
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 21,
+              "median": 57.069,
+              "mean": 97.139,
+              "min": 12.056,
+              "max": 408.388
+            },
+            "median_C_minus_A_step30a": -4.244,
+            "median_B_minus_A_step25c": 0.707,
+            "median_C_minus_B_step29": -1.764,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "AWAY_FROM_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "M1_endpoint72h": {
+          "candidate": {
+            "n": 21,
+            "median": 76.63,
+            "mean": 116.013,
+            "min": 5.685,
+            "max": 357.029
+          },
+          "HYCOM": {
+            "n": 23,
+            "median": 98.344,
+            "mean": 114.589,
+            "min": 11.989,
+            "max": 240.965
+          }
+        },
+        "M2_totalPath": {
+          "candidate": {
+            "n": 23,
+            "median": 99.595,
+            "mean": 137.107,
+            "min": 10.346,
+            "max": 382.227
+          },
+          "HYCOM": {
+            "n": 23,
+            "median": 108.383,
+            "mean": 130.878,
+            "min": 44.318,
+            "max": 255.853
+          }
+        },
+        "M4_separation72h": {
+          "n": 21,
+          "median": 89.667,
+          "mean": 110.608,
+          "min": 13.037,
+          "max": 253.811
+        },
+        "M5_observed72h": {
+          "n": 23,
+          "median": 98.763,
+          "mean": 135.861,
+          "min": 16.535,
+          "max": 449.489
+        }
+      },
+      "holdout": {
+        "n_drifters": 12,
+        "24h": {
+          "n": 12,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 12,
+            "median": 10.314,
+            "mean": 13.968,
+            "min": 1.764,
+            "max": 37.918
+          },
+          "error_HYCOM": {
+            "n": 12,
+            "median": 13.437,
+            "mean": 13.601,
+            "min": 1.941,
+            "max": 23.705
+          },
+          "delta": {
+            "n": 12,
+            "median": -2.342,
+            "mean": 0.367,
+            "min": -20.638,
+            "max": 17.231
+          },
+          "wins_candidate": 7,
+          "losses_candidate": 5,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 12,
+            "k": 5,
+            "p_nominal": 0.774414,
+            "reported": true,
+            "role": "descriptive context only; not the decision rule"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 12,
+            "median": 19.242,
+            "mean": 18.952,
+            "min": 7.292,
+            "max": 46.232
+          },
+          "unpairedAvailability": {
+            "candidate": 12,
+            "HYCOM": 12
+          },
+          "threeWayFrozen": {
+            "n_allThree": 12,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 12,
+              "median": 13.437,
+              "mean": 13.601,
+              "min": 1.941,
+              "max": 23.705
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 12,
+              "median": 12.356,
+              "mean": 14.516,
+              "min": 2.992,
+              "max": 34.495
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 12,
+              "median": 10.314,
+              "mean": 13.968,
+              "min": 1.764,
+              "max": 37.918
+            },
+            "median_C_minus_A_step30a": -2.342,
+            "median_B_minus_A_step25c": 1.209,
+            "median_C_minus_B_step29": -2.175,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "AWAY_FROM_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "48h": {
+          "n": 12,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 12,
+            "median": 21.774,
+            "mean": 28.537,
+            "min": 7.566,
+            "max": 62.962
+          },
+          "error_HYCOM": {
+            "n": 12,
+            "median": 22.142,
+            "mean": 25.101,
+            "min": 6.096,
+            "max": 58.664
+          },
+          "delta": {
+            "n": 12,
+            "median": 2.305,
+            "mean": 3.436,
+            "min": -30.924,
+            "max": 31.779
+          },
+          "wins_candidate": 4,
+          "losses_candidate": 8,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 12,
+            "k": 4,
+            "p_nominal": 0.387695,
+            "reported": true,
+            "role": "descriptive context only; not the decision rule"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 12,
+            "median": 34.215,
+            "mean": 37.106,
+            "min": 13.516,
+            "max": 91.64
+          },
+          "unpairedAvailability": {
+            "candidate": 12,
+            "HYCOM": 12
+          },
+          "threeWayFrozen": {
+            "n_allThree": 12,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 12,
+              "median": 22.142,
+              "mean": 25.101,
+              "min": 6.096,
+              "max": 58.664
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 12,
+              "median": 26.219,
+              "mean": 28.284,
+              "min": 4.796,
+              "max": 58.905
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 12,
+              "median": 21.774,
+              "mean": 28.537,
+              "min": 7.566,
+              "max": 62.962
+            },
+            "median_C_minus_A_step30a": 2.305,
+            "median_B_minus_A_step25c": 1.69,
+            "median_C_minus_B_step29": 2.822,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "AWAY_FROM_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "72h": {
+          "n": 12,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 12,
+            "median": 28.914,
+            "mean": 36.436,
+            "min": 5.529,
+            "max": 97.454
+          },
+          "error_HYCOM": {
+            "n": 12,
+            "median": 31.308,
+            "mean": 38.592,
+            "min": 10.265,
+            "max": 90.497
+          },
+          "delta": {
+            "n": 12,
+            "median": 0.881,
+            "mean": -2.156,
+            "min": -40.272,
+            "max": 34.125
+          },
+          "wins_candidate": 6,
+          "losses_candidate": 6,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 12,
+            "k": 6,
+            "p_nominal": 1.0,
+            "reported": true,
+            "role": "descriptive context only; not the decision rule"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 12,
+            "median": 42.492,
+            "mean": 46.438,
+            "min": 17.525,
+            "max": 122.794
+          },
+          "unpairedAvailability": {
+            "candidate": 12,
+            "HYCOM": 12
+          },
+          "threeWayFrozen": {
+            "n_allThree": 12,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 12,
+              "median": 31.308,
+              "mean": 38.592,
+              "min": 10.265,
+              "max": 90.497
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 12,
+              "median": 34.264,
+              "mean": 40.102,
+              "min": 7.037,
+              "max": 83.052
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 12,
+              "median": 28.913,
+              "mean": 36.436,
+              "min": 5.529,
+              "max": 97.454
+            },
+            "median_C_minus_A_step30a": 0.881,
+            "median_B_minus_A_step25c": 2.956,
+            "median_C_minus_B_step29": -3.832,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "TOWARD_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "M1_endpoint72h": {
+          "candidate": {
+            "n": 12,
+            "median": 56.496,
+            "mean": 65.025,
+            "min": 12.575,
+            "max": 127.336
+          },
+          "HYCOM": {
+            "n": 12,
+            "median": 73.204,
+            "mean": 78.041,
+            "min": 12.233,
+            "max": 150.297
+          }
+        },
+        "M2_totalPath": {
+          "candidate": {
+            "n": 12,
+            "median": 62.116,
+            "mean": 70.413,
+            "min": 22.578,
+            "max": 141.253
+          },
+          "HYCOM": {
+            "n": 12,
+            "median": 83.279,
+            "mean": 95.941,
+            "min": 37.045,
+            "max": 174.169
+          }
+        },
+        "M4_separation72h": {
+          "n": 12,
+          "median": 42.492,
+          "mean": 46.438,
+          "min": 17.525,
+          "max": 122.794
+        },
+        "M5_observed72h": {
+          "n": 12,
+          "median": 70.81,
+          "mean": 75.39,
+          "min": 12.151,
+          "max": 154.559
+        }
+      }
+    },
+    "perWindow": {
+      "KE-1": {
+        "n_drifters": 8,
+        "24h": {
+          "n": 8,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 8,
+            "median": 22.513,
+            "mean": 30.269,
+            "min": 2.639,
+            "max": 74.23
+          },
+          "error_HYCOM": {
+            "n": 8,
+            "median": 13.999,
+            "mean": 14.762,
+            "min": 6.03,
+            "max": 26.129
+          },
+          "delta": {
+            "n": 8,
+            "median": 7.815,
+            "mean": 15.507,
+            "min": -9.748,
+            "max": 55.852
+          },
+          "wins_candidate": 2,
+          "losses_candidate": 6,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 8,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 8,
+            "median": 28.442,
+            "mean": 29.95,
+            "min": 6.672,
+            "max": 56.006
+          },
+          "unpairedAvailability": {
+            "candidate": 8,
+            "HYCOM": 8
+          },
+          "threeWayFrozen": {
+            "n_allThree": 8,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 8,
+              "median": 13.998,
+              "mean": 14.762,
+              "min": 6.03,
+              "max": 26.129
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 8,
+              "median": 24.043,
+              "mean": 30.279,
+              "min": 2.66,
+              "max": 76.952
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 8,
+              "median": 22.513,
+              "mean": 30.269,
+              "min": 2.639,
+              "max": 74.23
+            },
+            "median_C_minus_A_step30a": 7.815,
+            "median_B_minus_A_step25c": 9.346,
+            "median_C_minus_B_step29": -0.357,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "TOWARD_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "48h": {
+          "n": 8,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 8,
+            "median": 39.422,
+            "mean": 55.411,
+            "min": 6.398,
+            "max": 179.449
+          },
+          "error_HYCOM": {
+            "n": 8,
+            "median": 27.56,
+            "mean": 25.98,
+            "min": 5.112,
+            "max": 39.026
+          },
+          "delta": {
+            "n": 8,
+            "median": 6.286,
+            "mean": 29.431,
+            "min": -12.28,
+            "max": 142.413
+          },
+          "wins_candidate": 3,
+          "losses_candidate": 5,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 8,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 8,
+            "median": 44.568,
+            "mean": 54.819,
+            "min": 10.326,
+            "max": 142.669
+          },
+          "unpairedAvailability": {
+            "candidate": 8,
+            "HYCOM": 8
+          },
+          "threeWayFrozen": {
+            "n_allThree": 8,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 8,
+              "median": 27.561,
+              "mean": 25.98,
+              "min": 5.112,
+              "max": 39.026
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 8,
+              "median": 43.986,
+              "mean": 55.375,
+              "min": 11.886,
+              "max": 169.072
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 8,
+              "median": 39.422,
+              "mean": 55.411,
+              "min": 6.398,
+              "max": 179.449
+            },
+            "median_C_minus_A_step30a": 6.286,
+            "median_B_minus_A_step25c": 10.192,
+            "median_C_minus_B_step29": 0.081,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "TOWARD_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "72h": {
+          "n": 7,
+          "notAvailable": 1,
+          "error_candidate": {
+            "n": 7,
+            "median": 28.966,
+            "mean": 81.452,
+            "min": 17.333,
+            "max": 335.192
+          },
+          "error_HYCOM": {
+            "n": 7,
+            "median": 43.692,
+            "mean": 46.917,
+            "min": 16.207,
+            "max": 102.331
+          },
+          "delta": {
+            "n": 7,
+            "median": -10.989,
+            "mean": 34.535,
+            "min": -36.276,
+            "max": 232.861
+          },
+          "wins_candidate": 4,
+          "losses_candidate": 3,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 7,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 7,
+            "median": 76.277,
+            "mean": 89.207,
+            "min": 33.325,
+            "max": 234.01
+          },
+          "unpairedAvailability": {
+            "candidate": 7,
+            "HYCOM": 8
+          },
+          "threeWayFrozen": {
+            "n_allThree": 7,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 7,
+              "median": 43.692,
+              "mean": 46.917,
+              "min": 16.207,
+              "max": 102.331
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 7,
+              "median": 32.042,
+              "mean": 83.603,
+              "min": 18.783,
+              "max": 325.969
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 7,
+              "median": 28.966,
+              "mean": 81.452,
+              "min": 17.333,
+              "max": 335.192
+            },
+            "median_C_minus_A_step30a": -10.989,
+            "median_B_minus_A_step25c": 7.283,
+            "median_C_minus_B_step29": 2.053,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "AWAY_FROM_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "M1_endpoint72h": {
+          "candidate": {
+            "n": 7,
+            "median": 66.081,
+            "mean": 101.601,
+            "min": 35.496,
+            "max": 357.029
+          },
+          "HYCOM": {
+            "n": 8,
+            "median": 65.895,
+            "mean": 83.138,
+            "min": 11.989,
+            "max": 172.172
+          }
+        },
+        "M2_totalPath": {
+          "candidate": {
+            "n": 8,
+            "median": 75.188,
+            "mean": 125.862,
+            "min": 37.925,
+            "max": 382.227
+          },
+          "HYCOM": {
+            "n": 8,
+            "median": 86.54,
+            "mean": 104.676,
+            "min": 44.318,
+            "max": 193.528
+          }
+        },
+        "M4_separation72h": {
+          "n": 7,
+          "median": 76.277,
+          "mean": 89.207,
+          "min": 33.325,
+          "max": 234.01
+        },
+        "M5_observed72h": {
+          "n": 8,
+          "median": 62.84,
+          "mean": 79.529,
+          "min": 16.535,
+          "max": 204.736
+        }
+      },
+      "KE-2": {
+        "n_drifters": 5,
+        "24h": {
+          "n": 5,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 5,
+            "median": 13.945,
+            "mean": 14.301,
+            "min": 9.865,
+            "max": 18.575
+          },
+          "error_HYCOM": {
+            "n": 5,
+            "median": 14.072,
+            "mean": 16.365,
+            "min": 1.487,
+            "max": 28.443
+          },
+          "delta": {
+            "n": 5,
+            "median": 0.037,
+            "mean": -2.064,
+            "min": -16.365,
+            "max": 12.458
+          },
+          "wins_candidate": 2,
+          "losses_candidate": 3,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 5,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 5,
+            "median": 16.903,
+            "mean": 20.708,
+            "min": 1.118,
+            "max": 36.101
+          },
+          "unpairedAvailability": {
+            "candidate": 5,
+            "HYCOM": 5
+          },
+          "threeWayFrozen": {
+            "n_allThree": 5,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 5,
+              "median": 14.072,
+              "mean": 16.364,
+              "min": 1.487,
+              "max": 28.443
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 5,
+              "median": 11.536,
+              "mean": 12.03,
+              "min": 4.427,
+              "max": 20.568
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 5,
+              "median": 13.945,
+              "mean": 14.301,
+              "min": 9.865,
+              "max": 18.575
+            },
+            "median_C_minus_A_step30a": 0.037,
+            "median_B_minus_A_step25c": -0.251,
+            "median_C_minus_B_step29": 0.288,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "TOWARD_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "48h": {
+          "n": 5,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 5,
+            "median": 29.476,
+            "mean": 23.194,
+            "min": 5.273,
+            "max": 34.31
+          },
+          "error_HYCOM": {
+            "n": 5,
+            "median": 30.812,
+            "mean": 41.386,
+            "min": 7.466,
+            "max": 77.943
+          },
+          "delta": {
+            "n": 5,
+            "median": -15.728,
+            "mean": -18.192,
+            "min": -54.792,
+            "max": 26.844
+          },
+          "wins_candidate": 3,
+          "losses_candidate": 2,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 5,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 5,
+            "median": 32.633,
+            "mean": 46.802,
+            "min": 15.859,
+            "max": 83.518
+          },
+          "unpairedAvailability": {
+            "candidate": 5,
+            "HYCOM": 5
+          },
+          "threeWayFrozen": {
+            "n_allThree": 5,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 5,
+              "median": 30.812,
+              "mean": 41.386,
+              "min": 7.466,
+              "max": 77.943
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 5,
+              "median": 15.402,
+              "mean": 20.519,
+              "min": 7.082,
+              "max": 37.503
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 5,
+              "median": 29.476,
+              "mean": 23.194,
+              "min": 5.273,
+              "max": 34.31
+            },
+            "median_C_minus_A_step30a": -15.728,
+            "median_B_minus_A_step25c": -13.919,
+            "median_C_minus_B_step29": 0.585,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "AWAY_FROM_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "72h": {
+          "n": 5,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 5,
+            "median": 39.643,
+            "mean": 31.578,
+            "min": 12.056,
+            "max": 49.226
+          },
+          "error_HYCOM": {
+            "n": 5,
+            "median": 44.239,
+            "mean": 70.926,
+            "min": 20.569,
+            "max": 158.931
+          },
+          "delta": {
+            "n": 5,
+            "median": -8.514,
+            "mean": -39.348,
+            "min": -119.287,
+            "max": 22.519
+          },
+          "wins_candidate": 4,
+          "losses_candidate": 1,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 5,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 5,
+            "median": 50.924,
+            "mean": 68.208,
+            "min": 26.453,
+            "max": 141.397
+          },
+          "unpairedAvailability": {
+            "candidate": 5,
+            "HYCOM": 5
+          },
+          "threeWayFrozen": {
+            "n_allThree": 5,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 5,
+              "median": 44.239,
+              "mean": 70.926,
+              "min": 20.569,
+              "max": 158.931
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 5,
+              "median": 21.727,
+              "mean": 29.927,
+              "min": 10.262,
+              "max": 51.677
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 5,
+              "median": 39.643,
+              "mean": 31.578,
+              "min": 12.056,
+              "max": 49.226
+            },
+            "median_C_minus_A_step30a": -8.513,
+            "median_B_minus_A_step25c": -10.307,
+            "median_C_minus_B_step29": -1.764,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "TOWARD_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "M1_endpoint72h": {
+          "candidate": {
+            "n": 5,
+            "median": 70.983,
+            "mean": 65.237,
+            "min": 5.685,
+            "max": 120.676
+          },
+          "HYCOM": {
+            "n": 5,
+            "median": 93.295,
+            "mean": 86.144,
+            "min": 45.298,
+            "max": 139.966
+          }
+        },
+        "M2_totalPath": {
+          "candidate": {
+            "n": 5,
+            "median": 72.271,
+            "mean": 70.338,
+            "min": 10.346,
+            "max": 134.66
+          },
+          "HYCOM": {
+            "n": 5,
+            "median": 100.092,
+            "mean": 91.406,
+            "min": 49.12,
+            "max": 150.073
+          }
+        },
+        "M4_separation72h": {
+          "n": 5,
+          "median": 50.924,
+          "mean": 68.208,
+          "min": 26.453,
+          "max": 141.397
+        },
+        "M5_observed72h": {
+          "n": 5,
+          "median": 70.905,
+          "mean": 79.548,
+          "min": 37.048,
+          "max": 131.458
+        }
+      },
+      "AG-1": {
+        "n_drifters": 9,
+        "24h": {
+          "n": 9,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 9,
+            "median": 42.785,
+            "mean": 53.211,
+            "min": 21.655,
+            "max": 129.183
+          },
+          "error_HYCOM": {
+            "n": 9,
+            "median": 39.952,
+            "mean": 60.952,
+            "min": 23.293,
+            "max": 144.38
+          },
+          "delta": {
+            "n": 9,
+            "median": -4.515,
+            "mean": -7.741,
+            "min": -74.511,
+            "max": 65.633
+          },
+          "wins_candidate": 5,
+          "losses_candidate": 4,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 9,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 9,
+            "median": 49.299,
+            "mean": 44.323,
+            "min": 7.66,
+            "max": 75.156
+          },
+          "unpairedAvailability": {
+            "candidate": 9,
+            "HYCOM": 9
+          },
+          "threeWayFrozen": {
+            "n_allThree": 9,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 9,
+              "median": 39.952,
+              "mean": 60.952,
+              "min": 23.293,
+              "max": 144.38
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 9,
+              "median": 45.029,
+              "mean": 53.854,
+              "min": 18.05,
+              "max": 131.891
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 9,
+              "median": 42.785,
+              "mean": 53.211,
+              "min": 21.655,
+              "max": 129.183
+            },
+            "median_C_minus_A_step30a": -4.514,
+            "median_B_minus_A_step25c": -1.44,
+            "median_C_minus_B_step29": -0.954,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "AWAY_FROM_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "48h": {
+          "n": 9,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 9,
+            "median": 94.203,
+            "mean": 110.737,
+            "min": 46.098,
+            "max": 281.682
+          },
+          "error_HYCOM": {
+            "n": 9,
+            "median": 60.676,
+            "mean": 103.323,
+            "min": 19.304,
+            "max": 238.223
+          },
+          "delta": {
+            "n": 9,
+            "median": 8.687,
+            "mean": 7.414,
+            "min": -110.597,
+            "max": 138.746
+          },
+          "wins_candidate": 3,
+          "losses_candidate": 6,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 9,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 9,
+            "median": 110.564,
+            "mean": 101.616,
+            "min": 12.106,
+            "max": 180.414
+          },
+          "unpairedAvailability": {
+            "candidate": 9,
+            "HYCOM": 9
+          },
+          "threeWayFrozen": {
+            "n_allThree": 9,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 9,
+              "median": 60.676,
+              "mean": 103.323,
+              "min": 19.304,
+              "max": 238.223
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 9,
+              "median": 99.332,
+              "mean": 111.768,
+              "min": 52.823,
+              "max": 289.961
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 9,
+              "median": 94.203,
+              "mean": 110.737,
+              "min": 46.098,
+              "max": 281.682
+            },
+            "median_C_minus_A_step30a": 8.688,
+            "median_B_minus_A_step25c": 16.728,
+            "median_C_minus_B_step29": 1.233,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "TOWARD_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "72h": {
+          "n": 9,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 9,
+            "median": 144.8,
+            "mean": 145.762,
+            "min": 57.069,
+            "max": 408.388
+          },
+          "error_HYCOM": {
+            "n": 9,
+            "median": 106.115,
+            "mean": 153.786,
+            "min": 45.89,
+            "max": 323.38
+          },
+          "delta": {
+            "n": 9,
+            "median": -2.857,
+            "mean": -8.024,
+            "min": -171.894,
+            "max": 170.176
+          },
+          "wins_candidate": 5,
+          "losses_candidate": 4,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 9,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 9,
+            "median": 177.941,
+            "mean": 150.809,
+            "min": 13.037,
+            "max": 253.811
+          },
+          "unpairedAvailability": {
+            "candidate": 9,
+            "HYCOM": 9
+          },
+          "threeWayFrozen": {
+            "n_allThree": 9,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 9,
+              "median": 106.115,
+              "mean": 153.786,
+              "min": 45.89,
+              "max": 323.38
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 9,
+              "median": 143.744,
+              "mean": 148.164,
+              "min": 63.504,
+              "max": 416.26
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 9,
+              "median": 144.8,
+              "mean": 145.762,
+              "min": 57.069,
+              "max": 408.388
+            },
+            "median_C_minus_A_step30a": -2.856,
+            "median_B_minus_A_step25c": 0.707,
+            "median_C_minus_B_step29": -3.563,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "AWAY_FROM_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "M1_endpoint72h": {
+          "candidate": {
+            "n": 9,
+            "median": 162.399,
+            "mean": 155.431,
+            "min": 22.569,
+            "max": 330.868
+          },
+          "HYCOM": {
+            "n": 9,
+            "median": 182.984,
+            "mean": 168.424,
+            "min": 88.772,
+            "max": 240.965
+          }
+        },
+        "M2_totalPath": {
+          "candidate": {
+            "n": 9,
+            "median": 175.276,
+            "mean": 169.783,
+            "min": 27.746,
+            "max": 341.736
+          },
+          "HYCOM": {
+            "n": 9,
+            "median": 186.979,
+            "mean": 185.092,
+            "min": 108.383,
+            "max": 255.853
+          }
+        },
+        "M4_separation72h": {
+          "n": 9,
+          "median": 177.941,
+          "mean": 150.809,
+          "min": 13.037,
+          "max": 253.811
+        },
+        "M5_observed72h": {
+          "n": 9,
+          "median": 135.1,
+          "mean": 193.115,
+          "min": 80.755,
+          "max": 449.489
+        }
+      },
+      "AG-2": {
+        "n_drifters": 1,
+        "24h": {
+          "n": 1,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 1,
+            "median": 25.469,
+            "mean": 25.469,
+            "min": 25.469,
+            "max": 25.469
+          },
+          "error_HYCOM": {
+            "n": 1,
+            "median": 116.865,
+            "mean": 116.865,
+            "min": 116.865,
+            "max": 116.865
+          },
+          "delta": {
+            "n": 1,
+            "median": -91.396,
+            "mean": -91.396,
+            "min": -91.396,
+            "max": -91.396
+          },
+          "wins_candidate": 1,
+          "losses_candidate": 0,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 1,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 1,
+            "median": 116.815,
+            "mean": 116.815,
+            "min": 116.815,
+            "max": 116.815
+          },
+          "unpairedAvailability": {
+            "candidate": 1,
+            "HYCOM": 1
+          },
+          "threeWayFrozen": {
+            "n_allThree": 1,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 1,
+              "median": 116.865,
+              "mean": 116.865,
+              "min": 116.865,
+              "max": 116.865
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 1,
+              "median": 28.432,
+              "mean": 28.432,
+              "min": 28.432,
+              "max": 28.432
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 1,
+              "median": 25.469,
+              "mean": 25.469,
+              "min": 25.469,
+              "max": 25.469
+            },
+            "median_C_minus_A_step30a": -91.396,
+            "median_B_minus_A_step25c": -88.433,
+            "median_C_minus_B_step29": -2.963,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "AWAY_FROM_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "48h": {
+          "n": 0,
+          "notAvailable": 1,
+          "error_candidate": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "error_HYCOM": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "delta": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "wins_candidate": 0,
+          "losses_candidate": 0,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 0,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "unpairedAvailability": {
+            "candidate": 0,
+            "HYCOM": 1
+          },
+          "threeWayFrozen": {
+            "n_allThree": 0,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 0,
+              "median": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 0,
+              "median": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 0,
+              "median": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            },
+            "median_C_minus_A_step30a": null,
+            "median_B_minus_A_step25c": null,
+            "median_C_minus_B_step29": null,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "NOT_AVAILABLE",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "72h": {
+          "n": 0,
+          "notAvailable": 1,
+          "error_candidate": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "error_HYCOM": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "delta": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "wins_candidate": 0,
+          "losses_candidate": 0,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 0,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "unpairedAvailability": {
+            "candidate": 0,
+            "HYCOM": 1
+          },
+          "threeWayFrozen": {
+            "n_allThree": 0,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 0,
+              "median": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 0,
+              "median": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 0,
+              "median": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            },
+            "median_C_minus_A_step30a": null,
+            "median_B_minus_A_step25c": null,
+            "median_C_minus_B_step29": null,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "NOT_AVAILABLE",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "M1_endpoint72h": {
+          "candidate": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "HYCOM": {
+            "n": 1,
+            "median": 23.912,
+            "mean": 23.912,
+            "min": 23.912,
+            "max": 23.912
+          }
+        },
+        "M2_totalPath": {
+          "candidate": {
+            "n": 1,
+            "median": 266.832,
+            "mean": 266.832,
+            "min": 266.832,
+            "max": 266.832
+          },
+          "HYCOM": {
+            "n": 1,
+            "median": 49.933,
+            "mean": 49.933,
+            "min": 49.933,
+            "max": 49.933
+          }
+        },
+        "M4_separation72h": {
+          "n": 0,
+          "median": null,
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "M5_observed72h": {
+          "n": 1,
+          "median": 352.788,
+          "mean": 352.788,
+          "min": 352.788,
+          "max": 352.788
+        }
+      },
+      "KE-H1": {
+        "n_drifters": 5,
+        "24h": {
+          "n": 5,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 5,
+            "median": 12.722,
+            "mean": 19.563,
+            "min": 5.975,
+            "max": 37.918
+          },
+          "error_HYCOM": {
+            "n": 5,
+            "median": 8.223,
+            "mean": 11.895,
+            "min": 1.941,
+            "max": 23.705
+          },
+          "delta": {
+            "n": 5,
+            "median": 8.633,
+            "mean": 7.668,
+            "min": -0.593,
+            "max": 14.213
+          },
+          "wins_candidate": 1,
+          "losses_candidate": 4,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 5,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 5,
+            "median": 15.284,
+            "mean": 19.115,
+            "min": 7.292,
+            "max": 46.232
+          },
+          "unpairedAvailability": {
+            "candidate": 5,
+            "HYCOM": 5
+          },
+          "threeWayFrozen": {
+            "n_allThree": 5,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 5,
+              "median": 8.223,
+              "mean": 11.895,
+              "min": 1.941,
+              "max": 23.705
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 5,
+              "median": 15.025,
+              "mean": 18.949,
+              "min": 2.992,
+              "max": 34.495
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 5,
+              "median": 12.722,
+              "mean": 19.563,
+              "min": 5.975,
+              "max": 37.918
+            },
+            "median_C_minus_A_step30a": 8.633,
+            "median_B_minus_A_step25c": 10.444,
+            "median_C_minus_B_step29": 1.608,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "TOWARD_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "48h": {
+          "n": 5,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 5,
+            "median": 21.517,
+            "mean": 31.737,
+            "min": 7.566,
+            "max": 61.804
+          },
+          "error_HYCOM": {
+            "n": 5,
+            "median": 21.544,
+            "mean": 24.538,
+            "min": 6.096,
+            "max": 58.664
+          },
+          "delta": {
+            "n": 5,
+            "median": 3.14,
+            "mean": 7.2,
+            "min": -13.026,
+            "max": 31.779
+          },
+          "wins_candidate": 1,
+          "losses_candidate": 4,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 5,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 5,
+            "median": 29.655,
+            "mean": 39.602,
+            "min": 13.516,
+            "max": 91.64
+          },
+          "unpairedAvailability": {
+            "candidate": 5,
+            "HYCOM": 5
+          },
+          "threeWayFrozen": {
+            "n_allThree": 5,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 5,
+              "median": 21.544,
+              "mean": 24.538,
+              "min": 6.096,
+              "max": 58.664
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 5,
+              "median": 26.378,
+              "mean": 31.602,
+              "min": 4.796,
+              "max": 58.905
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 5,
+              "median": 21.517,
+              "mean": 31.737,
+              "min": 7.566,
+              "max": 61.804
+            },
+            "median_C_minus_A_step30a": 3.14,
+            "median_B_minus_A_step25c": 0.241,
+            "median_C_minus_B_step29": 2.77,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "AWAY_FROM_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "72h": {
+          "n": 5,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 5,
+            "median": 26.355,
+            "mean": 34.766,
+            "min": 5.529,
+            "max": 64.032
+          },
+          "error_HYCOM": {
+            "n": 5,
+            "median": 24.444,
+            "mean": 38.464,
+            "min": 12.091,
+            "max": 89.37
+          },
+          "delta": {
+            "n": 5,
+            "median": -6.563,
+            "mean": -3.698,
+            "min": -29.467,
+            "max": 34.125
+          },
+          "wins_candidate": 3,
+          "losses_candidate": 2,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 5,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 5,
+            "median": 42.85,
+            "mean": 54.272,
+            "min": 17.525,
+            "max": 122.794
+          },
+          "unpairedAvailability": {
+            "candidate": 5,
+            "HYCOM": 5
+          },
+          "threeWayFrozen": {
+            "n_allThree": 5,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 5,
+              "median": 24.444,
+              "mean": 38.464,
+              "min": 12.091,
+              "max": 89.37
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 5,
+              "median": 30.524,
+              "mean": 37.423,
+              "min": 7.037,
+              "max": 69.208
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 5,
+              "median": 26.355,
+              "mean": 34.766,
+              "min": 5.529,
+              "max": 64.032
+            },
+            "median_C_minus_A_step30a": -6.562,
+            "median_B_minus_A_step25c": -5.054,
+            "median_C_minus_B_step29": -3.496,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "AWAY_FROM_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "M1_endpoint72h": {
+          "candidate": {
+            "n": 5,
+            "median": 51.833,
+            "mean": 59.314,
+            "min": 19.017,
+            "max": 122.244
+          },
+          "HYCOM": {
+            "n": 5,
+            "median": 79.693,
+            "mean": 78.371,
+            "min": 40.051,
+            "max": 125.215
+          }
+        },
+        "M2_totalPath": {
+          "candidate": {
+            "n": 5,
+            "median": 51.982,
+            "mean": 62.79,
+            "min": 24.536,
+            "max": 128.254
+          },
+          "HYCOM": {
+            "n": 5,
+            "median": 83.845,
+            "mean": 84.309,
+            "min": 47.599,
+            "max": 128.243
+          }
+        },
+        "M4_separation72h": {
+          "n": 5,
+          "median": 42.85,
+          "mean": 54.272,
+          "min": 17.525,
+          "max": 122.794
+        },
+        "M5_observed72h": {
+          "n": 5,
+          "median": 62.188,
+          "mean": 71.914,
+          "min": 31.456,
+          "max": 112.667
+        }
+      },
+      "KE-H3": {
+        "n_drifters": 7,
+        "24h": {
+          "n": 7,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 7,
+            "median": 8.827,
+            "mean": 9.972,
+            "min": 1.764,
+            "max": 29.53
+          },
+          "error_HYCOM": {
+            "n": 7,
+            "median": 13.802,
+            "mean": 14.82,
+            "min": 7.39,
+            "max": 22.802
+          },
+          "delta": {
+            "n": 7,
+            "median": -4.245,
+            "mean": -4.849,
+            "min": -20.638,
+            "max": 17.231
+          },
+          "wins_candidate": 6,
+          "losses_candidate": 1,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 7,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 7,
+            "median": 20.449,
+            "mean": 18.836,
+            "min": 10.087,
+            "max": 23.437
+          },
+          "unpairedAvailability": {
+            "candidate": 7,
+            "HYCOM": 7
+          },
+          "threeWayFrozen": {
+            "n_allThree": 7,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 7,
+              "median": 13.802,
+              "mean": 14.82,
+              "min": 7.39,
+              "max": 22.802
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 7,
+              "median": 8.506,
+              "mean": 11.349,
+              "min": 5.228,
+              "max": 19.701
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 7,
+              "median": 8.827,
+              "mean": 9.972,
+              "min": 1.764,
+              "max": 29.53
+            },
+            "median_C_minus_A_step30a": -4.245,
+            "median_B_minus_A_step25c": -2.162,
+            "median_C_minus_B_step29": -5.043,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "AWAY_FROM_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "48h": {
+          "n": 7,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 7,
+            "median": 22.032,
+            "mean": 26.252,
+            "min": 12.355,
+            "max": 62.962
+          },
+          "error_HYCOM": {
+            "n": 7,
+            "median": 22.74,
+            "mean": 25.504,
+            "min": 12.402,
+            "max": 43.279
+          },
+          "delta": {
+            "n": 7,
+            "median": 0.824,
+            "mean": 0.747,
+            "min": -30.924,
+            "max": 27.836
+          },
+          "wins_candidate": 3,
+          "losses_candidate": 4,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 7,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 7,
+            "median": 36.49,
+            "mean": 35.322,
+            "min": 26.473,
+            "max": 42.083
+          },
+          "unpairedAvailability": {
+            "candidate": 7,
+            "HYCOM": 7
+          },
+          "threeWayFrozen": {
+            "n_allThree": 7,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 7,
+              "median": 22.74,
+              "mean": 25.504,
+              "min": 12.402,
+              "max": 43.279
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 7,
+              "median": 26.06,
+              "mean": 25.913,
+              "min": 9.4,
+              "max": 46.89
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 7,
+              "median": 22.032,
+              "mean": 26.252,
+              "min": 12.355,
+              "max": 62.962
+            },
+            "median_C_minus_A_step30a": 0.824,
+            "median_B_minus_A_step25c": 3.139,
+            "median_C_minus_B_step29": 2.874,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "TOWARD_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "72h": {
+          "n": 7,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 7,
+            "median": 29.904,
+            "mean": 37.629,
+            "min": 10.81,
+            "max": 97.454
+          },
+          "error_HYCOM": {
+            "n": 7,
+            "median": 33.118,
+            "mean": 38.684,
+            "min": 10.265,
+            "max": 90.497
+          },
+          "delta": {
+            "n": 7,
+            "median": 6.958,
+            "mean": -1.055,
+            "min": -40.272,
+            "max": 24.124
+          },
+          "wins_candidate": 3,
+          "losses_candidate": 4,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 7,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 7,
+            "median": 42.135,
+            "mean": 40.842,
+            "min": 25.065,
+            "max": 53.829
+          },
+          "unpairedAvailability": {
+            "candidate": 7,
+            "HYCOM": 7
+          },
+          "threeWayFrozen": {
+            "n_allThree": 7,
+            "A_HYCOM_step25c_error_H002": {
+              "n": 7,
+              "median": 33.118,
+              "mean": 38.684,
+              "min": 10.265,
+              "max": 90.497
+            },
+            "B_GLORYS_step25c_error_G002": {
+              "n": 7,
+              "median": 36.862,
+              "mean": 42.016,
+              "min": 14.309,
+              "max": 83.052
+            },
+            "C_STOKES_step29_error_T002": {
+              "n": 7,
+              "median": 29.904,
+              "mean": 37.629,
+              "min": 10.81,
+              "max": 97.454
+            },
+            "median_C_minus_A_step30a": 6.957,
+            "median_B_minus_A_step25c": 3.744,
+            "median_C_minus_B_step29": -7.242,
+            "stokesMovedGlorysRelativeToHycomErrorMedian": "AWAY_FROM_HYCOM_ERROR_LEVEL",
+            "note": "frozen values copied from the STEP 25C / STEP 29 tables; C-B (STEP 29) and C-A (STEP 30A) are different comparisons"
+          }
+        },
+        "M1_endpoint72h": {
+          "candidate": {
+            "n": 7,
+            "median": 56.756,
+            "mean": 69.104,
+            "min": 12.575,
+            "max": 127.336
+          },
+          "HYCOM": {
+            "n": 7,
+            "median": 66.716,
+            "mean": 77.804,
+            "min": 12.233,
+            "max": 150.297
+          }
+        },
+        "M2_totalPath": {
+          "candidate": {
+            "n": 7,
+            "median": 64.618,
+            "mean": 75.858,
+            "min": 22.578,
+            "max": 141.253
+          },
+          "HYCOM": {
+            "n": 7,
+            "median": 82.714,
+            "mean": 104.25,
+            "min": 37.045,
+            "max": 174.169
+          }
+        },
+        "M4_separation72h": {
+          "n": 7,
+          "median": 42.135,
+          "mean": 40.842,
+          "min": 25.065,
+          "max": 53.829
+        },
+        "M5_observed72h": {
+          "n": 7,
+          "median": 79.433,
+          "mean": 77.873,
+          "min": 12.151,
+          "max": 154.559
+        }
+      }
+    },
+    "topCandidateErrors": {
+      "24h": [
+        {
+          "unit": "AG-1",
+          "drifter_id": "127313",
+          "error_candidate": 129.183,
+          "error_HYCOM": 63.55,
+          "delta": 65.633
+        },
+        {
+          "unit": "KE-1",
+          "drifter_id": "71155",
+          "error_candidate": 74.23,
+          "error_HYCOM": 18.379,
+          "delta": 55.852
+        },
+        {
+          "unit": "AG-1",
+          "drifter_id": "127199",
+          "error_candidate": 70.192,
+          "error_HYCOM": 144.38,
+          "delta": -74.188
+        }
+      ],
+      "48h": [
+        {
+          "unit": "AG-1",
+          "drifter_id": "127313",
+          "error_candidate": 281.682,
+          "error_HYCOM": 142.936,
+          "delta": 138.746
+        },
+        {
+          "unit": "KE-1",
+          "drifter_id": "71155",
+          "error_candidate": 179.449,
+          "error_HYCOM": 37.036,
+          "delta": 142.413
+        },
+        {
+          "unit": "AG-1",
+          "drifter_id": "127199",
+          "error_candidate": 127.746,
+          "error_HYCOM": 237.391,
+          "delta": -109.645
+        }
+      ],
+      "72h": [
+        {
+          "unit": "AG-1",
+          "drifter_id": "127313",
+          "error_candidate": 408.388,
+          "error_HYCOM": 238.212,
+          "delta": 170.176
+        },
+        {
+          "unit": "KE-1",
+          "drifter_id": "71155",
+          "error_candidate": 335.192,
+          "error_HYCOM": 102.331,
+          "delta": 232.861
+        },
+        {
+          "unit": "AG-1",
+          "drifter_id": "127315",
+          "error_candidate": 151.598,
+          "error_HYCOM": 56.37,
+          "delta": 95.228
+        }
+      ]
+    },
+    "primary72h": {
+      "n": 33,
+      "candidate_median": 44.652,
+      "HYCOM_median": 48.81,
+      "delta_median": -4.244,
+      "delta_mean": -1.609,
+      "wins_candidate": 19,
+      "losses_candidate": 14,
+      "ties": 0,
+      "consistency_candidate": 0.5758
+    },
+    "labelRules": {
+      "scope": "overall stratum",
+      "primaryHorizonHours": 72,
+      "consistencyFraction": 0.6666666666666666,
+      "A": "CANDIDATE_DESCRIPTIVELY_FAVORED if median delta < -tie AND wins/(wins+losses) >= 2/3",
+      "B": "HYCOM_DESCRIPTIVELY_FAVORED if median delta > +tie AND losses/(wins+losses) >= 2/3",
+      "C": "NO_CLEAR_DESCRIPTIVE_DIFFERENCE otherwise",
+      "labels": [
+        "CANDIDATE_DESCRIPTIVELY_FAVORED",
+        "HYCOM_DESCRIPTIVELY_FAVORED",
+        "NO_CLEAR_DESCRIPTIVE_DIFFERENCE"
+      ],
+      "newThreshold": false,
+      "operationalSuperiorityClaim": false
+    },
+    "descriptiveLabel": {
+      "primary": "NO_CLEAR_DESCRIPTIVE_DIFFERENCE",
+      "byStratum": {
+        "overall": "NO_CLEAR_DESCRIPTIVE_DIFFERENCE",
+        "calibration": "NO_CLEAR_DESCRIPTIVE_DIFFERENCE",
+        "holdout": "NO_CLEAR_DESCRIPTIVE_DIFFERENCE"
+      }
+    },
+    "step29Context": {
+      "comparison": "STEP 29 = C (GLORYS + Stokes) vs B (GLORYS), alpha 0.002; frozen",
+      "72h": {
+        "overall": {
+          "median_delta": -3.496,
+          "wins_stokes": 19,
+          "losses_stokes": 14,
+          "ties": 0
+        },
+        "calibration": {
+          "median_delta": -1.765,
+          "wins_stokes": 11,
+          "losses_stokes": 10,
+          "ties": 0
+        },
+        "holdout": {
+          "median_delta": -3.832,
+          "wins_stokes": 8,
+          "losses_stokes": 4,
+          "ties": 0
+        }
+      },
+      "descriptiveLabel": {
+        "primary": "NO_CLEAR_STOKES_DIFFERENCE",
+        "byStratum": {
+          "overall": "NO_CLEAR_STOKES_DIFFERENCE",
+          "calibration": "NO_CLEAR_STOKES_DIFFERENCE",
+          "holdout": "STOKES_DESCRIPTIVELY_FAVORED"
+        },
+        "structural_alpha0": {
+          "overall": "NO_CLEAR_STOKES_DIFFERENCE",
+          "calibration": "NO_CLEAR_STOKES_DIFFERENCE",
+          "holdout": "STOKES_DESCRIPTIVELY_FAVORED"
+        }
+      },
+      "source": "docs/research/step29-stokes-evaluation.json",
+      "sha256": "acb1a5389e64e6e2f31207f7c32af4ed8f02c4a681ec3c349f96163ba9e2813b"
+    },
+    "outlierPolicyApplied": {
+      "removed": 0,
+      "trimmed": 0,
+      "winsorized": 0,
+      "weighted": 0,
+      "deleted": 0,
+      "postHocExclusions": 0
+    },
+    "alphaSelection": "NONE",
+    "coefficientSelection": "NONE",
+    "depthSelection": "NONE",
+    "forcingSelection": "NONE",
+    "holdoutUsedForSelection": false,
+    "reranking": false,
+    "physicalExplanationClaimed": false,
+    "statisticalSignificanceClaimed": false,
+    "interpretation": "DESCRIPTIVE ONLY",
+    "question": "Does the already-computed GLORYS12V1 + Stokes drift candidate produce lower observed-versus-model trajectory error than the frozen HYCOM baseline? (final-candidate benchmark; not optimization, tuning, forcing or alpha selection)",
+    "answer72h": "Under the preregistered 72 h paired M3 rule the overall label is NO_CLEAR_DESCRIPTIVE_DIFFERENCE (median delta -4.244 km, wins/losses/ties 19/14/0).",
+    "statements": [
+      "STEP 30A is a descriptive paired benchmark of two already-computed trajectory sets; no statistical significance, causal, universal or operational claim is made.",
+      "STEP 29 (GLORYS + Stokes vs GLORYS) and STEP 30A (GLORYS + Stokes vs HYCOM) are different comparisons and are never interchanged.",
+      "alpha = 0.002, Stokes coefficient 1.0, GLORYS depth 15.810070 m and HYCOM depth 15.000 m are unchanged; no alpha, coefficient, depth or forcing selection was made; MODEL_RUN_COUNT = 0.",
+      "Holdout results are descriptive only; the candidate was fixed before this step; no re-ranking, no selective rerun, no outlier handling.",
+      "AVISO and any other field are reference fields, not ground truth; STEP 17-29 results are unchanged.",
+      "STEP 30A overall 72 h: candidate median 44.652 km, HYCOM median 48.81 km, paired median delta -4.244 km, W/L/T 19/14/0, label NO_CLEAR_DESCRIPTIVE_DIFFERENCE.",
+      "Holdout (KE-H1, KE-H3) 72 h: median delta 0.881 km, W/L/T 6/6/0, descriptive label NO_CLEAR_DESCRIPTIVE_DIFFERENCE; not used for any selection.",
+      "STEP 29 context (C vs B, frozen): 72 h median delta -3.496 km, W/L 19/14; holdout -3.832 km, W/L 8/4. This is a different comparison from STEP 30A (C vs A)."
+    ]
+  },
+  "tableSha256": "b01a5b3d53d3a702952143f53637c21d2027bd04010903b8c93ffefa4cbe61d3",
+  "summarySha256": "faaf891fa7c5308db70f97add419d370efa7346ee560c30e307ac33d0a01c504"
+}

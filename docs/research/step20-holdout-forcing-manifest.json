@@ -1,0 +1,927 @@
+{
+  "schemaVersion": "1.0",
+  "createdAtUTC": "2026-09-06T06:49:23Z",
+  "ruleId": "forcing-protocol-step17-hycom15m-ncep10m-primary",
+  "protocolSha256": "db73ef67d1a191d67b29d488805a3c9998a65bf70b80dffe15b40ed8eb041792",
+  "preregistrationSha256": "b4bad6447e8de801fa44ba5e51de161ddaee066638bebe11011b5d495e131378",
+  "cohortSha256": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474",
+  "lockCommit": "551668ef",
+  "normalizedIssuedAtUTC": "2026-09-06T05:00:00Z",
+  "glorys": {
+    "status": "BLOCKED/PENDING",
+    "reason": "Copernicus Marine credentials not provided in this environment; no download attempted; no substitute forcing (protocol §3/§4)"
+  },
+  "runUnits": [
+    {
+      "windowId": "KE-H1",
+      "region": "KE",
+      "t0": "2010-08-10T12:00:00Z",
+      "end": "2010-08-13T12:00:00Z",
+      "drifterCount": 5,
+      "drifterIds": [
+        "81806",
+        "48985",
+        "90149",
+        "90135",
+        "90150"
+      ],
+      "oceanDomain": {
+        "south": 30.2673,
+        "north": 40.0,
+        "west": 135.25655,
+        "east": 161.85992
+      },
+      "windDomain": {
+        "south": 27.2673,
+        "north": 43.0,
+        "west": 132.25655,
+        "east": 164.85992
+      },
+      "hycom": {
+        "files": [
+          {
+            "dataset": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+            "product": "water_u/water_v",
+            "depthMeters": 15,
+            "temporalResolution": "3 h",
+            "spatialResolution": "0.08°",
+            "filename": "current-20100810T12.nc",
+            "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=30.267&west=135.257&east=161.860&horizStride=1&time_start=2010-08-10T12%3A00%3A00Z&time_end=2010-08-11T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "httpStatus": 200,
+            "retrievedAtUTC": "2026-09-06T06:49:34Z",
+            "bytes": 1317204,
+            "sha256": "75b64a385a33be60e24836d49081becb1ba388d263d13ce2156bb497b6b455e8"
+          },
+          {
+            "dataset": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+            "product": "water_u/water_v",
+            "depthMeters": 15,
+            "temporalResolution": "3 h",
+            "spatialResolution": "0.08°",
+            "filename": "current-20100811T12.nc",
+            "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=30.267&west=135.257&east=161.860&horizStride=1&time_start=2010-08-11T12%3A00%3A00Z&time_end=2010-08-12T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "httpStatus": 200,
+            "retrievedAtUTC": "2026-09-06T06:49:47Z",
+            "bytes": 1317204,
+            "sha256": "28ffa3fc9079844446daf53c849e4872d0e231d4ffdf7ef4749dc88d13ca5175"
+          },
+          {
+            "dataset": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+            "product": "water_u/water_v",
+            "depthMeters": 15,
+            "temporalResolution": "3 h",
+            "spatialResolution": "0.08°",
+            "filename": "current-20100812T12.nc",
+            "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=30.267&west=135.257&east=161.860&horizStride=1&time_start=2010-08-12T12%3A00%3A00Z&time_end=2010-08-13T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "httpStatus": 200,
+            "retrievedAtUTC": "2026-09-06T06:49:58Z",
+            "bytes": 1317204,
+            "sha256": "004f7c0a75f37ea9da0de4c71f342aa24f3fd66501d0f84f72e33936230a3c64"
+          },
+          {
+            "dataset": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+            "product": "water_u/water_v",
+            "depthMeters": 15,
+            "temporalResolution": "3 h",
+            "spatialResolution": "0.08°",
+            "filename": "current-20100813T12.nc",
+            "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=30.267&west=135.257&east=161.860&horizStride=1&time_start=2010-08-13T12%3A00%3A00Z&time_end=2010-08-13T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "httpStatus": 200,
+            "retrievedAtUTC": "2026-09-06T06:50:01Z",
+            "bytes": 170300,
+            "sha256": "5c85ecf2c178316826f4952fdef1e54742c274e453f5e5b2735d67e773bb01c5"
+          }
+        ]
+      },
+      "ncep": {
+        "files": [
+          {
+            "dataset": "NCEP-DOE Reanalysis 2 gaussian_grid",
+            "product": "uwnd.10m",
+            "levelMeters": 10,
+            "temporalResolution": "6 h",
+            "spatialResolution": "T62 Gaussian ≈1.9°",
+            "filename": "uwnd.10m.gauss.20100810T00-20100814T00.nc",
+            "query": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2010.nc?var=uwnd&north=43.000&south=27.267&west=132.257&east=164.860&time_start=2010-08-10T00%3A00%3A00Z&time_end=2010-08-14T00%3A00%3A00Z&accept=netcdf",
+            "httpStatus": 200,
+            "retrievedAtUTC": "2026-09-06T06:50:02Z",
+            "bytes": 14132,
+            "sha256": "124f192aa82c249cb68f4932607a33dbed4c682866088a0d6a2e9bc1ab60217d"
+          },
+          {
+            "dataset": "NCEP-DOE Reanalysis 2 gaussian_grid",
+            "product": "vwnd.10m",
+            "levelMeters": 10,
+            "temporalResolution": "6 h",
+            "spatialResolution": "T62 Gaussian ≈1.9°",
+            "filename": "vwnd.10m.gauss.20100810T00-20100814T00.nc",
+            "query": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2010.nc?var=vwnd&north=43.000&south=27.267&west=132.257&east=164.860&time_start=2010-08-10T00%3A00%3A00Z&time_end=2010-08-14T00%3A00%3A00Z&accept=netcdf",
+            "httpStatus": 200,
+            "retrievedAtUTC": "2026-09-06T06:50:03Z",
+            "bytes": 14132,
+            "sha256": "a83f82e100b0e2ab8dca533faed89b3fdc8611f1a25e50fa759c2e92e8bedcfc"
+          }
+        ],
+        "qc": {
+          "frames": 17,
+          "expectedFrames": 17,
+          "cadenceSeconds": 21600.0,
+          "timeStart": "2010-08-10T00:00:00Z",
+          "timeEnd": "2010-08-14T00:00:00Z",
+          "missingRate": 0.0,
+          "uRange": [
+            -8.75,
+            15.279998779296875
+          ],
+          "vRange": [
+            -10.729995727539062,
+            19.3800048828125
+          ],
+          "withinPhysicalBounds": true,
+          "releaseStencil": [
+            {
+              "drifterId": "81806",
+              "ok": true
+            },
+            {
+              "drifterId": "48985",
+              "ok": true
+            },
+            {
+              "drifterId": "90149",
+              "ok": true
+            },
+            {
+              "drifterId": "90135",
+              "ok": true
+            },
+            {
+              "drifterId": "90150",
+              "ok": true
+            }
+          ]
+        },
+        "normalized": {
+          "file": "data/research/step20/holdout/forcing/normalized/KE-H1.ncep10m.wind.json",
+          "gridSha256": "2efe5efe8feed013a2c0b64fb3257938d8f85a129f35ecc0167cc35db0154d21",
+          "sourceSha256": "1a2a9c4cb2471074f06e643ea26e7d0d33d201e66f63b99ea528f5a8f318b254",
+          "fileSha256": "7b16b08358e2ca50769cfb4106674703f7da70190e8bb6601fec4ceeae5bcfcd",
+          "readerVersion": "earthus-ncep-r2-wind/1"
+        }
+      },
+      "status": "FORCING_BLOCKED",
+      "statusReasons": [
+        "HYCOM reader/validation: ValueError: dataset exceeds 2000000 velocity values; subset before importing"
+      ],
+      "forcingSha256": "adeb1aa745e9f1df5e3dc18acb7a38c28192c4d9c0f52e54b42595d5c8833d19"
+    },
+    {
+      "windowId": "KE-H2",
+      "region": "KE",
+      "t0": "2010-08-16T12:00:00Z",
+      "end": "2010-08-19T12:00:00Z",
+      "drifterCount": 1,
+      "drifterIds": [
+        "81961"
+      ],
+      "oceanDomain": {
+        "south": 32.62506,
+        "north": 36.62506,
+        "west": 143.81236,
+        "east": 147.81236
+      },
+      "windDomain": {
+        "south": 29.625059999999998,
+        "north": 39.62506,
+        "west": 140.81236,
+        "east": 150.81236
+      },
+      "hycom": {
+        "files": [
+          {
+            "dataset": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+            "product": "water_u/water_v",
+            "depthMeters": 15,
+            "temporalResolution": "3 h",
+            "spatialResolution": "0.08°",
+            "filename": "current-20100816T12.nc",
+            "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=36.625&south=32.625&west=143.812&east=147.812&horizStride=1&time_start=2010-08-16T12%3A00%3A00Z&time_end=2010-08-17T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "httpStatus": 200,
+            "retrievedAtUTC": "2026-09-06T06:50:11Z",
+            "bytes": 86916,
+            "sha256": "353141f7a8328d64e8ebfcbe124e9c38223f2a0d05548f1c3a09924621ea5534"
+          },
+          {
+            "dataset": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+            "product": "water_u/water_v",
+            "depthMeters": 15,
+            "temporalResolution": "3 h",
+            "spatialResolution": "0.08°",
+            "filename": "current-20100817T12.nc",
+            "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=36.625&south=32.625&west=143.812&east=147.812&horizStride=1&time_start=2010-08-17T12%3A00%3A00Z&time_end=2010-08-18T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "httpStatus": 200,
+            "retrievedAtUTC": "2026-09-06T06:50:20Z",
+            "bytes": 86916,
+            "sha256": "3c58613ef067136f0e1a56cbd03d7c5356c60470eb0e222b2efc6c505c3b733f"
+          },
+          {
+            "dataset": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+            "product": "water_u/water_v",
+            "depthMeters": 15,
+            "temporalResolution": "3 h",
+            "spatialResolution": "0.08°",
+            "filename": "current-20100818T12.nc",
+            "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=36.625&south=32.625&west=143.812&east=147.812&horizStride=1&time_start=2010-08-18T12%3A00%3A00Z&time_end=2010-08-19T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "httpStatus": 200,
+            "retrievedAtUTC": "2026-09-06T06:50:28Z",
+            "bytes": 76508,
+            "sha256": "0d1bc086813ff89b3b995a0a7a9539fa608aec5fb3f6c3facd1456da8c8b8e7f"
+          },
+          {
+            "dataset": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+            "product": "water_u/water_v",
+            "depthMeters": 15,
+            "temporalResolution": "3 h",
+            "spatialResolution": "0.08°",
+            "filename": "current-20100819T12.nc",
+            "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=36.625&south=32.625&west=143.812&east=147.812&horizStride=1&time_start=2010-08-19T12%3A00%3A00Z&time_end=2010-08-19T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "httpStatus": 200,
+            "retrievedAtUTC": "2026-09-06T06:50:30Z",
+            "bytes": 14036,
+            "sha256": "b87bfc255cec7f06d47a6446df181dcb9a058306678257fd6768a7f70818b6e7"
+          }
+        ]
+      },
+      "ncep": {
+        "files": [
+          {
+            "dataset": "NCEP-DOE Reanalysis 2 gaussian_grid",
+            "product": "uwnd.10m",
+            "levelMeters": 10,
+            "temporalResolution": "6 h",
+            "spatialResolution": "T62 Gaussian ≈1.9°",
+            "filename": "uwnd.10m.gauss.20100816T00-20100820T00.nc",
+            "query": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2010.nc?var=uwnd&north=39.625&south=29.625&west=140.812&east=150.812&time_start=2010-08-16T00%3A00%3A00Z&time_end=2010-08-20T00%3A00%3A00Z&accept=netcdf",
+            "httpStatus": 200,
+            "retrievedAtUTC": "2026-09-06T06:50:30Z",
+            "bytes": 5504,
+            "sha256": "6fd98b4cc48c5d92857d108c9eaab72662dba0906b58c207fc3c80301591be3d"
+          },
+          {
+            "dataset": "NCEP-DOE Reanalysis 2 gaussian_grid",
+            "product": "vwnd.10m",
+            "levelMeters": 10,
+            "temporalResolution": "6 h",
+            "spatialResolution": "T62 Gaussian ≈1.9°",
+            "filename": "vwnd.10m.gauss.20100816T00-20100820T00.nc",
+            "query": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2010.nc?var=vwnd&north=39.625&south=29.625&west=140.812&east=150.812&time_start=2010-08-16T00%3A00%3A00Z&time_end=2010-08-20T00%3A00%3A00Z&accept=netcdf",
+            "httpStatus": 200,
+            "retrievedAtUTC": "2026-09-06T06:50:31Z",
+            "bytes": 5504,
+            "sha256": "917e600539b6911c132678153593d98af8e5ceb9a015c05fcb0b8deff3e515f5"
+          }
+        ],
+        "qc": {
+          "frames": 17,
+          "expectedFrames": 17,
+          "cadenceSeconds": 21600.0,
+          "timeStart": "2010-08-16T00:00:00Z",
+          "timeEnd": "2010-08-20T00:00:00Z",
+          "missingRate": 0.0,
+          "uRange": [
+            -12.44000244140625,
+            10.30999755859375
+          ],
+          "vRange": [
+            -11.860000610351562,
+            9.17999267578125
+          ],
+          "withinPhysicalBounds": true,
+          "releaseStencil": [
+            {
+              "drifterId": "81961",
+              "ok": true
+            }
+          ]
+        },
+        "normalized": {
+          "file": "data/research/step20/holdout/forcing/normalized/KE-H2.ncep10m.wind.json",
+          "gridSha256": "845e76d17199704da29f4e2ac200eac0a29c3569fee67e327380996e59355ef0",
+          "sourceSha256": "c953ea225576e99a9ccd8ec64cead82c7d1186d6423447b7b98b782f7754a2c4",
+          "fileSha256": "f1818c74a8618e25a02da60b52894468ee403a73e07621b98e467d4adcad5a36",
+          "readerVersion": "earthus-ncep-r2-wind/1"
+        }
+      },
+      "status": "FORCING_BLOCKED",
+      "statusReasons": [
+        "HYCOM reader/validation: ValueError: missing or irregular frames: [('2010-08-18T09:00:00Z', '2010-08-18T15:00:00Z')]; gaps are never interpolated"
+      ],
+      "forcingSha256": "c38258fff612cf733d8f4dba61ff070e4280b1567ef11a2bfda19b06f31bd123"
+    },
+    {
+      "windowId": "KE-H3",
+      "region": "KE",
+      "t0": "2010-11-15T12:00:00Z",
+      "end": "2010-11-18T12:00:00Z",
+      "drifterCount": 7,
+      "drifterIds": [
+        "90146",
+        "89898",
+        "92981",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "oceanDomain": {
+        "south": 29.02459,
+        "north": 40.0,
+        "west": 141.06795,
+        "east": 156.05711
+      },
+      "windDomain": {
+        "south": 26.02459,
+        "north": 43.0,
+        "west": 138.06795,
+        "east": 159.05711
+      },
+      "hycom": {
+        "files": [
+          {
+            "dataset": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+            "product": "water_u/water_v",
+            "depthMeters": 15,
+            "temporalResolution": "3 h",
+            "spatialResolution": "0.08°",
+            "filename": "current-20101115T12.nc",
+            "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=29.025&west=141.068&east=156.057&horizStride=1&time_start=2010-11-15T12%3A00%3A00Z&time_end=2010-11-16T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "httpStatus": 200,
+            "retrievedAtUTC": "2026-09-06T06:50:41Z",
+            "bytes": 840108,
+            "sha256": "707cb78ba9a07754fe4260c85749c8569614f85fdf5c5f46197e9471abd4ebb3"
+          },
+          {
+            "dataset": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+            "product": "water_u/water_v",
+            "depthMeters": 15,
+            "temporalResolution": "3 h",
+            "spatialResolution": "0.08°",
+            "filename": "current-20101116T12.nc",
+            "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=29.025&west=141.068&east=156.057&horizStride=1&time_start=2010-11-16T12%3A00%3A00Z&time_end=2010-11-17T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "httpStatus": 200,
+            "retrievedAtUTC": "2026-09-06T06:50:48Z",
+            "bytes": 840108,
+            "sha256": "61846c74a06cda7f9607df19aeac9c88106b7e75d757861d13ebb1122909df56"
+          },
+          {
+            "dataset": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+            "product": "water_u/water_v",
+            "depthMeters": 15,
+            "temporalResolution": "3 h",
+            "spatialResolution": "0.08°",
+            "filename": "current-20101117T12.nc",
+            "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=29.025&west=141.068&east=156.057&horizStride=1&time_start=2010-11-17T12%3A00%3A00Z&time_end=2010-11-18T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "httpStatus": 200,
+            "retrievedAtUTC": "2026-09-06T06:50:57Z",
+            "bytes": 840108,
+            "sha256": "23fe406e7bf0ee2fadfbb6e00dc2006bfbff0e20fdf0006007f6ab088fd88387"
+          },
+          {
+            "dataset": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+            "product": "water_u/water_v",
+            "depthMeters": 15,
+            "temporalResolution": "3 h",
+            "spatialResolution": "0.08°",
+            "filename": "current-20101118T12.nc",
+            "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=29.025&west=141.068&east=156.057&horizStride=1&time_start=2010-11-18T12%3A00%3A00Z&time_end=2010-11-18T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "httpStatus": 200,
+            "retrievedAtUTC": "2026-09-06T06:51:00Z",
+            "bytes": 109756,
+            "sha256": "106f6c1530b4262517fc388eff750bc00a8015ed4e8aa03c7a58e93a29b5b7ea"
+          }
+        ],
+        "qc": {
+          "frames": 25,
+          "expectedFrames": 25,
+          "cadenceSeconds": 10800.0,
+          "shape": [
+            25,
+            138,
+            189
+          ],
+          "maskedNodes": 228,
+          "missingRate": 0.008741660915573934,
+          "uRange": [
+            -1.152999997138977,
+            2.0380001068115234
+          ],
+          "vRange": [
+            -1.9640001058578491,
+            1.3070000410079956
+          ],
+          "withinPhysicalBounds": true,
+          "timeStart": "2010-11-15T12:00:00Z",
+          "timeEnd": "2010-11-18T12:00:00Z",
+          "releaseStencil": [
+            {
+              "drifterId": "90146",
+              "wet": true
+            },
+            {
+              "drifterId": "89898",
+              "wet": true
+            },
+            {
+              "drifterId": "92981",
+              "wet": true
+            },
+            {
+              "drifterId": "98996",
+              "wet": true
+            },
+            {
+              "drifterId": "98997",
+              "wet": true
+            },
+            {
+              "drifterId": "98998",
+              "wet": true
+            },
+            {
+              "drifterId": "99006",
+              "wet": true
+            }
+          ]
+        },
+        "normalized": {
+          "file": "data/research/step20/holdout/forcing/normalized/KE-H3.hycom15m.dataset.json",
+          "gridSha256": "3a4c0d25c2dc968875931d12c5b90044e5810b5fa77716c55a47ad317445bad2",
+          "sourceSha256": "1c2b809e746db3c08b07df06d1e5e151884c83646e37edead8d5d5468bc99d76",
+          "fileSha256": "b88e9390bf3f0b7fa1e81d9bf28ee8960f5e7cbce4d4bc0f2e9cf95a485f5b3e",
+          "readerVersion": "earthus-hycom-netcdf/1",
+          "processingHistory": [
+            {
+              "operation": "netCDF4 mask-and-scale decode; remove singleton depth; concatenate original frames",
+              "netCDF4Version": "1.7.4",
+              "fillPolicy": "masked nodes become null and landMask=true; never zero",
+              "regridding": false
+            },
+            {
+              "operation": "Normalize documented 0.08 degree coordinate labels to two decimals; retain source values and original files",
+              "rawLatitude": [
+                29.040000915527344,
+                29.1200008392334,
+                29.200000762939453,
+                29.280000686645508,
+                29.360000610351562,
+                29.440000534057617,
+                29.520000457763672,
+                29.600000381469727,
+                29.68000030517578,
+                29.760000228881836,
+                29.84000015258789,
+                29.920000076293945,
+                30.0,
+                30.079999923706055,
+                30.15999984741211,
+                30.239999771118164,
+                30.31999969482422,
+                30.399999618530273,
+                30.479999542236328,
+                30.559999465942383,
+                30.639999389648438,
+                30.719999313354492,
+                30.799999237060547,
+                30.8799991607666,
+                30.959999084472656,
+                31.040000915527344,
+                31.1200008392334,
+                31.200000762939453,
+                31.280000686645508,
+                31.360000610351562,
+                31.440000534057617,
+                31.520000457763672,
+                31.600000381469727,
+                31.68000030517578,
+                31.760000228881836,
+                31.84000015258789,
+                31.920000076293945,
+                32.0,
+                32.08000183105469,
+                32.15999984741211,
+                32.2400016784668,
+                32.31999969482422,
+                32.400001525878906,
+                32.47999954223633,
+                32.560001373291016,
+                32.63999938964844,
+                32.720001220703125,
+                32.79999923706055,
+                32.880001068115234,
+                32.959999084472656,
+                33.040000915527344,
+                33.119998931884766,
+                33.20000076293945,
+                33.279998779296875,
+                33.36000061035156,
+                33.439998626708984,
+                33.52000045776367,
+                33.599998474121094,
+                33.68000030517578,
+                33.7599983215332,
+                33.84000015258789,
+                33.91999816894531,
+                34.0,
+                34.08000183105469,
+                34.15999984741211,
+                34.2400016784668,
+                34.31999969482422,
+                34.400001525878906,
+                34.47999954223633,
+                34.560001373291016,
+                34.63999938964844,
+                34.720001220703125,
+                34.79999923706055,
+                34.880001068115234,
+                34.959999084472656,
+                35.040000915527344,
+                35.119998931884766,
+                35.20000076293945,
+                35.279998779296875,
+                35.36000061035156,
+                35.439998626708984,
+                35.52000045776367,
+                35.599998474121094,
+                35.68000030517578,
+                35.7599983215332,
+                35.84000015258789,
+                35.91999816894531,
+                36.0,
+                36.08000183105469,
+                36.15999984741211,
+                36.2400016784668,
+                36.31999969482422,
+                36.400001525878906,
+                36.47999954223633,
+                36.560001373291016,
+                36.63999938964844,
+                36.720001220703125,
+                36.79999923706055,
+                36.880001068115234,
+                36.959999084472656,
+                37.040000915527344,
+                37.119998931884766,
+                37.20000076293945,
+                37.279998779296875,
+                37.36000061035156,
+                37.439998626708984,
+                37.52000045776367,
+                37.599998474121094,
+                37.68000030517578,
+                37.7599983215332,
+                37.84000015258789,
+                37.91999816894531,
+                38.0,
+                38.08000183105469,
+                38.15999984741211,
+                38.2400016784668,
+                38.31999969482422,
+                38.400001525878906,
+                38.47999954223633,
+                38.560001373291016,
+                38.63999938964844,
+                38.720001220703125,
+                38.79999923706055,
+                38.880001068115234,
+                38.959999084472656,
+                39.040000915527344,
+                39.119998931884766,
+                39.20000076293945,
+                39.279998779296875,
+                39.36000061035156,
+                39.439998626708984,
+                39.52000045776367,
+                39.599998474121094,
+                39.68000030517578,
+                39.7599983215332,
+                39.84000015258789,
+                39.91999816894531,
+                40.0
+              ],
+              "rawLongitude": [
+                141.0400390625,
+                141.1199951171875,
+                141.199951171875,
+                141.280029296875,
+                141.3599853515625,
+                141.43994140625,
+                141.52001953125,
+                141.5999755859375,
+                141.679931640625,
+                141.760009765625,
+                141.8399658203125,
+                141.9200439453125,
+                142.0,
+                142.0799560546875,
+                142.1600341796875,
+                142.239990234375,
+                142.320068359375,
+                142.4000244140625,
+                142.47998046875,
+                142.56005859375,
+                142.6400146484375,
+                142.719970703125,
+                142.800048828125,
+                142.8800048828125,
+                142.9599609375,
+                143.0400390625,
+                143.1199951171875,
+                143.199951171875,
+                143.280029296875,
+                143.3599853515625,
+                143.43994140625,
+                143.52001953125,
+                143.5999755859375,
+                143.679931640625,
+                143.760009765625,
+                143.8399658203125,
+                143.9200439453125,
+                144.0,
+                144.0799560546875,
+                144.1600341796875,
+                144.239990234375,
+                144.320068359375,
+                144.4000244140625,
+                144.47998046875,
+                144.56005859375,
+                144.6400146484375,
+                144.719970703125,
+                144.800048828125,
+                144.8800048828125,
+                144.9599609375,
+                145.0400390625,
+                145.1199951171875,
+                145.199951171875,
+                145.280029296875,
+                145.3599853515625,
+                145.43994140625,
+                145.52001953125,
+                145.5999755859375,
+                145.679931640625,
+                145.760009765625,
+                145.8399658203125,
+                145.9200439453125,
+                146.0,
+                146.0799560546875,
+                146.1600341796875,
+                146.239990234375,
+                146.320068359375,
+                146.4000244140625,
+                146.47998046875,
+                146.56005859375,
+                146.6400146484375,
+                146.719970703125,
+                146.800048828125,
+                146.8800048828125,
+                146.9599609375,
+                147.0400390625,
+                147.1199951171875,
+                147.199951171875,
+                147.280029296875,
+                147.3599853515625,
+                147.43994140625,
+                147.52001953125,
+                147.5999755859375,
+                147.679931640625,
+                147.760009765625,
+                147.8399658203125,
+                147.9200439453125,
+                148.0,
+                148.0799560546875,
+                148.1600341796875,
+                148.239990234375,
+                148.320068359375,
+                148.4000244140625,
+                148.47998046875,
+                148.56005859375,
+                148.6400146484375,
+                148.719970703125,
+                148.800048828125,
+                148.8800048828125,
+                148.9599609375,
+                149.0400390625,
+                149.1199951171875,
+                149.199951171875,
+                149.280029296875,
+                149.3599853515625,
+                149.43994140625,
+                149.52001953125,
+                149.5999755859375,
+                149.679931640625,
+                149.760009765625,
+                149.8399658203125,
+                149.9200439453125,
+                150.0,
+                150.0799560546875,
+                150.1600341796875,
+                150.239990234375,
+                150.320068359375,
+                150.4000244140625,
+                150.47998046875,
+                150.56005859375,
+                150.6400146484375,
+                150.719970703125,
+                150.800048828125,
+                150.8800048828125,
+                150.9599609375,
+                151.0400390625,
+                151.1199951171875,
+                151.199951171875,
+                151.280029296875,
+                151.3599853515625,
+                151.43994140625,
+                151.52001953125,
+                151.5999755859375,
+                151.679931640625,
+                151.760009765625,
+                151.8399658203125,
+                151.9200439453125,
+                152.0,
+                152.0799560546875,
+                152.1600341796875,
+                152.239990234375,
+                152.320068359375,
+                152.4000244140625,
+                152.47998046875,
+                152.56005859375,
+                152.6400146484375,
+                152.719970703125,
+                152.800048828125,
+                152.8800048828125,
+                152.9599609375,
+                153.0400390625,
+                153.1199951171875,
+                153.199951171875,
+                153.280029296875,
+                153.3599853515625,
+                153.43994140625,
+                153.52001953125,
+                153.5999755859375,
+                153.679931640625,
+                153.760009765625,
+                153.8399658203125,
+                153.9200439453125,
+                154.0,
+                154.0799560546875,
+                154.1600341796875,
+                154.239990234375,
+                154.320068359375,
+                154.4000244140625,
+                154.47998046875,
+                154.56005859375,
+                154.6400146484375,
+                154.719970703125,
+                154.800048828125,
+                154.8800048828125,
+                154.9599609375,
+                155.0400390625,
+                155.1199951171875,
+                155.199951171875,
+                155.280029296875,
+                155.3599853515625,
+                155.43994140625,
+                155.52001953125,
+                155.5999755859375,
+                155.679931640625,
+                155.760009765625,
+                155.8399658203125,
+                155.9200439453125,
+                156.0,
+                156.0799560546875
+              ],
+              "maxAbsoluteCoordinateCorrectionDegrees": {
+                "lat": 1.8310546892053026e-06,
+                "lon": 6.835937500682121e-05
+              },
+              "vectorValuesInterpolated": false
+            },
+            {
+              "operation": "Record provider wet-validity mask",
+              "independentCoastlineValidated": false
+            }
+          ]
+        }
+      },
+      "ncep": {
+        "files": [
+          {
+            "dataset": "NCEP-DOE Reanalysis 2 gaussian_grid",
+            "product": "uwnd.10m",
+            "levelMeters": 10,
+            "temporalResolution": "6 h",
+            "spatialResolution": "T62 Gaussian ≈1.9°",
+            "filename": "uwnd.10m.gauss.20101115T00-20101119T00.nc",
+            "query": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2010.nc?var=uwnd&north=43.000&south=26.025&west=138.068&east=159.057&time_start=2010-11-15T00%3A00%3A00Z&time_end=2010-11-19T00%3A00%3A00Z&accept=netcdf",
+            "httpStatus": 200,
+            "retrievedAtUTC": "2026-09-06T06:51:02Z",
+            "bytes": 11256,
+            "sha256": "c3ec18b68cb3b1c58e383f570805ab5348f5c103e3b8fa514009c556212f96d0"
+          },
+          {
+            "dataset": "NCEP-DOE Reanalysis 2 gaussian_grid",
+            "product": "vwnd.10m",
+            "levelMeters": 10,
+            "temporalResolution": "6 h",
+            "spatialResolution": "T62 Gaussian ≈1.9°",
+            "filename": "vwnd.10m.gauss.20101115T00-20101119T00.nc",
+            "query": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2010.nc?var=vwnd&north=43.000&south=26.025&west=138.068&east=159.057&time_start=2010-11-15T00%3A00%3A00Z&time_end=2010-11-19T00%3A00%3A00Z&accept=netcdf",
+            "httpStatus": 200,
+            "retrievedAtUTC": "2026-09-06T06:51:03Z",
+            "bytes": 11256,
+            "sha256": "0b0dcf5b2f1508599a81d2a229d0c09beb3c7793efc48f8e4b2695c79df15ce2"
+          }
+        ],
+        "qc": {
+          "frames": 17,
+          "expectedFrames": 17,
+          "cadenceSeconds": 21600.0,
+          "timeStart": "2010-11-15T00:00:00Z",
+          "timeEnd": "2010-11-19T00:00:00Z",
+          "missingRate": 0.0,
+          "uRange": [
+            -20.69000244140625,
+            22.050003051757812
+          ],
+          "vRange": [
+            -22.600006103515625,
+            23.149993896484375
+          ],
+          "withinPhysicalBounds": true,
+          "releaseStencil": [
+            {
+              "drifterId": "90146",
+              "ok": true
+            },
+            {
+              "drifterId": "89898",
+              "ok": true
+            },
+            {
+              "drifterId": "92981",
+              "ok": true
+            },
+            {
+              "drifterId": "98996",
+              "ok": true
+            },
+            {
+              "drifterId": "98997",
+              "ok": true
+            },
+            {
+              "drifterId": "98998",
+              "ok": true
+            },
+            {
+              "drifterId": "99006",
+              "ok": true
+            }
+          ]
+        },
+        "normalized": {
+          "file": "data/research/step20/holdout/forcing/normalized/KE-H3.ncep10m.wind.json",
+          "gridSha256": "94b50b5ac56e7224b260eb0a03bddccd9785e3454a69471cdc3a39bc61e43cd8",
+          "sourceSha256": "3c55922370474b8a9d8d6a8b17c6121e67a7ae8de7d014acdcf2eb1122bbe455",
+          "fileSha256": "c1f1e3d70697a41b5d39d4f0b422869378256930d5e9d9b8393cbff996ab9bbc",
+          "readerVersion": "earthus-ncep-r2-wind/1"
+        }
+      },
+      "status": "FORCING_ACQUISITION_PASS",
+      "statusReasons": [],
+      "forcingSha256": "19e48cfdd9d2495433d00823bc44d878871c38b9269c993222944cb6b4c41d03"
+    }
+  ],
+  "primaryStatus": "FORCING_PARTIAL",
+  "aggregateForcingSha256": "4766c1681fcfd0524bb43e65cd0510c1523e01cb569a67eb1887db44818adebd",
+  "modelRun": false,
+  "trajectoryComputed": false,
+  "secretsRecorded": false,
+  "phase": "STEP 20 Phase B-2 R1 holdout forcing acquisition",
+  "step20RuleId": "model-protocol-step20-generalization-parameter-validation",
+  "step20LockCommit": "155995dd",
+  "alphaLockCommit": "73fafffb",
+  "acquiredAfterAlphaLock": true,
+  "selectedAlphaArtifactSha256": "68e43a0f91e3a6bd81427399adbe2cf8a7543d85cf0249d4926f3df093649efd",
+  "step20PreregistrationSha256": "1e4ed8c1d004b00812c0710fd3df32c8a6c7537ff5287474a4c0a3e8ae33cae4",
+  "step17ForcingProtocolSha256": "db73ef67d1a191d67b29d488805a3c9998a65bf70b80dffe15b40ed8eb041792",
+  "step17ForcingManifestSha256": "591cc05799da03e6bb604321d9e2b129a32a201112922c4d06823026a0b5ac86",
+  "step17FilesModified": false,
+  "scopeFile": "docs\\research\\step20-holdout-forcing-scope.json",
+  "scopeSha256": "3db72a8847c801e1ffe476889d63e74ade5ab0576bb6ec8f89d509a2ffdeb4d0",
+  "unitSource": "docs/research/step20-preregistration.json holdout.runUnits (KE-H1, KE-H2, KE-H3)",
+  "substituteForcing": "NONE (no GLORYS, no ERA5, no other HYCOM/NCEP product)",
+  "acquisitionTool": {
+    "file": "tools/research/acquire_step20_holdout_forcing.py",
+    "sha256": "244229c286adc363193405ff00478b6d444f893465ef01d94823b71eac9be05d"
+  }
+}

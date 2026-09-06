@@ -1,0 +1,274 @@
+{
+  "ruleId": "model-protocol-step20-generalization-parameter-validation",
+  "purpose": "R1 holdout forcing scope, computed before any download",
+  "afterAlphaLockCommit": "73fafffb",
+  "createdAtUTC": "2026-09-06T06:49:22Z",
+  "forcingProtocol": "STEP 17 (551668ef) verbatim: ocean box = t0 bbox ± 2.0°, lat clipped to [-40, 40]; wind box = ocean box ± 3.0°; ocean t0..t0+72h @3 h (25 frames); wind t0-12h..t0+84h @6 h (17 frames)",
+  "units": [
+    {
+      "windowId": "KE-H1",
+      "startUTC": "2010-08-10T12:00:00Z",
+      "endUTC": "2010-08-13T12:00:00Z",
+      "drifterCount": 5,
+      "drifterIds": [
+        "81806",
+        "48985",
+        "90149",
+        "90135",
+        "90150"
+      ],
+      "releaseLatRange": [
+        32.2673,
+        39.19842
+      ],
+      "releaseLonRange": [
+        137.25655,
+        159.85992
+      ],
+      "oceanBox": {
+        "south": 30.2673,
+        "north": 40.0,
+        "west": 135.25655,
+        "east": 161.85992
+      },
+      "windBox": {
+        "south": 27.2673,
+        "north": 43.0,
+        "west": 132.25655,
+        "east": 164.85992
+      },
+      "requiredOceanTimestamps": [
+        "2010-08-10T12:00:00Z",
+        "2010-08-10T15:00:00Z",
+        "2010-08-10T18:00:00Z",
+        "2010-08-10T21:00:00Z",
+        "2010-08-11T00:00:00Z",
+        "2010-08-11T03:00:00Z",
+        "2010-08-11T06:00:00Z",
+        "2010-08-11T09:00:00Z",
+        "2010-08-11T12:00:00Z",
+        "2010-08-11T15:00:00Z",
+        "2010-08-11T18:00:00Z",
+        "2010-08-11T21:00:00Z",
+        "2010-08-12T00:00:00Z",
+        "2010-08-12T03:00:00Z",
+        "2010-08-12T06:00:00Z",
+        "2010-08-12T09:00:00Z",
+        "2010-08-12T12:00:00Z",
+        "2010-08-12T15:00:00Z",
+        "2010-08-12T18:00:00Z",
+        "2010-08-12T21:00:00Z",
+        "2010-08-13T00:00:00Z",
+        "2010-08-13T03:00:00Z",
+        "2010-08-13T06:00:00Z",
+        "2010-08-13T09:00:00Z",
+        "2010-08-13T12:00:00Z"
+      ],
+      "requiredWindTimestamps": [
+        "2010-08-10T00:00:00Z",
+        "2010-08-10T06:00:00Z",
+        "2010-08-10T12:00:00Z",
+        "2010-08-10T18:00:00Z",
+        "2010-08-11T00:00:00Z",
+        "2010-08-11T06:00:00Z",
+        "2010-08-11T12:00:00Z",
+        "2010-08-11T18:00:00Z",
+        "2010-08-12T00:00:00Z",
+        "2010-08-12T06:00:00Z",
+        "2010-08-12T12:00:00Z",
+        "2010-08-12T18:00:00Z",
+        "2010-08-13T00:00:00Z",
+        "2010-08-13T06:00:00Z",
+        "2010-08-13T12:00:00Z",
+        "2010-08-13T18:00:00Z",
+        "2010-08-14T00:00:00Z"
+      ],
+      "hycomQueries": [
+        "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=30.267&west=135.257&east=161.860&horizStride=1&time_start=2010-08-10T12%3A00%3A00Z&time_end=2010-08-11T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=30.267&west=135.257&east=161.860&horizStride=1&time_start=2010-08-11T12%3A00%3A00Z&time_end=2010-08-12T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=30.267&west=135.257&east=161.860&horizStride=1&time_start=2010-08-12T12%3A00%3A00Z&time_end=2010-08-13T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=30.267&west=135.257&east=161.860&horizStride=1&time_start=2010-08-13T12%3A00%3A00Z&time_end=2010-08-13T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+      ],
+      "ncepQueries": [
+        "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2010.nc?var=uwnd&north=43.000&south=27.267&west=132.257&east=164.860&time_start=2010-08-10T00%3A00%3A00Z&time_end=2010-08-14T00%3A00%3A00Z&accept=netcdf",
+        "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2010.nc?var=vwnd&north=43.000&south=27.267&west=132.257&east=164.860&time_start=2010-08-10T00%3A00%3A00Z&time_end=2010-08-14T00%3A00%3A00Z&accept=netcdf"
+      ]
+    },
+    {
+      "windowId": "KE-H2",
+      "startUTC": "2010-08-16T12:00:00Z",
+      "endUTC": "2010-08-19T12:00:00Z",
+      "drifterCount": 1,
+      "drifterIds": [
+        "81961"
+      ],
+      "releaseLatRange": [
+        34.62506,
+        34.62506
+      ],
+      "releaseLonRange": [
+        145.81236,
+        145.81236
+      ],
+      "oceanBox": {
+        "south": 32.62506,
+        "north": 36.62506,
+        "west": 143.81236,
+        "east": 147.81236
+      },
+      "windBox": {
+        "south": 29.625059999999998,
+        "north": 39.62506,
+        "west": 140.81236,
+        "east": 150.81236
+      },
+      "requiredOceanTimestamps": [
+        "2010-08-16T12:00:00Z",
+        "2010-08-16T15:00:00Z",
+        "2010-08-16T18:00:00Z",
+        "2010-08-16T21:00:00Z",
+        "2010-08-17T00:00:00Z",
+        "2010-08-17T03:00:00Z",
+        "2010-08-17T06:00:00Z",
+        "2010-08-17T09:00:00Z",
+        "2010-08-17T12:00:00Z",
+        "2010-08-17T15:00:00Z",
+        "2010-08-17T18:00:00Z",
+        "2010-08-17T21:00:00Z",
+        "2010-08-18T00:00:00Z",
+        "2010-08-18T03:00:00Z",
+        "2010-08-18T06:00:00Z",
+        "2010-08-18T09:00:00Z",
+        "2010-08-18T12:00:00Z",
+        "2010-08-18T15:00:00Z",
+        "2010-08-18T18:00:00Z",
+        "2010-08-18T21:00:00Z",
+        "2010-08-19T00:00:00Z",
+        "2010-08-19T03:00:00Z",
+        "2010-08-19T06:00:00Z",
+        "2010-08-19T09:00:00Z",
+        "2010-08-19T12:00:00Z"
+      ],
+      "requiredWindTimestamps": [
+        "2010-08-16T00:00:00Z",
+        "2010-08-16T06:00:00Z",
+        "2010-08-16T12:00:00Z",
+        "2010-08-16T18:00:00Z",
+        "2010-08-17T00:00:00Z",
+        "2010-08-17T06:00:00Z",
+        "2010-08-17T12:00:00Z",
+        "2010-08-17T18:00:00Z",
+        "2010-08-18T00:00:00Z",
+        "2010-08-18T06:00:00Z",
+        "2010-08-18T12:00:00Z",
+        "2010-08-18T18:00:00Z",
+        "2010-08-19T00:00:00Z",
+        "2010-08-19T06:00:00Z",
+        "2010-08-19T12:00:00Z",
+        "2010-08-19T18:00:00Z",
+        "2010-08-20T00:00:00Z"
+      ],
+      "hycomQueries": [
+        "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=36.625&south=32.625&west=143.812&east=147.812&horizStride=1&time_start=2010-08-16T12%3A00%3A00Z&time_end=2010-08-17T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=36.625&south=32.625&west=143.812&east=147.812&horizStride=1&time_start=2010-08-17T12%3A00%3A00Z&time_end=2010-08-18T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=36.625&south=32.625&west=143.812&east=147.812&horizStride=1&time_start=2010-08-18T12%3A00%3A00Z&time_end=2010-08-19T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=36.625&south=32.625&west=143.812&east=147.812&horizStride=1&time_start=2010-08-19T12%3A00%3A00Z&time_end=2010-08-19T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+      ],
+      "ncepQueries": [
+        "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2010.nc?var=uwnd&north=39.625&south=29.625&west=140.812&east=150.812&time_start=2010-08-16T00%3A00%3A00Z&time_end=2010-08-20T00%3A00%3A00Z&accept=netcdf",
+        "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2010.nc?var=vwnd&north=39.625&south=29.625&west=140.812&east=150.812&time_start=2010-08-16T00%3A00%3A00Z&time_end=2010-08-20T00%3A00%3A00Z&accept=netcdf"
+      ]
+    },
+    {
+      "windowId": "KE-H3",
+      "startUTC": "2010-11-15T12:00:00Z",
+      "endUTC": "2010-11-18T12:00:00Z",
+      "drifterCount": 7,
+      "drifterIds": [
+        "90146",
+        "89898",
+        "92981",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "releaseLatRange": [
+        31.02459,
+        38.44446
+      ],
+      "releaseLonRange": [
+        143.06795,
+        154.05711
+      ],
+      "oceanBox": {
+        "south": 29.02459,
+        "north": 40.0,
+        "west": 141.06795,
+        "east": 156.05711
+      },
+      "windBox": {
+        "south": 26.02459,
+        "north": 43.0,
+        "west": 138.06795,
+        "east": 159.05711
+      },
+      "requiredOceanTimestamps": [
+        "2010-11-15T12:00:00Z",
+        "2010-11-15T15:00:00Z",
+        "2010-11-15T18:00:00Z",
+        "2010-11-15T21:00:00Z",
+        "2010-11-16T00:00:00Z",
+        "2010-11-16T03:00:00Z",
+        "2010-11-16T06:00:00Z",
+        "2010-11-16T09:00:00Z",
+        "2010-11-16T12:00:00Z",
+        "2010-11-16T15:00:00Z",
+        "2010-11-16T18:00:00Z",
+        "2010-11-16T21:00:00Z",
+        "2010-11-17T00:00:00Z",
+        "2010-11-17T03:00:00Z",
+        "2010-11-17T06:00:00Z",
+        "2010-11-17T09:00:00Z",
+        "2010-11-17T12:00:00Z",
+        "2010-11-17T15:00:00Z",
+        "2010-11-17T18:00:00Z",
+        "2010-11-17T21:00:00Z",
+        "2010-11-18T00:00:00Z",
+        "2010-11-18T03:00:00Z",
+        "2010-11-18T06:00:00Z",
+        "2010-11-18T09:00:00Z",
+        "2010-11-18T12:00:00Z"
+      ],
+      "requiredWindTimestamps": [
+        "2010-11-15T00:00:00Z",
+        "2010-11-15T06:00:00Z",
+        "2010-11-15T12:00:00Z",
+        "2010-11-15T18:00:00Z",
+        "2010-11-16T00:00:00Z",
+        "2010-11-16T06:00:00Z",
+        "2010-11-16T12:00:00Z",
+        "2010-11-16T18:00:00Z",
+        "2010-11-17T00:00:00Z",
+        "2010-11-17T06:00:00Z",
+        "2010-11-17T12:00:00Z",
+        "2010-11-17T18:00:00Z",
+        "2010-11-18T00:00:00Z",
+        "2010-11-18T06:00:00Z",
+        "2010-11-18T12:00:00Z",
+        "2010-11-18T18:00:00Z",
+        "2010-11-19T00:00:00Z"
+      ],
+      "hycomQueries": [
+        "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=29.025&west=141.068&east=156.057&horizStride=1&time_start=2010-11-15T12%3A00%3A00Z&time_end=2010-11-16T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=29.025&west=141.068&east=156.057&horizStride=1&time_start=2010-11-16T12%3A00%3A00Z&time_end=2010-11-17T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=29.025&west=141.068&east=156.057&horizStride=1&time_start=2010-11-17T12%3A00%3A00Z&time_end=2010-11-18T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=29.025&west=141.068&east=156.057&horizStride=1&time_start=2010-11-18T12%3A00%3A00Z&time_end=2010-11-18T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+      ],
+      "ncepQueries": [
+        "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2010.nc?var=uwnd&north=43.000&south=26.025&west=138.068&east=159.057&time_start=2010-11-15T00%3A00%3A00Z&time_end=2010-11-19T00%3A00%3A00Z&accept=netcdf",
+        "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2010.nc?var=vwnd&north=43.000&south=26.025&west=138.068&east=159.057&time_start=2010-11-15T00%3A00%3A00Z&time_end=2010-11-19T00%3A00%3A00Z&accept=netcdf"
+      ]
+    }
+  ]
+}

@@ -36,6 +36,10 @@ cp -r "$ENGINE"/. "$OUT/engine"/
 # 소스가 문서 기준 상대경로로 밖을 참조하는 두 곳 — 번들 안으로 끌어온다
 cp -r "$ROOT/prototype/v2/assets/physical-earth"/. "$OUT/assets/physical-earth"/
 cp "$ROOT/prototype/data/country-reference.json" "$OUT/data/country-reference.json"
+# FOR ME 공용 부품(v1·v2 같이 씀) — 소스는 prototype/js/ 에 있고 v2 는 ../../js/ 로 읽는다.
+# 번들 안으로 복사하고(js/shared/) 아래 3/4 에서 경로를 ./shared/ 로 바꾼다. (지시서 v2.0 STEP 2, 2026-09-07)
+mkdir -p "$OUT/js/shared"
+cp "$ROOT/prototype/js/for-me-row.js" "$ROOT/prototype/js/usage.js" "$OUT/js/shared/"
 
 echo "== 3/4 경로 재작성 =="
 while IFS= read -r -d '' f; do
@@ -44,6 +48,8 @@ while IFS= read -r -d '' f; do
     -e "s#'\.\./\.\./js/earthus2/v02'#'../engine'#g" \
     -e 's#\.\./\.\./vendor/#../vendor/#g' \
     -e 's#\.\./\.\./js/aetherus/#./aetherus/#g' \
+    -e 's#\.\./\.\./js/for-me-row\.js#./shared/for-me-row.js#g' \
+    -e 's#\.\./\.\./js/usage\.js#./shared/usage.js#g' \
     -e 's#\.\./v2/assets/#./assets/#g' \
     -e "s#'\.\./data/#'./data/#g" \
     -e 's#"\.\./data/#"./data/#g' \
@@ -86,7 +92,9 @@ fail=0
 # ⚠️ js/ 바로 아래 파일 기준의 규칙이다. js/aetherus/ 는 한 칸 더 깊어서
 #    ../../vendor/ 가 번들 안(vendor/)을 가리킨다 — 정본 모듈을 소스와 같은
 #    깊이에 두는 이유다. 그 트리는 아래에서 따로, 실제 파일 존재로 검사한다.
-leftover="$(grep -rn -E "\.\./\.\./|\.\./v2/|from '\.\./js/" "$OUT/js" --exclude-dir=aetherus || true)"
+# js/research/ 도 한 칸 더 깊어서(js/research/) ../../data·../../vendor 가 번들 안(data/·vendor/)을 가리킨다 —
+# aetherus 와 같은 이유로 예외. 대상 파일은 아래 python 검사가 실제 존재로 확인한다. (2026-09-07)
+leftover="$(grep -rn -E "\.\./\.\./|\.\./v2/|from '\.\./js/" "$OUT/js" --exclude-dir=aetherus --exclude-dir=research || true)"
 if [[ -n "$leftover" ]]; then
   echo "FAIL 번들 밖 참조가 남았습니다:" >&2
   printf '%s\n' "$leftover" >&2

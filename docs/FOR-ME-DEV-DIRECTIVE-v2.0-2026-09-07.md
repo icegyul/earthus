@@ -267,6 +267,31 @@ MY IMPACT · 부산      🟠 영향 가능성 있음
 
 계측은 STEP 1 의 43개 그대로. 대응: `[내 영향 자세히 보기]` = `forme.clicked.<menu>`, `[INTELLIGENCE 로 분석하기]` = `forme.intelligence_cta.<menu>`, WHEN·WHY 진입 = `forme.explorer_cta.<menu>`. 새 이름이 필요해지면 마이그레이션이 같이 간다.
 
+## 7.5 STEP 2 완료 기록 (2026-09-07)
+
+**배포됨** — `https://earthus.net/v2/?tab=my` (번들 재빌드 후 `tools/deploy-v2-three.sh`). v1 공용 파일은 앞서 배포.
+
+| 산출물 | 위치 |
+|---|---|
+| 판정 엔진(순수) | `prototype/v2-three/js/for-me-signal.js` — 태풍·지진·쓰나미·파고, WHEN/WHY/CERTAIN/CHANGED/HISTORY |
+| 화면 | `prototype/v2-three/js/main.js` `forMe*` — MY IMPACT 카드 묶음(내 장소 탭, 감시 카드 아래) · WHEN·WHY · INTELLIGENCE ①~⑥ · 딥링크 `?tab=my&event=&from=` |
+| 번들 규칙 | `tools/build-v2-bundle.sh` — `prototype/js/{for-me-row,usage}.js` → `js/shared/`, `../../js/` 재작성. `js/research/` 가드 예외(한 칸 깊음) |
+| 공용 계측 | `prototype/v2-three/js/usage.js` 는 `../../js/usage.js` 재수출 껍데기 (허용 50개) |
+| 검사 | `node tools/v2/test_for_me_signal.mjs` — 실데이터 픽스처(`tools/v2/fixtures/forme/`, 2026-09-06 15:25Z KROVANH) 로 신호/지남/신호 없음/자료 없음/변화/이력/배지 |
+
+**§8 검증 결과**: 나하(강풍역 안) MY IMPACT·WHEN·WHY·INTELLIGENCE 실제 값 출력 ✓ · 부산(강풍역 밖, 파고 3.3 m 신호) ✓ · 자료 없음 → 4장 판단 불가 ✓(node) · 기존 FREE 정보 그대로 ✓ · 콘솔 오류 0(기존 404 2건 외) ✓ · 계측 43개 유지, `explorer_cta`·`intelligence_cta`·`v2_opened` 실제 발화 확인 ✓ · 모바일 375px 가로 넘침 없음 ✓.
+
+**구현하며 확정한 규칙(자료가 정했다)**
+- ECMWF 앙상블은 **51 멤버**(64 아님). 앙상블 판정 반경은 **판단 기준 발표의 반경과 같게**(강풍역 440 km 등) — 기준이 다르면 등급이 부당하게 낮아진다.
+- KMA 발표엔 반경이 없다 → 거리·이력엔 쓰되 안/밖 판정과 일치 집계에서 **제외("반경 자료 없음")**. STEP 6 에서 Lambda 에 KMA 강풍반경 추가.
+- 반경이 한 기관에도 없고(NHC) 최근접이 **1,500 km** 를 넘으면 '밖'(강풍역 실측 최대 1,000 km). 그 안쪽은 판단 불가. 2,500 km 넘는 조용한 태풍은 한 줄로 묶는다.
+- 영향 창이 통째로 과거(끝 + 1h)면 **'지남'** — 발표 시점엔 안이었어도 지금은 밖. 판단 기준에 "안이었으나 HH:MM 에 지남"으로 쓴다.
+- WHAT CHANGED·HISTORY 는 사건 패킷 `ocean/cyclone-events/{gdacsId}.json` 의 `revisions[].agencies[].sourceRef` 로 발표 원문을 찾아 **같은 함수로 재계산**. S3 목록·발표 주기 추측 불필요. 폴백 `findPreviousIssue`(KMA 3h 짚기)는 패킷이 없을 때만.
+- 쓰나미: 게시문 JSON 에 대상 구역 목록이 없어 **포함 여부는 판단 불가**로 표시(위협 게시문일 때만 카드). STEP 6 에서 Lambda 가 게시문 구역을 파싱하면 판정 가능.
+- 파고: 동아시아 0.5° 격자 우선, 밖이면 전지구 5°. 시간별 예보는 STEP 3.
+- 동네예보(785 KB)는 태풍이 있을 때만 받는다.
+- 신뢰 등급: 기관 일치 · 앙상블 방향 일치 · 발표 경과(≤6h 높음, >12h 낮음). 확률 % 없음.
+
 ## 8. 매핑표·v1.0 과의 관계
 
 - `V1-V2-UPSELL-MAP-2026-09-06.md` 「정보 해상도 차등」은 이 문서 §3 으로 대체(EXPLORER=구간+최대, INTELLIGENCE=+확실성·변화·근거·검증). "유료의 이유" 문장도 §0 으로 대체.

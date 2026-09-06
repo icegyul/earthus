@@ -33,7 +33,11 @@ import { TravelScene } from './travel.js?v=3-information';
 import { ExtScene } from './ext-scene.js?v=1';
 let extScene = null;
 // 익명 이용 집계 — 개인 식별자를 보내지 않는다 (날짜·이벤트명·횟수만). usage.js 주석 참조.
-import { usage } from './usage.js?v=1';
+import { usage } from './usage.js?v=2';
+// FOR ME — 내 동네에 걸린 사건 판정(순수) + v1·v2 공용 부품(동네 저장·딥링크). 지시서 v2.0 STEP 2 (2026-09-07).
+// ⚠️ '../../js/for-me-row.js' 는 번들 빌드(tools/build-v2-bundle.sh)가 './shared/for-me-row.js' 로 바꿔 넣는다.
+import { evaluateForMe, summarize, typhoonCard, typhoonChanged, issuesFromPacket, previousIssues, stormFromArchives, historyLine, fmtKst } from './for-me-signal.js?v=1';
+import { readFromParam, placeLabel } from '../../js/for-me-row.js';
 import { FlightRoute, routeCardHtml } from './route.js?v=4';
 import { PrecipField } from './precip-field.js?v=5';
 import { LightningMarks } from './lightning-marks.js?v=12';
@@ -3151,6 +3155,143 @@ async function main() {
   const fetchS3 = (path) => fetch(`${S3D}${path}`, { cache: 'no-store' })
     .then((r) => (r.ok ? r.json() : null)).catch(() => null);
 
+  /* ══ FOR ME — 내 동네에 걸린 사건 (지시서 v2.0 STEP 2, 2026-09-07) ══════════════════════
+     계산은 for-me-signal.js(순수 함수), 자료는 여기서 받는다. 사용자별 서버 저장은 없다 —
+     "무엇이 달라졌나"와 "판단 기록"은 발표 아카이브를 같은 함수로 다시 계산해 만든다.
+     화면 단계: MY IMPACT(무료) → WHEN·WHY(EXPLORER) → INTELLIGENCE. 지금은 FREE_OPEN 이라 🔒 는 모양만이다.
+     규율: 자료 없음 = '판단 불가'(안전 아님) · 시각엔 폭(±6h) · 확률 % 없음 · 없는 항목은 화면에서 뺀다. */
+  const forMe = { loading: false, data: null, cards: null, error: null, at: null, view: {}, focusId: null, intel: {} };
+  const fetchS3T = (path, ms = 15000) => Promise.race([fetchS3(path), new Promise((res) => setTimeout(() => res(null), ms))]);
+  const loadForMe = async (p) => {
+    forMe.loading = true; forMe.error = null;
+    try {
+      const keys = { official: '/events/typhoon-official.json', ecmwf: '/events/typhoon-ecmwf.json', marineEa: '/ocean/marine-ea.json', marine: '/ocean/marine.json',
+                     buoys: '/ocean/kma-buoy.json', quakes: '/events/quake-asia.json', tsunami: '/events/tsunami-intl.json', tsunamiEta: '/ocean/tsunami-eta.json' };
+      const names = Object.keys(keys);
+      const got = await Promise.all(names.map((k) => fetchS3T(keys[k])));
+      if (myEarth.place !== p) return;
+      const data = {}; names.forEach((k, i) => { data[k] = got[i]; });
+      // 동네예보(785 KB)는 태풍이 있을 때만 — 강풍 시각(WHY)에만 쓴다
+      data.fcst = (data.official?.storms || []).length ? await fetchS3T('/wind/kma-fcst.json', 20000) : null;
+      if (myEarth.place !== p) return;
+      forMe.data = data;
+      forMe.cards = evaluateForMe(p, data, { now: Date.now(), waveThreshold: 2.0 });
+      forMe.at = new Date().toISOString().slice(0, 16).replace('T', ' ') + 'Z';
+      forMe.intel = {};
+    } catch (e) { forMe.error = String((e && e.message) || e); forMe.cards = null; }
+    forMe.loading = false;
+  };
+  // INTELLIGENCE ④⑥ — 사건 패킷(ocean/cyclone-events/{id}.json)의 회차별 sourceRef 로 직전 발표·이력을 찾아 같은 함수로 다시 계산
+  const loadForMeIntel = async (card) => {
+    const st = forMe.intel[card.id] || (forMe.intel[card.id] = { loading: true });
+    try {
+      const p = myEarth.place;
+      const storm = (forMe.data?.official?.storms || []).find((s) => (s.key || s.name) === card.id);
+      const idx = await fetchS3T('/ocean/cyclone-events.json');
+      const ev = (idx?.events || []).find((e) => String(e.name || '').toUpperCase().startsWith(String(storm?.key || '').toUpperCase() + '-'));
+      const packet = ev ? await fetchS3T(`/ocean/cyclone-events/${ev.gdacsId}.json`) : null;
+      if (!storm || !packet) { st.loading = false; st.none = !storm ? '공식 발표 없음' : '회차 패킷 없음'; shell.renderIntel(); return; }
+      const ctx = { ecmwf: forMe.data.ecmwf, grids: [forMe.data.marineEa, forMe.data.marine].filter(Boolean), buoys: forMe.data.buoys, fcst: forMe.data.fcst, now: Date.now() };
+      const prevIssues = previousIssues(packet, storm);
+      const prevArch = await Promise.all(prevIssues.map((x) => fetchS3T('/' + x.sourceRef)));
+      const prevStorm = stormFromArchives(prevArch, storm);
+      st.prevIssues = prevIssues;
+      st.changed = prevStorm ? typhoonChanged(card, typhoonCard(p, prevStorm, ctx)) : null;
+      const issues = Object.values(issuesFromPacket(packet)).flat().sort((a, b) => (b.issueMs || 0) - (a.issueMs || 0)).slice(0, 8);
+      const archs = await Promise.all(issues.map((x) => fetchS3T('/' + x.sourceRef)));
+      st.history = issues.map((x, i) => { const s1 = stormFromArchives([archs[i]], storm); return s1 ? historyLine(typhoonCard(p, s1, ctx), x) : null; }).filter(Boolean);
+      st.loading = false;
+    } catch (e) { st.loading = false; st.error = String((e && e.message) || e); }
+    shell.renderIntel();
+  };
+  // 동네 이름: 저장된 이름 > 60 km 안 특보 구역 이름 > 좌표. (특보 구역은 '마라도 781 km · 근사'처럼 멀 수 있어 거리로 거른다)
+  const forMePlaceName = () => {
+    const p = myEarth.place; if (!p) return '';
+    if (p.name) return p.name;
+    const z = myEarth.zone;
+    if (z && z.zoneName && Number.isFinite(+z.km) && +z.km <= 60) return z.zoneName;
+    return placeLabel(p);
+  };
+  const forMeStateLine = (c) => c.state === 'signal' ? '🟠 영향 가능성 있음' : c.state === 'quiet' ? '🟢 지금은 영향 신호 없음' : '⚪ 판단 불가';
+  const forMeWhenHtml = (w, c) => {
+    const pw = c.facts && c.facts.pastWindow;
+    if (!w && pw) return `영향권 지남 — ${fmtKst(pw.startMs)} ~ ${fmtKst(pw.endMs)} KST 에 ${escUI(pw.agencyKo || pw.agency)} 강풍역·예보원 안이었음 (${fmtKst(pw.issueMs)} KST 발표 기준)${c.facts.nearestKm != null ? ` · 최근접 ${c.facts.nearestKm} km` : ''}`;
+    if (!w) return `강풍역·예보원 진입 없음${c.facts && c.facts.nearestKm != null ? ` · 최근접 ${c.facts.nearestKm} km` : ''}`;
+    const start = w.startNow ? '지금부터 (발표 시점에 이미 영향권 안)' : `${fmtKst(w.startMs)} KST`;
+    const end = w.openEnd ? `예보 끝(${fmtKst(w.endMs)} KST) 이후 미확정` : `${fmtKst(w.endMs)} KST`;
+    return `${escUI(start)} ~ ${escUI(end)}<br/>가장 가능성 높은 구간 <b>${fmtKst(w.peakMs)} ± ${w.widthH}시간</b> (최근접 ${w.peakKm} km)`
+      + `<div class="forme-src">${escUI(w.agencyKo || w.agency)} 발표 ${fmtKst(w.issueMs)} KST 기준 · 예보 시각 사이는 직선 보간 · ±${w.widthH}h 는 예보 간격에서 오는 폭</div>`;
+  };
+  const forMeWhyHtml = (c) => c.why.length ? `<ul class="forme-why">${c.why.map((w) => `<li class="${w.hit ? 'hit' : ''}"><b>${escUI(w.label)}</b> ${escUI(w.value)}<div class="forme-src">${escUI(w.source)}</div></li>`).join('')}</ul>` : '';
+  const forMeCardHtml = (c) => {
+    const view = forMe.view[c.id] || 'impact';
+    const name = forMePlaceName();
+    const badges = (c.badges || []).map((b) => dataBadge(b)).join(' ');
+    const link = c.basis && c.basis.bulletin ? `<a class="official-out" href="${escUI(c.basis.bulletin)}" target="_blank" rel="noopener noreferrer">게시문 원문 ↗</a>` : '';
+    if (view === 'impact') {
+      return `<div class="card"><div class="card-h">MY IMPACT · ${escUI(c.title)} ${badges}</div><div class="card-b">`
+        + `<div class="forme-state ${c.state}">${forMeStateLine(c)}</div>`
+        + statRow('내 위치', escUI(name)) + statRow('판단 기준', escUI(c.basis.text))
+        + statRow('영향 가능성', c.state === 'signal' ? '있음' : c.state === 'quiet' ? '없음' : '판단 불가', c.state === 'unknown')
+        + statRow('상태', escUI(c.status)) + link
+        + ((c.why.length || c.when) ? `<button class="forme-btn" data-action="forme-when" data-id="${escUI(c.id)}">내 영향 자세히 보기 → WHEN · WHY</button>` : '')
+        + '</div></div>';
+    }
+    const preview = [c.certain ? '얼마나 확실한가 — 등급과 이유' : null, c.kind === 'cyclone' ? '무엇이 달라졌나 — 직전 발표와 같은 계산으로 비교' : null,
+                     c.engine.length ? '판단에 쓴 근거 — 자료별 상태' : null, c.kind === 'cyclone' ? '이 사건에 대한 판단 기록' : null].filter(Boolean);
+    if (view === 'when') {
+      return `<div class="card"><div class="card-h">WHEN · WHY · ${escUI(c.title)} ${dataBadge('EARTHUS_ANALYSIS')}</div><div class="card-b">`
+        + `<button class="forme-back" data-action="forme-back" data-id="${escUI(c.id)}">← MY IMPACT</button>`
+        + `<div class="forme-state ${c.state}">${escUI(name)} · ${forMeStateLine(c)}</div>`
+        + `<div class="forme-sec"><div class="t">예상 영향 시간</div>${forMeWhenHtml(c.when, c)}</div>`
+        + (c.why.length ? `<div class="forme-sec"><div class="t">왜 영향을 받나</div>${forMeWhyHtml(c)}</div>` : '')
+        + (c.timeline.length ? `<div class="forme-sec"><div class="t">예상 변화</div><div class="forme-tl">${c.timeline.map((t) => `<span class="${t.level}">${escUI(t.label)} · ${escUI(t.text)}${t.km != null ? ` · ${t.km} km` : ''}</span>`).join('')}</div></div>` : '')
+        + (preview.length ? `<div class="forme-sec"><div class="t">INTELLIGENCE 에서 더 보기</div><ul class="forme-preview">${preview.map((x) => `<li>${escUI(x)}</li>`).join('')}</ul>`
+            + `<button class="forme-btn" data-action="forme-intel" data-id="${escUI(c.id)}">INTELLIGENCE 로 분석하기 🔒</button><div class="forme-src">🔒 는 유료 개시 전까지 모양만입니다 — 지금은 전부 열려 있습니다</div></div>` : '')
+        + '</div></div>';
+    }
+    const st = forMe.intel[c.id] || null;
+    let h = `<div class="card"><div class="card-h">EARTHUS INTELLIGENCE · ${escUI(c.title)} ${dataBadge('EARTHUS_ANALYSIS')}</div><div class="card-b">`
+      + `<button class="forme-back" data-action="forme-back" data-id="${escUI(c.id)}">← WHEN · WHY</button>`
+      + `<div class="forme-state ${c.state}">${escUI(name)} · ${forMeStateLine(c)}</div>`
+      + `<div class="forme-sec"><div class="t">① WHEN — 언제 영향을 받나</div>${forMeWhenHtml(c.when, c)}</div>`
+      + (c.why.length ? `<div class="forme-sec"><div class="t">② WHY — 왜 영향을 받나</div>${forMeWhyHtml(c)}</div>` : '');
+    if (c.certain) h += `<div class="forme-sec"><div class="t">③ HOW CERTAIN — 얼마나 확실한가</div>신뢰 등급 <b>${escUI(c.certain.gradeKo)}</b><ul class="forme-why">${c.certain.reasons.map((r) => `<li>${escUI(r)}</li>`).join('')}</ul><div class="forme-src">등급은 기관 일치·앙상블 방향·실측·발표 경과시간으로 정합니다. 확률(%)은 만들지 않습니다.</div></div>`;
+    if (c.kind === 'cyclone') {
+      if (!st || st.loading) h += `<div class="forme-sec"><div class="t">④ WHAT CHANGED — 이전 분석과 무엇이 달라졌나</div>직전 발표를 같은 함수로 다시 계산하는 중…</div>`;
+      else if (st.changed) h += `<div class="forme-sec"><div class="t">④ WHAT CHANGED — 이전 분석과 무엇이 달라졌나</div><div class="forme-src">직전 ${escUI(st.prevIssues.map((x) => `${x.agency} ${fmtKst(x.issueMs)}`).join(' · '))} → 현재 ${fmtKst(st.changed.curIssueMs)} KST</div><ul class="forme-why">${st.changed.lines.map((l) => `<li>${escUI(l)}</li>`).join('')}</ul></div>`;
+      else if (st.none || st.error) h += `<div class="forme-sec"><div class="t">④ WHAT CHANGED</div>비교 불가 — ${escUI(st.none || st.error)}</div>`;
+      else h += `<div class="forme-sec"><div class="t">④ WHAT CHANGED</div>첫 발표 — 비교 대상 없음</div>`;
+    }
+    if (c.engine.length) h += `<div class="forme-sec"><div class="t">⑤ WHY ENGINE — 판단에 쓴 근거</div><ul class="forme-eng">${c.engine.map((e) => `<li class="${e.used ? '' : 'off'}"><span>${e.used ? '●' : '○'}</span><span>${escUI(e.name)}</span><span class="forme-src">${escUI(e.text)}${e.used ? '' : ' (미사용)'}</span></li>`).join('')}</ul>${c.engineSummary ? `<div><b>→ ${escUI(c.engineSummary)}</b></div>` : ''}</div>`;
+    if (c.kind === 'cyclone' && st && !st.loading && st.history && st.history.length) {
+      const stTxt = (s) => s === 'signal' ? '영향 가능' : s === 'quiet' ? '신호 없음' : '판단 불가';
+      h += `<div class="forme-sec"><div class="t">⑥ MY EVENT HISTORY — 이 사건에 대한 EARTHUS 판단 기록</div><div class="wrap"><table class="forme-hist"><thead><tr><th>발표</th><th>영향</th><th>시작</th><th>최근접</th></tr></thead><tbody>`
+        + st.history.map((r) => `<tr><td>${escUI(r.agency)} ${fmtKst(r.issueMs)}</td><td>${stTxt(r.state)}</td><td>${r.startMs ? fmtKst(r.startMs) : '—'}</td><td>${r.nearestKm != null ? r.nearestKm + ' km' : '—'}</td></tr>`).join('')
+        + `</tbody></table></div><div class="forme-src">각 줄은 그 발표 원문(불변 보관)을 같은 함수로 다시 계산한 값입니다. 실제 관측과의 대조(분석 성과)는 STEP 6.</div></div>`;
+    }
+    return h + '</div></div>';
+  };
+  const forMeOrder = (cards) => {
+    const rank = (c) => (c.id === forMe.focusId ? 0 : c.state === 'signal' ? 1 : c.state === 'unknown' ? 2 : 3);
+    return [...cards].sort((a, b) => rank(a) - rank(b));
+  };
+  const forMeHtml = () => {
+    if (!myEarth.place) return '';
+    let h = `<div class="card"><div class="card-h">MY IMPACT · ${escUI(forMePlaceName())} ${dataBadge('EARTHUS_ANALYSIS')}</div><div class="card-b">`;
+    if (forMe.loading) h += '내 동네에 걸린 사건을 판정하는 중… (태풍 공식 발표 · 앙상블 · 파고 격자 · 부이 · 지진 · 쓰나미 게시문)';
+    else if (forMe.error) h += `<div class="forme-state unknown">⚪ 판단 불가 — ${escUI(forMe.error)}</div>`;
+    else if (!forMe.cards) h += '⟳ 를 누르면 내 동네에 걸린 사건을 판정합니다.';
+    else { const s = summarize(forMe.cards); h += `<div class="forme-state ${s.level}">${escUI(s.text)}</div><div class="forme-src">판정 ${escUI(forMe.at)} · 다음 판정 = 앱 열 때·⟳ 때 · 자료 없음은 안전이 아닙니다</div>`; }
+    h += '</div></div>';
+    if (!forMe.cards) return h;
+    // 2,500 km 넘게 먼 태풍(신호 없음)은 한 줄로 묶는다 — 동태평양 허리케인 넷이 카드 넷을 차지하지 않게
+    const far = forMe.cards.filter((c) => c.kind === 'cyclone' && c.state === 'quiet' && c.facts.nearestKm > 2500);
+    for (const c of forMeOrder(forMe.cards.filter((c) => !far.includes(c)))) h += forMeCardHtml(c);
+    if (far.length) h += `<div class="card"><div class="card-b"><div class="forme-state quiet">🟢 먼 열대저기압 ${far.length}건 — 영향 신호 없음</div><div class="forme-src">${escUI(far.map((c) => `${c.title} ${c.facts.nearestKm} km`).join(' · '))}</div></div></div>`;
+    return h;
+  };
+
   const refreshMyEarth = async () => {
     const p = myEarth.place;
     if (!p) return;
@@ -3216,6 +3357,9 @@ async function main() {
       });
       if (verdict.hits.length) saveWatch(log.concat(verdict.hits));
       myEarth.watch = { monitoring: verdict.monitoring, reason: verdict.reason, fresh: verdict.hits, log: log.concat(verdict.hits).slice(-5).reverse() };
+      // FOR ME — 같은 ⟳ 로 내 동네에 걸린 사건도 다시 판정한다 (앱 열 때·⟳ 때만, 감시 카드와 같은 원칙)
+      shell.renderIntel();
+      await loadForMe(p);
     } catch (e) {
       myEarth.error = String((e && e.message) || e);
     }
@@ -3282,6 +3426,8 @@ async function main() {
       else if (wv.monitoring === 'ON') html += '<div style="margin-top:6px;color:var(--text-dim)">아직 기록 없음</div>';
       html += '</div></div><div>';
     }
+    // FOR ME 카드 묶음 — 감시 카드와 같은 자리 규칙: 열린 <div> 를 닫고, 카드를 내고, 다시 <div> 를 연다 (아래 줄이 그것을 닫는다)
+    html += '</div>' + forMeHtml() + '<div>';
     html += `</div><details><summary>각 자료의 기준 시각</summary><p>특보: ${escUI(d.warnAt||'제공되지 않음')}<br/>대기질: ${escUI(d.airAt||'제공되지 않음')}<br/>바람·기온: ${escUI(d.awsAt||'제공되지 않음')}</p></details>조회 ${d.at} · 한국 관측망 기준 · 조회 시각과 자료 시각은 다릅니다.</div></div>`;
     return html;
   };
@@ -4054,6 +4200,16 @@ async function main() {
         myEarth.place={lat:+lat.toFixed(4),lon:+lon.toFixed(4)};myEarth.data=null;
         try{localStorage.setItem('earthus.myplace',JSON.stringify(myEarth.place));}catch(_){}
         refreshMyEarth();return;
+      }
+      // FOR ME 단계 이동 — MY IMPACT → WHEN·WHY(EXPLORER 진입 계측) → INTELLIGENCE(계측 + 직전 발표·이력 재계산)
+      if (action === 'forme-when' || action === 'forme-intel' || action === 'forme-back') {
+        const card = (forMe.cards || []).find((c) => c.id === ds.id);
+        if (card) {
+          if (action === 'forme-back') forMe.view[card.id] = forMe.view[card.id] === 'intel' ? 'when' : 'impact';
+          else if (action === 'forme-when') { forMe.view[card.id] = 'when'; usage.track(`forme.explorer_cta.${card.kind}`); }
+          else { forMe.view[card.id] = 'intel'; usage.track(`forme.intelligence_cta.${card.kind}`); if (card.kind === 'cyclone' && !forMe.intel[card.id]) loadForMeIntel(card); }
+        }
+        shell.renderIntel(); return;
       }
       const travelAction=travel.handleAction(action,ds,value);
       if(travelAction){
@@ -5572,6 +5728,19 @@ async function main() {
   // 링크로 들어왔다면 그 화면을 되살린다 (국가 데이터가 준비된 뒤라 선택도 복원된다)
   const incoming = parseLink();
   if (incoming) applyLink(incoming).catch((e) => console.warn('[earthus-three] 링크 복원 실패', e));
+
+  // FOR ME 딥링크 — v1 한 줄·사건 방이 보내는 /v2/?tab=my&event=…&from=forme.<menu> (지시서 v2.0 §3.2). 읽기만 하고 쓰지 않는다.
+  // from 은 메뉴 이름뿐(개인 식별자 없음) — 깔때기 4단계 forme.v2_opened.<menu> 를 한 번 찍는다.
+  try {
+    const q = new URLSearchParams(location.search);
+    const fromMenu = readFromParam(location.search);
+    if (fromMenu) usage.track(`forme.v2_opened.${fromMenu}`);
+    if (q.get('tab') === 'my') {
+      forMe.focusId = q.get('event') || null;
+      shell.showTab('my'); shell.openIntel();
+      if (myEarth.place) refreshMyEarth(); else shell.renderIntel();
+    }
+  } catch (_) { /* 주소가 이상해도 앱은 돈다 */ }
 
   // 밤면 도시 불빛 — 첫 화면의 기준을 한국으로 옮기면서 필요해졌다.
   // 한국이 밤인 시각(대략 절반)에 열면 첫 화면의 한반도가 통째로 까맸다. 없는 낮을 만들지는

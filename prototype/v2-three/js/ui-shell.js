@@ -437,7 +437,7 @@ export function initShell(hooks) {
     <div id="intel-body">
       <div class="intel-tabs">
         <button data-tab="feed" class="on">${i18n.ko?'사건':'Feed'}</button>
-        <button data-tab="my">${i18n.ko?'내 장소':'My place'}</button>
+        <button data-tab="my">${i18n.ko?'내 장소 · FOR ME':'My place · FOR ME'}</button>
         <button data-tab="now">${i18n.ko?'선택 자료':'Now'}</button>
         <button data-tab="why">${i18n.ko?'자료의 근거':'Why'}</button>
         <button data-tab="next">${i18n.ko?'예보·예정':'Next'}</button>

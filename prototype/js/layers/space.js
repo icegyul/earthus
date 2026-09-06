@@ -5,7 +5,8 @@ import { API, C, GLOBAL_EVENT } from '../config.js';
 import { fetchT } from '../net.js';
 import { getLaunchSchedule } from '../launch-schedule.js';
 import { i18n } from '../i18n.js';
-import { SAT_GROUPS, satDetail, ISS_ICON } from './satcat.js';
+import { SAT_GROUPS, satDetail, ISS_ICON,
+         STATION_MAIN, STATION_PARTS, VISITING } from './satcat.js';
 import { power } from '../power.js';
 
 /* ══════════════════════════════════════════════════════════════
@@ -99,13 +100,9 @@ const LS_KEEP = 'earthus.satKeepVisible';
       → 대표 모듈 하나에만 아이콘을 주고 나머지 모듈은 감춘다.
       → 도킹한 우주선(소유즈·드래건·프로그레스…)은 따로 표시한다.
         정거장에 지금 무엇이 붙어 있는지가 사람들이 궁금해하는 정보다. */
-const STATION_MAIN = { 'ISS (ZARYA)': 'ISS', 'CSS (TIANHE)': 'CSS' };
-
-// 대표 모듈과 같은 덩어리라 화면에서 뺀다 (정보 시트에는 남는다)
-const STATION_PARTS = /^(POISK|ZVEZDA|ISS \(NAUKA\)|NAUKA|RASSVET|PIRS|PRICHAL|CSS \((WENTIAN|MENGTIAN)\))$/;
-
-// 정거장에 도킹했거나 오가는 우주선
-const VISITING = /^(SOYUZ|PROGRESS|CREW DRAGON|DRAGON|CYGNUS|SHENZHOU|SZ-\d|TIANZHOU|STARLINER|HTV|CARGO)/i;
+/* ⚠️ 정본은 satcat.js 다 (STATION_MAIN·STATION_PARTS·VISITING).
+   화면(여기)과 정보 시트(satcat.js)가 서로 다른 규칙으로 갈라지면
+   "화면엔 큐브샛인데 시트엔 우주정거장" 같은 어긋남이 생긴다. 한 곳에서만 정의한다. */
 const LABEL_LIMIT = 400;   // 이 개수를 넘으면 이름표를 끈다 (아래 build() 참고)
 
 /* 위성 위치를 다시 계산하는 간격.
@@ -140,6 +137,7 @@ export const orbits = {
   catalogAge: null,
   source: null,          // 's3' | 'celestrak' — 어느 경로로 받았는지
   _trackTimer: null,
+  _dockRow: {},
   _priorityNorad: null,
   selected: JSON.parse(localStorage.getItem(LS_GROUPS) || 'null')
             || ['stations', 'korea', 'weather', 'science'],
@@ -422,6 +420,16 @@ export const orbits = {
     this.ds.entities.removeAll();
     this._pos = []; this._posAt = 0;
 
+    /* 도킹 우주선 이름표를 정거장별로 한 줄씩 내려 쌓기 위한 준비.
+       ⚠️ 줄 번호를 전체에서 하나로 세면 ISS 3대 + 톈궁 2대일 때
+          톈궁 이름표가 5번째 줄까지 내려가 아이콘에서 멀리 떨어진다.
+          → 대표 정거장의 현재 위치를 미리 구해 두고, 가까운 쪽에 붙여 센다. */
+    const stationAnchors = this.sats
+      .filter(s => STATION_MAIN[s.name])
+      .map(s => ({ tag: STATION_MAIN[s.name], p: this.propagate(s.rec, new Date()) }))
+      .filter(a => a.p);
+    this._dockRow = {};         // { ISS: 2, CSS: 1 } 처럼 정거장별로 센다
+
     // ⚠️ 라벨은 개수에 비례해 프레임을 갉아먹는다.
     //    스타링크(10,776) · 전체(16,123) 를 켜면 라벨 렌더링만으로 멈춘다.
     //    이름은 클릭하면 정보 시트에 나오므로, 많을 땐 점만 그린다.
@@ -471,11 +479,32 @@ export const orbits = {
           color: Cesium.Color.fromCssColorString('#7fe3dd'),
           outlineColor: Cesium.Color.WHITE.withAlpha(0.65), outlineWidth: 1.6,
         };
+        /* ⚠️ 도킹한 우주선은 정거장과 **좌표가 사실상 같다**.
+           예전엔 이름표를 정거장(-26)과 거의 같은 -16 에 두어 글자가 포개졌다
+           ("CSS" 위에 "SHENZHOU-20" 이 겹쳐 읽을 수 없었다 — 2026-09-06 수정).
+           → 정거장 이름표는 위(-26), 도킹 우주선은 아래로 한 대씩 내려 쌓는다. */
+        /* 지금 가장 가까운 대표 정거장에 붙여 센다. 정거장을 못 찾으면 한 묶음으로. */
+        const vp = this.propagate(s.rec, new Date());
+        let host = '—';
+        if (vp && stationAnchors.length) {
+          let best = Infinity;
+          for (const a of stationAnchors) {
+            // ⚠️ 날짜변경선에서 경도차가 359° 로 튄다 — 짧은 쪽으로 접는다.
+            let dLon = Math.abs(a.p.lon - vp.lon) % 360;
+            if (dLon > 180) dLon = 360 - dLon;
+            const d = Math.hypot(a.p.lat - vp.lat, dLon);
+            if (d < best) { best = d; host = a.tag; }
+          }
+        }
+        this._dockRow[host] = (this._dockRow[host] || 0) + 1;
+        const dockRow = this._dockRow[host];
         ent.label = {
           text: s.name.replace(/\s*\(.*\)$/, ''),
           font: '300 10px -apple-system, sans-serif',
           fillColor: Cesium.Color.fromCssColorString('#bff2ee').withAlpha(0.9),
-          pixelOffset: new Cesium.Cartesian2(0, -16),
+          /* 아이콘은 34px 세로라 점 기준 ±17 을 차지한다. 24 부터 시작해야
+             글자가 아이콘 안으로 파고들지 않는다. 두 대째부터 13px 씩 내린다. */
+          pixelOffset: new Cesium.Cartesian2(0, 24 + (dockRow - 1) * 13),
           distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 30_000_000),
         };
       } else {

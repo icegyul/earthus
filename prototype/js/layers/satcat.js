@@ -338,8 +338,108 @@ export function purposeOf(name) {
   return null;
 }
 
+/* ── 정거장 그룹의 진짜 정체 ──────────────────────────────────
+   ⚠️⚠️ CelesTrak 의 "stations" 묶음은 우주정거장만 들어있는 게 아니다.
+      ISS·톈궁 본체와 모듈, 거기 도킹한 보급선·유인선, 그리고
+      **정거장에서 사출된 큐브샛까지** 전부 같은 묶음에 들어온다.
+      묶음 이름을 구성원 각각의 정체로 쓰면 멕시코 대학 큐브샛(GXIBA-1)이
+      "우주정거장 · 유인 우주활동"으로 표시된다. 실제로 그랬다 (2026-09-06 수정).
+      → 묶음이 아니라 **이름으로** 역할을 가른다. 모르면 모른다고 쓴다. */
+
+/** 대표 모듈 — 아이콘과 이름표를 받는 둘. 궤도에 있는 유인 정거장은 이 둘뿐이다. */
+export const STATION_MAIN = { 'ISS (ZARYA)': 'ISS', 'CSS (TIANHE)': 'CSS' };
+
+/** 대표와 같은 덩어리로 붙어 다니는 모듈 — 화면에선 빼고 정보 시트에는 남긴다. */
+export const STATION_PARTS =
+  /^(POISK|ZVEZDA|ISS \(NAUKA\)|NAUKA|RASSVET|PIRS|PRICHAL|CSS \((WENTIAN|MENGTIAN)\))$/;
+
+/** 정거장에 도킹했거나 오가는 우주선. */
+export const VISITING =
+  /^(SOYUZ|PROGRESS|CREW DRAGON|DRAGON|CYGNUS|SHENZHOU|SZ-\d|TIANZHOU|STARLINER|HTV|CARGO)/i;
+
+/** 이름 → 정거장 묶음 안에서의 역할. 'main' | 'part' | 'visiting' | 'other' */
+/** 파편·로켓 몸체 — CelesTrak 이름 규칙. 위성이 아니다.
+    실제로 stations 묶음에 'FREGAT DEB'(프레가트 상단 파편)가 들어 있다. */
+export const DEBRIS = /(\sDEB|\sR\/B|\sAKM|\sPKM)$/i;
+
+/** 이름 → 정거장 묶음 안에서의 역할. 'main'|'part'|'visiting'|'debris'|'other' */
+export function stationRole(name) {
+  const n = String(name || '');
+  if (STATION_MAIN[n]) return 'main';
+  if (STATION_PARTS.test(n)) return 'part';
+  if (VISITING.test(n)) return 'visiting';
+  if (DEBRIS.test(n)) return 'debris';
+  return 'other';
+}
+
+/* ── SATCAT 소유 코드 → 국가·기관명 ──────────────────────────
+   ⚠️ 표에 없는 코드는 "MEX" 처럼 코드가 그대로 화면에 나왔다.
+      CelesTrak SATCAT sources 전체를 옮겨 둔다 (celestrak.org/satcat/sources.php).
+      새 코드가 생기면 여기에 추가한다 — 없으면 코드 그대로 보여준다(지어내지 않는다). */
+const OWNERS = {
+  AB:['아랍위성통신기구','Arab Satellite Communications Organization'],
+  ABS:['아시아 방송위성','Asia Broadcast Satellite'],
+  AC:['아시아샛','AsiaSat'], ALG:['알제리','Algeria'], ANG:['앙골라','Angola'],
+  ARGN:['아르헨티나','Argentina'], ARM:['아르메니아','Armenia'], ASRA:['오스트리아','Austria'],
+  AUS:['호주','Australia'], AZER:['아제르바이잔','Azerbaijan'], BEL:['벨기에','Belgium'],
+  BELA:['벨라루스','Belarus'], BERM:['버뮤다','Bermuda'], BGD:['방글라데시','Bangladesh'],
+  BHR:['바레인','Bahrain'], BHUT:['부탄','Bhutan'], BOL:['볼리비아','Bolivia'],
+  BRAZ:['브라질','Brazil'], BUL:['불가리아','Bulgaria'], BWA:['보츠와나','Botswana'],
+  CA:['캐나다','Canada'], CHBZ:['중국·브라질','China/Brazil'], CHTU:['중국·튀르키예','China/Türkiye'],
+  CHLE:['칠레','Chile'], CIS:['러시아','Russia (CIS)'], COL:['콜롬비아','Colombia'],
+  CRI:['코스타리카','Costa Rica'], CZCH:['체코','Czech Republic'], DEN:['덴마크','Denmark'],
+  DJI:['지부티','Djibouti'], ECU:['에콰도르','Ecuador'], EGYP:['이집트','Egypt'],
+  ESA:['유럽우주국','European Space Agency'], ESRO:['유럽우주연구기구','ESRO'],
+  EST:['에스토니아','Estonia'], ETH:['에티오피아','Ethiopia'],
+  EUME:['유럽기상위성기구','EUMETSAT'], EUTE:['유텔샛','EUTELSAT'],
+  FGER:['프랑스·독일','France/Germany'], FIN:['핀란드','Finland'], FR:['프랑스','France'],
+  FRIT:['프랑스·이탈리아','France/Italy'], GER:['독일','Germany'], GHA:['가나','Ghana'],
+  GLOB:['글로벌스타','Globalstar'], GREC:['그리스','Greece'],
+  GRSA:['그리스·사우디','Greece/Saudi Arabia'], GUAT:['과테말라','Guatemala'],
+  HRV:['크로아티아','Croatia'], HUN:['헝가리','Hungary'], IM:['인마샛','INMARSAT'],
+  IND:['인도','India'], INDO:['인도네시아','Indonesia'], IRAN:['이란','Iran'], IRAQ:['이라크','Iraq'],
+  IRID:['이리듐','Iridium'], IRL:['아일랜드','Ireland'], ISRA:['이스라엘','Israel'],
+  /* ⚠️ 아래 셋은 CelesTrak sources 페이지에 없는데 실제 카탈로그에는 나온다
+     (2026-09-06 전수 확인: JOR 2기, SVK 4기, KWT 2기). 문서보다 데이터가 먼저다. */
+  JOR:['요르단','Jordan'], SVK:['슬로바키아','Slovakia'], KWT:['쿠웨이트','Kuwait'],
+  ISRO:['인도우주연구기구','ISRO'], ISS:['국제우주정거장','International Space Station'],
+  IT:['이탈리아','Italy'], ITSO:['인텔샛','INTELSAT'], JPN:['일본','Japan'],
+  KAZ:['카자흐스탄','Kazakhstan'], KEN:['케냐','Kenya'], LAOS:['라오스','Laos'],
+  LKA:['스리랑카','Sri Lanka'], LTU:['리투아니아','Lithuania'], LUXE:['룩셈부르크','Luxembourg'],
+  MA:['모로코','Morocco'], MALA:['말레이시아','Malaysia'], MCO:['모나코','Monaco'],
+  MDA:['몰도바','Moldova'], MEX:['멕시코','Mexico'], MMR:['미얀마','Myanmar'],
+  MNE:['몬테네그로','Montenegro'], MNG:['몽골','Mongolia'], MUS:['모리셔스','Mauritius'],
+  NATO:['북대서양조약기구','NATO'], NETH:['네덜란드','Netherlands'], NICO:['뉴 ICO','New ICO'],
+  NIG:['나이지리아','Nigeria'], NKOR:['북한','North Korea'], NOR:['노르웨이','Norway'],
+  NPL:['네팔','Nepal'], NZ:['뉴질랜드','New Zealand'], O3B:['O3b 네트웍스','O3b Networks'],
+  ORB:['오브컴','ORBCOMM'], PAKI:['파키스탄','Pakistan'], PERU:['페루','Peru'],
+  POL:['폴란드','Poland'], POR:['포르투갈','Portugal'], PRC:['중국','China'],
+  PRY:['파라과이','Paraguay'], PRES:['중국·유럽우주국','China/ESA'], QAT:['카타르','Qatar'],
+  RASC:['라스콤스타','RascomStar-QAF'], ROC:['대만','Taiwan'], ROM:['루마니아','Romania'],
+  RP:['필리핀','Philippines'], RWA:['르완다','Rwanda'], SAFR:['남아프리카공화국','South Africa'],
+  SAUD:['사우디아라비아','Saudi Arabia'], SDN:['수단','Sudan'], SEAL:['시론치','Sea Launch'],
+  SEN:['세네갈','Senegal'], SES:['SES','SES'], SGJP:['싱가포르·일본','Singapore/Japan'],
+  SING:['싱가포르','Singapore'], SKOR:['대한민국','Republic of Korea'],
+  SLB:['솔로몬 제도','Solomon Islands'], SPN:['스페인','Spain'],
+  STCT:['싱가포르·대만','Singapore/Taiwan'], SVN:['슬로베니아','Slovenia'],
+  SWED:['스웨덴','Sweden'], SWTZ:['스위스','Switzerland'], TBD:['미정','To be determined'],
+  THAI:['태국','Thailand'], TMMC:['투르크메니스탄·모나코','Turkmenistan/Monaco'],
+  TUN:['튀니지','Tunisia'], TURK:['튀르키예','Türkiye'], UAE:['아랍에미리트','UAE'],
+  UK:['영국','United Kingdom'], UKR:['우크라이나','Ukraine'], UNK:['알 수 없음','Unknown'],
+  URY:['우루과이','Uruguay'], US:['미국','United States'],
+  USBZ:['미국·브라질','United States/Brazil'], VAT:['바티칸','Vatican City'],
+  VENZ:['베네수엘라','Venezuela'], VTNM:['베트남','Vietnam'], ZWE:['짐바브웨','Zimbabwe'],
+};
+
+/** 소유 코드를 사람이 읽는 이름으로. 모르는 코드는 코드 그대로 (지어내지 않는다). */
+export function ownerName(code, ko) {
+  if (!code) return null;
+  const o = OWNERS[String(code).trim().toUpperCase()];
+  return o ? (ko ? o[0] : o[1]) : String(code);
+}
+
 /** 계열도 모를 때 — 그룹과 궤도로 최소한의 설명 */
-function fallbackPurpose(groupId, cls, ko) {
+function fallbackPurpose(groupId, cls, ko, name) {
   const byGroup = {
     korea:    ko ? '한국 위성' : 'Korean satellite',
     weather:  ko ? '기상 관측' : 'Weather observation',
@@ -349,10 +449,29 @@ function fallbackPurpose(groupId, cls, ko) {
     earth:    ko ? '지구관측' : 'Earth observation',
     military: ko ? '군용 (임무 비공개)' : 'Military (undisclosed)',
     amateur:  ko ? '아마추어 무선 중계' : 'Amateur radio relay',
-    stations: ko ? '유인 우주활동' : 'Human spaceflight',
   };
   const g = byGroup[groupId];
   if (g) return g;
+  /* ⚠️ stations 는 byGroup 에서 뺐다 — 묶음 이름을 정체로 쓰면 안 된다.
+     여기까지 온 stations 구성원은 본체·모듈·왕복선 어디에도 안 걸린 물체다.
+     대부분 정거장에서 사출된 큐브샛이지만 우리가 확인한 게 아니므로 단정하지 않는다. */
+  if (groupId === 'stations') {
+    switch (stationRole(name)) {
+      case 'main':
+        return ko ? '유인 우주정거장' : 'Crewed space station';
+      case 'part':
+        return ko ? '우주정거장 구성 모듈 — 본체에 도킹해 함께 돈다'
+                  : 'Space station module — docked to the core, flies with it';
+      case 'visiting':
+        return ko ? '정거장 왕복 우주선' : 'Station visiting vehicle';
+      case 'debris':
+        return ko ? '위성이 아니다 — 로켓·위성에서 떨어져 나온 조각'
+                  : 'Not a satellite — fragment from a rocket or satellite';
+      default:
+        return ko ? '용도 미상 — 정거장 궤도의 소형 물체'
+                  : 'Purpose unknown — small object in station orbit';
+    }
+  }
   // 그룹도 모르면 궤도에서 유추 — 단정하지 말고 "주로" 라고 쓴다
   if (/정지궤도|Geostationary/.test(cls)) return ko ? '주로 통신·기상 (정지궤도)' : 'Typically comms/weather (GEO)';
   if (/태양동기|Sun-sync/.test(cls)) return ko ? '주로 지구관측 (태양동기궤도)' : 'Typically Earth observation (SSO)';
@@ -376,6 +495,21 @@ export function orbitClass(altKm, incDeg, periodMin) {
   if (incDeg > 96 && incDeg < 102 && altKm < 1200) return { ko:'태양동기궤도(SSO)', en:'Sun-synchronous' };
   if (incDeg > 80)   return { ko:'극궤도(LEO)', en:'Polar low orbit' };
   return { ko:'저궤도(LEO)', en:'Low Earth orbit' };
+}
+
+/** 분류 이름 — stations 묶음만 이름으로 가르고, 나머지는 그룹 이름 그대로. */
+function categoryOf(sat, ko) {
+  if (sat.group === 'stations') {
+    switch (stationRole(sat.name)) {
+      case 'main':     return ko ? '우주정거장 (본체)' : 'Space station (core)';
+      case 'part':     return ko ? '우주정거장 모듈' : 'Space station module';
+      case 'visiting': return ko ? '정거장 왕복 우주선' : 'Station visiting vehicle';
+      case 'debris':   return ko ? '파편·로켓 잔해' : 'Debris / rocket body';
+      default:         return ko ? '정거장 궤도 물체' : 'Object in station orbit';
+    }
+  }
+  const gp = SAT_GROUPS.find(g => g.id === sat.group);
+  return gp ? (ko ? gp.ko : gp.en) : null;
 }
 
 /**
@@ -407,19 +541,38 @@ export function satDetail(sat, live, lang = 'ko') {
     d[ko ? '관제' : 'Control']   = cur.control;
     d[ko ? '생김새' : 'Appearance'] = cur.look;
     if (cur.crew) d[ko ? '탑승 인원' : 'Crew'] = cur.crew;
+    const c0 = categoryOf(sat, ko);
+    if (c0) d[ko ? '분류' : 'Category'] = c0;
   } else if (fam) {
     d[ko ? '용도' : 'Purpose'] = fam.short;
     d[ko ? '하는 일' : 'What it does'] = fam.long;
-    const gp = SAT_GROUPS.find(g => g.id === sat.group);
-    if (gp) d[ko ? '분류' : 'Category'] = ko ? gp.ko : gp.en;
+    const c = categoryOf(sat, ko);
+    if (c) d[ko ? '분류' : 'Category'] = c;
   } else {
-    d[ko ? '용도' : 'Purpose'] = fallbackPurpose(sat.group, ko ? cls.ko : cls.en, ko);
-    const gp = SAT_GROUPS.find(g => g.id === sat.group);
-    if (gp) d[ko ? '분류' : 'Category'] = ko ? gp.ko : gp.en;
+    d[ko ? '용도' : 'Purpose'] = fallbackPurpose(sat.group, ko ? cls.ko : cls.en, ko, sat.name);
+    const c = categoryOf(sat, ko);
+    if (c) d[ko ? '분류' : 'Category'] = c;
+  }
+  /* 정거장 묶음에 섞여 들어온 물체는 왜 여기 있는지 한 줄로 밝힌다.
+     "우주정거장"이라고 잘못 부르던 자리다 (2026-09-06). */
+  if (sat.group === 'stations') {
+    const role = stationRole(sat.name);
+    if (role === 'other') {
+      d[ko ? '참고' : 'Note'] = ko
+        ? 'CelesTrak 이 정거장과 같은 묶음으로 내려보내는 물체다 (정거장에서 사출된 소형위성이 많다). 정거장 본체가 아니다.'
+        : 'CelesTrak lists this in the same group as the stations (often a smallsat deployed from one). Not a station itself.';
+    } else if (role === 'debris') {
+      d[ko ? '참고' : 'Note'] = ko
+        ? '이름 끝의 DEB·R/B 는 CelesTrak 이 파편·로켓 잔해에 붙이는 표시다.'
+        : 'The DEB / R/B suffix is how CelesTrak marks debris and spent rocket bodies.';
+    }
   }
 
   // SATCAT 조인분 (Lambda 가 CelesTrak SATCAT 을 붙여준 값)
-  if (sat.ownerKo || sat.owner) d[ko ? '소유' : 'Owner'] = ko ? (sat.ownerKo || sat.owner) : sat.owner;
+  /* ⚠️ 예전엔 Lambda 가 준 ownerKo 를 그대로 썼다. 표에 없는 코드는 'MEX' 처럼
+     코드가 그대로 화면에 나왔다 → 여기 전체 표(ownerName)로 다시 매긴다. */
+  const own = ownerName(sat.owner, ko) || (ko ? sat.ownerKo : sat.owner);
+  if (own) d[ko ? '소유' : 'Owner'] = own;
   if (sat.launchSite)  d[ko ? '발사장' : 'Launch site'] = siteName(sat.launchSite, ko);
   if (sat.opsKo || sat.opsEn) d[ko ? '운용 상태' : 'Status'] = ko ? sat.opsKo : sat.opsEn;
   if (sat.rcs) {

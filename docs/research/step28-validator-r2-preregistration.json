@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "revision": "validator r2",
+  "ruleId": "forcing-field-agreement-step28",
+  "createdAtUTC": "2026-09-06T14:45:57Z",
+  "baseLock": "b357378b",
+  "reason": "r1 validator (tools/research/check_step28_field_execution.py, locked at b357378b) FAILED only its language scan: the summary quotes the preregistered Q2Q3 rule text ending in 'AVISO is a reference field, not ground truth' (a negated mention copied from the locked Phase B preregistration); every metric, mask, timestamp, depth, context and reproducibility check passed (run twice, byte-identical FAIL output)",
+  "change": "r2 removes quoted \"rule\": strings (preregistered rule quotations) from the scanned text and binds its own SHA; no metric, mask, threshold or output logic changed",
+  "r1ValidatorSha256": "bb7c65dadc1e048b6fd0bbbebf72b4e4c74d86f5704061e1b3ae012aaf7eaa4e",
+  "validatorR2Sha256": "5246467cfa9d27f0e40152d499d6b42080fd492d155ab5a7247255724418b5f0",
+  "outputsUnchanged": true
+}

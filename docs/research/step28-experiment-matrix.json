@@ -1,0 +1,306 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "forcing-field-agreement-step28",
+  "phase": "A",
+  "cells": [
+    {
+      "windowId": "KE-1",
+      "comparison": "A",
+      "timestamp": "2010-05-12T12:00:00Z",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-1",
+      "comparison": "B",
+      "timestamp": "2010-05-12T12:00:00Z",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-1",
+      "comparison": "C",
+      "timestamp": "2010-05-12T12:00:00Z",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-2",
+      "comparison": "A",
+      "timestamp": "2010-06-30T12:00:00Z",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-2",
+      "comparison": "B",
+      "timestamp": "2010-06-30T12:00:00Z",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-2",
+      "comparison": "C",
+      "timestamp": "2010-06-30T12:00:00Z",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "AG-1",
+      "comparison": "A",
+      "timestamp": null,
+      "status": "NO_EXACT_AVISO_TIME"
+    },
+    {
+      "windowId": "AG-1",
+      "comparison": "B",
+      "timestamp": null,
+      "status": "NO_EXACT_AVISO_TIME"
+    },
+    {
+      "windowId": "AG-1",
+      "comparison": "C",
+      "timestamp": null,
+      "status": "NO_EXACT_AVISO_TIME"
+    },
+    {
+      "windowId": "AG-2",
+      "comparison": "A",
+      "timestamp": null,
+      "status": "NO_EXACT_AVISO_TIME"
+    },
+    {
+      "windowId": "AG-2",
+      "comparison": "B",
+      "timestamp": null,
+      "status": "NO_EXACT_AVISO_TIME"
+    },
+    {
+      "windowId": "AG-2",
+      "comparison": "C",
+      "timestamp": null,
+      "status": "NO_EXACT_AVISO_TIME"
+    },
+    {
+      "windowId": "KE-H1",
+      "comparison": "A",
+      "timestamp": "2010-08-11T12:00:00Z",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-H1",
+      "comparison": "B",
+      "timestamp": "2010-08-11T12:00:00Z",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-H1",
+      "comparison": "C",
+      "timestamp": "2010-08-11T12:00:00Z",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-H2",
+      "comparison": "A",
+      "timestamp": "2010-08-18T12:00:00Z",
+      "status": "BLOCKED_HYCOM_FRAME_MISSING"
+    },
+    {
+      "windowId": "KE-H2",
+      "comparison": "B",
+      "timestamp": "2010-08-18T12:00:00Z",
+      "status": "BLOCKED_HYCOM_FRAME_MISSING"
+    },
+    {
+      "windowId": "KE-H2",
+      "comparison": "C",
+      "timestamp": "2010-08-18T12:00:00Z",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-H3",
+      "comparison": "A",
+      "timestamp": "2010-11-17T12:00:00Z",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-H3",
+      "comparison": "B",
+      "timestamp": "2010-11-17T12:00:00Z",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-H3",
+      "comparison": "C",
+      "timestamp": "2010-11-17T12:00:00Z",
+      "status": "PLANNED_PHASE_B"
+    }
+  ],
+  "depthCells": [
+    {
+      "windowId": "KE-1",
+      "comparison": "C",
+      "level": "D05",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-1",
+      "comparison": "C",
+      "level": "D10",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-1",
+      "comparison": "C",
+      "level": "D15",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-1",
+      "comparison": "C",
+      "level": "D20",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-2",
+      "comparison": "C",
+      "level": "D05",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-2",
+      "comparison": "C",
+      "level": "D10",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-2",
+      "comparison": "C",
+      "level": "D15",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-2",
+      "comparison": "C",
+      "level": "D20",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "AG-1",
+      "comparison": "C",
+      "level": "D05",
+      "status": "NOT_APPLICABLE"
+    },
+    {
+      "windowId": "AG-1",
+      "comparison": "C",
+      "level": "D10",
+      "status": "NOT_APPLICABLE"
+    },
+    {
+      "windowId": "AG-1",
+      "comparison": "C",
+      "level": "D15",
+      "status": "NOT_APPLICABLE"
+    },
+    {
+      "windowId": "AG-1",
+      "comparison": "C",
+      "level": "D20",
+      "status": "NOT_APPLICABLE"
+    },
+    {
+      "windowId": "AG-2",
+      "comparison": "C",
+      "level": "D05",
+      "status": "NOT_APPLICABLE"
+    },
+    {
+      "windowId": "AG-2",
+      "comparison": "C",
+      "level": "D10",
+      "status": "NOT_APPLICABLE"
+    },
+    {
+      "windowId": "AG-2",
+      "comparison": "C",
+      "level": "D15",
+      "status": "NOT_APPLICABLE"
+    },
+    {
+      "windowId": "AG-2",
+      "comparison": "C",
+      "level": "D20",
+      "status": "NOT_APPLICABLE"
+    },
+    {
+      "windowId": "KE-H1",
+      "comparison": "C",
+      "level": "D05",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-H1",
+      "comparison": "C",
+      "level": "D10",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-H1",
+      "comparison": "C",
+      "level": "D15",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-H1",
+      "comparison": "C",
+      "level": "D20",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-H2",
+      "comparison": "C",
+      "level": "D05",
+      "status": "NOT_APPLICABLE"
+    },
+    {
+      "windowId": "KE-H2",
+      "comparison": "C",
+      "level": "D10",
+      "status": "NOT_APPLICABLE"
+    },
+    {
+      "windowId": "KE-H2",
+      "comparison": "C",
+      "level": "D15",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-H2",
+      "comparison": "C",
+      "level": "D20",
+      "status": "NOT_APPLICABLE"
+    },
+    {
+      "windowId": "KE-H3",
+      "comparison": "C",
+      "level": "D05",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-H3",
+      "comparison": "C",
+      "level": "D10",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-H3",
+      "comparison": "C",
+      "level": "D15",
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "windowId": "KE-H3",
+      "comparison": "C",
+      "level": "D20",
+      "status": "PLANNED_PHASE_B"
+    }
+  ],
+  "executedComparisons": 0,
+  "figuresCreated": 0,
+  "modelRuns": 0
+}

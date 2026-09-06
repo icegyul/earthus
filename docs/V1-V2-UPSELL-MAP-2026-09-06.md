@@ -129,6 +129,10 @@ v1·v2 공용 모듈 `prototype/js/for-me-row.js` (v2-three 는 상대경로 imp
 ### 순서 (1단계 안에서)
 
 1. `for-me-row.js` + `earthus.myplace` 통일 + 깔때기 6단계 계측(마이그레이션 포함) → 아직 화면에 안 붙임.
+   **완료 2026-09-06.** `prototype/js/for-me-row.js`(부품·저장·딥링크·이벤트 이름), `prototype/js/usage.js`(v1·v2 공용 집계, 허용 50개), `mylocation.js`(GPS 성공 시 overwrite:false 저장), `supabase/migrations/20260906_forme_funnel_events.sql`(허용 목록 + `forme_funnel_daily` 뷰), `tools/v1/test_for_me_row.mjs`(5항목 PASS). v1 세 파일 운영 배포됨.
+   ⚠️ **SQL 은 아직 적용 전** — Supabase SQL Editor 에 붙여 실행해야 forme.* 가 서버에 쌓인다. 그 전엔 RPC 가 조용히 버린다(앱엔 무해).
+   ⚠️ **v2 는 아직 공용 usage.js 를 안 쓴다.** `tools/build-v2-bundle.sh` 가 번들 안 `../../` 참조를 FAIL 로 막는다(89행). STEP 2 에서 `prototype/js/for-me-row.js`·`usage.js` 를 번들로 복사하고 재작성 규칙(`../../js/for-me-row.js → ./shared/…`)을 추가한 뒤 v2 `usage.js` 를 `export * from` 껍데기로 바꾼다. 그때까지 v2 허용 목록은 옛 7개 그대로(중복이지만 forme.* 를 아직 안 찍으므로 무해).
+   ⚠️ 배포 순서: **v1(/js/) 먼저, v2 나중** — v2 가 /js/ 의 공용 모듈을 가리키게 되는 순간부터 그렇다.
 2. v2 MY EARTH 카드 묶음 (딥링크 목적지부터).
 3. v2 사건 룸·해양 카드 줄.
 4. v1 태풍 → 지진 → 날씨 → 쓰나미 → 해양 → 대기질 → 검색 순. 각 시트 하나씩 배포(`tools/deploy-v1.sh` 파일 단위).

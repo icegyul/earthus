@@ -6,6 +6,7 @@
 
 import { viewer } from './viewer.js';
 import { i18n } from './i18n.js';
+import { setMyPlace } from './for-me-row.js';
 
 export const myLocation = {
   ds: null,
@@ -56,6 +57,10 @@ export const myLocation = {
 
     this.state = 'ok';
     this.coords = { lat: p.coords.latitude, lon: p.coords.longitude, acc: p.coords.accuracy };
+    /* FOR ME 동네 저장 (2026-09-06). 키는 v2 와 같은 earthus.myplace 하나다.
+       ⚠️ overwrite:false — v2 에서 손으로 고른 동네가 있으면 GPS 가 덮어쓰지 않는다.
+          여기서 처음 저장될 때만 의미가 있으므로 set_location 계측은 붙이는 쪽(STEP 4)에서 찍는다. */
+    setMyPlace(this.coords, { overwrite: false });
     this.draw();
     return this.coords;
   },

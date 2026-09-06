@@ -1,0 +1,134 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "ruleId": "data06-license-evidence-scope-correction-step24b",
+  "title": "STEP 24b — DATA-06 license evidence scope correction",
+  "createdAtUTC": "2026-09-06T10:55:00Z",
+  "baseCommit": "e0e7cfd2",
+  "parentStep24Commit": "e0e7cfd2",
+  "parentStep24LockCommit": "275d06e6",
+  "parentStep24Status": "STEP24_CREDENTIALS_REQUIRED",
+  "MODEL_RUN": "FORBIDDEN",
+  "purpose": "minimal correction of the STEP 24 DATA-06 license-evidence scope defect: restrict evidence to IFREMER/SHOM WW3 hindcast documents, inspect the README files present in the FTP tree, map every claim to its source; no data acquisition, no model run, no alpha change, STEP 17–24 immutable",
+  "defect": "STEP 24 assess_step24.py attached Copernicus Marine terms snippets (document id cmems_terms) to the DATA-06 (IFREMER WW3) license record; STEP 24 record kept immutable as historical evidence",
+  "evidenceScopeRule": {
+    "allowed": [
+      "IFREMER FTP directory listings directly containing the product",
+      "IFREMER FTP README files",
+      "IFREMER product documentation",
+      "SHOM documentation explicitly applying to this product",
+      "official IFREMER/SHOM terms or license documents",
+      "official product metadata/documentation stating usage/redistribution terms"
+    ],
+    "forbidden": [
+      "Copernicus Marine terms",
+      "unrelated CMEMS terms",
+      "third-party license interpretations",
+      "generic statements such as 'FTP is public'",
+      "search-engine snippets",
+      "unrelated IFREMER datasets",
+      "inferred license statements"
+    ],
+    "hostRestriction": "ftp.ifremer.fr/ifremer/ww3/ only",
+    "productApplicability": "only statements naming WAVEWATCH III / GLOBMULTI / GLOB-30M / CFSR hindcast, or located in the GLOBAL product directory, are used"
+  },
+  "sources": [
+    {
+      "id": "ifremer_ww3_top_listing",
+      "purpose": "listing ww3/ (product tree root)",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/"
+    },
+    {
+      "id": "ifremer_hindcast_listing",
+      "purpose": "listing HINDCAST/ (README files located here)",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/"
+    },
+    {
+      "id": "ifremer_hindcast_readme",
+      "purpose": "HINDCAST/README (8479 B, 2019) — usage/citation/terms",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/README"
+    },
+    {
+      "id": "ifremer_hindcast_readme_sav",
+      "purpose": "HINDCAST/README.sav (4677 B, 2017) — earlier README",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/README.sav"
+    },
+    {
+      "id": "ifremer_hindcast_readme_netcdf",
+      "purpose": "HINDCAST/readme_netcdf (2910 B, 2014) — file format notes",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/readme_netcdf"
+    },
+    {
+      "id": "ifremer_hindcast_old_readmes_listing",
+      "purpose": "listing HINDCAST/OLD_READMES/",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/OLD_READMES/"
+    },
+    {
+      "id": "ifremer_global_listing",
+      "purpose": "listing HINDCAST/GLOBAL/ (product directory)",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/"
+    },
+    {
+      "id": "ifremer_global_readme",
+      "purpose": "HINDCAST/GLOBAL/README (819 B, 2013) — product-directory README",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/README"
+    }
+  ],
+  "determinationQuestions": [
+    "1 explicit license exists?",
+    "2 explicit research-use permission?",
+    "3 redistribution permission?",
+    "4 derived-quantity use permission?",
+    "5 citation requirement?",
+    "6 access restriction?",
+    "7 governing organization?",
+    "8 product-specific applicability?"
+  ],
+  "statusRule": {
+    "allowed": [
+      "LICENSE_CONFIRMED",
+      "LICENSE_RESTRICTED",
+      "LICENSE_UNKNOWN",
+      "DATASET_BLOCKED"
+    ],
+    "anonymousFtpIsNotPermission": true,
+    "citationOnly": "LICENSE_UNKNOWN",
+    "namedOpenLicenseOrExplicitTerms": "LICENSE_CONFIRMED with exact statement and source",
+    "explicitRestriction": "LICENSE_RESTRICTED with restriction quoted"
+  },
+  "unchanged": {
+    "DATA-01": "CREDENTIALS_REQUIRED — no authentication attempt, no credential creation, no GLORYS download; STEP 17 BLOCKED/PENDING immutable",
+    "DATA-03": "REFERENCE_ELIGIBLE_PARTIAL — no reacquisition, no coverage change, not drifter velocity, not added to HYCOM, no alpha use",
+    "alpha": 0.002,
+    "baselineAlpha": 0.0,
+    "step20Conclusion": "unchanged",
+    "test06": "NOT RUN"
+  },
+  "outputs": [
+    "docs/research/step24b-license-evidence-scope-correction.json",
+    "docs/research/step24b-license-status.json",
+    "docs/research/step24b-evidence-index.json",
+    "docs/research/step24b-summary.json",
+    "docs/research/step24b-run.json",
+    "docs/research/step24b-evidence/"
+  ],
+  "tools": {
+    "assessment": {
+      "file": "tools/research/assess_step24b.py",
+      "sha256": "9f54f1e9f23c1d82ff25db9fcc3bb28f8744d454a97f434ec79ba9bb8d244af8"
+    },
+    "validator": {
+      "file": "tools/research/check_step24b_license_scope.py",
+      "sha256": "c1dfde0a079316aceb5e7fa8835db6b65225e07a4c5ea9838b8d6dd28ae37b07"
+    }
+  },
+  "requiredStatements": [
+    "STEP24 remains immutable.",
+    "STEP24b supersedes only the DATA-06 license-evidence scope.",
+    "STEP20 alpha=0.002 remains calibration-selected but not established as superior on holdout.",
+    "STEP17 GLORYS BLOCKED/PENDING remains historically immutable.",
+    "No model performance conclusion is generated."
+  ],
+  "lockedAtUTC": "2026-09-06T10:55:00Z",
+  "stopRule": "STOP after STEP 24b; TEST-06 not run; STEP 25 not started"
+}

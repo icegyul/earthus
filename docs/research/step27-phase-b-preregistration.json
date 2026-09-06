@@ -1,0 +1,505 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "phase": "B",
+  "ruleId": "depth-sensitivity-step27",
+  "createdAtUTC": "2026-09-06T14:13:56Z",
+  "baseCommit": "0c2b3cb7",
+  "ruleSha256": "603435292009708e7516eb39b2ba8ff705b4331dbc93f4ab98c9e55b3b217ca4",
+  "phaseAPreregistrationSha256": "192824c2042e2c3fc6971c150048b9e5f509ea7f46244beef2e309f2a364dfa0",
+  "step27bR2RuleSha256": "22fa3ad36e4e2870104a9e8862e0ab63f5c8f3742987a68c571d5a05eb0a98b0",
+  "depths": {
+    "D05": {
+      "targetMeters": 5,
+      "nativeLevelMeters": 5.078224182128906,
+      "source": "STEP 27B"
+    },
+    "D10": {
+      "targetMeters": 10,
+      "nativeLevelMeters": 9.572997093200684,
+      "source": "STEP 27B"
+    },
+    "D15": {
+      "targetMeters": 15,
+      "nativeLevelMeters": 15.81007,
+      "source": "STEP 25B/25C (control)"
+    },
+    "D20": {
+      "targetMeters": 20,
+      "nativeLevelMeters": 18.495559692382812,
+      "source": "STEP 27C (STEP 27B-r2 identity)"
+    }
+  },
+  "control": "D15",
+  "labelNote": "D05/D10/D15/D20 are target labels only; the model uses the exact native level; no vertical interpolation",
+  "runPlan": {
+    "D05": 6,
+    "D10": 6,
+    "D15": 6,
+    "D20": 6
+  },
+  "plannedRuns": 24,
+  "alpha": {
+    "value": 0.002,
+    "alpha0Runs": 0,
+    "search": false
+  },
+  "hycomRuns": 0,
+  "executionOrder": [
+    "phase 1: D15 x (KE-1, KE-2, AG-1, AG-2, KE-H1, KE-H3) with the D15 reproduction gate vs STEP 25C (STOP on failure; no other depth executed)",
+    "phase 2: per window KE-1, KE-2, AG-1, AG-2, KE-H1, KE-H3: D05, D10, D20 (D15 executed in phase 1, never re-run)"
+  ],
+  "d15ReproductionGate": {
+    "reference": "docs/research/step25c-run-manifest.json alpha 0.002 runs",
+    "comparedOn": "numeric result array digest (particleId, samples timeUTC/lon/lat/status, finalStatus) and CSV rows (drifter_id, timestamp, lat, lon, alpha, status, valid) after removing run_id",
+    "failStatus": "STEP27_BLOCKED_D15_REPRODUCTION"
+  },
+  "depthIdentityGate": {
+    "toleranceMeters": 0.01,
+    "checkedBeforeEachRun": true,
+    "failStatus": "DEPTH_IDENTITY_FAIL"
+  },
+  "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+  "windows": [
+    {
+      "windowId": "KE-1",
+      "role": "CALIBRATION",
+      "region": "KE",
+      "t0": "2010-05-11T12:00:00Z",
+      "end": "2010-05-14T12:00:00Z",
+      "drifterCount": 8,
+      "drifterIds": [
+        "71155",
+        "81801",
+        "81805",
+        "81807",
+        "81811",
+        "81813",
+        "81814",
+        "81816"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "71155",
+          "lon": 142.60959,
+          "lat": 35.68513
+        },
+        {
+          "drifterId": "81801",
+          "lon": 150.57346,
+          "lat": 30.12786
+        },
+        {
+          "drifterId": "81805",
+          "lon": 150.6728,
+          "lat": 30.8741
+        },
+        {
+          "drifterId": "81807",
+          "lon": 149.87982,
+          "lat": 30.91725
+        },
+        {
+          "drifterId": "81811",
+          "lon": 151.57515,
+          "lat": 32.09739
+        },
+        {
+          "drifterId": "81813",
+          "lon": 157.64886,
+          "lat": 30.87311
+        },
+        {
+          "drifterId": "81814",
+          "lon": 159.61974,
+          "lat": 36.19472
+        },
+        {
+          "drifterId": "81816",
+          "lon": 148.6675,
+          "lat": 30.73258
+        }
+      ],
+      "computationArea": {
+        "west": 140.60959,
+        "east": 161.61974,
+        "south": 28.12786,
+        "north": 38.19472
+      },
+      "oceanBox": {
+        "south": 28.12786,
+        "north": 38.19472,
+        "west": 140.60959,
+        "east": 161.61974
+      },
+      "wind": {
+        "file": "data/research/step17/normalized/KE-1.ncep10m.wind.json",
+        "sha256": "6e6c0c225cf70d676e7adb1cf0ba2b18f3805db9e0e02eef710295f564473a71",
+        "gridSha256": "ba15d7299bd49846e63cb05219503f6e5c11dc765ba6880f02c0ed1b7f553080",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      }
+    },
+    {
+      "windowId": "KE-2",
+      "role": "CALIBRATION",
+      "region": "KE",
+      "t0": "2010-06-30T12:00:00Z",
+      "end": "2010-07-03T12:00:00Z",
+      "drifterCount": 5,
+      "drifterIds": [
+        "48965",
+        "81802",
+        "90141",
+        "90142",
+        "90145"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "48965",
+          "lon": 135.53249,
+          "lat": 37.60833
+        },
+        {
+          "drifterId": "81802",
+          "lon": 151.58324,
+          "lat": 31.70784
+        },
+        {
+          "drifterId": "90141",
+          "lon": 145.17612,
+          "lat": 38.3657
+        },
+        {
+          "drifterId": "90142",
+          "lon": 152.78535,
+          "lat": 39.3177
+        },
+        {
+          "drifterId": "90145",
+          "lon": 147.0891,
+          "lat": 37.12376
+        }
+      ],
+      "computationArea": {
+        "west": 133.53249,
+        "east": 154.78535,
+        "south": 29.70784,
+        "north": 40.0
+      },
+      "oceanBox": {
+        "south": 29.70784,
+        "north": 40.0,
+        "west": 133.53249,
+        "east": 154.78535
+      },
+      "wind": {
+        "file": "data/research/step17/normalized/KE-2.ncep10m.wind.json",
+        "sha256": "2b913475ada3a1fa16d3a29b3441151b328eb99df64f798ee3467527cedda71f",
+        "gridSha256": "ace5b1a527ca39595e6e40051798846ca39a0fb54142e3e3d5aae2178e2f14f9",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      }
+    },
+    {
+      "windowId": "AG-1",
+      "role": "CALIBRATION",
+      "region": "AG",
+      "t0": "2015-04-23T12:00:00Z",
+      "end": "2015-04-26T12:00:00Z",
+      "drifterCount": 9,
+      "drifterIds": [
+        "127198",
+        "127199",
+        "127272",
+        "127313",
+        "127314",
+        "127315",
+        "132511",
+        "132528",
+        "132634"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "127198",
+          "lon": 20.32911,
+          "lat": -39.81819
+        },
+        {
+          "drifterId": "127199",
+          "lon": 20.31773,
+          "lat": -39.82213
+        },
+        {
+          "drifterId": "127272",
+          "lon": 27.2557,
+          "lat": -34.85449
+        },
+        {
+          "drifterId": "127313",
+          "lon": 23.25523,
+          "lat": -35.43792
+        },
+        {
+          "drifterId": "127314",
+          "lon": 30.01394,
+          "lat": -34.13828
+        },
+        {
+          "drifterId": "127315",
+          "lon": 24.83593,
+          "lat": -35.31406
+        },
+        {
+          "drifterId": "132511",
+          "lon": 21.4817,
+          "lat": -37.10636
+        },
+        {
+          "drifterId": "132528",
+          "lon": 23.86592,
+          "lat": -34.97313
+        },
+        {
+          "drifterId": "132634",
+          "lon": 29.88758,
+          "lat": -34.64967
+        }
+      ],
+      "computationArea": {
+        "west": 18.31773,
+        "east": 32.013940000000005,
+        "south": -40.0,
+        "north": -32.13828
+      },
+      "oceanBox": {
+        "south": -40.0,
+        "north": -32.13828,
+        "west": 18.31773,
+        "east": 32.013940000000005
+      },
+      "wind": {
+        "file": "data/research/step17/normalized/AG-1.ncep10m.wind.json",
+        "sha256": "00ff12e9daabcca05c9db6e5542eb788871c5fbae14a6d3774152d36cfbc6785",
+        "gridSha256": "be4e060568f5c72567f63209ace4bb1c2a32d6e3a03f998f102125a341edfed7",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      }
+    },
+    {
+      "windowId": "AG-2",
+      "role": "CALIBRATION",
+      "region": "AG",
+      "t0": "2015-04-26T12:00:00Z",
+      "end": "2015-04-29T12:00:00Z",
+      "drifterCount": 1,
+      "drifterIds": [
+        "127281"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "127281",
+          "lon": 21.79639,
+          "lat": -36.76674
+        }
+      ],
+      "computationArea": {
+        "west": 19.79639,
+        "east": 23.79639,
+        "south": -38.76674,
+        "north": -34.76674
+      },
+      "oceanBox": {
+        "south": -38.76674,
+        "north": -34.76674,
+        "west": 19.79639,
+        "east": 23.79639
+      },
+      "wind": {
+        "file": "data/research/step17/normalized/AG-2.ncep10m.wind.json",
+        "sha256": "f32e7a2a4f2e7d991d516e5ac97308ac1f4c0b143b9cf39612f604c1910f7699",
+        "gridSha256": "073d37611d155a6770f9fd3dfd7a849937587b72c4ad76b23f4cea547b1fc4e3",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      }
+    },
+    {
+      "windowId": "KE-H1",
+      "role": "HOLDOUT",
+      "region": "KE",
+      "t0": "2010-08-10T12:00:00Z",
+      "end": "2010-08-13T12:00:00Z",
+      "drifterCount": 5,
+      "drifterIds": [
+        "48985",
+        "81806",
+        "90135",
+        "90149",
+        "90150"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "48985",
+          "lon": 137.25655,
+          "lat": 39.19842
+        },
+        {
+          "drifterId": "81806",
+          "lon": 157.94424,
+          "lat": 32.2673
+        },
+        {
+          "drifterId": "90135",
+          "lon": 156.24634,
+          "lat": 37.19708
+        },
+        {
+          "drifterId": "90149",
+          "lon": 159.85992,
+          "lat": 38.45439
+        },
+        {
+          "drifterId": "90150",
+          "lon": 155.67223,
+          "lat": 38.35129
+        }
+      ],
+      "computationArea": {
+        "west": 135.25655,
+        "east": 161.85992,
+        "south": 30.2673,
+        "north": 40.0
+      },
+      "oceanBox": {
+        "south": 30.2673,
+        "north": 40.0,
+        "west": 135.25655,
+        "east": 161.85992
+      },
+      "wind": {
+        "file": "data/research/step20/holdout/forcing/normalized/KE-H1.ncep10m.wind.json",
+        "sha256": "7b16b08358e2ca50769cfb4106674703f7da70190e8bb6601fec4ceeae5bcfcd",
+        "gridSha256": "2efe5efe8feed013a2c0b64fb3257938d8f85a129f35ecc0167cc35db0154d21",
+        "source": "STEP 20 B-3 normalized NCEP-DOE R2 10 m 6 h (holdout)"
+      }
+    },
+    {
+      "windowId": "KE-H3",
+      "role": "HOLDOUT",
+      "region": "KE",
+      "t0": "2010-11-15T12:00:00Z",
+      "end": "2010-11-18T12:00:00Z",
+      "drifterCount": 7,
+      "drifterIds": [
+        "89898",
+        "90146",
+        "92981",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "89898",
+          "lon": 143.26125,
+          "lat": 31.29767
+        },
+        {
+          "drifterId": "90146",
+          "lon": 152.8268,
+          "lat": 38.44446
+        },
+        {
+          "drifterId": "92981",
+          "lon": 143.06795,
+          "lat": 31.02459
+        },
+        {
+          "drifterId": "98996",
+          "lon": 147.97673,
+          "lat": 33.89059
+        },
+        {
+          "drifterId": "98997",
+          "lon": 152.19716,
+          "lat": 34.03334
+        },
+        {
+          "drifterId": "98998",
+          "lon": 154.05711,
+          "lat": 33.55673
+        },
+        {
+          "drifterId": "99006",
+          "lon": 151.61525,
+          "lat": 31.19199
+        }
+      ],
+      "computationArea": {
+        "west": 141.06795,
+        "east": 156.05711,
+        "south": 29.02459,
+        "north": 40.0
+      },
+      "oceanBox": {
+        "south": 29.02459,
+        "north": 40.0,
+        "west": 141.06795,
+        "east": 156.05711
+      },
+      "wind": {
+        "file": "data/research/step20/holdout/forcing/normalized/KE-H3.ncep10m.wind.json",
+        "sha256": "c1f1e3d70697a41b5d39d4f0b422869378256930d5e9d9b8393cbff996ab9bbc",
+        "gridSha256": "94b50b5ac56e7224b260eb0a03bddccd9785e3454a69471cdc3a39bc61e43cd8",
+        "source": "STEP 20 B-3 normalized NCEP-DOE R2 10 m 6 h (holdout)"
+      }
+    }
+  ],
+  "labelRules": {
+    "scope": "overall stratum; also reported per stratum",
+    "primaryHorizonHours": 72,
+    "consistencyFraction": 0.6666666666666666,
+    "signTestMinimumN": 10,
+    "pairRule": "DEPTH-SPECIFIC_DIFFERENCE_OBSERVED for Dxx vs D15 if |median delta| > tie AND the fraction of non-tied pairs sharing the median sign >= 2/3; otherwise NO_CLEAR_DEPTH-SPECIFIC_DIFFERENCE; direction reported descriptively",
+    "overallRule": "DEPTH_SENSITIVITY_OBSERVED if any of the three pairs is DEPTH-SPECIFIC_DIFFERENCE_OBSERVED; otherwise NO_CLEAR_DEPTH_SENSITIVITY",
+    "pairLabels": [
+      "DEPTH-SPECIFIC_DIFFERENCE_OBSERVED",
+      "NO_CLEAR_DEPTH-SPECIFIC_DIFFERENCE"
+    ],
+    "overallLabels": [
+      "DEPTH_SENSITIVITY_OBSERVED",
+      "NO_CLEAR_DEPTH_SENSITIVITY"
+    ],
+    "selection": false,
+    "holdoutForSelection": false
+  },
+  "outputs": {
+    "committed": [
+      "docs/research/step27-phase-b-preregistration.json",
+      "docs/research/step27-depth-forcing-manifest.json",
+      "docs/research/step27-depth-manifest.json",
+      "docs/research/step27-depth-replay-manifest.json",
+      "docs/research/step27-depth-evaluation.json",
+      "docs/research/step27-depth-paired-table.csv",
+      "docs/research/step27-depth-execution-summary.json"
+    ],
+    "gitignored": [
+      "data/research/step27/forcing/**",
+      "data/research/step27/trajectories/**"
+    ],
+    "summaryNamingNote": "docs/research/step27-depth-summary.json is the SHA-locked STEP 27B quality summary and is not overwritten; the Phase B summary is docs/research/step27-depth-execution-summary.json"
+  },
+  "tools": {
+    "tools/research/build_step27_forcing.py": "521f658d70d47b24892b709ec7d4e613ca65b86c48a9fc526eeea0e23fa87889",
+    "tools/research/run_step27_phase_b.py": "878ba5d75ced8e3ec0a94385a45f54164ade7a2d28fb026e242c7e5626d0d7fb",
+    "tools/research/evaluate_step27_phase_b.py": "b8ca93a793ebccf950f8ef4d15c553be8de2253a114e67135eb500aa02a2c136",
+    "tools/research/check_step27_depth_execution.py": "1a1bcb4cfb624506dfdaaaedb8984dce2373ba1ac33e78d67e88f216a31817c4",
+    "tools/research/glorys_reader_step25c.py": "11b7d987434a55a9e42a9776e851fad49b8ec65d2df0f23130c7a7e6234ab63e",
+    "tools/research/replay_step25c_run.py": "5dd8c14da33dcd75c50c8e52dc517456d46a1a2f4ad38b3918687d16b4a73ff5"
+  },
+  "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+  "requiredStatements": [
+    "STEP 27 Phase B is a descriptive within-product depth sensitivity experiment; no significance, causal or operational claim is made.",
+    "The only intentional difference between D05, D10, D15 and D20 is the native ocean velocity depth (5.078224 / 9.572997 / 15.810070 / 18.495560 m); labels are target labels only.",
+    "The depth set and the control D15 were fixed before execution; no depth was added, removed, interpolated, weighted or chosen after results.",
+    "Holdout results are descriptive only and were not used to choose or re-rank a depth.",
+    "No preferred operational depth is declared; alpha = 0.002 and STEP 20-26 are unchanged."
+  ]
+}

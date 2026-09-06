@@ -353,7 +353,9 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
      ⚠️⚠️ 패널들은 .overlay(z10) 스태킹 컨텍스트 **안**이고 HUD 는 body 직속이라,
      z11 로 두면 루트 기준 비교에서 오히려 시트·검색 전부 **위**에 그려졌다.
      body 에 남는 한 z 는 10 미만이어야 의도대로 패널 아래가 된다. */
-  position:absolute;top:max(12px,env(safe-area-inset-top));left:12px;z-index:9;
+  /* ⚠️ 상단 바(.es-switch · .ab-bar) 가 top 14~52 를 쓴다. 12px 에 두면 HUD 위쪽이 그 아래로 들어가
+     '표시핀' 줄이 잘려 보인다(2026-09-06 받은 지적: "hud 내려줘"). 바 아래로 내린다. */
+  position:absolute;top:max(62px,calc(env(safe-area-inset-top) + 50px));left:12px;z-index:9;
   font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;line-height:1.8;
   background:rgba(0,0,0,.66);backdrop-filter:blur(12px);border:1px solid var(--line);
   padding:9px 12px;border-radius:9px;color:var(--fog);min-width:196px;
@@ -375,14 +377,14 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 #hudShow:hover{opacity:.9}
 #hudShow{
   /* #hud 와 같은 이유로 .overlay(z10)보다 낮게 둔다 — 패널 위로 떠오르면 안 된다 */
-  position:absolute;top:max(12px,env(safe-area-inset-top));left:12px;z-index:9;display:none;
+  position:absolute;top:max(62px,calc(env(safe-area-inset-top) + 50px));left:12px;z-index:9;display:none;
   /* 접혀 있어도 다시 여는 길은 분명히 보이게 한다. */
   font:10px ui-monospace,monospace;cursor:pointer;padding:5px 8px;border-radius:8px;
   background:rgba(0,0,0,.48);color:var(--fog);border:1px solid var(--line);opacity:.62;
 }
 /* AETHERUS의 지구 복귀 버튼도 왼쪽 위를 쓴다. HUD가 그 위를 덮으면 우주에서
    돌아갈 수 없으므로 우주 장면에서만 손잡이와 패널을 한 줄 아래로 내린다. */
-body.scene-space #hud,body.scene-space #hudShow{top:max(66px,calc(env(safe-area-inset-top) + 54px))}
+/* 우주 화면에서 따로 더 내리던 규칙은 뺐다 — 이제 평상시에도 같은 높이(바 아래)다. */
 
 /* ══════════ 토스트 / 로딩 ══════════ */
 #toast{

@@ -509,6 +509,10 @@ const CATEGORIES_FULL = [
    저장된 상태가 그 id 를 계속 쓴다. 되돌리려면 V1_LEAN 만 false 로.
    ⚠️ 첫 로딩 무게는 여기가 아니라 main.js 의 lazy 표가 줄인다. 이 표는 화면만 정리한다. */
 const V1_LEAN = true;
+/* 2026-09-06 받은 지시: "메뉴를 v3 처럼 하단으로 넣고 그 위로 두 번째 메뉴가 나오게. 설정은 좌상단에 있으니 빼라."
+   MENU_BAR 가 켜지면 #menuMain 은 오른쪽 서랍이 아니라 늘 보이는 하단 바가 되고(body.menu-bar, app.css 끝),
+   2단(#menuSub)은 항목 아래가 아니라 바 위에 뜬다. 옛 서랍 방식으로 되돌리려면 false. */
+const MENU_BAR = true;
 const CATEGORIES_LEAN = [
   { id: 'base',    ko: '바탕',       en: 'Base',
     ids: ['clouds', 'truecolor', 'gk2aAuto', 'himawari'] },
@@ -644,7 +648,9 @@ export const layerBar = {
       style.dataset.menuInformation = 'true';
       document.head.appendChild(style);
     }
-    const tab = $('#menuTab'), aetherusTab = $('#aetherusTab');
+    /* AETHERUS 손잡이는 v1 에서 뺐다(2026-09-06 받은 지시). 아래 배선이 널 검사 없이 쓰므로 떼어낸 더미로 받는다. */
+    const tab = $('#menuTab'), aetherusTab = $('#aetherusTab') || document.createElement('button');
+    if (MENU_BAR) document.body.classList.add('menu-bar');
     const main = $('#menuMain'), sub = $('#menuSub');
     const closeButton = $('#menuClose');
 
@@ -654,7 +660,7 @@ export const layerBar = {
       main.classList.toggle('open', earthusOpen);
       /* 2단은 옆이 아니라 **누른 항목 바로 아래**에 펼친다 (2026-09-06 받은 지시).
          #menuSub 를 그 버튼 뒤로 옮기고 inline 로 표시한다. AETHERUS 2단(숨김)은 예전 방식 그대로. */
-      const inline = earthusOpen && !!this.sub && this.sub !== 'aetherus';
+      const inline = !MENU_BAR && earthusOpen && !!this.sub && this.sub !== 'aetherus';
       const anchor = inline ? main.querySelector(`[data-open="${this.sub}"]`) : null;
       if (inline && anchor) {
         if (!this._subHome) { this._subHome = document.createComment('menuSub-home'); sub.parentNode.insertBefore(this._subHome, sub); }
@@ -677,7 +683,7 @@ export const layerBar = {
       tab.classList.toggle('beside', aetherusOpen);
       /* 2단을 보는 동안 1단은 모바일에서 화면 밖으로 나가므로, 보조기술에도
          같은 한 장 메뉴만 읽힌다. */
-      main.setAttribute('aria-hidden', String(!earthusOpen || (!!this.sub && !inline)));
+      main.setAttribute('aria-hidden', String(!MENU_BAR && (!earthusOpen || (!!this.sub && !inline))));
       sub.setAttribute('aria-hidden', String(!(this.open && this.sub)));
       /* ⚠️⚠️ aria-hidden 만으로는 **키보드 탭이 그대로 들어간다.** (감사 P2-2)
          화면 밖으로 밀어 둔 메뉴 버튼들이 탭 순서에 남아, 탭을 누르면
@@ -691,7 +697,7 @@ export const layerBar = {
       };
       /* 모바일에서는 2단이 1단을 완전히 대체한다. 화면 밖의 1단까지 탭으로
          들어가면 사용자가 길을 잃으므로, 2단을 연 동안은 1단도 inert 처리한다. */
-      seal(main, !earthusOpen || (!!this.sub && !inline));
+      seal(main, !MENU_BAR && (!earthusOpen || (!!this.sub && !inline)));
       seal(sub, !(this.open && this.sub));
       if (inline && anchor) requestAnimationFrame(() => { try { anchor.scrollIntoView({ block: 'start', behavior: 'smooth' }); } catch (_) { } });
       tab.setAttribute('aria-expanded', String(earthusOpen));
@@ -793,6 +799,7 @@ export const layerBar = {
         const k = b.dataset.open;
         const wasEarthStyle = this.sub === 'earth';
         this.sub = (this.sub === k) ? null : k;
+        if (MENU_BAR) this.open = !!this.sub;   // 하단 바는 늘 보이므로 '열림'은 2단이 떠 있는지만 뜻한다
         if (this.sub === 'earth') {
           this.query = '';
         }

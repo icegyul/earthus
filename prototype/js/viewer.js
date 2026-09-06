@@ -160,10 +160,10 @@ export function initViewer(containerId) {
      ⚠️ 위 8 km 사유(서핑·등산로 확대)는 그 메뉴들을 v1 에서 숨기면서 함께 물러났다.
         되살리려면 이 값과 imagery.js 의 Esri 층을 같이 되돌려야 한다. */
   cc.minimumZoomDistance = 700_000;
-  /* 우주 전환 B0 스파이크. 종전 45,000km 상한에서는 지구 바깥의 크기를
-     시험할 수조차 없었다. 2,000,000km까지 조작은 허용하되, 실제 우주 장면은
-     sceneMgr가 별도 전환하므로 이 값을 근거로 위치·자료를 지어내지 않는다. */
-  cc.maximumZoomDistance = 2_000_000_000;
+  /* 2026-09-06 받은 지시: v1 에서 AETHERUS(우주 전환)를 아예 뺀다. 예전 B0 스파이크 때
+     2,000,000km 까지 열어 둔 상한 때문에 은하수 천구(반지름 500,000km) 바깥으로 나가
+     하늘이 공처럼 보였다. 지구 전체가 넉넉히 들어오는 45,000km 로 되돌린다. */
+  cc.maximumZoomDistance = 45_000_000;
   cc.enableTilt = false;
   cc.enableLook = false;
   cc.inertiaSpin = 0.96;

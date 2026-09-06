@@ -108,7 +108,7 @@
 }
 </script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.143.0/Build/Cesium/Widgets/widgets.css">
-<link rel="stylesheet" href="css/app.css?v=20260906-inline-sub">
+<link rel="stylesheet" href="css/app.css?v=20260906-menubar">
 <link rel="stylesheet" href="css/weather-card-v7.css?v=20260820-wcv7-1">
 <link rel="stylesheet" href="css/tourism-flow.css?v=20260821-tourism-density2">
 <link rel="stylesheet" href="css/account.css?v=20260906-v1-lean">
@@ -481,9 +481,8 @@
        화면 반대편에 두지는 않되, EARTHUS 바로 아래에 **독립 손잡이**로 둔다.
        두 브랜드는 같은 가장자리와 같은 디자인을 쓰지만 각자 자기 메뉴를 연다. -->
   <button id="menuTab" class="brand-menu-tab" aria-label="EARTHUS 메뉴" aria-expanded="false"><span class="mt-label">EARTHUS</span></button>
-  <!-- v1 정리(2026-09-06): AETHERUS 메뉴는 v1 에서 전부 숨긴다 (받은 지시). 손잡이는 남겨 두되
-       hidden 이라 탭 순서에도 안 걸린다. 우주쓰레기(궤도 인텔리전스)는 인공위성 시트로 옮겼다. -->
-  <button id="aetherusTab" class="brand-menu-tab" aria-label="AETHERUS 메뉴" aria-expanded="false" hidden><span class="mt-label">AETHERUS</span></button>
+  <!-- v1 정리(2026-09-06): AETHERUS 손잡이는 v1 에서 뺐다 (받은 지시: "기능이 안 예뻐서 뺀다").
+       우주쓰레기(궤도 인텔리전스)만 인공위성 시트에 남겼다. layerbar.js 는 손잡이가 없어도 돈다. -->
 
   <!-- 2단: 지구 스타일 (1단보다 왼쪽) -->
   <div id="menuSub" aria-hidden="true">
@@ -1248,7 +1247,7 @@
 <script src="https://cdn.jsdelivr.net/npm/satellite.js@6.0.2/dist/satellite.min.js"
         integrity="sha384-J3D70NIZSVUuhQbp4W22OKF/xNWQjCEXmLxpnBp4CNDaQ+TbS1mmDZ2W3wlgqpKj"
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script type="module" src="js/main.js?v=20260906-v1-lean"></script>
+<script type="module" src="js/main.js?v=20260906-noaeth"></script>
 <!-- 홈 화면 설치용 서비스워커. 등록 실패해도 앱은 그대로 동작한다. -->
 <script>
   if ('serviceWorker' in navigator) {

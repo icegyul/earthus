@@ -2847,3 +2847,73 @@ body.aetherus-open .brand-menu-tab{display:none}
   .cosmic-photo-list button{grid-template-columns:58px minmax(0,1fr)}
   .cosmic-photo-list img{width:58px;height:56px}
 }
+
+/* ══ 하단 메뉴 바 (2026-09-06 받은 지시: "메뉴를 v3 처럼 하단으로, 그 위로 두 번째 메뉴") ══
+   layerbar.js 의 MENU_BAR 가 body.menu-bar 를 붙인다. 이 블록이 없으면 옛 오른쪽 서랍 그대로다.
+   · 1단(#menuMain)은 늘 보이는 가운데 하단 바. 항목은 아이콘 위·글자 아래.
+   · 2단(#menuSub)은 바 위에 뜬다. 항목 아래 펼침(inline)은 이 모드에서 쓰지 않는다.
+   · 설정은 좌상단 도구바에 있으니 바에서 뺀다. 머리글·묶음 제목·꺾쇠도 뺀다.
+   · 하단 온도 HUD·출처·바람 범례는 바 높이만큼 위로 올린다. */
+body.menu-bar #menuTab{ display:none !important; }
+body.menu-bar #menuMain{
+  position:fixed !important; left:50% !important; right:auto !important; top:auto !important; bottom:max(10px,env(safe-area-inset-bottom)) !important;
+  transform:translateX(-50%) !important; width:auto; max-width:min(96vw,640px); max-height:none;
+  display:flex; flex-direction:row; align-items:stretch; justify-content:center; gap:2px;
+  padding:5px 6px; border-radius:16px; border:1px solid rgba(255,255,255,.14); border-right:1px solid rgba(255,255,255,.14);
+  background:rgba(10,14,20,.78); backdrop-filter:blur(22px) saturate(120%);
+  box-shadow:0 10px 34px rgba(0,0,0,.36); overflow:visible; transition:none;
+}
+body.menu-bar #menuMain .mm-head,
+body.menu-bar #menuMain .mm-section-title,
+body.menu-bar #menuMain .mm-chev,
+body.menu-bar #menuMain .mm-questions,
+body.menu-bar #menuMain [data-act="settings"]{ display:none !important; }
+body.menu-bar #menuMain .mm-section{ display:contents; padding:0; border:0; }
+body.menu-bar #menuMain .mm-section[hidden]{ display:none !important; }
+body.menu-bar #menuMain .mm-move-grid{ display:contents; }
+body.menu-bar #menuMain .mm-item,
+body.menu-bar #menuMain .mm-move-item{
+  width:auto; min-width:58px; min-height:52px; margin:0 !important; padding:6px 8px 5px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+  border-radius:11px; border:0; background:none; color:var(--paper); opacity:.86;
+  font-size:10.5px; line-height:1.15; white-space:nowrap; box-shadow:none;
+}
+body.menu-bar #menuMain .mm-item .mm-ico,
+body.menu-bar #menuMain .mm-move-item .mm-ico{ width:auto; font-size:18px; }
+body.menu-bar #menuMain .mm-item .mm-ico svg,
+body.menu-bar #menuMain .mm-move-item .mm-ico svg{ width:20px; height:20px; }
+body.menu-bar #menuMain .mm-label{ flex:none; text-align:center; }
+body.menu-bar #menuMain .mm-label small{ display:none; }
+body.menu-bar #menuMain .mm-label b{ font-weight:500; }
+body.menu-bar #menuMain .mm-badge{ position:absolute; top:4px; right:6px; }
+body.menu-bar #menuMain .mm-item{ position:relative; }
+body.menu-bar #menuMain .mm-item.open,
+body.menu-bar #menuMain .mm-item.on,
+body.menu-bar #menuMain .mm-move-item.on{ opacity:1; color:#8fd0ff; background:rgba(77,159,255,.12); box-shadow:none; }
+body.menu-bar #menuMain .mm-item:hover,
+body.menu-bar #menuMain .mm-move-item:hover{ opacity:1; background:rgba(255,255,255,.06); }
+
+body.menu-bar #menuSub{
+  position:fixed !important; left:50% !important; right:auto !important; top:auto !important; bottom:max(82px,calc(env(safe-area-inset-bottom) + 72px)) !important;
+  transform:translateX(-50%) translateY(12px) !important; opacity:0 !important; visibility:hidden; pointer-events:none;
+  width:min(94vw,560px); max-height:min(56vh,520px);
+  border-radius:16px; border:1px solid var(--line);
+  transition:transform .32s cubic-bezier(.22,1,.36,1), opacity .22s ease;
+}
+body.menu-bar #menuSub.open{ transform:translateX(-50%) translateY(0) !important; opacity:1 !important; visibility:visible; pointer-events:auto; }
+body.menu-bar #menuSub.inline{ position:fixed; }   /* 안전망 — 이 모드에서는 inline 을 붙이지 않는다 */
+
+/* 바가 차지한 자리만큼 하단의 다른 것들을 올린다 */
+body.menu-bar .amb-bottom{ bottom:max(132px,calc(env(safe-area-inset-bottom) + 118px)); }
+body.menu-bar #provenanceDock{ bottom:max(80px,calc(env(safe-area-inset-bottom) + 70px)); }
+body.menu-bar #windLegend{ bottom:max(128px,calc(env(safe-area-inset-bottom) + 116px)); }
+body.menu-bar #mapOff{ bottom:max(80px,calc(env(safe-area-inset-bottom) + 70px)); }
+
+@media (max-width:640px){
+  body.menu-bar #menuMain{ left:max(6px,env(safe-area-inset-left)) !important; right:max(6px,env(safe-area-inset-right)) !important; transform:none !important; width:auto; max-width:none; gap:0; padding:4px 3px; border-radius:14px; }
+  body.menu-bar #menuMain .mm-item,
+  body.menu-bar #menuMain .mm-move-item{ flex:1 1 0; min-width:0; padding:5px 2px 4px; font-size:9.5px; }
+  body.menu-bar #menuSub{ left:max(6px,env(safe-area-inset-left)) !important; right:max(6px,env(safe-area-inset-right)) !important; width:auto; transform:translateY(12px) !important; }
+  body.menu-bar #menuSub.open{ transform:translateY(0) !important; }
+  body.menu-bar #provenanceDock{ width:min(270px,calc(100vw - 20px)); }
+}

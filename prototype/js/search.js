@@ -96,7 +96,10 @@ const EN_LABEL = {                    // 메뉴 라벨은 한국어라 영어만
 };
 function liveActions() {
   return [...document.querySelectorAll('#menuMain [data-act]')]
-    .filter(b => b.offsetParent !== null || !b.hidden)   // 숨긴 줄(관리자 등)은 뺀다
+    /* 숨긴 줄(관리자 등)과 v1 정리로 hidden 처리한 묶음(읽고 분석·활동)은 뺀다.
+       ⚠️ offsetParent 로만 보면 hidden 섹션 안의 버튼(b.hidden=false)이 살아남았다.
+       '물어보기'는 이제 검색창 자체의 줄이다(find 끝 참고) — 기능 목록에서는 뺀다. */
+    .filter(b => !b.closest('[hidden]') && b.dataset.act !== 'ask')
     .map(b => {
       const act = b.dataset.act;
       const label = (b.querySelector('.mm-label')?.textContent || act).trim();
@@ -352,6 +355,18 @@ export const search = {
       out.push(h);
       if (out.length >= 24) break;
     }
+    /* ── 물어보기 — 검색창이 곧 질문창이다 (2026-09-06 받은 지시: "물어보기는 우상단 돋보기창으로")
+       무엇을 치든 맨 아래에 "이 문장을 그대로 물어보기" 줄을 둔다. 찾는 것이 없어도 이 줄은 남아서
+       빈 화면 대신 질문으로 이어진다. 눌러야 ask/* 모듈을 받는다(첫 로딩에는 없다). */
+    const question = String(qRaw || '').trim();
+    if (question.length >= 2) {
+      out.push({
+        s: -1, type: 'ask',
+        title: ko ? `「${question}」 물어보기` : `Ask: "${question}"`,
+        sub: ko ? '자료에 물어보기 · 이 문장을 그대로 보냅니다' : 'Ask the data with this sentence',
+        ref: { q: question },
+      });
+    }
     return out;
   },
 
@@ -382,14 +397,14 @@ export const search = {
       return;
     }
 
-    const ICON = { place: '📍', layer: '◍', action: '›', open: '›', satellite: '🛰', 'aetherus-photo': '✦' };
+    const ICON = { place: '📍', layer: '◍', action: '›', open: '›', satellite: '🛰', 'aetherus-photo': '✦', ask: '?' };
     rows.forEach((h, i) => {
       const b = document.createElement('button');
       b.className = 'sr-row' + (i === 0 ? ' on' : '');
       b.dataset.i = i;
       const tag = ko
-        ? { place: '장소', layer: '레이어', action: '기능', open: '기능', satellite: '위성', 'aetherus-photo': 'Aetherus' }[h.type]
-        : { place: 'Place', layer: 'Layer', action: 'Go', open: 'Go', satellite: 'Satellite', 'aetherus-photo': 'Aetherus' }[h.type];
+        ? { place: '장소', layer: '레이어', action: '기능', open: '기능', satellite: '위성', 'aetherus-photo': 'Aetherus', ask: '물어보기' }[h.type]
+        : { place: 'Place', layer: 'Layer', action: 'Go', open: 'Go', satellite: 'Satellite', 'aetherus-photo': 'Aetherus', ask: 'Ask' }[h.type];
       b.innerHTML =
         `<span class="sr-ico">${ICON[h.type]}</span>`
         + `<span class="sr-txt"><b>${esc(h.title)}</b>`
@@ -417,6 +432,21 @@ export const search = {
       return;
     }
     this.close();
+
+    if (h.type === 'ask') {
+      /* 물어보기 모듈은 여기서 처음 받는다. 열고 나서 질문을 그대로 보낸다. */
+      try {
+        const { askPanel } = await import('./ask/panel.js');
+        if (!askPanel._inited) { askPanel._inited = true; askPanel.init(); }
+        askPanel.open();
+        await askPanel.send(h.ref.q);
+      } catch (e) {
+        const { toast } = await import('./ui.js');
+        toast(i18n.lang === 'ko' ? '물어보기를 열지 못했습니다' : 'Could not open Ask');
+        console.warn('[search] ask', e?.message || e);
+      }
+      return;
+    }
 
     if (h.type === 'aetherus-photo') {
       document.dispatchEvent(new CustomEvent('aetherus:photo', {
@@ -502,11 +532,11 @@ function hintBlock(ko) {
   const d = document.createElement('div');
   d.className = 'sr-hint';
   const ex = ko
-    ? ['서울', '천리안', '기온', '태풍', 'ㅅㅇ']
-    : ['Seoul', 'Hubble', 'Temperature', 'Cyclones'];
+    ? ['서울', '천리안', '기온', '태풍', '지금 태풍 어디야?']
+    : ['Seoul', 'Temperature', 'Cyclones', 'Where is the typhoon now?'];
   d.innerHTML = `<p>${ko
-    ? '장소 · 레이어 · 위성을 한 번에 찾습니다'
-    : 'Search places, layers and satellites'}</p>`
+    ? '장소 · 레이어 · 위성을 찾거나, 문장으로 물어봅니다'
+    : 'Search places, layers and satellites, or ask a question'}</p>`
     + `<div class="sr-ex">${ex.map(e => `<button type="button">${esc(e)}</button>`).join('')}</div>`
     + `<p class="sr-note">${ko
         ? '초성으로도 찾습니다 · Esc 로 닫기'

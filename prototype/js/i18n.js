@@ -267,7 +267,7 @@ export const i18n = {
                    en: 'Your email is used only to tell you when it opens, and is handled under our' },
     'wl.priv':   { ko: '개인정보처리방침', en: 'privacy policy' },
     'ph.email':  { ko: '이메일 주소',              en: 'Email address' },
-    'ph.search': { ko: '장소 · 레이어 · 위성 검색', en: 'Search places, layers, satellites' },
+    'ph.search': { ko: '장소 · 레이어 · 위성 검색 · 물어보기', en: 'Search places, layers, satellites · ask' },
     'ph.ask':    { ko: '지금 태풍 어디야?',        en: 'Where is the typhoon right now?' },
     'wl.fine2':  { ko: '에 따라 처리됩니다.', en: '.' },
     'wl.fine3':  { ko: '창립 멤버 반값은', en: 'The founding member half price is set out in' },

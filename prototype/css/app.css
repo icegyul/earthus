@@ -2903,7 +2903,41 @@ body.menu-bar #menuSub{
 body.menu-bar #menuSub.open{ transform:translateX(-50%) translateY(0) !important; opacity:1 !important; visibility:visible; pointer-events:auto; }
 body.menu-bar #menuSub.inline{ position:fixed; }   /* 안전망 — 이 모드에서는 inline 을 붙이지 않는다 */
 
+/* 2단 = 바 위의 작은 가로 칩 줄 (받은 지시: "그 위로 작게 가로로, 위성은 이름만 + 국기").
+   검색·선택 요약·출처 접이·묶음 제목·설명·큰 아이콘은 이 모드에서 뺀다. 칩 = 국기 + 이름. */
+body.menu-bar #menuSub{ width:auto !important; max-width:min(96vw,720px); max-height:none; }
+body.menu-bar #menuSub .ms-head{ display:none; }
+body.menu-bar #layerStrip{ display:flex; flex-wrap:nowrap; align-items:center; gap:6px; padding:8px 10px; overflow-x:auto; overflow-y:hidden; scrollbar-width:none; }
+body.menu-bar #layerStrip::-webkit-scrollbar{ display:none; }
+body.menu-bar #layerStrip .ly-search,
+body.menu-bar #layerStrip .ly-selection,
+body.menu-bar #layerStrip .ly-section-head,
+body.menu-bar #layerStrip .ly-gap,
+body.menu-bar #layerStrip .ly-sub,
+body.menu-bar #layerStrip .ly-sat,
+body.menu-bar #layerStrip .ly canvas,
+body.menu-bar #layerStrip .ly-expert,
+body.menu-bar #layerStrip .ly-open em,
+body.menu-bar #layerStrip .ly-open-arrow{ display:none !important; }
+body.menu-bar #layerStrip .ly,
+body.menu-bar #layerStrip .ly-open{
+  flex:none; width:auto; min-height:34px; margin:0; padding:6px 11px; display:flex; align-items:center; gap:6px;
+  border-radius:999px; border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.04); color:var(--paper);
+  font-size:12px; line-height:1.2; white-space:nowrap; opacity:.9; box-shadow:none; text-align:left;
+}
+body.menu-bar #layerStrip .ly .ly-name{ display:flex; align-items:center; gap:6px; margin:0; font-size:12px; font-weight:500; }
+body.menu-bar #layerStrip .ly .ly-flag{ font-size:13px; opacity:1; }
+body.menu-bar #layerStrip .ly.on,
+body.menu-bar #layerStrip .ly[aria-pressed="true"]{ opacity:1; color:#9fe6f5; border-color:rgba(90,209,232,.5); background:rgba(90,209,232,.12); }
+body.menu-bar #layerStrip .ly-open .ly-open-copy b{ font-size:12px; font-weight:500; }
+body.menu-bar #layerStrip .ly:hover,
+body.menu-bar #layerStrip .ly-open:hover{ opacity:1; background:rgba(255,255,255,.08); }
+@media (max-width:640px){ body.menu-bar #layerStrip{ padding:7px 8px; } body.menu-bar #layerStrip .ly, body.menu-bar #layerStrip .ly-open{ padding:6px 10px; font-size:11.5px; } }
+
 /* 바가 차지한 자리만큼 하단의 다른 것들을 올린다 */
+body.menu-bar.menu-sub-open .amb-bottom{ bottom:max(200px,calc(env(safe-area-inset-bottom) + 186px)); }
+body.menu-bar.menu-sub-open #provenanceDock{ bottom:max(146px,calc(env(safe-area-inset-bottom) + 136px)); }
+body.menu-bar.menu-sub-open #windLegend{ bottom:max(196px,calc(env(safe-area-inset-bottom) + 184px)); }
 body.menu-bar .amb-bottom{ bottom:max(132px,calc(env(safe-area-inset-bottom) + 118px)); }
 body.menu-bar #provenanceDock{ bottom:max(80px,calc(env(safe-area-inset-bottom) + 70px)); }
 body.menu-bar #windLegend{ bottom:max(128px,calc(env(safe-area-inset-bottom) + 116px)); }

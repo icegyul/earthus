@@ -671,6 +671,7 @@ export const layerBar = {
         if (this._subHome?.parentNode) this._subHome.parentNode.insertBefore(sub, this._subHome);
       }
       main.classList.toggle('has-inline', inline);
+      document.body.classList.toggle('menu-sub-open', MENU_BAR && this.open && !!this.sub);   // 2단이 떠 있는 동안 온도·출처를 더 올린다 (app.css)
       main.classList.toggle('sub-open', earthusOpen && !!this.sub && !inline);
       sub.classList.toggle('open', this.open && !!this.sub);
       tab.classList.toggle('open', earthusOpen);
@@ -800,6 +801,8 @@ export const layerBar = {
         const wasEarthStyle = this.sub === 'earth';
         this.sub = (this.sub === k) ? null : k;
         if (MENU_BAR) this.open = !!this.sub;   // 하단 바는 늘 보이므로 '열림'은 2단이 떠 있는지만 뜻한다
+        /* 2단이 뜨는 자리에 시트(위성·날씨 등)가 떠 있으면 겹친다(받은 지적) — 2단을 열 때 시트는 닫는다. 레이어는 둔다. */
+        if (MENU_BAR && this.sub) panels.closeAll();
         if (this.sub === 'earth') {
           this.query = '';
         }

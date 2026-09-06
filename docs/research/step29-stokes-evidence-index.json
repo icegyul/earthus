@@ -1,0 +1,301 @@
+{
+  "ruleId": "stokes-license-and-experiment-gate-step29",
+  "documents": [
+    {
+      "id": "ifremer_global_listing",
+      "kind": "ifremer_ftp_readme_copy",
+      "file": "docs/research/step24b-evidence/ifremer_global_listing.bin",
+      "sha256": "60c61bacd1af349c649019c6f7309c823d03b2903021081a10f000d269289431",
+      "bytes": 7652
+    },
+    {
+      "id": "ifremer_global_readme",
+      "kind": "ifremer_ftp_readme_copy",
+      "file": "docs/research/step24b-evidence/ifremer_global_readme.bin",
+      "sha256": "9a4fa39056451ff8affc33bea67afe91e754027d028644df6cd70cf869d4e69a",
+      "bytes": 819
+    },
+    {
+      "id": "ifremer_hindcast_listing",
+      "kind": "ifremer_ftp_readme_copy",
+      "file": "docs/research/step24b-evidence/ifremer_hindcast_listing.bin",
+      "sha256": "f5a3cf7e880c2317899cd48f1433f0704983d3189fba2f854a8c11f2db0f52e0",
+      "bytes": 2476
+    },
+    {
+      "id": "ifremer_hindcast_old_readmes_listing",
+      "kind": "ifremer_ftp_readme_copy",
+      "file": "docs/research/step24b-evidence/ifremer_hindcast_old_readmes_listing.bin",
+      "sha256": "76c42608a1701da1bc27e46ce28e0691ae62bfa926d5df5267b4d96100a9e70b",
+      "bytes": 1044
+    },
+    {
+      "id": "ifremer_hindcast_readme",
+      "kind": "ifremer_ftp_readme_copy",
+      "file": "docs/research/step24b-evidence/ifremer_hindcast_readme.bin",
+      "sha256": "474be33ab38a948baed777be2336d457e0f3fb4ca0440f8433ffc7763ad9d342",
+      "bytes": 8479
+    },
+    {
+      "id": "ifremer_hindcast_readme_netcdf",
+      "kind": "ifremer_ftp_readme_copy",
+      "file": "docs/research/step24b-evidence/ifremer_hindcast_readme_netcdf.bin",
+      "sha256": "b4c7818e0b162aab474c8a10b331f813e8c7a609b056e6a4d4156a3556d5d843",
+      "bytes": 2910
+    },
+    {
+      "id": "ifremer_hindcast_readme_sav",
+      "kind": "ifremer_ftp_readme_copy",
+      "file": "docs/research/step24b-evidence/ifremer_hindcast_readme_sav.bin",
+      "sha256": "221b3fdf1f445c311cbe9fe9ebb9b038209157a4ac157d1b6c50b3d8e23be444",
+      "bytes": 4677
+    },
+    {
+      "id": "ifremer_ww3_top_listing",
+      "kind": "ifremer_ftp_readme_copy",
+      "file": "docs/research/step24b-evidence/ifremer_ww3_top_listing.bin",
+      "sha256": "ecce2c34a9e7fa562aeea2d7993c18bf72bc4dd6f33f8e0abe45e8b74fa5e353",
+      "bytes": 1215
+    },
+    {
+      "id": "data06_file:WW3-GLOB-30M_201005_uss.nc",
+      "kind": "downloaded_product_file_attributes",
+      "file": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201005_uss.nc",
+      "sha256": "9a8afc65fef3502497ae44cdc79f4c02a17218b873dd2d287d81f081bcfb87e8",
+      "shaVerified": true,
+      "attributes": {
+        "distribution_statement": "No restrictions",
+        "institution": "SHOM and Ifremer",
+        "institution_references": "http://www.previmer.org/",
+        "data_centre": "IFREMER OCO DATA CENTER",
+        "data_centre_references": "http://www.previmer.org/",
+        "contact": "cdoco-exploit@ifremer.fr",
+        "references": "http://wwz.ifremer.fr/iowaga/",
+        "source": "MODEL WAVEWATCH III (R) GLOBMULTI",
+        "product_version": "1.0",
+        "software_version": "4.05-Ifremer_rev513",
+        "title": "WAVEWATCH-III FORECAST",
+        "forecast_type": "forecast",
+        "operational_status": "operational",
+        "grid": "glob_30m",
+        "forcing_wind": "wind_ncep",
+        "creation_date": "2013-07-05T16:20:13Z",
+        "product_name": "ww3.201005_uss.nc",
+        "start_date": "2010-05-01T00:00:00Z",
+        "stop_date": "2010-05-31T21:00:00Z"
+      }
+    },
+    {
+      "id": "data06_file:WW3-GLOB-30M_201006_uss.nc",
+      "kind": "downloaded_product_file_attributes",
+      "file": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201006_uss.nc",
+      "sha256": "152d2264a8d8c46277044d55b0616131fdf6c270419af06ddac0b66f50682e12",
+      "shaVerified": true,
+      "attributes": {
+        "distribution_statement": "No restrictions",
+        "institution": "SHOM and Ifremer",
+        "institution_references": "http://www.previmer.org/",
+        "data_centre": "IFREMER OCO DATA CENTER",
+        "data_centre_references": "http://www.previmer.org/",
+        "contact": "cdoco-exploit@ifremer.fr",
+        "references": "http://wwz.ifremer.fr/iowaga/",
+        "source": "MODEL WAVEWATCH III (R) GLOBMULTI",
+        "product_version": "1.0",
+        "software_version": "4.05-Ifremer_rev513",
+        "title": "WAVEWATCH-III FORECAST",
+        "forecast_type": "forecast",
+        "operational_status": "operational",
+        "grid": "glob_30m",
+        "forcing_wind": "wind_ncep",
+        "creation_date": "2013-07-05T16:20:13Z",
+        "product_name": "ww3.201006_uss.nc",
+        "start_date": "2010-06-01T00:00:00Z",
+        "stop_date": "2010-06-30T21:00:00Z"
+      }
+    },
+    {
+      "id": "data06_file:WW3-GLOB-30M_201007_uss.nc",
+      "kind": "downloaded_product_file_attributes",
+      "file": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201007_uss.nc",
+      "sha256": "cb3eae5330791054bad4922887814212b196bcc04886ec13eefbde3f7393b4fa",
+      "shaVerified": true,
+      "attributes": {
+        "distribution_statement": "No restrictions",
+        "institution": "SHOM and Ifremer",
+        "institution_references": "http://www.previmer.org/",
+        "data_centre": "IFREMER OCO DATA CENTER",
+        "data_centre_references": "http://www.previmer.org/",
+        "contact": "cdoco-exploit@ifremer.fr",
+        "references": "http://wwz.ifremer.fr/iowaga/",
+        "source": "MODEL WAVEWATCH III (R) GLOBMULTI",
+        "product_version": "1.0",
+        "software_version": "4.05-Ifremer_rev513",
+        "title": "WAVEWATCH-III FORECAST",
+        "forecast_type": "forecast",
+        "operational_status": "operational",
+        "grid": "glob_30m",
+        "forcing_wind": "wind_ncep",
+        "creation_date": "2013-07-05T16:19:48Z",
+        "product_name": "ww3.201007_uss.nc",
+        "start_date": "2010-07-01T00:00:00Z",
+        "stop_date": "2010-07-31T21:00:00Z"
+      }
+    },
+    {
+      "id": "data06_file:WW3-GLOB-30M_201008_uss.nc",
+      "kind": "downloaded_product_file_attributes",
+      "file": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201008_uss.nc",
+      "sha256": "4825781512add7afa509ae26106750d9df2dab0ef339836dc1f93084295b4e63",
+      "shaVerified": true,
+      "attributes": {
+        "distribution_statement": "No restrictions",
+        "institution": "SHOM and Ifremer",
+        "institution_references": "http://www.previmer.org/",
+        "data_centre": "IFREMER OCO DATA CENTER",
+        "data_centre_references": "http://www.previmer.org/",
+        "contact": "cdoco-exploit@ifremer.fr",
+        "references": "http://wwz.ifremer.fr/iowaga/",
+        "source": "MODEL WAVEWATCH III (R) GLOBMULTI",
+        "product_version": "1.0",
+        "software_version": "4.05-Ifremer_rev513",
+        "title": "WAVEWATCH-III FORECAST",
+        "forecast_type": "forecast",
+        "operational_status": "operational",
+        "grid": "glob_30m",
+        "forcing_wind": "wind_ncep",
+        "creation_date": "2013-07-05T16:19:48Z",
+        "product_name": "ww3.201008_uss.nc",
+        "start_date": "2010-08-01T00:00:00Z",
+        "stop_date": "2010-08-31T21:00:00Z"
+      }
+    },
+    {
+      "id": "data06_file:WW3-GLOB-30M_201011_uss.nc",
+      "kind": "downloaded_product_file_attributes",
+      "file": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201011_uss.nc",
+      "sha256": "c18e6fc7663a74c384fbfdffb7867bdb6e8c629f1391d31eb047b4aaa80d4365",
+      "shaVerified": true,
+      "attributes": {
+        "distribution_statement": "No restrictions",
+        "institution": "SHOM and Ifremer",
+        "institution_references": "http://www.previmer.org/",
+        "data_centre": "IFREMER OCO DATA CENTER",
+        "data_centre_references": "http://www.previmer.org/",
+        "contact": "cdoco-exploit@ifremer.fr",
+        "references": "http://wwz.ifremer.fr/iowaga/",
+        "source": "MODEL WAVEWATCH III (R) GLOBMULTI",
+        "product_version": "1.0",
+        "software_version": "4.05-Ifremer_rev513",
+        "title": "WAVEWATCH-III FORECAST",
+        "forecast_type": "forecast",
+        "operational_status": "operational",
+        "grid": "glob_30m",
+        "forcing_wind": "wind_ncep",
+        "creation_date": "2013-07-05T16:19:48Z",
+        "product_name": "ww3.201011_uss.nc",
+        "start_date": "2010-11-01T00:00:00Z",
+        "stop_date": "2010-11-30T21:00:00Z"
+      }
+    },
+    {
+      "id": "data06_file:WW3-GLOB-30M_201504_uss.nc",
+      "kind": "downloaded_product_file_attributes",
+      "file": "data/research/step23/DATA-06/2015_CFSR/WW3-GLOB-30M_201504_uss.nc",
+      "sha256": "63052f4623c00103e876c78037a5e04faf7a360726377015cce07352d92bb556",
+      "shaVerified": true,
+      "attributes": {
+        "distribution_statement": "No restrictions",
+        "institution": "SHOM and Ifremer",
+        "institution_references": "http://www.previmer.org/",
+        "data_centre": "IFREMER OCO DATA CENTER",
+        "data_centre_references": "http://www.previmer.org/",
+        "contact": "cdoco-exploit@ifremer.fr",
+        "references": "http://wwz.ifremer.fr/iowaga/",
+        "source": "MODEL WAVEWATCH III (R) GLOBMULTI",
+        "product_version": "1.0",
+        "software_version": "5.00-Ifremer_rev1210",
+        "title": "WAVEWATCH-III HINDCAST",
+        "forecast_type": "hindcast",
+        "operational_status": "operational",
+        "grid": "glob_30m",
+        "forcing_wind": "wind_ncep",
+        "creation_date": "2017-01-04T17:27:45Z",
+        "product_name": "glob_30m.201504_uss.nc",
+        "start_date": "2015-04-01 00:00:00",
+        "stop_date": "2015-04-30 21:00:00"
+      }
+    },
+    {
+      "id": "sextant_glob30m_lops_2025",
+      "kind": "online_catalogue_or_wiki (context; not stored; not applied)",
+      "url": "https://sextant.ifremer.fr/record/87209a81-2c27-452b-86ae-b9c2cc4d43a9/",
+      "consultedOn": "2026-09-06",
+      "appliesToDownloadedFiles": false,
+      "statedLicense": "CC-BY (Creative Commons - Attribution)"
+    },
+    {
+      "id": "sextant_globmulti_era5_globcur_01",
+      "kind": "online_catalogue_or_wiki (context; not stored; not applied)",
+      "url": "https://sextant.ifremer.fr/record/857a3337-f59a-481a-bf98-5561e8b61e7b/",
+      "consultedOn": "2026-09-06",
+      "appliesToDownloadedFiles": false,
+      "statedLicense": "Creative Commons Attribution-ShareAlike CC BY-SA"
+    },
+    {
+      "id": "ww3_wiki_ifremer_wave_hindcasts",
+      "kind": "online_catalogue_or_wiki (context; not stored; not applied)",
+      "url": "https://forge.ifremer.fr/plugins/mediawiki/wiki/ww3/index.php/En:ifremer_wave_hindcasts",
+      "consultedOn": "2026-09-06",
+      "appliesToDownloadedFiles": true,
+      "statedLicense": null
+    },
+    {
+      "id": "iowaga_reference_page",
+      "kind": "online_catalogue_or_wiki (context; not stored; not applied)",
+      "url": "http://wwz.ifremer.fr/iowaga/",
+      "consultedOn": "2026-09-06",
+      "appliesToDownloadedFiles": true,
+      "statedLicense": null
+    }
+  ],
+  "claimSourceMapping": [
+    {
+      "claimId": "file_attr:WW3-GLOB-30M_201005_uss.nc#distribution_statement",
+      "source": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201005_uss.nc",
+      "sourceSha256": "9a8afc65fef3502497ae44cdc79f4c02a17218b873dd2d287d81f081bcfb87e8"
+    },
+    {
+      "claimId": "file_attr:WW3-GLOB-30M_201006_uss.nc#distribution_statement",
+      "source": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201006_uss.nc",
+      "sourceSha256": "152d2264a8d8c46277044d55b0616131fdf6c270419af06ddac0b66f50682e12"
+    },
+    {
+      "claimId": "file_attr:WW3-GLOB-30M_201007_uss.nc#distribution_statement",
+      "source": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201007_uss.nc",
+      "sourceSha256": "cb3eae5330791054bad4922887814212b196bcc04886ec13eefbde3f7393b4fa"
+    },
+    {
+      "claimId": "file_attr:WW3-GLOB-30M_201008_uss.nc#distribution_statement",
+      "source": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201008_uss.nc",
+      "sourceSha256": "4825781512add7afa509ae26106750d9df2dab0ef339836dc1f93084295b4e63"
+    },
+    {
+      "claimId": "file_attr:WW3-GLOB-30M_201011_uss.nc#distribution_statement",
+      "source": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201011_uss.nc",
+      "sourceSha256": "c18e6fc7663a74c384fbfdffb7867bdb6e8c629f1391d31eb047b4aaa80d4365"
+    },
+    {
+      "claimId": "file_attr:WW3-GLOB-30M_201504_uss.nc#distribution_statement",
+      "source": "data/research/step23/DATA-06/2015_CFSR/WW3-GLOB-30M_201504_uss.nc",
+      "sourceSha256": "63052f4623c00103e876c78037a5e04faf7a360726377015cce07352d92bb556"
+    }
+  ],
+  "excluded": [
+    "Copernicus Marine terms (unrelated product)",
+    "third-party interpretations",
+    "generic FTP assumptions",
+    "search snippets without source"
+  ],
+  "newDownloads": 0,
+  "credentialsInvolved": false
+}

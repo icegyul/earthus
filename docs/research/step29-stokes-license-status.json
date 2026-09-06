@@ -1,0 +1,272 @@
+{
+  "ruleId": "stokes-license-and-experiment-gate-step29",
+  "dataset": "DATA-06",
+  "provider": "IFREMER (distribution, OCO data centre) and SHOM (co-institution per file attribute)",
+  "product": "WAVEWATCH III GLOBMULTI global hindcast, GLOB-30M (0.5 deg), CFSR-forced (forcing_wind wind_ncep), surface Stokes drift uss files",
+  "productVersion": [
+    "1.0"
+  ],
+  "sourcePath": "ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/<year>_CFSR/uss/",
+  "priorStatus": "LICENSE_UNKNOWN",
+  "evidenceScope": "provider-embedded attributes of the downloaded files (SHA-verified) + IFREMER FTP README copies (STEP 24b) + IFREMER WW3 wiki (context); Sextant records of other product versions recorded as context only; no Copernicus material used",
+  "copernicusEvidenceUsed": false,
+  "applicableStatements": [
+    {
+      "claimId": "file_attr:WW3-GLOB-30M_201005_uss.nc#distribution_statement",
+      "source": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201005_uss.nc",
+      "sourceSha256": "9a8afc65fef3502497ae44cdc79f4c02a17218b873dd2d287d81f081bcfb87e8",
+      "text": "distribution_statement = No restrictions; institution = SHOM and Ifremer; data_centre = IFREMER OCO DATA CENTER; product_version = 1.0; source = MODEL WAVEWATCH III (R) GLOBMULTI",
+      "category": "explicit distribution/use statement embedded by the provider in the downloaded file",
+      "productApplicable": true,
+      "applicabilityBasis": "attribute of the downloaded hindcast file itself (product_version 1.0, GLOBMULTI, glob_30m, wind_ncep)"
+    },
+    {
+      "claimId": "file_attr:WW3-GLOB-30M_201006_uss.nc#distribution_statement",
+      "source": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201006_uss.nc",
+      "sourceSha256": "152d2264a8d8c46277044d55b0616131fdf6c270419af06ddac0b66f50682e12",
+      "text": "distribution_statement = No restrictions; institution = SHOM and Ifremer; data_centre = IFREMER OCO DATA CENTER; product_version = 1.0; source = MODEL WAVEWATCH III (R) GLOBMULTI",
+      "category": "explicit distribution/use statement embedded by the provider in the downloaded file",
+      "productApplicable": true,
+      "applicabilityBasis": "attribute of the downloaded hindcast file itself (product_version 1.0, GLOBMULTI, glob_30m, wind_ncep)"
+    },
+    {
+      "claimId": "file_attr:WW3-GLOB-30M_201007_uss.nc#distribution_statement",
+      "source": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201007_uss.nc",
+      "sourceSha256": "cb3eae5330791054bad4922887814212b196bcc04886ec13eefbde3f7393b4fa",
+      "text": "distribution_statement = No restrictions; institution = SHOM and Ifremer; data_centre = IFREMER OCO DATA CENTER; product_version = 1.0; source = MODEL WAVEWATCH III (R) GLOBMULTI",
+      "category": "explicit distribution/use statement embedded by the provider in the downloaded file",
+      "productApplicable": true,
+      "applicabilityBasis": "attribute of the downloaded hindcast file itself (product_version 1.0, GLOBMULTI, glob_30m, wind_ncep)"
+    },
+    {
+      "claimId": "file_attr:WW3-GLOB-30M_201008_uss.nc#distribution_statement",
+      "source": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201008_uss.nc",
+      "sourceSha256": "4825781512add7afa509ae26106750d9df2dab0ef339836dc1f93084295b4e63",
+      "text": "distribution_statement = No restrictions; institution = SHOM and Ifremer; data_centre = IFREMER OCO DATA CENTER; product_version = 1.0; source = MODEL WAVEWATCH III (R) GLOBMULTI",
+      "category": "explicit distribution/use statement embedded by the provider in the downloaded file",
+      "productApplicable": true,
+      "applicabilityBasis": "attribute of the downloaded hindcast file itself (product_version 1.0, GLOBMULTI, glob_30m, wind_ncep)"
+    },
+    {
+      "claimId": "file_attr:WW3-GLOB-30M_201011_uss.nc#distribution_statement",
+      "source": "data/research/step23/DATA-06/2010_CFSR/WW3-GLOB-30M_201011_uss.nc",
+      "sourceSha256": "c18e6fc7663a74c384fbfdffb7867bdb6e8c629f1391d31eb047b4aaa80d4365",
+      "text": "distribution_statement = No restrictions; institution = SHOM and Ifremer; data_centre = IFREMER OCO DATA CENTER; product_version = 1.0; source = MODEL WAVEWATCH III (R) GLOBMULTI",
+      "category": "explicit distribution/use statement embedded by the provider in the downloaded file",
+      "productApplicable": true,
+      "applicabilityBasis": "attribute of the downloaded hindcast file itself (product_version 1.0, GLOBMULTI, glob_30m, wind_ncep)"
+    },
+    {
+      "claimId": "file_attr:WW3-GLOB-30M_201504_uss.nc#distribution_statement",
+      "source": "data/research/step23/DATA-06/2015_CFSR/WW3-GLOB-30M_201504_uss.nc",
+      "sourceSha256": "63052f4623c00103e876c78037a5e04faf7a360726377015cce07352d92bb556",
+      "text": "distribution_statement = No restrictions; institution = SHOM and Ifremer; data_centre = IFREMER OCO DATA CENTER; product_version = 1.0; source = MODEL WAVEWATCH III (R) GLOBMULTI",
+      "category": "explicit distribution/use statement embedded by the provider in the downloaded file",
+      "productApplicable": true,
+      "applicabilityBasis": "attribute of the downloaded hindcast file itself (product_version 1.0, GLOBMULTI, glob_30m, wind_ncep)"
+    }
+  ],
+  "distributionStatementValues": [
+    "No restrictions"
+  ],
+  "institutionValues": [
+    "SHOM and Ifremer"
+  ],
+  "readmeDocuments": [
+    {
+      "id": "ifremer_global_listing",
+      "file": "docs/research/step24b-evidence/ifremer_global_listing.bin",
+      "sha256": "60c61bacd1af349c649019c6f7309c823d03b2903021081a10f000d269289431",
+      "bytes": 7652,
+      "licenseTermsFound": false,
+      "citationRequirementFound": false,
+      "note": "IFREMER FTP document copied in STEP 24b; re-scanned: no license, terms-of-use, citation or redistribution statement"
+    },
+    {
+      "id": "ifremer_global_readme",
+      "file": "docs/research/step24b-evidence/ifremer_global_readme.bin",
+      "sha256": "9a4fa39056451ff8affc33bea67afe91e754027d028644df6cd70cf869d4e69a",
+      "bytes": 819,
+      "licenseTermsFound": false,
+      "citationRequirementFound": false,
+      "note": "IFREMER FTP document copied in STEP 24b; re-scanned: no license, terms-of-use, citation or redistribution statement"
+    },
+    {
+      "id": "ifremer_hindcast_listing",
+      "file": "docs/research/step24b-evidence/ifremer_hindcast_listing.bin",
+      "sha256": "f5a3cf7e880c2317899cd48f1433f0704983d3189fba2f854a8c11f2db0f52e0",
+      "bytes": 2476,
+      "licenseTermsFound": false,
+      "citationRequirementFound": false,
+      "note": "IFREMER FTP document copied in STEP 24b; re-scanned: no license, terms-of-use, citation or redistribution statement"
+    },
+    {
+      "id": "ifremer_hindcast_old_readmes_listing",
+      "file": "docs/research/step24b-evidence/ifremer_hindcast_old_readmes_listing.bin",
+      "sha256": "76c42608a1701da1bc27e46ce28e0691ae62bfa926d5df5267b4d96100a9e70b",
+      "bytes": 1044,
+      "licenseTermsFound": false,
+      "citationRequirementFound": false,
+      "note": "IFREMER FTP document copied in STEP 24b; re-scanned: no license, terms-of-use, citation or redistribution statement"
+    },
+    {
+      "id": "ifremer_hindcast_readme",
+      "file": "docs/research/step24b-evidence/ifremer_hindcast_readme.bin",
+      "sha256": "474be33ab38a948baed777be2336d457e0f3fb4ca0440f8433ffc7763ad9d342",
+      "bytes": 8479,
+      "licenseTermsFound": false,
+      "citationRequirementFound": false,
+      "note": "IFREMER FTP document copied in STEP 24b; re-scanned: no license, terms-of-use, citation or redistribution statement"
+    },
+    {
+      "id": "ifremer_hindcast_readme_netcdf",
+      "file": "docs/research/step24b-evidence/ifremer_hindcast_readme_netcdf.bin",
+      "sha256": "b4c7818e0b162aab474c8a10b331f813e8c7a609b056e6a4d4156a3556d5d843",
+      "bytes": 2910,
+      "licenseTermsFound": false,
+      "citationRequirementFound": false,
+      "note": "IFREMER FTP document copied in STEP 24b; re-scanned: no license, terms-of-use, citation or redistribution statement"
+    },
+    {
+      "id": "ifremer_hindcast_readme_sav",
+      "file": "docs/research/step24b-evidence/ifremer_hindcast_readme_sav.bin",
+      "sha256": "221b3fdf1f445c311cbe9fe9ebb9b038209157a4ac157d1b6c50b3d8e23be444",
+      "bytes": 4677,
+      "licenseTermsFound": false,
+      "citationRequirementFound": false,
+      "note": "IFREMER FTP document copied in STEP 24b; re-scanned: no license, terms-of-use, citation or redistribution statement"
+    },
+    {
+      "id": "ifremer_ww3_top_listing",
+      "file": "docs/research/step24b-evidence/ifremer_ww3_top_listing.bin",
+      "sha256": "ecce2c34a9e7fa562aeea2d7993c18bf72bc4dd6f33f8e0abe45e8b74fa5e353",
+      "bytes": 1215,
+      "licenseTermsFound": false,
+      "citationRequirementFound": false,
+      "note": "IFREMER FTP document copied in STEP 24b; re-scanned: no license, terms-of-use, citation or redistribution statement"
+    }
+  ],
+  "onlineDocumentsConsulted": [
+    {
+      "id": "sextant_glob30m_lops_2025",
+      "url": "https://sextant.ifremer.fr/record/87209a81-2c27-452b-86ae-b9c2cc4d43a9/",
+      "consultedOn": "2026-09-06",
+      "describes": "GLOB-30M_LOPS_2025 (WAVEWATCH III, Alday & Ardhuin 2023 parameterization, ERA5 winds, 1991-2024, hourly)",
+      "statedLicense": "CC-BY (Creative Commons - Attribution)",
+      "citation": "Accensi Mickael (2024). GLOB-30M_LOPS_2025. IFREMER. DOI 10.12770/87209a81-2c27-452b-86ae-b9c2cc4d43a9",
+      "appliesToDownloadedFiles": false,
+      "reason": "different product (ERA5-forced, 2025 LOPS hindcast); the downloaded files are the CFSR-forced product_version 1.0 files created 2013-07-05",
+      "role": "ALTERNATIVE_CANDIDATE (not substituted; new preregistration required before any use)"
+    },
+    {
+      "id": "sextant_globmulti_era5_globcur_01",
+      "url": "https://sextant.ifremer.fr/record/857a3337-f59a-481a-bf98-5561e8b61e7b/",
+      "consultedOn": "2026-09-06",
+      "describes": "GLOBMULTI_ERA5_GLOBCUR_01 (WAVEWATCH III, Alday et al. 2021, ERA5 winds, CMEMS GLOBCURRENT, 1993-2024, 3-hourly, 0.5 deg global grid)",
+      "statedLicense": "Creative Commons Attribution-ShareAlike CC BY-SA",
+      "citation": "Accensi Mickael. GLOBMULTI_ERA5_GLOBCUR_01. IFREMER. DOI 10.12770/857a3337-f59a-481a-bf98-5561e8b61e7b",
+      "appliesToDownloadedFiles": false,
+      "reason": "different product (ERA5-forced); does not name the CFSR hindcast files",
+      "role": "ALTERNATIVE_CANDIDATE (not substituted; new preregistration required before any use)"
+    },
+    {
+      "id": "ww3_wiki_ifremer_wave_hindcasts",
+      "url": "https://forge.ifremer.fr/plugins/mediawiki/wiki/ww3/index.php/En:ifremer_wave_hindcasts",
+      "consultedOn": "2026-09-06",
+      "describes": "IFREMER wave hindcasts wiki: CFSR/CFSRR-forced global hindcast 1984-2015, BETAMAX by year, FTP directories",
+      "statedLicense": null,
+      "citation": null,
+      "appliesToDownloadedFiles": true,
+      "reason": "documents the CFSR hindcast family but contains no license, terms, citation or redistribution statement",
+      "role": "context (no applicable permission statement)"
+    },
+    {
+      "id": "iowaga_reference_page",
+      "url": "http://wwz.ifremer.fr/iowaga/",
+      "consultedOn": "2026-09-06",
+      "describes": "file attribute 'references' target",
+      "statedLicense": null,
+      "citation": null,
+      "appliesToDownloadedFiles": true,
+      "reason": "host not resolvable on 2026-09-06 (getaddrinfo ENOTFOUND); no content obtained",
+      "role": "unreachable"
+    }
+  ],
+  "determination": {
+    "1_explicitLicenseStated": {
+      "answer": "YES_AS_DISTRIBUTION_STATEMENT",
+      "basis": "file attribute distribution_statement = 'No restrictions' in all six downloaded files (SHOM and Ifremer; IFREMER OCO data centre)",
+      "namedLicenseText": false
+    },
+    "2_researchUseAllowed": {
+      "answer": "YES",
+      "basis": "no restriction stated by the provider on the files"
+    },
+    "3_derivedQuantitiesAllowed": {
+      "answer": "NOT_RESTRICTED",
+      "basis": "no restriction stated; no explicit derivative clause exists"
+    },
+    "4_redistributionAllowed": {
+      "answer": "NOT_RESTRICTED",
+      "basis": "distribution_statement 'No restrictions'; repository policy nevertheless keeps raw files uncommitted"
+    },
+    "5_modificationDerivationAllowed": {
+      "answer": "NOT_RESTRICTED",
+      "basis": "no restriction stated"
+    },
+    "6_citationRequired": {
+      "answer": "NOT_STATED",
+      "basis": "no citation requirement found in file attributes, FTP READMEs or wiki; attribution to SHOM/Ifremer (IOWAGA, http://wwz.ifremer.fr/iowaga/) will be given voluntarily"
+    },
+    "7_commercialUseRestriction": {
+      "answer": "NONE_STATED",
+      "basis": "no restriction stated"
+    },
+    "8_derivativeProductRestriction": {
+      "answer": "NONE_STATED",
+      "basis": "no restriction stated"
+    },
+    "9_coverage": {
+      "answer": "PRODUCT_FILES",
+      "basis": "the statement is embedded in the product files themselves (not a statement about the WAVEWATCH III model code)"
+    },
+    "10_appliesToDownloadedHindcastFiles": {
+      "answer": "YES",
+      "basis": "attribute present and identical in every downloaded file (SHA-verified)"
+    }
+  },
+  "caveats": [
+    "The permission rests on a provider-embedded file attribute, not on a named license text (no CC/ODbL/other license name, no terms-of-use document, no citation requirement was found for the CFSR-forced product_version 1.0 files).",
+    "The file metadata block also carries operational-forecast template fields (title 'WAVEWATCH-III FORECAST', forecast_type 'forecast', operational_status 'operational') although the files are hindcast outputs; the distribution_statement may therefore be template-inherited. It is nevertheless the only provider statement attached to these exact files and is identical in all six.",
+    "Precedent: STEP 17 accepted the HYCOM file attribute distribution_statement ('Distribution unlimited') as the license basis for the frozen baseline; the same evidence class is applied here for consistency and is disclosed.",
+    "Successor products on Sextant (ERA5-forced) carry named Creative Commons licenses; they are different products and are NOT applied to these files (recorded as ALTERNATIVE_CANDIDATE only)."
+  ],
+  "finalLicenseStatus": "LICENSE_CONFIRMED",
+  "statusRule": "LICENSE_CONFIRMED = explicit provider statement permitting use/distribution applicable to the downloaded files (a file-embedded distribution_statement qualifies, as accepted for HYCOM in STEP 17); LICENSE_RESTRICTED = explicit restriction; LICENSE_UNKNOWN = no applicable explicit statement; DATASET_BLOCKED = data failure",
+  "modelUseAllowed": true,
+  "alternativeCandidates": [
+    {
+      "id": "sextant_glob30m_lops_2025",
+      "url": "https://sextant.ifremer.fr/record/87209a81-2c27-452b-86ae-b9c2cc4d43a9/",
+      "consultedOn": "2026-09-06",
+      "describes": "GLOB-30M_LOPS_2025 (WAVEWATCH III, Alday & Ardhuin 2023 parameterization, ERA5 winds, 1991-2024, hourly)",
+      "statedLicense": "CC-BY (Creative Commons - Attribution)",
+      "citation": "Accensi Mickael (2024). GLOB-30M_LOPS_2025. IFREMER. DOI 10.12770/87209a81-2c27-452b-86ae-b9c2cc4d43a9",
+      "appliesToDownloadedFiles": false,
+      "reason": "different product (ERA5-forced, 2025 LOPS hindcast); the downloaded files are the CFSR-forced product_version 1.0 files created 2013-07-05",
+      "role": "ALTERNATIVE_CANDIDATE (not substituted; new preregistration required before any use)"
+    },
+    {
+      "id": "sextant_globmulti_era5_globcur_01",
+      "url": "https://sextant.ifremer.fr/record/857a3337-f59a-481a-bf98-5561e8b61e7b/",
+      "consultedOn": "2026-09-06",
+      "describes": "GLOBMULTI_ERA5_GLOBCUR_01 (WAVEWATCH III, Alday et al. 2021, ERA5 winds, CMEMS GLOBCURRENT, 1993-2024, 3-hourly, 0.5 deg global grid)",
+      "statedLicense": "Creative Commons Attribution-ShareAlike CC BY-SA",
+      "citation": "Accensi Mickael. GLOBMULTI_ERA5_GLOBCUR_01. IFREMER. DOI 10.12770/857a3337-f59a-481a-bf98-5561e8b61e7b",
+      "appliesToDownloadedFiles": false,
+      "reason": "different product (ERA5-forced); does not name the CFSR hindcast files",
+      "role": "ALTERNATIVE_CANDIDATE (not substituted; new preregistration required before any use)"
+    }
+  ],
+  "anonymousFtpIsNotPermission": true
+}

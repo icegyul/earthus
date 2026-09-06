@@ -1,0 +1,39 @@
+{
+  "ruleId": "stokes-license-and-experiment-gate-step29",
+  "phase": "A",
+  "status": "PREREGISTRATION_LOCKED",
+  "dataset": "DATA-06",
+  "product": "WAVEWATCH III GLOBMULTI GLOB-30M CFSR hindcast (product_version 1.0), surface Stokes drift uss",
+  "priorLicenseStatus": "LICENSE_UNKNOWN",
+  "licenseStatus": "LICENSE_CONFIRMED",
+  "licenseBasis": "provider-embedded distribution_statement 'No restrictions' in all six downloaded files (SHOM and Ifremer; IFREMER OCO data centre); no named license text; no citation requirement stated",
+  "researchUse": "YES",
+  "derivedUse": "NOT_RESTRICTED",
+  "redistribution": "NOT_RESTRICTED",
+  "citation": "NOT_STATED",
+  "technicalSuitability": "TECHNICALLY_SUITABLE_PENDING_EXECUTION_GATE",
+  "test06Status": "ELIGIBLE_PENDING_EXECUTION_PROTOCOL",
+  "decisionCase": "A",
+  "alternativeCandidates": [
+    "sextant_glob30m_lops_2025",
+    "sextant_globmulti_era5_globcur_01"
+  ],
+  "newData": 0,
+  "modelRunCount": 0,
+  "alpha": 0.002,
+  "stokesCoefficient": 1.0,
+  "caveats": [
+    "The permission rests on a provider-embedded file attribute, not on a named license text (no CC/ODbL/other license name, no terms-of-use document, no citation requirement was found for the CFSR-forced product_version 1.0 files).",
+    "The file metadata block also carries operational-forecast template fields (title 'WAVEWATCH-III FORECAST', forecast_type 'forecast', operational_status 'operational') although the files are hindcast outputs; the distribution_statement may therefore be template-inherited. It is nevertheless the only provider statement attached to these exact files and is identical in all six.",
+    "Precedent: STEP 17 accepted the HYCOM file attribute distribution_statement ('Distribution unlimited') as the license basis for the frozen baseline; the same evidence class is applied here for consistency and is disclosed.",
+    "Successor products on Sextant (ERA5-forced) carry named Creative Commons licenses; they are different products and are NOT applied to these files (recorded as ALTERNATIVE_CANDIDATE only)."
+  ],
+  "interpretation": "LICENSE / EXPERIMENT DESIGN ONLY",
+  "statements": [
+    "STEP 29 Phase A resolves the DATA-06 data-use gate and registers the TEST-06 design; no Stokes field was integrated and no trajectory was run.",
+    "The license determination rests on the provider-embedded 'No restrictions' distribution statement of the downloaded files; a named license text was not found and this is disclosed.",
+    "Stokes drift is a hypothesis term; no statement that it is the missing term or will improve the model is made.",
+    "alpha = 0.002 (comparison alpha = 0) and the Stokes coefficient 1.0 are fixed; no coefficient or alpha search.",
+    "AVISO evidence from STEP 28 is rationale only and is not ground truth; STEP 20-28 results are unchanged."
+  ]
+}

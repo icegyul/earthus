@@ -1,0 +1,170 @@
+{
+  "ruleId": "stokes-license-and-experiment-gate-step29",
+  "test": "TEST-06 (future; NOT executed here)",
+  "hypothesis": "Adding Stokes drift may alter the surface transport trajectory in a direction not represented by the existing Eulerian-current plus windage formulation.",
+  "hypothesisStatus": "hypothesis only; no claim that Stokes drift is the missing term or that it will improve the model",
+  "control": {
+    "ocean": "GLORYS12V1 native 15.810070 m (STEP 25C Condition C forcing, SHA-locked)",
+    "wind": "NCEP-DOE R2 10 m 6 h (STEP 17 / STEP 20 B-3 files)",
+    "alpha": 0.002,
+    "equation": "dX/dt = U_ocean + alpha * U_wind"
+  },
+  "treatment": {
+    "ocean": "GLORYS12V1 native 15.810070 m",
+    "stokes": "WW3 GLOB-30M CFSR surface Stokes drift (uuss, vuss), coefficient 1.0 (added directly)",
+    "wind": "NCEP-DOE R2 10 m 6 h",
+    "alpha": 0.002,
+    "equation": "dX/dt = U_ocean + U_Stokes + alpha * U_wind"
+  },
+  "structuralBaseline": {
+    "pair": "same control/treatment with alpha = 0",
+    "role": "structural check only"
+  },
+  "stokesCoefficient": 1.0,
+  "coefficientSearch": false,
+  "alphaSearch": false,
+  "alpha": 0.002,
+  "alphaModified": false,
+  "termsKeptSeparate": [
+    "Eulerian ocean current (GLORYS)",
+    "windage alpha * U10 (NCEP R2)",
+    "Stokes drift (WW3 uss)"
+  ],
+  "substitutionsForbidden": [
+    "Stokes for current",
+    "Stokes for windage",
+    "AVISO for any term",
+    "drifter velocity for any term"
+  ],
+  "mechanics": "frozen runtime mechanics (RK4 300 s, output 900 s, 72 h, bilinear/linear, cos(phi) at every stage, STEP 18b status rules); the Stokes term requires a runtime-external composite forcing or a preregistered runtime extension, to be defined and locked in the TEST-06 execution protocol",
+  "windows": {
+    "calibration": [
+      "KE-1",
+      "KE-2",
+      "AG-1",
+      "AG-2"
+    ],
+    "holdout": [
+      "KE-H1",
+      "KE-H3"
+    ],
+    "KE-H2": "coverage fact only unless a separate rule makes the frozen baseline pairing eligible",
+    "AG-holdout": "UNAVAILABLE"
+  },
+  "step20Modified": false,
+  "metrics": "M3 24/48/72 h primary (paired delta treatment - control, tie 1e-6 km, median primary), M1/M2/M4/M5 secondary; descriptive only",
+  "runs": {
+    "treatment": 6,
+    "control": "existing STEP 25C Condition C runs (alpha 0.002) reused by SHA if configuration identity is exact, else 6",
+    "structuralBaseline": "6 + 6 (alpha 0)"
+  },
+  "acceptanceForFutureTest": [
+    "license status permits scientific use",
+    "product identity verified",
+    "uuss/vuss present",
+    "72 h coverage complete per window",
+    "no source gaps",
+    "units m/s",
+    "coordinate integrity",
+    "reproducibility",
+    "field physically interpretable as surface Stokes drift",
+    "TEST-06 execution protocol locked"
+  ],
+  "evidenceRationaleFromStep28": {
+    "HYCOM_vs_GLORYS": "median vector difference ~0.25 m/s, median direction difference ~35 deg",
+    "HYCOM_vs_AVISO": "larger speed excess over the surface-geostrophic reference",
+    "GLORYS_vs_AVISO": "lower vector difference than HYCOM in all four A/B/C windows",
+    "caveat": "AVISO is a reference field, not ground truth"
+  },
+  "decision": {
+    "case": "A",
+    "test06Status": "ELIGIBLE_PENDING_EXECUTION_PROTOCOL"
+  },
+  "technicalSuitability": {
+    "evaluated": true,
+    "source": "STEP 23 DATA-06 quality gates (frozen) + file attributes re-read here",
+    "variables": {
+      "uuss": "eastward surface stokes drift",
+      "vuss": "northward surface stokes drift"
+    },
+    "units": [
+      "m s-1",
+      "m/s"
+    ],
+    "spatialResolutionDegrees": 0.5,
+    "cadenceSeconds": 10800,
+    "gates": {
+      "G1": "PASS",
+      "G2": "PASS",
+      "G3": "PASS",
+      "G4": "PASS",
+      "G5": "PASS",
+      "G6": "PASS",
+      "G7": "PASS",
+      "G8": "PASS",
+      "G9": "PASS",
+      "G10": "PASS",
+      "G11": "PENDING_VALIDATOR"
+    },
+    "windowsCovered": [
+      "KE-1",
+      "KE-2",
+      "AG-1",
+      "AG-2",
+      "KE-H1",
+      "KE-H2",
+      "KE-H3"
+    ],
+    "windowsNotCovered": [],
+    "windowStatus": [
+      {
+        "windowId": "KE-1",
+        "covered": true,
+        "spansMonths": false,
+        "releaseStencil": true
+      },
+      {
+        "windowId": "KE-2",
+        "covered": true,
+        "spansMonths": true,
+        "releaseStencil": "RECHECK_AT_EXECUTION (spans two monthly files)"
+      },
+      {
+        "windowId": "AG-1",
+        "covered": true,
+        "spansMonths": false,
+        "releaseStencil": true
+      },
+      {
+        "windowId": "AG-2",
+        "covered": true,
+        "spansMonths": false,
+        "releaseStencil": true
+      },
+      {
+        "windowId": "KE-H1",
+        "covered": true,
+        "spansMonths": false,
+        "releaseStencil": true
+      },
+      {
+        "windowId": "KE-H2",
+        "covered": true,
+        "spansMonths": false,
+        "releaseStencil": true
+      },
+      {
+        "windowId": "KE-H3",
+        "covered": true,
+        "spansMonths": false,
+        "releaseStencil": true
+      }
+    ],
+    "caveat": "KE-2 spans two monthly files (contiguous, 3 h boundary gap = cadence); its release stencil was not evaluated in STEP 23 (null) and must be re-checked in the TEST-06 execution gate; no gap repair permitted",
+    "physicalInterpretation": "surface Stokes drift from the wave spectrum (WAVEWATCH III uss); not an Eulerian current, not geostrophic current, not windage, not drifter velocity",
+    "result": "TECHNICALLY_SUITABLE_PENDING_EXECUTION_GATE"
+  },
+  "MODEL_RUN": "FORBIDDEN",
+  "modelRunCount": 0,
+  "newDownloads": 0
+}

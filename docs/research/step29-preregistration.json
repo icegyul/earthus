@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "ruleId": "stokes-license-and-experiment-gate-step29",
+  "phase": "A",
+  "createdAtUTC": "2026-09-06T14:56:47Z",
+  "gitCommitAtDesign": "4942421a",
+  "authorProcess": "Claude Fable 5.1 session, user-directed STEP 29 Phase A",
+  "protocolDocument": "docs/research/step29-stokes-license-protocol.md",
+  "protocolSha256": "97787ac0908bc6f688b9d40763998a0e97ed4bc761496f6c6e952dc1a0ce4f70",
+  "licenseStatusSha256": "8a8640ac534c1fb9b8551a4a1e777f8a96d6f6c271d896246ed13b8cf93cb24b",
+  "evidenceIndexSha256": "0e7982a94d8e0d8e0e2766ec8734c775e01d08a22d04a5f1e97a3fb0cc34e35e",
+  "experimentDesignSha256": "1fd0060865a65e6ec8e05d419e627d8a75943f222baf259d91a8300551887aae",
+  "summarySha256": "ef7fdfa382a678f6b59a6e0dc9a097514a932cf70fc7304eed360e0504f5ccb2",
+  "tools": {
+    "tools/research/assess_step29.py": "a1dd3b67a1f4f959fa4ed50f2c380550346bf4cc6f5e60bb10e52f3d6e9de6fb"
+  },
+  "validator": {
+    "path": "tools/research/check_step29_stokes_license.py",
+    "sha256": "79edfec989d979298e12611135894f99bf01dd72ad76fc0c977b1cbd307e5834"
+  },
+  "ancestry": {
+    "step28PhaseB": "4942421a",
+    "step28PhaseA": "79a0d69d",
+    "step27PhaseB": "3338c7e4",
+    "step25c": "c974ce42",
+    "step24b": "db6cea2f",
+    "step23": "4bb4342b",
+    "step20AlphaLock": "73fafffb"
+  },
+  "decisionRule": "LICENSE_CONFIRMED = explicit provider statement permitting use/distribution applicable to the downloaded files (file-embedded distribution_statement qualifies, as for HYCOM in STEP 17); LICENSE_RESTRICTED = explicit restriction; LICENSE_UNKNOWN = no applicable explicit statement; DATASET_BLOCKED = data failure",
+  "MODEL_RUN": "FORBIDDEN",
+  "modelRunCount": 0,
+  "newData": 0,
+  "alpha": 0.002,
+  "stokesCoefficient": 1.0,
+  "expectedOutcome": "NONE DECLARED",
+  "stopRule": "Phase A ends at the LOCK commit; no WW3 download, no TEST-06 run, no forcing/depth/alpha change, no STEP 30"
+}

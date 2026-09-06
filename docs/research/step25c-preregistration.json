@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "ruleId": "forcing-sensitivity-test02-step25c",
+  "protocolDocument": "docs/research/step25c-test02-protocol.json",
+  "protocolSha256": "7ff8468ea8399b8bf9d563980a184203b1b69c55a52cf7a493d1c140c97901ab",
+  "createdAtUTC": "2026-09-06T11:46:30Z",
+  "gitCommitAtDesign": "929d3468",
+  "authorProcess": "Claude Fable 5.1 session, user-directed STEP 25C",
+  "ancestry": {
+    "step25b": "929d3468",
+    "step25aLock": "2841f511",
+    "step24bR2": "db6cea2f",
+    "step20AlphaLock": "73fafffb",
+    "step20Lock": "155995dd"
+  },
+  "tools": {
+    "tools/research/glorys_reader_step25c.py": "11b7d987434a55a9e42a9776e851fad49b8ec65d2df0f23130c7a7e6234ab63e",
+    "tools/research/build_step25c_forcing.py": "b16c37b71a65fe169af6347effadb79ac24159b7414350d833ee81213e3cb68c",
+    "tools/research/run_step25c_test02.py": "966f76bc047c886f087134df66f2f434759b83d60e21a0537d5839d83c3154aa",
+    "tools/research/evaluate_step25c_test02.py": "2cf5f80d96f145060527f7e619c502d244cbb7ff384598d8992a3e6eb7f092ad",
+    "tools/research/check_step25c_test02.py": "52e8c8bddf27bbdd66bb177225824039b2fe471145d6b18e02dcfb475399132a"
+  },
+  "validator": {
+    "path": "tools/research/check_step25c_test02.py",
+    "sha256": "52e8c8bddf27bbdd66bb177225824039b2fe471145d6b18e02dcfb475399132a"
+  },
+  "possibleOutcomes": [
+    "GLORYS DESCRIPTIVELY FAVORED",
+    "HYCOM DESCRIPTIVELY FAVORED",
+    "NO CLEAR DESCRIPTIVE DIFFERENCE",
+    "EXPERIMENT BLOCKED"
+  ],
+  "expectedWinner": "NONE DECLARED (no prior)",
+  "modelRunPlan": {
+    "newRuns": 12,
+    "hycomRerun": false
+  },
+  "alpha": {
+    "primary": 0.002,
+    "comparison": 0.0,
+    "search": false
+  },
+  "phaseOrder": [
+    "LOCK commit",
+    "forcing normalization (data only)",
+    "12 GLORYS runs with per-run replay",
+    "evaluation",
+    "validator x2 byte-identical",
+    "commit only with validator PASS"
+  ],
+  "lockPolicy": "protocol, preregistration and the five tools are SHA-locked and committed BEFORE forcing normalization and any model run"
+}

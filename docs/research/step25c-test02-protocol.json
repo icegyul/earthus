@@ -1,0 +1,856 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "forcing-sensitivity-test02-step25c",
+  "title": "STEP 25C / TEST-02 - GLORYS12V1 versus frozen HYCOM paired forcing experiment",
+  "status": "PREREGISTRATION LOCKED",
+  "createdAtUTC": "2026-09-06T11:46:30Z",
+  "baseCommit": "929d3468",
+  "scientificQuestion": "Does the higher-resolution GLORYS12V1 ocean forcing reduce observed-versus-modelled drifter trajectory error relative to the frozen HYCOM GOFS 3.1 forcing, all other mechanics identical?",
+  "design": "STEP 25A TEST-02 executed as locked: paired A/B on identical windows, releases, wind, alpha, mechanics; only the ocean forcing dataset identity differs",
+  "modelA": {
+    "name": "FROZEN HYCOM BASELINE",
+    "ocean": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X, 0.08 deg, 15 m, 3-hourly",
+    "wind": "NCEP-DOE R2 10 m 6-hourly",
+    "alpha": 0.002,
+    "source": "STEP 20 calibration (B-1) and B-6 holdout trajectories, SHA-locked; NOT re-run",
+    "rerun": false
+  },
+  "modelB": {
+    "name": "GLORYS12V1",
+    "productId": "GLOBAL_MULTIYEAR_PHY_001_030",
+    "datasetId": "cmems_mod_glo_phy_my_0.083deg_P1D-m",
+    "resolutionDegrees": 0.08333333333333333,
+    "cadence": "daily mean",
+    "cadenceSeconds": 86400,
+    "variables": [
+      "uo",
+      "vo"
+    ],
+    "depthMeters": 15.81007,
+    "depthRule": "single native level as stored (15.81007 m); no vertical interpolation, no depth search, no alternate depth",
+    "wind": "NCEP-DOE R2 10 m 6-hourly (identical files as Model A, SHA-locked)",
+    "alpha": 0.002,
+    "temporalRule": "daily mean frames carry the stored 00:00Z label; linear interpolation between existing bracketing daily frames only (t0-1 d .. end+1 d acquired in STEP 25B); no gap filling, no frame duplication, no extrapolation",
+    "reader": {
+      "file": "tools/research/glorys_reader_step25c.py",
+      "version": "earthus-glorys-netcdf/1",
+      "isolatedFromRuntime": true,
+      "coordinateNormalization": "float32 labels of the documented 1/12 degree grid normalized to k/12 (tolerance 1e-4 deg, worst case recorded); values untouched"
+    }
+  },
+  "structuralPair": {
+    "alpha": 0.0,
+    "role": "structural comparison only (GLORYS alpha 0 vs HYCOM alpha 0; GLORYS alpha 0.002 vs alpha 0 = M4)",
+    "optimization": false
+  },
+  "alphaPolicy": {
+    "primary": 0.002,
+    "comparison": 0.0,
+    "search": false,
+    "recalibration": false,
+    "step20Modified": false
+  },
+  "modelMechanics": {
+    "runtime": "services/research-runtime (frozen at 155995dd)",
+    "modelId": "surface-passive-advection.v2.windage",
+    "modelVersion": "0.1.0",
+    "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+    "equation": "dX/dt = U_ocean + alpha * U_wind",
+    "integrator": "RK4",
+    "integrationStepSeconds": 300,
+    "outputStepSeconds": 900,
+    "durationSeconds": 259200,
+    "spatialInterpolation": "bilinear",
+    "temporalInterpolation": "linear",
+    "extrapolation": false,
+    "coordinateConversion": "OceanParcels Geographic (111120 m/deg, cos(phi) at every RK4 stage)",
+    "backend": "oceanparcels 3.1.4",
+    "python": "3.12.10",
+    "statusRules": "STEP 18b (OUT_OF_DOMAIN only at +/-40 deg; else FORCING_UNAVAILABLE)"
+  },
+  "identicalBetweenAandB": [
+    "wind files",
+    "alpha",
+    "release positions",
+    "release time",
+    "drifter IDs",
+    "windows",
+    "computation area",
+    "RK4 300 s",
+    "output 900 s",
+    "duration 72 h",
+    "interpolation",
+    "status rules",
+    "observation handling",
+    "metrics"
+  ],
+  "differenceBetweenAandB": [
+    "ocean forcing dataset identity (HYCOM 0.08 deg 3 h vs GLORYS12V1 1/12 deg daily mean); product cadence is part of the identity, not a tunable"
+  ],
+  "windows": [
+    {
+      "windowId": "KE-1",
+      "role": "CALIBRATION",
+      "region": "KE",
+      "t0": "2010-05-11T12:00:00Z",
+      "end": "2010-05-14T12:00:00Z",
+      "drifterCount": 8,
+      "drifterIds": [
+        "71155",
+        "81801",
+        "81805",
+        "81807",
+        "81811",
+        "81813",
+        "81814",
+        "81816"
+      ],
+      "oceanBox": {
+        "south": 28.12786,
+        "north": 38.19472,
+        "west": 140.60959,
+        "east": 161.61974
+      },
+      "computationArea": {
+        "west": 140.60959,
+        "east": 161.61974,
+        "south": 28.12786,
+        "north": 38.19472
+      },
+      "releasePositions": [
+        {
+          "drifterId": "71155",
+          "lon": 142.60959,
+          "lat": 35.68513
+        },
+        {
+          "drifterId": "81801",
+          "lon": 150.57346,
+          "lat": 30.12786
+        },
+        {
+          "drifterId": "81805",
+          "lon": 150.6728,
+          "lat": 30.8741
+        },
+        {
+          "drifterId": "81807",
+          "lon": 149.87982,
+          "lat": 30.91725
+        },
+        {
+          "drifterId": "81811",
+          "lon": 151.57515,
+          "lat": 32.09739
+        },
+        {
+          "drifterId": "81813",
+          "lon": 157.64886,
+          "lat": 30.87311
+        },
+        {
+          "drifterId": "81814",
+          "lon": 159.61974,
+          "lat": 36.19472
+        },
+        {
+          "drifterId": "81816",
+          "lon": 148.6675,
+          "lat": 30.73258
+        }
+      ],
+      "releaseTimeUTC": "2010-05-11T12:00:00Z",
+      "glorysSource": {
+        "file": "data/research/step25b/glorys/KE-1.glorys12v1.uo_vo.15.81m.nc",
+        "sha256": "d399a2b586b3eea97838bfc9eab2bf0e58afcd33d07c4e9fcef7b02de033c2dc",
+        "bytes": 870562,
+        "step25bWindowStatus": "WINDOW_PASS",
+        "sourceFrames": [
+          "2010-05-10T00:00:00Z",
+          "2010-05-11T00:00:00Z",
+          "2010-05-12T00:00:00Z",
+          "2010-05-13T00:00:00Z",
+          "2010-05-14T00:00:00Z",
+          "2010-05-15T00:00:00Z"
+        ]
+      },
+      "wind": {
+        "file": "data/research/step17/normalized/KE-1.ncep10m.wind.json",
+        "sha256": "6e6c0c225cf70d676e7adb1cf0ba2b18f3805db9e0e02eef710295f564473a71",
+        "gridSha256": "ba15d7299bd49846e63cb05219503f6e5c11dc765ba6880f02c0ed1b7f553080",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      },
+      "hycomBaseline": {
+        "0.002": {
+          "runId": "step20-cal-alpha0.002-KE-1",
+          "file": "data/research/step20/calibration/KE-1/alpha0.002.trajectories.csv",
+          "sha256": "cc38b0d7fd171f187b990f16f9ab3a18d836ea2a7a6913e0d8dce996a1915069",
+          "resultArraySha256": "2b7547ed6151ad908f91513a6d54a7ab140f3413f42eb5b706f0e79ad296ec9d",
+          "segmented": false
+        },
+        "0": {
+          "runId": "step20-cal-alpha0-KE-1",
+          "file": "data/research/step20/calibration/KE-1/alpha0.trajectories.csv",
+          "sha256": "0e6f034f7f99982148708d0cf67302249141fbb2063d410c96547c329b4740b3",
+          "resultArraySha256": "aa6987ed8fcabd89d025b30acc3bd869840f8aff6d7ae598984b16d0d357ba4b",
+          "segmented": false
+        }
+      },
+      "commonWindowRule": "both forcings valid for the full 72 h window (STEP 25A)",
+      "pairedComparisonEligible": true
+    },
+    {
+      "windowId": "KE-2",
+      "role": "CALIBRATION",
+      "region": "KE",
+      "t0": "2010-06-30T12:00:00Z",
+      "end": "2010-07-03T12:00:00Z",
+      "drifterCount": 5,
+      "drifterIds": [
+        "48965",
+        "81802",
+        "90141",
+        "90142",
+        "90145"
+      ],
+      "oceanBox": {
+        "south": 29.70784,
+        "north": 40.0,
+        "west": 133.53249,
+        "east": 154.78535
+      },
+      "computationArea": {
+        "west": 133.53249,
+        "east": 154.78535,
+        "south": 29.70784,
+        "north": 40.0
+      },
+      "releasePositions": [
+        {
+          "drifterId": "48965",
+          "lon": 135.53249,
+          "lat": 37.60833
+        },
+        {
+          "drifterId": "81802",
+          "lon": 151.58324,
+          "lat": 31.70784
+        },
+        {
+          "drifterId": "90141",
+          "lon": 145.17612,
+          "lat": 38.3657
+        },
+        {
+          "drifterId": "90142",
+          "lon": 152.78535,
+          "lat": 39.3177
+        },
+        {
+          "drifterId": "90145",
+          "lon": 147.0891,
+          "lat": 37.12376
+        }
+      ],
+      "releaseTimeUTC": "2010-06-30T12:00:00Z",
+      "glorysSource": {
+        "file": "data/research/step25b/glorys/KE-2.glorys12v1.uo_vo.15.81m.nc",
+        "sha256": "f2ca50183aea583d69e3b73f4609568b221106a7c119a0c8c0bd43d7623f4bbe",
+        "bytes": 899382,
+        "step25bWindowStatus": "WINDOW_PASS",
+        "sourceFrames": [
+          "2010-06-29T00:00:00Z",
+          "2010-06-30T00:00:00Z",
+          "2010-07-01T00:00:00Z",
+          "2010-07-02T00:00:00Z",
+          "2010-07-03T00:00:00Z",
+          "2010-07-04T00:00:00Z"
+        ]
+      },
+      "wind": {
+        "file": "data/research/step17/normalized/KE-2.ncep10m.wind.json",
+        "sha256": "2b913475ada3a1fa16d3a29b3441151b328eb99df64f798ee3467527cedda71f",
+        "gridSha256": "ace5b1a527ca39595e6e40051798846ca39a0fb54142e3e3d5aae2178e2f14f9",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      },
+      "hycomBaseline": {
+        "0.002": {
+          "runId": "step20-cal-alpha0.002-KE-2",
+          "file": "data/research/step20/calibration/KE-2/alpha0.002.trajectories.csv",
+          "sha256": "e2c8ca1336b3ef967e08a2b641579158e61617ec5c0b770762919769b416aa99",
+          "resultArraySha256": "a063e35a2ec6ac764d590e792b98482974c60b6d5580c59029a167f7dfd05043",
+          "segmented": false
+        },
+        "0": {
+          "runId": "step20-cal-alpha0-KE-2",
+          "file": "data/research/step20/calibration/KE-2/alpha0.trajectories.csv",
+          "sha256": "f52849f24e6cf02a51e1594b018d601496b292b77a899bb59d8cbf0f39eeef82",
+          "resultArraySha256": "054d9a24687fe4b520285b50e061f8f6e5ca93d69f24d3e66868ef0224d6334d",
+          "segmented": false
+        }
+      },
+      "commonWindowRule": "both forcings valid for the full 72 h window (STEP 25A)",
+      "pairedComparisonEligible": true
+    },
+    {
+      "windowId": "AG-1",
+      "role": "CALIBRATION",
+      "region": "AG",
+      "t0": "2015-04-23T12:00:00Z",
+      "end": "2015-04-26T12:00:00Z",
+      "drifterCount": 9,
+      "drifterIds": [
+        "127198",
+        "127199",
+        "127272",
+        "127313",
+        "127314",
+        "127315",
+        "132511",
+        "132528",
+        "132634"
+      ],
+      "oceanBox": {
+        "south": -40.0,
+        "north": -32.13828,
+        "west": 18.31773,
+        "east": 32.013940000000005
+      },
+      "computationArea": {
+        "west": 18.31773,
+        "east": 32.013940000000005,
+        "south": -40.0,
+        "north": -32.13828
+      },
+      "releasePositions": [
+        {
+          "drifterId": "127198",
+          "lon": 20.32911,
+          "lat": -39.81819
+        },
+        {
+          "drifterId": "127199",
+          "lon": 20.31773,
+          "lat": -39.82213
+        },
+        {
+          "drifterId": "127272",
+          "lon": 27.2557,
+          "lat": -34.85449
+        },
+        {
+          "drifterId": "127313",
+          "lon": 23.25523,
+          "lat": -35.43792
+        },
+        {
+          "drifterId": "127314",
+          "lon": 30.01394,
+          "lat": -34.13828
+        },
+        {
+          "drifterId": "127315",
+          "lon": 24.83593,
+          "lat": -35.31406
+        },
+        {
+          "drifterId": "132511",
+          "lon": 21.4817,
+          "lat": -37.10636
+        },
+        {
+          "drifterId": "132528",
+          "lon": 23.86592,
+          "lat": -34.97313
+        },
+        {
+          "drifterId": "132634",
+          "lon": 29.88758,
+          "lat": -34.64967
+        }
+      ],
+      "releaseTimeUTC": "2015-04-23T12:00:00Z",
+      "glorysSource": {
+        "file": "data/research/step25b/glorys/AG-1.glorys12v1.uo_vo.15.81m.nc",
+        "sha256": "87fffab5d0cfc0ff96387be7089b408681ea55a1f87bfba72f7f8f3ccf875759",
+        "bytes": 482402,
+        "step25bWindowStatus": "WINDOW_PASS",
+        "sourceFrames": [
+          "2015-04-22T00:00:00Z",
+          "2015-04-23T00:00:00Z",
+          "2015-04-24T00:00:00Z",
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z"
+        ]
+      },
+      "wind": {
+        "file": "data/research/step17/normalized/AG-1.ncep10m.wind.json",
+        "sha256": "00ff12e9daabcca05c9db6e5542eb788871c5fbae14a6d3774152d36cfbc6785",
+        "gridSha256": "be4e060568f5c72567f63209ace4bb1c2a32d6e3a03f998f102125a341edfed7",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      },
+      "hycomBaseline": {
+        "0.002": {
+          "runId": "step20-cal-alpha0.002-AG-1",
+          "file": "data/research/step20/calibration/AG-1/alpha0.002.trajectories.csv",
+          "sha256": "58f9ca262b7e74d1fba1daac951b51e9f32847e7b500ec87bb9e7d75f716976b",
+          "resultArraySha256": "afac7313dd5dc7decd013aca1d7da6691bfa48933f98273d4c02c09beb9891d3",
+          "segmented": false
+        },
+        "0": {
+          "runId": "step20-cal-alpha0-AG-1",
+          "file": "data/research/step20/calibration/AG-1/alpha0.trajectories.csv",
+          "sha256": "8970e7010f555482aafe210a66a41664c2fa6482726296a0d31f01ed2aeaee3b",
+          "resultArraySha256": "752235d460dd93f8c8f820259e85294c0fb9e13f968f2d48cea589e656d966f6",
+          "segmented": false
+        }
+      },
+      "commonWindowRule": "both forcings valid for the full 72 h window (STEP 25A)",
+      "pairedComparisonEligible": true
+    },
+    {
+      "windowId": "AG-2",
+      "role": "CALIBRATION",
+      "region": "AG",
+      "t0": "2015-04-26T12:00:00Z",
+      "end": "2015-04-29T12:00:00Z",
+      "drifterCount": 1,
+      "drifterIds": [
+        "127281"
+      ],
+      "oceanBox": {
+        "south": -38.76674,
+        "north": -34.76674,
+        "west": 19.79639,
+        "east": 23.79639
+      },
+      "computationArea": {
+        "west": 19.79639,
+        "east": 23.79639,
+        "south": -38.76674,
+        "north": -34.76674
+      },
+      "releasePositions": [
+        {
+          "drifterId": "127281",
+          "lon": 21.79639,
+          "lat": -36.76674
+        }
+      ],
+      "releaseTimeUTC": "2015-04-26T12:00:00Z",
+      "glorysSource": {
+        "file": "data/research/step25b/glorys/AG-2.glorys12v1.uo_vo.15.81m.nc",
+        "sha256": "595c2bace7156f3dab92698a251e29a87920eb4d2375cc730fbdf69562cc9b25",
+        "bytes": 114286,
+        "step25bWindowStatus": "WINDOW_PASS",
+        "sourceFrames": [
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z",
+          "2015-04-28T00:00:00Z",
+          "2015-04-29T00:00:00Z",
+          "2015-04-30T00:00:00Z"
+        ]
+      },
+      "wind": {
+        "file": "data/research/step17/normalized/AG-2.ncep10m.wind.json",
+        "sha256": "f32e7a2a4f2e7d991d516e5ac97308ac1f4c0b143b9cf39612f604c1910f7699",
+        "gridSha256": "073d37611d155a6770f9fd3dfd7a849937587b72c4ad76b23f4cea547b1fc4e3",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      },
+      "hycomBaseline": {
+        "0.002": {
+          "runId": "step20-cal-alpha0.002-AG-2",
+          "file": "data/research/step20/calibration/AG-2/alpha0.002.trajectories.csv",
+          "sha256": "afc98cf9d2e1d66f97d1c3f2637ae9c0e7c24bdfdade8d2dc785a10f990ba0e2",
+          "resultArraySha256": "42c0010f77f96608364fdb55450f40f22851947b085bc7184b04fc9afe5dd42b",
+          "segmented": false
+        },
+        "0": {
+          "runId": "step20-cal-alpha0-AG-2",
+          "file": "data/research/step20/calibration/AG-2/alpha0.trajectories.csv",
+          "sha256": "158100c502fbe5f985fe5dbb5979229c77bc55731453f938b5fec9ffcd169da7",
+          "resultArraySha256": "341f1fca0d7e6dece2cd0d05f434f81dfa5415110650ccac27e721ea098b87d8",
+          "segmented": false
+        }
+      },
+      "commonWindowRule": "both forcings valid for the full 72 h window (STEP 25A)",
+      "pairedComparisonEligible": true
+    },
+    {
+      "windowId": "KE-H1",
+      "role": "HOLDOUT",
+      "region": "KE",
+      "t0": "2010-08-10T12:00:00Z",
+      "end": "2010-08-13T12:00:00Z",
+      "drifterCount": 5,
+      "drifterIds": [
+        "48985",
+        "81806",
+        "90135",
+        "90149",
+        "90150"
+      ],
+      "oceanBox": {
+        "south": 30.2673,
+        "north": 40.0,
+        "west": 135.25655,
+        "east": 161.85992
+      },
+      "computationArea": {
+        "west": 135.25655,
+        "east": 161.85992,
+        "south": 30.2673,
+        "north": 40.0
+      },
+      "releasePositions": [
+        {
+          "drifterId": "48985",
+          "lon": 137.25655,
+          "lat": 39.19842
+        },
+        {
+          "drifterId": "81806",
+          "lon": 157.94424,
+          "lat": 32.2673
+        },
+        {
+          "drifterId": "90135",
+          "lon": 156.24634,
+          "lat": 37.19708
+        },
+        {
+          "drifterId": "90149",
+          "lon": 159.85992,
+          "lat": 38.45439
+        },
+        {
+          "drifterId": "90150",
+          "lon": 155.67223,
+          "lat": 38.35129
+        }
+      ],
+      "releaseTimeUTC": "2010-08-10T12:00:00Z",
+      "glorysSource": {
+        "file": "data/research/step25b/glorys/KE-H1.glorys12v1.uo_vo.15.81m.nc",
+        "sha256": "5fcb3b013aa4f0fa8dabf516ea2ef9d669f7009aceb5d960c339e92f4debcb25",
+        "bytes": 1052642,
+        "step25bWindowStatus": "WINDOW_PASS",
+        "sourceFrames": [
+          "2010-08-09T00:00:00Z",
+          "2010-08-10T00:00:00Z",
+          "2010-08-11T00:00:00Z",
+          "2010-08-12T00:00:00Z",
+          "2010-08-13T00:00:00Z",
+          "2010-08-14T00:00:00Z"
+        ]
+      },
+      "wind": {
+        "file": "data/research/step20/holdout/forcing/normalized/KE-H1.ncep10m.wind.json",
+        "sha256": "7b16b08358e2ca50769cfb4106674703f7da70190e8bb6601fec4ceeae5bcfcd",
+        "gridSha256": "2efe5efe8feed013a2c0b64fb3257938d8f85a129f35ecc0167cc35db0154d21",
+        "source": "STEP 20 B-3 normalized NCEP-DOE R2 10 m 6 h (holdout)"
+      },
+      "hycomBaseline": {
+        "0.002": {
+          "runId": "step20-hold-alpha0.002-KE-H1",
+          "file": "data/research/step20/holdout/trajectories/KE-H1/alpha0.002.trajectories.csv",
+          "sha256": "5f68152824cf8b548187181fed37b06b6c3b3482d024c72ecd1ce679bc580d18",
+          "resultArraySha256": "0a0a80728f9ef58f0d1637ebd7e57db44d45d94380405402dc19de47308368da",
+          "segmented": true
+        },
+        "0": {
+          "runId": "step20-hold-alpha0-KE-H1",
+          "file": "data/research/step20/holdout/trajectories/KE-H1/alpha0.trajectories.csv",
+          "sha256": "56c327e0b21ad59b4a1a840a13bc9d45e9f913ba4e9196032aed60230fa44d8c",
+          "resultArraySha256": "3f5722fcd417a0127a571e447ca1115509c71bc1c42c646e073f8a287caa5312",
+          "segmented": true
+        }
+      },
+      "commonWindowRule": "both forcings valid for the full 72 h window (STEP 25A)",
+      "pairedComparisonEligible": true
+    },
+    {
+      "windowId": "KE-H3",
+      "role": "HOLDOUT",
+      "region": "KE",
+      "t0": "2010-11-15T12:00:00Z",
+      "end": "2010-11-18T12:00:00Z",
+      "drifterCount": 7,
+      "drifterIds": [
+        "89898",
+        "90146",
+        "92981",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "oceanBox": {
+        "south": 29.02459,
+        "north": 40.0,
+        "west": 141.06795,
+        "east": 156.05711
+      },
+      "computationArea": {
+        "west": 141.06795,
+        "east": 156.05711,
+        "south": 29.02459,
+        "north": 40.0
+      },
+      "releasePositions": [
+        {
+          "drifterId": "89898",
+          "lon": 143.26125,
+          "lat": 31.29767
+        },
+        {
+          "drifterId": "90146",
+          "lon": 152.8268,
+          "lat": 38.44446
+        },
+        {
+          "drifterId": "92981",
+          "lon": 143.06795,
+          "lat": 31.02459
+        },
+        {
+          "drifterId": "98996",
+          "lon": 147.97673,
+          "lat": 33.89059
+        },
+        {
+          "drifterId": "98997",
+          "lon": 152.19716,
+          "lat": 34.03334
+        },
+        {
+          "drifterId": "98998",
+          "lon": 154.05711,
+          "lat": 33.55673
+        },
+        {
+          "drifterId": "99006",
+          "lon": 151.61525,
+          "lat": 31.19199
+        }
+      ],
+      "releaseTimeUTC": "2010-11-15T12:00:00Z",
+      "glorysSource": {
+        "file": "data/research/step25b/glorys/KE-H3.glorys12v1.uo_vo.15.81m.nc",
+        "sha256": "403ed3a5b4b2882d6f1a102d2edea299ae9436598b250a46e0c0bcb834c10152",
+        "bytes": 691438,
+        "step25bWindowStatus": "WINDOW_PASS",
+        "sourceFrames": [
+          "2010-11-14T00:00:00Z",
+          "2010-11-15T00:00:00Z",
+          "2010-11-16T00:00:00Z",
+          "2010-11-17T00:00:00Z",
+          "2010-11-18T00:00:00Z",
+          "2010-11-19T00:00:00Z"
+        ]
+      },
+      "wind": {
+        "file": "data/research/step20/holdout/forcing/normalized/KE-H3.ncep10m.wind.json",
+        "sha256": "c1f1e3d70697a41b5d39d4f0b422869378256930d5e9d9b8393cbff996ab9bbc",
+        "gridSha256": "94b50b5ac56e7224b260eb0a03bddccd9785e3454a69471cdc3a39bc61e43cd8",
+        "source": "STEP 20 B-3 normalized NCEP-DOE R2 10 m 6 h (holdout)"
+      },
+      "hycomBaseline": {
+        "0.002": {
+          "runId": "step20-hold-alpha0.002-KE-H3",
+          "file": "data/research/step20/holdout/trajectories/KE-H3/alpha0.002.trajectories.csv",
+          "sha256": "00d9db9f183b53e2d7261cc42e4db997a06b7b8b9d0a1e421f73f4517a723fd6",
+          "resultArraySha256": "a9ae8822f873fd2695ae39ebd8e8132bbac52e7f416033645f5fba2f7f96e1de",
+          "segmented": false
+        },
+        "0": {
+          "runId": "step20-hold-alpha0-KE-H3",
+          "file": "data/research/step20/holdout/trajectories/KE-H3/alpha0.trajectories.csv",
+          "sha256": "e63fe31926121e2fad2445a7ef10d95276fbd0b1bd204adbf5c87500995c70be",
+          "resultArraySha256": "54e70c66093be5ae749749d6f5fd0eb439e35726b665018bb806b3bd7c614938",
+          "segmented": false
+        }
+      },
+      "commonWindowRule": "both forcings valid for the full 72 h window (STEP 25A)",
+      "pairedComparisonEligible": true
+    }
+  ],
+  "windowCount": 6,
+  "drifterTotal": 35,
+  "calibrationDrifters": 23,
+  "holdoutDrifters": 12,
+  "excluded": {
+    "KE-H2": {
+      "paired": false,
+      "reason": "HYCOM baseline FORCING_UNAVAILABLE (source frame 2010-08-18T12Z missing) in immutable STEP 20; GLORYS coverage is a STEP 25B fact only",
+      "modelRun": false
+    },
+    "AG-holdout": "UNAVAILABLE; not invented"
+  },
+  "runMatrix": {
+    "newRuns": [
+      {
+        "model": "B-GLORYS12V1",
+        "alpha": 0.002,
+        "windows": [
+          "KE-1",
+          "KE-2",
+          "AG-1",
+          "AG-2",
+          "KE-H1",
+          "KE-H3"
+        ]
+      },
+      {
+        "model": "B-GLORYS12V1",
+        "alpha": 0.0,
+        "windows": [
+          "KE-1",
+          "KE-2",
+          "AG-1",
+          "AG-2",
+          "KE-H1",
+          "KE-H3"
+        ]
+      }
+    ],
+    "expectedNewRunCount": 12,
+    "hycomRuns": "existing STEP 20 runs (12 trajectory files) referenced by SHA",
+    "order": "window order KE-1, KE-2, AG-1, AG-2, KE-H1, KE-H3; alpha 0.002 then 0"
+  },
+  "reproducibility": {
+    "perRun": "separate-process bundle replay; result-array SHA must match (STOP otherwise)",
+    "evaluation": "evaluator re-run to a temporary directory must be byte-identical (validator)",
+    "recorded": [
+      "spec SHA",
+      "forcing file/grid SHA",
+      "wind grid SHA",
+      "reader SHA",
+      "model source SHA",
+      "dependency lock SHA",
+      "python/parcels versions",
+      "trajectory CSV SHA",
+      "result JSON SHA",
+      "replay SHA",
+      "72 h endpoints",
+      "full trajectory samples"
+    ]
+  },
+  "comparison": {
+    "primaryMetric": "M3 observed-vs-model position error (haversine, R = 6371008.8 m) at exact UTC t0+24/48/72 h",
+    "horizonsHours": [
+      24,
+      48,
+      72
+    ],
+    "observationInterpolation": false,
+    "delta": "error_GLORYS - error_HYCOM (km); negative = GLORYS lower",
+    "tieToleranceKm": 1e-06,
+    "primaryStatistic": "paired median delta",
+    "secondaryStatistic": "paired mean delta",
+    "counts": "wins (GLORYS lower) / losses / ties",
+    "pairing": "a drifter contributes at a horizon only when both models and the observation are available there; n and notAvailable reported; no other exclusion",
+    "secondaryMetrics": {
+      "M1": "72 h endpoint displacement (both models, both alphas)",
+      "M2": "total path length",
+      "M4": "72 h separation GLORYS alpha0.002 vs alpha0 (and HYCOM pair, and GLORYS vs HYCOM at alpha 0.002)",
+      "M5": "observed 72 h displacement"
+    },
+    "strata": [
+      "overall",
+      "calibration (KE-1, KE-2, AG-1, AG-2)",
+      "holdout (KE-H1, KE-H3)",
+      "per window (small-n, descriptive only)"
+    ],
+    "hycomCrossCheck": "recomputed HYCOM errors must agree with the published STEP 20 tables within 0.001 km rounding"
+  },
+  "interpretationRule": {
+    "scope": "overall stratum, alpha 0.002 pair",
+    "primaryHorizonHours": 72,
+    "A_GLORYS_DESCRIPTIVELY_FAVORED": "median delta < -tie AND wins/(wins+losses) >= 2/3",
+    "B_HYCOM_DESCRIPTIVELY_FAVORED": "median delta > +tie AND losses/(wins+losses) >= 2/3",
+    "C_NO_CLEAR_DESCRIPTIVE_DIFFERENCE": "otherwise",
+    "D_EXPERIMENT_BLOCKED": "any mandatory gate fails",
+    "consistencyFraction": 0.6666666666666666,
+    "signTestMinimumN": 10,
+    "signTestRole": "descriptive / nominal only; pairs not independent",
+    "claimsForbidden": [
+      "statistical significance",
+      "generalization",
+      "universal superiority",
+      "operational superiority",
+      "production readiness"
+    ],
+    "calibrationHoldoutLabels": "reported separately, descriptive only; no selection"
+  },
+  "forbidden": {
+    "extrapolation": false,
+    "smoothing": false,
+    "zeroFill": false,
+    "landSubstitution": false,
+    "frameDuplication": false,
+    "gapInterpolation": false,
+    "forcingBlending": false,
+    "biasCorrection": false,
+    "nudging": false,
+    "assimilation": false,
+    "outlierRemoval": false,
+    "winsorization": false,
+    "postHocExclusion": false,
+    "postHocThreshold": false,
+    "alphaSearch": false,
+    "depthSearch": false,
+    "redesign": false
+  },
+  "failureGates": [
+    "source/reader/model validation failure -> STOP",
+    "incomplete GLORYS trajectory run (status != COMPLETED) -> STOP",
+    "HYCOM reference configuration mismatch -> STOP",
+    "replay mismatch -> STOP",
+    "drifter pairing differs from the locked definition -> STOP",
+    "no silent repair"
+  ],
+  "inputs": {
+    "step25bManifestSha256": "8dfd07815328074fefa029a41e911130984386d50d3ca86cd8c123e1f0d8b734",
+    "step25bQualityGatesSha256": "56dcc6182d14346d6345de82bf16ad5b438f9ce739ba45a15d8807fd1b5cfb12",
+    "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+    "observationSource": "data/research/step15/noaa-gdp-hourly-qc/{region}-{year}-q*.csv (STEP 15/16 locked)",
+    "step20CalibrationManifestSha256": "41ca439ec6540fd98b3c9ecf5c74af7afdd8731e94bea5d33bfac3397afe8498",
+    "step20HoldoutManifestSha256": "968da55a4553c00f373d6a0f26bc2b1c9e3f3af421d37db7a1e58e99a5727653"
+  },
+  "outputs": {
+    "committed": [
+      "docs/research/step25c-test02-protocol.json",
+      "docs/research/step25c-preregistration.json",
+      "docs/research/step25c-rule-sha256.txt",
+      "docs/research/step25c-glorys-forcing-manifest.json",
+      "docs/research/step25c-run-manifest.json",
+      "docs/research/step25c-paired-table.csv",
+      "docs/research/step25c-evaluation.json",
+      "docs/research/step25c-summary.json"
+    ],
+    "gitignored": [
+      "data/research/step25c/forcing/*.dataset.json",
+      "data/research/step25c/trajectories/**"
+    ]
+  },
+  "tools": {
+    "reader": "tools/research/glorys_reader_step25c.py",
+    "forcing": "tools/research/build_step25c_forcing.py",
+    "runner": "tools/research/run_step25c_test02.py",
+    "evaluator": "tools/research/evaluate_step25c_test02.py",
+    "validator": "tools/research/check_step25c_test02.py"
+  },
+  "requiredStatements": [
+    "TEST-02 is a descriptive paired experiment; no statistical significance, generalization or operational claim is made.",
+    "Higher resolution is not interpreted as superiority; the label follows the locked M3 paired rule only.",
+    "STEP20 alpha=0.002 remains calibration-selected but not established as superior on holdout; alpha is unchanged.",
+    "The HYCOM baseline is the immutable STEP 20 record and was not re-run.",
+    "KE-H2 is excluded from pairing; STEP 20 is not revised.",
+    "No forcing tuning, model selection or STEP 26 follows from this result."
+  ],
+  "lockPolicy": "protocol, preregistration and the five tools are SHA-locked and committed BEFORE forcing normalization and any model run",
+  "stopRule": "after the validated TEST-02 record: STOP; no STEP 26, no forcing tuning, no alpha change, no model selection"
+}

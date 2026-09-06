@@ -99,3 +99,5 @@ data/research/step20/
 data/research/step23/
 # STEP 25B GLORYS raw data and isolated toolbox venv are never committed; only docs/research/step25b-* records are
 data/research/step25b/
+# STEP 25C TEST-02 normalized GLORYS forcing and GLORYS trajectory outputs are never committed; only docs/research/step25c-* records are
+data/research/step25c/

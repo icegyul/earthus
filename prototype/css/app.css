@@ -3020,3 +3020,9 @@ body.menu-bar #sheet{
   max-height:min(72vh,calc(100dvh - 190px));
   z-index:20;
 }
+/* 같은 문제가 .sheet-panel 전부(인공위성·경보·계정·이벤트…)에 있었다 — 받은 신고: "예정된 발사도 메뉴에 가려져
+   팔콘9 다음 두 개가 안 보여". 바 모드에서는 모든 시트를 바 위로 올린다(account.css 의 공통 규칙보다 뒤에 와야 이긴다). */
+body.menu-bar .sheet-panel{
+  bottom:max(82px,calc(env(safe-area-inset-bottom) + 72px));
+  max-height:min(78vh,720px,calc(100dvh - 190px));
+}

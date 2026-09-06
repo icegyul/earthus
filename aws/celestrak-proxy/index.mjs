@@ -24,7 +24,9 @@ const BUCKET = process.env.CACHE_BUCKET;
 const TTL_MS = 24 * 60 * 60 * 1000;
 const CELESTRAK = 'https://celestrak.org';
 
-/* 사용자에게 보여줄 그룹 → CelesTrak 그룹명 (satcat.js 와 맞춰둘 것) */
+/* 사용자에게 보여줄 그룹 → CelesTrak 그룹명 (satcat.js 와 맞춰둘 것)
+   ⚠️ 'korea' 는 여기 없다 — CelesTrak 에 "한국"이라는 GROUP 슬러그가 없다.
+      아래 KOREA_NORAD 로 별도 조립한다 (build() 끝부분 참고). */
 const GROUPS = {
   stations: ['stations'],
   weather:  ['weather', 'noaa', 'goes'],
@@ -38,6 +40,40 @@ const GROUPS = {
   all:      ['active'],
 };
 
+/* 한국이 운용하는 위성 — NORAD 카탈로그 번호로 직접 고른다.
+   ⚠️ 여기 번호는 CelesTrak/n2yo/SatNOGS 로 개별 확인한 것만 적는다(2026-09 확인).
+      확인 못 한 것(예: 차세대중형위성 4호 — 2026-07 발사했지만 공개 카탈로그 번호를
+      아직 못 찾음)은 넣지 않는다 — 틀린 번호로 다른 위성을 "한국 위성"이라고
+      보여주는 것이 아예 안 보여주는 것보다 나쁘다.
+   ⚠️ 이미 weather/earth 그룹으로도 잡히는 위성(GK-2A, 아리랑 시리즈)이 겹쳐 들어있다.
+      한 그룹에서만 볼 수 있게 나누지 않는다 — "한국 위성"을 켜면 전부 한 번에
+      보여야 이 목록의 의미가 있다. build() 안 중복 제거는 그룹별로 이뤄지므로
+      다른 그룹과 겹쳐도 각 그룹 안에서는 정상 동작한다. */
+const KOREA_NORAD = new Set([
+  '43823',  // 천리안2A (GEO-KOMPSAT-2A)
+  '45246',  // 천리안2B (GEO-KOMPSAT-2B)
+  '29268',  // 아리랑2호 (KOMPSAT-2)
+  '38338',  // 아리랑3호 (KOMPSAT-3)
+  '40536',  // 아리랑3A호 (KOMPSAT-3A)
+  '39227',  // 아리랑5호 (KOMPSAT-5)
+  '66820',  // 아리랑7호 (KOMPSAT-7, 2025-12 발사)
+  '47932',  // 차세대중형위성1호 (CAS500-1)
+  '69013',  // 차세대중형위성2호 (CAS500-2)
+  '56749',  // 도요샛 가람 (SNIPE-1) — 교신 상태 불확실
+  '56745',  // 도요샛 나래 (SNIPE-2)
+  '56746',  // 도요샛 다솔 (SNIPE-3) — 사출 이상으로 유실 추정
+  '56744',  // 도요샛 라온 (SNIPE-4)
+  '37265',  // 무궁화6호 (KOREASAT-6)
+  '61910',  // 무궁화6A호 (KOREASAT-6A)
+  '42691',  // 무궁화7호 (KOREASAT-7)
+  '45920',  // 아나시스2호 (ANASIS-II)
+  '58463',  // 425사업 정찰위성 1호 (EO/IR)
+  '59452',  // 425사업 정찰위성 2호 (SAR)
+  '62377',  // 425사업 정찰위성 3호 (SAR)
+  '63630',  // 425사업 정찰위성 4호 (SAR)
+  '66293',  // 425사업 정찰위성 5호 (SAR)
+]);
+
 /* SATCAT 운용 상태 코드 → 사람이 읽는 말 */
 const OPS = {
   '+': { ko: '운용 중',        en: 'Operational' },
@@ -50,7 +86,12 @@ const OPS = {
   '?': { ko: '알 수 없음',     en: 'Unknown' },
 };
 
-/* SATCAT 소유 코드 → 국가명 (자주 나오는 것만) */
+/* SATCAT 소유 코드 → 국가명 (자주 나오는 것만)
+   ⚠️ 2026-09-06: **화면에 보이는 이름의 정본은 여기가 아니다.**
+      표에 없는 코드가 'MEX' 처럼 그대로 노출돼, 전체 표를
+      prototype/js/layers/satcat.js 의 OWNERS/ownerName() 으로 옮겼다.
+      클라이언트가 raw 코드(own)로 다시 매기므로 아래 표는 폴백일 뿐이다.
+      새 코드를 추가할 곳은 satcat.js 다. */
 const OWNERS = {
   US:'미국', CIS:'러시아', PRC:'중국', ESA:'유럽우주국', FR:'프랑스', JPN:'일본',
   IND:'인도', UK:'영국', GER:'독일', ITSO:'인텔샛', ISS:'국제우주정거장',
@@ -170,6 +211,16 @@ async function build() {
     }
     groups[key] = list;
   }
+
+  /* 'korea' 는 CelesTrak GROUP 슬러그가 아니므로 위 루프에서 못 받는다.
+     대신 이미 받아둔 groups(그중 'all' = active 전체가 가장 넓다)를 합쳐
+     KOREA_NORAD 로 골라낸다 — 추가 CelesTrak 요청이 없다.
+     'all' 요청이 실패해도(레이트리밋 등) 다른 그룹에 들어있으면 잡힌다. */
+  const pool = new Map();
+  for (const list of Object.values(groups)) {
+    for (const s of list) if (!pool.has(s.id)) pool.set(s.id, s);
+  }
+  groups.korea = [...pool.values()].filter(s => KOREA_NORAD.has(s.id));
 
   return {
     schemaVersion: 2,

@@ -7,7 +7,9 @@
 set -euo pipefail
 
 FN="${1:-celestrak-proxy}"
-REGION="$(aws configure get region)"
+# 프로필 리전(us-east-2)을 따르면 서울 함수의 복사본이 생긴다 — deploy-lite/deploy-python 과 같이 서울로 못 박는다.
+REGION="${REGION:-ap-northeast-2}"
+export AWS_DEFAULT_REGION="$REGION"
 BUCKET="earthus-cache-kr"
 BUCKET_REGION="us-east-2"   # ⚠️ 버킷이 실제로 있는 리전 (Lambda 리전과 다를 수 있음)
 ROLE="earthus-lambda-${FN}"
@@ -55,7 +57,22 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 cp "$DIR"/*.mjs "$TMP"/
 # @aws-sdk/client-s3 는 Lambda Node.js 20+ 런타임에 기본 포함되어 있어 번들 불필요
-(cd "$TMP" && zip -qr function.zip .)
+# Windows(Git Bash)엔 zip 이 없다 — python 으로 묶는다. 실패하면 멈춘다.
+if command -v zip >/dev/null 2>&1; then
+  (cd "$TMP" && zip -qr function.zip .)
+else
+  python - "$(cygpath -w "$TMP" 2>/dev/null || echo "$TMP")" <<'PY'
+import os, sys, zipfile
+src = sys.argv[1]
+with zipfile.ZipFile(os.path.join(src, "function.zip"), "w", zipfile.ZIP_DEFLATED) as z:
+    for root, _, files in os.walk(src):
+        for f in files:
+            if f == "function.zip": continue
+            full = os.path.join(root, f); z.write(full, os.path.relpath(full, src))
+PY
+fi
+[ -s "$TMP/function.zip" ] || { echo "❌ 패키징 실패"; exit 1; }
+ZIPFILE="$(cygpath -w "$TMP/function.zip" 2>/dev/null || echo "$TMP/function.zip")"
 SIZE=$(du -h "$TMP/function.zip" | cut -f1)
 echo "▸ 패키지: ${SIZE}"
 
@@ -63,18 +80,20 @@ echo "▸ 패키지: ${SIZE}"
 if aws lambda get-function --function-name "$FN" >/dev/null 2>&1; then
   echo "▸ 코드 갱신"
   aws lambda update-function-code \
-    --function-name "$FN" --zip-file "fileb://$TMP/function.zip" \
+    --function-name "$FN" --zip-file "fileb://${ZIPFILE}" \
     --query 'LastModified' --output text
   # 코드 갱신이 끝나기 전에 설정을 바꾸면 ResourceConflictException 이 난다
   aws lambda wait function-updated --function-name "$FN" 2>/dev/null || sleep 8
   # ⚠️ --environment 는 합치지 않고 **통째로 덮어쓴다** — API 키가 날아간다.
   #    기존 값을 읽어 합쳐서 넘긴다. 값은 화면에 찍지 않는다.
   ENVCUR="$(mktemp)"; ENVNEW="$(mktemp)"; chmod 600 "$ENVCUR" "$ENVNEW"
+  # Windows 파이썬·aws CLI 는 Git Bash 의 /tmp 경로를 못 연다 — Windows 경로로 바꿔 넘긴다
+  ENVCURW="$(cygpath -w "$ENVCUR" 2>/dev/null || echo "$ENVCUR")"; ENVNEWW="$(cygpath -w "$ENVNEW" 2>/dev/null || echo "$ENVNEW")"
   aws lambda get-function-configuration --function-name "$FN" \
       --query 'Environment.Variables' --output json 2>/dev/null > "$ENVCUR" \
       || echo '{}' > "$ENVCUR"
-  CUR="$ENVCUR" BKT="$BUCKET" BRG="$BUCKET_REGION" \
-    python3 - "$ENVNEW" <<'PY'
+  CUR="$ENVCURW" BKT="$BUCKET" BRG="$BUCKET_REGION" \
+    python3 - "$ENVNEWW" <<'PY'
 import json, os, sys
 cur = json.load(open(os.environ["CUR"])) or {}
 kept = [k for k in cur if k not in ("CACHE_BUCKET", "CACHE_REGION")]
@@ -85,7 +104,7 @@ print("  · 기존 환경변수 보존: " + (", ".join(sorted(kept)) if kept els
 PY
   aws lambda update-function-configuration \
     --function-name "$FN" --timeout 300 --memory-size 1024 \
-    --environment "file://$ENVNEW" \
+    --environment "file://$ENVNEWW" \
     --query 'LastModified' --output text >/dev/null
   rm -f "$ENVCUR" "$ENVNEW"
 else
@@ -95,7 +114,7 @@ else
     --runtime nodejs20.x \
     --role "$ROLE_ARN" \
     --handler index.handler \
-    --zip-file "fileb://$TMP/function.zip" \
+    --zip-file "fileb://${ZIPFILE}" \
     --timeout 300 \
     --memory-size 1024 \
     --environment "Variables={CACHE_BUCKET=${BUCKET},CACHE_REGION=${BUCKET_REGION}}" \
@@ -123,3 +142,9 @@ echo "✅ 배포 완료"
 echo "   ${URL}"
 echo ""
 echo "   확인: curl -s '${URL}' | head -c 400"
+
+# ── 배포 가드: us-east-2 에 같은 이름이 있으면 실패(삭제는 별도 승인)
+if DUP="$(aws lambda get-function --function-name "$FN" --region us-east-2 --query 'Configuration.[FunctionArn,LastModified]' --output text 2>/dev/null)"; then
+  echo "❌ 배포 가드 FAIL — us-east-2 에 복사본이 있다: $DUP"; exit 1
+fi
+echo "✅ 배포 가드 PASS — ${FN} 은 ${REGION} 에만 있다"

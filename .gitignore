@@ -101,3 +101,5 @@ data/research/step23/
 data/research/step25b/
 # STEP 25C TEST-02 normalized GLORYS forcing and GLORYS trajectory outputs are never committed; only docs/research/step25c-* records are
 data/research/step25c/
+# STEP 26 derived forcing and GLORYS trajectory outputs are never committed; only docs/research/step26-* records are
+data/research/step26/

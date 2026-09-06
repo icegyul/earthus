@@ -1,0 +1,90 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "phase": "B",
+  "ruleId": "forcing-decomposition-step26",
+  "createdAtUTC": "2026-09-06T12:25:41Z",
+  "phaseALock": "86266b3a",
+  "ruleSha256": "b0ee1dc154998b6d2d140581636a1d11412bd57bceafbf0c0a3980697b91787c",
+  "phaseAPreregistrationSha256": "de082a8ef0ef893c4e492160eef518af1ada8c6de8e83f440cc37fcde10814ce",
+  "scope": "Comparison 2 (C vs D) and Comparison 4 (A vs C) only; Comparisons 1 and 3 remain BLOCKED; Condition B not executed; no HYCOM rerun; no re-acquisition",
+  "runPlan": {
+    "A": 0,
+    "B": 0,
+    "C": 6,
+    "D": 6
+  },
+  "alpha": {
+    "value": 0.002,
+    "alpha0Runs": 0,
+    "search": false
+  },
+  "hycomRerun": false,
+  "conditionBExecuted": false,
+  "order": [
+    "LOCK commit (this record + tools)",
+    "derive Condition D (derive_step26_coarse.py) + derived manifest",
+    "6 Condition C runs",
+    "C reproduction gate vs STEP 25C (result array bitwise, CSV rows without run_id) - STOP if FAIL",
+    "6 Condition D runs",
+    "evaluation",
+    "validator x2 byte-identical (includes independent re-derivation and evaluator re-run)",
+    "commit only with validator PASS"
+  ],
+  "cReproductionGate": {
+    "reference": "docs/research/step25c-run-manifest.json alpha 0.002 runs",
+    "comparedOn": "numeric result array digest (particleId, samples timeUTC/lon/lat/status, finalStatus) and CSV rows (drifter_id, timestamp, lat, lon, alpha, status, valid) after removing run_id",
+    "serializationDifferenceTolerated": "none except the run_id column, which is a label and not part of the numeric result",
+    "failStatus": "STEP26_BLOCKED_GLORYS_REPRODUCTION"
+  },
+  "labelRules": {
+    "scope": "overall stratum",
+    "primaryHorizonHours": 72,
+    "consistencyFraction": 0.6666666666666666,
+    "signTestMinimumN": 10,
+    "comparison2": "SPATIAL_REPRESENTATION_DIFFERENCE_OBSERVED if |median delta_spatial| > tie AND the fraction of non-tied pairs sharing the median sign >= 2/3; otherwise NO_CLEAR_SPATIAL_REPRESENTATION_DIFFERENCE; direction (native or coarse lower) reported descriptively",
+    "comparison2Labels": [
+      "SPATIAL_REPRESENTATION_DIFFERENCE_OBSERVED",
+      "NO_CLEAR_SPATIAL_REPRESENTATION_DIFFERENCE"
+    ],
+    "comparison4": "identical to the STEP 25C rule: GLORYS_DESCRIPTIVELY_FAVORED if median delta_product < -tie AND wins/(wins+losses) >= 2/3; HYCOM_DESCRIPTIVELY_FAVORED if median > +tie AND losses/(wins+losses) >= 2/3; otherwise NO_CLEAR_DESCRIPTIVE_DIFFERENCE",
+    "comparison4Labels": [
+      "GLORYS_DESCRIPTIVELY_FAVORED",
+      "HYCOM_DESCRIPTIVELY_FAVORED",
+      "NO_CLEAR_DESCRIPTIVE_DIFFERENCE"
+    ],
+    "modelSelection": false
+  },
+  "outputs": {
+    "committed": [
+      "docs/research/step26-phase-b-preregistration.json",
+      "docs/research/step26-derived-forcing-manifest.json",
+      "docs/research/step26-forcing-decomposition-manifest.json",
+      "docs/research/step26-evaluation.json",
+      "docs/research/step26-paired-table.csv",
+      "docs/research/step26-phase-b-summary.json"
+    ],
+    "gitignored": [
+      "data/research/step26/forcing/*.dataset.json",
+      "data/research/step26/trajectories/**"
+    ],
+    "summaryNamingNote": "the Phase A file docs/research/step26-summary.json is SHA-locked at 86266b3a and is not overwritten; the Phase B summary is docs/research/step26-phase-b-summary.json"
+  },
+  "tools": {
+    "tools/research/derive_step26_coarse.py": "08ee1a70f35eb28984965dec1d7455e5500f7a523f0061520effb076f273f20a",
+    "tools/research/run_step26_phase_b.py": "67d23a4c6206c4ae03a80daf99161cc9c2a5852496dc2d26bb3577b355397c26",
+    "tools/research/evaluate_step26_phase_b.py": "d25141d5a37d81a06dd9191eec04fd296d99b1c32d26dc4a7de66e6411b34e42",
+    "tools/research/check_step26_forcing_decomposition.py": "b34678cf439217dfe5a27eaf3a7509f70118ab25ad7a45c44d3d74f095d29520",
+    "tools/research/glorys_reader_step25c.py": "11b7d987434a55a9e42a9776e851fad49b8ec65d2df0f23130c7a7e6234ab63e",
+    "tools/research/replay_step25c_run.py": "5dd8c14da33dcd75c50c8e52dc517456d46a1a2f4ad38b3918687d16b4a73ff5"
+  },
+  "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+  "requiredStatements": [
+    "STEP 26 Phase B is a descriptive decomposition; no statistical significance, causal, universal or operational superiority claim is made.",
+    "Comparison 2 isolates spatial representation within one product (GLORYS, same cadence, same 15.810070 m depth).",
+    "Comparison 4 differs by ocean product, cadence and native depth (15.000 m vs 15.810070 m, difference 0.810070 m); the depth confound is disclosed, not attributed.",
+    "Comparisons 1 and 3 remain BLOCKED (HYCOM_DAILY not constructible from existing frames); no re-acquisition was attempted.",
+    "The HYCOM reference is the immutable STEP 20 record; STEP 25C is unchanged; alpha = 0.002 is unchanged.",
+    "No forcing is selected; no TEST-06 and no STEP 27 follows from this result."
+  ]
+}

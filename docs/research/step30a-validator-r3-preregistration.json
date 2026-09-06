@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "1.0",
+  "status": "VALIDATOR REVISION LOCKED",
+  "ruleId": "final-candidate-benchmark-step30a",
+  "phase": "B",
+  "phaseBLock": "d30607c8",
+  "r2Lock": "196c0084",
+  "phaseALock": "94d414b6",
+  "reason": "Locked r2 validator reported FAIL on '7 medians recomputed' at holdout 48 h and holdout 72 h: the r2 tolerance 0.001 km is compared with a floating-point difference of two 3-decimal values that differ by exactly 0.001 (2.305 - 2.304 and 28.914 - 28.913 evaluate slightly above 0.001 in binary floating point). r2 is kept on disk unchanged; r3 changes only that tolerance to 0.0015 km (the value the other checks already use). No evaluation output, rule, threshold, label or input was changed.",
+  "r1": {
+    "path": "tools/research/check_step30a_final_candidate.py",
+    "sha256": "2716b2509766f66517e4e5ed89ed09126354edb5d100d3309d650b73e7bb88a0",
+    "result": "FAIL",
+    "failures": [
+      "7 medians recomputed: overall 48h",
+      "7 medians recomputed: holdout 48h",
+      "7 medians recomputed: holdout 72h",
+      "no overclaim language"
+    ],
+    "runs": 2,
+    "byteIdenticalOutput": true,
+    "allOtherChecks": "PASS"
+  },
+  "r2": {
+    "path": "tools/research/check_step30a_final_candidate_r2.py",
+    "sha256": "553050882e6c932d1e45b178c926f665ff8263b794bb88356e18cbf71bda8d89",
+    "result": "FAIL",
+    "failures": [
+      "7 medians recomputed (tolerance 0.001 km, rounded table): holdout 48h",
+      "7 medians recomputed (tolerance 0.001 km, rounded table): holdout 72h"
+    ],
+    "runs": 2,
+    "byteIdenticalOutput": true,
+    "allOtherChecks": "PASS"
+  },
+  "r3": {
+    "path": "tools/research/check_step30a_final_candidate_r3.py",
+    "sha256": "3a6f8fcf5cbc0ba9bddbe8dc81c49f749aef5f930dbfcfc88c91c5de0a5f4e32"
+  },
+  "evaluatorSha256": "4d3bc0805701ae9827d05d4fbfd772acce3331211a9a3de6a9812ae7de594d4e",
+  "evaluationOutputsAtR2Failure": {
+    "docs/research/step30a-final-candidate-table.csv": "b01a5b3d53d3a702952143f53637c21d2027bd04010903b8c93ffefa4cbe61d3",
+    "docs/research/step30a-final-candidate-window-summary.csv": "9a5bd88c8afffbe636d25815a7a28dc51ae971653174d10c32060449ac553c3a",
+    "docs/research/step30a-final-candidate-summary.json": "faaf891fa7c5308db70f97add419d370efa7346ee560c30e307ac33d0a01c504",
+    "docs/research/step30a-final-candidate-evaluation.json": "1fe96b3ce1b104d9334cd2f92954cfa0d0e44f8771bc81489b6e8e702227e5ae",
+    "docs/research/step30a-final-candidate-manifest.json": "cae1745aaa19b8a70758f97252d481d4f98908218b7ebf590851f5a3e1f324a6"
+  },
+  "evaluationOutputsModified": false,
+  "modelRunCount": 0,
+  "newData": 0
+}

@@ -1,0 +1,354 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "forcing-adequacy-requirement-analysis-step22",
+  "title": "STEP 22 — Forcing / observation adequacy & model requirement analysis",
+  "status": "PREREGISTRATION LOCKED",
+  "descriptiveOnly": true,
+  "createdAtUTC": "2026-09-06T09:10:00Z",
+  "baseCommit": "7b0453b8",
+  "purpose": "identify which forcing / observation / physical-process limitations are plausibly related to the current model error, and what data and physical terms the next step would require; no model run, no parameter optimisation, no data acquisition",
+  "keyQuestion": "what data and physical terms are needed in the next step to reduce the current model error?",
+  "frozenBaseline": {
+    "ocean": "HYCOM GOFS 3.1, 0.08 degree, 15 m, 3 h",
+    "wind": "NCEP-DOE R2, 10 m, 6 h",
+    "equation": "dX/dt = U_ocean + alpha * U_wind",
+    "alpha": 0.002,
+    "integration": "RK4, 300 s substep, 900 s output",
+    "interpolation": "bilinear spatial, linear temporal, cos(phi) every RK4 stage",
+    "excluded": [
+      "extrapolation",
+      "smoothing",
+      "zero-fill",
+      "land substitution",
+      "frame duplication"
+    ]
+  },
+  "frozenStep20": {
+    "selectedAlpha": 0.002,
+    "holdout": {
+      "evaluable": 12,
+      "unavailable": "KE-H2 (n=1)"
+    },
+    "conclusion": "Calibration-selected alpha=0.002 did not show a consistent performance advantage over alpha=0 on the 12 evaluable KE holdout drifters.",
+    "modifiable": false
+  },
+  "frozenStep21Evidence": [
+    "A temporal error growth indication",
+    "B regional / event-dependent error indication",
+    "C directional bias indication",
+    "D alpha effect small and inconsistent",
+    "E large individual trajectory failures",
+    "F windage displacement nearly orthogonal to the observation-error vector"
+  ],
+  "step21Recomputation": "NONE — numbers are copied from docs/research/step21-diagnostic-summary.json (SHA-verified) and re-verified by the validator",
+  "limitationCategories": [
+    {
+      "id": "L1",
+      "category": "Ocean spatial resolution",
+      "fields": [
+        "evidence",
+        "represents",
+        "doesNotRepresent",
+        "expectedSignature",
+        "evidenceStrength",
+        "additionalDataRequired",
+        "priority"
+      ]
+    },
+    {
+      "id": "L2",
+      "category": "Ocean temporal resolution",
+      "fields": [
+        "evidence",
+        "represents",
+        "doesNotRepresent",
+        "expectedSignature",
+        "evidenceStrength",
+        "additionalDataRequired",
+        "priority"
+      ]
+    },
+    {
+      "id": "L3",
+      "category": "Forcing depth / vertical representativeness",
+      "fields": [
+        "evidence",
+        "represents",
+        "doesNotRepresent",
+        "expectedSignature",
+        "evidenceStrength",
+        "additionalDataRequired",
+        "priority"
+      ]
+    },
+    {
+      "id": "L4",
+      "category": "Wind forcing resolution / windage representation",
+      "fields": [
+        "evidence",
+        "represents",
+        "doesNotRepresent",
+        "expectedSignature",
+        "evidenceStrength",
+        "additionalDataRequired",
+        "priority"
+      ]
+    },
+    {
+      "id": "L5",
+      "category": "Sub-grid / mesoscale / eddy processes",
+      "fields": [
+        "evidence",
+        "represents",
+        "doesNotRepresent",
+        "expectedSignature",
+        "evidenceStrength",
+        "additionalDataRequired",
+        "priority"
+      ]
+    },
+    {
+      "id": "L6",
+      "category": "Coastal / bathymetric interaction",
+      "fields": [
+        "evidence",
+        "represents",
+        "doesNotRepresent",
+        "expectedSignature",
+        "evidenceStrength",
+        "additionalDataRequired",
+        "priority"
+      ]
+    },
+    {
+      "id": "L7",
+      "category": "Observation sampling / observation uncertainty",
+      "fields": [
+        "evidence",
+        "represents",
+        "doesNotRepresent",
+        "expectedSignature",
+        "evidenceStrength",
+        "additionalDataRequired",
+        "priority"
+      ]
+    },
+    {
+      "id": "L8",
+      "category": "Missing physical processes (Stokes drift, mixed-layer, other surface transport)",
+      "fields": [
+        "evidence",
+        "represents",
+        "doesNotRepresent",
+        "expectedSignature",
+        "evidenceStrength",
+        "additionalDataRequired",
+        "priority"
+      ]
+    }
+  ],
+  "evidenceLabels": [
+    "DIRECTLY_SUPPORTED",
+    "SUPPORTED_INDICATION",
+    "PLAUSIBLE_BUT_UNTESTED",
+    "INSUFFICIENT_EVIDENCE"
+  ],
+  "evidenceRule": "STEP 21 descriptive results never establish a physical cause; an untested mechanism is at most PLAUSIBLE_BUT_UNTESTED",
+  "priorities": {
+    "P0": "essential; next model improvement cannot proceed without it",
+    "P1": "high value; strongly recommended for the next validation",
+    "P2": "supporting",
+    "P3": "insufficient current evidence"
+  },
+  "priorityRule": "not adjusted to performance results; reason stated for each",
+  "availabilityLabels": [
+    "AVAILABLE",
+    "PARTIAL",
+    "UNAVAILABLE",
+    "UNKNOWN"
+  ],
+  "dataRegisterIds": [
+    {
+      "id": "DATA-01",
+      "data": "higher-resolution ocean current"
+    },
+    {
+      "id": "DATA-02",
+      "data": "higher-frequency ocean forcing"
+    },
+    {
+      "id": "DATA-03",
+      "data": "surface current / altimetry reference"
+    },
+    {
+      "id": "DATA-04",
+      "data": "mixed-layer / vertical current information"
+    },
+    {
+      "id": "DATA-05",
+      "data": "drifter metadata including depth/drogue/windage characteristics"
+    },
+    {
+      "id": "DATA-06",
+      "data": "wave / Stokes drift information"
+    },
+    {
+      "id": "DATA-07",
+      "data": "higher-resolution wind forcing"
+    },
+    {
+      "id": "DATA-08",
+      "data": "bathymetry / coastal circulation information"
+    }
+  ],
+  "testMatrixIds": [
+    {
+      "id": "TEST-01",
+      "name": "higher temporal resolution ocean forcing",
+      "fields": [
+        "hypothesis",
+        "requiredData",
+        "dependentVariable",
+        "control",
+        "risk"
+      ]
+    },
+    {
+      "id": "TEST-02",
+      "name": "higher spatial resolution ocean forcing",
+      "fields": [
+        "hypothesis",
+        "requiredData",
+        "dependentVariable",
+        "control",
+        "risk"
+      ]
+    },
+    {
+      "id": "TEST-03",
+      "name": "surface current product comparison",
+      "fields": [
+        "hypothesis",
+        "requiredData",
+        "dependentVariable",
+        "control",
+        "risk"
+      ]
+    },
+    {
+      "id": "TEST-04",
+      "name": "depth sensitivity",
+      "fields": [
+        "hypothesis",
+        "requiredData",
+        "dependentVariable",
+        "control",
+        "risk"
+      ]
+    },
+    {
+      "id": "TEST-05",
+      "name": "windage-only sensitivity",
+      "fields": [
+        "hypothesis",
+        "requiredData",
+        "dependentVariable",
+        "control",
+        "risk"
+      ]
+    },
+    {
+      "id": "TEST-06",
+      "name": "Stokes drift inclusion",
+      "fields": [
+        "hypothesis",
+        "requiredData",
+        "dependentVariable",
+        "control",
+        "risk"
+      ]
+    },
+    {
+      "id": "TEST-07",
+      "name": "eddy-resolving forcing comparison",
+      "fields": [
+        "hypothesis",
+        "requiredData",
+        "dependentVariable",
+        "control",
+        "risk"
+      ]
+    },
+    {
+      "id": "TEST-08",
+      "name": "coastal/bathymetric sensitivity",
+      "fields": [
+        "hypothesis",
+        "requiredData",
+        "dependentVariable",
+        "control",
+        "risk"
+      ]
+    }
+  ],
+  "physicalProcessInventory": [
+    "Stokes drift",
+    "surface windage / slip",
+    "mixed-layer shear",
+    "vertical shear",
+    "mesoscale eddies",
+    "sub-grid turbulence",
+    "coastal/bathymetric effects",
+    "wave-current interaction"
+  ],
+  "errorSignatureMap": "error signature → possible limitation → evidence → confidence → required data → candidate future test (hypothesis generation, not causal attribution)",
+  "developmentGateQuestions": [
+    "Q1 continue parameter tuning with the current model?",
+    "Q2 new forcing/data required?",
+    "Q3 highest-priority data?",
+    "Q4 mandatory baseline for the next iteration?"
+  ],
+  "prohibited": {
+    "newAlphaSearch": false,
+    "newAlphaSelection": false,
+    "parameterOptimisation": false,
+    "newTrajectoryRun": false,
+    "holdoutRerun": false,
+    "observationModification": false,
+    "outlierRemoval": false,
+    "forcingInterpolation": false,
+    "missingForcingSubstitution": false,
+    "smoothing": false,
+    "retrospectiveProtocolModification": false,
+    "performanceImprovementClaim": false,
+    "externalDataAcquisition": false
+  },
+  "prohibitedWording": [
+    "cause",
+    "proven cause",
+    "validated mechanism",
+    "confirmed physical explanation"
+  ],
+  "allowedWording": [
+    "possible",
+    "plausible",
+    "indication",
+    "hypothesis",
+    "requires testing"
+  ],
+  "outputs": [
+    "docs/research/step22-limitation-assessment.json",
+    "docs/research/step22-data-requirement-register.json",
+    "docs/research/step22-future-test-matrix.json",
+    "docs/research/step22-summary.json",
+    "docs/research/step22-summary.csv",
+    "docs/research/step22-run.json"
+  ],
+  "tools": {
+    "analysis": "tools/research/analyze_step22.py",
+    "validator": "tools/research/check_step22_forcing_adequacy.py"
+  },
+  "reproducibility": "independent re-run to a separate directory; all five outputs byte-identical",
+  "finalInterpretation": "DESCRIPTIVE / REQUIREMENT ANALYSIS ONLY; STEP 20 conclusion unchanged; STEP 21 conclusion unchanged; alpha=0.002 unchanged; no model validation claim; no causal attribution",
+  "stopRule": "STOP after STEP 22; STEP 23 not started"
+}

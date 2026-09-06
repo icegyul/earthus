@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "ruleId": "forcing-adequacy-requirement-analysis-step22",
+  "protocolDocument": "docs/research/step22-forcing-adequacy-protocol.json",
+  "protocolSha256": "2c5b5c2f0402053221253cf097935ed60e2afc0290adb0a956313816a3fc3968",
+  "createdAtUTC": "2026-09-06T09:10:00Z",
+  "gitCommitAtDesign": "7b0453b8",
+  "authorProcess": "Claude Code session (Research Intelligence PHASE 2, STEP 22 Phase A) — requirement-analysis preregistration; no model run, no data download, no alpha change",
+  "immutabilityCheck": {
+    "ancestryCommits": {
+      "step17": "551668ef",
+      "step18": "d505cc5e",
+      "step18b": "5b9567e5",
+      "step19": "5f27dc2d",
+      "step20": "155995dd",
+      "selectedAlpha": "73fafffb",
+      "step20B3": "9113e8b5",
+      "step20B4": "869bc664",
+      "step20B5": "c395a098",
+      "step20B6Gate": "7b3d2a0e",
+      "step20B6": "ed746129",
+      "step21Lock": "63c3e5dd",
+      "step21Complete": "7b0453b8"
+    },
+    "lockedFiles": {
+      "docs/research/step17-forcing-protocol.md": "db73ef67d1a191d67b29d488805a3c9998a65bf70b80dffe15b40ed8eb041792",
+      "docs/research/step17-forcing-manifest.json": "591cc05799da03e6bb604321d9e2b129a32a201112922c4d06823026a0b5ac86",
+      "docs/research/step18-model-manifest.json": "02c859f9a079eb68826852589d4c6d313171bcad9b544406212abfe3651a61cb",
+      "docs/research/step18b-model-manifest.json": "923fd1ba69438da0a6bbd02495705b4dccce229d606a199b0498c6d80d6aaefe",
+      "docs/research/step19-evaluation.json": "9baa0c6ae4fd38fbd0ea72e479736d0eb8f43f49aac6cebc8dcfa0051490b5f4",
+      "docs/research/step20-preregistration.json": "1e4ed8c1d004b00812c0710fd3df32c8a6c7537ff5287474a4c0a3e8ae33cae4",
+      "docs/research/step20-selected-alpha.json": "68e43a0f91e3a6bd81427399adbe2cf8a7543d85cf0249d4926f3df093649efd",
+      "docs/research/step20-calibration-manifest.json": "41ca439ec6540fd98b3c9ecf5c74af7afdd8731e94bea5d33bfac3397afe8498",
+      "docs/research/step20-b6-holdout-manifest.json": "968da55a4553c00f373d6a0f26bc2b1c9e3f3af421d37db7a1e58e99a5727653",
+      "docs/research/step20-b6-holdout-summary.json": "fe2043b30aaba17d34e3d9a780379de9612541b75caa4ed487a10931a784d93b",
+      "docs/research/step20-b6-holdout-table.csv": "d21d029bba4e09a15ef19a393f0d8389df0e5750cb1459ed0b1e92372aeea681",
+      "docs/research/step20-b3-holdout-forcing-manifest.json": "10c4f7420d16757b7cd3f23805ce63dde1f58ea63591e8dc9411647d7bc27701",
+      "docs/research/step21-model-adequacy-protocol.json": "92e97e5322bcf5a26ad59c2e953fe454340fdb681dfff2f915097a99f787f2e3",
+      "docs/research/step21-model-adequacy-preregistration.json": "ef7d760be00cb3ee250478544fb73d99a9cab7f361cd40445991ca43f2630abd",
+      "docs/research/step21-diagnostic-summary.json": "d310eaadf64324286de80e485e9944998665d14d2599ca80133cf3d25b406fbd",
+      "docs/research/step21-diagnostic-table.csv": "e52dc35d6750cc7260e05341d48b7eaa886dfc389f1880547a39b184dbdbbe78",
+      "docs/research/step21-diagnostic-run.json": "9f0e21e29ae8766ec078446579c3f2c9729c8c2cb7b79e3f066155a81b7743d5",
+      "docs/research/cohort-step16.json": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474"
+    },
+    "runtimeFilesIdenticalToStep20Lock": true,
+    "result": "PASS"
+  },
+  "analysisTool": {
+    "file": "tools/research/analyze_step22.py",
+    "sha256": "92cb5e0173ccf2ad680faa26254c4629ee32e0b9dcecb547c88e6644b6296b19"
+  },
+  "validator": {
+    "file": "tools/research/check_step22_forcing_adequacy.py",
+    "sha256": "11bef086fe3dcae66bcd38e08cae95ed29a7024dcf2a761229c619a183378ddd"
+  },
+  "phaseA": {
+    "modelRuns": 0,
+    "dataDownloads": 0,
+    "alphaCandidatesAdded": 0,
+    "testsExecuted": 0
+  },
+  "lockedAtUTC": "2026-09-06T09:10:00Z",
+  "nextStep": "STEP 22 Phase B requirement analysis (same instruction), then STOP; STEP 23 not started"
+}

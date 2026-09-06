@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "revision": "r2",
+  "ruleId": "forcing-sensitivity-test02-step25c",
+  "createdAtUTC": "2026-09-06T11:49:06Z",
+  "baseLock": "aee3943c",
+  "reason": "attempt 1 (r1 runner, locked at aee3943c): all 12 GLORYS runs executed and were recorded, but every separate-process replay returned 'bundle input missing' (returncode 2) because the runtime bundle exporter omits datasets whose manifest declares redistributionAllowed=false (the GLORYS manifest, by licence caution). The replay could not execute; it did NOT mismatch. Per the locked failure gate the r1 manifest is TEST02_RUNS_FAIL and is kept as docs/research/step25c-run-manifest.attempt1-replay-unavailable.json; its trajectories are kept under data/research/step25c/trajectories.attempt1/ (gitignored).",
+  "change": {
+    "newRunner": "tools/research/run_step25c_test02_r2.py",
+    "replayTool": "tools/research/replay_step25c_run.py",
+    "differences": [
+      "separate-process replay re-executes the frozen runtime from the on-disk spec/forcing/wind files and compares result-array, spec and model-source SHAs",
+      "the spec is written next to each result",
+      "each r2 run additionally records whether its result-array SHA is identical to attempt 1"
+    ],
+    "unchanged": [
+      "protocol",
+      "windows / drifters / areas / alpha",
+      "model mechanics (frozen runtime, untouched)",
+      "forcing files (SHA-locked)",
+      "evaluator",
+      "validator"
+    ]
+  },
+  "attempt1": {
+    "manifest": "docs/research/step25c-run-manifest.attempt1-replay-unavailable.json",
+    "sha256": "9f8f37c2de814741ab668461c09ffc0cd30875feaf94b6f1b9795a3628f203e2",
+    "status": "TEST02_RUNS_FAIL",
+    "runs": 12,
+    "resultArraySha256": {
+      "step25c-glorys-alpha0.002-KE-1": "06eb9162490bc0b76c86773451ce7d45eb096ac943a897acb375e9ad446554d5",
+      "step25c-glorys-alpha0-KE-1": "f9324738018dbfa8512da244d7f8691fb66c1e741263b6a2e3bbc9ff0e59ff48",
+      "step25c-glorys-alpha0.002-KE-2": "528ea5c3d9a63d344fb50a10a9933292a2c9d361082811aa2eafda92c88cb781",
+      "step25c-glorys-alpha0-KE-2": "09ca71aa61ad8f25946b72d1855ec7e5d9b1806dfa47183fd4136ac0b921d775",
+      "step25c-glorys-alpha0.002-AG-1": "2601100263e032541bb4be47d535ee0eeb194b831b9e576196ebba03046f0199",
+      "step25c-glorys-alpha0-AG-1": "a03c5fa220d758dae53d6a87dd0b92202d4d8d221929821f7ab4ec3fb2661636",
+      "step25c-glorys-alpha0.002-AG-2": "d9fd5c344ea358631e66f56d9dfc219f45ad62a9bc29d9435088843d09f10ef5",
+      "step25c-glorys-alpha0-AG-2": "330f7b4cc61db57a32605af426d7fb956e3d48045c40ecd8f6b7525e67ca3d79",
+      "step25c-glorys-alpha0.002-KE-H1": "39a8217ae840b23a1e02fc15ecac0f3e817bf742a06f0460602fef9ca1b58aad",
+      "step25c-glorys-alpha0-KE-H1": "e078a4a66c696e2facc00506c54b62b218d6c74811d6ff80fd70b5dcfb362954",
+      "step25c-glorys-alpha0.002-KE-H3": "084163f0f1142782da178af2e393478dbcb50ae942690511cfbc6337d40ca227",
+      "step25c-glorys-alpha0-KE-H3": "4e5c4d11f51fafd4b70ca29bf2e76000bf29b7f7b4fae98b6bc6243c1f286478"
+    },
+    "replayReturncodes": [
+      2
+    ]
+  },
+  "modelRunCountBeforeR2": 12,
+  "expectedModelRunCountAfterR2": 24,
+  "tools": {
+    "tools/research/run_step25c_test02_r2.py": "a06b077c880059f934e07ce651fdeed34cd93fcfb834177d4bee8041f8636269",
+    "tools/research/replay_step25c_run.py": "5dd8c14da33dcd75c50c8e52dc517456d46a1a2f4ad38b3918687d16b4a73ff5"
+  },
+  "protocolSha256": "7ff8468ea8399b8bf9d563980a184203b1b69c55a52cf7a493d1c140c97901ab",
+  "alpha": {
+    "primary": 0.002,
+    "comparison": 0.0,
+    "search": false
+  }
+}

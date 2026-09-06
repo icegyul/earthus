@@ -1,0 +1,64 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "ruleId": "model-adequacy-diagnosis-step21",
+  "protocolDocument": "docs/research/step21-model-adequacy-protocol.json",
+  "protocolSha256": "92e97e5322bcf5a26ad59c2e953fe454340fdb681dfff2f915097a99f787f2e3",
+  "createdAtUTC": "2026-09-06T08:30:00Z",
+  "gitCommitAtDesign": "ed746129",
+  "authorProcess": "Claude Code session (Research Intelligence PHASE 2, STEP 21 Phase A) — diagnostic preregistration; no model run, no alpha search, no data download",
+  "immutabilityCheck": {
+    "step17LockCommit": "551668ef",
+    "step18LockCommit": "d505cc5e",
+    "step18bLockCommit": "5b9567e5",
+    "step19LockCommit": "5f27dc2d",
+    "step20LockCommit": "155995dd",
+    "selectedAlphaLockCommit": "73fafffb",
+    "step20B3Commit": "9113e8b5",
+    "step20B4Commit": "869bc664",
+    "step20B5Commit": "c395a098",
+    "step20B6GateCommit": "7b3d2a0e",
+    "step20B6Commit": "ed746129",
+    "lockedFiles": {
+      "docs/research/step17-forcing-protocol.md": "db73ef67d1a191d67b29d488805a3c9998a65bf70b80dffe15b40ed8eb041792",
+      "docs/research/step18-model-manifest.json": "02c859f9a079eb68826852589d4c6d313171bcad9b544406212abfe3651a61cb",
+      "docs/research/step18b-model-protocol.md": "73e8aa1405aa82c6ae283962f8efaabdfa5331a5dc6109471b1e6bd0ebf813bc",
+      "docs/research/step18b-model-manifest.json": "923fd1ba69438da0a6bbd02495705b4dccce229d606a199b0498c6d80d6aaefe",
+      "docs/research/step19-evaluation-protocol.md": "920475967d4dd1a0b10a9f96f10c83291f92df767e906c50b0973e82b9af52b3",
+      "docs/research/step19-evaluation.json": "9baa0c6ae4fd38fbd0ea72e479736d0eb8f43f49aac6cebc8dcfa0051490b5f4",
+      "docs/research/step20-generalization-protocol.md": "65b004589570e7e409201e82c9388b17ec53002c4b31282112056d005baabb00",
+      "docs/research/step20-preregistration.json": "1e4ed8c1d004b00812c0710fd3df32c8a6c7537ff5287474a4c0a3e8ae33cae4",
+      "docs/research/step20-selection-rule-sha256.txt": "5d980be74fbeb752160143c2e44ecb6611f01f21e94ea528908fc5867d9b46d7",
+      "docs/research/step20-selected-alpha.json": "68e43a0f91e3a6bd81427399adbe2cf8a7543d85cf0249d4926f3df093649efd",
+      "docs/research/step20-calibration-manifest.json": "41ca439ec6540fd98b3c9ecf5c74af7afdd8731e94bea5d33bfac3397afe8498",
+      "docs/research/step20-calibration-table.csv": "a15df2a059ba11e5e3900f10b29ad3cfed1dca610c8ad421898374cd31a8425f",
+      "docs/research/step20-b3-forcing-resolution-protocol.md": "b7a2ad2309553c05f261598773df7ca5295a8dcd92ef76fd3467e4d1787ef466",
+      "docs/research/step20-b4-segmentation-gate.json": "9e3d3dd9e98287a3a0d06a8a8fe190d5189f595cf6b81055d6e41d30e2aaed02",
+      "docs/research/step20-b5-numerical-equivalence-protocol.md": "a61140347320519b623eeb382d18470a0759d4e51597c4d2896730889a737f42",
+      "docs/research/step20-b6-segmentation-gate.json": "b5cca409e6f62a8afc26c39c43ad6b49791f4689c0c9825c7cd35a7dd75ccafa",
+      "docs/research/step20-b6-holdout-manifest.json": "968da55a4553c00f373d6a0f26bc2b1c9e3f3af421d37db7a1e58e99a5727653",
+      "docs/research/step20-b6-holdout-evaluation.json": "c03be570b5b2cc229f9b0454b6899f43ae4390f77309ce165650035df3673cea",
+      "docs/research/step20-b6-holdout-summary.json": "fe2043b30aaba17d34e3d9a780379de9612541b75caa4ed487a10931a784d93b",
+      "docs/research/step20-b6-holdout-table.csv": "d21d029bba4e09a15ef19a393f0d8389df0e5750cb1459ed0b1e92372aeea681",
+      "docs/research/cohort-step16.json": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474"
+    },
+    "runtimeFilesIdenticalToStep20Lock": true,
+    "result": "PASS"
+  },
+  "diagnosticTool": {
+    "file": "tools/research/diagnose_step21.py",
+    "sha256": "7891a5b95108b7e17a52493fbbc13b18d8a4f8fa179d6630cad67e89cb9ba9bd"
+  },
+  "validator": {
+    "file": "tools/research/check_step21_model_adequacy.py",
+    "sha256": "0fd7583d1dd3fd63a06ab3820f6059fe10adb2c5226fd7d8b6441aedf674b8ff"
+  },
+  "phaseA": {
+    "modelRuns": 0,
+    "forcingDownloads": 0,
+    "observationDownloads": 0,
+    "alphaCandidatesAdded": 0
+  },
+  "lockedAtUTC": "2026-09-06T08:30:00Z",
+  "nextStep": "STEP 21 Phase B diagnostic execution (same instruction), then STOP; STEP 22 not started"
+}

@@ -1,0 +1,205 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "model-adequacy-diagnosis-step21",
+  "title": "STEP 21 — Model adequacy & error source diagnosis",
+  "status": "PREREGISTRATION LOCKED",
+  "descriptiveOnly": true,
+  "createdAtUTC": "2026-09-06T08:30:00Z",
+  "baseCommit": "ed746129",
+  "purpose": "diagnose the error structure and adequacy of the surface passive-advection model without changing any STEP 17–20 result; no alpha search, no reselection, no tuning",
+  "step20FrozenReference": {
+    "selectedAlpha": 0.002,
+    "baseline": 0.0,
+    "holdout": {
+      "preregistered": 13,
+      "evaluable": 12,
+      "unavailable": 1,
+      "KE-H1": 5,
+      "KE-H3": 7,
+      "KE-H2": "FORCING_UNAVAILABLE (n=1)",
+      "AG": "HOLDOUT_UNAVAILABLE"
+    },
+    "conclusion": "Calibration-selected alpha=0.002 did not show a consistent performance advantage over alpha=0 on the 12 evaluable KE holdout drifters.",
+    "modifiable": false
+  },
+  "dataScope": {
+    "CALIBRATION": {
+      "source": "STEP 20 calibration trajectories (docs/research/step20-calibration-manifest.json), alpha 0 and 0.002 only",
+      "units": [
+        "KE-1",
+        "KE-2",
+        "AG-1",
+        "AG-2"
+      ],
+      "n": 23
+    },
+    "HOLDOUT": {
+      "source": "STEP 20 B-6 holdout trajectories (docs/research/step20-b6-holdout-manifest.json); frozen; never used for selection",
+      "units": [
+        "KE-H1",
+        "KE-H3"
+      ],
+      "n": 12
+    },
+    "observations": "STEP 15 NOAA GDP hourly QC (observationSha256 22c0ecff…), exact UTC matching, no interpolation",
+    "releasePositions": "STEP 16 cohort (calibration) / STEP 20 preregistration (holdout)",
+    "newExternalData": false
+  },
+  "units": [
+    "KE-1",
+    "KE-2",
+    "AG-1",
+    "AG-2",
+    "KE-H1",
+    "KE-H3"
+  ],
+  "excludedUnits": [
+    {
+      "unit": "KE-H2",
+      "n": 1,
+      "status": "FORCING_UNAVAILABLE"
+    }
+  ],
+  "alphasUsed": [
+    0.0,
+    0.002
+  ],
+  "newAlphaCandidates": 0,
+  "alphaReselection": false,
+  "holdoutUsedForSelection": false,
+  "questions": {
+    "Q1": "does model error increase with time?",
+    "Q2": "error growth rate across 24/48/72 h?",
+    "Q3": "does the alpha=0.002 vs alpha=0 difference grow systematically with time?",
+    "Q4": "is error concentrated in particular regions/units?",
+    "Q5": "is observed–model divergence directionally systematic?",
+    "Q6": "systematic difference between model and observed displacement magnitude?",
+    "Q7": "systematic difference between model path length and observed displacement/path?",
+    "Q8": "does a single drifter dominate the error distribution? (no removal)",
+    "Q9": "does the windage term help only in particular units or increase error in particular units?",
+    "Q10": "scalar magnitude error vs directional/spatial displacement error?"
+  },
+  "haversineRadiusMeters": 6371008.8,
+  "horizonsHours": [
+    24,
+    48,
+    72
+  ],
+  "metrics": {
+    "A_positionError": "haversine(observed, model) at each horizon, km",
+    "B_modelDisplacement": "haversine(release, model endpoint)",
+    "C_observedDisplacement": "haversine(release, observed endpoint)",
+    "D_modelPathLength": "sum of haversine over 900 s samples (and over hourly subsamples for fair comparison with observations)",
+    "E_pathExcessRatio": "model path (900 s) / model displacement",
+    "F_directional": {
+      "bearing": "initial great-circle bearing release→endpoint, deg clockwise from north",
+      "absBearingDifference": "|model − observed| folded to [0,180]",
+      "eastNorthOffset": "model endpoint minus observed endpoint, km, equirectangular at observed latitude"
+    },
+    "G_errorGrowth": {
+      "E48_minus_E24": true,
+      "E72_minus_E48": true,
+      "E72_over_E24": "NOT_AVAILABLE if E24 < 1e-6 km"
+    },
+    "speedPath": {
+      "dispRatio": "model/observed displacement",
+      "pathRatioHourly": "model hourly path / observed hourly path (sampling note recorded)",
+      "endpointOverPath": "model displacement / model path (900 s)"
+    },
+    "zeroDenominator": "NOT_AVAILABLE"
+  },
+  "growthClasses": {
+    "A": "E24 <= E48 <= E72",
+    "B": "E48 < E24",
+    "C": "otherwise (non-monotonic)",
+    "D": "insufficient data"
+  },
+  "alphaEffect": {
+    "delta": "E(alpha 0.002) − E(alpha 0) per horizon, consistency with STEP 20 tables within 0.001 km",
+    "signPersistence": "same non-zero sign at 24/48/72 h",
+    "signChanges": "count of sign changes 24→48→72",
+    "cumulativeSeparation": "haversine(P_0.002, P_0) per horizon",
+    "windageTowardObservation": "projection of (P_0.002 − P_0) onto (P_obs − P_0) / |P_obs − P_0|^2; positive = toward observation",
+    "judgement": "none — STEP 20 conclusion unchanged"
+  },
+  "regionalTables": {
+    "units": [
+      "KE-1",
+      "KE-2",
+      "AG-1",
+      "AG-2",
+      "KE-H1",
+      "KE-H3"
+    ],
+    "fields": [
+      "n",
+      "24/48/72 h median error",
+      "growth",
+      "72 h observed/model displacement",
+      "directional bias"
+    ],
+    "smallN": "n < 10 → SMALL-N / DESCRIPTIVE ONLY"
+  },
+  "outlierPolicy": {
+    "remove": false,
+    "trim": false,
+    "winsorize": false,
+    "reweight": false,
+    "topErrorExclusion": false,
+    "wording": "highest-error cases"
+  },
+  "statisticalPolicy": {
+    "exploratoryDescriptive": true,
+    "confirmatoryPValues": false,
+    "newSignificanceThresholds": false,
+    "independenceAssumed": false,
+    "generalisationClaims": false
+  },
+  "confirmatoryPValues": false,
+  "thresholdsIntroduced": false,
+  "figures": [
+    "F1 observed vs model endpoint error 24/48/72h",
+    "F2 error growth E24→E48→E72",
+    "F3 observed vs model displacement",
+    "F4 bearing difference",
+    "F5 paired delta alpha 0 vs 0.002",
+    "F6 72 h trajectory divergence examples"
+  ],
+  "figureRules": "axes from 0 over the full data range, no truncation; each figure states dataset, n, horizon, alpha, metric; deterministic SVG without external libraries",
+  "adequacyCategories": {
+    "A": "magnitude error dominant",
+    "B": "directional error dominant",
+    "C": "temporal error growth dominant",
+    "D": "regional / event-dependent error dominant",
+    "rule": "one or more may apply; INSUFFICIENT EVIDENCE when indicators do not separate; no threshold"
+  },
+  "prohibitedWording": [
+    "alpha=0.002 is optimal",
+    "windage improves the model",
+    "windage is necessary",
+    "model is validated",
+    "model is accurate",
+    "general-purpose parameter established"
+  ],
+  "allowedWording": [
+    "descriptive pattern",
+    "diagnostic indication",
+    "error structure",
+    "regional difference",
+    "directional bias indication",
+    "temporal error growth",
+    "insufficient evidence"
+  ],
+  "outputs": [
+    "docs/research/step21-diagnostic-summary.json",
+    "docs/research/step21-diagnostic-table.csv",
+    "docs/research/step21-diagnostic-run.json",
+    "docs/research/step21-diagnostic-figures/*.svg"
+  ],
+  "tools": {
+    "diagnostic": "tools/research/diagnose_step21.py",
+    "validator": "tools/research/check_step21_model_adequacy.py"
+  },
+  "reproducibility": "independent re-run to a separate directory; table, summary and figures byte-identical",
+  "stopRule": "STOP after STEP 21; STEP 22 not started; STEP 17–20 not modified; alpha not reselected"
+}

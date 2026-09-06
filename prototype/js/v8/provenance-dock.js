@@ -37,7 +37,7 @@ export function attachProvenanceDock(root) {
     const rows = directSourceRows(root);
     const ko = koreanUi();
     const visible = root.classList.contains('on') && rows.length > 0;
-    const label = ko ? '출처:' : 'Source:';
+    const label = '';   // '출처:' 머리말은 뺐다 (2026-09-06 받은 지시) — 글씨만 남긴다
     const summary = root.dataset.inlineSource || compactText(rows[0])
       || (ko ? '자료 출처 확인' : 'View data source');
 

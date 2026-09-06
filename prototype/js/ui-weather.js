@@ -146,12 +146,16 @@ export const weatherPanel = {
     });
     // 위치명은 날씨보다 늦게 도착할 수 있다. 시트가 열린 뒤 도착해도 제목을 갱신한다.
     document.addEventListener('earthus:place', () => {
-      if (!$('#wxSheet')?.classList.contains('up')) return;
+      /* 시트가 닫혀 있어도 한 번은 받아 둔다 — 좌상단 출처 표기가 날씨 자료 출처를 함께 적기 때문(2026-09-06).
+         같은 자리면 다시 받지 않는다(_loadV7 이 키로 막는다). */
+      if (!$('#wxSheet')?.classList.contains('up')) { if (!this.model) this._loadV7(); return; }
       this._dropStaleKma();
       this._dropStaleModel();
       this.render();
       this._loadV7();
     });
+    // 자리를 이미 알면 한 번 받아 둔다 — earthus:place 가 이 리스너보다 먼저 지나가 좌상단 출처에 날씨 출처가 비어 있었다(2026-09-06).
+    if (Number.isFinite(chrome.place?.lat) && Number.isFinite(chrome.place?.lon)) setTimeout(() => { if (!this.model) this._loadV7(); }, 1500);
     return this;
   },
 
@@ -400,9 +404,12 @@ export const weatherPanel = {
 
     root.appendChild(this._renderHourly(model, ko));
     root.appendChild(renderDaily(model, ko));
-    root.appendChild(renderIntelligence(model, ko, activeHour));
+    // 안내할 특보가 있을 때만 카드를 둔다. "확인할 수 없습니다"·"분리해 읽으세요"는 안내가 아니라
+    // 빈 카드라 숨긴다(2026-09-06 요청). 공식 특보 게이트는 위 official-warning 칸이 따로 지킨다.
+    const intelligence = renderIntelligence(model, ko, activeHour);
+    if (intelligence) root.appendChild(intelligence);
     root.appendChild(renderDetails(model, sourceMap, ko));
-    root.appendChild(renderSources(model, ko));
+    /* 출처·시각·상태 카드는 뺐다 (2026-09-06 받은 지시) — 출처는 좌하단 한 줄(ui-source.js inlineSource)에만 적는다. renderSources 는 남겨 둔다. */
     root.appendChild(renderEarthActions(model, ko));
     root.querySelectorAll('.wcv7-detail-toggle').forEach(button => {
       button.addEventListener('click', () => {
@@ -912,9 +919,10 @@ function renderDaily(model, ko) {
 }
 
 function renderIntelligence(model, ko, activeHour = null) {
+  const active = model.warningGate?.gate === 'OFFICIAL_WARNING_ACTIVE';
+  if (!active) return null;   // 특보가 없으면 카드 자체를 만들지 않는다
   const section = el('section', 'wcv7-section wcv7-intelligence');
   section.dataset.weatherSection = 'intelligence';
-  const active = model.warningGate?.gate === 'OFFICIAL_WARNING_ACTIVE';
   const unknown = model.warningGate?.status === 'UNKNOWN' || model.warningGate?.gate === 'UNKNOWN';
   let title;
   let body;

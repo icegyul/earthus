@@ -220,6 +220,13 @@ export const sourceNote = {
     i18n.onChange(() => this.render());
     /* 확대하면 자료가 바뀐다 (전지구 합성 ↔ 히마와리). 그때 바로 다시 그린다. */
     document.addEventListener('earthus:imagery', () => this.render());
+    /* 날씨 카드가 만든 출처 목록(Open-Meteo·기상청 AWS·동네예보·에어코리아)을 구름 출처와 같은 자리에 적는다(2026-09-06 요청).
+       모델은 날씨 시트가 만든 것을 그대로 받는다 — 여기서 다시 받지 않는다. */
+    document.addEventListener('earthus:weather-model', event => {
+      this._weatherSources = event.detail?.model?.sources || null;
+      this._weatherTz = event.detail?.model?.location?.timezone || null;
+      this.render();
+    });
     document.addEventListener('earthus:tourism-snapshot', event => {
       this._tourismSnapshot = event.detail || null;
       this.render();
@@ -693,6 +700,27 @@ export const sourceNote = {
       }
     } catch (_) { /* 레지스트리가 아직 없으면 넘어간다 */ }
 
+    if (this._weatherSources?.length) {
+      const typeKo = { OBSERVED: '관측', OFFICIAL_FORECAST: '공식 예보', MODEL_FORECAST: '모델 예보' };
+      const typeEn = { OBSERVED: 'obs', OFFICIAL_FORECAST: 'official', MODEL_FORECAST: 'model' };
+      const label = s => ko ? s.label : (s.labelEn || s.label);
+      const when = s => { const t = s.observedAt || s.issuedAt; if (!t) return null; const d = new Date(t); return Number.isFinite(d.getTime()) ? hhmm(d) : null; };
+      const shortNames = [];
+      for (const src of this._weatherSources) {
+        /* 지연·불가 출처도 적는다 — 날씨 시트의 출처 카드를 뺐으므로(2026-09-06 받은 지시) 여기가 유일한 자리다. 상태는 짧게 덧붙인다. */
+        const stateKo = { DELAYED: '지연', LATE: '지연', STALE: '지연', UNAVAILABLE: '불가' };
+        const state = src.dataState && src.dataState !== 'AVAILABLE'
+          ? (ko ? (stateKo[src.dataState] || src.dataState) : String(src.dataState).toLowerCase()) : null;
+        const parts = [(ko ? typeKo : typeEn)[src.sourceType] || null, when(src), src.distanceKm != null ? `${src.distanceKm}km` : null, state].filter(Boolean);
+        bits.push(`<b>${label(src)}</b>${parts.length ? ' · ' + parts.join(' · ') : ''}`);
+        shortNames.push(label(src).replace(/\s*\(.*?\)\s*/g, '').replace(/ forecast models$/, '') + (state ? ` (${state})` : ''));
+      }
+      // 접힌 독의 한 줄 요약에도 함께 적는다: "구름 …  · 날씨 Open-Meteo · 기상청 …"
+      if (shortNames.length && bits.length) {
+        const cloud = String(bits[0]).replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+        this.root.dataset.inlineSource = `${cloud} · ${ko ? '날씨' : 'Weather'} ${shortNames.join(' · ')}`;
+      }
+    }
     this.root.innerHTML = bits.map(b => `<span>${b}</span>`).join('')
       + (esriVisible
         ? '<span class="map-credit">Powered by Esri · Source: Esri, Vantor, '

@@ -1,0 +1,49 @@
+{
+  "ruleId": "model-evidence-synthesis-step31",
+  "phase": "A",
+  "status": "PREREGISTRATION_LOCKED",
+  "modelSelection": "MODEL_SELECTION_NOT_READY",
+  "alpha": 0.002,
+  "depthMetersPrimary": 15.81007,
+  "currentCandidate": "GLORYS + Stokes",
+  "candidateStatus": "CANDIDATE_ONLY",
+  "operationalStatus": "NOT_OPERATIONALLY_VALIDATED",
+  "frozenReference": "HYCOM",
+  "frozenReferenceStatus": "FROZEN_REFERENCE_BASELINE",
+  "unresolvedHighPriority": "TEMPORAL_OCEAN_FORCING",
+  "unresolvedPhysicalComponent": "SURFACE / MIXED-LAYER / NON-GEOSTROPHIC TRANSPORT",
+  "nextPriority": [
+    "TEMPORAL_FORCING",
+    "EXPANDED_INDEPENDENT_HOLDOUT",
+    "MIXED_LAYER_VERTICAL_SHEAR",
+    "SURFACE_NON_GEOSTROPHIC",
+    "COASTAL_BATHYMETRIC"
+  ],
+  "step32Candidate": "INDEPENDENT EXPANDED VALIDATION / TEMPORAL FORCING TEST",
+  "lockedConclusions": {
+    "ALPHA": "NOT_ESTABLISHED_AS_SUPERIOR",
+    "SPATIAL_RESOLUTION": "NO_CLEAR_EFFECT",
+    "DEPTH": "NO_CLEAR_EFFECT",
+    "STOKES": "NO_CLEAR_SUPERIORITY",
+    "GLORYS": "NO_CLEAR_SUPERIORITY_OVER_HYCOM",
+    "HYCOM": "NOT_ESTABLISHED_AS_UNIVERSALLY_SUPERIOR",
+    "AVISO": "REFERENCE_ONLY",
+    "TEMPORAL_OCEAN_FORCING": "UNTESTED_HIGH_PRIORITY",
+    "SURFACE_MIXED_LAYER_NON_GEOSTROPHIC_TRANSPORT": "UNRESOLVED_PHYSICAL_COMPONENT"
+  },
+  "modelRunCount": 0,
+  "newData": 0,
+  "newTrajectories": 0,
+  "alphaChange": "NO",
+  "depthChange": "NO",
+  "forcingSelection": "NO",
+  "interpretation": "SYNTHESIS ONLY",
+  "statements": [
+    "STEP 31 Phase A synthesizes frozen STEP 20-30A results; no trajectory, metric or label is recomputed or modified.",
+    "No candidate meets the preregistered 72 h consistency rule; MODEL_SELECTION_NOT_READY.",
+    "GLORYS + Stokes is CANDIDATE_ONLY (not selected); HYCOM is the FROZEN_REFERENCE_BASELINE (not established as superior).",
+    "Temporal ocean forcing resolution is UNTESTED_HIGH_PRIORITY (STEP 26 Comparison 1 BLOCKED); surface / mixed-layer / non-geostrophic transport is an UNRESOLVED_PHYSICAL_COMPONENT; neither is claimed as the explanation of the error.",
+    "Future priorities are ordered by evidence gaps, not by expected favorable outcome; nothing is executed in STEP 31A.",
+    "AVISO is a reference field only; no statistical significance, generalization, causal or operational claim is made."
+  ]
+}

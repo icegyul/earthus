@@ -1,0 +1,162 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "model-evidence-synthesis-step31",
+  "phase": "A",
+  "status": "PREREGISTRATION_LOCKED",
+  "createdAtUTC": "2026-09-06T22:21:49Z",
+  "baseCommit": "813e1954",
+  "modelSelectionGate": {
+    "Q1": {
+      "question": "Can GLORYS+Stokes be declared the final operational model?",
+      "answer": "NO",
+      "reason": "STEP 30A label NO_CLEAR_DESCRIPTIVE_DIFFERENCE (72 h consistency 19/33 = 0.576 < 2/3); holdout 6/6"
+    },
+    "Q2": {
+      "question": "Can HYCOM be declared the final operational model?",
+      "answer": "NO",
+      "reason": "not a scientifically established winner: STEP 25C / STEP 30A no clear difference; HYCOM lower median error at 24/48 h but higher at 72 h"
+    },
+    "Q3": {
+      "question": "Can alpha be re-tuned?",
+      "answer": "NO"
+    },
+    "Q4": {
+      "question": "Can depth be reselected?",
+      "answer": "NO"
+    },
+    "Q5": {
+      "question": "Can the Stokes coefficient be tuned?",
+      "answer": "NO"
+    },
+    "Q6": {
+      "question": "Is another confirmatory experiment justified?",
+      "answer": "YES",
+      "condition": "if the research goal is a defensible final model selection"
+    }
+  },
+  "finalResearchGate": {
+    "options": {
+      "A": "MODEL_SELECTION_READY only if one candidate has preregistered, consistent independent holdout superiority",
+      "B": "MODEL_SELECTION_NOT_READY if evidence remains mixed"
+    },
+    "decision": "MODEL_SELECTION_NOT_READY",
+    "reason": "no candidate meets the 2/3 consistency rule at 72 h overall; holdout evidence rests on 12 KE drifters; temporal ocean forcing untested"
+  },
+  "lockedConclusions": {
+    "ALPHA": "NOT_ESTABLISHED_AS_SUPERIOR",
+    "SPATIAL_RESOLUTION": "NO_CLEAR_EFFECT",
+    "DEPTH": "NO_CLEAR_EFFECT",
+    "STOKES": "NO_CLEAR_SUPERIORITY",
+    "GLORYS": "NO_CLEAR_SUPERIORITY_OVER_HYCOM",
+    "HYCOM": "NOT_ESTABLISHED_AS_UNIVERSALLY_SUPERIOR",
+    "AVISO": "REFERENCE_ONLY",
+    "TEMPORAL_OCEAN_FORCING": "UNTESTED_HIGH_PRIORITY",
+    "SURFACE_MIXED_LAYER_NON_GEOSTROPHIC_TRANSPORT": "UNRESOLVED_PHYSICAL_COMPONENT"
+  },
+  "evidenceStrength": {
+    "ALPHA": "DIRECTLY_SUPPORTED",
+    "SPATIAL_RESOLUTION": "DIRECTLY_SUPPORTED",
+    "DEPTH": "DIRECTLY_SUPPORTED",
+    "STOKES": "SUPPORTED_INDICATION",
+    "GLORYS": "DIRECTLY_SUPPORTED",
+    "HYCOM": "DIRECTLY_SUPPORTED",
+    "AVISO": "DIRECTLY_SUPPORTED",
+    "TEMPORAL_OCEAN_FORCING": "PLAUSIBLE_BUT_UNTESTED",
+    "SURFACE_MIXED_LAYER_NON_GEOSTROPHIC_TRANSPORT": "SUPPORTED_INDICATION"
+  },
+  "currentResearchModel": {
+    "name": "GLORYS12V1 + WW3 Stokes + NCEP-R2",
+    "ocean": "GLORYS12V1 GLOBAL_MULTIYEAR_PHY_001_030 cmems_mod_glo_phy_my_0.083deg_P1D-m",
+    "depthMeters": 15.81007,
+    "stokes": "WW3 GLOB-30M CFSR surface Stokes drift, coefficient 1.0",
+    "wind": "NCEP-DOE R2 10 m 6 h",
+    "alpha": 0.002,
+    "status": "CANDIDATE_ONLY",
+    "operational": "NOT_OPERATIONALLY_VALIDATED",
+    "meaning": "CANDIDATE_ONLY does not mean selected"
+  },
+  "frozenReferenceBaseline": {
+    "name": "HYCOM GOFS 3.1 GLBv0.08 + NCEP-R2",
+    "depthMeters": 15.0,
+    "alpha": 0.002,
+    "status": "FROZEN_REFERENCE_BASELINE",
+    "meaning": "FROZEN_REFERENCE does not mean established as superior"
+  },
+  "unresolved": {
+    "TEMPORAL_OCEAN_FORCING": {
+      "label": "UNTESTED_HIGH_PRIORITY",
+      "reason": "STEP 26 Comparison 1 (HYCOM_NATIVE_3H vs HYCOM_DAILY) BLOCKED because the HYCOM native 3 h acquisition did not span the complete required daily windows; Comparison 3 also BLOCKED; 3 h vs daily HYCOM was not experimentally resolved",
+      "causalClaim": false
+    },
+    "SURFACE_MIXED_LAYER_NON_GEOSTROPHIC_TRANSPORT": {
+      "label": "UNRESOLVED_PHYSICAL_COMPONENT",
+      "reason": "STEP 28: both HYCOM and GLORYS exceed the AVISO geostrophic speed substantially; this does not establish which product is wrong; AVISO represents a different physical component than total drifter transport",
+      "causalClaim": false
+    }
+  },
+  "nextExperimentPriority": [
+    {
+      "rank": 1,
+      "id": "TEST-TEMPORAL",
+      "name": "TEMPORAL_FORCING",
+      "purpose": "HYCOM_NATIVE_3H vs HYCOM_DAILY on the registered windows",
+      "requirement": "acquire enough HYCOM 3-hourly source forcing to construct complete daily fields for every registered window",
+      "basis": "STEP 26 Comparison 1 registered but BLOCKED by incomplete source coverage; no performance data may be inferred from the missing comparison",
+      "executedHere": false
+    },
+    {
+      "rank": 2,
+      "id": "EXPANDED_HOLDOUT",
+      "name": "EXPANDED_INDEPENDENT_HOLDOUT",
+      "purpose": "test whether the STEP 29/30A holdout pattern reproduces outside the current 12-drifter KE holdout",
+      "requirement": "new independently derived holdout cohort with sufficient drifter count and window diversity; no current holdout reused as new",
+      "basis": "STEP 29 holdout 8/4 and STEP 30A holdout 6/6 rest on 12 KE drifters",
+      "executedHere": false
+    },
+    {
+      "rank": 3,
+      "id": "MIXED-LAYER",
+      "name": "MIXED_LAYER_VERTICAL_SHEAR",
+      "purpose": "vertical representativeness without post-hoc depth selection",
+      "requirement": "fixed multi-depth velocity data (registered before use)",
+      "basis": "STEP 27 covers 5-18.5 m only; STEP 22 L3/L8",
+      "executedHere": false
+    },
+    {
+      "rank": 4,
+      "id": "SURFACE-NONGEO",
+      "name": "SURFACE_NON_GEOSTROPHIC",
+      "purpose": "surface-current components not represented by AVISO geostrophic velocity",
+      "requirement": "reference data for non-geostrophic surface transport",
+      "basis": "STEP 28 Q6 MIXED; both products exceed AVISO geostrophic speed",
+      "executedHere": false
+    },
+    {
+      "rank": 5,
+      "id": "COASTAL",
+      "name": "COASTAL_BATHYMETRIC",
+      "purpose": "coastal / bathymetric interaction",
+      "requirement": "only if future evidence indicates relevance",
+      "basis": "STEP 22 L6 INSUFFICIENT_EVIDENCE",
+      "executedHere": false
+    }
+  ],
+  "noNewPerformanceExperimentNow": true,
+  "step32Candidate": {
+    "id": "STEP32",
+    "name": "INDEPENDENT EXPANDED VALIDATION / TEMPORAL FORCING TEST",
+    "registeredHere": "phase name and rationale only",
+    "modelRunsDesigned": false,
+    "note": "a separate STEP 32 Phase A will define the precise data and cohort requirements"
+  },
+  "counters": {
+    "MODEL_RUN_COUNT": 0,
+    "NEW_DATA": 0,
+    "NEW_TRAJECTORIES": 0,
+    "ALPHA_CHANGE": "NO",
+    "DEPTH_CHANGE": "NO",
+    "FORCING_SELECTION": "NO",
+    "MODEL_SELECTION": "NO",
+    "BLENDING": "NO"
+  }
+}

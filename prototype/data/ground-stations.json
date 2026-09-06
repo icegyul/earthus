@@ -1,0 +1,25 @@
+{
+  "schema": "earthus.ground-stations.v1",
+  "note": "공개 시설 소개 자료 기준의 대략 좌표(0.01° 안팎). 안테나 단위 정밀 좌표가 아니다. 가시성(고도각) 계산용.",
+  "source": "운영기관 공개 페이지 (KARI · NASA DSN · ESA ESTRACK · KSAT · NOAA · JAXA · ISRO · SANSA)",
+  "stations": [
+    { "id": "kari-daejeon", "name": "KARI 위성관제센터 (대전)", "en": "KARI Satellite Control Center, Daejeon", "operator": "KARI", "country": "KR", "lat": 36.374, "lon": 127.360 },
+    { "id": "kari-naro", "name": "나로우주센터 (고흥)", "en": "Naro Space Center", "operator": "KARI", "country": "KR", "lat": 34.432, "lon": 127.535 },
+    { "id": "kari-jeju", "name": "KARI 제주 추적소", "en": "KARI Jeju Tracking Station", "operator": "KARI", "country": "KR", "lat": 33.26, "lon": 126.33, "approx": true },
+    { "id": "dsn-goldstone", "name": "NASA DSN 골드스톤", "en": "NASA DSN Goldstone", "operator": "NASA/JPL", "country": "US", "lat": 35.43, "lon": -116.89 },
+    { "id": "dsn-canberra", "name": "NASA DSN 캔버라", "en": "NASA DSN Canberra", "operator": "NASA/CSIRO", "country": "AU", "lat": -35.40, "lon": 148.98 },
+    { "id": "dsn-madrid", "name": "NASA DSN 마드리드", "en": "NASA DSN Madrid", "operator": "NASA/INTA", "country": "ES", "lat": 40.43, "lon": -4.25 },
+    { "id": "esa-kourou", "name": "ESA 쿠루", "en": "ESA Kourou", "operator": "ESA", "country": "GF", "lat": 5.25, "lon": -52.80 },
+    { "id": "esa-kiruna", "name": "ESA 키루나", "en": "ESA Kiruna", "operator": "ESA", "country": "SE", "lat": 67.86, "lon": 20.96 },
+    { "id": "esa-newnorcia", "name": "ESA 뉴노르시아", "en": "ESA New Norcia", "operator": "ESA", "country": "AU", "lat": -31.05, "lon": 116.19 },
+    { "id": "esa-malargue", "name": "ESA 말라르궤", "en": "ESA Malargüe", "operator": "ESA", "country": "AR", "lat": -35.78, "lon": -69.40 },
+    { "id": "ksat-svalbard", "name": "KSAT 스발바르", "en": "KSAT Svalbard", "operator": "KSAT", "country": "NO", "lat": 78.23, "lon": 15.39 },
+    { "id": "ksat-troll", "name": "KSAT 트롤 (남극)", "en": "KSAT TrollSat", "operator": "KSAT", "country": "AQ", "lat": -72.01, "lon": 2.53 },
+    { "id": "noaa-fairbanks", "name": "NOAA 페어뱅크스", "en": "NOAA Fairbanks CDA", "operator": "NOAA", "country": "US", "lat": 64.97, "lon": -147.52 },
+    { "id": "nasa-wallops", "name": "NASA 월롭스", "en": "NASA Wallops", "operator": "NASA", "country": "US", "lat": 37.94, "lon": -75.47 },
+    { "id": "jaxa-usuda", "name": "JAXA 우스다", "en": "JAXA Usuda", "operator": "JAXA", "country": "JP", "lat": 36.13, "lon": 138.36 },
+    { "id": "jaxa-uchinoura", "name": "JAXA 우치노우라", "en": "JAXA Uchinoura", "operator": "JAXA", "country": "JP", "lat": 31.25, "lon": 131.08 },
+    { "id": "isro-bengaluru", "name": "ISRO ISTRAC 벵갈루루", "en": "ISRO ISTRAC Bengaluru", "operator": "ISRO", "country": "IN", "lat": 13.03, "lon": 77.51 },
+    { "id": "sansa-hartebeesthoek", "name": "SANSA 하르테비스툭", "en": "SANSA Hartebeesthoek", "operator": "SANSA", "country": "ZA", "lat": -25.89, "lon": 27.69 }
+  ]
+}

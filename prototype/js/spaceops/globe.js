@@ -53,7 +53,7 @@ export const globe = {
   _rm(list) { list.forEach(e => { try { this.ds.entities.remove(e); } catch (_) {} }); list.length = 0; },
 
   clearSelection() {
-    this._rm(this._selEnts); this._rm(this._trackEnts); this._rm(this._nearEnts); this._rm(this._approachEnts);
+    this._rm(this._selEnts); this._rm(this._trackEnts); this._rm(this._nearEnts); this._rm(this._approachEnts); this._rm(this._gsLinkEnts);
     viewer.scene.requestRender?.();
   },
 
@@ -61,6 +61,7 @@ export const globe = {
     this.clearSelection();
     this.clearLaunch();
     this.archive(false);
+    this._rm(this._gsEnts);
   },
 
   /* ── 선택 객체 강조 (§21 선택 객체 = Highlight + Orbit + Label) ─────────── */
@@ -292,6 +293,45 @@ export const globe = {
     }
     this.wake(800);
     return n;
+  },
+
+  /* ── 지상국 (§5 ⌾) ────────────────────────────────────────────────────── */
+  _gsEnts: [],
+  groundStations(list, ko = true) {
+    this._rm(this._gsEnts);
+    for (const st of list || []) {
+      this._gsEnts.push(this.ds.entities.add({
+        id: `so:gs:${st.id}`,
+        position: Cesium.Cartesian3.fromDegrees(st.lon, st.lat, 0),
+        point: { pixelSize: 6, color: Cesium.Color.fromCssColorString('#cfe9ff').withAlpha(0.9),
+          outlineColor: Cesium.Color.fromCssColorString('#5ad1e8').withAlpha(0.9), outlineWidth: 2,
+          distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 4e7) },
+        label: { text: ko ? st.name : st.en, font: '300 10px -apple-system, sans-serif',
+          fillColor: Cesium.Color.fromCssColorString('#cfe9ff').withAlpha(0.8), pixelOffset: new Cesium.Cartesian2(0, 13),
+          verticalOrigin: Cesium.VerticalOrigin.TOP,
+          distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 9_000_000) },
+        _meta: { kind: 'ground-station', _gs: st },
+      }));
+    }
+    this.wake(600);
+  },
+
+  /** 선택 객체와 지금 보이는 지상국을 잇는 얇은 선 */
+  _gsLinkEnts: [],
+  stationLinks(obj, rows, clockMs) {
+    this._rm(this._gsLinkEnts);
+    if (!obj?.rec || !rows?.length) return;
+    const a = geodeticAt(obj.rec, new Date(clockMs));
+    if (!a) return;
+    const A = cart(a);
+    rows.filter(r => r.visible).forEach(r => {
+      this._gsLinkEnts.push(this.ds.entities.add({
+        id: `so:gslink:${r.station.id}`,
+        polyline: { positions: [A, Cesium.Cartesian3.fromDegrees(r.station.lon, r.station.lat, 0)], width: 1,
+          arcType: Cesium.ArcType.NONE, material: css('#5ad1e8').withAlpha(0.45) },
+      }));
+    });
+    this.wake();
   },
 
   /* ── 카메라 (§22) ─────────────────────────────────────────────────────── */

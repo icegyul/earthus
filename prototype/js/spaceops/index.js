@@ -31,7 +31,7 @@ import * as M from './model.js';
 const t = (ko, en) => (i18n.lang === 'ko' ? ko : en);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const n0 = (v) => (v == null || !Number.isFinite(v) ? '—' : Math.round(v).toLocaleString());
-const CSS_HREF = new URL('../../css/spaceops.css?v=20260907-1', import.meta.url).href;
+const CSS_HREF = new URL('../../css/spaceops.css?v=20260907-2', import.meta.url).href;
 
 const SECTIONS = [
   ['live', '●', '실시간 우주 상황', 'Live space'],
@@ -67,6 +67,8 @@ export const spaceOps = {
   debrisFilter: 'ALL',
   orbitQuery: '',
   layer: null,              // AETHERUS Cesium 레이어(공유)
+  stations: [],             // data/ground-stations.json (참고 좌표)
+  _gsRows: null,
   _sats: null, _satsRef: null,
   _aeth: null, _aethStamp: null,
   _nearby: null,
@@ -89,8 +91,12 @@ export const spaceOps = {
     globe.setClock(() => this.clock());
     this._renderShell();
     this._renderAll();
+    this._setMtab('globe');
+    this._loadStations().then(() => { globe.groundStations(this.stations, i18n.lang === 'ko'); if (this.section === 'comm') this._renderSection(); });
 
-    /* 자료 확보 — 이미 받은 것은 다시 받지 않는다 */
+    /* 자료 확보 — 이미 받은 것은 다시 받지 않는다. 열기 전 레이어 상태는 기억해 두었다가 닫을 때 되돌린다
+       (받은 지적: 닫았더니 지구 위에 쓰레기·위성 점이 그대로 남아 홈 화면을 덮었다). */
+    this._prev = { orbitsOn: store.isOn('orbits') };
     try {
       if (typeof satellite === 'undefined') {
         const { loadSatJs } = await import('../aetherus/core.js');
@@ -131,6 +137,8 @@ export const spaceOps = {
        다음에 열었을 때 "궤적을 그리지 않습니다" 같은 틀린 말이 남는다(실측). */
     this.sel = null; this._nearby = null;
     globe.clearAll();
+    if (this._prev && !this._prev.orbitsOn) store.setLayer('orbits', false);
+    if (this._aethTurnedOn && this.layer?.on) { this.layer.toggle().catch(() => {}); this._aethTurnedOn = false; }
     globe.setClock(null);
     this.root.hidden = true;
     document.body.classList.remove('spaceops');
@@ -139,13 +147,28 @@ export const spaceOps = {
 
   toggle() { return this.open_ ? this.close() : this.open(); },
 
+  async _loadStations() {
+    if (this.stations.length) return this.stations;
+    try {
+      const res = await fetch(new URL('../../data/ground-stations.json', import.meta.url), { cache: 'force-cache' });
+      const doc = await res.json();
+      this.stations = doc.stations || [];
+      this._stationsNote = doc.note || '';
+    } catch (e) { console.warn('[spaceops] ground stations', e?.message || e); }
+    return this.stations;
+  },
+
   async _ensureAetherus() {
-    if (this.layer) return this.layer;
+    if (this.layer) {
+      // 닫을 때 꺼 두었으면 다시 켠다(공유 레이어라 인스턴스는 그대로)
+      if (!this.layer.on) { try { await this.layer.toggle(); this._aethTurnedOn = true; this._aeth = null; this._renderAll(); } catch (_) {} }
+      return this.layer;
+    }
     try {
       const { ensureLayer } = await import('../ui-aetherus.js');
       const layer = await ensureLayer();
       this.layer = layer;
-      if (!layer.on) await layer.toggle();
+      if (!layer.on) { await layer.toggle(); this._aethTurnedOn = true; }
       this._aeth = null;
       this._renderAll();
       this._snapshot();
@@ -253,6 +276,7 @@ export const spaceOps = {
       const s = this.sats()[id._meta._satIdx]; if (s) this.select(s); return;
     }
     if (id._aeth != null) { const o = this.aeth().find(x => x.ref.catalogId === id._aeth); if (o) this.select(o); return; }
+    if (id._meta?.kind === 'ground-station') { this.selectStation(id._meta._gs); return; }
     if (id._spaceops) { const o = this.findObj(id._spaceops); if (o) this.select(o); return; }
     const lm = id._meta?._launch || (id._meta?.kind === 'launch' ? id._meta : null);
     if (lm) { const o = this.launchObjs().find(x => x.ref.launchId === lm.id) || M.fromLaunch(lm); this.select(o); }
@@ -285,7 +309,29 @@ export const spaceOps = {
     }
     this._renderRight();
     this._markActive();
+    this._setMtab('right');
     document.dispatchEvent(new CustomEvent('earthus:spaceops-select', { detail: { id: obj?.id || null, kind: obj?.kind || null } }));
+  },
+
+  /** 지상국을 누르면 — 지금 그 지상국 지평선 위에 있는(고도각 ≥5°) 불러온 객체를 센다. */
+  selectStation(st) {
+    if (!st) return;
+    this.sel = { id: `gs:${st.id}`, kind: M.KIND.GROUND_STATION, name: i18n.lang === 'ko' ? st.name : st.en, station: st,
+      source: { provider: st.operator, dataset: 'data/ground-stations.json', observedAt: null, ingestedAt: null, processing: this._stationsNote || '' }, meta: {} };
+    globe.clearSelection();
+    const now = this.clock();
+    const rows = [];
+    for (const o of this.pool()) {
+      if (!o.rec) continue;
+      const r = M.stationsInView(o.rec, [st], now, 5)[0];
+      if (r?.visible) rows.push({ obj: o, elDeg: r.elDeg, azDeg: r.azDeg, rangeKm: r.rangeKm });
+    }
+    rows.sort((a, b) => b.elDeg - a.elDeg);
+    this._gsView = rows;
+    this._renderRight();
+    this._setMtab('right');
+    globe.camera('KOREA', {}); // 카메라 프리셋이 아니라 지상국으로: 아래에서 덮어쓴다
+    globe.camera('LAUNCH_SITE', { launch: { lat: st.lat, lon: st.lon } });
   },
 
   /** 선택 객체의 궤적·주변을 지금 시계로 다시 그린다 (범위·반경·ARCHIVE 시각이 바뀔 때) */
@@ -298,6 +344,8 @@ export const spaceOps = {
       this._nearby = M.nearby(o, this.pool(), this.clock(), this.radiusKm, 10);
     }
     globe.nearby(o, this._nearby.rows, this.clock());
+    this._gsRows = this.stations.length ? M.stationsInView(o.rec, this.stations, this.clock(), 5) : [];
+    globe.stationLinks(o, this._gsRows, this.clock());
   },
 
   _markActive() {
@@ -368,16 +416,18 @@ export const spaceOps = {
         <div class="so-search"><input type="search" data-so-search autocomplete="off" spellcheck="false"><div class="so-search-out" data-so-search-out hidden></div></div>
         <div class="so-cams" data-so-cams></div>
         <div class="so-clock"><small>KST</small><b data-so-clock>--</b></div>
-        <div class="so-mobile-tabs" data-so-mtabs></div>
       </header>
-      <aside class="so-left"><nav class="so-nav" data-so-nav></nav><div class="so-section" data-so-section></div></aside>
+      <aside class="so-left"><button type="button" class="so-handle" data-act="sheet-toggle" aria-label="펼치기/접기"><i></i></button>
+        <nav class="so-nav" data-so-nav></nav><div class="so-section" data-so-section></div></aside>
       <main class="so-center">
         <div class="so-kpis" data-so-kpis></div>
         <div class="so-legend" data-so-legend></div>
         <div class="so-center-note" data-so-center-note hidden></div>
       </main>
-      <aside class="so-right" data-so-right></aside>
-      <footer class="so-bottom" data-so-bottom></footer>`;
+      <aside class="so-right"><button type="button" class="so-handle" data-act="sheet-toggle" aria-label="펼치기/접기"><i></i></button>
+        <div class="so-right-body" data-so-right></div></aside>
+      <footer class="so-bottom" data-so-bottom></footer>
+      <nav class="so-mnav" data-so-mnav aria-label="구역"></nav>`;
     document.body.appendChild(root);
     this.root = root;
 
@@ -409,9 +459,11 @@ export const spaceOps = {
     r.querySelector('[data-so-legend]').innerHTML = `<b>${t('객체 구분', 'Objects')}</b>` + Object.entries(KIND_LABEL).filter(([k]) => k !== 'launch')
       .map(([k, [ko, en]]) => `<span><i style="color:${KIND_COLOR[k]}">${KIND_GLYPH[k]}</i>${t(ko, en)}</span>`).join('')
       + `<span><i style="color:${KIND_COLOR.launch}">▲</i>${t('발사장 · 궤적', 'Launch site · track')}</span>`
-      + `<span class="dim"><i>⌾</i>${t('지상국 · 자료 연결 전', 'Ground stations · not connected yet')}</span>`;
-    r.querySelector('[data-so-mtabs]').innerHTML = [['left', t('탐색', 'Browse')], ['globe', t('지구', 'Earth')], ['right', t('선택', 'Selected')], ['bottom', t('모듈', 'Modules')]]
-      .map(([id, l]) => `<button type="button" data-act="mtab" data-id="${id}"${id === 'globe' ? ' class="on"' : ''}>${l}</button>`).join('');
+      + `<span><i style="color:#5ad1e8">⌾</i>${t('지상국 (참고 좌표)', 'Ground station (approx.)')}</span>`;
+    /* 모바일 하단 구역 바 — 8구역 + 선택 객체. 데스크톱에서는 CSS 가 숨긴다. */
+    r.querySelector('[data-so-mnav]').innerHTML = `<button type="button" data-act="mtab" data-id="globe"><i>◍</i><span>${t('지구', 'Earth')}</span></button>`
+      + SECTIONS.map(([id, g, ko, en]) => `<button type="button" data-act="msection" data-id="${id}"><i>${g}</i><span>${t(ko, en).replace(' / ', '/')}</span></button>`).join('')
+      + `<button type="button" data-act="mtab" data-id="right"><i>◎</i><span>${t('선택', 'Selected')}</span></button>`;
   },
 
   _renderAll() {
@@ -592,6 +644,10 @@ export const spaceOps = {
         <div class="so-stats">${Object.entries(byOps).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<span><b>${n0(v)}</b>${esc(k)}</span>`).join('') || `<p class="so-empty">—</p>`}</div></div>
       <div class="so-group"><div class="so-gh">${t('궤도요소 신선도', 'Element-set age')}</div>
         <div class="so-stats">${buckets.map(([k, v]) => `<span><b>${n0(v)}</b>${k}</span>`).join('')}</div></div>
+      <div class="so-group"><div class="so-gh">${t('지상국', 'Ground stations')}<span>${n0(this.stations.length)}</span></div>
+        <div class="so-note">${t('참고 좌표(공개 자료). 지상국을 누르면 지금 그 지평선 위에 있는 객체를 셉니다.', 'Approximate public coordinates. Tap one to list objects above its horizon now.')}</div>
+        ${this.stations.map(st => { const r = this.sel?.rec ? (this._gsRows || []).find(x => x.station.id === st.id) : null;
+          return `<button type="button" class="so-row sm" data-act="station" data-id="${st.id}"><i style="color:#5ad1e8">⌾</i><span><b>${esc(i18n.lang === 'ko' ? st.name : st.en)}</b><small>${esc(st.operator)} · ${M.fmtLatLon(st.lat, st.lon)}</small></span><em class="${r?.visible ? 'approaching' : ''}">${r ? (r.visible ? `${r.elDeg.toFixed(0)}° ↑` : t('지평선 아래', 'below')) : ''}</em></button>`; }).join('')}</div>
       <div class="so-group"><div class="so-gh">${t('가장 오래된 요소', 'Oldest element sets')}</div>
         ${stale.map(o => this._row(o, o.meta.opsKo && i18n.lang === 'ko' ? o.meta.opsKo : (o.meta.opsEn || ''), M.fmtAge(age(o), i18n.lang === 'ko'))).join('') || `<p class="so-empty">—</p>`}</div>`;
   },
@@ -630,6 +686,9 @@ export const spaceOps = {
           <b data-so-arch-time>${on ? M.fmtKst(this.clockMs) : t('LIVE', 'LIVE')}</b></div>
         ${on ? `<div class="so-note">${t(`이 시각으로 ${n0(this._archiveDrawn)}기 전파 · 지난 근접사건 ${n0(core?.pastConjunctions)}건`, `${n0(this._archiveDrawn)} objects propagated · ${n0(core?.pastConjunctions)} past close approaches`)}</div>` : ''}
       </div>
+      <div class="so-group"><div class="so-gh">${t('지난 근접사건 (서버 산출)', 'Past close approaches (server)')}<span>${n0(core?.pastConjunctions)}</span></div>
+        ${(core?.pastConjunctionList || []).slice(0, 12).map(ev => `<button type="button" class="so-row" data-act="past-ca" data-id="${esc(`${ev.a}:${ev.b}:${ev.tca}`)}"><i style="color:${KIND_COLOR.approach}">⚠</i><span><b>${esc(ev.aName)} ↕ ${esc(ev.bName)}</b><small>${ev.missM != null ? `${(ev.missM / 1000) < 10 ? (ev.missM / 1000).toFixed(2) : Math.round(ev.missM / 1000)} km` : '—'} · TCA ${M.fmtKst(ev.tcaMs)}</small></span><em>${t('그 시각으로', 'replay')} ›</em></button>`).join('')
+          || `<p class="so-empty">${t('지난 근접사건이 없습니다.', 'No past close approaches.')}</p>`}</div>
       <div class="so-group"><div class="so-gh">${t('기록된 스냅샷 (이 기기)', 'Recorded snapshots (this device)')}</div>
         ${snaps.slice(0, 24).map(s => `<button type="button" class="so-row" data-act="archive-at" data-at="${s.at}"><i>◷</i><span><b>${M.fmtKst(s.at)}</b><small>${t('위성', 'sats')} ${n0(s.kpi?.active)} · ${t('잔해', 'debris')} ${n0(s.kpi?.rocketDebris)} · ${t('근접', 'events')} ${n0(s.kpi?.events)} · ${t('발사', 'launches')} ${n0(s.kpi?.launches)}</small></span><em>${t('재생', 'replay')} ›</em></button>`).join('')
           || `<p class="so-empty">${t('아직 기록이 없습니다. 관제센터를 열어 두면 15분마다 KPI 스냅샷이 쌓입니다.', 'No snapshots yet — KPIs are recorded every 15 minutes while open.')}</p>`}</div>
@@ -646,8 +705,63 @@ export const spaceOps = {
         <p class="dim">${t('선택하면 현재 위치·궤도·과거/미래 궤적·주변 객체·임무 기록이 여기에 열립니다.', 'Position, orbit, past/future track, nearby objects and mission history open here.')}</p></div>`;
       return;
     }
-    box.innerHTML = o.kind === M.KIND.LAUNCH ? this._rightLaunch(o) : this._rightObject(o);
+    box.innerHTML = o.kind === M.KIND.LAUNCH ? this._rightLaunch(o) : o.kind === M.KIND.GROUND_STATION ? this._rightStation(o) : this._rightObject(o);
+    box.scrollTop = 0;
     this._refreshLivePos();
+    if (o.rec) this._loadThumb(o);
+  },
+
+  /** 위성 사진(위키 자유 이미지) 또는 개념도 — 1.0 정보 시트와 같은 satimage.js 를 쓴다. */
+  async _loadThumb(o) {
+    const box = this.root.querySelector('[data-so-thumb]');
+    if (!box) return;
+    try {
+      const { satPhoto, drawSchematic } = await import('../satimage.js');
+      const photo = await satPhoto(o.name, i18n.lang);
+      if (this.sel !== o || !box.isConnected) return;
+      if (photo) {
+        box.innerHTML = `<img src="${esc(photo.url)}" alt="${esc(photo.title)}" loading="lazy"><a class="so-thumb-cap" href="${esc(photo.page)}" target="_blank" rel="noopener">${esc(photo.credit)} ↗</a>`;
+      } else {
+        const cv = document.createElement('canvas');
+        const satLike = { name: o.name, rec: o.rec, group: o.meta.group || 'science', rcs: o.meta.rcs };
+        drawSchematic(cv, satLike, o.color || KIND_COLOR[o.kind], i18n.lang);
+        box.innerHTML = '';
+        box.appendChild(cv);
+        box.insertAdjacentHTML('beforeend', `<span class="so-thumb-cap">${t('개념도 · 크기·궤도 반영', 'schematic · size & orbit')}</span>`);
+      }
+    } catch (_) { box.remove(); }
+  },
+
+  /** 궤도 개념도 — 지구 원 + 경사각만큼 기울인 궤도 타원 + 현재 위상. 축척은 개념적이다(고도는 로그 압축). */
+  _orbitSvg(o) {
+    const el = o.elements; if (!el) return '';
+    const alt = Math.max(150, el.perigeeKm);
+    const r = 30 + 30 * Math.min(1, Math.log10(alt / 150) / Math.log10(36000 / 150));   // 150km→30, GEO→60
+    const inc = el.incDeg;
+    const phase = ((this.clock() / (el.periodMin * 60_000)) % 1) * 2 * Math.PI;
+    const ry = r * 0.36;
+    const px = Math.cos(phase) * r, py = Math.sin(phase) * ry;
+    const col = KIND_COLOR[o.kind] || KIND_COLOR.satellite;
+    return `<svg class="so-orbit" viewBox="-70 -70 140 140" aria-label="${t('궤도 개념도', 'orbit diagram')}">
+      <defs><radialGradient id="soEarth" cx="35%" cy="35%"><stop offset="0" stop-color="#3d7fbf"/><stop offset="1" stop-color="#0b2140"/></radialGradient></defs>
+      <circle r="66" fill="none" stroke="rgba(120,180,230,.08)"/>
+      <ellipse rx="66" ry="24" fill="none" stroke="rgba(120,180,230,.12)" stroke-dasharray="2 3"/>
+      <circle r="26" fill="url(#soEarth)"/><ellipse rx="26" ry="6" cy="0" fill="none" stroke="rgba(255,255,255,.18)"/>
+      <g transform="rotate(${-inc})"><ellipse rx="${r}" ry="${ry}" fill="none" stroke="${col}" stroke-opacity=".85" stroke-width="1.4"/>
+        <circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="3.6" fill="${col}" stroke="#fff" stroke-width="1"/></g>
+      <text x="0" y="66" text-anchor="middle" font-size="7" fill="rgba(232,241,248,.45)">${t('개념도', 'schematic')} · i ${inc.toFixed(1)}°</text></svg>`;
+  },
+
+  _rightStation(o) {
+    const st = o.station;
+    const rows = this._gsView || [];
+    return `<div class="so-r-head"><i class="so-kind-ic gs">⌾</i><div><b>${esc(o.name)}</b><small>GROUND STATION · ${esc(st.operator)} · ${st.country}</small></div><span class="so-pill">${M.fmtLatLon(st.lat, st.lon)}</span></div>
+      <div class="so-note">${t('참고 좌표(공개 시설 자료, 대략)입니다. 실제 교신·스케줄 자료는 연결 전이고, 아래는 브라우저가 계산한 "지금 이 지상국 지평선 위(고도각 5° 이상)에 있는 불러온 객체"입니다.',
+        'Approximate public coordinates. No contact schedule is connected; below are loaded objects currently above this station\'s horizon (elevation ≥5°), computed in the browser.')}</div>
+      <div class="so-block"><div class="so-bh">IN VIEW NOW<span class="dim">${n0(rows.length)}</span></div>
+        ${rows.slice(0, 30).map(r => `<button type="button" class="so-row sm" data-act="select" data-id="${esc(r.obj.id)}"><i style="color:${KIND_COLOR[r.obj.kind]}">${KIND_GLYPH[r.obj.kind]}</i><span><b>${esc(r.obj.name)}</b><small>${t('고도각', 'el')} ${r.elDeg.toFixed(0)}° · ${t('방위', 'az')} ${r.azDeg.toFixed(0)}° · ${Math.round(r.rangeKm)} km</small></span></button>`).join('')
+          || `<p class="so-empty">${t('지금 지평선 위에 있는 불러온 객체가 없습니다.', 'No loaded object above the horizon now.')}</p>`}</div>
+      ${this._prov(o)}`;
   },
 
   _prov(o) {
@@ -668,8 +782,10 @@ export const spaceOps = {
     const kv = (k, v) => `<div class="so-kv"><small>${k}</small><b>${v}</b></div>`;
     const ca = this.approaches(o.noradId);
     const tl = M.missionTimeline(o, { closeApproaches: ca });
-    return `<div class="so-r-head"><i style="color:${KIND_COLOR[o.kind]}">${KIND_GLYPH[o.kind]}</i><div><b>${esc(o.name)}</b><small>${t(kko, ken)}${o.noradId ? ` · NORAD ${o.noradId}` : ''}${o.cospar ? ` · ${o.cospar}` : ''}</small></div>
+    const gs = (this._gsRows || []).filter(r => r.visible);
+    return `<div class="so-r-head"><i class="so-kind-ic" style="color:${KIND_COLOR[o.kind]}">${KIND_GLYPH[o.kind]}</i><div><b>${esc(o.name)}</b><small>${t(kko, ken)}${o.noradId ? ` · NORAD ${o.noradId}` : ''}${o.cospar ? ` · ${o.cospar}` : ''}</small></div>
         <span class="so-pill ${ops ? 'ok' : ''}">${ops ? esc(ops) : t('상태 미상', 'STATUS N/A')}</span></div>
+      <div class="so-visual"><div class="so-thumb" data-so-thumb></div>${this._orbitSvg(o)}</div>
       <div class="so-kvs" data-so-livepos>
         ${kv(t('운용', 'Operator'), esc(o.meta.ownerKo || o.meta.owner || '—'))}${kv(t('궤도', 'Orbit'), cls ? cls.code : '—')}
         ${kv(t('고도', 'Altitude'), g ? `${Math.round(g.altKm)} km` : '—')}${kv(t('경사각', 'Inclination'), el ? `${el.incDeg.toFixed(1)}°` : '—')}
@@ -691,8 +807,22 @@ export const spaceOps = {
       <div class="so-block" id="soMission"><div class="so-bh">MISSION TIMELINE</div><ol class="so-tl">${tl.map(s => `<li class="${s.known ? 'known' : 'nodata'}"><b>${s.key}</b><span>${s.known
         ? [s.at ? esc(Number.isFinite(Date.parse(s.at)) && String(s.at).length > 10 ? M.fmtKst(Date.parse(s.at)) : s.at) : null, s.note ? esc(s.note) : null, s.count ? String(s.count) : null].filter(Boolean).join(' · ')
         : t('자료 없음', 'no data')}</span>${s.source ? `<small>${esc(s.source)}${s.epochIsProxy ? t(' · 요소 epoch 기준', ' · element epoch') : ''}</small>` : ''}</li>`).join('')}</ol></div>
+      <div class="so-block"><div class="so-bh">GROUND STATIONS IN VIEW<span class="dim">${t('고도각 ≥5° · 참고 좌표', 'el ≥5° · approx.')}</span></div>
+        ${gs.length ? `<div class="so-gs">${gs.slice(0, 6).map(r => `<button type="button" data-act="station" data-id="${r.station.id}"><b>${esc(i18n.lang === 'ko' ? r.station.name : r.station.en)}</b><small>${r.elDeg.toFixed(0)}° · ${Math.round(r.rangeKm)} km</small></button>`).join('')}</div>`
+          : `<p class="so-empty">${t('지금 지평선 위에 이 객체를 둔 지상국(목록 18곳)이 없습니다.', 'None of the 18 listed stations sees it right now.')}</p>`}</div>
       <div class="so-block"><div class="so-bh">FOR ME<span class="dim">${t('내 위치 통과', 'passes over me')}</span></div><div data-so-passes>${this._passesHtml || `<button type="button" class="so-link" data-act="passes">${t('다음 24시간 동안 내 위치 위를 언제 지나가나 →', 'When does it pass over my location in the next 24h →')}</button>`}</div></div>
-      ${this._prov(o)}`;
+      ${this._prov(o)}
+      ${this._nextQuestion(o)}`;
+  },
+
+  /** 다음 질문 한 줄 — 배너 없이, 결과를 다 보여준 뒤 맨 아래에. Intelligence 지구로 잇는다. */
+  _nextQuestion(o) {
+    const q = o.kind === M.KIND.LAUNCH
+      ? t('이 발사가 올린 위성은 앞으로 무엇을 관측하나?', 'What will this launch\'s payload observe next?')
+      : o.kind === M.KIND.SATELLITE || o.kind === M.KIND.STATION
+        ? t('이 위성이 지금 내려다보는 곳에서 무슨 일이 벌어지나?', 'What is happening where this satellite looks right now?')
+        : t('이 잔해가 가까워지면 어느 위성·통신이 영향을 받나?', 'Which satellites or links would this debris affect?');
+    return `<button type="button" class="so-next" data-act="intel"><small>${t('다음 질문', 'Next question')}</small><b>${q}</b><i>Intelligence ›</i></button>`;
   },
 
   _nearbyHtml(compact) {
@@ -725,7 +855,7 @@ export const spaceOps = {
     const kv = (k, v) => `<div class="so-kv"><small>${k}</small><b>${v}</b></div>`;
     const max = plan ? Math.round(plan.T * 1.6) : 0;
     const vids = (m.videos || []).slice(0, 2);
-    return `<div class="so-r-head"><i style="color:${KIND_COLOR.launch}">▲</i><div><b>${esc(o.name)}</b><small>LAUNCH EVENT · ${esc(m.provider || '')}</small></div><span class="so-st st-${m.status.replace(/\s/g, '-')}">${m.status}</span></div>
+    return `<div class="so-r-head"><i class="so-kind-ic" style="color:${KIND_COLOR.launch}">▲</i><div><b>${esc(o.name)}</b><small>LAUNCH EVENT · ${esc(m.provider || '')}</small></div><span class="so-st st-${m.status.replace(/\s/g, '-')}">${m.status}</span></div>
       <div class="so-kvs">${kv('NET', Number.isFinite(net) ? M.fmtKst(net) : '—')}${kv(t('발사체', 'Rocket'), esc(m.rocket || '—'))}
         ${kv(t('발사대', 'Pad'), esc(m.pad || '—'))}${kv(t('장소', 'Site'), esc(m.site || '—'))}
         ${kv(t('목표 궤도', 'Target orbit'), esc(m.orbitAbbrev || m.orbit || '—'))}${kv(t('임무', 'Mission'), esc(m.missionType || m.mission || '—'))}</div>
@@ -749,7 +879,8 @@ export const spaceOps = {
         ${ev.mock.map(s => `<li class="mock"><b>${M.fmtTPlus(s.tPlusSec)}</b><span>${s.key}</span><small>MOCK</small></li>`).join('')}</ol>
         <div class="so-note warn">MOCK — ${t('단계별 실제 시각은 어느 공개 출처도 주지 않습니다. 위 회색 줄은 일반적인 예시이며 이 발사의 기록이 아닙니다.', ev.mockNote)}</div></div>
       ${(m.links || []).length ? `<div class="so-links">${m.links.slice(0, 4).map(l => `<a href="${esc(l.url || l)}" target="_blank" rel="noopener">${esc(l.title || l.url || l)} ↗</a>`).join('')}</div>` : ''}
-      ${this._prov(o)}`;
+      ${this._prov(o)}
+      ${this._nextQuestion(o)}`;
   },
 
   _refreshLivePos() {
@@ -821,8 +952,25 @@ export const spaceOps = {
     if (!b.closest('.so-search')) { out.hidden = true; }
     switch (act) {
       case 'close': this.close(); break;
-      case 'section': this.section = id; this._renderMode(); this._renderSection(); this.root.classList.add('mob-left'); this.root.classList.remove('mob-right', 'mob-bottom'); this._setMtab('left'); break;
-      case 'kpi': this.section = id; this._renderMode(); this._renderSection(); break;
+      case 'section': this.section = id; this._renderMode(); this._renderSection(); this._setMtab('left'); break;
+      case 'msection': {
+        // 모바일 바에서 같은 구역을 다시 누르면 시트를 접는다(지구로)
+        const same = this.section === id && this.root.classList.contains('mob-left');
+        this.section = id; this._renderMode(); this._renderSection(); this._setMtab(same ? 'globe' : 'left'); break;
+      }
+      case 'sheet-toggle': this.root.classList.toggle('so-full'); break;
+      case 'past-ca': {
+        const ev2 = (this.layer?.core?.pastConjunctionList || []).find(x => `${x.a}:${x.b}:${x.tca}` === id);
+        if (!ev2) break;
+        this.enterArchive(ev2.tcaMs);
+        const A = this.findObj(`aeth:${ev2.a}`) || this.sats().find(o => o.noradId === String(ev2.a));
+        const B = this.findObj(`aeth:${ev2.b}`) || this.sats().find(o => o.noradId === String(ev2.b));
+        if (A) { await this.select(A, { fly: true }); if (B) globe.approach(A, B, { id }, this.clock()); }
+        break;
+      }
+      case 'station': { const st = this.stations.find(s => s.id === id); if (st) this.selectStation(st); break; }
+      case 'intel': location.href = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? '/v2-three/' : '/Intelligence'; break;
+      case 'kpi': this.section = id; this._renderMode(); this._renderSection(); this._setMtab('left'); break;
       case 'cam': globe.camera(id, { launch: this.sel?.kind === M.KIND.LAUNCH ? this.sel : this.launchObjs()[0], object: this.sel }); break;
       case 'select': { const o = this.findObj(id); if (o) { await this.select(o, { fly: o.kind === M.KIND.LAUNCH }); out.hidden = true; this._setMtab('right'); } break; }
       case 'approach': {
@@ -859,9 +1007,10 @@ export const spaceOps = {
   },
 
   _setMtab(id) {
-    this.root.classList.remove('mob-left', 'mob-right', 'mob-bottom');
+    this.root.classList.remove('mob-left', 'mob-right', 'mob-bottom', 'so-full');
     if (id !== 'globe') this.root.classList.add(`mob-${id}`);
     this.root.querySelectorAll('[data-act="mtab"]').forEach(x => x.classList.toggle('on', x.dataset.id === id));
+    this.root.querySelectorAll('[data-act="msection"]').forEach(x => x.classList.toggle('on', id === 'left' && x.dataset.id === this.section));
   },
 
   _jump(id) { const el = this.root.querySelector(`#${id}`); if (el) { el.scrollIntoView({ block: 'start', behavior: 'smooth' }); el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 900); } },

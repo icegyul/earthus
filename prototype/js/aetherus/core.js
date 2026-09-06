@@ -248,7 +248,10 @@ export class AetherusCore {
         pcStatus: ev.latest_snapshot?.metrics?.PC?.status || 'NOT_COMPUTED',
       }))
       .filter((ev) => byCat.has(ev.a) && byCat.has(ev.b));
-    this.pastConjunctions = all.filter((ev) => Number.isFinite(ev.tcaMs) && ev.tcaMs < now).length;
+    /* 지난 사건은 개수만 세던 것을 목록도 남긴다 — 관제센터 ARCHIVE 가 그 TCA 로 되감아 보여준다. */
+    this.pastConjunctionList = all.filter((ev) => Number.isFinite(ev.tcaMs) && ev.tcaMs < now)
+      .sort((x, y) => y.tcaMs - x.tcaMs);
+    this.pastConjunctions = this.pastConjunctionList.length;
     this.conjunctions = all.filter((ev) => !Number.isFinite(ev.tcaMs) || ev.tcaMs >= now);
 
     this.loaded = true;

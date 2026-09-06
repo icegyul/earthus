@@ -418,6 +418,22 @@ export function passesOver(rec, observer, fromMs, hours = 24, minElDeg = 10, ste
   return out;
 }
 
+/* ── 지상국 가시성 (§5 지상국) — 지금 시각에 어느 지상국 지평선 위에 있는가 ──── */
+/** @returns [{station, elDeg, azDeg, rangeKm, visible}] 고도각 내림차순 */
+export function stationsInView(rec, stations, dateMs, minElDeg = 5) {
+  const S = sat();
+  if (!S || !rec || !stations?.length) return [];
+  const date = new Date(dateMs);
+  const pv = propagateTEME(rec, date);
+  if (!pv) return [];
+  const ecf = S.eciToEcf(pv.r, S.gstime(date));
+  return stations.map(st => {
+    const look = S.ecfToLookAngles({ latitude: st.lat * D2R, longitude: st.lon * D2R, height: 0 }, ecf);
+    const elDeg = look.elevation * R2D;
+    return { station: st, elDeg, azDeg: ((look.azimuth * R2D) + 360) % 360, rangeKm: look.rangeSat, visible: elDeg >= minElDeg };
+  }).sort((a, b) => b.elDeg - a.elDeg);
+}
+
 /* ── KPI (§4) — 실제로 받은 자료의 개수만 ───────────────────────────────── */
 export function kpis(ctx) {
   const sats = ctx.sats || [];

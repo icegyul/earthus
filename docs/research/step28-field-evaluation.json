@@ -1,0 +1,208 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "forcing-field-agreement-step28",
+  "phase": "B",
+  "status": "EVALUATION_COMPLETE",
+  "phaseAPreregistrationSha256": "0b9da69cdbd4ea1df4d8d6bd0084463b8162388d4b12371990910b1020668b16",
+  "phaseBPreregistrationSha256": "787fc01c474f3c738107b7301f6359bf7741fc868332bd024d14bd565a2f9903",
+  "manifestSha256": "6a586b07bb994b0f178a3b9940a370d93894bf2433334f54ecfb2528bde30022",
+  "tableSha256": "5b07fbe5cf5ed80d6e1268cecd2a229d2651bf95b868c0e35fd7a4f19d05a3f3",
+  "windowSummarySha256": "03df719cc9ba7147b3105d167d9a24e07d8e891d895f5191b1f1900c88c5773b",
+  "summarySha256": "a81350b33403e1da48384a2217e156ed9bbdaa3e1da685c17bbe08df5aab4175",
+  "rows": 34,
+  "figures": [
+    {
+      "windowId": "KE-1",
+      "figure": 1,
+      "file": "step28-figures/KE-1.fig1.hycom-speed.svg",
+      "sha256": "33be5d0235e7ae47cfed778081ebe4770718f75a88d928e06ea42b078d12e6da"
+    },
+    {
+      "windowId": "KE-1",
+      "figure": 2,
+      "file": "step28-figures/KE-1.fig2.glorys-speed.svg",
+      "sha256": "3b12a46f178e2f5e0425d687af2ffea3b6ea52ad4f4eba23b71f6cb6912a7edc"
+    },
+    {
+      "windowId": "KE-1",
+      "figure": 3,
+      "file": "step28-figures/KE-1.fig3.aviso-speed.svg",
+      "sha256": "2c00846fcd12158a0ef4cc566d73f1a354d7fbdea7a1ea4ca825943aa38b349b"
+    },
+    {
+      "windowId": "KE-1",
+      "figure": 4,
+      "file": "step28-figures/KE-1.fig4.hycom-glorys-vecdiff.svg",
+      "sha256": "4af2bbae3c284af1dc3ab9cd76bffe273aaea4583e7a2eb28e895a4251a3a050"
+    },
+    {
+      "windowId": "KE-1",
+      "figure": 5,
+      "file": "step28-figures/KE-1.fig5.hycom-aviso-vecdiff.svg",
+      "sha256": "33d9fa336e1d9da512ee0fbcbe90dced5be651b6c16933867bc0ea732e67980d"
+    },
+    {
+      "windowId": "KE-1",
+      "figure": 6,
+      "file": "step28-figures/KE-1.fig6.glorys-aviso-vecdiff.svg",
+      "sha256": "c4008b960f16032315d2813010a512d41d2fad9dbc7ee04b8987561bd420596b"
+    },
+    {
+      "windowId": "KE-1",
+      "figure": 7,
+      "file": "step28-figures/KE-1.fig7.hycom-glorys-dirdiff.svg",
+      "sha256": "3b4bdfcf6f6e1c4f0bb988cd00ceab751d3ea2be81b0a816d993bf388c819f65"
+    },
+    {
+      "windowId": "KE-2",
+      "figure": 1,
+      "file": "step28-figures/KE-2.fig1.hycom-speed.svg",
+      "sha256": "dd906a00a1cde574886db0bd2e8f50ef68aff4e962160207ca476534e5ae0565"
+    },
+    {
+      "windowId": "KE-2",
+      "figure": 2,
+      "file": "step28-figures/KE-2.fig2.glorys-speed.svg",
+      "sha256": "3284a0ed675e703333a1edbf7a634dd5ae49d0f6ff2b56ce1ac46d36a7fb23e2"
+    },
+    {
+      "windowId": "KE-2",
+      "figure": 3,
+      "file": "step28-figures/KE-2.fig3.aviso-speed.svg",
+      "sha256": "e693018fb668395e2472ec10074f2ba2ab78493579f7a052a7a62961a2754e22"
+    },
+    {
+      "windowId": "KE-2",
+      "figure": 4,
+      "file": "step28-figures/KE-2.fig4.hycom-glorys-vecdiff.svg",
+      "sha256": "b237811c3711519c22f8628a13e49e848ce5c3d532f0a1cfc424dceec6034f66"
+    },
+    {
+      "windowId": "KE-2",
+      "figure": 5,
+      "file": "step28-figures/KE-2.fig5.hycom-aviso-vecdiff.svg",
+      "sha256": "11da9fdfa1e658cf2ea2ff2085841a1e44f5200fb7f7d13bd65225cc1e1937ce"
+    },
+    {
+      "windowId": "KE-2",
+      "figure": 6,
+      "file": "step28-figures/KE-2.fig6.glorys-aviso-vecdiff.svg",
+      "sha256": "8f8c48502f796b458c3018aef461e52ed7049cd3f2d0862bdbc2b1d8ec88e77b"
+    },
+    {
+      "windowId": "KE-2",
+      "figure": 7,
+      "file": "step28-figures/KE-2.fig7.hycom-glorys-dirdiff.svg",
+      "sha256": "d45b3bd6fe9b5f24a3cb03fa18ec80f0947903b573cfd1e79b2defe9a6472481"
+    },
+    {
+      "windowId": "KE-H1",
+      "figure": 1,
+      "file": "step28-figures/KE-H1.fig1.hycom-speed.svg",
+      "sha256": "9e0dad73dfdcca3a00087f0e854e3d955233ac6d4e598d9d9f4b9f862e833446"
+    },
+    {
+      "windowId": "KE-H1",
+      "figure": 2,
+      "file": "step28-figures/KE-H1.fig2.glorys-speed.svg",
+      "sha256": "c364c225e24d94c9e36742057bba715c58460e706ab8102192b42d961daab57e"
+    },
+    {
+      "windowId": "KE-H1",
+      "figure": 3,
+      "file": "step28-figures/KE-H1.fig3.aviso-speed.svg",
+      "sha256": "04ae0cd2bd876ec66d1e547395015312017e7b80a7e3952acdd55ee052278632"
+    },
+    {
+      "windowId": "KE-H1",
+      "figure": 4,
+      "file": "step28-figures/KE-H1.fig4.hycom-glorys-vecdiff.svg",
+      "sha256": "58d961b5c5f048552c516748efcd8b93ab4fbdca636475a5fa7193c162e0ff0b"
+    },
+    {
+      "windowId": "KE-H1",
+      "figure": 5,
+      "file": "step28-figures/KE-H1.fig5.hycom-aviso-vecdiff.svg",
+      "sha256": "58a90011ae39e2da124e688ecca38169e597ef7a631271b3e8654ca2ff8fbd57"
+    },
+    {
+      "windowId": "KE-H1",
+      "figure": 6,
+      "file": "step28-figures/KE-H1.fig6.glorys-aviso-vecdiff.svg",
+      "sha256": "b3253eff0dcd16078c756b66f34689c98988a3ae42896108eda4d5f91944dd7d"
+    },
+    {
+      "windowId": "KE-H1",
+      "figure": 7,
+      "file": "step28-figures/KE-H1.fig7.hycom-glorys-dirdiff.svg",
+      "sha256": "ebd8ddabe1d3a8fe0e9a91e1172de379f7e52903abbe4e26c04a0e1b6da333ab"
+    },
+    {
+      "windowId": "KE-H2",
+      "figure": 2,
+      "file": "step28-figures/KE-H2.fig2.glorys-speed.svg",
+      "sha256": "6742e2911dd4b9776676a6a0e226c5dc8c1672d2c5f2aa1bb1a1a831d5d3ac64"
+    },
+    {
+      "windowId": "KE-H2",
+      "figure": 3,
+      "file": "step28-figures/KE-H2.fig3.aviso-speed.svg",
+      "sha256": "babbcc67117851884cd1adc84b4a1d542ee5d1601738908155679048d8260576"
+    },
+    {
+      "windowId": "KE-H2",
+      "figure": 6,
+      "file": "step28-figures/KE-H2.fig6.glorys-aviso-vecdiff.svg",
+      "sha256": "52e7639c1d2ce5e44a673998d5e49a5061da1fd7abab9c5882c0572534245e5c"
+    },
+    {
+      "windowId": "KE-H3",
+      "figure": 1,
+      "file": "step28-figures/KE-H3.fig1.hycom-speed.svg",
+      "sha256": "a3c55b6e3345d31700ccc32d032e5e9b62ef5f665b8787ba96b9af6362f54e3d"
+    },
+    {
+      "windowId": "KE-H3",
+      "figure": 2,
+      "file": "step28-figures/KE-H3.fig2.glorys-speed.svg",
+      "sha256": "880162fa743b2f40d247e07481c201a86ffc572011452a1f6f89254fab961710"
+    },
+    {
+      "windowId": "KE-H3",
+      "figure": 3,
+      "file": "step28-figures/KE-H3.fig3.aviso-speed.svg",
+      "sha256": "6536b54686db3f85a81496fe4e9d0f4701122d1b2c4b245acb3ef3e4c2aded7f"
+    },
+    {
+      "windowId": "KE-H3",
+      "figure": 4,
+      "file": "step28-figures/KE-H3.fig4.hycom-glorys-vecdiff.svg",
+      "sha256": "dd587420bb3b116463179158ff00700952917500f8bfaade93adb395b16ba008"
+    },
+    {
+      "windowId": "KE-H3",
+      "figure": 5,
+      "file": "step28-figures/KE-H3.fig5.hycom-aviso-vecdiff.svg",
+      "sha256": "eef141263ebb14d07fbd167a12aaeea147060d314c3671c7cc2e1d0b340521cb"
+    },
+    {
+      "windowId": "KE-H3",
+      "figure": 6,
+      "file": "step28-figures/KE-H3.fig6.glorys-aviso-vecdiff.svg",
+      "sha256": "abdecf8a835cbdb1256e81abe7db7004bdc9a41539ea5deefd7611377cfb35a3"
+    },
+    {
+      "windowId": "KE-H3",
+      "figure": 7,
+      "file": "step28-figures/KE-H3.fig7.hycom-glorys-dirdiff.svg",
+      "sha256": "c743a34cf5f2df3bd90ccada96411e376f81935c9bba532e6afbcef6b91a1d9c"
+    }
+  ],
+  "tool": {
+    "file": "tools/research/evaluate_step28_fields.py",
+    "sha256": "e7efdbd788c1ec307542a157f185d68b5576dc0e1cf61468e0970a51f0889d56"
+  },
+  "numpy": "2.5.2",
+  "deterministic": true,
+  "modelRunCount": 0
+}

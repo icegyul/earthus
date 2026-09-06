@@ -1,0 +1,395 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "forcing-field-agreement-step28",
+  "phaseAPreregistrationSha256": "0b9da69cdbd4ea1df4d8d6bd0084463b8162388d4b12371990910b1020668b16",
+  "phaseBPreregistrationSha256": "787fc01c474f3c738107b7301f6359bf7741fc868332bd024d14bd565a2f9903",
+  "cadenceNote": "HYCOM instantaneous at T; GLORYS daily mean of the UTC day containing T (label T - 12 h); AVISO daily product frame at T (12:00Z). Recorded as a product-cadence distinction; no shifting, no interpolation.",
+  "readerSha256": "11b7d987434a55a9e42a9776e851fad49b8ec65d2df0f23130c7a7e6234ab63e",
+  "windows": [
+    {
+      "windowId": "KE-1",
+      "role": "CALIBRATION",
+      "fieldStatus": "ELIGIBLE",
+      "avisoTimestamp": "2010-05-12T12:00:00Z",
+      "oceanBox": {
+        "south": 28.12786,
+        "north": 38.19472,
+        "west": 140.60959,
+        "east": 161.61974
+      },
+      "aviso": {
+        "file": "data/research/step23/DATA-03/erdTAgeo1day/KE-1.erdTAgeo1day.nc",
+        "sha256": "18d6d75692e34379b6c0afeaa9233bea56850f0bbb4caada89886fc257482919",
+        "frameIndex": 1,
+        "frameTimestamp": "2010-05-12T12:00:00Z",
+        "datasetId": "erdTAgeo1day",
+        "variables": [
+          "u_current",
+          "v_current"
+        ],
+        "role": "REFERENCE FIELD DIAGNOSTIC",
+        "cadence": "daily product sampled weekly; frame at 12:00Z"
+      },
+      "hycom": {
+        "file": "data/research/step17/normalized/KE-1.hycom15m.dataset.json",
+        "sha256": "8d5310d4823db910d4038c5bcca6474f83c6bbb369ff0528bef34a2bf31becac",
+        "frameIndex": 8,
+        "frameTimestamp": "2010-05-12T12:00:00Z",
+        "cadence": "3-hourly instantaneous",
+        "depthMeters": 15.0,
+        "status": "PASS"
+      },
+      "glorys": {
+        "D15": {
+          "file": "data/research/step25c/forcing/KE-1.glorys15.81m.dataset.json",
+          "fileSha256": "5eac44039387614c00d84df59c6805c2d275369cc4c1e25af80c0a23588230eb",
+          "normalizedHere": false,
+          "gridSha256": "57e0916e8e4204ed0e07c0c34cb5cd451a018157425b5de9ac1b766d29a484f2",
+          "frameLabel": "2010-05-12T00:00:00Z",
+          "frameIndex": 2,
+          "cadence": "daily mean; UTC day containing T; stored label T - 12 h (preregistered same-UTC-day rule; not interpolated, not shifted)",
+          "depthMeters": 15.81007
+        },
+        "D05": {
+          "file": "data/research/step27/forcing/D05/KE-1.glorys.dataset.json",
+          "fileSha256": "3e95ba6cfc50c7498872a74a16f79dd53d382f74409316080044634a5487cb08",
+          "nativeLevelMeters": 5.078224182128906,
+          "frameLabel": "2010-05-12T00:00:00Z",
+          "frameIndex": 2,
+          "source": "STEP 27 r3 normalized (cropped to D15 node set)"
+        },
+        "D10": {
+          "file": "data/research/step27/forcing/D10/KE-1.glorys.dataset.json",
+          "fileSha256": "644ba0eea631b86819c78381e48cf09282ad294493cc1c344085d694bb9ae94c",
+          "nativeLevelMeters": 9.572997093200684,
+          "frameLabel": "2010-05-12T00:00:00Z",
+          "frameIndex": 2,
+          "source": "STEP 27 r3 normalized (cropped to D15 node set)"
+        },
+        "D20": {
+          "file": "data/research/step27/forcing/D20/KE-1.glorys.dataset.json",
+          "fileSha256": "88e9af6c5370e3214e3006f17e134f72d5aaa48c3869b7918d05f67a228157b6",
+          "nativeLevelMeters": 18.495559692382812,
+          "frameLabel": "2010-05-12T00:00:00Z",
+          "frameIndex": 2,
+          "source": "STEP 27 r3 normalized (cropped to D15 node set)"
+        }
+      },
+      "comparisonsExecutable": [
+        "A",
+        "B",
+        "C"
+      ]
+    },
+    {
+      "windowId": "KE-2",
+      "role": "CALIBRATION",
+      "fieldStatus": "ELIGIBLE",
+      "avisoTimestamp": "2010-06-30T12:00:00Z",
+      "oceanBox": {
+        "south": 29.70784,
+        "north": 40.0,
+        "west": 133.53249,
+        "east": 154.78535
+      },
+      "aviso": {
+        "file": "data/research/step23/DATA-03/erdTAgeo1day/KE-2.erdTAgeo1day.nc",
+        "sha256": "0750f095bca4e5901beb05ce0d5174a9400cd1e7f087cc56cc934917f0841148",
+        "frameIndex": 1,
+        "frameTimestamp": "2010-06-30T12:00:00Z",
+        "datasetId": "erdTAgeo1day",
+        "variables": [
+          "u_current",
+          "v_current"
+        ],
+        "role": "REFERENCE FIELD DIAGNOSTIC",
+        "cadence": "daily product sampled weekly; frame at 12:00Z"
+      },
+      "hycom": {
+        "file": "data/research/step17/normalized/KE-2.hycom15m.dataset.json",
+        "sha256": "0f8c97f095d589595cb5b3da5245925409285c5f4274cdf953346e070cb03747",
+        "frameIndex": 0,
+        "frameTimestamp": "2010-06-30T12:00:00Z",
+        "cadence": "3-hourly instantaneous",
+        "depthMeters": 15.0,
+        "status": "PASS"
+      },
+      "glorys": {
+        "D15": {
+          "file": "data/research/step25c/forcing/KE-2.glorys15.81m.dataset.json",
+          "fileSha256": "3c454919b343754740dd861ac8d147282be60392b043771e7f5a7f6407ef28ae",
+          "normalizedHere": false,
+          "gridSha256": "99364bcd6a0dd93db4e4c7c09420e03d8cfb29e5d0443c872492b41ac00b30d5",
+          "frameLabel": "2010-06-30T00:00:00Z",
+          "frameIndex": 1,
+          "cadence": "daily mean; UTC day containing T; stored label T - 12 h (preregistered same-UTC-day rule; not interpolated, not shifted)",
+          "depthMeters": 15.81007
+        },
+        "D05": {
+          "file": "data/research/step27/forcing/D05/KE-2.glorys.dataset.json",
+          "fileSha256": "ac34f920448a635f9df264113dfb11dc9eb0725391b3e34c5dd4b7cdd24ef13b",
+          "nativeLevelMeters": 5.078224182128906,
+          "frameLabel": "2010-06-30T00:00:00Z",
+          "frameIndex": 1,
+          "source": "STEP 27 r3 normalized (cropped to D15 node set)"
+        },
+        "D10": {
+          "file": "data/research/step27/forcing/D10/KE-2.glorys.dataset.json",
+          "fileSha256": "eef2137b2a77089c4c38f4b151b78da120010a9ace0b0cd02bbe5941807a01b4",
+          "nativeLevelMeters": 9.572997093200684,
+          "frameLabel": "2010-06-30T00:00:00Z",
+          "frameIndex": 1,
+          "source": "STEP 27 r3 normalized (cropped to D15 node set)"
+        },
+        "D20": {
+          "file": "data/research/step27/forcing/D20/KE-2.glorys.dataset.json",
+          "fileSha256": "ff67f6cab5a80e461b25de88da96e3e08321ab5dd1d1e6cf4a8bb9d7f7869355",
+          "nativeLevelMeters": 18.495559692382812,
+          "frameLabel": "2010-06-30T00:00:00Z",
+          "frameIndex": 1,
+          "source": "STEP 27 r3 normalized (cropped to D15 node set)"
+        }
+      },
+      "comparisonsExecutable": [
+        "A",
+        "B",
+        "C"
+      ]
+    },
+    {
+      "windowId": "AG-1",
+      "role": "CALIBRATION",
+      "fieldStatus": "NO_EXACT_AVISO_TIME",
+      "avisoTimestamp": null,
+      "oceanBox": {
+        "south": -40.0,
+        "north": -32.13828,
+        "west": 18.31773,
+        "east": 32.013940000000005
+      },
+      "reason": "outside the AVISO period acquired in STEP 23 (2010 only); no download"
+    },
+    {
+      "windowId": "AG-2",
+      "role": "CALIBRATION",
+      "fieldStatus": "NO_EXACT_AVISO_TIME",
+      "avisoTimestamp": null,
+      "oceanBox": {
+        "south": -38.76674,
+        "north": -34.76674,
+        "west": 19.79639,
+        "east": 23.79639
+      },
+      "reason": "outside the AVISO period acquired in STEP 23 (2010 only); no download"
+    },
+    {
+      "windowId": "KE-H1",
+      "role": "HOLDOUT",
+      "fieldStatus": "ELIGIBLE",
+      "avisoTimestamp": "2010-08-11T12:00:00Z",
+      "oceanBox": {
+        "south": 30.2673,
+        "north": 40.0,
+        "west": 135.25655,
+        "east": 161.85992
+      },
+      "aviso": {
+        "file": "data/research/step23/DATA-03/erdTAgeo1day/KE-H1.erdTAgeo1day.nc",
+        "sha256": "cf2a248d6a8ccda2a78b8798fa4ecaec3f4c5f75c32ad6dae3456adb0247c2d7",
+        "frameIndex": 1,
+        "frameTimestamp": "2010-08-11T12:00:00Z",
+        "datasetId": "erdTAgeo1day",
+        "variables": [
+          "u_current",
+          "v_current"
+        ],
+        "role": "REFERENCE FIELD DIAGNOSTIC",
+        "cadence": "daily product sampled weekly; frame at 12:00Z"
+      },
+      "hycom": {
+        "file": "data/research/step20/holdout/forcing/normalized/KE-H1.hycom15m.chunkA.dataset.json",
+        "sha256": "1b26ecb7e982ea529a246eddc0f4045ba6364e48e23a77cda19491a4c1510b42",
+        "frameIndex": 8,
+        "frameTimestamp": "2010-08-11T12:00:00Z",
+        "cadence": "3-hourly instantaneous",
+        "depthMeters": 15.0,
+        "status": "PASS"
+      },
+      "glorys": {
+        "D15": {
+          "file": "data/research/step25c/forcing/KE-H1.glorys15.81m.dataset.json",
+          "fileSha256": "5cd22aece73dbb1d613ad99535d93b09b417b22ce300b2d3bfe79670e2656f16",
+          "normalizedHere": false,
+          "gridSha256": "e12142bace085deb9a83837334205d8d26c33c13cef9b06be3525c7a738bf1b5",
+          "frameLabel": "2010-08-11T00:00:00Z",
+          "frameIndex": 2,
+          "cadence": "daily mean; UTC day containing T; stored label T - 12 h (preregistered same-UTC-day rule; not interpolated, not shifted)",
+          "depthMeters": 15.81007
+        },
+        "D05": {
+          "file": "data/research/step27/forcing/D05/KE-H1.glorys.dataset.json",
+          "fileSha256": "c9501761e7bf5e2fa27122e51f1ce0148373c76d487df42768b51713fc158079",
+          "nativeLevelMeters": 5.078224182128906,
+          "frameLabel": "2010-08-11T00:00:00Z",
+          "frameIndex": 2,
+          "source": "STEP 27 r3 normalized (cropped to D15 node set)"
+        },
+        "D10": {
+          "file": "data/research/step27/forcing/D10/KE-H1.glorys.dataset.json",
+          "fileSha256": "2356fd10bc76bbaaf0c8adca68be5040c791d52ef3b7a8558fac52b733be3cee",
+          "nativeLevelMeters": 9.572997093200684,
+          "frameLabel": "2010-08-11T00:00:00Z",
+          "frameIndex": 2,
+          "source": "STEP 27 r3 normalized (cropped to D15 node set)"
+        },
+        "D20": {
+          "file": "data/research/step27/forcing/D20/KE-H1.glorys.dataset.json",
+          "fileSha256": "d3df941627a717cd41ceaea65ae351e4fff74e4c08ce27e9b38c7a68750b7164",
+          "nativeLevelMeters": 18.495559692382812,
+          "frameLabel": "2010-08-11T00:00:00Z",
+          "frameIndex": 2,
+          "source": "STEP 27 r3 normalized (cropped to D15 node set)"
+        }
+      },
+      "comparisonsExecutable": [
+        "A",
+        "B",
+        "C"
+      ]
+    },
+    {
+      "windowId": "KE-H2",
+      "role": "HOLDOUT",
+      "fieldStatus": "ELIGIBLE",
+      "avisoTimestamp": "2010-08-18T12:00:00Z",
+      "oceanBox": {
+        "south": 32.62506,
+        "north": 36.62506,
+        "west": 143.81236,
+        "east": 147.81236
+      },
+      "aviso": {
+        "file": "data/research/step23/DATA-03/erdTAgeo1day/KE-H2.erdTAgeo1day.nc",
+        "sha256": "8dcd1db9a27d6d730786b82aa21b426fb21ca7ad2f55c594ee0d75a714bc6abf",
+        "frameIndex": 1,
+        "frameTimestamp": "2010-08-18T12:00:00Z",
+        "datasetId": "erdTAgeo1day",
+        "variables": [
+          "u_current",
+          "v_current"
+        ],
+        "role": "REFERENCE FIELD DIAGNOSTIC",
+        "cadence": "daily product sampled weekly; frame at 12:00Z"
+      },
+      "hycom": {
+        "status": "NO_EXACT_HYCOM_TIME",
+        "note": "HYCOM instantaneous frame 2010-08-18T12:00:00Z absent from the locked dataset (STEP 20 record); comparisons A and B BLOCKED, C only"
+      },
+      "glorys": {
+        "D15": {
+          "file": "data/research/step28/KE-H2.glorys15.81m.dataset.json",
+          "fileSha256": "751cdb21860cc51455dd80ea8edb2e1d9c94719838a229c993cf4c561859f509",
+          "gridSha256": "d4d1b5738aaadc7598354efa5181190a333be7594b89d083fe2ce74a548c0c3f",
+          "sourceSha256": "bfc66034654eb10b1c2d7f2570d31cca6e10ccc4a925e355663593c58d8a7ce7",
+          "readerSha256": "11b7d987434a55a9e42a9776e851fad49b8ec65d2df0f23130c7a7e6234ab63e",
+          "readerVersion": "earthus-glorys-netcdf/1",
+          "normalizedHere": true,
+          "valueCheck": {
+            "frame0NodesCompared": 3600,
+            "mismatches": 0
+          },
+          "shape": [
+            6,
+            60,
+            60
+          ],
+          "frameLabel": "2010-08-18T00:00:00Z",
+          "frameIndex": 3,
+          "cadence": "daily mean; UTC day containing T; stored label T - 12 h (preregistered same-UTC-day rule; not interpolated, not shifted)",
+          "depthMeters": 15.81007
+        },
+        "depthNote": "KE-H2: D15 only (locked Phase A rule)"
+      },
+      "comparisonsExecutable": [
+        "C"
+      ]
+    },
+    {
+      "windowId": "KE-H3",
+      "role": "HOLDOUT",
+      "fieldStatus": "ELIGIBLE",
+      "avisoTimestamp": "2010-11-17T12:00:00Z",
+      "oceanBox": {
+        "south": 29.02459,
+        "north": 40.0,
+        "west": 141.06795,
+        "east": 156.05711
+      },
+      "aviso": {
+        "file": "data/research/step23/DATA-03/erdTAgeo1day/KE-H3.erdTAgeo1day.nc",
+        "sha256": "bca272caa2841f8c78279598335d4ff4de9735c6fbcf32b96155a2ce35bcf0db",
+        "frameIndex": 1,
+        "frameTimestamp": "2010-11-17T12:00:00Z",
+        "datasetId": "erdTAgeo1day",
+        "variables": [
+          "u_current",
+          "v_current"
+        ],
+        "role": "REFERENCE FIELD DIAGNOSTIC",
+        "cadence": "daily product sampled weekly; frame at 12:00Z"
+      },
+      "hycom": {
+        "file": "data/research/step20/holdout/forcing/normalized/KE-H3.hycom15m.dataset.json",
+        "sha256": "b88e9390bf3f0b7fa1e81d9bf28ee8960f5e7cbce4d4bc0f2e9cf95a485f5b3e",
+        "frameIndex": 16,
+        "frameTimestamp": "2010-11-17T12:00:00Z",
+        "cadence": "3-hourly instantaneous",
+        "depthMeters": 15.0,
+        "status": "PASS"
+      },
+      "glorys": {
+        "D15": {
+          "file": "data/research/step25c/forcing/KE-H3.glorys15.81m.dataset.json",
+          "fileSha256": "f3955b90eb1c2715accc8675d8a8338b3816434d96a70754bc7d5fe3f70cc059",
+          "normalizedHere": false,
+          "gridSha256": "f00cb7fec7d318234f7ed6dd2af3c92f332b92cb076d82cec947ea300735421f",
+          "frameLabel": "2010-11-17T00:00:00Z",
+          "frameIndex": 3,
+          "cadence": "daily mean; UTC day containing T; stored label T - 12 h (preregistered same-UTC-day rule; not interpolated, not shifted)",
+          "depthMeters": 15.81007
+        },
+        "D05": {
+          "file": "data/research/step27/forcing/D05/KE-H3.glorys.dataset.json",
+          "fileSha256": "aea9acce97cdfe7582c166b7bb498ecf040a3c395da353cee45674fb940c61d5",
+          "nativeLevelMeters": 5.078224182128906,
+          "frameLabel": "2010-11-17T00:00:00Z",
+          "frameIndex": 3,
+          "source": "STEP 27 r3 normalized (cropped to D15 node set)"
+        },
+        "D10": {
+          "file": "data/research/step27/forcing/D10/KE-H3.glorys.dataset.json",
+          "fileSha256": "6f9e2bf1a2a3ec158922724ecdba82bac0de4a24eeef9d2f6261ca7f617e0a55",
+          "nativeLevelMeters": 9.572997093200684,
+          "frameLabel": "2010-11-17T00:00:00Z",
+          "frameIndex": 3,
+          "source": "STEP 27 r3 normalized (cropped to D15 node set)"
+        },
+        "D20": {
+          "file": "data/research/step27/forcing/D20/KE-H3.glorys.dataset.json",
+          "fileSha256": "0fe908db5f418f29a3b1c2961211f2fe3e6d5d3d357af35085d0998ff8db5913",
+          "nativeLevelMeters": 18.495559692382812,
+          "frameLabel": "2010-11-17T00:00:00Z",
+          "frameIndex": 3,
+          "source": "STEP 27 r3 normalized (cropped to D15 node set)"
+        }
+      },
+      "comparisonsExecutable": [
+        "A",
+        "B",
+        "C"
+      ]
+    }
+  ],
+  "modelRunCount": 0,
+  "newDownloads": 0
+}

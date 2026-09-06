@@ -184,3 +184,26 @@ ok('fmt — KST 표기·T+ 표기', () => {
 });
 
 console.log(`\n${n} checks passed`);
+
+ok('historyOf / historyTrend — 서버 14일 이력 파일 해석', () => {
+  const hist = { days: ['2026-09-01', '2026-09-02', '2026-09-04'], objects: { '25544': [[418, 425, 516, 929], null, [416, 423, 516, 928]] } };
+  const rows = M.historyOf(hist, '25544');
+  assert.equal(rows.length, 2);
+  assert.equal(rows[1].dt, '2026-09-04'); assert.equal(rows[1].incDeg, 51.6); assert.equal(rows[1].periodMin, 92.8);
+  const tr = M.historyTrend(rows);
+  assert.equal(tr.days, 3);
+  assert.ok(Math.abs(tr.dPerigeePerDay - (-2 / 3)) < 1e-9);
+  assert.equal(M.historyOf(hist, '1').length, 0);
+  assert.equal(M.historyTrend(M.historyOf(hist, '1')), null);
+});
+
+ok('stationContacts — 24시간 접촉 창은 시작순, 각 창은 시작≤끝', () => {
+  const t0 = M.epochMsOf(ISS);
+  const stations = [{ id: 'a', name: 'A', lat: 36.37, lon: 127.36 }, { id: 'b', name: 'B', lat: -35.4, lon: 148.98 }];
+  const c = M.stationContacts(ISS, stations, t0, 24, 5, 60);
+  assert.ok(c.length >= 4 && c.length <= 20, `contacts=${c.length}`);
+  for (let i = 1; i < c.length; i++) assert.ok(c[i].startMs >= c[i - 1].startMs);
+  for (const w of c) { assert.ok(w.endMs >= w.startMs); assert.ok(w.maxEl >= 5); assert.ok(['a', 'b'].includes(w.station.id)); }
+});
+
+console.log(`${n} checks total`);

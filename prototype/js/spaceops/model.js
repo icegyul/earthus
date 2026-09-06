@@ -434,6 +434,52 @@ export function stationsInView(rec, stations, dateMs, minElDeg = 5) {
   }).sort((a, b) => b.elDeg - a.elDeg);
 }
 
+/** 앞으로 hours 시간 안 지상국 접촉 창(고도각 ≥ minEl) — NEXT 용. [{station, startMs, endMs, maxEl}] 시작순 */
+export function stationContacts(rec, stations, fromMs, hours = 24, minElDeg = 5, stepSec = 60) {
+  const S = sat();
+  if (!S || !rec || !stations?.length) return [];
+  const obs = stations.map(st => ({ st, gd: { latitude: st.lat * D2R, longitude: st.lon * D2R, height: 0 }, cur: null }));
+  const out = [];
+  for (let t = fromMs; t <= fromMs + hours * 3600_000; t += stepSec * 1000) {
+    const date = new Date(t);
+    const pv = propagateTEME(rec, date);
+    if (!pv) continue;
+    const ecf = S.eciToEcf(pv.r, S.gstime(date));
+    for (const o of obs) {
+      const el = S.ecfToLookAngles(o.gd, ecf).elevation * R2D;
+      if (el >= minElDeg) {
+        if (!o.cur) o.cur = { station: o.st, startMs: t, endMs: t, maxEl: el };
+        else { o.cur.endMs = t; if (el > o.cur.maxEl) o.cur.maxEl = el; }
+      } else if (o.cur) { out.push(o.cur); o.cur = null; }
+    }
+  }
+  for (const o of obs) if (o.cur) out.push(o.cur);
+  return out.sort((a, b) => a.startMs - b.startMs);
+}
+
+/* ── PAST — 서버 14일 이력(celestrak/history-14d.json.gz) ──────────────── */
+/** 이력 파일 → 이 NORAD 의 [{dt, perigeeKm, apogeeKm, incDeg, periodMin}] (없는 날은 뺀다) */
+export function historyOf(hist, noradId) {
+  const arr = hist?.objects?.[String(noradId)];
+  if (!arr || !Array.isArray(hist.days)) return [];
+  return hist.days.map((dt, i) => {
+    const v = arr[i];
+    return v ? { dt, perigeeKm: v[0], apogeeKm: v[1], incDeg: v[2] / 10, periodMin: v[3] / 10 } : null;
+  }).filter(Boolean);
+}
+
+/** 이력 추세 — 첫날과 마지막 날 사이의 하루당 변화. 자료가 이틀 미만이면 null. */
+export function historyTrend(rows) {
+  if (!rows || rows.length < 2) return null;
+  const a = rows[0], b = rows[rows.length - 1];
+  const days = Math.max(1, (Date.parse(b.dt) - Date.parse(a.dt)) / 86400_000);
+  return { days, from: a.dt, to: b.dt,
+    dPerigeePerDay: (b.perigeeKm - a.perigeeKm) / days,
+    dApogeePerDay: (b.apogeeKm - a.apogeeKm) / days,
+    dPeriodPerDay: (b.periodMin - a.periodMin) / days,
+    minPerigee: Math.min(...rows.map(r => r.perigeeKm)), maxPerigee: Math.max(...rows.map(r => r.perigeeKm)) };
+}
+
 /* ── KPI (§4) — 실제로 받은 자료의 개수만 ───────────────────────────────── */
 export function kpis(ctx) {
   const sats = ctx.sats || [];

@@ -98,6 +98,12 @@ export const API = {
   LAUNCH_FEED: CDN + '/events/launches.json',
   /* 과거 발사 기록 — 위성 관제패널을 열 때만 받는다(첫 화면을 무겁게 하지 않는다). */
   LAUNCH_RECENT: CDN + '/events/launches-recent.json',
+  /* 우주 상태 아카이브(aws/space-archive, 매시 05분) — 관제센터 ARCHIVE 가 그 시각의 화면·그날 궤도요소로 되감는다.
+     색인 → 시간 스냅샷(dt/hh) → 그날 카탈로그(celestrak/archive) → 14일 궤도 이력(PAST). 전부 관제센터 안에서만 받는다. */
+  SPACE_ARCHIVE_INDEX: CDN + '/events/space-archive/index.json',
+  SPACE_ARCHIVE_HOUR: (dt, hh) => `${CDN}/events/space-archive/dt=${dt}/hh=${hh}.json`,
+  SAT_CATALOG_DAY: (dt) => `${CDN}/celestrak/archive/dt=${dt}/catalog.json.gz`,
+  SAT_HISTORY: CDN + '/celestrak/history-14d.json.gz',
   KP:          'https://services.swpc.noaa.gov/json/planetary_k_index_1m.json',
   AURORA:      'https://services.swpc.noaa.gov/json/ovation_aurora_latest.json',
   OVERPASS:    'https://overpass-api.de/api/interpreter',

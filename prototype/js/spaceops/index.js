@@ -23,7 +23,7 @@
 import { i18n } from '../i18n.js';
 import { store } from '../store.js';
 import { orbits, launches } from '../layers/space.js';
-import { SAT_GROUPS } from '../layers/satcat.js';
+import { SAT_GROUPS, satDetail } from '../layers/satcat.js';
 import { panels } from '../panels.js';
 import { globe, KIND_COLOR } from './globe.js';
 import * as M from './model.js';
@@ -31,7 +31,7 @@ import * as M from './model.js';
 const t = (ko, en) => (i18n.lang === 'ko' ? ko : en);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const n0 = (v) => (v == null || !Number.isFinite(v) ? '—' : Math.round(v).toLocaleString());
-const CSS_HREF = new URL('../../css/spaceops.css?v=20260907-2', import.meta.url).href;
+const CSS_HREF = new URL('../../css/spaceops.css?v=20260907-3', import.meta.url).href;
 
 const SECTIONS = [
   ['live', '●', '실시간 우주 상황', 'Live space'],
@@ -336,12 +336,13 @@ export const spaceOps = {
 
   /** 선택 객체의 궤적·주변을 지금 시계로 다시 그린다 (범위·반경·ARCHIVE 시각이 바뀔 때) */
   _refreshSelectionGeometry(recomputeNearby = false) {
-    const o = this.sel;
+    const o = this._archObj(this.sel);
     if (!o?.rec) return;
     globe.highlight(o);
     globe.tracks(o, this.range, this.clock());
     if (recomputeNearby || !this._nearby) {
-      this._nearby = M.nearby(o, this.pool(), this.clock(), this.radiusKm, 10);
+      const day = this.clockMs != null ? this._dayFor(this.clockMs) : null;
+      this._nearby = M.nearby(o, day ? day.sats : this.pool(), this.clock(), this.radiusKm, 10);
     }
     globe.nearby(o, this._nearby.rows, this.clock());
     this._gsRows = this.stations.length ? M.stationsInView(o.rec, this.stations, this.clock(), 5) : [];
@@ -368,6 +369,9 @@ export const spaceOps = {
     this._nearby = null;
     this._refreshSelectionGeometry(true);
     this._renderAll();
+    // 서버 아카이브는 뒤에서 받는다 — 받으면 그날 요소·그 시각 화면으로 다시 그린다
+    clearTimeout(this._archSyncT);
+    this._archSyncT = setTimeout(() => this._archiveSync().catch(e => console.warn('[spaceops] archive', e?.message || e)), 250);
   },
   exitArchive() {
     if (this.clockMs == null) return;
@@ -384,7 +388,80 @@ export const spaceOps = {
   },
   _archiveDraw() {
     if (this.clockMs == null) return;
-    this._archiveDrawn = globe.archive(true, this.pool(), this.clockMs);
+    const day = this._dayFor(this.clockMs);
+    this._archiveDrawn = globe.archive(true, day ? day.sats : this.pool(), this.clockMs);
+    this._archiveUsesDay = !!day;
+  },
+
+  /* ── 서버 아카이브(aws/space-archive) — 그날 궤도요소·그 시각 화면 ─────────
+     재생 시각이 지금과 3시간 넘게 떨어져 있으면 그날 보존된 카탈로그(celestrak/archive)로 바꿔 전파한다.
+     오늘 요소로 역산하는 것보다 그날 요소가 정확하다. 없으면 지금 요소로 역산하고 화면에 그렇게 적는다. */
+  _archIndex: null, _days: {}, _hours: {}, _archLoading: null,
+  async _loadArchiveIndex() {
+    if (this._archIndex) return this._archIndex;
+    try {
+      const { API } = await import('../config.js');
+      const res = await fetch(API.SPACE_ARCHIVE_INDEX, { cache: 'no-cache' });
+      this._archIndex = res.ok ? await res.json() : { days: [] };
+    } catch (_) { this._archIndex = { days: [] }; }
+    return this._archIndex;
+  },
+  _utcDt(ms) { return new Date(ms).toISOString().slice(0, 10); },
+  _dayFor(ms) {
+    if (Math.abs(ms - Date.now()) < 3 * 3600_000) return null;
+    const d = this._days[this._utcDt(ms)];
+    return d?.sats?.length ? d : null;
+  },
+  /** 재생 시각에 맞는 그날 카탈로그·그 시각 스냅샷을 받아 둔다(한 번씩). 끝나면 점구름·선택을 다시 그린다. */
+  async _archiveSync() {
+    const ms = this.clockMs;
+    if (ms == null || Math.abs(ms - Date.now()) < 3 * 3600_000) { this._hour = null; return; }
+    const idx = await this._loadArchiveIndex();
+    const dt = this._utcDt(ms);
+    const day = idx.days?.find(d => d.dt === dt);
+    if (!day) { this._hour = null; if (this.section === 'archive') this._renderSection(); return; }
+    const hh = String(new Date(ms).getUTCHours()).padStart(2, '0');
+    const nearest = (day.hours || []).slice().sort((a, b) => Math.abs(+a - +hh) - Math.abs(+b - +hh))[0];
+    const { API } = await import('../config.js');
+    if (nearest) {
+      const key = `${dt}/${nearest}`;
+      if (!this._hours[key]) {
+        try { const r = await fetch(API.SPACE_ARCHIVE_HOUR(dt, nearest), { cache: 'force-cache' }); this._hours[key] = r.ok ? await r.json() : null; }
+        catch (_) { this._hours[key] = null; }
+      }
+      this._hour = this._hours[key] ? { ...this._hours[key], dt, hh: nearest } : null;
+    }
+    if (day.catalog && !this._days[dt]) {
+      this._days[dt] = { sats: [], loading: true };
+      try {
+        const r = await fetch(API.SAT_CATALOG_DAY(dt), { cache: 'force-cache' });
+        const cat = r.ok ? await r.json() : null;
+        const sats = [];
+        const seen = new Set();
+        for (const g of SAT_GROUPS.filter(x => orbits.isSelected(x.id))) {
+          for (const row of (cat?.groups?.[g.id] || [])) {
+            if (seen.has(row.id)) continue; seen.add(row.id);
+            try { const s = orbits.toSat(row, g); if (s) sats.push(M.fromSat(s, sats.length, cat.generated)); } catch (_) { /* 행 하나 실패 */ }
+          }
+        }
+        this._days[dt] = { sats, generated: cat?.generated || null, loading: false };
+      } catch (_) { this._days[dt] = { sats: [], loading: false }; }
+    }
+    if (this.clockMs === ms || (this.clockMs != null && this._utcDt(this.clockMs) === dt)) {
+      this._archiveDraw();
+      this._nearby = null;
+      this._refreshSelectionGeometry(true);
+      if (this.section === 'archive') this._renderSection();
+      this._renderRight();
+    }
+  },
+  /** 선택 객체를 그날 요소로 — 있으면 그날 것, 없으면 지금 것. */
+  _archObj(o) {
+    if (!o?.rec || this.clockMs == null) return o;
+    const day = this._dayFor(this.clockMs);
+    if (!day || !o.noradId) return o;
+    const d = day.sats.find(x => x.noradId === o.noradId);
+    return d ? { ...o, rec: d.rec, elements: d.elements, source: { ...d.source, dataset: `${d.source.dataset} · ${t('그날 보존본', 'archived that day')}` } } : o;
   },
 
   _snapshot() {
@@ -667,6 +744,22 @@ export const spaceOps = {
         'Pick a satellite to open its MISSION TIMELINE on the right. Stage-level times have no public source and stay "no data".')}</div>`;
   },
 
+  /** 그 시각의 화면(서버 시간 스냅샷) — 그때 진행 중·예정이던 발사, 그때의 근접사건. */
+  _archiveHourHtml() {
+    const h = this._hour;
+    const idx = this._archIndex;
+    if (Math.abs(this.clockMs - Date.now()) < 3 * 3600_000) return `<div class="so-group"><div class="so-gh">${t('그 시각의 화면', 'Screen at that time')}</div><p class="so-empty">${t('3시간 안쪽은 지금 화면과 같습니다.', 'Within 3 hours the live screen applies.')}</p></div>`;
+    if (!idx) return `<div class="so-group"><div class="so-gh">${t('그 시각의 화면', 'Screen at that time')}</div><p class="so-empty">${t('서버 아카이브 색인을 받는 중…', 'Loading archive index…')}</p></div>`;
+    if (!h) return `<div class="so-group"><div class="so-gh">${t('그 시각의 화면', 'Screen at that time')}</div><p class="so-empty">${t(`이 시각의 서버 스냅샷이 없습니다 (아카이브는 ${idx.days?.[0]?.dt || '—'} 부터, 매시 05분).`, `No server snapshot for this time (archive starts ${idx.days?.[0]?.dt || '—'}, hourly).`)}</p></div>`;
+    const L = h.launches, C = h.conjunctions;
+    const row = (l, live) => `<div class="so-row sm"><i style="color:${KIND_COLOR.launch}">▲</i><span><b>${esc(l.name)}</b><small>${esc([l.mission, l.pad || l.site].filter(Boolean).join(' · '))}</small></span><em><span class="so-st st-${M.launchStatus(l.status).replace(/\s/g, '-')}">${live ? 'IN FLIGHT' : M.launchStatus(l.status)}</span>${l.net ? M.fmtKst(Date.parse(l.net)).slice(5, 16) : ''}</em></div>`;
+    return `<div class="so-group"><div class="so-gh">${t('그 시각의 화면', 'Screen at that time')}<span>${h.dt} ${h.hh}:05 UTC</span></div>
+      ${L ? `${(L.live || []).map(l => row(l, true)).join('')}${(L.upcoming || []).slice(0, 6).map(l => row(l, false)).join('')}` : `<p class="so-empty">${t('발사 축약본 없음', 'no launch feed')}</p>`}
+      <div class="so-gh" style="padding-top:8px">${t('그때의 근접사건', 'Close approaches then')}<span>${n0(C?.events?.length)}</span></div>
+      ${(C?.events || []).slice(0, 6).map(ev => `<div class="so-row sm"><i style="color:${KIND_COLOR.approach}">⚠</i><span><b>${esc(ev.aName)} ↕ ${esc(ev.bName)}</b><small>${ev.missM != null ? `${(ev.missM / 1000).toFixed(1)} km` : '—'} · TCA ${M.fmtKst(Date.parse(ev.tca))}</small></span></div>`).join('') || `<p class="so-empty">${t('없음', 'none')}</p>`}
+      <div class="so-src">${t('서버가 매시 05분에 그 시각의 events/launches.json·AETHERUS 근접사건을 그대로 남긴 것 · 값을 만들지 않음', 'Hourly server copy of the launch feed and AETHERUS conjunctions at that time — nothing synthesized')}</div></div>`;
+  },
+
   _sec_archive() {
     const snaps = M.readSnapshots(localStorage).slice().reverse();
     const core = this.layer?.core;
@@ -684,15 +777,19 @@ export const spaceOps = {
         <div class="so-arch-row"><button type="button" class="so-play" data-act="archive-play">${on && this.archivePlay.on ? '❚❚' : '▶'}</button>
           ${[1, 10, 60, 600].map(s => `<button type="button" class="${this.archivePlay.speed === s ? 'on' : ''}" data-act="archive-speed" data-speed="${s}">${s}x</button>`).join('')}
           <b data-so-arch-time>${on ? M.fmtKst(this.clockMs) : t('LIVE', 'LIVE')}</b></div>
-        ${on ? `<div class="so-note">${t(`이 시각으로 ${n0(this._archiveDrawn)}기 전파 · 지난 근접사건 ${n0(core?.pastConjunctions)}건`, `${n0(this._archiveDrawn)} objects propagated · ${n0(core?.pastConjunctions)} past close approaches`)}</div>` : ''}
+        ${on ? `<div class="so-note">${this._archiveUsesDay
+          ? t(`그날(${this._utcDt(this.clockMs)} UTC) 보존된 궤도요소로 ${n0(this._archiveDrawn)}기 전파 — 서버 아카이브`, `${n0(this._archiveDrawn)} objects from that day's archived elements (${this._utcDt(this.clockMs)} UTC)`)
+          : t(`지금 요소로 ${n0(this._archiveDrawn)}기 역산 · 지난 근접사건 ${n0(core?.pastConjunctions)}건`, `${n0(this._archiveDrawn)} objects from today's elements · ${n0(core?.pastConjunctions)} past close approaches`)}</div>` : ''}
       </div>
+      ${on ? this._archiveHourHtml() : ''}
       <div class="so-group"><div class="so-gh">${t('지난 근접사건 (서버 산출)', 'Past close approaches (server)')}<span>${n0(core?.pastConjunctions)}</span></div>
         ${(core?.pastConjunctionList || []).slice(0, 12).map(ev => `<button type="button" class="so-row" data-act="past-ca" data-id="${esc(`${ev.a}:${ev.b}:${ev.tca}`)}"><i style="color:${KIND_COLOR.approach}">⚠</i><span><b>${esc(ev.aName)} ↕ ${esc(ev.bName)}</b><small>${ev.missM != null ? `${(ev.missM / 1000) < 10 ? (ev.missM / 1000).toFixed(2) : Math.round(ev.missM / 1000)} km` : '—'} · TCA ${M.fmtKst(ev.tcaMs)}</small></span><em>${t('그 시각으로', 'replay')} ›</em></button>`).join('')
           || `<p class="so-empty">${t('지난 근접사건이 없습니다.', 'No past close approaches.')}</p>`}</div>
       <div class="so-group"><div class="so-gh">${t('기록된 스냅샷 (이 기기)', 'Recorded snapshots (this device)')}</div>
         ${snaps.slice(0, 24).map(s => `<button type="button" class="so-row" data-act="archive-at" data-at="${s.at}"><i>◷</i><span><b>${M.fmtKst(s.at)}</b><small>${t('위성', 'sats')} ${n0(s.kpi?.active)} · ${t('잔해', 'debris')} ${n0(s.kpi?.rocketDebris)} · ${t('근접', 'events')} ${n0(s.kpi?.events)} · ${t('발사', 'launches')} ${n0(s.kpi?.launches)}</small></span><em>${t('재생', 'replay')} ›</em></button>`).join('')
           || `<p class="so-empty">${t('아직 기록이 없습니다. 관제센터를 열어 두면 15분마다 KPI 스냅샷이 쌓입니다.', 'No snapshots yet — KPIs are recorded every 15 minutes while open.')}</p>`}</div>
-      <div class="so-note">${t('서버 쪽 archive_snapshots(전 객체 상태 보존)는 다음 단계입니다. 지금은 KPI 요약만 기기에 남깁니다.', 'Server-side archive_snapshots (full state history) is the next phase; only KPI summaries are kept on this device for now.')}</div>`;
+      <div class="so-note">${t(`서버 아카이브(매시 05분): 그 시각의 발사·근접사건 스냅샷, 그날의 궤도요소 카탈로그 보존, 객체별 14일 궤도 이력. ${this._archIndex ? `${n0(this._archIndex.days?.length)}일 · ${this._archIndex.days?.[0]?.dt || ''}부터` : ''}`,
+        `Server archive (hourly): launch/close-approach snapshots, that day's element catalogue, 14-day per-object orbit history. ${this._archIndex ? `${n0(this._archIndex.days?.length)} days since ${this._archIndex.days?.[0]?.dt || ''}` : ''}`)}</div>`;
   },
 
   /* ── 오른쪽: 선택 객체 (§7·§8·§11·§13) ───────────────────────────────── */
@@ -786,6 +883,9 @@ export const spaceOps = {
     return `<div class="so-r-head"><i class="so-kind-ic" style="color:${KIND_COLOR[o.kind]}">${KIND_GLYPH[o.kind]}</i><div><b>${esc(o.name)}</b><small>${t(kko, ken)}${o.noradId ? ` · NORAD ${o.noradId}` : ''}${o.cospar ? ` · ${o.cospar}` : ''}</small></div>
         <span class="so-pill ${ops ? 'ok' : ''}">${ops ? esc(ops) : t('상태 미상', 'STATUS N/A')}</span></div>
       <div class="so-visual"><div class="so-thumb" data-so-thumb></div>${this._orbitSvg(o)}</div>
+      ${this._tabsHtml()}
+      ${this.tab !== 'overview' ? this._tabHtml(o) : ''}
+      <div class="so-ov"${this.tab !== 'overview' ? ' hidden' : ''}>
       <div class="so-kvs" data-so-livepos>
         ${kv(t('운용', 'Operator'), esc(o.meta.ownerKo || o.meta.owner || '—'))}${kv(t('궤도', 'Orbit'), cls ? cls.code : '—')}
         ${kv(t('고도', 'Altitude'), g ? `${Math.round(g.altKm)} km` : '—')}${kv(t('경사각', 'Inclination'), el ? `${el.incDeg.toFixed(1)}°` : '—')}
@@ -812,7 +912,161 @@ export const spaceOps = {
           : `<p class="so-empty">${t('지금 지평선 위에 이 객체를 둔 지상국(목록 18곳)이 없습니다.', 'None of the 18 listed stations sees it right now.')}</p>`}</div>
       <div class="so-block"><div class="so-bh">FOR ME<span class="dim">${t('내 위치 통과', 'passes over me')}</span></div><div data-so-passes>${this._passesHtml || `<button type="button" class="so-link" data-act="passes">${t('다음 24시간 동안 내 위치 위를 언제 지나가나 →', 'When does it pass over my location in the next 24h →')}</button>`}</div></div>
       ${this._prov(o)}
+      </div>
       ${this._nextQuestion(o)}`;
+  },
+
+  /* ── Intelligence 5문 — 같은 객체 자료 위에 (§27 "별도의 섬으로 만들지 않는다") ──
+     WHY   왜 이 궤도인가 · 왜 잔해인가 — satcat 용도 규칙 + 궤도 등급 규칙(규칙 설명이라고 적는다)
+     NEXT  앞으로 24시간 — 지상국 접촉 창 · 근접사건 TCA · 내 위치 통과
+     PAST  14일 궤도 이력(서버 아카이브) — 근지점·주기 추세
+     COMPARE 다른 객체와 나란히 — 요소·거리·앞으로 90분 최근접(브라우저 계산)
+     FOR ME 내 위치 통과 예보 */
+  tab: 'overview',
+  cmp: null,
+  cmpQuery: '',
+  _tabsHtml() {
+    const tabs = [['overview', t('개요', 'Overview')], ['why', 'WHY'], ['next', 'NEXT'], ['past', 'PAST'], ['compare', 'COMPARE'], ['forme', 'FOR ME']];
+    return `<div class="so-rtabs">${tabs.map(([id, l]) => `<button type="button" class="${this.tab === id ? 'on' : ''}" data-act="tab" data-id="${id}">${l}</button>`).join('')}</div>`;
+  },
+  _tabHtml(o) {
+    const fn = { why: this._tabWhy, next: this._tabNext, past: this._tabPast, compare: this._tabCompare, forme: this._tabForMe }[this.tab];
+    return fn ? `<div class="so-tabpane">${fn.call(this, o)}</div>` : '';
+  },
+
+  _tabWhy(o) {
+    const el = o.elements;
+    const cls = el ? M.orbitClass(el.perigeeKm, el.incDeg, el.periodMin) : null;
+    const items = [];
+    // 용도 — satcat 의 큐레이션·계열 규칙(1.0 정보 시트와 같은 판정)
+    try {
+      const live = o.rec ? M.geodeticAt(o.rec, new Date(this.clock())) : null;
+      const d = satDetail({ name: o.name, rec: o.rec, group: o.meta.group || 'science', objectId: o.cospar, noradId: o.noradId,
+        owner: o.meta.owner, ownerKo: o.meta.ownerKo, launchDate: o.meta.launchDate, launchSite: o.meta.launchSite, opsKo: o.meta.opsKo, opsEn: o.meta.opsEn, rcs: o.meta.rcs }, live, i18n.lang);
+      const purpose = d?.rows?.[t('용도', 'Purpose')];
+      if (purpose) items.push([t('무엇을 하는 물체인가', 'What it does'), purpose, d.rows._curated ? t('큐레이션 자료', 'curated') : t('위성 계열 규칙으로 판정', 'inferred from family rules')]);
+      if (d?.rows?._note) items.push([t('주의', 'Caveat'), d.rows._note, null]);
+    } catch (_) { /* 규칙 판정 실패해도 궤도 설명은 낸다 */ }
+    if (o.kind === M.KIND.FRAGMENT || o.kind === M.KIND.DEBRIS || o.kind === M.KIND.ROCKET_BODY) {
+      const n = o.name.toUpperCase();
+      const ev = /COSMOS 2251|IRIDIUM 33/.test(n) ? t('2009-02-10 이리듐 33 · 코스모스 2251 충돌(최초의 운용위성 간 충돌)', '2009-02-10 Iridium 33 / Cosmos 2251 collision')
+        : /FENGYUN 1C/.test(n) ? t('2007-01-11 중국 위성요격 실험(펑윈 1C 파괴)', '2007-01-11 Chinese ASAT test (Fengyun 1C)')
+          : /COSMOS 1408/.test(n) ? t('2021-11-15 러시아 위성요격 실험(코스모스 1408 파괴)', '2021-11-15 Russian ASAT test (Cosmos 1408)') : null;
+      items.push([t('왜 잔해인가', 'Why debris'), o.kind === M.KIND.ROCKET_BODY
+        ? t('이름의 R/B 는 CelesTrak 이 발사체 상단(로켓 몸체)에 붙이는 표시입니다. 위성을 올린 뒤 궤도에 남은 부분입니다.', 'R/B marks a spent rocket body left in orbit after deploying its payload.')
+        : t(`이름의 DEB 는 파편 표시입니다.${ev ? ` 알려진 원인: ${ev}.` : ' 원 물체 이름이 앞에 붙습니다.'}`, `DEB marks a fragment.${ev ? ` Known origin: ${ev}.` : ''}`), t('이름 규약(CelesTrak/SATCAT)', 'naming convention')]);
+    }
+    if (el && cls) {
+      const why = cls.code === 'GEO' ? t('공전 주기가 지구 자전과 같아(약 1,436분) 지상에서 보면 한 자리에 머뭅니다. 통신·기상 정지위성이 쓰는 궤도입니다.', 'Period equals Earth\'s rotation, so it stays over one spot — the orbit of comms and weather GEO satellites.')
+        : cls.code === 'SSO' ? t(`경사각 ${el.incDeg.toFixed(1)}°의 태양동기궤도입니다. 궤도면이 하루 약 1° 씩 돌아 매일 같은 지방시에 같은 곳 위를 지나므로 관측 조명 조건이 일정합니다 — 지구관측·기상 위성이 고르는 궤도입니다.`, `Sun-synchronous at ${el.incDeg.toFixed(1)}°: the orbit plane precesses ~1°/day so it crosses each place at the same local time — chosen by Earth-observation satellites.`)
+          : cls.code === 'MEO' ? t('중궤도(약 2만 km)입니다. 항법위성(GPS·갈릴레오·베이더우)이 지구 전체를 적은 수로 덮으려고 쓰는 높이입니다.', 'Medium Earth orbit (~20,000 km) — used by navigation constellations for global coverage with few satellites.')
+            : el.incDeg > 80 ? t(`경사각 ${el.incDeg.toFixed(1)}°의 극궤도입니다. 지구가 아래에서 자전하므로 며칠이면 전 지구를 훑습니다.`, `Polar orbit at ${el.incDeg.toFixed(1)}° — Earth rotates beneath it, so it sweeps the whole globe in days.`)
+              : Math.abs(el.incDeg - 51.6) < 1 ? t('경사각 51.6° — 국제우주정거장 궤도입니다. 러시아 바이코누르에서 직접 도달할 수 있는 가장 낮은 경사각이면서 미국 발사장도 닿는 절충값입니다.', '51.6° — the ISS inclination: the lowest reachable from Baikonur while still accessible from US sites.')
+                : Math.abs(el.incDeg - 41.5) < 1 ? t('경사각 41.5° — 중국 톈궁 정거장 궤도입니다.', '41.5° — the Tiangong station orbit.')
+                  : el.incDeg < 60 ? t(`경사각 ${el.incDeg.toFixed(1)}° 저궤도입니다. 발사장 위도(직접 발사의 최소 경사각)와 통신 대상 지역이 이 값을 정합니다. 스타링크·인터넷 위성군이 주로 이 대역입니다.`, `LEO at ${el.incDeg.toFixed(1)}° — set by launch-site latitude and the regions to serve; typical of internet constellations.`)
+                    : t(`경사각 ${el.incDeg.toFixed(1)}° 저궤도입니다.`, `LEO at ${el.incDeg.toFixed(1)}°.`);
+      items.push([t('왜 이 궤도인가', 'Why this orbit'), why, t('궤도 등급 규칙 설명 · 운용기관 발표가 정본', 'rule-based explanation; operator statements are authoritative')]);
+      if (el.perigeeKm < 400) items.push([t('왜 오래 못 남나', 'Why it will not last'), t(`근지점 ${Math.round(el.perigeeKm)} km 는 대기 저항이 큰 높이입니다. 추진 없이는 고도가 계속 떨어집니다 — PAST 탭의 추세로 확인하세요.`, `Perigee ${Math.round(el.perigeeKm)} km sits in noticeable drag; without propulsion altitude keeps falling — see PAST.`), null]);
+      if (el.ecc > 0.1) items.push([t('왜 타원인가', 'Why elliptical'), t(`이심률 ${el.ecc.toFixed(3)} — 근지점 ${Math.round(el.perigeeKm)} km, 원지점 ${Math.round(el.apogeeKm)} km. 전이궤도(GTO)나 특정 지역 상공 체류(몰니야형)에 쓰이는 모양입니다.`, `Eccentricity ${el.ecc.toFixed(3)} (${Math.round(el.perigeeKm)}–${Math.round(el.apogeeKm)} km): a transfer or Molniya-type shape.`), null]);
+    }
+    const ca = this.approaches(o.noradId);
+    if (ca.length) items.push([t('왜 근접사건이 있나', 'Why a close approach'), t(`서버(AETHERUS P4)가 앞으로의 궤도를 스크리닝해 ${ca.length}건을 찾았습니다. 가장 가까운 것: ${ca[0].b.name} · ${ca[0].missKm != null ? `${ca[0].missKm.toFixed(1)} km` : '—'} · ${M.fmtKst(ca[0].tcaMs)}. 확률은 계산하지 않았습니다.`, `Server screening found ${ca.length}: nearest ${ca[0].b.name} at ${ca[0].missKm?.toFixed(1)} km, ${M.fmtKst(ca[0].tcaMs)}. No probability computed.`), 'AETHERUS P4 · ADVISORY_ONLY']);
+    return `<div class="so-block"><div class="so-bh">WHY<span class="dim">${t('규칙 기반 설명', 'rule-based')}</span></div>
+      ${items.map(([k, v, src]) => `<div class="so-why"><b>${esc(k)}</b><p>${esc(v)}</p>${src ? `<small>${esc(src)}</small>` : ''}</div>`).join('') || `<p class="so-empty">${t('설명할 자료가 없습니다.', 'Nothing to explain.')}</p>`}</div>`;
+  },
+
+  _tabNext(o) {
+    if (!o.rec) return `<p class="so-empty">${t('궤도요소가 없어 앞일을 계산할 수 없습니다.', 'No elements — cannot project.')}</p>`;
+    const now = this.clock();
+    const contacts = M.stationContacts(o.rec, this.stations, now, 24, 5, 60).slice(0, 8);
+    const ca = this.approaches(o.noradId).slice(0, 3);
+    const el = o.elements;
+    const nextOrbits = el ? [1, 3].map(k => { const g = M.geodeticAt(o.rec, new Date(now + k * el.periodMin * 60_000)); return g ? [k, g] : null; }).filter(Boolean) : [];
+    return `<div class="so-block"><div class="so-bh">NEXT 24H<span class="dim">${t('브라우저 SGP4', 'browser SGP4')}</span></div>
+      ${ca.length ? `<div class="so-gh">${t('근접사건', 'Close approaches')}</div>${ca.map(ev => this._caRow(ev)).join('')}` : ''}
+      <div class="so-gh">${t('지상국 접촉 창 (고도각 ≥5°)', 'Station contact windows (el ≥5°)')}</div>
+      ${contacts.length ? `<ol class="so-passes">${contacts.map(c => `<li><b>${M.fmtKst(c.startMs).slice(5, 16)}</b><span>${esc(i18n.lang === 'ko' ? c.station.name : c.station.en)} · ${Math.round((c.endMs - c.startMs) / 60_000)}${t('분', 'm')} · ${t('최대', 'max')} ${Math.round(c.maxEl)}°</span></li>`).join('')}</ol>`
+        : `<p class="so-empty">${t('24시간 안 목록 지상국 위를 지나지 않습니다.', 'No listed station contact in 24h.')}</p>`}
+      ${nextOrbits.length ? `<div class="so-gh" style="padding-top:8px">${t('다음 위치', 'Upcoming positions')}</div><ol class="so-passes">${nextOrbits.map(([k, g]) => `<li><b>+${k} ${t('바퀴', 'orbit')}</b><span>${M.fmtLatLon(g.lat, g.lon)} · ${Math.round(g.altKm)} km</span></li>`).join('')}</ol>` : ''}
+      <div class="so-gh" style="padding-top:8px">${t('내 위치 통과', 'Passes over me')}</div><div data-so-passes>${`<button type="button" class="so-link" data-act="passes">${t('내 위치로 계산 →', 'Compute for my location →')}</button>`}</div>
+      <div class="so-src">${t('지상국 좌표는 참고값 · 접촉 창은 기하(가시선)만이고 실제 교신 스케줄이 아님', 'Station coordinates are approximate; windows are line-of-sight geometry, not contact schedules')}</div></div>`;
+  },
+
+  _hist: null, _histLoading: false,
+  async _loadHistory() {
+    if (this._hist || this._histLoading) return this._hist;
+    this._histLoading = true;
+    try {
+      const { API } = await import('../config.js');
+      const r = await fetch(API.SAT_HISTORY, { cache: 'no-cache' });
+      this._hist = r.ok ? await r.json() : { days: [], objects: {} };
+    } catch (_) { this._hist = { days: [], objects: {} }; }
+    this._histLoading = false;
+    if (this.tab === 'past') this._renderRight();
+    return this._hist;
+  },
+  _tabPast(o) {
+    if (!this._hist) { this._loadHistory(); return `<div class="so-block"><div class="so-bh">PAST</div><p class="so-empty">${t('서버 14일 궤도 이력을 받는 중…', 'Loading 14-day history…')}</p></div>`; }
+    const rows = o.noradId ? M.historyOf(this._hist, o.noradId) : [];
+    const tr = M.historyTrend(rows);
+    const spark = (key, color) => {
+      if (rows.length < 2) return '';
+      const vs = rows.map(r => r[key]); const lo = Math.min(...vs), hi = Math.max(...vs); const span = Math.max(1e-6, hi - lo);
+      const pts = rows.map((r, i) => `${(i / (rows.length - 1) * 100).toFixed(1)},${(30 - (r[key] - lo) / span * 26 + 2).toFixed(1)}`).join(' ');
+      return `<svg class="so-spark" viewBox="0 0 100 34" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.6"/></svg>`;
+    };
+    const ca = (this.layer?.core?.pastConjunctionList || []).filter(ev => String(ev.a) === o.noradId || String(ev.b) === o.noradId).slice(0, 5);
+    return `<div class="so-block"><div class="so-bh">PAST<span class="dim">${t('서버 아카이브 · 하루 1회', 'server archive · daily')}</span></div>
+      ${rows.length ? `<div class="so-kvs">
+          <div class="so-kv"><small>${t('근지점 추세', 'Perigee trend')}</small><b>${tr ? `${tr.dPerigeePerDay >= 0 ? '+' : ''}${tr.dPerigeePerDay.toFixed(2)} km/${t('일', 'd')}` : '—'}</b>${spark('perigeeKm', '#5ad1e8')}</div>
+          <div class="so-kv"><small>${t('주기 추세', 'Period trend')}</small><b>${tr ? `${tr.dPeriodPerDay >= 0 ? '+' : ''}${(tr.dPeriodPerDay * 60).toFixed(2)} s/${t('일', 'd')}` : '—'}</b>${spark('periodMin', '#f5b14c')}</div></div>
+        <table class="so-table"><thead><tr><th>${t('날짜', 'Day')}</th><th>${t('근지점', 'Perigee')}</th><th>${t('원지점', 'Apogee')}</th><th>i</th><th>${t('주기', 'Period')}</th></tr></thead>
+        <tbody>${rows.slice().reverse().map(r => `<tr><td>${r.dt.slice(5)}</td><td>${r.perigeeKm}</td><td>${r.apogeeKm}</td><td>${r.incDeg.toFixed(1)}°</td><td>${r.periodMin.toFixed(1)}</td></tr>`).join('')}</tbody></table>
+        ${rows.length < 3 ? `<p class="so-empty">${t(`이력이 쌓이는 중입니다 (${rows.length}일). 하루 한 번 늘어납니다.`, `History is accumulating (${rows.length} day${rows.length > 1 ? 's' : ''}); one row per day.`)}</p>` : ''}`
+        : `<p class="so-empty">${t('이 객체의 이력이 아직 없습니다 (아카이브는 카탈로그에 있는 물체만, 하루 1회).', 'No history for this object yet (catalogued objects only, daily).')}</p>`}
+      ${ca.length ? `<div class="so-gh" style="padding-top:8px">${t('지난 근접사건', 'Past close approaches')}</div>${ca.map(ev => `<button type="button" class="so-row sm" data-act="past-ca" data-id="${esc(`${ev.a}:${ev.b}:${ev.tca}`)}"><i style="color:${KIND_COLOR.approach}">⚠</i><span><b>${esc(String(ev.a) === o.noradId ? ev.bName : ev.aName)}</b><small>${ev.missM != null ? `${(ev.missM / 1000).toFixed(1)} km` : '—'} · ${M.fmtKst(ev.tcaMs)}</small></span><em>${t('되감기', 'replay')} ›</em></button>`).join('')}` : ''}
+      <div class="so-src">${t('CelesTrak 요소를 하루 한 번 보존한 값 · 단위 km·분 · 이 객체의 발사·기동 이벤트 기록은 출처가 없어 없음', 'Daily archived CelesTrak elements (km, min). No maneuver/event log — no public source.')}</div></div>`;
+  },
+
+  _tabCompare(o) {
+    const q = this.cmpQuery.trim().toLowerCase();
+    const pool = this.pool().filter(x => x.id !== o.id && x.rec);
+    const cands = q ? pool.filter(x => x.name.toLowerCase().includes(q) || (x.noradId || '').includes(q)).slice(0, 8)
+      : (this._nearby?.rows || []).map(r => r.obj).slice(0, 5);
+    const b = this.cmp && this.cmp.id !== o.id ? this.cmp : null;
+    let table = '';
+    if (b?.rec) {
+      const now = this.clock();
+      const ga = M.geodeticAt(o.rec, new Date(now)), gb = M.geodeticAt(b.rec, new Date(now));
+      const d = M.nearby(o, [b], now, 1e9, 1).rows[0];
+      const cap = M.closestApproach(o.rec, b.rec, now, 90, 20);
+      const row = (k, va, vb) => `<tr><th>${k}</th><td>${va}</td><td>${vb}</td></tr>`;
+      const cls = x => x.elements ? M.orbitClass(x.elements.perigeeKm, x.elements.incDeg, x.elements.periodMin).code : '—';
+      table = `<table class="so-table so-cmp"><thead><tr><th></th><th>${esc(o.name)}</th><th>${esc(b.name)}</th></tr></thead><tbody>
+        ${row(t('종류', 'Kind'), t(...(KIND_LABEL[o.kind] || KIND_LABEL.unknown)), t(...(KIND_LABEL[b.kind] || KIND_LABEL.unknown)))}
+        ${row(t('궤도', 'Orbit'), cls(o), cls(b))}
+        ${row(t('근지점/원지점', 'Peri/Apo'), o.elements ? `${Math.round(o.elements.perigeeKm)}/${Math.round(o.elements.apogeeKm)}` : '—', b.elements ? `${Math.round(b.elements.perigeeKm)}/${Math.round(b.elements.apogeeKm)}` : '—')}
+        ${row(t('경사각', 'Incl.'), o.elements ? `${o.elements.incDeg.toFixed(1)}°` : '—', b.elements ? `${b.elements.incDeg.toFixed(1)}°` : '—')}
+        ${row(t('주기', 'Period'), o.elements ? `${o.elements.periodMin.toFixed(1)}m` : '—', b.elements ? `${b.elements.periodMin.toFixed(1)}m` : '—')}
+        ${row(t('지금 고도', 'Alt now'), ga ? `${Math.round(ga.altKm)} km` : '—', gb ? `${Math.round(gb.altKm)} km` : '—')}
+        ${row(t('요소 나이', 'Elem. age'), o.elements?.epochMs ? M.fmtAge(now - o.elements.epochMs, i18n.lang === 'ko') : '—', b.elements?.epochMs ? M.fmtAge(now - b.elements.epochMs, i18n.lang === 'ko') : '—')}
+        ${row(t('운용', 'Operator'), esc(o.meta.ownerKo || o.meta.owner || '—'), esc(b.meta.ownerKo || b.meta.owner || '—'))}
+      </tbody></table>
+      <div class="so-kvs"><div class="so-kv"><small>${t('지금 거리', 'Distance now')}</small><b>${d ? `${d.distKm < 10 ? d.distKm.toFixed(1) : Math.round(d.distKm).toLocaleString()} km` : '—'}</b></div>
+        <div class="so-kv"><small>${t('90분 안 최근접', 'Closest in 90 min')}</small><b>${cap ? `${cap.missKm < 10 ? cap.missKm.toFixed(1) : Math.round(cap.missKm).toLocaleString()} km` : '—'}</b>${cap ? `<small>${M.fmtKst(cap.tcaMs).slice(5, 16)} · ${cap.relKmS != null ? `${cap.relKmS.toFixed(1)} km/s` : ''}</small>` : ''}</div></div>
+      <div class="so-actions"><button type="button" data-act="cmp-link">${t('지구에 잇기', 'Link on Earth')}</button><button type="button" data-act="select" data-id="${esc(b.id)}">${t('이 객체 선택', 'Select this')}</button></div>
+      <div class="so-src">${t('브라우저 SGP4 기하 계산 · 확률 아님 · 서버 근접사건과 별개', 'Browser SGP4 geometry · no probability · independent of server screening')}</div>`;
+    }
+    return `<div class="so-block"><div class="so-bh">COMPARE<span class="dim">${b ? esc(b.name) : t('비교 대상 고르기', 'pick an object')}</span></div>
+      <input type="search" class="so-filter" data-so-cmp-q value="${esc(this.cmpQuery)}" placeholder="${t('이름 · NORAD 로 찾기 (비우면 주변 객체)', 'Name / NORAD (empty = nearby)')}">
+      ${cands.length ? `<div class="so-chips">${cands.map(x => `<button type="button" class="${b?.id === x.id ? 'on' : ''}" data-act="cmp-pick" data-id="${esc(x.id)}">${esc(x.name)}</button>`).join('')}</div>` : `<p class="so-empty">${t('후보가 없습니다 — 검색어를 넣어 보세요.', 'No candidates — try a search term.')}</p>`}
+      ${table}</div>`;
+  },
+
+  _tabForMe(o) {
+    return `<div class="so-block"><div class="so-bh">FOR ME<span class="dim">${t('내 위치 기준', 'my location')}</span></div>
+      <div data-so-passes>${this._passesHtml || `<button type="button" class="so-link" data-act="passes">${t('다음 24시간 동안 내 위치 위를 언제 지나가나 →', 'When does it pass over my location in the next 24h →')}</button>`}</div>
+      <p class="so-note">${t('통과 예보는 고도각 10° 이상 · 브라우저 SGP4 계산입니다. 맨눈 관측 가능 여부(햇빛 조건)는 계산하지 않습니다.', 'Passes at elevation ≥10°, computed in the browser. Visibility (sunlit) is not computed.')}</p></div>`;
   },
 
   /** 다음 질문 한 줄 — 배너 없이, 결과를 다 보여준 뒤 맨 아래에. Intelligence 지구로 잇는다. */
@@ -939,6 +1193,11 @@ export const spaceOps = {
       this._renderSection(); const n = this.root.querySelector('[data-so-orbit-q]'); n?.focus(); try { n.setSelectionRange(pos, pos); } catch (_) {}
       return;
     }
+    if (el.matches('[data-so-cmp-q]')) {
+      this.cmpQuery = el.value; const pos = el.selectionStart;
+      this._renderRight(); const n = this.root.querySelector('[data-so-cmp-q]'); n?.focus(); try { n.setSelectionRange(pos, pos); } catch (_) {}
+      return;
+    }
     if (el.matches('[data-so-arch-slider]')) { this.enterArchive(Date.now() + Number(el.value) * 60_000); return; }
     if (el.matches('[data-so-arch-input]')) { const ms = Date.parse(el.value); if (Number.isFinite(ms)) this.enterArchive(ms); return; }
     if (el.matches('[data-so-replay-slider]')) { this.replay.tPlus = Number(el.value); this.replay.on = false; globe.launchAt(this.replay.tPlus); const tl = this.root.querySelector('[data-so-replay-t]'); if (tl) tl.textContent = M.fmtTPlus(this.replay.tPlus); }
@@ -969,6 +1228,9 @@ export const spaceOps = {
         break;
       }
       case 'station': { const st = this.stations.find(s => s.id === id); if (st) this.selectStation(st); break; }
+      case 'tab': this.tab = id; this._renderRight(); break;
+      case 'cmp-pick': this.cmp = this.findObj(id); this._renderRight(); break;
+      case 'cmp-link': if (this.sel?.rec && this.cmp?.rec) globe.approach(this.sel, this.cmp, { id: 'cmp' }, this.clock()); break;
       case 'intel': location.href = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? '/v2-three/' : '/Intelligence'; break;
       case 'kpi': this.section = id; this._renderMode(); this._renderSection(); this._setMtab('left'); break;
       case 'cam': globe.camera(id, { launch: this.sel?.kind === M.KIND.LAUNCH ? this.sel : this.launchObjs()[0], object: this.sel }); break;

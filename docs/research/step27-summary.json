@@ -1,0 +1,31 @@
+{
+  "ruleId": "depth-sensitivity-step27",
+  "phase": "A",
+  "status": "PREREGISTRATION_LOCKED",
+  "dataStatus": "STEP27_DATA_BLOCKED",
+  "depths": 4,
+  "depthTargets": [
+    "~5.08 m",
+    "~9.57 m",
+    "15.810070 m",
+    "~21.6 m"
+  ],
+  "control": "D15 15.810070 m",
+  "windows": 6,
+  "drifters": 35,
+  "plannedRuns": 24,
+  "alpha": 0.002,
+  "modelRunCount": 0,
+  "trajectoryCount": 0,
+  "newDataCount": 0,
+  "verticalInterpolation": false,
+  "dataFact": "acquired GLORYS files hold only the 15.810070 m level (depth dimension 1); D05/D10/D20 absent; nothing invented, interpolated or downloaded",
+  "interpretation": "NONE",
+  "statements": [
+    "STEP 27 Phase A registers a within-product depth sensitivity design only; no field is constructed, no model is run, no metric is computed.",
+    "The depth set (nearest native levels to 5/10/15/20 m) and the control D15 = 15.810070 m are fixed before any result.",
+    "Conditions D05, D10, D20 are not present in existing data: STEP27_DATA_BLOCKED; a separately preregistered authorized acquisition is required.",
+    "No vertical interpolation, averaging or depth search; alpha = 0.002 unchanged; STEP 17-26 unchanged.",
+    "STEP 27 is a sensitivity experiment; no depth is selected for operational use."
+  ]
+}

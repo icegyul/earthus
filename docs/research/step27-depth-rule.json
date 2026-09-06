@@ -1,0 +1,1079 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "depth-sensitivity-step27",
+  "status": "PREREGISTRATION LOCKED",
+  "phase": "A",
+  "createdAtUTC": "2026-09-06T12:36:48Z",
+  "baseCommit": "a4474eb8",
+  "purpose": "diagnose the depth element of the STEP 25C HYCOM-GLORYS comparison within one product (GLORYS12V1) with all else constant; STEP 17-26, STEP 20 alpha, STEP 25C and STEP 26 unchanged",
+  "scientificQuestion": {
+    "primary": "Does ocean velocity depth materially affect drifter trajectory agreement when all other conditions are held constant?",
+    "secondary": "Is the 15 m choice adequately representative?",
+    "prior": "none; shallower or deeper is not assumed better"
+  },
+  "product": {
+    "productId": "GLOBAL_MULTIYEAR_PHY_001_030",
+    "datasetId": "cmems_mod_glo_phy_my_0.083deg_P1D-m",
+    "name": "GLORYS12V1",
+    "variables": [
+      "uo",
+      "vo"
+    ],
+    "cadence": "daily mean",
+    "resolutionDegrees": 0.08333333333333333,
+    "framesRule": "same daily frames t0-1 d .. end+1 d and same boxes as STEP 25B"
+  },
+  "depths": [
+    {
+      "id": "D05",
+      "targetMeters": 5,
+      "expectedNativeLevelMeters": 5.078,
+      "nativeLevelMeters": null,
+      "exact": false,
+      "role": "alternative",
+      "rule": "single native GLORYS level nearest the target, exact value read from file metadata; no vertical interpolation, no averaging, no depth search",
+      "verticalInterpolation": false,
+      "presentInAcquiredFiles": false
+    },
+    {
+      "id": "D10",
+      "targetMeters": 10,
+      "expectedNativeLevelMeters": 9.573,
+      "nativeLevelMeters": null,
+      "exact": false,
+      "role": "alternative",
+      "rule": "single native GLORYS level nearest the target, exact value read from file metadata; no vertical interpolation, no averaging, no depth search",
+      "verticalInterpolation": false,
+      "presentInAcquiredFiles": false
+    },
+    {
+      "id": "D15",
+      "targetMeters": 15,
+      "expectedNativeLevelMeters": 15.81007,
+      "nativeLevelMeters": 15.81007,
+      "exact": true,
+      "role": "control",
+      "rule": "single native GLORYS level nearest the target, exact value read from file metadata; no vertical interpolation, no averaging, no depth search",
+      "verticalInterpolation": false,
+      "presentInAcquiredFiles": true,
+      "source": "STEP 25B raw files / STEP 25C normalized Condition C forcing (SHA-locked)"
+    },
+    {
+      "id": "D20",
+      "targetMeters": 20,
+      "expectedNativeLevelMeters": 21.599,
+      "nativeLevelMeters": null,
+      "exact": false,
+      "role": "alternative",
+      "rule": "single native GLORYS level nearest the target, exact value read from file metadata; no vertical interpolation, no averaging, no depth search",
+      "verticalInterpolation": false,
+      "presentInAcquiredFiles": false
+    }
+  ],
+  "depthCount": 4,
+  "control": "D15",
+  "controlFixedBeforeResults": true,
+  "conditions": [
+    {
+      "id": "D05",
+      "name": "GLORYS_D05",
+      "depthTargetMeters": 5,
+      "runs": 6
+    },
+    {
+      "id": "D10",
+      "name": "GLORYS_D10",
+      "depthTargetMeters": 10,
+      "runs": 6
+    },
+    {
+      "id": "D15",
+      "name": "GLORYS_D15",
+      "depthTargetMeters": 15,
+      "runs": 6
+    },
+    {
+      "id": "D20",
+      "name": "GLORYS_D20",
+      "depthTargetMeters": 20,
+      "runs": 6
+    }
+  ],
+  "dataAvailability": {
+    "checkedAtLock": "2026-09-06T12:36:48Z",
+    "levelsPresentInAcquiredFiles": [
+      15.81007
+    ],
+    "depthDimensionLength": 1,
+    "subsetRequest": "-z 15.81 -Z 15.81 (STEP 25B)",
+    "missingConditions": [
+      "D05",
+      "D10",
+      "D20"
+    ],
+    "status": "STEP27_DATA_BLOCKED",
+    "reason": "the already acquired GLORYS files contain only the 15.810070 m level; D05/D10/D20 are not present and are neither invented, interpolated nor downloaded in Phase A",
+    "unblockRequirement": "separately preregistered, authorized acquisition of the three missing native levels (same product, boxes, frames; gates G1-G11 per level; credentials never read/printed/stored)"
+  },
+  "frozenParameters": {
+    "runtime": "services/research-runtime (frozen at 155995dd)",
+    "modelId": "surface-passive-advection.v2.windage",
+    "modelVersion": "0.1.0",
+    "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+    "equation": "dX/dt = U_ocean(depth) + 0.002 * U_wind",
+    "integrator": "RK4",
+    "integrationStepSeconds": 300,
+    "outputStepSeconds": 900,
+    "durationSeconds": 259200,
+    "spatialInterpolation": "bilinear",
+    "temporalInterpolation": "linear",
+    "extrapolation": false,
+    "coordinateConversion": "OceanParcels Geographic (111120 m/deg, cos(phi) at every RK4 stage)",
+    "backend": "oceanparcels 3.1.4",
+    "python": "3.12.10",
+    "statusRules": "STEP 18b (OUT_OF_DOMAIN only at +/-40 deg; else FORCING_UNAVAILABLE)",
+    "alpha": 0.002,
+    "wind": "NCEP-DOE R2 10 m 6-hourly (STEP 17 / STEP 20 B-3 normalized files, SHA in windows[].wind)"
+  },
+  "alpha": {
+    "value": 0.002,
+    "alpha0Runs": 0,
+    "search": false,
+    "reselection": false,
+    "step20Changed": false
+  },
+  "windows": [
+    {
+      "windowId": "KE-1",
+      "role": "CALIBRATION",
+      "region": "KE",
+      "t0": "2010-05-11T12:00:00Z",
+      "end": "2010-05-14T12:00:00Z",
+      "drifterCount": 8,
+      "drifterIds": [
+        "71155",
+        "81801",
+        "81805",
+        "81807",
+        "81811",
+        "81813",
+        "81814",
+        "81816"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "71155",
+          "lon": 142.60959,
+          "lat": 35.68513
+        },
+        {
+          "drifterId": "81801",
+          "lon": 150.57346,
+          "lat": 30.12786
+        },
+        {
+          "drifterId": "81805",
+          "lon": 150.6728,
+          "lat": 30.8741
+        },
+        {
+          "drifterId": "81807",
+          "lon": 149.87982,
+          "lat": 30.91725
+        },
+        {
+          "drifterId": "81811",
+          "lon": 151.57515,
+          "lat": 32.09739
+        },
+        {
+          "drifterId": "81813",
+          "lon": 157.64886,
+          "lat": 30.87311
+        },
+        {
+          "drifterId": "81814",
+          "lon": 159.61974,
+          "lat": 36.19472
+        },
+        {
+          "drifterId": "81816",
+          "lon": 148.6675,
+          "lat": 30.73258
+        }
+      ],
+      "computationArea": {
+        "west": 140.60959,
+        "east": 161.61974,
+        "south": 28.12786,
+        "north": 38.19472
+      },
+      "glorysBox": {
+        "south": 28.12786,
+        "north": 38.19472,
+        "west": 140.60959,
+        "east": 161.61974
+      },
+      "wind": {
+        "file": "data/research/step17/normalized/KE-1.ncep10m.wind.json",
+        "sha256": "6e6c0c225cf70d676e7adb1cf0ba2b18f3805db9e0e02eef710295f564473a71",
+        "gridSha256": "ba15d7299bd49846e63cb05219503f6e5c11dc765ba6880f02c0ed1b7f553080",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      },
+      "d15Forcing": {
+        "rawFile": "data/research/step25b/glorys/KE-1.glorys12v1.uo_vo.15.81m.nc",
+        "rawSha256": "d399a2b586b3eea97838bfc9eab2bf0e58afcd33d07c4e9fcef7b02de033c2dc",
+        "normalizedFile": "data/research/step25c/forcing/KE-1.glorys15.81m.dataset.json",
+        "normalizedFileSha256": "5eac44039387614c00d84df59c6805c2d275369cc4c1e25af80c0a23588230eb",
+        "gridSha256": "57e0916e8e4204ed0e07c0c34cb5cd451a018157425b5de9ac1b766d29a484f2",
+        "timeUTC": [
+          "2010-05-10T00:00:00Z",
+          "2010-05-11T00:00:00Z",
+          "2010-05-12T00:00:00Z",
+          "2010-05-13T00:00:00Z",
+          "2010-05-14T00:00:00Z",
+          "2010-05-15T00:00:00Z"
+        ],
+        "requestedBox": {
+          "west": 140.10959,
+          "east": 162.11974,
+          "south": 27.62786,
+          "north": 38.69472
+        },
+        "requestedTime": [
+          "2010-05-10T00:00:00",
+          "2010-05-15T00:00:00"
+        ]
+      },
+      "requiredForOtherDepths": {
+        "sameProduct": "GLOBAL_MULTIYEAR_PHY_001_030 / cmems_mod_glo_phy_my_0.083deg_P1D-m",
+        "sameBox": {
+          "west": 140.10959,
+          "east": 162.11974,
+          "south": 27.62786,
+          "north": 38.69472
+        },
+        "sameTime": [
+          "2010-05-10T00:00:00",
+          "2010-05-15T00:00:00"
+        ],
+        "sameFrames": [
+          "2010-05-10T00:00:00Z",
+          "2010-05-11T00:00:00Z",
+          "2010-05-12T00:00:00Z",
+          "2010-05-13T00:00:00Z",
+          "2010-05-14T00:00:00Z",
+          "2010-05-15T00:00:00Z"
+        ],
+        "levels": [
+          "nearest native to 5 m",
+          "nearest native to 10 m",
+          "nearest native to 20 m"
+        ],
+        "status": "NOT_ACQUIRED"
+      }
+    },
+    {
+      "windowId": "KE-2",
+      "role": "CALIBRATION",
+      "region": "KE",
+      "t0": "2010-06-30T12:00:00Z",
+      "end": "2010-07-03T12:00:00Z",
+      "drifterCount": 5,
+      "drifterIds": [
+        "48965",
+        "81802",
+        "90141",
+        "90142",
+        "90145"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "48965",
+          "lon": 135.53249,
+          "lat": 37.60833
+        },
+        {
+          "drifterId": "81802",
+          "lon": 151.58324,
+          "lat": 31.70784
+        },
+        {
+          "drifterId": "90141",
+          "lon": 145.17612,
+          "lat": 38.3657
+        },
+        {
+          "drifterId": "90142",
+          "lon": 152.78535,
+          "lat": 39.3177
+        },
+        {
+          "drifterId": "90145",
+          "lon": 147.0891,
+          "lat": 37.12376
+        }
+      ],
+      "computationArea": {
+        "west": 133.53249,
+        "east": 154.78535,
+        "south": 29.70784,
+        "north": 40.0
+      },
+      "glorysBox": {
+        "south": 29.70784,
+        "north": 40.0,
+        "west": 133.53249,
+        "east": 154.78535
+      },
+      "wind": {
+        "file": "data/research/step17/normalized/KE-2.ncep10m.wind.json",
+        "sha256": "2b913475ada3a1fa16d3a29b3441151b328eb99df64f798ee3467527cedda71f",
+        "gridSha256": "ace5b1a527ca39595e6e40051798846ca39a0fb54142e3e3d5aae2178e2f14f9",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      },
+      "d15Forcing": {
+        "rawFile": "data/research/step25b/glorys/KE-2.glorys12v1.uo_vo.15.81m.nc",
+        "rawSha256": "f2ca50183aea583d69e3b73f4609568b221106a7c119a0c8c0bd43d7623f4bbe",
+        "normalizedFile": "data/research/step25c/forcing/KE-2.glorys15.81m.dataset.json",
+        "normalizedFileSha256": "3c454919b343754740dd861ac8d147282be60392b043771e7f5a7f6407ef28ae",
+        "gridSha256": "99364bcd6a0dd93db4e4c7c09420e03d8cfb29e5d0443c872492b41ac00b30d5",
+        "timeUTC": [
+          "2010-06-29T00:00:00Z",
+          "2010-06-30T00:00:00Z",
+          "2010-07-01T00:00:00Z",
+          "2010-07-02T00:00:00Z",
+          "2010-07-03T00:00:00Z",
+          "2010-07-04T00:00:00Z"
+        ],
+        "requestedBox": {
+          "west": 133.03249,
+          "east": 155.28535,
+          "south": 29.20784,
+          "north": 40.5
+        },
+        "requestedTime": [
+          "2010-06-29T00:00:00",
+          "2010-07-04T00:00:00"
+        ]
+      },
+      "requiredForOtherDepths": {
+        "sameProduct": "GLOBAL_MULTIYEAR_PHY_001_030 / cmems_mod_glo_phy_my_0.083deg_P1D-m",
+        "sameBox": {
+          "west": 133.03249,
+          "east": 155.28535,
+          "south": 29.20784,
+          "north": 40.5
+        },
+        "sameTime": [
+          "2010-06-29T00:00:00",
+          "2010-07-04T00:00:00"
+        ],
+        "sameFrames": [
+          "2010-06-29T00:00:00Z",
+          "2010-06-30T00:00:00Z",
+          "2010-07-01T00:00:00Z",
+          "2010-07-02T00:00:00Z",
+          "2010-07-03T00:00:00Z",
+          "2010-07-04T00:00:00Z"
+        ],
+        "levels": [
+          "nearest native to 5 m",
+          "nearest native to 10 m",
+          "nearest native to 20 m"
+        ],
+        "status": "NOT_ACQUIRED"
+      }
+    },
+    {
+      "windowId": "AG-1",
+      "role": "CALIBRATION",
+      "region": "AG",
+      "t0": "2015-04-23T12:00:00Z",
+      "end": "2015-04-26T12:00:00Z",
+      "drifterCount": 9,
+      "drifterIds": [
+        "127198",
+        "127199",
+        "127272",
+        "127313",
+        "127314",
+        "127315",
+        "132511",
+        "132528",
+        "132634"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "127198",
+          "lon": 20.32911,
+          "lat": -39.81819
+        },
+        {
+          "drifterId": "127199",
+          "lon": 20.31773,
+          "lat": -39.82213
+        },
+        {
+          "drifterId": "127272",
+          "lon": 27.2557,
+          "lat": -34.85449
+        },
+        {
+          "drifterId": "127313",
+          "lon": 23.25523,
+          "lat": -35.43792
+        },
+        {
+          "drifterId": "127314",
+          "lon": 30.01394,
+          "lat": -34.13828
+        },
+        {
+          "drifterId": "127315",
+          "lon": 24.83593,
+          "lat": -35.31406
+        },
+        {
+          "drifterId": "132511",
+          "lon": 21.4817,
+          "lat": -37.10636
+        },
+        {
+          "drifterId": "132528",
+          "lon": 23.86592,
+          "lat": -34.97313
+        },
+        {
+          "drifterId": "132634",
+          "lon": 29.88758,
+          "lat": -34.64967
+        }
+      ],
+      "computationArea": {
+        "west": 18.31773,
+        "east": 32.013940000000005,
+        "south": -40.0,
+        "north": -32.13828
+      },
+      "glorysBox": {
+        "south": -40.0,
+        "north": -32.13828,
+        "west": 18.31773,
+        "east": 32.013940000000005
+      },
+      "wind": {
+        "file": "data/research/step17/normalized/AG-1.ncep10m.wind.json",
+        "sha256": "00ff12e9daabcca05c9db6e5542eb788871c5fbae14a6d3774152d36cfbc6785",
+        "gridSha256": "be4e060568f5c72567f63209ace4bb1c2a32d6e3a03f998f102125a341edfed7",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      },
+      "d15Forcing": {
+        "rawFile": "data/research/step25b/glorys/AG-1.glorys12v1.uo_vo.15.81m.nc",
+        "rawSha256": "87fffab5d0cfc0ff96387be7089b408681ea55a1f87bfba72f7f8f3ccf875759",
+        "normalizedFile": "data/research/step25c/forcing/AG-1.glorys15.81m.dataset.json",
+        "normalizedFileSha256": "a41f03647dcf12c048f92bb389d5ce80340060b4a953051ab0da43394823237c",
+        "gridSha256": "6821bf8fef4cd232353f030f51f836eb06adf331f5a7a6568eaabceca60009e2",
+        "timeUTC": [
+          "2015-04-22T00:00:00Z",
+          "2015-04-23T00:00:00Z",
+          "2015-04-24T00:00:00Z",
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z"
+        ],
+        "requestedBox": {
+          "west": 17.81773,
+          "east": 32.51394,
+          "south": -40.5,
+          "north": -31.63828
+        },
+        "requestedTime": [
+          "2015-04-22T00:00:00",
+          "2015-04-27T00:00:00"
+        ]
+      },
+      "requiredForOtherDepths": {
+        "sameProduct": "GLOBAL_MULTIYEAR_PHY_001_030 / cmems_mod_glo_phy_my_0.083deg_P1D-m",
+        "sameBox": {
+          "west": 17.81773,
+          "east": 32.51394,
+          "south": -40.5,
+          "north": -31.63828
+        },
+        "sameTime": [
+          "2015-04-22T00:00:00",
+          "2015-04-27T00:00:00"
+        ],
+        "sameFrames": [
+          "2015-04-22T00:00:00Z",
+          "2015-04-23T00:00:00Z",
+          "2015-04-24T00:00:00Z",
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z"
+        ],
+        "levels": [
+          "nearest native to 5 m",
+          "nearest native to 10 m",
+          "nearest native to 20 m"
+        ],
+        "status": "NOT_ACQUIRED"
+      }
+    },
+    {
+      "windowId": "AG-2",
+      "role": "CALIBRATION",
+      "region": "AG",
+      "t0": "2015-04-26T12:00:00Z",
+      "end": "2015-04-29T12:00:00Z",
+      "drifterCount": 1,
+      "drifterIds": [
+        "127281"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "127281",
+          "lon": 21.79639,
+          "lat": -36.76674
+        }
+      ],
+      "computationArea": {
+        "west": 19.79639,
+        "east": 23.79639,
+        "south": -38.76674,
+        "north": -34.76674
+      },
+      "glorysBox": {
+        "south": -38.76674,
+        "north": -34.76674,
+        "west": 19.79639,
+        "east": 23.79639
+      },
+      "wind": {
+        "file": "data/research/step17/normalized/AG-2.ncep10m.wind.json",
+        "sha256": "f32e7a2a4f2e7d991d516e5ac97308ac1f4c0b143b9cf39612f604c1910f7699",
+        "gridSha256": "073d37611d155a6770f9fd3dfd7a849937587b72c4ad76b23f4cea547b1fc4e3",
+        "source": "STEP 17 normalized NCEP-DOE R2 10 m 6 h"
+      },
+      "d15Forcing": {
+        "rawFile": "data/research/step25b/glorys/AG-2.glorys12v1.uo_vo.15.81m.nc",
+        "rawSha256": "595c2bace7156f3dab92698a251e29a87920eb4d2375cc730fbdf69562cc9b25",
+        "normalizedFile": "data/research/step25c/forcing/AG-2.glorys15.81m.dataset.json",
+        "normalizedFileSha256": "27de6bdf0d7284aa5989f3c0c75d08b61eb3776dbf1b93c0ec055bdff42bb2bb",
+        "gridSha256": "96894ed4c1b40a0d5db94d3cdcbab83f8a4d4502342ac983ae84eda4e97d0a26",
+        "timeUTC": [
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z",
+          "2015-04-28T00:00:00Z",
+          "2015-04-29T00:00:00Z",
+          "2015-04-30T00:00:00Z"
+        ],
+        "requestedBox": {
+          "west": 19.29639,
+          "east": 24.29639,
+          "south": -39.26674,
+          "north": -34.26674
+        },
+        "requestedTime": [
+          "2015-04-25T00:00:00",
+          "2015-04-30T00:00:00"
+        ]
+      },
+      "requiredForOtherDepths": {
+        "sameProduct": "GLOBAL_MULTIYEAR_PHY_001_030 / cmems_mod_glo_phy_my_0.083deg_P1D-m",
+        "sameBox": {
+          "west": 19.29639,
+          "east": 24.29639,
+          "south": -39.26674,
+          "north": -34.26674
+        },
+        "sameTime": [
+          "2015-04-25T00:00:00",
+          "2015-04-30T00:00:00"
+        ],
+        "sameFrames": [
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z",
+          "2015-04-28T00:00:00Z",
+          "2015-04-29T00:00:00Z",
+          "2015-04-30T00:00:00Z"
+        ],
+        "levels": [
+          "nearest native to 5 m",
+          "nearest native to 10 m",
+          "nearest native to 20 m"
+        ],
+        "status": "NOT_ACQUIRED"
+      }
+    },
+    {
+      "windowId": "KE-H1",
+      "role": "HOLDOUT",
+      "region": "KE",
+      "t0": "2010-08-10T12:00:00Z",
+      "end": "2010-08-13T12:00:00Z",
+      "drifterCount": 5,
+      "drifterIds": [
+        "48985",
+        "81806",
+        "90135",
+        "90149",
+        "90150"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "48985",
+          "lon": 137.25655,
+          "lat": 39.19842
+        },
+        {
+          "drifterId": "81806",
+          "lon": 157.94424,
+          "lat": 32.2673
+        },
+        {
+          "drifterId": "90135",
+          "lon": 156.24634,
+          "lat": 37.19708
+        },
+        {
+          "drifterId": "90149",
+          "lon": 159.85992,
+          "lat": 38.45439
+        },
+        {
+          "drifterId": "90150",
+          "lon": 155.67223,
+          "lat": 38.35129
+        }
+      ],
+      "computationArea": {
+        "west": 135.25655,
+        "east": 161.85992,
+        "south": 30.2673,
+        "north": 40.0
+      },
+      "glorysBox": {
+        "south": 30.2673,
+        "north": 40.0,
+        "west": 135.25655,
+        "east": 161.85992
+      },
+      "wind": {
+        "file": "data/research/step20/holdout/forcing/normalized/KE-H1.ncep10m.wind.json",
+        "sha256": "7b16b08358e2ca50769cfb4106674703f7da70190e8bb6601fec4ceeae5bcfcd",
+        "gridSha256": "2efe5efe8feed013a2c0b64fb3257938d8f85a129f35ecc0167cc35db0154d21",
+        "source": "STEP 20 B-3 normalized NCEP-DOE R2 10 m 6 h (holdout)"
+      },
+      "d15Forcing": {
+        "rawFile": "data/research/step25b/glorys/KE-H1.glorys12v1.uo_vo.15.81m.nc",
+        "rawSha256": "5fcb3b013aa4f0fa8dabf516ea2ef9d669f7009aceb5d960c339e92f4debcb25",
+        "normalizedFile": "data/research/step25c/forcing/KE-H1.glorys15.81m.dataset.json",
+        "normalizedFileSha256": "5cd22aece73dbb1d613ad99535d93b09b417b22ce300b2d3bfe79670e2656f16",
+        "gridSha256": "e12142bace085deb9a83837334205d8d26c33c13cef9b06be3525c7a738bf1b5",
+        "timeUTC": [
+          "2010-08-09T00:00:00Z",
+          "2010-08-10T00:00:00Z",
+          "2010-08-11T00:00:00Z",
+          "2010-08-12T00:00:00Z",
+          "2010-08-13T00:00:00Z",
+          "2010-08-14T00:00:00Z"
+        ],
+        "requestedBox": {
+          "west": 134.75655,
+          "east": 162.35992,
+          "south": 29.7673,
+          "north": 40.5
+        },
+        "requestedTime": [
+          "2010-08-09T00:00:00",
+          "2010-08-14T00:00:00"
+        ]
+      },
+      "requiredForOtherDepths": {
+        "sameProduct": "GLOBAL_MULTIYEAR_PHY_001_030 / cmems_mod_glo_phy_my_0.083deg_P1D-m",
+        "sameBox": {
+          "west": 134.75655,
+          "east": 162.35992,
+          "south": 29.7673,
+          "north": 40.5
+        },
+        "sameTime": [
+          "2010-08-09T00:00:00",
+          "2010-08-14T00:00:00"
+        ],
+        "sameFrames": [
+          "2010-08-09T00:00:00Z",
+          "2010-08-10T00:00:00Z",
+          "2010-08-11T00:00:00Z",
+          "2010-08-12T00:00:00Z",
+          "2010-08-13T00:00:00Z",
+          "2010-08-14T00:00:00Z"
+        ],
+        "levels": [
+          "nearest native to 5 m",
+          "nearest native to 10 m",
+          "nearest native to 20 m"
+        ],
+        "status": "NOT_ACQUIRED"
+      }
+    },
+    {
+      "windowId": "KE-H3",
+      "role": "HOLDOUT",
+      "region": "KE",
+      "t0": "2010-11-15T12:00:00Z",
+      "end": "2010-11-18T12:00:00Z",
+      "drifterCount": 7,
+      "drifterIds": [
+        "89898",
+        "90146",
+        "92981",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "releasePositions": [
+        {
+          "drifterId": "89898",
+          "lon": 143.26125,
+          "lat": 31.29767
+        },
+        {
+          "drifterId": "90146",
+          "lon": 152.8268,
+          "lat": 38.44446
+        },
+        {
+          "drifterId": "92981",
+          "lon": 143.06795,
+          "lat": 31.02459
+        },
+        {
+          "drifterId": "98996",
+          "lon": 147.97673,
+          "lat": 33.89059
+        },
+        {
+          "drifterId": "98997",
+          "lon": 152.19716,
+          "lat": 34.03334
+        },
+        {
+          "drifterId": "98998",
+          "lon": 154.05711,
+          "lat": 33.55673
+        },
+        {
+          "drifterId": "99006",
+          "lon": 151.61525,
+          "lat": 31.19199
+        }
+      ],
+      "computationArea": {
+        "west": 141.06795,
+        "east": 156.05711,
+        "south": 29.02459,
+        "north": 40.0
+      },
+      "glorysBox": {
+        "south": 29.02459,
+        "north": 40.0,
+        "west": 141.06795,
+        "east": 156.05711
+      },
+      "wind": {
+        "file": "data/research/step20/holdout/forcing/normalized/KE-H3.ncep10m.wind.json",
+        "sha256": "c1f1e3d70697a41b5d39d4f0b422869378256930d5e9d9b8393cbff996ab9bbc",
+        "gridSha256": "94b50b5ac56e7224b260eb0a03bddccd9785e3454a69471cdc3a39bc61e43cd8",
+        "source": "STEP 20 B-3 normalized NCEP-DOE R2 10 m 6 h (holdout)"
+      },
+      "d15Forcing": {
+        "rawFile": "data/research/step25b/glorys/KE-H3.glorys12v1.uo_vo.15.81m.nc",
+        "rawSha256": "403ed3a5b4b2882d6f1a102d2edea299ae9436598b250a46e0c0bcb834c10152",
+        "normalizedFile": "data/research/step25c/forcing/KE-H3.glorys15.81m.dataset.json",
+        "normalizedFileSha256": "f3955b90eb1c2715accc8675d8a8338b3816434d96a70754bc7d5fe3f70cc059",
+        "gridSha256": "f00cb7fec7d318234f7ed6dd2af3c92f332b92cb076d82cec947ea300735421f",
+        "timeUTC": [
+          "2010-11-14T00:00:00Z",
+          "2010-11-15T00:00:00Z",
+          "2010-11-16T00:00:00Z",
+          "2010-11-17T00:00:00Z",
+          "2010-11-18T00:00:00Z",
+          "2010-11-19T00:00:00Z"
+        ],
+        "requestedBox": {
+          "west": 140.56795,
+          "east": 156.55711,
+          "south": 28.52459,
+          "north": 40.5
+        },
+        "requestedTime": [
+          "2010-11-14T00:00:00",
+          "2010-11-19T00:00:00"
+        ]
+      },
+      "requiredForOtherDepths": {
+        "sameProduct": "GLOBAL_MULTIYEAR_PHY_001_030 / cmems_mod_glo_phy_my_0.083deg_P1D-m",
+        "sameBox": {
+          "west": 140.56795,
+          "east": 156.55711,
+          "south": 28.52459,
+          "north": 40.5
+        },
+        "sameTime": [
+          "2010-11-14T00:00:00",
+          "2010-11-19T00:00:00"
+        ],
+        "sameFrames": [
+          "2010-11-14T00:00:00Z",
+          "2010-11-15T00:00:00Z",
+          "2010-11-16T00:00:00Z",
+          "2010-11-17T00:00:00Z",
+          "2010-11-18T00:00:00Z",
+          "2010-11-19T00:00:00Z"
+        ],
+        "levels": [
+          "nearest native to 5 m",
+          "nearest native to 10 m",
+          "nearest native to 20 m"
+        ],
+        "status": "NOT_ACQUIRED"
+      }
+    }
+  ],
+  "windowCount": 6,
+  "excluded": {
+    "KE-H2": {
+      "paired": false,
+      "reason": "immutable STEP 20 HYCOM baseline FORCING_UNAVAILABLE",
+      "modelRun": false
+    },
+    "AG-holdout": "UNAVAILABLE; not invented"
+  },
+  "calibrationWindows": [
+    "KE-1",
+    "KE-2",
+    "AG-1",
+    "AG-2"
+  ],
+  "holdoutWindows": [
+    "KE-H1",
+    "KE-H3"
+  ],
+  "holdoutRole": "descriptive only; never used to choose a depth; no re-ranking",
+  "strata": [
+    "overall",
+    "calibration",
+    "holdout",
+    "perWindow"
+  ],
+  "runMatrix": {
+    "conditions": 4,
+    "windows": 6,
+    "plannedRuns": 24,
+    "alpha": 0.002,
+    "order": [
+      "D05",
+      "D10",
+      "D15",
+      "D20"
+    ],
+    "windowOrder": [
+      "KE-1",
+      "KE-2",
+      "AG-1",
+      "AG-2",
+      "KE-H1",
+      "KE-H3"
+    ],
+    "d15ReproductionGate": "D15 result arrays must equal STEP 25C Condition C (alpha 0.002) bitwise"
+  },
+  "metrics": {
+    "M3": {
+      "definition": "observed-vs-model position error, haversine",
+      "radiusMeters": 6371008.8,
+      "horizonsHours": [
+        24,
+        48,
+        72
+      ],
+      "exactUTC": true,
+      "observationInterpolation": false,
+      "primaryStatistic": "median",
+      "secondaryStatistic": "mean",
+      "report": [
+        "n",
+        "median",
+        "mean",
+        "min",
+        "max",
+        "NOT_AVAILABLE"
+      ]
+    },
+    "delta": "error(depth) - error(D15), km; negative = alternative depth lower error",
+    "tieToleranceKm": 1e-06,
+    "pairedReport": [
+      "paired median delta",
+      "paired mean delta",
+      "wins",
+      "losses",
+      "ties"
+    ],
+    "M1": "72 h endpoint displacement",
+    "M2": "total path length",
+    "M4": "72 h model separation between the compared depth conditions",
+    "M5": "observed 72 h displacement",
+    "secondaryOnly": [
+      "M1",
+      "M2",
+      "M4",
+      "M5"
+    ]
+  },
+  "comparisons": [
+    "D05 vs D15",
+    "D10 vs D15",
+    "D20 vs D15"
+  ],
+  "depthSeparation": {
+    "pairs": [
+      "D05 vs D15",
+      "D10 vs D15",
+      "D20 vs D15"
+    ],
+    "horizonsHours": [
+      24,
+      48,
+      72
+    ]
+  },
+  "maskRule": {
+    "sameAtEveryDepth": true,
+    "invalidStencil": "DEPTH_SPECIFIC_FORCING_UNAVAILABLE for that drifter at that depth",
+    "substitution": false,
+    "fill": false,
+    "nearestNeighbour": false
+  },
+  "fairness": {
+    "onlyIntentionalDifference": "native ocean velocity depth",
+    "identical": [
+      "product/dataset id",
+      "daily frames and time axis",
+      "horizontal grid",
+      "wind files",
+      "alpha",
+      "numerics",
+      "observations",
+      "computation area"
+    ],
+    "verifiedBeforeExecution": [
+      "source file SHA",
+      "native depth metadata",
+      "uo/vo present",
+      "depth dimension length 1 per file",
+      "time axis",
+      "horizontal grid"
+    ]
+  },
+  "noDepthOptimization": {
+    "sensitivityOnly": true,
+    "addDepthAfterResults": false,
+    "removeDepthAfterResults": false,
+    "interpolateToBestDepth": false,
+    "selectFromHoldout": false,
+    "combineLayers": false,
+    "weightedProfile": false,
+    "operationalWinner": false
+  },
+  "dataPolicy": {
+    "newDownloadInPhaseA": false,
+    "newObservation": false,
+    "newWindow": false,
+    "replacementData": false,
+    "newProduct": false
+  },
+  "forbidden": {
+    "verticalInterpolation": false,
+    "verticalAveraging": false,
+    "depthSearch": false,
+    "alphaSearch": false,
+    "smoothing": false,
+    "extrapolation": false,
+    "zeroFill": false,
+    "landSubstitution": false,
+    "frameDuplication": false,
+    "gapFilling": false,
+    "blending": false,
+    "biasCorrection": false,
+    "nudging": false,
+    "assimilation": false
+  },
+  "outlierPolicy": {
+    "removal": false,
+    "trimming": false,
+    "winsorization": false,
+    "weighting": false,
+    "manualExclusion": false
+  },
+  "statisticalPolicy": {
+    "design": "descriptive paired analysis",
+    "independenceAssumed": false,
+    "independentSampleTests": false,
+    "newSignificanceThreshold": false,
+    "signTest": "nominal only, n >= 10, never a selection criterion"
+  },
+  "reproducibility": {
+    "perRun": [
+      "depth",
+      "sourceForcingSha256",
+      "configurationSha256",
+      "runnerSha256",
+      "readerSha256",
+      "resultSha256",
+      "replayResultSha256"
+    ],
+    "independentReplay": true,
+    "d15MustEqualStep25C": true,
+    "evaluatorRerunByteIdentical": true
+  },
+  "allowedLanguage": [
+    "descriptive difference",
+    "depth sensitivity",
+    "vertical representativeness"
+  ],
+  "forbiddenLanguage": [
+    "best depth",
+    "optimal depth",
+    "selected depth",
+    "superior",
+    "validated",
+    "proven",
+    "production-ready"
+  ],
+  "phaseA": {
+    "modelRunCount": 0,
+    "newData": 0,
+    "depthFieldsConstructed": 0,
+    "interpretation": "NONE",
+    "outputs": [
+      "docs/research/step27-depth-sensitivity-protocol.md",
+      "docs/research/step27-depth-rule.json",
+      "docs/research/step27-preregistration.json",
+      "docs/research/step27-experiment-matrix.json",
+      "docs/research/step27-summary.json",
+      "tools/research/check_step27_preregistration.py"
+    ]
+  },
+  "phaseB": {
+    "status": "NOT_STARTED; DATA_BLOCKED at lock",
+    "prerequisite": "authorized acquisition record for D05/D10/D20 passing STEP 25B-style gates",
+    "plannedRuns": 24
+  },
+  "lockPolicy": "locked and committed before any acquisition, field construction or run",
+  "stopRule": "Phase A ends at the LOCK commit; no depth choice is made; no download; no STEP 28"
+}

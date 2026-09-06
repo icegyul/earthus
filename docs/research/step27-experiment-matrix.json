@@ -1,0 +1,240 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "depth-sensitivity-step27",
+  "phase": "A",
+  "conditions": [
+    {
+      "id": "D05",
+      "name": "GLORYS_D05",
+      "depthTargetMeters": 5,
+      "runs": 6
+    },
+    {
+      "id": "D10",
+      "name": "GLORYS_D10",
+      "depthTargetMeters": 10,
+      "runs": 6
+    },
+    {
+      "id": "D15",
+      "name": "GLORYS_D15",
+      "depthTargetMeters": 15,
+      "runs": 6
+    },
+    {
+      "id": "D20",
+      "name": "GLORYS_D20",
+      "depthTargetMeters": 20,
+      "runs": 6
+    }
+  ],
+  "conditionStatus": {
+    "D05": "STEP27_DATA_BLOCKED",
+    "D10": "STEP27_DATA_BLOCKED",
+    "D15": "AVAILABLE (STEP 25C Condition C forcing)",
+    "D20": "STEP27_DATA_BLOCKED"
+  },
+  "cells": [
+    {
+      "condition": "D05",
+      "windowId": "KE-1",
+      "role": "CALIBRATION",
+      "drifters": 8,
+      "alpha": 0.002,
+      "status": "STEP27_DATA_BLOCKED"
+    },
+    {
+      "condition": "D05",
+      "windowId": "KE-2",
+      "role": "CALIBRATION",
+      "drifters": 5,
+      "alpha": 0.002,
+      "status": "STEP27_DATA_BLOCKED"
+    },
+    {
+      "condition": "D05",
+      "windowId": "AG-1",
+      "role": "CALIBRATION",
+      "drifters": 9,
+      "alpha": 0.002,
+      "status": "STEP27_DATA_BLOCKED"
+    },
+    {
+      "condition": "D05",
+      "windowId": "AG-2",
+      "role": "CALIBRATION",
+      "drifters": 1,
+      "alpha": 0.002,
+      "status": "STEP27_DATA_BLOCKED"
+    },
+    {
+      "condition": "D05",
+      "windowId": "KE-H1",
+      "role": "HOLDOUT",
+      "drifters": 5,
+      "alpha": 0.002,
+      "status": "STEP27_DATA_BLOCKED"
+    },
+    {
+      "condition": "D05",
+      "windowId": "KE-H3",
+      "role": "HOLDOUT",
+      "drifters": 7,
+      "alpha": 0.002,
+      "status": "STEP27_DATA_BLOCKED"
+    },
+    {
+      "condition": "D10",
+      "windowId": "KE-1",
+      "role": "CALIBRATION",
+      "drifters": 8,
+      "alpha": 0.002,
+      "status": "STEP27_DATA_BLOCKED"
+    },
+    {
+      "condition": "D10",
+      "windowId": "KE-2",
+      "role": "CALIBRATION",
+      "drifters": 5,
+      "alpha": 0.002,
+      "status": "STEP27_DATA_BLOCKED"
+    },
+    {
+      "condition": "D10",
+      "windowId": "AG-1",
+      "role": "CALIBRATION",
+      "drifters": 9,
+      "alpha": 0.002,
+      "status": "STEP27_DATA_BLOCKED"
+    },
+    {
+      "condition": "D10",
+      "windowId": "AG-2",
+      "role": "CALIBRATION",
+      "drifters": 1,
+      "alpha": 0.002,
+      "status": "STEP27_DATA_BLOCKED"
+    },
+    {
+      "condition": "D10",
+      "windowId": "KE-H1",
+      "role": "HOLDOUT",
+      "drifters": 5,
+      "alpha": 0.002,
+      "status": "STEP27_DATA_BLOCKED"
+    },
+    {
+      "condition": "D10",
+      "windowId": "KE-H3",
+      "role": "HOLDOUT",
+      "drifters": 7,
+      "alpha": 0.002,
+      "status": "STEP27_DATA_BLOCKED"
+    },
+    {
+      "condition": "D15",
+      "windowId": "KE-1",
+      "role": "CALIBRATION",
+      "drifters": 8,
+      "alpha": 0.002,
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "condition": "D15",
+      "windowId": "KE-2",
+      "role": "CALIBRATION",
+      "drifters": 5,
+      "alpha": 0.002,
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "condition": "D15",
+      "windowId": "AG-1",
+      "role": "CALIBRATION",
+      "drifters": 9,
+      "alpha": 0.002,
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "condition": "D15",
+      "windowId": "AG-2",
+      "role": "CALIBRATION",
+      "drifters": 1,
+      "alpha": 0.002,
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "condition": "D15",
+      "windowId": "KE-H1",
+      "role": "HOLDOUT",
+      "drifters": 5,
+      "alpha": 0.002,
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "condition": "D15",
+      "windowId": "KE-H3",
+      "role": "HOLDOUT",
+      "drifters": 7,
+      "alpha": 0.002,
+      "status": "PLANNED_PHASE_B"
+    },
+    {
+      "condition": "D20",
+      "windowId": "KE-1",
+      "role": "CALIBRATION",
+      "drifters": 8,
+      "alpha": 0.002,
+      "status": "STEP27_DATA_BLOCKED"
+    },
+    {
+      "condition": "D20",
+      "windowId": "KE-2",
+      "role": "CALIBRATION",
+      "drifters": 5,
+      "alpha": 0.002,
+      "status": "STEP27_DATA_BLOCKED"
+    },
+    {
+      "condition": "D20",
+      "windowId": "AG-1",
+      "role": "CALIBRATION",
+      "drifters": 9,
+      "alpha": 0.002,
+      "status": "STEP27_DATA_BLOCKED"
+    },
+    {
+      "condition": "D20",
+      "windowId": "AG-2",
+      "role": "CALIBRATION",
+      "drifters": 1,
+      "alpha": 0.002,
+      "status": "STEP27_DATA_BLOCKED"
+    },
+    {
+      "condition": "D20",
+      "windowId": "KE-H1",
+      "role": "HOLDOUT",
+      "drifters": 5,
+      "alpha": 0.002,
+      "status": "STEP27_DATA_BLOCKED"
+    },
+    {
+      "condition": "D20",
+      "windowId": "KE-H3",
+      "role": "HOLDOUT",
+      "drifters": 7,
+      "alpha": 0.002,
+      "status": "STEP27_DATA_BLOCKED"
+    }
+  ],
+  "plannedRuns": 24,
+  "executedRuns": 0,
+  "comparisons": [
+    "D05 vs D15",
+    "D10 vs D15",
+    "D20 vs D15"
+  ],
+  "control": "D15",
+  "dataStatus": "STEP27_DATA_BLOCKED"
+}

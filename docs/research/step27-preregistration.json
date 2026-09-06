@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "ruleId": "depth-sensitivity-step27",
+  "phase": "A",
+  "createdAtUTC": "2026-09-06T12:36:48Z",
+  "gitCommitAtDesign": "a4474eb8",
+  "authorProcess": "Claude Fable 5.1 session, user-directed STEP 27 Phase A",
+  "protocolDocument": "docs/research/step27-depth-sensitivity-protocol.md",
+  "protocolSha256": "80e0398999dc4ecf99172dc540efbecaebcdf632c6ae95aa703fab22644dcdbb",
+  "ruleSha256": "603435292009708e7516eb39b2ba8ff705b4331dbc93f4ab98c9e55b3b217ca4",
+  "experimentMatrixSha256": "162141ebedd9cca6b7c998072707628d0999b6488c5a9e333f590f477f02abb5",
+  "summarySha256": "130efeb130bd51cad59dddf79c492c6caaff7046a15e7dffb9ded7f6f97bfbab",
+  "validator": {
+    "path": "tools/research/check_step27_preregistration.py",
+    "sha256": "af4b997e7fa770fc6fde99d2ae16ba94aa8a11b1ae748f4434166379ec267f21"
+  },
+  "ancestry": {
+    "step26PhaseB": "a4474eb8",
+    "step26PhaseA": "86266b3a",
+    "step25c": "c974ce42",
+    "step25b": "929d3468",
+    "step20AlphaLock": "73fafffb",
+    "step20Lock": "155995dd"
+  },
+  "possibleOutcomesPhaseB": [
+    "descriptive depth sensitivity observed",
+    "no clear depth sensitivity",
+    "STEP27_DATA_BLOCKED"
+  ],
+  "expectedWinner": "NONE DECLARED",
+  "modelRunPlan": {
+    "phaseA": 0,
+    "phaseB": 24
+  },
+  "alpha": {
+    "value": 0.002,
+    "search": false
+  },
+  "newData": 0,
+  "dataStatusAtLock": "STEP27_DATA_BLOCKED",
+  "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+  "lockPolicy": "locked and committed before any acquisition, field construction or run"
+}

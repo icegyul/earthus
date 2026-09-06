@@ -1,0 +1,151 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "ruleId": "cohort-selection-rule-step16-chronological-accumulation",
+  "ruleDocument": "docs/research/step16-cohort-selection-rule.md",
+  "ruleDocumentSha256": "e9e2c1ca2e2148ff763becebf8a56119a3551c965efe32df7ea49fdb84ea0948",
+  "createdAtUTC": "2026-09-06T03:27:21Z",
+  "authorProcess": "Claude Code session (Research Intelligence PHASE 2, STEP 16) — design only; no observation file opened, no selection run",
+  "gitCommitAtDesign": "7091c5cb",
+  "parent": {
+    "step": 15,
+    "commit": "7091c5cb",
+    "status": "COHORT_SELECTION_BLOCKED",
+    "cohortSha256": "00488af20abb6b2637f6c886bc0a1cb6ea2075a74c003d6171e76e23806a266a",
+    "auditSha256": "d2b57bf4e5647beb0066bd3a55e46ea830228b94a518a0896688a0a2b198befc",
+    "observationManifestSha256": "3c533163270ca8f0d73f0a60e5ec67c3ced76136725259b6f62a6eecf2219c81",
+    "step14RuleSha256": "ae9c214a337f2a351de73ed98e12395136d10013cea60b986644948b3db8c0c5",
+    "preserved": true
+  },
+  "onlyChangeFromStep14Rule": "window selection: one earliest qualifying window per region → chronological accumulation of earliest qualifying windows (non-overlapping, ≥72 h apart) until the region cohort reaches 10 unique drifters (cap 6 windows). Everything else identical.",
+  "observationPeriod": {
+    "startDate": "2010-01-01",
+    "endDate": "2020-12-31",
+    "inclusive": true
+  },
+  "dailyStartUTC": "12:00",
+  "horizonHours": 72,
+  "regions": [
+    {
+      "id": "GS",
+      "south": 32,
+      "north": 40,
+      "west": -75,
+      "east": -55
+    },
+    {
+      "id": "KE",
+      "south": 30,
+      "north": 40,
+      "west": 135,
+      "east": 160
+    },
+    {
+      "id": "AG",
+      "south": -40,
+      "north": -30,
+      "west": 15,
+      "east": 35
+    },
+    {
+      "id": "BM",
+      "south": -40,
+      "north": -30,
+      "west": -60,
+      "east": -45
+    }
+  ],
+  "eligibility": {
+    "E1": "drogue_lost_date empty or > windowEnd",
+    "E2": "typebuoy in {SVP,SVPB}",
+    "E3": "73 hourly samples t0..t0+72h, consecutive gap <= 1 h, provider gap <= 3600 s",
+    "E4": "nearest Natural Earth 1:10m coastline vertex > 100 km at t0",
+    "E5": "t0 position inside region box; leaving later is not an exclusion"
+  },
+  "advectionCriteria": {
+    "A1": {
+      "threshold": 0.3,
+      "operator": ">=",
+      "unit": "m/s",
+      "definition": "median over eligible of first-observed-displacement / elapsed seconds"
+    },
+    "A2": {
+      "threshold": 40,
+      "operator": ">=",
+      "unit": "km",
+      "definition": "median great-circle displacement t0→t72"
+    },
+    "A3": {
+      "threshold": 90,
+      "operator": "<=",
+      "unit": "deg",
+      "definition": "median min-angle(bearing t0→t24, bearing t24→t72); leg < 1 km → 180"
+    }
+  },
+  "windowQualification": "eligible >= 8 AND A1 AND A2 AND A3",
+  "regionWindowMinimumEligible": 8,
+  "accumulation": {
+    "order": "calendar date ascending within region",
+    "startFrom": "earliest qualifying window",
+    "minimumStartSeparationHours": 72,
+    "stopWhenRegionUniqueDrifters": 10,
+    "maximumWindowsPerRegion": 6,
+    "drifterUniqueness": "an ID already in the region cohort is not added again (counts toward window qualification only)",
+    "rationale": "해역당 최대 6개 window에서 최소 10개의 고유 drifter를 확보하고, 최종적으로 10기 이상을 확보한 해역 중 cohort size가 큰 상위 2개 해역을 선택한다. 최종 총 cohort가 20기 이상이면 PASS이며, 그렇지 않으면 BLOCKED이다.",
+    "overlapStatement": "채택 window 간 직접적인 시간 중첩을 금지하여 temporal overlap을 제거한다. 이후 forcing/model 단계에서 run 간 통계적 독립성은 별도로 검토한다."
+  },
+  "regionCohortMinimum": 10,
+  "requiredRegions": 2,
+  "totalMinimumEligible": 20,
+  "regionSelectionOrder": [
+    "region cohort size after accumulation, descending",
+    "region ID alphabetical"
+  ],
+  "tieBreak": "alphabetical region ID; window order has no ties",
+  "duplicatePolicy": "identical (ID,time) rows collapsed; conflicting rows exclude the drifter (duplicateConflict)",
+  "missingData": "never zero-filled; missing/gap → E3 exclusion for that window; empty quarter files recorded",
+  "coastline": {
+    "file": "docs/research/fixtures/gdp-cohort-step12/ne_10m_coastline.geojson",
+    "sha256": "6f75ae0e0de157b14946e2255eb1f5486d9a13819032e26d4610852d296788f6",
+    "method": "nearest vertex haversine > 100 km"
+  },
+  "observationInputs": {
+    "reuse": "STEP 15 raw files, data/research/step15/noaa-gdp-hourly-qc/ (not committed)",
+    "observationSha256Expected": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+    "newAcquisition": false
+  },
+  "determinism": "two runs on identical inputs must give identical selectionHash, cohort (minus createdAtUTC) and audit; selectionHash excludes timestamps",
+  "forbiddenInputs": [
+    "HYCOM",
+    "GLORYS",
+    "ERA5",
+    "NCEP",
+    "wind",
+    "V1 results",
+    "V2 results",
+    "replay",
+    "evidence",
+    "verdict",
+    "bootstrap",
+    "sensitivity",
+    "model trajectories",
+    "baselines",
+    "STEP 15 per-window counts or dates as selection inputs"
+  ],
+  "postHocGuard": "The only rule change is single-window → chronological accumulation. No criterion targets window size, speed, displacement, a date, a year, a region or a drifter. The designer acknowledges that the committed STEP 15 audit shows qualifying windows exist in all four regions; the rule does not consult that audit and starts from the earliest window regardless of size.",
+  "stopCondition": "fewer than 2 regions reaching 10 unique drifters, or total < 20 → COHORT_SELECTION_BLOCKED; the rule is not modified afterwards",
+  "expectedOutputs": [
+    "docs/research/cohort-step16.json",
+    "docs/research/step16-selection-audit.json",
+    "docs/research/step16-observation-manifest.json",
+    "tools/research/select_step16_cohort.py",
+    "tools/research/check_step16_selection.py"
+  ],
+  "modelBlind": true,
+  "forcingBlind": true,
+  "noModelExecution": true,
+  "cohortSelected": false,
+  "lockedAtUTC": "2026-09-06T03:31:04Z",
+  "observationDataAccessCount": 0,
+  "lockPolicy": "LOCK 이후 rule 내용 수정 금지; 변경은 새 ruleId 로만"
+}

@@ -1,0 +1,705 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "forcing-decomposition-step26",
+  "ruleSha256": "b0ee1dc154998b6d2d140581636a1d11412bd57bceafbf0c0a3980697b91787c",
+  "condition": "D GLORYS_COARSE_DAILY",
+  "algorithm": "glorys-to-hycom-grid-bilinear/1",
+  "derivationScript": {
+    "file": "tools/research/derive_step26_coarse.py",
+    "sha256": "08ee1a70f35eb28984965dec1d7455e5500f7a523f0061520effb076f273f20a"
+  },
+  "windows": [
+    {
+      "windowId": "KE-1",
+      "role": "CALIBRATION",
+      "source": {
+        "file": "data/research/step25c/forcing/KE-1.glorys15.81m.dataset.json",
+        "fileSha256": "5eac44039387614c00d84df59c6805c2d275369cc4c1e25af80c0a23588230eb",
+        "gridSha256": "57e0916e8e4204ed0e07c0c34cb5cd451a018157425b5de9ac1b766d29a484f2",
+        "rawGlorysSha256": "d399a2b586b3eea97838bfc9eab2bf0e58afcd33d07c4e9fcef7b02de033c2dc",
+        "timestamps": [
+          "2010-05-10T00:00:00Z",
+          "2010-05-11T00:00:00Z",
+          "2010-05-12T00:00:00Z",
+          "2010-05-13T00:00:00Z",
+          "2010-05-14T00:00:00Z",
+          "2010-05-15T00:00:00Z"
+        ],
+        "sourceShape": [
+          6,
+          133,
+          264
+        ]
+      },
+      "targetGrid": {
+        "file": "data/research/step17/normalized/KE-1.hycom15m.dataset.json",
+        "axesSha256": "15cfff26d1cc5f80d235b1c368cdd3086c3d074b91e1fa08dc711399d2a01992",
+        "shape": [
+          126,
+          263
+        ],
+        "resolutionDegrees": 0.08,
+        "immutable": true
+      },
+      "interpolation": "bilinear",
+      "algorithm": "glorys-to-hycom-grid-bilinear/1",
+      "maskRule": "target node valid only if all four GLORYS stencil nodes are wet in every frame; otherwise null and landMask=true",
+      "depthMeters": 15.81007,
+      "verticalInterpolation": false,
+      "temporalTransformation": false,
+      "derived": {
+        "file": "data/research/step26/forcing/KE-1.glorys-coarse.dataset.json",
+        "fileSha256": "e5e5e9ae5b61cd8ee7cc8a6fb76e6e6fc9aa101569b4573f3547080ac8c3f248",
+        "gridSha256": "2b3b8a48edcd990aa4bf254bb2a54762b98ca76cd4d2edb256568dc01ed8ea8c",
+        "datasetId": "glorys12v1-coarse-hycomgrid-15.81m-KE-1",
+        "version": "step26-1",
+        "shape": [
+          6,
+          126,
+          263
+        ],
+        "maskedNodes": 121,
+        "fields": [
+          {
+            "timeUTC": "2010-05-10T00:00:00Z",
+            "uSha256": "58cb747fa176f91fdf2a428b911c56cc861d1948a42449591e32a004ef848879",
+            "vSha256": "60b9aed6ea4cac838970bb69fb8ff9c4e82feb9a32979fe190705a99062c7ed2",
+            "sourceTimeUTC": "2010-05-10T00:00:00Z",
+            "dimensions": [
+              126,
+              263
+            ]
+          },
+          {
+            "timeUTC": "2010-05-11T00:00:00Z",
+            "uSha256": "f27315a956fe8feefb5e6962b5b8867b5b9b050c43ab2e88d79a2d7b06869b79",
+            "vSha256": "6c000395a1af9cac1861a369b0cf9731a8caf4fe6628019a888fd18e3e93b43a",
+            "sourceTimeUTC": "2010-05-11T00:00:00Z",
+            "dimensions": [
+              126,
+              263
+            ]
+          },
+          {
+            "timeUTC": "2010-05-12T00:00:00Z",
+            "uSha256": "2b96839c23734f3b51f49aad9cd66ec528558c3c37127eb742817c293d29e801",
+            "vSha256": "ef3450813123fc765d150e557dc0a7b40682f3e5fa4c6c9ffb02db633d028032",
+            "sourceTimeUTC": "2010-05-12T00:00:00Z",
+            "dimensions": [
+              126,
+              263
+            ]
+          },
+          {
+            "timeUTC": "2010-05-13T00:00:00Z",
+            "uSha256": "2ab5589e5b4a782df2a7f4a3a201ac40a4332a22d5c958b257acb1e5ba602605",
+            "vSha256": "3e307de0dff8fa7b24e81580268878434dbb7bddd1aa5085281f6166f3366ce7",
+            "sourceTimeUTC": "2010-05-13T00:00:00Z",
+            "dimensions": [
+              126,
+              263
+            ]
+          },
+          {
+            "timeUTC": "2010-05-14T00:00:00Z",
+            "uSha256": "649100150b25644304992b842978afb28153f45239f2d998072bdf40f01b3284",
+            "vSha256": "2252332d8f3ac598432df2b939d10f28e393320e455e65033105882295907fbe",
+            "sourceTimeUTC": "2010-05-14T00:00:00Z",
+            "dimensions": [
+              126,
+              263
+            ]
+          },
+          {
+            "timeUTC": "2010-05-15T00:00:00Z",
+            "uSha256": "73c3d3c4bb820ef3d81f9bd889165db63cd4c79e7e1ae7679ffad6fcaa1ba3e6",
+            "vSha256": "a70b5702d17023bb24f6fffd5095e82c562bd453d8b33041997527efe9aebf67",
+            "sourceTimeUTC": "2010-05-15T00:00:00Z",
+            "dimensions": [
+              126,
+              263
+            ]
+          }
+        ]
+      },
+      "status": "DERIVED"
+    },
+    {
+      "windowId": "KE-2",
+      "role": "CALIBRATION",
+      "source": {
+        "file": "data/research/step25c/forcing/KE-2.glorys15.81m.dataset.json",
+        "fileSha256": "3c454919b343754740dd861ac8d147282be60392b043771e7f5a7f6407ef28ae",
+        "gridSha256": "99364bcd6a0dd93db4e4c7c09420e03d8cfb29e5d0443c872492b41ac00b30d5",
+        "rawGlorysSha256": "f2ca50183aea583d69e3b73f4609568b221106a7c119a0c8c0bd43d7623f4bbe",
+        "timestamps": [
+          "2010-06-29T00:00:00Z",
+          "2010-06-30T00:00:00Z",
+          "2010-07-01T00:00:00Z",
+          "2010-07-02T00:00:00Z",
+          "2010-07-03T00:00:00Z",
+          "2010-07-04T00:00:00Z"
+        ],
+        "sourceShape": [
+          6,
+          136,
+          267
+        ]
+      },
+      "targetGrid": {
+        "file": "data/research/step17/normalized/KE-2.hycom15m.dataset.json",
+        "axesSha256": "3254be46a0b4c497d36454a2c3c00fc5e3d91d75181b031d1cf32130ca22b0bf",
+        "shape": [
+          130,
+          267
+        ],
+        "resolutionDegrees": 0.08,
+        "immutable": true
+      },
+      "interpolation": "bilinear",
+      "algorithm": "glorys-to-hycom-grid-bilinear/1",
+      "maskRule": "target node valid only if all four GLORYS stencil nodes are wet in every frame; otherwise null and landMask=true",
+      "depthMeters": 15.81007,
+      "verticalInterpolation": false,
+      "temporalTransformation": false,
+      "derived": {
+        "file": "data/research/step26/forcing/KE-2.glorys-coarse.dataset.json",
+        "fileSha256": "449db7a102f142bd1d8934d61c6591a7f6346ea081a3f722858018085cdddc54",
+        "gridSha256": "d866bff77548e23a942366de3c08fb69003f371fece38e12383fb94f1cfd5781",
+        "datasetId": "glorys12v1-coarse-hycomgrid-15.81m-KE-2",
+        "version": "step26-1",
+        "shape": [
+          6,
+          130,
+          267
+        ],
+        "maskedNodes": 3489,
+        "fields": [
+          {
+            "timeUTC": "2010-06-29T00:00:00Z",
+            "uSha256": "d40c3680f07b297ac671f91777f30f49c03a08db1f01377b6eaf40fcdf1d8480",
+            "vSha256": "0eea0151eb912f18fc3273d0d07c256841316f0809e3b3eccb80f9d253b07ed0",
+            "sourceTimeUTC": "2010-06-29T00:00:00Z",
+            "dimensions": [
+              130,
+              267
+            ]
+          },
+          {
+            "timeUTC": "2010-06-30T00:00:00Z",
+            "uSha256": "df8f6f9332e6d449ff3cb39ab9bb28159775274ee0ba93e85afe9c4173b80c1d",
+            "vSha256": "7f38f23c3987b7f7b514dc449caa02d61395c4ad5c75804d799c6ba8bd679883",
+            "sourceTimeUTC": "2010-06-30T00:00:00Z",
+            "dimensions": [
+              130,
+              267
+            ]
+          },
+          {
+            "timeUTC": "2010-07-01T00:00:00Z",
+            "uSha256": "ddb86e3cd81885f9b5044a7aa8d7312a0510e6c387133f05542fa2588dc4351d",
+            "vSha256": "275d63b88ee65d994f511d897bfbb5852aec132fa360d06c7f17816a85887d09",
+            "sourceTimeUTC": "2010-07-01T00:00:00Z",
+            "dimensions": [
+              130,
+              267
+            ]
+          },
+          {
+            "timeUTC": "2010-07-02T00:00:00Z",
+            "uSha256": "fcb6f3f0b5d2afd96bc6ff2d4eaf50b6e9f3f8426f910037c191ce480d6c2fd4",
+            "vSha256": "8c59783a70d17f9ecd44ccf15f1618c43d6d0d3502244b2af988a8585ceef41a",
+            "sourceTimeUTC": "2010-07-02T00:00:00Z",
+            "dimensions": [
+              130,
+              267
+            ]
+          },
+          {
+            "timeUTC": "2010-07-03T00:00:00Z",
+            "uSha256": "a33a3cad870e1b0726bbb8c3299d33245954537914108af62f8a1d916845b1fa",
+            "vSha256": "505f55e5fb4c36f1fd11aa2a3802acb5a001e26e1874460ed14ab5ff09658bb5",
+            "sourceTimeUTC": "2010-07-03T00:00:00Z",
+            "dimensions": [
+              130,
+              267
+            ]
+          },
+          {
+            "timeUTC": "2010-07-04T00:00:00Z",
+            "uSha256": "6f41e654198bfddd6a48525564df9c9f02add70a04b7c18681f411eb36a132b6",
+            "vSha256": "349f1ba40a8f3e71f78ac6011607509a01ff3df787d96d600a8cbe3d0fcfd305",
+            "sourceTimeUTC": "2010-07-04T00:00:00Z",
+            "dimensions": [
+              130,
+              267
+            ]
+          }
+        ]
+      },
+      "status": "DERIVED"
+    },
+    {
+      "windowId": "AG-1",
+      "role": "CALIBRATION",
+      "source": {
+        "file": "data/research/step25c/forcing/AG-1.glorys15.81m.dataset.json",
+        "fileSha256": "a41f03647dcf12c048f92bb389d5ce80340060b4a953051ab0da43394823237c",
+        "gridSha256": "6821bf8fef4cd232353f030f51f836eb06adf331f5a7a6568eaabceca60009e2",
+        "rawGlorysSha256": "87fffab5d0cfc0ff96387be7089b408681ea55a1f87bfba72f7f8f3ccf875759",
+        "timestamps": [
+          "2015-04-22T00:00:00Z",
+          "2015-04-23T00:00:00Z",
+          "2015-04-24T00:00:00Z",
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z"
+        ],
+        "sourceShape": [
+          6,
+          107,
+          177
+        ]
+      },
+      "targetGrid": {
+        "file": "data/research/step17/normalized/AG-1.hycom15m.dataset.json",
+        "axesSha256": "e47d224b29bf95bf0a809ac337bfcfd4c08893d2eead912e6af4a042b6d36ea2",
+        "shape": [
+          99,
+          172
+        ],
+        "resolutionDegrees": 0.08,
+        "immutable": true
+      },
+      "interpolation": "bilinear",
+      "algorithm": "glorys-to-hycom-grid-bilinear/1",
+      "maskRule": "target node valid only if all four GLORYS stencil nodes are wet in every frame; otherwise null and landMask=true",
+      "depthMeters": 15.81007,
+      "verticalInterpolation": false,
+      "temporalTransformation": false,
+      "derived": {
+        "file": "data/research/step26/forcing/AG-1.glorys-coarse.dataset.json",
+        "fileSha256": "0e05362ac6e8a3d10b0aee213305a81a01431c53d395266ba5686318315c212b",
+        "gridSha256": "c438b80fc75fbe0e355ec7bcdf518ba5bf9dfa2cc5b2ade1e8010820e68a5e08",
+        "datasetId": "glorys12v1-coarse-hycomgrid-15.81m-AG-1",
+        "version": "step26-1",
+        "shape": [
+          6,
+          99,
+          172
+        ],
+        "maskedNodes": 3147,
+        "fields": [
+          {
+            "timeUTC": "2015-04-22T00:00:00Z",
+            "uSha256": "59e19e180145fce4f7325bc1674f17424249cd9b25a13facb93f5d74d1ee21ce",
+            "vSha256": "b3042fce52a217c6c8338f5504a301d8abd5d1302d168ee44b2a49c311524ab7",
+            "sourceTimeUTC": "2015-04-22T00:00:00Z",
+            "dimensions": [
+              99,
+              172
+            ]
+          },
+          {
+            "timeUTC": "2015-04-23T00:00:00Z",
+            "uSha256": "fe213122aea52d791fa81982d38e6a19eb44d00b00c9fa34d06d9797d8a09213",
+            "vSha256": "30368ede7b4a3cb5949fa22e1f95b362829421b91e81a1819a47f005886f4177",
+            "sourceTimeUTC": "2015-04-23T00:00:00Z",
+            "dimensions": [
+              99,
+              172
+            ]
+          },
+          {
+            "timeUTC": "2015-04-24T00:00:00Z",
+            "uSha256": "8e8faaffa78f9f2d8659cf3e5a6eeddd5757ef08dda07e35fa8dda320d4a265f",
+            "vSha256": "d9730e66e7fdca6ba1790b099fe234c8a2b2db43140885625d4ab47a27b4194a",
+            "sourceTimeUTC": "2015-04-24T00:00:00Z",
+            "dimensions": [
+              99,
+              172
+            ]
+          },
+          {
+            "timeUTC": "2015-04-25T00:00:00Z",
+            "uSha256": "5344059f1ef7760b63a7cffca879c31035be45fd8fd68bd163ac8c45d977a449",
+            "vSha256": "f878cea398a597e712d5f099f5208c8d27cf81ba8b17460e6e427de38967d865",
+            "sourceTimeUTC": "2015-04-25T00:00:00Z",
+            "dimensions": [
+              99,
+              172
+            ]
+          },
+          {
+            "timeUTC": "2015-04-26T00:00:00Z",
+            "uSha256": "fed44ae424e9ca7c252d3ef929a02cf2b79ca893bd88b7889fa2b4cbfa174775",
+            "vSha256": "7b22b712d5c7ecc6cee67a4d2c2b9dd8de02b70eadb3f88ae180c54cc4a6c253",
+            "sourceTimeUTC": "2015-04-26T00:00:00Z",
+            "dimensions": [
+              99,
+              172
+            ]
+          },
+          {
+            "timeUTC": "2015-04-27T00:00:00Z",
+            "uSha256": "bba4052a3c5e52545cbb37ece40c6a531402a4691f648b5667e63187176e0236",
+            "vSha256": "b5d3b8bb319920490be56edba6139c10e69cb8c62788cf982796d863d16407c4",
+            "sourceTimeUTC": "2015-04-27T00:00:00Z",
+            "dimensions": [
+              99,
+              172
+            ]
+          }
+        ]
+      },
+      "status": "DERIVED"
+    },
+    {
+      "windowId": "AG-2",
+      "role": "CALIBRATION",
+      "source": {
+        "file": "data/research/step25c/forcing/AG-2.glorys15.81m.dataset.json",
+        "fileSha256": "27de6bdf0d7284aa5989f3c0c75d08b61eb3776dbf1b93c0ec055bdff42bb2bb",
+        "gridSha256": "96894ed4c1b40a0d5db94d3cdcbab83f8a4d4502342ac983ae84eda4e97d0a26",
+        "rawGlorysSha256": "595c2bace7156f3dab92698a251e29a87920eb4d2375cc730fbdf69562cc9b25",
+        "timestamps": [
+          "2015-04-25T00:00:00Z",
+          "2015-04-26T00:00:00Z",
+          "2015-04-27T00:00:00Z",
+          "2015-04-28T00:00:00Z",
+          "2015-04-29T00:00:00Z",
+          "2015-04-30T00:00:00Z"
+        ],
+        "sourceShape": [
+          6,
+          60,
+          60
+        ]
+      },
+      "targetGrid": {
+        "file": "data/research/step17/normalized/AG-2.hycom15m.dataset.json",
+        "axesSha256": "bb718e28a7e51de7eea992c939bf5af871f90afbc810ca54945b6ae5bd7b44da",
+        "shape": [
+          51,
+          51
+        ],
+        "resolutionDegrees": 0.08,
+        "immutable": true
+      },
+      "interpolation": "bilinear",
+      "algorithm": "glorys-to-hycom-grid-bilinear/1",
+      "maskRule": "target node valid only if all four GLORYS stencil nodes are wet in every frame; otherwise null and landMask=true",
+      "depthMeters": 15.81007,
+      "verticalInterpolation": false,
+      "temporalTransformation": false,
+      "derived": {
+        "file": "data/research/step26/forcing/AG-2.glorys-coarse.dataset.json",
+        "fileSha256": "68af9bd1b84f31430c245ab30a0cc01f9971edb51c38100c8a7925020d4aac10",
+        "gridSha256": "fbe9ebd739324ac09e519f2afa9b5e97c89cae1d34c8671470b2aaa73f865429",
+        "datasetId": "glorys12v1-coarse-hycomgrid-15.81m-AG-2",
+        "version": "step26-1",
+        "shape": [
+          6,
+          51,
+          51
+        ],
+        "maskedNodes": 6,
+        "fields": [
+          {
+            "timeUTC": "2015-04-25T00:00:00Z",
+            "uSha256": "c1b5c966b331df61d6407137d9305433c0291df2055661229dda755535465345",
+            "vSha256": "3fd8b5e9fc1face9e712c079af6831309f13f3eb3d5d75e0f8155271c18cb82e",
+            "sourceTimeUTC": "2015-04-25T00:00:00Z",
+            "dimensions": [
+              51,
+              51
+            ]
+          },
+          {
+            "timeUTC": "2015-04-26T00:00:00Z",
+            "uSha256": "c369737a14c941b0b6891a837d89225b6a4d4f33efd85fa011b61fe12ba0030d",
+            "vSha256": "4957fbb15e5928183bbb351f1d8712c39851418d3e2670b18a5a264577fc1aa5",
+            "sourceTimeUTC": "2015-04-26T00:00:00Z",
+            "dimensions": [
+              51,
+              51
+            ]
+          },
+          {
+            "timeUTC": "2015-04-27T00:00:00Z",
+            "uSha256": "b682e2db3b42d64f17e0258d32e357cee0f5b99974c27e90b8e8b6244316d8a1",
+            "vSha256": "4f527dfe0853d89a5c9edfb35fb8cccf8b32e638c219c5edf6685c0d5b6ffd14",
+            "sourceTimeUTC": "2015-04-27T00:00:00Z",
+            "dimensions": [
+              51,
+              51
+            ]
+          },
+          {
+            "timeUTC": "2015-04-28T00:00:00Z",
+            "uSha256": "bd62bb97b437e0c8c3d8d634ba095950a863b00b55e06246dc918afe77e368cd",
+            "vSha256": "280d8e7f5cf6c55f6af7e6c291fb39daa32d84653ab3c950268692a39b8518a8",
+            "sourceTimeUTC": "2015-04-28T00:00:00Z",
+            "dimensions": [
+              51,
+              51
+            ]
+          },
+          {
+            "timeUTC": "2015-04-29T00:00:00Z",
+            "uSha256": "d260f6e1ae14d414ed2d21daa92113b40d636cd1a51c6aff60e18338e1538b56",
+            "vSha256": "b8f0a27077b7c407ae0975b3c5918d4b5cdd47d82a9b3fe26a807f7f00bffdc9",
+            "sourceTimeUTC": "2015-04-29T00:00:00Z",
+            "dimensions": [
+              51,
+              51
+            ]
+          },
+          {
+            "timeUTC": "2015-04-30T00:00:00Z",
+            "uSha256": "cd9d0ed5bebae813db51ca9fb27c28e7e38ec8db2a9dbbd45312dbbfcba0897a",
+            "vSha256": "466c763e4684d9d54e336ef509129d57f31ccbdbb956ea613d40d144a9ec36ec",
+            "sourceTimeUTC": "2015-04-30T00:00:00Z",
+            "dimensions": [
+              51,
+              51
+            ]
+          }
+        ]
+      },
+      "status": "DERIVED"
+    },
+    {
+      "windowId": "KE-H1",
+      "role": "HOLDOUT",
+      "source": {
+        "file": "data/research/step25c/forcing/KE-H1.glorys15.81m.dataset.json",
+        "fileSha256": "5cd22aece73dbb1d613ad99535d93b09b417b22ce300b2d3bfe79670e2656f16",
+        "gridSha256": "e12142bace085deb9a83837334205d8d26c33c13cef9b06be3525c7a738bf1b5",
+        "rawGlorysSha256": "5fcb3b013aa4f0fa8dabf516ea2ef9d669f7009aceb5d960c339e92f4debcb25",
+        "timestamps": [
+          "2010-08-09T00:00:00Z",
+          "2010-08-10T00:00:00Z",
+          "2010-08-11T00:00:00Z",
+          "2010-08-12T00:00:00Z",
+          "2010-08-13T00:00:00Z",
+          "2010-08-14T00:00:00Z"
+        ],
+        "sourceShape": [
+          6,
+          129,
+          331
+        ]
+      },
+      "targetGrid": {
+        "file": "data/research/step20/holdout/forcing/normalized/KE-H1.hycom15m.chunkA.dataset.json",
+        "axesSha256": "077bbce052678115c597bd4e00c335319fdb603ced63952c1de692fed96bb821",
+        "shape": [
+          123,
+          333
+        ],
+        "resolutionDegrees": 0.08,
+        "immutable": true
+      },
+      "interpolation": "bilinear",
+      "algorithm": "glorys-to-hycom-grid-bilinear/1",
+      "maskRule": "target node valid only if all four GLORYS stencil nodes are wet in every frame; otherwise null and landMask=true",
+      "depthMeters": 15.81007,
+      "verticalInterpolation": false,
+      "temporalTransformation": false,
+      "derived": {
+        "file": "data/research/step26/forcing/KE-H1.glorys-coarse.dataset.json",
+        "fileSha256": "aae54069c89968d601df1500c6719466a81d04e392683e67123b35da004b7c4b",
+        "gridSha256": "a14913f44df259b33f097553b95b9cc1fad3d6340337aac052e7ad84be6738e6",
+        "datasetId": "glorys12v1-coarse-hycomgrid-15.81m-KE-H1",
+        "version": "step26-1",
+        "shape": [
+          6,
+          123,
+          333
+        ],
+        "maskedNodes": 2986,
+        "fields": [
+          {
+            "timeUTC": "2010-08-09T00:00:00Z",
+            "uSha256": "7df82dcf2ad9055d3640937a3fdae8ba0277fc81683c9637a5e583f9eb56707e",
+            "vSha256": "61d58e605a8b2c770baf6d176ee05de84b752d901ae8fabb5f85a21c70038661",
+            "sourceTimeUTC": "2010-08-09T00:00:00Z",
+            "dimensions": [
+              123,
+              333
+            ]
+          },
+          {
+            "timeUTC": "2010-08-10T00:00:00Z",
+            "uSha256": "fc9860745061b67413d3cddc2e576111d5cef39b051538968f6a6d7617d02b76",
+            "vSha256": "987598af608fabe995a2ca509f35cda0a28ee4f0f083f64c2010a05fe57385f7",
+            "sourceTimeUTC": "2010-08-10T00:00:00Z",
+            "dimensions": [
+              123,
+              333
+            ]
+          },
+          {
+            "timeUTC": "2010-08-11T00:00:00Z",
+            "uSha256": "2c723aa69458913dfbb93c659a40523404553596cfe31843f01fef6fc8e00074",
+            "vSha256": "749a86be4b4f4d83a3b2c6362cba30dd7e4b6f64514df6f4f5c173467463e14f",
+            "sourceTimeUTC": "2010-08-11T00:00:00Z",
+            "dimensions": [
+              123,
+              333
+            ]
+          },
+          {
+            "timeUTC": "2010-08-12T00:00:00Z",
+            "uSha256": "d7aa41387ce3cf95a29b14551f5f91beedc276ca11987ad0648fb0d80989288d",
+            "vSha256": "46712a2c61348ef0c2010715faf65167178fa203fa973253319c0852f2f55f50",
+            "sourceTimeUTC": "2010-08-12T00:00:00Z",
+            "dimensions": [
+              123,
+              333
+            ]
+          },
+          {
+            "timeUTC": "2010-08-13T00:00:00Z",
+            "uSha256": "e9382b32d7863110e70b36a699a28b54e229400b8539ee59b2236c676832d633",
+            "vSha256": "82520d34d6a00fb63df78a6e9d6c6a06acddf9e1d854df66b3747d3de6571b7e",
+            "sourceTimeUTC": "2010-08-13T00:00:00Z",
+            "dimensions": [
+              123,
+              333
+            ]
+          },
+          {
+            "timeUTC": "2010-08-14T00:00:00Z",
+            "uSha256": "121ef616c8d128d65cb42a39ba8323fcab7b733ba5c3234b63623baff8f712be",
+            "vSha256": "6ea51792912b9fa3b0941856a430f9f14308fc6eb0d8de0869a7bfb4b8f23a33",
+            "sourceTimeUTC": "2010-08-14T00:00:00Z",
+            "dimensions": [
+              123,
+              333
+            ]
+          }
+        ]
+      },
+      "status": "DERIVED"
+    },
+    {
+      "windowId": "KE-H3",
+      "role": "HOLDOUT",
+      "source": {
+        "file": "data/research/step25c/forcing/KE-H3.glorys15.81m.dataset.json",
+        "fileSha256": "f3955b90eb1c2715accc8675d8a8338b3816434d96a70754bc7d5fe3f70cc059",
+        "gridSha256": "f00cb7fec7d318234f7ed6dd2af3c92f332b92cb076d82cec947ea300735421f",
+        "rawGlorysSha256": "403ed3a5b4b2882d6f1a102d2edea299ae9436598b250a46e0c0bcb834c10152",
+        "timestamps": [
+          "2010-11-14T00:00:00Z",
+          "2010-11-15T00:00:00Z",
+          "2010-11-16T00:00:00Z",
+          "2010-11-17T00:00:00Z",
+          "2010-11-18T00:00:00Z",
+          "2010-11-19T00:00:00Z"
+        ],
+        "sourceShape": [
+          6,
+          144,
+          192
+        ]
+      },
+      "targetGrid": {
+        "file": "data/research/step20/holdout/forcing/normalized/KE-H3.hycom15m.dataset.json",
+        "axesSha256": "3f6b04aebe29a618cd8c6b573ef04a7eb51f4a99fb7abc88308283ebdb03b553",
+        "shape": [
+          138,
+          189
+        ],
+        "resolutionDegrees": 0.08,
+        "immutable": true
+      },
+      "interpolation": "bilinear",
+      "algorithm": "glorys-to-hycom-grid-bilinear/1",
+      "maskRule": "target node valid only if all four GLORYS stencil nodes are wet in every frame; otherwise null and landMask=true",
+      "depthMeters": 15.81007,
+      "verticalInterpolation": false,
+      "temporalTransformation": false,
+      "derived": {
+        "file": "data/research/step26/forcing/KE-H3.glorys-coarse.dataset.json",
+        "fileSha256": "374a88cdfc4fc638bc9d1a1d9119e233420b2d901d791227304e40f671791404",
+        "gridSha256": "4975df68c4a7f9cce23369b035213b8e76f5a2d8d5cebe5a06aec3f02228acbb",
+        "datasetId": "glorys12v1-coarse-hycomgrid-15.81m-KE-H3",
+        "version": "step26-1",
+        "shape": [
+          6,
+          138,
+          189
+        ],
+        "maskedNodes": 222,
+        "fields": [
+          {
+            "timeUTC": "2010-11-14T00:00:00Z",
+            "uSha256": "e96fe2381e4ba4ff6cfd2cec074e959d2a2d1cc581dab91c8465e232d0b2803b",
+            "vSha256": "8f343a5c62bd41c5ef78481cc3af89be05aa00d98add23b1c176963dda306cbd",
+            "sourceTimeUTC": "2010-11-14T00:00:00Z",
+            "dimensions": [
+              138,
+              189
+            ]
+          },
+          {
+            "timeUTC": "2010-11-15T00:00:00Z",
+            "uSha256": "bbd4a8b731c358f7479333a67182dcd1979aee0cbde9fadb12bbf4068a4a2df8",
+            "vSha256": "2b46793c92e06d8bd4d6cb20cdd4a5e514742feb0552c01d739a9409d3d9150c",
+            "sourceTimeUTC": "2010-11-15T00:00:00Z",
+            "dimensions": [
+              138,
+              189
+            ]
+          },
+          {
+            "timeUTC": "2010-11-16T00:00:00Z",
+            "uSha256": "91f00a89869273ff1181af84b11424374286ee21f5cbfef819888c202e2d6084",
+            "vSha256": "042d446d5c0fc7d901c6cc7601a7b934502cca51bf9c25f223118d5cf8153e05",
+            "sourceTimeUTC": "2010-11-16T00:00:00Z",
+            "dimensions": [
+              138,
+              189
+            ]
+          },
+          {
+            "timeUTC": "2010-11-17T00:00:00Z",
+            "uSha256": "cc719f7ced476b4561d1423a0870188d6f04be62388e87fd5cc1edc5216d9cf6",
+            "vSha256": "1935f495d390459aac4f0ae6ebc89373c1008afad2e0e356c1673bc83d446e9d",
+            "sourceTimeUTC": "2010-11-17T00:00:00Z",
+            "dimensions": [
+              138,
+              189
+            ]
+          },
+          {
+            "timeUTC": "2010-11-18T00:00:00Z",
+            "uSha256": "cd917801ed59e4fa9a24012d98a28473bcd9673e0514989384144aa19c8ce28b",
+            "vSha256": "60345571187dd2e9f47c80d101a1042c6676b34347f3b8d6401db262e27b539d",
+            "sourceTimeUTC": "2010-11-18T00:00:00Z",
+            "dimensions": [
+              138,
+              189
+            ]
+          },
+          {
+            "timeUTC": "2010-11-19T00:00:00Z",
+            "uSha256": "239c2704491eca93bd13b15d4aa3cf23c3d563b4bed6b0fec9f7c2661e201dc3",
+            "vSha256": "3d689e259a66787ffdfc72f6739fdd6f6d2457edb27e445bb365429fc69fcd28",
+            "sourceTimeUTC": "2010-11-19T00:00:00Z",
+            "dimensions": [
+              138,
+              189
+            ]
+          }
+        ]
+      },
+      "status": "DERIVED"
+    }
+  ],
+  "windowCount": 6,
+  "modelRunCount": 0
+}

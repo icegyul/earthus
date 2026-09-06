@@ -1,0 +1,4569 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "forcing-decomposition-step26",
+  "phase": "B",
+  "status": "EVALUATION_COMPLETE",
+  "ruleSha256": "b0ee1dc154998b6d2d140581636a1d11412bd57bceafbf0c0a3980697b91787c",
+  "phaseBPreregistrationSha256": "c43e2f0ffe5a288de2d876bc6bd504a394a1b1cfabf0df77b390b2f10d786a8b",
+  "runManifestSha256": "b4c01e83c979bee89563f8d05aba0289020bd34af30bdf52c151e0700a9f110e",
+  "derivedForcingManifestSha256": "82ec1df67d17fe93ed4331bd8acaf0058b11d64b746ef67b7b70ea9a878464d8",
+  "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+  "inputFileShas": [
+    {
+      "window": "AG-1",
+      "condition": "A",
+      "file": "data/research/step20/calibration/AG-1/alpha0.002.trajectories.csv",
+      "expected": "58f9ca262b7e74d1fba1daac951b51e9f32847e7b500ec87bb9e7d75f716976b",
+      "actual": "58f9ca262b7e74d1fba1daac951b51e9f32847e7b500ec87bb9e7d75f716976b",
+      "verified": true
+    },
+    {
+      "window": "AG-1",
+      "condition": "C",
+      "file": "data/research/step26/trajectories/C/AG-1/alpha0.002.trajectories.csv",
+      "expected": "ffcc7a66ac8e6c32ed3ae964ee5a51286de315cdc726596550312d4472ae6dff",
+      "actual": "ffcc7a66ac8e6c32ed3ae964ee5a51286de315cdc726596550312d4472ae6dff",
+      "verified": true
+    },
+    {
+      "window": "AG-1",
+      "condition": "D",
+      "file": "data/research/step26/trajectories/D/AG-1/alpha0.002.trajectories.csv",
+      "expected": "43182e7ff84446fb57c71c7d4e1da8d5c5b6dc39d30373ef64cf82b87cf25dbd",
+      "actual": "43182e7ff84446fb57c71c7d4e1da8d5c5b6dc39d30373ef64cf82b87cf25dbd",
+      "verified": true
+    },
+    {
+      "window": "AG-2",
+      "condition": "A",
+      "file": "data/research/step20/calibration/AG-2/alpha0.002.trajectories.csv",
+      "expected": "afc98cf9d2e1d66f97d1c3f2637ae9c0e7c24bdfdade8d2dc785a10f990ba0e2",
+      "actual": "afc98cf9d2e1d66f97d1c3f2637ae9c0e7c24bdfdade8d2dc785a10f990ba0e2",
+      "verified": true
+    },
+    {
+      "window": "AG-2",
+      "condition": "C",
+      "file": "data/research/step26/trajectories/C/AG-2/alpha0.002.trajectories.csv",
+      "expected": "65f82484abcb1cb13165192fd0a63af731c6c8b22d1ae7b050be6c257aa317a6",
+      "actual": "65f82484abcb1cb13165192fd0a63af731c6c8b22d1ae7b050be6c257aa317a6",
+      "verified": true
+    },
+    {
+      "window": "AG-2",
+      "condition": "D",
+      "file": "data/research/step26/trajectories/D/AG-2/alpha0.002.trajectories.csv",
+      "expected": "fb3eae9cc6ef44da14d3c69a38fd6e1f95ec72e85729a64ca852d3a2b19db3ed",
+      "actual": "fb3eae9cc6ef44da14d3c69a38fd6e1f95ec72e85729a64ca852d3a2b19db3ed",
+      "verified": true
+    },
+    {
+      "window": "KE-1",
+      "condition": "A",
+      "file": "data/research/step20/calibration/KE-1/alpha0.002.trajectories.csv",
+      "expected": "cc38b0d7fd171f187b990f16f9ab3a18d836ea2a7a6913e0d8dce996a1915069",
+      "actual": "cc38b0d7fd171f187b990f16f9ab3a18d836ea2a7a6913e0d8dce996a1915069",
+      "verified": true
+    },
+    {
+      "window": "KE-1",
+      "condition": "C",
+      "file": "data/research/step26/trajectories/C/KE-1/alpha0.002.trajectories.csv",
+      "expected": "28beaa8ba8d179653447df8b037b330a85221ebf78a374447c4f0f6da7f2cdb8",
+      "actual": "28beaa8ba8d179653447df8b037b330a85221ebf78a374447c4f0f6da7f2cdb8",
+      "verified": true
+    },
+    {
+      "window": "KE-1",
+      "condition": "D",
+      "file": "data/research/step26/trajectories/D/KE-1/alpha0.002.trajectories.csv",
+      "expected": "86feebb9de6858e23026dbe2fb94bc655d6b58ac11ce14320083c5da33930e23",
+      "actual": "86feebb9de6858e23026dbe2fb94bc655d6b58ac11ce14320083c5da33930e23",
+      "verified": true
+    },
+    {
+      "window": "KE-2",
+      "condition": "A",
+      "file": "data/research/step20/calibration/KE-2/alpha0.002.trajectories.csv",
+      "expected": "e2c8ca1336b3ef967e08a2b641579158e61617ec5c0b770762919769b416aa99",
+      "actual": "e2c8ca1336b3ef967e08a2b641579158e61617ec5c0b770762919769b416aa99",
+      "verified": true
+    },
+    {
+      "window": "KE-2",
+      "condition": "C",
+      "file": "data/research/step26/trajectories/C/KE-2/alpha0.002.trajectories.csv",
+      "expected": "76453cd5aca6be80c27a39c6a47627ef6074e25930a7a41dcff149c60bcb3839",
+      "actual": "76453cd5aca6be80c27a39c6a47627ef6074e25930a7a41dcff149c60bcb3839",
+      "verified": true
+    },
+    {
+      "window": "KE-2",
+      "condition": "D",
+      "file": "data/research/step26/trajectories/D/KE-2/alpha0.002.trajectories.csv",
+      "expected": "317a304e2798534c01f835e76065bf5b3a756e749850ec879b2be0f797b6b1b4",
+      "actual": "317a304e2798534c01f835e76065bf5b3a756e749850ec879b2be0f797b6b1b4",
+      "verified": true
+    },
+    {
+      "window": "KE-H1",
+      "condition": "A",
+      "file": "data/research/step20/holdout/trajectories/KE-H1/alpha0.002.trajectories.csv",
+      "expected": "5f68152824cf8b548187181fed37b06b6c3b3482d024c72ecd1ce679bc580d18",
+      "actual": "5f68152824cf8b548187181fed37b06b6c3b3482d024c72ecd1ce679bc580d18",
+      "verified": true
+    },
+    {
+      "window": "KE-H1",
+      "condition": "C",
+      "file": "data/research/step26/trajectories/C/KE-H1/alpha0.002.trajectories.csv",
+      "expected": "4e88e819590cdb264d6145b3f0d3e084a3c0c5cb7c434a750af20046d8a160c8",
+      "actual": "4e88e819590cdb264d6145b3f0d3e084a3c0c5cb7c434a750af20046d8a160c8",
+      "verified": true
+    },
+    {
+      "window": "KE-H1",
+      "condition": "D",
+      "file": "data/research/step26/trajectories/D/KE-H1/alpha0.002.trajectories.csv",
+      "expected": "f72aa148756222c5c79460ea63b5d57aaa831f33eb9a331e2cfccbf749a25ada",
+      "actual": "f72aa148756222c5c79460ea63b5d57aaa831f33eb9a331e2cfccbf749a25ada",
+      "verified": true
+    },
+    {
+      "window": "KE-H3",
+      "condition": "A",
+      "file": "data/research/step20/holdout/trajectories/KE-H3/alpha0.002.trajectories.csv",
+      "expected": "00d9db9f183b53e2d7261cc42e4db997a06b7b8b9d0a1e421f73f4517a723fd6",
+      "actual": "00d9db9f183b53e2d7261cc42e4db997a06b7b8b9d0a1e421f73f4517a723fd6",
+      "verified": true
+    },
+    {
+      "window": "KE-H3",
+      "condition": "C",
+      "file": "data/research/step26/trajectories/C/KE-H3/alpha0.002.trajectories.csv",
+      "expected": "1f6b3554db7419d45a15010920bd37bf8c0899f0ca417b259c8224804bc8071c",
+      "actual": "1f6b3554db7419d45a15010920bd37bf8c0899f0ca417b259c8224804bc8071c",
+      "verified": true
+    },
+    {
+      "window": "KE-H3",
+      "condition": "D",
+      "file": "data/research/step26/trajectories/D/KE-H3/alpha0.002.trajectories.csv",
+      "expected": "4e7e2fe6cc287ad9de3d056a1880c25d4b9876c2ef9e9e5204106dff5b1c2b9d",
+      "actual": "4e7e2fe6cc287ad9de3d056a1880c25d4b9876c2ef9e9e5204106dff5b1c2b9d",
+      "verified": true
+    }
+  ],
+  "perDrifter": [
+    {
+      "drifter_id": "127198",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_A_24h": 143.319,
+      "error_C_24h": 69.677,
+      "error_D_24h": 69.906,
+      "delta_spatial_24h": -0.229,
+      "delta_product_24h": -73.642,
+      "error_A_48h": 238.223,
+      "error_C_48h": 124.876,
+      "error_D_48h": 124.692,
+      "delta_spatial_48h": 0.184,
+      "delta_product_48h": -113.348,
+      "error_A_72h": 323.38,
+      "error_C_72h": 147.7,
+      "error_D_72h": 147.879,
+      "delta_spatial_72h": -0.179,
+      "delta_product_72h": -175.68,
+      "endpoint_A_72h": 210.616,
+      "path_A": 241.654,
+      "endpoint_C_72h": 166.876,
+      "path_C": 181.07,
+      "endpoint_D_72h": 166.788,
+      "path_D": 181.003,
+      "M4_C_D_sep72h": 0.269,
+      "M4_C_A_sep72h": 257.165,
+      "observed_72h": 308.466
+    },
+    {
+      "drifter_id": "127199",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_A_24h": 144.38,
+      "error_C_24h": 71.146,
+      "error_D_24h": 71.353,
+      "delta_spatial_24h": -0.207,
+      "delta_product_24h": -73.234,
+      "error_A_48h": 237.391,
+      "error_C_48h": 125.036,
+      "error_D_48h": 124.804,
+      "delta_spatial_48h": 0.232,
+      "delta_product_48h": -112.355,
+      "error_A_72h": 319.828,
+      "error_C_72h": 146.416,
+      "error_D_72h": 146.493,
+      "delta_spatial_72h": -0.077,
+      "delta_product_72h": -173.412,
+      "endpoint_A_72h": 209.404,
+      "path_A": 240.659,
+      "endpoint_C_72h": 168.361,
+      "path_C": 182.888,
+      "endpoint_D_72h": 168.395,
+      "path_D": 182.937,
+      "M4_C_D_sep72h": 0.287,
+      "M4_C_A_sep72h": 254.082,
+      "observed_72h": 308.854
+    },
+    {
+      "drifter_id": "127272",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_A_24h": 27.47,
+      "error_C_24h": 18.05,
+      "error_D_24h": 18.32,
+      "delta_spatial_24h": -0.271,
+      "delta_product_24h": -9.42,
+      "error_A_48h": 55.056,
+      "error_C_48h": 52.823,
+      "error_D_48h": 52.586,
+      "delta_spatial_48h": 0.237,
+      "delta_product_48h": -2.234,
+      "error_A_72h": 106.115,
+      "error_C_72h": 96.523,
+      "error_D_72h": 95.638,
+      "delta_spatial_72h": 0.885,
+      "delta_product_72h": -9.592,
+      "endpoint_A_72h": 186.183,
+      "path_A": 188.312,
+      "endpoint_C_72h": 168.331,
+      "path_C": 168.387,
+      "endpoint_D_72h": 167.447,
+      "path_D": 167.494,
+      "M4_C_D_sep72h": 0.894,
+      "M4_C_A_sep72h": 47.863,
+      "observed_72h": 80.755
+    },
+    {
+      "drifter_id": "127313",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_A_24h": 63.55,
+      "error_C_24h": 131.891,
+      "error_D_24h": 131.213,
+      "delta_spatial_24h": 0.678,
+      "delta_product_24h": 68.341,
+      "error_A_48h": 142.936,
+      "error_C_48h": 289.961,
+      "error_D_48h": 287.687,
+      "delta_spatial_48h": 2.275,
+      "delta_product_48h": 147.026,
+      "error_A_72h": 238.212,
+      "error_C_72h": 416.26,
+      "error_D_72h": 411.548,
+      "delta_spatial_72h": 4.713,
+      "delta_product_72h": 178.048,
+      "endpoint_A_72h": 240.965,
+      "path_A": 255.853,
+      "endpoint_C_72h": 54.514,
+      "path_C": 54.842,
+      "endpoint_D_72h": 58.617,
+      "path_D": 59.136,
+      "M4_C_D_sep72h": 4.992,
+      "M4_C_A_sep72h": 227.955,
+      "observed_72h": 449.489
+    },
+    {
+      "drifter_id": "127314",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_A_24h": 47.299,
+      "error_C_24h": 45.859,
+      "error_D_24h": 45.866,
+      "delta_spatial_24h": -0.007,
+      "delta_product_24h": -1.441,
+      "error_A_48h": 60.676,
+      "error_C_48h": 77.404,
+      "error_D_48h": 77.469,
+      "delta_spatial_48h": -0.066,
+      "delta_product_48h": 16.727,
+      "error_A_72h": 45.89,
+      "error_C_72h": 63.504,
+      "error_D_72h": 63.507,
+      "delta_spatial_72h": -0.004,
+      "delta_product_72h": 17.614,
+      "endpoint_A_72h": 128.458,
+      "path_A": 166.418,
+      "endpoint_C_72h": 131.752,
+      "path_C": 167.418,
+      "endpoint_D_72h": 131.658,
+      "path_D": 167.265,
+      "M4_C_D_sep72h": 0.134,
+      "M4_C_A_sep72h": 22.13,
+      "observed_72h": 98.763
+    },
+    {
+      "drifter_id": "127315",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_A_24h": 23.293,
+      "error_C_24h": 34.539,
+      "error_D_24h": 33.62,
+      "delta_spatial_24h": 0.919,
+      "delta_product_24h": 11.246,
+      "error_A_48h": 44.649,
+      "error_C_48h": 83.472,
+      "error_D_48h": 82.25,
+      "delta_spatial_48h": 1.222,
+      "delta_product_48h": 38.823,
+      "error_A_72h": 56.37,
+      "error_C_72h": 143.744,
+      "error_D_72h": 141.369,
+      "delta_spatial_72h": 2.376,
+      "delta_product_72h": 87.374,
+      "endpoint_A_72h": 182.984,
+      "path_A": 186.979,
+      "endpoint_C_72h": 323.313,
+      "path_C": 332.85,
+      "endpoint_D_72h": 321.023,
+      "path_D": 330.371,
+      "M4_C_D_sep72h": 2.472,
+      "M4_C_A_sep72h": 169.759,
+      "observed_72h": 181.032
+    },
+    {
+      "drifter_id": "132511",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_A_24h": 39.952,
+      "error_C_24h": 45.029,
+      "error_D_24h": 45.539,
+      "delta_spatial_24h": -0.51,
+      "delta_product_24h": 5.077,
+      "error_A_48h": 55.875,
+      "error_C_48h": 99.332,
+      "error_D_48h": 100.915,
+      "delta_spatial_48h": -1.582,
+      "delta_product_48h": 43.458,
+      "error_A_72h": 105.167,
+      "error_C_72h": 151.207,
+      "error_D_72h": 154.545,
+      "delta_spatial_72h": -3.338,
+      "delta_product_72h": 46.041,
+      "endpoint_A_72h": 122.398,
+      "path_A": 125.485,
+      "endpoint_C_72h": 238.377,
+      "path_C": 248.764,
+      "endpoint_D_72h": 241.67,
+      "path_D": 252.12,
+      "M4_C_D_sep72h": 3.343,
+      "M4_C_A_sep72h": 224.392,
+      "observed_72h": 90.051
+    },
+    {
+      "drifter_id": "132528",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_A_24h": 25.126,
+      "error_C_24h": 41.109,
+      "error_D_24h": 40.438,
+      "delta_spatial_24h": 0.671,
+      "delta_product_24h": 15.983,
+      "error_A_48h": 19.304,
+      "error_C_48h": 99.499,
+      "error_D_48h": 98.382,
+      "delta_spatial_48h": 1.117,
+      "delta_product_48h": 80.195,
+      "error_A_72h": 65.919,
+      "error_C_72h": 66.626,
+      "error_D_72h": 65.173,
+      "delta_spatial_72h": 1.452,
+      "delta_product_72h": 0.706,
+      "endpoint_A_72h": 146.033,
+      "path_A": 152.088,
+      "endpoint_C_72h": 19.203,
+      "path_C": 24.573,
+      "endpoint_D_72h": 20.443,
+      "path_D": 24.701,
+      "M4_C_D_sep72h": 1.933,
+      "M4_C_A_sep72h": 126.899,
+      "observed_72h": 85.528
+    },
+    {
+      "drifter_id": "132634",
+      "unit": "AG-1",
+      "role": "CALIBRATION",
+      "error_A_24h": 34.178,
+      "error_C_24h": 27.383,
+      "error_D_24h": 27.489,
+      "delta_spatial_24h": -0.106,
+      "delta_product_24h": -6.795,
+      "error_A_48h": 75.794,
+      "error_C_48h": 53.507,
+      "error_D_48h": 53.727,
+      "delta_spatial_48h": -0.22,
+      "delta_product_48h": -22.287,
+      "error_A_72h": 123.195,
+      "error_C_72h": 101.496,
+      "error_D_72h": 102.127,
+      "delta_spatial_72h": -0.631,
+      "delta_product_72h": -21.699,
+      "endpoint_A_72h": 88.772,
+      "path_A": 108.383,
+      "endpoint_C_72h": 124.846,
+      "path_C": 156.945,
+      "endpoint_D_72h": 124.694,
+      "path_D": 156.339,
+      "M4_C_D_sep72h": 0.726,
+      "M4_C_A_sep72h": 47.723,
+      "observed_72h": 135.1
+    },
+    {
+      "drifter_id": "127281",
+      "unit": "AG-2",
+      "role": "CALIBRATION",
+      "error_A_24h": 116.865,
+      "error_C_24h": 28.432,
+      "error_D_24h": 27.845,
+      "delta_spatial_24h": 0.587,
+      "delta_product_24h": -88.433,
+      "error_A_48h": 232.889,
+      "error_C_48h": "NOT_AVAILABLE",
+      "error_D_48h": "NOT_AVAILABLE",
+      "delta_spatial_48h": "NOT_AVAILABLE",
+      "delta_product_48h": "NOT_AVAILABLE",
+      "error_A_72h": 331.318,
+      "error_C_72h": "NOT_AVAILABLE",
+      "error_D_72h": "NOT_AVAILABLE",
+      "delta_spatial_72h": "NOT_AVAILABLE",
+      "delta_product_72h": "NOT_AVAILABLE",
+      "endpoint_A_72h": 23.912,
+      "path_A": 49.933,
+      "endpoint_C_72h": "NOT_AVAILABLE",
+      "path_C": 267.569,
+      "endpoint_D_72h": "NOT_AVAILABLE",
+      "path_D": 267.068,
+      "M4_C_D_sep72h": "NOT_AVAILABLE",
+      "M4_C_A_sep72h": "NOT_AVAILABLE",
+      "observed_72h": 352.788
+    },
+    {
+      "drifter_id": "71155",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_A_24h": 18.379,
+      "error_C_24h": 76.952,
+      "error_D_24h": 75.956,
+      "delta_spatial_24h": 0.996,
+      "delta_product_24h": 58.573,
+      "error_A_48h": 37.036,
+      "error_C_48h": 169.072,
+      "error_D_48h": 166.759,
+      "delta_spatial_48h": 2.313,
+      "delta_product_48h": 132.036,
+      "error_A_72h": 102.331,
+      "error_C_72h": 325.969,
+      "error_D_72h": 322.231,
+      "delta_spatial_72h": 3.738,
+      "delta_product_72h": 223.639,
+      "endpoint_A_72h": 172.16,
+      "path_A": 184.774,
+      "endpoint_C_72h": 349.635,
+      "path_C": 374.344,
+      "endpoint_D_72h": 345.893,
+      "path_D": 370.309,
+      "M4_C_D_sep72h": 3.807,
+      "M4_C_A_sep72h": 224.622,
+      "observed_72h": 127.48
+    },
+    {
+      "drifter_id": "81801",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_A_24h": 6.03,
+      "error_C_24h": 46.234,
+      "error_D_24h": 46.105,
+      "delta_spatial_24h": 0.129,
+      "delta_product_24h": 40.204,
+      "error_A_48h": 18.216,
+      "error_C_48h": 80.256,
+      "error_D_48h": 80.047,
+      "delta_spatial_48h": 0.208,
+      "delta_product_48h": 62.039,
+      "error_A_72h": 16.207,
+      "error_C_72h": 89.781,
+      "error_D_72h": 89.469,
+      "delta_spatial_72h": 0.313,
+      "delta_product_72h": 73.574,
+      "endpoint_A_72h": 70.923,
+      "path_A": 87.431,
+      "endpoint_C_72h": 66.534,
+      "path_C": 69.825,
+      "endpoint_D_72h": 66.666,
+      "path_D": 69.815,
+      "M4_C_D_sep72h": 0.47,
+      "M4_C_A_sep72h": 94.854,
+      "observed_72h": 78.333
+    },
+    {
+      "drifter_id": "81805",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_A_24h": 11.633,
+      "error_C_24h": 22.646,
+      "error_D_24h": 22.419,
+      "delta_spatial_24h": 0.227,
+      "delta_product_24h": 11.013,
+      "error_A_48h": 33.386,
+      "error_C_48h": 30.398,
+      "error_D_48h": 30.153,
+      "delta_spatial_48h": 0.245,
+      "delta_product_48h": -2.988,
+      "error_A_72h": 43.692,
+      "error_C_72h": 28.201,
+      "error_D_72h": 27.936,
+      "delta_spatial_72h": 0.265,
+      "delta_product_72h": -15.491,
+      "endpoint_A_72h": 60.868,
+      "path_A": 68.908,
+      "endpoint_C_72h": 75.353,
+      "path_C": 88.04,
+      "endpoint_D_72h": 75.077,
+      "path_D": 87.504,
+      "M4_C_D_sep72h": 0.3,
+      "M4_C_A_sep72h": 51.034,
+      "observed_72h": 47.347
+    },
+    {
+      "drifter_id": "81807",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_A_24h": 10.165,
+      "error_C_24h": 8.196,
+      "error_D_24h": 7.97,
+      "delta_spatial_24h": 0.226,
+      "delta_product_24h": -1.969,
+      "error_A_48h": 18.678,
+      "error_C_48h": 15.75,
+      "error_D_48h": 15.346,
+      "delta_spatial_48h": 0.404,
+      "delta_product_48h": -2.929,
+      "error_A_72h": 31.862,
+      "error_C_72h": 32.042,
+      "error_D_72h": 30.813,
+      "delta_spatial_72h": 1.229,
+      "delta_product_72h": 0.18,
+      "endpoint_A_72h": 11.989,
+      "path_A": 44.318,
+      "endpoint_C_72h": 22.685,
+      "path_C": 32.803,
+      "endpoint_D_72h": 22.401,
+      "path_D": 31.847,
+      "M4_C_D_sep72h": 1.533,
+      "M4_C_A_sep72h": 17.882,
+      "observed_72h": 21.291
+    },
+    {
+      "drifter_id": "81811",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_A_24h": 26.129,
+      "error_C_24h": 40.522,
+      "error_D_24h": 40.555,
+      "delta_spatial_24h": -0.033,
+      "delta_product_24h": 14.393,
+      "error_A_48h": 39.026,
+      "error_C_48h": 46.395,
+      "error_D_48h": 46.441,
+      "delta_spatial_48h": -0.047,
+      "delta_product_48h": 7.369,
+      "error_A_72h": 59.055,
+      "error_C_72h": 18.783,
+      "error_D_72h": 18.833,
+      "delta_spatial_72h": -0.05,
+      "delta_product_72h": -40.272,
+      "endpoint_A_72h": 55.94,
+      "path_A": 104.989,
+      "endpoint_C_72h": 26.077,
+      "path_C": 60.684,
+      "endpoint_D_72h": 25.897,
+      "path_D": 60.37,
+      "M4_C_D_sep72h": 0.209,
+      "M4_C_A_sep72h": 62.511,
+      "observed_72h": 41.423
+    },
+    {
+      "drifter_id": "81813",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_A_24h": 12.387,
+      "error_C_24h": 2.66,
+      "error_D_24h": 2.659,
+      "delta_spatial_24h": 0.001,
+      "delta_product_24h": -9.727,
+      "error_A_48h": 21.735,
+      "error_C_48h": 11.886,
+      "error_D_48h": 12.5,
+      "delta_spatial_48h": -0.614,
+      "delta_product_48h": -9.849,
+      "error_A_72h": 19.63,
+      "error_C_72h": 26.913,
+      "error_D_72h": 26.714,
+      "delta_spatial_72h": 0.198,
+      "delta_product_72h": 7.283,
+      "endpoint_A_72h": 81.699,
+      "path_A": 85.65,
+      "endpoint_C_72h": 79.473,
+      "path_C": 90.149,
+      "endpoint_D_72h": 77.83,
+      "path_D": 87.755,
+      "M4_C_D_sep72h": 2.475,
+      "M4_C_A_sep72h": 24.934,
+      "observed_72h": 99.084
+    },
+    {
+      "drifter_id": "81814",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_A_24h": 15.61,
+      "error_C_24h": 19.585,
+      "error_D_24h": 19.301,
+      "delta_spatial_24h": 0.284,
+      "delta_product_24h": 3.974,
+      "error_A_48h": 5.112,
+      "error_C_48h": 41.577,
+      "error_D_48h": 41.065,
+      "delta_spatial_48h": 0.512,
+      "delta_product_48h": 36.465,
+      "error_A_72h": 48.22,
+      "error_C_72h": "NOT_AVAILABLE",
+      "error_D_72h": "NOT_AVAILABLE",
+      "delta_spatial_72h": "NOT_AVAILABLE",
+      "delta_product_72h": "NOT_AVAILABLE",
+      "endpoint_A_72h": 172.172,
+      "path_A": 193.528,
+      "endpoint_C_72h": "NOT_AVAILABLE",
+      "path_C": 215.731,
+      "endpoint_D_72h": "NOT_AVAILABLE",
+      "path_D": 213.039,
+      "M4_C_D_sep72h": "NOT_AVAILABLE",
+      "M4_C_A_sep72h": "NOT_AVAILABLE",
+      "observed_72h": 204.736
+    },
+    {
+      "drifter_id": "81816",
+      "unit": "KE-1",
+      "role": "CALIBRATION",
+      "error_A_24h": 17.762,
+      "error_C_24h": 25.44,
+      "error_D_24h": 24.625,
+      "delta_spatial_24h": 0.816,
+      "delta_product_24h": 7.678,
+      "error_A_48h": 34.649,
+      "error_C_48h": 47.664,
+      "error_D_48h": 46.143,
+      "delta_spatial_48h": 1.521,
+      "delta_product_48h": 13.015,
+      "error_A_72h": 55.641,
+      "error_C_72h": 63.535,
+      "error_D_72h": 61.701,
+      "delta_spatial_72h": 1.834,
+      "delta_product_72h": 7.894,
+      "endpoint_A_72h": 39.353,
+      "path_A": 67.807,
+      "endpoint_C_72h": 79.647,
+      "path_C": 79.782,
+      "endpoint_D_72h": 77.79,
+      "path_D": 77.928,
+      "M4_C_D_sep72h": 1.899,
+      "M4_C_A_sep72h": 116.82,
+      "observed_72h": 16.535
+    },
+    {
+      "drifter_id": "48965",
+      "unit": "KE-2",
+      "role": "CALIBRATION",
+      "error_A_24h": 9.828,
+      "error_C_24h": 9.577,
+      "error_D_24h": 9.205,
+      "delta_spatial_24h": 0.372,
+      "delta_product_24h": -0.251,
+      "error_A_48h": 21.001,
+      "error_C_48h": 7.082,
+      "error_D_48h": 6.318,
+      "delta_spatial_48h": 0.764,
+      "delta_product_48h": -13.919,
+      "error_A_72h": 20.569,
+      "error_C_72h": 10.262,
+      "error_D_72h": 10.627,
+      "delta_spatial_72h": -0.364,
+      "delta_product_72h": -10.307,
+      "endpoint_A_72h": 53.817,
+      "path_A": 57.527,
+      "endpoint_C_72h": 45.219,
+      "path_C": 47.219,
+      "endpoint_D_72h": 45.847,
+      "path_D": 47.649,
+      "M4_C_D_sep72h": 0.86,
+      "M4_C_A_sep72h": 29.788,
+      "observed_72h": 49.759
+    },
+    {
+      "drifter_id": "81802",
+      "unit": "KE-2",
+      "role": "CALIBRATION",
+      "error_A_24h": 1.487,
+      "error_C_24h": 14.04,
+      "error_D_24h": 13.809,
+      "delta_spatial_24h": 0.231,
+      "delta_product_24h": 12.553,
+      "error_A_48h": 7.466,
+      "error_C_48h": 33.725,
+      "error_D_48h": 33.072,
+      "delta_spatial_48h": 0.653,
+      "delta_product_48h": 26.259,
+      "error_A_72h": 26.706,
+      "error_C_72h": 50.99,
+      "error_D_72h": 49.818,
+      "delta_spatial_72h": 1.173,
+      "delta_product_72h": 24.284,
+      "endpoint_A_72h": 98.344,
+      "path_A": 100.092,
+      "endpoint_C_72h": 67.628,
+      "path_C": 68.565,
+      "endpoint_D_72h": 68.438,
+      "path_D": 69.437,
+      "M4_C_D_sep72h": 1.173,
+      "M4_C_A_sep72h": 32.168,
+      "observed_72h": 108.571
+    },
+    {
+      "drifter_id": "90141",
+      "unit": "KE-2",
+      "role": "CALIBRATION",
+      "error_A_24h": 28.443,
+      "error_C_24h": 4.427,
+      "error_D_24h": 4.106,
+      "delta_spatial_24h": 0.321,
+      "delta_product_24h": -24.016,
+      "error_A_48h": 77.943,
+      "error_C_48h": 15.402,
+      "error_D_48h": 15.076,
+      "delta_spatial_48h": 0.326,
+      "delta_product_48h": -62.542,
+      "error_A_72h": 158.931,
+      "error_C_72h": 14.977,
+      "error_D_72h": 14.044,
+      "delta_spatial_72h": 0.933,
+      "delta_product_72h": -143.954,
+      "endpoint_A_72h": 93.295,
+      "path_A": 100.217,
+      "endpoint_C_72h": 82.95,
+      "path_C": 87.533,
+      "endpoint_D_72h": 80.444,
+      "path_D": 84.774,
+      "M4_C_D_sep72h": 3.011,
+      "M4_C_A_sep72h": 167.628,
+      "observed_72h": 70.905
+    },
+    {
+      "drifter_id": "90142",
+      "unit": "KE-2",
+      "role": "CALIBRATION",
+      "error_A_24h": 14.072,
+      "error_C_24h": 20.568,
+      "error_D_24h": 20.543,
+      "delta_spatial_24h": 0.026,
+      "delta_product_24h": 6.496,
+      "error_A_48h": 30.812,
+      "error_C_48h": 37.503,
+      "error_D_48h": 37.263,
+      "delta_spatial_48h": 0.24,
+      "delta_product_48h": 6.691,
+      "error_A_72h": 44.239,
+      "error_C_72h": 51.677,
+      "error_D_72h": 51.0,
+      "delta_spatial_72h": 0.677,
+      "delta_product_72h": 7.438,
+      "endpoint_A_72h": 45.298,
+      "path_A": 49.12,
+      "endpoint_C_72h": 20.751,
+      "path_C": 22.883,
+      "endpoint_D_72h": 19.587,
+      "path_D": 21.653,
+      "M4_C_D_sep72h": 1.245,
+      "M4_C_A_sep72h": 65.895,
+      "observed_72h": 37.048
+    },
+    {
+      "drifter_id": "90145",
+      "unit": "KE-2",
+      "role": "CALIBRATION",
+      "error_A_24h": 27.992,
+      "error_C_24h": 11.536,
+      "error_D_24h": 11.51,
+      "delta_spatial_24h": 0.026,
+      "delta_product_24h": -16.456,
+      "error_A_48h": 69.708,
+      "error_C_48h": 8.884,
+      "error_D_48h": 8.909,
+      "delta_spatial_48h": -0.025,
+      "delta_product_48h": -60.824,
+      "error_A_72h": 104.183,
+      "error_C_72h": 21.727,
+      "error_D_72h": 21.78,
+      "delta_spatial_72h": -0.053,
+      "delta_product_72h": -82.456,
+      "endpoint_A_72h": 139.966,
+      "path_A": 150.073,
+      "endpoint_C_72h": 115.598,
+      "path_C": 128.603,
+      "endpoint_D_72h": 115.724,
+      "path_D": 128.599,
+      "M4_C_D_sep72h": 0.228,
+      "M4_C_A_sep72h": 86.539,
+      "observed_72h": 131.458
+    },
+    {
+      "drifter_id": "48985",
+      "unit": "KE-H1",
+      "role": "HOLDOUT",
+      "error_A_24h": 8.223,
+      "error_C_24h": 10.273,
+      "error_D_24h": 10.276,
+      "delta_spatial_24h": -0.002,
+      "delta_product_24h": 2.05,
+      "error_A_48h": 21.544,
+      "error_C_48h": 11.849,
+      "error_D_48h": 11.847,
+      "delta_spatial_48h": 0.003,
+      "delta_product_48h": -9.694,
+      "error_A_72h": 48.81,
+      "error_C_72h": 22.839,
+      "error_D_72h": 22.53,
+      "delta_spatial_72h": 0.309,
+      "delta_product_72h": -25.972,
+      "endpoint_A_72h": 40.051,
+      "path_A": 55.705,
+      "endpoint_C_72h": 15.274,
+      "path_C": 17.581,
+      "endpoint_D_72h": 16.852,
+      "path_D": 18.903,
+      "M4_C_D_sep72h": 1.587,
+      "M4_C_A_sep72h": 50.953,
+      "observed_72h": 31.456
+    },
+    {
+      "drifter_id": "81806",
+      "unit": "KE-H1",
+      "role": "HOLDOUT",
+      "error_A_24h": 1.941,
+      "error_C_24h": 2.992,
+      "error_D_24h": 2.963,
+      "delta_spatial_24h": 0.029,
+      "delta_product_24h": 1.05,
+      "error_A_48h": 6.096,
+      "error_C_48h": 4.796,
+      "error_D_48h": 4.765,
+      "delta_spatial_48h": 0.031,
+      "delta_product_48h": -1.3,
+      "error_A_72h": 12.091,
+      "error_C_72h": 7.037,
+      "error_D_72h": 7.121,
+      "delta_spatial_72h": -0.083,
+      "delta_product_72h": -5.054,
+      "endpoint_A_72h": 45.351,
+      "path_A": 47.599,
+      "endpoint_C_72h": 44.501,
+      "path_C": 44.533,
+      "endpoint_D_72h": 44.195,
+      "path_D": 44.227,
+      "M4_C_D_sep72h": 0.32,
+      "M4_C_A_sep72h": 16.764,
+      "observed_72h": 48.477
+    },
+    {
+      "drifter_id": "90135",
+      "unit": "KE-H1",
+      "role": "HOLDOUT",
+      "error_A_24h": 21.517,
+      "error_C_24h": 31.961,
+      "error_D_24h": 31.795,
+      "delta_spatial_24h": 0.165,
+      "delta_product_24h": 10.444,
+      "error_A_48h": 27.504,
+      "error_C_48h": 56.083,
+      "error_D_48h": 55.786,
+      "delta_spatial_48h": 0.297,
+      "delta_product_48h": 28.579,
+      "error_A_72h": 24.444,
+      "error_C_72h": 57.508,
+      "error_D_72h": 57.247,
+      "delta_spatial_72h": 0.261,
+      "delta_product_72h": 33.064,
+      "endpoint_A_72h": 101.547,
+      "path_A": 106.154,
+      "endpoint_C_72h": 126.318,
+      "path_C": 130.913,
+      "endpoint_D_72h": 126.057,
+      "path_D": 130.564,
+      "M4_C_D_sep72h": 0.295,
+      "M4_C_A_sep72h": 36.094,
+      "observed_72h": 104.782
+    },
+    {
+      "drifter_id": "90149",
+      "unit": "KE-H1",
+      "role": "HOLDOUT",
+      "error_A_24h": 4.089,
+      "error_C_24h": 15.025,
+      "error_D_24h": 15.017,
+      "delta_spatial_24h": 0.008,
+      "delta_product_24h": 10.936,
+      "error_A_48h": 8.88,
+      "error_C_48h": 26.378,
+      "error_D_48h": 26.322,
+      "delta_spatial_48h": 0.055,
+      "delta_product_48h": 17.498,
+      "error_A_72h": 17.603,
+      "error_C_72h": 30.524,
+      "error_D_72h": 30.329,
+      "delta_spatial_72h": 0.195,
+      "delta_product_72h": 12.921,
+      "endpoint_A_72h": 79.693,
+      "path_A": 83.845,
+      "endpoint_C_72h": 35.413,
+      "path_C": 35.457,
+      "endpoint_D_72h": 35.838,
+      "path_D": 35.885,
+      "M4_C_D_sep72h": 0.473,
+      "M4_C_A_sep72h": 47.788,
+      "observed_72h": 62.188
+    },
+    {
+      "drifter_id": "90150",
+      "unit": "KE-H1",
+      "role": "HOLDOUT",
+      "error_A_24h": 23.705,
+      "error_C_24h": 34.495,
+      "error_D_24h": 34.181,
+      "delta_spatial_24h": 0.313,
+      "delta_product_24h": 10.79,
+      "error_A_48h": 58.664,
+      "error_C_48h": 58.905,
+      "error_D_48h": 57.712,
+      "delta_spatial_48h": 1.194,
+      "delta_product_48h": 0.242,
+      "error_A_72h": 89.37,
+      "error_C_72h": 69.208,
+      "error_D_72h": 67.189,
+      "delta_spatial_72h": 2.019,
+      "delta_product_72h": -20.162,
+      "endpoint_A_72h": 125.215,
+      "path_A": 128.243,
+      "endpoint_C_72h": 49.739,
+      "path_C": 52.782,
+      "endpoint_D_72h": 50.996,
+      "path_D": 54.231,
+      "M4_C_D_sep72h": 2.108,
+      "M4_C_A_sep72h": 114.333,
+      "observed_72h": 112.667
+    },
+    {
+      "drifter_id": "89898",
+      "unit": "KE-H3",
+      "role": "HOLDOUT",
+      "error_A_24h": 13.802,
+      "error_C_24h": 6.807,
+      "error_D_24h": 6.735,
+      "delta_spatial_24h": 0.072,
+      "delta_product_24h": -6.996,
+      "error_A_48h": 17.08,
+      "error_C_48h": 26.06,
+      "error_D_48h": 25.846,
+      "delta_spatial_48h": 0.213,
+      "delta_product_48h": 8.98,
+      "error_A_72h": 10.265,
+      "error_C_72h": 52.084,
+      "error_D_72h": 51.782,
+      "delta_spatial_72h": 0.301,
+      "delta_product_72h": 41.819,
+      "endpoint_A_72h": 150.297,
+      "path_A": 173.068,
+      "endpoint_C_72h": 104.573,
+      "path_C": 110.415,
+      "endpoint_D_72h": 104.735,
+      "path_D": 110.588,
+      "M4_C_D_sep72h": 0.301,
+      "M4_C_A_sep72h": 60.911,
+      "observed_72h": 140.071
+    },
+    {
+      "drifter_id": "90146",
+      "unit": "KE-H3",
+      "role": "HOLDOUT",
+      "error_A_24h": 16.625,
+      "error_C_24h": 6.766,
+      "error_D_24h": 6.962,
+      "delta_spatial_24h": -0.196,
+      "delta_product_24h": -9.859,
+      "error_A_48h": 22.74,
+      "error_C_48h": 19.158,
+      "error_D_48h": 19.427,
+      "delta_spatial_48h": -0.269,
+      "delta_product_48h": -3.582,
+      "error_A_72h": 29.497,
+      "error_C_72h": 31.665,
+      "error_D_72h": 31.987,
+      "delta_spatial_72h": -0.322,
+      "delta_product_72h": 2.167,
+      "endpoint_A_72h": 101.085,
+      "path_A": 141.661,
+      "endpoint_C_72h": 54.39,
+      "path_C": 54.753,
+      "endpoint_D_72h": 54.154,
+      "path_D": 54.515,
+      "M4_C_D_sep72h": 0.323,
+      "M4_C_A_sep72h": 46.699,
+      "observed_72h": 81.357
+    },
+    {
+      "drifter_id": "92981",
+      "unit": "KE-H3",
+      "role": "HOLDOUT",
+      "error_A_24h": 13.072,
+      "error_C_24h": 14.439,
+      "error_D_24h": 14.415,
+      "delta_spatial_24h": 0.024,
+      "delta_product_24h": 1.366,
+      "error_A_48h": 12.402,
+      "error_C_48h": 31.834,
+      "error_D_48h": 31.752,
+      "delta_spatial_48h": 0.081,
+      "delta_product_48h": 19.432,
+      "error_A_72h": 33.118,
+      "error_C_72h": 36.862,
+      "error_D_72h": 36.764,
+      "delta_spatial_72h": 0.098,
+      "delta_product_72h": 3.743,
+      "endpoint_A_72h": 140.511,
+      "path_A": 174.169,
+      "endpoint_C_72h": 120.046,
+      "path_C": 130.288,
+      "endpoint_D_72h": 120.024,
+      "path_D": 130.291,
+      "M4_C_D_sep72h": 0.301,
+      "M4_C_A_sep72h": 43.762,
+      "observed_72h": 154.559
+    },
+    {
+      "drifter_id": "98996",
+      "unit": "KE-H3",
+      "role": "HOLDOUT",
+      "error_A_24h": 12.299,
+      "error_C_24h": 19.701,
+      "error_D_24h": 19.711,
+      "delta_spatial_24h": -0.01,
+      "delta_product_24h": 7.402,
+      "error_A_48h": 35.126,
+      "error_C_48h": 46.89,
+      "error_D_48h": 46.912,
+      "delta_spatial_48h": -0.022,
+      "delta_product_48h": 11.763,
+      "error_A_72h": 90.497,
+      "error_C_72h": 83.052,
+      "error_D_72h": 83.052,
+      "delta_spatial_72h": 0.0,
+      "delta_product_72h": -7.444,
+      "endpoint_A_72h": 12.233,
+      "path_A": 37.045,
+      "endpoint_C_72h": 31.315,
+      "path_C": 31.683,
+      "endpoint_D_72h": 31.391,
+      "path_D": 31.759,
+      "M4_C_D_sep72h": 0.08,
+      "M4_C_A_sep72h": 39.138,
+      "observed_72h": 79.433
+    },
+    {
+      "drifter_id": "98997",
+      "unit": "KE-H3",
+      "role": "HOLDOUT",
+      "error_A_24h": 17.752,
+      "error_C_24h": 17.993,
+      "error_D_24h": 17.915,
+      "delta_spatial_24h": 0.078,
+      "delta_product_24h": 0.241,
+      "error_A_48h": 33.816,
+      "error_C_48h": 36.955,
+      "error_D_48h": 36.694,
+      "delta_spatial_48h": 0.262,
+      "delta_product_48h": 3.139,
+      "error_A_72h": 37.114,
+      "error_C_72h": 51.988,
+      "error_D_72h": 51.83,
+      "delta_spatial_72h": 0.159,
+      "delta_product_72h": 14.874,
+      "endpoint_A_72h": 42.506,
+      "path_A": 70.311,
+      "endpoint_C_72h": 63.693,
+      "path_C": 70.483,
+      "endpoint_D_72h": 63.557,
+      "path_D": 70.298,
+      "M4_C_D_sep72h": 0.439,
+      "M4_C_A_sep72h": 63.394,
+      "observed_72h": 12.151
+    },
+    {
+      "drifter_id": "98998",
+      "unit": "KE-H3",
+      "role": "HOLDOUT",
+      "error_A_24h": 22.802,
+      "error_C_24h": 8.506,
+      "error_D_24h": 8.651,
+      "delta_spatial_24h": -0.145,
+      "delta_product_24h": -14.296,
+      "error_A_48h": 43.279,
+      "error_C_48h": 9.4,
+      "error_D_48h": 9.56,
+      "delta_spatial_48h": -0.16,
+      "delta_product_48h": -33.879,
+      "error_A_72h": 58.451,
+      "error_C_72h": 14.309,
+      "error_D_72h": 14.534,
+      "delta_spatial_72h": -0.225,
+      "delta_product_72h": -44.143,
+      "endpoint_A_72h": 66.716,
+      "path_A": 82.714,
+      "endpoint_C_72h": 40.461,
+      "path_C": 42.135,
+      "endpoint_D_72h": 40.049,
+      "path_D": 41.663,
+      "M4_C_D_sep72h": 0.42,
+      "M4_C_A_sep72h": 48.143,
+      "observed_72h": 51.185
+    },
+    {
+      "drifter_id": "99006",
+      "unit": "KE-H3",
+      "role": "HOLDOUT",
+      "error_A_24h": 7.39,
+      "error_C_24h": 5.228,
+      "error_D_24h": 5.213,
+      "delta_spatial_24h": 0.015,
+      "delta_product_24h": -2.162,
+      "error_A_48h": 14.086,
+      "error_C_48h": 11.096,
+      "error_D_48h": 11.128,
+      "delta_spatial_48h": -0.032,
+      "delta_product_48h": -2.991,
+      "error_A_72h": 11.846,
+      "error_C_72h": 24.151,
+      "error_D_72h": 24.179,
+      "delta_spatial_72h": -0.028,
+      "delta_product_72h": 12.305,
+      "endpoint_A_72h": 31.281,
+      "path_A": 50.781,
+      "endpoint_C_72h": 18.674,
+      "path_C": 19.74,
+      "endpoint_D_72h": 18.871,
+      "path_D": 19.912,
+      "M4_C_D_sep72h": 0.198,
+      "M4_C_A_sep72h": 20.952,
+      "observed_72h": 26.356
+    }
+  ],
+  "step25cCrossCheck": [
+    {
+      "unit": "KE-1",
+      "drifter_id": "71155",
+      "horizon": 24,
+      "step26": 58.573,
+      "step25c": "58.573",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "71155",
+      "horizon": 48,
+      "step26": 132.036,
+      "step25c": "132.036",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "71155",
+      "horizon": 72,
+      "step26": 223.639,
+      "step25c": "223.639",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81801",
+      "horizon": 24,
+      "step26": 40.204,
+      "step25c": "40.204",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81801",
+      "horizon": 48,
+      "step26": 62.039,
+      "step25c": "62.039",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81801",
+      "horizon": 72,
+      "step26": 73.574,
+      "step25c": "73.574",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81805",
+      "horizon": 24,
+      "step26": 11.013,
+      "step25c": "11.013",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81805",
+      "horizon": 48,
+      "step26": -2.988,
+      "step25c": "-2.988",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81805",
+      "horizon": 72,
+      "step26": -15.491,
+      "step25c": "-15.491",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81807",
+      "horizon": 24,
+      "step26": -1.969,
+      "step25c": "-1.969",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81807",
+      "horizon": 48,
+      "step26": -2.929,
+      "step25c": "-2.929",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81807",
+      "horizon": 72,
+      "step26": 0.18,
+      "step25c": "0.18",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81811",
+      "horizon": 24,
+      "step26": 14.393,
+      "step25c": "14.393",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81811",
+      "horizon": 48,
+      "step26": 7.369,
+      "step25c": "7.369",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81811",
+      "horizon": 72,
+      "step26": -40.272,
+      "step25c": "-40.272",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81813",
+      "horizon": 24,
+      "step26": -9.727,
+      "step25c": "-9.727",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81813",
+      "horizon": 48,
+      "step26": -9.849,
+      "step25c": "-9.849",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81813",
+      "horizon": 72,
+      "step26": 7.283,
+      "step25c": "7.283",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81814",
+      "horizon": 24,
+      "step26": 3.974,
+      "step25c": "3.974",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81814",
+      "horizon": 48,
+      "step26": 36.465,
+      "step25c": "36.465",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81814",
+      "horizon": 72,
+      "step26": "NOT_AVAILABLE",
+      "step25c": "NOT_AVAILABLE",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81816",
+      "horizon": 24,
+      "step26": 7.678,
+      "step25c": "7.678",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81816",
+      "horizon": 48,
+      "step26": 13.015,
+      "step25c": "13.015",
+      "agree": true
+    },
+    {
+      "unit": "KE-1",
+      "drifter_id": "81816",
+      "horizon": 72,
+      "step26": 7.894,
+      "step25c": "7.894",
+      "agree": true
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "48965",
+      "horizon": 24,
+      "step26": -0.251,
+      "step25c": "-0.251",
+      "agree": true
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "48965",
+      "horizon": 48,
+      "step26": -13.919,
+      "step25c": "-13.919",
+      "agree": true
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "48965",
+      "horizon": 72,
+      "step26": -10.307,
+      "step25c": "-10.307",
+      "agree": true
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "81802",
+      "horizon": 24,
+      "step26": 12.553,
+      "step25c": "12.553",
+      "agree": true
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "81802",
+      "horizon": 48,
+      "step26": 26.259,
+      "step25c": "26.259",
+      "agree": true
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "81802",
+      "horizon": 72,
+      "step26": 24.284,
+      "step25c": "24.284",
+      "agree": true
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "90141",
+      "horizon": 24,
+      "step26": -24.016,
+      "step25c": "-24.016",
+      "agree": true
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "90141",
+      "horizon": 48,
+      "step26": -62.542,
+      "step25c": "-62.542",
+      "agree": true
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "90141",
+      "horizon": 72,
+      "step26": -143.954,
+      "step25c": "-143.954",
+      "agree": true
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "90142",
+      "horizon": 24,
+      "step26": 6.496,
+      "step25c": "6.496",
+      "agree": true
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "90142",
+      "horizon": 48,
+      "step26": 6.691,
+      "step25c": "6.691",
+      "agree": true
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "90142",
+      "horizon": 72,
+      "step26": 7.438,
+      "step25c": "7.438",
+      "agree": true
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "90145",
+      "horizon": 24,
+      "step26": -16.456,
+      "step25c": "-16.456",
+      "agree": true
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "90145",
+      "horizon": 48,
+      "step26": -60.824,
+      "step25c": "-60.824",
+      "agree": true
+    },
+    {
+      "unit": "KE-2",
+      "drifter_id": "90145",
+      "horizon": 72,
+      "step26": -82.456,
+      "step25c": "-82.456",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127198",
+      "horizon": 24,
+      "step26": -73.642,
+      "step25c": "-73.642",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127198",
+      "horizon": 48,
+      "step26": -113.348,
+      "step25c": "-113.348",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127198",
+      "horizon": 72,
+      "step26": -175.68,
+      "step25c": "-175.68",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127199",
+      "horizon": 24,
+      "step26": -73.234,
+      "step25c": "-73.234",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127199",
+      "horizon": 48,
+      "step26": -112.355,
+      "step25c": "-112.355",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127199",
+      "horizon": 72,
+      "step26": -173.412,
+      "step25c": "-173.412",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127272",
+      "horizon": 24,
+      "step26": -9.42,
+      "step25c": "-9.42",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127272",
+      "horizon": 48,
+      "step26": -2.234,
+      "step25c": "-2.234",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127272",
+      "horizon": 72,
+      "step26": -9.592,
+      "step25c": "-9.592",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127313",
+      "horizon": 24,
+      "step26": 68.341,
+      "step25c": "68.341",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127313",
+      "horizon": 48,
+      "step26": 147.026,
+      "step25c": "147.026",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127313",
+      "horizon": 72,
+      "step26": 178.048,
+      "step25c": "178.048",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127314",
+      "horizon": 24,
+      "step26": -1.441,
+      "step25c": "-1.441",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127314",
+      "horizon": 48,
+      "step26": 16.727,
+      "step25c": "16.727",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127314",
+      "horizon": 72,
+      "step26": 17.614,
+      "step25c": "17.614",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127315",
+      "horizon": 24,
+      "step26": 11.246,
+      "step25c": "11.246",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127315",
+      "horizon": 48,
+      "step26": 38.823,
+      "step25c": "38.823",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "127315",
+      "horizon": 72,
+      "step26": 87.374,
+      "step25c": "87.374",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "132511",
+      "horizon": 24,
+      "step26": 5.077,
+      "step25c": "5.077",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "132511",
+      "horizon": 48,
+      "step26": 43.458,
+      "step25c": "43.458",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "132511",
+      "horizon": 72,
+      "step26": 46.041,
+      "step25c": "46.041",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "132528",
+      "horizon": 24,
+      "step26": 15.983,
+      "step25c": "15.983",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "132528",
+      "horizon": 48,
+      "step26": 80.195,
+      "step25c": "80.195",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "132528",
+      "horizon": 72,
+      "step26": 0.706,
+      "step25c": "0.706",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "132634",
+      "horizon": 24,
+      "step26": -6.795,
+      "step25c": "-6.795",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "132634",
+      "horizon": 48,
+      "step26": -22.287,
+      "step25c": "-22.287",
+      "agree": true
+    },
+    {
+      "unit": "AG-1",
+      "drifter_id": "132634",
+      "horizon": 72,
+      "step26": -21.699,
+      "step25c": "-21.699",
+      "agree": true
+    },
+    {
+      "unit": "AG-2",
+      "drifter_id": "127281",
+      "horizon": 24,
+      "step26": -88.433,
+      "step25c": "-88.433",
+      "agree": true
+    },
+    {
+      "unit": "AG-2",
+      "drifter_id": "127281",
+      "horizon": 48,
+      "step26": "NOT_AVAILABLE",
+      "step25c": "NOT_AVAILABLE",
+      "agree": true
+    },
+    {
+      "unit": "AG-2",
+      "drifter_id": "127281",
+      "horizon": 72,
+      "step26": "NOT_AVAILABLE",
+      "step25c": "NOT_AVAILABLE",
+      "agree": true
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "48985",
+      "horizon": 24,
+      "step26": 2.05,
+      "step25c": "2.05",
+      "agree": true
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "48985",
+      "horizon": 48,
+      "step26": -9.694,
+      "step25c": "-9.694",
+      "agree": true
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "48985",
+      "horizon": 72,
+      "step26": -25.972,
+      "step25c": "-25.972",
+      "agree": true
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "81806",
+      "horizon": 24,
+      "step26": 1.05,
+      "step25c": "1.05",
+      "agree": true
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "81806",
+      "horizon": 48,
+      "step26": -1.3,
+      "step25c": "-1.3",
+      "agree": true
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "81806",
+      "horizon": 72,
+      "step26": -5.054,
+      "step25c": "-5.054",
+      "agree": true
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "90135",
+      "horizon": 24,
+      "step26": 10.444,
+      "step25c": "10.444",
+      "agree": true
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "90135",
+      "horizon": 48,
+      "step26": 28.579,
+      "step25c": "28.579",
+      "agree": true
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "90135",
+      "horizon": 72,
+      "step26": 33.064,
+      "step25c": "33.064",
+      "agree": true
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "90149",
+      "horizon": 24,
+      "step26": 10.936,
+      "step25c": "10.936",
+      "agree": true
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "90149",
+      "horizon": 48,
+      "step26": 17.498,
+      "step25c": "17.498",
+      "agree": true
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "90149",
+      "horizon": 72,
+      "step26": 12.921,
+      "step25c": "12.921",
+      "agree": true
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "90150",
+      "horizon": 24,
+      "step26": 10.79,
+      "step25c": "10.79",
+      "agree": true
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "90150",
+      "horizon": 48,
+      "step26": 0.242,
+      "step25c": "0.242",
+      "agree": true
+    },
+    {
+      "unit": "KE-H1",
+      "drifter_id": "90150",
+      "horizon": 72,
+      "step26": -20.162,
+      "step25c": "-20.162",
+      "agree": true
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "89898",
+      "horizon": 24,
+      "step26": -6.996,
+      "step25c": "-6.996",
+      "agree": true
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "89898",
+      "horizon": 48,
+      "step26": 8.98,
+      "step25c": "8.98",
+      "agree": true
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "89898",
+      "horizon": 72,
+      "step26": 41.819,
+      "step25c": "41.819",
+      "agree": true
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "90146",
+      "horizon": 24,
+      "step26": -9.859,
+      "step25c": "-9.859",
+      "agree": true
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "90146",
+      "horizon": 48,
+      "step26": -3.582,
+      "step25c": "-3.582",
+      "agree": true
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "90146",
+      "horizon": 72,
+      "step26": 2.167,
+      "step25c": "2.167",
+      "agree": true
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "92981",
+      "horizon": 24,
+      "step26": 1.366,
+      "step25c": "1.366",
+      "agree": true
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "92981",
+      "horizon": 48,
+      "step26": 19.432,
+      "step25c": "19.432",
+      "agree": true
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "92981",
+      "horizon": 72,
+      "step26": 3.743,
+      "step25c": "3.743",
+      "agree": true
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "98996",
+      "horizon": 24,
+      "step26": 7.402,
+      "step25c": "7.402",
+      "agree": true
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "98996",
+      "horizon": 48,
+      "step26": 11.763,
+      "step25c": "11.763",
+      "agree": true
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "98996",
+      "horizon": 72,
+      "step26": -7.444,
+      "step25c": "-7.444",
+      "agree": true
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "98997",
+      "horizon": 24,
+      "step26": 0.241,
+      "step25c": "0.241",
+      "agree": true
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "98997",
+      "horizon": 48,
+      "step26": 3.139,
+      "step25c": "3.139",
+      "agree": true
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "98997",
+      "horizon": 72,
+      "step26": 14.874,
+      "step25c": "14.874",
+      "agree": true
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "98998",
+      "horizon": 24,
+      "step26": -14.296,
+      "step25c": "-14.296",
+      "agree": true
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "98998",
+      "horizon": 48,
+      "step26": -33.879,
+      "step25c": "-33.879",
+      "agree": true
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "98998",
+      "horizon": 72,
+      "step26": -44.143,
+      "step25c": "-44.143",
+      "agree": true
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "99006",
+      "horizon": 24,
+      "step26": -2.162,
+      "step25c": "-2.162",
+      "agree": true
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "99006",
+      "horizon": 48,
+      "step26": -2.991,
+      "step25c": "-2.991",
+      "agree": true
+    },
+    {
+      "unit": "KE-H3",
+      "drifter_id": "99006",
+      "horizon": 72,
+      "step26": 12.305,
+      "step25c": "12.305",
+      "agree": true
+    }
+  ],
+  "summary": {
+    "ruleId": "forcing-decomposition-step26",
+    "phase": "B",
+    "status": "STEP26_COMPLETE",
+    "alpha": 0.002,
+    "horizons": [
+      24,
+      48,
+      72
+    ],
+    "tieToleranceKm": 1e-06,
+    "conditions": {
+      "A": {
+        "name": "HYCOM_NATIVE_3H",
+        "role": "REFERENCE ONLY (immutable STEP 20 alpha 0.002)",
+        "newRuns": 0,
+        "depthMeters": 15.0
+      },
+      "B": {
+        "name": "HYCOM_DAILY",
+        "status": "BLOCKED",
+        "reason": "HYCOM daily forcing cannot be derived: the native 3-hour source frames are incomplete for the complete registered windows (two complete UTC days per window; five required); no re-acquisition in Phase B"
+      },
+      "C": {
+        "name": "GLORYS_NATIVE_DAILY",
+        "runs": 6,
+        "depthMeters": 15.81007,
+        "reproductionAgainstStep25C": true
+      },
+      "D": {
+        "name": "GLORYS_COARSE_DAILY",
+        "runs": 6,
+        "depthMeters": 15.81007,
+        "derivation": "bilinear onto the immutable HYCOM grid (glorys-to-hycom-grid-bilinear/1)"
+      }
+    },
+    "depthAudit": {
+      "hycomDepthMeters": "15.000 m",
+      "glorysDepthMeters": "15.810070 m",
+      "depthDifferenceMeters": "0.810070 m",
+      "identicalDepthForcing": false,
+      "attributedInStep26": false,
+      "note": "confound remains in Comparison 4; Comparison 2 is depth-matched (both GLORYS 15.810070 m)"
+    },
+    "comparisons": {
+      "1": {
+        "name": "HYCOM_NATIVE_3H vs HYCOM_DAILY",
+        "status": "BLOCKED",
+        "reason": "HYCOM daily forcing cannot be derived because the required native 3-hour source frames are incomplete for the complete registered windows"
+      },
+      "2": {
+        "name": "GLORYS_NATIVE_DAILY vs GLORYS_COARSE_DAILY",
+        "status": "EVALUATED",
+        "delta": "E_C - E_D (km); negative = native lower error",
+        "onlyIntentionalDifference": "native 1/12 degree GLORYS grid vs bilinear HYCOM-grid (0.08 degree) representation of the same GLORYS fields; wind, alpha, depth, cadence, labels, mechanics identical"
+      },
+      "3": {
+        "name": "HYCOM_DAILY vs GLORYS_COARSE_DAILY",
+        "status": "BLOCKED",
+        "reason": "depends on HYCOM_DAILY"
+      },
+      "4": {
+        "name": "HYCOM_NATIVE_3H vs GLORYS_NATIVE_DAILY",
+        "status": "EVALUATED",
+        "delta": "E_C - E_A (km); negative = GLORYS lower error",
+        "differences": "ocean forcing product, cadence (3 h vs daily mean) and native depth (15.000 vs 15.810070 m) identity as defined in STEP 26; not a pure spatial or temporal test",
+        "reproducesStep25C": true
+      }
+    },
+    "strata": {
+      "overall": {
+        "n_drifters": 35,
+        "24h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 35,
+            "median": 17.762,
+            "mean": 29.388,
+            "min": 1.487,
+            "max": 144.38
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 35,
+            "median": 19.701,
+            "mean": 28.277,
+            "min": 2.66,
+            "max": 131.891
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 35,
+            "median": 19.711,
+            "mean": 28.12,
+            "min": 2.659,
+            "max": 131.213
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 0,
+            "D": 0
+          },
+          "comparison2_C_vs_D": {
+            "n": 35,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 0.029,
+              "mean_delta": 0.157,
+              "min_delta": -0.51,
+              "max_delta": 0.996
+            },
+            "wins_C": 11,
+            "losses_C": 24,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 35,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 1.366,
+              "mean_delta": -1.111,
+              "min_delta": -88.433,
+              "max_delta": 68.341
+            },
+            "wins_C": 15,
+            "losses_C": 20,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "48h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 35,
+            "median": 33.816,
+            "mean": 53.679,
+            "min": 5.112,
+            "max": 238.223
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 34,
+            "median": 39.54,
+            "mean": 55.615,
+            "min": 4.796,
+            "max": 289.961
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 34,
+            "median": 39.164,
+            "mean": 55.275,
+            "min": 4.765,
+            "max": 287.687
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 1,
+            "D": 1
+          },
+          "comparison2_C_vs_D": {
+            "n": 34,
+            "notAvailable": 1,
+            "delta": {
+              "median_delta": 0.222,
+              "mean_delta": 0.34,
+              "min_delta": -1.582,
+              "max_delta": 2.313
+            },
+            "wins_C": 10,
+            "losses_C": 24,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 34,
+            "notAvailable": 1,
+            "delta": {
+              "median_delta": 4.915,
+              "mean_delta": 7.206,
+              "min_delta": -113.348,
+              "max_delta": 147.026
+            },
+            "wins_C": 15,
+            "losses_C": 19,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "72h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 35,
+            "median": 48.81,
+            "mean": 83.136,
+            "min": 10.265,
+            "max": 331.318
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 33,
+            "median": 51.988,
+            "mean": 77.259,
+            "min": 7.037,
+            "max": 416.26
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 33,
+            "median": 51.782,
+            "mean": 76.721,
+            "min": 7.121,
+            "max": 411.548
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 2,
+            "D": 2
+          },
+          "comparison2_C_vs_D": {
+            "n": 33,
+            "notAvailable": 2,
+            "delta": {
+              "median_delta": 0.198,
+              "mean_delta": 0.539,
+              "min_delta": -3.338,
+              "max_delta": 4.713
+            },
+            "wins_C": 12,
+            "losses_C": 21,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 33,
+            "notAvailable": 2,
+            "delta": {
+              "median_delta": 2.167,
+              "mean_delta": 0.586,
+              "min_delta": -175.68,
+              "max_delta": 223.639
+            },
+            "wins_C": 14,
+            "losses_C": 19,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "M1_endpoint72h": {
+          "A": {
+            "n": 35,
+            "median": 93.295,
+            "mean": 102.058,
+            "min": 11.989,
+            "max": 240.965
+          },
+          "C": {
+            "n": 33,
+            "median": 67.628,
+            "mean": 94.895,
+            "min": 15.274,
+            "max": 349.635
+          },
+          "D": {
+            "n": 33,
+            "median": 68.438,
+            "mean": 94.82,
+            "min": 16.852,
+            "max": 345.893
+          }
+        },
+        "M2_totalPath": {
+          "A": {
+            "n": 35,
+            "median": 104.989,
+            "mean": 118.9,
+            "min": 37.045,
+            "max": 255.853
+          },
+          "C": {
+            "n": 35,
+            "median": 79.782,
+            "mean": 111.207,
+            "min": 17.581,
+            "max": 374.344
+          },
+          "D": {
+            "n": 35,
+            "median": 77.928,
+            "mean": 110.913,
+            "min": 18.903,
+            "max": 370.309
+          }
+        },
+        "M4_separation72h": {
+          "C_vs_D": {
+            "n": 33,
+            "median": 0.473,
+            "mean": 1.185,
+            "min": 0.08,
+            "max": 4.992
+          },
+          "C_vs_A": {
+            "n": 33,
+            "median": 51.034,
+            "mean": 89.139,
+            "min": 16.764,
+            "max": 257.165
+          }
+        },
+        "M5_observed72h": {
+          "n": 35,
+          "median": 85.528,
+          "mean": 115.128,
+          "min": 12.151,
+          "max": 449.489
+        }
+      },
+      "calibration": {
+        "n_drifters": 23,
+        "24h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 23,
+            "median": 25.126,
+            "mean": 37.624,
+            "min": 1.487,
+            "max": 144.38
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 23,
+            "median": 27.383,
+            "mean": 35.456,
+            "min": 2.66,
+            "max": 131.891
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 23,
+            "median": 27.489,
+            "mean": 35.233,
+            "min": 2.659,
+            "max": 131.213
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 0,
+            "D": 0
+          },
+          "comparison2_C_vs_D": {
+            "n": 23,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 0.226,
+              "mean_delta": 0.224,
+              "min_delta": -0.51,
+              "max_delta": 0.996
+            },
+            "wins_C": 7,
+            "losses_C": 16,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 23,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 3.974,
+              "mean_delta": -2.168,
+              "min_delta": -88.433,
+              "max_delta": 68.341
+            },
+            "wins_C": 11,
+            "losses_C": 12,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "48h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 23,
+            "median": 39.026,
+            "mean": 68.59,
+            "min": 5.112,
+            "max": 238.223
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 22,
+            "median": 50.243,
+            "mean": 70.523,
+            "min": 7.082,
+            "max": 289.961
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 22,
+            "median": 49.513,
+            "mean": 70.073,
+            "min": 6.318,
+            "max": 287.687
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 1,
+            "D": 1
+          },
+          "comparison2_C_vs_D": {
+            "n": 22,
+            "notAvailable": 1,
+            "delta": {
+              "median_delta": 0.242,
+              "mean_delta": 0.45,
+              "min_delta": -1.582,
+              "max_delta": 2.313
+            },
+            "wins_C": 6,
+            "losses_C": 16,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 22,
+            "notAvailable": 1,
+            "delta": {
+              "median_delta": 7.03,
+              "mean_delta": 9.401,
+              "min_delta": -113.348,
+              "max_delta": 147.026
+            },
+            "wins_C": 10,
+            "losses_C": 12,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "72h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 23,
+            "median": 59.055,
+            "mean": 106.376,
+            "min": 16.207,
+            "max": 331.318
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 21,
+            "median": 63.535,
+            "mean": 98.492,
+            "min": 10.262,
+            "max": 416.26
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 21,
+            "median": 63.507,
+            "mean": 97.774,
+            "min": 10.627,
+            "max": 411.548
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 2,
+            "D": 2
+          },
+          "comparison2_C_vs_D": {
+            "n": 21,
+            "notAvailable": 2,
+            "delta": {
+              "median_delta": 0.313,
+              "mean_delta": 0.719,
+              "min_delta": -3.338,
+              "max_delta": 4.713
+            },
+            "wins_C": 8,
+            "losses_C": 13,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 21,
+            "notAvailable": 2,
+            "delta": {
+              "median_delta": 0.706,
+              "mean_delta": 0.058,
+              "min_delta": -175.68,
+              "max_delta": 223.639
+            },
+            "wins_C": 9,
+            "losses_C": 12,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "M1_endpoint72h": {
+          "A": {
+            "n": 23,
+            "median": 98.344,
+            "mean": 114.589,
+            "min": 11.989,
+            "max": 240.965
+          },
+          "C": {
+            "n": 21,
+            "median": 79.647,
+            "mean": 115.577,
+            "min": 19.203,
+            "max": 349.635
+          },
+          "D": {
+            "n": 21,
+            "median": 77.83,
+            "mean": 115.349,
+            "min": 19.587,
+            "max": 345.893
+          }
+        },
+        "M2_totalPath": {
+          "A": {
+            "n": 23,
+            "median": 108.383,
+            "mean": 130.878,
+            "min": 44.318,
+            "max": 255.853
+          },
+          "C": {
+            "n": 23,
+            "median": 90.149,
+            "mean": 137.02,
+            "min": 22.883,
+            "max": 374.344
+          },
+          "D": {
+            "n": 23,
+            "median": 87.755,
+            "mean": 136.483,
+            "min": 21.653,
+            "max": 370.309
+          }
+        },
+        "M4_separation72h": {
+          "C_vs_D": {
+            "n": 21,
+            "median": 1.173,
+            "mean": 1.536,
+            "min": 0.134,
+            "max": 4.992
+          },
+          "C_vs_A": {
+            "n": 21,
+            "median": 86.539,
+            "mean": 112.031,
+            "min": 17.882,
+            "max": 257.165
+          }
+        },
+        "M5_observed72h": {
+          "n": 23,
+          "median": 98.763,
+          "mean": 135.861,
+          "min": 16.535,
+          "max": 449.489
+        }
+      },
+      "holdout": {
+        "n_drifters": 12,
+        "24h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 12,
+            "median": 13.437,
+            "mean": 13.601,
+            "min": 1.941,
+            "max": 23.705
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 12,
+            "median": 12.356,
+            "mean": 14.515,
+            "min": 2.992,
+            "max": 34.495
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 12,
+            "median": 12.345,
+            "mean": 14.486,
+            "min": 2.963,
+            "max": 34.181
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 0,
+            "D": 0
+          },
+          "comparison2_C_vs_D": {
+            "n": 12,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 0.019,
+              "mean_delta": 0.029,
+              "min_delta": -0.196,
+              "max_delta": 0.313
+            },
+            "wins_C": 4,
+            "losses_C": 8,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 12,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 1.208,
+              "mean_delta": 0.914,
+              "min_delta": -14.296,
+              "max_delta": 10.936
+            },
+            "wins_C": 4,
+            "losses_C": 8,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "48h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 12,
+            "median": 22.142,
+            "mean": 25.101,
+            "min": 6.096,
+            "max": 58.664
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 12,
+            "median": 26.219,
+            "mean": 28.284,
+            "min": 4.796,
+            "max": 58.905
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 12,
+            "median": 26.084,
+            "mean": 28.146,
+            "min": 4.765,
+            "max": 57.712
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 0,
+            "D": 0
+          },
+          "comparison2_C_vs_D": {
+            "n": 12,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 0.043,
+              "mean_delta": 0.138,
+              "min_delta": -0.269,
+              "max_delta": 1.194
+            },
+            "wins_C": 4,
+            "losses_C": 8,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 12,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 1.691,
+              "mean_delta": 3.182,
+              "min_delta": -33.879,
+              "max_delta": 28.579
+            },
+            "wins_C": 5,
+            "losses_C": 7,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "72h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 12,
+            "median": 31.308,
+            "mean": 38.592,
+            "min": 10.265,
+            "max": 90.497
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 12,
+            "median": 34.263,
+            "mean": 40.102,
+            "min": 7.037,
+            "max": 83.052
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 12,
+            "median": 34.375,
+            "mean": 39.879,
+            "min": 7.121,
+            "max": 83.052
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 0,
+            "D": 0
+          },
+          "comparison2_C_vs_D": {
+            "n": 12,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 0.128,
+              "mean_delta": 0.224,
+              "min_delta": -0.322,
+              "max_delta": 2.019
+            },
+            "wins_C": 4,
+            "losses_C": 8,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 12,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 2.955,
+              "mean_delta": 1.51,
+              "min_delta": -44.143,
+              "max_delta": 41.819
+            },
+            "wins_C": 5,
+            "losses_C": 7,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "M1_endpoint72h": {
+          "A": {
+            "n": 12,
+            "median": 73.204,
+            "mean": 78.041,
+            "min": 12.233,
+            "max": 150.297
+          },
+          "C": {
+            "n": 12,
+            "median": 47.12,
+            "mean": 58.7,
+            "min": 15.274,
+            "max": 126.318
+          },
+          "D": {
+            "n": 12,
+            "median": 47.596,
+            "mean": 58.893,
+            "min": 16.852,
+            "max": 126.057
+          }
+        },
+        "M2_totalPath": {
+          "A": {
+            "n": 12,
+            "median": 83.279,
+            "mean": 95.941,
+            "min": 37.045,
+            "max": 174.169
+          },
+          "C": {
+            "n": 12,
+            "median": 48.657,
+            "mean": 61.73,
+            "min": 17.581,
+            "max": 130.913
+          },
+          "D": {
+            "n": 12,
+            "median": 49.229,
+            "mean": 61.903,
+            "min": 18.903,
+            "max": 130.564
+          }
+        },
+        "M4_separation72h": {
+          "C_vs_D": {
+            "n": 12,
+            "median": 0.321,
+            "mean": 0.57,
+            "min": 0.08,
+            "max": 2.108
+          },
+          "C_vs_A": {
+            "n": 12,
+            "median": 47.243,
+            "mean": 49.077,
+            "min": 16.764,
+            "max": 114.333
+          }
+        },
+        "M5_observed72h": {
+          "n": 12,
+          "median": 70.81,
+          "mean": 75.39,
+          "min": 12.151,
+          "max": 154.559
+        }
+      }
+    },
+    "perWindow": {
+      "KE-1": {
+        "n_drifters": 8,
+        "24h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 8,
+            "median": 13.999,
+            "mean": 14.762,
+            "min": 6.03,
+            "max": 26.129
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 8,
+            "median": 24.043,
+            "mean": 30.279,
+            "min": 2.66,
+            "max": 76.952
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 8,
+            "median": 23.522,
+            "mean": 29.949,
+            "min": 2.659,
+            "max": 75.956
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 0,
+            "D": 0
+          },
+          "comparison2_C_vs_D": {
+            "n": 8,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 0.227,
+              "mean_delta": 0.331,
+              "min_delta": -0.033,
+              "max_delta": 0.996
+            },
+            "wins_C": 1,
+            "losses_C": 7,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 8,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 9.346,
+              "mean_delta": 15.518,
+              "min_delta": -9.727,
+              "max_delta": 58.573
+            },
+            "wins_C": 2,
+            "losses_C": 6,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "48h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 8,
+            "median": 27.56,
+            "mean": 25.98,
+            "min": 5.112,
+            "max": 39.026
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 8,
+            "median": 43.986,
+            "mean": 55.375,
+            "min": 11.886,
+            "max": 169.072
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 8,
+            "median": 43.604,
+            "mean": 54.807,
+            "min": 12.5,
+            "max": 166.759
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 0,
+            "D": 0
+          },
+          "comparison2_C_vs_D": {
+            "n": 8,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 0.324,
+              "mean_delta": 0.568,
+              "min_delta": -0.614,
+              "max_delta": 2.313
+            },
+            "wins_C": 2,
+            "losses_C": 6,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 8,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 10.192,
+              "mean_delta": 29.395,
+              "min_delta": -9.849,
+              "max_delta": 132.036
+            },
+            "wins_C": 3,
+            "losses_C": 5,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "72h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 8,
+            "median": 45.956,
+            "mean": 47.08,
+            "min": 16.207,
+            "max": 102.331
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 7,
+            "median": 32.042,
+            "mean": 83.603,
+            "min": 18.783,
+            "max": 325.969
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 7,
+            "median": 30.813,
+            "mean": 82.528,
+            "min": 18.833,
+            "max": 322.231
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 1,
+            "D": 1
+          },
+          "comparison2_C_vs_D": {
+            "n": 7,
+            "notAvailable": 1,
+            "delta": {
+              "median_delta": 0.313,
+              "mean_delta": 1.075,
+              "min_delta": -0.05,
+              "max_delta": 3.738
+            },
+            "wins_C": 1,
+            "losses_C": 6,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 7,
+            "notAvailable": 1,
+            "delta": {
+              "median_delta": 7.283,
+              "mean_delta": 36.687,
+              "min_delta": -40.272,
+              "max_delta": 223.639
+            },
+            "wins_C": 2,
+            "losses_C": 5,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "M1_endpoint72h": {
+          "A": {
+            "n": 8,
+            "median": 65.895,
+            "mean": 83.138,
+            "min": 11.989,
+            "max": 172.172
+          },
+          "C": {
+            "n": 7,
+            "median": 75.353,
+            "mean": 99.915,
+            "min": 22.685,
+            "max": 349.635
+          },
+          "D": {
+            "n": 7,
+            "median": 75.077,
+            "mean": 98.793,
+            "min": 22.401,
+            "max": 345.893
+          }
+        },
+        "M2_totalPath": {
+          "A": {
+            "n": 8,
+            "median": 86.54,
+            "mean": 104.676,
+            "min": 44.318,
+            "max": 193.528
+          },
+          "C": {
+            "n": 8,
+            "median": 83.911,
+            "mean": 126.42,
+            "min": 32.803,
+            "max": 374.344
+          },
+          "D": {
+            "n": 8,
+            "median": 82.716,
+            "mean": 124.821,
+            "min": 31.847,
+            "max": 370.309
+          }
+        },
+        "M4_separation72h": {
+          "C_vs_D": {
+            "n": 7,
+            "median": 1.533,
+            "mean": 1.528,
+            "min": 0.209,
+            "max": 3.807
+          },
+          "C_vs_A": {
+            "n": 7,
+            "median": 62.511,
+            "mean": 84.665,
+            "min": 17.882,
+            "max": 224.622
+          }
+        },
+        "M5_observed72h": {
+          "n": 8,
+          "median": 62.84,
+          "mean": 79.529,
+          "min": 16.535,
+          "max": 204.736
+        },
+        "role": "CALIBRATION",
+        "smallN": true,
+        "label": "SMALL-N / DESCRIPTIVE ONLY"
+      },
+      "KE-2": {
+        "n_drifters": 5,
+        "24h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 5,
+            "median": 14.072,
+            "mean": 16.365,
+            "min": 1.487,
+            "max": 28.443
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 5,
+            "median": 11.536,
+            "mean": 12.03,
+            "min": 4.427,
+            "max": 20.568
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 5,
+            "median": 11.51,
+            "mean": 11.834,
+            "min": 4.106,
+            "max": 20.543
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 0,
+            "D": 0
+          },
+          "comparison2_C_vs_D": {
+            "n": 5,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 0.231,
+              "mean_delta": 0.195,
+              "min_delta": 0.026,
+              "max_delta": 0.372
+            },
+            "wins_C": 0,
+            "losses_C": 5,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 5,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": -0.251,
+              "mean_delta": -4.335,
+              "min_delta": -24.016,
+              "max_delta": 12.553
+            },
+            "wins_C": 3,
+            "losses_C": 2,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "48h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 5,
+            "median": 30.812,
+            "mean": 41.386,
+            "min": 7.466,
+            "max": 77.943
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 5,
+            "median": 15.402,
+            "mean": 20.519,
+            "min": 7.082,
+            "max": 37.503
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 5,
+            "median": 15.076,
+            "mean": 20.128,
+            "min": 6.318,
+            "max": 37.263
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 0,
+            "D": 0
+          },
+          "comparison2_C_vs_D": {
+            "n": 5,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 0.326,
+              "mean_delta": 0.392,
+              "min_delta": -0.025,
+              "max_delta": 0.764
+            },
+            "wins_C": 1,
+            "losses_C": 4,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 5,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": -13.919,
+              "mean_delta": -20.867,
+              "min_delta": -62.542,
+              "max_delta": 26.259
+            },
+            "wins_C": 3,
+            "losses_C": 2,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "72h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 5,
+            "median": 44.239,
+            "mean": 70.926,
+            "min": 20.569,
+            "max": 158.931
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 5,
+            "median": 21.727,
+            "mean": 29.927,
+            "min": 10.262,
+            "max": 51.677
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 5,
+            "median": 21.78,
+            "mean": 29.454,
+            "min": 10.627,
+            "max": 51.0
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 0,
+            "D": 0
+          },
+          "comparison2_C_vs_D": {
+            "n": 5,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 0.677,
+              "mean_delta": 0.473,
+              "min_delta": -0.364,
+              "max_delta": 1.173
+            },
+            "wins_C": 2,
+            "losses_C": 3,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 5,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": -10.307,
+              "mean_delta": -40.999,
+              "min_delta": -143.954,
+              "max_delta": 24.284
+            },
+            "wins_C": 3,
+            "losses_C": 2,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "M1_endpoint72h": {
+          "A": {
+            "n": 5,
+            "median": 93.295,
+            "mean": 86.144,
+            "min": 45.298,
+            "max": 139.966
+          },
+          "C": {
+            "n": 5,
+            "median": 67.628,
+            "mean": 66.429,
+            "min": 20.751,
+            "max": 115.598
+          },
+          "D": {
+            "n": 5,
+            "median": 68.438,
+            "mean": 66.008,
+            "min": 19.587,
+            "max": 115.724
+          }
+        },
+        "M2_totalPath": {
+          "A": {
+            "n": 5,
+            "median": 100.092,
+            "mean": 91.406,
+            "min": 49.12,
+            "max": 150.073
+          },
+          "C": {
+            "n": 5,
+            "median": 68.565,
+            "mean": 70.961,
+            "min": 22.883,
+            "max": 128.603
+          },
+          "D": {
+            "n": 5,
+            "median": 69.437,
+            "mean": 70.422,
+            "min": 21.653,
+            "max": 128.599
+          }
+        },
+        "M4_separation72h": {
+          "C_vs_D": {
+            "n": 5,
+            "median": 1.173,
+            "mean": 1.304,
+            "min": 0.228,
+            "max": 3.011
+          },
+          "C_vs_A": {
+            "n": 5,
+            "median": 65.895,
+            "mean": 76.404,
+            "min": 29.788,
+            "max": 167.628
+          }
+        },
+        "M5_observed72h": {
+          "n": 5,
+          "median": 70.905,
+          "mean": 79.548,
+          "min": 37.048,
+          "max": 131.458
+        },
+        "role": "CALIBRATION",
+        "smallN": true,
+        "label": "SMALL-N / DESCRIPTIVE ONLY"
+      },
+      "AG-1": {
+        "n_drifters": 9,
+        "24h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 9,
+            "median": 39.952,
+            "mean": 60.952,
+            "min": 23.293,
+            "max": 144.38
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 9,
+            "median": 45.029,
+            "mean": 53.854,
+            "min": 18.05,
+            "max": 131.891
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 9,
+            "median": 45.539,
+            "mean": 53.749,
+            "min": 18.32,
+            "max": 131.213
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 0,
+            "D": 0
+          },
+          "comparison2_C_vs_D": {
+            "n": 9,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": -0.106,
+              "mean_delta": 0.104,
+              "min_delta": -0.51,
+              "max_delta": 0.919
+            },
+            "wins_C": 6,
+            "losses_C": 3,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 9,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": -1.441,
+              "mean_delta": -7.098,
+              "min_delta": -73.642,
+              "max_delta": 68.341
+            },
+            "wins_C": 5,
+            "losses_C": 4,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "48h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 9,
+            "median": 60.676,
+            "mean": 103.323,
+            "min": 19.304,
+            "max": 238.223
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 9,
+            "median": 99.332,
+            "mean": 111.768,
+            "min": 52.823,
+            "max": 289.961
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 9,
+            "median": 98.382,
+            "mean": 111.39,
+            "min": 52.586,
+            "max": 287.687
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 0,
+            "D": 0
+          },
+          "comparison2_C_vs_D": {
+            "n": 9,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 0.232,
+              "mean_delta": 0.378,
+              "min_delta": -1.582,
+              "max_delta": 2.275
+            },
+            "wins_C": 3,
+            "losses_C": 6,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 9,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 16.727,
+              "mean_delta": 8.445,
+              "min_delta": -113.348,
+              "max_delta": 147.026
+            },
+            "wins_C": 4,
+            "losses_C": 5,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "72h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 9,
+            "median": 106.115,
+            "mean": 153.786,
+            "min": 45.89,
+            "max": 323.38
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 9,
+            "median": 143.744,
+            "mean": 148.164,
+            "min": 63.504,
+            "max": 416.26
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 9,
+            "median": 141.369,
+            "mean": 147.587,
+            "min": 63.507,
+            "max": 411.548
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 0,
+            "D": 0
+          },
+          "comparison2_C_vs_D": {
+            "n": 9,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": -0.004,
+              "mean_delta": 0.577,
+              "min_delta": -3.338,
+              "max_delta": 4.713
+            },
+            "wins_C": 5,
+            "losses_C": 4,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 9,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 0.706,
+              "mean_delta": -5.622,
+              "min_delta": -175.68,
+              "max_delta": 178.048
+            },
+            "wins_C": 4,
+            "losses_C": 5,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "M1_endpoint72h": {
+          "A": {
+            "n": 9,
+            "median": 182.984,
+            "mean": 168.424,
+            "min": 88.772,
+            "max": 240.965
+          },
+          "C": {
+            "n": 9,
+            "median": 166.876,
+            "mean": 155.064,
+            "min": 19.203,
+            "max": 323.313
+          },
+          "D": {
+            "n": 9,
+            "median": 166.788,
+            "mean": 155.637,
+            "min": 20.443,
+            "max": 321.023
+          }
+        },
+        "M2_totalPath": {
+          "A": {
+            "n": 9,
+            "median": 186.979,
+            "mean": 185.092,
+            "min": 108.383,
+            "max": 255.853
+          },
+          "C": {
+            "n": 9,
+            "median": 168.387,
+            "mean": 168.637,
+            "min": 24.573,
+            "max": 332.85
+          },
+          "D": {
+            "n": 9,
+            "median": 167.494,
+            "mean": 169.041,
+            "min": 24.701,
+            "max": 330.371
+          }
+        },
+        "M4_separation72h": {
+          "C_vs_D": {
+            "n": 9,
+            "median": 0.894,
+            "mean": 1.672,
+            "min": 0.134,
+            "max": 4.992
+          },
+          "C_vs_A": {
+            "n": 9,
+            "median": 169.759,
+            "mean": 153.107,
+            "min": 22.13,
+            "max": 257.165
+          }
+        },
+        "M5_observed72h": {
+          "n": 9,
+          "median": 135.1,
+          "mean": 193.115,
+          "min": 80.755,
+          "max": 449.489
+        },
+        "role": "CALIBRATION",
+        "smallN": true,
+        "label": "SMALL-N / DESCRIPTIVE ONLY"
+      },
+      "AG-2": {
+        "n_drifters": 1,
+        "24h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 1,
+            "median": 116.865,
+            "mean": 116.865,
+            "min": 116.865,
+            "max": 116.865
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 1,
+            "median": 28.432,
+            "mean": 28.432,
+            "min": 28.432,
+            "max": 28.432
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 1,
+            "median": 27.845,
+            "mean": 27.845,
+            "min": 27.845,
+            "max": 27.845
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 0,
+            "D": 0
+          },
+          "comparison2_C_vs_D": {
+            "n": 1,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 0.587,
+              "mean_delta": 0.587,
+              "min_delta": 0.587,
+              "max_delta": 0.587
+            },
+            "wins_C": 0,
+            "losses_C": 1,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 1,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": -88.433,
+              "mean_delta": -88.433,
+              "min_delta": -88.433,
+              "max_delta": -88.433
+            },
+            "wins_C": 1,
+            "losses_C": 0,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "48h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 1,
+            "median": 232.889,
+            "mean": 232.889,
+            "min": 232.889,
+            "max": 232.889
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 1,
+            "D": 1
+          },
+          "comparison2_C_vs_D": {
+            "n": 0,
+            "notAvailable": 1,
+            "delta": {
+              "median_delta": null,
+              "mean_delta": null,
+              "min_delta": null,
+              "max_delta": null
+            },
+            "wins_C": 0,
+            "losses_C": 0,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 0,
+            "notAvailable": 1,
+            "delta": {
+              "median_delta": null,
+              "mean_delta": null,
+              "min_delta": null,
+              "max_delta": null
+            },
+            "wins_C": 0,
+            "losses_C": 0,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "72h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 1,
+            "median": 331.318,
+            "mean": 331.318,
+            "min": 331.318,
+            "max": 331.318
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 1,
+            "D": 1
+          },
+          "comparison2_C_vs_D": {
+            "n": 0,
+            "notAvailable": 1,
+            "delta": {
+              "median_delta": null,
+              "mean_delta": null,
+              "min_delta": null,
+              "max_delta": null
+            },
+            "wins_C": 0,
+            "losses_C": 0,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 0,
+            "notAvailable": 1,
+            "delta": {
+              "median_delta": null,
+              "mean_delta": null,
+              "min_delta": null,
+              "max_delta": null
+            },
+            "wins_C": 0,
+            "losses_C": 0,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "M1_endpoint72h": {
+          "A": {
+            "n": 1,
+            "median": 23.912,
+            "mean": 23.912,
+            "min": 23.912,
+            "max": 23.912
+          },
+          "C": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "D": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          }
+        },
+        "M2_totalPath": {
+          "A": {
+            "n": 1,
+            "median": 49.933,
+            "mean": 49.933,
+            "min": 49.933,
+            "max": 49.933
+          },
+          "C": {
+            "n": 1,
+            "median": 267.569,
+            "mean": 267.569,
+            "min": 267.569,
+            "max": 267.569
+          },
+          "D": {
+            "n": 1,
+            "median": 267.068,
+            "mean": 267.068,
+            "min": 267.068,
+            "max": 267.068
+          }
+        },
+        "M4_separation72h": {
+          "C_vs_D": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          },
+          "C_vs_A": {
+            "n": 0,
+            "median": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          }
+        },
+        "M5_observed72h": {
+          "n": 1,
+          "median": 352.788,
+          "mean": 352.788,
+          "min": 352.788,
+          "max": 352.788
+        },
+        "role": "CALIBRATION",
+        "smallN": true,
+        "label": "SMALL-N / DESCRIPTIVE ONLY"
+      },
+      "KE-H1": {
+        "n_drifters": 5,
+        "24h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 5,
+            "median": 8.223,
+            "mean": 11.895,
+            "min": 1.941,
+            "max": 23.705
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 5,
+            "median": 15.025,
+            "mean": 18.949,
+            "min": 2.992,
+            "max": 34.495
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 5,
+            "median": 15.017,
+            "mean": 18.847,
+            "min": 2.963,
+            "max": 34.181
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 0,
+            "D": 0
+          },
+          "comparison2_C_vs_D": {
+            "n": 5,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 0.029,
+              "mean_delta": 0.103,
+              "min_delta": -0.002,
+              "max_delta": 0.313
+            },
+            "wins_C": 1,
+            "losses_C": 4,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 5,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 10.444,
+              "mean_delta": 7.054,
+              "min_delta": 1.05,
+              "max_delta": 10.936
+            },
+            "wins_C": 0,
+            "losses_C": 5,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "48h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 5,
+            "median": 21.544,
+            "mean": 24.538,
+            "min": 6.096,
+            "max": 58.664
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 5,
+            "median": 26.378,
+            "mean": 31.602,
+            "min": 4.796,
+            "max": 58.905
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 5,
+            "median": 26.322,
+            "mean": 31.286,
+            "min": 4.765,
+            "max": 57.712
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 0,
+            "D": 0
+          },
+          "comparison2_C_vs_D": {
+            "n": 5,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 0.055,
+              "mean_delta": 0.316,
+              "min_delta": 0.003,
+              "max_delta": 1.194
+            },
+            "wins_C": 0,
+            "losses_C": 5,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 5,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 0.242,
+              "mean_delta": 7.065,
+              "min_delta": -9.694,
+              "max_delta": 28.579
+            },
+            "wins_C": 2,
+            "losses_C": 3,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "72h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 5,
+            "median": 24.444,
+            "mean": 38.464,
+            "min": 12.091,
+            "max": 89.37
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 5,
+            "median": 30.524,
+            "mean": 37.423,
+            "min": 7.037,
+            "max": 69.208
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 5,
+            "median": 30.329,
+            "mean": 36.883,
+            "min": 7.121,
+            "max": 67.189
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 0,
+            "D": 0
+          },
+          "comparison2_C_vs_D": {
+            "n": 5,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 0.261,
+              "mean_delta": 0.54,
+              "min_delta": -0.083,
+              "max_delta": 2.019
+            },
+            "wins_C": 1,
+            "losses_C": 4,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 5,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": -5.054,
+              "mean_delta": -1.041,
+              "min_delta": -25.972,
+              "max_delta": 33.064
+            },
+            "wins_C": 3,
+            "losses_C": 2,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "M1_endpoint72h": {
+          "A": {
+            "n": 5,
+            "median": 79.693,
+            "mean": 78.371,
+            "min": 40.051,
+            "max": 125.215
+          },
+          "C": {
+            "n": 5,
+            "median": 44.501,
+            "mean": 54.249,
+            "min": 15.274,
+            "max": 126.318
+          },
+          "D": {
+            "n": 5,
+            "median": 44.195,
+            "mean": 54.788,
+            "min": 16.852,
+            "max": 126.057
+          }
+        },
+        "M2_totalPath": {
+          "A": {
+            "n": 5,
+            "median": 83.845,
+            "mean": 84.309,
+            "min": 47.599,
+            "max": 128.243
+          },
+          "C": {
+            "n": 5,
+            "median": 44.533,
+            "mean": 56.253,
+            "min": 17.581,
+            "max": 130.913
+          },
+          "D": {
+            "n": 5,
+            "median": 44.227,
+            "mean": 56.762,
+            "min": 18.903,
+            "max": 130.564
+          }
+        },
+        "M4_separation72h": {
+          "C_vs_D": {
+            "n": 5,
+            "median": 0.473,
+            "mean": 0.956,
+            "min": 0.295,
+            "max": 2.108
+          },
+          "C_vs_A": {
+            "n": 5,
+            "median": 47.788,
+            "mean": 53.186,
+            "min": 16.764,
+            "max": 114.333
+          }
+        },
+        "M5_observed72h": {
+          "n": 5,
+          "median": 62.188,
+          "mean": 71.914,
+          "min": 31.456,
+          "max": 112.667
+        },
+        "role": "HOLDOUT",
+        "smallN": true,
+        "label": "SMALL-N / DESCRIPTIVE ONLY"
+      },
+      "KE-H3": {
+        "n_drifters": 7,
+        "24h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 7,
+            "median": 13.802,
+            "mean": 14.82,
+            "min": 7.39,
+            "max": 22.802
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 7,
+            "median": 8.506,
+            "mean": 11.348,
+            "min": 5.228,
+            "max": 19.701
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 7,
+            "median": 8.651,
+            "mean": 11.372,
+            "min": 5.213,
+            "max": 19.711
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 0,
+            "D": 0
+          },
+          "comparison2_C_vs_D": {
+            "n": 7,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 0.015,
+              "mean_delta": -0.023,
+              "min_delta": -0.196,
+              "max_delta": 0.078
+            },
+            "wins_C": 3,
+            "losses_C": 4,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 7,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": -2.162,
+              "mean_delta": -3.472,
+              "min_delta": -14.296,
+              "max_delta": 7.402
+            },
+            "wins_C": 4,
+            "losses_C": 3,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "48h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 7,
+            "median": 22.74,
+            "mean": 25.504,
+            "min": 12.402,
+            "max": 43.279
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 7,
+            "median": 26.06,
+            "mean": 25.913,
+            "min": 9.4,
+            "max": 46.89
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 7,
+            "median": 25.846,
+            "mean": 25.903,
+            "min": 9.56,
+            "max": 46.912
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 0,
+            "D": 0
+          },
+          "comparison2_C_vs_D": {
+            "n": 7,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": -0.022,
+              "mean_delta": 0.01,
+              "min_delta": -0.269,
+              "max_delta": 0.262
+            },
+            "wins_C": 4,
+            "losses_C": 3,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 7,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 3.139,
+              "mean_delta": 0.409,
+              "min_delta": -33.879,
+              "max_delta": 19.432
+            },
+            "wins_C": 3,
+            "losses_C": 4,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "72h": {
+          "error_A_HYCOM_NATIVE_3H": {
+            "n": 7,
+            "median": 33.118,
+            "mean": 38.684,
+            "min": 10.265,
+            "max": 90.497
+          },
+          "error_C_GLORYS_NATIVE_DAILY": {
+            "n": 7,
+            "median": 36.862,
+            "mean": 42.016,
+            "min": 14.309,
+            "max": 83.052
+          },
+          "error_D_GLORYS_COARSE_DAILY": {
+            "n": 7,
+            "median": 36.764,
+            "mean": 42.018,
+            "min": 14.534,
+            "max": 83.052
+          },
+          "NOT_AVAILABLE": {
+            "A": 0,
+            "C": 0,
+            "D": 0
+          },
+          "comparison2_C_vs_D": {
+            "n": 7,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 0.0,
+              "mean_delta": -0.003,
+              "min_delta": -0.322,
+              "max_delta": 0.301
+            },
+            "wins_C": 3,
+            "losses_C": 4,
+            "ties": 0,
+            "winMeaning": "C lower error than D"
+          },
+          "comparison4_C_vs_A": {
+            "n": 7,
+            "notAvailable": 0,
+            "delta": {
+              "median_delta": 3.743,
+              "mean_delta": 3.332,
+              "min_delta": -44.143,
+              "max_delta": 41.819
+            },
+            "wins_C": 2,
+            "losses_C": 5,
+            "ties": 0,
+            "winMeaning": "C lower error than A"
+          }
+        },
+        "M1_endpoint72h": {
+          "A": {
+            "n": 7,
+            "median": 66.716,
+            "mean": 77.804,
+            "min": 12.233,
+            "max": 150.297
+          },
+          "C": {
+            "n": 7,
+            "median": 54.39,
+            "mean": 61.879,
+            "min": 18.674,
+            "max": 120.046
+          },
+          "D": {
+            "n": 7,
+            "median": 54.154,
+            "mean": 61.826,
+            "min": 18.871,
+            "max": 120.024
+          }
+        },
+        "M2_totalPath": {
+          "A": {
+            "n": 7,
+            "median": 82.714,
+            "mean": 104.25,
+            "min": 37.045,
+            "max": 174.169
+          },
+          "C": {
+            "n": 7,
+            "median": 54.753,
+            "mean": 65.643,
+            "min": 19.74,
+            "max": 130.288
+          },
+          "D": {
+            "n": 7,
+            "median": 54.515,
+            "mean": 65.575,
+            "min": 19.912,
+            "max": 130.291
+          }
+        },
+        "M4_separation72h": {
+          "C_vs_D": {
+            "n": 7,
+            "median": 0.301,
+            "mean": 0.295,
+            "min": 0.08,
+            "max": 0.439
+          },
+          "C_vs_A": {
+            "n": 7,
+            "median": 46.699,
+            "mean": 46.143,
+            "min": 20.952,
+            "max": 63.394
+          }
+        },
+        "M5_observed72h": {
+          "n": 7,
+          "median": 79.433,
+          "mean": 77.873,
+          "min": 12.151,
+          "max": 154.559
+        },
+        "role": "HOLDOUT",
+        "smallN": true,
+        "label": "SMALL-N / DESCRIPTIVE ONLY"
+      }
+    },
+    "topErrors_C": {
+      "24h": [
+        {
+          "drifter_id": "127313",
+          "unit": "AG-1",
+          "error_A": 63.55,
+          "error_C": 131.891,
+          "error_D": 131.213
+        },
+        {
+          "drifter_id": "71155",
+          "unit": "KE-1",
+          "error_A": 18.379,
+          "error_C": 76.952,
+          "error_D": 75.956
+        },
+        {
+          "drifter_id": "127199",
+          "unit": "AG-1",
+          "error_A": 144.38,
+          "error_C": 71.146,
+          "error_D": 71.353
+        }
+      ],
+      "48h": [
+        {
+          "drifter_id": "127313",
+          "unit": "AG-1",
+          "error_A": 142.936,
+          "error_C": 289.961,
+          "error_D": 287.687
+        },
+        {
+          "drifter_id": "71155",
+          "unit": "KE-1",
+          "error_A": 37.036,
+          "error_C": 169.072,
+          "error_D": 166.759
+        },
+        {
+          "drifter_id": "127199",
+          "unit": "AG-1",
+          "error_A": 237.391,
+          "error_C": 125.036,
+          "error_D": 124.804
+        }
+      ],
+      "72h": [
+        {
+          "drifter_id": "127313",
+          "unit": "AG-1",
+          "error_A": 238.212,
+          "error_C": 416.26,
+          "error_D": 411.548
+        },
+        {
+          "drifter_id": "71155",
+          "unit": "KE-1",
+          "error_A": 102.331,
+          "error_C": 325.969,
+          "error_D": 322.231
+        },
+        {
+          "drifter_id": "132511",
+          "unit": "AG-1",
+          "error_A": 105.167,
+          "error_C": 151.207,
+          "error_D": 154.545
+        }
+      ]
+    },
+    "exploratorySignTest": {
+      "overall_24h_comparison2_C_vs_D": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 35,
+        "k": 11,
+        "p": 0.04096,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+      },
+      "overall_24h_comparison4_C_vs_A": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 35,
+        "k": 15,
+        "p": 0.49956,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+      },
+      "overall_48h_comparison2_C_vs_D": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 34,
+        "k": 10,
+        "p": 0.024307,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+      },
+      "overall_48h_comparison4_C_vs_A": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 34,
+        "k": 15,
+        "p": 0.607591,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+      },
+      "overall_72h_comparison2_C_vs_D": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 33,
+        "k": 12,
+        "p": 0.162756,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+      },
+      "overall_72h_comparison4_C_vs_A": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 33,
+        "k": 14,
+        "p": 0.48685,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+      },
+      "calibration_24h_comparison2_C_vs_D": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 23,
+        "k": 7,
+        "p": 0.09314,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+      },
+      "calibration_24h_comparison4_C_vs_A": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 23,
+        "k": 11,
+        "p": 1.0,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+      },
+      "calibration_48h_comparison2_C_vs_D": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 22,
+        "k": 6,
+        "p": 0.052479,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+      },
+      "calibration_48h_comparison4_C_vs_A": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 22,
+        "k": 10,
+        "p": 0.831812,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+      },
+      "calibration_72h_comparison2_C_vs_D": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 21,
+        "k": 8,
+        "p": 0.38331,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+      },
+      "calibration_72h_comparison4_C_vs_A": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 21,
+        "k": 9,
+        "p": 0.663624,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+      },
+      "holdout_24h_comparison2_C_vs_D": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 12,
+        "k": 4,
+        "p": 0.387695,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+      },
+      "holdout_24h_comparison4_C_vs_A": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 12,
+        "k": 4,
+        "p": 0.387695,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+      },
+      "holdout_48h_comparison2_C_vs_D": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 12,
+        "k": 4,
+        "p": 0.387695,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+      },
+      "holdout_48h_comparison4_C_vs_A": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 12,
+        "k": 5,
+        "p": 0.774414,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+      },
+      "holdout_72h_comparison2_C_vs_D": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 12,
+        "k": 4,
+        "p": 0.387695,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+      },
+      "holdout_72h_comparison4_C_vs_A": {
+        "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+        "n": 12,
+        "k": 5,
+        "p": 0.774414,
+        "ties_excluded": 0,
+        "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+      }
+    },
+    "step25cCrossCheck": {
+      "pairsCompared": 105,
+      "agreeWithinRounding": 105,
+      "allAgree": true
+    },
+    "labelRules": {
+      "scope": "overall stratum",
+      "primaryHorizonHours": 72,
+      "consistencyFraction": 0.6666666666666666,
+      "signTestMinimumN": 10,
+      "comparison2": "SPATIAL_REPRESENTATION_DIFFERENCE_OBSERVED if |median delta_spatial| > tie AND the fraction of non-tied pairs sharing the median sign >= 2/3; otherwise NO_CLEAR_SPATIAL_REPRESENTATION_DIFFERENCE; direction (native or coarse lower) reported descriptively",
+      "comparison2Labels": [
+        "SPATIAL_REPRESENTATION_DIFFERENCE_OBSERVED",
+        "NO_CLEAR_SPATIAL_REPRESENTATION_DIFFERENCE"
+      ],
+      "comparison4": "identical to the STEP 25C rule: GLORYS_DESCRIPTIVELY_FAVORED if median delta_product < -tie AND wins/(wins+losses) >= 2/3; HYCOM_DESCRIPTIVELY_FAVORED if median > +tie AND losses/(wins+losses) >= 2/3; otherwise NO_CLEAR_DESCRIPTIVE_DIFFERENCE",
+      "comparison4Labels": [
+        "GLORYS_DESCRIPTIVELY_FAVORED",
+        "HYCOM_DESCRIPTIVELY_FAVORED",
+        "NO_CLEAR_DESCRIPTIVE_DIFFERENCE"
+      ],
+      "modelSelection": false
+    },
+    "descriptiveLabel": {
+      "comparison2": {
+        "primary": "NO_CLEAR_SPATIAL_REPRESENTATION_DIFFERENCE",
+        "direction": "coarse lower error",
+        "byStratum": {
+          "overall": {
+            "label": "NO_CLEAR_SPATIAL_REPRESENTATION_DIFFERENCE",
+            "direction": "coarse lower error"
+          },
+          "calibration": {
+            "label": "NO_CLEAR_SPATIAL_REPRESENTATION_DIFFERENCE",
+            "direction": "coarse lower error"
+          },
+          "holdout": {
+            "label": "SPATIAL_REPRESENTATION_DIFFERENCE_OBSERVED",
+            "direction": "coarse lower error"
+          }
+        }
+      },
+      "comparison4": {
+        "primary": "NO_CLEAR_DESCRIPTIVE_DIFFERENCE",
+        "byStratum": {
+          "overall": "NO_CLEAR_DESCRIPTIVE_DIFFERENCE",
+          "calibration": "NO_CLEAR_DESCRIPTIVE_DIFFERENCE",
+          "holdout": "NO_CLEAR_DESCRIPTIVE_DIFFERENCE"
+        }
+      }
+    },
+    "KE-H2": "EXCLUDED (immutable STEP 20 HYCOM baseline unavailable); GLORYS coverage recorded in STEP 25B only; no paired result",
+    "AG_holdout": "UNAVAILABLE",
+    "outlierPolicyApplied": {
+      "removed": 0,
+      "trimmed": 0,
+      "winsorized": 0,
+      "weighted": 0,
+      "deleted": 0,
+      "manualExclusions": 0
+    },
+    "acceptanceThresholds": "NONE",
+    "parameterSelection": "NONE",
+    "modelSelection": "NONE",
+    "hycomRerun": false,
+    "conditionBExecuted": false,
+    "interpretation": "DESCRIPTIVE ONLY",
+    "statements": [
+      "STEP 26 Phase B is a descriptive decomposition; no statistical significance, causal, universal or operational superiority claim is made.",
+      "Comparison 2 isolates spatial representation within one product (GLORYS, same cadence, same 15.810070 m depth).",
+      "Comparison 4 differs by ocean product, cadence and native depth (15.000 m vs 15.810070 m, difference 0.810070 m); the depth confound is disclosed, not attributed.",
+      "Comparisons 1 and 3 remain BLOCKED (HYCOM_DAILY not constructible from existing frames); no re-acquisition was attempted.",
+      "The HYCOM reference is the immutable STEP 20 record; STEP 25C is unchanged; alpha = 0.002 is unchanged.",
+      "No forcing is selected; no TEST-06 and no STEP 27 follows from this result."
+    ]
+  },
+  "tableSha256": "9fb9ba7bb4db09651a3edf079cea7802b9bb470b66b8033e9a0264e6baa8cb23",
+  "summarySha256": "bc242bb58cf98630c529e6c5f8dfaf1e05bce5b218ced248ced29aab22a3fce6",
+  "tool": {
+    "file": "tools/research/evaluate_step26_phase_b.py",
+    "sha256": "d25141d5a37d81a06dd9191eec04fd296d99b1c32d26dc4a7de66e6411b34e42"
+  },
+  "deterministic": true,
+  "randomSeed": null,
+  "positionalToleranceInM3": null
+}

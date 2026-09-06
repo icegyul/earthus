@@ -1,0 +1,2544 @@
+{
+  "ruleId": "forcing-decomposition-step26",
+  "phase": "B",
+  "status": "STEP26_COMPLETE",
+  "alpha": 0.002,
+  "horizons": [
+    24,
+    48,
+    72
+  ],
+  "tieToleranceKm": 1e-06,
+  "conditions": {
+    "A": {
+      "name": "HYCOM_NATIVE_3H",
+      "role": "REFERENCE ONLY (immutable STEP 20 alpha 0.002)",
+      "newRuns": 0,
+      "depthMeters": 15.0
+    },
+    "B": {
+      "name": "HYCOM_DAILY",
+      "status": "BLOCKED",
+      "reason": "HYCOM daily forcing cannot be derived: the native 3-hour source frames are incomplete for the complete registered windows (two complete UTC days per window; five required); no re-acquisition in Phase B"
+    },
+    "C": {
+      "name": "GLORYS_NATIVE_DAILY",
+      "runs": 6,
+      "depthMeters": 15.81007,
+      "reproductionAgainstStep25C": true
+    },
+    "D": {
+      "name": "GLORYS_COARSE_DAILY",
+      "runs": 6,
+      "depthMeters": 15.81007,
+      "derivation": "bilinear onto the immutable HYCOM grid (glorys-to-hycom-grid-bilinear/1)"
+    }
+  },
+  "depthAudit": {
+    "hycomDepthMeters": "15.000 m",
+    "glorysDepthMeters": "15.810070 m",
+    "depthDifferenceMeters": "0.810070 m",
+    "identicalDepthForcing": false,
+    "attributedInStep26": false,
+    "note": "confound remains in Comparison 4; Comparison 2 is depth-matched (both GLORYS 15.810070 m)"
+  },
+  "comparisons": {
+    "1": {
+      "name": "HYCOM_NATIVE_3H vs HYCOM_DAILY",
+      "status": "BLOCKED",
+      "reason": "HYCOM daily forcing cannot be derived because the required native 3-hour source frames are incomplete for the complete registered windows"
+    },
+    "2": {
+      "name": "GLORYS_NATIVE_DAILY vs GLORYS_COARSE_DAILY",
+      "status": "EVALUATED",
+      "delta": "E_C - E_D (km); negative = native lower error",
+      "onlyIntentionalDifference": "native 1/12 degree GLORYS grid vs bilinear HYCOM-grid (0.08 degree) representation of the same GLORYS fields; wind, alpha, depth, cadence, labels, mechanics identical"
+    },
+    "3": {
+      "name": "HYCOM_DAILY vs GLORYS_COARSE_DAILY",
+      "status": "BLOCKED",
+      "reason": "depends on HYCOM_DAILY"
+    },
+    "4": {
+      "name": "HYCOM_NATIVE_3H vs GLORYS_NATIVE_DAILY",
+      "status": "EVALUATED",
+      "delta": "E_C - E_A (km); negative = GLORYS lower error",
+      "differences": "ocean forcing product, cadence (3 h vs daily mean) and native depth (15.000 vs 15.810070 m) identity as defined in STEP 26; not a pure spatial or temporal test",
+      "reproducesStep25C": true
+    }
+  },
+  "strata": {
+    "overall": {
+      "n_drifters": 35,
+      "24h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 35,
+          "median": 17.762,
+          "mean": 29.388,
+          "min": 1.487,
+          "max": 144.38
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 35,
+          "median": 19.701,
+          "mean": 28.277,
+          "min": 2.66,
+          "max": 131.891
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 35,
+          "median": 19.711,
+          "mean": 28.12,
+          "min": 2.659,
+          "max": 131.213
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 0,
+          "D": 0
+        },
+        "comparison2_C_vs_D": {
+          "n": 35,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 0.029,
+            "mean_delta": 0.157,
+            "min_delta": -0.51,
+            "max_delta": 0.996
+          },
+          "wins_C": 11,
+          "losses_C": 24,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 35,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 1.366,
+            "mean_delta": -1.111,
+            "min_delta": -88.433,
+            "max_delta": 68.341
+          },
+          "wins_C": 15,
+          "losses_C": 20,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "48h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 35,
+          "median": 33.816,
+          "mean": 53.679,
+          "min": 5.112,
+          "max": 238.223
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 34,
+          "median": 39.54,
+          "mean": 55.615,
+          "min": 4.796,
+          "max": 289.961
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 34,
+          "median": 39.164,
+          "mean": 55.275,
+          "min": 4.765,
+          "max": 287.687
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 1,
+          "D": 1
+        },
+        "comparison2_C_vs_D": {
+          "n": 34,
+          "notAvailable": 1,
+          "delta": {
+            "median_delta": 0.222,
+            "mean_delta": 0.34,
+            "min_delta": -1.582,
+            "max_delta": 2.313
+          },
+          "wins_C": 10,
+          "losses_C": 24,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 34,
+          "notAvailable": 1,
+          "delta": {
+            "median_delta": 4.915,
+            "mean_delta": 7.206,
+            "min_delta": -113.348,
+            "max_delta": 147.026
+          },
+          "wins_C": 15,
+          "losses_C": 19,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "72h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 35,
+          "median": 48.81,
+          "mean": 83.136,
+          "min": 10.265,
+          "max": 331.318
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 33,
+          "median": 51.988,
+          "mean": 77.259,
+          "min": 7.037,
+          "max": 416.26
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 33,
+          "median": 51.782,
+          "mean": 76.721,
+          "min": 7.121,
+          "max": 411.548
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 2,
+          "D": 2
+        },
+        "comparison2_C_vs_D": {
+          "n": 33,
+          "notAvailable": 2,
+          "delta": {
+            "median_delta": 0.198,
+            "mean_delta": 0.539,
+            "min_delta": -3.338,
+            "max_delta": 4.713
+          },
+          "wins_C": 12,
+          "losses_C": 21,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 33,
+          "notAvailable": 2,
+          "delta": {
+            "median_delta": 2.167,
+            "mean_delta": 0.586,
+            "min_delta": -175.68,
+            "max_delta": 223.639
+          },
+          "wins_C": 14,
+          "losses_C": 19,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "M1_endpoint72h": {
+        "A": {
+          "n": 35,
+          "median": 93.295,
+          "mean": 102.058,
+          "min": 11.989,
+          "max": 240.965
+        },
+        "C": {
+          "n": 33,
+          "median": 67.628,
+          "mean": 94.895,
+          "min": 15.274,
+          "max": 349.635
+        },
+        "D": {
+          "n": 33,
+          "median": 68.438,
+          "mean": 94.82,
+          "min": 16.852,
+          "max": 345.893
+        }
+      },
+      "M2_totalPath": {
+        "A": {
+          "n": 35,
+          "median": 104.989,
+          "mean": 118.9,
+          "min": 37.045,
+          "max": 255.853
+        },
+        "C": {
+          "n": 35,
+          "median": 79.782,
+          "mean": 111.207,
+          "min": 17.581,
+          "max": 374.344
+        },
+        "D": {
+          "n": 35,
+          "median": 77.928,
+          "mean": 110.913,
+          "min": 18.903,
+          "max": 370.309
+        }
+      },
+      "M4_separation72h": {
+        "C_vs_D": {
+          "n": 33,
+          "median": 0.473,
+          "mean": 1.185,
+          "min": 0.08,
+          "max": 4.992
+        },
+        "C_vs_A": {
+          "n": 33,
+          "median": 51.034,
+          "mean": 89.139,
+          "min": 16.764,
+          "max": 257.165
+        }
+      },
+      "M5_observed72h": {
+        "n": 35,
+        "median": 85.528,
+        "mean": 115.128,
+        "min": 12.151,
+        "max": 449.489
+      }
+    },
+    "calibration": {
+      "n_drifters": 23,
+      "24h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 23,
+          "median": 25.126,
+          "mean": 37.624,
+          "min": 1.487,
+          "max": 144.38
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 23,
+          "median": 27.383,
+          "mean": 35.456,
+          "min": 2.66,
+          "max": 131.891
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 23,
+          "median": 27.489,
+          "mean": 35.233,
+          "min": 2.659,
+          "max": 131.213
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 0,
+          "D": 0
+        },
+        "comparison2_C_vs_D": {
+          "n": 23,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 0.226,
+            "mean_delta": 0.224,
+            "min_delta": -0.51,
+            "max_delta": 0.996
+          },
+          "wins_C": 7,
+          "losses_C": 16,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 23,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 3.974,
+            "mean_delta": -2.168,
+            "min_delta": -88.433,
+            "max_delta": 68.341
+          },
+          "wins_C": 11,
+          "losses_C": 12,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "48h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 23,
+          "median": 39.026,
+          "mean": 68.59,
+          "min": 5.112,
+          "max": 238.223
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 22,
+          "median": 50.243,
+          "mean": 70.523,
+          "min": 7.082,
+          "max": 289.961
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 22,
+          "median": 49.513,
+          "mean": 70.073,
+          "min": 6.318,
+          "max": 287.687
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 1,
+          "D": 1
+        },
+        "comparison2_C_vs_D": {
+          "n": 22,
+          "notAvailable": 1,
+          "delta": {
+            "median_delta": 0.242,
+            "mean_delta": 0.45,
+            "min_delta": -1.582,
+            "max_delta": 2.313
+          },
+          "wins_C": 6,
+          "losses_C": 16,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 22,
+          "notAvailable": 1,
+          "delta": {
+            "median_delta": 7.03,
+            "mean_delta": 9.401,
+            "min_delta": -113.348,
+            "max_delta": 147.026
+          },
+          "wins_C": 10,
+          "losses_C": 12,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "72h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 23,
+          "median": 59.055,
+          "mean": 106.376,
+          "min": 16.207,
+          "max": 331.318
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 21,
+          "median": 63.535,
+          "mean": 98.492,
+          "min": 10.262,
+          "max": 416.26
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 21,
+          "median": 63.507,
+          "mean": 97.774,
+          "min": 10.627,
+          "max": 411.548
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 2,
+          "D": 2
+        },
+        "comparison2_C_vs_D": {
+          "n": 21,
+          "notAvailable": 2,
+          "delta": {
+            "median_delta": 0.313,
+            "mean_delta": 0.719,
+            "min_delta": -3.338,
+            "max_delta": 4.713
+          },
+          "wins_C": 8,
+          "losses_C": 13,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 21,
+          "notAvailable": 2,
+          "delta": {
+            "median_delta": 0.706,
+            "mean_delta": 0.058,
+            "min_delta": -175.68,
+            "max_delta": 223.639
+          },
+          "wins_C": 9,
+          "losses_C": 12,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "M1_endpoint72h": {
+        "A": {
+          "n": 23,
+          "median": 98.344,
+          "mean": 114.589,
+          "min": 11.989,
+          "max": 240.965
+        },
+        "C": {
+          "n": 21,
+          "median": 79.647,
+          "mean": 115.577,
+          "min": 19.203,
+          "max": 349.635
+        },
+        "D": {
+          "n": 21,
+          "median": 77.83,
+          "mean": 115.349,
+          "min": 19.587,
+          "max": 345.893
+        }
+      },
+      "M2_totalPath": {
+        "A": {
+          "n": 23,
+          "median": 108.383,
+          "mean": 130.878,
+          "min": 44.318,
+          "max": 255.853
+        },
+        "C": {
+          "n": 23,
+          "median": 90.149,
+          "mean": 137.02,
+          "min": 22.883,
+          "max": 374.344
+        },
+        "D": {
+          "n": 23,
+          "median": 87.755,
+          "mean": 136.483,
+          "min": 21.653,
+          "max": 370.309
+        }
+      },
+      "M4_separation72h": {
+        "C_vs_D": {
+          "n": 21,
+          "median": 1.173,
+          "mean": 1.536,
+          "min": 0.134,
+          "max": 4.992
+        },
+        "C_vs_A": {
+          "n": 21,
+          "median": 86.539,
+          "mean": 112.031,
+          "min": 17.882,
+          "max": 257.165
+        }
+      },
+      "M5_observed72h": {
+        "n": 23,
+        "median": 98.763,
+        "mean": 135.861,
+        "min": 16.535,
+        "max": 449.489
+      }
+    },
+    "holdout": {
+      "n_drifters": 12,
+      "24h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 12,
+          "median": 13.437,
+          "mean": 13.601,
+          "min": 1.941,
+          "max": 23.705
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 12,
+          "median": 12.356,
+          "mean": 14.515,
+          "min": 2.992,
+          "max": 34.495
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 12,
+          "median": 12.345,
+          "mean": 14.486,
+          "min": 2.963,
+          "max": 34.181
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 0,
+          "D": 0
+        },
+        "comparison2_C_vs_D": {
+          "n": 12,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 0.019,
+            "mean_delta": 0.029,
+            "min_delta": -0.196,
+            "max_delta": 0.313
+          },
+          "wins_C": 4,
+          "losses_C": 8,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 12,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 1.208,
+            "mean_delta": 0.914,
+            "min_delta": -14.296,
+            "max_delta": 10.936
+          },
+          "wins_C": 4,
+          "losses_C": 8,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "48h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 12,
+          "median": 22.142,
+          "mean": 25.101,
+          "min": 6.096,
+          "max": 58.664
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 12,
+          "median": 26.219,
+          "mean": 28.284,
+          "min": 4.796,
+          "max": 58.905
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 12,
+          "median": 26.084,
+          "mean": 28.146,
+          "min": 4.765,
+          "max": 57.712
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 0,
+          "D": 0
+        },
+        "comparison2_C_vs_D": {
+          "n": 12,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 0.043,
+            "mean_delta": 0.138,
+            "min_delta": -0.269,
+            "max_delta": 1.194
+          },
+          "wins_C": 4,
+          "losses_C": 8,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 12,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 1.691,
+            "mean_delta": 3.182,
+            "min_delta": -33.879,
+            "max_delta": 28.579
+          },
+          "wins_C": 5,
+          "losses_C": 7,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "72h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 12,
+          "median": 31.308,
+          "mean": 38.592,
+          "min": 10.265,
+          "max": 90.497
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 12,
+          "median": 34.263,
+          "mean": 40.102,
+          "min": 7.037,
+          "max": 83.052
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 12,
+          "median": 34.375,
+          "mean": 39.879,
+          "min": 7.121,
+          "max": 83.052
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 0,
+          "D": 0
+        },
+        "comparison2_C_vs_D": {
+          "n": 12,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 0.128,
+            "mean_delta": 0.224,
+            "min_delta": -0.322,
+            "max_delta": 2.019
+          },
+          "wins_C": 4,
+          "losses_C": 8,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 12,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 2.955,
+            "mean_delta": 1.51,
+            "min_delta": -44.143,
+            "max_delta": 41.819
+          },
+          "wins_C": 5,
+          "losses_C": 7,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "M1_endpoint72h": {
+        "A": {
+          "n": 12,
+          "median": 73.204,
+          "mean": 78.041,
+          "min": 12.233,
+          "max": 150.297
+        },
+        "C": {
+          "n": 12,
+          "median": 47.12,
+          "mean": 58.7,
+          "min": 15.274,
+          "max": 126.318
+        },
+        "D": {
+          "n": 12,
+          "median": 47.596,
+          "mean": 58.893,
+          "min": 16.852,
+          "max": 126.057
+        }
+      },
+      "M2_totalPath": {
+        "A": {
+          "n": 12,
+          "median": 83.279,
+          "mean": 95.941,
+          "min": 37.045,
+          "max": 174.169
+        },
+        "C": {
+          "n": 12,
+          "median": 48.657,
+          "mean": 61.73,
+          "min": 17.581,
+          "max": 130.913
+        },
+        "D": {
+          "n": 12,
+          "median": 49.229,
+          "mean": 61.903,
+          "min": 18.903,
+          "max": 130.564
+        }
+      },
+      "M4_separation72h": {
+        "C_vs_D": {
+          "n": 12,
+          "median": 0.321,
+          "mean": 0.57,
+          "min": 0.08,
+          "max": 2.108
+        },
+        "C_vs_A": {
+          "n": 12,
+          "median": 47.243,
+          "mean": 49.077,
+          "min": 16.764,
+          "max": 114.333
+        }
+      },
+      "M5_observed72h": {
+        "n": 12,
+        "median": 70.81,
+        "mean": 75.39,
+        "min": 12.151,
+        "max": 154.559
+      }
+    }
+  },
+  "perWindow": {
+    "KE-1": {
+      "n_drifters": 8,
+      "24h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 8,
+          "median": 13.999,
+          "mean": 14.762,
+          "min": 6.03,
+          "max": 26.129
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 8,
+          "median": 24.043,
+          "mean": 30.279,
+          "min": 2.66,
+          "max": 76.952
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 8,
+          "median": 23.522,
+          "mean": 29.949,
+          "min": 2.659,
+          "max": 75.956
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 0,
+          "D": 0
+        },
+        "comparison2_C_vs_D": {
+          "n": 8,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 0.227,
+            "mean_delta": 0.331,
+            "min_delta": -0.033,
+            "max_delta": 0.996
+          },
+          "wins_C": 1,
+          "losses_C": 7,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 8,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 9.346,
+            "mean_delta": 15.518,
+            "min_delta": -9.727,
+            "max_delta": 58.573
+          },
+          "wins_C": 2,
+          "losses_C": 6,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "48h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 8,
+          "median": 27.56,
+          "mean": 25.98,
+          "min": 5.112,
+          "max": 39.026
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 8,
+          "median": 43.986,
+          "mean": 55.375,
+          "min": 11.886,
+          "max": 169.072
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 8,
+          "median": 43.604,
+          "mean": 54.807,
+          "min": 12.5,
+          "max": 166.759
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 0,
+          "D": 0
+        },
+        "comparison2_C_vs_D": {
+          "n": 8,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 0.324,
+            "mean_delta": 0.568,
+            "min_delta": -0.614,
+            "max_delta": 2.313
+          },
+          "wins_C": 2,
+          "losses_C": 6,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 8,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 10.192,
+            "mean_delta": 29.395,
+            "min_delta": -9.849,
+            "max_delta": 132.036
+          },
+          "wins_C": 3,
+          "losses_C": 5,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "72h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 8,
+          "median": 45.956,
+          "mean": 47.08,
+          "min": 16.207,
+          "max": 102.331
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 7,
+          "median": 32.042,
+          "mean": 83.603,
+          "min": 18.783,
+          "max": 325.969
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 7,
+          "median": 30.813,
+          "mean": 82.528,
+          "min": 18.833,
+          "max": 322.231
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 1,
+          "D": 1
+        },
+        "comparison2_C_vs_D": {
+          "n": 7,
+          "notAvailable": 1,
+          "delta": {
+            "median_delta": 0.313,
+            "mean_delta": 1.075,
+            "min_delta": -0.05,
+            "max_delta": 3.738
+          },
+          "wins_C": 1,
+          "losses_C": 6,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 7,
+          "notAvailable": 1,
+          "delta": {
+            "median_delta": 7.283,
+            "mean_delta": 36.687,
+            "min_delta": -40.272,
+            "max_delta": 223.639
+          },
+          "wins_C": 2,
+          "losses_C": 5,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "M1_endpoint72h": {
+        "A": {
+          "n": 8,
+          "median": 65.895,
+          "mean": 83.138,
+          "min": 11.989,
+          "max": 172.172
+        },
+        "C": {
+          "n": 7,
+          "median": 75.353,
+          "mean": 99.915,
+          "min": 22.685,
+          "max": 349.635
+        },
+        "D": {
+          "n": 7,
+          "median": 75.077,
+          "mean": 98.793,
+          "min": 22.401,
+          "max": 345.893
+        }
+      },
+      "M2_totalPath": {
+        "A": {
+          "n": 8,
+          "median": 86.54,
+          "mean": 104.676,
+          "min": 44.318,
+          "max": 193.528
+        },
+        "C": {
+          "n": 8,
+          "median": 83.911,
+          "mean": 126.42,
+          "min": 32.803,
+          "max": 374.344
+        },
+        "D": {
+          "n": 8,
+          "median": 82.716,
+          "mean": 124.821,
+          "min": 31.847,
+          "max": 370.309
+        }
+      },
+      "M4_separation72h": {
+        "C_vs_D": {
+          "n": 7,
+          "median": 1.533,
+          "mean": 1.528,
+          "min": 0.209,
+          "max": 3.807
+        },
+        "C_vs_A": {
+          "n": 7,
+          "median": 62.511,
+          "mean": 84.665,
+          "min": 17.882,
+          "max": 224.622
+        }
+      },
+      "M5_observed72h": {
+        "n": 8,
+        "median": 62.84,
+        "mean": 79.529,
+        "min": 16.535,
+        "max": 204.736
+      },
+      "role": "CALIBRATION",
+      "smallN": true,
+      "label": "SMALL-N / DESCRIPTIVE ONLY"
+    },
+    "KE-2": {
+      "n_drifters": 5,
+      "24h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 5,
+          "median": 14.072,
+          "mean": 16.365,
+          "min": 1.487,
+          "max": 28.443
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 5,
+          "median": 11.536,
+          "mean": 12.03,
+          "min": 4.427,
+          "max": 20.568
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 5,
+          "median": 11.51,
+          "mean": 11.834,
+          "min": 4.106,
+          "max": 20.543
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 0,
+          "D": 0
+        },
+        "comparison2_C_vs_D": {
+          "n": 5,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 0.231,
+            "mean_delta": 0.195,
+            "min_delta": 0.026,
+            "max_delta": 0.372
+          },
+          "wins_C": 0,
+          "losses_C": 5,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 5,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": -0.251,
+            "mean_delta": -4.335,
+            "min_delta": -24.016,
+            "max_delta": 12.553
+          },
+          "wins_C": 3,
+          "losses_C": 2,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "48h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 5,
+          "median": 30.812,
+          "mean": 41.386,
+          "min": 7.466,
+          "max": 77.943
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 5,
+          "median": 15.402,
+          "mean": 20.519,
+          "min": 7.082,
+          "max": 37.503
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 5,
+          "median": 15.076,
+          "mean": 20.128,
+          "min": 6.318,
+          "max": 37.263
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 0,
+          "D": 0
+        },
+        "comparison2_C_vs_D": {
+          "n": 5,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 0.326,
+            "mean_delta": 0.392,
+            "min_delta": -0.025,
+            "max_delta": 0.764
+          },
+          "wins_C": 1,
+          "losses_C": 4,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 5,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": -13.919,
+            "mean_delta": -20.867,
+            "min_delta": -62.542,
+            "max_delta": 26.259
+          },
+          "wins_C": 3,
+          "losses_C": 2,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "72h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 5,
+          "median": 44.239,
+          "mean": 70.926,
+          "min": 20.569,
+          "max": 158.931
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 5,
+          "median": 21.727,
+          "mean": 29.927,
+          "min": 10.262,
+          "max": 51.677
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 5,
+          "median": 21.78,
+          "mean": 29.454,
+          "min": 10.627,
+          "max": 51.0
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 0,
+          "D": 0
+        },
+        "comparison2_C_vs_D": {
+          "n": 5,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 0.677,
+            "mean_delta": 0.473,
+            "min_delta": -0.364,
+            "max_delta": 1.173
+          },
+          "wins_C": 2,
+          "losses_C": 3,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 5,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": -10.307,
+            "mean_delta": -40.999,
+            "min_delta": -143.954,
+            "max_delta": 24.284
+          },
+          "wins_C": 3,
+          "losses_C": 2,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "M1_endpoint72h": {
+        "A": {
+          "n": 5,
+          "median": 93.295,
+          "mean": 86.144,
+          "min": 45.298,
+          "max": 139.966
+        },
+        "C": {
+          "n": 5,
+          "median": 67.628,
+          "mean": 66.429,
+          "min": 20.751,
+          "max": 115.598
+        },
+        "D": {
+          "n": 5,
+          "median": 68.438,
+          "mean": 66.008,
+          "min": 19.587,
+          "max": 115.724
+        }
+      },
+      "M2_totalPath": {
+        "A": {
+          "n": 5,
+          "median": 100.092,
+          "mean": 91.406,
+          "min": 49.12,
+          "max": 150.073
+        },
+        "C": {
+          "n": 5,
+          "median": 68.565,
+          "mean": 70.961,
+          "min": 22.883,
+          "max": 128.603
+        },
+        "D": {
+          "n": 5,
+          "median": 69.437,
+          "mean": 70.422,
+          "min": 21.653,
+          "max": 128.599
+        }
+      },
+      "M4_separation72h": {
+        "C_vs_D": {
+          "n": 5,
+          "median": 1.173,
+          "mean": 1.304,
+          "min": 0.228,
+          "max": 3.011
+        },
+        "C_vs_A": {
+          "n": 5,
+          "median": 65.895,
+          "mean": 76.404,
+          "min": 29.788,
+          "max": 167.628
+        }
+      },
+      "M5_observed72h": {
+        "n": 5,
+        "median": 70.905,
+        "mean": 79.548,
+        "min": 37.048,
+        "max": 131.458
+      },
+      "role": "CALIBRATION",
+      "smallN": true,
+      "label": "SMALL-N / DESCRIPTIVE ONLY"
+    },
+    "AG-1": {
+      "n_drifters": 9,
+      "24h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 9,
+          "median": 39.952,
+          "mean": 60.952,
+          "min": 23.293,
+          "max": 144.38
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 9,
+          "median": 45.029,
+          "mean": 53.854,
+          "min": 18.05,
+          "max": 131.891
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 9,
+          "median": 45.539,
+          "mean": 53.749,
+          "min": 18.32,
+          "max": 131.213
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 0,
+          "D": 0
+        },
+        "comparison2_C_vs_D": {
+          "n": 9,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": -0.106,
+            "mean_delta": 0.104,
+            "min_delta": -0.51,
+            "max_delta": 0.919
+          },
+          "wins_C": 6,
+          "losses_C": 3,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 9,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": -1.441,
+            "mean_delta": -7.098,
+            "min_delta": -73.642,
+            "max_delta": 68.341
+          },
+          "wins_C": 5,
+          "losses_C": 4,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "48h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 9,
+          "median": 60.676,
+          "mean": 103.323,
+          "min": 19.304,
+          "max": 238.223
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 9,
+          "median": 99.332,
+          "mean": 111.768,
+          "min": 52.823,
+          "max": 289.961
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 9,
+          "median": 98.382,
+          "mean": 111.39,
+          "min": 52.586,
+          "max": 287.687
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 0,
+          "D": 0
+        },
+        "comparison2_C_vs_D": {
+          "n": 9,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 0.232,
+            "mean_delta": 0.378,
+            "min_delta": -1.582,
+            "max_delta": 2.275
+          },
+          "wins_C": 3,
+          "losses_C": 6,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 9,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 16.727,
+            "mean_delta": 8.445,
+            "min_delta": -113.348,
+            "max_delta": 147.026
+          },
+          "wins_C": 4,
+          "losses_C": 5,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "72h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 9,
+          "median": 106.115,
+          "mean": 153.786,
+          "min": 45.89,
+          "max": 323.38
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 9,
+          "median": 143.744,
+          "mean": 148.164,
+          "min": 63.504,
+          "max": 416.26
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 9,
+          "median": 141.369,
+          "mean": 147.587,
+          "min": 63.507,
+          "max": 411.548
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 0,
+          "D": 0
+        },
+        "comparison2_C_vs_D": {
+          "n": 9,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": -0.004,
+            "mean_delta": 0.577,
+            "min_delta": -3.338,
+            "max_delta": 4.713
+          },
+          "wins_C": 5,
+          "losses_C": 4,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 9,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 0.706,
+            "mean_delta": -5.622,
+            "min_delta": -175.68,
+            "max_delta": 178.048
+          },
+          "wins_C": 4,
+          "losses_C": 5,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "M1_endpoint72h": {
+        "A": {
+          "n": 9,
+          "median": 182.984,
+          "mean": 168.424,
+          "min": 88.772,
+          "max": 240.965
+        },
+        "C": {
+          "n": 9,
+          "median": 166.876,
+          "mean": 155.064,
+          "min": 19.203,
+          "max": 323.313
+        },
+        "D": {
+          "n": 9,
+          "median": 166.788,
+          "mean": 155.637,
+          "min": 20.443,
+          "max": 321.023
+        }
+      },
+      "M2_totalPath": {
+        "A": {
+          "n": 9,
+          "median": 186.979,
+          "mean": 185.092,
+          "min": 108.383,
+          "max": 255.853
+        },
+        "C": {
+          "n": 9,
+          "median": 168.387,
+          "mean": 168.637,
+          "min": 24.573,
+          "max": 332.85
+        },
+        "D": {
+          "n": 9,
+          "median": 167.494,
+          "mean": 169.041,
+          "min": 24.701,
+          "max": 330.371
+        }
+      },
+      "M4_separation72h": {
+        "C_vs_D": {
+          "n": 9,
+          "median": 0.894,
+          "mean": 1.672,
+          "min": 0.134,
+          "max": 4.992
+        },
+        "C_vs_A": {
+          "n": 9,
+          "median": 169.759,
+          "mean": 153.107,
+          "min": 22.13,
+          "max": 257.165
+        }
+      },
+      "M5_observed72h": {
+        "n": 9,
+        "median": 135.1,
+        "mean": 193.115,
+        "min": 80.755,
+        "max": 449.489
+      },
+      "role": "CALIBRATION",
+      "smallN": true,
+      "label": "SMALL-N / DESCRIPTIVE ONLY"
+    },
+    "AG-2": {
+      "n_drifters": 1,
+      "24h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 1,
+          "median": 116.865,
+          "mean": 116.865,
+          "min": 116.865,
+          "max": 116.865
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 1,
+          "median": 28.432,
+          "mean": 28.432,
+          "min": 28.432,
+          "max": 28.432
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 1,
+          "median": 27.845,
+          "mean": 27.845,
+          "min": 27.845,
+          "max": 27.845
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 0,
+          "D": 0
+        },
+        "comparison2_C_vs_D": {
+          "n": 1,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 0.587,
+            "mean_delta": 0.587,
+            "min_delta": 0.587,
+            "max_delta": 0.587
+          },
+          "wins_C": 0,
+          "losses_C": 1,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 1,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": -88.433,
+            "mean_delta": -88.433,
+            "min_delta": -88.433,
+            "max_delta": -88.433
+          },
+          "wins_C": 1,
+          "losses_C": 0,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "48h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 1,
+          "median": 232.889,
+          "mean": 232.889,
+          "min": 232.889,
+          "max": 232.889
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 0,
+          "median": null,
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 0,
+          "median": null,
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 1,
+          "D": 1
+        },
+        "comparison2_C_vs_D": {
+          "n": 0,
+          "notAvailable": 1,
+          "delta": {
+            "median_delta": null,
+            "mean_delta": null,
+            "min_delta": null,
+            "max_delta": null
+          },
+          "wins_C": 0,
+          "losses_C": 0,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 0,
+          "notAvailable": 1,
+          "delta": {
+            "median_delta": null,
+            "mean_delta": null,
+            "min_delta": null,
+            "max_delta": null
+          },
+          "wins_C": 0,
+          "losses_C": 0,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "72h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 1,
+          "median": 331.318,
+          "mean": 331.318,
+          "min": 331.318,
+          "max": 331.318
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 0,
+          "median": null,
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 0,
+          "median": null,
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 1,
+          "D": 1
+        },
+        "comparison2_C_vs_D": {
+          "n": 0,
+          "notAvailable": 1,
+          "delta": {
+            "median_delta": null,
+            "mean_delta": null,
+            "min_delta": null,
+            "max_delta": null
+          },
+          "wins_C": 0,
+          "losses_C": 0,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 0,
+          "notAvailable": 1,
+          "delta": {
+            "median_delta": null,
+            "mean_delta": null,
+            "min_delta": null,
+            "max_delta": null
+          },
+          "wins_C": 0,
+          "losses_C": 0,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "M1_endpoint72h": {
+        "A": {
+          "n": 1,
+          "median": 23.912,
+          "mean": 23.912,
+          "min": 23.912,
+          "max": 23.912
+        },
+        "C": {
+          "n": 0,
+          "median": null,
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "D": {
+          "n": 0,
+          "median": null,
+          "mean": null,
+          "min": null,
+          "max": null
+        }
+      },
+      "M2_totalPath": {
+        "A": {
+          "n": 1,
+          "median": 49.933,
+          "mean": 49.933,
+          "min": 49.933,
+          "max": 49.933
+        },
+        "C": {
+          "n": 1,
+          "median": 267.569,
+          "mean": 267.569,
+          "min": 267.569,
+          "max": 267.569
+        },
+        "D": {
+          "n": 1,
+          "median": 267.068,
+          "mean": 267.068,
+          "min": 267.068,
+          "max": 267.068
+        }
+      },
+      "M4_separation72h": {
+        "C_vs_D": {
+          "n": 0,
+          "median": null,
+          "mean": null,
+          "min": null,
+          "max": null
+        },
+        "C_vs_A": {
+          "n": 0,
+          "median": null,
+          "mean": null,
+          "min": null,
+          "max": null
+        }
+      },
+      "M5_observed72h": {
+        "n": 1,
+        "median": 352.788,
+        "mean": 352.788,
+        "min": 352.788,
+        "max": 352.788
+      },
+      "role": "CALIBRATION",
+      "smallN": true,
+      "label": "SMALL-N / DESCRIPTIVE ONLY"
+    },
+    "KE-H1": {
+      "n_drifters": 5,
+      "24h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 5,
+          "median": 8.223,
+          "mean": 11.895,
+          "min": 1.941,
+          "max": 23.705
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 5,
+          "median": 15.025,
+          "mean": 18.949,
+          "min": 2.992,
+          "max": 34.495
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 5,
+          "median": 15.017,
+          "mean": 18.847,
+          "min": 2.963,
+          "max": 34.181
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 0,
+          "D": 0
+        },
+        "comparison2_C_vs_D": {
+          "n": 5,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 0.029,
+            "mean_delta": 0.103,
+            "min_delta": -0.002,
+            "max_delta": 0.313
+          },
+          "wins_C": 1,
+          "losses_C": 4,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 5,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 10.444,
+            "mean_delta": 7.054,
+            "min_delta": 1.05,
+            "max_delta": 10.936
+          },
+          "wins_C": 0,
+          "losses_C": 5,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "48h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 5,
+          "median": 21.544,
+          "mean": 24.538,
+          "min": 6.096,
+          "max": 58.664
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 5,
+          "median": 26.378,
+          "mean": 31.602,
+          "min": 4.796,
+          "max": 58.905
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 5,
+          "median": 26.322,
+          "mean": 31.286,
+          "min": 4.765,
+          "max": 57.712
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 0,
+          "D": 0
+        },
+        "comparison2_C_vs_D": {
+          "n": 5,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 0.055,
+            "mean_delta": 0.316,
+            "min_delta": 0.003,
+            "max_delta": 1.194
+          },
+          "wins_C": 0,
+          "losses_C": 5,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 5,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 0.242,
+            "mean_delta": 7.065,
+            "min_delta": -9.694,
+            "max_delta": 28.579
+          },
+          "wins_C": 2,
+          "losses_C": 3,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "72h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 5,
+          "median": 24.444,
+          "mean": 38.464,
+          "min": 12.091,
+          "max": 89.37
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 5,
+          "median": 30.524,
+          "mean": 37.423,
+          "min": 7.037,
+          "max": 69.208
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 5,
+          "median": 30.329,
+          "mean": 36.883,
+          "min": 7.121,
+          "max": 67.189
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 0,
+          "D": 0
+        },
+        "comparison2_C_vs_D": {
+          "n": 5,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 0.261,
+            "mean_delta": 0.54,
+            "min_delta": -0.083,
+            "max_delta": 2.019
+          },
+          "wins_C": 1,
+          "losses_C": 4,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 5,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": -5.054,
+            "mean_delta": -1.041,
+            "min_delta": -25.972,
+            "max_delta": 33.064
+          },
+          "wins_C": 3,
+          "losses_C": 2,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "M1_endpoint72h": {
+        "A": {
+          "n": 5,
+          "median": 79.693,
+          "mean": 78.371,
+          "min": 40.051,
+          "max": 125.215
+        },
+        "C": {
+          "n": 5,
+          "median": 44.501,
+          "mean": 54.249,
+          "min": 15.274,
+          "max": 126.318
+        },
+        "D": {
+          "n": 5,
+          "median": 44.195,
+          "mean": 54.788,
+          "min": 16.852,
+          "max": 126.057
+        }
+      },
+      "M2_totalPath": {
+        "A": {
+          "n": 5,
+          "median": 83.845,
+          "mean": 84.309,
+          "min": 47.599,
+          "max": 128.243
+        },
+        "C": {
+          "n": 5,
+          "median": 44.533,
+          "mean": 56.253,
+          "min": 17.581,
+          "max": 130.913
+        },
+        "D": {
+          "n": 5,
+          "median": 44.227,
+          "mean": 56.762,
+          "min": 18.903,
+          "max": 130.564
+        }
+      },
+      "M4_separation72h": {
+        "C_vs_D": {
+          "n": 5,
+          "median": 0.473,
+          "mean": 0.956,
+          "min": 0.295,
+          "max": 2.108
+        },
+        "C_vs_A": {
+          "n": 5,
+          "median": 47.788,
+          "mean": 53.186,
+          "min": 16.764,
+          "max": 114.333
+        }
+      },
+      "M5_observed72h": {
+        "n": 5,
+        "median": 62.188,
+        "mean": 71.914,
+        "min": 31.456,
+        "max": 112.667
+      },
+      "role": "HOLDOUT",
+      "smallN": true,
+      "label": "SMALL-N / DESCRIPTIVE ONLY"
+    },
+    "KE-H3": {
+      "n_drifters": 7,
+      "24h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 7,
+          "median": 13.802,
+          "mean": 14.82,
+          "min": 7.39,
+          "max": 22.802
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 7,
+          "median": 8.506,
+          "mean": 11.348,
+          "min": 5.228,
+          "max": 19.701
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 7,
+          "median": 8.651,
+          "mean": 11.372,
+          "min": 5.213,
+          "max": 19.711
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 0,
+          "D": 0
+        },
+        "comparison2_C_vs_D": {
+          "n": 7,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 0.015,
+            "mean_delta": -0.023,
+            "min_delta": -0.196,
+            "max_delta": 0.078
+          },
+          "wins_C": 3,
+          "losses_C": 4,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 7,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": -2.162,
+            "mean_delta": -3.472,
+            "min_delta": -14.296,
+            "max_delta": 7.402
+          },
+          "wins_C": 4,
+          "losses_C": 3,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "48h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 7,
+          "median": 22.74,
+          "mean": 25.504,
+          "min": 12.402,
+          "max": 43.279
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 7,
+          "median": 26.06,
+          "mean": 25.913,
+          "min": 9.4,
+          "max": 46.89
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 7,
+          "median": 25.846,
+          "mean": 25.903,
+          "min": 9.56,
+          "max": 46.912
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 0,
+          "D": 0
+        },
+        "comparison2_C_vs_D": {
+          "n": 7,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": -0.022,
+            "mean_delta": 0.01,
+            "min_delta": -0.269,
+            "max_delta": 0.262
+          },
+          "wins_C": 4,
+          "losses_C": 3,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 7,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 3.139,
+            "mean_delta": 0.409,
+            "min_delta": -33.879,
+            "max_delta": 19.432
+          },
+          "wins_C": 3,
+          "losses_C": 4,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "72h": {
+        "error_A_HYCOM_NATIVE_3H": {
+          "n": 7,
+          "median": 33.118,
+          "mean": 38.684,
+          "min": 10.265,
+          "max": 90.497
+        },
+        "error_C_GLORYS_NATIVE_DAILY": {
+          "n": 7,
+          "median": 36.862,
+          "mean": 42.016,
+          "min": 14.309,
+          "max": 83.052
+        },
+        "error_D_GLORYS_COARSE_DAILY": {
+          "n": 7,
+          "median": 36.764,
+          "mean": 42.018,
+          "min": 14.534,
+          "max": 83.052
+        },
+        "NOT_AVAILABLE": {
+          "A": 0,
+          "C": 0,
+          "D": 0
+        },
+        "comparison2_C_vs_D": {
+          "n": 7,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 0.0,
+            "mean_delta": -0.003,
+            "min_delta": -0.322,
+            "max_delta": 0.301
+          },
+          "wins_C": 3,
+          "losses_C": 4,
+          "ties": 0,
+          "winMeaning": "C lower error than D"
+        },
+        "comparison4_C_vs_A": {
+          "n": 7,
+          "notAvailable": 0,
+          "delta": {
+            "median_delta": 3.743,
+            "mean_delta": 3.332,
+            "min_delta": -44.143,
+            "max_delta": 41.819
+          },
+          "wins_C": 2,
+          "losses_C": 5,
+          "ties": 0,
+          "winMeaning": "C lower error than A"
+        }
+      },
+      "M1_endpoint72h": {
+        "A": {
+          "n": 7,
+          "median": 66.716,
+          "mean": 77.804,
+          "min": 12.233,
+          "max": 150.297
+        },
+        "C": {
+          "n": 7,
+          "median": 54.39,
+          "mean": 61.879,
+          "min": 18.674,
+          "max": 120.046
+        },
+        "D": {
+          "n": 7,
+          "median": 54.154,
+          "mean": 61.826,
+          "min": 18.871,
+          "max": 120.024
+        }
+      },
+      "M2_totalPath": {
+        "A": {
+          "n": 7,
+          "median": 82.714,
+          "mean": 104.25,
+          "min": 37.045,
+          "max": 174.169
+        },
+        "C": {
+          "n": 7,
+          "median": 54.753,
+          "mean": 65.643,
+          "min": 19.74,
+          "max": 130.288
+        },
+        "D": {
+          "n": 7,
+          "median": 54.515,
+          "mean": 65.575,
+          "min": 19.912,
+          "max": 130.291
+        }
+      },
+      "M4_separation72h": {
+        "C_vs_D": {
+          "n": 7,
+          "median": 0.301,
+          "mean": 0.295,
+          "min": 0.08,
+          "max": 0.439
+        },
+        "C_vs_A": {
+          "n": 7,
+          "median": 46.699,
+          "mean": 46.143,
+          "min": 20.952,
+          "max": 63.394
+        }
+      },
+      "M5_observed72h": {
+        "n": 7,
+        "median": 79.433,
+        "mean": 77.873,
+        "min": 12.151,
+        "max": 154.559
+      },
+      "role": "HOLDOUT",
+      "smallN": true,
+      "label": "SMALL-N / DESCRIPTIVE ONLY"
+    }
+  },
+  "topErrors_C": {
+    "24h": [
+      {
+        "drifter_id": "127313",
+        "unit": "AG-1",
+        "error_A": 63.55,
+        "error_C": 131.891,
+        "error_D": 131.213
+      },
+      {
+        "drifter_id": "71155",
+        "unit": "KE-1",
+        "error_A": 18.379,
+        "error_C": 76.952,
+        "error_D": 75.956
+      },
+      {
+        "drifter_id": "127199",
+        "unit": "AG-1",
+        "error_A": 144.38,
+        "error_C": 71.146,
+        "error_D": 71.353
+      }
+    ],
+    "48h": [
+      {
+        "drifter_id": "127313",
+        "unit": "AG-1",
+        "error_A": 142.936,
+        "error_C": 289.961,
+        "error_D": 287.687
+      },
+      {
+        "drifter_id": "71155",
+        "unit": "KE-1",
+        "error_A": 37.036,
+        "error_C": 169.072,
+        "error_D": 166.759
+      },
+      {
+        "drifter_id": "127199",
+        "unit": "AG-1",
+        "error_A": 237.391,
+        "error_C": 125.036,
+        "error_D": 124.804
+      }
+    ],
+    "72h": [
+      {
+        "drifter_id": "127313",
+        "unit": "AG-1",
+        "error_A": 238.212,
+        "error_C": 416.26,
+        "error_D": 411.548
+      },
+      {
+        "drifter_id": "71155",
+        "unit": "KE-1",
+        "error_A": 102.331,
+        "error_C": 325.969,
+        "error_D": 322.231
+      },
+      {
+        "drifter_id": "132511",
+        "unit": "AG-1",
+        "error_A": 105.167,
+        "error_C": 151.207,
+        "error_D": 154.545
+      }
+    ]
+  },
+  "exploratorySignTest": {
+    "overall_24h_comparison2_C_vs_D": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 35,
+      "k": 11,
+      "p": 0.04096,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "overall_24h_comparison4_C_vs_A": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 35,
+      "k": 15,
+      "p": 0.49956,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "overall_48h_comparison2_C_vs_D": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 34,
+      "k": 10,
+      "p": 0.024307,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "overall_48h_comparison4_C_vs_A": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 34,
+      "k": 15,
+      "p": 0.607591,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "overall_72h_comparison2_C_vs_D": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 33,
+      "k": 12,
+      "p": 0.162756,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "overall_72h_comparison4_C_vs_A": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 33,
+      "k": 14,
+      "p": 0.48685,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "calibration_24h_comparison2_C_vs_D": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 23,
+      "k": 7,
+      "p": 0.09314,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "calibration_24h_comparison4_C_vs_A": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 23,
+      "k": 11,
+      "p": 1.0,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "calibration_48h_comparison2_C_vs_D": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 22,
+      "k": 6,
+      "p": 0.052479,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "calibration_48h_comparison4_C_vs_A": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 22,
+      "k": 10,
+      "p": 0.831812,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "calibration_72h_comparison2_C_vs_D": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 21,
+      "k": 8,
+      "p": 0.38331,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "calibration_72h_comparison4_C_vs_A": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 21,
+      "k": 9,
+      "p": 0.663624,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "holdout_24h_comparison2_C_vs_D": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 12,
+      "k": 4,
+      "p": 0.387695,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "holdout_24h_comparison4_C_vs_A": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 12,
+      "k": 4,
+      "p": 0.387695,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "holdout_48h_comparison2_C_vs_D": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 12,
+      "k": 4,
+      "p": 0.387695,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "holdout_48h_comparison4_C_vs_A": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 12,
+      "k": 5,
+      "p": 0.774414,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "holdout_72h_comparison2_C_vs_D": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 12,
+      "k": 4,
+      "p": 0.387695,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    },
+    "holdout_72h_comparison4_C_vs_A": {
+      "label": "EXPLORATORY / NOMINAL / DESCRIPTIVE ONLY",
+      "n": 12,
+      "k": 5,
+      "p": 0.774414,
+      "ties_excluded": 0,
+      "caveat": "pairs share window forcing/time; not independent; not an acceptance criterion"
+    }
+  },
+  "step25cCrossCheck": {
+    "pairsCompared": 105,
+    "agreeWithinRounding": 105,
+    "allAgree": true
+  },
+  "labelRules": {
+    "scope": "overall stratum",
+    "primaryHorizonHours": 72,
+    "consistencyFraction": 0.6666666666666666,
+    "signTestMinimumN": 10,
+    "comparison2": "SPATIAL_REPRESENTATION_DIFFERENCE_OBSERVED if |median delta_spatial| > tie AND the fraction of non-tied pairs sharing the median sign >= 2/3; otherwise NO_CLEAR_SPATIAL_REPRESENTATION_DIFFERENCE; direction (native or coarse lower) reported descriptively",
+    "comparison2Labels": [
+      "SPATIAL_REPRESENTATION_DIFFERENCE_OBSERVED",
+      "NO_CLEAR_SPATIAL_REPRESENTATION_DIFFERENCE"
+    ],
+    "comparison4": "identical to the STEP 25C rule: GLORYS_DESCRIPTIVELY_FAVORED if median delta_product < -tie AND wins/(wins+losses) >= 2/3; HYCOM_DESCRIPTIVELY_FAVORED if median > +tie AND losses/(wins+losses) >= 2/3; otherwise NO_CLEAR_DESCRIPTIVE_DIFFERENCE",
+    "comparison4Labels": [
+      "GLORYS_DESCRIPTIVELY_FAVORED",
+      "HYCOM_DESCRIPTIVELY_FAVORED",
+      "NO_CLEAR_DESCRIPTIVE_DIFFERENCE"
+    ],
+    "modelSelection": false
+  },
+  "descriptiveLabel": {
+    "comparison2": {
+      "primary": "NO_CLEAR_SPATIAL_REPRESENTATION_DIFFERENCE",
+      "direction": "coarse lower error",
+      "byStratum": {
+        "overall": {
+          "label": "NO_CLEAR_SPATIAL_REPRESENTATION_DIFFERENCE",
+          "direction": "coarse lower error"
+        },
+        "calibration": {
+          "label": "NO_CLEAR_SPATIAL_REPRESENTATION_DIFFERENCE",
+          "direction": "coarse lower error"
+        },
+        "holdout": {
+          "label": "SPATIAL_REPRESENTATION_DIFFERENCE_OBSERVED",
+          "direction": "coarse lower error"
+        }
+      }
+    },
+    "comparison4": {
+      "primary": "NO_CLEAR_DESCRIPTIVE_DIFFERENCE",
+      "byStratum": {
+        "overall": "NO_CLEAR_DESCRIPTIVE_DIFFERENCE",
+        "calibration": "NO_CLEAR_DESCRIPTIVE_DIFFERENCE",
+        "holdout": "NO_CLEAR_DESCRIPTIVE_DIFFERENCE"
+      }
+    }
+  },
+  "KE-H2": "EXCLUDED (immutable STEP 20 HYCOM baseline unavailable); GLORYS coverage recorded in STEP 25B only; no paired result",
+  "AG_holdout": "UNAVAILABLE",
+  "outlierPolicyApplied": {
+    "removed": 0,
+    "trimmed": 0,
+    "winsorized": 0,
+    "weighted": 0,
+    "deleted": 0,
+    "manualExclusions": 0
+  },
+  "acceptanceThresholds": "NONE",
+  "parameterSelection": "NONE",
+  "modelSelection": "NONE",
+  "hycomRerun": false,
+  "conditionBExecuted": false,
+  "interpretation": "DESCRIPTIVE ONLY",
+  "statements": [
+    "STEP 26 Phase B is a descriptive decomposition; no statistical significance, causal, universal or operational superiority claim is made.",
+    "Comparison 2 isolates spatial representation within one product (GLORYS, same cadence, same 15.810070 m depth).",
+    "Comparison 4 differs by ocean product, cadence and native depth (15.000 m vs 15.810070 m, difference 0.810070 m); the depth confound is disclosed, not attributed.",
+    "Comparisons 1 and 3 remain BLOCKED (HYCOM_DAILY not constructible from existing frames); no re-acquisition was attempted.",
+    "The HYCOM reference is the immutable STEP 20 record; STEP 25C is unchanged; alpha = 0.002 is unchanged.",
+    "No forcing is selected; no TEST-06 and no STEP 27 follows from this result."
+  ]
+}

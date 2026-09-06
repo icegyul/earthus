@@ -1,0 +1,2561 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "forcing-decomposition-step26",
+  "ruleSha256": "b0ee1dc154998b6d2d140581636a1d11412bd57bceafbf0c0a3980697b91787c",
+  "phaseBPreregistrationSha256": "c43e2f0ffe5a288de2d876bc6bd504a394a1b1cfabf0df77b390b2f10d786a8b",
+  "derivedForcingManifestSha256": "82ec1df67d17fe93ed4331bd8acaf0058b11d64b746ef67b7b70ea9a878464d8",
+  "status": "STEP26_RUNS_PASS",
+  "modelRunCount": 12,
+  "conditionRuns": {
+    "A": 0,
+    "B": 0,
+    "C": 6,
+    "D": 6
+  },
+  "hycomRerun": false,
+  "conditionBExecuted": false,
+  "alpha": 0.002,
+  "alpha0Runs": 0,
+  "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+  "runnerSha256": "67d23a4c6206c4ae03a80daf99161cc9c2a5852496dc2d26bb3577b355397c26",
+  "replayToolSha256": "5dd8c14da33dcd75c50c8e52dc517456d46a1a2f4ad38b3918687d16b4a73ff5",
+  "readerSha256": "11b7d987434a55a9e42a9776e851fad49b8ec65d2df0f23130c7a7e6234ab63e",
+  "derivationScriptSha256": "08ee1a70f35eb28984965dec1d7455e5500f7a523f0061520effb076f273f20a",
+  "conditionCReproduction": {
+    "pass": true,
+    "windows": {
+      "KE-1": true,
+      "KE-2": true,
+      "AG-1": true,
+      "AG-2": true,
+      "KE-H1": true,
+      "KE-H3": true
+    }
+  },
+  "runs": [
+    {
+      "runId": "step26-C-alpha0.002-KE-1",
+      "windowId": "KE-1",
+      "role": "CALIBRATION",
+      "condition": "C",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "drifterCount": 8,
+      "released": 8,
+      "drifterIds": [
+        "71155",
+        "81801",
+        "81805",
+        "81807",
+        "81811",
+        "81813",
+        "81814",
+        "81816"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 140.60959,
+        "east": 161.61974,
+        "south": 28.12786,
+        "north": 38.19472
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "glorys12v1-15.81m-KE-1",
+          "version": "step25c-1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-1",
+        "version": "2010-05-11T12.earthus1"
+      },
+      "forcingFile": "data/research/step25c/forcing/KE-1.glorys15.81m.dataset.json",
+      "forcingFileSha256": "5eac44039387614c00d84df59c6805c2d275369cc4c1e25af80c0a23588230eb",
+      "gridSha256": "57e0916e8e4204ed0e07c0c34cb5cd451a018157425b5de9ac1b766d29a484f2",
+      "sourceSha256": "d399a2b586b3eea97838bfc9eab2bf0e58afcd33d07c4e9fcef7b02de033c2dc",
+      "windGridSha256": "ba15d7299bd49846e63cb05219503f6e5c11dc765ba6880f02c0ed1b7f553080",
+      "depthMeters": 15.81007,
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 9216,
+          "outputSamplesUpperBound": 2312,
+          "recommendedMaxStepSeconds": 923,
+          "minimumGridLengthMeters": 7230.152687026686,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T12:26:07Z",
+      "completedAtUTC": "2026-09-06T12:26:16Z",
+      "wallSeconds": 8.6,
+      "modelCommit": "9e26d8cb34c10579a3ae23633188f89621d0af60",
+      "modelId": "surface-passive-advection.v2.windage",
+      "modelVersion": "0.1.0",
+      "engineVersion": "3.1.4",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f",
+      "specSha256": "a9cc4170292523521a41e0ddd2b14a6eddc8c237287188dff8bf03594ff512dc",
+      "resultArraySha256": "06eb9162490bc0b76c86773451ce7d45eb096ac943a897acb375e9ad446554d5",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step26/trajectories/C/KE-1/alpha0.002.result.json",
+      "resultSha256": "019087ca913df479722364b5e0f8349937c74115a98eb8a21df32419e0b84186",
+      "specFile": "data/research/step26/trajectories/C/KE-1/alpha0.002.spec.json",
+      "trajectoriesFile": "data/research/step26/trajectories/C/KE-1/alpha0.002.trajectories.csv",
+      "trajectoriesSha256": "28beaa8ba8d179653447df8b037b330a85221ebf78a374447c4f0f6da7f2cdb8",
+      "trajectoriesSha256WithoutRunId": "804bb2bfc7ceb68d93a2d4e119d7c96f99a9563110680256516d0cd170e94ce5",
+      "rows": 2306,
+      "finalStatusCounts": {
+        "COMPLETED": 7,
+        "FORCING_UNAVAILABLE": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 1,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 7
+      },
+      "qualityStatus": "PARTIAL",
+      "endpoints72h": [
+        {
+          "drifterId": "71155",
+          "lon": 146.1018137460341,
+          "lat": 34.37692636127448,
+          "timeUTC": "2010-05-14T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "81801",
+          "lon": 151.25788613410106,
+          "lat": 30.042410139582397,
+          "timeUTC": "2010-05-14T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "81805",
+          "lon": 150.1673325254045,
+          "lat": 30.35448434490761,
+          "timeUTC": "2010-05-14T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "81807",
+          "lon": 149.64397416982672,
+          "lat": 30.891344753538164,
+          "timeUTC": "2010-05-14T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "81811",
+          "lon": 151.54990971564212,
+          "lat": 32.330931260320874,
+          "timeUTC": "2010-05-14T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "81813",
+          "lon": 158.47445569078434,
+          "lat": 30.968994665953772,
+          "timeUTC": "2010-05-14T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "81814",
+          "lon": 161.6197399999245,
+          "lat": 35.18993767175973,
+          "timeUTC": "2010-05-14T10:20:34.178066Z",
+          "finalStatus": "OUT_OF_DOMAIN"
+        },
+        {
+          "drifterId": "81816",
+          "lon": 148.13379315649996,
+          "lat": 31.283777012638378,
+          "timeUTC": "2010-05-14T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step25c_run.py (on-disk spec/forcing/wind)",
+        "replayToolSha256": "5dd8c14da33dcd75c50c8e52dc517456d46a1a2f4ad38b3918687d16b4a73ff5",
+        "returncode": 0,
+        "replayResultSha256": "06eb9162490bc0b76c86773451ce7d45eb096ac943a897acb375e9ad446554d5",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "reproduction": {
+        "reference": "STEP 25C GLORYS alpha 0.002",
+        "referenceRunId": "step25c-glorys-alpha0.002-KE-1",
+        "referenceResultArraySha256": "06eb9162490bc0b76c86773451ce7d45eb096ac943a897acb375e9ad446554d5",
+        "referenceTrajectoriesFile": "data/research/step25c/trajectories/KE-1/alpha0.002.trajectories.csv",
+        "referenceTrajectoriesSha256": "73b2218ac19979c86df8fba305a7fd36a8e2aaf8cef7981286e548dab153c54b",
+        "resultArrayBitwiseEqual": true,
+        "csvRowsEqualWithoutRunId": true,
+        "comparedOn": "numeric result array (particleId, samples timeUTC/lon/lat/status, finalStatus) via canonical SHA-256; CSV rows (drifter_id, timestamp, lat, lon, alpha, status, valid) after removing run_id",
+        "pass": true
+      }
+    },
+    {
+      "runId": "step26-C-alpha0.002-KE-2",
+      "windowId": "KE-2",
+      "role": "CALIBRATION",
+      "condition": "C",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "drifterCount": 5,
+      "released": 5,
+      "drifterIds": [
+        "48965",
+        "81802",
+        "90141",
+        "90142",
+        "90145"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 133.53249,
+        "east": 154.78535,
+        "south": 29.70784,
+        "north": 40.0
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "glorys12v1-15.81m-KE-2",
+          "version": "step25c-1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-2",
+        "version": "2010-06-30T12.earthus1"
+      },
+      "forcingFile": "data/research/step25c/forcing/KE-2.glorys15.81m.dataset.json",
+      "forcingFileSha256": "3c454919b343754740dd861ac8d147282be60392b043771e7f5a7f6407ef28ae",
+      "gridSha256": "99364bcd6a0dd93db4e4c7c09420e03d8cfb29e5d0443c872492b41ac00b30d5",
+      "sourceSha256": "f2ca50183aea583d69e3b73f4609568b221106a7c119a0c8c0bd43d7623f4bbe",
+      "windGridSha256": "ace5b1a527ca39595e6e40051798846ca39a0fb54142e3e3d5aae2178e2f14f9",
+      "depthMeters": 15.81007,
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 5760,
+          "outputSamplesUpperBound": 1445,
+          "recommendedMaxStepSeconds": 775,
+          "minimumGridLengthMeters": 7041.359241454685,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T12:26:23Z",
+      "completedAtUTC": "2026-09-06T12:26:26Z",
+      "wallSeconds": 3.2,
+      "modelCommit": "9e26d8cb34c10579a3ae23633188f89621d0af60",
+      "modelId": "surface-passive-advection.v2.windage",
+      "modelVersion": "0.1.0",
+      "engineVersion": "3.1.4",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f",
+      "specSha256": "d1090e0b2fc715695cd5260ff774bfd894891da1899def7f70ef2e143929404f",
+      "resultArraySha256": "528ea5c3d9a63d344fb50a10a9933292a2c9d361082811aa2eafda92c88cb781",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step26/trajectories/C/KE-2/alpha0.002.result.json",
+      "resultSha256": "456ce517cbfc178e72e5d5d519cf6999a2f45bc4ea6de091a5a7147ca7cc0ee8",
+      "specFile": "data/research/step26/trajectories/C/KE-2/alpha0.002.spec.json",
+      "trajectoriesFile": "data/research/step26/trajectories/C/KE-2/alpha0.002.trajectories.csv",
+      "trajectoriesSha256": "76453cd5aca6be80c27a39c6a47627ef6074e25930a7a41dcff149c60bcb3839",
+      "trajectoriesSha256WithoutRunId": "8278fcb27b0346ba3a737607ae1e7405bd701e57377e021c3a2b7b54aa738128",
+      "rows": 1445,
+      "finalStatusCounts": {
+        "COMPLETED": 5
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 5
+      },
+      "qualityStatus": "COMPLETE",
+      "endpoints72h": [
+        {
+          "drifterId": "48965",
+          "lon": 135.05227945222146,
+          "lat": 37.46559559649436,
+          "timeUTC": "2010-07-03T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "81802",
+          "lon": 151.14896121981758,
+          "lat": 31.225458073231874,
+          "timeUTC": "2010-07-03T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "90141",
+          "lon": 145.99326443869415,
+          "lat": 38.750667283135364,
+          "timeUTC": "2010-07-03T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "90142",
+          "lon": 152.8691912438402,
+          "lat": 39.142746323927355,
+          "timeUTC": "2010-07-03T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "90145",
+          "lon": 146.64178986922576,
+          "lat": 38.10111185018483,
+          "timeUTC": "2010-07-03T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step25c_run.py (on-disk spec/forcing/wind)",
+        "replayToolSha256": "5dd8c14da33dcd75c50c8e52dc517456d46a1a2f4ad38b3918687d16b4a73ff5",
+        "returncode": 0,
+        "replayResultSha256": "528ea5c3d9a63d344fb50a10a9933292a2c9d361082811aa2eafda92c88cb781",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "reproduction": {
+        "reference": "STEP 25C GLORYS alpha 0.002",
+        "referenceRunId": "step25c-glorys-alpha0.002-KE-2",
+        "referenceResultArraySha256": "528ea5c3d9a63d344fb50a10a9933292a2c9d361082811aa2eafda92c88cb781",
+        "referenceTrajectoriesFile": "data/research/step25c/trajectories/KE-2/alpha0.002.trajectories.csv",
+        "referenceTrajectoriesSha256": "f4ea33dcda5c7d7594991836cc511738a08e118117536c569dc3110a9ec54c83",
+        "resultArrayBitwiseEqual": true,
+        "csvRowsEqualWithoutRunId": true,
+        "comparedOn": "numeric result array (particleId, samples timeUTC/lon/lat/status, finalStatus) via canonical SHA-256; CSV rows (drifter_id, timestamp, lat, lon, alpha, status, valid) after removing run_id",
+        "pass": true
+      }
+    },
+    {
+      "runId": "step26-C-alpha0.002-AG-1",
+      "windowId": "AG-1",
+      "role": "CALIBRATION",
+      "condition": "C",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "drifterCount": 9,
+      "released": 9,
+      "drifterIds": [
+        "127198",
+        "127199",
+        "127272",
+        "127313",
+        "127314",
+        "127315",
+        "132511",
+        "132528",
+        "132634"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 18.31773,
+        "east": 32.013940000000005,
+        "south": -40.0,
+        "north": -32.13828
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "glorys12v1-15.81m-AG-1",
+          "version": "step25c-1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-1",
+        "version": "2015-04-23T12.earthus1"
+      },
+      "forcingFile": "data/research/step25c/forcing/AG-1.glorys15.81m.dataset.json",
+      "forcingFileSha256": "a41f03647dcf12c048f92bb389d5ce80340060b4a953051ab0da43394823237c",
+      "gridSha256": "6821bf8fef4cd232353f030f51f836eb06adf331f5a7a6568eaabceca60009e2",
+      "sourceSha256": "87fffab5d0cfc0ff96387be7089b408681ea55a1f87bfba72f7f8f3ccf875759",
+      "windGridSha256": "be4e060568f5c72567f63209ace4bb1c2a32d6e3a03f998f102125a341edfed7",
+      "depthMeters": 15.81007,
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 10368,
+          "outputSamplesUpperBound": 2601,
+          "recommendedMaxStepSeconds": 825,
+          "minimumGridLengthMeters": 7041.359241456487,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T12:26:31Z",
+      "completedAtUTC": "2026-09-06T12:26:36Z",
+      "wallSeconds": 4.4,
+      "modelCommit": "9e26d8cb34c10579a3ae23633188f89621d0af60",
+      "modelId": "surface-passive-advection.v2.windage",
+      "modelVersion": "0.1.0",
+      "engineVersion": "3.1.4",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f",
+      "specSha256": "56e80cd4f3e31c231a7b66edeaf730eb0f8a734a78d2e3ebb38928569621bb20",
+      "resultArraySha256": "2601100263e032541bb4be47d535ee0eeb194b831b9e576196ebba03046f0199",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step26/trajectories/C/AG-1/alpha0.002.result.json",
+      "resultSha256": "73bbe80f9b036d8ba5e65f58e6db0dc2f25683030df24f822e4cecc406f82322",
+      "specFile": "data/research/step26/trajectories/C/AG-1/alpha0.002.spec.json",
+      "trajectoriesFile": "data/research/step26/trajectories/C/AG-1/alpha0.002.trajectories.csv",
+      "trajectoriesSha256": "ffcc7a66ac8e6c32ed3ae964ee5a51286de315cdc726596550312d4472ae6dff",
+      "trajectoriesSha256WithoutRunId": "2303574224e8719c5f8e3a586d69c46eb41f1ba43558f99eda714525dea02a79",
+      "rows": 2601,
+      "finalStatusCounts": {
+        "COMPLETED": 9
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 9
+      },
+      "qualityStatus": "COMPLETE",
+      "endpoints72h": [
+        {
+          "drifterId": "127198",
+          "lon": 22.261260897936353,
+          "lat": -39.61017006061703,
+          "timeUTC": "2015-04-26T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "127199",
+          "lon": 22.265952060518572,
+          "lat": -39.60615141622332,
+          "timeUTC": "2015-04-26T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "127272",
+          "lon": 25.535628033383546,
+          "lat": -35.4139840311361,
+          "timeUTC": "2015-04-26T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "127313",
+          "lon": 22.654692301058645,
+          "lat": -35.40846320435595,
+          "timeUTC": "2015-04-26T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "127314",
+          "lon": 28.586830866587945,
+          "lat": -34.052782422242124,
+          "timeUTC": "2015-04-26T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "127315",
+          "lon": 21.825705889772365,
+          "lat": -36.908324009669265,
+          "timeUTC": "2015-04-26T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "132511",
+          "lon": 18.99461693241517,
+          "lat": -37.94639911385241,
+          "timeUTC": "2015-04-26T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "132528",
+          "lon": 23.668290349018605,
+          "lat": -35.03327149005423,
+          "timeUTC": "2015-04-26T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "132634",
+          "lon": 29.525237309077085,
+          "lat": -33.567724902805494,
+          "timeUTC": "2015-04-26T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step25c_run.py (on-disk spec/forcing/wind)",
+        "replayToolSha256": "5dd8c14da33dcd75c50c8e52dc517456d46a1a2f4ad38b3918687d16b4a73ff5",
+        "returncode": 0,
+        "replayResultSha256": "2601100263e032541bb4be47d535ee0eeb194b831b9e576196ebba03046f0199",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "reproduction": {
+        "reference": "STEP 25C GLORYS alpha 0.002",
+        "referenceRunId": "step25c-glorys-alpha0.002-AG-1",
+        "referenceResultArraySha256": "2601100263e032541bb4be47d535ee0eeb194b831b9e576196ebba03046f0199",
+        "referenceTrajectoriesFile": "data/research/step25c/trajectories/AG-1/alpha0.002.trajectories.csv",
+        "referenceTrajectoriesSha256": "d3c35e012c7fa956320f29c60307320d4c0629ba9b96315e98393eb8cdfcc429",
+        "resultArrayBitwiseEqual": true,
+        "csvRowsEqualWithoutRunId": true,
+        "comparedOn": "numeric result array (particleId, samples timeUTC/lon/lat/status, finalStatus) via canonical SHA-256; CSV rows (drifter_id, timestamp, lat, lon, alpha, status, valid) after removing run_id",
+        "pass": true
+      }
+    },
+    {
+      "runId": "step26-C-alpha0.002-AG-2",
+      "windowId": "AG-2",
+      "role": "CALIBRATION",
+      "condition": "C",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "127281"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 19.79639,
+        "east": 23.79639,
+        "south": -38.76674,
+        "north": -34.76674
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "glorys12v1-15.81m-AG-2",
+          "version": "step25c-1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-2",
+        "version": "2015-04-26T12.earthus1"
+      },
+      "forcingFile": "data/research/step25c/forcing/AG-2.glorys15.81m.dataset.json",
+      "forcingFileSha256": "27de6bdf0d7284aa5989f3c0c75d08b61eb3776dbf1b93c0ec055bdff42bb2bb",
+      "gridSha256": "96894ed4c1b40a0d5db94d3cdcbab83f8a4d4502342ac983ae84eda4e97d0a26",
+      "sourceSha256": "595c2bace7156f3dab92698a251e29a87920eb4d2375cc730fbdf69562cc9b25",
+      "windGridSha256": "073d37611d155a6770f9fd3dfd7a849937587b72c4ad76b23f4cea547b1fc4e3",
+      "depthMeters": 15.81007,
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 1152,
+          "outputSamplesUpperBound": 289,
+          "recommendedMaxStepSeconds": 840,
+          "minimumGridLengthMeters": 7170.875884201242,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T12:26:42Z",
+      "completedAtUTC": "2026-09-06T12:26:42Z",
+      "wallSeconds": 0.5,
+      "modelCommit": "9e26d8cb34c10579a3ae23633188f89621d0af60",
+      "modelId": "surface-passive-advection.v2.windage",
+      "modelVersion": "0.1.0",
+      "engineVersion": "3.1.4",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f",
+      "specSha256": "2639789ea91c0eae87606200cecc7b9c2c18d5edb05d666c6a57c2af1d4f1f23",
+      "resultArraySha256": "d9fd5c344ea358631e66f56d9dfc219f45ad62a9bc29d9435088843d09f10ef5",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step26/trajectories/C/AG-2/alpha0.002.result.json",
+      "resultSha256": "af74af18715a215b4f48172f2f9d841e29b8206b905bee5715cb259dd751be73",
+      "specFile": "data/research/step26/trajectories/C/AG-2/alpha0.002.spec.json",
+      "trajectoriesFile": "data/research/step26/trajectories/C/AG-2/alpha0.002.trajectories.csv",
+      "trajectoriesSha256": "65f82484abcb1cb13165192fd0a63af731c6c8b22d1ae7b050be6c257aa317a6",
+      "trajectoriesSha256WithoutRunId": "7e2ec320fe0486bc0e83751e7a7372169843f1702b5ee22592f55fc93ea2f18d",
+      "rows": 180,
+      "finalStatusCounts": {
+        "FORCING_UNAVAILABLE": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 1,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 0
+      },
+      "qualityStatus": "PARTIAL",
+      "endpoints72h": [
+        {
+          "drifterId": "127281",
+          "lon": 19.796390000252558,
+          "lat": -38.12911681537962,
+          "timeUTC": "2015-04-28T08:39:26.555446Z",
+          "finalStatus": "OUT_OF_DOMAIN"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step25c_run.py (on-disk spec/forcing/wind)",
+        "replayToolSha256": "5dd8c14da33dcd75c50c8e52dc517456d46a1a2f4ad38b3918687d16b4a73ff5",
+        "returncode": 0,
+        "replayResultSha256": "d9fd5c344ea358631e66f56d9dfc219f45ad62a9bc29d9435088843d09f10ef5",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "reproduction": {
+        "reference": "STEP 25C GLORYS alpha 0.002",
+        "referenceRunId": "step25c-glorys-alpha0.002-AG-2",
+        "referenceResultArraySha256": "d9fd5c344ea358631e66f56d9dfc219f45ad62a9bc29d9435088843d09f10ef5",
+        "referenceTrajectoriesFile": "data/research/step25c/trajectories/AG-2/alpha0.002.trajectories.csv",
+        "referenceTrajectoriesSha256": "f1486264a3eba7f44f2e46b004543a4443b78037cbe78ad4431f6a79d5fa480f",
+        "resultArrayBitwiseEqual": true,
+        "csvRowsEqualWithoutRunId": true,
+        "comparedOn": "numeric result array (particleId, samples timeUTC/lon/lat/status, finalStatus) via canonical SHA-256; CSV rows (drifter_id, timestamp, lat, lon, alpha, status, valid) after removing run_id",
+        "pass": true
+      }
+    },
+    {
+      "runId": "step26-C-alpha0.002-KE-H1",
+      "windowId": "KE-H1",
+      "role": "HOLDOUT",
+      "condition": "C",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "drifterCount": 5,
+      "released": 5,
+      "drifterIds": [
+        "48985",
+        "81806",
+        "90135",
+        "90149",
+        "90150"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 135.25655,
+        "east": 161.85992,
+        "south": 30.2673,
+        "north": 40.0
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "glorys12v1-15.81m-KE-H1",
+          "version": "step25c-1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-h1",
+        "version": "2010-08-10T12.earthus1"
+      },
+      "forcingFile": "data/research/step25c/forcing/KE-H1.glorys15.81m.dataset.json",
+      "forcingFileSha256": "5cd22aece73dbb1d613ad99535d93b09b417b22ce300b2d3bfe79670e2656f16",
+      "gridSha256": "e12142bace085deb9a83837334205d8d26c33c13cef9b06be3525c7a738bf1b5",
+      "sourceSha256": "5fcb3b013aa4f0fa8dabf516ea2ef9d669f7009aceb5d960c339e92f4debcb25",
+      "windGridSha256": "2efe5efe8feed013a2c0b64fb3257938d8f85a129f35ecc0167cc35db0154d21",
+      "depthMeters": 15.81007,
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 5760,
+          "outputSamplesUpperBound": 1445,
+          "recommendedMaxStepSeconds": 682,
+          "minimumGridLengthMeters": 7041.359241454685,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T12:26:45Z",
+      "completedAtUTC": "2026-09-06T12:26:48Z",
+      "wallSeconds": 3.3,
+      "modelCommit": "9e26d8cb34c10579a3ae23633188f89621d0af60",
+      "modelId": "surface-passive-advection.v2.windage",
+      "modelVersion": "0.1.0",
+      "engineVersion": "3.1.4",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f",
+      "specSha256": "31f06b4de5afbde64b7b3c9da37fbb566d92225eecd7737440cfffbf879a8e6b",
+      "resultArraySha256": "39a8217ae840b23a1e02fc15ecac0f3e817bf742a06f0460602fef9ca1b58aad",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step26/trajectories/C/KE-H1/alpha0.002.result.json",
+      "resultSha256": "fb3091f2e327cc7912b3c6b41e9848ded09f23e54184968b454243784972eaaf",
+      "specFile": "data/research/step26/trajectories/C/KE-H1/alpha0.002.spec.json",
+      "trajectoriesFile": "data/research/step26/trajectories/C/KE-H1/alpha0.002.trajectories.csv",
+      "trajectoriesSha256": "4e88e819590cdb264d6145b3f0d3e084a3c0c5cb7c434a750af20046d8a160c8",
+      "trajectoriesSha256WithoutRunId": "7f81ae10c5a1bf451b5719c66b9b337b27e2030f13cb34d9303dff4e705a402e",
+      "rows": 1445,
+      "finalStatusCounts": {
+        "COMPLETED": 5
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 5
+      },
+      "qualityStatus": "COMPLETE",
+      "endpoints72h": [
+        {
+          "drifterId": "48985",
+          "lon": 137.42906841172373,
+          "lat": 39.16700896540416,
+          "timeUTC": "2010-08-13T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "81806",
+          "lon": 157.83542415354145,
+          "lat": 32.65683486916156,
+          "timeUTC": "2010-08-13T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "90135",
+          "lon": 155.71756399234772,
+          "lat": 36.143208374348575,
+          "timeUTC": "2010-08-13T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "90149",
+          "lon": 159.5695447391704,
+          "lat": 38.67773120184229,
+          "timeUTC": "2010-08-13T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "90150",
+          "lon": 156.2425940081518,
+          "lat": 38.35767794813253,
+          "timeUTC": "2010-08-13T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step25c_run.py (on-disk spec/forcing/wind)",
+        "replayToolSha256": "5dd8c14da33dcd75c50c8e52dc517456d46a1a2f4ad38b3918687d16b4a73ff5",
+        "returncode": 0,
+        "replayResultSha256": "39a8217ae840b23a1e02fc15ecac0f3e817bf742a06f0460602fef9ca1b58aad",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "reproduction": {
+        "reference": "STEP 25C GLORYS alpha 0.002",
+        "referenceRunId": "step25c-glorys-alpha0.002-KE-H1",
+        "referenceResultArraySha256": "39a8217ae840b23a1e02fc15ecac0f3e817bf742a06f0460602fef9ca1b58aad",
+        "referenceTrajectoriesFile": "data/research/step25c/trajectories/KE-H1/alpha0.002.trajectories.csv",
+        "referenceTrajectoriesSha256": "78e69b1a30834a236ffa5b9ecbe8590c8ba584cf6eb9778722f8b69fb8c497f8",
+        "resultArrayBitwiseEqual": true,
+        "csvRowsEqualWithoutRunId": true,
+        "comparedOn": "numeric result array (particleId, samples timeUTC/lon/lat/status, finalStatus) via canonical SHA-256; CSV rows (drifter_id, timestamp, lat, lon, alpha, status, valid) after removing run_id",
+        "pass": true
+      }
+    },
+    {
+      "runId": "step26-C-alpha0.002-KE-H3",
+      "windowId": "KE-H3",
+      "role": "HOLDOUT",
+      "condition": "C",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "drifterCount": 7,
+      "released": 7,
+      "drifterIds": [
+        "89898",
+        "90146",
+        "92981",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 141.06795,
+        "east": 156.05711,
+        "south": 29.02459,
+        "north": 40.0
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "glorys12v1-15.81m-KE-H3",
+          "version": "step25c-1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-h3",
+        "version": "2010-11-15T12.earthus1"
+      },
+      "forcingFile": "data/research/step25c/forcing/KE-H3.glorys15.81m.dataset.json",
+      "forcingFileSha256": "f3955b90eb1c2715accc8675d8a8338b3816434d96a70754bc7d5fe3f70cc059",
+      "gridSha256": "f00cb7fec7d318234f7ed6dd2af3c92f332b92cb076d82cec947ea300735421f",
+      "sourceSha256": "403ed3a5b4b2882d6f1a102d2edea299ae9436598b250a46e0c0bcb834c10152",
+      "windGridSha256": "94b50b5ac56e7224b260eb0a03bddccd9785e3454a69471cdc3a39bc61e43cd8",
+      "depthMeters": 15.81007,
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 8064,
+          "outputSamplesUpperBound": 2023,
+          "recommendedMaxStepSeconds": 831,
+          "minimumGridLengthMeters": 7041.359241454685,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T12:26:54Z",
+      "completedAtUTC": "2026-09-06T12:26:58Z",
+      "wallSeconds": 3.9,
+      "modelCommit": "9e26d8cb34c10579a3ae23633188f89621d0af60",
+      "modelId": "surface-passive-advection.v2.windage",
+      "modelVersion": "0.1.0",
+      "engineVersion": "3.1.4",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f",
+      "specSha256": "13b20ad8855599738d1db3208f85aac922791139d9fe3c209c1080fa7515d6fb",
+      "resultArraySha256": "084163f0f1142782da178af2e393478dbcb50ae942690511cfbc6337d40ca227",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step26/trajectories/C/KE-H3/alpha0.002.result.json",
+      "resultSha256": "6394ad47a7e6e50a47cbc9a490d4a15fde75bf6f16fe27bb50a6c6c7aff27db5",
+      "specFile": "data/research/step26/trajectories/C/KE-H3/alpha0.002.spec.json",
+      "trajectoriesFile": "data/research/step26/trajectories/C/KE-H3/alpha0.002.trajectories.csv",
+      "trajectoriesSha256": "1f6b3554db7419d45a15010920bd37bf8c0899f0ca417b259c8224804bc8071c",
+      "trajectoriesSha256WithoutRunId": "de295d42b6b60ae548f9f19ede1473741e9c283f710011a927e93fadc49042a5",
+      "rows": 2023,
+      "finalStatusCounts": {
+        "COMPLETED": 7
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 7
+      },
+      "qualityStatus": "COMPLETE",
+      "endpoints72h": [
+        {
+          "drifterId": "89898",
+          "lon": 142.88984778567465,
+          "lat": 30.412918541263025,
+          "timeUTC": "2010-11-18T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "90146",
+          "lon": 152.22157742011063,
+          "lat": 38.32530679631268,
+          "timeUTC": "2010-11-18T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "92981",
+          "lon": 143.30936451552157,
+          "lat": 29.96522107849316,
+          "timeUTC": "2010-11-18T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "98996",
+          "lon": 148.2519280636302,
+          "lat": 33.726202575183265,
+          "timeUTC": "2010-11-18T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "98997",
+          "lon": 152.86182374893303,
+          "lat": 34.19231906322968,
+          "timeUTC": "2010-11-18T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "98998",
+          "lon": 153.69150111175048,
+          "lat": 33.3583228221586,
+          "timeUTC": "2010-11-18T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "99006",
+          "lon": 151.4325938804082,
+          "lat": 31.25367647580784,
+          "timeUTC": "2010-11-18T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step25c_run.py (on-disk spec/forcing/wind)",
+        "replayToolSha256": "5dd8c14da33dcd75c50c8e52dc517456d46a1a2f4ad38b3918687d16b4a73ff5",
+        "returncode": 0,
+        "replayResultSha256": "084163f0f1142782da178af2e393478dbcb50ae942690511cfbc6337d40ca227",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "reproduction": {
+        "reference": "STEP 25C GLORYS alpha 0.002",
+        "referenceRunId": "step25c-glorys-alpha0.002-KE-H3",
+        "referenceResultArraySha256": "084163f0f1142782da178af2e393478dbcb50ae942690511cfbc6337d40ca227",
+        "referenceTrajectoriesFile": "data/research/step25c/trajectories/KE-H3/alpha0.002.trajectories.csv",
+        "referenceTrajectoriesSha256": "26f151010ec4590186456047a627be701821a33b585df53d337f6d5be331c16d",
+        "resultArrayBitwiseEqual": true,
+        "csvRowsEqualWithoutRunId": true,
+        "comparedOn": "numeric result array (particleId, samples timeUTC/lon/lat/status, finalStatus) via canonical SHA-256; CSV rows (drifter_id, timestamp, lat, lon, alpha, status, valid) after removing run_id",
+        "pass": true
+      }
+    },
+    {
+      "runId": "step26-D-alpha0.002-KE-1",
+      "windowId": "KE-1",
+      "role": "CALIBRATION",
+      "condition": "D",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "drifterCount": 8,
+      "released": 8,
+      "drifterIds": [
+        "71155",
+        "81801",
+        "81805",
+        "81807",
+        "81811",
+        "81813",
+        "81814",
+        "81816"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 140.60959,
+        "east": 161.61974,
+        "south": 28.12786,
+        "north": 38.19472
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "glorys12v1-coarse-hycomgrid-15.81m-KE-1",
+          "version": "step26-1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-1",
+        "version": "2010-05-11T12.earthus1"
+      },
+      "forcingFile": "data/research/step26/forcing/KE-1.glorys-coarse.dataset.json",
+      "forcingFileSha256": "e5e5e9ae5b61cd8ee7cc8a6fb76e6e6fc9aa101569b4573f3547080ac8c3f248",
+      "gridSha256": "2b3b8a48edcd990aa4bf254bb2a54762b98ca76cd4d2edb256568dc01ed8ea8c",
+      "sourceSha256": "d399a2b586b3eea97838bfc9eab2bf0e58afcd33d07c4e9fcef7b02de033c2dc",
+      "windGridSha256": "ba15d7299bd49846e63cb05219503f6e5c11dc765ba6880f02c0ed1b7f553080",
+      "depthMeters": 15.81007,
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 9216,
+          "outputSamplesUpperBound": 2312,
+          "recommendedMaxStepSeconds": 913,
+          "minimumGridLengthMeters": 6989.789646322781,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T12:27:04Z",
+      "completedAtUTC": "2026-09-06T12:27:08Z",
+      "wallSeconds": 4.4,
+      "modelCommit": "9e26d8cb34c10579a3ae23633188f89621d0af60",
+      "modelId": "surface-passive-advection.v2.windage",
+      "modelVersion": "0.1.0",
+      "engineVersion": "3.1.4",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f",
+      "specSha256": "253c583fc948360430d862bbc3320f606414ad608132e7ad5d5e850d1c86b38f",
+      "resultArraySha256": "7b6718562d225e2d0c4c17a37df3c48430467868bf1d845fb8e972d43304ace0",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step26/trajectories/D/KE-1/alpha0.002.result.json",
+      "resultSha256": "827790a84186332615c3d601f747ce70a2d2af3359d20b71da4facc65ab63000",
+      "specFile": "data/research/step26/trajectories/D/KE-1/alpha0.002.spec.json",
+      "trajectoriesFile": "data/research/step26/trajectories/D/KE-1/alpha0.002.trajectories.csv",
+      "trajectoriesSha256": "86feebb9de6858e23026dbe2fb94bc655d6b58ac11ce14320083c5da33930e23",
+      "trajectoriesSha256WithoutRunId": "427aeb41341188eb66ea1def11832d769d0db4dda8ab700ae4da305f4ae15bca",
+      "rows": 2303,
+      "finalStatusCounts": {
+        "COMPLETED": 7,
+        "FORCING_UNAVAILABLE": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 1,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 7
+      },
+      "qualityStatus": "PARTIAL",
+      "endpoints72h": [
+        {
+          "drifterId": "71155",
+          "lon": 146.06829422452165,
+          "lat": 34.3971047443127,
+          "timeUTC": "2010-05-14T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "81801",
+          "lon": 151.25854138722582,
+          "lat": 30.03822003074399,
+          "timeUTC": "2010-05-14T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "81805",
+          "lon": 150.1682599500731,
+          "lat": 30.357056773414545,
+          "timeUTC": "2010-05-14T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "81807",
+          "lon": 149.64945542246937,
+          "lat": 30.878384790655584,
+          "timeUTC": "2010-05-14T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "81811",
+          "lon": 151.55121292442226,
+          "lat": 32.32940518256931,
+          "timeUTC": "2010-05-14T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "81813",
+          "lon": 158.4596504158638,
+          "lat": 30.950715562811663,
+          "timeUTC": "2010-05-14T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "81814",
+          "lon": 161.60000000006653,
+          "lat": 35.203081489705795,
+          "timeUTC": "2010-05-14T09:43:00.327004Z",
+          "finalStatus": "OUT_OF_DOMAIN"
+        },
+        {
+          "drifterId": "81816",
+          "lon": 148.14945643020576,
+          "lat": 31.27317514026393,
+          "timeUTC": "2010-05-14T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step25c_run.py (on-disk spec/forcing/wind)",
+        "replayToolSha256": "5dd8c14da33dcd75c50c8e52dc517456d46a1a2f4ad38b3918687d16b4a73ff5",
+        "returncode": 0,
+        "replayResultSha256": "7b6718562d225e2d0c4c17a37df3c48430467868bf1d845fb8e972d43304ace0",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "derivedForcing": {
+        "targetGridAxesSha256": "15cfff26d1cc5f80d235b1c368cdd3086c3d074b91e1fa08dc711399d2a01992",
+        "derivedGridSha256": "2b3b8a48edcd990aa4bf254bb2a54762b98ca76cd4d2edb256568dc01ed8ea8c",
+        "derivedFileSha256": "e5e5e9ae5b61cd8ee7cc8a6fb76e6e6fc9aa101569b4573f3547080ac8c3f248",
+        "algorithm": "glorys-to-hycom-grid-bilinear/1"
+      }
+    },
+    {
+      "runId": "step26-D-alpha0.002-KE-2",
+      "windowId": "KE-2",
+      "role": "CALIBRATION",
+      "condition": "D",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "drifterCount": 5,
+      "released": 5,
+      "drifterIds": [
+        "48965",
+        "81802",
+        "90141",
+        "90142",
+        "90145"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 133.53249,
+        "east": 154.78535,
+        "south": 29.70784,
+        "north": 40.0
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "glorys12v1-coarse-hycomgrid-15.81m-KE-2",
+          "version": "step26-1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-2",
+        "version": "2010-06-30T12.earthus1"
+      },
+      "forcingFile": "data/research/step26/forcing/KE-2.glorys-coarse.dataset.json",
+      "forcingFileSha256": "449db7a102f142bd1d8934d61c6591a7f6346ea081a3f722858018085cdddc54",
+      "gridSha256": "d866bff77548e23a942366de3c08fb69003f371fece38e12383fb94f1cfd5781",
+      "sourceSha256": "f2ca50183aea583d69e3b73f4609568b221106a7c119a0c8c0bd43d7623f4bbe",
+      "windGridSha256": "ace5b1a527ca39595e6e40051798846ca39a0fb54142e3e3d5aae2178e2f14f9",
+      "depthMeters": 15.81007,
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 5760,
+          "outputSamplesUpperBound": 1445,
+          "recommendedMaxStepSeconds": 754,
+          "minimumGridLengthMeters": 6809.828681549111,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T12:27:15Z",
+      "completedAtUTC": "2026-09-06T12:27:18Z",
+      "wallSeconds": 3.4,
+      "modelCommit": "9e26d8cb34c10579a3ae23633188f89621d0af60",
+      "modelId": "surface-passive-advection.v2.windage",
+      "modelVersion": "0.1.0",
+      "engineVersion": "3.1.4",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f",
+      "specSha256": "c4a3b86307287f45b19aff28e1b85872fea987097593ce0bbf3c60618e7c8c92",
+      "resultArraySha256": "bc20813c39ab42dedfb9d325d5a7ed1e265bcc0b8b9f1d8455982d76b9a97cd6",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step26/trajectories/D/KE-2/alpha0.002.result.json",
+      "resultSha256": "1cac160e14bb2c7bd65a72eabbb56dc37b6981e8d2edd07184e44f216a0b9f28",
+      "specFile": "data/research/step26/trajectories/D/KE-2/alpha0.002.spec.json",
+      "trajectoriesFile": "data/research/step26/trajectories/D/KE-2/alpha0.002.trajectories.csv",
+      "trajectoriesSha256": "317a304e2798534c01f835e76065bf5b3a756e749850ec879b2be0f797b6b1b4",
+      "trajectoriesSha256WithoutRunId": "bcfdab5bee2eeec151a0fc09bac66ec2e261e22a4dfdab4401777eab1dc09fc2",
+      "rows": 1445,
+      "finalStatusCounts": {
+        "COMPLETED": 5
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 5
+      },
+      "qualityStatus": "COMPLETE",
+      "endpoints72h": [
+        {
+          "drifterId": "48965",
+          "lon": 135.0480278956153,
+          "lat": 37.45863158310973,
+          "timeUTC": "2010-07-03T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "81802",
+          "lon": 151.15094467198776,
+          "lat": 31.215046851613035,
+          "timeUTC": "2010-07-03T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "90141",
+          "lon": 145.95856376673657,
+          "lat": 38.751744964158824,
+          "timeUTC": "2010-07-03T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "90142",
+          "lon": 152.86915123694962,
+          "lat": 39.153941832302614,
+          "timeUTC": "2010-07-03T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "90145",
+          "lon": 146.63925389273822,
+          "lat": 38.101589826724776,
+          "timeUTC": "2010-07-03T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step25c_run.py (on-disk spec/forcing/wind)",
+        "replayToolSha256": "5dd8c14da33dcd75c50c8e52dc517456d46a1a2f4ad38b3918687d16b4a73ff5",
+        "returncode": 0,
+        "replayResultSha256": "bc20813c39ab42dedfb9d325d5a7ed1e265bcc0b8b9f1d8455982d76b9a97cd6",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "derivedForcing": {
+        "targetGridAxesSha256": "3254be46a0b4c497d36454a2c3c00fc5e3d91d75181b031d1cf32130ca22b0bf",
+        "derivedGridSha256": "d866bff77548e23a942366de3c08fb69003f371fece38e12383fb94f1cfd5781",
+        "derivedFileSha256": "449db7a102f142bd1d8934d61c6591a7f6346ea081a3f722858018085cdddc54",
+        "algorithm": "glorys-to-hycom-grid-bilinear/1"
+      }
+    },
+    {
+      "runId": "step26-D-alpha0.002-AG-1",
+      "windowId": "AG-1",
+      "role": "CALIBRATION",
+      "condition": "D",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "drifterCount": 9,
+      "released": 9,
+      "drifterIds": [
+        "127198",
+        "127199",
+        "127272",
+        "127313",
+        "127314",
+        "127315",
+        "132511",
+        "132528",
+        "132634"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 18.31773,
+        "east": 32.013940000000005,
+        "south": -40.0,
+        "north": -32.13828
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "glorys12v1-coarse-hycomgrid-15.81m-AG-1",
+          "version": "step26-1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-1",
+        "version": "2015-04-23T12.earthus1"
+      },
+      "forcingFile": "data/research/step26/forcing/AG-1.glorys-coarse.dataset.json",
+      "forcingFileSha256": "0e05362ac6e8a3d10b0aee213305a81a01431c53d395266ba5686318315c212b",
+      "gridSha256": "c438b80fc75fbe0e355ec7bcdf518ba5bf9dfa2cc5b2ade1e8010820e68a5e08",
+      "sourceSha256": "87fffab5d0cfc0ff96387be7089b408681ea55a1f87bfba72f7f8f3ccf875759",
+      "windGridSha256": "be4e060568f5c72567f63209ace4bb1c2a32d6e3a03f998f102125a341edfed7",
+      "depthMeters": 15.81007,
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 10368,
+          "outputSamplesUpperBound": 2601,
+          "recommendedMaxStepSeconds": 826,
+          "minimumGridLengthMeters": 6809.8286815503225,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T12:27:24Z",
+      "completedAtUTC": "2026-09-06T12:27:28Z",
+      "wallSeconds": 4.3,
+      "modelCommit": "9e26d8cb34c10579a3ae23633188f89621d0af60",
+      "modelId": "surface-passive-advection.v2.windage",
+      "modelVersion": "0.1.0",
+      "engineVersion": "3.1.4",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f",
+      "specSha256": "09606eaacb051b8cf550b973df23223d19dee2a475dd81d42b3a23dd983e43ee",
+      "resultArraySha256": "7dcd31a970c480ae24fdf87d995705bc67cfe632d5928a509b5f04266dff59b3",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step26/trajectories/D/AG-1/alpha0.002.result.json",
+      "resultSha256": "b5e73bb8c2d593cc9077d3ef93294761f5f27c8766a7a39b1e61baa8154b2655",
+      "specFile": "data/research/step26/trajectories/D/AG-1/alpha0.002.spec.json",
+      "trajectoriesFile": "data/research/step26/trajectories/D/AG-1/alpha0.002.trajectories.csv",
+      "trajectoriesSha256": "43182e7ff84446fb57c71c7d4e1da8d5c5b6dc39d30373ef64cf82b87cf25dbd",
+      "trajectoriesSha256WithoutRunId": "3d594648f8f48184d3c05e67458964678928e5d9086f1cb2a441ea3fce11bc0b",
+      "rows": 2601,
+      "finalStatusCounts": {
+        "COMPLETED": 9
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 9
+      },
+      "qualityStatus": "COMPLETE",
+      "endpoints72h": [
+        {
+          "drifterId": "127198",
+          "lon": 22.2606860550745,
+          "lat": -39.61254664960851,
+          "timeUTC": "2015-04-26T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "127199",
+          "lon": 22.266849028459404,
+          "lat": -39.60863600596902,
+          "timeUTC": "2015-04-26T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "127272",
+          "lon": 25.545257218976587,
+          "lat": -35.41222949001856,
+          "timeUTC": "2015-04-26T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "127313",
+          "lon": 22.608259468880874,
+          "lat": -35.432628510040836,
+          "timeUTC": "2015-04-26T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "127314",
+          "lon": 28.58793245628044,
+          "lat": -34.05199046280575,
+          "timeUTC": "2015-04-26T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "127315",
+          "lon": 21.841894237544807,
+          "lat": -36.8902512909732,
+          "timeUTC": "2015-04-26T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "132511",
+          "lon": 18.95738358299539,
+          "lat": -37.95284806388385,
+          "timeUTC": "2015-04-26T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "132528",
+          "lon": 23.65026990561043,
+          "lat": -35.02407280727528,
+          "timeUTC": "2015-04-26T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "132634",
+          "lon": 29.53305955637549,
+          "lat": -33.56736739877283,
+          "timeUTC": "2015-04-26T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step25c_run.py (on-disk spec/forcing/wind)",
+        "replayToolSha256": "5dd8c14da33dcd75c50c8e52dc517456d46a1a2f4ad38b3918687d16b4a73ff5",
+        "returncode": 0,
+        "replayResultSha256": "7dcd31a970c480ae24fdf87d995705bc67cfe632d5928a509b5f04266dff59b3",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "derivedForcing": {
+        "targetGridAxesSha256": "e47d224b29bf95bf0a809ac337bfcfd4c08893d2eead912e6af4a042b6d36ea2",
+        "derivedGridSha256": "c438b80fc75fbe0e355ec7bcdf518ba5bf9dfa2cc5b2ade1e8010820e68a5e08",
+        "derivedFileSha256": "0e05362ac6e8a3d10b0aee213305a81a01431c53d395266ba5686318315c212b",
+        "algorithm": "glorys-to-hycom-grid-bilinear/1"
+      }
+    },
+    {
+      "runId": "step26-D-alpha0.002-AG-2",
+      "windowId": "AG-2",
+      "role": "CALIBRATION",
+      "condition": "D",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "127281"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 19.79639,
+        "east": 23.79639,
+        "south": -38.76674,
+        "north": -34.76674
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "glorys12v1-coarse-hycomgrid-15.81m-AG-2",
+          "version": "step26-1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ag-2",
+        "version": "2015-04-26T12.earthus1"
+      },
+      "forcingFile": "data/research/step26/forcing/AG-2.glorys-coarse.dataset.json",
+      "forcingFileSha256": "68af9bd1b84f31430c245ab30a0cc01f9971edb51c38100c8a7925020d4aac10",
+      "gridSha256": "fbe9ebd739324ac09e519f2afa9b5e97c89cae1d34c8671470b2aaa73f865429",
+      "sourceSha256": "595c2bace7156f3dab92698a251e29a87920eb4d2375cc730fbdf69562cc9b25",
+      "windGridSha256": "073d37611d155a6770f9fd3dfd7a849937587b72c4ad76b23f4cea547b1fc4e3",
+      "depthMeters": 15.81007,
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 1152,
+          "outputSamplesUpperBound": 289,
+          "recommendedMaxStepSeconds": 840,
+          "minimumGridLengthMeters": 6928.002773054685,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T12:27:34Z",
+      "completedAtUTC": "2026-09-06T12:27:35Z",
+      "wallSeconds": 0.5,
+      "modelCommit": "9e26d8cb34c10579a3ae23633188f89621d0af60",
+      "modelId": "surface-passive-advection.v2.windage",
+      "modelVersion": "0.1.0",
+      "engineVersion": "3.1.4",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f",
+      "specSha256": "e377b28f1bd712ae7b140dd7194865c94efe4bcbd40e7a7fb617873623d2ce69",
+      "resultArraySha256": "5554fbe6ae647b1cffc577bdd1bf5a0fdf4c74a6fe874300e9e7bf9203e79e92",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step26/trajectories/D/AG-2/alpha0.002.result.json",
+      "resultSha256": "6512cc6ca296bbd004622ac6bb71b4d7a71257198399ecff021212950722bc42",
+      "specFile": "data/research/step26/trajectories/D/AG-2/alpha0.002.spec.json",
+      "trajectoriesFile": "data/research/step26/trajectories/D/AG-2/alpha0.002.trajectories.csv",
+      "trajectoriesSha256": "fb3eae9cc6ef44da14d3c69a38fd6e1f95ec72e85729a64ca852d3a2b19db3ed",
+      "trajectoriesSha256WithoutRunId": "4d5bff1f1aca8c64709b8cafb3a0803b0922d1d32f3f02b1a1e2843ba9b41add",
+      "rows": 182,
+      "finalStatusCounts": {
+        "FORCING_UNAVAILABLE": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 1,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 0
+      },
+      "qualityStatus": "PARTIAL",
+      "endpoints72h": [
+        {
+          "drifterId": "127281",
+          "lon": 19.79639000017505,
+          "lat": -38.13152970364565,
+          "timeUTC": "2015-04-28T09:14:55.985234Z",
+          "finalStatus": "OUT_OF_DOMAIN"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step25c_run.py (on-disk spec/forcing/wind)",
+        "replayToolSha256": "5dd8c14da33dcd75c50c8e52dc517456d46a1a2f4ad38b3918687d16b4a73ff5",
+        "returncode": 0,
+        "replayResultSha256": "5554fbe6ae647b1cffc577bdd1bf5a0fdf4c74a6fe874300e9e7bf9203e79e92",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "derivedForcing": {
+        "targetGridAxesSha256": "bb718e28a7e51de7eea992c939bf5af871f90afbc810ca54945b6ae5bd7b44da",
+        "derivedGridSha256": "fbe9ebd739324ac09e519f2afa9b5e97c89cae1d34c8671470b2aaa73f865429",
+        "derivedFileSha256": "68af9bd1b84f31430c245ab30a0cc01f9971edb51c38100c8a7925020d4aac10",
+        "algorithm": "glorys-to-hycom-grid-bilinear/1"
+      }
+    },
+    {
+      "runId": "step26-D-alpha0.002-KE-H1",
+      "windowId": "KE-H1",
+      "role": "HOLDOUT",
+      "condition": "D",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "drifterCount": 5,
+      "released": 5,
+      "drifterIds": [
+        "48985",
+        "81806",
+        "90135",
+        "90149",
+        "90150"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 135.25655,
+        "east": 161.85992,
+        "south": 30.2673,
+        "north": 40.0
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "glorys12v1-coarse-hycomgrid-15.81m-KE-H1",
+          "version": "step26-1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-h1",
+        "version": "2010-08-10T12.earthus1"
+      },
+      "forcingFile": "data/research/step26/forcing/KE-H1.glorys-coarse.dataset.json",
+      "forcingFileSha256": "aae54069c89968d601df1500c6719466a81d04e392683e67123b35da004b7c4b",
+      "gridSha256": "a14913f44df259b33f097553b95b9cc1fad3d6340337aac052e7ad84be6738e6",
+      "sourceSha256": "5fcb3b013aa4f0fa8dabf516ea2ef9d669f7009aceb5d960c339e92f4debcb25",
+      "windGridSha256": "2efe5efe8feed013a2c0b64fb3257938d8f85a129f35ecc0167cc35db0154d21",
+      "depthMeters": 15.81007,
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 5760,
+          "outputSamplesUpperBound": 1445,
+          "recommendedMaxStepSeconds": 663,
+          "minimumGridLengthMeters": 6809.828681551532,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T12:27:37Z",
+      "completedAtUTC": "2026-09-06T12:27:40Z",
+      "wallSeconds": 3.2,
+      "modelCommit": "9e26d8cb34c10579a3ae23633188f89621d0af60",
+      "modelId": "surface-passive-advection.v2.windage",
+      "modelVersion": "0.1.0",
+      "engineVersion": "3.1.4",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f",
+      "specSha256": "9ada7ba5d4b93a5533e9108743ab59a3745566ef83261f650f14646aec47b09c",
+      "resultArraySha256": "e581107d3fdd28a8b91f856d6a401830000084ddbdedcba5edf9f39aaefaed1e",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step26/trajectories/D/KE-H1/alpha0.002.result.json",
+      "resultSha256": "45e345517f571fc5bab7cb7739ff90c4797e008815ee681380d65d143b403fe8",
+      "specFile": "data/research/step26/trajectories/D/KE-H1/alpha0.002.spec.json",
+      "trajectoriesFile": "data/research/step26/trajectories/D/KE-H1/alpha0.002.trajectories.csv",
+      "trajectoriesSha256": "f72aa148756222c5c79460ea63b5d57aaa831f33eb9a331e2cfccbf749a25ada",
+      "trajectoriesSha256WithoutRunId": "fea84e49b7dcff4ecbe36ae6a002ef44787241094d0f4d240044121f5ea82848",
+      "rows": 1445,
+      "finalStatusCounts": {
+        "COMPLETED": 5
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 5
+      },
+      "qualityStatus": "COMPLETE",
+      "endpoints72h": [
+        {
+          "drifterId": "48985",
+          "lon": 137.44639336931715,
+          "lat": 39.162188381746766,
+          "timeUTC": "2010-08-13T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "81806",
+          "lon": 157.83714196667756,
+          "lat": 32.65434562907618,
+          "timeUTC": "2010-08-13T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "90135",
+          "lon": 155.720054783163,
+          "lat": 36.14493577592501,
+          "timeUTC": "2010-08-13T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "90149",
+          "lon": 159.5643707104639,
+          "lat": 38.67905505721918,
+          "timeUTC": "2010-08-13T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "90150",
+          "lon": 156.25689501662282,
+          "lat": 38.34239492489195,
+          "timeUTC": "2010-08-13T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step25c_run.py (on-disk spec/forcing/wind)",
+        "replayToolSha256": "5dd8c14da33dcd75c50c8e52dc517456d46a1a2f4ad38b3918687d16b4a73ff5",
+        "returncode": 0,
+        "replayResultSha256": "e581107d3fdd28a8b91f856d6a401830000084ddbdedcba5edf9f39aaefaed1e",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "derivedForcing": {
+        "targetGridAxesSha256": "077bbce052678115c597bd4e00c335319fdb603ced63952c1de692fed96bb821",
+        "derivedGridSha256": "a14913f44df259b33f097553b95b9cc1fad3d6340337aac052e7ad84be6738e6",
+        "derivedFileSha256": "aae54069c89968d601df1500c6719466a81d04e392683e67123b35da004b7c4b",
+        "algorithm": "glorys-to-hycom-grid-bilinear/1"
+      }
+    },
+    {
+      "runId": "step26-D-alpha0.002-KE-H3",
+      "windowId": "KE-H3",
+      "role": "HOLDOUT",
+      "condition": "D",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "drifterCount": 7,
+      "released": 7,
+      "drifterIds": [
+        "89898",
+        "90146",
+        "92981",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 141.06795,
+        "east": 156.05711,
+        "south": 29.02459,
+        "north": 40.0
+      },
+      "datasetVersions": [
+        {
+          "datasetId": "glorys12v1-coarse-hycomgrid-15.81m-KE-H3",
+          "version": "step26-1"
+        }
+      ],
+      "windDataset": {
+        "datasetId": "ncep-doe-r2-10m-wind-ke-h3",
+        "version": "2010-11-15T12.earthus1"
+      },
+      "forcingFile": "data/research/step26/forcing/KE-H3.glorys-coarse.dataset.json",
+      "forcingFileSha256": "374a88cdfc4fc638bc9d1a1d9119e233420b2d901d791227304e40f671791404",
+      "gridSha256": "4975df68c4a7f9cce23369b035213b8e76f5a2d8d5cebe5a06aec3f02228acbb",
+      "sourceSha256": "403ed3a5b4b2882d6f1a102d2edea299ae9436598b250a46e0c0bcb834c10152",
+      "windGridSha256": "94b50b5ac56e7224b260eb0a03bddccd9785e3454a69471cdc3a39bc61e43cd8",
+      "depthMeters": 15.81007,
+      "preflight": {
+        "ok": true,
+        "errors": [],
+        "estimate": {
+          "particleStepsUpperBound": 8064,
+          "outputSamplesUpperBound": 2023,
+          "recommendedMaxStepSeconds": 805,
+          "minimumGridLengthMeters": 6809.828681551532,
+          "costEstimate": null,
+          "runtimeEstimateSeconds": null
+        }
+      },
+      "status": "COMPLETED",
+      "startedAtUTC": "2026-09-06T12:27:46Z",
+      "completedAtUTC": "2026-09-06T12:27:50Z",
+      "wallSeconds": 3.8,
+      "modelCommit": "9e26d8cb34c10579a3ae23633188f89621d0af60",
+      "modelId": "surface-passive-advection.v2.windage",
+      "modelVersion": "0.1.0",
+      "engineVersion": "3.1.4",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f",
+      "specSha256": "62fa65fd447d026b1326fcd4c7e8eedb9c8d2e010d83bb6463f181201b922472",
+      "resultArraySha256": "4b98128e019bf7a461b0b999f12d8069da1b496b5ca64f3578495dc547e26d1e",
+      "environment": {
+        "python": "3.12.10",
+        "platform": "Windows-11-10.0.26200-SP0",
+        "dependencies": {
+          "Deprecated": "1.3.1",
+          "PyYAML": "6.0.3",
+          "Pygments": "2.21.0",
+          "asciitree": "0.3.3",
+          "certifi": "2026.7.22",
+          "cftime": "1.6.5",
+          "cgen": "2025.1",
+          "click": "8.5.0",
+          "cloudpickle": "3.1.2",
+          "colorama": "0.4.6",
+          "constantdict": "2025.3",
+          "dask": "2026.8.0",
+          "fasteners": "0.20",
+          "fsspec": "2026.7.0",
+          "iniconfig": "2.3.0",
+          "locket": "1.0.0",
+          "netCDF4": "1.7.4",
+          "numcodecs": "0.15.1",
+          "numpy": "2.5.2",
+          "packaging": "26.3",
+          "pandas": "3.0.5",
+          "parcels": "3.1.4",
+          "partd": "1.4.2",
+          "platformdirs": "4.11.7",
+          "pluggy": "1.6.0",
+          "psutil": "7.2.2",
+          "pymbolic": "2025.1",
+          "pytest": "9.1.1",
+          "python-dateutil": "2.9.0.post0",
+          "pytools": "2026.1.1",
+          "scipy": "1.18.1",
+          "siphash24": "1.8",
+          "six": "1.17.0",
+          "toolz": "1.1.0",
+          "tqdm": "4.70.0",
+          "typing_extensions": "4.16.0",
+          "tzdata": "2026.3",
+          "wrapt": "2.4.0",
+          "xarray": "2026.7.0",
+          "zarr": "2.18.7"
+        },
+        "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f"
+      },
+      "resultFile": "data/research/step26/trajectories/D/KE-H3/alpha0.002.result.json",
+      "resultSha256": "20c91f9ad7eee9d9a06ef7480212ec4c5b44afcd3c3d35f41db8e30583321cb9",
+      "specFile": "data/research/step26/trajectories/D/KE-H3/alpha0.002.spec.json",
+      "trajectoriesFile": "data/research/step26/trajectories/D/KE-H3/alpha0.002.trajectories.csv",
+      "trajectoriesSha256": "4e7e2fe6cc287ad9de3d056a1880c25d4b9876c2ef9e9e5204106dff5b1c2b9d",
+      "trajectoriesSha256WithoutRunId": "39c8d0b7511ea277ca9a691de2b65560c247c5f925642a2073aebf98a1035191",
+      "rows": 2023,
+      "finalStatusCounts": {
+        "COMPLETED": 7
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 7
+      },
+      "qualityStatus": "COMPLETE",
+      "endpoints72h": [
+        {
+          "drifterId": "89898",
+          "lon": 142.8917731092962,
+          "lat": 30.410777445357077,
+          "timeUTC": "2010-11-18T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "90146",
+          "lon": 152.22359212559184,
+          "lat": 38.3277403359818,
+          "timeUTC": "2010-11-18T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "92981",
+          "lon": 143.31238095740702,
+          "lat": 29.965940148390988,
+          "timeUTC": "2010-11-18T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "98996",
+          "lon": 148.2527510819998,
+          "lat": 33.7259775340595,
+          "timeUTC": "2010-11-18T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "98997",
+          "lon": 152.8591485782286,
+          "lat": 34.19559111238325,
+          "timeUTC": "2010-11-18T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "98998",
+          "lon": 153.69566869272467,
+          "lat": 33.35977860535262,
+          "timeUTC": "2010-11-18T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "99006",
+          "lon": 151.43076831218917,
+          "lat": 31.254536811627204,
+          "timeUTC": "2010-11-18T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step25c_run.py (on-disk spec/forcing/wind)",
+        "replayToolSha256": "5dd8c14da33dcd75c50c8e52dc517456d46a1a2f4ad38b3918687d16b4a73ff5",
+        "returncode": 0,
+        "replayResultSha256": "4b98128e019bf7a461b0b999f12d8069da1b496b5ca64f3578495dc547e26d1e",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "derivedForcing": {
+        "targetGridAxesSha256": "3f6b04aebe29a618cd8c6b573ef04a7eb51f4a99fb7abc88308283ebdb03b553",
+        "derivedGridSha256": "4975df68c4a7f9cce23369b035213b8e76f5a2d8d5cebe5a06aec3f02228acbb",
+        "derivedFileSha256": "374a88cdfc4fc638bc9d1a1d9119e233420b2d901d791227304e40f671791404",
+        "algorithm": "glorys-to-hycom-grid-bilinear/1"
+      }
+    }
+  ],
+  "startedAtUTC": "2026-09-06T12:26:05Z",
+  "completedAtUTC": "2026-09-06T12:27:55Z",
+  "log": [
+    {
+      "utc": "2026-09-06T12:26:07Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step26-C-alpha0.002-KE-1",
+      "particles": 8
+    },
+    {
+      "utc": "2026-09-06T12:26:22Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step26-C-alpha0.002-KE-1",
+      "wall": 8.6,
+      "replay": true,
+      "final": {
+        "COMPLETED": 7,
+        "FORCING_UNAVAILABLE": 1
+      }
+    },
+    {
+      "utc": "2026-09-06T12:26:23Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step26-C-alpha0.002-KE-2",
+      "particles": 5
+    },
+    {
+      "utc": "2026-09-06T12:26:31Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step26-C-alpha0.002-KE-2",
+      "wall": 3.2,
+      "replay": true,
+      "final": {
+        "COMPLETED": 5
+      }
+    },
+    {
+      "utc": "2026-09-06T12:26:31Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step26-C-alpha0.002-AG-1",
+      "particles": 9
+    },
+    {
+      "utc": "2026-09-06T12:26:42Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step26-C-alpha0.002-AG-1",
+      "wall": 4.4,
+      "replay": true,
+      "final": {
+        "COMPLETED": 9
+      }
+    },
+    {
+      "utc": "2026-09-06T12:26:42Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step26-C-alpha0.002-AG-2",
+      "particles": 1
+    },
+    {
+      "utc": "2026-09-06T12:26:44Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step26-C-alpha0.002-AG-2",
+      "wall": 0.5,
+      "replay": true,
+      "final": {
+        "FORCING_UNAVAILABLE": 1
+      }
+    },
+    {
+      "utc": "2026-09-06T12:26:45Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step26-C-alpha0.002-KE-H1",
+      "particles": 5
+    },
+    {
+      "utc": "2026-09-06T12:26:53Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step26-C-alpha0.002-KE-H1",
+      "wall": 3.3,
+      "replay": true,
+      "final": {
+        "COMPLETED": 5
+      }
+    },
+    {
+      "utc": "2026-09-06T12:26:54Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step26-C-alpha0.002-KE-H3",
+      "particles": 7
+    },
+    {
+      "utc": "2026-09-06T12:27:03Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step26-C-alpha0.002-KE-H3",
+      "wall": 3.9,
+      "replay": true,
+      "final": {
+        "COMPLETED": 7
+      }
+    },
+    {
+      "utc": "2026-09-06T12:27:03Z",
+      "phase": "gate",
+      "status": "C_REPRODUCTION_PASS",
+      "windows": 6
+    },
+    {
+      "utc": "2026-09-06T12:27:04Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step26-D-alpha0.002-KE-1",
+      "particles": 8
+    },
+    {
+      "utc": "2026-09-06T12:27:14Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step26-D-alpha0.002-KE-1",
+      "wall": 4.4,
+      "replay": true,
+      "final": {
+        "COMPLETED": 7,
+        "FORCING_UNAVAILABLE": 1
+      }
+    },
+    {
+      "utc": "2026-09-06T12:27:15Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step26-D-alpha0.002-KE-2",
+      "particles": 5
+    },
+    {
+      "utc": "2026-09-06T12:27:23Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step26-D-alpha0.002-KE-2",
+      "wall": 3.4,
+      "replay": true,
+      "final": {
+        "COMPLETED": 5
+      }
+    },
+    {
+      "utc": "2026-09-06T12:27:24Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step26-D-alpha0.002-AG-1",
+      "particles": 9
+    },
+    {
+      "utc": "2026-09-06T12:27:34Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step26-D-alpha0.002-AG-1",
+      "wall": 4.3,
+      "replay": true,
+      "final": {
+        "COMPLETED": 9
+      }
+    },
+    {
+      "utc": "2026-09-06T12:27:34Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step26-D-alpha0.002-AG-2",
+      "particles": 1
+    },
+    {
+      "utc": "2026-09-06T12:27:36Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step26-D-alpha0.002-AG-2",
+      "wall": 0.5,
+      "replay": true,
+      "final": {
+        "FORCING_UNAVAILABLE": 1
+      }
+    },
+    {
+      "utc": "2026-09-06T12:27:37Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step26-D-alpha0.002-KE-H1",
+      "particles": 5
+    },
+    {
+      "utc": "2026-09-06T12:27:45Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step26-D-alpha0.002-KE-H1",
+      "wall": 3.2,
+      "replay": true,
+      "final": {
+        "COMPLETED": 5
+      }
+    },
+    {
+      "utc": "2026-09-06T12:27:46Z",
+      "phase": "run",
+      "status": "START",
+      "runId": "step26-D-alpha0.002-KE-H3",
+      "particles": 7
+    },
+    {
+      "utc": "2026-09-06T12:27:55Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step26-D-alpha0.002-KE-H3",
+      "wall": 3.8,
+      "replay": true,
+      "final": {
+        "COMPLETED": 7
+      }
+    }
+  ]
+}

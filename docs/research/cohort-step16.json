@@ -1,0 +1,951 @@
+{
+  "schemaVersion": "1.0",
+  "cohortId": "gdp-cohort-step16-2010-2020-chronological",
+  "status": "COHORT_SELECTION_PASS",
+  "ruleId": "cohort-selection-rule-step16-chronological-accumulation",
+  "ruleSha256": "e9e2c1ca2e2148ff763becebf8a56119a3551c965efe32df7ea49fdb84ea0948",
+  "preregistrationSha256": "5bae117d42742c23e9c13817c60341ea153c641505d595f95873634b559d33b3",
+  "lockCommit": "6c73cafe",
+  "observationPeriod": {
+    "startDate": "2010-01-01",
+    "endDate": "2020-12-31",
+    "inclusive": true
+  },
+  "observation": "NOAA GDP hourly QC (ERDDAP drifter_hourly_qc, CC BY 4.0) — STEP 15 raw files reused",
+  "candidateRegions": [
+    "GS",
+    "KE",
+    "AG",
+    "BM"
+  ],
+  "totalWindows": 16072,
+  "daysEnumerated": 4018,
+  "eligibleWindowsTotal": 438,
+  "regionResults": {
+    "GS": {
+      "box": {
+        "south": 32,
+        "north": 40,
+        "west": -75,
+        "east": -55
+      },
+      "loadedDrifterCount": 584,
+      "duplicateConflictDrifters": 0,
+      "evaluatedWindows": 4018,
+      "eligibleWindows": 275,
+      "selectedWindows": 4,
+      "skippedOverlap": 5,
+      "finalUniqueDrifterCount": 10,
+      "regionStatus": "REGION_MET",
+      "selectedWindowDates": [
+        "2010-07-20",
+        "2010-07-23",
+        "2010-07-27",
+        "2010-07-30"
+      ],
+      "uniqueDrifterIds": [
+        "92918",
+        "92920",
+        "89822",
+        "92885",
+        "92917",
+        "98904",
+        "98942",
+        "98944",
+        "92872",
+        "98941"
+      ]
+    },
+    "KE": {
+      "box": {
+        "south": 30,
+        "north": 40,
+        "west": 135,
+        "east": 160
+      },
+      "loadedDrifterCount": 584,
+      "duplicateConflictDrifters": 0,
+      "evaluatedWindows": 4018,
+      "eligibleWindows": 115,
+      "selectedWindows": 2,
+      "skippedOverlap": 0,
+      "finalUniqueDrifterCount": 13,
+      "regionStatus": "REGION_MET",
+      "selectedWindowDates": [
+        "2010-05-11",
+        "2010-06-30"
+      ],
+      "uniqueDrifterIds": [
+        "81801",
+        "81805",
+        "81807",
+        "81811",
+        "81813",
+        "81814",
+        "71155",
+        "81816",
+        "81802",
+        "48965",
+        "90141",
+        "90142",
+        "90145"
+      ]
+    },
+    "AG": {
+      "box": {
+        "south": -40,
+        "north": -30,
+        "west": 15,
+        "east": 35
+      },
+      "loadedDrifterCount": 429,
+      "duplicateConflictDrifters": 0,
+      "evaluatedWindows": 4018,
+      "eligibleWindows": 17,
+      "selectedWindows": 2,
+      "skippedOverlap": 2,
+      "finalUniqueDrifterCount": 10,
+      "regionStatus": "REGION_MET",
+      "selectedWindowDates": [
+        "2015-04-23",
+        "2015-04-26"
+      ],
+      "uniqueDrifterIds": [
+        "127198",
+        "127199",
+        "127272",
+        "127313",
+        "127314",
+        "127315",
+        "132511",
+        "132528",
+        "132634",
+        "127281"
+      ]
+    },
+    "BM": {
+      "box": {
+        "south": -40,
+        "north": -30,
+        "west": -60,
+        "east": -45
+      },
+      "loadedDrifterCount": 225,
+      "duplicateConflictDrifters": 0,
+      "evaluatedWindows": 4018,
+      "eligibleWindows": 31,
+      "selectedWindows": 2,
+      "skippedOverlap": 2,
+      "finalUniqueDrifterCount": 10,
+      "regionStatus": "REGION_MET",
+      "selectedWindowDates": [
+        "2013-12-13",
+        "2013-12-16"
+      ],
+      "uniqueDrifterIds": [
+        "123311",
+        "123329",
+        "123330",
+        "123331",
+        "123332",
+        "123333",
+        "123334",
+        "123336",
+        "123335",
+        "123338"
+      ]
+    }
+  },
+  "regionsRanked": [
+    {
+      "regionId": "KE",
+      "uniqueDrifters": 13
+    },
+    {
+      "regionId": "AG",
+      "uniqueDrifters": 10
+    },
+    {
+      "regionId": "BM",
+      "uniqueDrifters": 10
+    },
+    {
+      "regionId": "GS",
+      "uniqueDrifters": 10
+    }
+  ],
+  "selectedRegions": [
+    "KE",
+    "AG"
+  ],
+  "selectedWindows": {
+    "KE": [
+      {
+        "order": 1,
+        "date": "2010-05-11",
+        "start": "2010-05-11T12:00:00Z",
+        "end": "2010-05-14T12:00:00Z",
+        "eligibleCount": 8,
+        "newDrifterIds": [
+          "81801",
+          "81805",
+          "81807",
+          "81811",
+          "81813",
+          "81814",
+          "71155",
+          "81816"
+        ],
+        "duplicateDrifterIds": [],
+        "cumulativeUniqueDrifters": 8
+      },
+      {
+        "order": 2,
+        "date": "2010-06-30",
+        "start": "2010-06-30T12:00:00Z",
+        "end": "2010-07-03T12:00:00Z",
+        "eligibleCount": 8,
+        "newDrifterIds": [
+          "81802",
+          "48965",
+          "90141",
+          "90142",
+          "90145"
+        ],
+        "duplicateDrifterIds": [
+          "81805",
+          "81811",
+          "81816"
+        ],
+        "cumulativeUniqueDrifters": 13
+      }
+    ],
+    "AG": [
+      {
+        "order": 1,
+        "date": "2015-04-23",
+        "start": "2015-04-23T12:00:00Z",
+        "end": "2015-04-26T12:00:00Z",
+        "eligibleCount": 9,
+        "newDrifterIds": [
+          "127198",
+          "127199",
+          "127272",
+          "127313",
+          "127314",
+          "127315",
+          "132511",
+          "132528",
+          "132634"
+        ],
+        "duplicateDrifterIds": [],
+        "cumulativeUniqueDrifters": 9
+      },
+      {
+        "order": 2,
+        "date": "2015-04-26",
+        "start": "2015-04-26T12:00:00Z",
+        "end": "2015-04-29T12:00:00Z",
+        "eligibleCount": 10,
+        "newDrifterIds": [
+          "127281"
+        ],
+        "duplicateDrifterIds": [
+          "127198",
+          "127199",
+          "127272",
+          "127313",
+          "127314",
+          "127315",
+          "132511",
+          "132528",
+          "132634"
+        ],
+        "cumulativeUniqueDrifters": 10
+      }
+    ]
+  },
+  "selectedDrifters": {
+    "KE": [
+      "81801",
+      "81805",
+      "81807",
+      "81811",
+      "81813",
+      "81814",
+      "71155",
+      "81816",
+      "81802",
+      "48965",
+      "90141",
+      "90142",
+      "90145"
+    ],
+    "AG": [
+      "127198",
+      "127199",
+      "127272",
+      "127313",
+      "127314",
+      "127315",
+      "132511",
+      "132528",
+      "132634",
+      "127281"
+    ]
+  },
+  "selectedWindowDetails": {
+    "KE": [
+      {
+        "order": 1,
+        "date": "2010-05-11",
+        "start": "2010-05-11T12:00:00Z",
+        "end": "2010-05-14T12:00:00Z",
+        "eligibleCount": 8,
+        "A1_median": 0.3301,
+        "A2_median": 62.84,
+        "A3_median": 27.9,
+        "newDrifterIds": [
+          "81801",
+          "81805",
+          "81807",
+          "81811",
+          "81813",
+          "81814",
+          "71155",
+          "81816"
+        ],
+        "duplicateDrifterIds": [],
+        "cumulativeUniqueDrifters": 8,
+        "drifters": [
+          {
+            "drifterId": "81801",
+            "typebuoy": "SVPB",
+            "startLon": 150.57346,
+            "startLat": 30.12786,
+            "coastKm": 727.3,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2010-05-11T12:00:00Z",
+            "endTimestamp": "2010-05-14T12:00:00Z",
+            "speedMps": 0.32009100295733917,
+            "displacement72hKm": 78.3326634570577,
+            "turnDeg": 67.3236427729799,
+            "drogueLostDate": "2010-09-27T00:00:00Z"
+          },
+          {
+            "drifterId": "81805",
+            "typebuoy": "SVPB",
+            "startLon": 150.6728,
+            "startLat": 30.8741,
+            "coastKm": 797.5,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2010-05-11T12:00:00Z",
+            "endTimestamp": "2010-05-14T12:00:00Z",
+            "speedMps": 0.14481271080763522,
+            "displacement72hKm": 47.34715308086131,
+            "turnDeg": 15.75622849458037,
+            "drogueLostDate": "2010-10-17T00:00:00Z"
+          },
+          {
+            "drifterId": "81807",
+            "typebuoy": "SVPB",
+            "startLon": 149.87982,
+            "startLat": 30.91725,
+            "coastKm": 830.8,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2010-05-11T12:00:00Z",
+            "endTimestamp": "2010-05-14T12:00:00Z",
+            "speedMps": 0.11731408607115877,
+            "displacement72hKm": 21.29119285101267,
+            "turnDeg": 7.809553440097602,
+            "drogueLostDate": "2010-06-28T00:00:00Z"
+          },
+          {
+            "drifterId": "81811",
+            "typebuoy": "SVPB",
+            "startLon": 151.57515,
+            "startLat": 32.09739,
+            "coastKm": 896.0,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2010-05-11T12:00:00Z",
+            "endTimestamp": "2010-05-14T12:00:00Z",
+            "speedMps": 0.7122304888458802,
+            "displacement72hKm": 41.42321817928646,
+            "turnDeg": 154.34231037737305,
+            "drogueLostDate": "2010-10-28T00:00:00Z"
+          },
+          {
+            "drifterId": "81813",
+            "typebuoy": "SVPB",
+            "startLon": 157.64886,
+            "startLat": 30.87311,
+            "coastKm": 814.8,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2010-05-11T12:00:00Z",
+            "endTimestamp": "2010-05-14T12:00:00Z",
+            "speedMps": 0.2373821992770039,
+            "displacement72hKm": 99.08419719915976,
+            "turnDeg": 24.340767588907624,
+            "drogueLostDate": "2010-11-02T00:00:00Z"
+          },
+          {
+            "drifterId": "81814",
+            "typebuoy": "SVPB",
+            "startLon": 159.61974,
+            "startLat": 36.19472,
+            "coastKm": 1337.6,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2010-05-11T12:00:00Z",
+            "endTimestamp": "2010-05-14T12:00:00Z",
+            "speedMps": 0.6968188361767719,
+            "displacement72hKm": 204.73569460835125,
+            "turnDeg": 7.366686195653529,
+            "drogueLostDate": "2010-10-02T00:00:00Z"
+          },
+          {
+            "drifterId": "71155",
+            "typebuoy": "SVP",
+            "startLon": 142.60959,
+            "startLat": 35.68513,
+            "coastKm": 156.3,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2010-05-11T12:00:00Z",
+            "endTimestamp": "2010-05-14T12:00:00Z",
+            "speedMps": 2.3250721122915974,
+            "displacement72hKm": 127.47955632854134,
+            "turnDeg": 31.428955209754463,
+            "drogueLostDate": "2010-05-21T00:00:00Z"
+          },
+          {
+            "drifterId": "81816",
+            "typebuoy": "SVPB",
+            "startLon": 148.6675,
+            "startLat": 30.73258,
+            "coastKm": 717.6,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2010-05-11T12:00:00Z",
+            "endTimestamp": "2010-05-14T12:00:00Z",
+            "speedMps": 0.3401414781321247,
+            "displacement72hKm": 16.534738334286043,
+            "turnDeg": 125.85256847533776,
+            "drogueLostDate": "2010-12-24T00:00:00Z"
+          }
+        ]
+      },
+      {
+        "order": 2,
+        "date": "2010-06-30",
+        "start": "2010-06-30T12:00:00Z",
+        "end": "2010-07-03T12:00:00Z",
+        "eligibleCount": 8,
+        "A1_median": 0.3703,
+        "A2_median": 60.33,
+        "A3_median": 32.0,
+        "newDrifterIds": [
+          "81802",
+          "48965",
+          "90141",
+          "90142",
+          "90145"
+        ],
+        "duplicateDrifterIds": [
+          "81805",
+          "81811",
+          "81816"
+        ],
+        "cumulativeUniqueDrifters": 13,
+        "drifters": [
+          {
+            "drifterId": "81802",
+            "typebuoy": "SVPB",
+            "startLon": 151.58324,
+            "startLat": 31.70784,
+            "coastKm": 854.2,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2010-06-30T12:00:00Z",
+            "endTimestamp": "2010-07-03T12:00:00Z",
+            "speedMps": 0.5030087010495216,
+            "displacement72hKm": 108.57081934905966,
+            "turnDeg": 30.027591447552908,
+            "drogueLostDate": "2010-10-04T00:00:00Z"
+          },
+          {
+            "drifterId": "81805",
+            "typebuoy": "SVPB",
+            "startLon": 151.69386,
+            "startLat": 30.07004,
+            "coastKm": 677.7,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2010-06-30T12:00:00Z",
+            "endTimestamp": "2010-07-03T12:00:00Z",
+            "speedMps": 0.4569888733906332,
+            "displacement72hKm": 36.02744507739073,
+            "turnDeg": 46.532430806555055,
+            "drogueLostDate": "2010-10-17T00:00:00Z"
+          },
+          {
+            "drifterId": "81811",
+            "typebuoy": "SVPB",
+            "startLon": 148.29613,
+            "startLat": 33.098,
+            "coastKm": 739.9,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2010-06-30T12:00:00Z",
+            "endTimestamp": "2010-07-03T12:00:00Z",
+            "speedMps": 0.4159601087342813,
+            "displacement72hKm": 76.21003533588018,
+            "turnDeg": 15.854001554580066,
+            "drogueLostDate": "2010-10-28T00:00:00Z"
+          },
+          {
+            "drifterId": "48965",
+            "typebuoy": "SVP",
+            "startLon": 135.53249,
+            "startLat": 37.60833,
+            "coastKm": 109.6,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2010-06-30T12:00:00Z",
+            "endTimestamp": "2010-07-03T12:00:00Z",
+            "speedMps": 0.0873614291454617,
+            "displacement72hKm": 49.75856765949934,
+            "turnDeg": 36.8727501499269,
+            "drogueLostDate": "2010-10-15T00:00:00Z"
+          },
+          {
+            "drifterId": "81816",
+            "typebuoy": "SVPB",
+            "startLon": 148.4147,
+            "startLat": 31.01544,
+            "coastKm": 711.7,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2010-06-30T12:00:00Z",
+            "endTimestamp": "2010-07-03T12:00:00Z",
+            "speedMps": 0.24466297872893505,
+            "displacement72hKm": 32.51555894164618,
+            "turnDeg": 26.6691236162892,
+            "drogueLostDate": "2010-12-24T00:00:00Z"
+          },
+          {
+            "drifterId": "90141",
+            "typebuoy": "SVPB",
+            "startLon": 145.17612,
+            "startLat": 38.3657,
+            "coastKm": 294.5,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2010-06-30T12:00:00Z",
+            "endTimestamp": "2010-07-03T12:00:00Z",
+            "speedMps": 0.3246156435901819,
+            "displacement72hKm": 70.90518821193285,
+            "turnDeg": 34.01377231645796,
+            "drogueLostDate": "2010-10-04T00:00:00Z"
+          },
+          {
+            "drifterId": "90142",
+            "typebuoy": "SVPB",
+            "startLon": 152.78535,
+            "startLat": 39.3177,
+            "coastKm": 697.7,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2010-06-30T12:00:00Z",
+            "endTimestamp": "2010-07-03T12:00:00Z",
+            "speedMps": 0.266111667291699,
+            "displacement72hKm": 37.04830654922174,
+            "turnDeg": 5.4885129857955235,
+            "drogueLostDate": "2010-07-27T00:00:00Z"
+          },
+          {
+            "drifterId": "90145",
+            "typebuoy": "SVPB",
+            "startLon": 147.0891,
+            "startLat": 37.12376,
+            "coastKm": 503.1,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2010-06-30T12:00:00Z",
+            "endTimestamp": "2010-07-03T12:00:00Z",
+            "speedMps": 0.5456633103135686,
+            "displacement72hKm": 131.4581425582623,
+            "turnDeg": 53.67578903499782,
+            "drogueLostDate": "2010-09-04T00:00:00Z"
+          }
+        ]
+      }
+    ],
+    "AG": [
+      {
+        "order": 1,
+        "date": "2015-04-23",
+        "start": "2015-04-23T12:00:00Z",
+        "end": "2015-04-26T12:00:00Z",
+        "eligibleCount": 9,
+        "A1_median": 0.9281,
+        "A2_median": 135.1,
+        "A3_median": 17.0,
+        "newDrifterIds": [
+          "127198",
+          "127199",
+          "127272",
+          "127313",
+          "127314",
+          "127315",
+          "132511",
+          "132528",
+          "132634"
+        ],
+        "duplicateDrifterIds": [],
+        "cumulativeUniqueDrifters": 9,
+        "drifters": [
+          {
+            "drifterId": "127198",
+            "typebuoy": "SVPB",
+            "startLon": 20.32911,
+            "startLat": -39.81819,
+            "coastKm": 556.3,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2015-04-23T12:00:00Z",
+            "endTimestamp": "2015-04-26T12:00:00Z",
+            "speedMps": 1.7525865827158826,
+            "displacement72hKm": 308.4657305088773,
+            "turnDeg": 17.326493761541315,
+            "drogueLostDate": "2015-09-28T00:00:00Z"
+          },
+          {
+            "drifterId": "127199",
+            "typebuoy": "SVPB",
+            "startLon": 20.31773,
+            "startLat": -39.82213,
+            "coastKm": 556.7,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2015-04-23T12:00:00Z",
+            "endTimestamp": "2015-04-26T12:00:00Z",
+            "speedMps": 1.7368067696559562,
+            "displacement72hKm": 308.8541598283801,
+            "turnDeg": 16.97258199093511,
+            "drogueLostDate": "2015-11-16T00:00:00Z"
+          },
+          {
+            "drifterId": "127272",
+            "typebuoy": "SVPB",
+            "startLon": 27.2557,
+            "startLat": -34.85449,
+            "coastKm": 139.3,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2015-04-23T12:00:00Z",
+            "endTimestamp": "2015-04-26T12:00:00Z",
+            "speedMps": 0.4173666397954363,
+            "displacement72hKm": 80.75518751460983,
+            "turnDeg": 3.2638365703272996,
+            "drogueLostDate": "2016-07-19T00:00:00Z"
+          },
+          {
+            "drifterId": "127313",
+            "typebuoy": "SVPB",
+            "startLon": 23.25523,
+            "startLat": -35.43792,
+            "coastKm": 148.3,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2015-04-23T12:00:00Z",
+            "endTimestamp": "2015-04-26T12:00:00Z",
+            "speedMps": 1.8057865193891576,
+            "displacement72hKm": 449.48937090793794,
+            "turnDeg": 6.3676648684974,
+            "drogueLostDate": "2015-09-13T00:00:00Z"
+          },
+          {
+            "drifterId": "127314",
+            "typebuoy": "SVPB",
+            "startLon": 30.01394,
+            "startLat": -34.13828,
+            "coastKm": 221.9,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2015-04-23T12:00:00Z",
+            "endTimestamp": "2015-04-26T12:00:00Z",
+            "speedMps": 0.9280945995218179,
+            "displacement72hKm": 98.76255482342393,
+            "turnDeg": 104.31363917664021,
+            "drogueLostDate": "2015-10-03T00:00:00Z"
+          },
+          {
+            "drifterId": "127315",
+            "typebuoy": "SVPB",
+            "startLon": 24.83593,
+            "startLat": -35.31406,
+            "coastKm": 123.2,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2015-04-23T12:00:00Z",
+            "endTimestamp": "2015-04-26T12:00:00Z",
+            "speedMps": 0.7793485773120469,
+            "displacement72hKm": 181.03214403774328,
+            "turnDeg": 8.648275406006888,
+            "drogueLostDate": "2015-10-05T00:00:00Z"
+          },
+          {
+            "drifterId": "132511",
+            "typebuoy": "SVPB",
+            "startLon": 21.4817,
+            "startLat": -37.10636,
+            "coastKm": 286.5,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2015-04-23T12:00:00Z",
+            "endTimestamp": "2015-04-26T12:00:00Z",
+            "speedMps": 0.47854517026747584,
+            "displacement72hKm": 90.0513538472478,
+            "turnDeg": 12.738365257854241,
+            "drogueLostDate": "2015-06-16T00:00:00Z"
+          },
+          {
+            "drifterId": "132528",
+            "typebuoy": "SVPB",
+            "startLon": 23.86592,
+            "startLat": -34.97313,
+            "coastKm": 104.2,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2015-04-23T12:00:00Z",
+            "endTimestamp": "2015-04-26T12:00:00Z",
+            "speedMps": 0.09265349473132552,
+            "displacement72hKm": 85.52837825211137,
+            "turnDeg": 59.99538794041419,
+            "drogueLostDate": "2015-06-24T00:00:00Z"
+          },
+          {
+            "drifterId": "132634",
+            "typebuoy": "SVPB",
+            "startLon": 29.88758,
+            "startLat": -34.64967,
+            "coastKm": 256.2,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2015-04-23T12:00:00Z",
+            "endTimestamp": "2015-04-26T12:00:00Z",
+            "speedMps": 2.209766011467955,
+            "displacement72hKm": 135.10047974877622,
+            "turnDeg": 122.92040300976925,
+            "drogueLostDate": "2015-08-16T00:00:00Z"
+          }
+        ]
+      },
+      {
+        "order": 2,
+        "date": "2015-04-26",
+        "start": "2015-04-26T12:00:00Z",
+        "end": "2015-04-29T12:00:00Z",
+        "eligibleCount": 10,
+        "A1_median": 0.8902,
+        "A2_median": 203.69,
+        "A3_median": 49.5,
+        "newDrifterIds": [
+          "127281"
+        ],
+        "duplicateDrifterIds": [
+          "127198",
+          "127199",
+          "127272",
+          "127313",
+          "127314",
+          "127315",
+          "132511",
+          "132528",
+          "132634"
+        ],
+        "cumulativeUniqueDrifters": 10,
+        "drifters": [
+          {
+            "drifterId": "127198",
+            "typebuoy": "SVPB",
+            "startLon": 23.72075,
+            "startLat": -38.91199,
+            "coastKm": 531.9,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2015-04-26T12:00:00Z",
+            "endTimestamp": "2015-04-29T12:00:00Z",
+            "speedMps": 1.0608535283030083,
+            "displacement72hKm": 201.85176450051972,
+            "turnDeg": 51.397870934725006,
+            "drogueLostDate": "2015-09-28T00:00:00Z"
+          },
+          {
+            "drifterId": "127199",
+            "typebuoy": "SVPB",
+            "startLon": 23.71447,
+            "startLat": -38.9162,
+            "coastKm": 532.4,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2015-04-26T12:00:00Z",
+            "endTimestamp": "2015-04-29T12:00:00Z",
+            "speedMps": 1.0191083979946611,
+            "displacement72hKm": 205.52353372770486,
+            "turnDeg": 47.5953269747709,
+            "drogueLostDate": "2015-11-16T00:00:00Z"
+          },
+          {
+            "drifterId": "127272",
+            "typebuoy": "SVPB",
+            "startLon": 26.59648,
+            "startLat": -35.34084,
+            "coastKm": 166.9,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2015-04-26T12:00:00Z",
+            "endTimestamp": "2015-04-29T12:00:00Z",
+            "speedMps": 0.2687848414013462,
+            "displacement72hKm": 41.04058718634712,
+            "turnDeg": 6.488756535818965,
+            "drogueLostDate": "2016-07-19T00:00:00Z"
+          },
+          {
+            "drifterId": "127281",
+            "typebuoy": "SVPB",
+            "startLon": 21.79639,
+            "startLat": -36.76674,
+            "coastKm": 264.1,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2015-04-26T12:00:00Z",
+            "endTimestamp": "2015-04-29T12:00:00Z",
+            "speedMps": 1.39687565293212,
+            "displacement72hKm": 352.78783638141067,
+            "turnDeg": 33.68003458977998,
+            "drogueLostDate": "2016-02-24T00:00:00Z"
+          },
+          {
+            "drifterId": "127313",
+            "typebuoy": "SVPB",
+            "startLon": 19.70106,
+            "startLat": -38.3124,
+            "coastKm": 389.0,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2015-04-26T12:00:00Z",
+            "endTimestamp": "2015-04-29T12:00:00Z",
+            "speedMps": 1.91466548417753,
+            "displacement72hKm": 297.3511430368706,
+            "turnDeg": 20.588121170937825,
+            "drogueLostDate": "2015-09-13T00:00:00Z"
+          },
+          {
+            "drifterId": "127314",
+            "typebuoy": "SVPB",
+            "startLon": 29.0278,
+            "startLat": -34.49252,
+            "coastKm": 192.4,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2015-04-26T12:00:00Z",
+            "endTimestamp": "2015-04-29T12:00:00Z",
+            "speedMps": 0.9261909517985382,
+            "displacement72hKm": 99.92874178445601,
+            "turnDeg": 129.9141886492627,
+            "drogueLostDate": "2015-10-03T00:00:00Z"
+          },
+          {
+            "drifterId": "127315",
+            "typebuoy": "SVPB",
+            "startLon": 23.07844,
+            "startLat": -36.09766,
+            "coastKm": 223.0,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2015-04-26T12:00:00Z",
+            "endTimestamp": "2015-04-29T12:00:00Z",
+            "speedMps": 0.6723704686748426,
+            "displacement72hKm": 222.974175699718,
+            "turnDeg": 14.182673348784931,
+            "drogueLostDate": "2015-10-05T00:00:00Z"
+          },
+          {
+            "drifterId": "132511",
+            "typebuoy": "SVPB",
+            "startLon": 20.64812,
+            "startLat": -37.5718,
+            "coastKm": 311.3,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2015-04-26T12:00:00Z",
+            "endTimestamp": "2015-04-29T12:00:00Z",
+            "speedMps": 0.04759244854028676,
+            "displacement72hKm": 32.669619192803765,
+            "turnDeg": 87.40231726567947,
+            "drogueLostDate": "2015-06-16T00:00:00Z"
+          },
+          {
+            "drifterId": "132528",
+            "typebuoy": "SVPB",
+            "startLon": 22.94439,
+            "startLat": -35.12303,
+            "coastKm": 115.5,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2015-04-26T12:00:00Z",
+            "endTimestamp": "2015-04-29T12:00:00Z",
+            "speedMps": 0.29929982991030524,
+            "displacement72hKm": 43.08183569101373,
+            "turnDeg": 120.59816740766428,
+            "drogueLostDate": "2015-06-24T00:00:00Z"
+          },
+          {
+            "drifterId": "132634",
+            "typebuoy": "SVPB",
+            "startLon": 28.60046,
+            "startLat": -34.06049,
+            "coastKm": 130.6,
+            "sampleCount": 73,
+            "maxGapHours": 1.0,
+            "startTimestamp": "2015-04-26T12:00:00Z",
+            "endTimestamp": "2015-04-29T12:00:00Z",
+            "speedMps": 0.8543004125843623,
+            "displacement72hKm": 213.84667977169636,
+            "turnDeg": 87.40249455237472,
+            "drogueLostDate": "2015-08-16T00:00:00Z"
+          }
+        ]
+      }
+    ]
+  },
+  "regionCount": 2,
+  "totalUniqueDrifters": 23,
+  "requiredRegions": 2,
+  "totalMinimumEligible": 20,
+  "thresholds": {
+    "A1": 0.3,
+    "A2": 40,
+    "A3": 90,
+    "regionWindowMinimumEligible": 8,
+    "stopWhenRegionUniqueDrifters": 10,
+    "maximumWindowsPerRegion": 6,
+    "minimumStartSeparationHours": 72
+  },
+  "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+  "coastlineSha256": "6f75ae0e0de157b14946e2255eb1f5486d9a13819032e26d4610852d296788f6",
+  "selectionHash": "4b13c3abce723bc222de0bec7b0499c551b4cb668b3f68759d7e00f0ccbc6692",
+  "createdAtUTC": "2026-09-06T03:47:55Z",
+  "gitCommit": "6c73cafe",
+  "modelBlind": true,
+  "forcingBlind": true,
+  "forbiddenInputAccess": 0,
+  "previousStepStatus": "STEP 15 COHORT_SELECTION_BLOCKED (7091c5cb), preserved and not used"
+}

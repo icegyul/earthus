@@ -96,19 +96,21 @@ export const satPanel = {
 
     list.forEach(m => box.appendChild(this._launchRow(m, ko, false)));
 
-    /* 관제패널 입구 (받은 지시: "위성 관제패널 메뉴도 넣어줘 — 발사 기록과 과거 기록 모두")
-       ⚠️ 레이어 스위치가 아니라 다른 화면을 여는 줄이다. 우주쓰레기 입구와 같은 문법으로 둔다. */
+    /* 관제센터 입구 (2026-09-07 지시서: 발사→궤적→궤도→운용→쓰레기→접근→기록→재생을 한 화면으로)
+       ⚠️ 레이어 스위치가 아니라 전체화면을 여는 줄이다. 옛 관제패널(ui-launchops.js)의 발사 기록·저장은
+          관제센터의 '위성 발사 현황' 안에 그대로 들어 있다(같은 localStorage 키를 읽는다). */
     const ops = document.createElement('button');
     ops.type = 'button';
     ops.className = 'sat-orbit sl-ops';
-    ops.innerHTML = `<b>${ko ? '위성 관제패널' : 'Launch operations'}</b>`
-      + `<em>${ko ? '진행 중 · 예정 전체 · 지난 발사 기록 · 저장한 발사' : 'In progress · all upcoming · past launches · saved'}</em>`;
+    ops.innerHTML = `<b>${ko ? '위성 관제센터' : 'Satellite control center'}</b>`
+      + `<em>${ko ? '실시간 우주 · 발사 · 궤도 · 우주쓰레기 · 접근 이벤트 · 임무 기록 · ARCHIVE 재생'
+                  : 'Live space · launches · orbits · debris · close approaches · missions · archive replay'}</em>`;
     ops.onclick = async () => {
       try {
-        const { launchOps } = await import('./ui-launchops.js');
+        const { spaceOps } = await import('./spaceops/index.js');
         document.getElementById('satSheet').classList.remove('up');
-        launchOps.open();
-      } catch (e) { console.warn('[sat] 관제패널', e?.message || e); }
+        await spaceOps.open();
+      } catch (e) { console.warn('[sat] 관제센터', e?.message || e); }
     };
     box.appendChild(ops);
 

@@ -81,6 +81,9 @@ export class AetherusCesiumLayer {
         /* ⚠️ 표시 거리를 Infinity 로 두지 않는다 — 지구 뒤편 객체가 지구를 뚫고
            보인다(1.0 위성 레이어가 같은 함정을 겪었다). */
         distanceDisplayCondition: new Cesium.DistanceDisplayCondition(0, 6e7),
+        /* 집기용 식별자 — 관제센터(js/spaceops)가 점을 눌러 정본 객체를 고른다.
+           PointPrimitive 는 Entity 가 아니라 _meta 가 없으므로 id 로 넘긴다. */
+        id: { _aeth: row.catalogId, name: row.name },
       });
     }
 

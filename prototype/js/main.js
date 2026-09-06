@@ -495,6 +495,10 @@ async function boot() {
   await initAccount();
   await analytics.init();
   satPanel.init();
+  /* 위성 관제센터 딥링크 — ?spaceops=1 (인공위성 시트의 '위성 관제센터' 줄과 같은 화면) */
+  if (new URLSearchParams(location.search).has('spaceops')) {
+    import('./spaceops/index.js').then(m => m.spaceOps.open()).catch(e => console.warn('[spaceops]', e?.message || e));
+  }
   /* v1 정리: sky·flight·community·event·ask 패널은 누를 때 받고 그때 init 한다 (lazy 표) */
   sourceNote.init();
   readability.init();
@@ -903,6 +907,13 @@ function bindAccountUI() {
 
 function onPick(ev) {
   const picked = scene.pick(ev.position);
+
+  /* 위성 관제센터가 열려 있으면 집기는 전부 그쪽이 맡는다 — 오른쪽 '선택 객체' 패널이 정보 시트 대신이다.
+     (여기서 store.select 로 가면 #sheet 가 관제센터 뒤에서 열린다.) */
+  if (document.body.classList.contains('spaceops') && globalThis.__spaceOps?.pick) {
+    globalThis.__spaceOps.pick(picked, ev);
+    return;
+  }
 
   /** 화면 좌표 → 지표의 위경도. 지구를 안 가리켰으면 null. */
   const ground = () => {

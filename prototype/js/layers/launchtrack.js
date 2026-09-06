@@ -21,7 +21,7 @@ export const launchTrack = {
   },
 
   /** 선택한 발사의 궤적을 그린다. 그릴 수 없으면 이유를 돌려준다(화면이 그대로 적는다). */
-  show(m) {
+  show(m, opts = {}) {
     const ds = this._ensure();
     ds.entities.removeAll();
     this.current = null;
@@ -51,8 +51,9 @@ export const launchTrack = {
       });
     });
 
-    /* 상승 구간 — 발사대에서 궤도 높이까지. "여기서 저쪽으로 올라간다"를 한눈에. */
-    const head = pts.slice(0, Math.min(40, pts.length));
+    /* 상승 구간 — 발사대에서 궤도 높이까지. "여기서 저쪽으로 올라간다"를 한눈에.
+       관제센터(spaceops)는 재생 표식과 맞추려고 12점(45초 간격 ≈ 9분)을 넘긴다. 기본은 옛 그림 그대로 40점. */
+    const head = pts.slice(0, Math.min(opts.ascentPts || 40, pts.length));
     ds.entities.add({
       id: `ltrack:${m.id}:ascent`,
       polyline: {

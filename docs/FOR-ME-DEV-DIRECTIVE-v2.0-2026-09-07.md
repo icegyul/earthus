@@ -292,6 +292,25 @@ MY IMPACT · 부산      🟠 영향 가능성 있음
 - 동네예보(785 KB)는 태풍이 있을 때만 받는다.
 - 신뢰 등급: 기관 일치 · 앙상블 방향 일치 · 발표 경과(≤6h 높음, >12h 낮음). 확률 % 없음.
 
+## 7.6 STEP 3 완료 기록 (2026-09-07)
+
+| 산출물 | 위치 |
+|---|---|
+| 사건 방 MY IMPACT 미니 블록 | `intel-feed.js` `roomHtml` 끝에 `extraRoomHtml` 훅 → `main.js` `forMeRoomHtml(it)`. TC 는 GDACS 이름→공식 key 로 카드 매칭, EQ 는 같은 사건(30분·규모 0.5) 매칭, 없으면 `quakeCardFromEvent` 로 즉석 판정(400 km·M5+) |
+| 해양 카드 MY IMPACT 미니 블록 | `main.js` `seaCardHtml` 부이 버튼 아래 `forMeSeaHtml()` — **클릭 지점이 아니라 내 동네** 기준 파고 카드 |
+| 파고 시간별 | `main.js` `loadWaveHourly(p)` — Open-Meteo Marine hourly, 내 동네 1점, `earthus.forme.wavehourly` 1시간 캐시, 429 면 15분 뒤 재시도. 엔진 `waveHourlySeries`·`waveWindow`·`waveCard(hourly)` → WHEN(임계 초과 창·최대 시각·±1h)·타임라인 |
+| 미니 블록 → 내 장소 탭 | `forme-open` 액션: `forme.clicked.<menu>` 계측, 카드를 맨 앞에 두고 MY IMPACT 로 도착. 동네 없으면 등록 화면 |
+| 계측 | `shown`/`signal` 은 사건·지점당 **한 번**(`forMe.tracked`), 같은 화면이 다시 그려져도 중복 없음 |
+| 검사 | `node tools/v2/test_for_me_step3.mjs` — 시간별 창(+18h~+39h, 최대 3.1 m)·타임라인·즉석 지진 카드·방-카드 매칭 |
+
+**검증**: 부산 파고 WHEN·WHY 에 시간별 예보(72시간, 1점) 반영 ✓ · 지진 사건 방 맨 끝 미니 블록 → 누르면 내 장소 탭 첫 카드 ✓ · `forme.shown.quake`·`forme.clicked.quake` 발화 ✓ · 콘솔 오류 0 ✓. 태풍 사건 방은 피드에 TC 항목이 없어(KROVANH 약화) 매칭 함수 단위 테스트로만 확인.
+
+**자료가 정한 것**
+- 격자(60 km 안 최대)와 1점 시간별 예보는 **다른 자료**라 값이 다르다(부산 격자 3.2 m vs 1점 1.2 m). 둘 다 자료명과 함께 그대로 보여준다. 격자는 보수적(과다 경보 쪽).
+- Open-Meteo 시간별 응답의 시각은 오프셋 없는 ISO(`2026-09-06T00:00`, timezone=UTC) — `Date.parse` 가 지역시로 읽어 9시간이 밀리던 것을 `parseWhen` 에서 UTC 로 고정(테스트가 잡음).
+- 사건 방 EQ 항목에 숫자 규모 `mag` 를 더했다(제목의 M6.2 는 글자). `+null` 은 0 이므로 null 검사가 먼저.
+- v2 는 이미 클릭 지점마다 같은 Open-Meteo Marine API 를 부른다(`marineSelect`). 내 동네 1점 시간별은 그 관행 위에 1시간 캐시로 얹었다. 상업 이용 약관 판단은 §9 결정 7.
+
 ## 8. 매핑표·v1.0 과의 관계
 
 - `V1-V2-UPSELL-MAP-2026-09-06.md` 「정보 해상도 차등」은 이 문서 §3 으로 대체(EXPLORER=구간+최대, INTELLIGENCE=+확실성·변화·근거·검증). "유료의 이유" 문장도 §0 으로 대체.
@@ -307,6 +326,7 @@ MY IMPACT · 부산      🟠 영향 가능성 있음
 | 4 | 푸시 토큰 | `PUSH_TICK_URL`/`PUSH_TICK_TOKEN` 설정 — STEP 7 전까지 PD 가 |
 | 5 | Replay | 후순위(STEP 8 이후). v2 에 사건 Replay 엔진이 없다 |
 | 6 | 아카이브 보존 기간 | 파고 30일 · 관측 90일 · 태풍 공식은 현행(무기한) |
+| 7 | Open-Meteo Marine 브라우저 직접 호출(시간별·클릭 지점) 상업 약관 | 저장소 기록(`aws/kma-fcst/handler.py`)은 "무료 API 는 비상업 전용"이라 적음. v2 가 이미 지점 조회에 쓰고 있어 같은 관행으로 두되, **한국 안은 기상청 동네예보 WAV(파고) 항목을 Lambda 에 추가해 공식 시간별로 바꾸는 것**을 권고(STEP 6) |
 
 ## 10. 일정
 

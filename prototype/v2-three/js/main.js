@@ -36,8 +36,9 @@ let extScene = null;
 import { usage } from './usage.js?v=2';
 // FOR ME — 내 동네에 걸린 사건 판정(순수) + v1·v2 공용 부품(동네 저장·딥링크). 지시서 v2.0 STEP 2 (2026-09-07).
 // ⚠️ '../../js/for-me-row.js' 는 번들 빌드(tools/build-v2-bundle.sh)가 './shared/for-me-row.js' 로 바꿔 넣는다.
-import { evaluateForMe, summarize, typhoonCard, typhoonChanged, issuesFromPacket, previousIssues, stormFromArchives, historyLine, fmtKst } from './for-me-signal.js?v=1';
-import { readFromParam, placeLabel } from '../../js/for-me-row.js';
+import { evaluateForMe, summarize, typhoonCard, typhoonChanged, issuesFromPacket, previousIssues, stormFromArchives, historyLine, fmtKst,
+         waveHourlySeries, quakeCardFromEvent, matchCardForRoom } from './for-me-signal.js?v=2';
+import { readFromParam, placeLabel, isFormeMenu } from '../../js/for-me-row.js';
 import { FlightRoute, routeCardHtml } from './route.js?v=4';
 import { PrecipField } from './precip-field.js?v=5';
 import { LightningMarks } from './lightning-marks.js?v=12';
@@ -2819,6 +2820,7 @@ async function main() {
         <p>해양: Open-Meteo Marine · 유효 ${seaPoint.time || '시각 미제공'} UTC<br/>바람: Open-Meteo GFS · 유효 ${seaPoint.windTime || '시각 미제공'} UTC<br/>조회 ${seaPoint.retrievedAt}</p>
         <button data-action="marine-buoys">부이 실측과 비교</button>
       </div>
+      ${forMeSeaHtml()}
       <div class="paycard" style="border-style:solid; cursor:default;">
         <button class="simgo" data-action="sim-now">이 바다 시뮬레이션 보기 →</button>
         <div class="paysub">모델 값을 입력한 파도 시뮬레이션</div>
@@ -2885,6 +2887,7 @@ async function main() {
 
   const feed = new IntelFeed(scene, dataBadge);
   feed.onUpdate = () => shell.renderIntel(); // PAST 등 비동기 카드 갱신
+  feed.extraRoomHtml = (it) => forMeRoomHtml(it); // FOR ME MY IMPACT 미니 블록 — 사건 방 맨 끝 (정의는 아래, 호출은 렌더 때)
   feed.load().then(() => shell.renderIntel()).catch((e) => console.warn('[earthus-feed]', e));
 
   // 소스 건강 상태: S3 캐시 객체에 HEAD를 쳐서 파이프라인 갱신 시각을 직접 확인한다.
@@ -3160,8 +3163,31 @@ async function main() {
      "무엇이 달라졌나"와 "판단 기록"은 발표 아카이브를 같은 함수로 다시 계산해 만든다.
      화면 단계: MY IMPACT(무료) → WHEN·WHY(EXPLORER) → INTELLIGENCE. 지금은 FREE_OPEN 이라 🔒 는 모양만이다.
      규율: 자료 없음 = '판단 불가'(안전 아님) · 시각엔 폭(±6h) · 확률 % 없음 · 없는 항목은 화면에서 뺀다. */
-  const forMe = { loading: false, data: null, cards: null, error: null, at: null, view: {}, focusId: null, intel: {} };
+  const forMe = { loading: false, data: null, cards: null, error: null, at: null, view: {}, focusId: null, intel: {}, tracked: new Set(), extraCards: {} };
   const fetchS3T = (path, ms = 15000) => Promise.race([fetchS3(path), new Promise((res) => setTimeout(() => res(null), ms))]);
+  /* 파고 시간별 — Open-Meteo Marine hourly, **내 동네 1점**, 1시간 캐시, 지점당 1요청, 429 면 15분 뒤 재시도 (STEP 3).
+     v2 는 이미 클릭 지점마다 같은 API 를 부른다(marineSelect). 여기는 동네가 바뀌거나 1시간이 지나야만 한 번 더 부른다. */
+  const WAVE_HOURLY_KEY = 'earthus.forme.wavehourly';
+  const loadWaveHourly = async (p) => {
+    const key = `${(+p.lat).toFixed(2)},${(+p.lon).toFixed(2)}`;
+    let cache = null; try { cache = JSON.parse(localStorage.getItem(WAVE_HOURLY_KEY) || 'null'); } catch (_) { cache = null; }
+    const now = Date.now();
+    const same = cache && cache.key === key;
+    if (same && cache.json && now - cache.at < 3600_000) return waveHourlySeries(cache.json);
+    if (same && cache.backoffUntil && now < cache.backoffUntil) return cache.json ? waveHourlySeries(cache.json) : null;
+    try {
+      const r = await fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${(+p.lat).toFixed(3)}&longitude=${(+p.lon).toFixed(3)}&hourly=wave_height,swell_wave_height,wind_wave_height,wave_period&forecast_days=3&timezone=UTC`);
+      if (r.status === 429) {
+        try { localStorage.setItem(WAVE_HOURLY_KEY, JSON.stringify({ key, at: same ? cache.at : 0, json: same ? cache.json : null, backoffUntil: now + 15 * 60_000 })); } catch (_) { /* 저장 불가 */ }
+        return same && cache.json ? waveHourlySeries(cache.json) : null;
+      }
+      if (!r.ok) return null;
+      const json = await r.json();
+      const series = waveHourlySeries(json);
+      if (series) { try { localStorage.setItem(WAVE_HOURLY_KEY, JSON.stringify({ key, at: now, json })); } catch (_) { /* 저장 불가 */ } }
+      return series;
+    } catch (_) { return null; }
+  };
   const loadForMe = async (p) => {
     forMe.loading = true; forMe.error = null;
     try {
@@ -3173,8 +3199,10 @@ async function main() {
       const data = {}; names.forEach((k, i) => { data[k] = got[i]; });
       // 동네예보(785 KB)는 태풍이 있을 때만 — 강풍 시각(WHY)에만 쓴다
       data.fcst = (data.official?.storms || []).length ? await fetchS3T('/wind/kma-fcst.json', 20000) : null;
+      data.waveHourly = await loadWaveHourly(p);   // 내 동네 1점 시간별 파고 (1시간 캐시)
       if (myEarth.place !== p) return;
       forMe.data = data;
+      forMe.extraCards = {};
       forMe.cards = evaluateForMe(p, data, { now: Date.now(), waveThreshold: 2.0 });
       forMe.at = new Date().toISOString().slice(0, 16).replace('T', ' ') + 'Z';
       forMe.intel = {};
@@ -3214,6 +3242,14 @@ async function main() {
   };
   const forMeStateLine = (c) => c.state === 'signal' ? '🟠 영향 가능성 있음' : c.state === 'quiet' ? '🟢 지금은 영향 신호 없음' : '⚪ 판단 불가';
   const forMeWhenHtml = (w, c) => {
+    if (c.kind === 'wave') {
+      // 파고는 시간별 예보(내 동네 1점)로 창을 만든다 — 태풍의 강풍역 문구를 쓰지 않는다
+      if (w) return `${w.startNow ? '지금부터' : `${fmtKst(w.startMs)} KST`} ~ ${w.openEnd ? '예보 끝(3일) 이후 미확정' : `${fmtKst(w.endMs)} KST`}<br/>최대 <b>${w.peakWave.toFixed(1)} m · ${fmtKst(w.peakMs)} KST</b> (시간별 1점 예보, 폭 ±1h)<div class="forme-src">${escUI(w.agencyKo || '')} · 지금 격자값과 예보 1점은 다른 자료라 값이 다를 수 있습니다</div>`;
+      if (c.facts && c.facts.maxWave != null) return `3일 내 임계 초과 예보 없음 · 최대 ${(+c.facts.maxWave).toFixed(1)} m`;
+      return '시간별 예보 응답 없음 — 지금 격자값만으로 판정';
+    }
+    if (c.kind === 'quake') return `이미 발생한 사건 — 시각은 발생 시각(${c.basis && c.basis.issueMs ? fmtKst(c.basis.issueMs) + ' KST' : '—'})`;
+    if (c.kind === 'tsunami') return '도달시간은 INTELLIGENCE 의 EARTHUS 추정(SIMULATION_ONLY)에만 있습니다';
     const pw = c.facts && c.facts.pastWindow;
     if (!w && pw) return `영향권 지남 — ${fmtKst(pw.startMs)} ~ ${fmtKst(pw.endMs)} KST 에 ${escUI(pw.agencyKo || pw.agency)} 강풍역·예보원 안이었음 (${fmtKst(pw.issueMs)} KST 발표 기준)${c.facts.nearestKm != null ? ` · 최근접 ${c.facts.nearestKm} km` : ''}`;
     if (!w) return `강풍역·예보원 진입 없음${c.facts && c.facts.nearestKm != null ? ` · 최근접 ${c.facts.nearestKm} km` : ''}`;
@@ -3285,11 +3321,51 @@ async function main() {
     else { const s = summarize(forMe.cards); h += `<div class="forme-state ${s.level}">${escUI(s.text)}</div><div class="forme-src">판정 ${escUI(forMe.at)} · 다음 판정 = 앱 열 때·⟳ 때 · 자료 없음은 안전이 아닙니다</div>`; }
     h += '</div></div>';
     if (!forMe.cards) return h;
+    // 사건 방에서 만든 임시 카드(USGS 지진 등)도 같이 — 내 장소 탭 목록에 없던 사건이 눌려 왔을 때 도착지가 비지 않게
+    const all = [...forMe.cards, ...Object.values(forMe.extraCards).filter((x) => !forMe.cards.some((c) => c.id === x.id))];
     // 2,500 km 넘게 먼 태풍(신호 없음)은 한 줄로 묶는다 — 동태평양 허리케인 넷이 카드 넷을 차지하지 않게
-    const far = forMe.cards.filter((c) => c.kind === 'cyclone' && c.state === 'quiet' && c.facts.nearestKm > 2500);
-    for (const c of forMeOrder(forMe.cards.filter((c) => !far.includes(c)))) h += forMeCardHtml(c);
+    const far = all.filter((c) => c.kind === 'cyclone' && c.state === 'quiet' && c.facts.nearestKm > 2500);
+    for (const c of forMeOrder(all.filter((c) => !far.includes(c)))) h += forMeCardHtml(c);
     if (far.length) h += `<div class="card"><div class="card-b"><div class="forme-state quiet">🟢 먼 열대저기압 ${far.length}건 — 영향 신호 없음</div><div class="forme-src">${escUI(far.map((c) => `${c.title} ${c.facts.nearestKm} km`).join(' · '))}</div></div></div>`;
     return h;
+  };
+  /* ── MY IMPACT 미니 블록 — 사건 방 맨 끝 · 해양 카드 안 (STEP 3). 새 fetch 없음, 판정은 내 장소 탭과 같은 카드. ── */
+  const forMeMiniHtml = (card, ctx = {}) => {
+    const head = (extra) => `<div class="card forme-mini"><div class="card-h">MY IMPACT${myEarth.place ? ` · ${escUI(forMePlaceName())}` : ''} ${extra || dataBadge('EARTHUS_ANALYSIS')}</div><div class="card-b">`;
+    if (!myEarth.place) return head() + `<div class="forme-state unknown">📍 내 동네를 고르면 ${escUI(ctx.noun || '이 사건')}이 내 위치에 영향 주는지 알려드립니다</div><button class="forme-btn" data-action="forme-open" data-kind="${escUI(ctx.kind || '')}">내 동네 고르기</button></div></div>`;
+    if (!card) {
+      if (forMe.loading || !forMe.cards) return head() + '내 동네 기준으로 판정하는 중…</div></div>';
+      return head() + `<div class="forme-state unknown">⚪ 판단 불가 — ${escUI(ctx.noneReason || '이 사건에 맞는 공식 발표 없음')}</div></div></div>`;
+    }
+    return head((card.badges || []).map((b) => dataBadge(b)).join(' '))
+      + `<div class="forme-state ${card.state}">${forMeStateLine(card)}</div>` + statRow('판단 기준', escUI(card.basis.text))
+      + `<button class="forme-btn" data-action="forme-open" data-id="${escUI(card.id)}" data-kind="${escUI(card.kind)}">내 영향 자세히 보기</button></div></div>`;
+  };
+  const forMeEnsure = () => { if (myEarth.place && !forMe.cards && !forMe.loading) loadForMe(myEarth.place).then(() => shell.renderIntel()); };
+  // 깔때기 1·2단계(shown·signal)는 같은 화면이 다시 그려질 때마다가 아니라 사건·지점당 한 번만 센다
+  const forMeTrackOnce = (key, card, kind) => {
+    if (forMe.tracked.has(key) || !isFormeMenu(kind)) return;
+    forMe.tracked.add(key);
+    usage.track(`forme.shown.${kind}`);
+    if (card && card.state === 'signal') usage.track(`forme.signal.${kind}`);
+  };
+  const forMeRoomHtml = (it) => {
+    if (!it || (it.kind !== 'TC' && it.kind !== 'EQ')) return '';
+    const kind = it.kind === 'TC' ? 'cyclone' : 'quake';
+    if (!myEarth.place) { forMeTrackOnce(`room:${it.id}`, null, kind); return forMeMiniHtml(null, { kind, noun: it.kind === 'TC' ? '이 태풍' : '이 지진' }); }
+    forMeEnsure();
+    if (!forMe.cards) return forMeMiniHtml(null, { kind });
+    let card = matchCardForRoom(forMe.cards, it);
+    if (!card && it.kind === 'EQ') { card = quakeCardFromEvent(myEarth.place, it); if (card) forMe.extraCards[card.id] = card; }
+    forMeTrackOnce(`room:${it.id}`, card, kind);
+    return forMeMiniHtml(card, { kind, noneReason: it.kind === 'TC' ? '공식 발표(KMA·JMA·NHC)에 이 태풍이 없음 — GDACS 만' : '판정 자료 없음' });
+  };
+  const forMeSeaHtml = () => {
+    if (!myEarth.place) { forMeTrackOnce('sea:unset', null, 'wave'); return forMeMiniHtml(null, { kind: 'wave', noun: '이 바다 상태' }); }
+    forMeEnsure();
+    const card = (forMe.cards || []).find((c) => c.kind === 'wave') || null;
+    if (forMe.cards) forMeTrackOnce('sea:wave', card, 'wave');
+    return forMeMiniHtml(card, { kind: 'wave', noneReason: '내 동네 반경 안 바다 격자 없음 (내륙)' });
   };
 
   const refreshMyEarth = async () => {
@@ -4202,8 +4278,15 @@ async function main() {
         refreshMyEarth();return;
       }
       // FOR ME 단계 이동 — MY IMPACT → WHEN·WHY(EXPLORER 진입 계측) → INTELLIGENCE(계측 + 직전 발표·이력 재계산)
+      if (action === 'forme-open') {
+        // 사건 방·해양 카드의 미니 블록 → 내 장소 탭 (깔때기 3단계 clicked). 동네가 없으면 등록 화면이 나온다.
+        const kind = ds.kind || '';
+        if (isFormeMenu(kind)) usage.track(`forme.clicked.${kind}`);
+        if (ds.id) { forMe.focusId = ds.id; forMe.view[ds.id] = 'impact'; }
+        shell.showTab('my'); shell.openIntel(); shell.renderIntel(); return;
+      }
       if (action === 'forme-when' || action === 'forme-intel' || action === 'forme-back') {
-        const card = (forMe.cards || []).find((c) => c.id === ds.id);
+        const card = [...(forMe.cards || []), ...Object.values(forMe.extraCards)].find((c) => c.id === ds.id);
         if (card) {
           if (action === 'forme-back') forMe.view[card.id] = forMe.view[card.id] === 'intel' ? 'when' : 'impact';
           else if (action === 'forme-when') { forMe.view[card.id] = 'when'; usage.track(`forme.explorer_cta.${card.kind}`); }

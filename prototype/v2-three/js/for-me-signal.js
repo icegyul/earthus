@@ -44,6 +44,9 @@ export function parseWhen(v, { kst = false } = {}) {
     const iso = `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}T${s.slice(8, 10)}:${s.slice(10, 12)}:00${kst ? '+09:00' : 'Z'}`;
     const t = Date.parse(iso); return Number.isFinite(t) ? t : null;
   }
+  // 'YYYY-MM-DDTHH:MM' 처럼 오프셋이 없는 ISO 는 **UTC 로** 읽는다 (Open-Meteo timezone=UTC 응답).
+  // Date.parse 는 오프셋 없는 날짜-시각을 브라우저 지역시로 읽어서, 한국에서 9시간이 밀렸다 (STEP 3 테스트에서 잡음).
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?$/.test(s)) { const t = Date.parse(s + 'Z'); return Number.isFinite(t) ? t : null; }
   if (/^\d{4}\.\d{2}\.\d{2} \d{2}:\d{2}:\d{2} UTC$/.test(s)) {
     const t = Date.parse(s.replace(/^(\d{4})\.(\d{2})\.(\d{2}) (\d{2}:\d{2}:\d{2}) UTC$/, '$1-$2-$3T$4Z'));
     return Number.isFinite(t) ? t : null;
@@ -411,28 +414,122 @@ export function tsunamiCards(place, intlJson, etaIndex = null, { now = Date.now(
 }
 
 /* ── 파고 ─────────────────────────────────────────────────── */
-export function waveCard(place, grids, buoys, { threshold = 2.0, now = Date.now() } = {}) {
+/** Open-Meteo Marine hourly 응답 → [{t, wave, swell, windWave, per}]. 못 읽으면 null. (STEP 3, 내 동네 1점) */
+export function waveHourlySeries(json) {
+  const h = json?.hourly;
+  if (!h || !Array.isArray(h.time) || !Array.isArray(h.wave_height)) return null;
+  const out = [];
+  for (let i = 0; i < h.time.length; i++) {
+    const t = parseWhen(h.time[i]); const w = h.wave_height[i];
+    if (t == null || w == null || !Number.isFinite(+w)) continue;
+    out.push({ t, wave: +w, swell: h.swell_wave_height?.[i] ?? null, windWave: h.wind_wave_height?.[i] ?? null, per: h.wave_period?.[i] ?? null });
+  }
+  return out.length ? out : null;
+}
+
+/** 시간별 파고에서 임계 초과 창 — 첫 초과 ~ 연속 끝, 최대 시각. 지금 이전 자료는 버린다. */
+export function waveWindow(series, threshold, now) {
+  const fut = (series || []).filter(x => x.t >= now - H);
+  if (!fut.length) return null;
+  const first = fut.findIndex(x => x.wave >= threshold);
+  if (first < 0) return { none: true, maxWave: Math.max(...fut.map(x => x.wave)), maxAt: fut.reduce((m, x) => (x.wave > m.wave ? x : m), fut[0]).t };
+  let last = first; while (last + 1 < fut.length && fut[last + 1].wave >= threshold) last++;
+  const seg = fut.slice(first, last + 1);
+  const peak = seg.reduce((m, x) => (x.wave > m.wave ? x : m), seg[0]);
+  return { startMs: fut[first].t, endMs: fut[last].t, peakMs: peak.t, peakWave: peak.wave, widthH: 1, openEnd: last === fut.length - 1, startNow: first === 0, maxWave: peak.wave };
+}
+
+export function waveCard(place, grids, buoys, { threshold = 2.0, now = Date.now(), hourly = null, hourlySource = 'Open-Meteo Marine 시간별(내 동네 1점)' } = {}) {
   const w = grids ? waveNear(place, grids) : null;
-  if (!w) return { kind: 'wave', id: 'wave', title: '파고', state: 'unknown', basis: { text: '판단 불가 — 격자 응답 없음' }, status: '감시 중', when: null, why: [], timeline: [], certain: null, engine: [], engineSummary: null, facts: {}, badges: ['MODEL'] };
-  if (w.none) return null; // 내륙 깊은 곳 — 반경 안 바다 격자 없음: 카드 자체를 만들지 않는다
+  if (!w && !hourly) return { kind: 'wave', id: 'wave', title: '파고', state: 'unknown', basis: { text: '판단 불가 — 격자 응답 없음' }, status: '감시 중', when: null, why: [], timeline: [], certain: null, engine: [], engineSummary: null, facts: {}, badges: ['MODEL'] };
+  if (w && w.none && !hourly) return null; // 내륙 깊은 곳 — 반경 안 바다 격자 없음: 카드 자체를 만들지 않는다
   const near = buoys ? buoysNear(place, buoys, 100, 3, now) : [];
   const fresh = near.filter(b => b.fresh);
-  const hit = w.wave >= threshold;
+  const nowWave = (w && !w.none) ? w.wave : null;
+  const win = hourly ? waveWindow(hourly, threshold, now) : null;
+  const hitNow = nowWave != null && nowWave >= threshold;
+  const hitLater = !!(win && !win.none);
+  const hit = hitNow || hitLater;
   const reasons = [];
-  if (fresh.length) { const diff = Math.abs(fresh[0].wh - w.wave); reasons.push(`부이 ${fresh[0].name}(${fresh[0].km} km) 실측 ${fresh[0].wh} m · 모델과 ${diff.toFixed(1)} m 차이`); }
+  if (fresh.length && nowWave != null) { const diff = Math.abs(fresh[0].wh - nowWave); reasons.push(`부이 ${fresh[0].name}(${fresh[0].km} km) 실측 ${fresh[0].wh} m · 모델과 ${diff.toFixed(1)} m 차이`); }
   else if (near.length) reasons.push(`부이 ${near[0].name} 관측이 3시간 넘어 대조 제외`); else reasons.push('100 km 안 파고 부이 없음 — 모델만');
-  const grade = fresh.length ? (Math.abs(fresh[0].wh - w.wave) <= 0.5 ? 'high' : 'low') : 'mid';
+  if (hourly) reasons.push(`시간별 예보 ${hourly.length}시간 (${hourlySource})${win && !win.none ? ` · 임계 초과 ${fmtKst(win.startMs)}~${fmtKst(win.endMs)} KST` : win ? ` · 3일 내 최대 ${win.maxWave.toFixed(1)} m (임계 미만)` : ''}`);
+  else reasons.push('시간별 예보 없음 — 지금 격자값만');
+  const grade = (fresh.length && nowWave != null) ? (Math.abs(fresh[0].wh - nowWave) <= 0.5 ? 'high' : 'low') : 'mid';
+  const basisText = nowWave != null
+    ? `${w.source} ${w.res}° 격자 최대 유의파고 ${nowWave.toFixed(1)} m ${hitNow ? '≥' : '<'} 임계 ${threshold.toFixed(1)} m (${w.time ? fmtKst(parseWhen(w.time)) + ' KST' : ''})${!hitNow && hitLater ? ` · 시간별 예보로 ${fmtKst(win.startMs)} KST 부터 초과` : ''}`
+    : `${hourlySource} 최대 ${win ? win.maxWave.toFixed(1) : '?'} m ${hitLater ? '≥' : '<'} 임계 ${threshold.toFixed(1)} m`;
+  const when = hitLater ? { ...win, agency: hourlySource, agencyKo: hourlySource, issueMs: hourly[0]?.t ?? null, peakKm: null } : null;
+  const why = [];
+  if (nowWave != null) why.push({ key: 'wave', label: '유의파고(지금)', value: `${nowWave.toFixed(1)} m`, source: `${w.source} ${w.res}° 격자`, hit: hitNow });
+  if (win) why.push({ key: 'wavefc', label: '유의파고(예보)', value: win.none ? `3일 내 최대 ${win.maxWave.toFixed(1)} m (${fmtKst(win.maxAt)} KST)` : `최대 ${win.peakWave.toFixed(1)} m (${fmtKst(win.peakMs)} KST) · 임계 초과 ${fmtKst(win.startMs)}~${win.openEnd ? '예보 끝' : fmtKst(win.endMs)}`, source: hourlySource, hit: hitLater });
+  if (w && !w.none && w.swell != null) why.push({ key: 'swell', label: '너울', value: `${(+w.swell).toFixed(1)} m${w.wper != null ? ` · 주기 ${(+w.wper).toFixed(0)} s` : ''}`, source: w.source });
+  // 예상 변화 — 시간별 예보가 있을 때만 (지금/12/24/36h)
+  const timeline = [];
+  if (hourly) {
+    for (const off of [0, 12, 24, 36]) {
+      const t = now + off * H;
+      const x = hourly.reduce((m, y) => (Math.abs(y.t - t) < Math.abs(m.t - t) ? y : m), hourly[0]);
+      if (Math.abs(x.t - t) > 2 * H) continue;
+      let level = 'out', text = `${x.wave.toFixed(1)} m`;
+      if (x.wave >= threshold && win && !win.none && Math.abs(x.t - win.peakMs) <= 3 * H) { level = 'peak'; text = `최대 ${x.wave.toFixed(1)} m`; }
+      else if (x.wave >= threshold) { level = 'in'; text = `임계 초과 ${x.wave.toFixed(1)} m`; }
+      else if (x.wave >= threshold * 0.75) { level = 'watch'; text = `관심 ${x.wave.toFixed(1)} m`; }
+      timeline.push({ label: off === 0 ? '지금' : `${off}시간 후`, level, text, km: null });
+    }
+  }
+  const engine = [];
+  if (nowWave != null) engine.push({ name: `해양 모델(${w.source})`, used: true, hit: hitNow, text: `${nowWave.toFixed(1)} m @ ${w.lat.toFixed(1)},${w.lon.toFixed(1)}` });
+  else engine.push({ name: '해양 모델 격자', used: false, text: grids ? '내 동네 반경 안 바다 격자 없음' : '격자 응답 없음' });
+  engine.push(hourly ? { name: hourlySource, used: true, hit: hitLater, text: win && !win.none ? `초과 ${fmtKst(win.startMs)}~${fmtKst(win.endMs)} KST` : `3일 내 최대 ${win ? win.maxWave.toFixed(1) : '?'} m` } : { name: '시간별 파고 예보', used: false, text: '응답 없음' });
+  engine.push(near.length ? { name: 'KMA 부이 실측', used: fresh.length > 0, hit: fresh.some(b => b.wh >= threshold), text: `${near[0].name} ${near[0].km} km · ${near[0].wh} m${near[0].fresh ? '' : ' (3시간 넘음)'}` } : { name: 'KMA 부이 실측', used: false, text: '100 km 안 부이 없음' });
+  const usedN = engine.filter(e => e.used).length;
+  const sameDir = engine.filter(e => e.used && !!e.hit === hit).length;
   return {
     kind: 'wave', id: 'wave', title: '파고 · 내 동네 앞바다', state: hit ? 'signal' : 'quiet',
-    basis: { text: `${w.source} ${w.res}° 격자 최대 유의파고 ${w.wave.toFixed(1)} m ${hit ? '≥' : '<'} 임계 ${threshold.toFixed(1)} m (${w.time ? fmtKst(parseWhen(w.time)) + ' KST' : ''})`, issueMs: w.time ? parseWhen(w.time) : null },
-    status: '감시 중 · 시간별 예보는 STEP 3', when: null,
-    why: [{ key: 'wave', label: '유의파고', value: `${w.wave.toFixed(1)} m`, source: `${w.source} ${w.res}°`, hit },
-          ...(w.swell != null ? [{ key: 'swell', label: '너울', value: `${(+w.swell).toFixed(1)} m${w.wper != null ? ` · 주기 ${(+w.wper).toFixed(0)} s` : ''}`, source: w.source }] : [])],
-    timeline: [], certain: { grade, gradeKo: GRADE[grade], reasons },
-    engine: [{ name: `해양 모델(${w.source})`, used: true, text: `${w.wave.toFixed(1)} m @ ${w.lat.toFixed(1)},${w.lon.toFixed(1)}` },
-             near.length ? { name: 'KMA 부이 실측', used: fresh.length > 0, text: `${near[0].name} ${near[0].km} km · ${near[0].wh} m${near[0].fresh ? '' : ' (3시간 넘음)'}` } : { name: 'KMA 부이 실측', used: false, text: '100 km 안 부이 없음' }],
-    engineSummary: null, facts: { wave: w.wave, threshold }, badges: ['MODEL'],
+    basis: { text: basisText, issueMs: w && w.time ? parseWhen(w.time) : null },
+    status: hourly ? '감시 중 · 다음 판정 = 앱 열 때·⟳ 때' : '감시 중 · 시간별 예보 응답 없음', when,
+    why, timeline, certain: { grade, gradeKo: GRADE[grade], reasons },
+    engine, engineSummary: usedN ? `${usedN}개 자료 중 ${sameDir}개 같은 방향` : null,
+    facts: { wave: nowWave, threshold, maxWave: win ? win.maxWave : null }, badges: ['MODEL'],
   };
+}
+
+/* ── 사건 방(피드 항목) ↔ 카드 ─────────────────────────────── */
+/** USGS 피드 항목 하나로 지진 카드 — 내 장소 탭의 quake-asia 카드에 없는 사건(먼 곳·USGS 만)도 같은 규칙으로 판정 */
+export function quakeCardFromEvent(place, ev, { km = 400, minMag = 5 } = {}) {
+  if (!ev || !Number.isFinite(+ev.lat) || !Number.isFinite(+ev.lon)) return null;
+  const d = kmBetween(place, { lat: +ev.lat, lon: +ev.lon });
+  // +null 은 0 이라 null 검사가 먼저다
+  const mag = (ev.mag != null && Number.isFinite(+ev.mag)) ? +ev.mag : (String(ev.title || '').match(/M(\d+(?:\.\d+)?)/) ? +String(ev.title).match(/M(\d+(?:\.\d+)?)/)[1] : null);
+  const signal = d <= km && mag != null && mag >= minMag;
+  const src = ev.source || 'USGS';
+  return {
+    kind: 'quake', id: ev.id || `eq-${ev.lat},${ev.lon}`, title: `지진 M${mag != null ? mag.toFixed(1) : '?'} · ${ev.where || ev.place || ''}`,
+    state: signal ? 'signal' : 'quiet',
+    basis: { text: `${src} 관측 · 내 동네에서 ${Math.round(d)} km${signal ? ` (${km} km 안 M${minMag}+ 규칙)` : ` · ${d > km ? `${km} km 밖` : `M${minMag} 미만`}`}`, agency: src, issueMs: Number.isFinite(ev.whenT) ? ev.whenT : null },
+    status: '감시 중', when: null,
+    why: [{ key: 'dist', label: '거리', value: `${Math.round(d)} km`, source: src },
+          { key: 'mag', label: '규모·깊이', value: `M${mag != null ? mag.toFixed(1) : '?'}${ev.depthKm != null ? ` · 깊이 ${Math.round(ev.depthKm)} km` : ''}`, source: src }],
+    timeline: [], certain: { grade: 'mid', gradeKo: '보통', reasons: [`기관 1곳 관측 (${src})`] },
+    engine: [{ name: src, used: true, hit: signal, text: `M${mag != null ? mag.toFixed(1) : '?'} · ${Math.round(d)} km` }],
+    engineSummary: null, facts: { km: Math.round(d), mag }, badges: ['OFFICIAL_OBSERVATION'],
+  };
+}
+
+/** 피드 항목(TC/EQ)에 맞는 카드. TC 는 GDACS 이름(KROVANH-26)→공식 key(KROVANH), EQ 는 100 km·30분·규모 0.5 안 같은 사건. */
+export function matchCardForRoom(cards, it) {
+  if (!Array.isArray(cards) || !it) return null;
+  if (it.kind === 'TC') {
+    const name = String(it.stormName || it.title || '').toUpperCase().replace(/-\d{2}$/, '').trim();
+    return cards.find(c => c.kind === 'cyclone' && String(c.id || '').toUpperCase() === name) || null;
+  }
+  if (it.kind === 'EQ') {
+    return cards.find(c => c.kind === 'quake' && Number.isFinite(c.basis?.issueMs) && Number.isFinite(it.whenT)
+      && Math.abs(c.basis.issueMs - it.whenT) <= 30 * 60_000 && Number.isFinite(+c.facts?.km) && Number.isFinite(+it.lat)
+      && (c.facts.mag == null || !Number.isFinite(+it.mag) || Math.abs(+c.facts.mag - +it.mag) <= 0.5)) || null;
+  }
+  return null;
 }
 
 /* ── 전체 ─────────────────────────────────────────────────── */
@@ -460,7 +557,7 @@ export function evaluateForMe(place, data = {}, opts = {}) {
   if (qs === null) cards.push({ kind: 'quake', id: 'quake', title: '지진', state: 'unknown', basis: { text: '판단 불가 — 지진 목록 응답 없음' }, status: '감시 중', when: null, why: [], timeline: [], certain: null, engine: [], engineSummary: null, facts: {}, badges: [] });
   else cards.push(...qs);
   // 파고
-  const wc = waveCard(place, grids.length ? grids : null, data.buoys, { threshold: opts.waveThreshold ?? 2.0, now });
+  const wc = waveCard(place, grids.length ? grids : null, data.buoys, { threshold: opts.waveThreshold ?? 2.0, now, hourly: data.waveHourly || null });
   if (wc) cards.push(wc);
   return cards;
 }

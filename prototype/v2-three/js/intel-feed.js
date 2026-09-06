@@ -73,6 +73,7 @@ export class IntelFeed {
     this._frame = 0;
     this.past = null; // 선택 사건의 과거 맥락 { state, ... }
     this.onUpdate = null; // 비동기 로드 후 패널 리렌더 콜백 (main.js가 연결)
+    this.extraRoomHtml = null; // (it) => html — FOR ME MY IMPACT 미니 블록 (main.js가 연결, STEP 3)
     this.room = new EventRoom();
     this.roomHtmlCache = null; // 선택 사건의 기관 스택 (비동기 완성 후 채워짐)
     this.events = new Map();   // gdacsId → 패킷 목록 항목 (변경 요약·이유·신뢰도·상태)
@@ -355,6 +356,7 @@ export class IntelFeed {
           lat: c[1],
           lon: c[0],
           depthKm: c[2],
+          mag: Number.isFinite(p.mag) ? p.mag : null,   // FOR ME 사건 방 판정용 숫자 규모 (제목의 M6.2 는 글자다)
           official: p.url || null,   // USGS 사건 상세 페이지 (피드가 주는 값)
           facts: [
             [i18n.t('fMag'), `M${p.mag != null ? p.mag.toFixed(1) : '?'}`],
@@ -468,8 +470,10 @@ export class IntelFeed {
       <div class="card"><div class="card-h">WHY ${this.badge('INSUFFICIENT_DATA')}</div>
         <div class="card-b"><b>인과 주장 게이트</b>: 검증된 근거 체인 없이 "원인"을 말하지 않습니다.<br/>
         이 사건에 연결된 근거는 1차 관측(${it.source})과 위의 실측 이력뿐 — 인과 분석 근거 부족.<br/>
-        <span class="paysub">${it.why} — 근거 그래프·전망(NEXT)은 EXPLORER PRO에서 제공 예정 · 공식 경보·안전정보는 항상 무료</span></div></div>`;
+        <span class="paysub">${it.why} — 근거 그래프·전망(NEXT)은 EXPLORER PRO에서 제공 예정 · 공식 경보·안전정보는 항상 무료</span></div></div>${this.extraRoomHtml ? this.extraRoomHtml(it) : ''}`;
   }
+  // FOR ME MY IMPACT 미니 블록 — main.js 가 연결한다(사건 방 맨 끝, WHY 카드 뒤). 지시서 v2.0 STEP 3.
+  // 이 모듈은 내 동네·판정 상태를 모른다. 훅이 없으면 아무것도 그리지 않는다.
 
   // 선택 세대 토큰(지시서 B): A 를 눌렀다 B 를 누르면 A 의 늦은 응답(이력·트랙·기관 스택)은 전부 버린다.
   _nextGeneration() {

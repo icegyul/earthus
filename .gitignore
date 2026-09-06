@@ -103,3 +103,5 @@ data/research/step25b/
 data/research/step25c/
 # STEP 26 derived forcing and GLORYS trajectory outputs are never committed; only docs/research/step26-* records are
 data/research/step26/
+# STEP 27 / 27B raw native-depth GLORYS files and trajectories are never committed; only docs/research/step27-* records are
+data/research/step27/

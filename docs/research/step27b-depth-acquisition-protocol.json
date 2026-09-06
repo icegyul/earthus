@@ -1,0 +1,600 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "missing-native-depth-acquisition-step27b",
+  "title": "STEP 27B - missing GLORYS12V1 native depth levels: authorized acquisition and quality gate",
+  "status": "PREREGISTRATION LOCKED",
+  "createdAtUTC": "2026-09-06T12:46:02Z",
+  "baseCommit": "2a5c8f9a",
+  "MODEL_RUN": "FORBIDDEN",
+  "purpose": "acquire the STEP 27 depth conditions absent from existing data (D05, D10, D20) and run gates G1-G11 per depth; no model run, no depth comparison, no depth choice; STEP 27 depth rule, D15 and STEP 20-26 unchanged",
+  "step27RuleSha256": "603435292009708e7516eb39b2ba8ff705b4331dbc93f4ab98c9e55b3b217ca4",
+  "step25bProtocolSha256": "0a542a94ee0c04a54ac7bd543c7f89eb0462e0a19e89668c969935178dc76eb9",
+  "product": {
+    "productId": "GLOBAL_MULTIYEAR_PHY_001_030",
+    "datasetId": "cmems_mod_glo_phy_my_0.083deg_P1D-m",
+    "name": "Global Ocean Physics Reanalysis (GLORYS12V1)",
+    "doi": "10.48670/moi-00021",
+    "resolution": "1/12 deg (~8 km)",
+    "levels": 50,
+    "cadence": "daily mean",
+    "variables": [
+      "uo",
+      "vo"
+    ],
+    "temporalCoverageClaim": "1993-01-01 .. 2021-06-30 (multiyear) - 2010 and 2015 windows inside"
+  },
+  "nativeLevelListMeters": [
+    0.49402499198913574,
+    1.5413750410079956,
+    2.6456689834594727,
+    3.8194949626922607,
+    5.078224182128906,
+    6.440614223480225,
+    7.92956018447876,
+    9.572997093200684,
+    11.404999732971191,
+    13.467140197753906,
+    15.810070037841797,
+    18.495559692382812,
+    21.598819732666016,
+    25.211410522460938,
+    29.444730758666992,
+    34.43415069580078,
+    40.344051361083984,
+    47.37369155883789,
+    55.76428985595703,
+    65.80726623535156,
+    77.85385131835938,
+    92.3260726928711,
+    109.72930145263672,
+    130.66600036621094,
+    155.85069274902344,
+    186.12559509277344,
+    222.47520446777344,
+    266.0403137207031,
+    318.1274108886719,
+    380.2130126953125,
+    453.9377136230469,
+    541.0889282226562,
+    643.5667724609375,
+    763.3331298828125,
+    902.3392944335938,
+    1062.43994140625,
+    1245.291015625,
+    1452.2509765625,
+    1684.2840576171875,
+    1941.8929443359375,
+    2225.077880859375,
+    2533.3359375,
+    2865.702880859375,
+    3220.820068359375,
+    3597.031982421875,
+    3992.48388671875,
+    4405.22412109375,
+    4833.291015625,
+    5274.7841796875,
+    5727.9169921875
+  ],
+  "nativeLevelListSource": "copernicusmarine 2.4.1 describe -i cmems_mod_glo_phy_my_0.083deg_P1D-m (metadata only, recorded at lock)",
+  "depthConditions": [
+    {
+      "id": "D05",
+      "targetMeters": 5,
+      "expectedNativeLevelMeters": 5.078224,
+      "nearestNativeLevelMeters": 5.078224182128906,
+      "secondNearestNativeLevelMeters": 3.8194949626922607,
+      "ruleReading": "single native level nearest the target (STEP 27 rule)",
+      "verticalInterpolation": false,
+      "request": "-z 5 -Z 5 --coordinates-selection-method nearest",
+      "acquisitionStatus": "ACQUIRE",
+      "blockedStatus": null
+    },
+    {
+      "id": "D10",
+      "targetMeters": 10,
+      "expectedNativeLevelMeters": 9.572997,
+      "nearestNativeLevelMeters": 9.572997093200684,
+      "secondNearestNativeLevelMeters": 11.404999732971191,
+      "ruleReading": "single native level nearest the target (STEP 27 rule)",
+      "verticalInterpolation": false,
+      "request": "-z 10 -Z 10 --coordinates-selection-method nearest",
+      "acquisitionStatus": "ACQUIRE",
+      "blockedStatus": null
+    },
+    {
+      "id": "D20",
+      "targetMeters": 20,
+      "expectedNativeLevelMeters": 21.598816,
+      "nearestNativeLevelMeters": 18.495559692382812,
+      "secondNearestNativeLevelMeters": 21.598819732666016,
+      "ruleReading": "single native level nearest the target (STEP 27 rule)",
+      "verticalInterpolation": false,
+      "request": "-z 20 -Z 20 --coordinates-selection-method nearest",
+      "acquisitionStatus": "BLOCKED_DEPTH_IDENTITY_AMBIGUOUS",
+      "blockedStatus": "DEPTH_IDENTITY_AMBIGUOUS",
+      "reason": "the locked STEP 27 rule says 'nearest native level to 20 m' = 18.495560 m, while the STEP 27 rule file and STEP 27B instruction expect 21.598816 m; the two readings name different native levels; choosing one after seeing the level list would be a depth choice made by the executor, which is forbidden; D20 is therefore not acquired and awaits an explicit ruling in a new preregistration (which level defines D20); no multi-level extraction is performed"
+    }
+  ],
+  "d15": {
+    "levelMeters": 15.81007,
+    "source": "STEP 25B files (SHA-locked in step25b-glorys-acquisition-manifest.json)",
+    "reacquire": false,
+    "modify": false
+  },
+  "windows": [
+    {
+      "windowId": "KE-1",
+      "role": "CALIBRATION",
+      "t0": "2010-05-11T12:00:00Z",
+      "end": "2010-05-14T12:00:00Z",
+      "drifterCount": 8,
+      "drifterIds": [
+        "81801",
+        "81805",
+        "81807",
+        "81811",
+        "81813",
+        "81814",
+        "71155",
+        "81816"
+      ],
+      "oceanBox": {
+        "south": 28.12786,
+        "north": 38.19472,
+        "west": 140.60959,
+        "east": 161.61974
+      },
+      "subsetBox": {
+        "west": 140.10959,
+        "east": 162.11974,
+        "south": 27.62786,
+        "north": 38.69472
+      },
+      "releasePositions": [
+        {
+          "drifterId": "71155",
+          "lon": 142.60959,
+          "lat": 35.68513
+        },
+        {
+          "drifterId": "81801",
+          "lon": 150.57346,
+          "lat": 30.12786
+        },
+        {
+          "drifterId": "81805",
+          "lon": 150.6728,
+          "lat": 30.8741
+        },
+        {
+          "drifterId": "81807",
+          "lon": 149.87982,
+          "lat": 30.91725
+        },
+        {
+          "drifterId": "81811",
+          "lon": 151.57515,
+          "lat": 32.09739
+        },
+        {
+          "drifterId": "81813",
+          "lon": 157.64886,
+          "lat": 30.87311
+        },
+        {
+          "drifterId": "81814",
+          "lon": 159.61974,
+          "lat": 36.19472
+        },
+        {
+          "drifterId": "81816",
+          "lon": 148.6675,
+          "lat": 30.73258
+        }
+      ]
+    },
+    {
+      "windowId": "KE-2",
+      "role": "CALIBRATION",
+      "t0": "2010-06-30T12:00:00Z",
+      "end": "2010-07-03T12:00:00Z",
+      "drifterCount": 5,
+      "drifterIds": [
+        "81802",
+        "48965",
+        "90141",
+        "90142",
+        "90145"
+      ],
+      "oceanBox": {
+        "south": 29.70784,
+        "north": 40.0,
+        "west": 133.53249,
+        "east": 154.78535
+      },
+      "subsetBox": {
+        "west": 133.03249,
+        "east": 155.28535,
+        "south": 29.20784,
+        "north": 40.5
+      },
+      "releasePositions": [
+        {
+          "drifterId": "48965",
+          "lon": 135.53249,
+          "lat": 37.60833
+        },
+        {
+          "drifterId": "81802",
+          "lon": 151.58324,
+          "lat": 31.70784
+        },
+        {
+          "drifterId": "90141",
+          "lon": 145.17612,
+          "lat": 38.3657
+        },
+        {
+          "drifterId": "90142",
+          "lon": 152.78535,
+          "lat": 39.3177
+        },
+        {
+          "drifterId": "90145",
+          "lon": 147.0891,
+          "lat": 37.12376
+        }
+      ]
+    },
+    {
+      "windowId": "AG-1",
+      "role": "CALIBRATION",
+      "t0": "2015-04-23T12:00:00Z",
+      "end": "2015-04-26T12:00:00Z",
+      "drifterCount": 9,
+      "drifterIds": [
+        "127198",
+        "127199",
+        "127272",
+        "127313",
+        "127314",
+        "127315",
+        "132511",
+        "132528",
+        "132634"
+      ],
+      "oceanBox": {
+        "south": -40.0,
+        "north": -32.13828,
+        "west": 18.31773,
+        "east": 32.013940000000005
+      },
+      "subsetBox": {
+        "west": 17.81773,
+        "east": 32.51394,
+        "south": -40.5,
+        "north": -31.63828
+      },
+      "releasePositions": [
+        {
+          "drifterId": "127198",
+          "lon": 20.32911,
+          "lat": -39.81819
+        },
+        {
+          "drifterId": "127199",
+          "lon": 20.31773,
+          "lat": -39.82213
+        },
+        {
+          "drifterId": "127272",
+          "lon": 27.2557,
+          "lat": -34.85449
+        },
+        {
+          "drifterId": "127313",
+          "lon": 23.25523,
+          "lat": -35.43792
+        },
+        {
+          "drifterId": "127314",
+          "lon": 30.01394,
+          "lat": -34.13828
+        },
+        {
+          "drifterId": "127315",
+          "lon": 24.83593,
+          "lat": -35.31406
+        },
+        {
+          "drifterId": "132511",
+          "lon": 21.4817,
+          "lat": -37.10636
+        },
+        {
+          "drifterId": "132528",
+          "lon": 23.86592,
+          "lat": -34.97313
+        },
+        {
+          "drifterId": "132634",
+          "lon": 29.88758,
+          "lat": -34.64967
+        }
+      ]
+    },
+    {
+      "windowId": "AG-2",
+      "role": "CALIBRATION",
+      "t0": "2015-04-26T12:00:00Z",
+      "end": "2015-04-29T12:00:00Z",
+      "drifterCount": 1,
+      "drifterIds": [
+        "127281"
+      ],
+      "oceanBox": {
+        "south": -38.76674,
+        "north": -34.76674,
+        "west": 19.79639,
+        "east": 23.79639
+      },
+      "subsetBox": {
+        "west": 19.29639,
+        "east": 24.29639,
+        "south": -39.26674,
+        "north": -34.26674
+      },
+      "releasePositions": [
+        {
+          "drifterId": "127281",
+          "lon": 21.79639,
+          "lat": -36.76674
+        }
+      ]
+    },
+    {
+      "windowId": "KE-H1",
+      "role": "HOLDOUT",
+      "t0": "2010-08-10T12:00:00Z",
+      "end": "2010-08-13T12:00:00Z",
+      "drifterCount": 5,
+      "drifterIds": [
+        "81806",
+        "48985",
+        "90149",
+        "90135",
+        "90150"
+      ],
+      "oceanBox": {
+        "south": 30.2673,
+        "north": 40.0,
+        "west": 135.25655,
+        "east": 161.85992
+      },
+      "subsetBox": {
+        "west": 134.75655,
+        "east": 162.35992,
+        "south": 29.7673,
+        "north": 40.5
+      },
+      "releasePositions": [
+        {
+          "drifterId": "48985",
+          "lon": 137.25655,
+          "lat": 39.19842
+        },
+        {
+          "drifterId": "81806",
+          "lon": 157.94424,
+          "lat": 32.2673
+        },
+        {
+          "drifterId": "90135",
+          "lon": 156.24634,
+          "lat": 37.19708
+        },
+        {
+          "drifterId": "90149",
+          "lon": 159.85992,
+          "lat": 38.45439
+        },
+        {
+          "drifterId": "90150",
+          "lon": 155.67223,
+          "lat": 38.35129
+        }
+      ]
+    },
+    {
+      "windowId": "KE-H2",
+      "role": "HOLDOUT",
+      "t0": "2010-08-16T12:00:00Z",
+      "end": "2010-08-19T12:00:00Z",
+      "drifterCount": 1,
+      "drifterIds": [
+        "81961"
+      ],
+      "oceanBox": {
+        "south": 32.62506,
+        "north": 36.62506,
+        "west": 143.81236,
+        "east": 147.81236
+      },
+      "subsetBox": {
+        "west": 143.31236,
+        "east": 148.31236,
+        "south": 32.12506,
+        "north": 37.12506
+      },
+      "releasePositions": [
+        {
+          "drifterId": "81961",
+          "lon": 145.81236,
+          "lat": 34.62506
+        }
+      ]
+    },
+    {
+      "windowId": "KE-H3",
+      "role": "HOLDOUT",
+      "t0": "2010-11-15T12:00:00Z",
+      "end": "2010-11-18T12:00:00Z",
+      "drifterCount": 7,
+      "drifterIds": [
+        "90146",
+        "89898",
+        "92981",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "oceanBox": {
+        "south": 29.02459,
+        "north": 40.0,
+        "west": 141.06795,
+        "east": 156.05711
+      },
+      "subsetBox": {
+        "west": 140.56795,
+        "east": 156.55711,
+        "south": 28.52459,
+        "north": 40.5
+      },
+      "releasePositions": [
+        {
+          "drifterId": "89898",
+          "lon": 143.26125,
+          "lat": 31.29767
+        },
+        {
+          "drifterId": "90146",
+          "lon": 152.8268,
+          "lat": 38.44446
+        },
+        {
+          "drifterId": "92981",
+          "lon": 143.06795,
+          "lat": 31.02459
+        },
+        {
+          "drifterId": "98996",
+          "lon": 147.97673,
+          "lat": 33.89059
+        },
+        {
+          "drifterId": "98997",
+          "lon": 152.19716,
+          "lat": 34.03334
+        },
+        {
+          "drifterId": "98998",
+          "lon": 154.05711,
+          "lat": 33.55673
+        },
+        {
+          "drifterId": "99006",
+          "lon": 151.61525,
+          "lat": 31.19199
+        }
+      ]
+    }
+  ],
+  "pairedWindows": [
+    "KE-1",
+    "KE-2",
+    "AG-1",
+    "AG-2",
+    "KE-H1",
+    "KE-H3"
+  ],
+  "keH2": "coverage fact only; never paired",
+  "temporalRule": "t0 - 1 day .. end + 1 day daily means (as STEP 25B)",
+  "spatialRule": "exact STEP 25B subset boxes (ocean box + 0.5 degree); no expansion, no contraction",
+  "accessPolicy": {
+    "allowed": "official Copernicus Marine client with credentials the user holds and provides through the client mechanism itself",
+    "toolboxInstall": "python -m venv data/research/step25b/toolbox-venv + pip install copernicusmarine (isolated from services/research-runtime; never imported by the trajectory runtime)",
+    "authenticationCheck": "copernicusmarine login --check-credentials-valid, exit code only",
+    "ifCredentialsAbsent": "STATUS = STEP25B_CREDENTIALS_REQUIRED; acquisition stops; no retry, no alternative source, no fabrication",
+    "forbidden": [
+      "printing credentials",
+      "logging credentials",
+      "storing credentials in Git",
+      "writing credentials to JSON/manifests/CSV",
+      "committing credentials",
+      "copying credentials into source code",
+      "exposing tokens/passwords in terminal output",
+      "searching for credentials in unrelated files",
+      "reading credential file contents",
+      "creating or fabricating credentials",
+      "unauthorized scraping / mirror / third-party redistribution"
+    ],
+    "toolbox": "existing isolated STEP 25B venv (copernicusmarine 2.4.1); nothing installed"
+  },
+  "credentialPolicy": {
+    "read": false,
+    "print": false,
+    "store": false,
+    "log": false,
+    "commit": false,
+    "existenceCheckOnly": true,
+    "verifyOnlySuccessFailure": true
+  },
+  "gates": {
+    "G1": "provenance: productId GLOBAL_MULTIYEAR_PHY_001_030 / datasetId cmems_mod_glo_phy_my_0.083deg_P1D-m recorded from the client request",
+    "G2": "file integrity: SHA-256 and byte size of every acquired file recorded in the manifest and re-verified",
+    "G3": "coordinate integrity: strictly increasing, uniform longitude/latitude axes; latitude within [-90, 90]",
+    "G4": "time axis: strictly increasing, uniform 86400 s daily steps",
+    "G5": "variables uo and vo present, 4-D (time, depth, lat, lon)",
+    "G6": "spatial coverage: the locked ocean box lies inside the acquired grid",
+    "G7": "temporal coverage: daily means bracketing t0 and end on both sides with no gap",
+    "G8": "missingness: masked fraction of uo/vo inside the ocean box recorded (fact only; no fill)",
+    "G9": "units: uo/vo in m s-1",
+    "G10": "release stencil valid at the acquired depth and bracketing frames; DEPTH_SPECIFIC_FORCING_UNAVAILABLE otherwise (no substitution)",
+    "G11": "reproducibility: quality tool re-run to a temporary directory yields byte-identical outputs (checked by the validator)",
+    "depthIdentity": "single returned native level within 0.01 m of the expected nearest native level; stored value authoritative; DEPTH_IDENTITY_FAIL otherwise"
+  },
+  "statusRule": {
+    "STEP27B_CREDENTIALS_REQUIRED": "not AUTHORIZED",
+    "STEP27B_DATA_QUALITY_FAILED": "D15 changed, or any DEPTH_IDENTITY_FAIL, or no depth DEPTH_READY",
+    "STEP27B_PARTIAL_COVERAGE": "some but not all of D05/D10/D20 DEPTH_READY (blocked/ambiguous depths count as not ready)",
+    "STEP27B_READY_FOR_TEST": "D05, D10 and D20 all DEPTH_READY (all six paired windows WINDOW_PASS each)"
+  },
+  "forbidden": {
+    "verticalInterpolation": false,
+    "verticalAveraging": false,
+    "multiLevelExtraction": false,
+    "substitution": false,
+    "fill": false,
+    "regrid": false,
+    "smoothing": false,
+    "depthSelection": false,
+    "alphaModification": false,
+    "modelRun": false
+  },
+  "outputs": [
+    "docs/research/step27-depth-access-status.json",
+    "docs/research/step27-depth-acquisition-manifest.json",
+    "docs/research/step27-depth-quality-gates.json",
+    "docs/research/step27-depth-coverage-matrix.csv",
+    "docs/research/step27-depth-summary.json"
+  ],
+  "rawData": {
+    "directory": "data/research/step27/{D05,D10,D20}/",
+    "gitignored": true
+  },
+  "tools": {
+    "acquisition": "tools/research/acquire_step27b.py",
+    "quality": "tools/research/quality_step27b.py (gates via locked quality_step25b.assess)",
+    "validator": "tools/research/check_step27_depth_acquisition.py"
+  },
+  "requiredStatements": [
+    "STEP 27B performs data acquisition and quality validation only; no model run, no depth comparison, no statistic.",
+    "The STEP 27 depth set and the control D15 = 15.810070 m are unchanged; D15 data are not re-acquired.",
+    "No vertical interpolation, averaging, multi-level extraction or substitution was performed.",
+    "No depth is chosen here; a blocked or ambiguous depth is not replaced by another level.",
+    "alpha = 0.002 and STEP 20-26 results are unchanged."
+  ],
+  "lockPolicy": "protocol, preregistration and tools SHA-locked and committed before any acquisition",
+  "stopRule": "after the quality report: STOP; no STEP 27 Phase B, no depth comparison, no STEP 28"
+}

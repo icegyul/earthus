@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "ruleId": "missing-native-depth-acquisition-step27b",
+  "protocolSha256": "38be0a2ebae7c448bc675e05cce3b8e37e9521f95e58724f07fdd039282c967b",
+  "createdAtUTC": "2026-09-06T12:46:02Z",
+  "gitCommitAtDesign": "2a5c8f9a",
+  "authorProcess": "Claude Fable 5.1 session, user-directed STEP 27B",
+  "ancestry": {
+    "step27PhaseA": "2a5c8f9a",
+    "step26PhaseB": "a4474eb8",
+    "step25b": "929d3468",
+    "step20AlphaLock": "73fafffb"
+  },
+  "tools": {
+    "tools/research/acquire_step27b.py": "e4a4ac4010bf76585945307382020819d30d81176a68580ac73fbc8c3516c628",
+    "tools/research/quality_step27b.py": "9e8a86347f79a0f29179ecbd80f1beafebdd8eb8ac93394a590d78067fb8559d",
+    "tools/research/check_step27_depth_acquisition.py": "0a6dd94d3160067fb1a945c5b34d264209f631bb2e8a75f52f17139b1ede8cfc"
+  },
+  "validator": {
+    "path": "tools/research/check_step27_depth_acquisition.py",
+    "sha256": "0a6dd94d3160067fb1a945c5b34d264209f631bb2e8a75f52f17139b1ede8cfc",
+    "checks": 21
+  },
+  "depthPlan": {
+    "D05": "ACQUIRE",
+    "D10": "ACQUIRE",
+    "D20": "BLOCKED_DEPTH_IDENTITY_AMBIGUOUS"
+  },
+  "expectedOutcomeIfAcquisitionSucceeds": "STEP27B_PARTIAL_COVERAGE (D20 blocked as DEPTH_IDENTITY_AMBIGUOUS pending ruling)",
+  "credentialState": "authorized (exit code 0 at lock; contents never read)",
+  "MODEL_RUN": "FORBIDDEN",
+  "lockPolicy": "protocol, preregistration and tools SHA-locked and committed before any acquisition"
+}

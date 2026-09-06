@@ -1025,6 +1025,10 @@ export const layerBar = {
     const isAetherus = kind === 'aetherus';
     strip.classList.toggle('aetherus-menu-list', isAetherus);
     document.querySelector('#menuSub')?.classList.toggle('aetherus-open', isAetherus);
+    /* 2026-09-06 받은 지시: "전체레이어는 오른쪽에 — 윈디처럼 아이콘과 설명글이 나오게. 하단 메뉴는 그대로."
+       하단 바 모드에서 레이어 목록만 오른쪽 세로 판(#menuSub.layers-right, app.css 끝)이 되고,
+       Alert·여행은 바 위의 가로 칩 줄 그대로다. 항목 구조(.ly 캔버스·이름·설명)는 건드리지 않는다 — CSS 로만 편다. */
+    document.querySelector('#menuSub')?.classList.toggle('layers-right', MENU_BAR && !isAlert && !isTravel && !isAetherus);
 
     // 머리글은 목록에 따라 바뀐다 (DOM 은 하나를 돌려 쓴다)
     const head = $('#menuSub .ms-head');

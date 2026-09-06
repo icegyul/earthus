@@ -1,0 +1,98 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "phase": "B",
+  "ruleId": "stokes-license-and-experiment-gate-step29",
+  "createdAtUTC": "2026-09-06T15:11:30Z",
+  "phaseALock": "289815d6",
+  "phaseAPreregistrationSha256": "3a8be551f104cc49bf5602ecc26c180a9f022e9ed2340ba7d9843c69e066febf",
+  "licenseStatusSha256": "8a8640ac534c1fb9b8551a4a1e777f8a96d6f6c271d896246ed13b8cf93cb24b",
+  "experimentDesignSha256": "1fd0060865a65e6ec8e05d419e627d8a75943f222baf259d91a8300551887aae",
+  "compositeMethod": {
+    "why": "the frozen runtime (155995dd) has no Stokes term; the design allows a runtime-external composite forcing",
+    "control": "GLORYS12V1 15.810070 m (STEP 25C Condition C normalized dataset) sampled at 3-hourly instants t0 + 3h*k, k = 0..24, by linear interpolation between its daily frames (identical to the runtime's own linear interpolation at those instants)",
+    "treatment": "control values + WW3 surface Stokes drift (uuss, vuss) at the same instants, bilinearly sampled from the 0.5 degree WW3 nodes (exact multiples of 0.5 = 6/12, so every GLORYS cell lies inside one WW3 cell and the runtime reproduces the WW3 bilinear interpolant exactly)",
+    "stokesCoefficient": 1.0,
+    "stokesMultipliedByAlpha": false,
+    "equationRealization": "U_ocean(runtime) := U_GLORYS + U_Stokes; windage alpha * U_wind applied by the runtime separately, so dX/dt = U_GLORYS + U_Stokes + alpha * U_wind",
+    "grid": "GLORYS 1/12 degree nodes cropped to the computation area + one node (runtime value limit)",
+    "timeAxis": "25 frames t0 .. t0+72 h at 10800 s",
+    "mask": "GLORYS wet-validity mask OR invalid 4-node WW3 stencil (any frame); identical for control and treatment",
+    "forbidden": [
+      "extrapolation",
+      "gap repair",
+      "frame duplication",
+      "zero fill",
+      "smoothing",
+      "alternative WW3 product",
+      "ERA5/Sextant substitution"
+    ],
+    "controlNotBitwiseStep25C": "the composite time axis (3 h) and mask differ from the STEP 25C Condition C dataset by construction; therefore 6 control runs are executed (design allowance) and their relation to STEP 25C is recorded descriptively, not gated"
+  },
+  "ww3Gate": [
+    "identity (source GLOBMULTI, product_version 1.0, grid glob_30m, distribution_statement No restrictions)",
+    "file SHA = STEP 23 manifest",
+    "uuss/vuss present, m/s",
+    "3 h axis: all 25 instants present incl. the KE-2 June/July file boundary",
+    "extent covers the cropped grid",
+    "missingness recorded",
+    "release stencil at t0 on WW3 nodes (fresh; KE-2 required)",
+    "license LICENSE_CONFIRMED"
+  ],
+  "runPlan": {
+    "control-alpha0.002": 6,
+    "treatment-alpha0.002": 6,
+    "control-alpha0": 6,
+    "treatment-alpha0": 6
+  },
+  "plannedRuns": 24,
+  "order": "per window KE-1, KE-2, AG-1, AG-2, KE-H1, KE-H3: control 0.002, treatment 0.002, control 0, treatment 0",
+  "alpha": {
+    "primary": 0.002,
+    "structural": 0.0,
+    "search": false
+  },
+  "stokesCoefficient": 1.0,
+  "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+  "labelRules": {
+    "scope": "overall stratum, primary alpha 0.002, 72 h; also reported per stratum and for the structural alpha 0 pair",
+    "primaryHorizonHours": 72,
+    "tieToleranceKm": 1e-06,
+    "consistencyFraction": 0.6666666666666666,
+    "signTestMinimumN": 10,
+    "rule": "STOKES_DESCRIPTIVELY_FAVORED if median delta < -tie AND wins/(wins+losses) >= 2/3; STOKES_DESCRIPTIVELY_DISFAVORED if median delta > +tie AND losses/(wins+losses) >= 2/3; otherwise NO_CLEAR_STOKES_DIFFERENCE; TEST_BLOCKED if any mandatory gate fails",
+    "labels": [
+      "STOKES_DESCRIPTIVELY_FAVORED",
+      "NO_CLEAR_STOKES_DIFFERENCE",
+      "STOKES_DESCRIPTIVELY_DISFAVORED",
+      "TEST_BLOCKED"
+    ],
+    "selection": false
+  },
+  "outputs": [
+    "docs/research/step29-stokes-forcing-manifest.json",
+    "docs/research/step29-stokes-fairness-report.json",
+    "docs/research/step29-stokes-manifest.json",
+    "docs/research/step29-stokes-replay-manifest.json",
+    "docs/research/step29-stokes-evaluation.json",
+    "docs/research/step29-stokes-paired-table.csv",
+    "docs/research/step29-stokes-summary.json",
+    "data/research/step29/ (gitignored)"
+  ],
+  "tools": {
+    "tools/research/build_step29_forcing.py": "2ba5bbb46caf6f4439da871fbaec0ca186a6268125aff172494a854f2fd97298",
+    "tools/research/run_step29_test06.py": "58be6c34ff94710d9199cffd3a3d7825231a021ddd359e106e7d692ef0178439",
+    "tools/research/evaluate_step29_test06.py": "31c22612f59f9b90a89a9c924bb4e16e933ecd2eeb38a864ad76a0b3d964843c",
+    "tools/research/check_step29_stokes_execution.py": "d38203064cf8a9033120c940ceac891aa7f9b0ac600b556434006f110ee2d1a6",
+    "tools/research/glorys_reader_step25c.py": "11b7d987434a55a9e42a9776e851fad49b8ec65d2df0f23130c7a7e6234ab63e",
+    "tools/research/replay_step25c_run.py": "5dd8c14da33dcd75c50c8e52dc517456d46a1a2f4ad38b3918687d16b4a73ff5"
+  },
+  "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+  "requiredStatements": [
+    "TEST-06 is a descriptive paired experiment; no statistical significance, causal, universal or operational claim is made.",
+    "The only intentional difference between treatment and control is the added WW3 surface Stokes drift (coefficient 1.0, never multiplied by alpha); grid, time axis, mask, wind, alpha, releases and mechanics are identical.",
+    "alpha = 0.002 (structural pair alpha = 0), the Stokes coefficient, GLORYS depth and forcing identities are unchanged; no coefficient, alpha, depth or forcing selection was made.",
+    "Holdout results are descriptive only; no re-ranking, no selective rerun, no outlier handling.",
+    "Any observed Stokes effect is reported as an observed effect under the preregistered metric, not as a physical explanation; STEP 20-29 Phase A results are unchanged."
+  ]
+}

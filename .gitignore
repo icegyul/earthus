@@ -107,3 +107,5 @@ data/research/step26/
 data/research/step27/
 # STEP 28 field-diagnostic derived data (KE-H2 normalized GLORYS) is never committed; docs/research/step28-* records and SVG figures are
 data/research/step28/
+# STEP 29 TEST-06 composite forcing and trajectories are never committed; docs/research/step29-* records are
+data/research/step29/

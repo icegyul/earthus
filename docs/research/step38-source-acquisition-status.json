@@ -1,0 +1,56 @@
+{
+  "ruleId": "source-acquisition-freeze-step38",
+  "status": "SOURCE_ACQUISITION_COMPLETE",
+  "protocolSha256": "a4dfbcbea6562e02b032e0557397a61870e31b53e980931c396f44905b9b88cd",
+  "acquisitionManifestSha256": "c9d3109fbab2970b43b887cc7ba81d3aacbdd094375b091e8e185097a22dc2a0",
+  "freezeManifestSha256": "5e979cff746a1ee72c877a8b1bdb8c1bc1e310605ab9fc7cc6337d9ea902da77",
+  "step37LockCommit": "74d19f0a9661a41d63a08c56bbd3f91e9d8b312d",
+  "cohortManifestSha256": "bda31c3ca36a395acadc95c1cb18663964ee9a00e4a72a7c2504182f51df06ca",
+  "windows": 9,
+  "drifters": 20,
+  "summary": {
+    "hycomPass": 9,
+    "windowBlocked": 0,
+    "fail": 0,
+    "candidatePass": 9,
+    "candidateBlocked": 0
+  },
+  "artefactCounts": {
+    "A_ORIGINAL_SOURCE": 121,
+    "B_DERIVED_REPACKAGED": 27,
+    "C_METADATA": 4,
+    "D_ACQUISITION_LOG": 1
+  },
+  "totalBytes": {
+    "A_ORIGINAL_SOURCE": 320067871,
+    "B_DERIVED_REPACKAGED": 71432236,
+    "C_METADATA": 481343
+  },
+  "glorysAuthenticated": true,
+  "blockedWindows": [],
+  "candidateBlockedWindows": [],
+  "coordinateRule": {
+    "GS-Y1": "PASS",
+    "GS-Y2": "PASS",
+    "GS-Y3": "PASS",
+    "GS-Y4": "PASS",
+    "GS-Y5": "PASS",
+    "GS-Y6": "PASS",
+    "GS-Y7": "PASS",
+    "GS-Y8": "PASS",
+    "GS-Y9": "PASS"
+  },
+  "scientificExperimentExecuted": false,
+  "trajectoryExecuted": false,
+  "modelExecuted": false,
+  "parameterTuning": false,
+  "forcingSelection": false,
+  "endpointComputed": false,
+  "bootstrapRun": false,
+  "performanceEvaluated": false,
+  "step37Modified": false,
+  "step36Modified": false,
+  "forbiddenInputAccess": 0,
+  "automaticCommit": false,
+  "finalizedAtUTC": "2026-09-07T02:51:02Z"
+}

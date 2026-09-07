@@ -1,0 +1,131 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "source-acquisition-freeze-step38",
+  "status": "PROTOCOL LOCKED (file-level; automatic commit forbidden)",
+  "createdAtUTC": "2026-09-07T02:28:39Z",
+  "step37LockCommit": "74d19f0a9661a41d63a08c56bbd3f91e9d8b312d",
+  "step37Parent": "043a09b8539955868651a06e7c2c44e3c606803f",
+  "step36LockCommit": "043a09b8539955868651a06e7c2c44e3c606803f",
+  "step37ProtocolSha256": "eae40cde609155a32ccbe0c01a6090715e2324d72cc080e2e7043ecbd90f2d0d",
+  "step37StatusSha256": "61de721a97b57b04692f7b357cb8ef3a62088ef3cecdfbf010af4c760434a767",
+  "cohortManifestSha256": "bda31c3ca36a395acadc95c1cb18663964ee9a00e4a72a7c2504182f51df06ca",
+  "purpose": "acquire only the sources fixed by the locked STEP 37 protocol (field 15 / 37-42) for the immutable STEP 36 cohort, verify provenance and integrity, and freeze the data; no daily field, composite, trajectory, metric, endpoint, bootstrap or comparison",
+  "cohort": {
+    "windows": 9,
+    "drifters": 20,
+    "windowIds": [
+      "GS-Y1",
+      "GS-Y2",
+      "GS-Y3",
+      "GS-Y4",
+      "GS-Y5",
+      "GS-Y6",
+      "GS-Y7",
+      "GS-Y8",
+      "GS-Y9"
+    ],
+    "consumedAsIs": true,
+    "rederived": false
+  },
+  "sources": {
+    "HYCOM": {
+      "product": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "experiment": "expt_53.X",
+      "year": "2010",
+      "variables": [
+        "water_u",
+        "water_v"
+      ],
+      "vertCoord": 15,
+      "spatialResolutionDeg": 0.08,
+      "temporalResolution": "3 h",
+      "access": "NCSS https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010 (STEP 17 mechanism)",
+      "layouts": [
+        "STEP 17 four-part t0..t0+72h (25 frames)",
+        "six UTC-day files 00..21Z = 48 registered frames"
+      ],
+      "bbox": "STEP 36 window ocean box (-180..180)",
+      "licence": "DoD Distribution A (file distribution_statement)"
+    },
+    "NCEP": {
+      "product": "NCEP-DOE Reanalysis 2 10 m u/v",
+      "year": "2010",
+      "temporalResolution": "6 h",
+      "spatialResolution": "T62 gaussian",
+      "access": "PSL THREDDS NCSS (STEP 17 wind_parts; request longitudes converted to the PSL 0..360 request convention as in STEP 17; the frozen runtime unwraps longitudes at lookup)",
+      "period": "t0 - 12 h .. t0 + 84 h"
+    },
+    "GLORYS": {
+      "product": "GLORYS12V1 GLOBAL_MULTIYEAR_PHY_001_030 cmems_mod_glo_phy_my_0.083deg_P1D-m",
+      "variables": [
+        "uo",
+        "vo"
+      ],
+      "level": "15.81 m (native 15.810070 m)",
+      "spatialResolutionDeg": 0.0833,
+      "temporalResolution": "daily mean",
+      "access": "official Copernicus Marine toolbox in the STEP 25B isolated venv; credentials by exit code only",
+      "bbox": "ocean box +-0.5 deg",
+      "period": "t0 - 1 d 00:00 .. end + 1 d 00:00",
+      "version": "recorded from the file at acquisition"
+    },
+    "WW3": {
+      "product": "WW3 GLOB-30M CFSR surface Stokes drift (uuss/vuss), IFREMER hindcast, product_version 1.0",
+      "months": [
+        "201007",
+        "201008",
+        "201009",
+        "201010"
+      ],
+      "spatialResolutionDeg": 0.5,
+      "temporalResolution": "3 h",
+      "access": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/2010_CFSR/uss/ (anonymous FTP; own fetch, no shared log)",
+      "licence": "distribution_statement 'No restrictions' (STEP 29 LICENSE_CONFIRMED)"
+    }
+  },
+  "step37ForcingRule": "if any registered source is unavailable or a mandatory frame is missing for a window: WINDOW_BLOCKED for that window in every condition; no alternative product, version, interpolation or reconstruction; if the Copernicus credential check fails: CANDIDATE_BLOCKED (H1 not evaluable), H2 may still proceed on A/B",
+  "substitution": "FORBIDDEN (no other product, experiment, version, interpolation or reconstruction)",
+  "longitudeRule": "STEP 37 field 20: STEP 36 boxes are -180..180; the reader axis must cover the box in that convention; any convention mismatch -> COORDINATE_BLOCKED, never transformed; probe (2010-07-27T12Z, box slice) showed the NCSS returns -180..180 for this dataset",
+  "immutability": "originals never overwritten (fetch refuses existing files); derived runtime datasets stored under normalized/ and linked to the original SHA-256; freeze manifest classifies A original / B derived / C metadata / D log",
+  "qcScope": [
+    "existence",
+    "byte integrity",
+    "checksum",
+    "metadata completeness",
+    "coordinate metadata incl. longitude rule",
+    "temporal coverage",
+    "spatial coverage",
+    "resolution",
+    "product / version identity",
+    "missing frames",
+    "release stencil",
+    "overlap-frame reproducibility"
+  ],
+  "qcForbidden": [
+    "performance evaluation",
+    "trajectory",
+    "candidate vs baseline",
+    "model ranking",
+    "endpoint",
+    "bootstrap"
+  ],
+  "blockingRule": "missing registered frame -> WINDOW_BLOCKED (all conditions); GLORYS unavailable / credential failure -> CANDIDATE_BLOCKED for that window; WW3 file unavailable -> CANDIDATE_BLOCKED for windows in that month; never substitute",
+  "tools": {
+    "tools/research/acquire_step38_sources.py": "f5f1fc6be8153e396f1e8c508c8bb16027d0d4d470120b199812a7870d589e59",
+    "tools/research/freeze_step38_data.py": "c22ab62bc3df12b5e93e4576ede4313f234a3379012db2b7ca193ad472794071",
+    "tools/research/check_step38_source_acquisition.py": "ab161bf9b1abb30cc0c4d2069a9efe55b880d69657bead9443fcd02ba53a49b3"
+  },
+  "reused": {
+    "tools/research/acquire_step17_forcing.py": "040da01c4ed53af6944a8c18485900d9fad1ef273523446d10d118425daca975",
+    "tools/research/build_step20_chunked_forcing.py": "973d8527dd1c2dfb2b2aecde4061ceb8a0be8befd73551d5a5d00b1e753be9e1",
+    "tools/research/glorys_reader_step25c.py": "11b7d987434a55a9e42a9776e851fad49b8ec65d2df0f23130c7a7e6234ab63e"
+  },
+  "outputs": [
+    "docs/research/step38-source-acquisition-manifest.json",
+    "docs/research/step38-data-freeze-manifest.json",
+    "docs/research/step38-source-acquisition-status.json",
+    "docs/research/step38-source-acquisition-report.md"
+  ],
+  "rawData": "data/research/step38/ (gitignored)",
+  "automaticCommit": false
+}

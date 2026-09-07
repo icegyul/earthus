@@ -1,0 +1,2117 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "source-acquisition-freeze-step38",
+  "protocolSha256": "a4dfbcbea6562e02b032e0557397a61870e31b53e980931c396f44905b9b88cd",
+  "acquisitionManifestSha256": "c9d3109fbab2970b43b887cc7ba81d3aacbdd094375b091e8e185097a22dc2a0",
+  "cohortManifestSha256": "bda31c3ca36a395acadc95c1cb18663964ee9a00e4a72a7c2504182f51df06ca",
+  "tool": {
+    "file": "tools/research/freeze_step38_data.py",
+    "sha256": "c22ab62bc3df12b5e93e4576ede4313f234a3379012db2b7ca193ad472794071"
+  },
+  "frozenAtUTC": "2026-09-07T02:51:02Z",
+  "windows": [
+    {
+      "windowId": "GS-Y1",
+      "hycomStatus": "HYCOM_PASS",
+      "candidateStatus": "CANDIDATE_PASS",
+      "checks": {
+        "sourceIdentity": true,
+        "fileIntegrity": true,
+        "coordinates": true,
+        "longitudeRule": true,
+        "timeAxis": true,
+        "variables": true,
+        "spatialCoverage": true,
+        "temporalCoverage": true,
+        "missingFrames": true,
+        "units": true,
+        "releaseStencil": true,
+        "reproducibility": true
+      },
+      "glorysChecks": {
+        "acquired": true,
+        "integrity": true,
+        "identity": true,
+        "coverage": true,
+        "depthLevel": true,
+        "ww3Months": {
+          "201007": "PASS"
+        }
+      },
+      "missingRegisteredFrames": [],
+      "registeredFrames": 48,
+      "acquiredDayFrames": 48,
+      "reproducibility": {
+        "overlapFrames": 25,
+        "overlapEqual": 25,
+        "readerReproduced": true
+      },
+      "notes": [],
+      "chunked": false
+    },
+    {
+      "windowId": "GS-Y2",
+      "hycomStatus": "HYCOM_PASS",
+      "candidateStatus": "CANDIDATE_PASS",
+      "checks": {
+        "sourceIdentity": true,
+        "fileIntegrity": true,
+        "coordinates": true,
+        "longitudeRule": true,
+        "timeAxis": true,
+        "variables": true,
+        "spatialCoverage": true,
+        "temporalCoverage": true,
+        "missingFrames": true,
+        "units": true,
+        "releaseStencil": true,
+        "reproducibility": true
+      },
+      "glorysChecks": {
+        "acquired": true,
+        "integrity": true,
+        "identity": true,
+        "coverage": true,
+        "depthLevel": true,
+        "ww3Months": {
+          "201007": "PASS",
+          "201008": "PASS"
+        }
+      },
+      "missingRegisteredFrames": [],
+      "registeredFrames": 48,
+      "acquiredDayFrames": 48,
+      "reproducibility": {
+        "overlapFrames": 25,
+        "overlapEqual": 25,
+        "readerReproduced": true
+      },
+      "notes": [],
+      "chunked": false
+    },
+    {
+      "windowId": "GS-Y3",
+      "hycomStatus": "HYCOM_PASS",
+      "candidateStatus": "CANDIDATE_PASS",
+      "checks": {
+        "sourceIdentity": true,
+        "fileIntegrity": true,
+        "coordinates": true,
+        "longitudeRule": true,
+        "timeAxis": true,
+        "variables": true,
+        "spatialCoverage": true,
+        "temporalCoverage": true,
+        "missingFrames": true,
+        "units": true,
+        "releaseStencil": true,
+        "reproducibility": true
+      },
+      "glorysChecks": {
+        "acquired": true,
+        "integrity": true,
+        "identity": true,
+        "coverage": true,
+        "depthLevel": true,
+        "ww3Months": {
+          "201008": "PASS"
+        }
+      },
+      "missingRegisteredFrames": [],
+      "registeredFrames": 48,
+      "acquiredDayFrames": 48,
+      "reproducibility": {
+        "overlapFrames": 25,
+        "overlapEqual": 25,
+        "readerReproduced": true
+      },
+      "notes": [],
+      "chunked": false
+    },
+    {
+      "windowId": "GS-Y4",
+      "hycomStatus": "HYCOM_PASS",
+      "candidateStatus": "CANDIDATE_PASS",
+      "checks": {
+        "sourceIdentity": true,
+        "fileIntegrity": true,
+        "coordinates": true,
+        "longitudeRule": true,
+        "timeAxis": true,
+        "variables": true,
+        "spatialCoverage": true,
+        "temporalCoverage": true,
+        "missingFrames": true,
+        "units": true,
+        "releaseStencil": true,
+        "reproducibility": true
+      },
+      "glorysChecks": {
+        "acquired": true,
+        "integrity": true,
+        "identity": true,
+        "coverage": true,
+        "depthLevel": true,
+        "ww3Months": {
+          "201008": "PASS"
+        }
+      },
+      "missingRegisteredFrames": [],
+      "registeredFrames": 48,
+      "acquiredDayFrames": 48,
+      "reproducibility": {
+        "overlapFrames": 25,
+        "overlapEqual": 25,
+        "readerReproduced": true
+      },
+      "notes": [],
+      "chunked": false
+    },
+    {
+      "windowId": "GS-Y5",
+      "hycomStatus": "HYCOM_PASS",
+      "candidateStatus": "CANDIDATE_PASS",
+      "checks": {
+        "sourceIdentity": true,
+        "fileIntegrity": true,
+        "coordinates": true,
+        "longitudeRule": true,
+        "timeAxis": true,
+        "variables": true,
+        "spatialCoverage": true,
+        "temporalCoverage": true,
+        "missingFrames": true,
+        "units": true,
+        "releaseStencil": true,
+        "reproducibility": true
+      },
+      "glorysChecks": {
+        "acquired": true,
+        "integrity": true,
+        "identity": true,
+        "coverage": true,
+        "depthLevel": true,
+        "ww3Months": {
+          "201008": "PASS"
+        }
+      },
+      "missingRegisteredFrames": [],
+      "registeredFrames": 48,
+      "acquiredDayFrames": 48,
+      "reproducibility": {
+        "overlapFrames": 25,
+        "overlapEqual": 25,
+        "readerReproduced": true
+      },
+      "notes": [],
+      "chunked": false
+    },
+    {
+      "windowId": "GS-Y6",
+      "hycomStatus": "HYCOM_PASS",
+      "candidateStatus": "CANDIDATE_PASS",
+      "checks": {
+        "sourceIdentity": true,
+        "fileIntegrity": true,
+        "coordinates": true,
+        "longitudeRule": true,
+        "timeAxis": true,
+        "variables": true,
+        "spatialCoverage": true,
+        "temporalCoverage": true,
+        "missingFrames": true,
+        "units": true,
+        "releaseStencil": true,
+        "reproducibility": true
+      },
+      "glorysChecks": {
+        "acquired": true,
+        "integrity": true,
+        "identity": true,
+        "coverage": true,
+        "depthLevel": true,
+        "ww3Months": {
+          "201008": "PASS"
+        }
+      },
+      "missingRegisteredFrames": [],
+      "registeredFrames": 48,
+      "acquiredDayFrames": 48,
+      "reproducibility": {
+        "overlapFrames": 25,
+        "overlapEqual": 25,
+        "readerReproduced": true
+      },
+      "notes": [],
+      "chunked": false
+    },
+    {
+      "windowId": "GS-Y7",
+      "hycomStatus": "HYCOM_PASS",
+      "candidateStatus": "CANDIDATE_PASS",
+      "checks": {
+        "sourceIdentity": true,
+        "fileIntegrity": true,
+        "coordinates": true,
+        "longitudeRule": true,
+        "timeAxis": true,
+        "variables": true,
+        "spatialCoverage": true,
+        "temporalCoverage": true,
+        "missingFrames": true,
+        "units": true,
+        "releaseStencil": true,
+        "reproducibility": true
+      },
+      "glorysChecks": {
+        "acquired": true,
+        "integrity": true,
+        "identity": true,
+        "coverage": true,
+        "depthLevel": true,
+        "ww3Months": {
+          "201008": "PASS"
+        }
+      },
+      "missingRegisteredFrames": [],
+      "registeredFrames": 48,
+      "acquiredDayFrames": 48,
+      "reproducibility": {
+        "overlapFrames": 25,
+        "overlapEqual": 25,
+        "readerReproduced": true
+      },
+      "notes": [],
+      "chunked": false
+    },
+    {
+      "windowId": "GS-Y8",
+      "hycomStatus": "HYCOM_PASS",
+      "candidateStatus": "CANDIDATE_PASS",
+      "checks": {
+        "sourceIdentity": true,
+        "fileIntegrity": true,
+        "coordinates": true,
+        "longitudeRule": true,
+        "timeAxis": true,
+        "variables": true,
+        "spatialCoverage": true,
+        "temporalCoverage": true,
+        "missingFrames": true,
+        "units": true,
+        "releaseStencil": true,
+        "reproducibility": true
+      },
+      "glorysChecks": {
+        "acquired": true,
+        "integrity": true,
+        "identity": true,
+        "coverage": true,
+        "depthLevel": true,
+        "ww3Months": {
+          "201009": "PASS"
+        }
+      },
+      "missingRegisteredFrames": [],
+      "registeredFrames": 48,
+      "acquiredDayFrames": 48,
+      "reproducibility": {
+        "overlapFrames": 25,
+        "overlapEqual": 25,
+        "readerReproduced": true
+      },
+      "notes": [],
+      "chunked": false
+    },
+    {
+      "windowId": "GS-Y9",
+      "hycomStatus": "HYCOM_PASS",
+      "candidateStatus": "CANDIDATE_PASS",
+      "checks": {
+        "sourceIdentity": true,
+        "fileIntegrity": true,
+        "coordinates": true,
+        "longitudeRule": true,
+        "timeAxis": true,
+        "variables": true,
+        "spatialCoverage": true,
+        "temporalCoverage": true,
+        "missingFrames": true,
+        "units": true,
+        "releaseStencil": true,
+        "reproducibility": true
+      },
+      "glorysChecks": {
+        "acquired": true,
+        "integrity": true,
+        "identity": true,
+        "coverage": true,
+        "depthLevel": true,
+        "ww3Months": {
+          "201010": "PASS"
+        }
+      },
+      "missingRegisteredFrames": [],
+      "registeredFrames": 48,
+      "acquiredDayFrames": 48,
+      "reproducibility": {
+        "overlapFrames": 25,
+        "overlapEqual": 25,
+        "readerReproduced": true
+      },
+      "notes": [],
+      "chunked": false
+    }
+  ],
+  "ww3": {
+    "201007": {
+      "integrity": true,
+      "identity": true,
+      "variables": true,
+      "units": true,
+      "monthlyAxis": true,
+      "status": "PASS"
+    },
+    "201008": {
+      "integrity": true,
+      "identity": true,
+      "variables": true,
+      "units": true,
+      "monthlyAxis": true,
+      "status": "PASS"
+    },
+    "201009": {
+      "integrity": true,
+      "identity": true,
+      "variables": true,
+      "units": true,
+      "monthlyAxis": true,
+      "status": "PASS"
+    },
+    "201010": {
+      "integrity": true,
+      "identity": true,
+      "variables": true,
+      "units": true,
+      "monthlyAxis": true,
+      "status": "PASS"
+    }
+  },
+  "summary": {
+    "hycomPass": 9,
+    "windowBlocked": 0,
+    "fail": 0,
+    "candidatePass": 9,
+    "candidateBlocked": 0
+  },
+  "artefacts": [
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y1/hycom/current-20100727T12.nc",
+      "sha256": "4a12e193be9bedd500c35d9e4acd3f937161f84816f0cb565b7581e61a3b9944",
+      "bytes": 653628,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y1",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:38:59Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=37.431&south=30.949&west=-75.019&east=-55.395&horizStride=1&time_start=2010-07-27T12%3A00%3A00Z&time_end=2010-07-28T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y1/hycom/current-20100728T12.nc",
+      "sha256": "ce6a454952e6597f8002ef101c49811aef9c12a684417948f5700d69c30cfe41",
+      "bytes": 653628,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y1",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:39:07Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=37.431&south=30.949&west=-75.019&east=-55.395&horizStride=1&time_start=2010-07-28T12%3A00%3A00Z&time_end=2010-07-29T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y1/hycom/current-20100729T12.nc",
+      "sha256": "3d5e517908800fba6d0a2e9c8b08668577e094ddc9072f47c9bb918446a8ff58",
+      "bytes": 653628,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y1",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:39:15Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=37.431&south=30.949&west=-75.019&east=-55.395&horizStride=1&time_start=2010-07-29T12%3A00%3A00Z&time_end=2010-07-30T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y1/hycom/current-20100730T12.nc",
+      "sha256": "7caf4eae01ddc1670127af3d86f3f273eb3e7e46bd38b45d05c3f79e35e8a815",
+      "bytes": 86460,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y1",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:39:17Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=37.431&south=30.949&west=-75.019&east=-55.395&horizStride=1&time_start=2010-07-30T12%3A00%3A00Z&time_end=2010-07-30T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y1/hycom-days/day-20100726.nc",
+      "sha256": "8ab2aab4d5d42bebafbe0377c9657ee283df01da99b39c614b3838aba5645ed3",
+      "bytes": 653628,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y1",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:39:24Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=37.431&south=30.949&west=-75.019&east=-55.395&horizStride=1&time_start=2010-07-26T00%3A00%3A00Z&time_end=2010-07-26T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y1/hycom-days/day-20100727.nc",
+      "sha256": "93ce5366e21a9bfd7fb3ed466869c4d6ea104c29c66cfac517b47fd8def50fe6",
+      "bytes": 653628,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y1",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:39:30Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=37.431&south=30.949&west=-75.019&east=-55.395&horizStride=1&time_start=2010-07-27T00%3A00%3A00Z&time_end=2010-07-27T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y1/hycom-days/day-20100728.nc",
+      "sha256": "a6d9341262224274709edb8c36aea83877a2c442f1de357fb36c7c33f41d0a44",
+      "bytes": 653628,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y1",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:39:33Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=37.431&south=30.949&west=-75.019&east=-55.395&horizStride=1&time_start=2010-07-28T00%3A00%3A00Z&time_end=2010-07-28T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y1/hycom-days/day-20100729.nc",
+      "sha256": "939904a23f5831962369d240b1e1f272574ede7ef89a5460de6ddabba80147ad",
+      "bytes": 653628,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y1",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:39:44Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=37.431&south=30.949&west=-75.019&east=-55.395&horizStride=1&time_start=2010-07-29T00%3A00%3A00Z&time_end=2010-07-29T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y1/hycom-days/day-20100730.nc",
+      "sha256": "61a57df1159b0c09305dae77625d6f0caabaa2d4fc58486100ebefd4145297db",
+      "bytes": 653628,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y1",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:39:51Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=37.431&south=30.949&west=-75.019&east=-55.395&horizStride=1&time_start=2010-07-30T00%3A00%3A00Z&time_end=2010-07-30T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y1/hycom-days/day-20100731.nc",
+      "sha256": "f9f507920e03b744c3c65501bed431fb706c1de2dff1ebb08fb555d98eec69bc",
+      "bytes": 653628,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y1",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:40:00Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=37.431&south=30.949&west=-75.019&east=-55.395&horizStride=1&time_start=2010-07-31T00%3A00%3A00Z&time_end=2010-07-31T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y1/ncep/uwnd.10m.gauss.20100727T00-20100731T00.nc",
+      "sha256": "beef90c1d6175c5a1b75587db28b91caac1fa99ae2f8c6c87bcef5654a60434c",
+      "bytes": 11260,
+      "source": "NCEP-DOE R2 10 m 6 h 2010",
+      "window": "GS-Y1",
+      "retrievedAtUTC": "2026-09-07T02:40:02Z",
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2010.nc?var=uwnd&north=40.431&south=27.949&west=281.981&east=307.605&time_start=2010-07-27T00%3A00%3A00Z&time_end=2010-07-31T00%3A00%3A00Z&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y1/ncep/vwnd.10m.gauss.20100727T00-20100731T00.nc",
+      "sha256": "1a619747756aef0396be518ccf2f9a56e010db6d4386c72acaad8b4c00f5793d",
+      "bytes": 11260,
+      "source": "NCEP-DOE R2 10 m 6 h 2010",
+      "window": "GS-Y1",
+      "retrievedAtUTC": "2026-09-07T02:40:03Z",
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2010.nc?var=vwnd&north=40.431&south=27.949&west=281.981&east=307.605&time_start=2010-07-27T00%3A00%3A00Z&time_end=2010-07-31T00%3A00%3A00Z&accept=netcdf"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y1.hycom15m.dataset.json",
+      "sha256": "c1af1871eea4e9b4717c65770a22f5fb669469098d46c5379a78ee5d2291ec23",
+      "bytes": 20477870,
+      "window": "GS-Y1",
+      "derivedFromOriginals": [
+        "4a12e193be9bedd500c35d9e4acd3f937161f84816f0cb565b7581e61a3b9944",
+        "ce6a454952e6597f8002ef101c49811aef9c12a684417948f5700d69c30cfe41",
+        "3d5e517908800fba6d0a2e9c8b08668577e094ddc9072f47c9bb918446a8ff58",
+        "7caf4eae01ddc1670127af3d86f3f273eb3e7e46bd38b45d05c3f79e35e8a815"
+      ],
+      "gridSha256": "a40cb564c4070829906a75a1e41314a7cef6dc913f06c28fae3ac4a72004a9f7",
+      "reader": "netcdf_reader.build_dataset"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y1.ncep10m.wind.json",
+      "sha256": "34ab751e1dd694b7202e45753c1bf5adc2bd54bff9546480653c3386ee5a2641",
+      "bytes": 78546,
+      "window": "GS-Y1",
+      "derivedFromOriginals": [
+        "beef90c1d6175c5a1b75587db28b91caac1fa99ae2f8c6c87bcef5654a60434c",
+        "1a619747756aef0396be518ccf2f9a56e010db6d4386c72acaad8b4c00f5793d"
+      ],
+      "gridSha256": "e6e35f7ea7d39565149f4e8be77ede3718afe7509e5253b1ba2bae2339a7a0de",
+      "reader": "wind.build_ncep_r2_wind_dataset"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/glorys/GS-Y1.glorys12v1.uo_vo.15.81m.nc",
+      "sha256": "bdb93066f47535aef6f689c9e68fd1084df765e262a0035752bfbb7dc2361f92",
+      "bytes": 563554,
+      "source": "GLORYS12V1 cmems_mod_glo_phy_my_0.083deg_P1D-m 15.81 m",
+      "window": "GS-Y1",
+      "retrievedAtUTC": "2026-09-07T02:40:17Z",
+      "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x -75.51929 -X -54.89547 -y 30.44938 -Y 37.93114 -t 2010-07-26T00:00:00 -T 2010-07-31T00:00:00 -z 15.81 -Z 15.81 -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step38\\glorys -f GS-Y1.glorys12v1.uo_vo.15.81m.nc --disable-progress-bar"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y1.glorys15.81m.dataset.json",
+      "sha256": "d08d5e5dc47be1dfa304b68b0d97eb0c93d73b67dbf624bc7cc492c57106703e",
+      "bytes": 5579589,
+      "window": "GS-Y1",
+      "derivedFromOriginals": [
+        "bdb93066f47535aef6f689c9e68fd1084df765e262a0035752bfbb7dc2361f92"
+      ],
+      "gridSha256": "2d24b7b6427e7edcd1ce16886d156f894108abc4058c861ded360d18fede1d5b",
+      "reader": "glorys_reader_step25c.build_dataset"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y2/hycom/current-20100730T12.nc",
+      "sha256": "5aae388f3692cb87a4c152718786aefadd9df342b3193b6adb56eb5aeb223431",
+      "bytes": 195268,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y2",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:40:20Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=36.354&west=-71.934&east=-61.872&horizStride=1&time_start=2010-07-30T12%3A00%3A00Z&time_end=2010-07-31T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y2/hycom/current-20100731T12.nc",
+      "sha256": "5e9e391050b221b85618b780b001caaca881e7fdae7741fdbff789650d70ed13",
+      "bytes": 195268,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y2",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:40:29Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=36.354&west=-71.934&east=-61.872&horizStride=1&time_start=2010-07-31T12%3A00%3A00Z&time_end=2010-08-01T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y2/hycom/current-20100801T12.nc",
+      "sha256": "a23c9a6ae4f82bdcd963b1df4d880c5ac1ff4659fba84afbb1685bd6553bd3b1",
+      "bytes": 195268,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y2",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:40:37Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=36.354&west=-71.934&east=-61.872&horizStride=1&time_start=2010-08-01T12%3A00%3A00Z&time_end=2010-08-02T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y2/hycom/current-20100802T12.nc",
+      "sha256": "ca969e4300a590f523966dd44ff86c99e23fc4f457e83438e17b3ac7494f4552",
+      "bytes": 28084,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y2",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:40:39Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=36.354&west=-71.934&east=-61.872&horizStride=1&time_start=2010-08-02T12%3A00%3A00Z&time_end=2010-08-02T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y2/hycom-days/day-20100729.nc",
+      "sha256": "474c6de65ed955ccca16599471e45f9e516ad8ec226fb793e3e0888d4e069a31",
+      "bytes": 195268,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y2",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:40:40Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=36.354&west=-71.934&east=-61.872&horizStride=1&time_start=2010-07-29T00%3A00%3A00Z&time_end=2010-07-29T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y2/hycom-days/day-20100730.nc",
+      "sha256": "9c917fdf89daaefb5d5aef75945a17403c337393154d527cd1548ff687c5d169",
+      "bytes": 195268,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y2",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:40:44Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=36.354&west=-71.934&east=-61.872&horizStride=1&time_start=2010-07-30T00%3A00%3A00Z&time_end=2010-07-30T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y2/hycom-days/day-20100731.nc",
+      "sha256": "00ba176bebccb7a02a17a93f0e2985f17fc4455721ec4470d9394022c2f11059",
+      "bytes": 195268,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y2",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:40:48Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=36.354&west=-71.934&east=-61.872&horizStride=1&time_start=2010-07-31T00%3A00%3A00Z&time_end=2010-07-31T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y2/hycom-days/day-20100801.nc",
+      "sha256": "44ecff6463c50196dc368eaf6967086183d3913211ccd6d2885c54e2c0517dd6",
+      "bytes": 195268,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y2",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:41:04Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=36.354&west=-71.934&east=-61.872&horizStride=1&time_start=2010-08-01T00%3A00%3A00Z&time_end=2010-08-01T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y2/hycom-days/day-20100802.nc",
+      "sha256": "f22e69a24d6625be3ce775e4828013e2e1e01281e87450bfa5106db998c5928e",
+      "bytes": 195268,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y2",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:41:09Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=36.354&west=-71.934&east=-61.872&horizStride=1&time_start=2010-08-02T00%3A00%3A00Z&time_end=2010-08-02T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y2/hycom-days/day-20100803.nc",
+      "sha256": "40c6c5aa86fc9de258b257c0bec8581965b901d01cddeeafca761a032bdca04e",
+      "bytes": 195268,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y2",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:41:14Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=36.354&west=-71.934&east=-61.872&horizStride=1&time_start=2010-08-03T00%3A00%3A00Z&time_end=2010-08-03T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y2/ncep/uwnd.10m.gauss.20100730T00-20100803T00.nc",
+      "sha256": "e6c27c0b06576a8e5018f35e4075a15bac67e40c0068faff6e8550a7a54965df",
+      "bytes": 7152,
+      "source": "NCEP-DOE R2 10 m 6 h 2010",
+      "window": "GS-Y2",
+      "retrievedAtUTC": "2026-09-07T02:41:15Z",
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2010.nc?var=uwnd&north=43.000&south=33.354&west=285.066&east=301.128&time_start=2010-07-30T00%3A00%3A00Z&time_end=2010-08-03T00%3A00%3A00Z&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y2/ncep/vwnd.10m.gauss.20100730T00-20100803T00.nc",
+      "sha256": "d61bde615268e2c2dde2e5c735580e98f8ce63156934f9c9bf6c1efc27d58e96",
+      "bytes": 7152,
+      "source": "NCEP-DOE R2 10 m 6 h 2010",
+      "window": "GS-Y2",
+      "retrievedAtUTC": "2026-09-07T02:41:16Z",
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2010.nc?var=vwnd&north=43.000&south=33.354&west=285.066&east=301.128&time_start=2010-07-30T00%3A00%3A00Z&time_end=2010-08-03T00%3A00%3A00Z&accept=netcdf"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y2.hycom15m.dataset.json",
+      "sha256": "eaa58a67da9d90bb914e14b3512b49950ab0dfb0bf9c77ef9fd68ad1c7932ede",
+      "bytes": 5968585,
+      "window": "GS-Y2",
+      "derivedFromOriginals": [
+        "5aae388f3692cb87a4c152718786aefadd9df342b3193b6adb56eb5aeb223431",
+        "5e9e391050b221b85618b780b001caaca881e7fdae7741fdbff789650d70ed13",
+        "a23c9a6ae4f82bdcd963b1df4d880c5ac1ff4659fba84afbb1685bd6553bd3b1",
+        "ca969e4300a590f523966dd44ff86c99e23fc4f457e83438e17b3ac7494f4552"
+      ],
+      "gridSha256": "ce8dc10b4bfb4543662f7352a3e062ca36c8d5ae31abedd8a7c8b3de75d01428",
+      "reader": "netcdf_reader.build_dataset"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y2.ncep10m.wind.json",
+      "sha256": "0590e14ed13cbebf87f869ea1f9bd6fba7f0c24c56ebab3bb26eee2e1f34d388",
+      "bytes": 41804,
+      "window": "GS-Y2",
+      "derivedFromOriginals": [
+        "e6c27c0b06576a8e5018f35e4075a15bac67e40c0068faff6e8550a7a54965df",
+        "d61bde615268e2c2dde2e5c735580e98f8ce63156934f9c9bf6c1efc27d58e96"
+      ],
+      "gridSha256": "40a08573984ccdaefdebcd7aa98d511f9c566a15479ca8801c271ba8cb8eb497",
+      "reader": "wind.build_ncep_r2_wind_dataset"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/glorys/GS-Y2.glorys12v1.uo_vo.15.81m.nc",
+      "sha256": "1112ee61c877e01002c57d29a8987ca1d2baf7797755db4bf710261984ff3d28",
+      "bytes": 206626,
+      "source": "GLORYS12V1 cmems_mod_glo_phy_my_0.083deg_P1D-m 15.81 m",
+      "window": "GS-Y2",
+      "retrievedAtUTC": "2026-09-07T02:41:30Z",
+      "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x -72.43419 -X -61.37165 -y 35.85383 -Y 40.5 -t 2010-07-29T00:00:00 -T 2010-08-03T00:00:00 -z 15.81 -Z 15.81 -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step38\\glorys -f GS-Y2.glorys12v1.uo_vo.15.81m.nc --disable-progress-bar"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y2.glorys15.81m.dataset.json",
+      "sha256": "740e54e937962beb6684a2cb867735efe75f79907beaacdf6f1e135b8c07ddd8",
+      "bytes": 1850083,
+      "window": "GS-Y2",
+      "derivedFromOriginals": [
+        "1112ee61c877e01002c57d29a8987ca1d2baf7797755db4bf710261984ff3d28"
+      ],
+      "gridSha256": "0f3959be1a272d1c6669dee93eaabfaf354c0646613a40333065b9af4862c661",
+      "reader": "glorys_reader_step25c.build_dataset"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y3/hycom/current-20100802T12.nc",
+      "sha256": "49b67d809f3484b000fa2402a22f6ea5c29319d5568004281444a0087cc765c5",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y3",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:41:34Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=34.627&south=30.627&west=-65.458&east=-61.458&horizStride=1&time_start=2010-08-02T12%3A00%3A00Z&time_end=2010-08-03T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y3/hycom/current-20100803T12.nc",
+      "sha256": "ddab3542d0bf4cf4a8f9627b6d345fc0afd77f020427eaba0a1fb719460199cf",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y3",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:41:44Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=34.627&south=30.627&west=-65.458&east=-61.458&horizStride=1&time_start=2010-08-03T12%3A00%3A00Z&time_end=2010-08-04T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y3/hycom/current-20100804T12.nc",
+      "sha256": "aff0e2d3a15777f3dcb9589f0b652dcf7094ea9ae5420199ebad445a336b89cb",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y3",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:41:51Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=34.627&south=30.627&west=-65.458&east=-61.458&horizStride=1&time_start=2010-08-04T12%3A00%3A00Z&time_end=2010-08-05T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y3/hycom/current-20100805T12.nc",
+      "sha256": "61c2fa66c2145f819b4e5406ace9dad9f9d243da5437d658c1d64265c90ce777",
+      "bytes": 14036,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y3",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:41:52Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=34.627&south=30.627&west=-65.458&east=-61.458&horizStride=1&time_start=2010-08-05T12%3A00%3A00Z&time_end=2010-08-05T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y3/hycom-days/day-20100801.nc",
+      "sha256": "ea9573a20d0452da5eadacfcd2b2bb2b4bc6018c172298c560dc90b7430574e7",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y3",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:41:59Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=34.627&south=30.627&west=-65.458&east=-61.458&horizStride=1&time_start=2010-08-01T00%3A00%3A00Z&time_end=2010-08-01T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y3/hycom-days/day-20100802.nc",
+      "sha256": "ae75e298e0de50df380483515db8be012b26e7ea39b79272046e8c5d14f441a1",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y3",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:42:03Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=34.627&south=30.627&west=-65.458&east=-61.458&horizStride=1&time_start=2010-08-02T00%3A00%3A00Z&time_end=2010-08-02T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y3/hycom-days/day-20100803.nc",
+      "sha256": "e0ef706acae8cf75beb386e3efe19ba77a7634f94122c13fef6e0322ebe66ca3",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y3",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:42:09Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=34.627&south=30.627&west=-65.458&east=-61.458&horizStride=1&time_start=2010-08-03T00%3A00%3A00Z&time_end=2010-08-03T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y3/hycom-days/day-20100804.nc",
+      "sha256": "92686e5852cb895956c97343df91ed06238fbb64fe9f0e546f38a19b88548fe2",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y3",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:42:14Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=34.627&south=30.627&west=-65.458&east=-61.458&horizStride=1&time_start=2010-08-04T00%3A00%3A00Z&time_end=2010-08-04T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y3/hycom-days/day-20100805.nc",
+      "sha256": "8003dd5fc633d15ad950954a4b367a6adf87f5993b94b0b8833a0bfc6d8b0f31",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y3",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:42:22Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=34.627&south=30.627&west=-65.458&east=-61.458&horizStride=1&time_start=2010-08-05T00%3A00%3A00Z&time_end=2010-08-05T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y3/hycom-days/day-20100806.nc",
+      "sha256": "4c73292a34a335288d32b41d28a351fe77aa717977534ca8b696308a87771ee8",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y3",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:42:31Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=34.627&south=30.627&west=-65.458&east=-61.458&horizStride=1&time_start=2010-08-06T00%3A00%3A00Z&time_end=2010-08-06T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y3/ncep/uwnd.10m.gauss.20100802T00-20100806T00.nc",
+      "sha256": "96a64ba0fb8b2ba47154f6230d3c70306c324108b70d2bc295864b85f218e849",
+      "bytes": 5916,
+      "source": "NCEP-DOE R2 10 m 6 h 2010",
+      "window": "GS-Y3",
+      "retrievedAtUTC": "2026-09-07T02:42:31Z",
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2010.nc?var=uwnd&north=37.627&south=27.627&west=291.542&east=301.542&time_start=2010-08-02T00%3A00%3A00Z&time_end=2010-08-06T00%3A00%3A00Z&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y3/ncep/vwnd.10m.gauss.20100802T00-20100806T00.nc",
+      "sha256": "ee254ef412d6da62d2f82b162d02100620825fd211de09c2f06f6192e881adf3",
+      "bytes": 5916,
+      "source": "NCEP-DOE R2 10 m 6 h 2010",
+      "window": "GS-Y3",
+      "retrievedAtUTC": "2026-09-07T02:42:32Z",
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2010.nc?var=vwnd&north=37.627&south=27.627&west=291.542&east=301.542&time_start=2010-08-02T00%3A00%3A00Z&time_end=2010-08-06T00%3A00%3A00Z&accept=netcdf"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y3.hycom15m.dataset.json",
+      "sha256": "2f8c45dfe908199519564824f4ae07fa652e938b1f1445a6287216eb9695124a",
+      "bytes": 2652184,
+      "window": "GS-Y3",
+      "derivedFromOriginals": [
+        "49b67d809f3484b000fa2402a22f6ea5c29319d5568004281444a0087cc765c5",
+        "ddab3542d0bf4cf4a8f9627b6d345fc0afd77f020427eaba0a1fb719460199cf",
+        "aff0e2d3a15777f3dcb9589f0b652dcf7094ea9ae5420199ebad445a336b89cb",
+        "61c2fa66c2145f819b4e5406ace9dad9f9d243da5437d658c1d64265c90ce777"
+      ],
+      "gridSha256": "04edbf4ea60e4a1efdff67bd02e476b31e81ebddcb6f2c618396a06bdd758f3a",
+      "reader": "netcdf_reader.build_dataset"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y3.ncep10m.wind.json",
+      "sha256": "7e2a3e2f23e6647ee73cb99b8ff983f2ce1fc07d0879c03968749a8638e76d0f",
+      "bytes": 30209,
+      "window": "GS-Y3",
+      "derivedFromOriginals": [
+        "96a64ba0fb8b2ba47154f6230d3c70306c324108b70d2bc295864b85f218e849",
+        "ee254ef412d6da62d2f82b162d02100620825fd211de09c2f06f6192e881adf3"
+      ],
+      "gridSha256": "31720ed01f565a725747261675c46c996a531eb040428eb66a8fe5c3a89d4709",
+      "reader": "wind.build_ncep_r2_wind_dataset"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/glorys/GS-Y3.glorys12v1.uo_vo.15.81m.nc",
+      "sha256": "e03173a12eab45c0ab103da9db1afe9d07969e8fd331941036980f7e70a6d361",
+      "bytes": 114274,
+      "source": "GLORYS12V1 cmems_mod_glo_phy_my_0.083deg_P1D-m 15.81 m",
+      "window": "GS-Y3",
+      "retrievedAtUTC": "2026-09-07T02:42:44Z",
+      "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x -65.95829 -X -60.95829 -y 30.12728 -Y 35.12728 -t 2010-08-01T00:00:00 -T 2010-08-06T00:00:00 -z 15.81 -Z 15.81 -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step38\\glorys -f GS-Y3.glorys12v1.uo_vo.15.81m.nc --disable-progress-bar"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y3.glorys15.81m.dataset.json",
+      "sha256": "37c1d460ddd27f8b7d4c53774533069a62638380354f7e4b503a3c1d5ee40f6f",
+      "bytes": 913548,
+      "window": "GS-Y3",
+      "derivedFromOriginals": [
+        "e03173a12eab45c0ab103da9db1afe9d07969e8fd331941036980f7e70a6d361"
+      ],
+      "gridSha256": "7307248c160be2fe671a35b9fabfdd74f9ffbd4d698ce342c5aec2d9ca1c9c29",
+      "reader": "glorys_reader_step25c.build_dataset"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y4/hycom/current-20100805T12.nc",
+      "sha256": "b916476eccc0ccd2adcc32c41a45807189710f8a34a9a8a11ab5bb98066652c9",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y4",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:42:48Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.568&south=34.568&west=-57.244&east=-53.244&horizStride=1&time_start=2010-08-05T12%3A00%3A00Z&time_end=2010-08-06T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y4/hycom/current-20100806T12.nc",
+      "sha256": "0834c31cf7a8b18160be05782d3a15d37f008776ac3b6eaadd2e791d9fc15abc",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y4",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:42:53Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.568&south=34.568&west=-57.244&east=-53.244&horizStride=1&time_start=2010-08-06T12%3A00%3A00Z&time_end=2010-08-07T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y4/hycom/current-20100807T12.nc",
+      "sha256": "7430556f1dc54c80bfd949543acbaf962ff66d4777fddbf335a7b9668a822291",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y4",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:43:06Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.568&south=34.568&west=-57.244&east=-53.244&horizStride=1&time_start=2010-08-07T12%3A00%3A00Z&time_end=2010-08-08T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y4/hycom/current-20100808T12.nc",
+      "sha256": "61513da0b911eaf41ef1577f85ced59352da6cf6f6edc8469e8e6de6cf4e56e4",
+      "bytes": 14036,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y4",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:43:07Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.568&south=34.568&west=-57.244&east=-53.244&horizStride=1&time_start=2010-08-08T12%3A00%3A00Z&time_end=2010-08-08T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y4/hycom-days/day-20100804.nc",
+      "sha256": "91d5872f8c6cf177b0d11c756ead5bc6bf633b8e0b1286e650db2fb3b2a2196b",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y4",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:43:08Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.568&south=34.568&west=-57.244&east=-53.244&horizStride=1&time_start=2010-08-04T00%3A00%3A00Z&time_end=2010-08-04T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y4/hycom-days/day-20100805.nc",
+      "sha256": "2191990bdf3263cdef108416dabd3035e832fc4364f6d51abed2c591f84741b7",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y4",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:43:12Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.568&south=34.568&west=-57.244&east=-53.244&horizStride=1&time_start=2010-08-05T00%3A00%3A00Z&time_end=2010-08-05T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y4/hycom-days/day-20100806.nc",
+      "sha256": "f95794fbd60417077556936bfe021f709674ec096262ed449a192969398bdef7",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y4",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:43:25Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.568&south=34.568&west=-57.244&east=-53.244&horizStride=1&time_start=2010-08-06T00%3A00%3A00Z&time_end=2010-08-06T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y4/hycom-days/day-20100807.nc",
+      "sha256": "4f3c94e95f1507491e21511d049aeb51bf13770003e4a4a9aab5ecb564841b69",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y4",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:43:30Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.568&south=34.568&west=-57.244&east=-53.244&horizStride=1&time_start=2010-08-07T00%3A00%3A00Z&time_end=2010-08-07T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y4/hycom-days/day-20100808.nc",
+      "sha256": "1c77c44011d7a2cf15b220f5bd6b9d4a0dbd00c34f4bf8c69f26b21dee7bb3a9",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y4",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:43:36Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.568&south=34.568&west=-57.244&east=-53.244&horizStride=1&time_start=2010-08-08T00%3A00%3A00Z&time_end=2010-08-08T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y4/hycom-days/day-20100809.nc",
+      "sha256": "0bfbbe91683dc1f302555640daa600722983a070557cde9724af60ba5773ddb6",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y4",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:43:48Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.568&south=34.568&west=-57.244&east=-53.244&horizStride=1&time_start=2010-08-09T00%3A00%3A00Z&time_end=2010-08-09T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y4/ncep/uwnd.10m.gauss.20100805T00-20100809T00.nc",
+      "sha256": "a95ffd27c61c95f18ba022ebe040f84e74a2db74d233113f18b1c5684322ec74",
+      "bytes": 5504,
+      "source": "NCEP-DOE R2 10 m 6 h 2010",
+      "window": "GS-Y4",
+      "retrievedAtUTC": "2026-09-07T02:43:49Z",
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2010.nc?var=uwnd&north=41.568&south=31.568&west=299.756&east=309.756&time_start=2010-08-05T00%3A00%3A00Z&time_end=2010-08-09T00%3A00%3A00Z&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y4/ncep/vwnd.10m.gauss.20100805T00-20100809T00.nc",
+      "sha256": "945c736edaa63c478762346617593ba2baba28bb2fdba1f5e7d92064d72a5487",
+      "bytes": 5504,
+      "source": "NCEP-DOE R2 10 m 6 h 2010",
+      "window": "GS-Y4",
+      "retrievedAtUTC": "2026-09-07T02:43:50Z",
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2010.nc?var=vwnd&north=41.568&south=31.568&west=299.756&east=309.756&time_start=2010-08-05T00%3A00%3A00Z&time_end=2010-08-09T00%3A00%3A00Z&accept=netcdf"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y4.hycom15m.dataset.json",
+      "sha256": "8e99d5afcfa9cb368a0b721a02aa9e0f8baa9fbc013f90d6f84f61c1b47f760b",
+      "bytes": 2650596,
+      "window": "GS-Y4",
+      "derivedFromOriginals": [
+        "b916476eccc0ccd2adcc32c41a45807189710f8a34a9a8a11ab5bb98066652c9",
+        "0834c31cf7a8b18160be05782d3a15d37f008776ac3b6eaadd2e791d9fc15abc",
+        "7430556f1dc54c80bfd949543acbaf962ff66d4777fddbf335a7b9668a822291",
+        "61513da0b911eaf41ef1577f85ced59352da6cf6f6edc8469e8e6de6cf4e56e4"
+      ],
+      "gridSha256": "6f8eea3cde78037210f1f0a873a7110a3f0591f1f11efe930a4f8f63d91ef88f",
+      "reader": "netcdf_reader.build_dataset"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y4.ncep10m.wind.json",
+      "sha256": "902f09bb108f779949578c865e8468174e8105ea0c50aaed48348bda99cfaaa1",
+      "bytes": 26310,
+      "window": "GS-Y4",
+      "derivedFromOriginals": [
+        "a95ffd27c61c95f18ba022ebe040f84e74a2db74d233113f18b1c5684322ec74",
+        "945c736edaa63c478762346617593ba2baba28bb2fdba1f5e7d92064d72a5487"
+      ],
+      "gridSha256": "27e02d00dac6e773c0048a9236586100745e67d48098c72131227e4e8fa36ea1",
+      "reader": "wind.build_ncep_r2_wind_dataset"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/glorys/GS-Y4.glorys12v1.uo_vo.15.81m.nc",
+      "sha256": "952097b208dfe58e734eab13437fb708fee246cfb5b3a499a9211793c1276d44",
+      "bytes": 114274,
+      "source": "GLORYS12V1 cmems_mod_glo_phy_my_0.083deg_P1D-m 15.81 m",
+      "window": "GS-Y4",
+      "retrievedAtUTC": "2026-09-07T02:44:03Z",
+      "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x -57.74397 -X -52.74397 -y 34.0677 -Y 39.0677 -t 2010-08-04T00:00:00 -T 2010-08-09T00:00:00 -z 15.81 -Z 15.81 -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step38\\glorys -f GS-Y4.glorys12v1.uo_vo.15.81m.nc --disable-progress-bar"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y4.glorys15.81m.dataset.json",
+      "sha256": "1b63ccf9f2869dee416afb66492f66b47d1a0426ea706f9d4d406cb646491cdc",
+      "bytes": 911223,
+      "window": "GS-Y4",
+      "derivedFromOriginals": [
+        "952097b208dfe58e734eab13437fb708fee246cfb5b3a499a9211793c1276d44"
+      ],
+      "gridSha256": "9261f718a5c9e6250033f69a6afa469b89533ed4dbad39a29be40b23e1deab2d",
+      "reader": "glorys_reader_step25c.build_dataset"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y5/hycom/current-20100808T12.nc",
+      "sha256": "7a9b9d3c179e6f47886c27dd1f4d10317ba05f846078b7bf61b8932e83bf05cd",
+      "bytes": 85276,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y5",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:44:05Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=36.045&west=-72.202&east=-68.202&horizStride=1&time_start=2010-08-08T12%3A00%3A00Z&time_end=2010-08-09T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y5/hycom/current-20100809T12.nc",
+      "sha256": "c7fdd646dc71cc607c479c8e2fa7edef339b7ddd13f25e21c7d4a83d025e977c",
+      "bytes": 85276,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y5",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:44:09Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=36.045&west=-72.202&east=-68.202&horizStride=1&time_start=2010-08-09T12%3A00%3A00Z&time_end=2010-08-10T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y5/hycom/current-20100810T12.nc",
+      "sha256": "433272ba49e9fda716a52022fef59d3cbcc49625deb9443574435ea0eaf27ac2",
+      "bytes": 85276,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y5",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:44:15Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=36.045&west=-72.202&east=-68.202&horizStride=1&time_start=2010-08-10T12%3A00%3A00Z&time_end=2010-08-11T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y5/hycom/current-20100811T12.nc",
+      "sha256": "3ea3e0a2e914b82328f8b7a0c5ae95a28be0949c78df1b05238ea7521ebd9a92",
+      "bytes": 13820,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y5",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:44:16Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=36.045&west=-72.202&east=-68.202&horizStride=1&time_start=2010-08-11T12%3A00%3A00Z&time_end=2010-08-11T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y5/hycom-days/day-20100807.nc",
+      "sha256": "02acf94a64cc520c1ad96d996c94eaa26706d698eb9572d938a6ed4765c8b772",
+      "bytes": 85276,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y5",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:44:17Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=36.045&west=-72.202&east=-68.202&horizStride=1&time_start=2010-08-07T00%3A00%3A00Z&time_end=2010-08-07T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y5/hycom-days/day-20100808.nc",
+      "sha256": "7c390108107a56d0afb237af14c8d739f74dca1e935c2b1dd13e0526d6f7001e",
+      "bytes": 85276,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y5",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:44:18Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=36.045&west=-72.202&east=-68.202&horizStride=1&time_start=2010-08-08T00%3A00%3A00Z&time_end=2010-08-08T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y5/hycom-days/day-20100809.nc",
+      "sha256": "3b8b17071bd42b53becb2c93a11e1d9d1cdad9c6edd3d7e748885ff36d493bdb",
+      "bytes": 85276,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y5",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:44:22Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=36.045&west=-72.202&east=-68.202&horizStride=1&time_start=2010-08-09T00%3A00%3A00Z&time_end=2010-08-09T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y5/hycom-days/day-20100810.nc",
+      "sha256": "387d70dda18b4fbf4b33d84c5d2e4bbfb1d52d4584c7a36f25690ceac1326c42",
+      "bytes": 85276,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y5",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:44:24Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=36.045&west=-72.202&east=-68.202&horizStride=1&time_start=2010-08-10T00%3A00%3A00Z&time_end=2010-08-10T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y5/hycom-days/day-20100811.nc",
+      "sha256": "c9446b8cae9233d36592805dbf44ea7882cbf7da878ed2739395ebdf6dace089",
+      "bytes": 85276,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y5",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:44:28Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=36.045&west=-72.202&east=-68.202&horizStride=1&time_start=2010-08-11T00%3A00%3A00Z&time_end=2010-08-11T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y5/hycom-days/day-20100812.nc",
+      "sha256": "558c5660178b733cddaf8c5561d1197dad27afc49f602b27b0570e5982941cb7",
+      "bytes": 85276,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y5",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:44:53Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=36.045&west=-72.202&east=-68.202&horizStride=1&time_start=2010-08-12T00%3A00%3A00Z&time_end=2010-08-12T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y5/ncep/uwnd.10m.gauss.20100808T00-20100812T00.nc",
+      "sha256": "d2a83bfee8bbd07f3300d7c36d73635db363f142d2571354005df061e79d14e0",
+      "bytes": 5504,
+      "source": "NCEP-DOE R2 10 m 6 h 2010",
+      "window": "GS-Y5",
+      "retrievedAtUTC": "2026-09-07T02:44:54Z",
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2010.nc?var=uwnd&north=43.000&south=33.045&west=284.798&east=294.798&time_start=2010-08-08T00%3A00%3A00Z&time_end=2010-08-12T00%3A00%3A00Z&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y5/ncep/vwnd.10m.gauss.20100808T00-20100812T00.nc",
+      "sha256": "2de44b51eddbbca333ae8f6540ccd9b97fafb704ef1c73c5ff87af3ee8b3a858",
+      "bytes": 5504,
+      "source": "NCEP-DOE R2 10 m 6 h 2010",
+      "window": "GS-Y5",
+      "retrievedAtUTC": "2026-09-07T02:44:55Z",
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2010.nc?var=vwnd&north=43.000&south=33.045&west=284.798&east=294.798&time_start=2010-08-08T00%3A00%3A00Z&time_end=2010-08-12T00%3A00%3A00Z&accept=netcdf"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y5.hycom15m.dataset.json",
+      "sha256": "9f6ff6828caf53837b47f9e811ba0e0e54180fe17666676e93a0c1dc4975b67b",
+      "bytes": 2554743,
+      "window": "GS-Y5",
+      "derivedFromOriginals": [
+        "7a9b9d3c179e6f47886c27dd1f4d10317ba05f846078b7bf61b8932e83bf05cd",
+        "c7fdd646dc71cc607c479c8e2fa7edef339b7ddd13f25e21c7d4a83d025e977c",
+        "433272ba49e9fda716a52022fef59d3cbcc49625deb9443574435ea0eaf27ac2",
+        "3ea3e0a2e914b82328f8b7a0c5ae95a28be0949c78df1b05238ea7521ebd9a92"
+      ],
+      "gridSha256": "be1824eba98b2f377fd00c22bcaf282c574bb05a944f69889da39b39d23d049d",
+      "reader": "netcdf_reader.build_dataset"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y5.ncep10m.wind.json",
+      "sha256": "86eb11326eb0b14220472b6206668fbbd83b6b245047cfaf3a39ddae73d63bca",
+      "bytes": 26290,
+      "window": "GS-Y5",
+      "derivedFromOriginals": [
+        "d2a83bfee8bbd07f3300d7c36d73635db363f142d2571354005df061e79d14e0",
+        "2de44b51eddbbca333ae8f6540ccd9b97fafb704ef1c73c5ff87af3ee8b3a858"
+      ],
+      "gridSha256": "b9e2df78a1eb2997f6fdfc6f517aab16711ceacb896a77d02264276ac683563f",
+      "reader": "wind.build_ncep_r2_wind_dataset"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/glorys/GS-Y5.glorys12v1.uo_vo.15.81m.nc",
+      "sha256": "c3794c8527885ac4e7e7c198ea91fd3e4354ece48bb73bf8918733fb70261013",
+      "bytes": 114286,
+      "source": "GLORYS12V1 cmems_mod_glo_phy_my_0.083deg_P1D-m 15.81 m",
+      "window": "GS-Y5",
+      "retrievedAtUTC": "2026-09-07T02:45:08Z",
+      "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x -72.70186 -X -67.70186 -y 35.54509 -Y 40.5 -t 2010-08-07T00:00:00 -T 2010-08-12T00:00:00 -z 15.81 -Z 15.81 -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step38\\glorys -f GS-Y5.glorys12v1.uo_vo.15.81m.nc --disable-progress-bar"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y5.glorys15.81m.dataset.json",
+      "sha256": "48dcc0671aa8de7e2b25910013ff4d58c0953e8526be0313571f7876b2d7dbeb",
+      "bytes": 900739,
+      "window": "GS-Y5",
+      "derivedFromOriginals": [
+        "c3794c8527885ac4e7e7c198ea91fd3e4354ece48bb73bf8918733fb70261013"
+      ],
+      "gridSha256": "1575de4d9a1686698de5e98c52649ad64650e29de44bd7aa292b7822eedb8b79",
+      "reader": "glorys_reader_step25c.build_dataset"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y6/hycom/current-20100822T12.nc",
+      "sha256": "6e294c512f17cdc993a48922227f8aee9fd5cd0d0bda224267038289f84a75ba",
+      "bytes": 88556,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y6",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:45:16Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=39.467&south=35.360&west=-65.945&east=-61.899&horizStride=1&time_start=2010-08-22T12%3A00%3A00Z&time_end=2010-08-23T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y6/hycom/current-20100823T12.nc",
+      "sha256": "24c008d400d0be19586d30026a93c82d3b76670672823c7e2bfcffed4e52e601",
+      "bytes": 88556,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y6",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:45:24Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=39.467&south=35.360&west=-65.945&east=-61.899&horizStride=1&time_start=2010-08-23T12%3A00%3A00Z&time_end=2010-08-24T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y6/hycom/current-20100824T12.nc",
+      "sha256": "afaec9f22f4de0f24680e94d965319ad55326f816705b1e6c4f4eee361028c66",
+      "bytes": 88556,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y6",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:45:29Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=39.467&south=35.360&west=-65.945&east=-61.899&horizStride=1&time_start=2010-08-24T12%3A00%3A00Z&time_end=2010-08-25T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y6/hycom/current-20100825T12.nc",
+      "sha256": "c889ccab9edccc1c847655f31e3b99597bac97a4d023401eca3b47560a5bb3b1",
+      "bytes": 14244,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y6",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:45:30Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=39.467&south=35.360&west=-65.945&east=-61.899&horizStride=1&time_start=2010-08-25T12%3A00%3A00Z&time_end=2010-08-25T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y6/hycom-days/day-20100821.nc",
+      "sha256": "4e44a66db7fd9ce98a0408d9188364c69e9f3434f041b4854fe820c60d135cde",
+      "bytes": 88556,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y6",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:45:37Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=39.467&south=35.360&west=-65.945&east=-61.899&horizStride=1&time_start=2010-08-21T00%3A00%3A00Z&time_end=2010-08-21T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y6/hycom-days/day-20100822.nc",
+      "sha256": "53264f501862dc5f6995092459403e05a0c2d496c2fdd91e7e0b19c5fa46ce47",
+      "bytes": 88556,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y6",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:45:42Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=39.467&south=35.360&west=-65.945&east=-61.899&horizStride=1&time_start=2010-08-22T00%3A00%3A00Z&time_end=2010-08-22T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y6/hycom-days/day-20100823.nc",
+      "sha256": "ffb00b9ef546c3f9c815f51c943be70256df09f045d0470f9b194e196617d895",
+      "bytes": 88556,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y6",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:45:44Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=39.467&south=35.360&west=-65.945&east=-61.899&horizStride=1&time_start=2010-08-23T00%3A00%3A00Z&time_end=2010-08-23T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y6/hycom-days/day-20100824.nc",
+      "sha256": "1d3fcafa5fab838d028eb28461940e525ab35b8c01f5b8ae2339be527cd8b8af",
+      "bytes": 88556,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y6",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:45:51Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=39.467&south=35.360&west=-65.945&east=-61.899&horizStride=1&time_start=2010-08-24T00%3A00%3A00Z&time_end=2010-08-24T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y6/hycom-days/day-20100825.nc",
+      "sha256": "44e57369186c2514e773791970a910189d28c95cf9d622c2a54e1fb8e1cd5b8e",
+      "bytes": 88556,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y6",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:45:55Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=39.467&south=35.360&west=-65.945&east=-61.899&horizStride=1&time_start=2010-08-25T00%3A00%3A00Z&time_end=2010-08-25T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y6/hycom-days/day-20100826.nc",
+      "sha256": "bf94740b22f80687811f255c6ef89dd0c0bd4b4c370f2df7d872e6dee794f7fe",
+      "bytes": 88556,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y6",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:46:01Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=39.467&south=35.360&west=-65.945&east=-61.899&horizStride=1&time_start=2010-08-26T00%3A00%3A00Z&time_end=2010-08-26T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y6/ncep/uwnd.10m.gauss.20100822T00-20100826T00.nc",
+      "sha256": "71fcc5a84414070eb502bd7d8353dcd677d26985a7a8eea4307afcb867173c79",
+      "bytes": 6396,
+      "source": "NCEP-DOE R2 10 m 6 h 2010",
+      "window": "GS-Y6",
+      "retrievedAtUTC": "2026-09-07T02:46:02Z",
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2010.nc?var=uwnd&north=42.467&south=32.360&west=291.055&east=301.101&time_start=2010-08-22T00%3A00%3A00Z&time_end=2010-08-26T00%3A00%3A00Z&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y6/ncep/vwnd.10m.gauss.20100822T00-20100826T00.nc",
+      "sha256": "6a691ee2054af2405a6dd932a963c538d6af9df639eba160ec632fa4c91e19bc",
+      "bytes": 6396,
+      "source": "NCEP-DOE R2 10 m 6 h 2010",
+      "window": "GS-Y6",
+      "retrievedAtUTC": "2026-09-07T02:46:03Z",
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2010.nc?var=vwnd&north=42.467&south=32.360&west=291.055&east=301.101&time_start=2010-08-22T00%3A00%3A00Z&time_end=2010-08-26T00%3A00%3A00Z&accept=netcdf"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y6.hycom15m.dataset.json",
+      "sha256": "63043686a4d9be43b9de10138a4ad51a0024af50835bd8de6744e5b12597d023",
+      "bytes": 2671526,
+      "window": "GS-Y6",
+      "derivedFromOriginals": [
+        "6e294c512f17cdc993a48922227f8aee9fd5cd0d0bda224267038289f84a75ba",
+        "24c008d400d0be19586d30026a93c82d3b76670672823c7e2bfcffed4e52e601",
+        "afaec9f22f4de0f24680e94d965319ad55326f816705b1e6c4f4eee361028c66",
+        "c889ccab9edccc1c847655f31e3b99597bac97a4d023401eca3b47560a5bb3b1"
+      ],
+      "gridSha256": "9ec2898120a4c9f53fa3b0fa428e12859a93cb78a4451a237d91c2303f0f8565",
+      "reader": "netcdf_reader.build_dataset"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y6.ncep10m.wind.json",
+      "sha256": "9a70f033283644e3948363ab5d54a4b8322f1cd7a84d74b31fb4c9fc3943d69c",
+      "bytes": 34645,
+      "window": "GS-Y6",
+      "derivedFromOriginals": [
+        "71fcc5a84414070eb502bd7d8353dcd677d26985a7a8eea4307afcb867173c79",
+        "6a691ee2054af2405a6dd932a963c538d6af9df639eba160ec632fa4c91e19bc"
+      ],
+      "gridSha256": "e8235a7d675381631dcb9353fb3d764531e762af11f1f5346f5281dae070206e",
+      "reader": "wind.build_ncep_r2_wind_dataset"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/glorys/GS-Y6.glorys12v1.uo_vo.15.81m.nc",
+      "sha256": "712108eed606afd6f6a6a5c052e47a2914ef00068356a5bfb9778fcdf61928b0",
+      "bytes": 117152,
+      "source": "GLORYS12V1 cmems_mod_glo_phy_my_0.083deg_P1D-m 15.81 m",
+      "window": "GS-Y6",
+      "retrievedAtUTC": "2026-09-07T02:46:16Z",
+      "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x -66.44472 -X -61.39941 -y 34.86032 -Y 39.96704 -t 2010-08-21T00:00:00 -T 2010-08-26T00:00:00 -z 15.81 -Z 15.81 -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step38\\glorys -f GS-Y6.glorys12v1.uo_vo.15.81m.nc --disable-progress-bar"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y6.glorys15.81m.dataset.json",
+      "sha256": "47debeedf6d2c5718929090b6e2298aa899001649cffa1509802d00892f4c3d0",
+      "bytes": 928480,
+      "window": "GS-Y6",
+      "derivedFromOriginals": [
+        "712108eed606afd6f6a6a5c052e47a2914ef00068356a5bfb9778fcdf61928b0"
+      ],
+      "gridSha256": "95fba67ecd48be3627923cc1c8e8146b881212d336860bcd49679b4d16028b66",
+      "reader": "glorys_reader_step25c.build_dataset"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y7/hycom/current-20100828T12.nc",
+      "sha256": "865801f2c781c318ec2b08a8b5614321e5825597091262cccba26c73f8611175",
+      "bytes": 47556,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y7",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:46:24Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=37.927&west=-62.426&east=-58.426&horizStride=1&time_start=2010-08-28T12%3A00%3A00Z&time_end=2010-08-29T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y7/hycom/current-20100829T12.nc",
+      "sha256": "cfb658a138f33aa0b0536e65348f5f023c75e4d011960301c77acea37a8eb706",
+      "bytes": 47556,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y7",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:46:30Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=37.927&west=-62.426&east=-58.426&horizStride=1&time_start=2010-08-29T12%3A00%3A00Z&time_end=2010-08-30T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y7/hycom/current-20100830T12.nc",
+      "sha256": "1b4694ee46543b0d135586552d283bf1bd529f0430c2fdfca13447802c793337",
+      "bytes": 47556,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y7",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:46:38Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=37.927&west=-62.426&east=-58.426&horizStride=1&time_start=2010-08-30T12%3A00%3A00Z&time_end=2010-08-31T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y7/hycom/current-20100831T12.nc",
+      "sha256": "cb054abb6075d34e92139f5337c4071b37e3b88a0b9c96c3959a1ffe80afa151",
+      "bytes": 8948,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y7",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:46:39Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=37.927&west=-62.426&east=-58.426&horizStride=1&time_start=2010-08-31T12%3A00%3A00Z&time_end=2010-08-31T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y7/hycom-days/day-20100827.nc",
+      "sha256": "541286a936a3d4928a2c0a4594c210f22591b0daf32e157bc2bb7b3f91dd7ced",
+      "bytes": 47556,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y7",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:46:49Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=37.927&west=-62.426&east=-58.426&horizStride=1&time_start=2010-08-27T00%3A00%3A00Z&time_end=2010-08-27T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y7/hycom-days/day-20100828.nc",
+      "sha256": "8c2155ad20effc34ebe474a1167b26f89adbc2975b259ac2482b28fa5468ab8b",
+      "bytes": 47556,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y7",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:46:54Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=37.927&west=-62.426&east=-58.426&horizStride=1&time_start=2010-08-28T00%3A00%3A00Z&time_end=2010-08-28T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y7/hycom-days/day-20100829.nc",
+      "sha256": "2a6495a88e0d10da664108a704d0736722bcdec2ecff0cae34ec0297f9073c9d",
+      "bytes": 47556,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y7",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:47:00Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=37.927&west=-62.426&east=-58.426&horizStride=1&time_start=2010-08-29T00%3A00%3A00Z&time_end=2010-08-29T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y7/hycom-days/day-20100830.nc",
+      "sha256": "a14858f1fd5e86d338b37ae5b6e1754f294d27e5ea0c6ca3f53232e3c561c85f",
+      "bytes": 47556,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y7",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:47:06Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=37.927&west=-62.426&east=-58.426&horizStride=1&time_start=2010-08-30T00%3A00%3A00Z&time_end=2010-08-30T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y7/hycom-days/day-20100831.nc",
+      "sha256": "9afcf685f8d79be105f4dabd3eef80d94b14f52c1b663e50f8d76ef62a516a97",
+      "bytes": 47556,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y7",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:47:12Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=37.927&west=-62.426&east=-58.426&horizStride=1&time_start=2010-08-31T00%3A00%3A00Z&time_end=2010-08-31T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y7/hycom-days/day-20100901.nc",
+      "sha256": "8898eb1006cb50de78cb4d4b306c3d33c1c60d735dea9150b3474e49c8c69b69",
+      "bytes": 47556,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y7",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:47:19Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=40.000&south=37.927&west=-62.426&east=-58.426&horizStride=1&time_start=2010-09-01T00%3A00%3A00Z&time_end=2010-09-01T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y7/ncep/uwnd.10m.gauss.20100828T00-20100901T00.nc",
+      "sha256": "0adca985e6d0e7413855d2c046bd766f81a33d5214412db5a76a22d6b6fe20f5",
+      "bytes": 5092,
+      "source": "NCEP-DOE R2 10 m 6 h 2010",
+      "window": "GS-Y7",
+      "retrievedAtUTC": "2026-09-07T02:47:20Z",
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2010.nc?var=uwnd&north=43.000&south=34.927&west=294.574&east=304.574&time_start=2010-08-28T00%3A00%3A00Z&time_end=2010-09-01T00%3A00%3A00Z&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y7/ncep/vwnd.10m.gauss.20100828T00-20100901T00.nc",
+      "sha256": "158d51c64d87cf255e0dcdd1bdbdc9dae2a6be6614ac8975792e5913c5fc1239",
+      "bytes": 5092,
+      "source": "NCEP-DOE R2 10 m 6 h 2010",
+      "window": "GS-Y7",
+      "retrievedAtUTC": "2026-09-07T02:47:21Z",
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2010.nc?var=vwnd&north=43.000&south=34.927&west=294.574&east=304.574&time_start=2010-08-28T00%3A00%3A00Z&time_end=2010-09-01T00%3A00%3A00Z&accept=netcdf"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y7.hycom15m.dataset.json",
+      "sha256": "6f6fb64aefabbe08cc462a61cf4024203c6174dcd713eb96dd48a29717774e57",
+      "bytes": 1375547,
+      "window": "GS-Y7",
+      "derivedFromOriginals": [
+        "865801f2c781c318ec2b08a8b5614321e5825597091262cccba26c73f8611175",
+        "cfb658a138f33aa0b0536e65348f5f023c75e4d011960301c77acea37a8eb706",
+        "1b4694ee46543b0d135586552d283bf1bd529f0430c2fdfca13447802c793337",
+        "cb054abb6075d34e92139f5337c4071b37e3b88a0b9c96c3959a1ffe80afa151"
+      ],
+      "gridSha256": "99841f1d0f8a59e91bf41d19764887ed8139eca1a9842df2cb21191b02c51e70",
+      "reader": "netcdf_reader.build_dataset"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y7.ncep10m.wind.json",
+      "sha256": "8c3a7bd524ad0837f93492996a1ccba79f3b27e73d621d984e5a01f3e9073a9a",
+      "bytes": 23064,
+      "window": "GS-Y7",
+      "derivedFromOriginals": [
+        "0adca985e6d0e7413855d2c046bd766f81a33d5214412db5a76a22d6b6fe20f5",
+        "158d51c64d87cf255e0dcdd1bdbdc9dae2a6be6614ac8975792e5913c5fc1239"
+      ],
+      "gridSha256": "255d79ffb5b6b6484cab61acf6c809ceda13e0d34ad6bfed16b9da486814bbae",
+      "reader": "wind.build_ncep_r2_wind_dataset"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/glorys/GS-Y7.glorys12v1.uo_vo.15.81m.nc",
+      "sha256": "8a8164a04d6d67724110f74531f252bb9e92863c627867c472c4352828bbf7e2",
+      "bytes": 81154,
+      "source": "GLORYS12V1 cmems_mod_glo_phy_my_0.083deg_P1D-m 15.81 m",
+      "window": "GS-Y7",
+      "retrievedAtUTC": "2026-09-07T02:47:33Z",
+      "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x -62.92588 -X -57.92588 -y 37.42722 -Y 40.5 -t 2010-08-27T00:00:00 -T 2010-09-01T00:00:00 -z 15.81 -Z 15.81 -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step38\\glorys -f GS-Y7.glorys12v1.uo_vo.15.81m.nc --disable-progress-bar"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y7.glorys15.81m.dataset.json",
+      "sha256": "0a6fdd852fe5c7977331edb57784c6fabf1d25ef36d884b227e9278e833a9280",
+      "bytes": 554297,
+      "window": "GS-Y7",
+      "derivedFromOriginals": [
+        "8a8164a04d6d67724110f74531f252bb9e92863c627867c472c4352828bbf7e2"
+      ],
+      "gridSha256": "c3d0904e9e894adae3e4fd656861e9c070176e73cb26adde4e77c6c41fdf5ba4",
+      "reader": "glorys_reader_step25c.build_dataset"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y8/hycom/current-20100916T12.nc",
+      "sha256": "7b82e3567dc945f802e7721c4cfa2828bf88b9413c93433a1fb7acb272f770d9",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y8",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:47:41Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.066&south=34.066&west=-75.505&east=-71.505&horizStride=1&time_start=2010-09-16T12%3A00%3A00Z&time_end=2010-09-17T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y8/hycom/current-20100917T12.nc",
+      "sha256": "b8c7824a6fcc4cdaef461bb24e3227c4d04660eb6578a74e64d785859b2c1aa7",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y8",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:47:50Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.066&south=34.066&west=-75.505&east=-71.505&horizStride=1&time_start=2010-09-17T12%3A00%3A00Z&time_end=2010-09-18T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y8/hycom/current-20100918T12.nc",
+      "sha256": "7639208012678a47b6737c339d62cad89f59f0cb596772d2041311ff3635415e",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y8",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:48:01Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.066&south=34.066&west=-75.505&east=-71.505&horizStride=1&time_start=2010-09-18T12%3A00%3A00Z&time_end=2010-09-19T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y8/hycom/current-20100919T12.nc",
+      "sha256": "26f0c6f325245e282ad1ba56adc1b7ab4ec7d1cfb4a4afdab845c99b25cf710e",
+      "bytes": 14036,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y8",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:48:03Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.066&south=34.066&west=-75.505&east=-71.505&horizStride=1&time_start=2010-09-19T12%3A00%3A00Z&time_end=2010-09-19T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y8/hycom-days/day-20100915.nc",
+      "sha256": "92dc101b777f806c521ae28f1a51117e20b3d9e5a4ccfb32574bc23bd3bd1da2",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y8",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:48:11Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.066&south=34.066&west=-75.505&east=-71.505&horizStride=1&time_start=2010-09-15T00%3A00%3A00Z&time_end=2010-09-15T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y8/hycom-days/day-20100916.nc",
+      "sha256": "ce37879f8aa7d8619b1ab3f6fe32333aa1ec66095766d27ab00f7fd670be81a8",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y8",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:48:20Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.066&south=34.066&west=-75.505&east=-71.505&horizStride=1&time_start=2010-09-16T00%3A00%3A00Z&time_end=2010-09-16T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y8/hycom-days/day-20100917.nc",
+      "sha256": "056b705f494b16a459c0f935884366f1ce6c88a2050f9f2046f87db7a242939d",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y8",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:48:27Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.066&south=34.066&west=-75.505&east=-71.505&horizStride=1&time_start=2010-09-17T00%3A00%3A00Z&time_end=2010-09-17T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y8/hycom-days/day-20100918.nc",
+      "sha256": "3ef0cd8fa9f9b1134b7674c74f6c09cdc1e03e5b55ef74fd677fe828c0c041f4",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y8",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:48:33Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.066&south=34.066&west=-75.505&east=-71.505&horizStride=1&time_start=2010-09-18T00%3A00%3A00Z&time_end=2010-09-18T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y8/hycom-days/day-20100919.nc",
+      "sha256": "44707694badc169ed292b1b851ed01326a6e2a377945507655026b44f8cdad94",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y8",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:48:40Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.066&south=34.066&west=-75.505&east=-71.505&horizStride=1&time_start=2010-09-19T00%3A00%3A00Z&time_end=2010-09-19T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y8/hycom-days/day-20100920.nc",
+      "sha256": "0f54adecffb4285edaa373e55cbd9b197c80bf5c302b17de3a5c646a46118217",
+      "bytes": 86916,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y8",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:48:47Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.066&south=34.066&west=-75.505&east=-71.505&horizStride=1&time_start=2010-09-20T00%3A00%3A00Z&time_end=2010-09-20T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y8/ncep/uwnd.10m.gauss.20100916T00-20100920T00.nc",
+      "sha256": "0438b94e55080a0cda21b1bcf0e1b5aea4873abb4e544ca9f14cd2acaa68decc",
+      "bytes": 5504,
+      "source": "NCEP-DOE R2 10 m 6 h 2010",
+      "window": "GS-Y8",
+      "retrievedAtUTC": "2026-09-07T02:48:48Z",
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2010.nc?var=uwnd&north=41.066&south=31.066&west=281.495&east=291.495&time_start=2010-09-16T00%3A00%3A00Z&time_end=2010-09-20T00%3A00%3A00Z&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y8/ncep/vwnd.10m.gauss.20100916T00-20100920T00.nc",
+      "sha256": "4788f89f2992e6aac324a01212e651ca5da6e47be48ac96bbef48071f2e62d46",
+      "bytes": 5504,
+      "source": "NCEP-DOE R2 10 m 6 h 2010",
+      "window": "GS-Y8",
+      "retrievedAtUTC": "2026-09-07T02:48:48Z",
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2010.nc?var=vwnd&north=41.066&south=31.066&west=281.495&east=291.495&time_start=2010-09-16T00%3A00%3A00Z&time_end=2010-09-20T00%3A00%3A00Z&accept=netcdf"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y8.hycom15m.dataset.json",
+      "sha256": "709536ce64e281bc62a23b35e5cb219be6f0552ac6a5685a0c681c06542f4dd7",
+      "bytes": 2575280,
+      "window": "GS-Y8",
+      "derivedFromOriginals": [
+        "7b82e3567dc945f802e7721c4cfa2828bf88b9413c93433a1fb7acb272f770d9",
+        "b8c7824a6fcc4cdaef461bb24e3227c4d04660eb6578a74e64d785859b2c1aa7",
+        "7639208012678a47b6737c339d62cad89f59f0cb596772d2041311ff3635415e",
+        "26f0c6f325245e282ad1ba56adc1b7ab4ec7d1cfb4a4afdab845c99b25cf710e"
+      ],
+      "gridSha256": "426761b1126dcc95e412760b1198167aa38a3909d9769f3e8d7b6050c1b2f70f",
+      "reader": "netcdf_reader.build_dataset"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y8.ncep10m.wind.json",
+      "sha256": "6088e18e1c9a029fa3e7dabd3295043ad08f24af0ac7f7e1647e0b87eb315c36",
+      "bytes": 27249,
+      "window": "GS-Y8",
+      "derivedFromOriginals": [
+        "0438b94e55080a0cda21b1bcf0e1b5aea4873abb4e544ca9f14cd2acaa68decc",
+        "4788f89f2992e6aac324a01212e651ca5da6e47be48ac96bbef48071f2e62d46"
+      ],
+      "gridSha256": "ab06fe73bd49ab82409d1aee098c98f7e84812b7fce1a538b149af4e5716ee11",
+      "reader": "wind.build_ncep_r2_wind_dataset"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/glorys/GS-Y8.glorys12v1.uo_vo.15.81m.nc",
+      "sha256": "8530a219c9ffcb1a2a4684d6a9f7053aabefdd2050939e384f375bdb724af1a5",
+      "bytes": 114248,
+      "source": "GLORYS12V1 cmems_mod_glo_phy_my_0.083deg_P1D-m 15.81 m",
+      "window": "GS-Y8",
+      "retrievedAtUTC": "2026-09-07T02:49:01Z",
+      "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x -76.00465 -X -71.00465 -y 33.5663 -Y 38.5663 -t 2010-09-15T00:00:00 -T 2010-09-20T00:00:00 -z 15.81 -Z 15.81 -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step38\\glorys -f GS-Y8.glorys12v1.uo_vo.15.81m.nc --disable-progress-bar"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y8.glorys15.81m.dataset.json",
+      "sha256": "8af4acf6215b5db388b8194d77b2de009b075963c8d26fae203673f4abd18345",
+      "bytes": 845474,
+      "window": "GS-Y8",
+      "derivedFromOriginals": [
+        "8530a219c9ffcb1a2a4684d6a9f7053aabefdd2050939e384f375bdb724af1a5"
+      ],
+      "gridSha256": "d0fb043e53c272385908e1f6f470fcba3e3a8347e81b847ad8bcc24b58d5ce0c",
+      "reader": "glorys_reader_step25c.build_dataset"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y9/hycom/current-20101016T12.nc",
+      "sha256": "153884ca6dcbec2c8ee947bc4980c9748d64171b43175ade5b992ec28a0a1471",
+      "bytes": 442724,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y9",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:49:09Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.890&south=33.175&west=-68.264&east=-53.130&horizStride=1&time_start=2010-10-16T12%3A00%3A00Z&time_end=2010-10-17T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y9/hycom/current-20101017T12.nc",
+      "sha256": "dcb05cb5e51685be6bf9afc240ef9a1bdf2159d489ed50a3b9989b1f5c0f0a91",
+      "bytes": 442724,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y9",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:49:18Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.890&south=33.175&west=-68.264&east=-53.130&horizStride=1&time_start=2010-10-17T12%3A00%3A00Z&time_end=2010-10-18T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y9/hycom/current-20101018T12.nc",
+      "sha256": "26ed54ce21a6e6a861439237c97677f82f8fe919a5896fe8acb3570e4575ec00",
+      "bytes": 442724,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y9",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:49:26Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.890&south=33.175&west=-68.264&east=-53.130&horizStride=1&time_start=2010-10-18T12%3A00%3A00Z&time_end=2010-10-19T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y9/hycom/current-20101019T12.nc",
+      "sha256": "68fd5b7348f0ddea776ce84a725c08949a823230e2f8f7ab5668c3cb56f5f7a4",
+      "bytes": 59628,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y9",
+      "layout": "window",
+      "retrievedAtUTC": "2026-09-07T02:49:28Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.890&south=33.175&west=-68.264&east=-53.130&horizStride=1&time_start=2010-10-19T12%3A00%3A00Z&time_end=2010-10-19T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y9/hycom-days/day-20101015.nc",
+      "sha256": "406c5730e47f4fdd4f201246121674d9da0c595c5517c86d45818e12b516373e",
+      "bytes": 442724,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y9",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:49:34Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.890&south=33.175&west=-68.264&east=-53.130&horizStride=1&time_start=2010-10-15T00%3A00%3A00Z&time_end=2010-10-15T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y9/hycom-days/day-20101016.nc",
+      "sha256": "21e1e99ee6fa5a473285b796eba3bf0002ccba3fe841079c8ea00f77d0bf7362",
+      "bytes": 442724,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y9",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:49:43Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.890&south=33.175&west=-68.264&east=-53.130&horizStride=1&time_start=2010-10-16T00%3A00%3A00Z&time_end=2010-10-16T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y9/hycom-days/day-20101017.nc",
+      "sha256": "a0112692f6ab6d89f9c7de737674e568b5b2363e6deca08d31437245e82b6255",
+      "bytes": 442724,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y9",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:49:47Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.890&south=33.175&west=-68.264&east=-53.130&horizStride=1&time_start=2010-10-17T00%3A00%3A00Z&time_end=2010-10-17T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y9/hycom-days/day-20101018.nc",
+      "sha256": "76c814e99ed6a13c84293ed21079f3062a136d00f1c53bfeaafc6cb946f17d6f",
+      "bytes": 442724,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y9",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:49:51Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.890&south=33.175&west=-68.264&east=-53.130&horizStride=1&time_start=2010-10-18T00%3A00%3A00Z&time_end=2010-10-18T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y9/hycom-days/day-20101019.nc",
+      "sha256": "9bb9937c2f77ed11993e7c7d6d0cc436b739a56fcef50ce8e0d1eb7dc2dc731f",
+      "bytes": 442724,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y9",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:50:00Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.890&south=33.175&west=-68.264&east=-53.130&horizStride=1&time_start=2010-10-19T00%3A00%3A00Z&time_end=2010-10-19T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y9/hycom-days/day-20101020.nc",
+      "sha256": "fd5606cbc5949d8b02ee12923564b809b40d6998c5e128f01f8c6806f7ae93d1",
+      "bytes": 442724,
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X 2010",
+      "window": "GS-Y9",
+      "layout": "day",
+      "retrievedAtUTC": "2026-09-07T02:50:11Z",
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010?var=water_u&var=water_v&north=38.890&south=33.175&west=-68.264&east=-53.130&horizStride=1&time_start=2010-10-20T00%3A00%3A00Z&time_end=2010-10-20T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y9/ncep/uwnd.10m.gauss.20101016T00-20101020T00.nc",
+      "sha256": "f1892b7add9353a400385270eebb98fa0085bdc05b1b61464796c53ccc443afa",
+      "bytes": 8796,
+      "source": "NCEP-DOE R2 10 m 6 h 2010",
+      "window": "GS-Y9",
+      "retrievedAtUTC": "2026-09-07T02:50:13Z",
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2010.nc?var=uwnd&north=41.890&south=30.175&west=288.736&east=309.870&time_start=2010-10-16T00%3A00%3A00Z&time_end=2010-10-20T00%3A00%3A00Z&accept=netcdf"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/forcing/GS-Y9/ncep/vwnd.10m.gauss.20101016T00-20101020T00.nc",
+      "sha256": "7ab6f9eae20bc52fc0b801c90b4cbd77edd557a27445e0fc3518396bdbdd8a1d",
+      "bytes": 8796,
+      "source": "NCEP-DOE R2 10 m 6 h 2010",
+      "window": "GS-Y9",
+      "retrievedAtUTC": "2026-09-07T02:50:14Z",
+      "url": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2010.nc?var=vwnd&north=41.890&south=30.175&west=288.736&east=309.870&time_start=2010-10-16T00%3A00%3A00Z&time_end=2010-10-20T00%3A00%3A00Z&accept=netcdf"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y9.hycom15m.dataset.json",
+      "sha256": "cdf7b212e8028689385648775d32cf9d5bc118ac3dde67367ae8e228ccb2b137",
+      "bytes": 13800418,
+      "window": "GS-Y9",
+      "derivedFromOriginals": [
+        "153884ca6dcbec2c8ee947bc4980c9748d64171b43175ade5b992ec28a0a1471",
+        "dcb05cb5e51685be6bf9afc240ef9a1bdf2159d489ed50a3b9989b1f5c0f0a91",
+        "26ed54ce21a6e6a861439237c97677f82f8fe919a5896fe8acb3570e4575ec00",
+        "68fd5b7348f0ddea776ce84a725c08949a823230e2f8f7ab5668c3cb56f5f7a4"
+      ],
+      "gridSha256": "4c2833a9a1afe7ff086f0a1b00efeabe4e85b6794632b15b02a1da46db5a3870",
+      "reader": "netcdf_reader.build_dataset"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y9.ncep10m.wind.json",
+      "sha256": "66fff145b503dd346444e5684307c5374b31a4dffe556b510df3943f3875738e",
+      "bytes": 56295,
+      "window": "GS-Y9",
+      "derivedFromOriginals": [
+        "f1892b7add9353a400385270eebb98fa0085bdc05b1b61464796c53ccc443afa",
+        "7ab6f9eae20bc52fc0b801c90b4cbd77edd557a27445e0fc3518396bdbdd8a1d"
+      ],
+      "gridSha256": "79c173aef9c01d7ec15c0c7c2ccc6f00d19485ef20621a50c55fa56246d2772c",
+      "reader": "wind.build_ncep_r2_wind_dataset"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/glorys/GS-Y9.glorys12v1.uo_vo.15.81m.nc",
+      "sha256": "71b79eb68925ba2be3b76652c6808ae502baa078313fd582e628a47b38ef73e8",
+      "bytes": 400354,
+      "source": "GLORYS12V1 cmems_mod_glo_phy_my_0.083deg_P1D-m 15.81 m",
+      "window": "GS-Y9",
+      "retrievedAtUTC": "2026-09-07T02:50:27Z",
+      "command": "subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x -68.76377 -X -52.63004 -y 32.67507 -Y 39.39012 -t 2010-10-15T00:00:00 -T 2010-10-20T00:00:00 -z 15.81 -Z 15.81 -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step38\\glorys -f GS-Y9.glorys12v1.uo_vo.15.81m.nc --disable-progress-bar"
+    },
+    {
+      "category": "B_DERIVED_REPACKAGED",
+      "file": "data/research/step38/forcing/normalized/GS-Y9.glorys15.81m.dataset.json",
+      "sha256": "091de15a9da3bc73d3736dd6a8eb581eda6f17a1aa4cfc44283d31a35a98ac3d",
+      "bytes": 3877642,
+      "window": "GS-Y9",
+      "derivedFromOriginals": [
+        "71b79eb68925ba2be3b76652c6808ae502baa078313fd582e628a47b38ef73e8"
+      ],
+      "gridSha256": "7250afe952207a73e268fdb7d3c3d708da32c8a0fc52646318e4a8a9ec0cba7a",
+      "reader": "glorys_reader_step25c.build_dataset"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/DATA-06/2010_CFSR/WW3-GLOB-30M_201007_uss.nc",
+      "sha256": "cb3eae5330791054bad4922887814212b196bcc04886ec13eefbde3f7393b4fa",
+      "bytes": 75860673,
+      "source": "WW3 GLOB-30M CFSR uss",
+      "month": "201007",
+      "retrievedAtUTC": "2026-09-07T02:32:12Z",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/2010_CFSR/uss/WW3-GLOB-30M_201007_uss.nc"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/DATA-06/2010_CFSR/WW3-GLOB-30M_201008_uss.nc",
+      "sha256": "4825781512add7afa509ae26106750d9df2dab0ef339836dc1f93084295b4e63",
+      "bytes": 76342282,
+      "source": "WW3 GLOB-30M CFSR uss",
+      "month": "201008",
+      "retrievedAtUTC": "2026-09-07T02:34:40Z",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/2010_CFSR/uss/WW3-GLOB-30M_201008_uss.nc"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/DATA-06/2010_CFSR/WW3-GLOB-30M_201009_uss.nc",
+      "sha256": "876d040e308b2c9aa124a4a5c74b1c7fd30ccb64976b67a2122fd87f7dcd2969",
+      "bytes": 74109421,
+      "source": "WW3 GLOB-30M CFSR uss",
+      "month": "201009",
+      "retrievedAtUTC": "2026-09-07T02:36:58Z",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/2010_CFSR/uss/WW3-GLOB-30M_201009_uss.nc"
+    },
+    {
+      "category": "A_ORIGINAL_SOURCE",
+      "file": "data/research/step38/DATA-06/2010_CFSR/WW3-GLOB-30M_201010_uss.nc",
+      "sha256": "7d5c7778e5cc6874fc84b4fc39c34223697876ae6a3d71778b5f417f7123ee68",
+      "bytes": 75590229,
+      "source": "WW3 GLOB-30M CFSR uss",
+      "month": "201010",
+      "retrievedAtUTC": "2026-09-07T02:38:45Z",
+      "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/2010_CFSR/uss/WW3-GLOB-30M_201010_uss.nc"
+    },
+    {
+      "category": "C_METADATA",
+      "file": "docs/research/step38-source-acquisition-protocol.json",
+      "sha256": "a4dfbcbea6562e02b032e0557397a61870e31b53e980931c396f44905b9b88cd",
+      "bytes": 6254
+    },
+    {
+      "category": "C_METADATA",
+      "file": "docs/research/step38-source-acquisition-manifest.json",
+      "sha256": "c9d3109fbab2970b43b887cc7ba81d3aacbdd094375b091e8e185097a22dc2a0",
+      "bytes": 390664
+    },
+    {
+      "category": "C_METADATA",
+      "file": "docs/research/step37-experiment-preregistration-protocol.json",
+      "sha256": "eae40cde609155a32ccbe0c01a6090715e2324d72cc080e2e7043ecbd90f2d0d",
+      "bytes": 49784
+    },
+    {
+      "category": "C_METADATA",
+      "file": "docs/research/step36-cohort-extension-manifest.json",
+      "sha256": "bda31c3ca36a395acadc95c1cb18663964ee9a00e4a72a7c2504182f51df06ca",
+      "bytes": 34641
+    },
+    {
+      "category": "D_ACQUISITION_LOG",
+      "file": "docs/research/step38-source-acquisition-manifest.json",
+      "sha256": "c9d3109fbab2970b43b887cc7ba81d3aacbdd094375b091e8e185097a22dc2a0",
+      "bytes": 390664,
+      "note": "per-request acquisition log embedded in the acquisition manifest"
+    }
+  ],
+  "artefactCounts": {
+    "A_ORIGINAL_SOURCE": 121,
+    "B_DERIVED_REPACKAGED": 27,
+    "C_METADATA": 4,
+    "D_ACQUISITION_LOG": 1
+  },
+  "totalBytes": {
+    "A_ORIGINAL_SOURCE": 320067871,
+    "B_DERIVED_REPACKAGED": 71432236,
+    "C_METADATA": 481343
+  },
+  "originalsImmutable": true,
+  "scientificProcessing": false,
+  "trajectoryComputed": false,
+  "endpointComputed": false,
+  "bootstrapRun": false,
+  "status": "SOURCE_ACQUISITION_COMPLETE"
+}

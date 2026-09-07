@@ -15,6 +15,10 @@ const GDACS_TC = GDACS_TC_COMPACT;
 const GDACS_LAST_KEY = 'earthus.gdacs.last';
 const loadLastGdacs = () => { try { const j = JSON.parse(localStorage.getItem(GDACS_LAST_KEY) || 'null'); return j && j.features ? j : null; } catch (e) { return null; } };
 const saveLastGdacs = (j) => { try { localStorage.setItem(GDACS_LAST_KEY, JSON.stringify({ generated: j.generated, savedAt: new Date().toISOString(), features: j.features })); } catch (e) { /* 저장 불가 */ } };
+// 사건 id 를 HTML 속성에 넣을 때만 쓴다. 지금 id 는 우리가 만든 tc-/eq- 접두사라 안전하지만,
+// 바깥 피드가 준 문자열이 섞여 있으므로 따옴표를 그대로 흘리지 않는다.
+const attr = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+
 const USGS_EQ = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_day.geojson';
 const GDACS_GEOM = (id, ep) => `https://www.gdacs.org/gdacsapi/api/polygons/getgeometry?eventtype=TC&eventid=${id}&episodeid=${ep}`;
 
@@ -300,9 +304,25 @@ export class IntelFeed {
         const g = f.geometry || {};
         const c = g.type === 'Point' ? g.coordinates : null;
         if (!c) continue;
+        // 같은 태풍의 회차가 여러 건 올 수 있다. 축약본 경로는 상류(aws/gdacs-tc/handler.py:50-51)가
+        // 이미 회차 최댓값 하나만 남기지만, 축약본도 캐시도 죽어 원본 MAP 으로 폴백할 때는 그대로 들어온다.
+        // 그러면 같은 tc-<eventid> 가 목록에 두 번 생기고, 지구에는 옛 회차 트랙이 그려진다.
+        // 상류와 같은 규칙(회차가 큰 쪽이 이긴다)으로 여기서도 하나만 남긴다.
+        const ep = Number(p.episodeid) || 0;
+        const dupAt = items.findIndex((x) => x.kind === 'TC' && String(x.eventid) === String(p.eventid));
+        if (dupAt >= 0) {
+          if ((Number(items[dupAt].episodeid) || 0) >= ep) continue;
+          items.splice(dupAt, 1);
+        }
         items.push({
+          // 정본 사건 id. 목록이 재정렬돼도, 다음 수집에서 같은 사건이 갱신돼도 그대로다.
+          // GDACS 는 사건이 진행되며 episodeid 를 올리지만 eventid 는 유지하므로 eventid 로만 만든다.
           id: `tc-${p.eventid}`,
           kind: 'TC',
+          // 기계가 읽는 출처 신원. 아래 `source` 는 사람에게 보여줄 표기라 서로 다른 필드다.
+          sourceSystem: 'gdacs',
+          sourceEventId: String(p.eventid),
+          revision: Number.isFinite(+p.episodeid) ? +p.episodeid : 0,
           eventid: p.eventid,
           episodeid: p.episodeid,
           alert: p.alertlevel || 'Green',
@@ -343,8 +363,12 @@ export class IntelFeed {
         const c = (f.geometry || {}).coordinates || null;
         if (!c) continue;
         items.push({
+          // 정본 사건 id — USGS 사건 코드는 개정돼도 유지된다(us7000... 형태).
           id: `eq-${f.id}`,
           kind: 'EQ',
+          sourceSystem: 'usgs',
+          sourceEventId: String(f.id),
+          revision: Number.isFinite(+p.updated) ? +p.updated : 0,
           alert: p.mag >= 6.5 ? 'Red' : p.mag >= 5.5 ? 'Orange' : 'Green',
           title: `M${p.mag != null ? p.mag.toFixed(1) : '?'} ${i18n.ko ? '지진' : 'earthquake'}`,
           where: p.place || '',
@@ -425,7 +449,7 @@ export class IntelFeed {
     const why = p && p.reasons && p.reasons.length ? `<div class="feed-line"><span class="feed-k">${ko ? '왜 지금' : 'why now'}</span>${p.reasons.join(' · ')}</div>` : '';
     const rev = p && p.lastRevisionAt ? ` · ${ko ? '회차' : 'rev'} ${agoText(Date.parse(p.lastRevisionAt))}` : '';
     return `
-      <div class="feed-item${followed ? ' followed' : ''}" data-action="feed-open" data-idx="${this.items.indexOf(it)}">
+      <div class="feed-item${followed ? ' followed' : ''}" data-action="feed-open" data-event-id="${attr(it.id)}">
         <span class="feed-dot ${it.kind === 'TC' ? 'tc' : 'eq'} a-${it.alert.toLowerCase()}"></span>
         <div class="feed-main">
           <div class="feed-title">${it.title}${followed && p && p.lastRevisionAt && this.follow.has(it.id) ? '' : ''}</div>
@@ -627,6 +651,14 @@ export class IntelFeed {
     return Object.entries(latest.agencies).filter(([k]) => !k.startsWith('EARTHUS')).map(([k, v]) => ({
       agency: k, official: k !== 'ECMWF', issued: v.issued, h24: v.h24, h48: v.h48, headingKo: v.heading24Ko,
     }));
+  }
+
+  // 정본 사건 id 로 연다. 목록은 정착할 때마다 재정렬되므로(위 sort) 인덱스는 화면 밖으로 나가면 안 된다.
+  // select(idx) 는 그대로 둔다 — 기존 테스트와 호출부가 쓴다.
+  async selectById(eventId, orbit) {
+    const idx = this.items.findIndex((x) => x.id === eventId);
+    if (idx < 0) return;
+    return this.select(idx, orbit);
   }
 
   async select(idx, orbit) {

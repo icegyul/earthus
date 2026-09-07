@@ -3288,14 +3288,16 @@ async function main() {
     return '';
   };
   /* PHASE 2 §8: [근거 보기]는 새 근거 시스템을 만들지 않고 이미 있는 '사건 방'을 연다.
-     사건 방은 인덱스로만 열 수 있어(feed-open data-idx) 카드 → 피드 항목을 여기서 잇는다.
-     짝이 없으면 버튼 자체를 안 그린다 — 눌러도 아무 일 없는 버튼을 두지 않는다. */
-  const feedIdxForCard = (c) => {
-    if (!c || c.kind !== 'cyclone' || !feed || !Array.isArray(feed.items)) return -1;
+     FOR ME 카드 id 와 피드 사건 id 는 서로 다른 네임스페이스라(카드는 폭풍 이름, 사건은 tc-<eventid>)
+     여기서 잇는다. 짝이 없으면 버튼 자체를 안 그린다 — 눌러도 아무 일 없는 버튼을 두지 않는다.
+     2026-09-08: 인덱스가 아니라 정본 사건 id 를 돌려준다. 목록이 재정렬돼도 같은 사건을 가리킨다. */
+  const feedEventIdForCard = (c) => {
+    if (!c || c.kind !== 'cyclone' || !feed || !Array.isArray(feed.items)) return null;
     const key = String(c.id || '').toUpperCase();
-    if (!key) return -1;
-    return feed.items.findIndex((it) => it.kind === 'TC'
+    if (!key) return null;
+    const hit = feed.items.find((it) => it.kind === 'TC'
       && String(it.stormName || it.title || '').toUpperCase().replace(/-\d{2}$/, '').trim() === key);
+    return hit ? hit.id : null;
   };
   const forMeCardHtml = (c) => {
     const view = forMe.view[c.id] || 'impact';
@@ -3312,7 +3314,7 @@ async function main() {
       const ens = c.facts && c.facts.ens;
       const changedLine = st && !st.loading && st.changed && st.changed.lines && st.changed.lines.length
         ? st.changed.lines[0] : null;
-      const feedIdx = feedIdxForCard(c);
+      const feedEventId = feedEventIdForCard(c);
       return `<div class="card"><div class="card-h">MY IMPACT · ${escUI(c.title)} ${badges}</div><div class="card-b">`
         + `<div class="forme-state ${c.state}">${forMeStateLine(c)}</div>`
         + statRow('내 위치', escUI(name)) + statRow('판단 기준', escUI(c.basis.text))
@@ -3322,8 +3324,8 @@ async function main() {
         + (changedLine ? statRow('달라진 것', escUI(changedLine)) : '')
         + statRow('상태', escUI(c.status)) + link
         + `<div class="forme-cta">`
-        + (feedIdx >= 0 ? `<button class="forme-btn" data-action="forme-evidence" data-id="${escUI(c.id)}">근거 보기</button>` : '')
-        + (c.kind === 'cyclone' && feedIdx >= 0 ? `<button class="forme-btn" data-action="forme-sim" data-id="${escUI(c.id)}">시뮬레이션</button>` : '')
+        + (feedEventId ? `<button class="forme-btn" data-action="forme-evidence" data-id="${escUI(c.id)}">근거 보기</button>` : '')
+        + (c.kind === 'cyclone' && feedEventId ? `<button class="forme-btn" data-action="forme-sim" data-id="${escUI(c.id)}">시뮬레이션</button>` : '')
         + ((c.why.length || c.when) ? `<button class="forme-btn" data-action="forme-when" data-id="${escUI(c.id)}">내 영향 자세히 → WHEN · WHY</button>` : '')
         + '</div></div></div>';
     }
@@ -4360,10 +4362,10 @@ async function main() {
          둘 다 이미 있는 화면으로 보낸다. 새 근거 시스템도, 새 계산 엔진도 만들지 않는다. */
       if (action === 'forme-evidence' || action === 'forme-sim') {
         const card = [...(forMe.cards || []), ...Object.values(forMe.extraCards)].find((c) => c.id === ds.id);
-        const idx = feedIdxForCard(card);
-        if (idx < 0) { shell.renderIntel(); return; }
+        const eventId = feedEventIdForCard(card);
+        if (!eventId) { shell.renderIntel(); return; }
         usage.track(action === 'forme-sim' ? 'forme.sim_cta.cyclone' : 'forme.evidence_cta.cyclone');
-        feed.select(idx, orbit);          // 방 전환은 동기 · 회차 패킷은 비동기로 뒤따른다
+        feed.selectById(eventId, orbit);  // 방 전환은 동기 · 회차 패킷은 비동기로 뒤따른다
         if (action === 'forme-sim') shell.showTab('scenario');  // 패킷이 오면 기준선 카드가 스스로 다시 그려진다
         else shell.showTab('feed');
         shell.renderIntel(); return;
@@ -4492,7 +4494,8 @@ async function main() {
         launchScenario(parseFloat(ds.lat), parseFloat(ds.lon), cat0);
       } else if (action === 'feed-open') {
         usage.track('event.room_opened');
-        feed.select(parseInt(ds.idx, 10), orbit); // view 전환은 동기, 트랙은 비동기
+        // 정본 사건 id 로 연다. 목록은 정착할 때마다 재정렬되므로 인덱스는 클릭과 열림 사이에서 어긋난다.
+        feed.selectById(ds.eventId, orbit); // view 전환은 동기, 트랙은 비동기
         shell.renderIntel();
       } else if (action === 'feed-back') {
         feed.back();
@@ -4532,7 +4535,9 @@ async function main() {
         // 성공한 소스는 캐시(TTL 안)에 있고 실패는 캐시에 안 남으므로, 캐시를 비우지 않고 다시 열면
         // 실패한 것만 새로 요청된다. 전엔 clearCache() 로 성공한 소스까지 다시 받았다.
         usage.track('event.room_retry');
-        if (feed.selected) feed.select(feed.items.indexOf(feed.selected), orbit);
+        // id 로 다시 연다. feed.load() 가 items 를 새 배열로 갈아 끼운 뒤에는 indexOf 가 -1 을 주고
+        // select(-1) 은 조용히 return 해서, 재시도 버튼이 아무 반응 없이 죽어 있었다.
+        if (feed.selected) feed.selectById(feed.selected.id, orbit);
       } else if (action === 'room-layer' && ds.key) {
         // 사건 방 줄의 "지구에 켜기" — 메뉴에서 누른 것과 똑같은 경로로 레이어를 켠다
         usage.track('event.layer_from_room');

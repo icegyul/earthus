@@ -10,6 +10,13 @@ FN="${1:-celestrak-proxy}"
 # 프로필 리전(us-east-2)을 따르면 서울 함수의 복사본이 생긴다 — deploy-lite/deploy-python 과 같이 서울로 못 박는다.
 REGION="${REGION:-ap-northeast-2}"
 export AWS_DEFAULT_REGION="$REGION"
+# ⚠️⚠️ **이게 없으면 배포가 조용히 엉뚱한 길로 간다.** 윈도우 콘솔 기본 코드페이지는 cp949 라
+#    aws CLI 가 한글 설명(em dash 포함)을 찍다가 UnicodeEncodeError 로 죽고 rc=255 를 낸다.
+#    아래 `get-function ... >/dev/null 2>&1` 존재 확인이 그 255 를 "함수 없음"으로 읽어
+#    **이미 있는 함수를 create 하려 들다 ResourceConflictException 으로 실패한다.**
+#    2026-09-08 실측 — air-ea 의 0.5° 상자 확대(2d94c379)가 이래서 운영에 못 올라가 있었다.
+#    설명에 한글이 있는 함수는 전부 해당된다. PYTHONIOENCODING 으로는 안 고쳐진다(CLI v2 는 자체 런타임).
+export PYTHONUTF8=1
 BUCKET="earthus-cache-kr"
 BUCKET_REGION="us-east-2"   # ⚠️ 버킷이 실제로 있는 리전 (Lambda 리전과 다를 수 있음)
 ROLE="earthus-lambda-${FN}"

@@ -602,6 +602,10 @@
     border: 1px solid rgba(127,183,245,0.45); background: rgba(127,183,245,0.10); color: #cfe6ff; font-size: 11.5px; font-weight: 600;
     text-align: left; cursor: pointer; }
   .forme-btn:hover { background: rgba(127,183,245,0.18); }
+  /* PHASE 2 §5: Event Card 의 ACTION 줄 — 근거 보기 · 시뮬레이션은 나란히, 자세히는 아래 한 줄 */
+  .forme-cta { display: flex; flex-wrap: wrap; gap: 6px; }
+  .forme-cta .forme-btn { flex: 1 1 44%; width: auto; text-align: center; }
+  .forme-cta .forme-btn:last-child:nth-child(odd) { flex-basis: 100%; }
   .forme-btn.sub { border-style: dashed; font-weight: 500; color: var(--text-dim); }
   .forme-back { background: none; border: none; color: #7fb7f5; font-size: 11px; padding: 0; margin-bottom: 6px; cursor: pointer; }
   .forme-sec { margin-top: 9px; padding-top: 7px; border-top: 1px dashed rgba(120,160,200,0.2); }

@@ -3274,19 +3274,58 @@ async function main() {
       + `<div class="forme-src">${escUI(w.agencyKo || w.agency)} 발표 ${fmtKst(w.issueMs)} KST 기준 · 예보 시각 사이는 직선 보간 · ±${w.widthH}h 는 예보 간격에서 오는 폭</div>`;
   };
   const forMeWhyHtml = (c) => c.why.length ? `<ul class="forme-why">${c.why.map((w) => `<li class="${w.hit ? 'hit' : ''}"><b>${escUI(w.label)}</b> ${escUI(w.value)}<div class="forme-src">${escUI(w.source)}</div></li>`).join('')}</ul>` : '';
+  /* PHASE 2 §4: 카드 첫 화면에 넣을 짧은 '언제'. 긴 설명은 WHEN·WHY 단계가 그대로 맡는다.
+     ⚠️ when 이 null 이라고 '영향 없음'이 아니다 — 지나간 창(pastWindow)일 수도 있다. */
+  const forMeWhenBrief = (c) => {
+    if (c.kind !== 'cyclone') return '';
+    const w = c.when;
+    if (w) {
+      if (w.startNow) return '지금 영향권 안';
+      const h = Math.round((w.peakMs - Date.now()) / 3_600_000);
+      return h > 0 ? `약 ${h}시간 후 (가장 가능성 높은 구간)` : `${fmtKst(w.peakMs)} KST`;
+    }
+    if (c.facts && c.facts.pastWindow) return '영향권 지남';
+    return '';
+  };
+  /* PHASE 2 §8: [근거 보기]는 새 근거 시스템을 만들지 않고 이미 있는 '사건 방'을 연다.
+     사건 방은 인덱스로만 열 수 있어(feed-open data-idx) 카드 → 피드 항목을 여기서 잇는다.
+     짝이 없으면 버튼 자체를 안 그린다 — 눌러도 아무 일 없는 버튼을 두지 않는다. */
+  const feedIdxForCard = (c) => {
+    if (!c || c.kind !== 'cyclone' || !feed || !Array.isArray(feed.items)) return -1;
+    const key = String(c.id || '').toUpperCase();
+    if (!key) return -1;
+    return feed.items.findIndex((it) => it.kind === 'TC'
+      && String(it.stormName || it.title || '').toUpperCase().replace(/-\d{2}$/, '').trim() === key);
+  };
   const forMeCardHtml = (c) => {
     const view = forMe.view[c.id] || 'impact';
     const name = forMePlaceName();
     const badges = (c.badges || []).map((b) => dataBadge(b)).join(' ');
     const link = c.basis && c.basis.bulletin ? `<a class="official-out" href="${escUI(c.basis.bulletin)}" target="_blank" rel="noopener noreferrer">게시문 원문 ↗</a>` : '';
     if (view === 'impact') {
+      /* PHASE 2 (2026-09-07 지시 §4~§9): 첫 화면이 곧 Intelligence Event Card 다.
+         WHAT · WHEN · CONFIDENCE · CHANGE · [근거 보기][시뮬레이션] 을 여기서 다 보여준다.
+         ⚠️ 값은 엔진이 낸 것만 쓴다. 없으면 줄을 아예 빼고, '—'·'준비 중'으로 채우지 않는다
+            (for-me-signal.js 머리말 규칙). 확률(%)로 바꾸지 않는다 — 앙상블은 원시 개수 그대로. */
+      if (c.kind === 'cyclone' && c.state === 'signal' && !forMe.intel[c.id]) loadForMeIntel(c);
+      const st = forMe.intel[c.id] || null;
+      const ens = c.facts && c.facts.ens;
+      const changedLine = st && !st.loading && st.changed && st.changed.lines && st.changed.lines.length
+        ? st.changed.lines[0] : null;
+      const feedIdx = feedIdxForCard(c);
       return `<div class="card"><div class="card-h">MY IMPACT · ${escUI(c.title)} ${badges}</div><div class="card-b">`
         + `<div class="forme-state ${c.state}">${forMeStateLine(c)}</div>`
         + statRow('내 위치', escUI(name)) + statRow('판단 기준', escUI(c.basis.text))
         + statRow('영향 가능성', c.state === 'signal' ? '있음' : c.state === 'quiet' ? '없음' : '판단 불가', c.state === 'unknown')
+        + (forMeWhenBrief(c) ? statRow('언제', forMeWhenBrief(c)) : '')
+        + (c.certain ? statRow('얼마나 확실', `<b>${escUI(c.certain.gradeKo)}</b>${ens ? ` · 앙상블 ${ens.n}/${ens.total}` : ''}`) : '')
+        + (changedLine ? statRow('달라진 것', escUI(changedLine)) : '')
         + statRow('상태', escUI(c.status)) + link
-        + ((c.why.length || c.when) ? `<button class="forme-btn" data-action="forme-when" data-id="${escUI(c.id)}">내 영향 자세히 보기 → WHEN · WHY</button>` : '')
-        + '</div></div>';
+        + `<div class="forme-cta">`
+        + (feedIdx >= 0 ? `<button class="forme-btn" data-action="forme-evidence" data-id="${escUI(c.id)}">근거 보기</button>` : '')
+        + (c.kind === 'cyclone' && feedIdx >= 0 ? `<button class="forme-btn" data-action="forme-sim" data-id="${escUI(c.id)}">시뮬레이션</button>` : '')
+        + ((c.why.length || c.when) ? `<button class="forme-btn" data-action="forme-when" data-id="${escUI(c.id)}">내 영향 자세히 → WHEN · WHY</button>` : '')
+        + '</div></div></div>';
     }
     const preview = [c.certain ? '얼마나 확실한가 — 등급과 이유' : null, c.kind === 'cyclone' ? '무엇이 달라졌나 — 직전 발표와 같은 계산으로 비교' : null,
                      c.engine.length ? '판단에 쓴 근거 — 자료별 상태' : null, c.kind === 'cyclone' ? '이 사건에 대한 판단 기록' : null].filter(Boolean);
@@ -4250,6 +4289,12 @@ async function main() {
           <button class="simgo" data-action="sim-scenario-event">기준선에서 실험 시작 →</button>
           <div class="paysub">공식 예보 아님 · SIMULATION_ONLY · 실험 기록은 이 기기에만 남습니다</div>
         </div></div></div>`;
+      } else if (feed.selected && feed.selected.kind === 'TC' && !feed.packet) {
+        /* PHASE 2 §12: 상태를 가르지 않으면 '받는 중'과 '자료 없음'이 같은 문장으로 보인다.
+           feed.packet 은 받는 동안 null, 실패하면 {error}, 성공하면 회차 객체다(intel-feed.js loadPacket). */
+        head = `<div class="card"><div class="card-h">기준선 ${dataBadge('LOADING')}</div><div class="card-b">${escUI(feed.selected.title)} 의 회차 패킷을 받는 중…</div></div>`;
+      } else if (feed.selected && feed.selected.kind === 'TC' && feed.packet && feed.packet.error) {
+        head = `<div class="card"><div class="card-h">기준선 ${dataBadge('UNAVAILABLE')}</div><div class="card-b">회차 패킷을 받지 못했습니다 — ${escUI(feed.packet.error)}<br/>시뮬레이션에 필요한 공식 기준선이 없어 실험을 시작하지 않습니다.</div></div>`;
       } else if (feed.selected && feed.selected.kind === 'TC') {
         head = `<div class="card"><div class="card-h">기준선 ${dataBadge('UNAVAILABLE')}</div><div class="card-b">${escUI(feed.selected.title)} 의 공식 +24h 전망이 아직 패킷에 없어 기준선을 만들지 않았습니다.</div></div>`;
       } else {
@@ -4299,6 +4344,18 @@ async function main() {
         if (isFormeMenu(kind)) usage.track(`forme.clicked.${kind}`);
         if (ds.id) { forMe.focusId = ds.id; forMe.view[ds.id] = 'impact'; }
         shell.showTab('my'); shell.openIntel(); shell.renderIntel(); return;
+      }
+      /* PHASE 2 §8·§9: 카드 → 근거(사건 방) / 카드 → 시뮬레이션(기준선 실험).
+         둘 다 이미 있는 화면으로 보낸다. 새 근거 시스템도, 새 계산 엔진도 만들지 않는다. */
+      if (action === 'forme-evidence' || action === 'forme-sim') {
+        const card = [...(forMe.cards || []), ...Object.values(forMe.extraCards)].find((c) => c.id === ds.id);
+        const idx = feedIdxForCard(card);
+        if (idx < 0) { shell.renderIntel(); return; }
+        usage.track(action === 'forme-sim' ? 'forme.sim_cta.cyclone' : 'forme.evidence_cta.cyclone');
+        feed.select(idx, orbit);          // 방 전환은 동기 · 회차 패킷은 비동기로 뒤따른다
+        if (action === 'forme-sim') shell.showTab('scenario');  // 패킷이 오면 기준선 카드가 스스로 다시 그려진다
+        else shell.showTab('feed');
+        shell.renderIntel(); return;
       }
       if (action === 'forme-when' || action === 'forme-intel' || action === 'forme-back') {
         const card = [...(forMe.cards || []), ...Object.values(forMe.extraCards)].find((c) => c.id === ds.id);

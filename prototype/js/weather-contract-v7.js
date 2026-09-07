@@ -332,6 +332,14 @@ export function buildWeatherCardModel(input = {}) {
       unit: observation ? 'm/s' : 'km/h', ...currentSource }),
     pressure: point({ value: observation?.ps ?? meteo.current?.surface_pressure,
       unit: 'hPa', ...currentSource }),
+    /* 가시거리 — 2026-09-07. 요청(buildWeatherQueryV7)에는 진작 들어 있었는데
+       여기서 받아적지 않아 버려지고 있었다. 관측값은 없다 — 방재기상관측(AWS)은
+       시정계가 없고 종관관측(ASOS)에만 있다. 그래서 이 값은 **모델**이고,
+       관측 출처(currentSource)를 붙이지 않고 모델로 명시한다. */
+    visibility: point({ value: meteo.current?.visibility, unit: 'm',
+      sourceRef: 'open-meteo', sourceType: SOURCE_TYPE.MODEL_FORECAST,
+      dataState: meteo.current?.visibility == null ? DATA_STATE.MISSING : DATA_STATE.AVAILABLE,
+      validAt: meteoValidAt }),
     precipitation15m: point({ value: observation?.rn15, unit: 'mm', ...currentSource }),
     precipitation60m: point({ value: observation?.rn60 ?? meteo.current?.precipitation,
       unit: 'mm', ...currentSource }),

@@ -1041,10 +1041,16 @@ function renderDetails(model, sourceMap, ko) {
     },
     {
       icon: '◎', title: ko ? '기압·가시거리' : 'Pressure & visibility',
-      summary: valueText(current.pressure, 0), points: [current.pressure],
-      body: `${ko ? '현지기압' : 'Surface pressure'} ${valueText(current.pressure, 0)} · `
-        + (ko ? '현재 관측과 같은 기준의 가시거리 자료는 제공되지 않습니다.'
-          : 'Visibility on the same observational basis is unavailable.'),
+      summary: valueText(current.pressure, 0), points: [current.pressure, current.visibility],
+      /* 가시거리는 모델값이라 기압(관측)과 같은 줄에 썬다고 같은 성격으로 읽힌다.
+         그래서 문장에서 집어 말한다 — 관측소 시정계 값이 아니다. */
+      body: `${ko ? '현지기압' : 'Surface pressure'} ${valueText(current.pressure, 0)}`
+        + (current.visibility?.value != null
+          ? ` · ${ko ? '가시거리' : 'Visibility'} ${(current.visibility.value / 1000).toFixed(current.visibility.value >= 10000 ? 0 : 1)} km`
+            + `<div class="wcv7-moon-src">${ko
+              ? '가시거리는 관측소 시정계 값이 아니라 모델 예상치입니다(방재기상관측에는 시정계가 없습니다).'
+              : 'Visibility is a model value, not a station measurement.'}</div>`
+          : ` · ${ko ? '가시거리 응답 없음' : 'Visibility unavailable'}`),
     },
     {
       icon: '◐', title: ko ? '해·달' : 'Sun & moon',

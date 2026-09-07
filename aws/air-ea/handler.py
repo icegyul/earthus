@@ -67,17 +67,23 @@ DST_BUCKET = os.environ["CACHE_BUCKET"]
 DST_REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 OUTPUT_KEY = "wind/air-ea.json"
 STATUS_DST = "wind/status/air-ea.json"
-COLLECTOR_REVISION = "air-ea.2026-09-07.n2"
+COLLECTOR_REVISION = "air-ea.2026-09-08.n3"
 API = "https://air-quality-api.open-meteo.com/v1/air-quality"
 
 RES = 0.5
 LAT0, LAT1 = 20.0, 50.0
 LON0, LON1 = 90.0, 150.0
 BATCH = 100
-# ⚠️ 쉬지 않고 던지면 429 가 난다.
-#    실측(2026-09-07, ap-northeast-2): 100지점 한 번이 약 5.5초, PACE 3.0 을 더해
-#    36회에 305초였다. 넓힌 상자는 74회이므로 7.5×74 ≈ 555초 — timeout 900초 안이다.
-PACE = 2.0
+# ⚠️ 쉬지 않고 던지면 429 가 난다. 그렇다고 넉넉히 쉴 여유도 없다.
+#    실측(2026-09-07, ap-northeast-2):
+#      좁은 상자 36회 · 요청 5.5초/회 · PACE 3.0 → 305초
+#      넓힌 상자 74회 · 요청 8.1초/회 · PACE 2.0 → 745초  (timeout 900초)
+#    요청 시간 자체가 시간대에 따라 47% 까지 늘었다. 그 부분은 우리가 줄일 수 없고,
+#    남은 여유는 PACE 뿐이라 1.0 으로 내린다(≈ 670초, 중단선 780초까지 110초 여유).
+# ⚠️ 그래도 느린 시간대에는 deadline_near 가 걸려 그 회차를 **건너뛴다.**
+#    그때는 지난 회차의 온전한 판이 그대로 쓰이고 status 에 FAILED 로 남는다 —
+#    대기질은 시간 단위로 급변하지 않으므로 반쯤 채운 판보다 이쪽이 옳다.
+PACE = 1.0
 
 dst = boto3.client("s3", region_name=DST_REGION)
 

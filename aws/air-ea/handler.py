@@ -27,8 +27,14 @@
    만들어내는 것이고, 그보다 성기면 위처럼 봉우리를 놓친다. 0.4° 에 가장 가까우면서
    동아시아 보강판들(marine-ea · sst-anom-ea)과 **같은 칸**이 되는 값이 0.5° 다.
 
-⚠️ 상자는 천리안 동아시아 영상·해양 보강판과 **같은 범위**다(23~47°N, 114~150°E).
-   다른 상자를 쓰면 구름·수온과 겹쳐 볼 때 경계가 어긋나 보인다.
+⚠️⚠️ **상자를 해양 보강판보다 서쪽으로 넓게 잡는다 (20~50°N, 90~150°E).**
+   처음엔 해양 보강판과 같은 114~150°E 로 만들었는데, 정작 문제의 먼지 봉우리
+   (40°N 104°E, 817µg/m³)가 **상자 왼쪽 밖**이었다. 고비·타클라마칸은 대략
+   85~110°E 에 있다 — 발원지를 안 담으면 "황사가 어디서 오고 있나"를 못 본다.
+   바다는 한반도 주변만 촘촘하면 되지만, 먼지는 **오는 길**을 함께 봐야 한다.
+   ⚠️ 판마다 상자가 다르다(marine-ea 114~150·pressure-ea 110~160·여기 90~150).
+      화면 쪽 FINE_BOX 표와 반드시 같이 고친다 — 어긋나면 상자 밖을 보는데도
+      보강판을 받거나, 안을 보는데 안 받는다.
 
 ⚠️ 전지구판을 **대체하지 않는다.** 화면은 전지구 5° 판을 깔고 이 판을 그 위에
    덧그린다(prototype/js/gridoverlay.js). 그래서 상자 밖이 비지 않고,
@@ -61,16 +67,17 @@ DST_BUCKET = os.environ["CACHE_BUCKET"]
 DST_REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 OUTPUT_KEY = "wind/air-ea.json"
 STATUS_DST = "wind/status/air-ea.json"
-COLLECTOR_REVISION = "air-ea.2026-09-07.n1"
+COLLECTOR_REVISION = "air-ea.2026-09-07.n2"
 API = "https://air-quality-api.open-meteo.com/v1/air-quality"
 
 RES = 0.5
-LAT0, LAT1 = 23.0, 47.0
-LON0, LON1 = 114.0, 150.0
+LAT0, LAT1 = 20.0, 50.0
+LON0, LON1 = 90.0, 150.0
 BATCH = 100
-# ⚠️ 쉬지 않고 던지면 429 가 난다. 실측(2026-09-07)으로 100지점 한 번이 15초쯤
-#    걸리므로, 36회면 대기까지 합쳐 11분 안쪽이다 — timeout 900초 안에 든다.
-PACE = 3.0
+# ⚠️ 쉬지 않고 던지면 429 가 난다.
+#    실측(2026-09-07, ap-northeast-2): 100지점 한 번이 약 5.5초, PACE 3.0 을 더해
+#    36회에 305초였다. 넓힌 상자는 74회이므로 7.5×74 ≈ 555초 — timeout 900초 안이다.
+PACE = 2.0
 
 dst = boto3.client("s3", region_name=DST_REGION)
 
@@ -228,7 +235,7 @@ def handler(event, context):
         "res": RES, "lat0": LAT0, "lon0": LON0,
         "nx": nx, "ny": ny,
         "source": "Open-Meteo Air Quality (CAMS)",
-        "region": "East Asia 23-47N 114-150E",
+        "region": "East Asia and dust corridor 20-50N 90-150E",
         "units": {"pm25": "µg/m³", "pm10": "µg/m³", "dust": "µg/m³",
                   "o3": "µg/m³", "uv": "index", "aod": "unitless",
                   "aqi": "European AQI", "aqiUs": "US AQI"},

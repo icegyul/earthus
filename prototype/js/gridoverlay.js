@@ -313,6 +313,13 @@ const SCALE_OF = { temp: 'temp', humidity: 'rh', rh: 'rh', fog: 'vis', drought: 
 /* 예보 레이어인지 — 화면에 "내일"이라고 밝혀야 하는지 판단한다 */
 export const IS_FORECAST = { tmax: true, tmin: true, windfc: true };
 
+/** 그리는 도중 레이어가 꺼졌다 — 오류가 아니라 취소다.
+ *  ⚠️ 이걸 일반 오류로 다루면 사용자에게 "자료를 불러오지 못했습니다" 토스트가 뜨고
+ *     스위치가 되돌아간다. 스스로 끈 것뿐인데 고장으로 보인다. */
+class Cancelled extends Error {
+  constructor() { super('그리는 중에 꺼졌다'); this.name = 'Cancelled'; }
+}
+
 function colorAt(scale, v) {
   const st = scale.stops;
   if (v <= st[0][0]) return st[0][1];
@@ -330,8 +337,20 @@ function colorAt(scale, v) {
   return st[st.length - 1][1];
 }
 
-/* 동아시아 보강판이 덮는 상자 — 천리안 동아시아 영상과 같은 범위다. */
-const EA_BOX = Object.freeze({ south: 23, north: 47, west: 114, east: 150 });
+/* 보강판마다 덮는 상자가 다르다 — **서버의 실제 격자 범위와 같아야 한다.**
+   ⚠️ 어긋나면 두 가지로 틀린다: 상자 밖을 보는데 보강판을 받거나(헛수고),
+      안을 보는데 안 받는다(5° 그대로 보인다).
+   ⚠️ 해양·수온은 천리안 동아시아 영상과 같은 범위다 — 구름과 겹쳐 볼 때
+      경계가 어긋나지 않아야 하기 때문이다.
+   ⚠️ 대기질만 서쪽으로 훨씬 넓다(90°E). 바다는 한반도 주변만 촘촘하면 되지만
+      먼지는 **오는 길**을 함께 봐야 한다 — 고비·타클라마칸이 85~110°E 다.
+      (처음엔 114°E 로 만들었다가, 문제의 봉우리 40°N 104°E 가 상자 밖이었다.) */
+const FINE_BOX = Object.freeze({
+  marineEa:   { south: 23, north: 47, west: 114, east: 150 },
+  sstAnomEa:  { south: 23, north: 47, west: 114, east: 150 },
+  pressureEa: { south: 20, north: 50, west: 110, east: 160 },
+  airEa:      { south: 20, north: 50, west:  90, east: 150 },
+});
 
 /* 소스 이름 → 실제 파일 */
 const SRC_URL = {
@@ -396,7 +415,9 @@ export const gridOverlay = {
    *     상자 밖이 빌 걱정이 없으니, 상자와 화면이 **겹치는지**만 보면 된다.
    *  ⚠️ 지구 절반이 보이는 화면에서는 0.5°가 한 픽셀도 못 되므로 그리지 않는다.
    *     캔버스 한 장과 텍스처 업로드를 아끼는 자리다. */
-  _fineInView() {
+  _fineInView(name) {
+    const box = FINE_BOX[name];
+    if (!box) return false;
     try {
       const camera = viewer?.camera;
       if (!(camera?.positionCartographic?.height < 9_000_000)) return false;
@@ -407,11 +428,11 @@ export const gridOverlay = {
       const east = Cesium.Math.toDegrees(rect.east);
       const south = Cesium.Math.toDegrees(rect.south);
       const north = Cesium.Math.toDegrees(rect.north);
-      if (north < EA_BOX.south || south > EA_BOX.north) return false;
+      if (north < box.south || south > box.north) return false;
       // 날짜변경선을 걸친 화면은 west > east 로 온다. 상자는 안 걸치므로 한쪽만 맞으면 된다.
       return west <= east
-        ? east >= EA_BOX.west && west <= EA_BOX.east
-        : east >= EA_BOX.west || west <= EA_BOX.east;
+        ? east >= box.west && west <= box.east
+        : east >= box.west || west <= box.east;
     } catch (_) { return false; }
   },
 
@@ -430,9 +451,10 @@ export const gridOverlay = {
   /** refreshResolution 이 "판이 바뀌었나"를 볼 때 쓰는 이름. 실제로 그려지는 것은
    *  전지구 판 + (선택) 촘촘한 판 두 장이고, 이 이름은 **위에 놓인 판**을 가리킨다. */
   _desiredSource(key) {
-    const fine = this._fineInView() ? this._fineSource(key) : null;
-    if (fine && this._fineMissing.has(fine)) return SOURCE_OF[key] || 'wind';
-    return fine || SOURCE_OF[key] || 'wind';
+    const base = SOURCE_OF[key] || 'wind';
+    const fine = this._fineSource(key);
+    if (!fine || this._fineMissing.has(fine) || !this._fineInView(fine)) return base;
+    return fine;
   },
 
   /** key = 레이어 id (temp · rh · sst · pm25 · fog …) */
@@ -471,8 +493,12 @@ export const gridOverlay = {
       if (!scale) throw new Error(`${key} 눈금 없음`);
 
       this._remove(key);
-      this.layers[key] = this._paint(base.grid, base.field, scale);
+      const baseLayer = this._paint(base.grid, base.field, scale);
+      this.layers[key] = baseLayer;
       let shown = { ...base, sourceName: baseSource };
+      /* ⚠️ 아래 await 동안 이 레이어가 꺼질 수 있다(applyAll·배타 그룹·사용자 조작).
+         그때 계속 그리면 **꺼진 레이어의 그림이 지구에 남는다.** 매번 확인한다. */
+      const cancelled = () => this.layers[key] !== baseLayer;
 
       /* 촘촘한 판 — 화면에 걸쳐 있을 때만. 실패는 조용히 넘어간다(전지구 판이 이미 있다). */
       const fineName = srcName !== baseSource ? srcName : null;
@@ -480,14 +506,29 @@ export const gridOverlay = {
         try {
           const gf = await this.load(fineName);
           const fine = await this._fieldOf(key, gf, fineName);
+          if (cancelled()) throw new Cancelled();
           if (fine?.field) {
             this.fine[key] = this._paint(fine.grid, fine.field, scale);
+            /* ⚠️⚠️ **겹친 자리에서 전지구 판을 도려낸다.**
+               반투명 두 장을 그냥 포개면 그 안쪽만 진해진다: alpha 0.62 두 장이면
+               실효 0.86 이 되어, 상자 경계가 **또 하나의 네모**로 보인다.
+               네모를 없애려고 넣은 판이 새 네모를 만드는 셈이라 반드시 도려낸다.
+               ⚠️ 도려낼 범위는 상수 상자가 아니라 **그 판의 실제 격자 범위**다.
+                  판마다 lat0 이 반 칸씩 다르다(marine-ea 22.75 vs sst-anom-ea 22.875). */
+            const fineBounds = gridBounds(fine.grid);
+            if (fineBounds) {
+              this.layers[key].cutoutRectangle = Cesium.Rectangle.fromDegrees(
+                fineBounds.west, fineBounds.south, fineBounds.east, fineBounds.north);
+            }
             shown = { ...fine, sourceName: fineName };
           }
         } catch (error) {
+          if (error instanceof Cancelled) throw error;
           /* ⚠️ 한 번 없으면 카메라가 멈출 때마다 다시 조르지 않는다.
              전지구 판은 이미 깔려 있어 화면은 멀쩡하고, 재시도는 발열만 된다.
-             자료가 올라오면 레이어를 껐다 켜거나 새로 고칠 때 다시 본다. */
+             자료가 올라오면 레이어를 껐다 켜거나 새로 고칠 때 다시 본다.
+             ⚠️ 중간에 꺼진 것(Cancelled)은 "없다"가 아니다 — 여기에 넣으면
+                다음에 켤 때도 보강판을 건너뛴다. */
           this._fineMissing.add(fineName);
           console.warn('[gridOverlay] 보강판 없음', key, error.message);
         }
@@ -495,6 +536,7 @@ export const gridOverlay = {
 
       /* ⚠️ 읽는 값(도시 수치·물어보기·등치선)은 **위에 놓인 판**을 따른다.
          화면에 0.5°가 보이는데 5° 값을 숫자로 적으면 그림과 숫자가 어긋난다. */
+      if (cancelled()) return null;
       if (shown.anomInfo) this._anomInfo = shown.anomInfo;
       this._rendered[key] = { grid: shown.grid, field: shown.field, sourceName: shown.sourceName };
       this._showValueLabels(key, shown.grid, shown.field);
@@ -502,6 +544,8 @@ export const gridOverlay = {
         detail: { layer: key, grid: shown.grid, field: shown.field, sourceName: shown.sourceName },
       }));
     } catch (e) {
+      // 스스로 끈 것은 실패가 아니다 — 토스트도 스위치 되돌리기도 하지 않는다.
+      if (e instanceof Cancelled) { this._remove(key); return null; }
       console.warn('[gridOverlay]', key, e.message);
       /* ⚠️ 조용히 실패하면 안 된다. 켰는데 아무것도 안 나오고 설명도 없으면
          사용자에게는 그냥 고장이다. 왜 안 나오는지 말하고 스위치를 되돌린다.

@@ -76,8 +76,14 @@ assert.match(overlay, /if \(base === 'marine'\) return 'marineEa'/,
   '파고·너울·해류에는 동아시아 0.5° 보강판이 있어야 한다');
 /* ⚠️ 전지구 판을 **대체**하면 상자 밖이 비어 "저기는 바다가 없다"가 된다.
    반대로 전지구 5°만 쓰면 서해·동해가 한 칸에 뭉개진다. 두 장을 겹쳐 그린다. */
-assert.match(overlay, /this\.layers\[key\] = this\._paint\([\s\S]{0,900}?this\.fine\[key\] = this\._paint\(/,
+assert.match(overlay, /const baseLayer = this\._paint\([\s\S]{0,1600}?this\.fine\[key\] = this\._paint\(/,
   '전지구 판 위에 동아시아 보강판을 덧그려야 한다');
+/* ⚠️ 반투명 두 장을 그냥 포개면 alpha 0.62×2 → 실효 0.86 이라 상자 안쪽만 진해진다.
+   네모를 없애려고 넣은 판이 새 네모를 만든다 — 겹친 자리는 아래 판을 도려낸다. */
+assert.match(overlay, /cutoutRectangle = Cesium\.Rectangle\.fromDegrees\(/,
+  '보강판이 덮는 자리에서는 전지구 판을 도려내야 한다');
+assert.match(overlay, /FINE_BOX = Object\.freeze\([\s\S]{0,400}?airEa:\s*\{[^}]*west:\s*90/,
+  '대기질 보강판 상자는 먼지 발원지(고비·타클라마칸)까지 서쪽으로 넓어야 한다');
 /* ⚠️ 네 꼭짓점을 모두 요구하면 5° 격자에서 한반도 주변 12칸 중 1칸만 칠해졌다(실측). */
 assert.match(overlay, /const near = tx < 0\.5[\s\S]{0,600}?weight > 0 \? acc \/ weight/,
   '결측 꼭짓점이 있어도 속한 격자점이 살아 있으면 칠해야 한다');
@@ -117,4 +123,4 @@ assert.match(renderQuality, /totalRenders\+\+[\s\S]*dataset\.totalRenders/,
 assert.match(index, /readabilityPanel[\s\S]*hidden/,
   '첫 Earth View는 수치·등치선 없이 시작해야 한다');
 
-console.log('Continuous layers PR-06: 39/39 passed');
+console.log('Continuous layers PR-06: 41/41 passed');

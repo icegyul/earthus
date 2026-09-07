@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "validation-extension-preregistration-step46",
+  "step": 50,
+  "classification": "VALIDATION_EXTENSION_ENDPOINT_AGGREGATION_AND_PREREGISTERED_BOOTSTRAP",
+  "status": "VALIDATION_EXTENSION_ENDPOINT_PASS",
+  "protocolSha256": "89fb79f35256a30bd17dca4c91a899215203bba5a6063751fba8d095738591ab",
+  "resultsSha256": "c1fbf574c778909be804b57a3bf81200148c5f22dfb710d3b0247d4150908903",
+  "ancestry": {
+    "step46": "f7be980e3aa1e71c4cc96b7aca699e1d4b1faec7",
+    "step48": "00516cd1562d50b9380f4eef4ad66611822ae99c",
+    "step49": "fbb080af5723c32488ddf976d64f067ba12a4555",
+    "step45c": "fa9c0590d634a6d6f30cc8a6cd2797c94e0ae7dd",
+    "step44": "5f8d5c38bfc9cc6a168707ae0b1b643c99ad46f9",
+    "step40": "2b1a7baa7ef9e69d25cecbff2b09fca8700fca80",
+    "step37": "74d19f0a9661a41d63a08c56bbd3f91e9d8b312d",
+    "step36": "043a09b8539955868651a06e7c2c44e3c606803f",
+    "runtime": "155995dd062b557b7a2ba90e5e5fb5a54ee28048"
+  },
+  "H_EXT": "NOT_SUPPORTED",
+  "H_EXT_basis": "the STEP 46 preregistered criterion governs; the directive criterion is recorded beside it and is not merged",
+  "decisionBasis": {
+    "Theta_extension_72h_km": -2.272,
+    "CI_upper_72h_km": 10.246,
+    "upper95BelowZero": false,
+    "validWindows": 5,
+    "gate": "PASS",
+    "preregisteredDescriptiveLabel": "NO_CLEAR_EXTENSION_DIFFERENCE",
+    "preregisteredCandidateFavored": false,
+    "directiveCriterionCandidateFavored": true,
+    "criteriaAgreeOnFavour": false,
+    "criteriaAgreeOnDecision": true
+  },
+  "theta": {
+    "24h": -11.815,
+    "48h": 2.734,
+    "72h": -2.272
+  },
+  "validWindows": {
+    "24h": 5,
+    "48h": 5,
+    "72h": 5
+  },
+  "bootstrap": {
+    "B": 10000,
+    "seed": 20260946,
+    "samplingUnit": "window",
+    "samplingFrameSize": 6,
+    "available": {
+      "24h": 10000,
+      "48h": 10000,
+      "72h": 10000
+    },
+    "notAvailable": {
+      "24h": 0,
+      "48h": 0,
+      "72h": 0
+    },
+    "CI": {
+      "24h": [
+        -25.1625,
+        3.667
+      ],
+      "48h": [
+        -26.1455,
+        16.758
+      ],
+      "72h": [
+        -9.597,
+        10.246
+      ]
+    }
+  },
+  "reproducibility": {
+    "status": "PASS",
+    "runs": 3,
+    "scientificFieldsByteIdentical": true,
+    "allowedDifferences": [
+      "output path label (replicatesFile)",
+      "createdAtUTC"
+    ]
+  },
+  "primaryResult": {
+    "Theta_km": -31.331,
+    "CI95_km": [
+      -72.0725,
+      -11.7435
+    ],
+    "H1": "SUPPORTED",
+    "candidateStatus": "CANDIDATE_ONLY",
+    "operationalPromotion": false,
+    "PRIMARY_RESULT_MODIFIED": false
+  },
+  "primaryRecomputed": false,
+  "pooledWithPrimary": false,
+  "operationalPromotion": false,
+  "productionClaim": false,
+  "candidateStatus": "CANDIDATE_ONLY",
+  "dataLocation": "data/research/step50/ (never staged)",
+  "automaticCommit": false,
+  "push": false
+}

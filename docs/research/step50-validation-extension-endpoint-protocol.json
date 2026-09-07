@@ -1,0 +1,133 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "validation-extension-preregistration-step46",
+  "step": 50,
+  "classification": "VALIDATION_EXTENSION_ENDPOINT_AGGREGATION_AND_PREREGISTERED_BOOTSTRAP",
+  "scope": "aggregation of the frozen STEP 49 execution and the STEP 46 preregistered window-level bootstrap; first and only evaluation of H_EXT",
+  "ancestry": {
+    "step46": "f7be980e3aa1e71c4cc96b7aca699e1d4b1faec7",
+    "step48": "00516cd1562d50b9380f4eef4ad66611822ae99c",
+    "step49": "fbb080af5723c32488ddf976d64f067ba12a4555",
+    "step45c": "fa9c0590d634a6d6f30cc8a6cd2797c94e0ae7dd",
+    "step44": "5f8d5c38bfc9cc6a168707ae0b1b643c99ad46f9",
+    "step40": "2b1a7baa7ef9e69d25cecbff2b09fca8700fca80",
+    "step37": "74d19f0a9661a41d63a08c56bbd3f91e9d8b312d",
+    "step36": "043a09b8539955868651a06e7c2c44e3c606803f",
+    "runtime": "155995dd062b557b7a2ba90e5e5fb5a54ee28048"
+  },
+  "headAtExecution": "fbb080af5723c32488ddf976d64f067ba12a4555",
+  "frozenInputs": {
+    "docs/research/step46-validation-extension-preregistration-protocol.json": "c824b053fdeea20336f1396dc503232492ab77e1f9d5f032586b23c47d66862d",
+    "docs/research/step47-validation-extension-cohort-manifest.json": "32d3085010185d8c1a5734ef53be227252220b74a2526dbadf5c72de5eee2cca",
+    "docs/research/step48-validation-data-freeze-manifest.json": "8d50c2aebf32cae57e8b82e318eded07e29b5546dd29a58ea8c8b33a17da8719",
+    "docs/research/step49-validation-extension-execution-manifest.json": "c9b3d59653ae79a2715c24b054e8b3f3b5319c2efe36cf124e286787b9c38bdb",
+    "docs/research/step30a-rule.json": "9251be51fc3fc8cc3a3b9570a0b3902c01e653754389da55852bdd4e83ab803d"
+  },
+  "cohort": {
+    "windows": 6,
+    "uniqueDrifters": 25,
+    "derivationHash": "9e03db68d506358e1217db25f50ade8aa314b406063fd8c309cbe6a3092e5e45",
+    "windowIds": [
+      "KE-X1",
+      "KE-X2",
+      "KE-X3",
+      "KE-X4",
+      "BM-X5",
+      "BM-X6"
+    ],
+    "modified": false,
+    "reselected": false
+  },
+  "endpoint": {
+    "naHandling": "a window without a valid pair is NOT_AVAILABLE, excluded from Theta at that horizon, and RETAINED in the bootstrap sampling frame; never imputed",
+    "perDrifter": "delta_i(h) = E_C,i(h) - E_A,i(h); E = haversine(model, observed) at exactly t0+h, R = 6371008.8 m, km",
+    "pooledDrifterMedian": "DESCRIPTIVE ONLY, never the primary endpoint",
+    "primary": "Theta_extension(h) = median over windows with >= 1 valid pair",
+    "weighting": "equal window weighting; drifter-count never weights a window",
+    "window": "Delta_w(h) = median over the window's VALID C-A paired drifter deltas"
+  },
+  "bootstrap": {
+    "samplingUnit": "window",
+    "samplingFrame": "ALL 6 registered extension windows, NOT_AVAILABLE windows included",
+    "B": 10000,
+    "seed": 20260946,
+    "generator": "numpy.random.default_rng(20260946); rng.integers(0, 6, size=6) per replicate, sequential; fresh stream per horizon",
+    "withReplacement": true,
+    "naReplicate": "counted, never redrawn",
+    "drifterLevelResamplingInPrimary": false,
+    "quantileMethod": "linear",
+    "quantiles": [
+      0.025,
+      0.975
+    ],
+    "fullPrecisionPreserved": true
+  },
+  "decisionRule": {
+    "source": "STEP 46 field 16",
+    "text": "STEP 46: H_EXT SUPPORTED iff descriptive label == CANDIDATE_EXTENSION_DESCRIPTIVELY_FAVORED AND window-level Q0.975 < 0 km AND the gate is satisfied; BLOCKED if the gate fails",
+    "horizon": "72h",
+    "secondaryHorizonsChangeDecision": false,
+    "criterionDivergenceHandling": "the STEP 46 preregistered descriptive-favour criterion (frozen STEP 30A rule on pooled 72 h pairs) governs; the criterion stated in the STEP 50 directive (Theta_extension(72h) < 0) is computed and reported beside it, never merged and never used to override the preregistration"
+  },
+  "sensitivityOnly": {
+    "preregisteredIn": "STEP 46 field 15 sensitivityOnly",
+    "unit": "drifter pair",
+    "B": 10000,
+    "seed": 20260946,
+    "generator": "separate numpy.random.default_rng(20260946)",
+    "usedForDecision": false,
+    "replacesPrimary": false,
+    "newSensitivityAnalysesInvented": false
+  },
+  "separationFromPrimary": {
+    "primaryRecomputed": false,
+    "pooledValidation": false,
+    "combinedCohort": false,
+    "combinedBootstrap": false,
+    "metaAnalysis": false,
+    "overallGlobalClaim": false,
+    "note": "the primary 9-window cohort and the extension 6-window cohort are never summed or pooled"
+  },
+  "independenceLanguage": {
+    "permitted": [
+      "geographically independent validation extension",
+      "validation extension whose geographic domain is separate from the primary cohort"
+    ],
+    "forbidden": [
+      "fully independent in every dimension",
+      "independent in time and space",
+      "global validation",
+      "universal validation"
+    ],
+    "temporalIndependenceFromOriginalValidationAttemptClaimed": false,
+    "pooledWithStep45cOriginalAttempt": false,
+    "step45cNote": "the original STEP 44 validation attempt produced no performance evaluation at all, so nothing from it is pooled with extension performance"
+  },
+  "prohibited": [
+    "source substitution",
+    "parameter tuning",
+    "window addition or removal",
+    "drifter addition or removal",
+    "imputation of invalid results",
+    "result-driven rerun",
+    "trajectory re-execution",
+    "primary result modification"
+  ],
+  "tools": {
+    "tools/research/aggregate_step50_validation_extension.py": "e542c6232c4d631a34ad3b523c022a177c0d8dbf9f4f687fa7c633b8a3d40d2a",
+    "tools/research/bootstrap_step50_validation_extension.py": "b5d4b98c89ae80adc157b832de296eaac26dd420b464bdcdf78b9c4313e99b9d"
+  },
+  "primaryResult": {
+    "Theta_km": -31.331,
+    "CI95_km": [
+      -72.0725,
+      -11.7435
+    ],
+    "H1": "SUPPORTED",
+    "candidateStatus": "CANDIDATE_ONLY",
+    "operationalPromotion": false,
+    "PRIMARY_RESULT_MODIFIED": false
+  },
+  "automaticCommit": false,
+  "push": false
+}

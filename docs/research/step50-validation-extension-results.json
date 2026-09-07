@@ -1,0 +1,388 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "validation-extension-preregistration-step46",
+  "step": 50,
+  "classification": "VALIDATION_EXTENSION_RESULTS",
+  "status": "VALIDATION_EXTENSION_ENDPOINT_COMPLETE",
+  "protocolSha256": "89fb79f35256a30bd17dca4c91a899215203bba5a6063751fba8d095738591ab",
+  "inputs": {
+    "step49ExecutionManifestSha256": "c9b3d59653ae79a2715c24b054e8b3f3b5319c2efe36cf124e286787b9c38bdb",
+    "step49EndpointRawSha256": "9173254bcd1b8cb505a93b7d57f05895eb5f0f712eb6b56d2081f20a3ffe3bc0",
+    "step49EndpointTableSha256": "aa3ceee287ae52ea209f22b1a2492dee60a4cb6162d421e67b0fbd77ee68f4ff",
+    "aggregationFile": "data/research/step50/step50-aggregation.json",
+    "aggregationSha256": "47dcfaae9fd2ce81257304c0d5fd1d20ebe563f5eb952cfd034bcef1e5308cbd",
+    "bootstrapFile": "data/research/step50/step50-bootstrap.json",
+    "bootstrapSha256": "d121043087b288e0de8807a084d1efd6ca641539f8d591dd4c8f7fe393994411",
+    "trajectoriesReRun": 0,
+    "observationsRead": 0,
+    "forcingRead": 0
+  },
+  "cohort": {
+    "windows": 6,
+    "uniqueDrifters": 25,
+    "derivationHash": "9e03db68d506358e1217db25f50ade8aa314b406063fd8c309cbe6a3092e5e45",
+    "windowIds": [
+      "KE-X1",
+      "KE-X2",
+      "KE-X3",
+      "KE-X4",
+      "BM-X5",
+      "BM-X6"
+    ],
+    "modified": false,
+    "reselected": false
+  },
+  "windowResults": {
+    "KE-X1": {
+      "24h": {
+        "Delta_w_km": 3.667,
+        "validPairs": 10
+      },
+      "48h": {
+        "Delta_w_km": 3.521,
+        "validPairs": 10
+      },
+      "72h": {
+        "Delta_w_km": -2.272,
+        "validPairs": 10
+      },
+      "registeredDrifters": 10,
+      "status72h": "VALID"
+    },
+    "KE-X2": {
+      "24h": {
+        "Delta_w_km": -12.6515,
+        "validPairs": 2
+      },
+      "48h": {
+        "Delta_w_km": 16.758,
+        "validPairs": 1
+      },
+      "72h": {
+        "Delta_w_km": 10.246,
+        "validPairs": 1
+      },
+      "registeredDrifters": 2,
+      "status72h": "VALID"
+    },
+    "KE-X3": {
+      "24h": {
+        "Delta_w_km": "NOT_AVAILABLE",
+        "validPairs": 0
+      },
+      "48h": {
+        "Delta_w_km": "NOT_AVAILABLE",
+        "validPairs": 0
+      },
+      "72h": {
+        "Delta_w_km": "NOT_AVAILABLE",
+        "validPairs": 0
+      },
+      "registeredDrifters": 1,
+      "status72h": "NOT_AVAILABLE"
+    },
+    "KE-X4": {
+      "24h": {
+        "Delta_w_km": -11.815,
+        "validPairs": 1
+      },
+      "48h": {
+        "Delta_w_km": -5.32,
+        "validPairs": 1
+      },
+      "72h": {
+        "Delta_w_km": -2.985,
+        "validPairs": 1
+      },
+      "registeredDrifters": 1,
+      "status72h": "VALID"
+    },
+    "BM-X5": {
+      "24h": {
+        "Delta_w_km": 2.962,
+        "validPairs": 9
+      },
+      "48h": {
+        "Delta_w_km": 2.734,
+        "validPairs": 9
+      },
+      "72h": {
+        "Delta_w_km": 1.338,
+        "validPairs": 9
+      },
+      "registeredDrifters": 9,
+      "status72h": "VALID"
+    },
+    "BM-X6": {
+      "24h": {
+        "Delta_w_km": -25.1625,
+        "validPairs": 2
+      },
+      "48h": {
+        "Delta_w_km": -26.1455,
+        "validPairs": 2
+      },
+      "72h": {
+        "Delta_w_km": -9.597,
+        "validPairs": 2
+      },
+      "registeredDrifters": 2,
+      "status72h": "VALID"
+    }
+  },
+  "theta": {
+    "24h": -11.815,
+    "48h": 2.734,
+    "72h": -2.272
+  },
+  "validWindows": {
+    "24h": 5,
+    "48h": 5,
+    "72h": 5
+  },
+  "notAvailableWindows": {
+    "24h": [
+      "KE-X3"
+    ],
+    "48h": [
+      "KE-X3"
+    ],
+    "72h": [
+      "KE-X3"
+    ]
+  },
+  "bootstrap": {
+    "24h": {
+      "ThetaObserved_km": -11.815,
+      "Q0.025_km": -25.1625,
+      "Q0.975_km": 3.667,
+      "Q0.025_km_rounded6": -25.1625,
+      "Q0.975_km_rounded6": 3.667,
+      "B_requested": 10000,
+      "seed": 20260946,
+      "availableReplicates": 10000,
+      "notAvailableReplicates": 0,
+      "redrawn": 0,
+      "quantileMethod": "linear",
+      "quantiles": [
+        0.025,
+        0.975
+      ],
+      "samplingFrameSize": 6,
+      "naWindowsIncludedInFrame": [
+        "KE-X3"
+      ],
+      "replicatesSha256": "749d6749dbd417dc7f5253f12340216f02c775f493a77f071c3dafb85cce1335",
+      "statisticSha256": "3dea963c477eb302c97018f02142a6228ed9597b97f7e65e1e5dd01a29782484",
+      "windowWeighting": "equal (a window drawn k times contributes k times)",
+      "driftersResampledIndependently": false
+    },
+    "48h": {
+      "ThetaObserved_km": 2.734,
+      "Q0.025_km": -26.145500000000002,
+      "Q0.975_km": 16.758,
+      "Q0.025_km_rounded6": -26.1455,
+      "Q0.975_km_rounded6": 16.758,
+      "B_requested": 10000,
+      "seed": 20260946,
+      "availableReplicates": 10000,
+      "notAvailableReplicates": 0,
+      "redrawn": 0,
+      "quantileMethod": "linear",
+      "quantiles": [
+        0.025,
+        0.975
+      ],
+      "samplingFrameSize": 6,
+      "naWindowsIncludedInFrame": [
+        "KE-X3"
+      ],
+      "replicatesSha256": "a67bb507688e4ed37bc7920ec9ca65ab48cde40078fb743d203d3f25f24b0b79",
+      "statisticSha256": "cb3881f828f8c422d9bb47771086bb595dfd3bc8ce3a2d3a5b3997a595bf74c0",
+      "windowWeighting": "equal (a window drawn k times contributes k times)",
+      "driftersResampledIndependently": false
+    },
+    "72h": {
+      "ThetaObserved_km": -2.272,
+      "Q0.025_km": -9.597,
+      "Q0.975_km": 10.246,
+      "Q0.025_km_rounded6": -9.597,
+      "Q0.975_km_rounded6": 10.246,
+      "B_requested": 10000,
+      "seed": 20260946,
+      "availableReplicates": 10000,
+      "notAvailableReplicates": 0,
+      "redrawn": 0,
+      "quantileMethod": "linear",
+      "quantiles": [
+        0.025,
+        0.975
+      ],
+      "samplingFrameSize": 6,
+      "naWindowsIncludedInFrame": [
+        "KE-X3"
+      ],
+      "replicatesSha256": "193dbef2d80c65f829c210b37427e02372466e80fc1b8035a7d767d097778263",
+      "statisticSha256": "71b5deddd81c42c8adbace3290e6bc48a7984a618b6fccb44ee211dffe66a5d0",
+      "windowWeighting": "equal (a window drawn k times contributes k times)",
+      "driftersResampledIndependently": false
+    }
+  },
+  "pooledDescriptive": {
+    "24h": {
+      "losses_candidate": 14,
+      "n": 24,
+      "notAvailable": 1,
+      "pooledMedian_km": 3.043,
+      "role": "DESCRIPTIVE ONLY - not the primary endpoint",
+      "ties": 0,
+      "wins_candidate": 10
+    },
+    "48h": {
+      "losses_candidate": 11,
+      "n": 23,
+      "notAvailable": 2,
+      "pooledMedian_km": -0.971,
+      "role": "DESCRIPTIVE ONLY - not the primary endpoint",
+      "ties": 0,
+      "wins_candidate": 12
+    },
+    "72h": {
+      "losses_candidate": 12,
+      "n": 23,
+      "notAvailable": 2,
+      "pooledMedian_km": 1.338,
+      "role": "DESCRIPTIVE ONLY - not the primary endpoint",
+      "ties": 0,
+      "wins_candidate": 11
+    }
+  },
+  "sensitivityOnly": {
+    "24h": {
+      "B": 10000,
+      "Q0.025_km": -7.018,
+      "Q0.975_km": 7.584,
+      "generator": "separate numpy.random.default_rng(20260946)",
+      "n": 24,
+      "pooledMedianObserved_km": 3.043,
+      "role": "SECONDARY / SENSITIVITY ONLY (ignores window clustering; never replaces the primary interval; never used for H_EXT)",
+      "seed": 20260946,
+      "unit": "drifter pair"
+    },
+    "48h": {
+      "B": 10000,
+      "Q0.025_km": -8.791574999999959,
+      "Q0.975_km": 16.758,
+      "generator": "separate numpy.random.default_rng(20260946)",
+      "n": 23,
+      "pooledMedianObserved_km": -0.971,
+      "role": "SECONDARY / SENSITIVITY ONLY (ignores window clustering; never replaces the primary interval; never used for H_EXT)",
+      "seed": 20260946,
+      "unit": "drifter pair"
+    },
+    "72h": {
+      "B": 10000,
+      "Q0.025_km": -12.42789999999992,
+      "Q0.975_km": 21.205,
+      "generator": "separate numpy.random.default_rng(20260946)",
+      "n": 23,
+      "pooledMedianObserved_km": 1.338,
+      "role": "SECONDARY / SENSITIVITY ONLY (ignores window clustering; never replaces the primary interval; never used for H_EXT)",
+      "seed": 20260946,
+      "unit": "drifter pair"
+    }
+  },
+  "descriptiveFavour": {
+    "criteriaAgree": false,
+    "directiveCriterion_step50": {
+      "Theta_extension_72h_km": -2.272,
+      "candidateFavored": true,
+      "source": "STEP 50 directive section 9 (Theta_extension(72h) < 0)"
+    },
+    "note": "both are recorded; the STEP 46 preregistered criterion governs. A divergence is reported, never silently resolved.",
+    "preregisteredCriterion_step46": {
+      "candidateFavored": false,
+      "label": "NO_CLEAR_EXTENSION_DIFFERENCE",
+      "losses": 12,
+      "nonTied": 23,
+      "pooledMedian_km": 1.338,
+      "source": "STEP 46 field 16 successCriterion.descriptiveLabel (frozen STEP 30A rule on pooled 72 h pairs)",
+      "ties": 0,
+      "winShare": 0.478261,
+      "wins": 11
+    }
+  },
+  "decision": {
+    "H_EXT": "NOT_SUPPORTED",
+    "H_EXT_basis": "the STEP 46 preregistered criterion governs; the directive criterion is recorded beside it and is not merged",
+    "Q0.975_72h_km": 10.246,
+    "ThetaObserved_72h_km": -2.272,
+    "candidateStatus": "CANDIDATE_ONLY",
+    "criteriaAgreeOnDecision": true,
+    "criteriaAgreeOnFavour": false,
+    "directiveCriterion": {
+      "H_EXT": "NOT_SUPPORTED",
+      "candidateFavored": true,
+      "source": "STEP 50 directive section 9 (Theta_extension(72h) < 0)"
+    },
+    "gateSatisfied": true,
+    "horizonUsed": "72h",
+    "operationalPromotion": false,
+    "preregisteredCriterion": {
+      "H_EXT": "NOT_SUPPORTED",
+      "candidateFavored": false,
+      "label": "NO_CLEAR_EXTENSION_DIFFERENCE",
+      "source": "STEP 46 field 16 (frozen STEP 30A rule on pooled 72 h pairs)"
+    },
+    "productionClaim": false,
+    "rule": "STEP 46: H_EXT SUPPORTED iff descriptive label == CANDIDATE_EXTENSION_DESCRIPTIVELY_FAVORED AND window-level Q0.975 < 0 km AND the gate is satisfied; BLOCKED if the gate fails",
+    "upper95BelowZero": false
+  },
+  "H_EXT": "NOT_SUPPORTED",
+  "missingness": {
+    "imputation": 0,
+    "manualExclusion": 0,
+    "rows": [
+      {
+        "drifterId": "37042",
+        "finalStatusA": "OUT_OF_DOMAIN",
+        "finalStatusB": "OUT_OF_DOMAIN",
+        "finalStatusC": "COMPLETED",
+        "missingSide72h": "A",
+        "reason72h": "A:OUT_OF_DOMAIN",
+        "window": "KE-X2"
+      },
+      {
+        "drifterId": "40083",
+        "finalStatusA": "OUT_OF_DOMAIN",
+        "finalStatusB": "OUT_OF_DOMAIN",
+        "finalStatusC": "OUT_OF_DOMAIN",
+        "missingSide72h": "A,C",
+        "reason72h": "A:OUT_OF_DOMAIN; C:OUT_OF_DOMAIN",
+        "window": "KE-X3"
+      }
+    ],
+    "substitution": 0,
+    "windowsAddedOrRemoved": 0
+  },
+  "primaryExperiment": {
+    "Theta_km": -31.331,
+    "CI95_km": [
+      -72.0725,
+      -11.7435
+    ],
+    "H1": "SUPPORTED",
+    "recomputed": false,
+    "pooledWithExtension": false,
+    "modified": false
+  },
+  "originalValidationStatus": "VALIDATION_COHORT_BLOCKED",
+  "originalValidationPerformanceEvaluated": false,
+  "operationalPromotion": false,
+  "productionClaim": false,
+  "globalSuperiorityClaim": false,
+  "causalClaim": false,
+  "universalClaim": false,
+  "candidateStatus": "CANDIDATE_ONLY",
+  "createdAtUTC": "2026-09-07T09:38:26Z"
+}

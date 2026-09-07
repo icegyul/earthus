@@ -1,0 +1,92 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "experiment-preregistration-step37",
+  "step": 39,
+  "status": "EXECUTION PROTOCOL LOCKED (file-level; automatic commit forbidden)",
+  "createdAtUTC": "2026-09-07T03:47:09Z",
+  "step38LockCommit": "23e78f863fb092aa9e3c36e4d74d4afd4393e7f4",
+  "step37LockCommit": "74d19f0a9661a41d63a08c56bbd3f91e9d8b312d",
+  "step36LockCommit": "043a09b8539955868651a06e7c2c44e3c606803f",
+  "runtimeCommit": "155995dd",
+  "scope": "first scientific computation on the frozen STEP 38 data under the locked STEP 37 protocol: daily fields (B), candidate composite (C), trajectories A/B/C, per-run separate-process replay, independent re-execution, deterministic evaluation with the nested hierarchy; NO bootstrap (deferred to the preregistered uncertainty step), no tuning, no selection, no acquisition",
+  "frozen": {
+    "docs/research/step36-cohort-extension-manifest.json": "bda31c3ca36a395acadc95c1cb18663964ee9a00e4a72a7c2504182f51df06ca",
+    "docs/research/step36-cohort-extension-status.json": "fa17d06115b3c9904058e2e2d45a693257e3f63a7d306a53c3467814ce6ff147",
+    "docs/research/step37-experiment-preregistration-protocol.json": "eae40cde609155a32ccbe0c01a6090715e2324d72cc080e2e7043ecbd90f2d0d",
+    "docs/research/step37-experiment-preregistration-status.json": "61de721a97b57b04692f7b357cb8ef3a62088ef3cecdfbf010af4c760434a767",
+    "docs/research/step38-source-acquisition-protocol.json": "a4dfbcbea6562e02b032e0557397a61870e31b53e980931c396f44905b9b88cd",
+    "docs/research/step38-source-acquisition-manifest.json": "c9d3109fbab2970b43b887cc7ba81d3aacbdd094375b091e8e185097a22dc2a0",
+    "docs/research/step38-data-freeze-manifest.json": "5e979cff746a1ee72c877a8b1bdb8c1bc1e310605ab9fc7cc6337d9ea902da77",
+    "docs/research/step38-source-acquisition-status.json": "560f079a37bcec976f0e5132f7c6c47141a52f6c89d633ea6845d8f242875fd1",
+    "docs/research/step32-temporal-experiment-matrix.json": "b3d1b6fe985dbe5f86b61ec6e6c5fc9ca83572054c0eadd2799040d94a3e70fb",
+    "docs/research/step30a-rule.json": "9251be51fc3fc8cc3a3b9570a0b3902c01e653754389da55852bdd4e83ab803d",
+    "docs/research/step18b-preregistration.json": "02935e81e9c93690078ff96231c74ad51c86dfaffa89bfa17a2e2ba082306316",
+    "docs/research/step29-stokes-license-status.json": "8a8640ac534c1fb9b8551a4a1e777f8a96d6f6c271d896246ed13b8cf93cb24b"
+  },
+  "cohort": {
+    "windows": 9,
+    "drifters": 20,
+    "windowIds": [
+      "GS-Y1",
+      "GS-Y2",
+      "GS-Y3",
+      "GS-Y4",
+      "GS-Y5",
+      "GS-Y6",
+      "GS-Y7",
+      "GS-Y8",
+      "GS-Y9"
+    ],
+    "rederived": false
+  },
+  "configuration": {
+    "alpha": 0.002,
+    "stokesCoefficient": 1.0,
+    "depthA_B_m": 15.0,
+    "depthC_m": 15.81007,
+    "integrator": "RK4",
+    "integrationStepSeconds": 300,
+    "outputStepSeconds": 900,
+    "durationSeconds": 259200,
+    "horizonsHours": [
+      24,
+      48,
+      72
+    ],
+    "interpolation": "bilinear space / linear time (frozen runtime)",
+    "boundaryPolicy": "STOP_AT_FIRST_CROSSING",
+    "computationArea": "window ocean box clipped to +-40 deg",
+    "longitude": "frozen STEP 38 rule (-180..180; transformApplied false); no wrap or patch"
+  },
+  "conditions": {
+    "A": "HYCOM_NATIVE_3H: STEP 38 derived HYCOM datasets (25 frames, 3 h, 15.000 m)",
+    "B": "HYCOM_DAILY: STEP 39 daily fields from the frozen STEP 38 day files (8 frames per UTC day, unweighted mean, label 00Z; configuration = frozen STEP 32 matrix conditions.B.dailyDerivation)",
+    "C": "GLORYS12V1 15.810070 m + WW3 GLOB-30M CFSR Stokes x 1.0 (STEP 29 composite construction) + NCEP-R2, alpha 0.002"
+  },
+  "order": [
+    "B3 build daily fields",
+    "run A and B (18 runs, replay each)",
+    "build candidate composite",
+    "run C (9 runs, replay each)",
+    "deterministic evaluation (nested Theta, secondary, labels; no bootstrap)",
+    "independent re-execution into a scratch directory (byte comparison)",
+    "execution record",
+    "validator x2"
+  ],
+  "tools": {
+    "tools/research/build_step39_daily.py": "1b28eb45568975dce11ba4a954595d6bbc878f17a31f3babbf1708897e2b1712",
+    "tools/research/build_step39_candidate_forcing.py": "5fcfc9663dafa8d895b6f4240993e050e81bbd749c8835c248ffae9aac413895",
+    "tools/research/step39_runs.py": "2310a3b786043634a26a40ee6da52d50e0a0b135efd830fb21d9ef86e001f5e0",
+    "tools/research/run_step39_trajectories.py": "fdbf845ab5c01049953fdc5080ab90956b93d41d15c0984d4b5d53f022e78101",
+    "tools/research/replay_step39_run.py": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+    "tools/research/evaluate_step39.py": "9d6261954be8dda2e98a9e1419015e2c7dc4537e92808e7107923ebe1c9d8a7f",
+    "tools/research/check_step39_execution.py": "92f05408446c7d233b438d3bacd4d9c61ccc900afd77900cf7f638d2d0cb2496"
+  },
+  "reused": {
+    "tools/research/run_step18b_model.py": "8fb69ffa5b4e2056d5153aaeeba47682ab1326037bb01e809cfb866d12a9633b",
+    "tools/research/step20_segmented.py": "8f451b420ef2618552ca588836d97d9f1a893e71eea16a5d3d6041c206341d0c",
+    "tools/research/build_step20_chunked_forcing.py": "973d8527dd1c2dfb2b2aecde4061ceb8a0be8befd73551d5a5d00b1e753be9e1"
+  },
+  "bootstrapInStep39": false,
+  "automaticCommit": false
+}

@@ -1,0 +1,1571 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "experiment-preregistration-step37",
+  "step": 39,
+  "status": "EVALUATION_COMPLETE",
+  "cohortManifestSha256": "bda31c3ca36a395acadc95c1cb18663964ee9a00e4a72a7c2504182f51df06ca",
+  "temporalRunManifestSha256": "b267f5869a0160227545b4a4f294de10bdcac1a7dd11841ac28813b73f779634",
+  "candidateRunManifestSha256": "534cd7426f6f2af653303b9e4ae019d489d9e416524b54859ba7d227da86eba5",
+  "rule30aSha256": "9251be51fc3fc8cc3a3b9570a0b3902c01e653754389da55852bdd4e83ab803d",
+  "observationFiles": {
+    "data/research/step15/noaa-gdp-hourly-qc/GS-2010-q1.csv": "0aa36a5da88947784b120e624dc31bb29954b9f2f5778605aab4af181fcf5bc0",
+    "data/research/step15/noaa-gdp-hourly-qc/GS-2010-q2.csv": "f9da42a4103870b30ca2c3e270a256a64118a273fc28b4c40b304d109a9c8c4c",
+    "data/research/step15/noaa-gdp-hourly-qc/GS-2010-q3.csv": "074ae91f289b1b7d9aaae09dffa976f3a45a2b7606c9560dee1b63ceb3da9ca9",
+    "data/research/step15/noaa-gdp-hourly-qc/GS-2010-q4.csv": "b138736c47bb987a7482d414feb007a09ea007dbbc4f2e488225aaa203037873"
+  },
+  "inputTrajectories": [
+    {
+      "runId": "step39-A-alpha0.002-GS-Y1",
+      "window": "GS-Y1",
+      "condition": "A",
+      "file": "data/research/step39/trajectories/GS-Y1/A-alpha0.002/trajectories.csv",
+      "expected": "1800bc76b6b91759dee06e2656a0c2b484e880becb19c2b6f7be2e9c0610adf0",
+      "actual": "1800bc76b6b91759dee06e2656a0c2b484e880becb19c2b6f7be2e9c0610adf0",
+      "verified": true
+    },
+    {
+      "runId": "step39-B-alpha0.002-GS-Y1",
+      "window": "GS-Y1",
+      "condition": "B",
+      "file": "data/research/step39/trajectories/GS-Y1/B-alpha0.002/trajectories.csv",
+      "expected": "d52c0eec58726ecb4a38631b349c895ee3fa8d67b6248b9dee22a43ce19116db",
+      "actual": "d52c0eec58726ecb4a38631b349c895ee3fa8d67b6248b9dee22a43ce19116db",
+      "verified": true
+    },
+    {
+      "runId": "step39-A-alpha0.002-GS-Y2",
+      "window": "GS-Y2",
+      "condition": "A",
+      "file": "data/research/step39/trajectories/GS-Y2/A-alpha0.002/trajectories.csv",
+      "expected": "898f7ea6a8f1dfd5ca674891dad7008210992caef238c018bc46b6e142ca6428",
+      "actual": "898f7ea6a8f1dfd5ca674891dad7008210992caef238c018bc46b6e142ca6428",
+      "verified": true
+    },
+    {
+      "runId": "step39-B-alpha0.002-GS-Y2",
+      "window": "GS-Y2",
+      "condition": "B",
+      "file": "data/research/step39/trajectories/GS-Y2/B-alpha0.002/trajectories.csv",
+      "expected": "1e7d9f204390150102ec70b1a6763be3c58bcfc6786cf88c453d1d079fdd5e8b",
+      "actual": "1e7d9f204390150102ec70b1a6763be3c58bcfc6786cf88c453d1d079fdd5e8b",
+      "verified": true
+    },
+    {
+      "runId": "step39-A-alpha0.002-GS-Y3",
+      "window": "GS-Y3",
+      "condition": "A",
+      "file": "data/research/step39/trajectories/GS-Y3/A-alpha0.002/trajectories.csv",
+      "expected": "407bc9cbbe2f8b6c03325d18c4ffd62c5ea2570a54f9c2bbb5f13b5872de162f",
+      "actual": "407bc9cbbe2f8b6c03325d18c4ffd62c5ea2570a54f9c2bbb5f13b5872de162f",
+      "verified": true
+    },
+    {
+      "runId": "step39-B-alpha0.002-GS-Y3",
+      "window": "GS-Y3",
+      "condition": "B",
+      "file": "data/research/step39/trajectories/GS-Y3/B-alpha0.002/trajectories.csv",
+      "expected": "a868c650bc33572a44134581e974beae13db3193e0ff4f70beb494f27adf31c8",
+      "actual": "a868c650bc33572a44134581e974beae13db3193e0ff4f70beb494f27adf31c8",
+      "verified": true
+    },
+    {
+      "runId": "step39-A-alpha0.002-GS-Y4",
+      "window": "GS-Y4",
+      "condition": "A",
+      "file": "data/research/step39/trajectories/GS-Y4/A-alpha0.002/trajectories.csv",
+      "expected": "098e86808eea8608abdec351ba7a3c2145aa68e460154c24cc411b47b4d1dbc9",
+      "actual": "098e86808eea8608abdec351ba7a3c2145aa68e460154c24cc411b47b4d1dbc9",
+      "verified": true
+    },
+    {
+      "runId": "step39-B-alpha0.002-GS-Y4",
+      "window": "GS-Y4",
+      "condition": "B",
+      "file": "data/research/step39/trajectories/GS-Y4/B-alpha0.002/trajectories.csv",
+      "expected": "4cdd6f8eea831bb7ff492e6861af582391ae4fe1f6f34fe73c1428665feea915",
+      "actual": "4cdd6f8eea831bb7ff492e6861af582391ae4fe1f6f34fe73c1428665feea915",
+      "verified": true
+    },
+    {
+      "runId": "step39-A-alpha0.002-GS-Y5",
+      "window": "GS-Y5",
+      "condition": "A",
+      "file": "data/research/step39/trajectories/GS-Y5/A-alpha0.002/trajectories.csv",
+      "expected": "f53e729777180da34bf4c7cd1b666c0b7b8a1a763c90cf6db21ecb0db7d21e95",
+      "actual": "f53e729777180da34bf4c7cd1b666c0b7b8a1a763c90cf6db21ecb0db7d21e95",
+      "verified": true
+    },
+    {
+      "runId": "step39-B-alpha0.002-GS-Y5",
+      "window": "GS-Y5",
+      "condition": "B",
+      "file": "data/research/step39/trajectories/GS-Y5/B-alpha0.002/trajectories.csv",
+      "expected": "051aa670e58f17cdb4b3f6dfc3f3b89fbe1afc92597f7632e3355ce2bd56ff94",
+      "actual": "051aa670e58f17cdb4b3f6dfc3f3b89fbe1afc92597f7632e3355ce2bd56ff94",
+      "verified": true
+    },
+    {
+      "runId": "step39-A-alpha0.002-GS-Y6",
+      "window": "GS-Y6",
+      "condition": "A",
+      "file": "data/research/step39/trajectories/GS-Y6/A-alpha0.002/trajectories.csv",
+      "expected": "d2d2fbf4c5dfb873692bc648bc1ce1d753dcb5d46e4e6bf51fb48ed487102d36",
+      "actual": "d2d2fbf4c5dfb873692bc648bc1ce1d753dcb5d46e4e6bf51fb48ed487102d36",
+      "verified": true
+    },
+    {
+      "runId": "step39-B-alpha0.002-GS-Y6",
+      "window": "GS-Y6",
+      "condition": "B",
+      "file": "data/research/step39/trajectories/GS-Y6/B-alpha0.002/trajectories.csv",
+      "expected": "2711d99911dd30456041c50e67e91cf6ee895c9bc13597fc39775fe49a54f4a4",
+      "actual": "2711d99911dd30456041c50e67e91cf6ee895c9bc13597fc39775fe49a54f4a4",
+      "verified": true
+    },
+    {
+      "runId": "step39-A-alpha0.002-GS-Y7",
+      "window": "GS-Y7",
+      "condition": "A",
+      "file": "data/research/step39/trajectories/GS-Y7/A-alpha0.002/trajectories.csv",
+      "expected": "5967135792e94d8320e908c6b673383fc6a8a21cd8f27ef457860ecc06465689",
+      "actual": "5967135792e94d8320e908c6b673383fc6a8a21cd8f27ef457860ecc06465689",
+      "verified": true
+    },
+    {
+      "runId": "step39-B-alpha0.002-GS-Y7",
+      "window": "GS-Y7",
+      "condition": "B",
+      "file": "data/research/step39/trajectories/GS-Y7/B-alpha0.002/trajectories.csv",
+      "expected": "16cbb6c5ba15576772e3cf9c7ad4118db588e5b1360da3fb783d18fcb7ddcb4a",
+      "actual": "16cbb6c5ba15576772e3cf9c7ad4118db588e5b1360da3fb783d18fcb7ddcb4a",
+      "verified": true
+    },
+    {
+      "runId": "step39-A-alpha0.002-GS-Y8",
+      "window": "GS-Y8",
+      "condition": "A",
+      "file": "data/research/step39/trajectories/GS-Y8/A-alpha0.002/trajectories.csv",
+      "expected": "193d73c87f5567509c68dccf677e9ea7db4b971dbea4ef243ba38a15992bc901",
+      "actual": "193d73c87f5567509c68dccf677e9ea7db4b971dbea4ef243ba38a15992bc901",
+      "verified": true
+    },
+    {
+      "runId": "step39-B-alpha0.002-GS-Y8",
+      "window": "GS-Y8",
+      "condition": "B",
+      "file": "data/research/step39/trajectories/GS-Y8/B-alpha0.002/trajectories.csv",
+      "expected": "88f35d3afc652147c9dca68854eafe8d6409841eecd5c77ecad76ce0dd7e480a",
+      "actual": "88f35d3afc652147c9dca68854eafe8d6409841eecd5c77ecad76ce0dd7e480a",
+      "verified": true
+    },
+    {
+      "runId": "step39-A-alpha0.002-GS-Y9",
+      "window": "GS-Y9",
+      "condition": "A",
+      "file": "data/research/step39/trajectories/GS-Y9/A-alpha0.002/trajectories.csv",
+      "expected": "e3181ecd49ac682ac7e003602b52166e3bcdf9e19c18f77f472bb7761f4caa0e",
+      "actual": "e3181ecd49ac682ac7e003602b52166e3bcdf9e19c18f77f472bb7761f4caa0e",
+      "verified": true
+    },
+    {
+      "runId": "step39-B-alpha0.002-GS-Y9",
+      "window": "GS-Y9",
+      "condition": "B",
+      "file": "data/research/step39/trajectories/GS-Y9/B-alpha0.002/trajectories.csv",
+      "expected": "06eb38a26bb0a59f62adf10ceb3ab4a75024d8cb3b312364b07d90ca31ce7f81",
+      "actual": "06eb38a26bb0a59f62adf10ceb3ab4a75024d8cb3b312364b07d90ca31ce7f81",
+      "verified": true
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y1",
+      "window": "GS-Y1",
+      "condition": "C",
+      "file": "data/research/step39/trajectories/GS-Y1/C-alpha0.002/trajectories.csv",
+      "expected": "437d8e9245ef746bab1ee4c06c8418b7f3212b557d9d9d91c4f610acbba08e93",
+      "actual": "437d8e9245ef746bab1ee4c06c8418b7f3212b557d9d9d91c4f610acbba08e93",
+      "verified": true
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y2",
+      "window": "GS-Y2",
+      "condition": "C",
+      "file": "data/research/step39/trajectories/GS-Y2/C-alpha0.002/trajectories.csv",
+      "expected": "f926448380feaeeb2a5187995e42ee4b4a68de7af11e58c5d2cbea563060b92e",
+      "actual": "f926448380feaeeb2a5187995e42ee4b4a68de7af11e58c5d2cbea563060b92e",
+      "verified": true
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y3",
+      "window": "GS-Y3",
+      "condition": "C",
+      "file": "data/research/step39/trajectories/GS-Y3/C-alpha0.002/trajectories.csv",
+      "expected": "1bda419d703a51b91917caf54a3bb9d20eb03763d4fc6fb175bb2002979295ff",
+      "actual": "1bda419d703a51b91917caf54a3bb9d20eb03763d4fc6fb175bb2002979295ff",
+      "verified": true
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y4",
+      "window": "GS-Y4",
+      "condition": "C",
+      "file": "data/research/step39/trajectories/GS-Y4/C-alpha0.002/trajectories.csv",
+      "expected": "d0439a802bd399a8cce2c868fbd9651946980e1004c16a318fc53fed817f4f20",
+      "actual": "d0439a802bd399a8cce2c868fbd9651946980e1004c16a318fc53fed817f4f20",
+      "verified": true
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y5",
+      "window": "GS-Y5",
+      "condition": "C",
+      "file": "data/research/step39/trajectories/GS-Y5/C-alpha0.002/trajectories.csv",
+      "expected": "a0faddefef91f109c98c8e3c53e48c4689324161b0d7b737ef6899f37966ab95",
+      "actual": "a0faddefef91f109c98c8e3c53e48c4689324161b0d7b737ef6899f37966ab95",
+      "verified": true
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y6",
+      "window": "GS-Y6",
+      "condition": "C",
+      "file": "data/research/step39/trajectories/GS-Y6/C-alpha0.002/trajectories.csv",
+      "expected": "f1f7983dd67e82e3d5b90ef35ef0f8ddb7f5f1bade2d14c16f198f0d546a124d",
+      "actual": "f1f7983dd67e82e3d5b90ef35ef0f8ddb7f5f1bade2d14c16f198f0d546a124d",
+      "verified": true
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y7",
+      "window": "GS-Y7",
+      "condition": "C",
+      "file": "data/research/step39/trajectories/GS-Y7/C-alpha0.002/trajectories.csv",
+      "expected": "4e00c2514f67e8feb9ea15e273e7701866acc701938d1d8cd66ac34f0126ff57",
+      "actual": "4e00c2514f67e8feb9ea15e273e7701866acc701938d1d8cd66ac34f0126ff57",
+      "verified": true
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y8",
+      "window": "GS-Y8",
+      "condition": "C",
+      "file": "data/research/step39/trajectories/GS-Y8/C-alpha0.002/trajectories.csv",
+      "expected": "c5987f53d4a900f665ff15accd57c8c50493dbb95508d1fac4b910712ccc8cfc",
+      "actual": "c5987f53d4a900f665ff15accd57c8c50493dbb95508d1fac4b910712ccc8cfc",
+      "verified": true
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y9",
+      "window": "GS-Y9",
+      "condition": "C",
+      "file": "data/research/step39/trajectories/GS-Y9/C-alpha0.002/trajectories.csv",
+      "expected": "94f4eff1c79b60cc0c46d3a4b7ce0b36ae0f9b58b8f0a5a6ac0c9da2add43462",
+      "actual": "94f4eff1c79b60cc0c46d3a4b7ce0b36ae0f9b58b8f0a5a6ac0c9da2add43462",
+      "verified": true
+    }
+  ],
+  "pairing": "exact drifter_id and exact UTC timestamp; candidate, baseline and observation valid; NA never imputed",
+  "perDrifter": [
+    {
+      "drifter_id": "89822",
+      "window": "GS-Y1",
+      "rank": 1,
+      "error_A_24h": 17.226,
+      "error_B_24h": 14.172,
+      "error_C_24h": 25.351,
+      "delta_CA_24h": 8.125,
+      "delta_BA_24h": -3.053,
+      "sep_CA_24h": 8.134,
+      "sep_BA_24h": 3.769,
+      "error_A_48h": 25.854,
+      "error_B_48h": 21.037,
+      "error_C_48h": 42.433,
+      "delta_CA_48h": 16.579,
+      "delta_BA_48h": -4.817,
+      "sep_CA_48h": 16.595,
+      "sep_BA_48h": 6.728,
+      "error_A_72h": 20.336,
+      "error_B_72h": 28.253,
+      "error_C_72h": 49.099,
+      "delta_CA_72h": 28.762,
+      "delta_BA_72h": 7.916,
+      "sep_CA_72h": 28.899,
+      "sep_BA_72h": 8.841,
+      "endpoint_A_72h": 65.339,
+      "path_A": 71.479,
+      "endpoint_B_72h": 56.704,
+      "path_B": 63.922,
+      "endpoint_C_72h": 44.591,
+      "path_C": 46.055,
+      "observed_72h": 81.387
+    },
+    {
+      "drifter_id": "92885",
+      "window": "GS-Y1",
+      "rank": 1,
+      "error_A_24h": 35.603,
+      "error_B_24h": 32.624,
+      "error_C_24h": 29.755,
+      "delta_CA_24h": -5.848,
+      "delta_BA_24h": -2.979,
+      "sep_CA_24h": 7.871,
+      "sep_BA_24h": 3.732,
+      "error_A_48h": 61.411,
+      "error_B_48h": 59.127,
+      "error_C_48h": 36.521,
+      "delta_CA_48h": -24.889,
+      "delta_BA_48h": -2.284,
+      "sep_CA_48h": 30.834,
+      "sep_BA_48h": 12.858,
+      "error_A_72h": 78.317,
+      "error_B_72h": 74.271,
+      "error_C_72h": 52.19,
+      "delta_CA_72h": -26.126,
+      "delta_BA_72h": -4.046,
+      "sep_CA_72h": 53.722,
+      "sep_BA_72h": 12.965,
+      "endpoint_A_72h": 52.419,
+      "path_A": 82.353,
+      "endpoint_B_72h": 45.107,
+      "path_B": 72.831,
+      "endpoint_C_72h": 22.024,
+      "path_C": 60.329,
+      "observed_72h": 32.519
+    },
+    {
+      "drifter_id": "92917",
+      "window": "GS-Y1",
+      "rank": 1,
+      "error_A_24h": 13.85,
+      "error_B_24h": 16.171,
+      "error_C_24h": 17.838,
+      "delta_CA_24h": 3.988,
+      "delta_BA_24h": 2.321,
+      "sep_CA_24h": 26.855,
+      "sep_BA_24h": 9.812,
+      "error_A_48h": 33.35,
+      "error_B_48h": 21.562,
+      "error_C_48h": 56.441,
+      "delta_CA_48h": 23.091,
+      "delta_BA_48h": -11.788,
+      "sep_CA_48h": 44.127,
+      "sep_BA_48h": 33.874,
+      "error_A_72h": 83.375,
+      "error_B_72h": 18.074,
+      "error_C_72h": 125.39,
+      "delta_CA_72h": 42.015,
+      "delta_BA_72h": -65.3,
+      "sep_CA_72h": 57.878,
+      "sep_BA_72h": 72.695,
+      "endpoint_A_72h": 171.551,
+      "path_A": 212.712,
+      "endpoint_B_72h": 127.627,
+      "path_B": 151.888,
+      "endpoint_C_72h": 183.471,
+      "path_C": 205.503,
+      "observed_72h": 109.653
+    },
+    {
+      "drifter_id": "92918",
+      "window": "GS-Y1",
+      "rank": 1,
+      "error_A_24h": 32.73,
+      "error_B_24h": 17.339,
+      "error_C_24h": 21.872,
+      "delta_CA_24h": -10.858,
+      "delta_BA_24h": -15.39,
+      "sep_CA_24h": 53.999,
+      "sep_BA_24h": 15.392,
+      "error_A_48h": 61.204,
+      "error_B_48h": 55.144,
+      "error_C_48h": 67.933,
+      "delta_CA_48h": 6.729,
+      "delta_BA_48h": -6.06,
+      "sep_CA_48h": 65.468,
+      "sep_BA_48h": 18.041,
+      "error_A_72h": 86.098,
+      "error_B_72h": 84.676,
+      "error_C_72h": 79.472,
+      "delta_CA_72h": -6.626,
+      "delta_BA_72h": -1.422,
+      "sep_CA_72h": 68.34,
+      "sep_BA_72h": 14.771,
+      "endpoint_A_72h": 160.497,
+      "path_A": 186.172,
+      "endpoint_B_72h": 148.161,
+      "path_B": 175.162,
+      "endpoint_C_72h": 128.697,
+      "path_C": 146.65,
+      "observed_72h": 208.031
+    },
+    {
+      "drifter_id": "92920",
+      "window": "GS-Y1",
+      "rank": 1,
+      "error_A_24h": 17.723,
+      "error_B_24h": 21.675,
+      "error_C_24h": 16.011,
+      "delta_CA_24h": -1.711,
+      "delta_BA_24h": 3.952,
+      "sep_CA_24h": 6.32,
+      "sep_BA_24h": 3.989,
+      "error_A_48h": 47.027,
+      "error_B_48h": 48.027,
+      "error_C_48h": 37.695,
+      "delta_CA_48h": -9.332,
+      "delta_BA_48h": 1.0,
+      "sep_CA_48h": 14.312,
+      "sep_BA_48h": 1.604,
+      "error_A_72h": 76.384,
+      "error_B_72h": 75.672,
+      "error_C_72h": 64.318,
+      "delta_CA_72h": -12.065,
+      "delta_BA_72h": -0.711,
+      "sep_CA_72h": 16.338,
+      "sep_BA_72h": 2.395,
+      "endpoint_A_72h": 55.988,
+      "path_A": 60.611,
+      "endpoint_B_72h": 54.615,
+      "path_B": 55.15,
+      "endpoint_C_72h": 48.752,
+      "path_C": 48.806,
+      "observed_72h": 28.77
+    },
+    {
+      "drifter_id": "98904",
+      "window": "GS-Y1",
+      "rank": 1,
+      "error_A_24h": 34.795,
+      "error_B_24h": 34.815,
+      "error_C_24h": 12.027,
+      "delta_CA_24h": -22.768,
+      "delta_BA_24h": 0.02,
+      "sep_CA_24h": 22.837,
+      "sep_BA_24h": 4.113,
+      "error_A_48h": 54.969,
+      "error_B_48h": 52.911,
+      "error_C_48h": 28.638,
+      "delta_CA_48h": -26.331,
+      "delta_BA_48h": -2.058,
+      "sep_CA_48h": 26.595,
+      "sep_BA_48h": 11.114,
+      "error_A_72h": 70.622,
+      "error_B_72h": 66.263,
+      "error_C_72h": 34.306,
+      "delta_CA_72h": -36.316,
+      "delta_BA_72h": -4.359,
+      "sep_CA_72h": 42.888,
+      "sep_BA_72h": 11.57,
+      "endpoint_A_72h": 126.716,
+      "path_A": 161.606,
+      "endpoint_B_72h": 115.396,
+      "path_B": 141.282,
+      "endpoint_C_72h": 121.473,
+      "path_C": 124.686,
+      "observed_72h": 100.206
+    },
+    {
+      "drifter_id": "98942",
+      "window": "GS-Y1",
+      "rank": 1,
+      "error_A_24h": 41.219,
+      "error_B_24h": 44.534,
+      "error_C_24h": 16.707,
+      "delta_CA_24h": -24.512,
+      "delta_BA_24h": 3.315,
+      "sep_CA_24h": 26.895,
+      "sep_BA_24h": 11.454,
+      "error_A_48h": 69.639,
+      "error_B_48h": 62.379,
+      "error_C_48h": 34.645,
+      "delta_CA_48h": -34.995,
+      "delta_BA_48h": -7.261,
+      "sep_CA_48h": 49.837,
+      "sep_BA_48h": 39.106,
+      "error_A_72h": 64.251,
+      "error_B_72h": 91.96,
+      "error_C_72h": 39.968,
+      "delta_CA_72h": -24.283,
+      "delta_BA_72h": 27.709,
+      "sep_CA_72h": 37.44,
+      "sep_BA_72h": 74.814,
+      "endpoint_A_72h": 160.984,
+      "path_A": 185.6,
+      "endpoint_B_72h": 131.202,
+      "path_B": 179.298,
+      "endpoint_C_72h": 123.842,
+      "path_C": 126.515,
+      "observed_72h": 109.183
+    },
+    {
+      "drifter_id": "98944",
+      "window": "GS-Y1",
+      "rank": 1,
+      "error_A_24h": 27.357,
+      "error_B_24h": 29.696,
+      "error_C_24h": 8.748,
+      "delta_CA_24h": -18.609,
+      "delta_BA_24h": 2.339,
+      "sep_CA_24h": 20.123,
+      "sep_BA_24h": 4.678,
+      "error_A_48h": 42.538,
+      "error_B_48h": 41.658,
+      "error_C_48h": 19.332,
+      "delta_CA_48h": -23.207,
+      "delta_BA_48h": -0.881,
+      "sep_CA_48h": 26.333,
+      "sep_BA_48h": 18.806,
+      "error_A_72h": 45.964,
+      "error_B_72h": 48.292,
+      "error_C_72h": 22.284,
+      "delta_CA_72h": -23.679,
+      "delta_BA_72h": 2.328,
+      "sep_CA_72h": 27.948,
+      "sep_BA_72h": 23.02,
+      "endpoint_A_72h": 122.836,
+      "path_A": 158.418,
+      "endpoint_B_72h": 108.939,
+      "path_B": 143.216,
+      "endpoint_C_72h": 108.87,
+      "path_C": 113.583,
+      "observed_72h": 87.992
+    },
+    {
+      "drifter_id": "92872",
+      "window": "GS-Y2",
+      "rank": 2,
+      "error_A_24h": 28.492,
+      "error_B_24h": 28.869,
+      "error_C_24h": 7.666,
+      "delta_CA_24h": -20.826,
+      "delta_BA_24h": 0.377,
+      "sep_CA_24h": 21.146,
+      "sep_BA_24h": 9.91,
+      "error_A_48h": 88.679,
+      "error_B_48h": 82.125,
+      "error_C_48h": 34.306,
+      "delta_CA_48h": -54.373,
+      "delta_BA_48h": -6.554,
+      "sep_CA_48h": 54.946,
+      "sep_BA_48h": 6.977,
+      "error_A_72h": 104.301,
+      "error_B_72h": 101.89,
+      "error_C_72h": "NOT_AVAILABLE",
+      "delta_CA_72h": "NOT_AVAILABLE",
+      "delta_BA_72h": -2.411,
+      "sep_CA_72h": "NOT_AVAILABLE",
+      "sep_BA_72h": 5.756,
+      "endpoint_A_72h": 153.731,
+      "path_A": 157.865,
+      "endpoint_B_72h": 159.15,
+      "path_B": 160.046,
+      "endpoint_C_72h": "NOT_AVAILABLE",
+      "path_C": 204.352,
+      "observed_72h": 240.175
+    },
+    {
+      "drifter_id": "98941",
+      "window": "GS-Y2",
+      "rank": 2,
+      "error_A_24h": 80.227,
+      "error_B_24h": 82.848,
+      "error_C_24h": 65.481,
+      "delta_CA_24h": -14.746,
+      "delta_BA_24h": 2.621,
+      "sep_CA_24h": 70.097,
+      "sep_BA_24h": 3.808,
+      "error_A_48h": 124.879,
+      "error_B_48h": 144.104,
+      "error_C_48h": 89.394,
+      "delta_CA_48h": -35.485,
+      "delta_BA_48h": 19.225,
+      "sep_CA_48h": 89.183,
+      "sep_BA_48h": 21.095,
+      "error_A_72h": 199.597,
+      "error_B_72h": 220.888,
+      "error_C_72h": 193.982,
+      "delta_CA_72h": -5.615,
+      "delta_BA_72h": 21.291,
+      "sep_CA_72h": 61.935,
+      "sep_BA_72h": 39.113,
+      "endpoint_A_72h": 197.188,
+      "path_A": 232.858,
+      "endpoint_B_72h": 171.379,
+      "path_B": 203.083,
+      "endpoint_C_72h": 235.524,
+      "path_C": 240.752,
+      "observed_72h": 392.257
+    },
+    {
+      "drifter_id": "93015",
+      "window": "GS-Y3",
+      "rank": 3,
+      "error_A_24h": 16.918,
+      "error_B_24h": 17.187,
+      "error_C_24h": 9.06,
+      "delta_CA_24h": -7.858,
+      "delta_BA_24h": 0.269,
+      "sep_CA_24h": 23.179,
+      "sep_BA_24h": 1.215,
+      "error_A_48h": 28.225,
+      "error_B_48h": 31.532,
+      "error_C_48h": 15.375,
+      "delta_CA_48h": -12.85,
+      "delta_BA_48h": 3.308,
+      "sep_CA_48h": 34.625,
+      "sep_BA_48h": 5.033,
+      "error_A_72h": 44.269,
+      "error_B_72h": 46.836,
+      "error_C_72h": 22.89,
+      "delta_CA_72h": -21.379,
+      "delta_BA_72h": 2.567,
+      "sep_CA_72h": 45.789,
+      "sep_BA_72h": 5.692,
+      "endpoint_A_72h": 26.049,
+      "path_A": 54.664,
+      "endpoint_B_72h": 21.857,
+      "path_B": 23.023,
+      "endpoint_C_72h": 71.834,
+      "path_C": 71.905,
+      "observed_72h": 68.331
+    },
+    {
+      "drifter_id": "92863",
+      "window": "GS-Y4",
+      "rank": 4,
+      "error_A_24h": 25.099,
+      "error_B_24h": 18.348,
+      "error_C_24h": 24.833,
+      "delta_CA_24h": -0.266,
+      "delta_BA_24h": -6.751,
+      "sep_CA_24h": 13.011,
+      "sep_BA_24h": 6.908,
+      "error_A_48h": 52.491,
+      "error_B_48h": 42.335,
+      "error_C_48h": 39.558,
+      "delta_CA_48h": -12.933,
+      "delta_BA_48h": -10.156,
+      "sep_CA_48h": 30.249,
+      "sep_BA_48h": 12.035,
+      "error_A_72h": 84.916,
+      "error_B_72h": 70.699,
+      "error_C_72h": 43.633,
+      "delta_CA_72h": -41.283,
+      "delta_BA_72h": -14.217,
+      "sep_CA_72h": 59.994,
+      "sep_BA_72h": 18.498,
+      "endpoint_A_72h": 80.199,
+      "path_A": 84.373,
+      "endpoint_B_72h": 86.741,
+      "path_B": 88.051,
+      "endpoint_C_72h": 51.553,
+      "path_C": 62.368,
+      "observed_72h": 93.653
+    },
+    {
+      "drifter_id": "98936",
+      "window": "GS-Y5",
+      "rank": 5,
+      "error_A_24h": 18.629,
+      "error_B_24h": 1.77,
+      "error_C_24h": 117.8,
+      "delta_CA_24h": 99.17,
+      "delta_BA_24h": -16.859,
+      "sep_CA_24h": 99.728,
+      "sep_BA_24h": 18.53,
+      "error_A_48h": 32.409,
+      "error_B_48h": 32.186,
+      "error_C_48h": "NOT_AVAILABLE",
+      "delta_CA_48h": "NOT_AVAILABLE",
+      "delta_BA_48h": -0.223,
+      "sep_CA_48h": "NOT_AVAILABLE",
+      "sep_BA_48h": 22.077,
+      "error_A_72h": 49.207,
+      "error_B_72h": 61.857,
+      "error_C_72h": "NOT_AVAILABLE",
+      "delta_CA_72h": "NOT_AVAILABLE",
+      "delta_BA_72h": 12.65,
+      "sep_CA_72h": "NOT_AVAILABLE",
+      "sep_BA_72h": 21.79,
+      "endpoint_A_72h": 116.612,
+      "path_A": 126.521,
+      "endpoint_B_72h": 136.967,
+      "path_B": 155.793,
+      "endpoint_C_72h": "NOT_AVAILABLE",
+      "path_C": 186.522,
+      "observed_72h": 86.202
+    },
+    {
+      "drifter_id": "81994",
+      "window": "GS-Y6",
+      "rank": 6,
+      "error_A_24h": 54.512,
+      "error_B_24h": 54.936,
+      "error_C_24h": 36.256,
+      "delta_CA_24h": -18.256,
+      "delta_BA_24h": 0.423,
+      "sep_CA_24h": 37.745,
+      "sep_BA_24h": 13.59,
+      "error_A_48h": 135.2,
+      "error_B_48h": 133.636,
+      "error_C_48h": 91.168,
+      "delta_CA_48h": -44.032,
+      "delta_BA_48h": -1.564,
+      "sep_CA_48h": 54.437,
+      "sep_BA_48h": 23.975,
+      "error_A_72h": 270.709,
+      "error_B_72h": 283.559,
+      "error_C_72h": 204.934,
+      "delta_CA_72h": -65.774,
+      "delta_BA_72h": 12.85,
+      "sep_CA_72h": 69.586,
+      "sep_BA_72h": 18.214,
+      "endpoint_A_72h": 151.968,
+      "path_A": 158.838,
+      "endpoint_B_72h": 170.12,
+      "path_B": 189.18,
+      "endpoint_C_72h": 93.614,
+      "path_C": 95.926,
+      "observed_72h": 186.287
+    },
+    {
+      "drifter_id": "88538",
+      "window": "GS-Y6",
+      "rank": 6,
+      "error_A_24h": 60.191,
+      "error_B_24h": 62.143,
+      "error_C_24h": 37.752,
+      "delta_CA_24h": -22.439,
+      "delta_BA_24h": 1.952,
+      "sep_CA_24h": 46.662,
+      "sep_BA_24h": 6.325,
+      "error_A_48h": 152.568,
+      "error_B_48h": 151.624,
+      "error_C_48h": 98.697,
+      "delta_CA_48h": -53.871,
+      "delta_BA_48h": -0.944,
+      "sep_CA_48h": 70.187,
+      "sep_BA_48h": 7.874,
+      "error_A_72h": 310.547,
+      "error_B_72h": 308.311,
+      "error_C_72h": 211.081,
+      "delta_CA_72h": -99.466,
+      "delta_BA_72h": -2.236,
+      "sep_CA_72h": 105.975,
+      "sep_BA_72h": 4.434,
+      "endpoint_A_72h": 181.827,
+      "path_A": 196.506,
+      "endpoint_B_72h": 177.733,
+      "path_B": 199.139,
+      "endpoint_C_72h": 90.605,
+      "path_C": 92.887,
+      "observed_72h": 198.402
+    },
+    {
+      "drifter_id": "90466",
+      "window": "GS-Y6",
+      "rank": 6,
+      "error_A_24h": 46.593,
+      "error_B_24h": 46.291,
+      "error_C_24h": 37.364,
+      "delta_CA_24h": -9.229,
+      "delta_BA_24h": -0.302,
+      "sep_CA_24h": 26.65,
+      "sep_BA_24h": 14.349,
+      "error_A_48h": 105.377,
+      "error_B_48h": 105.302,
+      "error_C_48h": 81.515,
+      "delta_CA_48h": -23.862,
+      "delta_BA_48h": -0.075,
+      "sep_CA_48h": 34.098,
+      "sep_BA_48h": 27.792,
+      "error_A_72h": 203.025,
+      "error_B_72h": 219.933,
+      "error_C_72h": 173.171,
+      "delta_CA_72h": -29.854,
+      "delta_BA_72h": 16.907,
+      "sep_CA_72h": 34.572,
+      "sep_BA_72h": 26.12,
+      "endpoint_A_72h": 124.469,
+      "path_A": 128.323,
+      "endpoint_B_72h": 150.501,
+      "path_B": 163.557,
+      "endpoint_C_72h": 92.612,
+      "path_C": 94.673,
+      "observed_72h": 149.701
+    },
+    {
+      "drifter_id": "92869",
+      "window": "GS-Y7",
+      "rank": 7,
+      "error_A_24h": 84.985,
+      "error_B_24h": 91.541,
+      "error_C_24h": "NOT_AVAILABLE",
+      "delta_CA_24h": "NOT_AVAILABLE",
+      "delta_BA_24h": 6.556,
+      "sep_CA_24h": "NOT_AVAILABLE",
+      "sep_BA_24h": 7.57,
+      "error_A_48h": 103.731,
+      "error_B_48h": 111.531,
+      "error_C_48h": "NOT_AVAILABLE",
+      "delta_CA_48h": "NOT_AVAILABLE",
+      "delta_BA_48h": 7.8,
+      "sep_CA_48h": "NOT_AVAILABLE",
+      "sep_BA_48h": 13.141,
+      "error_A_72h": "NOT_AVAILABLE",
+      "error_B_72h": "NOT_AVAILABLE",
+      "error_C_72h": "NOT_AVAILABLE",
+      "delta_CA_72h": "NOT_AVAILABLE",
+      "delta_BA_72h": "NOT_AVAILABLE",
+      "sep_CA_72h": "NOT_AVAILABLE",
+      "sep_BA_72h": "NOT_AVAILABLE",
+      "endpoint_A_72h": "NOT_AVAILABLE",
+      "path_A": 211.671,
+      "endpoint_B_72h": "NOT_AVAILABLE",
+      "path_B": 216.536,
+      "endpoint_C_72h": "NOT_AVAILABLE",
+      "path_C": 18.532,
+      "observed_72h": 172.82
+    },
+    {
+      "drifter_id": "88532",
+      "window": "GS-Y8",
+      "rank": 8,
+      "error_A_24h": 83.673,
+      "error_B_24h": 90.827,
+      "error_C_24h": 31.466,
+      "delta_CA_24h": -52.208,
+      "delta_BA_24h": 7.154,
+      "sep_CA_24h": 114.932,
+      "sep_BA_24h": 12.698,
+      "error_A_48h": 123.057,
+      "error_B_48h": 145.93,
+      "error_C_48h": "NOT_AVAILABLE",
+      "delta_CA_48h": "NOT_AVAILABLE",
+      "delta_BA_48h": 22.873,
+      "sep_CA_48h": "NOT_AVAILABLE",
+      "sep_BA_48h": 29.018,
+      "error_A_72h": "NOT_AVAILABLE",
+      "error_B_72h": "NOT_AVAILABLE",
+      "error_C_72h": "NOT_AVAILABLE",
+      "delta_CA_72h": "NOT_AVAILABLE",
+      "delta_BA_72h": "NOT_AVAILABLE",
+      "sep_CA_72h": "NOT_AVAILABLE",
+      "sep_BA_72h": "NOT_AVAILABLE",
+      "endpoint_A_72h": "NOT_AVAILABLE",
+      "path_A": 201.01,
+      "endpoint_B_72h": "NOT_AVAILABLE",
+      "path_B": 205.963,
+      "endpoint_C_72h": "NOT_AVAILABLE",
+      "path_C": 198.036,
+      "observed_72h": 412.902
+    },
+    {
+      "drifter_id": "92906",
+      "window": "GS-Y9",
+      "rank": 9,
+      "error_A_24h": 14.921,
+      "error_B_24h": 17.085,
+      "error_C_24h": 26.613,
+      "delta_CA_24h": 11.692,
+      "delta_BA_24h": 2.163,
+      "sep_CA_24h": 11.758,
+      "sep_BA_24h": 3.713,
+      "error_A_48h": 32.206,
+      "error_B_48h": 30.518,
+      "error_C_48h": 48.06,
+      "delta_CA_48h": 15.854,
+      "delta_BA_48h": -1.687,
+      "sep_CA_48h": 19.803,
+      "sep_BA_48h": 4.239,
+      "error_A_72h": 42.529,
+      "error_B_72h": 36.473,
+      "error_C_72h": 68.454,
+      "delta_CA_72h": 25.924,
+      "delta_BA_72h": -6.056,
+      "sep_CA_72h": 33.95,
+      "sep_BA_72h": 11.215,
+      "endpoint_A_72h": 34.242,
+      "path_A": 52.534,
+      "endpoint_B_72h": 44.688,
+      "path_B": 45.976,
+      "endpoint_C_72h": 16.011,
+      "path_C": 18.952,
+      "observed_72h": 74.801
+    },
+    {
+      "drifter_id": "92919",
+      "window": "GS-Y9",
+      "rank": 9,
+      "error_A_24h": 36.58,
+      "error_B_24h": 39.428,
+      "error_C_24h": 64.973,
+      "delta_CA_24h": 28.394,
+      "delta_BA_24h": 2.848,
+      "sep_CA_24h": 67.212,
+      "sep_BA_24h": 7.109,
+      "error_A_48h": 170.123,
+      "error_B_48h": 208.463,
+      "error_C_48h": 51.109,
+      "delta_CA_48h": -119.014,
+      "delta_BA_48h": 38.341,
+      "sep_CA_48h": 155.184,
+      "sep_BA_48h": 41.993,
+      "error_A_72h": 287.951,
+      "error_B_72h": 353.669,
+      "error_C_72h": 105.284,
+      "delta_CA_72h": -182.666,
+      "delta_BA_72h": 65.718,
+      "sep_CA_72h": 192.818,
+      "sep_BA_72h": 74.452,
+      "endpoint_A_72h": 196.531,
+      "path_A": 253.241,
+      "endpoint_B_72h": 212.087,
+      "path_B": 246.467,
+      "endpoint_C_72h": 217.885,
+      "path_C": 265.322,
+      "observed_72h": 244.942
+    }
+  ],
+  "primaryDeltas72h": [
+    {
+      "window": "GS-Y1",
+      "drifter_id": "89822",
+      "delta_i": 28.762
+    },
+    {
+      "window": "GS-Y1",
+      "drifter_id": "92885",
+      "delta_i": -26.126
+    },
+    {
+      "window": "GS-Y1",
+      "drifter_id": "92917",
+      "delta_i": 42.015
+    },
+    {
+      "window": "GS-Y1",
+      "drifter_id": "92918",
+      "delta_i": -6.626
+    },
+    {
+      "window": "GS-Y1",
+      "drifter_id": "92920",
+      "delta_i": -12.065
+    },
+    {
+      "window": "GS-Y1",
+      "drifter_id": "98904",
+      "delta_i": -36.316
+    },
+    {
+      "window": "GS-Y1",
+      "drifter_id": "98942",
+      "delta_i": -24.283
+    },
+    {
+      "window": "GS-Y1",
+      "drifter_id": "98944",
+      "delta_i": -23.679
+    },
+    {
+      "window": "GS-Y2",
+      "drifter_id": "92872",
+      "delta_i": "NOT_AVAILABLE"
+    },
+    {
+      "window": "GS-Y2",
+      "drifter_id": "98941",
+      "delta_i": -5.615
+    },
+    {
+      "window": "GS-Y3",
+      "drifter_id": "93015",
+      "delta_i": -21.379
+    },
+    {
+      "window": "GS-Y4",
+      "drifter_id": "92863",
+      "delta_i": -41.283
+    },
+    {
+      "window": "GS-Y5",
+      "drifter_id": "98936",
+      "delta_i": "NOT_AVAILABLE"
+    },
+    {
+      "window": "GS-Y6",
+      "drifter_id": "81994",
+      "delta_i": -65.774
+    },
+    {
+      "window": "GS-Y6",
+      "drifter_id": "88538",
+      "delta_i": -99.466
+    },
+    {
+      "window": "GS-Y6",
+      "drifter_id": "90466",
+      "delta_i": -29.854
+    },
+    {
+      "window": "GS-Y7",
+      "drifter_id": "92869",
+      "delta_i": "NOT_AVAILABLE"
+    },
+    {
+      "window": "GS-Y8",
+      "drifter_id": "88532",
+      "delta_i": "NOT_AVAILABLE"
+    },
+    {
+      "window": "GS-Y9",
+      "drifter_id": "92906",
+      "delta_i": 25.924
+    },
+    {
+      "window": "GS-Y9",
+      "drifter_id": "92919",
+      "delta_i": -182.666
+    }
+  ],
+  "summary": {
+    "ruleId": "experiment-preregistration-step37",
+    "step": 39,
+    "status": "STEP39_EVALUATED_DETERMINISTIC",
+    "n_windows": 9,
+    "n_drifters": 20,
+    "hierarchy": "LEVEL 1 window (9) > LEVEL 2 drifter pair (20) > LEVEL 3 trajectory points (never independent)",
+    "primary": {
+      "endpoint": "Theta = median_w[ median_i( E_C,i(72h) - E_A,i(72h) ) ], km, equal window weighting",
+      "Theta_km": -31.331086,
+      "windowsWithValidPair": 6,
+      "windowsNotAvailable": [
+        "GS-Y5",
+        "GS-Y7",
+        "GS-Y8"
+      ],
+      "Delta_w": {
+        "GS-Y1": {
+          "n_valid": 8,
+          "Delta_w": -17.872416
+        },
+        "GS-Y2": {
+          "n_valid": 1,
+          "Delta_w": -5.614733
+        },
+        "GS-Y3": {
+          "n_valid": 1,
+          "Delta_w": -21.378853
+        },
+        "GS-Y4": {
+          "n_valid": 1,
+          "Delta_w": -41.283319
+        },
+        "GS-Y5": {
+          "n_valid": 0,
+          "Delta_w": "NOT_AVAILABLE"
+        },
+        "GS-Y6": {
+          "n_valid": 3,
+          "Delta_w": -65.774227
+        },
+        "GS-Y7": {
+          "n_valid": 0,
+          "Delta_w": "NOT_AVAILABLE"
+        },
+        "GS-Y8": {
+          "n_valid": 0,
+          "Delta_w": "NOT_AVAILABLE"
+        },
+        "GS-Y9": {
+          "n_valid": 2,
+          "Delta_w": -78.370901
+        }
+      },
+      "windowConsistency": {
+        "negative": 6,
+        "positive": 0,
+        "tied": 0
+      },
+      "pooledSecondary": {
+        "pooledMedian": {
+          "n": 16,
+          "median": -23.981,
+          "mean": -29.902,
+          "min": -182.666,
+          "max": 42.015
+        },
+        "wins_candidate": 13,
+        "losses_candidate": 3,
+        "ties": 0,
+        "n": 16,
+        "notAvailable": 4
+      },
+      "descriptiveLabel_step30aRule_pooledPairs": "CANDIDATE_DESCRIPTIVELY_FAVORED",
+      "bootstrapInterval": "NOT RUN IN STEP 39 (deferred to the preregistered uncertainty step)",
+      "successCriterionEvaluated": false,
+      "successCriterion": "label CANDIDATE_DESCRIPTIVELY_FAVORED AND window-level 95 % interval of Theta < 0 (interval pending)"
+    },
+    "secondary": {
+      "nested": {
+        "delta_CA_24h": {
+          "perWindow": {
+            "GS-Y1": {
+              "n_valid": 8,
+              "Delta_w": -8.35269
+            },
+            "GS-Y2": {
+              "n_valid": 2,
+              "Delta_w": -17.785925
+            },
+            "GS-Y3": {
+              "n_valid": 1,
+              "Delta_w": -7.857914
+            },
+            "GS-Y4": {
+              "n_valid": 1,
+              "Delta_w": -0.265607
+            },
+            "GS-Y5": {
+              "n_valid": 1,
+              "Delta_w": 99.17016
+            },
+            "GS-Y6": {
+              "n_valid": 3,
+              "Delta_w": -18.256074
+            },
+            "GS-Y7": {
+              "n_valid": 0,
+              "Delta_w": "NOT_AVAILABLE"
+            },
+            "GS-Y8": {
+              "n_valid": 1,
+              "Delta_w": -52.207804
+            },
+            "GS-Y9": {
+              "n_valid": 2,
+              "Delta_w": 20.042566
+            }
+          },
+          "windowsWithValidPair": 8,
+          "windowsNotAvailable": [
+            "GS-Y7"
+          ],
+          "Theta": -8.105302,
+          "windowConsistency": {
+            "negative": 6,
+            "positive": 2,
+            "tied": 0
+          },
+          "formula": "Theta = median_w[ median_i( E_C - E_A (24h) ) ]"
+        },
+        "delta_CA_48h": {
+          "perWindow": {
+            "GS-Y1": {
+              "n_valid": 8,
+              "Delta_w": -16.269051
+            },
+            "GS-Y2": {
+              "n_valid": 2,
+              "Delta_w": -44.928738
+            },
+            "GS-Y3": {
+              "n_valid": 1,
+              "Delta_w": -12.850033
+            },
+            "GS-Y4": {
+              "n_valid": 1,
+              "Delta_w": -12.932801
+            },
+            "GS-Y5": {
+              "n_valid": 0,
+              "Delta_w": "NOT_AVAILABLE"
+            },
+            "GS-Y6": {
+              "n_valid": 3,
+              "Delta_w": -44.031938
+            },
+            "GS-Y7": {
+              "n_valid": 0,
+              "Delta_w": "NOT_AVAILABLE"
+            },
+            "GS-Y8": {
+              "n_valid": 0,
+              "Delta_w": "NOT_AVAILABLE"
+            },
+            "GS-Y9": {
+              "n_valid": 2,
+              "Delta_w": -51.579842
+            }
+          },
+          "windowsWithValidPair": 6,
+          "windowsNotAvailable": [
+            "GS-Y5",
+            "GS-Y7",
+            "GS-Y8"
+          ],
+          "Theta": -30.150495,
+          "windowConsistency": {
+            "negative": 6,
+            "positive": 0,
+            "tied": 0
+          },
+          "formula": "Theta = median_w[ median_i( E_C - E_A (48h) ) ]"
+        },
+        "delta_BA_24h": {
+          "perWindow": {
+            "GS-Y1": {
+              "n_valid": 8,
+              "Delta_w": 1.170639
+            },
+            "GS-Y2": {
+              "n_valid": 2,
+              "Delta_w": 1.498911
+            },
+            "GS-Y3": {
+              "n_valid": 1,
+              "Delta_w": 0.26905
+            },
+            "GS-Y4": {
+              "n_valid": 1,
+              "Delta_w": -6.750807
+            },
+            "GS-Y5": {
+              "n_valid": 1,
+              "Delta_w": -16.859486
+            },
+            "GS-Y6": {
+              "n_valid": 3,
+              "Delta_w": 0.423137
+            },
+            "GS-Y7": {
+              "n_valid": 1,
+              "Delta_w": 6.55601
+            },
+            "GS-Y8": {
+              "n_valid": 1,
+              "Delta_w": 7.154133
+            },
+            "GS-Y9": {
+              "n_valid": 2,
+              "Delta_w": 2.505891
+            }
+          },
+          "windowsWithValidPair": 9,
+          "windowsNotAvailable": [],
+          "Theta": 1.170639,
+          "windowConsistency": {
+            "negative": 2,
+            "positive": 7,
+            "tied": 0
+          },
+          "formula": "Theta = median_w[ median_i( E_B - E_A (24h) ) ]"
+        },
+        "delta_BA_48h": {
+          "perWindow": {
+            "GS-Y1": {
+              "n_valid": 8,
+              "Delta_w": -3.550284
+            },
+            "GS-Y2": {
+              "n_valid": 2,
+              "Delta_w": 6.33532
+            },
+            "GS-Y3": {
+              "n_valid": 1,
+              "Delta_w": 3.307517
+            },
+            "GS-Y4": {
+              "n_valid": 1,
+              "Delta_w": -10.156024
+            },
+            "GS-Y5": {
+              "n_valid": 1,
+              "Delta_w": -0.22297
+            },
+            "GS-Y6": {
+              "n_valid": 3,
+              "Delta_w": -0.944081
+            },
+            "GS-Y7": {
+              "n_valid": 1,
+              "Delta_w": 7.799876
+            },
+            "GS-Y8": {
+              "n_valid": 1,
+              "Delta_w": 22.873179
+            },
+            "GS-Y9": {
+              "n_valid": 2,
+              "Delta_w": 18.326614
+            }
+          },
+          "windowsWithValidPair": 9,
+          "windowsNotAvailable": [],
+          "Theta": 3.307517,
+          "windowConsistency": {
+            "negative": 4,
+            "positive": 5,
+            "tied": 0
+          },
+          "formula": "Theta = median_w[ median_i( E_B - E_A (48h) ) ]"
+        },
+        "delta_BA_72h": {
+          "perWindow": {
+            "GS-Y1": {
+              "n_valid": 8,
+              "Delta_w": -1.066712
+            },
+            "GS-Y2": {
+              "n_valid": 2,
+              "Delta_w": 9.439917
+            },
+            "GS-Y3": {
+              "n_valid": 1,
+              "Delta_w": 2.566956
+            },
+            "GS-Y4": {
+              "n_valid": 1,
+              "Delta_w": -14.217265
+            },
+            "GS-Y5": {
+              "n_valid": 1,
+              "Delta_w": 12.65033
+            },
+            "GS-Y6": {
+              "n_valid": 3,
+              "Delta_w": 12.850437
+            },
+            "GS-Y7": {
+              "n_valid": 0,
+              "Delta_w": "NOT_AVAILABLE"
+            },
+            "GS-Y8": {
+              "n_valid": 0,
+              "Delta_w": "NOT_AVAILABLE"
+            },
+            "GS-Y9": {
+              "n_valid": 2,
+              "Delta_w": 29.831231
+            }
+          },
+          "windowsWithValidPair": 7,
+          "windowsNotAvailable": [
+            "GS-Y7",
+            "GS-Y8"
+          ],
+          "Theta": 9.439917,
+          "windowConsistency": {
+            "negative": 2,
+            "positive": 5,
+            "tied": 0
+          },
+          "formula": "Theta = median_w[ median_i( E_B - E_A (72h) ) ]"
+        }
+      },
+      "pooled": {
+        "delta_CA_24h": {
+          "pooledMedian": {
+            "n": 19,
+            "median": -9.229,
+            "mean": -4.145,
+            "min": -52.208,
+            "max": 99.17
+          },
+          "wins_candidate": 14,
+          "losses_candidate": 5,
+          "ties": 0,
+          "n": 19,
+          "notAvailable": 1
+        },
+        "delta_CA_48h": {
+          "pooledMedian": {
+            "n": 17,
+            "median": -23.862,
+            "mean": -24.289,
+            "min": -119.014,
+            "max": 23.091
+          },
+          "wins_candidate": 13,
+          "losses_candidate": 4,
+          "ties": 0,
+          "n": 17,
+          "notAvailable": 3
+        },
+        "delta_CA_72h": {
+          "pooledMedian": {
+            "n": 16,
+            "median": -23.981,
+            "mean": -29.902,
+            "min": -182.666,
+            "max": 42.015
+          },
+          "wins_candidate": 13,
+          "losses_candidate": 3,
+          "ties": 0,
+          "n": 16,
+          "notAvailable": 4
+        },
+        "delta_BA_24h": {
+          "pooledMedian": {
+            "n": 20,
+            "median": 1.187,
+            "mean": -0.451,
+            "min": -16.859,
+            "max": 7.154
+          },
+          "wins_daily": 6,
+          "losses_daily": 14,
+          "ties": 0,
+          "n": 20,
+          "notAvailable": 0
+        },
+        "delta_BA_48h": {
+          "pooledMedian": {
+            "n": 20,
+            "median": -1.254,
+            "mean": 1.81,
+            "min": -11.788,
+            "max": 38.341
+          },
+          "wins_daily": 14,
+          "losses_daily": 6,
+          "ties": 0,
+          "n": 20,
+          "notAvailable": 0
+        },
+        "delta_BA_72h": {
+          "pooledMedian": {
+            "n": 18,
+            "median": 0.808,
+            "mean": 3.843,
+            "min": -65.3,
+            "max": 65.718
+          },
+          "wins_daily": 9,
+          "losses_daily": 9,
+          "ties": 0,
+          "n": 18,
+          "notAvailable": 2
+        }
+      },
+      "temporalLabel72h_step32Rule_pooledPairs": "NO_CLEAR_TEMPORAL_DIFFERENCE"
+    },
+    "availability": {
+      "A_24h": 20,
+      "A_48h": 20,
+      "A_72h": 18,
+      "B_24h": 20,
+      "B_48h": 20,
+      "B_72h": 18,
+      "C_24h": 19,
+      "C_48h": 17,
+      "C_72h": 16,
+      "pair_CA_24h": 19,
+      "pair_CA_48h": 17,
+      "pair_CA_72h": 16,
+      "pair_BA_24h": 20,
+      "pair_BA_48h": 20,
+      "pair_BA_72h": 18
+    },
+    "blockedRuns": [],
+    "metrics": {
+      "A": {
+        "M1_endpoint72h": {
+          "n": 18,
+          "median": 125.592,
+          "mean": 121.064,
+          "min": 26.049,
+          "max": 197.188
+        },
+        "M2_totalPath": {
+          "n": 20,
+          "median": 158.628,
+          "mean": 148.868,
+          "min": 52.534,
+          "max": 253.241
+        },
+        "M3_72h": {
+          "n": 18,
+          "median": 80.846,
+          "mean": 117.911,
+          "min": 20.336,
+          "max": 310.547
+        }
+      },
+      "B": {
+        "M1_endpoint72h": {
+          "n": 18,
+          "median": 129.415,
+          "mean": 117.721,
+          "min": 21.857,
+          "max": 212.087
+        },
+        "M2_totalPath": {
+          "n": 20,
+          "median": 157.92,
+          "mean": 143.978,
+          "min": 23.023,
+          "max": 246.467
+        },
+        "M3_72h": {
+          "n": 18,
+          "median": 74.971,
+          "mean": 121.754,
+          "min": 18.074,
+          "max": 353.669
+        }
+      },
+      "C": {
+        "M1_endpoint72h": {
+          "n": 16,
+          "median": 93.113,
+          "mean": 103.21,
+          "min": 16.011,
+          "max": 235.524
+        },
+        "M2_totalPath": {
+          "n": 20,
+          "median": 104.754,
+          "mean": 121.118,
+          "min": 18.532,
+          "max": 265.322
+        },
+        "M3_72h": {
+          "n": 16,
+          "median": 66.386,
+          "mean": 93.154,
+          "min": 22.284,
+          "max": 211.081
+        }
+      },
+      "M4_separation72h": {
+        "C_vs_A": {
+          "n": 16,
+          "median": 49.756,
+          "mean": 58.629,
+          "min": 16.338,
+          "max": 192.818
+        },
+        "B_vs_A": {
+          "n": 18,
+          "median": 16.493,
+          "mean": 24.798,
+          "min": 2.395,
+          "max": 74.814
+        }
+      },
+      "M5_observed72h": {
+        "n": 20,
+        "median": 109.418,
+        "mean": 153.911,
+        "min": 28.77,
+        "max": 412.902
+      }
+    },
+    "noImputation": true,
+    "noSubstitution": true,
+    "parameterSelection": "NONE",
+    "modelSelection": "NONE",
+    "candidateStatus": "CANDIDATE_ONLY",
+    "baselineStatus": "FROZEN_REFERENCE_BASELINE",
+    "interpretation": "DESCRIPTIVE / DETERMINISTIC ONLY; no inference until the preregistered bootstrap"
+  },
+  "tableSha256": "30fbc404142e9b20bb83879a67821614937a146810078088cb623bbb04623035",
+  "summarySha256": "7d90ba995733071f9536df598332bffdc2bd75d4206e7ef23a2c1f9bde67ea83"
+}

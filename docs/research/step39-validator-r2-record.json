@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "experiment-preregistration-step37",
+  "step": 39,
+  "status": "VALIDATOR REVISION RECORDED (uncommitted)",
+  "createdAtUTC": "2026-09-07T03:52:41Z",
+  "protocolSha256": "5bd1eb236d2d423f2af24440cceea798e150fd20ee2a4acb754b78522b6aba23",
+  "reason": "r1 parsed every trajectory row timestamp with a whole-second format and required every row on the 900 s grid; the frozen runtime (155995dd, boundaryPolicy STOP_AT_FIRST_CROSSING) writes the terminal sample of a stopped particle at the exact crossing instant (e.g. GS-Y7 2010-08-31T10:16:52.559116Z, OUT_OF_DOMAIN at 40 N), exactly as in STEP 20/32 exports. r1 crashed on that row. r2 accepts such off-grid rows only when valid == false with a terminal status, and still requires every valid sample on the 900 s grid. No trajectory, metric, manifest or scientific setting was changed.",
+  "r1": {
+    "path": "tools/research/check_step39_execution.py",
+    "sha256": "92f05408446c7d233b438d3bacd4d9c61ccc900afd77900cf7f638d2d0cb2496",
+    "result": "CRASH (ValueError on fractional-second terminal timestamp) x2, byte-identical"
+  },
+  "r2": {
+    "path": "tools/research/check_step39_execution_r2.py",
+    "sha256": "11d32da938e7d78be87bf892720626ad851f226e971dfcab7a01c0df342c3c81"
+  },
+  "pipelineOutputsModified": false
+}

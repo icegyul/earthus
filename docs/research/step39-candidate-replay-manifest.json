@@ -1,0 +1,97 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "experiment-preregistration-step37",
+  "kind": "candidate",
+  "runManifestSha256": "534cd7426f6f2af653303b9e4ae019d489d9e416524b54859ba7d227da86eba5",
+  "replayTool": {
+    "file": "tools/research/replay_step39_run.py",
+    "sha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899"
+  },
+  "replays": [
+    {
+      "runId": "step39-C-alpha0.002-GS-Y1",
+      "windowId": "GS-Y1",
+      "condition": "C",
+      "resultArraySha256": "0e83017e855ccd6654696dc20176da3bef6a06c684afc7706c9f2d811fadde8a",
+      "replayResultSha256": "0e83017e855ccd6654696dc20176da3bef6a06c684afc7706c9f2d811fadde8a",
+      "trajectoriesSha256": "437d8e9245ef746bab1ee4c06c8418b7f3212b557d9d9d91c4f610acbba08e93",
+      "matched": true
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y2",
+      "windowId": "GS-Y2",
+      "condition": "C",
+      "resultArraySha256": "e21f7ac7d2b13ead42e9334f533e67e25dd0c46b85c6543e743fef4ac0c5c6bd",
+      "replayResultSha256": "e21f7ac7d2b13ead42e9334f533e67e25dd0c46b85c6543e743fef4ac0c5c6bd",
+      "trajectoriesSha256": "f926448380feaeeb2a5187995e42ee4b4a68de7af11e58c5d2cbea563060b92e",
+      "matched": true
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y3",
+      "windowId": "GS-Y3",
+      "condition": "C",
+      "resultArraySha256": "c0bbebf0cbd08541aab217d03ee7a4ed112704603149586e090158d8a5bafbf6",
+      "replayResultSha256": "c0bbebf0cbd08541aab217d03ee7a4ed112704603149586e090158d8a5bafbf6",
+      "trajectoriesSha256": "1bda419d703a51b91917caf54a3bb9d20eb03763d4fc6fb175bb2002979295ff",
+      "matched": true
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y4",
+      "windowId": "GS-Y4",
+      "condition": "C",
+      "resultArraySha256": "f7960f23ff8fa816b0c70ac3bd32f21cf8370ca6bc35f73881bfc44fb0f3be5d",
+      "replayResultSha256": "f7960f23ff8fa816b0c70ac3bd32f21cf8370ca6bc35f73881bfc44fb0f3be5d",
+      "trajectoriesSha256": "d0439a802bd399a8cce2c868fbd9651946980e1004c16a318fc53fed817f4f20",
+      "matched": true
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y5",
+      "windowId": "GS-Y5",
+      "condition": "C",
+      "resultArraySha256": "3d652de9fcf5d018f901b4aba1f5cce2bbb137955d6f0d46b99c19df43e224e0",
+      "replayResultSha256": "3d652de9fcf5d018f901b4aba1f5cce2bbb137955d6f0d46b99c19df43e224e0",
+      "trajectoriesSha256": "a0faddefef91f109c98c8e3c53e48c4689324161b0d7b737ef6899f37966ab95",
+      "matched": true
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y6",
+      "windowId": "GS-Y6",
+      "condition": "C",
+      "resultArraySha256": "bca5538c519492c69c9c3e64fd0829b29ef7ab4ee6754d626bedb631f48a0b37",
+      "replayResultSha256": "bca5538c519492c69c9c3e64fd0829b29ef7ab4ee6754d626bedb631f48a0b37",
+      "trajectoriesSha256": "f1f7983dd67e82e3d5b90ef35ef0f8ddb7f5f1bade2d14c16f198f0d546a124d",
+      "matched": true
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y7",
+      "windowId": "GS-Y7",
+      "condition": "C",
+      "resultArraySha256": "bdc29c47a5bb3056ad3e83d55acb684f8885e82b8808a25f961ff503d0fbc487",
+      "replayResultSha256": "bdc29c47a5bb3056ad3e83d55acb684f8885e82b8808a25f961ff503d0fbc487",
+      "trajectoriesSha256": "4e00c2514f67e8feb9ea15e273e7701866acc701938d1d8cd66ac34f0126ff57",
+      "matched": true
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y8",
+      "windowId": "GS-Y8",
+      "condition": "C",
+      "resultArraySha256": "45b4df517f1cb74c6c1ed83dc57a7c0737756be67f2ddfda052b59201c101de5",
+      "replayResultSha256": "45b4df517f1cb74c6c1ed83dc57a7c0737756be67f2ddfda052b59201c101de5",
+      "trajectoriesSha256": "c5987f53d4a900f665ff15accd57c8c50493dbb95508d1fac4b910712ccc8cfc",
+      "matched": true
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y9",
+      "windowId": "GS-Y9",
+      "condition": "C",
+      "resultArraySha256": "9dde6892d7172c514c92017641763e0967aa27b7a3449a24779b644fa39f664f",
+      "replayResultSha256": "9dde6892d7172c514c92017641763e0967aa27b7a3449a24779b644fa39f664f",
+      "trajectoriesSha256": "94f4eff1c79b60cc0c46d3a4b7ce0b36ae0f9b58b8f0a5a6ac0c9da2add43462",
+      "matched": true
+    }
+  ],
+  "matchedCount": 9,
+  "total": 9,
+  "allMatched": true,
+  "blockedCount": 0
+}

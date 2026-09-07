@@ -1,0 +1,960 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "experiment-preregistration-step37",
+  "phase": "STEP39",
+  "kind": "candidate",
+  "conditions": [
+    "C"
+  ],
+  "cohortManifestSha256": "bda31c3ca36a395acadc95c1cb18663964ee9a00e4a72a7c2504182f51df06ca",
+  "acquisitionManifestSha256": "c9d3109fbab2970b43b887cc7ba81d3aacbdd094375b091e8e185097a22dc2a0",
+  "dailyManifestSha256": "76948fb690f53ac894ac980530e1f67b76ea4ac34104422b0d232a31f3dfbcf5",
+  "candidateManifestSha256": "63129afa4712d18d04a8a9327d92c923881394684c29fc23569ddc75fdf4ecf2",
+  "status": "STEP32_RUNS_PASS",
+  "modelRunCount": 9,
+  "plannedRuns": 9,
+  "alpha": 0.002,
+  "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+  "runnerSha256": "fdbf845ab5c01049953fdc5080ab90956b93d41d15c0984d4b5d53f022e78101",
+  "runner": "tools/research/run_step39_trajectories.py",
+  "sharedModuleSha256": "2310a3b786043634a26a40ee6da52d50e0a0b135efd830fb21d9ef86e001f5e0",
+  "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+  "segmentationRule": "STEP 20 B-3 (36 h split) only where the 25-frame dataset exceeds the runtime value limit",
+  "blockedRuns": [],
+  "blockedWindows": [],
+  "evaluableWindows": [
+    "GS-Y1",
+    "GS-Y2",
+    "GS-Y3",
+    "GS-Y4",
+    "GS-Y5",
+    "GS-Y6",
+    "GS-Y7",
+    "GS-Y8",
+    "GS-Y9"
+  ],
+  "runs": [
+    {
+      "runId": "step39-C-alpha0.002-GS-Y1",
+      "windowId": "GS-Y1",
+      "role": "NEW_HOLDOUT",
+      "condition": "C",
+      "conditionName": "GLORYS_STOKES_CANDIDATE",
+      "equation": "dX/dt = U_GLORYS + U_Stokes + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.81007,
+      "drifterCount": 8,
+      "released": 8,
+      "drifterIds": [
+        "89822",
+        "92885",
+        "92917",
+        "92918",
+        "92920",
+        "98904",
+        "98942",
+        "98944"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -75.01929,
+        "east": -55.39547,
+        "south": 30.949379999999998,
+        "north": 37.43114
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step39/forcing/candidate/GS-Y1.treatment.dataset.json",
+        "fileSha256": "7320121af7a3bdbb06c04c95beed3740e65f5f36c9cde335ec1c011c905e1ff8",
+        "gridSha256": "30db42e9984b53c4a6cc380136d63010aef36432218953f2b7f663c12c4f6020"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y1.ncep10m.wind.json",
+        "fileSha256": "34ab751e1dd694b7202e45753c1bf5adc2bd54bff9546480653c3386ee5a2641",
+        "gridSha256": "e6e35f7ea7d39565149f4e8be77ede3718afe7509e5253b1ba2bae2339a7a0de"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "0e83017e855ccd6654696dc20176da3bef6a06c684afc7706c9f2d811fadde8a",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y1/C-alpha0.002/spec.json",
+          "sha256": "63e41ee353d4a6eb54313f345a34e8ee1b3fc0916c26e87eacac1369a9f07e2f"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y1/C-alpha0.002/result.json",
+      "resultSha256": "7ac33a0f3ee213f2b1f40a20c3ce25a7d451c88f3c292d936b959de822aeb2d2",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y1/C-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "437d8e9245ef746bab1ee4c06c8418b7f3212b557d9d9d91c4f610acbba08e93",
+      "rows": 2312,
+      "finalStatusCounts": {
+        "COMPLETED": 8
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 8
+      },
+      "startedAtUTC": "2026-09-07T03:47:49Z",
+      "completedAtUTC": "2026-09-07T03:47:58Z",
+      "wallSeconds": 8.9,
+      "endpoints72h": [
+        {
+          "drifterId": "89822",
+          "lon": -61.2291838958823,
+          "lat": 34.33396863697535,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "92885",
+          "lon": -57.34536456684617,
+          "lat": 34.69948120674965,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "92917",
+          "lon": -60.329845375974955,
+          "lat": 36.85285747438403,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "92918",
+          "lon": -74.03695667555924,
+          "lat": 33.115390533722156,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "92920",
+          "lon": -66.59229052722156,
+          "lat": 33.38780310609941,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "98904",
+          "lon": -71.2916785165052,
+          "lat": 35.34993459491549,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "98942",
+          "lon": -71.21989584210944,
+          "lat": 35.380898566945916,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "98944",
+          "lon": -71.2863973187956,
+          "lat": 35.241522988790145,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "0e83017e855ccd6654696dc20176da3bef6a06c684afc7706c9f2d811fadde8a",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y2",
+      "windowId": "GS-Y2",
+      "role": "NEW_HOLDOUT",
+      "condition": "C",
+      "conditionName": "GLORYS_STOKES_CANDIDATE",
+      "equation": "dX/dt = U_GLORYS + U_Stokes + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.81007,
+      "drifterCount": 2,
+      "released": 2,
+      "drifterIds": [
+        "92872",
+        "98941"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -71.93419,
+        "east": -61.87165,
+        "south": 36.35383,
+        "north": 40.0
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step39/forcing/candidate/GS-Y2.treatment.dataset.json",
+        "fileSha256": "3bc85029d2dfcf8f9a3567cb1598b4d417ecf02800fac9c011d649cfbeb6c6ab",
+        "gridSha256": "4291d9fe840c6461c62fc277cafebe1369bec0f0805b9088f014c489745ed702"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y2.ncep10m.wind.json",
+        "fileSha256": "0590e14ed13cbebf87f869ea1f9bd6fba7f0c24c56ebab3bb26eee2e1f34d388",
+        "gridSha256": "40a08573984ccdaefdebcd7aa98d511f9c566a15479ca8801c271ba8cb8eb497"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "e21f7ac7d2b13ead42e9334f533e67e25dd0c46b85c6543e743fef4ac0c5c6bd",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y2/C-alpha0.002/spec.json",
+          "sha256": "f944a61d66489508d18b353a6356b957c1fcae7f00c053dbc5b80db7e945faac"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y2/C-alpha0.002/result.json",
+      "resultSha256": "3235f6d57d0442400b7dc2d1f985184f1ef67a7eeabf7d18a220c3bbccd77494",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y2/C-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "f926448380feaeeb2a5187995e42ee4b4a68de7af11e58c5d2cbea563060b92e",
+      "rows": 571,
+      "finalStatusCounts": {
+        "FORCING_UNAVAILABLE": 1,
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 1,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "startedAtUTC": "2026-09-07T03:48:07Z",
+      "completedAtUTC": "2026-09-07T03:48:09Z",
+      "wallSeconds": 2.1,
+      "endpoints72h": [
+        {
+          "drifterId": "92872",
+          "lon": -61.87165000008335,
+          "lat": 38.844975873339415,
+          "timeUTC": "2010-08-02T10:10:16.851282Z",
+          "finalStatus": "OUT_OF_DOMAIN"
+        },
+        {
+          "drifterId": "98941",
+          "lon": -67.57847921949595,
+          "lat": 37.340637683438345,
+          "timeUTC": "2010-08-02T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "e21f7ac7d2b13ead42e9334f533e67e25dd0c46b85c6543e743fef4ac0c5c6bd",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y3",
+      "windowId": "GS-Y3",
+      "role": "NEW_HOLDOUT",
+      "condition": "C",
+      "conditionName": "GLORYS_STOKES_CANDIDATE",
+      "equation": "dX/dt = U_GLORYS + U_Stokes + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.81007,
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "93015"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -65.45829,
+        "east": -61.45829,
+        "south": 30.62728,
+        "north": 34.62728
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step39/forcing/candidate/GS-Y3.treatment.dataset.json",
+        "fileSha256": "7103c159a072d0b36575be0a19bd46426004bf9ed52d604863ab058d730f8cc0",
+        "gridSha256": "d57edf9854f7221c8ec39970d9da034c66b94d48bb6c449bdd6b8bee7510ecef"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y3.ncep10m.wind.json",
+        "fileSha256": "7e2a3e2f23e6647ee73cb99b8ff983f2ce1fc07d0879c03968749a8638e76d0f",
+        "gridSha256": "31720ed01f565a725747261675c46c996a531eb040428eb66a8fe5c3a89d4709"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "c0bbebf0cbd08541aab217d03ee7a4ed112704603149586e090158d8a5bafbf6",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y3/C-alpha0.002/spec.json",
+          "sha256": "2b742e4e4ea6716ceaa4b67c863441067b0abf9d2085c6ea9936c4e7c9afee8a"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y3/C-alpha0.002/result.json",
+      "resultSha256": "d05cc6154b59e5230e11aa79b78d96896e88b88c6e165ccc700b3a5205835cc6",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y3/C-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "1bda419d703a51b91917caf54a3bb9d20eb03763d4fc6fb175bb2002979295ff",
+      "rows": 289,
+      "finalStatusCounts": {
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "startedAtUTC": "2026-09-07T03:48:12Z",
+      "completedAtUTC": "2026-09-07T03:48:13Z",
+      "wallSeconds": 1.1,
+      "endpoints72h": [
+        {
+          "drifterId": "93015",
+          "lon": -62.8437871922484,
+          "lat": 33.015443641795144,
+          "timeUTC": "2010-08-05T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "c0bbebf0cbd08541aab217d03ee7a4ed112704603149586e090158d8a5bafbf6",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y4",
+      "windowId": "GS-Y4",
+      "role": "NEW_HOLDOUT",
+      "condition": "C",
+      "conditionName": "GLORYS_STOKES_CANDIDATE",
+      "equation": "dX/dt = U_GLORYS + U_Stokes + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.81007,
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "92863"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -57.24397,
+        "east": -53.24397,
+        "south": 34.5677,
+        "north": 38.5677
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step39/forcing/candidate/GS-Y4.treatment.dataset.json",
+        "fileSha256": "3dc9609d059f04a7c370a279f5dbf191eb0f1b2f7c3290636bdeb4109cea48ca",
+        "gridSha256": "7040b5183f0fd7b423b733b1e6e281e682a7f6ee3d52565ad6074ada4c5642d7"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y4.ncep10m.wind.json",
+        "fileSha256": "902f09bb108f779949578c865e8468174e8105ea0c50aaed48348bda99cfaaa1",
+        "gridSha256": "27e02d00dac6e773c0048a9236586100745e67d48098c72131227e4e8fa36ea1"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "f7960f23ff8fa816b0c70ac3bd32f21cf8370ca6bc35f73881bfc44fb0f3be5d",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y4/C-alpha0.002/spec.json",
+          "sha256": "a185a33634ef689c26517a886d02349b46c2056112cae2c50bc00295ed5a787b"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y4/C-alpha0.002/result.json",
+      "resultSha256": "e838d9f940d63c117bd02485eb7fe1010a21c36f624c250333396dcc7aa6c29f",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y4/C-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "d0439a802bd399a8cce2c868fbd9651946980e1004c16a318fc53fed817f4f20",
+      "rows": 289,
+      "finalStatusCounts": {
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "startedAtUTC": "2026-09-07T03:48:16Z",
+      "completedAtUTC": "2026-09-07T03:48:17Z",
+      "wallSeconds": 1.1,
+      "endpoints72h": [
+        {
+          "drifterId": "92863",
+          "lon": -55.27692517305994,
+          "lat": 37.030571568057276,
+          "timeUTC": "2010-08-08T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "f7960f23ff8fa816b0c70ac3bd32f21cf8370ca6bc35f73881bfc44fb0f3be5d",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y5",
+      "windowId": "GS-Y5",
+      "role": "NEW_HOLDOUT",
+      "condition": "C",
+      "conditionName": "GLORYS_STOKES_CANDIDATE",
+      "equation": "dX/dt = U_GLORYS + U_Stokes + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.81007,
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "98936"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -72.20186,
+        "east": -68.20186,
+        "south": 36.04509,
+        "north": 40.0
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step39/forcing/candidate/GS-Y5.treatment.dataset.json",
+        "fileSha256": "36a66402fd456e6bd976b9c04527fb838e1f4df2b183619e68b53d3ecde99aa8",
+        "gridSha256": "729ecc4da78d626da9ca0a83a2d939264ea9b17ce8c0b06dc76497dfcb96bfe5"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y5.ncep10m.wind.json",
+        "fileSha256": "86eb11326eb0b14220472b6206668fbbd83b6b245047cfaf3a39ddae73d63bca",
+        "gridSha256": "b9e2df78a1eb2997f6fdfc6f517aab16711ceacb896a77d02264276ac683563f"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "3d652de9fcf5d018f901b4aba1f5cce2bbb137955d6f0d46b99c19df43e224e0",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y5/C-alpha0.002/spec.json",
+          "sha256": "0d5adecff6ee30c4c54655472871c972766bc493c770993fa423a3affc0933bb"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y5/C-alpha0.002/result.json",
+      "resultSha256": "f3f020a972aeefbc4af4f4df828e6d9decf760c06baf29398de2807d1b3cc34b",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y5/C-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "a0faddefef91f109c98c8e3c53e48c4689324161b0d7b737ef6899f37966ab95",
+      "rows": 142,
+      "finalStatusCounts": {
+        "FORCING_UNAVAILABLE": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 1,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 0
+      },
+      "startedAtUTC": "2026-09-07T03:48:19Z",
+      "completedAtUTC": "2026-09-07T03:48:20Z",
+      "wallSeconds": 0.9,
+      "endpoints72h": [
+        {
+          "drifterId": "98936",
+          "lon": -68.20186000021727,
+          "lat": 37.70321753279045,
+          "timeUTC": "2010-08-09T23:10:53.655303Z",
+          "finalStatus": "OUT_OF_DOMAIN"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "3d652de9fcf5d018f901b4aba1f5cce2bbb137955d6f0d46b99c19df43e224e0",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y6",
+      "windowId": "GS-Y6",
+      "role": "NEW_HOLDOUT",
+      "condition": "C",
+      "conditionName": "GLORYS_STOKES_CANDIDATE",
+      "equation": "dX/dt = U_GLORYS + U_Stokes + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.81007,
+      "drifterCount": 3,
+      "released": 3,
+      "drifterIds": [
+        "81994",
+        "88538",
+        "90466"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -65.94471999999999,
+        "east": -61.89941,
+        "south": 35.36032,
+        "north": 39.46704
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step39/forcing/candidate/GS-Y6.treatment.dataset.json",
+        "fileSha256": "918d2bd0885f6de4b22294f1135641b8453e52e4be90196fb89cf14431a14503",
+        "gridSha256": "1fb1eea36cb1e1588527f6938804ec79112b8d60506c1ee693685d9bbcd572e1"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y6.ncep10m.wind.json",
+        "fileSha256": "9a70f033283644e3948363ab5d54a4b8322f1cd7a84d74b31fb4c9fc3943d69c",
+        "gridSha256": "e8235a7d675381631dcb9353fb3d764531e762af11f1f5346f5281dae070206e"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "bca5538c519492c69c9c3e64fd0829b29ef7ab4ee6754d626bedb631f48a0b37",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y6/C-alpha0.002/spec.json",
+          "sha256": "e5c8329a9cfacd24397a238719f1ea3f2cacfc6a5c2ddd585146d25dc7b2719f"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y6/C-alpha0.002/result.json",
+      "resultSha256": "5a12ba5eb05e9947aba6241c78cd3f3240e25355a75529cd80f73d4ec3745c35",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y6/C-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "f1f7983dd67e82e3d5b90ef35ef0f8ddb7f5f1bade2d14c16f198f0d546a124d",
+      "rows": 867,
+      "finalStatusCounts": {
+        "COMPLETED": 3
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 3
+      },
+      "startedAtUTC": "2026-09-07T03:48:22Z",
+      "completedAtUTC": "2026-09-07T03:48:24Z",
+      "wallSeconds": 2.0,
+      "endpoints72h": [
+        {
+          "drifterId": "81994",
+          "lon": -62.91862541732695,
+          "lat": 37.22632940491422,
+          "timeUTC": "2010-08-25T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "88538",
+          "lon": -62.886361069740445,
+          "lat": 37.33921921039505,
+          "timeUTC": "2010-08-25T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "90466",
+          "lon": -62.982764743277826,
+          "lat": 37.02341442981478,
+          "timeUTC": "2010-08-25T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "bca5538c519492c69c9c3e64fd0829b29ef7ab4ee6754d626bedb631f48a0b37",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y7",
+      "windowId": "GS-Y7",
+      "role": "NEW_HOLDOUT",
+      "condition": "C",
+      "conditionName": "GLORYS_STOKES_CANDIDATE",
+      "equation": "dX/dt = U_GLORYS + U_Stokes + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.81007,
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "92869"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -62.42588,
+        "east": -58.42588,
+        "south": 37.92722,
+        "north": 40.0
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step39/forcing/candidate/GS-Y7.treatment.dataset.json",
+        "fileSha256": "15ad4de8a7091efb6fec4b4e0d8804c1c868278d07459a0af71c8d85ca39ebc2",
+        "gridSha256": "fc49ee516e8876721b2a598f1f1f21d1e836371b53e440d1ccb87a44effe7ea6"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y7.ncep10m.wind.json",
+        "fileSha256": "8c3a7bd524ad0837f93492996a1ccba79f3b27e73d621d984e5a01f3e9073a9a",
+        "gridSha256": "255d79ffb5b6b6484cab61acf6c809ceda13e0d34ad6bfed16b9da486814bbae"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "bdc29c47a5bb3056ad3e83d55acb684f8885e82b8808a25f961ff503d0fbc487",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y7/C-alpha0.002/spec.json",
+          "sha256": "6167217a85e63674d4790d27dcdd76c087df7cce27a2cab55bed399e277809de"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y7/C-alpha0.002/result.json",
+      "resultSha256": "af2bc880bce7a17ac1ebf82641be4949b131cd3022b9c39f3a79f689f1b6c527",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y7/C-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "4e00c2514f67e8feb9ea15e273e7701866acc701938d1d8cd66ac34f0126ff57",
+      "rows": 30,
+      "finalStatusCounts": {
+        "OUT_OF_DOMAIN": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 1,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 0
+      },
+      "startedAtUTC": "2026-09-07T03:48:27Z",
+      "completedAtUTC": "2026-09-07T03:48:28Z",
+      "wallSeconds": 0.4,
+      "endpoints72h": [
+        {
+          "drifterId": "92869",
+          "lon": -60.22252594657928,
+          "lat": 39.999999999672305,
+          "timeUTC": "2010-08-28T19:13:33.514799Z",
+          "finalStatus": "OUT_OF_DOMAIN"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "bdc29c47a5bb3056ad3e83d55acb684f8885e82b8808a25f961ff503d0fbc487",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y8",
+      "windowId": "GS-Y8",
+      "role": "NEW_HOLDOUT",
+      "condition": "C",
+      "conditionName": "GLORYS_STOKES_CANDIDATE",
+      "equation": "dX/dt = U_GLORYS + U_Stokes + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.81007,
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "88532"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -75.50465,
+        "east": -71.50465,
+        "south": 34.0663,
+        "north": 38.0663
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step39/forcing/candidate/GS-Y8.treatment.dataset.json",
+        "fileSha256": "e185bee9b44fdcb4207217b8b1a7b7da9f8e0984486b3c972d8cc3a9b956196c",
+        "gridSha256": "165a633ed6f5abe3881dc1bd6a8c7e6357eb71e7061a3d13a676065f6a1d5702"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y8.ncep10m.wind.json",
+        "fileSha256": "6088e18e1c9a029fa3e7dabd3295043ad08f24af0ac7f7e1647e0b87eb315c36",
+        "gridSha256": "ab06fe73bd49ab82409d1aee098c98f7e84812b7fce1a538b149af4e5716ee11"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "45b4df517f1cb74c6c1ed83dc57a7c0737756be67f2ddfda052b59201c101de5",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y8/C-alpha0.002/spec.json",
+          "sha256": "aadb59be1c1c623353f8f344427a7720a99a5367d55e2d0c24942243efc5fc0e"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y8/C-alpha0.002/result.json",
+      "resultSha256": "b632da1f87c7941a712dffdb8bbc0862f0dd3a2c0c58a61d17d621de342978cf",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y8/C-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "c5987f53d4a900f665ff15accd57c8c50493dbb95508d1fac4b910712ccc8cfc",
+      "rows": 103,
+      "finalStatusCounts": {
+        "FORCING_UNAVAILABLE": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 1,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 0
+      },
+      "startedAtUTC": "2026-09-07T03:48:29Z",
+      "completedAtUTC": "2026-09-07T03:48:30Z",
+      "wallSeconds": 0.7,
+      "endpoints72h": [
+        {
+          "drifterId": "88532",
+          "lon": -71.50465000005008,
+          "lat": 36.822897196541334,
+          "timeUTC": "2010-09-17T13:18:32.984437Z",
+          "finalStatus": "OUT_OF_DOMAIN"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "45b4df517f1cb74c6c1ed83dc57a7c0737756be67f2ddfda052b59201c101de5",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-C-alpha0.002-GS-Y9",
+      "windowId": "GS-Y9",
+      "role": "NEW_HOLDOUT",
+      "condition": "C",
+      "conditionName": "GLORYS_STOKES_CANDIDATE",
+      "equation": "dX/dt = U_GLORYS + U_Stokes + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.81007,
+      "drifterCount": 2,
+      "released": 2,
+      "drifterIds": [
+        "92906",
+        "92919"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -68.26377,
+        "east": -53.13004,
+        "south": 33.17507,
+        "north": 38.89012
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step39/forcing/candidate/GS-Y9.treatment.dataset.json",
+        "fileSha256": "9c2a6aa744fec14f1eabf9033ff1be6f9a830c542632222d1e6e8d6277076f37",
+        "gridSha256": "e6871e4e3bc057f6e354c34bd810cf142c3e3a82fc9549f184ee7c3e3c399d03"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y9.ncep10m.wind.json",
+        "fileSha256": "66fff145b503dd346444e5684307c5374b31a4dffe556b510df3943f3875738e",
+        "gridSha256": "79c173aef9c01d7ec15c0c7c2ccc6f00d19485ef20621a50c55fa56246d2772c"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "9dde6892d7172c514c92017641763e0967aa27b7a3449a24779b644fa39f664f",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y9/C-alpha0.002/spec.json",
+          "sha256": "205b213a4ce1c90359b2566045a07d515f026066c58d71468f537d528ea3c94d"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y9/C-alpha0.002/result.json",
+      "resultSha256": "7b71173c199b27feff1c9323bf2c962bd3a6e58e2d362a8ad232606ef015e56f",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y9/C-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "94f4eff1c79b60cc0c46d3a4b7ce0b36ae0f9b58b8f0a5a6ac0c9da2add43462",
+      "rows": 578,
+      "finalStatusCounts": {
+        "COMPLETED": 2
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 2
+      },
+      "startedAtUTC": "2026-09-07T03:48:32Z",
+      "completedAtUTC": "2026-09-07T03:48:36Z",
+      "wallSeconds": 3.9,
+      "endpoints72h": [
+        {
+          "drifterId": "92906",
+          "lon": -54.97692792293546,
+          "lat": 35.10395920704473,
+          "timeUTC": "2010-10-19T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "92919",
+          "lon": -64.86780405088453,
+          "lat": 38.50871380771973,
+          "timeUTC": "2010-10-19T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "9dde6892d7172c514c92017641763e0967aa27b7a3449a24779b644fa39f664f",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    }
+  ],
+  "startedAtUTC": "2026-09-07T03:47:49Z",
+  "completedAtUTC": "2026-09-07T03:48:41Z",
+  "log": [
+    {
+      "utc": "2026-09-07T03:48:07Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-C-alpha0.002-GS-Y1",
+      "wall": 8.9,
+      "replay": true,
+      "final": {
+        "COMPLETED": 8
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:12Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-C-alpha0.002-GS-Y2",
+      "wall": 2.1,
+      "replay": true,
+      "final": {
+        "FORCING_UNAVAILABLE": 1,
+        "COMPLETED": 1
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:16Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-C-alpha0.002-GS-Y3",
+      "wall": 1.1,
+      "replay": true,
+      "final": {
+        "COMPLETED": 1
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:19Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-C-alpha0.002-GS-Y4",
+      "wall": 1.1,
+      "replay": true,
+      "final": {
+        "COMPLETED": 1
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:22Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-C-alpha0.002-GS-Y5",
+      "wall": 0.9,
+      "replay": true,
+      "final": {
+        "FORCING_UNAVAILABLE": 1
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:27Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-C-alpha0.002-GS-Y6",
+      "wall": 2.0,
+      "replay": true,
+      "final": {
+        "COMPLETED": 3
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:29Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-C-alpha0.002-GS-Y7",
+      "wall": 0.4,
+      "replay": true,
+      "final": {
+        "OUT_OF_DOMAIN": 1
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:32Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-C-alpha0.002-GS-Y8",
+      "wall": 0.7,
+      "replay": true,
+      "final": {
+        "FORCING_UNAVAILABLE": 1
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:41Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-C-alpha0.002-GS-Y9",
+      "wall": 3.9,
+      "replay": true,
+      "final": {
+        "COMPLETED": 2
+      }
+    }
+  ]
+}

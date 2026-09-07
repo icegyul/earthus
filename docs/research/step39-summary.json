@@ -1,0 +1,543 @@
+{
+  "ruleId": "experiment-preregistration-step37",
+  "step": 39,
+  "status": "STEP39_EVALUATED_DETERMINISTIC",
+  "n_windows": 9,
+  "n_drifters": 20,
+  "hierarchy": "LEVEL 1 window (9) > LEVEL 2 drifter pair (20) > LEVEL 3 trajectory points (never independent)",
+  "primary": {
+    "endpoint": "Theta = median_w[ median_i( E_C,i(72h) - E_A,i(72h) ) ], km, equal window weighting",
+    "Theta_km": -31.331086,
+    "windowsWithValidPair": 6,
+    "windowsNotAvailable": [
+      "GS-Y5",
+      "GS-Y7",
+      "GS-Y8"
+    ],
+    "Delta_w": {
+      "GS-Y1": {
+        "n_valid": 8,
+        "Delta_w": -17.872416
+      },
+      "GS-Y2": {
+        "n_valid": 1,
+        "Delta_w": -5.614733
+      },
+      "GS-Y3": {
+        "n_valid": 1,
+        "Delta_w": -21.378853
+      },
+      "GS-Y4": {
+        "n_valid": 1,
+        "Delta_w": -41.283319
+      },
+      "GS-Y5": {
+        "n_valid": 0,
+        "Delta_w": "NOT_AVAILABLE"
+      },
+      "GS-Y6": {
+        "n_valid": 3,
+        "Delta_w": -65.774227
+      },
+      "GS-Y7": {
+        "n_valid": 0,
+        "Delta_w": "NOT_AVAILABLE"
+      },
+      "GS-Y8": {
+        "n_valid": 0,
+        "Delta_w": "NOT_AVAILABLE"
+      },
+      "GS-Y9": {
+        "n_valid": 2,
+        "Delta_w": -78.370901
+      }
+    },
+    "windowConsistency": {
+      "negative": 6,
+      "positive": 0,
+      "tied": 0
+    },
+    "pooledSecondary": {
+      "pooledMedian": {
+        "n": 16,
+        "median": -23.981,
+        "mean": -29.902,
+        "min": -182.666,
+        "max": 42.015
+      },
+      "wins_candidate": 13,
+      "losses_candidate": 3,
+      "ties": 0,
+      "n": 16,
+      "notAvailable": 4
+    },
+    "descriptiveLabel_step30aRule_pooledPairs": "CANDIDATE_DESCRIPTIVELY_FAVORED",
+    "bootstrapInterval": "NOT RUN IN STEP 39 (deferred to the preregistered uncertainty step)",
+    "successCriterionEvaluated": false,
+    "successCriterion": "label CANDIDATE_DESCRIPTIVELY_FAVORED AND window-level 95 % interval of Theta < 0 (interval pending)"
+  },
+  "secondary": {
+    "nested": {
+      "delta_CA_24h": {
+        "perWindow": {
+          "GS-Y1": {
+            "n_valid": 8,
+            "Delta_w": -8.35269
+          },
+          "GS-Y2": {
+            "n_valid": 2,
+            "Delta_w": -17.785925
+          },
+          "GS-Y3": {
+            "n_valid": 1,
+            "Delta_w": -7.857914
+          },
+          "GS-Y4": {
+            "n_valid": 1,
+            "Delta_w": -0.265607
+          },
+          "GS-Y5": {
+            "n_valid": 1,
+            "Delta_w": 99.17016
+          },
+          "GS-Y6": {
+            "n_valid": 3,
+            "Delta_w": -18.256074
+          },
+          "GS-Y7": {
+            "n_valid": 0,
+            "Delta_w": "NOT_AVAILABLE"
+          },
+          "GS-Y8": {
+            "n_valid": 1,
+            "Delta_w": -52.207804
+          },
+          "GS-Y9": {
+            "n_valid": 2,
+            "Delta_w": 20.042566
+          }
+        },
+        "windowsWithValidPair": 8,
+        "windowsNotAvailable": [
+          "GS-Y7"
+        ],
+        "Theta": -8.105302,
+        "windowConsistency": {
+          "negative": 6,
+          "positive": 2,
+          "tied": 0
+        },
+        "formula": "Theta = median_w[ median_i( E_C - E_A (24h) ) ]"
+      },
+      "delta_CA_48h": {
+        "perWindow": {
+          "GS-Y1": {
+            "n_valid": 8,
+            "Delta_w": -16.269051
+          },
+          "GS-Y2": {
+            "n_valid": 2,
+            "Delta_w": -44.928738
+          },
+          "GS-Y3": {
+            "n_valid": 1,
+            "Delta_w": -12.850033
+          },
+          "GS-Y4": {
+            "n_valid": 1,
+            "Delta_w": -12.932801
+          },
+          "GS-Y5": {
+            "n_valid": 0,
+            "Delta_w": "NOT_AVAILABLE"
+          },
+          "GS-Y6": {
+            "n_valid": 3,
+            "Delta_w": -44.031938
+          },
+          "GS-Y7": {
+            "n_valid": 0,
+            "Delta_w": "NOT_AVAILABLE"
+          },
+          "GS-Y8": {
+            "n_valid": 0,
+            "Delta_w": "NOT_AVAILABLE"
+          },
+          "GS-Y9": {
+            "n_valid": 2,
+            "Delta_w": -51.579842
+          }
+        },
+        "windowsWithValidPair": 6,
+        "windowsNotAvailable": [
+          "GS-Y5",
+          "GS-Y7",
+          "GS-Y8"
+        ],
+        "Theta": -30.150495,
+        "windowConsistency": {
+          "negative": 6,
+          "positive": 0,
+          "tied": 0
+        },
+        "formula": "Theta = median_w[ median_i( E_C - E_A (48h) ) ]"
+      },
+      "delta_BA_24h": {
+        "perWindow": {
+          "GS-Y1": {
+            "n_valid": 8,
+            "Delta_w": 1.170639
+          },
+          "GS-Y2": {
+            "n_valid": 2,
+            "Delta_w": 1.498911
+          },
+          "GS-Y3": {
+            "n_valid": 1,
+            "Delta_w": 0.26905
+          },
+          "GS-Y4": {
+            "n_valid": 1,
+            "Delta_w": -6.750807
+          },
+          "GS-Y5": {
+            "n_valid": 1,
+            "Delta_w": -16.859486
+          },
+          "GS-Y6": {
+            "n_valid": 3,
+            "Delta_w": 0.423137
+          },
+          "GS-Y7": {
+            "n_valid": 1,
+            "Delta_w": 6.55601
+          },
+          "GS-Y8": {
+            "n_valid": 1,
+            "Delta_w": 7.154133
+          },
+          "GS-Y9": {
+            "n_valid": 2,
+            "Delta_w": 2.505891
+          }
+        },
+        "windowsWithValidPair": 9,
+        "windowsNotAvailable": [],
+        "Theta": 1.170639,
+        "windowConsistency": {
+          "negative": 2,
+          "positive": 7,
+          "tied": 0
+        },
+        "formula": "Theta = median_w[ median_i( E_B - E_A (24h) ) ]"
+      },
+      "delta_BA_48h": {
+        "perWindow": {
+          "GS-Y1": {
+            "n_valid": 8,
+            "Delta_w": -3.550284
+          },
+          "GS-Y2": {
+            "n_valid": 2,
+            "Delta_w": 6.33532
+          },
+          "GS-Y3": {
+            "n_valid": 1,
+            "Delta_w": 3.307517
+          },
+          "GS-Y4": {
+            "n_valid": 1,
+            "Delta_w": -10.156024
+          },
+          "GS-Y5": {
+            "n_valid": 1,
+            "Delta_w": -0.22297
+          },
+          "GS-Y6": {
+            "n_valid": 3,
+            "Delta_w": -0.944081
+          },
+          "GS-Y7": {
+            "n_valid": 1,
+            "Delta_w": 7.799876
+          },
+          "GS-Y8": {
+            "n_valid": 1,
+            "Delta_w": 22.873179
+          },
+          "GS-Y9": {
+            "n_valid": 2,
+            "Delta_w": 18.326614
+          }
+        },
+        "windowsWithValidPair": 9,
+        "windowsNotAvailable": [],
+        "Theta": 3.307517,
+        "windowConsistency": {
+          "negative": 4,
+          "positive": 5,
+          "tied": 0
+        },
+        "formula": "Theta = median_w[ median_i( E_B - E_A (48h) ) ]"
+      },
+      "delta_BA_72h": {
+        "perWindow": {
+          "GS-Y1": {
+            "n_valid": 8,
+            "Delta_w": -1.066712
+          },
+          "GS-Y2": {
+            "n_valid": 2,
+            "Delta_w": 9.439917
+          },
+          "GS-Y3": {
+            "n_valid": 1,
+            "Delta_w": 2.566956
+          },
+          "GS-Y4": {
+            "n_valid": 1,
+            "Delta_w": -14.217265
+          },
+          "GS-Y5": {
+            "n_valid": 1,
+            "Delta_w": 12.65033
+          },
+          "GS-Y6": {
+            "n_valid": 3,
+            "Delta_w": 12.850437
+          },
+          "GS-Y7": {
+            "n_valid": 0,
+            "Delta_w": "NOT_AVAILABLE"
+          },
+          "GS-Y8": {
+            "n_valid": 0,
+            "Delta_w": "NOT_AVAILABLE"
+          },
+          "GS-Y9": {
+            "n_valid": 2,
+            "Delta_w": 29.831231
+          }
+        },
+        "windowsWithValidPair": 7,
+        "windowsNotAvailable": [
+          "GS-Y7",
+          "GS-Y8"
+        ],
+        "Theta": 9.439917,
+        "windowConsistency": {
+          "negative": 2,
+          "positive": 5,
+          "tied": 0
+        },
+        "formula": "Theta = median_w[ median_i( E_B - E_A (72h) ) ]"
+      }
+    },
+    "pooled": {
+      "delta_CA_24h": {
+        "pooledMedian": {
+          "n": 19,
+          "median": -9.229,
+          "mean": -4.145,
+          "min": -52.208,
+          "max": 99.17
+        },
+        "wins_candidate": 14,
+        "losses_candidate": 5,
+        "ties": 0,
+        "n": 19,
+        "notAvailable": 1
+      },
+      "delta_CA_48h": {
+        "pooledMedian": {
+          "n": 17,
+          "median": -23.862,
+          "mean": -24.289,
+          "min": -119.014,
+          "max": 23.091
+        },
+        "wins_candidate": 13,
+        "losses_candidate": 4,
+        "ties": 0,
+        "n": 17,
+        "notAvailable": 3
+      },
+      "delta_CA_72h": {
+        "pooledMedian": {
+          "n": 16,
+          "median": -23.981,
+          "mean": -29.902,
+          "min": -182.666,
+          "max": 42.015
+        },
+        "wins_candidate": 13,
+        "losses_candidate": 3,
+        "ties": 0,
+        "n": 16,
+        "notAvailable": 4
+      },
+      "delta_BA_24h": {
+        "pooledMedian": {
+          "n": 20,
+          "median": 1.187,
+          "mean": -0.451,
+          "min": -16.859,
+          "max": 7.154
+        },
+        "wins_daily": 6,
+        "losses_daily": 14,
+        "ties": 0,
+        "n": 20,
+        "notAvailable": 0
+      },
+      "delta_BA_48h": {
+        "pooledMedian": {
+          "n": 20,
+          "median": -1.254,
+          "mean": 1.81,
+          "min": -11.788,
+          "max": 38.341
+        },
+        "wins_daily": 14,
+        "losses_daily": 6,
+        "ties": 0,
+        "n": 20,
+        "notAvailable": 0
+      },
+      "delta_BA_72h": {
+        "pooledMedian": {
+          "n": 18,
+          "median": 0.808,
+          "mean": 3.843,
+          "min": -65.3,
+          "max": 65.718
+        },
+        "wins_daily": 9,
+        "losses_daily": 9,
+        "ties": 0,
+        "n": 18,
+        "notAvailable": 2
+      }
+    },
+    "temporalLabel72h_step32Rule_pooledPairs": "NO_CLEAR_TEMPORAL_DIFFERENCE"
+  },
+  "availability": {
+    "A_24h": 20,
+    "A_48h": 20,
+    "A_72h": 18,
+    "B_24h": 20,
+    "B_48h": 20,
+    "B_72h": 18,
+    "C_24h": 19,
+    "C_48h": 17,
+    "C_72h": 16,
+    "pair_CA_24h": 19,
+    "pair_CA_48h": 17,
+    "pair_CA_72h": 16,
+    "pair_BA_24h": 20,
+    "pair_BA_48h": 20,
+    "pair_BA_72h": 18
+  },
+  "blockedRuns": [],
+  "metrics": {
+    "A": {
+      "M1_endpoint72h": {
+        "n": 18,
+        "median": 125.592,
+        "mean": 121.064,
+        "min": 26.049,
+        "max": 197.188
+      },
+      "M2_totalPath": {
+        "n": 20,
+        "median": 158.628,
+        "mean": 148.868,
+        "min": 52.534,
+        "max": 253.241
+      },
+      "M3_72h": {
+        "n": 18,
+        "median": 80.846,
+        "mean": 117.911,
+        "min": 20.336,
+        "max": 310.547
+      }
+    },
+    "B": {
+      "M1_endpoint72h": {
+        "n": 18,
+        "median": 129.415,
+        "mean": 117.721,
+        "min": 21.857,
+        "max": 212.087
+      },
+      "M2_totalPath": {
+        "n": 20,
+        "median": 157.92,
+        "mean": 143.978,
+        "min": 23.023,
+        "max": 246.467
+      },
+      "M3_72h": {
+        "n": 18,
+        "median": 74.971,
+        "mean": 121.754,
+        "min": 18.074,
+        "max": 353.669
+      }
+    },
+    "C": {
+      "M1_endpoint72h": {
+        "n": 16,
+        "median": 93.113,
+        "mean": 103.21,
+        "min": 16.011,
+        "max": 235.524
+      },
+      "M2_totalPath": {
+        "n": 20,
+        "median": 104.754,
+        "mean": 121.118,
+        "min": 18.532,
+        "max": 265.322
+      },
+      "M3_72h": {
+        "n": 16,
+        "median": 66.386,
+        "mean": 93.154,
+        "min": 22.284,
+        "max": 211.081
+      }
+    },
+    "M4_separation72h": {
+      "C_vs_A": {
+        "n": 16,
+        "median": 49.756,
+        "mean": 58.629,
+        "min": 16.338,
+        "max": 192.818
+      },
+      "B_vs_A": {
+        "n": 18,
+        "median": 16.493,
+        "mean": 24.798,
+        "min": 2.395,
+        "max": 74.814
+      }
+    },
+    "M5_observed72h": {
+      "n": 20,
+      "median": 109.418,
+      "mean": 153.911,
+      "min": 28.77,
+      "max": 412.902
+    }
+  },
+  "noImputation": true,
+  "noSubstitution": true,
+  "parameterSelection": "NONE",
+  "modelSelection": "NONE",
+  "candidateStatus": "CANDIDATE_ONLY",
+  "baselineStatus": "FROZEN_REFERENCE_BASELINE",
+  "interpretation": "DESCRIPTIVE / DETERMINISTIC ONLY; no inference until the preregistered bootstrap"
+}

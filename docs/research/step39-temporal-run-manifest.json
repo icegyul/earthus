@@ -1,0 +1,1875 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "experiment-preregistration-step37",
+  "phase": "STEP39",
+  "kind": "temporal",
+  "conditions": [
+    "A",
+    "B"
+  ],
+  "cohortManifestSha256": "bda31c3ca36a395acadc95c1cb18663964ee9a00e4a72a7c2504182f51df06ca",
+  "acquisitionManifestSha256": "c9d3109fbab2970b43b887cc7ba81d3aacbdd094375b091e8e185097a22dc2a0",
+  "dailyManifestSha256": "76948fb690f53ac894ac980530e1f67b76ea4ac34104422b0d232a31f3dfbcf5",
+  "candidateManifestSha256": null,
+  "status": "STEP32_RUNS_PASS",
+  "modelRunCount": 18,
+  "plannedRuns": 18,
+  "alpha": 0.002,
+  "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+  "runnerSha256": "fdbf845ab5c01049953fdc5080ab90956b93d41d15c0984d4b5d53f022e78101",
+  "runner": "tools/research/run_step39_trajectories.py",
+  "sharedModuleSha256": "2310a3b786043634a26a40ee6da52d50e0a0b135efd830fb21d9ef86e001f5e0",
+  "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+  "segmentationRule": "STEP 20 B-3 (36 h split) only where the 25-frame dataset exceeds the runtime value limit",
+  "blockedRuns": [],
+  "blockedWindows": [],
+  "evaluableWindows": [
+    "GS-Y1",
+    "GS-Y2",
+    "GS-Y3",
+    "GS-Y4",
+    "GS-Y5",
+    "GS-Y6",
+    "GS-Y7",
+    "GS-Y8",
+    "GS-Y9"
+  ],
+  "runs": [
+    {
+      "runId": "step39-A-alpha0.002-GS-Y1",
+      "windowId": "GS-Y1",
+      "role": "NEW_HOLDOUT",
+      "condition": "A",
+      "conditionName": "HYCOM_NATIVE_3H",
+      "equation": "dX/dt = U_HYCOM_3h + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 8,
+      "released": 8,
+      "drifterIds": [
+        "89822",
+        "92885",
+        "92917",
+        "92918",
+        "92920",
+        "98904",
+        "98942",
+        "98944"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -75.01929,
+        "east": -55.39547,
+        "south": 30.949379999999998,
+        "north": 37.43114
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step38/forcing/normalized/GS-Y1.hycom15m.dataset.json",
+        "fileSha256": "c1af1871eea4e9b4717c65770a22f5fb669469098d46c5379a78ee5d2291ec23",
+        "gridSha256": "a40cb564c4070829906a75a1e41314a7cef6dc913f06c28fae3ac4a72004a9f7"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y1.ncep10m.wind.json",
+        "fileSha256": "34ab751e1dd694b7202e45753c1bf5adc2bd54bff9546480653c3386ee5a2641",
+        "gridSha256": "e6e35f7ea7d39565149f4e8be77ede3718afe7509e5253b1ba2bae2339a7a0de"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "c9363471452bf01180c67e00427a7384feddc428906d3fb4d1026b666459c173",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y1/A-alpha0.002/spec.json",
+          "sha256": "aff5c89b0c6992464755808cd10ace83a70fe9526d25785ca937c533c6483356"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y1/A-alpha0.002/result.json",
+      "resultSha256": "d830b7c19fc0d58509b75878327d8dda68c0170de51a3d1d83b80b767e49d692",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y1/A-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "1800bc76b6b91759dee06e2656a0c2b484e880becb19c2b6f7be2e9c0610adf0",
+      "rows": 2312,
+      "finalStatusCounts": {
+        "COMPLETED": 8
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 8
+      },
+      "startedAtUTC": "2026-09-07T03:47:23Z",
+      "completedAtUTC": "2026-09-07T03:47:38Z",
+      "wallSeconds": 15.3,
+      "endpoints72h": [
+        {
+          "drifterId": "89822",
+          "lon": -61.47098275855359,
+          "lat": 34.500572776918,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "92885",
+          "lon": -56.82459927920499,
+          "lat": 34.47673063674329,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "92917",
+          "lon": -59.6882866443045,
+          "lat": 36.940564007001555,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "92918",
+          "lon": -73.69211811897283,
+          "lat": 32.57336606468737,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "92920",
+          "lon": -66.42435430631187,
+          "lat": 33.43180880294787,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "98904",
+          "lon": -71.22075139080047,
+          "lat": 34.96862072484173,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "98942",
+          "lon": -70.8258621233493,
+          "lat": 35.4823458212754,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "98944",
+          "lon": -71.13853348089567,
+          "lat": 35.02118056378046,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "c9363471452bf01180c67e00427a7384feddc428906d3fb4d1026b666459c173",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-B-alpha0.002-GS-Y1",
+      "windowId": "GS-Y1",
+      "role": "NEW_HOLDOUT",
+      "condition": "B",
+      "conditionName": "HYCOM_DAILY",
+      "equation": "dX/dt = U_HYCOM_daily + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 8,
+      "released": 8,
+      "drifterIds": [
+        "89822",
+        "92885",
+        "92917",
+        "92918",
+        "92920",
+        "98904",
+        "98942",
+        "98944"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -75.01929,
+        "east": -55.39547,
+        "south": 30.949379999999998,
+        "north": 37.43114
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step39/forcing/normalized/GS-Y1.hycom15m.daily.dataset.json",
+        "fileSha256": "2079dbb01b07f377a10165850baf39240cd412ee0f4844055593c5ca9ebf75d3",
+        "gridSha256": "5cf39f054ff2fa7168d790a1d200fafb4669d06fc2fba35cee5582e1f7923443"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y1.ncep10m.wind.json",
+        "fileSha256": "34ab751e1dd694b7202e45753c1bf5adc2bd54bff9546480653c3386ee5a2641",
+        "gridSha256": "e6e35f7ea7d39565149f4e8be77ede3718afe7509e5253b1ba2bae2339a7a0de"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "e1a6c972e8ab65c1e995dd474332468455f076ff1232dbff842a2953fc8b70aa",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y1/B-alpha0.002/spec.json",
+          "sha256": "75f0414320808a46e84b9c241204cce9a638a5a080c553165da3f2ccfa98cff5"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y1/B-alpha0.002/result.json",
+      "resultSha256": "f43b2f61f50fe831bb323576ea6ceaf8c92d132e8accb2e5714d2a2e9e7eb023",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y1/B-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "d52c0eec58726ecb4a38631b349c895ee3fa8d67b6248b9dee22a43ce19116db",
+      "rows": 2312,
+      "finalStatusCounts": {
+        "COMPLETED": 8
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 8
+      },
+      "startedAtUTC": "2026-09-07T03:47:47Z",
+      "completedAtUTC": "2026-09-07T03:47:52Z",
+      "wallSeconds": 4.6,
+      "endpoints72h": [
+        {
+          "drifterId": "89822",
+          "lon": -61.378714185526064,
+          "lat": 34.47736876006669,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "92885",
+          "lon": -56.9092589776177,
+          "lat": 34.570158572514295,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "92917",
+          "lon": -59.026237399835665,
+          "lat": 36.558463387640046,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "92918",
+          "lon": -73.71716239867197,
+          "lat": 32.70452180519406,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "92920",
+          "lon": -66.40871156517618,
+          "lat": 33.4146826238548,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "98904",
+          "lon": -71.34751494958347,
+          "lat": 34.9627252914325,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "98942",
+          "lon": -71.17683968552885,
+          "lat": 34.87375321731663,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "98944",
+          "lon": -71.32794127284588,
+          "lat": 34.884219068975646,
+          "timeUTC": "2010-07-30T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "e1a6c972e8ab65c1e995dd474332468455f076ff1232dbff842a2953fc8b70aa",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-A-alpha0.002-GS-Y2",
+      "windowId": "GS-Y2",
+      "role": "NEW_HOLDOUT",
+      "condition": "A",
+      "conditionName": "HYCOM_NATIVE_3H",
+      "equation": "dX/dt = U_HYCOM_3h + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 2,
+      "released": 2,
+      "drifterIds": [
+        "92872",
+        "98941"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -71.93419,
+        "east": -61.87165,
+        "south": 36.35383,
+        "north": 40.0
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step38/forcing/normalized/GS-Y2.hycom15m.dataset.json",
+        "fileSha256": "eaa58a67da9d90bb914e14b3512b49950ab0dfb0bf9c77ef9fd68ad1c7932ede",
+        "gridSha256": "ce8dc10b4bfb4543662f7352a3e062ca36c8d5ae31abedd8a7c8b3de75d01428"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y2.ncep10m.wind.json",
+        "fileSha256": "0590e14ed13cbebf87f869ea1f9bd6fba7f0c24c56ebab3bb26eee2e1f34d388",
+        "gridSha256": "40a08573984ccdaefdebcd7aa98d511f9c566a15479ca8801c271ba8cb8eb497"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "118491f4fd0f8573e1b4ddd9f1f1c2743f894223877a2beb4126273b22fcb694",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y2/A-alpha0.002/spec.json",
+          "sha256": "9f300dec795a56bf03e3e82b766f99029da3be87d6c0c6ebe7246e31a030e4e0"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y2/A-alpha0.002/result.json",
+      "resultSha256": "f4064867f20510c87bbeb58bd9e84e18a8c00fb1bae99b8c5a07c20f44b63197",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y2/A-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "898f7ea6a8f1dfd5ca674891dad7008210992caef238c018bc46b6e142ca6428",
+      "rows": 578,
+      "finalStatusCounts": {
+        "COMPLETED": 2
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 2
+      },
+      "startedAtUTC": "2026-09-07T03:47:58Z",
+      "completedAtUTC": "2026-09-07T03:48:00Z",
+      "wallSeconds": 2.2,
+      "endpoints72h": [
+        {
+          "drifterId": "92872",
+          "lon": -62.1636421296444,
+          "lat": 39.401343593090715,
+          "timeUTC": "2010-08-02T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "98941",
+          "lon": -67.76273992499641,
+          "lat": 37.87816475251631,
+          "timeUTC": "2010-08-02T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "118491f4fd0f8573e1b4ddd9f1f1c2743f894223877a2beb4126273b22fcb694",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-B-alpha0.002-GS-Y2",
+      "windowId": "GS-Y2",
+      "role": "NEW_HOLDOUT",
+      "condition": "B",
+      "conditionName": "HYCOM_DAILY",
+      "equation": "dX/dt = U_HYCOM_daily + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 2,
+      "released": 2,
+      "drifterIds": [
+        "92872",
+        "98941"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -71.93419,
+        "east": -61.87165,
+        "south": 36.35383,
+        "north": 40.0
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step39/forcing/normalized/GS-Y2.hycom15m.daily.dataset.json",
+        "fileSha256": "558d6d53b4adc0771224a66faa003d56b6103af6e80ecf90e41c9ed692d18055",
+        "gridSha256": "ce00d1cc35fc35270a74e3ac8e8e9e5eb2a94fbdae58f548f531349c5685a298"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y2.ncep10m.wind.json",
+        "fileSha256": "0590e14ed13cbebf87f869ea1f9bd6fba7f0c24c56ebab3bb26eee2e1f34d388",
+        "gridSha256": "40a08573984ccdaefdebcd7aa98d511f9c566a15479ca8801c271ba8cb8eb497"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "d5f8b6517b23eba8e40246a5b078518700338158fde4b083901de775dcdf67d3",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y2/B-alpha0.002/spec.json",
+          "sha256": "b627075443242ba4c774a8de1519d44006be7ad7da2142eccc91c866de89d8b7"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y2/B-alpha0.002/result.json",
+      "resultSha256": "78f179e9ccd39c29959883d79c53f1b7db1dd377f0a38bc833acb2712ca389f7",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y2/B-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "1e7d9f204390150102ec70b1a6763be3c58bcfc6786cf88c453d1d079fdd5e8b",
+      "rows": 578,
+      "finalStatusCounts": {
+        "COMPLETED": 2
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 2
+      },
+      "startedAtUTC": "2026-09-07T03:48:03Z",
+      "completedAtUTC": "2026-09-07T03:48:04Z",
+      "wallSeconds": 1.3,
+      "endpoints72h": [
+        {
+          "drifterId": "92872",
+          "lon": -62.09667471746711,
+          "lat": 39.40280662345065,
+          "timeUTC": "2010-08-02T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "98941",
+          "lon": -67.9829963652282,
+          "lat": 38.18415320444228,
+          "timeUTC": "2010-08-02T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "d5f8b6517b23eba8e40246a5b078518700338158fde4b083901de775dcdf67d3",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-A-alpha0.002-GS-Y3",
+      "windowId": "GS-Y3",
+      "role": "NEW_HOLDOUT",
+      "condition": "A",
+      "conditionName": "HYCOM_NATIVE_3H",
+      "equation": "dX/dt = U_HYCOM_3h + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "93015"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -65.45829,
+        "east": -61.45829,
+        "south": 30.62728,
+        "north": 34.62728
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step38/forcing/normalized/GS-Y3.hycom15m.dataset.json",
+        "fileSha256": "2f8c45dfe908199519564824f4ae07fa652e938b1f1445a6287216eb9695124a",
+        "gridSha256": "04edbf4ea60e4a1efdff67bd02e476b31e81ebddcb6f2c618396a06bdd758f3a"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y3.ncep10m.wind.json",
+        "fileSha256": "7e2a3e2f23e6647ee73cb99b8ff983f2ce1fc07d0879c03968749a8638e76d0f",
+        "gridSha256": "31720ed01f565a725747261675c46c996a531eb040428eb66a8fe5c3a89d4709"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "387fd2f35caaf4542fdef34281ba5831d3b717c1dc788ebee16bff697b1f6a61",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y3/A-alpha0.002/spec.json",
+          "sha256": "8cd4a647f39a53e3f1c698acc45bac510c554e1cb56bb8d4d07d9c4ca6b4d397"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y3/A-alpha0.002/result.json",
+      "resultSha256": "fe52c394b4d5b96e398a6ffbddf29649b72fe7aabb6a85ff102a1c70e0c71bb1",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y3/A-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "407bc9cbbe2f8b6c03325d18c4ffd62c5ea2570a54f9c2bbb5f13b5872de162f",
+      "rows": 289,
+      "finalStatusCounts": {
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "startedAtUTC": "2026-09-07T03:48:07Z",
+      "completedAtUTC": "2026-09-07T03:48:08Z",
+      "wallSeconds": 1.1,
+      "endpoints72h": [
+        {
+          "drifterId": "93015",
+          "lon": -63.23814400986899,
+          "lat": 32.77065956282452,
+          "timeUTC": "2010-08-05T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "387fd2f35caaf4542fdef34281ba5831d3b717c1dc788ebee16bff697b1f6a61",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-B-alpha0.002-GS-Y3",
+      "windowId": "GS-Y3",
+      "role": "NEW_HOLDOUT",
+      "condition": "B",
+      "conditionName": "HYCOM_DAILY",
+      "equation": "dX/dt = U_HYCOM_daily + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "93015"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -65.45829,
+        "east": -61.45829,
+        "south": 30.62728,
+        "north": 34.62728
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step39/forcing/normalized/GS-Y3.hycom15m.daily.dataset.json",
+        "fileSha256": "0fe7695130746f332b57fbed7fae173f461f820677c82b074fbbf2c106e7dada",
+        "gridSha256": "923ed38c72e811114482438e4385a802c4ba36f3a8a2e39df5b3ea3704af1a3a"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y3.ncep10m.wind.json",
+        "fileSha256": "7e2a3e2f23e6647ee73cb99b8ff983f2ce1fc07d0879c03968749a8638e76d0f",
+        "gridSha256": "31720ed01f565a725747261675c46c996a531eb040428eb66a8fe5c3a89d4709"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "b5502bb16199266f7dd4c54db0e0631653c0b9f23d8c93cedff51e88e56c66a7",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y3/B-alpha0.002/spec.json",
+          "sha256": "eb2b52c497587107b73efa8af1c4dc2cc8f8c8d61766e683775737ad80a09cb0"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y3/B-alpha0.002/result.json",
+      "resultSha256": "76cba949757e97c35872533f3851c6a8dfd94901d5b463ad15c1f99453e9ca5b",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y3/B-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "a868c650bc33572a44134581e974beae13db3193e0ff4f70beb494f27adf31c8",
+      "rows": 289,
+      "finalStatusCounts": {
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "startedAtUTC": "2026-09-07T03:48:10Z",
+      "completedAtUTC": "2026-09-07T03:48:11Z",
+      "wallSeconds": 0.7,
+      "endpoints72h": [
+        {
+          "drifterId": "93015",
+          "lon": -63.29902251671908,
+          "lat": 32.77106587865189,
+          "timeUTC": "2010-08-05T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "b5502bb16199266f7dd4c54db0e0631653c0b9f23d8c93cedff51e88e56c66a7",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-A-alpha0.002-GS-Y4",
+      "windowId": "GS-Y4",
+      "role": "NEW_HOLDOUT",
+      "condition": "A",
+      "conditionName": "HYCOM_NATIVE_3H",
+      "equation": "dX/dt = U_HYCOM_3h + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "92863"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -57.24397,
+        "east": -53.24397,
+        "south": 34.5677,
+        "north": 38.5677
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step38/forcing/normalized/GS-Y4.hycom15m.dataset.json",
+        "fileSha256": "8e99d5afcfa9cb368a0b721a02aa9e0f8baa9fbc013f90d6f84f61c1b47f760b",
+        "gridSha256": "6f8eea3cde78037210f1f0a873a7110a3f0591f1f11efe930a4f8f63d91ef88f"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y4.ncep10m.wind.json",
+        "fileSha256": "902f09bb108f779949578c865e8468174e8105ea0c50aaed48348bda99cfaaa1",
+        "gridSha256": "27e02d00dac6e773c0048a9236586100745e67d48098c72131227e4e8fa36ea1"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "4241f95cbf1c781de6f34587c239c97e5daa403e311c45f4e3b20e73ce84539c",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y4/A-alpha0.002/spec.json",
+          "sha256": "24b8da74d85e536844b8aaa34f07939382d20811e2f90d1a7fb12cb0125289cf"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y4/A-alpha0.002/result.json",
+      "resultSha256": "239c660626f06f4418bea4ef6dbd83b3780c39a2b5fe3574f6d09eddb2f29401",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y4/A-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "098e86808eea8608abdec351ba7a3c2145aa68e460154c24cc411b47b4d1dbc9",
+      "rows": 289,
+      "finalStatusCounts": {
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "startedAtUTC": "2026-09-07T03:48:13Z",
+      "completedAtUTC": "2026-09-07T03:48:14Z",
+      "wallSeconds": 1.2,
+      "endpoints72h": [
+        {
+          "drifterId": "92863",
+          "lon": -55.952340636093965,
+          "lat": 37.01311278077012,
+          "timeUTC": "2010-08-08T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "4241f95cbf1c781de6f34587c239c97e5daa403e311c45f4e3b20e73ce84539c",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-B-alpha0.002-GS-Y4",
+      "windowId": "GS-Y4",
+      "role": "NEW_HOLDOUT",
+      "condition": "B",
+      "conditionName": "HYCOM_DAILY",
+      "equation": "dX/dt = U_HYCOM_daily + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "92863"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -57.24397,
+        "east": -53.24397,
+        "south": 34.5677,
+        "north": 38.5677
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step39/forcing/normalized/GS-Y4.hycom15m.daily.dataset.json",
+        "fileSha256": "8d4a415ed28abd3f891785af97294b83d13a2d0fac1035ec8a18d286f87b3feb",
+        "gridSha256": "613f813fccb0cec21f6f28f78bad7b9824d44280f79f6cb1892733e694c35d15"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y4.ncep10m.wind.json",
+        "fileSha256": "902f09bb108f779949578c865e8468174e8105ea0c50aaed48348bda99cfaaa1",
+        "gridSha256": "27e02d00dac6e773c0048a9236586100745e67d48098c72131227e4e8fa36ea1"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "6cbe58a1f5d10f9245d1dc3f3f7c1a67ea6575dbffafc8af826f28bee3c1ab2d",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y4/B-alpha0.002/spec.json",
+          "sha256": "ed29f6caae2bb193866592d54b087c2bf5323a974007c0a99310dfffa36bf32f"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y4/B-alpha0.002/result.json",
+      "resultSha256": "98df216eb587c511655d722ca4cdc03ff93d75a87a7269befed31848dd8a5d23",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y4/B-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "4cdd6f8eea831bb7ff492e6861af582391ae4fe1f6f34fe73c1428665feea915",
+      "rows": 289,
+      "finalStatusCounts": {
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "startedAtUTC": "2026-09-07T03:48:16Z",
+      "completedAtUTC": "2026-09-07T03:48:17Z",
+      "wallSeconds": 0.8,
+      "endpoints72h": [
+        {
+          "drifterId": "92863",
+          "lon": -55.86981418845946,
+          "lat": 37.16589437499587,
+          "timeUTC": "2010-08-08T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "6cbe58a1f5d10f9245d1dc3f3f7c1a67ea6575dbffafc8af826f28bee3c1ab2d",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-A-alpha0.002-GS-Y5",
+      "windowId": "GS-Y5",
+      "role": "NEW_HOLDOUT",
+      "condition": "A",
+      "conditionName": "HYCOM_NATIVE_3H",
+      "equation": "dX/dt = U_HYCOM_3h + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "98936"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -72.20186,
+        "east": -68.20186,
+        "south": 36.04509,
+        "north": 40.0
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step38/forcing/normalized/GS-Y5.hycom15m.dataset.json",
+        "fileSha256": "9f6ff6828caf53837b47f9e811ba0e0e54180fe17666676e93a0c1dc4975b67b",
+        "gridSha256": "be1824eba98b2f377fd00c22bcaf282c574bb05a944f69889da39b39d23d049d"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y5.ncep10m.wind.json",
+        "fileSha256": "86eb11326eb0b14220472b6206668fbbd83b6b245047cfaf3a39ddae73d63bca",
+        "gridSha256": "b9e2df78a1eb2997f6fdfc6f517aab16711ceacb896a77d02264276ac683563f"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "5119314caf4f7bd51a848167703063df2ae0bf84910c6a4a3e6706ddb4d152cd",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y5/A-alpha0.002/spec.json",
+          "sha256": "d2007cd8387c6b3181cf7ef62be8845991fffb72bfac47d21a9908c310632fed"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y5/A-alpha0.002/result.json",
+      "resultSha256": "24c61007f394d9cae5471bb930b877c2ff9385fb774fbaa3894734ff35f4a68e",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y5/A-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "f53e729777180da34bf4c7cd1b666c0b7b8a1a763c90cf6db21ecb0db7d21e95",
+      "rows": 289,
+      "finalStatusCounts": {
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "startedAtUTC": "2026-09-07T03:48:19Z",
+      "completedAtUTC": "2026-09-07T03:48:20Z",
+      "wallSeconds": 1.1,
+      "endpoints72h": [
+        {
+          "drifterId": "98936",
+          "lon": -68.98934358940107,
+          "lat": 38.48498743345756,
+          "timeUTC": "2010-08-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "5119314caf4f7bd51a848167703063df2ae0bf84910c6a4a3e6706ddb4d152cd",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-B-alpha0.002-GS-Y5",
+      "windowId": "GS-Y5",
+      "role": "NEW_HOLDOUT",
+      "condition": "B",
+      "conditionName": "HYCOM_DAILY",
+      "equation": "dX/dt = U_HYCOM_daily + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "98936"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -72.20186,
+        "east": -68.20186,
+        "south": 36.04509,
+        "north": 40.0
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step39/forcing/normalized/GS-Y5.hycom15m.daily.dataset.json",
+        "fileSha256": "c7b54e9c39683a56e191ded47bdb8f061dec31d02fb93c359b0db5961e67c9bb",
+        "gridSha256": "4b2a92bb8d87f44ed0f57abf2ba55b1336fdafc1f613dc3a79d4a3d3c0f87947"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y5.ncep10m.wind.json",
+        "fileSha256": "86eb11326eb0b14220472b6206668fbbd83b6b245047cfaf3a39ddae73d63bca",
+        "gridSha256": "b9e2df78a1eb2997f6fdfc6f517aab16711ceacb896a77d02264276ac683563f"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "6b552dc952eb46c05d0326124694aa15ae72c885ff9263f2c44006da3b5a6aa6",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y5/B-alpha0.002/spec.json",
+          "sha256": "b4f771264d2b6e72d2f5c924fbd34f218ce03b073dd671d8493a0f90d83738c1"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y5/B-alpha0.002/result.json",
+      "resultSha256": "69d49b89ae401149e3d9f88ca8ed4c017d5dd7d6678df8ca9f1937ae254f813b",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y5/B-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "051aa670e58f17cdb4b3f6dfc3f3b89fbe1afc92597f7632e3355ce2bd56ff94",
+      "rows": 289,
+      "finalStatusCounts": {
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "startedAtUTC": "2026-09-07T03:48:22Z",
+      "completedAtUTC": "2026-09-07T03:48:23Z",
+      "wallSeconds": 0.8,
+      "endpoints72h": [
+        {
+          "drifterId": "98936",
+          "lon": -68.81880985795733,
+          "lat": 38.628579913903685,
+          "timeUTC": "2010-08-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "6b552dc952eb46c05d0326124694aa15ae72c885ff9263f2c44006da3b5a6aa6",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-A-alpha0.002-GS-Y6",
+      "windowId": "GS-Y6",
+      "role": "NEW_HOLDOUT",
+      "condition": "A",
+      "conditionName": "HYCOM_NATIVE_3H",
+      "equation": "dX/dt = U_HYCOM_3h + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 3,
+      "released": 3,
+      "drifterIds": [
+        "81994",
+        "88538",
+        "90466"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -65.94471999999999,
+        "east": -61.89941,
+        "south": 35.36032,
+        "north": 39.46704
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step38/forcing/normalized/GS-Y6.hycom15m.dataset.json",
+        "fileSha256": "63043686a4d9be43b9de10138a4ad51a0024af50835bd8de6744e5b12597d023",
+        "gridSha256": "9ec2898120a4c9f53fa3b0fa428e12859a93cb78a4451a237d91c2303f0f8565"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y6.ncep10m.wind.json",
+        "fileSha256": "9a70f033283644e3948363ab5d54a4b8322f1cd7a84d74b31fb4c9fc3943d69c",
+        "gridSha256": "e8235a7d675381631dcb9353fb3d764531e762af11f1f5346f5281dae070206e"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "954f3a53a9dd4f2817c78fffd37341ec7dcd4bb5b4badf61b655cda6b0e6b15b",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y6/A-alpha0.002/spec.json",
+          "sha256": "64742263e148870561fdc92e01bab4b78f50db8677291e51177b70a165f7f5b9"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y6/A-alpha0.002/result.json",
+      "resultSha256": "66ffcb754c774e141db58284d166df283adb323b594113e03191c069083c4054",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y6/A-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "d2d2fbf4c5dfb873692bc648bc1ce1d753dcb5d46e4e6bf51fb48ed487102d36",
+      "rows": 867,
+      "finalStatusCounts": {
+        "COMPLETED": 3
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 3
+      },
+      "startedAtUTC": "2026-09-07T03:48:25Z",
+      "completedAtUTC": "2026-09-07T03:48:27Z",
+      "wallSeconds": 1.9,
+      "endpoints72h": [
+        {
+          "drifterId": "81994",
+          "lon": -62.50318241632539,
+          "lat": 36.69582603237234,
+          "timeUTC": "2010-08-25T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "88538",
+          "lon": -62.19149623793274,
+          "lat": 36.564636972120034,
+          "timeUTC": "2010-08-25T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "90466",
+          "lon": -62.73772234991921,
+          "lat": 36.78202444169355,
+          "timeUTC": "2010-08-25T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "954f3a53a9dd4f2817c78fffd37341ec7dcd4bb5b4badf61b655cda6b0e6b15b",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-B-alpha0.002-GS-Y6",
+      "windowId": "GS-Y6",
+      "role": "NEW_HOLDOUT",
+      "condition": "B",
+      "conditionName": "HYCOM_DAILY",
+      "equation": "dX/dt = U_HYCOM_daily + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 3,
+      "released": 3,
+      "drifterIds": [
+        "81994",
+        "88538",
+        "90466"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -65.94471999999999,
+        "east": -61.89941,
+        "south": 35.36032,
+        "north": 39.46704
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step39/forcing/normalized/GS-Y6.hycom15m.daily.dataset.json",
+        "fileSha256": "7d0e49d0950cdc75faa37b1bbc0f556cd0d3853d26d138070c725432400eb1cd",
+        "gridSha256": "820ee0fd8174ce47fa903cc1099c15146da4886268e854431a13641512c8afc1"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y6.ncep10m.wind.json",
+        "fileSha256": "9a70f033283644e3948363ab5d54a4b8322f1cd7a84d74b31fb4c9fc3943d69c",
+        "gridSha256": "e8235a7d675381631dcb9353fb3d764531e762af11f1f5346f5281dae070206e"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "52f331096684543e62cb57060afd7f97671a7767f5f23f976f01f36efd9a9555",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y6/B-alpha0.002/spec.json",
+          "sha256": "1b4a4ea8d77631d37742860bc86e7f323f5a229870754d968c2ba0dce1538e17"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y6/B-alpha0.002/result.json",
+      "resultSha256": "ec641562e01b903d4d2ad8c903c49f63b0d922afdbaeeaf672074bee98dbe0db",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y6/B-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "2711d99911dd30456041c50e67e91cf6ee895c9bc13597fc39775fe49a54f4a4",
+      "rows": 867,
+      "finalStatusCounts": {
+        "COMPLETED": 3
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 3
+      },
+      "startedAtUTC": "2026-09-07T03:48:30Z",
+      "completedAtUTC": "2026-09-07T03:48:32Z",
+      "wallSeconds": 1.6,
+      "endpoints72h": [
+        {
+          "drifterId": "81994",
+          "lon": -62.32313707789089,
+          "lat": 36.6185574983702,
+          "timeUTC": "2010-08-25T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "88538",
+          "lon": -62.24011946058569,
+          "lat": 36.57270889352039,
+          "timeUTC": "2010-08-25T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "90466",
+          "lon": -62.47518288828802,
+          "lat": 36.677601527952994,
+          "timeUTC": "2010-08-25T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "52f331096684543e62cb57060afd7f97671a7767f5f23f976f01f36efd9a9555",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-A-alpha0.002-GS-Y7",
+      "windowId": "GS-Y7",
+      "role": "NEW_HOLDOUT",
+      "condition": "A",
+      "conditionName": "HYCOM_NATIVE_3H",
+      "equation": "dX/dt = U_HYCOM_3h + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "92869"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -62.42588,
+        "east": -58.42588,
+        "south": 37.92722,
+        "north": 40.0
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step38/forcing/normalized/GS-Y7.hycom15m.dataset.json",
+        "fileSha256": "6f6fb64aefabbe08cc462a61cf4024203c6174dcd713eb96dd48a29717774e57",
+        "gridSha256": "99841f1d0f8a59e91bf41d19764887ed8139eca1a9842df2cb21191b02c51e70"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y7.ncep10m.wind.json",
+        "fileSha256": "8c3a7bd524ad0837f93492996a1ccba79f3b27e73d621d984e5a01f3e9073a9a",
+        "gridSha256": "255d79ffb5b6b6484cab61acf6c809ceda13e0d34ad6bfed16b9da486814bbae"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "50d380dc27189fad31f15cff66fc3ff7e336f97f6ed769a2f97ca8a4474a6c19",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y7/A-alpha0.002/spec.json",
+          "sha256": "d5d0dda2100f98e30512a54e8e6eaa0cd492262807e1e77f2ab9fb368a257e30"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y7/A-alpha0.002/result.json",
+      "resultSha256": "782acdbf5f2c3e7aa2bae400b515bcb51f5dabfe22f56b05f4df78df2c4cb3d5",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y7/A-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "5967135792e94d8320e908c6b673383fc6a8a21cd8f27ef457860ecc06465689",
+      "rows": 283,
+      "finalStatusCounts": {
+        "OUT_OF_DOMAIN": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 1,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 0
+      },
+      "startedAtUTC": "2026-09-07T03:48:34Z",
+      "completedAtUTC": "2026-09-07T03:48:35Z",
+      "wallSeconds": 0.9,
+      "endpoints72h": [
+        {
+          "drifterId": "92869",
+          "lon": -59.51347022469828,
+          "lat": 39.999999999955634,
+          "timeUTC": "2010-08-31T10:16:52.559116Z",
+          "finalStatus": "OUT_OF_DOMAIN"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "50d380dc27189fad31f15cff66fc3ff7e336f97f6ed769a2f97ca8a4474a6c19",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-B-alpha0.002-GS-Y7",
+      "windowId": "GS-Y7",
+      "role": "NEW_HOLDOUT",
+      "condition": "B",
+      "conditionName": "HYCOM_DAILY",
+      "equation": "dX/dt = U_HYCOM_daily + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "92869"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -62.42588,
+        "east": -58.42588,
+        "south": 37.92722,
+        "north": 40.0
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step39/forcing/normalized/GS-Y7.hycom15m.daily.dataset.json",
+        "fileSha256": "200eda93e97c32974b171ddf52731a1f5ef244acc34d2931704f3e6b63236ace",
+        "gridSha256": "95422791d7e9ef962e411bcf2349f6f20acab390305caebe2add6d284e2f27e5"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y7.ncep10m.wind.json",
+        "fileSha256": "8c3a7bd524ad0837f93492996a1ccba79f3b27e73d621d984e5a01f3e9073a9a",
+        "gridSha256": "255d79ffb5b6b6484cab61acf6c809ceda13e0d34ad6bfed16b9da486814bbae"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "12c0efcbba65d3c9dc019f86b5a33acd91cd10daee67032bb1659b38f9651ce6",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y7/B-alpha0.002/spec.json",
+          "sha256": "d40f36ed3e6093595d84214738927f74be5876db17d678c83ba82d06954b31c5"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y7/B-alpha0.002/result.json",
+      "resultSha256": "822ccebe7e0b602f0286de6c26e43e4e9c93c332d2e516964594e224c559aaf8",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y7/B-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "16cbb6c5ba15576772e3cf9c7ad4118db588e5b1360da3fb783d18fcb7ddcb4a",
+      "rows": 280,
+      "finalStatusCounts": {
+        "OUT_OF_DOMAIN": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 1,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 0
+      },
+      "startedAtUTC": "2026-09-07T03:48:37Z",
+      "completedAtUTC": "2026-09-07T03:48:38Z",
+      "wallSeconds": 0.7,
+      "endpoints72h": [
+        {
+          "drifterId": "92869",
+          "lon": -59.161970902563326,
+          "lat": 39.99999999964697,
+          "timeUTC": "2010-08-31T09:39:15.362856Z",
+          "finalStatus": "OUT_OF_DOMAIN"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "12c0efcbba65d3c9dc019f86b5a33acd91cd10daee67032bb1659b38f9651ce6",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-A-alpha0.002-GS-Y8",
+      "windowId": "GS-Y8",
+      "role": "NEW_HOLDOUT",
+      "condition": "A",
+      "conditionName": "HYCOM_NATIVE_3H",
+      "equation": "dX/dt = U_HYCOM_3h + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "88532"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -75.50465,
+        "east": -71.50465,
+        "south": 34.0663,
+        "north": 38.0663
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step38/forcing/normalized/GS-Y8.hycom15m.dataset.json",
+        "fileSha256": "709536ce64e281bc62a23b35e5cb219be6f0552ac6a5685a0c681c06542f4dd7",
+        "gridSha256": "426761b1126dcc95e412760b1198167aa38a3909d9769f3e8d7b6050c1b2f70f"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y8.ncep10m.wind.json",
+        "fileSha256": "6088e18e1c9a029fa3e7dabd3295043ad08f24af0ac7f7e1647e0b87eb315c36",
+        "gridSha256": "ab06fe73bd49ab82409d1aee098c98f7e84812b7fce1a538b149af4e5716ee11"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "7592cff006f83f194785ed64d328edf5374cd43e33536c542c72a745b7d382c8",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y8/A-alpha0.002/spec.json",
+          "sha256": "ba318c6afcec59dde2901cdfb7b57d305aa231adb5f353c19732acde8d9e9124"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y8/A-alpha0.002/result.json",
+      "resultSha256": "16d1fe5e02d0de5b95b0d9631a353044e034e1f568d9a6568afb5777f71174fe",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y8/A-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "193d73c87f5567509c68dccf677e9ea7db4b971dbea4ef243ba38a15992bc901",
+      "rows": 196,
+      "finalStatusCounts": {
+        "FORCING_UNAVAILABLE": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 1,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 0
+      },
+      "startedAtUTC": "2026-09-07T03:48:40Z",
+      "completedAtUTC": "2026-09-07T03:48:41Z",
+      "wallSeconds": 0.9,
+      "endpoints72h": [
+        {
+          "drifterId": "88532",
+          "lon": -71.51999999992702,
+          "lat": 36.665079135419575,
+          "timeUTC": "2010-09-18T12:42:55.278443Z",
+          "finalStatus": "OUT_OF_DOMAIN"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "7592cff006f83f194785ed64d328edf5374cd43e33536c542c72a745b7d382c8",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-B-alpha0.002-GS-Y8",
+      "windowId": "GS-Y8",
+      "role": "NEW_HOLDOUT",
+      "condition": "B",
+      "conditionName": "HYCOM_DAILY",
+      "equation": "dX/dt = U_HYCOM_daily + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "88532"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -75.50465,
+        "east": -71.50465,
+        "south": 34.0663,
+        "north": 38.0663
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step39/forcing/normalized/GS-Y8.hycom15m.daily.dataset.json",
+        "fileSha256": "cb7eeaeae9f6bd4fc31963164cdf49078283067dd44fab20fe868ac51c251f83",
+        "gridSha256": "a17d52831bf412f299b8aa801903fe9f21c3b0a8a449d422a30235d0065045d6"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y8.ncep10m.wind.json",
+        "fileSha256": "6088e18e1c9a029fa3e7dabd3295043ad08f24af0ac7f7e1647e0b87eb315c36",
+        "gridSha256": "ab06fe73bd49ab82409d1aee098c98f7e84812b7fce1a538b149af4e5716ee11"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "618dfbe4796a29e6db7d34fa1a050489d886807f62e371b36409bc981606ad25",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y8/B-alpha0.002/spec.json",
+          "sha256": "970ceaf3bc5a5e95218bee4dc183368f7e19cbbfda7ae7d3867862d85e7ee178"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y8/B-alpha0.002/result.json",
+      "resultSha256": "e5017cdb24d393d84c3a7fb76655630f79d347fa75ff9b02f7aff107aacfbb4d",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y8/B-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "88f35d3afc652147c9dca68854eafe8d6409841eecd5c77ecad76ce0dd7e480a",
+      "rows": 244,
+      "finalStatusCounts": {
+        "FORCING_UNAVAILABLE": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 1,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 0
+      },
+      "startedAtUTC": "2026-09-07T03:48:43Z",
+      "completedAtUTC": "2026-09-07T03:48:43Z",
+      "wallSeconds": 0.7,
+      "endpoints72h": [
+        {
+          "drifterId": "88532",
+          "lon": -71.51999999993812,
+          "lat": 36.81767524235839,
+          "timeUTC": "2010-09-19T00:43:10.627331Z",
+          "finalStatus": "OUT_OF_DOMAIN"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "618dfbe4796a29e6db7d34fa1a050489d886807f62e371b36409bc981606ad25",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-A-alpha0.002-GS-Y9",
+      "windowId": "GS-Y9",
+      "role": "NEW_HOLDOUT",
+      "condition": "A",
+      "conditionName": "HYCOM_NATIVE_3H",
+      "equation": "dX/dt = U_HYCOM_3h + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 2,
+      "released": 2,
+      "drifterIds": [
+        "92906",
+        "92919"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -68.26377,
+        "east": -53.13004,
+        "south": 33.17507,
+        "north": 38.89012
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step38/forcing/normalized/GS-Y9.hycom15m.dataset.json",
+        "fileSha256": "cdf7b212e8028689385648775d32cf9d5bc118ac3dde67367ae8e228ccb2b137",
+        "gridSha256": "4c2833a9a1afe7ff086f0a1b00efeabe4e85b6794632b15b02a1da46db5a3870"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y9.ncep10m.wind.json",
+        "fileSha256": "66fff145b503dd346444e5684307c5374b31a4dffe556b510df3943f3875738e",
+        "gridSha256": "79c173aef9c01d7ec15c0c7c2ccc6f00d19485ef20621a50c55fa56246d2772c"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "a0dd15df1d1f48e1cc44872db92710153382bcbd4ad920f0c9f05ed63719556b",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y9/A-alpha0.002/spec.json",
+          "sha256": "999aa9dae1e967ca4771751fbff61bc6dc028371a3b5fba12bc3446d2a1a8676"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y9/A-alpha0.002/result.json",
+      "resultSha256": "c52c548bf554c91d9e4b547e3d6dbf9b70d314fae0f2461ca4d432e892f85948",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y9/A-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "e3181ecd49ac682ac7e003602b52166e3bcdf9e19c18f77f472bb7761f4caa0e",
+      "rows": 578,
+      "finalStatusCounts": {
+        "COMPLETED": 2
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 2
+      },
+      "startedAtUTC": "2026-09-07T03:48:45Z",
+      "completedAtUTC": "2026-09-07T03:48:49Z",
+      "wallSeconds": 4.0,
+      "endpoints72h": [
+        {
+          "drifterId": "92906",
+          "lon": -54.86693314617298,
+          "lat": 35.39576167219886,
+          "timeUTC": "2010-10-19T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "92919",
+          "lon": -64.05373263907505,
+          "lat": 36.89869175773449,
+          "timeUTC": "2010-10-19T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "a0dd15df1d1f48e1cc44872db92710153382bcbd4ad920f0c9f05ed63719556b",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step39-B-alpha0.002-GS-Y9",
+      "windowId": "GS-Y9",
+      "role": "NEW_HOLDOUT",
+      "condition": "B",
+      "conditionName": "HYCOM_DAILY",
+      "equation": "dX/dt = U_HYCOM_daily + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 2,
+      "released": 2,
+      "drifterIds": [
+        "92906",
+        "92919"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": -68.26377,
+        "east": -53.13004,
+        "south": 33.17507,
+        "north": 38.89012
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step39/forcing/normalized/GS-Y9.hycom15m.daily.dataset.json",
+        "fileSha256": "b14ae90b8daec234fec4d65915f644cfc9f5dc8c1b6373caba5d1355b75aa824",
+        "gridSha256": "f9ad9639f9104f94abd8ef3206b88c10d373128e40c9c5df47d37785b3b72336"
+      },
+      "wind": {
+        "file": "data/research/step38/forcing/normalized/GS-Y9.ncep10m.wind.json",
+        "fileSha256": "66fff145b503dd346444e5684307c5374b31a4dffe556b510df3943f3875738e",
+        "gridSha256": "79c173aef9c01d7ec15c0c7c2ccc6f00d19485ef20621a50c55fa56246d2772c"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "a50783dbd061156f6e13aa11b4c35d751ae6e4ac1353ea919958ca1222e5deee",
+      "specs": {
+        "single": {
+          "file": "data/research/step39/trajectories/GS-Y9/B-alpha0.002/spec.json",
+          "sha256": "9ad4343c4944c5519685f5b22c1866dd194c5e07d70778263cd783713604d242"
+        }
+      },
+      "resultFile": "data/research/step39/trajectories/GS-Y9/B-alpha0.002/result.json",
+      "resultSha256": "3dda9ced6aa03e65dd39842b8c1de571421bb8682bada04d6be04ebb3674301b",
+      "trajectoriesFile": "data/research/step39/trajectories/GS-Y9/B-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "06eb38a26bb0a59f62adf10ceb3ab4a75024d8cb3b312364b07d90ca31ce7f81",
+      "rows": 578,
+      "finalStatusCounts": {
+        "COMPLETED": 2
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 2
+      },
+      "startedAtUTC": "2026-09-07T03:48:54Z",
+      "completedAtUTC": "2026-09-07T03:48:56Z",
+      "wallSeconds": 1.6,
+      "endpoints72h": [
+        {
+          "drifterId": "92906",
+          "lon": -54.825033310431934,
+          "lat": 35.490670311319924,
+          "timeUTC": "2010-10-19T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "92919",
+          "lon": -64.03619691924861,
+          "lat": 36.22927854937311,
+          "timeUTC": "2010-10-19T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "647dcc5b68b3a7383504a2da34d05e77532aaa2792f17ab6aa980fc111631899",
+        "returncode": 0,
+        "replayResultSha256": "a50783dbd061156f6e13aa11b4c35d751ae6e4ac1353ea919958ca1222e5deee",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    }
+  ],
+  "startedAtUTC": "2026-09-07T03:47:23Z",
+  "completedAtUTC": "2026-09-07T03:48:59Z",
+  "log": [
+    {
+      "utc": "2026-09-07T03:47:47Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-A-alpha0.002-GS-Y1",
+      "wall": 15.3,
+      "replay": true,
+      "final": {
+        "COMPLETED": 8
+      }
+    },
+    {
+      "utc": "2026-09-07T03:47:58Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-B-alpha0.002-GS-Y1",
+      "wall": 4.6,
+      "replay": true,
+      "final": {
+        "COMPLETED": 8
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:03Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-A-alpha0.002-GS-Y2",
+      "wall": 2.2,
+      "replay": true,
+      "final": {
+        "COMPLETED": 2
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:07Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-B-alpha0.002-GS-Y2",
+      "wall": 1.3,
+      "replay": true,
+      "final": {
+        "COMPLETED": 2
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:10Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-A-alpha0.002-GS-Y3",
+      "wall": 1.1,
+      "replay": true,
+      "final": {
+        "COMPLETED": 1
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:13Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-B-alpha0.002-GS-Y3",
+      "wall": 0.7,
+      "replay": true,
+      "final": {
+        "COMPLETED": 1
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:16Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-A-alpha0.002-GS-Y4",
+      "wall": 1.2,
+      "replay": true,
+      "final": {
+        "COMPLETED": 1
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:19Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-B-alpha0.002-GS-Y4",
+      "wall": 0.8,
+      "replay": true,
+      "final": {
+        "COMPLETED": 1
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:22Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-A-alpha0.002-GS-Y5",
+      "wall": 1.1,
+      "replay": true,
+      "final": {
+        "COMPLETED": 1
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:25Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-B-alpha0.002-GS-Y5",
+      "wall": 0.8,
+      "replay": true,
+      "final": {
+        "COMPLETED": 1
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:30Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-A-alpha0.002-GS-Y6",
+      "wall": 1.9,
+      "replay": true,
+      "final": {
+        "COMPLETED": 3
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:34Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-B-alpha0.002-GS-Y6",
+      "wall": 1.6,
+      "replay": true,
+      "final": {
+        "COMPLETED": 3
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:37Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-A-alpha0.002-GS-Y7",
+      "wall": 0.9,
+      "replay": true,
+      "final": {
+        "OUT_OF_DOMAIN": 1
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:40Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-B-alpha0.002-GS-Y7",
+      "wall": 0.7,
+      "replay": true,
+      "final": {
+        "OUT_OF_DOMAIN": 1
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:43Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-A-alpha0.002-GS-Y8",
+      "wall": 0.9,
+      "replay": true,
+      "final": {
+        "FORCING_UNAVAILABLE": 1
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:45Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-B-alpha0.002-GS-Y8",
+      "wall": 0.7,
+      "replay": true,
+      "final": {
+        "FORCING_UNAVAILABLE": 1
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:54Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-A-alpha0.002-GS-Y9",
+      "wall": 4.0,
+      "replay": true,
+      "final": {
+        "COMPLETED": 2
+      }
+    },
+    {
+      "utc": "2026-09-07T03:48:59Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step39-B-alpha0.002-GS-Y9",
+      "wall": 1.6,
+      "replay": true,
+      "final": {
+        "COMPLETED": 2
+      }
+    }
+  ]
+}

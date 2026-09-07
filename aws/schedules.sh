@@ -1,15 +1,19 @@
 #!/usr/bin/env bash
 # 멈춰 있는 Lambda 셋에 스케줄을 건다 — 한 번만 실행하면 된다.
 #
-# ⚠️⚠️ **왜 Claude 가 못 하나 (두 번 틀리게 말했다가 확인한 것)**
-#   처음엔 "자동모드 분류기 차단"이라고 했는데 그것만이 아니었다.
-#   `earthus-deploy` 사용자에게 **EventBridge 권한 자체가 없다**:
-#       events:ListRules → AccessDenied
-#       iam:ListUserPolicies → AccessDenied (자기 권한도 못 읽는다)
-#   자격증명은 default 하나뿐이라 우회 경로도 없다.
-#   → **관리자 권한으로 이 스크립트를 한 번 실행**하거나,
-#     earthus-deploy 에 events:PutRule / PutTargets 와
-#     lambda:AddPermission 을 붙여 주면 다음부터는 Claude 가 할 수 있다.
+# ⚠️ **자격증명** — `default` 프로필은 만료된 root 세션이라 무슨 명령을 내려도
+#   "session has expired, run aws login" 만 나온다. 실제로 쓸 것은 **earthus-deploy** 다.
+#       AWS_PROFILE=earthus-deploy  또는  --profile earthus-deploy
+#
+# ⚠️ **EventBridge 권한 (2026-09-08 실측으로 정정)**
+#   예전에 여기 "권한 자체가 없다"고 적어 뒀는데 틀렸다. 되는 것과 안 되는 것이 갈린다.
+#       events:PutRule           ✅  (kma-mountain-schedule 을 실제로 고쳤다)
+#       events:DescribeRule      ✅
+#       events:ListRules         ❌ AccessDenied  ← 이것만 보고 "권한 없음"이라 판단했었다
+#       events:ListTargetsByRule ❌ AccessDenied
+#   → **규칙 주기는 고칠 수 있다.** 다만 목록·타깃을 못 읽으니 규칙 이름을 미리 알아야 한다.
+#     이름은 람다 정책에서 나온다:
+#       aws lambda get-policy --function-name <FN> --profile earthus-deploy #         --region ap-northeast-2 --query Policy --output text | grep -o 'rule/[A-Za-z0-9_.-]*'
 #
 # 2026-08-03 실측 — 이 셋이 멈춰 있었다
 #   천리안2A       31분   (기대 10분)   ← 손으로 부를 때만 갱신됨
@@ -62,6 +66,42 @@ JOBS=(
   # 매주 한 번이면 갱신에는 충분하고 공공 API에도 불필요한 부하를 주지 않는다.
   "obis-summary|cron(30 18 ? * SUN *)|OBIS 주요 5도 해역 생물 관측 기록 요약 (주 1회)"
 )
+
+# ═══════════════════════════════════════════════════════════════════
+# 기상청 허브 수집기는 **여기서 만들지 않는다** — 아래는 참고표다
+# ═══════════════════════════════════════════════════════════════════
+# 이 파일만 보고 허브 수집기의 주기를 판단하면 안 된다. 여기 없기 때문이다.
+# 아래는 2026-09-08 에 실제 배포(describe-rule)에서 읽은 값이다. 하루 호출은
+# 회차당 호출수를 곱한 값이고, 근거는 wind/kma-calls/{날짜}/{lambda}.json 이다.
+#
+#   람다                규칙 이름                    주기(UTC)                       회/일  호출/일
+#   kma-fcst            earthus-kma-fcst            cron(15 * * * ? *)                24     628
+#   kma-mountain        kma-mountain-schedule       cron(25 2,8,14,20 * * ? *)         4     499
+#   kma-lightning       kma-lightning-schedule      cron(0/5 * * * ? *)              288     289
+#   kma-radar           kma-radar-schedule          cron(0/5 * * * ? *)              288     288
+#   kma-life            kma-life-schedule           cron(50 */3 * * ? *)               8     221
+#   kma-aws-min         kma-aws-min-schedule        cron(2,12,22,32,42,52 * * * ? *) 144     148
+#   quake-asia          quake-asia-schedule         rate(10 minutes)                 144     144
+#   gk2a-clouds         gk2a-clouds-schedule        rate(10 minutes)                 144     144
+#   typhoon-official    typhoon-official-hourly     cron(25 * * * ? *)                24      53
+#   kma-warn            kma-warn-schedule           cron(2,17,32,47 * * * ? *)        96      99
+#   kma-ocean           kma-ocean-schedule          cron(5,35 * * * ? *)              48      86
+#   kma-aws             kma-aws-hourly              cron(25 * * * ? *)                24      35
+#   gts-global          gts-global-schedule         cron(35 * * * ? *)                24      24
+#   kma-upper           kma-upper-schedule          cron(40 1,13 * * ? *)              2       6
+#   kma-normal          kma-normal-schedule         cron(20 18 1 * ? *)            월 1회   ~100
+#
+# ⚠️⚠️ **이 셋은 규칙 이름이 `<람다>-schedule` 규칙을 따르지 않는다.**
+#       kma-fcst          → earthus-kma-fcst
+#       kma-aws           → kma-aws-hourly
+#       typhoon-official  → typhoon-official-hourly
+#    아래 JOBS 는 규칙 이름을 `${FN}-schedule` 로 **만들어 낸다**. 그러니 이 셋을
+#    JOBS 에 넣으면 기존 규칙은 그대로 둔 채 **두 번째 규칙이 새로 생긴다**.
+#    두 규칙이 같은 람다를 각각 부르므로 호출이 **조용히 두 배**가 되고,
+#    화면은 멀쩡해서 허브 예산이 말라야만 알게 된다. 넣지 말 것.
+#
+# 예산·근거는 aws/KMA-HUB-BUDGET.md 에 있다.
+# ═══════════════════════════════════════════════════════════════════
 
 for job in "${JOBS[@]}"; do
   IFS='|' read -r FN SCHED DESC <<< "$job"

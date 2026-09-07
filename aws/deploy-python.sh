@@ -95,7 +95,8 @@ fi
 # boto3/botocore 는 Lambda 런타임에 이미 있다 — 넣으면 용량만 커진다.
 cp "$DIR"/*.py "$TMP"/
 SHARED="$(cd "$(dirname "$0")" && pwd)/_shared/kma_hub.py"
-if grep -q "import kma_hub" "$DIR/handler.py"; then
+# handler.py 만 보면 안 된다 — gk2a-clouds 는 cth_pipeline.py/combined_handler.py 가 허브를 부른다.
+if grep -q "import kma_hub" "$DIR"/*.py; then
   [ -f "$SHARED" ] || { echo "❌ kma_hub.py 없음: $SHARED"; exit 1; }
   cp "$SHARED" "$TMP"/
   echo "  · kma_hub.py 동봉(KMA 허브 호출 회계)"

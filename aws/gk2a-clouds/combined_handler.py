@@ -7,10 +7,12 @@ verification cannot accidentally trigger the full legacy satellite render worklo
 """
 import json
 
+import kma_hub   # KMA 허브 호출 회계 — 이 람다도 허브를 부른다(CTPS). 회계 밖에 있으면 잔량 계산이 틀린다
 from handler import handler as imagery_handler
 from cth_pipeline_lcc import run as run_cth
 
 
+@kma_hub.accounted('gk2a-clouds')
 def handler(event=None, context=None):
     event = event or {}
 

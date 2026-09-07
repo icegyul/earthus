@@ -8,12 +8,17 @@ KMA_KEY_SOURCE_FUNCTION="${KMA_KEY_SOURCE_FUNCTION:-kma-fcst}"
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
-for bin in aws python3 curl unzip zip; do command -v "$bin" >/dev/null || { echo "$bin required" >&2; exit 2; }; done
+PY_BIN="$(command -v python3 || command -v python)"
+# Windows(Git Bash): python·aws 는 Windows 실행파일이라 POSIX 경로(/d/...)를 못 읽는다.
+# 이 둘에 넘기는 경로는 반드시 winpath 를 거친다 — 한쪽만 변환하면 서로 다른 파일을 본다.
+winpath() { if command -v cygpath >/dev/null 2>&1; then cygpath -w "$1"; else printf '%s' "$1"; fi; }
+for bin in aws curl unzip; do command -v "$bin" >/dev/null || { echo "$bin required" >&2; exit 2; }; done
+[ -n "$PY_BIN" ] || { echo "python required" >&2; exit 2; }
 
-python3 - <<PY
+"$PY_BIN" - <<PY
 import ast, pathlib
 for name in ['cth_pipeline.py','cth_pipeline_lcc.py','combined_handler.py']:
-    ast.parse((pathlib.Path(r'$ROOT')/name).read_text())
+    ast.parse((pathlib.Path(r'$(winpath "$ROOT")')/name).read_text(encoding='utf-8'))
     print(name, 'syntax PASS')
 PY
 
@@ -24,19 +29,28 @@ cp "$ROOT/handler.py" "$WORK/package/handler.py"
 cp "$ROOT/cth_pipeline.py" "$WORK/package/cth_pipeline.py"
 cp "$ROOT/cth_pipeline_lcc.py" "$WORK/package/cth_pipeline_lcc.py"
 cp "$ROOT/combined_handler.py" "$WORK/package/combined_handler.py"
-(
-  cd "$WORK/package"
-  zip -qr "$WORK/next.zip" .
-)
+# KMA 허브 호출 회계 — combined_handler/cth_pipeline 이 import 한다. 빠지면 Lambda 가 import 에서 죽는다.
+SHARED="$(cd "$ROOT/.." && pwd)/_shared/kma_hub.py"
+[ -f "$SHARED" ] || { echo "kma_hub.py not found: $SHARED" >&2; exit 2; }
+cp "$SHARED" "$WORK/package/kma_hub.py"
+"$PY_BIN" - "$(winpath "$WORK/package")" "$(winpath "$WORK/next.zip")" <<'PY'
+import os, sys, zipfile
+src, out = sys.argv[1], sys.argv[2]
+with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:
+    for root, _, files in os.walk(src):
+        for f in files:
+            full = os.path.join(root, f)
+            z.write(full, os.path.relpath(full, src).replace(os.sep, '/'))
+PY
 
-aws lambda update-function-code --region "$AWS_REGION" --function-name "$FUNCTION_NAME" --zip-file "fileb://$WORK/next.zip" >/dev/null
+aws lambda update-function-code --region "$AWS_REGION" --function-name "$FUNCTION_NAME" --zip-file "fileb://$(winpath "$WORK/next.zip")" >/dev/null
 aws lambda wait function-updated --region "$AWS_REGION" --function-name "$FUNCTION_NAME"
 aws lambda update-function-configuration --region "$AWS_REGION" --function-name "$FUNCTION_NAME" --handler combined_handler.handler >/dev/null
 aws lambda wait function-updated --region "$AWS_REGION" --function-name "$FUNCTION_NAME"
 
 # Preserve every existing environment variable and ensure the CTH runtime has the same
 # KMA API Hub credential already used by proven KMA collectors. The secret value is never printed.
-KMA_SOURCE_USED="$(python3 - "$AWS_REGION" "$FUNCTION_NAME" "$KMA_KEY_SOURCE_FUNCTION" "${CACHE_BUCKET:-}" "$CACHE_REGION" "$WORK/env.json" <<'PY'
+KMA_SOURCE_USED="$("$PY_BIN" - "$AWS_REGION" "$FUNCTION_NAME" "$KMA_KEY_SOURCE_FUNCTION" "${CACHE_BUCKET:-}" "$CACHE_REGION" "$(winpath "$WORK/env.json")" <<'PY'
 import json, subprocess, sys
 region, target, preferred, bucket, cache_region, out = sys.argv[1:]
 
@@ -81,15 +95,15 @@ print(source_used)
 PY
 )"
 echo "KMA_HUB_KEY source: $KMA_SOURCE_USED (value hidden)"
-aws lambda update-function-configuration --region "$AWS_REGION" --function-name "$FUNCTION_NAME" --environment "file://$WORK/env.json" >/dev/null
+aws lambda update-function-configuration --region "$AWS_REGION" --function-name "$FUNCTION_NAME" --environment "file://$(winpath "$WORK/env.json")" >/dev/null
 aws lambda wait function-updated --region "$AWS_REGION" --function-name "$FUNCTION_NAME"
 
 aws lambda invoke --region "$AWS_REGION" --function-name "$FUNCTION_NAME" \
   --cli-binary-format raw-in-base64-out \
-  --payload '{"cthOnly":true}' "$WORK/invoke.json" >/dev/null
+  --payload '{"cthOnly":true}' "$(winpath "$WORK/invoke.json")" >/dev/null
 cat "$WORK/invoke.json"
 
-python3 - "$WORK/invoke.json" <<'PY'
+"$PY_BIN" - "$(winpath "$WORK/invoke.json")" <<'PY'
 import json,sys
 r=json.load(open(sys.argv[1]))
 if r.get('cthReady') is not True:

@@ -58,7 +58,7 @@ TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 cp "$DIR"/*.py "$TMP"/
 # KMA 허브 호출 회계 모듈 — handler 가 import 하면 반드시 같이 담는다(없으면 Lambda 가 import 에서 죽는다)
 SHARED="$(cd "$(dirname "$0")" && pwd)/_shared/kma_hub.py"
-if grep -q "import kma_hub" "$DIR/handler.py"; then
+if grep -q "import kma_hub" "$DIR"/*.py; then
   [ -f "$SHARED" ] || { echo "❌ kma_hub.py 없음: $SHARED"; exit 1; }
   cp "$SHARED" "$TMP"/
   echo "▸ kma_hub.py 동봉"

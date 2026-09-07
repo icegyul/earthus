@@ -28,12 +28,17 @@ import numpy as np
 from botocore import UNSIGNED
 from botocore.config import Config
 
+import kma_hub   # KMA 허브 호출 회계 — aws/_shared/kma_hub.py, 배포 스크립트가 같이 담는다
+
 SRC_BUCKET = 'noaa-gk2a-pds'
 DST_BUCKET = os.environ['CACHE_BUCKET']
 DST_REGION = os.environ.get('CACHE_REGION') or os.environ.get('AWS_REGION')
 KMA_HUB_KEY = os.environ.get('KMA_HUB_KEY', '').strip()
 KMA_AREA = os.environ.get('GK2A_CTH_KMA_AREA', 'EA').strip().upper() or 'EA'
-KMA_LOOKBACK_MINUTES = int(os.environ.get('GK2A_CTH_KMA_LOOKBACK_MINUTES', '180'))
+# 되짚기 폭. 한 회차가 이만큼을 10분씩 거슬러 부른다 — 180분이면 한 회차에 19번이다.
+# 10분마다 도는 수집기라 그 19번이 허브 예산을 통째로 태울 수 있고, 같은 산출물이
+# NOAA NODD 거울에 무료로 있다. 정상 지연 흔들림은 40분이면 덮는다(5번).
+KMA_LOOKBACK_MINUTES = int(os.environ.get('GK2A_CTH_KMA_LOOKBACK_MINUTES', '40'))
 OUT_PREFIX = os.environ.get('GK2A_CTH_OUT_PREFIX', 'clouds/gk2a/cth')
 MAX_SIDE = int(os.environ.get('GK2A_CTH_MAX_SIDE', '220'))
 LOOKBACK_HOURS = int(os.environ.get('GK2A_CTH_LOOKBACK_HOURS', '8'))
@@ -70,20 +75,29 @@ def fetch_latest_kma(now=None):
         raise RuntimeError('KMA_HUB_KEY_UNAVAILABLE')
     last_error = None
     for valid_at in _kma_candidates(now):
+        # 이미 403(일일 용량 초과)을 봤으면 남은 후보를 되짚지 않는다. 되짚어봐야 전부 403 이고,
+        # 마른 한도를 한 번 더 때려 차단을 스스로 연장한다. 같은 산출물이 NOAA 거울에 있다.
+        if kma_hub.stop():
+            last_error = 'KMA_CTPS_QUOTA_EXHAUSTED'
+            break
         stamp = valid_at.strftime('%Y%m%d%H%M')
         safe_url = f'{KMA_BASE}/{KMA_AREA}/data?date={stamp}'
         url = safe_url + '&' + urllib.parse.urlencode({'authKey': KMA_HUB_KEY})
         try:
             req = urllib.request.Request(url, headers=UA)
-            with urllib.request.urlopen(req, timeout=60) as response:
+            with kma_hub.track('CTPS-CTH'), urllib.request.urlopen(req, timeout=60) as response:
                 data = response.read()
             if not _hdf5_payload(data):
+                kma_hub.note_invalid('CTPS-CTH')
                 last_error = f'KMA_CTPS_NON_NETCDF:{stamp}:{len(data)}'
                 continue
             # Prove it is actually an HDF5/NetCDF product before accepting the time.
             with h5py.File(io.BytesIO(data), 'r'):
                 pass
             return valid_at, safe_url, data
+        except kma_hub.QuotaExhausted:
+            last_error = f'KMA_CTPS_QUOTA_EXHAUSTED:{stamp}'
+            break
         except urllib.error.HTTPError as exc:
             last_error = f'KMA_CTPS_HTTP_{exc.code}:{stamp}'
         except Exception as exc:  # noqa: BLE001

@@ -447,7 +447,9 @@ export function initShell(hooks) {
     <div id="intel-body">
       <div class="intel-tabs">
         <button data-tab="feed" class="on">${i18n.ko?'사건':'Feed'}</button>
-        <button data-tab="my">${i18n.ko?'내 장소 · FOR ME':'My place · FOR ME'}</button>
+        <!-- STEP 55: 3열 그리드에서 '내 장소 · FOR ME' 가 칸을 넘어 옆 탭 글자를 덮었다(실측 375폭).
+             하단 바가 이미 '내 곳'으로 부르고 있으니 같은 말로 맞춘다 — 가는 곳은 그대로다. -->
+        <button data-tab="my">${i18n.ko?'내 곳':'My place'}</button>
         <button data-tab="now">${i18n.ko?'선택 자료':'Now'}</button>
         <button data-tab="why">${i18n.ko?'자료의 근거':'Why'}</button>
         <button data-tab="next">${i18n.ko?'예보·예정':'Next'}</button>

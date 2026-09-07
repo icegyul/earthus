@@ -141,6 +141,38 @@ if (reg) {
     if (!defined.has(pid)) problems.push(`[레지스트리 미정의] 현상 '${pid}' 이 참조되는데 PHENOMENA 에 없다`);
   }
   notes.push(`[레지스트리] 현상 ${defined.size} · 레이어 ${regKeys.size}`);
+
+  // PHASE 2 STEP 2.3 — 리포트 종류 ↔ 현상 대응. capabilities.report 가 실제 생성기와 어긋나면 잡는다.
+  // 종류 정본은 aws/lab-report-index/handler.py 의 SOURCES 다.
+  const kindMap = new Map();
+  const kindRe = /^\s{2}'([a-z-]+)':\s*Object\.freeze\(\{\s*phenomenon:\s*(?:'([a-z_]+\.[a-z0-9_]+)'|null)/gm;
+  while ((m = kindRe.exec(reg))) kindMap.set(m[1], m[2] || null);
+  if (kindMap.size) {
+    let srcKinds = [];
+    try {
+      const idx = readFileSync(join(APP, '..', '..', '..', 'aws', 'lab-report-index', 'handler.py'), 'utf8');
+      const block = idx.match(/SOURCES\s*=\s*\(([\s\S]*?)\n\)/);
+      if (block) srcKinds = [...block[1].matchAll(/\(\s*"([a-z-]+)"/g)].map((x) => x[1]);
+    } catch { /* 색인 핸들러를 못 읽으면 이 대조만 건너뛴다 */ }
+    for (const k of srcKinds) {
+      if (!kindMap.has(k)) problems.push(`[리포트 종류 누락] '${k}' — 색인 SOURCES 에 있는데 REPORT_KIND_PHENOMENON 에 없다`);
+    }
+    for (const k of kindMap.keys()) {
+      if (srcKinds.length && !srcKinds.includes(k)) problems.push(`[리포트 종류 유령] '${k}' — 색인 SOURCES 에 없는 종류를 잇고 있다`);
+    }
+    // 현상이 report:true 라고 말하려면 실제 생성기가 있어야 한다. 반대도 마찬가지다.
+    const claimed = new Set([...kindMap.values()].filter(Boolean));
+    const repTrue = [...reg.matchAll(/^\s{2}'([a-z_]+\.[a-z0-9_]+)':\s*Object\.freeze\(\{[\s\S]*?report:\s*(true|false)/gm)]
+      .filter((x) => x[2] === 'true').map((x) => x[1]);
+    for (const p of repTrue) {
+      if (!claimed.has(p)) problems.push(`[리포트 근거 없음] 현상 '${p}' 이 report:true 인데 대응하는 리포트 종류가 없다`);
+    }
+    for (const p of claimed) {
+      if (!repTrue.includes(p)) problems.push(`[리포트 능력 누락] 현상 '${p}' 에 리포트 종류가 있는데 report:false 다`);
+    }
+    const unmapped = [...kindMap.entries()].filter(([, v]) => !v).map(([k]) => k);
+    if (unmapped.length) notes.push(`[리포트] 대응 현상 없는 종류 ${unmapped.length}건: ${unmapped.join(' · ')}`);
+  }
 }
 
 const live0 = layers.filter((l) => l.state !== 'LOCKED').length;

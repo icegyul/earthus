@@ -948,3 +948,39 @@ export function phenomenaByDomain(domain) {
     .filter(([, p]) => p.domain === domain)
     .map(([id, p]) => ({ id, ...p }));
 }
+
+// ── PHASE 2 STEP 2.3 — 기존 리포트 계약과의 호환 계층 ─────────────────────────
+// 리포트 종류(9종)와 현상(66종)을 잇는 표가 저장소 어디에도 없었다. 여기가 그 자리다.
+// 종류 정본은 aws/lab-report-index/handler.py 의 SOURCES 다(prototype/js/lab-reports.js
+// REPORT_KINDS 와 같은 9종). 여기서 종류를 늘리거나 줄이지 않는다 — 잇기만 한다.
+//
+// 정직하게: 9종 중 2종은 대응 현상이 없다. 억지로 잇지 않고 null 로 두고 이유를 적는다.
+// 리포트는 도는데 그것을 자기 것이라 주장하는 현상이 없다는 뜻이고, 그것이 지금의 사실이다.
+export const REPORT_KIND_PHENOMENON = Object.freeze({
+  'cyclone':        Object.freeze({ phenomenon: 'hazards.typhoon',       note: null }),
+  'earthquake':     Object.freeze({ phenomenon: 'hazards.earthquake',    note: null }),
+  'aurora':         Object.freeze({ phenomenon: 'space.aurora',          note: null }),
+  'air-pollution':  Object.freeze({ phenomenon: 'weather.air_quality',   note: null }),
+  'bird-migration': Object.freeze({ phenomenon: 'land.bird_migration',   note: null }),
+  'space-reentry':  Object.freeze({ phenomenon: 'space.orbital_debris',  note: null }),
+  // 산불 연기와 화산재를 함께 다룬다. 산불 쪽만 현상이 있다 — 화산재 현상은 없다.
+  'smoke-ash':      Object.freeze({ phenomenon: 'hazards.wildfire',      note: '화산재(VAAC) 절반은 대응 현상이 없다' }),
+  // Argo 플로트 부상 위치로 표류를 채점한다. 수심별 수온(ocean.subsurface_profile)도
+  // 표층 해류(ocean.surface_current)도 이 질문이 아니다. 같은 장비를 쓸 뿐 다른 현상이다.
+  'ocean-drift':    Object.freeze({ phenomenon: null, note: '대응 현상 없음 — Argo 표류 추정은 기존 66현상 어디에도 속하지 않는다' }),
+  // 해파리 출현 기록 + 해수온 전조 지표. 발생 예보가 아니라고 생성기가 스스로 적는다.
+  'marine-bloom':   Object.freeze({ phenomenon: null, note: '대응 현상 없음 — 해파리·적조 현상이 레지스트리에 없다' }),
+});
+
+/** 리포트 종류 → 현상 객체. 대응이 없으면 null 이다(조용히 아무 현상이나 주지 않는다). */
+export function phenomenonForReportKind(kind) {
+  const hit = REPORT_KIND_PHENOMENON[kind];
+  return hit && hit.phenomenon ? PHENOMENA[hit.phenomenon] || null : null;
+}
+
+/** 이 현상이 실제 리포트 생성기를 갖고 있나. capabilities.report 의 근거가 되는 표다. */
+export function reportKindsForPhenomenon(phenomenonId) {
+  return Object.entries(REPORT_KIND_PHENOMENON)
+    .filter(([, v]) => v.phenomenon === phenomenonId)
+    .map(([k]) => k);
+}

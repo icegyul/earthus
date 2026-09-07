@@ -141,3 +141,73 @@ put_object(..., IfNoneMatch="*", CacheControl="public, max-age=31536000, immutab
 4. 단계 C — 인용 대상만 조건부 불변 쓰기
 5. 발행 게이트 선언 + `BLOCKED` 상태 도입
 6. 월간 템플릿 (지침서 §17.1) — 이때 비로소 서술을 쓴다
+
+---
+
+# 부록 A — PHASE 2 STEP 2.3 기존 리포트 계약 대조 (2026-09-08)
+
+신규 schema 를 만들기 전에 기존 계약을 전부 찾아 대조했다. **새 설계 문서를 또 만들지 않았다** — 그 자체가 두 번째 계보이기 때문이다.
+
+## A.1 리포트 계보가 이미 셋이다
+
+| 계보 | 정체 | 상태 |
+|---|---|---|
+| ① 살아 있는 정본 | `docs/LAB-REPORT-CONTRACT.md` + `aws/cyclone-analog` + `aws/lab-events` + `aws/lab-report-index` + v1 `lab-reports.html` | **실제로 돌고 사용자가 본다** |
+| ② 그림자 팩트 봉투 | `aws/signal-foundation/canonical.py` 의 `earth.signal.v1` | DRAFT · `archive/canonical/v1/` 비공개 · 배포 안 됨 |
+| ③ 죽은 계보 | `prototype/js/earthus2/v05/paid/report-api-engine.js` 의 `earthus.report.v1` | 호출부 0 · 배럴 재수출만 |
+
+**결론: ①을 승격시킨다.** ③의 이름 `earthus.report.v1` 을 재사용하면 안 된다 — 필드 모양이 살아 있는 계약과 전혀 달라 같은 이름에 두 뜻이 생긴다. 지우지도 않는다.
+
+## A.2 항목별 판정
+
+| 항목 | 판정 | 근거 |
+|---|---|---|
+| `aws/lab-report-index` 공개 투영본 | **MIGRATE** | `public_report()` 에 `generatedAt`·`algorithmVersion`·`revision` 세 줄만 더한다. `algorithmVersion=2` 는 이미 비공개 스냅샷에 있다 — 공개로 올리기만 하면 된다 |
+| `aws/typhoon-official` 불변 쓰기 | **CAN KEEP (패턴 재사용)** | `IfNoneMatch="*"` + `immutable` + 412=이미보존. 새 아카이빙 계층을 만들지 않고 이 패턴을 인용 대상에만 복사한다 |
+| `aws/signal-foundation/canonical.py` | **CAN KEEP (승격 대상, 이번엔 아님)** | 29필드 봉투와 검증기가 이미 있다. 팩트 봉투를 새로 발명하지 않는다 |
+| `aws/cyclone-analog` 리포트 레코드 | **CAN KEEP + 호환 계층** | 태풍만 `kind`·`access`·`title`·`summary`·`sourcePath` 가 없고 id 가 bare 다. 색인과 v1 이 **각각 두 벌로** 메우고 있다 |
+| 리포트 종류 목록 | **CONFLICT** | 3곳에 손으로 유지된다 — 색인 `SOURCES`(9종) · `prototype/js/lab-reports.js`(9종) · `LAB-REPORT-CONTRACT.md`(**8종, 지진 누락**). 코드가 맞다 |
+| `detail` 필드 | **CONFLICT** | 한 필드 뒤에 서로 호환되지 않는 두 스키마가 있다(lab-events 계열 vs cyclone 계열) |
+| 오차 키 이름 | **CONFLICT** | `meanAbsError`(lab-events) vs `meanErrorKm`(cyclone). **이름을 통일하지 말고** `{metric, value, unit}` 덧붙임으로 표현한다 |
+| `access: 'pro'` | **MIGRATE (작게)** | 티어 사다리 `free/explorer/intelligence` 에 없는 네 번째 토큰이고 아무도 읽지 않는다. 값 도메인을 사다리로 정렬하거나 "아직 강제되지 않는다"를 계약에 명시 |
+| `aws/health` 감시 | **MIGRATE** | `generated_of()` 가 리터럴 `"generated"` 만 찾아 `generatedAt` 을 못 읽는다. 지금 LastModified 로 조용히 폴백 중이다 |
+| `earthus.report.v1` | **REPLACE LATER** | 지우지 않는다. 이름을 재사용하지 않는다 |
+| v2 `ext/lab-reports.js` | **CAN KEEP** | v2 전용 렌더러를 만들지 않는다. 링크 목적지는 `/lab-reports.html` 유지 |
+
+## A.3 id 네임스페이스가 5종이다
+
+```text
+메뉴      scene/layer                              ocean/surf
+현상      domain.snake                             hazards.typhoon
+리포트    {kind}:{sourceId}                        cyclone:1001318
+신호      {provider}:{dataset}:{h20}:{h12}         (':' 4토막)
+불변객체  events/typhoon-official/archive/{STORM}/{AGENCY}-{stamp}.json
+```
+
+**리포트 id 와 신호 id 가 둘 다 `:` 를 구분자로 쓴다.** 신규 schema 는 둘을 서로 다른 필드명(`reportId` / `signalId`)으로 분리해 담는다. 한 필드에 섞으면 토막 수로만 구분해야 한다.
+
+## A.4 리포트 종류 ↔ 현상 대응 — 이번 단계에서 만든 것
+
+표가 저장소 어디에도 없었다. `prototype/v2-three/js/phenomenon-registry.js` 의 `REPORT_KIND_PHENOMENON` 이 그 자리다.
+
+| 리포트 종류 | 현상 |
+|---|---|
+| `cyclone` | `hazards.typhoon` |
+| `earthquake` | `hazards.earthquake` |
+| `aurora` | `space.aurora` |
+| `air-pollution` | `weather.air_quality` |
+| `bird-migration` | `land.bird_migration` |
+| `space-reentry` | `space.orbital_debris` |
+| `smoke-ash` | `hazards.wildfire` — 화산재(VAAC) 절반은 대응 현상 없음 |
+| `ocean-drift` | **없음** — Argo 표류 추정은 66현상 어디에도 속하지 않는다 |
+| `marine-bloom` | **없음** — 해파리·적조 현상이 레지스트리에 없다 |
+
+억지로 잇지 않았다. 리포트는 도는데 그것을 자기 것이라 주장하는 현상이 없다는 것이 지금의 사실이다.
+
+**이 표가 PHASE 1 의 `capabilities.report` 를 실측으로 교차검증한다.** `report:true` 인 현상 7개가 정확히 7개 종류와 1:1로 맞고, 종류가 있는데 `report:false` 인 현상은 0개다. `tools/check-v2-consistency.mjs` 가 이 대칭을 강제한다.
+
+## A.5 이번 단계에서 하지 않은 것
+
+- 기존 리포트 데이터 삭제 · 대규모 마이그레이션 — 하지 않았다.
+- `detail`/`scores` 의 좌표·리드타임별 오차 노출(계약 §4 위반) — **고치지 않았다.** 지우면 `lab-report-detail.js` 의 렌더러가 함께 깨진다. 별도 단계가 필요하다.
+- 리포트 종류 정본 일원화 — 판정만 했다(코드 9종이 맞다).

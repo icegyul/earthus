@@ -346,7 +346,10 @@ export const spaceOps = {
     }
     globe.nearby(o, this._nearby.rows, this.clock());
     this._gsRows = this.stations.length ? M.stationsInView(o.rec, this.stations, this.clock(), 5) : [];
-    globe.stationLinks(o, this._gsRows, this.clock());
+    /* 지상국 연결선은 '위성 교신 / 상태' 에서만 그린다 — 2026-09-07 받은 지적 "줄이 생겨".
+       정지궤도 위성을 고르면 위성이 3만 5천 km 밖에 있어 연결선이 화면을 가로질러 설명 없는 긴 줄로만 보였다.
+       교신 화면에서는 그 줄이 지금 어느 지상국이 보는가를 뜻하므로 그대로 둔다. */
+    globe.stationLinks(o, this.section === 'comm' ? this._gsRows : [], this.clock());
   },
 
   _markActive() {
@@ -1211,11 +1214,11 @@ export const spaceOps = {
     if (!b.closest('.so-search')) { out.hidden = true; }
     switch (act) {
       case 'close': this.close(); break;
-      case 'section': this.section = id; this._renderMode(); this._renderSection(); this._setMtab('left'); break;
+      case 'section': this.section = id; this._renderMode(); this._renderSection(); this._setMtab('left'); this._refreshSelectionGeometry(); break;
       case 'msection': {
         // 모바일 바에서 같은 구역을 다시 누르면 시트를 접는다(지구로)
         const same = this.section === id && this.root.classList.contains('mob-left');
-        this.section = id; this._renderMode(); this._renderSection(); this._setMtab(same ? 'globe' : 'left'); break;
+        this.section = id; this._renderMode(); this._renderSection(); this._setMtab(same ? 'globe' : 'left'); this._refreshSelectionGeometry(); break;
       }
       case 'sheet-toggle': this.root.classList.toggle('so-full'); break;
       case 'past-ca': {
@@ -1232,7 +1235,7 @@ export const spaceOps = {
       case 'cmp-pick': this.cmp = this.findObj(id); this._renderRight(); break;
       case 'cmp-link': if (this.sel?.rec && this.cmp?.rec) globe.approach(this.sel, this.cmp, { id: 'cmp' }, this.clock()); break;
       case 'intel': location.href = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? '/v2-three/' : '/Intelligence'; break;
-      case 'kpi': this.section = id; this._renderMode(); this._renderSection(); this._setMtab('left'); break;
+      case 'kpi': this.section = id; this._renderMode(); this._renderSection(); this._setMtab('left'); this._refreshSelectionGeometry(); break;
       case 'cam': globe.camera(id, { launch: this.sel?.kind === M.KIND.LAUNCH ? this.sel : this.launchObjs()[0], object: this.sel }); break;
       case 'select': { const o = this.findObj(id); if (o) { await this.select(o, { fly: o.kind === M.KIND.LAUNCH }); out.hidden = true; this._setMtab('right'); } break; }
       case 'approach': {

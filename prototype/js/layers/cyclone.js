@@ -273,7 +273,10 @@ export const cyclones = {
   _hist: new Map(),  // eventid → [{t, lat, lon, name, alert}] 우리가 기록한 위치
   _selected: null,
   _spinTimer: null,
-  _ensembleVisible: true,
+  /* 2026-09-07 v1/v2 역할 분리 지시: v1은 FORECAST & OBSERVATION, 모델 비교는 v2(Intelligence) 몫.
+     ECMWF 51개 멤버 다발은 앙상블 해석이지 공식 통보문이 아니라서 v1 첫 화면 기본값을 꺼둔다.
+     지우지 않는다 — 버튼(진로 다발 보이기)은 그대로 있어 원하면 켤 수 있다. */
+  _ensembleVisible: false,
   _enabled: false,
   _trackToken: 0,
 

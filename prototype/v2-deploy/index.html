@@ -303,6 +303,33 @@
   .edge-tab.open, .edge-tab.beside { transform: translateX(286px); }
   .edge-tab.open { background: rgba(22,30,42,0.88); }
 
+  /* ---------- 하단 바 (2026-09-07 v1/v2 역할 분리 지시 §15) ----------
+     받은 지시: "최종 V2 메인 하단 메뉴: 내 곳 / 무슨 일 / 날씨 / 바다 / 우주 / 더보기".
+     기존 좌측 세로 손잡이·우측 EARTH INTELLIGENCE 패널은 그대로 둔다(지우지 않는다) —
+     이 바는 그 위에 얹는 지름길이다. v1·v3 의 하단 그림 바와 같은 조작 언어를 쓴다. */
+  #bottom-nav {
+    position: fixed; left: 50%; bottom: 54px; transform: translateX(-50%); z-index: 6;
+    display: flex; gap: 4px; background: var(--panel-bg); border: 1px solid var(--panel-line);
+    border-radius: 14px; padding: 5px; backdrop-filter: blur(16px);
+    transition: opacity 0.2s ease, transform 0.3s ease;
+  }
+  body:has(#intel.open) #bottom-nav { opacity: 0; pointer-events: none; transform: translateX(-50%) translateY(10px); }
+  #bottom-nav button {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    width: 56px; padding: 7px 2px 6px; border: 0; border-radius: 10px; cursor: pointer;
+    background: transparent; color: var(--text-dim); font: 500 9.5px/1 var(--sans, inherit);
+  }
+  #bottom-nav button svg { width: 19px; height: 19px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  #bottom-nav button:hover { background: rgba(74,144,217,0.12); color: var(--text); }
+  #bottom-nav button.on { background: rgba(74,144,217,0.2); color: var(--accent); }
+  @media (max-width: 720px) {
+    /* 좌하단 #hud(고도·과장+출처, 2줄 이상 되면 79px까지 자란다) 위로 확실히 띄운다 —
+       100px 로 뒀더니 실측(iPhone 폭 375) 에서 하단 바가 출처 글줄을 가렸다(2026-09-07). */
+    #bottom-nav { bottom: calc(158px + env(safe-area-inset-bottom)); padding: 4px; gap: 2px; }
+    #bottom-nav button { width: 48px; padding: 6px 1px 5px; }
+    #bottom-nav button svg { width: 17px; height: 17px; }
+  }
+
   /* ---------- 첫 방문 안내 ---------- */
   #intro {
     position: fixed; inset: 0; z-index: 12; display: none;
@@ -497,6 +524,11 @@
     color: var(--text); font-weight: 600;
   }
   .mp-chip-note { padding: 4px 18px 8px; font-size: 9px; color: rgba(150,175,195,0.55); line-height: 1.45; }
+  /* 장기 기후 시나리오 소제목(§13) — 지금 예보 목록과 같은 배지·같은 굵기라 구분이 안 됐다 */
+  .mp-subdiv {
+    margin: 8px 14px 2px; padding-top: 8px; border-top: 1px dashed var(--panel-line);
+    font-size: 9.5px; letter-spacing: 0.03em; color: rgba(150,175,195,0.7);
+  }
   .mp-item {
     width: 100%; min-height: 35px; display: flex; align-items: center; flex-wrap: wrap;
     gap: 4px 8px; background: none; border: 0; cursor: pointer; color: var(--text);

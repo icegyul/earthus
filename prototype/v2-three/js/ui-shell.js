@@ -82,11 +82,14 @@ export const SCENES = [
       { id: 'kmasea', name: '해상 관측망 (파고·수온 193지점)', state: 'OBSERVED', src: '기상청 해양관측', act: true },
       { id: 'sstfield', name: '해수면 온도 (전지구)', state: 'OBSERVED', src: 'NOAA OISST v2.1', act: true },
       { id: 'sstanom', name: '수온 아노말리 (평년 대비)', state: 'OBSERVED', src: 'OISST − 1991~2020 평년', act: true },
-      { id: 'slr', name: '해수면 상승 전망 2100 (전 세계)', state: 'MODEL_SIGNAL', src: 'IPCC AR6 · NASA', act: true },
-      { id: 'khoasl126', name: '우리 바다 해수면 전망 · SSP1-2.6 저배출', state: 'MODEL_SIGNAL', src: '국립해양조사원 지역 해양기후 모델 · 0.05°', act: true },
-      { id: 'khoasl245', name: '우리 바다 해수면 전망 · SSP2-4.5 중간', state: 'MODEL_SIGNAL', src: '국립해양조사원 지역 해양기후 모델 · 0.05°', act: true },
-      { id: 'khoasl370', name: '우리 바다 해수면 전망 · SSP3-7.0 고배출', state: 'MODEL_SIGNAL', src: '국립해양조사원 지역 해양기후 모델 · 0.05°', act: true },
-      { id: 'khoasl585', name: '우리 바다 해수면 전망 · SSP5-8.5 최고', state: 'MODEL_SIGNAL', src: '국립해양조사원 지역 해양기후 모델 · 0.05°', act: true },
+      /* 2026-09-07 지시 §13: 장기 기후 시나리오는 지금 예보와 섞어 보여주지 않는다.
+         longterm 플래그만 얹는다 — LiveLayers 렌더 경로(main.js LIVE_LAYER_KEYS)는 그대로
+         'ocean/…' 로 남으므로 데이터·계산은 안 건드리고 화면에만 소제목을 가른다. */
+      { id: 'slr', name: '해수면 상승 전망 2100 (전 세계)', state: 'MODEL_SIGNAL', src: 'IPCC AR6 · NASA', act: true, longterm: true },
+      { id: 'khoasl126', name: '우리 바다 해수면 전망 · SSP1-2.6 저배출', state: 'MODEL_SIGNAL', src: '국립해양조사원 지역 해양기후 모델 · 0.05°', act: true, longterm: true },
+      { id: 'khoasl245', name: '우리 바다 해수면 전망 · SSP2-4.5 중간', state: 'MODEL_SIGNAL', src: '국립해양조사원 지역 해양기후 모델 · 0.05°', act: true, longterm: true },
+      { id: 'khoasl370', name: '우리 바다 해수면 전망 · SSP3-7.0 고배출', state: 'MODEL_SIGNAL', src: '국립해양조사원 지역 해양기후 모델 · 0.05°', act: true, longterm: true },
+      { id: 'khoasl585', name: '우리 바다 해수면 전망 · SSP5-8.5 최고', state: 'MODEL_SIGNAL', src: '국립해양조사원 지역 해양기후 모델 · 0.05°', act: true, longterm: true },
       { id: 'khoaflood', name: '연안 침수 범위 — 시군구별 침수 예상도', state: 'MODEL_SIGNAL', src: '국립해양조사원 · 침수 예상도', act: true },
       { id: 'wavefield', name: '유의파고 (전지구)', state: 'MODEL_SIGNAL', src: 'Open-Meteo Marine', act: true },
       { id: 'current', name: '표층 해류', state: 'MODEL_SIGNAL', src: 'Open-Meteo Marine', act: true },
@@ -316,16 +319,23 @@ export function initShell(hooks) {
       <h3 class="mp-title"><button data-collapse="${s.id}" aria-expanded="${menuQuery || !collapsedSections.has(s.id) ? 'true':'false'}"><i></i>${i18n.scene(s.id, s.label)}<em>${shown.length} ${i18n.ko ? '항목':'items'}</em></button></h3>
       <div ${!menuQuery && collapsedSections.has(s.id) ? 'hidden':''}>
       ${menuQuery || activeOnly ? '' : chips}
-      ${shown.map((l) => {
-        const st = (hooks.getLayerState && hooks.getLayerState(s.id, l)) || {};
-        return `<button class="mp-item${l.state === 'LOCKED' ? ' locked' : ''}${st.on ? ' on' : ''}"
-          data-fscene="${s.id}" data-flayer="${l.id}" title="${safeText(l.src)}" aria-pressed="${!!st.on}">
-          <span class="mp-lbl">${i18n.layer(l.id, l.name)}</span>${dataBadge(l.state)}
-          <span class="mp-question">${safeText(i18n.ko ? MENU_QUESTIONS[l.id] || l.name : l.name)}</span>
-          <span class="mp-support">${safeText(menuCoverage(l.id,i18n.ko))} · ${safeText(menuTime(l.id,i18n.ko))}</span>
-          ${st.on && st.note ? `<span class="mp-note">${st.note}</span>` : ''}
-        </button>`;
-      }).join('')}
+      ${(() => {
+        let sawLongterm = false;
+        return shown.map((l) => {
+          // §13: 첫 장기 시나리오 항목 앞에 소제목을 한 번만 끼운다 — "지금 예보"와 섞이지 않게.
+          const divider = (!menuQuery && l.longterm && !sawLongterm)
+            ? (sawLongterm = true, `<div class="mp-subdiv">${i18n.ko ? '장기 기후 시나리오 — 예보 아님, 2100년까지 전망' : 'Long-term climate scenarios — not a forecast, out to 2100'}</div>`)
+            : '';
+          const st = (hooks.getLayerState && hooks.getLayerState(s.id, l)) || {};
+          return divider + `<button class="mp-item${l.state === 'LOCKED' ? ' locked' : ''}${st.on ? ' on' : ''}"
+            data-fscene="${s.id}" data-flayer="${l.id}" title="${safeText(l.src)}" aria-pressed="${!!st.on}">
+            <span class="mp-lbl">${i18n.layer(l.id, l.name)}</span>${dataBadge(l.state)}
+            <span class="mp-question">${safeText(i18n.ko ? MENU_QUESTIONS[l.id] || l.name : l.name)}</span>
+            <span class="mp-support">${safeText(menuCoverage(l.id,i18n.ko))} · ${safeText(menuTime(l.id,i18n.ko))}</span>
+            ${st.on && st.note ? `<span class="mp-note">${st.note}</span>` : ''}
+          </button>`;
+        }).join('');
+      })()}
       </div></section>`;
   };
 
@@ -441,12 +451,64 @@ export function initShell(hooks) {
         <button data-tab="now">${i18n.ko?'선택 자료':'Now'}</button>
         <button data-tab="why">${i18n.ko?'자료의 근거':'Why'}</button>
         <button data-tab="next">${i18n.ko?'예보·예정':'Next'}</button>
-        <button data-tab="scenario">${i18n.ko?'가정 실험':'What if'}</button>
+        <!-- 2026-09-07 지시 §18: 사용자가 찾을 수 있는 이름을 먼저 쓴다. "가정 실험/What-if"
+             는 고급 기능 쪽 표현으로 남기고(탭 안 내용·main.js 는 그대로), 탭 이름만 바꾼다. -->
+        <button data-tab="scenario">${i18n.ko?'시뮬레이션':'Simulation'}</button>
         <button class="ui-x" id="intel-close" aria-label="${i18n.ko?'정보 닫기':'Close information'}">✕</button>
       </div>
       <div id="intel-content"></div>
     </div>`;
   root.appendChild(intel);
+
+  /* ---------- 하단 바 — 내 곳 / 무슨 일 / 날씨 / 바다 / 우주 / 더보기 ----------
+     2026-09-07 v1/v2 역할 분리 지시 §15: "109개 SCENES 를 그대로 노출하지 않는다.
+     최종 V2 메인 하단 메뉴: 내 곳 무슨 일 날씨 바다 우주 더보기." §17: 기본 화면은
+     6탭 우측 패널이 아니라 대표 카드 하나 — 이 바가 그 대표 진입점이다.
+     좌측 세로 손잡이·우측 패널은 지우지 않는다. "더보기"가 정확히 그 기존 화면을 연다. */
+  const bottomNav = document.createElement('div');
+  bottomNav.id = 'bottom-nav';
+  const NAV_ICON = {
+    myplace: '<path d="M3 11 12 4l9 7"/><path d="M5 10v9h14v-9"/><path d="M10 19v-5h4v5"/>',
+    feed: '<path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7a5 5 0 1 0 5 5"/><circle cx="12" cy="12" r="1.5"/>',
+    weather: '<path d="M7 17a4 4 0 0 1 .6-7.9A6 6 0 0 1 19 11a3 3 0 0 1 0 6Z"/>',
+    ocean: '<path d="M2 14c3-4 6-4 9 0s6 4 9 0"/><path d="M2 19c3-4 6-4 9 0s6 4 9 0"/>',
+    space: '<rect x="9" y="9" width="6" height="6"/><path d="M2 12h5M17 12h5M4 9v6M20 9v6"/>',
+    more: '<circle cx="6" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18" cy="12" r="1.2"/>',
+  };
+  const NAV_ITEMS = [
+    { id: 'myplace', ko: '내 곳', en: 'My place' },
+    { id: 'feed', ko: '무슨 일', en: "What's up" },
+    { id: 'weather', ko: '날씨', en: 'Weather' },
+    { id: 'ocean', ko: '바다', en: 'Ocean' },
+    { id: 'space', ko: '우주', en: 'Space' },
+    { id: 'more', ko: '더보기', en: 'More' },
+  ];
+  bottomNav.innerHTML = NAV_ITEMS.map((n) => `<button type="button" data-nav="${n.id}">
+      <svg viewBox="0 0 24 24">${NAV_ICON[n.id]}</svg><span>${i18n.ko ? n.ko : n.en}</span>
+    </button>`).join('');
+  root.appendChild(bottomNav);
+
+  // 씬 목록 패널에서 특정 그룹(날씨·바다)까지 열어 스크롤해 보여준다 — 접혀 있었다면 편다.
+  const gotoScene = (brand, sceneId) => {
+    openPanel(brand);
+    collapsedSections.delete(sceneId);
+    requestAnimationFrame(() => {
+      panel.querySelector(`[data-section="${sceneId}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  };
+  bottomNav.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-nav]');
+    if (!btn) return;
+    bottomNav.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === btn));
+    switch (btn.dataset.nav) {
+      case 'myplace': showTab('my'); if (!intelOpen) intel.querySelector('#intel-tab').click(); break;
+      case 'feed': showTab('feed'); if (!intelOpen) intel.querySelector('#intel-tab').click(); break;
+      case 'weather': gotoScene('earthus', 'weather'); break;
+      case 'ocean': gotoScene('earthus', 'ocean'); break;
+      case 'space': gotoScene('aetherus', 'space'); break;
+      case 'more': openPanel('earthus'); break;
+    }
+  });
 
   const intelBody = intel.querySelector('#intel-body');
   const intelContent = intel.querySelector('#intel-content');

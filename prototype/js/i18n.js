@@ -174,7 +174,9 @@ export const i18n = {
     'm.sat':      { ko: '인공위성',          en: 'Satellites' },
     'm.alert':    { ko: '경보·재난',         en: 'Alerts' },
     'm.intel':    { ko: 'Intelligence',      en: 'Intelligence' },
-    'm.intelSub': { ko: '예보 · 시나리오 지구', en: 'Forecast & scenario Earth' },
+    /* 2026-09-07 v1/v2 역할 분리 지시: v1은 FORECAST & OBSERVATION, v2는 INTELLIGENCE & SIMULATION.
+       "시나리오"라는 말을 v1 메뉴 문구에 남기면 v1 스스로 분석 기능을 이름표에 얹는 셈이라 뺐다. */
+    'm.intelSub': { ko: '판단 · 시뮬레이션 지구', en: 'Intelligence & simulation Earth' },
     'm.explore':  { ko: '탐색·활동',         en: 'Explore & activities' },
     'm.news':     { ko: '뉴스',              en: 'News' },
     'm.lab':      { ko: 'LAB',               en: 'LAB' },

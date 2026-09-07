@@ -96,3 +96,65 @@ test('시뮬레이션 능력은 정확히 2개다 — 마케팅으로 늘리지 
   const sim = Object.entries(reg.PHENOMENA).filter(([, p]) => p.capabilities.simulation).map(([id]) => id);
   assert.deepEqual(sim.sort(), ['hazards.tsunami', 'ocean.wave']);
 });
+
+// ── PHASE 2 STEP 2.5~2.8 — 선택 문맥과 능력 게이팅 ────────────────────────────
+// initShell 은 실제 DOM 을 요구하므로 여기서는 배선 계약을 소스에서 확인한다
+// (tools/test_v2_badge_parity.mjs 와 같은 방식).
+
+test('ui-shell 이 선택 문맥을 밖으로 내준다', () => {
+  assert.match(shellSrc, /getSelection,/, 'getSelection 이 반환 API 에 없다');
+  assert.match(shellSrc, /getPhenomenonContext,/, 'getPhenomenonContext 가 반환 API 에 없다');
+  assert.match(shellSrc, /const getSelection = \(\) =>/);
+  // 문맥은 복합키를 들고 나가야 한다 — bare id 만 주면 받는 쪽이 다시 충돌한다.
+  assert.match(shellSrc, /layerKey: `\$\{s\.id\}\/\$\{l\.id\}`/);
+});
+
+test('선택이 바뀌는 모든 지점에서 능력 게이팅이 다시 돈다', () => {
+  const calls = (shellSrc.match(/applyCapabilityGating\(\)/g) || []).length;
+  // 정의 1 + 호출 3(메뉴 클릭 · setSelection · clearSelection)
+  assert.ok(calls >= 4, `게이팅 호출이 ${calls}곳뿐이다 — 선택 경로 하나가 빠졌다`);
+  assert.match(shellSrc, /selectedMenu=\{s:scene,l:layer\}; applyCapabilityGating\(\)/, '메뉴 클릭 경로에서 게이팅이 안 돈다');
+});
+
+test('능력 없는 행동은 숨긴다 — 준비 중으로 위장하지 않는다', () => {
+  assert.match(shellSrc, /CAP_TAB = \{ scenario: 'simulation', next: 'forecast' \}/);
+  assert.match(shellSrc, /btn\.hidden = hide/);
+  // 숨긴 탭이 열려 있었으면 되돌린다 — 빈 화면을 남기지 않는다.
+  assert.match(shellSrc, /if \(hide && curTab === tab\) showTab\('feed'\)/);
+  assert.ok(!/준비\s*중/.test(shellSrc.slice(shellSrc.indexOf('CAP_TAB'), shellSrc.indexOf('CAP_TAB') + 900)),
+    '능력 없는 행동을 "준비 중"으로 표시하고 있다');
+});
+
+test('낙뢰는 시뮬레이션도 예보도 없으므로 두 탭이 모두 숨겨져야 한다', () => {
+  const p = reg.PHENOMENA['hazards.lightning'];
+  assert.equal(p.capabilities.simulation, false);
+  assert.equal(p.capabilities.forecast, false);
+});
+
+test('파고는 시뮬레이션은 있고 예보는 없다 — 지침서 §45 기대와 다른 실제', () => {
+  const p = reg.PHENOMENA['ocean.wave'];
+  assert.equal(p.capabilities.simulation, true);
+  assert.equal(p.capabilities.forecast, false, 'marine.json 은 current= 만 받는다');
+});
+
+test('태풍은 예보·리포트는 있고 시뮬레이션은 없다', () => {
+  const p = reg.PHENOMENA['hazards.typhoon'];
+  assert.equal(p.capabilities.forecast, true);
+  assert.equal(p.capabilities.report, true);
+  assert.equal(p.capabilities.simulation, false, '5행 상수표는 시뮬레이션이 아니다');
+});
+
+test('어떤 레이어도 질문을 잃지 않았다 — 현상이 아닌 항목도 질문을 갖는다', async () => {
+  const mg = await import('../prototype/v2-three/js/menu-guide.js');
+  const lost = [];
+  const missing = [];
+  for (const key of Object.keys(reg.LAYER_PHENOMENON)) {
+    const [s, l] = key.split('/');
+    const now = reg.questionForLayer(s, l);
+    if (!now) missing.push(key);
+    if (mg.MENU_QUESTIONS[l] && !now) lost.push(key);
+  }
+  // 배경·조작·진입점은 현상이 아니지만 메뉴에서는 질문을 보여 준다. 행에 붙은 question 이 그 자리다.
+  assert.deepEqual(lost, [], '레지스트리로 옮기면서 질문이 사라진 레이어가 있다');
+  assert.deepEqual(missing, [], '질문이 없는 레이어가 있다 — 메뉴에 레이어 이름이 질문 자리에 나온다');
+});

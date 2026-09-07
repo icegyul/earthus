@@ -823,7 +823,7 @@ export const LAYER_PHENOMENON = Object.freeze({
   'hazards/eq': Object.freeze({ phenomenon: 'hazards.earthquake', role: 'primary', status: 'rename' }),
   'hazards/eqdepth': Object.freeze({ phenomenon: 'hazards.earthquake', role: 'data_product', status: 'merge' }),
   'hazards/eqhistory': Object.freeze({ phenomenon: 'hazards.earthquake', role: 'data_product', status: 'merge' }),
-  'hazards/feed': Object.freeze({ phenomenon: null, role: 'entrypoint', status: 'demote' }),
+  'hazards/feed': Object.freeze({ phenomenon: null, role: 'entrypoint', status: 'demote', question: '지금 중요한 사건은' }),
   'hazards/fireglobal': Object.freeze({ phenomenon: 'hazards.wildfire', role: 'primary', status: 'rename' }),
   'hazards/glof': Object.freeze({ phenomenon: 'hazards.glacial_lake_flood', role: 'primary', status: 'rename' }),
   'hazards/lightning': Object.freeze({ phenomenon: 'hazards.lightning', role: 'primary', status: 'rename' }),
@@ -847,17 +847,17 @@ export const LAYER_PHENOMENON = Object.freeze({
   'hobby/vessel': Object.freeze({ phenomenon: 'ocean.vessel_traffic', role: 'entrypoint', status: 'demote' }),
   'lab/charts': Object.freeze({ phenomenon: 'weather.climate_series', role: 'tool', status: 'reclassify' }),
   'lab/crust': Object.freeze({ phenomenon: 'hazards.crustal_motion', role: 'tool', status: 'reclassify' }),
-  'lab/reports': Object.freeze({ phenomenon: null, role: 'entrypoint', status: 'demote' }),
-  'lab/requests': Object.freeze({ phenomenon: null, role: 'entrypoint', status: 'demote' }),
+  'lab/reports': Object.freeze({ phenomenon: null, role: 'entrypoint', status: 'demote', question: '끝난 사건의 계산 보고서와 검증 결과를 어디서 보나' }),
+  'lab/requests': Object.freeze({ phenomenon: null, role: 'entrypoint', status: 'demote', question: '불편한 점을 남기고 다른 사람 요청에 공감하려면' }),
   'lab/today': Object.freeze({ phenomenon: 'weather.daily_extremes', role: 'tool', status: 'reclassify' }),
-  'land/base-bluemarble': Object.freeze({ phenomenon: null, role: 'basemap', status: 'demote' }),
-  'land/base-ne2': Object.freeze({ phenomenon: null, role: 'basemap', status: 'demote' }),
+  'land/base-bluemarble': Object.freeze({ phenomenon: null, role: 'basemap', status: 'demote', question: '지형과 수심의 전체 구조는' }),
+  'land/base-ne2': Object.freeze({ phenomenon: null, role: 'basemap', status: 'demote', question: '지형을 깔끔하게 보고 싶다' }),
   'land/base-night': Object.freeze({ phenomenon: 'people.night_lights', role: 'basemap', status: 'demote' }),
-  'land/base-truecolor': Object.freeze({ phenomenon: null, role: 'basemap', status: 'demote' }),
+  'land/base-truecolor': Object.freeze({ phenomenon: null, role: 'basemap', status: 'demote', question: '가장 최근에 촬영된 지구는' }),
   'land/forest': Object.freeze({ phenomenon: 'land.forest', role: 'primary', status: 'rename' }),
   'land/forestloss': Object.freeze({ phenomenon: 'land.forest', role: 'data_product', status: 'merge' }),
-  'land/globe': Object.freeze({ phenomenon: null, role: 'control', status: 'demote' }),
-  'land/locate': Object.freeze({ phenomenon: null, role: 'entrypoint', status: 'demote' }),
+  'land/globe': Object.freeze({ phenomenon: null, role: 'control', status: 'demote', question: '현재 장소에서 전체 지구로 돌아가려면' }),
+  'land/locate': Object.freeze({ phenomenon: null, role: 'entrypoint', status: 'demote', question: '내 주변 정보를 보고 싶다' }),
   'land/lst': Object.freeze({ phenomenon: 'land.surface_temperature', role: 'primary', status: 'rename' }),
   'land/satdetail': Object.freeze({ phenomenon: 'land.terrain', role: 'data_product', status: 'merge' }),
   'land/seaice': Object.freeze({ phenomenon: 'ocean.sea_ice', role: 'primary', status: 'reclassify' }),
@@ -874,7 +874,7 @@ export const LAYER_PHENOMENON = Object.freeze({
   'ocean/khoasl585': Object.freeze({ phenomenon: 'ocean.sea_level_rise', role: 'data_product', status: 'merge' }),
   'ocean/kmasea': Object.freeze({ phenomenon: 'ocean.sea_observation', role: 'data_product', status: 'merge' }),
   'ocean/marine': Object.freeze({ phenomenon: 'ocean.wave', role: 'entrypoint', status: 'merge' }),
-  'ocean/oceanfocus': Object.freeze({ phenomenon: null, role: 'control', status: 'demote' }),
+  'ocean/oceanfocus': Object.freeze({ phenomenon: null, role: 'control', status: 'demote', question: '한 해역의 핵심 상황은' }),
   'ocean/slr': Object.freeze({ phenomenon: 'ocean.sea_level_rise', role: 'primary', status: 'merge' }),
   'ocean/sstanom': Object.freeze({ phenomenon: 'ocean.sst_anomaly', role: 'primary', status: 'rename' }),
   'ocean/sstfield': Object.freeze({ phenomenon: 'ocean.sst', role: 'primary', status: 'rename' }),
@@ -959,7 +959,11 @@ export function isRegisteredLayer(sceneId, layerId) {
 
 export function questionForLayer(sceneId, layerId, lang = 'ko') {
   const p = phenomenonForLayer(sceneId, layerId);
-  return p ? p.question[lang] || p.question.ko : null;
+  if (p) return p.question[lang] || p.question.ko;
+  // 현상이 아닌 항목(배경·조작·진입점)도 메뉴에서는 질문을 보여 준다. 그 질문은 행에 붙어 있다.
+  // 이게 없으면 '지형을 깔끔하게 보고 싶다' 같은 문장이 사라지고 레이어 이름이 대신 나온다.
+  const hit = LAYER_PHENOMENON[`${sceneId}/${layerId}`];
+  return (hit && hit.question) || null;
 }
 
 export function phenomenaByDomain(domain) {

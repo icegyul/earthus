@@ -9,7 +9,7 @@ import { renderBadge, layerBadge } from './engine-bridge.js?v=15';
 // menu-guide.js 의 MENU_QUESTIONS 는 지우지 않았다 — tools/build_information_inventory.mjs 가
 // 아직 읽고, 레지스트리의 질문이 거기서 왔다. 다만 화면은 이제 레지스트리만 본다.
 // (bare id 조회였기 때문에 hobby/surf 가 ocean/surf 의 질문을 그대로 표시하고 있었다.)
-import { questionForLayer } from './phenomenon-registry.js?v=1';
+import { questionForLayer, phenomenonForLayer } from './phenomenon-registry.js?v=1';
 import { menuCoverage, menuTime, canClearLayer, matchesMenu } from './information-contract.js';
 const safeText = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -261,6 +261,52 @@ export function initShell(hooks) {
   let menuQuery = '';
   let activeOnly = false;
   let selectedMenu = null;
+
+  /* ── PHASE 2 STEP 2.5~2.8 — 선택 문맥과 능력 게이팅 ─────────────────────────
+     지침서: "메뉴 구조 최종 변경보다 정확한 context plumbing 이 우선이다."
+     그래서 여기서는 패널을 다시 짓지 않는다. 무엇이 선택됐는지 밖에서 읽을 수 있게 하고,
+     선택된 현상이 갖지 못한 능력의 버튼을 숨기는 것까지만 한다. */
+
+  const getSelection = () => (selectedMenu
+    ? { scene: selectedMenu.s.id, layer: selectedMenu.l.id, key: `${selectedMenu.s.id}/${selectedMenu.l.id}` }
+    : null);
+
+  // 선택된 레이어가 속한 현상과 그 능력. 선택이 없거나 현상이 아닌 항목(배경·조작)이면 null.
+  const getPhenomenonContext = () => {
+    if (!selectedMenu) return null;
+    const { s, l } = selectedMenu;
+    const p = phenomenonForLayer(s.id, l.id);
+    if (!p) return null;
+    return {
+      layerKey: `${s.id}/${l.id}`,
+      sceneId: s.id,
+      layerId: l.id,
+      domain: p.domain,
+      label: p.label,
+      question: p.question,
+      capabilities: p.capabilities,
+      availability: p.availability,
+      evidenceProfile: p.evidenceProfile,
+      scope: p.scope,
+      temporalMode: p.temporalMode,
+    };
+  };
+
+  // 능력이 없는 행동은 노출하지 않는다(지침서 STEP 2.6).
+  // "준비 중"으로 위장하지 않는다 — 없으면 없는 것이다.
+  // 선택이 없을 때는 기존 전역 동작 그대로 둔다. 이 단계는 문맥 배선이지 디자인 개편이 아니다.
+  const CAP_TAB = { scenario: 'simulation', next: 'forecast' };
+  function applyCapabilityGating() {
+    const ctx = getPhenomenonContext();
+    for (const [tab, cap] of Object.entries(CAP_TAB)) {
+      const btn = intel && intel.querySelector(`.intel-tabs [data-tab="${tab}"]`);
+      if (!btn) continue;
+      const hide = !!ctx && !ctx.capabilities[cap];
+      btn.hidden = hide;
+      // 숨긴 탭이 열려 있었으면 사건 탭으로 되돌린다 — 빈 화면을 남기지 않는다.
+      if (hide && curTab === tab) showTab('feed');
+    }
+  }
   let timelineMinutes = 0;
   const collapsedSections = new Set();
 
@@ -429,7 +475,7 @@ export function initShell(hooks) {
     if (!row) return;
     const scene = SCENES.find((s) => s.id === row.dataset.fscene);
     const layer = scene && scene.layers.find((l) => l.id === row.dataset.flayer);
-    if (layer && hooks.onLayerAction) { selectedMenu={s:scene,l:layer}; intelContent.scrollTop=0; hooks.onLayerAction(scene.id, layer); }
+    if (layer && hooks.onLayerAction) { selectedMenu={s:scene,l:layer}; applyCapabilityGating(); intelContent.scrollTop=0; hooks.onLayerAction(scene.id, layer); }
   });
 
   tabE.addEventListener('click', () => {
@@ -600,8 +646,22 @@ export function initShell(hooks) {
     }
     const active=activeLayers();
     const picked=hooks.getFocusSel?.();
+    /* PHASE 2 STEP 2.5 — INTELLIGENCE 는 별도 최상위 메뉴가 아니라 각 현상의 능력이다.
+       선택한 현상이 무엇을 할 수 있는지 여기서 한 줄로 말한다. 없는 능력은 적지 않는다 —
+       '준비 중'으로 위장하면 사용자는 곧 열린다고 읽는다. */
+    const CAP_KO = { current: '현재', history: '사료', intelligence: '해석', forecast: '예보', simulation: '시뮬레이션', evidence: '근거', report: '리포트' };
+    const CAP_EN = { current: 'Current', history: 'History', intelligence: 'Intelligence', forecast: 'Forecast', simulation: 'Simulation', evidence: 'Evidence', report: 'Report' };
+    const phenomenonLine = () => {
+      const ctx = getPhenomenonContext();
+      if (!ctx) return '';
+      const dict = i18n.ko ? CAP_KO : CAP_EN;
+      const on = Object.keys(dict).filter((k) => ctx.capabilities[k]).map((k) => dict[k]);
+      if (!on.length) return '';
+      const name = i18n.ko ? ctx.label.ko : ctx.label.en;
+      return `<div class="information-caps">${safeText(name)} · ${safeText(on.join(' · '))}</div>`;
+    };
     const header=document.createElement('div');header.className='information-context';
-    header.innerHTML=`${selectedMenu ? `<strong>${safeText(i18n.ko ? questionForLayer(selectedMenu.s.id, selectedMenu.l.id) || selectedMenu.l.name : selectedMenu.l.name)}</strong><div>${safeText(selectedMenu.l.src)} · ${dataBadge(selectedMenu.l.state)}</div>`:''}<div>${safeText(i18n.ko?'선택 장소':'Selected place')}: ${safeText(picked?.nameKo || picked?.name || (i18n.ko?'지도에서 선택':'Select on the globe'))}</div>${timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}</p>`:''}
+    header.innerHTML=`${selectedMenu ? `<strong>${safeText(i18n.ko ? questionForLayer(selectedMenu.s.id, selectedMenu.l.id) || selectedMenu.l.name : selectedMenu.l.name)}</strong><div>${safeText(selectedMenu.l.src)} · ${dataBadge(selectedMenu.l.state)}</div>${phenomenonLine()}`:''}<div>${safeText(i18n.ko?'선택 장소':'Selected place')}: ${safeText(picked?.nameKo || picked?.name || (i18n.ko?'지도에서 선택':'Select on the globe'))}</div>${timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}</p>`:''}
       ${active.length ? `<details><summary>${i18n.ko?'현재 켜진 자료':'Active data'} ${active.length}</summary>${active.map(({s,l})=>`<div class="active-data-row"><span>${safeText(i18n.layer(l.id,l.name,s.id))}<small>${safeText(menuTime(l.id,i18n.ko))}</small></span>${canClearLayer(l.id)?`<button data-action="shell-layer-off" data-scene="${s.id}" data-layer="${l.id}" aria-label="${safeText(l.name)} 끄기">${i18n.ko?'끄기':'Off'}</button>`:''}</div>`).join('')}<button data-action="shell-clear-layers">${i18n.ko?'추가 자료 모두 끄기':'Clear overlays'}</button></details>`:''}`;
     intelContent.prepend(header);
     intelContent.scrollTop=scrollTop;
@@ -772,8 +832,12 @@ export function initShell(hooks) {
 
   return {
     setActiveScene,
-    clearSelection: () => {selectedMenu=null;},
-    setSelection: (sid,id) => {const s=SCENES.find(s=>s.id===sid);const l=s?.layers.find(l=>l.id===id);selectedMenu=l?{s,l}:null;},
+    clearSelection: () => {selectedMenu=null; applyCapabilityGating();},
+    setSelection: (sid,id) => {const s=SCENES.find(s=>s.id===sid);const l=s?.layers.find(l=>l.id===id);selectedMenu=l?{s,l}:null; applyCapabilityGating();},
+    // PHASE 2 STEP 2.8 — 지금까지 selectedMenu 는 클로저 사적 변수였고 읽는 함수가 없었다.
+    // 문맥 패널은 "지금 무엇이 선택돼 있나" 를 모르면 문맥이 될 수 없다.
+    getSelection,
+    getPhenomenonContext,
     showTab,
     closeFlyout,
     refreshFlyout,

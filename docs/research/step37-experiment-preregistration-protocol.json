@@ -1,0 +1,777 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "experiment-preregistration-step37",
+  "status": "PREREGISTRATION_DESIGN_COMPLETE",
+  "createdAtUTC": "2026-09-07T01:33:49Z",
+  "head": "043a09b8539955868651a06e7c2c44e3c606803f",
+  "designOnly": true,
+  "experimentDataAccessed": false,
+  "ancestry": {
+    "step36LockCommit": "043a09b8539955868651a06e7c2c44e3c606803f",
+    "step36Parent": "3ebabfe372f8a47cdb4e9edc204c0d19a89ba052",
+    "step32PhaseALock": "ee64354d",
+    "frozenStates": {
+      "step32": "FROZEN (PARTIAL)",
+      "step33": "SOURCE_ABSENT",
+      "step34": "PREREGISTRATION_DESIGN_COMPLETE",
+      "step35": "PREREGISTRATION_BLOCKED",
+      "step36": "COHORT_EXTENSION_LOCKED"
+    },
+    "frozenInputs": {
+      "docs/research/step32-temporal-holdout-protocol.md": "b360d540d58a9cc94d35f6723fed78d0939ac0837d9003cf4d281f30714500f4",
+      "docs/research/step32-preregistration.json": "732ca966b6227fb5447b99bb2a06f59a38fdc7f2d1ffd9a5d4a5097bc175c971",
+      "docs/research/step32-holdout-rule.json": "39baa85f1481db446841af0beef22f11aca9e53a33ffc693e1d0393b9f4738a8",
+      "docs/research/step32-holdout-derivation.json": "ab3d06de6582802462637b5e307e4bee9d39bbdfdb9d2b461b232335ab357e95",
+      "docs/research/step32-temporal-experiment-matrix.json": "b3d1b6fe985dbe5f86b61ec6e6c5fc9ca83572054c0eadd2799040d94a3e70fb",
+      "docs/research/step32-summary.json": "fd27c0198fcf4bcd49945f1444a96d0c42ce6e451baa3e2d5286196f13402118",
+      "tools/research/derive_step32_holdout.py": "6c1e1aac44e3cb0489131329b26afd5c84f32d01dc5969a844a3906f1a9a023e",
+      "tools/research/check_step32_preregistration.py": "9b141c083611a9a78695ab78e758d4e0953aa82b48125cdcf9ab7ce977e61cad",
+      "docs/research/step32-candidate-acquisition-manifest.json": "1db2a6f52a79011dc2a5a69fd1ed64e837fd3ba15fc9a79ec5c2c0882c6a4bca",
+      "docs/research/step32-candidate-forcing-manifest.json": "97019f0a56beb822c0f319c4fcd8ed97fc067fda3940f5879cbefe6198f46093",
+      "docs/research/step32-candidate-replay-manifest.json": "3a0e81c9f10cd56232b077879b8d5616d73d1928d81c1e4743080e0cc25ebb10",
+      "docs/research/step32-candidate-run-manifest.json": "e96c4dbdb2b4901e7d766d87729bded031112ca009cd2f8ce6a6a65fcc399ddf",
+      "docs/research/step32-daily-derivation-manifest.json": "dcd2d839247df43ed79bd5b4bf908265e9ae1a9a1f7786aab902c22a570e5e4f",
+      "docs/research/step32-forcing-acquisition-manifest.json": "30e55f4e9bef09912815f1a4497301e165995fcccd30abc161da9840fed80fb8",
+      "docs/research/step32-forcing-quality.json": "3489dece3653ffa8a10ee8a0de0dd9660b981dce030864414163b35ae3169af8",
+      "docs/research/step32-phase-b-preregistration.json": "d7434d28d63e7a1e991fd512a2768fe2b1ee53b60ccffec271e668658d991701",
+      "docs/research/step32-phase-b-revisions.json": "c4d8e1f009af78b800ecd7febd5cb62dea2290a798fbe5fb138caa0701313ff4",
+      "docs/research/step32-temporal-evaluation.json": "88b264f7261b4f02fac9ca6fd8b82403622e48d066edc7cb96c12ffff94bf322",
+      "docs/research/step32-temporal-paired-table.csv": "8a0303a7a869dcb7ad108385ff22fcb15c918cc72b814f4bacb3638d706075ee",
+      "docs/research/step32-temporal-replay-manifest.json": "e227bad9731e40d6e669608488d313e2858068e1dff70c62b63cd83fb9229b84",
+      "docs/research/step32-temporal-run-manifest.json": "d8effb5bf73841a401beb4bda076f494ef80700c947075d24c92d4b57aafa4c0",
+      "docs/research/step32-temporal-summary.json": "265c8f52ebd88c83b805817722077e38a6d632335c870c05b237233608a512e0",
+      "docs/research/step32-validation-evaluation.json": "3b412b575e4bd1fff633487c7d07a6e39200554fd49d8fe6ca51825f6601a972",
+      "docs/research/step32-validation-paired-table.csv": "3943ec171b7d709a5fc925c0078f1804e85552066f5aa61f258e5ac72bd95107",
+      "docs/research/step32-validation-summary.json": "9a1828dd305ee11fade0ae20fd0daaaec3f0ff1279440b1af60b830dc1c01244",
+      "docs/research/step33-source-recovery-protocol.json": "9327ea49c6c2319364e7066c495e99c4ad1745b7eeb4aed65b8fda342ff3635c",
+      "docs/research/step33-source-recovery-manifest.json": "24f3efdb5bf86bbe702c4fb7301cb6e7ae15bc12352257d2b834a5fdf672ff35",
+      "docs/research/step33-source-availability-summary.json": "6b40205451458754d26b6e9da87e94a7c5f3519f43394b13479af6ea081ce0c6",
+      "docs/research/step33-source-recovery-report.md": "28fd28c5743871217fdbaad611de19284a5432cf22add3299f1706eed2133805",
+      "docs/research/step33-validator-r2-record.json": "cd7b8d70cde2424a8f264663be6692ec11ab0654c37bac7bad9fc99bd102caf3",
+      "tools/research/recover_step33_source.py": "c0590c7ba461696675bc4c365534daa9bc274cd611fb6c82cc84d1104c6ee94d",
+      "tools/research/check_step33_source_recovery.py": "fd99fddb604b0b42e4c6659b4f94b4578157a5eb82927454399d7d1b3e3099fa",
+      "tools/research/check_step33_source_recovery_r2.py": "263a56a7473de90d15aae7dfe118b19b2bf16f9568337645918799572c0ae50c",
+      "docs/research/step34-validation-path-protocol.json": "35ee2b362536057f7ee7d35bb249f3592e594d3e14dbd47c29ed40585f64e649",
+      "docs/research/step34-source-absence-record.json": "41681ba0d1c48f0fcacb566c4af48235c26a01f8f57082e917d699589dccc101",
+      "docs/research/step34-validation-options.json": "472101b4db126740408af8a633354587ea02ccf4d997810063e3a8d27d80565c",
+      "docs/research/step34-preregistration-draft.md": "469bc4719e3480ee36704f358df8cd1b13cc44a76c198a81766ad77034085bfe",
+      "tools/research/check_step34_validation_path.py": "f204985384b72d21fdc78cc4602f6943dad717417d0ed87889c5067ed8371214",
+      "docs/research/step35-phase-a-protocol.json": "7c3cc487568c1a063790e17fdae11ffe712047d78ea4761719bf6df7e7142f2f",
+      "docs/research/step35-phase-a-protocol-status.json": "2bf4f00655799613868d61a4ab9676ef57643d4575e871ab415b2c64d2566d9b",
+      "docs/research/step35-period-lock.json": "c2f6e862704a52e39685c4c4e61931e276d4934492e6d2e8c49ad0642f6f2b92",
+      "docs/research/step35-frame-inventory.json": "5bdb5c779ab4b7bc0607dab907452263f4306c7d0d77681ead7d058e3090add8",
+      "docs/research/step35-window-eligibility.json": "d01d06a3430def6ea77a814bb4379a9b45ca058713fa0901c9c30b035fbb635b",
+      "docs/research/step35-cohort-manifest.json": "07ebc185099e7f2e81377b3b186719814b4625eeea9688aa73887f4aa5c97d29",
+      "docs/research/step35-preregistration-report.md": "b529b91790e860c4a272f8074e770f65c8a7653475cb06c9929d26465918665a",
+      "tools/research/inventory_step35_frames.py": "360712db55eb5a536fa4d0dfadd692bdadb3ff4a9832b50a5ff61ce492c0934e",
+      "tools/research/derive_step35_cohort.py": "0834729050800666f0df46ad6b51337753fce168bc475accac3d8352d7a478a4",
+      "tools/research/check_step35_phase_a.py": "8b342759be167ab4b89171a0a2072573b38a59fd8002ca19474a27f8247ad304",
+      "docs/research/step36-cohort-extension-protocol.json": "9832f5c4ec709531e8965be6d38c0628ab2be70507cf684076298a7dedfcafed",
+      "docs/research/step36-cohort-extension-status.json": "fa17d06115b3c9904058e2e2d45a693257e3f63a7d306a53c3467814ce6ff147",
+      "docs/research/step36-cohort-extension-manifest.json": "bda31c3ca36a395acadc95c1cb18663964ee9a00e4a72a7c2504182f51df06ca",
+      "docs/research/step36-cohort-extension-report.md": "b010bd772003ea47fb14db0fc9dd6f284bf41485ae540af306253dc3b4521bd8",
+      "tools/research/derive_step36_cohort_extension.py": "33dd8bd1223cb471c4f0fc01e02fc0b8470db8103cb17cc1f1482e480dc20bd6",
+      "tools/research/check_step36_cohort_extension.py": "938dfc347886235ce84a6070f3c71157b90d89f28a1866f40cfab294ea173bb2"
+    }
+  },
+  "cohort": {
+    "source": "docs/research/step36-cohort-extension-manifest.json",
+    "sha256": "bda31c3ca36a395acadc95c1cb18663964ee9a00e4a72a7c2504182f51df06ca",
+    "derivationHash": "46892c3724f99e3425d50695d848b8ef966cc5d54cd040031c6e81b512c65b7d",
+    "status": "COHORT_EXTENSION_LOCKED",
+    "selectedWindows": 9,
+    "uniqueDrifters": 20,
+    "minimumGate": "6 windows AND 20 unique drifters",
+    "maxWindows": 12,
+    "firstEightIdenticalToStep35": true,
+    "chronologicalOrder": "immutable (start, region); same-region starts >= 72 h",
+    "exclusionInherited": "68 prior IDs (STEP 20 calibration 23, STEP 20 holdout 13, STEP 32 32) and STEP 20 / STEP 32 window starts +-72 h",
+    "immutable": true,
+    "consumedAsIs": true,
+    "windows": [
+      {
+        "windowId": "GS-Y1",
+        "region": "GS",
+        "t0": "2010-07-27T12:00:00Z",
+        "end": "2010-07-30T12:00:00Z",
+        "drifterCount": 8,
+        "drifterIds": [
+          "92918",
+          "92920",
+          "89822",
+          "92885",
+          "92917",
+          "98904",
+          "98942",
+          "98944"
+        ],
+        "oceanBox": {
+          "south": 30.949379999999998,
+          "north": 37.43114,
+          "west": -75.01929,
+          "east": -55.39547
+        },
+        "requiredUtcDays": [
+          "2010-07-26",
+          "2010-07-27",
+          "2010-07-28",
+          "2010-07-29",
+          "2010-07-30",
+          "2010-07-31"
+        ],
+        "requiredFrameCount": 48,
+        "chronologicalRank": 1
+      },
+      {
+        "windowId": "GS-Y2",
+        "region": "GS",
+        "t0": "2010-07-30T12:00:00Z",
+        "end": "2010-08-02T12:00:00Z",
+        "drifterCount": 2,
+        "drifterIds": [
+          "92872",
+          "98941"
+        ],
+        "oceanBox": {
+          "south": 36.35383,
+          "north": 40.0,
+          "west": -71.93419,
+          "east": -61.87165
+        },
+        "requiredUtcDays": [
+          "2010-07-29",
+          "2010-07-30",
+          "2010-07-31",
+          "2010-08-01",
+          "2010-08-02",
+          "2010-08-03"
+        ],
+        "requiredFrameCount": 48,
+        "chronologicalRank": 2
+      },
+      {
+        "windowId": "GS-Y3",
+        "region": "GS",
+        "t0": "2010-08-02T12:00:00Z",
+        "end": "2010-08-05T12:00:00Z",
+        "drifterCount": 1,
+        "drifterIds": [
+          "93015"
+        ],
+        "oceanBox": {
+          "south": 30.62728,
+          "north": 34.62728,
+          "west": -65.45829,
+          "east": -61.45829
+        },
+        "requiredUtcDays": [
+          "2010-08-01",
+          "2010-08-02",
+          "2010-08-03",
+          "2010-08-04",
+          "2010-08-05",
+          "2010-08-06"
+        ],
+        "requiredFrameCount": 48,
+        "chronologicalRank": 3
+      },
+      {
+        "windowId": "GS-Y4",
+        "region": "GS",
+        "t0": "2010-08-05T12:00:00Z",
+        "end": "2010-08-08T12:00:00Z",
+        "drifterCount": 1,
+        "drifterIds": [
+          "92863"
+        ],
+        "oceanBox": {
+          "south": 34.5677,
+          "north": 38.5677,
+          "west": -57.24397,
+          "east": -53.24397
+        },
+        "requiredUtcDays": [
+          "2010-08-04",
+          "2010-08-05",
+          "2010-08-06",
+          "2010-08-07",
+          "2010-08-08",
+          "2010-08-09"
+        ],
+        "requiredFrameCount": 48,
+        "chronologicalRank": 4
+      },
+      {
+        "windowId": "GS-Y5",
+        "region": "GS",
+        "t0": "2010-08-08T12:00:00Z",
+        "end": "2010-08-11T12:00:00Z",
+        "drifterCount": 1,
+        "drifterIds": [
+          "98936"
+        ],
+        "oceanBox": {
+          "south": 36.04509,
+          "north": 40.0,
+          "west": -72.20186,
+          "east": -68.20186
+        },
+        "requiredUtcDays": [
+          "2010-08-07",
+          "2010-08-08",
+          "2010-08-09",
+          "2010-08-10",
+          "2010-08-11",
+          "2010-08-12"
+        ],
+        "requiredFrameCount": 48,
+        "chronologicalRank": 5
+      },
+      {
+        "windowId": "GS-Y6",
+        "region": "GS",
+        "t0": "2010-08-22T12:00:00Z",
+        "end": "2010-08-25T12:00:00Z",
+        "drifterCount": 3,
+        "drifterIds": [
+          "81994",
+          "88538",
+          "90466"
+        ],
+        "oceanBox": {
+          "south": 35.36032,
+          "north": 39.46704,
+          "west": -65.94471999999999,
+          "east": -61.89941
+        },
+        "requiredUtcDays": [
+          "2010-08-21",
+          "2010-08-22",
+          "2010-08-23",
+          "2010-08-24",
+          "2010-08-25",
+          "2010-08-26"
+        ],
+        "requiredFrameCount": 48,
+        "chronologicalRank": 6
+      },
+      {
+        "windowId": "GS-Y7",
+        "region": "GS",
+        "t0": "2010-08-28T12:00:00Z",
+        "end": "2010-08-31T12:00:00Z",
+        "drifterCount": 1,
+        "drifterIds": [
+          "92869"
+        ],
+        "oceanBox": {
+          "south": 37.92722,
+          "north": 40.0,
+          "west": -62.42588,
+          "east": -58.42588
+        },
+        "requiredUtcDays": [
+          "2010-08-27",
+          "2010-08-28",
+          "2010-08-29",
+          "2010-08-30",
+          "2010-08-31",
+          "2010-09-01"
+        ],
+        "requiredFrameCount": 48,
+        "chronologicalRank": 7
+      },
+      {
+        "windowId": "GS-Y8",
+        "region": "GS",
+        "t0": "2010-09-16T12:00:00Z",
+        "end": "2010-09-19T12:00:00Z",
+        "drifterCount": 1,
+        "drifterIds": [
+          "88532"
+        ],
+        "oceanBox": {
+          "south": 34.0663,
+          "north": 38.0663,
+          "west": -75.50465,
+          "east": -71.50465
+        },
+        "requiredUtcDays": [
+          "2010-09-15",
+          "2010-09-16",
+          "2010-09-17",
+          "2010-09-18",
+          "2010-09-19",
+          "2010-09-20"
+        ],
+        "requiredFrameCount": 48,
+        "chronologicalRank": 8
+      },
+      {
+        "windowId": "GS-Y9",
+        "region": "GS",
+        "t0": "2010-10-16T12:00:00Z",
+        "end": "2010-10-19T12:00:00Z",
+        "drifterCount": 2,
+        "drifterIds": [
+          "92919",
+          "92906"
+        ],
+        "oceanBox": {
+          "south": 33.17507,
+          "north": 38.89012,
+          "west": -68.26377,
+          "east": -53.13004
+        },
+        "requiredUtcDays": [
+          "2010-10-15",
+          "2010-10-16",
+          "2010-10-17",
+          "2010-10-18",
+          "2010-10-19",
+          "2010-10-20"
+        ],
+        "requiredFrameCount": 48,
+        "chronologicalRank": 9
+      }
+    ],
+    "drifterIds": [
+      "92918",
+      "92920",
+      "89822",
+      "92885",
+      "92917",
+      "98904",
+      "98942",
+      "98944",
+      "92872",
+      "98941",
+      "93015",
+      "92863",
+      "98936",
+      "81994",
+      "88538",
+      "90466",
+      "92869",
+      "88532",
+      "92919",
+      "92906"
+    ],
+    "regions": [
+      "GS"
+    ],
+    "period": {
+      "t0": "2010-01-01T00:00:00Z",
+      "t1": "2015-12-31T21:00:00Z",
+      "observationMonths": [
+        "2010-07",
+        "2010-08",
+        "2010-09",
+        "2010-10"
+      ]
+    }
+  },
+  "design": {
+    "1_scientificQuestion": "On an independent, source-complete cohort (STEP 36; Gulf Stream box, 2010-07..2010-10), does (Q1) the ocean temporal representation of the frozen HYCOM baseline (native 3-hourly vs UTC-daily mean) materially change 72 h drifter-trajectory agreement, and (Q2) does the frozen candidate (GLORYS12V1 15.810070 m + WW3 Stokes x 1.0 + NCEP-R2 windage alpha 0.002) reproduce lower observed-vs-model position error than the frozen HYCOM baseline?",
+    "2_primaryHypothesis": {
+      "id": "H1",
+      "statement": "Paired 72 h M3 error of the candidate minus the HYCOM baseline has a negative median across the cohort AND the candidate has lower error in at least 2/3 of non-tied drifter pairs (CANDIDATE_DESCRIPTIVELY_FAVORED under the locked STEP 30A rule).",
+      "null": "H1-null: the locked rule yields NO_CLEAR_DESCRIPTIVE_DIFFERENCE or HYCOM_DESCRIPTIVELY_FAVORED.",
+      "directional": true,
+      "declaredExpectation": "NONE DECLARED (no expected winner)"
+    },
+    "3_secondaryHypotheses": [
+      {
+        "id": "H2 (temporal)",
+        "statement": "Paired 72 h M3 error of HYCOM_DAILY minus HYCOM_NATIVE_3H has a non-negative median with >= 2/3 consistency (NATIVE_3H_DESCRIPTIVELY_FAVORED) - i.e. temporal representation matters.",
+        "role": "secondary, preregistered; same metric family"
+      },
+      {
+        "id": "H3 (structural)",
+        "statement": "The H1 label is unchanged when alpha = 0 (structural pair) is substituted for alpha = 0.002 in both models.",
+        "role": "exploratory robustness; never replaces H1"
+      },
+      {
+        "id": "H4 (horizon)",
+        "statement": "The sign of the H1 median delta is the same at 24 h and 48 h.",
+        "role": "exploratory"
+      }
+    ],
+    "4_observationalTarget": "NOAA GDP hourly drogued drifter positions (STEP 15 archive, observation SHA 22c0ecff..., unchanged) of the 20 STEP 36 drifters at exact UTC t0 + 24 / 48 / 72 h",
+    "5_predictionTarget": "72 h open-loop Lagrangian trajectory from the drifter position at t0 (12:00Z) with output every 900 s; position at t0 + 24, 48, 72 h",
+    "6_independentVariables": [
+      "ocean forcing identity: HYCOM_NATIVE_3H (A), HYCOM_DAILY (B), GLORYS + Stokes candidate (C)",
+      "horizon: 24 / 48 / 72 h (72 h primary)",
+      "structural windage alpha: 0.002 (primary) and 0 (robustness pair only)"
+    ],
+    "7_dependentVariables": [
+      "M3 observed-vs-model haversine position error (km) per drifter and horizon",
+      "paired delta (km): E_C - E_A (H1), E_B - E_A (H2)",
+      "M1 endpoint displacement, M2 path length, M4 model-model separation, M5 observed displacement (descriptive)"
+    ],
+    "8_primaryEndpoint": {
+      "name": "nested paired median 72 h M3 delta (candidate minus HYCOM), Theta",
+      "definition": "Theta = median_{w in W*} [ median_{i in V_w} ( E_C,i(72h) - E_A,i(72h) ) ] with E_X,i(h) = haversine(model position at t0+h, observed position at t0+h), R = 6371008.8 m; ties |delta_i| <= 1e-6 km",
+      "unit": "km",
+      "aggregation": "nested: median of valid drifter-pair deltas within each window (Delta_w), then median across windows (Theta); equal window weighting; the pooled drifter-level median is secondary",
+      "validSampleRule": "a pair is valid at h only if the candidate trajectory, the baseline trajectory and the observation all exist at the exact UTC timestamp t0+h; no interpolation, nearest matching or imputation",
+      "missingValues": "NOT_AVAILABLE, counted and reported; never imputed; n and NA reported per horizon",
+      "comparison": "locked STEP 30A interpretationRule (docs/research/step30a-rule.json, unchanged) evaluated on the pooled valid drifter pairs (pooled median sign and wins/(wins+losses) >= 2/3, wins and losses counted over drifter pairs nested in windows) - this descriptive label is a different statistic from Theta and is reported together with the window-level consistency count (number of windows with Delta_w < -1e-6 / > +1e-6 / tied) as descriptive context",
+      "successCriterion": "H1 supported only if the descriptive label is CANDIDATE_DESCRIPTIVELY_FAVORED AND the window-level bootstrap 95 % percentile interval of Theta is entirely < 0 km; otherwise H1 not supported; the label, Theta and the interval are reported in every case",
+      "cannotBeReplaced": true,
+      "hierarchy": {
+        "level1": "window / cluster (9 STEP 36 windows; shared forcing period, release time and regional flow state)",
+        "level2": "drifter pair nested within its window (20 drifters; one candidate-vs-baseline pair per drifter per horizon)",
+        "level3": "trajectory evaluation points (900 s output samples and the 24/48/72 h evaluation instants) nested within a drifter pair",
+        "independenceRule": "trajectory evaluation points are NEVER treated as independent statistical observations for the primary inference; the primary inference unit is the window; drifter pairs are observations nested within windows; pooled drifter-level statistics are descriptive",
+        "notation": "V_w = set of drifters i in window w with a valid 72 h pair (candidate position, baseline position and observation all exist at exactly t0+72h); delta_i = E_C,i(72h) - E_A,i(72h) in km; W* = set of windows with |V_w| >= 1",
+        "windowStatistic": "Delta_w = median_{i in V_w}(delta_i)  (median of the valid drifter-pair deltas within window w; for an even |V_w| the arithmetic mean of the two middle values)",
+        "primaryStatistic": "Theta = median_{w in W*}(Delta_w)  (median across the window-level medians; equal window weighting; a window with |V_w| = 0 is excluded from W* and counted as NOT_AVAILABLE, never imputed)",
+        "formula": "Theta = median_{w in W*} [ median_{i in V_w} ( E_C,i(72h) - E_A,i(72h) ) ]",
+        "weighting": "equal-window weighting (each window contributes one Delta_w regardless of its drifter count); the pooled drifter-level median median_{i in union V_w}(delta_i) is reported as a secondary descriptive statistic for comparability with STEP 30A / STEP 32 and never replaces Theta",
+        "aggregationChoice": "nested median (preferred rule of the STEP 37 clarification); chosen deterministically before any data acquisition",
+        "appliesTo": "primary endpoint (72 h, C vs A); the same nested rule is used for H2 (B vs A) and for the 24 / 48 h secondary endpoints"
+      },
+      "mathematicalConsistencyCheck": "the label (pooled-pair rule) and Theta (nested statistic) are distinct, well-defined quantities; requiring both is a conjunction, not a contradiction; no inconsistency was found"
+    },
+    "9_secondaryEndpoints": [
+      "H2: paired median 72 h M3 delta, HYCOM_DAILY minus HYCOM_NATIVE_3H, with the STEP 32 temporal label rule",
+      "24 h and 48 h paired median deltas (both comparisons)",
+      "M1 / M2 / M4 / M5 descriptive statistics per condition",
+      "per-window medians and W/L/T (cluster structure)",
+      "structural alpha = 0 pair labels (robustness)"
+    ],
+    "10_evaluationMetrics": {
+      "M3": "haversine position error at exact UTC t0 + h, R = 6371008.8 m",
+      "M1": "72 h endpoint displacement from release",
+      "M2": "trajectory path length",
+      "M4": "trajectory separation between two models at h",
+      "M5": "observed 72 h displacement",
+      "statistics": "median (primary), mean, min, max, n, NA, wins / losses / ties per horizon and stratum",
+      "code": "identical implementation to STEP 32 evaluators (tools/research/evaluate_step32_temporal_r2.py, evaluate_step32_validation_r2.py); reused verbatim or byte-compared"
+    },
+    "11_baselineModel": {
+      "name": "HYCOM_NATIVE_3H (A) = frozen reference baseline",
+      "ocean": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis, 0.08 deg, 3-hourly instantaneous, 15.000 m",
+      "wind": "NCEP-DOE R2 10 m 6 h",
+      "equation": "dX/dt = U_HYCOM_3h + 0.002 * U_wind",
+      "status": "FROZEN_REFERENCE_BASELINE (STEP 31/34)",
+      "nullModel": "the baseline itself is the null for H1; for H2 the null is 'no material temporal-representation effect' (label NO_CLEAR_TEMPORAL_DIFFERENCE)"
+    },
+    "12_candidateModels": [
+      {
+        "id": "C",
+        "name": "GLORYS12V1 15.810070 m + WW3 GLOB-30M CFSR Stokes drift x 1.0 + NCEP-R2 alpha 0.002",
+        "equation": "dX/dt = U_GLORYS + U_Stokes + 0.002 * U_wind",
+        "status": "CANDIDATE_ONLY (STEP 31/34); the only candidate"
+      },
+      {
+        "id": "B",
+        "name": "HYCOM_DAILY (same source/grid/depth as A; UTC-daily mean of the 8 native frames, label 00:00Z)",
+        "role": "temporal-representation comparator for H2, not a candidate for selection"
+      }
+    ],
+    "13_modelSelectionRule": "NONE in this experiment: the candidate set is fixed (C only); no model is chosen from cohort results; the outcome is a descriptive label under the locked rule; any final operational model selection is a separate future decision requiring its own preregistration and independent evidence beyond this cohort",
+    "14_parameterSelectionRule": "all parameters fixed before execution: alpha 0.002 (STEP 20 lock 73fafffb), Stokes coefficient 1.0 (STEP 29), HYCOM depth 15.000 m, GLORYS native level 15.810070 m, RK4 300 s, output 900 s, duration 259200 s, bilinear space / linear time interpolation, cos(phi) each stage, boundary policy STOP_AT_FIRST_CROSSING, computation area = window ocean box clipped to +-40 deg; no parameter is tuned on the STEP 36 cohort; no calibration subset exists in this experiment",
+    "15_forcingSelectionRule": {
+      "candidates": "fixed by product identity; no forcing product is chosen by performance",
+      "forcings": [
+        {
+          "role": "A/B ocean",
+          "product": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+          "temporal": "3 h (A); UTC-daily mean of 8 frames (B)",
+          "spatial": "0.08 deg",
+          "version": "expt_53.X (2015 release; STEP 17 identity)",
+          "endpoint": "NCSS https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010"
+        },
+        {
+          "role": "C ocean",
+          "product": "GLORYS12V1 GLOBAL_MULTIYEAR_PHY_001_030 cmems_mod_glo_phy_my_0.083deg_P1D-m",
+          "temporal": "daily mean, sampled at 3 h instants by linear interpolation (STEP 29 construction)",
+          "spatial": "1/12 deg",
+          "version": "as served by the Copernicus Marine toolbox at acquisition; version string recorded from the file",
+          "endpoint": "official Copernicus Marine toolbox (authorized credentials; STEP 25B mechanism)"
+        },
+        {
+          "role": "C Stokes",
+          "product": "WW3 GLOB-30M CFSR surface Stokes drift (uuss/vuss), IFREMER hindcast, product_version 1.0",
+          "temporal": "3 h native",
+          "spatial": "0.5 deg",
+          "files": [
+            "WW3-GLOB-30M_201007_uss.nc",
+            "WW3-GLOB-30M_201008_uss.nc",
+            "WW3-GLOB-30M_201009_uss.nc",
+            "WW3-GLOB-30M_201010_uss.nc"
+          ],
+          "endpoint": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/2010_CFSR/uss/"
+        },
+        {
+          "role": "wind (all conditions)",
+          "product": "NCEP-DOE Reanalysis 2 10 m u/v, 6 h, gaussian grid",
+          "version": "PSL THREDDS 2010 files",
+          "endpoint": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/"
+        }
+      ],
+      "deterministicRule": "each condition uses exactly the product listed; identical wind file per window for all conditions",
+      "fallback": "if any registered source is unavailable or a mandatory frame is missing for a window: WINDOW_BLOCKED for that window in every condition; no alternative product, version, interpolation or reconstruction; if the Copernicus credential check fails: CANDIDATE_BLOCKED (H1 not evaluable), H2 may still proceed on A/B",
+      "performanceBasedSelection": false
+    },
+    "16_initializationRule": "release at the observed drifter position at t0 = window start (12:00Z), one particle per drifter, IDs sorted; positions from the STEP 36 manifest (startLon/startLat), never re-derived",
+    "17_integrationRule": "frozen research runtime (services/research-runtime byte-identical to commit 155995dd; model surface-passive-advection.v2.windage 0.1.0, source SHA 306a5976...), RK4 300 s, output 900 s, 72 h; STEP 20 B-3 segmentation (36 h split, union mask) only where a 25-frame dataset exceeds the runtime value limit; separate-process replay of every run",
+    "18_temporalResolution": {
+      "A": "3 h instantaneous",
+      "B": "daily mean labelled 00:00Z",
+      "C": "3 h instants (GLORYS linear-in-time between daily labels + WW3 native 3 h)",
+      "wind": "6 h",
+      "output": "900 s"
+    },
+    "19_spatialResolution": {
+      "A/B": "0.08 deg HYCOM native",
+      "C": "1/12 deg GLORYS native (WW3 0.5 deg bilinearly sampled onto GLORYS nodes)",
+      "wind": "T62 gaussian ~1.9 deg"
+    },
+    "20_interpolationRules": "bilinear in space, linear in time, exactly as the frozen runtime; no extrapolation; no nearest-neighbour substitution; longitude convention: the STEP 36 boxes are -180..180 (Gulf Stream); NCSS requests use the dataset's native convention and the reader's axis normalization is verified against the box before use - any convention mismatch is STEP-BLOCKED, never patched",
+    "21_landSeaMasking": "landMask = wet-validity union over all frames of the dataset (reader rule); condition B mask must equal condition A mask (registered identity) else FAIRNESS_MASK_MISMATCH -> STOP; C mask = GLORYS wet mask OR invalid WW3 stencil; masked nodes carry null, never zero",
+    "22_missingDataRules": "a missing mandatory HYCOM frame in [t0 - 1 d, t0 + 72 h + 1 d] blocks the window (all conditions); no interpolation, duplication, substitution, reconstruction or fill; observation gaps at t0+h make the pair NOT_AVAILABLE at that horizon",
+    "23_qualityControlRules": "B2 gate of STEP 32 reused: source identity, file integrity (SHA/bytes), coordinates (identical axes, 0.08 step, box coverage), time axis, variables, spatial and temporal coverage, missing frames, units m/s, release stencil (ocean and wind), reproducibility (overlap frames bitwise equal; reader re-run) -> PASS / WINDOW_BLOCKED / FAIL; WW3 gate of STEP 29 (identity, SHA, variables, units, 3 h axis, extent, release stencil, licence)",
+    "24_exclusionRules": "inherited immutable STEP 36 exclusions; no drifter or window added or removed; no post-hoc exclusion of any valid pair; no outlier removal, trimming, winsorization or weighting",
+    "25_failedTrajectories": "a particle terminated by the runtime (OUT_OF_DOMAIN at +-40 deg, FORCING_UNAVAILABLE at a grid edge or masked node) has no position at later horizons -> NOT_AVAILABLE at those horizons; reported per condition; never re-released, never replaced",
+    "26_incompleteObservations": "exact-timestamp rule only; a drifter with no observation at t0+h is NOT_AVAILABLE at h for every condition; drogue-loss rules are already applied in STEP 16 eligibility and are not re-applied",
+    "27_statisticalTestPlan": {
+      "primaryDecision": "locked STEP 30A descriptive rule on pooled pairs AND window-level 95 % interval of Theta < 0 (see 8_primaryEndpoint)",
+      "interval": "cluster bootstrap of the median delta (see 28/29)",
+      "nominalTest": "two-sided exact sign test on wins vs losses reported as nominal context only (n >= 10), never as the decision",
+      "inferenceUnit": "LEVEL 1 window = cluster and primary inference unit; LEVEL 2 drifter pair nested within window; LEVEL 3 trajectory evaluation points nested within pair and never independent observations",
+      "primaryStatistic": "Theta (nested median), window-level bootstrap interval",
+      "hierarchy": {
+        "level1": "window / cluster (9 STEP 36 windows; shared forcing period, release time and regional flow state)",
+        "level2": "drifter pair nested within its window (20 drifters; one candidate-vs-baseline pair per drifter per horizon)",
+        "level3": "trajectory evaluation points (900 s output samples and the 24/48/72 h evaluation instants) nested within a drifter pair",
+        "independenceRule": "trajectory evaluation points are NEVER treated as independent statistical observations for the primary inference; the primary inference unit is the window; drifter pairs are observations nested within windows; pooled drifter-level statistics are descriptive",
+        "notation": "V_w = set of drifters i in window w with a valid 72 h pair (candidate position, baseline position and observation all exist at exactly t0+72h); delta_i = E_C,i(72h) - E_A,i(72h) in km; W* = set of windows with |V_w| >= 1",
+        "windowStatistic": "Delta_w = median_{i in V_w}(delta_i)  (median of the valid drifter-pair deltas within window w; for an even |V_w| the arithmetic mean of the two middle values)",
+        "primaryStatistic": "Theta = median_{w in W*}(Delta_w)  (median across the window-level medians; equal window weighting; a window with |V_w| = 0 is excluded from W* and counted as NOT_AVAILABLE, never imputed)",
+        "formula": "Theta = median_{w in W*} [ median_{i in V_w} ( E_C,i(72h) - E_A,i(72h) ) ]",
+        "weighting": "equal-window weighting (each window contributes one Delta_w regardless of its drifter count); the pooled drifter-level median median_{i in union V_w}(delta_i) is reported as a secondary descriptive statistic for comparability with STEP 30A / STEP 32 and never replaces Theta",
+        "aggregationChoice": "nested median (preferred rule of the STEP 37 clarification); chosen deterministically before any data acquisition",
+        "appliesTo": "primary endpoint (72 h, C vs A); the same nested rule is used for H2 (B vs A) and for the 24 / 48 h secondary endpoints"
+      }
+    },
+    "28_uncertaintyEstimation": {
+      "method": "window-level (cluster) percentile bootstrap matched to the primary unit",
+      "procedure": "for b = 1..B: draw exactly 9 windows from the 9 STEP 36 windows uniformly with replacement (numpy.random.default_rng(20260907), rng.integers(0, 9, size=9) per replicate, replicates drawn sequentially from the single generator); keep every valid drifter-pair delta belonging to each sampled window (a window sampled k times contributes its Delta_w k times); drifter pairs are never resampled independently for the primary interval; recompute the complete primary statistic with the identical nested rule: Theta_b = median over the sampled windows (with |V_w| >= 1) of Delta_w; store Theta_b; if a replicate contains no window with a valid pair it is recorded as NOT_AVAILABLE and reported (count), not silently dropped or redrawn; B = 10000; seed = 20260907",
+      "bootstrap": {
+        "method": "window-level (cluster) percentile bootstrap matched to the primary unit",
+        "procedure": [
+          "for b = 1..B: draw exactly 9 windows from the 9 STEP 36 windows uniformly with replacement (numpy.random.default_rng(20260907), rng.integers(0, 9, size=9) per replicate, replicates drawn sequentially from the single generator)",
+          "keep every valid drifter-pair delta belonging to each sampled window (a window sampled k times contributes its Delta_w k times); drifter pairs are never resampled independently for the primary interval",
+          "recompute the complete primary statistic with the identical nested rule: Theta_b = median over the sampled windows (with |V_w| >= 1) of Delta_w",
+          "store Theta_b; if a replicate contains no window with a valid pair it is recorded as NOT_AVAILABLE and reported (count), not silently dropped or redrawn"
+        ],
+        "B": 10000,
+        "seed": 20260907,
+        "interval": "95 % percentile interval = [Q_0.025, Q_0.975] of the stored Theta_b values (numpy.quantile with method 'linear' over the available replicates)",
+        "reported": [
+          "point estimate Theta",
+          "interval bounds",
+          "number of available replicates",
+          "count of NOT_AVAILABLE replicates"
+        ],
+        "smallClusterLimitation": "the primary cluster count is 9 windows; the 95 % interval is an uncertainty estimate under the preregistered window-level resampling scheme and is NOT to be interpreted as establishing asymptotic normality or nominal coverage; the success criterion is not changed because of small n",
+        "trajectoryPointsResampled": false,
+        "drifterPairsResampledForPrimary": false
+      },
+      "unit": "km",
+      "sensitivity": {
+        "role": "SECONDARY / SENSITIVITY ONLY",
+        "method": "drifter-level percentile bootstrap: resample the valid drifter pairs of the cohort with replacement (n = |union V_w|), B = 10000, same seed 20260907 on a separate default_rng instance, recompute the pooled median delta; 95 % percentile interval",
+        "label": "ignores clustering; reported next to the primary window-level interval; can never replace the primary result or alter the success criterion"
+      },
+      "rationale": "the primary interval must match the primary statistical unit (window); drifter pairs stay nested inside their sampled windows"
+    },
+    "29_confidenceIntervals": "95 % percentile interval = [Q_0.025, Q_0.975] of the stored Theta_b values (numpy.quantile with method 'linear' over the available replicates); reported for Theta (72 h primary), for the H2 nested statistic and for the 24 / 48 h nested statistics; the primary cluster count is 9 windows; the 95 % interval is an uncertainty estimate under the preregistered window-level resampling scheme and is NOT to be interpreted as establishing asymptotic normality or nominal coverage; the success criterion is not changed because of small n",
+    "30_multipleComparisons": "one primary endpoint (H1, 72 h) -> no correction; H2 and the horizon/alpha variants are secondary/exploratory and reported without inferential claim; nominal sign-test p-values are context only, so no family-wise correction is applied and none is claimed",
+    "31_stoppingRules": [
+      "acquisition: any registered source unavailable or any mandatory frame missing -> WINDOW_BLOCKED (window), CANDIDATE_BLOCKED (credential failure)",
+      "cohort gate after the quality gate: if evaluable windows < 6 or evaluable unique drifters < 20 -> EXPERIMENT_BELOW_MINIMUM: runs may still be executed and reported descriptively but H1/H2 success criteria are declared NOT EVALUABLE",
+      "immutability: any frozen-file SHA change -> STOP",
+      "reproducibility: any replay mismatch -> STOP"
+    ],
+    "32_successFailureCriteria": {
+      "H1_supported": "label CANDIDATE_DESCRIPTIVELY_FAVORED AND cluster-bootstrap 95 % interval of the median delta entirely < 0",
+      "H1_notSupported": "any other outcome (reported with the label and interval)",
+      "H2_supported": "label NATIVE_3H_DESCRIPTIVELY_FAVORED or DAILY_DESCRIPTIVELY_FAVORED AND the interval excludes 0",
+      "noOperationalClaim": "no outcome promotes the candidate or the baseline to operational status"
+    },
+    "33_sensitivityAnalysis": [
+      "horizon 24 / 48 h endpoints (nested rule)",
+      "structural alpha = 0 pair for both comparisons (STEP 29 pattern)",
+      "drifter-level bootstrap interval (SECONDARY / SENSITIVITY ONLY; ignores clustering; never replaces the window-level primary interval)",
+      "pooled drifter-level median (secondary descriptive; comparability with STEP 30A / STEP 32)"
+    ],
+    "34_robustnessAnalysis": [
+      "leave-one-window-out: recompute the primary median delta and label omitting each window in turn (9 recomputations; descriptive)",
+      "per-window labels (clusters)",
+      "excluding the largest window (GS-Y1, 8 drifters) reported as one of the leave-one-out cases"
+    ],
+    "35_reproducibilityRequirements": [
+      "every run replayed in a separate process (result-array SHA equal)",
+      "whole pipeline re-executed into an independent directory: trajectories and result arrays byte-identical; derived datasets grid-SHA identical",
+      "evaluators deterministic; re-run byte-identical",
+      "validator output byte-identical across two runs",
+      "bootstrap seed fixed (20260907) and recorded"
+    ],
+    "36_provenanceRequirements": [
+      "frozen STEP 36 cohort identity (manifest SHA bda31c3c..., derivation hash 46892c37...)",
+      "this preregistration SHA",
+      "exact source/product identity and version string per file",
+      "acquisition timestamp, URL / command (credentials never recorded), HTTP status, SHA-256, bytes per file",
+      "preprocessing (reader/builder) script SHA and configuration SHA",
+      "code commit of the runtime (155995dd) and of every tool",
+      "runtime environment (python, platform, dependency lock SHA)",
+      "model identity (modelId, version, source SHA)",
+      "parameter manifest per run",
+      "forcing manifest per window/condition",
+      "bootstrap seed"
+    ],
+    "37_dataSourcesToAcquire": [
+      {
+        "data": "HYCOM expt_53.X 15 m u/v, 3 h, 2010",
+        "windows": "all 9",
+        "frames": "48 registered frames per window (6 UTC days) + STEP 17 four-part layout t0..t0+72h"
+      },
+      {
+        "data": "NCEP-DOE R2 10 m u/v 6 h, 2010",
+        "windows": "all 9 (t0-12h..t0+84h)"
+      },
+      {
+        "data": "GLORYS12V1 uo/vo at 15.81 m daily, 2010",
+        "windows": "all 9 (t0-1d..end+1d; box +-0.5 deg)"
+      },
+      {
+        "data": "WW3 GLOB-30M CFSR uss monthly files",
+        "files": [
+          "WW3-GLOB-30M_201007_uss.nc",
+          "WW3-GLOB-30M_201008_uss.nc",
+          "WW3-GLOB-30M_201009_uss.nc",
+          "WW3-GLOB-30M_201010_uss.nc"
+        ]
+      },
+      {
+        "data": "NOAA GDP observations",
+        "status": "already frozen (STEP 15); no acquisition"
+      }
+    ],
+    "38_dataVersions": {
+      "HYCOM": "GOFS 3.1 GLBv0.08 expt_53.X reanalysis (2015 release)",
+      "GLORYS": "GLOBAL_MULTIYEAR_PHY_001_030 / cmems_mod_glo_phy_my_0.083deg_P1D-m (version string recorded at acquisition)",
+      "WW3": "GLOB-30M CFSR, product_version 1.0 (file attribute)",
+      "NCEP": "Reanalysis 2 gaussian grid 2010",
+      "observations": "STEP 15 NOAA GDP hourly QC, SHA 22c0ecff..."
+    },
+    "39_acquisitionTimeWindow": "Phase B acquisition performed after this protocol is locked and reviewed; per window t0 - 1 day .. t0 + 72 h + 1 day (HYCOM), t0 - 12 h .. t0 + 84 h (wind), t0 - 1 day 00:00 .. end + 1 day 00:00 (GLORYS), calendar months covering t0..t0+72h (WW3)",
+    "40_dataAccessProtocol": "HYCOM/NCEP: anonymous HTTPS (NCSS / PSL THREDDS), STEP 17 fetch helper; WW3: anonymous FTP, STEP 23 fetch helper (its shared log append must be avoided - a STEP 32 side effect); GLORYS: official Copernicus Marine toolbox in the STEP 25B isolated venv, credentials via the toolbox only (existence and exit code recorded, contents never read, printed or stored); every acquisition tool runs under a guarded open that aborts on any performance / trajectory file",
+    "41_checksumRequirements": "SHA-256 and byte size for every raw file, normalized dataset, derived dataset, spec, result and trajectory file; grid SHA (canonical JSON) for every runtime dataset; aggregate manifest SHAs bound step to step",
+    "42_dataFreezePoint": "after acquisition + quality gate: the forcing acquisition manifest and quality report are frozen (SHA recorded in the run preregistration) before any daily derivation or model run; the cohort is already frozen (STEP 36)",
+    "43_forbiddenPostHocDecisions": [
+      "changing period, cohort, windows, drifters or exclusions",
+      "changing alpha, Stokes coefficient, depth, timestep, interpolation, release or area",
+      "choosing forcing, model or parameters from results",
+      "replacing blocked windows or substituting sources",
+      "excluding pairs, trimming, weighting",
+      "replacing the primary endpoint or its rule after seeing results",
+      "reporting a below-minimum evaluable set as meeting the minimum"
+    ],
+    "44_protocolChangeCriteria": "only a defect that makes the protocol non-executable as written (e.g. a tool error, a coordinate-convention mismatch) or an external source change; never a result; a change before any experiment data are accessed is an amendment; after data access it is a disclosed revision with the original kept",
+    "45_amendmentProcedure": "explicit amendment record (docs/research/step37-amendments.json, created only if needed) with: reason, affected fields, old value, new value, timestamp, commit SHA, statement whether experiment data were already accessed; original protocol file never edited; validator re-run and byte-identical"
+  },
+  "leakage": {
+    "inheritedExclusions": "STEP 20 calibration/holdout and STEP 32 IDs and windows excluded by STEP 36; respected as-is",
+    "noTuningOnCohort": true,
+    "noCalibrationSubset": "none; all parameters frozen from prior locked steps",
+    "step32Cohort": "kept as a separate descriptive record; never merged",
+    "guardedTools": "derivation / acquisition / build tools abort on performance-file access; validator source scan"
+  },
+  "statisticalUnit": {
+    "hierarchy": {
+      "level1": "window / cluster (9 STEP 36 windows; shared forcing period, release time and regional flow state)",
+      "level2": "drifter pair nested within its window (20 drifters; one candidate-vs-baseline pair per drifter per horizon)",
+      "level3": "trajectory evaluation points (900 s output samples and the 24/48/72 h evaluation instants) nested within a drifter pair",
+      "independenceRule": "trajectory evaluation points are NEVER treated as independent statistical observations for the primary inference; the primary inference unit is the window; drifter pairs are observations nested within windows; pooled drifter-level statistics are descriptive",
+      "notation": "V_w = set of drifters i in window w with a valid 72 h pair (candidate position, baseline position and observation all exist at exactly t0+72h); delta_i = E_C,i(72h) - E_A,i(72h) in km; W* = set of windows with |V_w| >= 1",
+      "windowStatistic": "Delta_w = median_{i in V_w}(delta_i)  (median of the valid drifter-pair deltas within window w; for an even |V_w| the arithmetic mean of the two middle values)",
+      "primaryStatistic": "Theta = median_{w in W*}(Delta_w)  (median across the window-level medians; equal window weighting; a window with |V_w| = 0 is excluded from W* and counted as NOT_AVAILABLE, never imputed)",
+      "formula": "Theta = median_{w in W*} [ median_{i in V_w} ( E_C,i(72h) - E_A,i(72h) ) ]",
+      "weighting": "equal-window weighting (each window contributes one Delta_w regardless of its drifter count); the pooled drifter-level median median_{i in union V_w}(delta_i) is reported as a secondary descriptive statistic for comparability with STEP 30A / STEP 32 and never replaces Theta",
+      "aggregationChoice": "nested median (preferred rule of the STEP 37 clarification); chosen deterministically before any data acquisition",
+      "appliesTo": "primary endpoint (72 h, C vs A); the same nested rule is used for H2 (B vs A) and for the 24 / 48 h secondary endpoints"
+    },
+    "cluster": "window (9) = LEVEL 1 = primary inference unit",
+    "pairedUnit": "drifter pair (20) = LEVEL 2, nested within window",
+    "evaluationPoints": "LEVEL 3, nested within pair, never independent observations",
+    "inference": "window-level percentile bootstrap of the nested statistic Theta; pooled statistics descriptive",
+    "justification": "drifters of one window share forcing period, release time and regional flow state; trajectory points of one drifter are serially dependent"
+  },
+  "phaseBExecutionOrder": [
+    "B1 acquire registered sources",
+    "B2 quality gate",
+    "B3 daily fields (B)",
+    "B4 run A and B, evaluate H2",
+    "B5 independent re-execution / replay",
+    "B6 acquire and build candidate forcing, run C",
+    "B7 evaluate H1, bootstrap, robustness, report"
+  ],
+  "noExperimentInStep37": {
+    "dataDownloaded": false,
+    "sourceFileOpened": false,
+    "trajectoryComputed": false,
+    "oceanModelRun": false,
+    "forecastModelRun": false,
+    "benchmark": false,
+    "forcingEvaluated": false,
+    "performanceInspected": false,
+    "modelSelected": false,
+    "parameterSelected": false,
+    "forcingSelected": false
+  },
+  "inputsRead": [
+    "docs/research/step36-cohort-extension-manifest.json",
+    "docs/research/step36-cohort-extension-status.json",
+    "docs/research/step35-phase-a-protocol.json (frozen list, exclusion)",
+    "docs/research/step35-cohort-manifest.json (first-eight identity)",
+    "docs/research/step32-temporal-experiment-matrix.json (condition definitions)",
+    "docs/research/step30a-rule.json (interpretation rule)"
+  ],
+  "forbiddenInputAccess": 0,
+  "automaticCommit": false,
+  "version": "1.1",
+  "amendmentHistory": [
+    {
+      "version": "1.1",
+      "type": "PRE-LOCK CLARIFICATION (not a post-hoc amendment; no experiment data accessed)",
+      "timestamp": "2026-09-07T01:49:01Z",
+      "commitSha": "UNCOMMITTED (base 043a09b8539955868651a06e7c2c44e3c606803f)",
+      "reason": "define the nested statistical hierarchy, the exact primary aggregation formula, the window-level bootstrap procedure, the percentile interval and the small-cluster limitation before lock",
+      "affectedFields": [
+        "design.8_primaryEndpoint",
+        "design.27_statisticalTestPlan",
+        "design.28_uncertaintyEstimation",
+        "design.29_confidenceIntervals",
+        "design.33_sensitivityAnalysis",
+        "statisticalUnit",
+        "version"
+      ],
+      "oldValue": {
+        "primaryAggregation": "median over all valid drifter pairs of the cohort (pooled; window structure reported alongside)",
+        "uncertainty": "cluster (window-level) percentile bootstrap, B = 10000, seed 20260907, procedure stated in prose",
+        "protocolSha256": "2b14503abe83fcfc26f47f5a79557b18a9866c1492626a4fdc62b7be519a118c"
+      },
+      "newValue": {
+        "primaryAggregation": "Theta = median_{w in W*} [ median_{i in V_w} ( E_C,i(72h) - E_A,i(72h) ) ] (equal window weighting)",
+        "uncertainty": "window-level bootstrap: exactly 9 windows with replacement per replicate, pairs nested, identical nested rule, B = 10000, seed 20260907, 95 % percentile [Q_0.025, Q_0.975], small-cluster limitation",
+        "successCriterion": "UNCHANGED: label CANDIDATE_DESCRIPTIVELY_FAVORED AND 95 % interval < 0"
+      },
+      "experimentDataAccessed": false
+    }
+  ]
+}

@@ -1,0 +1,48 @@
+{
+  "ruleId": "experiment-preregistration-step37",
+  "status": "PREREGISTRATION_DESIGN_COMPLETE",
+  "protocolSha256": "eae40cde609155a32ccbe0c01a6090715e2324d72cc080e2e7043ecbd90f2d0d",
+  "validator": {
+    "file": "tools/research/check_step37_experiment_preregistration.py",
+    "sha256": "679eec94b5d6071eabe8e7b30866abc95df09fe37a90108c2009c11c3d4ff68a"
+  },
+  "step36LockCommit": "043a09b8539955868651a06e7c2c44e3c606803f",
+  "cohortManifestSha256": "bda31c3ca36a395acadc95c1cb18663964ee9a00e4a72a7c2504182f51df06ca",
+  "cohortDerivationHash": "46892c3724f99e3425d50695d848b8ef966cc5d54cd040031c6e81b512c65b7d",
+  "selectedWindows": 9,
+  "uniqueDrifters": 20,
+  "designFields": 45,
+  "primaryEndpoint": "nested paired median 72 h M3 delta (candidate minus HYCOM), Theta",
+  "uncertaintyMethod": "window-level (cluster) percentile bootstrap matched to the primary unit",
+  "statisticalUnit": "LEVEL 1 window (primary) / LEVEL 2 drifter pair / LEVEL 3 trajectory points (never independent)",
+  "experimentDataAccessed": false,
+  "scientificExperimentExecuted": false,
+  "modelSelected": false,
+  "parameterSelected": false,
+  "forcingSelected": false,
+  "forbiddenInputAccess": 0,
+  "automaticCommit": false,
+  "createdAtUTC": "2026-09-07T01:33:49Z",
+  "note": "SHA-256 values are of working-copy bytes (CRLF on Windows); git object IDs are line-ending normalized and equal the committed blobs",
+  "protocolVersion": "1.1",
+  "preLockClarification": {
+    "timestamp": "2026-09-07T01:49:01Z",
+    "previousProtocolSha256": "2b14503abe83fcfc26f47f5a79557b18a9866c1492626a4fdc62b7be519a118c",
+    "fields": [
+      "statistical hierarchy",
+      "primary aggregation formula",
+      "window-level bootstrap",
+      "percentile interval",
+      "small-cluster limitation",
+      "drifter-level bootstrap = sensitivity only"
+    ]
+  },
+  "primaryAggregationFormula": "Theta = median_{w in W*} [ median_{i in V_w} ( E_C,i(72h) - E_A,i(72h) ) ]",
+  "bootstrap": {
+    "B": 10000,
+    "seed": 20260907,
+    "resampledUnit": "window (exactly 9 with replacement)",
+    "interval": "95 % percentile [Q_0.025, Q_0.975]"
+  },
+  "successCriterionUnchanged": true
+}

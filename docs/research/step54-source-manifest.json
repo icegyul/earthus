@@ -1,0 +1,1110 @@
+{
+  "schemaVersion": "1.0",
+  "study_id": "step53-new-independent-validation",
+  "step": 54,
+  "role": "STEP 54 source manifest",
+  "status": "VALIDATION_BLOCKED",
+  "protocolSha256": {
+    "markdown": "a9b6457ddce51c5bf437f600a9124086b1390d8a5cf0567616e1af03efd1e39a",
+    "json": "79c601beffd8ee94b303f7ea3317d9416c13e200e09c8adcc1357110ba9e7d46"
+  },
+  "observationAggregateSha256": "68d2227c7e3ba6684ef5d4d0c9d2dd82bdcd4063e35d96ab302b2cd496ce9d78",
+  "artifactCount": 25,
+  "totalBytes": 32451718,
+  "artifacts": [
+    {
+      "artifact_id": "EAC-2010-q1",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2010-q1"
+      },
+      "file_name": "EAC-2010-q1.csv",
+      "file_size_bytes": 2197510,
+      "sha256": "dbb5f22fe0717503af542ceb752ef678cd7c7239add8982a8483124b81bc7f06",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2010-01-01T00:00:00Z&time%3C%3D2010-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:39:43Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2010-q2",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2010-q2"
+      },
+      "file_name": "EAC-2010-q2.csv",
+      "file_size_bytes": 2228768,
+      "sha256": "e6928ff411ab7b07ae7e2a860daf3ff3964a833f3689371ddf23c9b36a168ac7",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2010-04-01T00:00:00Z&time%3C%3D2010-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:39:48Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2010-q3",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2010-q3"
+      },
+      "file_name": "EAC-2010-q3.csv",
+      "file_size_bytes": 1497759,
+      "sha256": "0f80c7efb9e2044b4b69bd9b65c93bb9834c9cb8c495210b9d489150d7b64505",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2010-07-01T00:00:00Z&time%3C%3D2010-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:39:53Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2010-q4",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2010-q4"
+      },
+      "file_name": "EAC-2010-q4.csv",
+      "file_size_bytes": 1891738,
+      "sha256": "e98f0eb57d74160e9bad42a2220306c133136972b78cb4f971eb5fe0cf305565",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2010-10-01T00:00:00Z&time%3C%3D2011-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:39:58Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2011-q1",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2011-q1"
+      },
+      "file_name": "EAC-2011-q1.csv",
+      "file_size_bytes": 1161836,
+      "sha256": "5a6bf01755eb8e979b914995c24814bce719e96edcf82d3f87d777b82d24ff8c",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2011-01-01T00:00:00Z&time%3C%3D2011-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:40:03Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2011-q2",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2011-q2"
+      },
+      "file_name": "EAC-2011-q2.csv",
+      "file_size_bytes": 881419,
+      "sha256": "1b4ca7558469137aea4ab71b2f04d4721c37bd10fe7269c1ad421ebc62151e06",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2011-04-01T00:00:00Z&time%3C%3D2011-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:40:07Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2011-q3",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2011-q3"
+      },
+      "file_name": "EAC-2011-q3.csv",
+      "file_size_bytes": 795735,
+      "sha256": "b7f6bcb9771f234513c0bf5356543f44cc58f9ab093307fc5566f2f3666ca5b7",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2011-07-01T00:00:00Z&time%3C%3D2011-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:40:11Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2011-q4",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2011-q4"
+      },
+      "file_name": "EAC-2011-q4.csv",
+      "file_size_bytes": 206013,
+      "sha256": "64e8a70837ed0215612ebd99ed2f89d19689744eb68471ec9a49a4c92191452c",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2011-10-01T00:00:00Z&time%3C%3D2012-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:40:14Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2012-q1",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2012-q1"
+      },
+      "file_name": "EAC-2012-q1.csv",
+      "file_size_bytes": 807795,
+      "sha256": "a6647db0c1cfc0e649c335bc5fb6a016e076278e406823cdac67bb1ec607bf75",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2012-01-01T00:00:00Z&time%3C%3D2012-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:40:19Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2012-q2",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2012-q2"
+      },
+      "file_name": "EAC-2012-q2.csv",
+      "file_size_bytes": 510803,
+      "sha256": "518927f77e4a873f77e2485ea5feb4e67e243a8d3e8b83e420c8a4c42e2ee98a",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2012-04-01T00:00:00Z&time%3C%3D2012-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:40:22Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2012-q3",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2012-q3"
+      },
+      "file_name": "EAC-2012-q3.csv",
+      "file_size_bytes": 497683,
+      "sha256": "c23cb9719ab1c31b1887fcd4fbbd2f9c83a42801f2301a38ded514605e433ddb",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2012-07-01T00:00:00Z&time%3C%3D2012-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:40:25Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2012-q4",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2012-q4"
+      },
+      "file_name": "EAC-2012-q4.csv",
+      "file_size_bytes": 525818,
+      "sha256": "022849fc9110d8ed78a06c2393f3bbfb3893bdece349226de73458ef6c77858d",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2012-10-01T00:00:00Z&time%3C%3D2013-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:40:28Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2013-q1",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2013-q1"
+      },
+      "file_name": "EAC-2013-q1.csv",
+      "file_size_bytes": 648881,
+      "sha256": "0cf0e92ca9df509813a476db501fa36e92630958bdbca7ff69ac6d501a3082eb",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2013-01-01T00:00:00Z&time%3C%3D2013-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:40:31Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2013-q2",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2013-q2"
+      },
+      "file_name": "EAC-2013-q2.csv",
+      "file_size_bytes": 579745,
+      "sha256": "6c372c9c3dd9d8a69d8a9bebdddceb7c5e6634a4084a103dccaf8a39dc52d0f2",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2013-04-01T00:00:00Z&time%3C%3D2013-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:40:33Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2013-q3",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2013-q3"
+      },
+      "file_name": "EAC-2013-q3.csv",
+      "file_size_bytes": 236893,
+      "sha256": "421f10a5c9fb12f71ec43c7beb59499fa47290a1120f9b98f41ef660d81cbaf3",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2013-07-01T00:00:00Z&time%3C%3D2013-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:40:36Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2013-q4",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2013-q4"
+      },
+      "file_name": "EAC-2013-q4.csv",
+      "file_size_bytes": 241696,
+      "sha256": "37131595126a22961d3c9adae9def722325317afe7d4ecda8c0e7283c65837a1",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2013-10-01T00:00:00Z&time%3C%3D2014-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:40:41Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2014-q1",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2014-q1"
+      },
+      "file_name": "EAC-2014-q1.csv",
+      "file_size_bytes": 251555,
+      "sha256": "18f1bd7a53a3c97554bc4f830026835af419dea7abb5186d4d776b665519ee4b",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2014-01-01T00:00:00Z&time%3C%3D2014-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:40:46Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2014-q2",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2014-q2"
+      },
+      "file_name": "EAC-2014-q2.csv",
+      "file_size_bytes": 534191,
+      "sha256": "e8fda012d16b1d8b4b0aa15029b49172c815165e63122ad434d74e1f7c14139c",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2014-04-01T00:00:00Z&time%3C%3D2014-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:40:48Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2014-q3",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2014-q3"
+      },
+      "file_name": "EAC-2014-q3.csv",
+      "file_size_bytes": 669470,
+      "sha256": "c306bf50bcac7dc77b6cf69c312f844f2883ad958dc4b2f3060e09582c70f60c",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2014-07-01T00:00:00Z&time%3C%3D2014-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:40:51Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2014-q4",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2014-q4"
+      },
+      "file_name": "EAC-2014-q4.csv",
+      "file_size_bytes": 870040,
+      "sha256": "6799b554608cb92006ef379c85719bbe51b1a64c1b1c9118da7faceca5674072",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2014-10-01T00:00:00Z&time%3C%3D2015-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:40:56Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2015-q1",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2015-q1"
+      },
+      "file_name": "EAC-2015-q1.csv",
+      "file_size_bytes": 1631493,
+      "sha256": "28ef1e9b5cd0a8c5dbecb445cbe7083006f4077393291a6a20a644ad6d4f765d",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2015-01-01T00:00:00Z&time%3C%3D2015-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:41:02Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2015-q2",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2015-q2"
+      },
+      "file_name": "EAC-2015-q2.csv",
+      "file_size_bytes": 3015131,
+      "sha256": "863dfbb48e7448fb3e5243bcac24c2d745f3523b5d38dc86db4e993b8382d4f8",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2015-04-01T00:00:00Z&time%3C%3D2015-07-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:41:08Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2015-q3",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2015-q3"
+      },
+      "file_name": "EAC-2015-q3.csv",
+      "file_size_bytes": 3994505,
+      "sha256": "bbbf6e4b512adc04a212b48c9abb8904a9f3e4c44e8b846a7c2c779c34c09623",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2015-07-01T00:00:00Z&time%3C%3D2015-10-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:41:12Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2015-q4",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2015-q4"
+      },
+      "file_name": "EAC-2015-q4.csv",
+      "file_size_bytes": 3469947,
+      "sha256": "1e35d4bc1ef97ee9023dfad56c23f07e3858b0900014349fe3acdd7ceddfd790",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2015-10-01T00:00:00Z&time%3C%3D2016-01-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:41:17Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "artifact_id": "EAC-2016-q1",
+      "source_family": "OBSERVATION",
+      "provider": "NOAA AOML Global Drifter Program (ERDDAP)",
+      "product": "drifter_hourly_qc",
+      "version": "UNVERIFIED",
+      "experiment": "UNVERIFIED",
+      "variable": [
+        "ID",
+        "time",
+        "latitude",
+        "longitude",
+        "ve",
+        "vn",
+        "gap",
+        "drogue_lost_date",
+        "typebuoy"
+      ],
+      "depth": "surface drifter observation",
+      "temporal_resolution": "hourly",
+      "spatial_bounds": {
+        "south": -43,
+        "north": -22,
+        "west": 147,
+        "east": 163,
+        "note": "EAC box 40S-25S/150E-160E with the STEP 15 request margin of 3 deg"
+      },
+      "time_bounds": {
+        "quarter": "2016-q1"
+      },
+      "file_name": "EAC-2016-q1.csv",
+      "file_size_bytes": 3105294,
+      "sha256": "a1b7cdda71a5adb1c7ef0f7929a177c9c01b34e113e6c23d059b79cf31dec90c",
+      "acquisition_status": "ACQUIRED",
+      "coverage_status": "PRESENT",
+      "provenance": "https://erddap.aoml.noaa.gov/gdp/erddap/tabledap/drifter_hourly_qc.csv?ID%2Ctime%2Clatitude%2Clongitude%2Cve%2Cvn%2Cgap%2Cdrogue_lost_date%2Ctypebuoy&time%3E%3D2016-01-01T00:00:00Z&time%3C%3D2016-04-03T12:00:00Z&latitude%3E%3D-43&latitude%3C%3D-22&longitude%3E%3D147&longitude%3C%3D163",
+      "retrieved_at_utc": "2026-09-07T10:41:21Z",
+      "http_status": 200,
+      "original_or_derived": "ORIGINAL_SOURCE"
+    }
+  ],
+  "frozenSourceIdentitiesNotAcquired": [
+    {
+      "source_family": "MODEL_A_OCEAN",
+      "provider": "HYCOM",
+      "product": "GOFS 3.1 GLBv0.08",
+      "experiment": "expt_53.X",
+      "variable": [
+        "water_u",
+        "water_v"
+      ],
+      "depth": "15.000 m",
+      "temporal_resolution": "3-hour",
+      "artifact_id": "NOT_ACQUIRED",
+      "version": "UNVERIFIED",
+      "spatial_bounds": "UNVERIFIED",
+      "time_bounds": "UNVERIFIED",
+      "file_name": "UNVERIFIED",
+      "file_size_bytes": "UNVERIFIED",
+      "sha256": "UNVERIFIED",
+      "acquisition_status": "NOT_ATTEMPTED_COHORT_BLOCKED",
+      "coverage_status": "NOT_EVALUATED",
+      "provenance": "identity frozen by STEP 53; acquisition not attempted because the cohort feasibility gate blocked first",
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "source_family": "MODEL_C_OCEAN",
+      "provider": "Copernicus Marine",
+      "product": "GLORYS12V1",
+      "variable": [
+        "uo",
+        "vo"
+      ],
+      "depth": "native 15.810070 m",
+      "temporal_resolution": "daily",
+      "artifact_id": "NOT_ACQUIRED",
+      "version": "UNVERIFIED",
+      "spatial_bounds": "UNVERIFIED",
+      "time_bounds": "UNVERIFIED",
+      "file_name": "UNVERIFIED",
+      "file_size_bytes": "UNVERIFIED",
+      "sha256": "UNVERIFIED",
+      "acquisition_status": "NOT_ATTEMPTED_COHORT_BLOCKED",
+      "coverage_status": "NOT_EVALUATED",
+      "provenance": "identity frozen by STEP 53; acquisition not attempted because the cohort feasibility gate blocked first",
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "source_family": "MODEL_C_STOKES",
+      "provider": "IFREMER",
+      "product": "WW3 GLOB-30M CFSR uss",
+      "variable": [
+        "uuss",
+        "vuss"
+      ],
+      "depth": "surface Stokes drift",
+      "temporal_resolution": "3-hour, monthly files",
+      "artifact_id": "NOT_ACQUIRED",
+      "version": "UNVERIFIED",
+      "spatial_bounds": "UNVERIFIED",
+      "time_bounds": "UNVERIFIED",
+      "file_name": "UNVERIFIED",
+      "file_size_bytes": "UNVERIFIED",
+      "sha256": "UNVERIFIED",
+      "acquisition_status": "NOT_ATTEMPTED_COHORT_BLOCKED",
+      "coverage_status": "NOT_EVALUATED",
+      "provenance": "identity frozen by STEP 53; acquisition not attempted because the cohort feasibility gate blocked first",
+      "original_or_derived": "ORIGINAL_SOURCE"
+    },
+    {
+      "source_family": "MODEL_C_ATMOSPHERE",
+      "provider": "NOAA PSL",
+      "product": "NCEP-DOE Reanalysis 2",
+      "variable": [
+        "uwnd",
+        "vwnd"
+      ],
+      "depth": "10 m",
+      "temporal_resolution": "6-hour",
+      "artifact_id": "NOT_ACQUIRED",
+      "version": "UNVERIFIED",
+      "spatial_bounds": "UNVERIFIED",
+      "time_bounds": "UNVERIFIED",
+      "file_name": "UNVERIFIED",
+      "file_size_bytes": "UNVERIFIED",
+      "sha256": "UNVERIFIED",
+      "acquisition_status": "NOT_ATTEMPTED_COHORT_BLOCKED",
+      "coverage_status": "NOT_EVALUATED",
+      "provenance": "identity frozen by STEP 53; acquisition not attempted because the cohort feasibility gate blocked first",
+      "original_or_derived": "ORIGINAL_SOURCE"
+    }
+  ],
+  "substitutionPerformed": false,
+  "unverifiedPolicy": "any value that cannot be established is recorded as UNVERIFIED and never invented",
+  "createdAtUTC": "2026-09-07T10:46:42Z"
+}

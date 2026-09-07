@@ -1,0 +1,140 @@
+{
+  "schemaVersion": "1.0",
+  "study_id": "step53-new-independent-validation",
+  "step": 54,
+  "role": "SHA-256 inventory of the STEP 54 acquired originals and generated records",
+  "observationFiles": [
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2010-q1.csv",
+      "sha256": "dbb5f22fe0717503af542ceb752ef678cd7c7239add8982a8483124b81bc7f06",
+      "bytes": 2197510
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2010-q2.csv",
+      "sha256": "e6928ff411ab7b07ae7e2a860daf3ff3964a833f3689371ddf23c9b36a168ac7",
+      "bytes": 2228768
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2010-q3.csv",
+      "sha256": "0f80c7efb9e2044b4b69bd9b65c93bb9834c9cb8c495210b9d489150d7b64505",
+      "bytes": 1497759
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2010-q4.csv",
+      "sha256": "e98f0eb57d74160e9bad42a2220306c133136972b78cb4f971eb5fe0cf305565",
+      "bytes": 1891738
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2011-q1.csv",
+      "sha256": "5a6bf01755eb8e979b914995c24814bce719e96edcf82d3f87d777b82d24ff8c",
+      "bytes": 1161836
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2011-q2.csv",
+      "sha256": "1b4ca7558469137aea4ab71b2f04d4721c37bd10fe7269c1ad421ebc62151e06",
+      "bytes": 881419
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2011-q3.csv",
+      "sha256": "b7f6bcb9771f234513c0bf5356543f44cc58f9ab093307fc5566f2f3666ca5b7",
+      "bytes": 795735
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2011-q4.csv",
+      "sha256": "64e8a70837ed0215612ebd99ed2f89d19689744eb68471ec9a49a4c92191452c",
+      "bytes": 206013
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2012-q1.csv",
+      "sha256": "a6647db0c1cfc0e649c335bc5fb6a016e076278e406823cdac67bb1ec607bf75",
+      "bytes": 807795
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2012-q2.csv",
+      "sha256": "518927f77e4a873f77e2485ea5feb4e67e243a8d3e8b83e420c8a4c42e2ee98a",
+      "bytes": 510803
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2012-q3.csv",
+      "sha256": "c23cb9719ab1c31b1887fcd4fbbd2f9c83a42801f2301a38ded514605e433ddb",
+      "bytes": 497683
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2012-q4.csv",
+      "sha256": "022849fc9110d8ed78a06c2393f3bbfb3893bdece349226de73458ef6c77858d",
+      "bytes": 525818
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2013-q1.csv",
+      "sha256": "0cf0e92ca9df509813a476db501fa36e92630958bdbca7ff69ac6d501a3082eb",
+      "bytes": 648881
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2013-q2.csv",
+      "sha256": "6c372c9c3dd9d8a69d8a9bebdddceb7c5e6634a4084a103dccaf8a39dc52d0f2",
+      "bytes": 579745
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2013-q3.csv",
+      "sha256": "421f10a5c9fb12f71ec43c7beb59499fa47290a1120f9b98f41ef660d81cbaf3",
+      "bytes": 236893
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2013-q4.csv",
+      "sha256": "37131595126a22961d3c9adae9def722325317afe7d4ecda8c0e7283c65837a1",
+      "bytes": 241696
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2014-q1.csv",
+      "sha256": "18f1bd7a53a3c97554bc4f830026835af419dea7abb5186d4d776b665519ee4b",
+      "bytes": 251555
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2014-q2.csv",
+      "sha256": "e8fda012d16b1d8b4b0aa15029b49172c815165e63122ad434d74e1f7c14139c",
+      "bytes": 534191
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2014-q3.csv",
+      "sha256": "c306bf50bcac7dc77b6cf69c312f844f2883ad958dc4b2f3060e09582c70f60c",
+      "bytes": 669470
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2014-q4.csv",
+      "sha256": "6799b554608cb92006ef379c85719bbe51b1a64c1b1c9118da7faceca5674072",
+      "bytes": 870040
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2015-q1.csv",
+      "sha256": "28ef1e9b5cd0a8c5dbecb445cbe7083006f4077393291a6a20a644ad6d4f765d",
+      "bytes": 1631493
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2015-q2.csv",
+      "sha256": "863dfbb48e7448fb3e5243bcac24c2d745f3523b5d38dc86db4e993b8382d4f8",
+      "bytes": 3015131
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2015-q3.csv",
+      "sha256": "bbbf6e4b512adc04a212b48c9abb8904a9f3e4c44e8b846a7c2c779c34c09623",
+      "bytes": 3994505
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2015-q4.csv",
+      "sha256": "1e35d4bc1ef97ee9023dfad56c23f07e3858b0900014349fe3acdd7ceddfd790",
+      "bytes": 3469947
+    },
+    {
+      "path": "data/research/step54/noaa-gdp-hourly-qc/EAC-2016-q1.csv",
+      "sha256": "a1b7cdda71a5adb1c7ef0f7929a177c9c01b34e113e6c23d059b79cf31dec90c",
+      "bytes": 3105294
+    }
+  ],
+  "observationAggregateSha256": "68d2227c7e3ba6684ef5d4d0c9d2dd82bdcd4063e35d96ab302b2cd496ce9d78",
+  "records": {
+    "step54-eac-cohort-manifest.json": "b59b523ba8dae4b1c653f92925bf73f9d43d13ce49d8fa3492f8f4969cef7e07",
+    "step54-source-manifest.json": "159be4ba31d7d54ba7a27143af98ffa782776d3c8f50a59c422725a91227f84f",
+    "step54-coverage-report.json": "a7f57900bfe406f935986f0c1c7e07ff2610fa295fc5b21907242dc3f0e32cff"
+  },
+  "createdAtUTC": "2026-09-07T10:46:42Z"
+}

@@ -1,0 +1,104 @@
+{
+  "schemaVersion": "1.0",
+  "study_id": "step53-new-independent-validation",
+  "step": 54,
+  "role": "STEP 54 source acquisition and data freeze record",
+  "status": "VALIDATION_BLOCKED",
+  "headAtFreeze": "b5cfb97aed482a38e1b763c2cd15a0f105cee9e7",
+  "ancestry": {
+    "step53": "b5cfb97aed482a38e1b763c2cd15a0f105cee9e7",
+    "step52": "4af3fd8fadc50243a3493efa22d57d5811c23943"
+  },
+  "protocolIntegrity": {
+    "markdown": "a9b6457ddce51c5bf437f600a9124086b1390d8a5cf0567616e1af03efd1e39a",
+    "json": "79c601beffd8ee94b303f7ea3317d9416c13e200e09c8adcc1357110ba9e7d46",
+    "expectedMarkdown": "a9b6457ddce51c5bf437f600a9124086b1390d8a5cf0567616e1af03efd1e39a",
+    "expectedJson": "79c601beffd8ee94b303f7ea3317d9416c13e200e09c8adcc1357110ba9e7d46",
+    "match": true
+  },
+  "domain": {
+    "region": "EAC",
+    "lat_min": -40.0,
+    "lat_max": -25.0,
+    "lon_min": 150.0,
+    "lon_max": 160.0,
+    "modified": false
+  },
+  "temporal": {
+    "start": "2010-01-01T12:00:00Z",
+    "end": "2015-12-31T12:00:00Z",
+    "modified": false,
+    "fullyTemporallyIndependent": false
+  },
+  "cohort": {
+    "manifest": "docs/research/step54-eac-cohort-manifest.json",
+    "sha256": "b59b523ba8dae4b1c653f92925bf73f9d43d13ce49d8fa3492f8f4969cef7e07",
+    "derivationHash": "7466480e4ba800c841a7b9c152b6e1b028de506e5fcf28e777ff18ee51427763",
+    "candidateWindowsScanned": 2191,
+    "registeredWindows": 5,
+    "uniqueDrifters": 12,
+    "gate": {
+      "blockReason": "unique drifters 12 < preregistered minimum 20",
+      "maxDriftersPerWindow": 12,
+      "minimumUniqueDrifters": 20,
+      "minimumUniqueDriftersMet": false,
+      "minimumValidWindows": 4,
+      "minimumWindowsMet": true,
+      "registeredWindows": 5,
+      "targetReached": false,
+      "targetWindows": 6,
+      "uniqueDrifters": 12
+    },
+    "overlapCheck": {
+      "newVsExtensionIds": [],
+      "newVsExtensionWindowStarts": [],
+      "newVsPrimaryIds": [],
+      "newVsPrimaryWindowStarts": [],
+      "pass": true
+    }
+  },
+  "observationSource": {
+    "manifest": "docs/research/step54-source-manifest.json",
+    "sha256": "159be4ba31d7d54ba7a27143af98ffa782776d3c8f50a59c422725a91227f84f",
+    "files": 25,
+    "totalBytes": 32451718,
+    "aggregateSha256": "68d2227c7e3ba6684ef5d4d0c9d2dd82bdcd4063e35d96ab302b2cd496ce9d78",
+    "originalsImmutable": true,
+    "originalsRewritten": false
+  },
+  "forcingAcquisition": {
+    "attempted": false,
+    "reason": "the preregistered cohort feasibility gate blocked before forcing acquisition; acquiring forcing for a cohort that cannot satisfy the locked minimum would serve no purpose and is not required by the protocol",
+    "frozenIdentitiesPreserved": true,
+    "substitution": false
+  },
+  "protocolChanges": {
+    "domainExpanded": false,
+    "temporalExtended": false,
+    "eligibilityLowered": false,
+    "targetAdjusted": false,
+    "regionReplaced": false,
+    "windowsInvented": false
+  },
+  "noScientificComputation": {
+    "trajectory": 0,
+    "endpoint": 0,
+    "delta": 0,
+    "theta": 0,
+    "bootstrap": 0,
+    "ci": 0,
+    "modelRun": 0,
+    "candidateRanking": 0,
+    "performanceInspected": false
+  },
+  "priorResultsUnchanged": {
+    "primary": "SUPPORTED",
+    "extension": "NOT_SUPPORTED",
+    "originalValidation": "BLOCKED",
+    "candidate": "CANDIDATE_ONLY",
+    "operationalPromotion": false,
+    "productionClaim": false
+  },
+  "dataLocation": "data/research/step54/ (never staged)",
+  "createdAtUTC": "2026-09-07T10:46:42Z"
+}

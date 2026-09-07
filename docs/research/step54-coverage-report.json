@@ -1,0 +1,295 @@
+{
+  "schemaVersion": "1.0",
+  "study_id": "step53-new-independent-validation",
+  "step": 54,
+  "role": "STEP 54 coverage report",
+  "status": "VALIDATION_BLOCKED",
+  "note": "the cohort feasibility gate blocked before forcing acquisition, so only the observation source has coverage to report; the four frozen forcing identities are recorded as NOT_EVALUATED rather than assumed",
+  "windows": [
+    {
+      "window_id": "EAC-V1",
+      "source": "OBSERVATION (NOAA GDP hourly QC)",
+      "coverage_start": "2015-06-22T12:00:00Z",
+      "coverage_end": "2015-06-25T12:00:00Z",
+      "required_start": "2015-06-22T12:00:00Z",
+      "required_end": "2015-06-25T12:00:00Z",
+      "required_instants": [
+        "2015-06-22T12:00:00Z",
+        "t0+24h",
+        "t0+48h",
+        "t0+72h"
+      ],
+      "coverage_pass": true,
+      "basis": "the frozen STEP 16 E3 test requires all 73 hourly samples from t0 to t0+72h for every eligible drifter; the window would not have been registered otherwise"
+    },
+    {
+      "window_id": "EAC-V2",
+      "source": "OBSERVATION (NOAA GDP hourly QC)",
+      "coverage_start": "2015-06-27T12:00:00Z",
+      "coverage_end": "2015-06-30T12:00:00Z",
+      "required_start": "2015-06-27T12:00:00Z",
+      "required_end": "2015-06-30T12:00:00Z",
+      "required_instants": [
+        "2015-06-27T12:00:00Z",
+        "t0+24h",
+        "t0+48h",
+        "t0+72h"
+      ],
+      "coverage_pass": true,
+      "basis": "the frozen STEP 16 E3 test requires all 73 hourly samples from t0 to t0+72h for every eligible drifter; the window would not have been registered otherwise"
+    },
+    {
+      "window_id": "EAC-V3",
+      "source": "OBSERVATION (NOAA GDP hourly QC)",
+      "coverage_start": "2015-06-30T12:00:00Z",
+      "coverage_end": "2015-07-03T12:00:00Z",
+      "required_start": "2015-06-30T12:00:00Z",
+      "required_end": "2015-07-03T12:00:00Z",
+      "required_instants": [
+        "2015-06-30T12:00:00Z",
+        "t0+24h",
+        "t0+48h",
+        "t0+72h"
+      ],
+      "coverage_pass": true,
+      "basis": "the frozen STEP 16 E3 test requires all 73 hourly samples from t0 to t0+72h for every eligible drifter; the window would not have been registered otherwise"
+    },
+    {
+      "window_id": "EAC-V4",
+      "source": "OBSERVATION (NOAA GDP hourly QC)",
+      "coverage_start": "2015-07-05T12:00:00Z",
+      "coverage_end": "2015-07-08T12:00:00Z",
+      "required_start": "2015-07-05T12:00:00Z",
+      "required_end": "2015-07-08T12:00:00Z",
+      "required_instants": [
+        "2015-07-05T12:00:00Z",
+        "t0+24h",
+        "t0+48h",
+        "t0+72h"
+      ],
+      "coverage_pass": true,
+      "basis": "the frozen STEP 16 E3 test requires all 73 hourly samples from t0 to t0+72h for every eligible drifter; the window would not have been registered otherwise"
+    },
+    {
+      "window_id": "EAC-V5",
+      "source": "OBSERVATION (NOAA GDP hourly QC)",
+      "coverage_start": "2015-07-13T12:00:00Z",
+      "coverage_end": "2015-07-16T12:00:00Z",
+      "required_start": "2015-07-13T12:00:00Z",
+      "required_end": "2015-07-16T12:00:00Z",
+      "required_instants": [
+        "2015-07-13T12:00:00Z",
+        "t0+24h",
+        "t0+48h",
+        "t0+72h"
+      ],
+      "coverage_pass": true,
+      "basis": "the frozen STEP 16 E3 test requires all 73 hourly samples from t0 to t0+72h for every eligible drifter; the window would not have been registered otherwise"
+    },
+    {
+      "window_id": "EAC-V1",
+      "source": "MODEL_A HYCOM_NATIVE_3H",
+      "coverage_start": "UNVERIFIED",
+      "coverage_end": "UNVERIFIED",
+      "required_start": "2015-06-22T12:00:00Z",
+      "required_end": "2015-06-25T12:00:00Z",
+      "coverage_pass": null,
+      "basis": "NOT_EVALUATED: acquisition not attempted because the cohort gate blocked"
+    },
+    {
+      "window_id": "EAC-V1",
+      "source": "MODEL_C GLORYS12V1",
+      "coverage_start": "UNVERIFIED",
+      "coverage_end": "UNVERIFIED",
+      "required_start": "2015-06-22T12:00:00Z",
+      "required_end": "2015-06-25T12:00:00Z",
+      "coverage_pass": null,
+      "basis": "NOT_EVALUATED: acquisition not attempted because the cohort gate blocked"
+    },
+    {
+      "window_id": "EAC-V1",
+      "source": "MODEL_C WW3 Stokes",
+      "coverage_start": "UNVERIFIED",
+      "coverage_end": "UNVERIFIED",
+      "required_start": "2015-06-22T12:00:00Z",
+      "required_end": "2015-06-25T12:00:00Z",
+      "coverage_pass": null,
+      "basis": "NOT_EVALUATED: acquisition not attempted because the cohort gate blocked"
+    },
+    {
+      "window_id": "EAC-V1",
+      "source": "MODEL_C NCEP-R2",
+      "coverage_start": "UNVERIFIED",
+      "coverage_end": "UNVERIFIED",
+      "required_start": "2015-06-22T12:00:00Z",
+      "required_end": "2015-06-25T12:00:00Z",
+      "coverage_pass": null,
+      "basis": "NOT_EVALUATED: acquisition not attempted because the cohort gate blocked"
+    },
+    {
+      "window_id": "EAC-V2",
+      "source": "MODEL_A HYCOM_NATIVE_3H",
+      "coverage_start": "UNVERIFIED",
+      "coverage_end": "UNVERIFIED",
+      "required_start": "2015-06-27T12:00:00Z",
+      "required_end": "2015-06-30T12:00:00Z",
+      "coverage_pass": null,
+      "basis": "NOT_EVALUATED: acquisition not attempted because the cohort gate blocked"
+    },
+    {
+      "window_id": "EAC-V2",
+      "source": "MODEL_C GLORYS12V1",
+      "coverage_start": "UNVERIFIED",
+      "coverage_end": "UNVERIFIED",
+      "required_start": "2015-06-27T12:00:00Z",
+      "required_end": "2015-06-30T12:00:00Z",
+      "coverage_pass": null,
+      "basis": "NOT_EVALUATED: acquisition not attempted because the cohort gate blocked"
+    },
+    {
+      "window_id": "EAC-V2",
+      "source": "MODEL_C WW3 Stokes",
+      "coverage_start": "UNVERIFIED",
+      "coverage_end": "UNVERIFIED",
+      "required_start": "2015-06-27T12:00:00Z",
+      "required_end": "2015-06-30T12:00:00Z",
+      "coverage_pass": null,
+      "basis": "NOT_EVALUATED: acquisition not attempted because the cohort gate blocked"
+    },
+    {
+      "window_id": "EAC-V2",
+      "source": "MODEL_C NCEP-R2",
+      "coverage_start": "UNVERIFIED",
+      "coverage_end": "UNVERIFIED",
+      "required_start": "2015-06-27T12:00:00Z",
+      "required_end": "2015-06-30T12:00:00Z",
+      "coverage_pass": null,
+      "basis": "NOT_EVALUATED: acquisition not attempted because the cohort gate blocked"
+    },
+    {
+      "window_id": "EAC-V3",
+      "source": "MODEL_A HYCOM_NATIVE_3H",
+      "coverage_start": "UNVERIFIED",
+      "coverage_end": "UNVERIFIED",
+      "required_start": "2015-06-30T12:00:00Z",
+      "required_end": "2015-07-03T12:00:00Z",
+      "coverage_pass": null,
+      "basis": "NOT_EVALUATED: acquisition not attempted because the cohort gate blocked"
+    },
+    {
+      "window_id": "EAC-V3",
+      "source": "MODEL_C GLORYS12V1",
+      "coverage_start": "UNVERIFIED",
+      "coverage_end": "UNVERIFIED",
+      "required_start": "2015-06-30T12:00:00Z",
+      "required_end": "2015-07-03T12:00:00Z",
+      "coverage_pass": null,
+      "basis": "NOT_EVALUATED: acquisition not attempted because the cohort gate blocked"
+    },
+    {
+      "window_id": "EAC-V3",
+      "source": "MODEL_C WW3 Stokes",
+      "coverage_start": "UNVERIFIED",
+      "coverage_end": "UNVERIFIED",
+      "required_start": "2015-06-30T12:00:00Z",
+      "required_end": "2015-07-03T12:00:00Z",
+      "coverage_pass": null,
+      "basis": "NOT_EVALUATED: acquisition not attempted because the cohort gate blocked"
+    },
+    {
+      "window_id": "EAC-V3",
+      "source": "MODEL_C NCEP-R2",
+      "coverage_start": "UNVERIFIED",
+      "coverage_end": "UNVERIFIED",
+      "required_start": "2015-06-30T12:00:00Z",
+      "required_end": "2015-07-03T12:00:00Z",
+      "coverage_pass": null,
+      "basis": "NOT_EVALUATED: acquisition not attempted because the cohort gate blocked"
+    },
+    {
+      "window_id": "EAC-V4",
+      "source": "MODEL_A HYCOM_NATIVE_3H",
+      "coverage_start": "UNVERIFIED",
+      "coverage_end": "UNVERIFIED",
+      "required_start": "2015-07-05T12:00:00Z",
+      "required_end": "2015-07-08T12:00:00Z",
+      "coverage_pass": null,
+      "basis": "NOT_EVALUATED: acquisition not attempted because the cohort gate blocked"
+    },
+    {
+      "window_id": "EAC-V4",
+      "source": "MODEL_C GLORYS12V1",
+      "coverage_start": "UNVERIFIED",
+      "coverage_end": "UNVERIFIED",
+      "required_start": "2015-07-05T12:00:00Z",
+      "required_end": "2015-07-08T12:00:00Z",
+      "coverage_pass": null,
+      "basis": "NOT_EVALUATED: acquisition not attempted because the cohort gate blocked"
+    },
+    {
+      "window_id": "EAC-V4",
+      "source": "MODEL_C WW3 Stokes",
+      "coverage_start": "UNVERIFIED",
+      "coverage_end": "UNVERIFIED",
+      "required_start": "2015-07-05T12:00:00Z",
+      "required_end": "2015-07-08T12:00:00Z",
+      "coverage_pass": null,
+      "basis": "NOT_EVALUATED: acquisition not attempted because the cohort gate blocked"
+    },
+    {
+      "window_id": "EAC-V4",
+      "source": "MODEL_C NCEP-R2",
+      "coverage_start": "UNVERIFIED",
+      "coverage_end": "UNVERIFIED",
+      "required_start": "2015-07-05T12:00:00Z",
+      "required_end": "2015-07-08T12:00:00Z",
+      "coverage_pass": null,
+      "basis": "NOT_EVALUATED: acquisition not attempted because the cohort gate blocked"
+    },
+    {
+      "window_id": "EAC-V5",
+      "source": "MODEL_A HYCOM_NATIVE_3H",
+      "coverage_start": "UNVERIFIED",
+      "coverage_end": "UNVERIFIED",
+      "required_start": "2015-07-13T12:00:00Z",
+      "required_end": "2015-07-16T12:00:00Z",
+      "coverage_pass": null,
+      "basis": "NOT_EVALUATED: acquisition not attempted because the cohort gate blocked"
+    },
+    {
+      "window_id": "EAC-V5",
+      "source": "MODEL_C GLORYS12V1",
+      "coverage_start": "UNVERIFIED",
+      "coverage_end": "UNVERIFIED",
+      "required_start": "2015-07-13T12:00:00Z",
+      "required_end": "2015-07-16T12:00:00Z",
+      "coverage_pass": null,
+      "basis": "NOT_EVALUATED: acquisition not attempted because the cohort gate blocked"
+    },
+    {
+      "window_id": "EAC-V5",
+      "source": "MODEL_C WW3 Stokes",
+      "coverage_start": "UNVERIFIED",
+      "coverage_end": "UNVERIFIED",
+      "required_start": "2015-07-13T12:00:00Z",
+      "required_end": "2015-07-16T12:00:00Z",
+      "coverage_pass": null,
+      "basis": "NOT_EVALUATED: acquisition not attempted because the cohort gate blocked"
+    },
+    {
+      "window_id": "EAC-V5",
+      "source": "MODEL_C NCEP-R2",
+      "coverage_start": "UNVERIFIED",
+      "coverage_end": "UNVERIFIED",
+      "required_start": "2015-07-13T12:00:00Z",
+      "required_end": "2015-07-16T12:00:00Z",
+      "coverage_pass": null,
+      "basis": "NOT_EVALUATED: acquisition not attempted because the cohort gate blocked"
+    }
+  ],
+  "registeredWindows": 5,
+  "allRegisteredWindowsEvaluated": true,
+  "trajectoryRun": false,
+  "endpointComputed": false,
+  "createdAtUTC": "2026-09-07T10:46:42Z"
+}

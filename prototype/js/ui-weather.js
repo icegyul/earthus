@@ -408,7 +408,9 @@ export const weatherPanel = {
     // 빈 카드라 숨긴다(2026-09-06 요청). 공식 특보 게이트는 위 official-warning 칸이 따로 지킨다.
     const intelligence = renderIntelligence(model, ko, activeHour);
     if (intelligence) root.appendChild(intelligence);
-    root.appendChild(renderDetails(model, sourceMap, ko));
+    const detailsEl = renderDetails(model, sourceMap, ko);
+    root.appendChild(detailsEl);
+    fillMoon(detailsEl, model, ko);
     /* 출처·시각·상태 카드는 뺐다 (2026-09-06 받은 지시) — 출처는 좌하단 한 줄(ui-source.js inlineSource)에만 적는다. renderSources 는 남겨 둔다. */
     root.appendChild(renderEarthActions(model, ko));
     root.querySelectorAll('.wcv7-detail-toggle').forEach(button => {
@@ -957,6 +959,35 @@ function renderIntelligence(model, ko, activeHour = null) {
   return section;
 }
 
+/* 달 위상·월출·월몰·다음 보름 — 2026-09-07 받은 요청(애플 날씨에는 있고 우리에는 없던 것).
+   ⚠️ 이 값은 관측이 아니라 **표준 공식 계산**이다. 그래서 기관 이름을 출처로 적지 않고
+      '천문 계산'이라고 밝히며, sky.js 의 저정밀 한계(달 ~0.3°)에서 오는 오차도 같이 적는다.
+   교차검증(2026-09-07 인천) 애플 날씨: 그므달 18% · 월몰 16:34 · 다음 만월 20일
+                                우리: 그므달 17% · 월몰 16:39 · 다음 보름 20일 뒤 */
+async function fillMoon(section, model, ko) {
+  const slot = section.querySelector('[data-moon-slot]');
+  if (!slot) return;
+  const lat = model.location?.lat, lon = model.location?.lon;   // 계약의 이름은 lat/lon 이다(latitude 아니다)
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;   // 좌표가 없으면 달은 적지 않는다
+  let sky;
+  try { sky = await import('./sky.js'); } catch (_) { return; }
+  const now = Date.now();
+  const ph = sky.moonPhase(now);
+  const times = sky.moonTimes(now, lat, lon);
+  const full = sky.nextMoonPhase(now, 0.5);
+  const tz = model.location.timezone;
+  const clock = ms => clockText(new Date(ms).toISOString(), tz);
+  const parts = [`${ko ? '달' : 'Moon'} ${esc(sky.moonPhaseName(ph.elong, ko))} · ${ko ? '밝은 면' : 'lit'} ${Math.round(ph.illum * 100)}%`];
+  if (times.rise) parts.push(`${ko ? '월출' : 'Moonrise'} ${clock(times.rise)}`);
+  if (times.set) parts.push(`${ko ? '월몰' : 'Moonset'} ${clock(times.set)}`);
+  if (full) { const d = Math.max(0, Math.round((full - now) / 86400000));
+    parts.push(ko ? `다음 보름 ${d}일 뒤` : `Next full moon in ${d} d`); }
+  slot.innerHTML = ` · ${parts.join(' · ')}`
+    + `<div class="wcv7-moon-src">${ko
+      ? '달 값은 관측이 아니라 천문 계산입니다(저정밀 공식). 위상은 거의 정확하고 월출·월몰은 몇 분 틀릴 수 있습니다.'
+      : 'Moon values are computed with low-precision formulae, not observed. Phase is close; rise and set can be off by a few minutes.'}</div>`;
+}
+
 function renderDetails(model, sourceMap, ko) {
   const section = el('section', 'wcv7-section wcv7-details');
   section.dataset.weatherSection = 'details';
@@ -1020,8 +1051,10 @@ function renderDetails(model, sourceMap, ko) {
       summary: `${clockText(sun.sunrise?.value, model.location.timezone)}–${clockText(sun.sunset?.value, model.location.timezone)}`,
       points: [sun.sunrise, sun.sunset],
       body: `${ko ? '해뜸' : 'Sunrise'} ${clockText(sun.sunrise?.value, model.location.timezone)} · `
-        + `${ko ? '해짐' : 'Sunset'} ${clockText(sun.sunset?.value, model.location.timezone)} · `
-        + (ko ? '달 위상은 현재 계약에서 제공하지 않습니다.' : 'Moon phase is not provided by the current contract.'),
+        + `${ko ? '해짐' : 'Sunset'} ${clockText(sun.sunset?.value, model.location.timezone)}`
+        /* 달은 관측이 아니라 계산이라 자료 계약 밖에 있다. sky.js(18KB)를 지연해 열고
+           렌더 뒤에 이 자리를 채운다 — 첫 로딩에 얹지 않기 위해서다. 못 여는 경우 해 정보만 남는다. */
+        + '<span data-moon-slot></span>',
     },
     {
       icon: '≋', title: ko ? '파도·조석' : 'Waves & tide',

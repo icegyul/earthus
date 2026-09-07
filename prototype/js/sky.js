@@ -181,6 +181,46 @@ export function moonPhase(t = Date.now()) {
   return { elong, phase: elong / 360, illum: (1 - Math.cos(elong * D2R)) / 2 };
 }
 
+/** 다음 삭(0) 또는 망(0.5) 시각. phase 는 0~1, 삭에서 삭까지 한 바퀴.
+ *  분 단위로 뒤져가며 목표 위상을 넘는 순간을 찾는다 — 새 공식 없이 moonPhase 만 쓴다. */
+export function nextMoonPhase(t = Date.now(), target = 0.5) {
+  const step = 6 * 3600000;              // 6시간씩 거치게 보고
+  const diff = x => { const d = (moonPhase(x).phase - target + 1) % 1; return d > 0.5 ? d - 1 : d; };
+  let a = t;
+  for (let i = 0; i < 130; i++) {        // 최대 32일 — 삭망 주기(29.53일)보다 길게
+    const b = a + step;
+    if (diff(a) < 0 && diff(b) >= 0) {   // 음→양 교차 = 목표 위상 통과
+      let lo = a, hi = b;
+      for (let k = 0; k < 24; k++) { const mid = (lo + hi) / 2; (diff(mid) < 0 ? lo = mid : hi = mid); }
+      return Math.round((lo + hi) / 2);
+    }
+    a = b;
+  }
+  return null;
+}
+
+/** 월출·월몰 — t 부터 24시간 안. 없으면 null(극지에선 종일 뜨거나 종일 안 뜼는 날이 있다).
+ *  기준 고도 +0.125° — 달은 시차가 커서 해처럼 -0.83° 를 쓰지 않는다.
+ *  ⚠️ 이 파일의 달 위치는 저정밀(~0.3°)이라 시각은 몇 분 틀릴 수 있다. 화면에 그렇게 적는다. */
+export function moonTimes(t = Date.now(), lat = 37.5, lon = 127) {
+  const H0 = 0.125;
+  const alt = x => { const m = moon(x); return altitude(m.ra, m.dec, lat, lon, x) - H0; };
+  const out = { rise: null, set: null };
+  const step = 600000;                   // 10분 간격으로 부호 바뀜을 찾고
+  let prev = alt(t);
+  for (let x = t + step; x <= t + 86400000; x += step) {
+    const cur = alt(x);
+    if (prev < 0 !== cur < 0) {          // 지평선을 넘었다
+      let lo = x - step, hi = x;
+      for (let k = 0; k < 22; k++) { const mid = (lo + hi) / 2; ((alt(mid) < 0) === (alt(lo) < 0) ? lo = mid : hi = mid); }
+      const at = Math.round((lo + hi) / 2);
+      if (cur >= 0 && out.rise == null) out.rise = at;
+      if (cur < 0 && out.set == null) out.set = at;
+    }
+    prev = cur;
+  }
+  return out;
+}
 export function moonPhaseName(elong, ko) {
   const n = [
     [22.5,  '삭',        'New moon'],

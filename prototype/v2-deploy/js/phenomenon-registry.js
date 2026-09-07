@@ -933,9 +933,28 @@ export const LAYER_PHENOMENON = Object.freeze({
 // 이 두 함수가 PHASE 2 의 교체 지점이다.
 // 지금 ui-shell.js 는 MENU_QUESTIONS[l.id] 로 bare id 를 쓴다 — 그래서 hobby/surf 가 ocean/surf 의 질문을 뺏어 쓴다.
 // 아래는 씬을 같이 받으므로 충돌이 성립하지 않는다.
+// 레지스트리에 없는 레이어를 조용히 넘기지 않는다(지침서 STEP 2.4). 메뉴에 레이어를 더하고
+// 레지스트리를 잊으면 질문·영문이름이 말없이 사라지므로, 한 번은 반드시 소리를 낸다.
+// tools/check-v2-consistency.mjs 가 커버리지를 강제하지만, 그것은 커밋 시점이고 이건 런타임이다.
+const warned = new Set();
+function warnMissing(key) {
+  if (warned.has(key)) return;
+  warned.add(key);
+  const msg = `[phenomenon-registry] '${key}' 가 레지스트리에 없다 — 질문·영문이름·능력이 비어 나온다. LAYER_PHENOMENON 에 추가하라.`;
+  if (typeof console !== 'undefined' && console.warn) console.warn(msg);
+}
+
+/** 레지스트리에 등록됐지만 현상이 아닌 것(배경·조작·진입점)은 null 을 준다. 그건 정상이다. */
 export function phenomenonForLayer(sceneId, layerId) {
-  const hit = LAYER_PHENOMENON[`${sceneId}/${layerId}`];
-  return hit && hit.phenomenon ? PHENOMENA[hit.phenomenon] || null : null;
+  const key = `${sceneId}/${layerId}`;
+  const hit = LAYER_PHENOMENON[key];
+  if (!hit) { warnMissing(key); return null; }
+  return hit.phenomenon ? PHENOMENA[hit.phenomenon] || null : null;
+}
+
+/** 이 레이어가 레지스트리에 등록돼 있나(현상이 아닌 조작·배경도 등록돼 있으면 true). */
+export function isRegisteredLayer(sceneId, layerId) {
+  return Object.prototype.hasOwnProperty.call(LAYER_PHENOMENON, `${sceneId}/${layerId}`);
 }
 
 export function questionForLayer(sceneId, layerId, lang = 'ko') {

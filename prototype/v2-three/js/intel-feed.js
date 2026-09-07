@@ -5,7 +5,7 @@
 import * as THREE from '../../vendor/three-r184.module.min.js';
 // 사건 방: 기관 스택 + 진리등급 + 현재→다음→행동 (정본 HAZ-011로 사건 결합)
 import { EventRoom } from './event-room.js?v=3';
-import { i18n } from './i18n.js?v=10';
+import { i18n } from './i18n.js?v=11';
 
 // PHASE 1(2026-09-05): 브라우저는 EARTHUS 축약본(Point·카드 필드만, 수십 KB)을 정상 경로로 쓴다.
 // 원본 MAP(1.97 MB · 15~106초)은 축약본도, 마지막 정상 축약본(localStorage)도 없을 때만 폴백이다.

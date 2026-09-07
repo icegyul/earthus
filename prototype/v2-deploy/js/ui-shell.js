@@ -3,9 +3,13 @@
 // 지구 렌더러(main.js)는 건드리지 않고 훅(hooks)으로만 연결한다.
 
 import * as THREE from '../vendor/three-r184.module.min.js';
-import { i18n } from './i18n.js?v=10';
+import { i18n } from './i18n.js?v=11';
 import { renderBadge, layerBadge } from './engine-bridge.js?v=15';
-import { MENU_QUESTIONS } from './menu-guide.js';
+// PHASE 2 STEP 2.4 — 질문을 복합키(scene/layer)로 찾는다. bare id 조회를 새로 만들지 않는다.
+// menu-guide.js 의 MENU_QUESTIONS 는 지우지 않았다 — tools/build_information_inventory.mjs 가
+// 아직 읽고, 레지스트리의 질문이 거기서 왔다. 다만 화면은 이제 레지스트리만 본다.
+// (bare id 조회였기 때문에 hobby/surf 가 ocean/surf 의 질문을 그대로 표시하고 있었다.)
+import { questionForLayer } from './phenomenon-registry.js?v=1';
 import { menuCoverage, menuTime, canClearLayer, matchesMenu } from './information-contract.js';
 const safeText = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -295,7 +299,7 @@ export function initShell(hooks) {
   const sectionHtml = (s) => {
     const shown = s.layers.filter(l => {
       const st = hooks.getLayerState?.(s.id, l) || {};
-      return (!activeOnly || st.on) && matchesMenu(menuQuery, [s.label,l.name,l.src,MENU_QUESTIONS[l.id],menuCoverage(l.id)]);
+      return (!activeOnly || st.on) && matchesMenu(menuQuery, [s.label,l.name,l.src,questionForLayer(s.id,l.id),menuCoverage(l.id)]);
     });
     if (!shown.length) return '';
     let chips = '';
@@ -329,8 +333,8 @@ export function initShell(hooks) {
           const st = (hooks.getLayerState && hooks.getLayerState(s.id, l)) || {};
           return divider + `<button class="mp-item${l.state === 'LOCKED' ? ' locked' : ''}${st.on ? ' on' : ''}"
             data-fscene="${s.id}" data-flayer="${l.id}" title="${safeText(l.src)}" aria-pressed="${!!st.on}">
-            <span class="mp-lbl">${i18n.layer(l.id, l.name)}</span>${dataBadge(l.state)}
-            <span class="mp-question">${safeText(i18n.ko ? MENU_QUESTIONS[l.id] || l.name : l.name)}</span>
+            <span class="mp-lbl">${i18n.layer(l.id, l.name, s.id)}</span>${dataBadge(l.state)}
+            <span class="mp-question">${safeText(i18n.ko ? questionForLayer(s.id,l.id) || l.name : l.name)}</span>
             <span class="mp-support">${safeText(menuCoverage(l.id,i18n.ko))} · ${safeText(menuTime(l.id,i18n.ko))}</span>
             ${st.on && st.note ? `<span class="mp-note">${st.note}</span>` : ''}
           </button>`;
@@ -529,7 +533,7 @@ export function initShell(hooks) {
   };
 
   const evidenceRow = ({ s, l, st }) => `<div class="stat">
-      <span class="k">${i18n.layer(l.id, l.name)}</span>
+      <span class="k">${i18n.layer(l.id, l.name, s.id)}</span>
       <span class="v">${layerBadge(`${s.id}/${l.id}`) || renderBadge(l.state)} ${l.src}${st.note ? ` · ${st.note}` : ''}</span>
     </div>`;
 
@@ -597,8 +601,8 @@ export function initShell(hooks) {
     const active=activeLayers();
     const picked=hooks.getFocusSel?.();
     const header=document.createElement('div');header.className='information-context';
-    header.innerHTML=`${selectedMenu ? `<strong>${safeText(i18n.ko ? MENU_QUESTIONS[selectedMenu.l.id] || selectedMenu.l.name : selectedMenu.l.name)}</strong><div>${safeText(selectedMenu.l.src)} · ${dataBadge(selectedMenu.l.state)}</div>`:''}<div>${safeText(i18n.ko?'선택 장소':'Selected place')}: ${safeText(picked?.nameKo || picked?.name || (i18n.ko?'지도에서 선택':'Select on the globe'))}</div>${timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}</p>`:''}
-      ${active.length ? `<details><summary>${i18n.ko?'현재 켜진 자료':'Active data'} ${active.length}</summary>${active.map(({s,l})=>`<div class="active-data-row"><span>${safeText(i18n.layer(l.id,l.name))}<small>${safeText(menuTime(l.id,i18n.ko))}</small></span>${canClearLayer(l.id)?`<button data-action="shell-layer-off" data-scene="${s.id}" data-layer="${l.id}" aria-label="${safeText(l.name)} 끄기">${i18n.ko?'끄기':'Off'}</button>`:''}</div>`).join('')}<button data-action="shell-clear-layers">${i18n.ko?'추가 자료 모두 끄기':'Clear overlays'}</button></details>`:''}`;
+    header.innerHTML=`${selectedMenu ? `<strong>${safeText(i18n.ko ? questionForLayer(selectedMenu.s.id, selectedMenu.l.id) || selectedMenu.l.name : selectedMenu.l.name)}</strong><div>${safeText(selectedMenu.l.src)} · ${dataBadge(selectedMenu.l.state)}</div>`:''}<div>${safeText(i18n.ko?'선택 장소':'Selected place')}: ${safeText(picked?.nameKo || picked?.name || (i18n.ko?'지도에서 선택':'Select on the globe'))}</div>${timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}</p>`:''}
+      ${active.length ? `<details><summary>${i18n.ko?'현재 켜진 자료':'Active data'} ${active.length}</summary>${active.map(({s,l})=>`<div class="active-data-row"><span>${safeText(i18n.layer(l.id,l.name,s.id))}<small>${safeText(menuTime(l.id,i18n.ko))}</small></span>${canClearLayer(l.id)?`<button data-action="shell-layer-off" data-scene="${s.id}" data-layer="${l.id}" aria-label="${safeText(l.name)} 끄기">${i18n.ko?'끄기':'Off'}</button>`:''}</div>`).join('')}<button data-action="shell-clear-layers">${i18n.ko?'추가 자료 모두 끄기':'Clear overlays'}</button></details>`:''}`;
     intelContent.prepend(header);
     intelContent.scrollTop=scrollTop;
   };

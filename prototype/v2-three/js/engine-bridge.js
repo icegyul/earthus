@@ -25,7 +25,7 @@ import { EarthusEngineRuntime } from '../../js/earthus2/v02/core/engine-runtime.
 import { ENGINE_CLASS, ENGINE_LIFECYCLE } from '../../js/earthus2/v02/core/constants.js';
 import { providerHealthState, PROVIDER_HEALTH } from '../../js/earthus2/v02/ops/provider-health.js';
 import { depthVisualScale } from '../../js/earthus2/v02/geo/bathymetry-policy.js';
-import { i18n } from './i18n.js?v=10';
+import { i18n } from './i18n.js?v=11';
 import { sourceTimeLabel } from './source-context.js?v=20260905';
 
 export {

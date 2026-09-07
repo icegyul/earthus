@@ -25,7 +25,7 @@ import { EarthusEngineRuntime } from '../engine/core/engine-runtime.js';
 import { ENGINE_CLASS, ENGINE_LIFECYCLE } from '../engine/core/constants.js';
 import { providerHealthState, PROVIDER_HEALTH } from '../engine/ops/provider-health.js';
 import { depthVisualScale } from '../engine/geo/bathymetry-policy.js';
-import { i18n } from './i18n.js?v=10';
+import { i18n } from './i18n.js?v=11';
 import { sourceTimeLabel } from './source-context.js?v=20260905';
 
 export {

@@ -4,7 +4,7 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=60-ext';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=61-phenomenon';
 import { createSelectionGate } from './information-contract.js';
 const escUI = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 import { OceanSim } from './sim-ocean.js?v=6';
@@ -14,7 +14,7 @@ import { evaluateWatch, myZone, loadWatch, saveWatch } from './watch.js?v=1';
 import { LiveLayers } from './live-layers.js?v=39-information';
 import { StationModel } from './station-model.js?v=2';
 import { AskEarth } from './ask-earth.js?v=3';
-import { i18n } from './i18n.js?v=10';
+import { i18n } from './i18n.js?v=11';
 // onboard.js 처럼 i18n 을 직접 들이지 않는 곳에서 쓴다. 문구를 한국어로 박아 두면
 // 영어 화면에서 거기만 한국어로 남는다(실측으로 잡았다).
 window.__earthusT = (k) => i18n.t(k);

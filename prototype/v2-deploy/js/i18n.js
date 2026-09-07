@@ -46,8 +46,13 @@ export const i18n = {
     return (k in d) ? d[k] : ((k in KO) ? KO[k] : k);
   },
   // 레이어 이름. 영어 이름이 없으면 한국어를 그대로 쓴다(id 를 노출하지 않는다).
-  layer(id, koName) {
+  //
+  // sceneId 를 주면 복합키를 먼저 본다. L_EN 은 bare id 라서 같은 id 가 두 씬에 있으면
+  // 한쪽 이름이 다른 쪽에 나온다 — 실제로 hobby/surf 가 ocean/surf 의
+  // '271 beaches · 946 fishing spots' 를 영어 이름으로 쓰고 있었다.
+  layer(id, koName, sceneId) {
     if (this.lang !== 'en') return koName;
+    if (sceneId && `${sceneId}/${id}` in L_EN_BY_KEY) return L_EN_BY_KEY[`${sceneId}/${id}`];
     return L_EN[id] || koName;
   },
   scene(id, koLabel) {
@@ -346,4 +351,17 @@ const L_EN = {
   solar: 'The solar system today',
   photos: '59 space photographs (placed on the sky)',
   galaxy: 'The Milky Way — where we are',
+};
+
+// 복합키 영문 이름. bare id 가 두 씬에 겹칠 때만 여기 적는다 — 나머지는 위 L_EN 이 맡는다.
+// 겹치는 id 는 2026-09-08 현재 surf · vessel 둘뿐이고, tools/check-v2-consistency.mjs 가
+// 새로 겹치면 '[id 충돌]' 경고로 알려 준다.
+const L_EN_BY_KEY = {
+  // ocean/surf 는 해변·낚시터 '장소 목록'(OSM), hobby/surf 는 '너울 상태'(Open-Meteo)다.
+  // 서로 다른 산출물인데 영어에서는 앞의 이름이 뒤에도 나오고 있었다.
+  'ocean/surf': '271 beaches · 946 fishing spots',
+  'hobby/surf': 'Surf — is the swell reaching this beach?',
+  // vessel 은 같은 현상(KOMSA MTIS)이라 이름이 같아도 맞다. 그래도 복합키로 못박아 둔다.
+  'ocean/vessel': 'Vessels',
+  'hobby/vessel': 'Vessels — official live positions · ferry service',
 };

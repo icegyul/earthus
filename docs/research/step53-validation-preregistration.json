@@ -1,0 +1,323 @@
+{
+  "study_id": "step53-new-independent-validation",
+  "status": "PREREGISTRATION_LOCKED",
+  "data_access_status": "PROTOCOL_ONLY",
+  "scientific_execution": "NOT_RUN",
+  "parent_audit_commit": "4af3fd8fadc50243a3493efa22d57d5811c23943",
+  "parent_audit_status": "FINAL_RESEARCH_AUDIT_PASS",
+  "head_at_preregistration": "28a6b9e85ebb0e877286faf647d720a2ff21f335",
+  "prior_results_immutable": {
+    "primary": {
+      "H1": "SUPPORTED",
+      "Theta_72h_km": -31.331,
+      "CI95_km": [
+        -72.0725,
+        -11.7435
+      ]
+    },
+    "validation_extension": {
+      "H_EXT": "NOT_SUPPORTED",
+      "Theta_72h_km": -2.272,
+      "CI95_km": [
+        -9.597,
+        10.246
+      ]
+    },
+    "original_validation": "BLOCKED",
+    "candidate": "CANDIDATE_ONLY",
+    "operational_promotion": false,
+    "production_claim": false,
+    "recomputed_in_step53": false
+  },
+  "research_question": "Does candidate C reproduce the direction and magnitude of the preregistered primary effect against baseline A in a new, previously untested validation population?",
+  "primary_hypothesis": "H_REP: Theta_72h < 0 and the 95 % window bootstrap interval lies entirely below zero, in the same direction as the primary effect",
+  "null_hypothesis": "H_REP-null: the conjunction does not hold (point estimate not below zero, or interval not entirely below zero)",
+  "geographic_domain": {
+    "name": "East Australian Current",
+    "code": "EAC",
+    "box": {
+      "south": -40.0,
+      "north": -25.0,
+      "west": 150.0,
+      "east": 160.0
+    },
+    "used_by_prior_studies": false,
+    "disjoint_from": {
+      "GS": {
+        "south": 32,
+        "north": 40,
+        "west": -75,
+        "east": -55
+      },
+      "KE": {
+        "south": 30,
+        "north": 40,
+        "west": 135,
+        "east": 160
+      },
+      "BM": {
+        "south": -40,
+        "north": -30,
+        "west": -60,
+        "east": -45
+      },
+      "AG": {
+        "south": -40,
+        "north": -30,
+        "west": 15,
+        "east": 35
+      }
+    },
+    "agulhas_rejection_reason": "the frozen STEP 35 window-eligibility inventory records zero window-eligible rows for AG across 2010-2015 under the inherited frame-coverage rule, so an AG study would be expected to block; this is a metadata feasibility fact, not a performance fact",
+    "performance_information_used_in_selection": false,
+    "changeable_after_data_access": false
+  },
+  "temporal_domain": {
+    "t0": "2010-01-01T12:00:00Z",
+    "t1": "2015-12-31T12:00:00Z",
+    "window_start_time_utc": "12:00:00",
+    "window_duration_hours": 72,
+    "upper_bound_reason": "HYCOM GOFS 3.1 expt_53.X coverage end, required by condition A",
+    "fully_temporally_independent": false,
+    "temporal_overlap_disclosure": "this period overlaps the calendar periods used by the primary experiment and by both earlier validation lines, in different regions; full temporal independence is not achievable without abandoning the locked HYCOM source"
+  },
+  "observation_source": {
+    "product": "NOAA Global Drifter Program hourly quality-controlled observations",
+    "present_in_existing_frozen_dataset": false,
+    "acquisition": "required after this lock in a separate acquisition step recording product identity, checksums and coverage before any scientific execution"
+  },
+  "model_A": {
+    "name": "HYCOM_NATIVE_3H",
+    "product": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X",
+    "variables": [
+      "water_u",
+      "water_v"
+    ],
+    "depth_m": 15.0,
+    "temporal_resolution": "3-hourly"
+  },
+  "model_C": {
+    "name": "GLORYS12V1 + WW3 Stokes x1.0 + NCEP-R2",
+    "glorys": {
+      "product": "GLORYS12V1",
+      "native_depth_m": 15.81007
+    },
+    "ww3": {
+      "product": "GLOB-30M CFSR uss",
+      "stokes_multiplier": 1.0
+    },
+    "ncep": {
+      "product": "NCEP-DOE Reanalysis 2",
+      "variables": [
+        "10 m u",
+        "10 m v"
+      ]
+    }
+  },
+  "alpha": 0.002,
+  "parameter_tuning_permitted": false,
+  "integrator": "RK4",
+  "dt_seconds": 300,
+  "output_seconds": 900,
+  "primary_horizon_hours": 72,
+  "secondary_horizons_hours": [
+    24,
+    48
+  ],
+  "endpoint": {
+    "per_drifter": "delta_i = E_C,i(72h) - E_A,i(72h); E = haversine(model, observed) at exactly t0+72h, R = 6371008.8 m, km",
+    "pairing": "exact drifter identity and exact UTC timestamp",
+    "imputation": false,
+    "interpolation_beyond_frozen_handling": false,
+    "manual_removal_after_results": false,
+    "sign_meaning": {
+      "negative": "C has lower displacement error than A",
+      "positive": "C has higher displacement error than A"
+    }
+  },
+  "aggregation": {
+    "window": "Delta_w = median(delta_i across valid paired drifters)",
+    "overall": "Theta_72h = equal-weight median of Delta_w across valid windows",
+    "weighting_prohibited_by": [
+      "drifter count",
+      "performance",
+      "geography",
+      "duration",
+      "model confidence"
+    ],
+    "pooled_drifter_median": "descriptive only, never the primary endpoint"
+  },
+  "cohort_selection_rule": {
+    "scan": "strict chronological order of candidate window starts from t0",
+    "window_registered_if": [
+      "eligible drifter count >= 8",
+      "window advection criteria pass",
+      "observations exist at exactly t0, t0+24h, t0+48h and t0+72h for the eligible drifters",
+      "window start at least 72 h after the previously registered window start",
+      "no exclusion or overlap rule violated"
+    ],
+    "ranking_permitted": false,
+    "prohibited_ranking_criteria": [
+      "lowest error",
+      "highest candidate advantage",
+      "best model agreement",
+      "favourable region",
+      "favourable season"
+    ],
+    "drifter_ordering": "numeric drifter identifier ascending",
+    "max_drifters_per_window": 12,
+    "eligibility_criteria": "frozen STEP 16 E1-E5 and A1-A3 applied verbatim, using only fields present in the acquired observation product; no field is invented"
+  },
+  "overlap_rule": {
+    "excluded_identity_count": 113,
+    "primary_identities": 20,
+    "extension_identities": 25,
+    "prior_excluded_identities": 88,
+    "excluded_identities_sha256": "f0b635397052a60d5fa7c016a5625b3487575d88d606ca0a606d4e88ade9f240",
+    "required_empty_intersections": [
+      "new IDs vs primary IDs",
+      "new IDs vs extension IDs",
+      "new window starts vs primary window starts",
+      "new window starts vs extension window starts"
+    ],
+    "primary_window_starts": [
+      "2010-07-27T12:00:00Z",
+      "2010-07-30T12:00:00Z",
+      "2010-08-02T12:00:00Z",
+      "2010-08-05T12:00:00Z",
+      "2010-08-08T12:00:00Z",
+      "2010-08-22T12:00:00Z",
+      "2010-08-28T12:00:00Z",
+      "2010-09-16T12:00:00Z",
+      "2010-10-16T12:00:00Z"
+    ],
+    "extension_window_starts": [
+      "2011-08-16T12:00:00Z",
+      "2011-09-22T12:00:00Z",
+      "2011-09-26T12:00:00Z",
+      "2011-11-06T12:00:00Z",
+      "2013-12-19T12:00:00Z",
+      "2014-01-06T12:00:00Z"
+    ],
+    "pass_condition": "all four intersections empty"
+  },
+  "minimum_valid_windows": 4,
+  "target_windows": 6,
+  "planning_target_windows": [
+    8,
+    10
+  ],
+  "minimum_unique_drifters": 20,
+  "maximum_drifters_per_window": 12,
+  "validity_gate": {
+    "minimum_valid_windows": 4,
+    "if_not_met": "VALIDATION_BLOCKED",
+    "blocked_means": "no performance claim, no bootstrap, no hypothesis conclusion"
+  },
+  "bootstrap_unit": "window",
+  "bootstrap_B": 10000,
+  "bootstrap_seed": 20260953,
+  "bootstrap_rng": "numpy.random.default_rng(20260953), one generator instance",
+  "bootstrap_sampling": "with replacement, sample size = number of registered valid windows",
+  "bootstrap_na_redraw": false,
+  "ci_level": 0.95,
+  "ci_quantiles": [
+    0.025,
+    0.975
+  ],
+  "quantile_method": "linear",
+  "seed_change_after_data_inspection": false,
+  "replication_criterion": {
+    "supported_iff": [
+      "valid-window gate passes",
+      "Theta_72h < 0 km",
+      "95 % interval upper bound < 0 km",
+      "direction agrees with the primary effect (C lower error than A)"
+    ],
+    "otherwise": "REPLICATION_NOT_SUPPORTED",
+    "gate_failure": "VALIDATION_BLOCKED",
+    "not_supported_does_not_mean_disproven": true,
+    "magnitude_equality_required": false,
+    "primary_point_estimate_reference_km": -31.331,
+    "post_hoc_magnitude_threshold": false
+  },
+  "statuses": [
+    "REPLICATION_SUPPORTED",
+    "REPLICATION_NOT_SUPPORTED",
+    "VALIDATION_BLOCKED"
+  ],
+  "forbidden_language": [
+    "model disproven",
+    "model proven",
+    "universally superior",
+    "globally validated",
+    "production ready",
+    "operationally proven"
+  ],
+  "post_hoc_prohibition": {
+    "prohibited_after_seeing_results": [
+      "change cohort",
+      "remove unfavourable windows",
+      "remove unfavourable drifters",
+      "change alpha",
+      "change source",
+      "change horizon",
+      "change endpoint",
+      "change bootstrap seed",
+      "change CI method",
+      "change aggregation",
+      "change geographic scope",
+      "change temporal scope"
+    ],
+    "new_analysis_requires_new_preregistration": true
+  },
+  "study_separation": {
+    "study_1_primary": "SUPPORTED",
+    "study_2_geographic_extension": "NOT_SUPPORTED",
+    "study_3_step53": "UNKNOWN until execution",
+    "pooled": false,
+    "combined_effect_estimate": false,
+    "retrospective_alteration_of_primary": false
+  },
+  "reproducibility": {
+    "separate_process_replay_required": true,
+    "scientific_outputs_byte_identical": true,
+    "allowed_differences": [
+      "creation timestamps"
+    ],
+    "mismatch_action": "halt the study"
+  },
+  "result_driven_cohort_selection": false,
+  "information_prohibited_in_cohort_selection": [
+    "primary performance",
+    "extension performance",
+    "trajectory error",
+    "Theta",
+    "confidence interval",
+    "candidate ranking",
+    "regional performance",
+    "seasonal performance",
+    "drifter-specific performance",
+    "source-specific performance"
+  ],
+  "phases": [
+    "A protocol definition",
+    "B population / geographic frame",
+    "C cohort-selection algorithm",
+    "D exclusion rules",
+    "E statistical endpoint",
+    "F acceptance / replication criterion",
+    "G reproducibility rules",
+    "H lock"
+  ],
+  "source_access_before_lock": {
+    "new_source_acquisition": false,
+    "source_performance_inspection": false,
+    "candidate_performance_inspection": false,
+    "trajectory_execution": false,
+    "result_inspection": false
+  },
+  "created_at_utc": "2026-09-07T10:14:21Z",
+  "automatic_commit": false,
+  "push": false
+}

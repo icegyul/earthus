@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "study_id": "step53-new-independent-validation",
+  "step": 53,
+  "role": "preregistration identity: the SHA-256 of the locked protocol documents",
+  "protocol_markdown": {
+    "path": "docs/research/step53-validation-preregistration.md",
+    "sha256": "a9b6457ddce51c5bf437f600a9124086b1390d8a5cf0567616e1af03efd1e39a",
+    "bytes": 11221
+  },
+  "protocol_json": {
+    "path": "docs/research/step53-validation-preregistration.json",
+    "sha256": "79c601beffd8ee94b303f7ea3317d9416c13e200e09c8adcc1357110ba9e7d46",
+    "bytes": 10824
+  },
+  "parent_audit_commit": "4af3fd8fadc50243a3493efa22d57d5811c23943",
+  "head_at_preregistration": "28a6b9e85ebb0e877286faf647d720a2ff21f335",
+  "data_access_status": "PROTOCOL_ONLY",
+  "scientific_execution": "NOT_RUN",
+  "created_at_utc": "2026-09-07T10:14:21Z"
+}

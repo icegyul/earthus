@@ -1,0 +1,227 @@
+{
+  "step": 56,
+  "status": "FINAL_SCIENTIFIC_STOP_POINT",
+  "classification": "FINAL_SCIENTIFIC_STATUS_AND_RESEARCH_STOP_POINT_LOCK",
+  "scope": "status lock only; no new analysis, cohort, forcing, bootstrap, endpoint or performance claim",
+  "head_at_lock": "797b7ccbfebd6b7b8033044a3fd4609e31cd2e62",
+  "branch": "earthus-v2/real-living-earth-render",
+  "ancestry": {
+    "step36": {
+      "commit": "043a09b8539955868651a06e7c2c44e3c606803f",
+      "ancestor": true
+    },
+    "step37": {
+      "commit": "74d19f0a9661a41d63a08c56bbd3f91e9d8b312d",
+      "ancestor": true
+    },
+    "step38": {
+      "commit": "23e78f863fb092aa9e3c36e4d74d4afd4393e7f4",
+      "ancestor": true
+    },
+    "step40": {
+      "commit": "2b1a7baa7ef9e69d25cecbff2b09fca8700fca80",
+      "ancestor": true
+    },
+    "step41": {
+      "commit": "9a3223089099bcb09a2589cc8a4bda82fcb47ae5",
+      "ancestor": true
+    },
+    "step42": {
+      "commit": "bae85245e827f53ee9782201c442ea7849c04e82",
+      "ancestor": true
+    },
+    "step43": {
+      "commit": "15970d9735330fb937e86af449c1deef6763b5d1",
+      "ancestor": true
+    },
+    "step44": {
+      "commit": "5f8d5c38bfc9cc6a168707ae0b1b643c99ad46f9",
+      "ancestor": true
+    },
+    "step45a": {
+      "commit": "b0f0274f14ae491e34f0bcb85874056d92260f46",
+      "ancestor": true
+    },
+    "step45b": {
+      "commit": "7249c38d355f97c4f264d2f4d7611ce5013bd8d7",
+      "ancestor": true
+    },
+    "step45c": {
+      "commit": "fa9c0590d634a6d6f30cc8a6cd2797c94e0ae7dd",
+      "ancestor": true
+    },
+    "step46": {
+      "commit": "f7be980e3aa1e71c4cc96b7aca699e1d4b1faec7",
+      "ancestor": true
+    },
+    "step48": {
+      "commit": "00516cd1562d50b9380f4eef4ad66611822ae99c",
+      "ancestor": true
+    },
+    "step49": {
+      "commit": "fbb080af5723c32488ddf976d64f067ba12a4555",
+      "ancestor": true
+    },
+    "step50": {
+      "commit": "85824367b6fd12c066da0e191f6731a0400293ab",
+      "ancestor": true
+    },
+    "step51": {
+      "commit": "539205efba50cb1940c337db3f51717d9b5c14be",
+      "ancestor": true
+    },
+    "step52": {
+      "commit": "4af3fd8fadc50243a3493efa22d57d5811c23943",
+      "ancestor": true
+    },
+    "step53": {
+      "commit": "b5cfb97aed482a38e1b763c2cd15a0f105cee9e7",
+      "ancestor": true
+    },
+    "step54": {
+      "commit": "989e8797b5a6ed7f4377463b8aa2441d29bb5cc3",
+      "ancestor": true
+    },
+    "step55": {
+      "commit": "ad99963b94e8de61307e5595051991c933a131c1",
+      "ancestor": true
+    }
+  },
+  "primary": {
+    "status": "SUPPORTED",
+    "hypothesis": "H1",
+    "comparison": "C vs A",
+    "endpoint": "72h exact-timestamp paired delta",
+    "theta_km": -31.331,
+    "ci95_km": [
+      -72.0725,
+      -11.7435
+    ],
+    "valid_windows": 6,
+    "registered_windows": 9,
+    "bootstrap": {
+      "B": 10000,
+      "seed": 20260907,
+      "available": 9999,
+      "not_available": 1
+    },
+    "interpretation": "the preregistered primary hypothesis was supported; this alone does not establish global or operational superiority",
+    "recomputed_in_step56": false
+  },
+  "geographic_extension": {
+    "status": "NOT_SUPPORTED",
+    "hypothesis": "H_EXT",
+    "comparison": "C vs A",
+    "theta_km": -2.272,
+    "ci95_km": [
+      -9.597,
+      10.246
+    ],
+    "valid_windows": 5,
+    "registered_windows": 6,
+    "bootstrap": {
+      "B": 10000,
+      "seed": 20260946
+    },
+    "interpretation": "the geographically independent extension did not satisfy the preregistered replication criterion, so the primary finding is treated as cohort- and domain-specific evidence",
+    "recomputed_in_step56": false
+  },
+  "eac": {
+    "status": "VALIDATION_BLOCKED",
+    "block_reason": "UNIQUE_DRIFTER_GATE_FAILED",
+    "domain": {
+      "latitude": [
+        -40.0,
+        -25.0
+      ],
+      "longitude": [
+        150.0,
+        160.0
+      ]
+    },
+    "temporal": [
+      "2010-01-01T12:00:00Z",
+      "2015-12-31T12:00:00Z"
+    ],
+    "candidate_starts_scanned": 2191,
+    "target_windows": 6,
+    "registered_windows": 5,
+    "minimum_valid_windows": 4,
+    "target_unique_drifters": 20,
+    "actual_unique_drifters": 12,
+    "window_gate": "PASS",
+    "unique_drifter_gate": "FAIL",
+    "performance_executed": false,
+    "endpoint_executed": false,
+    "bootstrap_executed": false,
+    "scientific_result": "NOT GENERATED",
+    "performance_inference": "NONE",
+    "interpretation": "no performance computation was carried out in the EAC, so the outcome is neither positive nor negative evidence about candidate C; the validation was blocked because the preregistered cohort requirement was not met"
+  },
+  "original_validation_attempt": {
+    "status": "VALIDATION_COHORT_BLOCKED",
+    "unique_drifters": 14,
+    "selected_windows": 4,
+    "performance_executed": false,
+    "note": "preserved as BLOCKED; never reported as NOT_SUPPORTED and never pooled"
+  },
+  "overall_replication": "NOT_ESTABLISHED",
+  "candidate_c_status": "CANDIDATE_ONLY",
+  "operational_promotion": false,
+  "production": false,
+  "research_stop_point": true,
+  "interpretation_lock": [
+    "the primary experiment supported H1",
+    "the geographic extension did not confirm independent replication in the same direction",
+    "the EAC validation was blocked for an unmet unique-drifter minimum and produced no performance result",
+    "overall replication is therefore NOT_ESTABLISHED",
+    "candidate C remains CANDIDATE_ONLY",
+    "C is not promoted to an operational ocean-current model or a production forecasting engine",
+    "the results are not described as universally superior or globally validated",
+    "the EAC block is not interpreted as a failure of C",
+    "the EAC block is not interpreted as a success of C",
+    "primary, extension and EAC data are never pooled"
+  ],
+  "stop_point": {
+    "locked": true,
+    "meaning": "the preregistered research chain is auditable as it stands and no further analysis is added to it on the current evidence",
+    "not_added_after_step56": [
+      "new cohort",
+      "new region",
+      "new forcing",
+      "new parameter tuning",
+      "new bootstrap",
+      "new endpoint",
+      "new retrospective analysis",
+      "post-hoc cohort selection fitted to results"
+    ],
+    "future_validation_requires": [
+      "new study id",
+      "new preregistration",
+      "new cohort definition",
+      "new data freeze",
+      "new execution"
+    ],
+    "existing_results_extended_or_modified": false
+  },
+  "product_decision": {
+    "ocean_intelligence": "ACTIVE DEVELOPMENT",
+    "candidate_c": "CANDIDATE_ONLY",
+    "auto_selected_as_production_source": false,
+    "primary_result_retained_as": "research evidence for the intelligence work",
+    "principle": "SCIENTIFIC RESULT != PRODUCTION MODEL APPROVAL"
+  },
+  "no_new_analysis": {
+    "trajectory": 0,
+    "bootstrap": 0,
+    "endpoint": 0,
+    "cohort": 0,
+    "forcing": 0,
+    "parameter_tuning": 0,
+    "performance_claim": 0,
+    "pooling": 0
+  },
+  "created_at_utc": "2026-09-07T11:23:51Z",
+  "automatic_commit": false,
+  "push": false
+}

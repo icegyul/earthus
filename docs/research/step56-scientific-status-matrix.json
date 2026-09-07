@@ -1,0 +1,73 @@
+{
+  "step": 56,
+  "role": "final scientific status matrix; the three studies are never pooled",
+  "matrix": [
+    {
+      "ITEM": "Primary",
+      "STATUS": "SUPPORTED",
+      "THETA_KM": -31.331,
+      "CI95_KM": [
+        -72.0725,
+        -11.7435
+      ],
+      "VALID_WINDOWS": "6 / 9",
+      "PERFORMANCE_EVALUATED": true
+    },
+    {
+      "ITEM": "Geographic Extension",
+      "STATUS": "NOT_SUPPORTED",
+      "THETA_KM": -2.272,
+      "CI95_KM": [
+        -9.597,
+        10.246
+      ],
+      "VALID_WINDOWS": "5 / 6",
+      "PERFORMANCE_EVALUATED": true
+    },
+    {
+      "ITEM": "EAC",
+      "STATUS": "VALIDATION_BLOCKED",
+      "THETA_KM": null,
+      "CI95_KM": null,
+      "VALID_WINDOWS": "n/a (blocked at cohort formation: 12 of >=20 unique drifters)",
+      "PERFORMANCE_EVALUATED": false
+    },
+    {
+      "ITEM": "Overall Replication",
+      "STATUS": "NOT_ESTABLISHED",
+      "THETA_KM": null,
+      "CI95_KM": null,
+      "VALID_WINDOWS": null,
+      "PERFORMANCE_EVALUATED": null
+    },
+    {
+      "ITEM": "Candidate C",
+      "STATUS": "CANDIDATE_ONLY",
+      "THETA_KM": null,
+      "CI95_KM": null,
+      "VALID_WINDOWS": null,
+      "PERFORMANCE_EVALUATED": null
+    },
+    {
+      "ITEM": "Operational",
+      "STATUS": "NO",
+      "THETA_KM": null,
+      "CI95_KM": null,
+      "VALID_WINDOWS": null,
+      "PERFORMANCE_EVALUATED": null
+    },
+    {
+      "ITEM": "Production",
+      "STATUS": "NO",
+      "THETA_KM": null,
+      "CI95_KM": null,
+      "VALID_WINDOWS": null,
+      "PERFORMANCE_EVALUATED": null
+    }
+  ],
+  "pooled": false,
+  "combined_effect_estimate": false,
+  "blocked_conflated_with_not_supported": false,
+  "research_stop_point": true,
+  "created_at_utc": "2026-09-07T11:23:51Z"
+}

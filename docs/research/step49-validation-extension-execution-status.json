@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "validation-extension-preregistration-step46",
+  "step": 49,
+  "classification": "VALIDATION_EXTENSION_EXECUTION",
+  "status": "VALIDATION_EXTENSION_EXECUTION_PASS",
+  "protocolSha256": "6ec1ee2aa012fa54b67e90ae3c7976b95a733ee5f8aba1342e18bbda9cf42b79",
+  "manifestSha256": "c9b3d59653ae79a2715c24b054e8b3f3b5319c2efe36cf124e286787b9c38bdb",
+  "ancestry": {
+    "step46": "f7be980e3aa1e71c4cc96b7aca699e1d4b1faec7",
+    "step48": "00516cd1562d50b9380f4eef4ad66611822ae99c",
+    "step45c": "fa9c0590d634a6d6f30cc8a6cd2797c94e0ae7dd",
+    "step44": "5f8d5c38bfc9cc6a168707ae0b1b643c99ad46f9",
+    "step40": "2b1a7baa7ef9e69d25cecbff2b09fca8700fca80",
+    "step38": "23e78f863fb092aa9e3c36e4d74d4afd4393e7f4",
+    "step37": "74d19f0a9661a41d63a08c56bbd3f91e9d8b312d",
+    "step36": "043a09b8539955868651a06e7c2c44e3c606803f",
+    "runtime": "155995dd062b557b7a2ba90e5e5fb5a54ee28048"
+  },
+  "cohort": {
+    "windows": 6,
+    "uniqueDrifters": 25,
+    "derivationHash": "9e03db68d506358e1217db25f50ade8aa314b406063fd8c309cbe6a3092e5e45",
+    "modified": false
+  },
+  "runUnits": {
+    "planned": 18,
+    "completed": 18,
+    "replayMatched": 18
+  },
+  "availability": {
+    "24h": {
+      "A": 24,
+      "B": 25,
+      "C": 24,
+      "pairedCA": 24,
+      "pairedBA": 24
+    },
+    "48h": {
+      "A": 23,
+      "B": 24,
+      "C": 24,
+      "pairedCA": 23,
+      "pairedBA": 23
+    },
+    "72h": {
+      "A": 23,
+      "B": 23,
+      "C": 24,
+      "pairedCA": 23,
+      "pairedBA": 23
+    }
+  },
+  "validWindowCount": 5,
+  "validWindows": [
+    "KE-X1",
+    "KE-X2",
+    "KE-X4",
+    "BM-X5",
+    "BM-X6"
+  ],
+  "executionGate": {
+    "definition": ">= 4 valid windows (frozen STEP 46)",
+    "validWindowCount": 5,
+    "required": 4,
+    "result": "PASS",
+    "windowsAddedOrRemovedToSatisfyGate": false
+  },
+  "reproducibility": {
+    "status": "PASS",
+    "scientificOutputsByteIdentical": true,
+    "metadataTimestampDifferencesOnly": true
+  },
+  "bootstrapRun": false,
+  "hypothesisTested": false,
+  "H_EXT": "NOT EVALUATED",
+  "operationalPromotion": false,
+  "primaryResult": {
+    "Theta_km": -31.331,
+    "CI95_km": [
+      -72.0725,
+      -11.7435
+    ],
+    "H1": "SUPPORTED",
+    "candidateStatus": "CANDIDATE_ONLY",
+    "operationalPromotion": false,
+    "PRIMARY_RESULT_MODIFIED": false
+  },
+  "originalValidationStatus": "VALIDATION_COHORT_BLOCKED",
+  "originalValidationUnchanged": true,
+  "nextStage": "STEP 50 — endpoint aggregation and the preregistered window-level bootstrap (seed 20260946); only because the execution gate PASSED",
+  "dataLocation": "data/research/step49/ (never staged)",
+  "automaticCommit": false,
+  "push": false
+}

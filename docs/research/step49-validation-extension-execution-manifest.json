@@ -1,0 +1,1088 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "validation-extension-preregistration-step46",
+  "step": 49,
+  "classification": "VALIDATION_EXTENSION_EXECUTION_MANIFEST",
+  "protocolSha256": "6ec1ee2aa012fa54b67e90ae3c7976b95a733ee5f8aba1342e18bbda9cf42b79",
+  "provenance": {
+    "step47CohortManifestSha256": "32d3085010185d8c1a5734ef53be227252220b74a2526dbadf5c72de5eee2cca",
+    "step47DerivationHash": "9e03db68d506358e1217db25f50ade8aa314b406063fd8c309cbe6a3092e5e45",
+    "step48Commit": "00516cd1562d50b9380f4eef4ad66611822ae99c",
+    "step48AcquisitionManifestSha256": "e8b5cacadebaba3c7672ea627551f26a84f0ca783b5077db5bcba66a39615c38",
+    "step48FreezeManifestSha256": "8d50c2aebf32cae57e8b82e318eded07e29b5546dd29a58ea8c8b33a17da8719",
+    "runtimeCommit": "155995dd",
+    "modelSourceSha256": [
+      "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3"
+    ],
+    "observationAggregateSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+    "coastlineSha256": "6f75ae0e0de157b14946e2255eb1f5486d9a13819032e26d4610852d296788f6"
+  },
+  "forcingPreparation": {
+    "dailyManifest": {
+      "file": "data/research/step49/step49-daily-derivation-manifest.json",
+      "sha256": "3b0c3aa6d57ad41f55bad2082d640c9cc5c91a8d40b8059b582fb67812f0c2b5",
+      "status": "DERIVED",
+      "derived": 6
+    },
+    "candidateForcingManifest": {
+      "file": "data/research/step49/step49-candidate-forcing-manifest.json",
+      "sha256": "4a32b065f7d437b147b27ef804ba7ac38c9b9998eed115d85612ae3d3090df40",
+      "status": "FORCING_BUILT",
+      "built": 6
+    }
+  },
+  "runManifests": {
+    "temporal": {
+      "file": "data/research/step49/step49-temporal-run-manifest.json",
+      "sha256": "c74fe6687abee76d26e91b3c6a30d9a37744b4721c9fcd027542c6aa691f5c06",
+      "status": "STEP32_RUNS_PASS"
+    },
+    "candidate": {
+      "file": "data/research/step49/step49-candidate-run-manifest.json",
+      "sha256": "ee3cce2420da0a1d48672d47e8c7714bc7cdc15c8caba6c6163eb906e3b4df6b",
+      "status": "STEP32_RUNS_PASS"
+    },
+    "temporalReplay": {
+      "file": "data/research/step49/step49-temporal-replay-manifest.json",
+      "sha256": "363c6a7031ee9da5f2ede4385430755cba1fb68aba9cc550b9268d00420157d9"
+    },
+    "candidateReplay": {
+      "file": "data/research/step49/step49-candidate-replay-manifest.json",
+      "sha256": "bdad8cf3cddc2f25bc64c7a8e5b03e44b9aa0b1b703f07cfc8532cbfa278ae2c"
+    }
+  },
+  "runUnits": {
+    "planned": 18,
+    "completed": 18,
+    "replayMatched": 18,
+    "runs": [
+      {
+        "runId": "step49-A-alpha0.002-KE-X1",
+        "windowId": "KE-X1",
+        "condition": "A",
+        "conditionName": "HYCOM_NATIVE_3H",
+        "equation": "dX/dt = U_HYCOM_3h + 0.002 * U_wind",
+        "alpha": 0.002,
+        "depthMeters": 15.0,
+        "drifterCount": 10,
+        "drifterIds": [
+          "37040",
+          "37090",
+          "37124",
+          "37267",
+          "37644",
+          "37647",
+          "37657",
+          "38625",
+          "38629",
+          "38630"
+        ],
+        "integrationStepSeconds": 300,
+        "outputStepSeconds": 900,
+        "durationSeconds": 259200,
+        "forcing": {
+          "chunked": false,
+          "file": "data/research/step48/forcing/normalized/KE-X1.hycom15m.dataset.json",
+          "fileSha256": "386a2f6c4ff6a0c8421f9d7056d4a8d943c7d70cad32fb3e068130f89ec70008",
+          "gridSha256": "a9147835e0e75867ce4b24e8a1b3dd5cb841ddfa0d98daaa3658adc51f10f267"
+        },
+        "wind": {
+          "file": "data/research/step48/forcing/normalized/KE-X1.ncep10m.wind.json",
+          "fileSha256": "b4f1c6242771b2289a1c9a5ffab8efe835b1504a08991c5a7a629e92680e0866",
+          "gridSha256": "3ff124c786270b40ec202877b8e8abf55de9451621d7a5aa3525d1c188fa9191"
+        },
+        "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+        "resultArraySha256": "27a93a510c79553a74f3dd63ca3d500ecd0cb2e65ee222e8f6d5d311f92902cd",
+        "trajectoriesFile": "data/research/step49/trajectories/KE-X1/A-alpha0.002/trajectories.csv",
+        "trajectoriesSha256": "f920f314c822823814618c31265088974e2b1dae4267f968beb35e47c35ec117",
+        "rows": 2890,
+        "finalStatusCounts": {
+          "COMPLETED": 10
+        },
+        "status": "COMPLETED",
+        "replayMatched": true,
+        "startedAtUTC": "2026-09-07T08:51:35Z"
+      },
+      {
+        "runId": "step49-B-alpha0.002-KE-X1",
+        "windowId": "KE-X1",
+        "condition": "B",
+        "conditionName": "HYCOM_DAILY",
+        "equation": "dX/dt = U_HYCOM_daily + 0.002 * U_wind",
+        "alpha": 0.002,
+        "depthMeters": 15.0,
+        "drifterCount": 10,
+        "drifterIds": [
+          "37040",
+          "37090",
+          "37124",
+          "37267",
+          "37644",
+          "37647",
+          "37657",
+          "38625",
+          "38629",
+          "38630"
+        ],
+        "integrationStepSeconds": 300,
+        "outputStepSeconds": 900,
+        "durationSeconds": 259200,
+        "forcing": {
+          "chunked": false,
+          "file": "data/research/step49/forcing/normalized/KE-X1.hycom15m.daily.dataset.json",
+          "fileSha256": "c666e7057a361a4175aa36b8c2986dadd4cde55028a63cd14aee7ecc762b9e69",
+          "gridSha256": "e5909adc54b6c6850ad5ea3c7516bdbe197956748c18ff0f7ea13e1a22e379f0"
+        },
+        "wind": {
+          "file": "data/research/step48/forcing/normalized/KE-X1.ncep10m.wind.json",
+          "fileSha256": "b4f1c6242771b2289a1c9a5ffab8efe835b1504a08991c5a7a629e92680e0866",
+          "gridSha256": "3ff124c786270b40ec202877b8e8abf55de9451621d7a5aa3525d1c188fa9191"
+        },
+        "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+        "resultArraySha256": "9195ba4b9c3e085f063b7666b948a95ce217d64cd5d3c94fe80faf08fef45beb",
+        "trajectoriesFile": "data/research/step49/trajectories/KE-X1/B-alpha0.002/trajectories.csv",
+        "trajectoriesSha256": "646ccfcbcb53f2c52d9be23b2f1371fc55ab302f05c0148fa5be6aa4412bac2c",
+        "rows": 2890,
+        "finalStatusCounts": {
+          "COMPLETED": 10
+        },
+        "status": "COMPLETED",
+        "replayMatched": true,
+        "startedAtUTC": "2026-09-07T08:51:54Z"
+      },
+      {
+        "runId": "step49-A-alpha0.002-KE-X2",
+        "windowId": "KE-X2",
+        "condition": "A",
+        "conditionName": "HYCOM_NATIVE_3H",
+        "equation": "dX/dt = U_HYCOM_3h + 0.002 * U_wind",
+        "alpha": 0.002,
+        "depthMeters": 15.0,
+        "drifterCount": 2,
+        "drifterIds": [
+          "37042",
+          "37650"
+        ],
+        "integrationStepSeconds": 300,
+        "outputStepSeconds": 900,
+        "durationSeconds": 259200,
+        "forcing": {
+          "chunked": false,
+          "file": "data/research/step48/forcing/normalized/KE-X2.hycom15m.dataset.json",
+          "fileSha256": "7c9ec97eece9be89b953eccb9ab8381979dbe0112efd5556e3abfe3babec4763",
+          "gridSha256": "c7f43635171cd52ad020782d5505029894d0058586473041d37a65cb8736c2b6"
+        },
+        "wind": {
+          "file": "data/research/step48/forcing/normalized/KE-X2.ncep10m.wind.json",
+          "fileSha256": "f5857989a37dc3c1d5626432c3615b64ebc86f901fab542db8f5cdb8263aa325",
+          "gridSha256": "515ea10306e879db3f240d547d1fb4d85d35fcf9b9d340bb8b9429aef010050f"
+        },
+        "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+        "resultArraySha256": "2b5d0c3a3328a512c383c70fc346e60a8ac1aaee7c0177944b4b81a73b84510d",
+        "trajectoriesFile": "data/research/step49/trajectories/KE-X2/A-alpha0.002/trajectories.csv",
+        "trajectoriesSha256": "13d3929cd299e06135c54ad39f5ed372689cd9554083d7cdbd9b3296c4a10c3f",
+        "rows": 434,
+        "finalStatusCounts": {
+          "FORCING_UNAVAILABLE": 1,
+          "COMPLETED": 1
+        },
+        "status": "COMPLETED",
+        "replayMatched": true,
+        "startedAtUTC": "2026-09-07T08:52:05Z"
+      },
+      {
+        "runId": "step49-B-alpha0.002-KE-X2",
+        "windowId": "KE-X2",
+        "condition": "B",
+        "conditionName": "HYCOM_DAILY",
+        "equation": "dX/dt = U_HYCOM_daily + 0.002 * U_wind",
+        "alpha": 0.002,
+        "depthMeters": 15.0,
+        "drifterCount": 2,
+        "drifterIds": [
+          "37042",
+          "37650"
+        ],
+        "integrationStepSeconds": 300,
+        "outputStepSeconds": 900,
+        "durationSeconds": 259200,
+        "forcing": {
+          "chunked": false,
+          "file": "data/research/step49/forcing/normalized/KE-X2.hycom15m.daily.dataset.json",
+          "fileSha256": "7015b8124b0038474a7956a96499d6e06c329402090ad70ab202f04d46dff747",
+          "gridSha256": "f6434388e402284dda24d8f37860c87a554652697859da472c797d8f21a0170e"
+        },
+        "wind": {
+          "file": "data/research/step48/forcing/normalized/KE-X2.ncep10m.wind.json",
+          "fileSha256": "f5857989a37dc3c1d5626432c3615b64ebc86f901fab542db8f5cdb8263aa325",
+          "gridSha256": "515ea10306e879db3f240d547d1fb4d85d35fcf9b9d340bb8b9429aef010050f"
+        },
+        "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+        "resultArraySha256": "79eb4d1e6e1ebb072c6e9f179ed243ee0bcd2910eb6bd6f1be3a57960c690e91",
+        "trajectoriesFile": "data/research/step49/trajectories/KE-X2/B-alpha0.002/trajectories.csv",
+        "trajectoriesSha256": "86a25522fbb01b3122996b27a9e7f3e03951251e3e38bd59f5a7aeb3cfb698c3",
+        "rows": 435,
+        "finalStatusCounts": {
+          "FORCING_UNAVAILABLE": 1,
+          "COMPLETED": 1
+        },
+        "status": "COMPLETED",
+        "replayMatched": true,
+        "startedAtUTC": "2026-09-07T08:52:10Z"
+      },
+      {
+        "runId": "step49-A-alpha0.002-KE-X3",
+        "windowId": "KE-X3",
+        "condition": "A",
+        "conditionName": "HYCOM_NATIVE_3H",
+        "equation": "dX/dt = U_HYCOM_3h + 0.002 * U_wind",
+        "alpha": 0.002,
+        "depthMeters": 15.0,
+        "drifterCount": 1,
+        "drifterIds": [
+          "40083"
+        ],
+        "integrationStepSeconds": 300,
+        "outputStepSeconds": 900,
+        "durationSeconds": 259200,
+        "forcing": {
+          "chunked": false,
+          "file": "data/research/step48/forcing/normalized/KE-X3.hycom15m.dataset.json",
+          "fileSha256": "333d5f559bd4856509f4203f558d5bcdeb9fd49ff361fdec2416b31f0f65d9c4",
+          "gridSha256": "837da690bb84c012433d27d60ef1a4be8a3c1f250085c867d6de59c09f69c17b"
+        },
+        "wind": {
+          "file": "data/research/step48/forcing/normalized/KE-X3.ncep10m.wind.json",
+          "fileSha256": "32de1735fa0b99dd492cded4f6bd254d414a52ffe23990058bb27c6dd8ba7e6a",
+          "gridSha256": "354624ca2516a2dc5a2465fa7e842f53b44b9864c603077c2bc335b4ce32c056"
+        },
+        "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+        "resultArraySha256": "af4cbbb5be4981b4032331f40f6de81e4849b096295ad63293a833b2efe2b721",
+        "trajectoriesFile": "data/research/step49/trajectories/KE-X3/A-alpha0.002/trajectories.csv",
+        "trajectoriesSha256": "9d2551b81b89fbdfcf7fc65379cf87ec4a136f6817333aacd5d2ec1fe37a5b8f",
+        "rows": 37,
+        "finalStatusCounts": {
+          "OUT_OF_DOMAIN": 1
+        },
+        "status": "COMPLETED",
+        "replayMatched": true,
+        "startedAtUTC": "2026-09-07T08:52:14Z"
+      },
+      {
+        "runId": "step49-B-alpha0.002-KE-X3",
+        "windowId": "KE-X3",
+        "condition": "B",
+        "conditionName": "HYCOM_DAILY",
+        "equation": "dX/dt = U_HYCOM_daily + 0.002 * U_wind",
+        "alpha": 0.002,
+        "depthMeters": 15.0,
+        "drifterCount": 1,
+        "drifterIds": [
+          "40083"
+        ],
+        "integrationStepSeconds": 300,
+        "outputStepSeconds": 900,
+        "durationSeconds": 259200,
+        "forcing": {
+          "chunked": false,
+          "file": "data/research/step49/forcing/normalized/KE-X3.hycom15m.daily.dataset.json",
+          "fileSha256": "fe3ae305f9196376256bd1ec2ebc4074f009c029c3d50065882963787ef3eb62",
+          "gridSha256": "7a32ba0293fcd48b44bcdf4611e2ab153bd12487f1ba85baa110d842622e6897"
+        },
+        "wind": {
+          "file": "data/research/step48/forcing/normalized/KE-X3.ncep10m.wind.json",
+          "fileSha256": "32de1735fa0b99dd492cded4f6bd254d414a52ffe23990058bb27c6dd8ba7e6a",
+          "gridSha256": "354624ca2516a2dc5a2465fa7e842f53b44b9864c603077c2bc335b4ce32c056"
+        },
+        "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+        "resultArraySha256": "21b04623580b0f7630e802dfd1f710b75b553210371d6ddafc2c971bcbbb392f",
+        "trajectoriesFile": "data/research/step49/trajectories/KE-X3/B-alpha0.002/trajectories.csv",
+        "trajectoriesSha256": "119eac85204072167a5b779656c169892e249735e30732d33541d6d98ceec065",
+        "rows": 225,
+        "finalStatusCounts": {
+          "OUT_OF_DOMAIN": 1
+        },
+        "status": "COMPLETED",
+        "replayMatched": true,
+        "startedAtUTC": "2026-09-07T08:52:16Z"
+      },
+      {
+        "runId": "step49-A-alpha0.002-KE-X4",
+        "windowId": "KE-X4",
+        "condition": "A",
+        "conditionName": "HYCOM_NATIVE_3H",
+        "equation": "dX/dt = U_HYCOM_3h + 0.002 * U_wind",
+        "alpha": 0.002,
+        "depthMeters": 15.0,
+        "drifterCount": 1,
+        "drifterIds": [
+          "39123"
+        ],
+        "integrationStepSeconds": 300,
+        "outputStepSeconds": 900,
+        "durationSeconds": 259200,
+        "forcing": {
+          "chunked": false,
+          "file": "data/research/step48/forcing/normalized/KE-X4.hycom15m.dataset.json",
+          "fileSha256": "e5a253cda62293683595de252e0709c34dad6b0f48f8ed0452ae61fa9d034fe0",
+          "gridSha256": "b3b116c4d46b00783e3ff23a7e53580cbf027e1b393143ce0a980c8ce4709e0d"
+        },
+        "wind": {
+          "file": "data/research/step48/forcing/normalized/KE-X4.ncep10m.wind.json",
+          "fileSha256": "57392e655fdbfb47352985453f2c5f478dddc5675d88147f9e0ea511aa59c7aa",
+          "gridSha256": "b7a1edb52828028e992514923201072b40bb6f484e900e6e451bdf7d6f4336af"
+        },
+        "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+        "resultArraySha256": "96a1947d625c1156701cb117d959dd6403d887283a6adf22e8bf7663c15af26e",
+        "trajectoriesFile": "data/research/step49/trajectories/KE-X4/A-alpha0.002/trajectories.csv",
+        "trajectoriesSha256": "f23ec8499c8b64f04ef5db3639d57e1e3eefcdbfcb60afb77a049dac25f84a7b",
+        "rows": 289,
+        "finalStatusCounts": {
+          "COMPLETED": 1
+        },
+        "status": "COMPLETED",
+        "replayMatched": true,
+        "startedAtUTC": "2026-09-07T08:52:18Z"
+      },
+      {
+        "runId": "step49-B-alpha0.002-KE-X4",
+        "windowId": "KE-X4",
+        "condition": "B",
+        "conditionName": "HYCOM_DAILY",
+        "equation": "dX/dt = U_HYCOM_daily + 0.002 * U_wind",
+        "alpha": 0.002,
+        "depthMeters": 15.0,
+        "drifterCount": 1,
+        "drifterIds": [
+          "39123"
+        ],
+        "integrationStepSeconds": 300,
+        "outputStepSeconds": 900,
+        "durationSeconds": 259200,
+        "forcing": {
+          "chunked": false,
+          "file": "data/research/step49/forcing/normalized/KE-X4.hycom15m.daily.dataset.json",
+          "fileSha256": "0c5f72365dff34d2264df199fd3647abb664aba65ca274e344b9a02ca1546b09",
+          "gridSha256": "16e61925914b6961f8b1f81328004748556ebd927708ee1d429104ba9f9c5414"
+        },
+        "wind": {
+          "file": "data/research/step48/forcing/normalized/KE-X4.ncep10m.wind.json",
+          "fileSha256": "57392e655fdbfb47352985453f2c5f478dddc5675d88147f9e0ea511aa59c7aa",
+          "gridSha256": "b7a1edb52828028e992514923201072b40bb6f484e900e6e451bdf7d6f4336af"
+        },
+        "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+        "resultArraySha256": "d553b897281a28e8522488f8f5e1378e74fa1e12628a0d605b18473caac8bcfa",
+        "trajectoriesFile": "data/research/step49/trajectories/KE-X4/B-alpha0.002/trajectories.csv",
+        "trajectoriesSha256": "f680cdeeb05e547931e603da23712e60653660c2799a5be410ad7b58cee8b83d",
+        "rows": 289,
+        "finalStatusCounts": {
+          "COMPLETED": 1
+        },
+        "status": "COMPLETED",
+        "replayMatched": true,
+        "startedAtUTC": "2026-09-07T08:52:21Z"
+      },
+      {
+        "runId": "step49-A-alpha0.002-BM-X5",
+        "windowId": "BM-X5",
+        "condition": "A",
+        "conditionName": "HYCOM_NATIVE_3H",
+        "equation": "dX/dt = U_HYCOM_3h + 0.002 * U_wind",
+        "alpha": 0.002,
+        "depthMeters": 15.0,
+        "drifterCount": 9,
+        "drifterIds": [
+          "123311",
+          "123329",
+          "123330",
+          "123331",
+          "123332",
+          "123334",
+          "123335",
+          "123336",
+          "123338"
+        ],
+        "integrationStepSeconds": 300,
+        "outputStepSeconds": 900,
+        "durationSeconds": 259200,
+        "forcing": {
+          "chunked": false,
+          "file": "data/research/step48/forcing/normalized/BM-X5.hycom15m.dataset.json",
+          "fileSha256": "0c57b1cc6ec8248a790abf1479d6af1529cda7eed6c7624766bb859df6a61737",
+          "gridSha256": "132ecf80de3557f5ed42a58e3bb50dd5f7a7cc4250b92251983f46f1967b92b8"
+        },
+        "wind": {
+          "file": "data/research/step48/forcing/normalized/BM-X5.ncep10m.wind.json",
+          "fileSha256": "08f53663b2343c364375875921f68fc157a85c35aad0f3ad6449c5041f88920d",
+          "gridSha256": "19e9026484bd7ed5a86f8940b7f4df79981075897abcfe84e209af6b3894c194"
+        },
+        "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+        "resultArraySha256": "1d78c2b029a0ada189164c65921fab0759c5ddc77b738b131a0e82f101028f0d",
+        "trajectoriesFile": "data/research/step49/trajectories/BM-X5/A-alpha0.002/trajectories.csv",
+        "trajectoriesSha256": "cee742eaf56ce6f41a39343b74e95caba0770f1271269a8fa758ea495e5e0830",
+        "rows": 2601,
+        "finalStatusCounts": {
+          "COMPLETED": 9
+        },
+        "status": "COMPLETED",
+        "replayMatched": true,
+        "startedAtUTC": "2026-09-07T08:52:24Z"
+      },
+      {
+        "runId": "step49-B-alpha0.002-BM-X5",
+        "windowId": "BM-X5",
+        "condition": "B",
+        "conditionName": "HYCOM_DAILY",
+        "equation": "dX/dt = U_HYCOM_daily + 0.002 * U_wind",
+        "alpha": 0.002,
+        "depthMeters": 15.0,
+        "drifterCount": 9,
+        "drifterIds": [
+          "123311",
+          "123329",
+          "123330",
+          "123331",
+          "123332",
+          "123334",
+          "123335",
+          "123336",
+          "123338"
+        ],
+        "integrationStepSeconds": 300,
+        "outputStepSeconds": 900,
+        "durationSeconds": 259200,
+        "forcing": {
+          "chunked": false,
+          "file": "data/research/step49/forcing/normalized/BM-X5.hycom15m.daily.dataset.json",
+          "fileSha256": "a46e034bf92f532f07710af22fb238a9876ab101384b644e5573c82258bc56ac",
+          "gridSha256": "2a4769fb8bbe425c974867fc66ba7494b764b0c49b3d977cca8cd3961c98b4cd"
+        },
+        "wind": {
+          "file": "data/research/step48/forcing/normalized/BM-X5.ncep10m.wind.json",
+          "fileSha256": "08f53663b2343c364375875921f68fc157a85c35aad0f3ad6449c5041f88920d",
+          "gridSha256": "19e9026484bd7ed5a86f8940b7f4df79981075897abcfe84e209af6b3894c194"
+        },
+        "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+        "resultArraySha256": "10c9cc2f1d056fe24fe8a112970d8a426280a6b2683303d99fe5999e7dcf012a",
+        "trajectoriesFile": "data/research/step49/trajectories/BM-X5/B-alpha0.002/trajectories.csv",
+        "trajectoriesSha256": "48e1ee0eb239c7a7da934d0acc5f0103bca9a3343dd5d7a9a3394e16c8b64967",
+        "rows": 2601,
+        "finalStatusCounts": {
+          "COMPLETED": 9
+        },
+        "status": "COMPLETED",
+        "replayMatched": true,
+        "startedAtUTC": "2026-09-07T08:52:38Z"
+      },
+      {
+        "runId": "step49-A-alpha0.002-BM-X6",
+        "windowId": "BM-X6",
+        "condition": "A",
+        "conditionName": "HYCOM_NATIVE_3H",
+        "equation": "dX/dt = U_HYCOM_3h + 0.002 * U_wind",
+        "alpha": 0.002,
+        "depthMeters": 15.0,
+        "drifterCount": 2,
+        "drifterIds": [
+          "123339",
+          "123341"
+        ],
+        "integrationStepSeconds": 300,
+        "outputStepSeconds": 900,
+        "durationSeconds": 259200,
+        "forcing": {
+          "chunked": false,
+          "file": "data/research/step48/forcing/normalized/BM-X6.hycom15m.dataset.json",
+          "fileSha256": "c1405b2b98c2ca20f92bfccddbeeef61b6199191b4768cf31babbf8e562dd676",
+          "gridSha256": "20e648417bbe35b14f55ba0bde75459b4136d06220dcd10d2d61b0aa0993ddcf"
+        },
+        "wind": {
+          "file": "data/research/step48/forcing/normalized/BM-X6.ncep10m.wind.json",
+          "fileSha256": "42ae1dd38ffe6266856287cec9e974213e150356afa0ea4d7b696e77ac810ce6",
+          "gridSha256": "20fa46cd35cc0f7836774eb18ef85f40fd999fa2c29364efa7d685c956d24e35"
+        },
+        "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+        "resultArraySha256": "8a38506fe0dd15c8de61029229512e2592059b0a0044ac970e2769b3b00b9a62",
+        "trajectoriesFile": "data/research/step49/trajectories/BM-X6/A-alpha0.002/trajectories.csv",
+        "trajectoriesSha256": "c826bb7d834d344c511ea203d992d64bb870af04455d0bacc78373b80cabb663",
+        "rows": 578,
+        "finalStatusCounts": {
+          "COMPLETED": 2
+        },
+        "status": "COMPLETED",
+        "replayMatched": true,
+        "startedAtUTC": "2026-09-07T08:52:48Z"
+      },
+      {
+        "runId": "step49-B-alpha0.002-BM-X6",
+        "windowId": "BM-X6",
+        "condition": "B",
+        "conditionName": "HYCOM_DAILY",
+        "equation": "dX/dt = U_HYCOM_daily + 0.002 * U_wind",
+        "alpha": 0.002,
+        "depthMeters": 15.0,
+        "drifterCount": 2,
+        "drifterIds": [
+          "123339",
+          "123341"
+        ],
+        "integrationStepSeconds": 300,
+        "outputStepSeconds": 900,
+        "durationSeconds": 259200,
+        "forcing": {
+          "chunked": false,
+          "file": "data/research/step49/forcing/normalized/BM-X6.hycom15m.daily.dataset.json",
+          "fileSha256": "dbb4dd2e510a02ae2735a53f2a390bd410177c0e23c56c8f4ac6016212ae11a6",
+          "gridSha256": "51fb16348c52408997e519c263a758621739d253a8cf9041f566eab6283b9be2"
+        },
+        "wind": {
+          "file": "data/research/step48/forcing/normalized/BM-X6.ncep10m.wind.json",
+          "fileSha256": "42ae1dd38ffe6266856287cec9e974213e150356afa0ea4d7b696e77ac810ce6",
+          "gridSha256": "20fa46cd35cc0f7836774eb18ef85f40fd999fa2c29364efa7d685c956d24e35"
+        },
+        "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+        "resultArraySha256": "b70ad5336b6e26bbb4035ee8ee87d7008a916f14b4623ba73fed455f5a715a00",
+        "trajectoriesFile": "data/research/step49/trajectories/BM-X6/B-alpha0.002/trajectories.csv",
+        "trajectoriesSha256": "30fabbcbfb9b54b5e5fcc879daaac1fc0d0141184432cca02277736fd4abb0c4",
+        "rows": 578,
+        "finalStatusCounts": {
+          "COMPLETED": 2
+        },
+        "status": "COMPLETED",
+        "replayMatched": true,
+        "startedAtUTC": "2026-09-07T08:52:53Z"
+      },
+      {
+        "runId": "step49-C-alpha0.002-KE-X1",
+        "windowId": "KE-X1",
+        "condition": "C",
+        "conditionName": "GLORYS_STOKES_CANDIDATE",
+        "equation": "dX/dt = U_GLORYS + U_Stokes + 0.002 * U_wind",
+        "alpha": 0.002,
+        "depthMeters": 15.81007,
+        "drifterCount": 10,
+        "drifterIds": [
+          "37040",
+          "37090",
+          "37124",
+          "37267",
+          "37644",
+          "37647",
+          "37657",
+          "38625",
+          "38629",
+          "38630"
+        ],
+        "integrationStepSeconds": 300,
+        "outputStepSeconds": 900,
+        "durationSeconds": 259200,
+        "forcing": {
+          "chunked": false,
+          "file": "data/research/step49/forcing/candidate/KE-X1.treatment.dataset.json",
+          "fileSha256": "7009a8d8e3b68363f09006be2ef3db596b7a907f65a4e149f2e780f680bb3f11",
+          "gridSha256": "d52018b29e09789a15be3f867046d7fdf969e04c3cc6b44f9bca33792ffadd5c"
+        },
+        "wind": {
+          "file": "data/research/step48/forcing/normalized/KE-X1.ncep10m.wind.json",
+          "fileSha256": "b4f1c6242771b2289a1c9a5ffab8efe835b1504a08991c5a7a629e92680e0866",
+          "gridSha256": "3ff124c786270b40ec202877b8e8abf55de9451621d7a5aa3525d1c188fa9191"
+        },
+        "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+        "resultArraySha256": "f1f9369ab1277b0eba2c6ddb5dc7285697d74c0e22194c9e18f06ae2ad0d6046",
+        "trajectoriesFile": "data/research/step49/trajectories/KE-X1/C-alpha0.002/trajectories.csv",
+        "trajectoriesSha256": "8d37757d96ba323339caf05eb6e055c0aa68a7de4aa79c887867167f6e2ee7d4",
+        "rows": 2890,
+        "finalStatusCounts": {
+          "COMPLETED": 10
+        },
+        "status": "COMPLETED",
+        "replayMatched": true,
+        "startedAtUTC": "2026-09-07T08:53:08Z"
+      },
+      {
+        "runId": "step49-C-alpha0.002-KE-X2",
+        "windowId": "KE-X2",
+        "condition": "C",
+        "conditionName": "GLORYS_STOKES_CANDIDATE",
+        "equation": "dX/dt = U_GLORYS + U_Stokes + 0.002 * U_wind",
+        "alpha": 0.002,
+        "depthMeters": 15.81007,
+        "drifterCount": 2,
+        "drifterIds": [
+          "37042",
+          "37650"
+        ],
+        "integrationStepSeconds": 300,
+        "outputStepSeconds": 900,
+        "durationSeconds": 259200,
+        "forcing": {
+          "chunked": false,
+          "file": "data/research/step49/forcing/candidate/KE-X2.treatment.dataset.json",
+          "fileSha256": "b59581c902ebe31007dbea93fa9d70e705bf9ee51e42e30083fef8c7575783d2",
+          "gridSha256": "caf61fed4f06ef520ae8ccd1882b802a639ce8626e58fab827108f8ccbf28b91"
+        },
+        "wind": {
+          "file": "data/research/step48/forcing/normalized/KE-X2.ncep10m.wind.json",
+          "fileSha256": "f5857989a37dc3c1d5626432c3615b64ebc86f901fab542db8f5cdb8263aa325",
+          "gridSha256": "515ea10306e879db3f240d547d1fb4d85d35fcf9b9d340bb8b9429aef010050f"
+        },
+        "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+        "resultArraySha256": "971865c5b775982a79fed5b64828f9f8b2ae2b3691bda07332c2a8fe4f5ad435",
+        "trajectoriesFile": "data/research/step49/trajectories/KE-X2/C-alpha0.002/trajectories.csv",
+        "trajectoriesSha256": "402d39dcae2e51be268fbf09e10eb652a2679a6e9465d85e47ab5599bea09cb4",
+        "rows": 578,
+        "finalStatusCounts": {
+          "COMPLETED": 2
+        },
+        "status": "COMPLETED",
+        "replayMatched": true,
+        "startedAtUTC": "2026-09-07T08:53:21Z"
+      },
+      {
+        "runId": "step49-C-alpha0.002-KE-X3",
+        "windowId": "KE-X3",
+        "condition": "C",
+        "conditionName": "GLORYS_STOKES_CANDIDATE",
+        "equation": "dX/dt = U_GLORYS + U_Stokes + 0.002 * U_wind",
+        "alpha": 0.002,
+        "depthMeters": 15.81007,
+        "drifterCount": 1,
+        "drifterIds": [
+          "40083"
+        ],
+        "integrationStepSeconds": 300,
+        "outputStepSeconds": 900,
+        "durationSeconds": 259200,
+        "forcing": {
+          "chunked": false,
+          "file": "data/research/step49/forcing/candidate/KE-X3.treatment.dataset.json",
+          "fileSha256": "c50689d867b26ca1007cb2a5d220bf8919d627eb3ff9eb29009a4142e039a444",
+          "gridSha256": "7b1f7bda037a8e4eb0276e23bcde8933f6b56979cdcc9f240df7b87c921913a3"
+        },
+        "wind": {
+          "file": "data/research/step48/forcing/normalized/KE-X3.ncep10m.wind.json",
+          "fileSha256": "32de1735fa0b99dd492cded4f6bd254d414a52ffe23990058bb27c6dd8ba7e6a",
+          "gridSha256": "354624ca2516a2dc5a2465fa7e842f53b44b9864c603077c2bc335b4ce32c056"
+        },
+        "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+        "resultArraySha256": "4db4388d9d090699d132d39fc7743bc4702c3c3944eef18978001cefb2ae7d8b",
+        "trajectoriesFile": "data/research/step49/trajectories/KE-X3/C-alpha0.002/trajectories.csv",
+        "trajectoriesSha256": "3211bc6c993c80aaea9271ffbb59be992efaff08293626b8dfc2aa715af677a3",
+        "rows": 11,
+        "finalStatusCounts": {
+          "OUT_OF_DOMAIN": 1
+        },
+        "status": "COMPLETED",
+        "replayMatched": true,
+        "startedAtUTC": "2026-09-07T08:53:27Z"
+      },
+      {
+        "runId": "step49-C-alpha0.002-KE-X4",
+        "windowId": "KE-X4",
+        "condition": "C",
+        "conditionName": "GLORYS_STOKES_CANDIDATE",
+        "equation": "dX/dt = U_GLORYS + U_Stokes + 0.002 * U_wind",
+        "alpha": 0.002,
+        "depthMeters": 15.81007,
+        "drifterCount": 1,
+        "drifterIds": [
+          "39123"
+        ],
+        "integrationStepSeconds": 300,
+        "outputStepSeconds": 900,
+        "durationSeconds": 259200,
+        "forcing": {
+          "chunked": false,
+          "file": "data/research/step49/forcing/candidate/KE-X4.treatment.dataset.json",
+          "fileSha256": "eeb1fc338a5d27e2139203668601db65c99d1eac77e073e03db5b9d896dfc064",
+          "gridSha256": "34c8b13e1456122f89c75a9b7295751272585a05b2268567bbbc3b2a0bfacf16"
+        },
+        "wind": {
+          "file": "data/research/step48/forcing/normalized/KE-X4.ncep10m.wind.json",
+          "fileSha256": "57392e655fdbfb47352985453f2c5f478dddc5675d88147f9e0ea511aa59c7aa",
+          "gridSha256": "b7a1edb52828028e992514923201072b40bb6f484e900e6e451bdf7d6f4336af"
+        },
+        "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+        "resultArraySha256": "83b042b5d524555c7ec5469a73a6679bdfc753cb60ed679a76498ab6dd43fe9b",
+        "trajectoriesFile": "data/research/step49/trajectories/KE-X4/C-alpha0.002/trajectories.csv",
+        "trajectoriesSha256": "ab1a183373d2bffb25e1abb50c5b9e9dea217db681c2386faf2521d5b1abd3fc",
+        "rows": 289,
+        "finalStatusCounts": {
+          "COMPLETED": 1
+        },
+        "status": "COMPLETED",
+        "replayMatched": true,
+        "startedAtUTC": "2026-09-07T08:53:29Z"
+      },
+      {
+        "runId": "step49-C-alpha0.002-BM-X5",
+        "windowId": "BM-X5",
+        "condition": "C",
+        "conditionName": "GLORYS_STOKES_CANDIDATE",
+        "equation": "dX/dt = U_GLORYS + U_Stokes + 0.002 * U_wind",
+        "alpha": 0.002,
+        "depthMeters": 15.81007,
+        "drifterCount": 9,
+        "drifterIds": [
+          "123311",
+          "123329",
+          "123330",
+          "123331",
+          "123332",
+          "123334",
+          "123335",
+          "123336",
+          "123338"
+        ],
+        "integrationStepSeconds": 300,
+        "outputStepSeconds": 900,
+        "durationSeconds": 259200,
+        "forcing": {
+          "chunked": false,
+          "file": "data/research/step49/forcing/candidate/BM-X5.treatment.dataset.json",
+          "fileSha256": "43abbda70ba9545caca05b702321908b71fd1a540e00510bc0a2765787ca9250",
+          "gridSha256": "8f1f8f0775e023e4e201c048a1f749289ab5bd2858de8be263966d25fa156996"
+        },
+        "wind": {
+          "file": "data/research/step48/forcing/normalized/BM-X5.ncep10m.wind.json",
+          "fileSha256": "08f53663b2343c364375875921f68fc157a85c35aad0f3ad6449c5041f88920d",
+          "gridSha256": "19e9026484bd7ed5a86f8940b7f4df79981075897abcfe84e209af6b3894c194"
+        },
+        "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+        "resultArraySha256": "06325ccc8b18c342ec953b731170993dcc8507cf5f0b654fa656def448ecd394",
+        "trajectoriesFile": "data/research/step49/trajectories/BM-X5/C-alpha0.002/trajectories.csv",
+        "trajectoriesSha256": "fe62d00620b1abd465e1eecc0a0b81d4ebe6ab1fca014097be4bcce6f6b57468",
+        "rows": 2601,
+        "finalStatusCounts": {
+          "COMPLETED": 9
+        },
+        "status": "COMPLETED",
+        "replayMatched": true,
+        "startedAtUTC": "2026-09-07T08:53:32Z"
+      },
+      {
+        "runId": "step49-C-alpha0.002-BM-X6",
+        "windowId": "BM-X6",
+        "condition": "C",
+        "conditionName": "GLORYS_STOKES_CANDIDATE",
+        "equation": "dX/dt = U_GLORYS + U_Stokes + 0.002 * U_wind",
+        "alpha": 0.002,
+        "depthMeters": 15.81007,
+        "drifterCount": 2,
+        "drifterIds": [
+          "123339",
+          "123341"
+        ],
+        "integrationStepSeconds": 300,
+        "outputStepSeconds": 900,
+        "durationSeconds": 259200,
+        "forcing": {
+          "chunked": false,
+          "file": "data/research/step49/forcing/candidate/BM-X6.treatment.dataset.json",
+          "fileSha256": "338663c1b88ebe23da9076e4c4f955ddd38ff579d5dbc73c8c0fd93a6b361732",
+          "gridSha256": "b0bbc4160932e41ee4931660b1d747439dd1f7c81d7d3b2adc340725603fa313"
+        },
+        "wind": {
+          "file": "data/research/step48/forcing/normalized/BM-X6.ncep10m.wind.json",
+          "fileSha256": "42ae1dd38ffe6266856287cec9e974213e150356afa0ea4d7b696e77ac810ce6",
+          "gridSha256": "20fa46cd35cc0f7836774eb18ef85f40fd999fa2c29364efa7d685c956d24e35"
+        },
+        "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+        "resultArraySha256": "9baef4cac6d835f12dc5cde2626de9febbc6f850fcec75bc79652a8d62c552b6",
+        "trajectoriesFile": "data/research/step49/trajectories/BM-X6/C-alpha0.002/trajectories.csv",
+        "trajectoriesSha256": "fbfc48da5579a0b00ab8221a471df994f2439dd93c06c67ccd43cc4cc298f208",
+        "rows": 578,
+        "finalStatusCounts": {
+          "COMPLETED": 2
+        },
+        "status": "COMPLETED",
+        "replayMatched": true,
+        "startedAtUTC": "2026-09-07T08:53:45Z"
+      }
+    ]
+  },
+  "endpointRawMaterial": {
+    "file": "data/research/step49/step49-endpoint-raw.json",
+    "sha256": "9173254bcd1b8cb505a93b7d57f05895eb5f0f712eb6b56d2081f20a3ffe3bc0",
+    "table": "data/research/step49/step49-endpoint-raw.csv",
+    "tableSha256": "aa3ceee287ae52ea209f22b1a2492dee60a4cb6162d421e67b0fbd77ee68f4ff",
+    "rows": 25,
+    "definition": {
+      "delta": "delta_i(h) = E_C,i(h) - E_A,i(h)",
+      "horizonsHours": [
+        24,
+        48,
+        72
+      ],
+      "naHandling": "NOT_AVAILABLE never imputed, substituted or removed",
+      "pairing": "exact drifter_id and exact UTC timestamp",
+      "perDrifter": "E_X,i(h) = haversine(model position at exactly t0+h, observed position at exactly t0+h), R = 6371008.8 m, km",
+      "secondary": "delta_BA,i(h) = E_B,i(h) - E_A,i(h)"
+    },
+    "windows": [
+      {
+        "end": "2011-08-19T12:00:00Z",
+        "perHorizon": {
+          "24h": {
+            "A": 10,
+            "B": 10,
+            "C": 10,
+            "pairedBA": 10,
+            "pairedCA": 10
+          },
+          "48h": {
+            "A": 10,
+            "B": 10,
+            "C": 10,
+            "pairedBA": 10,
+            "pairedCA": 10
+          },
+          "72h": {
+            "A": 10,
+            "B": 10,
+            "C": 10,
+            "pairedBA": 10,
+            "pairedCA": 10
+          }
+        },
+        "region": "KE",
+        "registeredDrifters": 10,
+        "start": "2011-08-16T12:00:00Z",
+        "validForPrimaryEndpoint72h": true,
+        "windowId": "KE-X1"
+      },
+      {
+        "end": "2011-09-25T12:00:00Z",
+        "perHorizon": {
+          "24h": {
+            "A": 2,
+            "B": 2,
+            "C": 2,
+            "pairedBA": 2,
+            "pairedCA": 2
+          },
+          "48h": {
+            "A": 1,
+            "B": 1,
+            "C": 2,
+            "pairedBA": 1,
+            "pairedCA": 1
+          },
+          "72h": {
+            "A": 1,
+            "B": 1,
+            "C": 2,
+            "pairedBA": 1,
+            "pairedCA": 1
+          }
+        },
+        "region": "KE",
+        "registeredDrifters": 2,
+        "start": "2011-09-22T12:00:00Z",
+        "validForPrimaryEndpoint72h": true,
+        "windowId": "KE-X2"
+      },
+      {
+        "end": "2011-09-29T12:00:00Z",
+        "perHorizon": {
+          "24h": {
+            "A": 0,
+            "B": 1,
+            "C": 0,
+            "pairedBA": 0,
+            "pairedCA": 0
+          },
+          "48h": {
+            "A": 0,
+            "B": 1,
+            "C": 0,
+            "pairedBA": 0,
+            "pairedCA": 0
+          },
+          "72h": {
+            "A": 0,
+            "B": 0,
+            "C": 0,
+            "pairedBA": 0,
+            "pairedCA": 0
+          }
+        },
+        "region": "KE",
+        "registeredDrifters": 1,
+        "start": "2011-09-26T12:00:00Z",
+        "validForPrimaryEndpoint72h": false,
+        "windowId": "KE-X3"
+      },
+      {
+        "end": "2011-11-09T12:00:00Z",
+        "perHorizon": {
+          "24h": {
+            "A": 1,
+            "B": 1,
+            "C": 1,
+            "pairedBA": 1,
+            "pairedCA": 1
+          },
+          "48h": {
+            "A": 1,
+            "B": 1,
+            "C": 1,
+            "pairedBA": 1,
+            "pairedCA": 1
+          },
+          "72h": {
+            "A": 1,
+            "B": 1,
+            "C": 1,
+            "pairedBA": 1,
+            "pairedCA": 1
+          }
+        },
+        "region": "KE",
+        "registeredDrifters": 1,
+        "start": "2011-11-06T12:00:00Z",
+        "validForPrimaryEndpoint72h": true,
+        "windowId": "KE-X4"
+      },
+      {
+        "end": "2013-12-22T12:00:00Z",
+        "perHorizon": {
+          "24h": {
+            "A": 9,
+            "B": 9,
+            "C": 9,
+            "pairedBA": 9,
+            "pairedCA": 9
+          },
+          "48h": {
+            "A": 9,
+            "B": 9,
+            "C": 9,
+            "pairedBA": 9,
+            "pairedCA": 9
+          },
+          "72h": {
+            "A": 9,
+            "B": 9,
+            "C": 9,
+            "pairedBA": 9,
+            "pairedCA": 9
+          }
+        },
+        "region": "BM",
+        "registeredDrifters": 9,
+        "start": "2013-12-19T12:00:00Z",
+        "validForPrimaryEndpoint72h": true,
+        "windowId": "BM-X5"
+      },
+      {
+        "end": "2014-01-09T12:00:00Z",
+        "perHorizon": {
+          "24h": {
+            "A": 2,
+            "B": 2,
+            "C": 2,
+            "pairedBA": 2,
+            "pairedCA": 2
+          },
+          "48h": {
+            "A": 2,
+            "B": 2,
+            "C": 2,
+            "pairedBA": 2,
+            "pairedCA": 2
+          },
+          "72h": {
+            "A": 2,
+            "B": 2,
+            "C": 2,
+            "pairedBA": 2,
+            "pairedCA": 2
+          }
+        },
+        "region": "BM",
+        "registeredDrifters": 2,
+        "start": "2014-01-06T12:00:00Z",
+        "validForPrimaryEndpoint72h": true,
+        "windowId": "BM-X6"
+      }
+    ],
+    "validWindowCount": 5,
+    "validWindows": [
+      "KE-X1",
+      "KE-X2",
+      "KE-X4",
+      "BM-X5",
+      "BM-X6"
+    ],
+    "validWindowDefinition": "a registered window with >= 1 valid C-A pair at 72 h (frozen STEP 46 definition)",
+    "invalidPairs72h": [
+      {
+        "window": "KE-X2",
+        "drifterId": "37042",
+        "missingSide": "A",
+        "reason": "A:OUT_OF_DOMAIN",
+        "finalStatusA": "OUT_OF_DOMAIN",
+        "finalStatusB": "OUT_OF_DOMAIN",
+        "finalStatusC": "COMPLETED"
+      },
+      {
+        "window": "KE-X3",
+        "drifterId": "40083",
+        "missingSide": "A,C",
+        "reason": "A:OUT_OF_DOMAIN; C:OUT_OF_DOMAIN",
+        "finalStatusA": "OUT_OF_DOMAIN",
+        "finalStatusB": "OUT_OF_DOMAIN",
+        "finalStatusC": "OUT_OF_DOMAIN"
+      }
+    ],
+    "ThetaComputed": false,
+    "labelComputed": false,
+    "bootstrapRun": false,
+    "hypothesisEvaluated": false,
+    "imputation": 0,
+    "substitution": 0,
+    "manualExclusion": 0
+  },
+  "reproducibility": {
+    "perRunSeparateProcessReplay": {
+      "temporal": 12,
+      "candidate": 6,
+      "matched": 18
+    },
+    "independentReExecution": "the whole experiment was executed again into an independent directory; every scientific field (resultArraySha256, trajectoriesSha256, finalStatusCounts, endpoints72h, rows, modelSourceSha256, status) is identical for all 18 runs, and result.json is identical once creation-timestamp keys are stripped; only resultSha256, which hashes the file including its timestamps, differs",
+    "endpointReplay": "the endpoint raw material was recomputed three times; CSV and JSON byte-identical",
+    "scientificOutputsByteIdentical": true,
+    "metadataTimestampDifferencesOnly": true
+  },
+  "gate": {
+    "cohortGate": {
+      "windows": 6,
+      "uniqueDrifters": 25,
+      "satisfiedInStep47": true
+    },
+    "executionGate": {
+      "definition": ">= 4 valid windows (frozen STEP 46)",
+      "validWindowCount": 5,
+      "required": 4,
+      "result": "PASS",
+      "windowsAddedOrRemovedToSatisfyGate": false
+    }
+  },
+  "noExperimentBeyondExecution": {
+    "bootstrapRun": false,
+    "hypothesisTested": false,
+    "H_EXT_evaluated": false,
+    "validationSupportedDeclared": false,
+    "operationalPromotion": false,
+    "parameterTuned": false,
+    "sourceSelected": false,
+    "windowSelected": false,
+    "drifterSelected": false,
+    "manualExclusion": false,
+    "resultDrivenRerun": false,
+    "primaryResultModified": false
+  },
+  "createdAtUTC": "2026-09-07T09:01:54Z",
+  "automaticCommit": false
+}

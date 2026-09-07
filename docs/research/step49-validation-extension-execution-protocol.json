@@ -1,0 +1,147 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "validation-extension-preregistration-step46",
+  "step": 49,
+  "classification": "VALIDATION_EXTENSION_EXECUTION",
+  "scope": "trajectory execution and endpoint raw material ONLY",
+  "stageSeparation": {
+    "step47": "COHORT LOCK",
+    "step48": "SOURCE LOCK",
+    "step49": "EXECUTION",
+    "step50": "aggregation + preregistered bootstrap (not started)"
+  },
+  "ancestry": {
+    "step46": "f7be980e3aa1e71c4cc96b7aca699e1d4b1faec7",
+    "step48": "00516cd1562d50b9380f4eef4ad66611822ae99c",
+    "step45c": "fa9c0590d634a6d6f30cc8a6cd2797c94e0ae7dd",
+    "step44": "5f8d5c38bfc9cc6a168707ae0b1b643c99ad46f9",
+    "step40": "2b1a7baa7ef9e69d25cecbff2b09fca8700fca80",
+    "step38": "23e78f863fb092aa9e3c36e4d74d4afd4393e7f4",
+    "step37": "74d19f0a9661a41d63a08c56bbd3f91e9d8b312d",
+    "step36": "043a09b8539955868651a06e7c2c44e3c606803f",
+    "runtime": "155995dd062b557b7a2ba90e5e5fb5a54ee28048"
+  },
+  "headAtExecution": "00516cd1562d50b9380f4eef4ad66611822ae99c",
+  "frozenInputs": {
+    "docs/research/step46-validation-extension-preregistration-protocol.json": "c824b053fdeea20336f1396dc503232492ab77e1f9d5f032586b23c47d66862d",
+    "docs/research/step47-validation-extension-cohort-manifest.json": "32d3085010185d8c1a5734ef53be227252220b74a2526dbadf5c72de5eee2cca",
+    "docs/research/step48-validation-source-acquisition-manifest.json": "e8b5cacadebaba3c7672ea627551f26a84f0ca783b5077db5bcba66a39615c38",
+    "docs/research/step48-validation-data-freeze-manifest.json": "8d50c2aebf32cae57e8b82e318eded07e29b5546dd29a58ea8c8b33a17da8719",
+    "docs/research/step32-temporal-experiment-matrix.json": "b3d1b6fe985dbe5f86b61ec6e6c5fc9ca83572054c0eadd2799040d94a3e70fb",
+    "docs/research/step29-stokes-license-status.json": "8a8640ac534c1fb9b8551a4a1e777f8a96d6f6c271d896246ed13b8cf93cb24b",
+    "docs/research/step18b-preregistration.json": "02935e81e9c93690078ff96231c74ad51c86dfaffa89bfa17a2e2ba082306316"
+  },
+  "cohort": {
+    "lockedBy": "STEP 47",
+    "status": "VALIDATION_EXTENSION_COHORT_LOCKED",
+    "derivationHash": "9e03db68d506358e1217db25f50ade8aa314b406063fd8c309cbe6a3092e5e45",
+    "windows": 6,
+    "uniqueDrifters": 25,
+    "windowIds": [
+      "KE-X1",
+      "KE-X2",
+      "KE-X3",
+      "KE-X4",
+      "BM-X5",
+      "BM-X6"
+    ],
+    "drifterIds": [
+      "123311",
+      "123329",
+      "123330",
+      "123331",
+      "123332",
+      "123334",
+      "123335",
+      "123336",
+      "123338",
+      "123339",
+      "123341",
+      "37040",
+      "37042",
+      "37090",
+      "37124",
+      "37267",
+      "37644",
+      "37647",
+      "37650",
+      "37657",
+      "38625",
+      "38629",
+      "38630",
+      "39123",
+      "40083"
+    ],
+    "reselected": false,
+    "modified": false
+  },
+  "modelConfiguration": {
+    "A": "HYCOM_NATIVE_3H",
+    "B": "HYCOM_DAILY",
+    "C": "GLORYS12V1 + WW3 Stokes x1.0 + NCEP-R2",
+    "alpha": 0.002,
+    "stokesMultiplier": 1.0,
+    "depthA_B_m": 15.0,
+    "depthC_m": 15.81007,
+    "integrator": "RK4",
+    "dtSeconds": 300,
+    "outputSeconds": 900,
+    "durationHours": 72,
+    "horizonsHours": [
+      24,
+      48,
+      72
+    ],
+    "boundaryPolicy": "STOP_AT_FIRST_CROSSING",
+    "runtimeCommit": "155995dd",
+    "randomSeedUsed": null,
+    "deterministic": true,
+    "tuning": false,
+    "optimisation": false
+  },
+  "bridgeViews": {
+    "role": "STEP-38/39-schema views of the LOCKED STEP 47 cohort and FROZEN STEP 48 sources so the frozen STEP 39 execution tools run unchanged; no re-acquisition, no selection, no modification",
+    "data/research/step49/bridge/step49-cohort-matrix.json": "a2a237545058b48942cc2b27c7941269e3e34100968e3af1a1e13e1fd7680c67",
+    "data/research/step49/bridge/step49-acq-bridge.json": "1e1aeb4e8c13bbd01b3dde59f4b33c15760f1810abedfa668a296ef4cf9a720e",
+    "data/research/step49/bridge/step49-freeze-bridge.json": "ed9ff5d3c7e8a66c316bf01646a3268ae8281e901a9769ee5a755cadf7c2c0b1"
+  },
+  "toolDerivation": "the STEP 49 forcing/run tools are derived from the frozen STEP 39 tools by identity/path patches only, algorithm unchanged (the same precedent by which the STEP 39 tools were derived from STEP 32)",
+  "tools": {
+    "tools/research/run_step49_validation_extension.py": "a8a489d454b0178793b79bf01df93d11e1d927dd2d5efb2973ce7cc781e5f2ea",
+    "tools/research/step49_runs.py": "5d2d17d28b97c507d041f7a2c59ad23c84a2c5c1f5e61136adf128be04f9ac10",
+    "tools/research/replay_step49_run.py": "eaf94a8d0b1ce9a3d479101c2bed8f4addc49a0e9198dbae8ccc50124245476f",
+    "tools/research/build_step49_daily.py": "f42dfc607177ea8b8edf94a23c2560147d5c406e934827d1d1d50866c9cba1ee",
+    "tools/research/build_step49_candidate_forcing.py": "41e0e4d0f3113c54d6c43c4fd6eacb1e2de828335170b65ed0a9ee5b10d7a670",
+    "tools/research/evaluate_step49_endpoints.py": "516d66796bc6d1a9bd6ec93c6d50abd091c3de626a6c1582f5fa6b6ee0276c7b",
+    "tools/research/check_step49_validation_extension.py": "05ae31ed5c3e2cea24c613c5d8d36313fcb329395d7b127951b483323a4aa2c9"
+  },
+  "prohibited": [
+    "bootstrap",
+    "hypothesis testing",
+    "H_EXT decision",
+    "VALIDATION_SUPPORTED",
+    "VALIDATION_NOT_SUPPORTED",
+    "operational promotion",
+    "candidate promotion",
+    "parameter tuning",
+    "source selection",
+    "window selection",
+    "drifter selection",
+    "manual exclusion",
+    "result-driven rerun",
+    "primary result modification"
+  ],
+  "primaryResult": {
+    "Theta_km": -31.331,
+    "CI95_km": [
+      -72.0725,
+      -11.7435
+    ],
+    "H1": "SUPPORTED",
+    "candidateStatus": "CANDIDATE_ONLY",
+    "operationalPromotion": false,
+    "PRIMARY_RESULT_MODIFIED": false
+  },
+  "automaticCommit": false,
+  "push": false
+}

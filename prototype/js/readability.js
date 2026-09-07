@@ -10,6 +10,7 @@
 import { viewer, onCameraIdle, viewRect } from './viewer.js';
 import { gridOverlay } from './gridoverlay.js';
 import { gridBounds, nearestGridPoint, nearestGridValue } from './gridmath.js';
+import { get as krGet, inKorea, nearest as nearestStation } from './korea.js';
 import { worldPlaces, describePlace, latLonText } from './geoname.js';
 import { i18n } from './i18n.js';
 import { store } from './store.js';
@@ -62,7 +63,29 @@ const fmtStop = value => Number.isInteger(value) ? String(value) : fmt(value);
    50km — 수도권 하나가 들어가는 거리다. 그 안쪽이면 같은 날씨라고 봐도 된다. */
 const FAR_KM = 50;
 const isFar = point => Number.isFinite(point?.km) && point.km > FAR_KM;
+
+/* ── 한국은 격자 대신 실측을 쓴다 ───────────────────────────────
+   5° 전지구 격자에서 서울의 가장 가까운 격자점은 40°N·125°E — 321km 떨어진 서해
+   북부다. 2026-09-08 07시 그 점의 습도는 82%, 같은 시각 서울 관측은 76%였다.
+   물결표를 달아 "먼 점의 값"이라고 밝히긴 했지만, 밝힌다고 맞는 값이 되지는 않는다.
+   ⚠️ 우리는 기상청 AWS 736지점을 이미 10분마다 받고 있다(korea.js `aws`).
+      실측이 있는데 남의 격자값을 도시 이름 옆에 놓을 이유가 없다.
+      보간하거나 지어내지 않는다 — **가까운 실제 관측소의 실제 값**만 쓴다.
+   ⚠️ 단위가 격자와 같은 것만 넣는다. 다르면 조용히 틀린 숫자가 된다.
+        습도 %      ← hm     기온 °C   ← ta
+        풍속 m/s    ← ws10 (10분 평균)  해면기압 hPa ← ps            */
+const OBS_FIELD = { humidity: 'hm', temp: 'ta', wind: 'ws10', pressure: 'ps' };
+/* 관측소가 이보다 멀면 실측이라 부르지 않는다 — 그때는 격자값 + 물결표로 돌아간다. */
+const OBS_MAX_KM = 25;
 const pointNote = (place, unit) => {
+  if (place.obs) {
+    const km = Math.round(place.obs.km);
+    return i18n.lang === 'ko'
+      ? `기상청 실측 — ${place.obs.name || place.obs.id} 관측소 ${fmt(place.value)}${unit} · `
+        + `${place.ko}에서 ${km}km · 격자값이 아닙니다`
+      : `Observed by KMA — station ${place.obs.name || place.obs.id}, ${km} km from ${place.en}`
+        + '; not a model grid value';
+  }
   const point = place.point;
   if (!point) return i18n.lang === 'ko' ? '가장 가까운 실제 격자점 값' : 'Nearest source grid-cell value';
   const where = `${fmt(Math.abs(point.lat))}°${point.lat >= 0 ? 'N' : 'S'} `
@@ -291,6 +314,15 @@ export const readability = {
         ? `~ 표시 = 그 도시에서 ${FAR_KM}km 넘게 떨어진 격자점 값 · 도시 관측값이 아님`
         : `~ marks a grid point more than ${FAR_KM} km from that city — not a city observation`;
       children.push(approx);
+      /* 한국 도시는 격자가 아니라 실측을 쓴다 — 물결표가 없는 이유를 밝힌다. */
+      if (OBS_FIELD[this.activeLayer]) {
+        const obsNote = document.createElement('p');
+        obsNote.className = 'rd-contour-meta';
+        obsNote.textContent = i18n.lang === 'ko'
+          ? `물결표 없는 한국 도시 = 기상청 AWS 실측(${OBS_MAX_KM}km 이내 관측소) · 격자값 아님`
+          : `Korean cities without ~ use KMA station observations within ${OBS_MAX_KM} km — not grid values`;
+        children.push(obsNote);
+      }
     }
     /* Cesium의 기본 credit 영역은 이 앱에서 숨겨져 있다. imagery provider에만 credit을
        넣으면 화면에서는 출처가 사라지므로, 참조 타일을 켠 동안 패널에도 항상 적는다. */
@@ -337,21 +369,51 @@ export const readability = {
          숫자를 지어내지도, 보간해서 도시값인 척하지도 않는다 — 대신 **얼마나 떨어진
          점인지 화면에 밝힌다.** 멀면 물결표를 달고, 정확한 격자점은 툴팁에 적는다. */
       const point = nearestGridPoint(this.grid, place.lat, place.lon);
-      seen.add(key); chosen.push({ ...place, value, point });
+      /* 한국은 실측이 있다 — 있으면 그것이 그 도시의 값이다(위 OBS_FIELD 주석). */
+      const obs = this._observationFor(place);
+      seen.add(key);
+      chosen.push(obs ? { ...place, value: obs.value, point, obs } : { ...place, value, point });
       if (chosen.length >= max) break;
     }
     const unit = gridOverlay.scaleOf(this.activeLayer)?.unit || '';
     this.cities.replaceChildren(...chosen.map(place => {
       const item = document.createElement('li');
-      const far = isFar(place.point);
+      /* 실측에는 물결표를 달지 않는다 — 물결표는 "그 도시 값이 아니다"라는 뜻이다. */
+      const far = !place.obs && isFar(place.point);
       item.innerHTML = `<span>${i18n.lang === 'ko' ? place.ko : place.en}</span>`
         + `<b>${far ? '~' : ''}${fmt(place.value)}${unit}</b>`;
       item.title = pointNote(place, unit);
       if (far) item.dataset.far = '1';
+      if (place.obs) item.dataset.obs = '1';
       return item;
     }));
     this.cities.hidden = chosen.length === 0;
     this._refreshMapLabels(chosen, unit);
+  },
+
+  /** 이 도시에 쓸 실측값 — 없으면 null(그때는 격자값 + 물결표로 돌아간다). */
+  _observationFor(place) {
+    const field = OBS_FIELD[this.activeLayer];
+    if (!field || !inKorea(place.lat, place.lon)) return null;
+    this._ensureObservations();
+    const list = this._obs?.stations;
+    if (!Array.isArray(list)) return null;
+    const st = nearestStation(list, place.lat, place.lon, OBS_MAX_KM);
+    const value = st?.[field];
+    return Number.isFinite(value) ? { value, km: st.km, name: st.name, id: st.id } : null;
+  },
+
+  /* 화면에 한국 도시가 처음 들어왔을 때만 받는다. korea.js 가 5분 캐시를 쥐고 있어
+     레이어를 오가도 다시 받지 않는다. 도착하면 한 번 더 그린다 — 그 전까지는
+     격자값 + 물결표가 그대로 보인다(빈 화면을 만들지 않는다). */
+  _ensureObservations() {
+    if (this._obs || this._obsPending) return;
+    this._obsPending = true;
+    krGet('aws').then(data => {
+      this._obs = data;
+      this._refreshCities();
+    }).catch(e => console.warn('[실측 도시값]', e.message))
+      .finally(() => { this._obsPending = false; });
   },
 
   _screenPlacement(place) {

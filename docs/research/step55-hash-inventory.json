@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0",
+  "step": 55,
+  "role": "SHA-256 inventory of the STEP 53/54 locked documents verified by this audit; nothing rewritten",
+  "documents": {
+    "step53-validation-preregistration.md": "a9b6457ddce51c5bf437f600a9124086b1390d8a5cf0567616e1af03efd1e39a",
+    "step53-validation-preregistration.json": "79c601beffd8ee94b303f7ea3317d9416c13e200e09c8adcc1357110ba9e7d46",
+    "step54-eac-cohort-manifest.json": "b59b523ba8dae4b1c653f92925bf73f9d43d13ce49d8fa3492f8f4969cef7e07",
+    "step54-source-manifest.json": "159be4ba31d7d54ba7a27143af98ffa782776d3c8f50a59c422725a91227f84f",
+    "step54-coverage-report.json": "a7f57900bfe406f935986f0c1c7e07ff2610fa295fc5b21907242dc3f0e32cff",
+    "step54-source-acquisition-freeze.json": "3c441d26cb84b2a9b66d29919821c8daee086952d9ca1044670dbcd3e0d24b74",
+    "step54-source-acquisition-freeze.md": "6087ab55e4df7e699b440c7edb6f1a6478acc070f8e661eacf7123ed3b56203c",
+    "step54-hash-inventory.json": "1fa5b4f66a1586627d2b3293f9057a5f93cc1f81d675c582670156e01c7e6feb"
+  },
+  "observation_aggregate_sha256": "68d2227c7e3ba6684ef5d4d0c9d2dd82bdcd4063e35d96ab302b2cd496ce9d78",
+  "observation_files": 25,
+  "cohort_derivation_hash": "7466480e4ba800c841a7b9c152b6e1b028de506e5fcf28e777ff18ee51427763",
+  "created_at_utc": "2026-09-07T11:06:37Z"
+}

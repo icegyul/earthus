@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "1.0",
+  "step": 55,
+  "role": "three-study status matrix; the three studies are never pooled",
+  "STUDY_1_PRIMARY": {
+    "hypothesis": "H1",
+    "status": "SUPPORTED",
+    "Theta_72h_km": -31.331,
+    "CI95_km": [
+      -72.0725,
+      -11.7435
+    ],
+    "valid_windows": "6/9",
+    "performance_evaluated": true
+  },
+  "STUDY_2_GEOGRAPHIC_VALIDATION_EXTENSION": {
+    "hypothesis": "H_EXT",
+    "status": "NOT_SUPPORTED",
+    "Theta_72h_km": -2.272,
+    "CI95_km": [
+      -9.597,
+      10.246
+    ],
+    "valid_windows": "5/6",
+    "performance_evaluated": true
+  },
+  "STUDY_3_EAC_VALIDATION": {
+    "hypothesis": "H_REP",
+    "status": "VALIDATION_BLOCKED",
+    "reason": "12 unique drifters < 20 required",
+    "Theta_72h_km": null,
+    "CI95_km": null,
+    "registered_windows": 5,
+    "performance_evaluated": false,
+    "note": "blocked before performance evaluation; provides neither positive nor negative performance evidence"
+  },
+  "overall_replication_status": "REPLICATION_NOT_ESTABLISHED",
+  "reason": "the primary was supported, but the geographically independent extension did not satisfy the preregistered replication criterion; the EAC study cannot change this because it was blocked before performance evaluation",
+  "candidate_status": "CANDIDATE_ONLY",
+  "operational_promotion": false,
+  "production_claim": false,
+  "pooled": false,
+  "combined_effect_estimate": false,
+  "blocked_conflated_with_not_supported": false,
+  "created_at_utc": "2026-09-07T11:06:37Z"
+}

@@ -1,0 +1,368 @@
+{
+  "schemaVersion": "1.0",
+  "study_id": "step53-new-independent-validation",
+  "step": 55,
+  "classification": "VALIDATION_BLOCK_AUDIT_AND_STATUS_LOCK",
+  "status": "VALIDATION_BLOCK_LOCKED",
+  "study_id_audited": "step53-new-independent-validation",
+  "parent_step": 54,
+  "parent_commit": "989e8797b5a6ed7f4377463b8aa2441d29bb5cc3",
+  "head_at_audit": "77ad6851f8c879c692c10f4206d1c027fbeb03d0",
+  "ancestry": {
+    "step52": {
+      "commit": "4af3fd8fadc50243a3493efa22d57d5811c23943",
+      "ancestor": true
+    },
+    "step53": {
+      "commit": "b5cfb97aed482a38e1b763c2cd15a0f105cee9e7",
+      "ancestor": true
+    },
+    "step54": {
+      "commit": "989e8797b5a6ed7f4377463b8aa2441d29bb5cc3",
+      "ancestor": true
+    }
+  },
+  "region": "EAC",
+  "latitude_bounds": [
+    -40.0,
+    -25.0
+  ],
+  "longitude_bounds": [
+    150.0,
+    160.0
+  ],
+  "temporal_start": "2010-01-01T12:00:00Z",
+  "temporal_end": "2015-12-31T12:00:00Z",
+  "target_windows": 6,
+  "registered_windows": 5,
+  "minimum_valid_windows": 4,
+  "target_unique_drifters": 20,
+  "actual_unique_drifters": 12,
+  "window_gate": "PASS",
+  "unique_drifter_gate": "FAIL",
+  "block_reason": "UNIQUE_DRIFTER_GATE_FAILED: 12 unique drifters observed against a preregistered minimum of 20",
+  "candidate_window_starts_scanned": 2191,
+  "registered_window_detail": [
+    {
+      "windowId": "EAC-V1",
+      "start": "2015-06-22T12:00:00Z",
+      "eligible": 8,
+      "selected": 8
+    },
+    {
+      "windowId": "EAC-V2",
+      "start": "2015-06-27T12:00:00Z",
+      "eligible": 9,
+      "selected": 1
+    },
+    {
+      "windowId": "EAC-V3",
+      "start": "2015-06-30T12:00:00Z",
+      "eligible": 8,
+      "selected": 1
+    },
+    {
+      "windowId": "EAC-V4",
+      "start": "2015-07-05T12:00:00Z",
+      "eligible": 9,
+      "selected": 1
+    },
+    {
+      "windowId": "EAC-V5",
+      "start": "2015-07-13T12:00:00Z",
+      "eligible": 8,
+      "selected": 1
+    }
+  ],
+  "selected_drifter_ids": [
+    "132572",
+    "132574",
+    "132583",
+    "139657",
+    "139658",
+    "139660",
+    "139661",
+    "139662",
+    "139663",
+    "139664",
+    "139665",
+    "139666"
+  ],
+  "performance_execution": "NOT RUN",
+  "endpoint_execution": "NOT RUN",
+  "bootstrap_execution": "NOT RUN",
+  "scientific_result": "NOT GENERATED",
+  "eac_performance_inference": "NONE",
+  "observation_source": {
+    "status": "ACQUIRED / FROZEN",
+    "files": 25,
+    "aggregate_sha256": "68d2227c7e3ba6684ef5d4d0c9d2dd82bdcd4063e35d96ab302b2cd496ce9d78",
+    "matches_step54_manifest": true
+  },
+  "model_forcing": {
+    "status": "NOT_ACQUIRED",
+    "reason": "COHORT GATE FAILED BEFORE FORCING ACQUISITION",
+    "identities_preserved": {
+      "A": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X, water_u/water_v, 15.000 m, 3-hour",
+      "C_ocean": "GLORYS12V1, native 15.810070 m",
+      "C_stokes": "WW3 GLOB-30M CFSR uss, Stokes x1.0",
+      "C_atmosphere": "NCEP-DOE R2, 10 m u/v",
+      "alpha": 0.002
+    },
+    "substitution": false
+  },
+  "primary_status": {
+    "H1": "SUPPORTED",
+    "Theta_72h_km": -31.331,
+    "CI95_km": [
+      -72.0725,
+      -11.7435
+    ],
+    "valid_windows": "6/9",
+    "changed": false
+  },
+  "extension_status": {
+    "H_EXT": "NOT_SUPPORTED",
+    "Theta_72h_km": -2.272,
+    "CI95_km": [
+      -9.597,
+      10.246
+    ],
+    "valid_windows": "5/6",
+    "changed": false
+  },
+  "overall_replication_status": "REPLICATION_NOT_ESTABLISHED",
+  "candidate_status": "CANDIDATE_ONLY",
+  "operational_promotion": false,
+  "production_claim": false,
+  "protocol_amendment": false,
+  "pooling": false,
+  "new_cohort_generated": false,
+  "alternate_cohort_searched": false,
+  "exhaustive_search": {
+    "candidate_days_scanned": 2191,
+    "full_preregistered_period": true,
+    "prohibited_and_not_done": [
+      "extend beyond 2015-12-31",
+      "move start before 2010-01-01",
+      "expand EAC latitude",
+      "expand EAC longitude",
+      "change eligibility",
+      "reduce the unique-drifter requirement",
+      "increase allowed drifters artificially",
+      "change deterministic ordering"
+    ]
+  },
+  "language_lock": {
+    "required_en": "The EAC validation was blocked before model-performance evaluation because the preregistered minimum unique-drifter requirement was not met (12 observed versus >=20 required). Therefore, no inference about candidate C's performance in the EAC domain can be made.",
+    "required_ko": "EAC 검증은 사전등록된 최소 고유 드리프터 수 조건(요구 >=20명, 실제 12명)을 충족하지 못해 모델 성능 평가 전에 차단되었다. 따라서 EAC 영역에서 후보 C의 성능에 대해서는 어떠한 추론도 할 수 없다.",
+    "forbidden": [
+      "EAC에서 C가 실패했다",
+      "EAC에서도 C가 안 됐다",
+      "EAC에서 C가 검증되지 않았다",
+      "EAC에서 C가 나빴다",
+      "EAC 결과가 음성이었다",
+      "3개 지역에서 검증 실패",
+      "blocked reported as NOT_SUPPORTED",
+      "blocked reported as FAILED"
+    ],
+    "reason": "no EAC performance result exists"
+  },
+  "audit_matrix": [
+    {
+      "CHECK_ID": "AUDIT-01",
+      "DESCRIPTION": "STEP 54 commit is an ancestor of HEAD",
+      "EXPECTED": "989e8797b5a6ed7f4377463b8aa2441d29bb5cc3",
+      "ACTUAL": "989e8797b5a6ed7f4377463b8aa2441d29bb5cc3",
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-02",
+      "DESCRIPTION": "STEP 53 protocol markdown SHA-256",
+      "EXPECTED": "a9b6457ddce51c5bf437f600a9124086b1390d8a5cf0567616e1af03efd1e39a",
+      "ACTUAL": "a9b6457ddce51c5bf437f600a9124086b1390d8a5cf0567616e1af03efd1e39a",
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-03",
+      "DESCRIPTION": "STEP 53 protocol JSON SHA-256",
+      "EXPECTED": "79c601beffd8ee94b303f7ea3317d9416c13e200e09c8adcc1357110ba9e7d46",
+      "ACTUAL": "79c601beffd8ee94b303f7ea3317d9416c13e200e09c8adcc1357110ba9e7d46",
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-04",
+      "DESCRIPTION": "EAC geographic bounds",
+      "EXPECTED": {
+        "south": -40.0,
+        "north": -25.0,
+        "west": 150.0,
+        "east": 160.0
+      },
+      "ACTUAL": {
+        "south": -40.0,
+        "north": -25.0,
+        "west": 150.0,
+        "east": 160.0
+      },
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-05",
+      "DESCRIPTION": "EAC temporal bounds",
+      "EXPECTED": [
+        "2010-01-01T12:00:00Z",
+        "2015-12-31T12:00:00Z"
+      ],
+      "ACTUAL": [
+        "2010-01-01T12:00:00Z",
+        "2015-12-31T12:00:00Z"
+      ],
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-06",
+      "DESCRIPTION": "target windows",
+      "EXPECTED": 6,
+      "ACTUAL": 6,
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-07",
+      "DESCRIPTION": "registered windows",
+      "EXPECTED": 5,
+      "ACTUAL": 5,
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-08",
+      "DESCRIPTION": "minimum valid windows",
+      "EXPECTED": 4,
+      "ACTUAL": 4,
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-09",
+      "DESCRIPTION": "target unique drifters",
+      "EXPECTED": ">= 20",
+      "ACTUAL": 20,
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-10",
+      "DESCRIPTION": "actual unique drifters",
+      "EXPECTED": 12,
+      "ACTUAL": 12,
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-11",
+      "DESCRIPTION": "primary drifter identity overlap",
+      "EXPECTED": [],
+      "ACTUAL": [],
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-12",
+      "DESCRIPTION": "extension drifter identity overlap",
+      "EXPECTED": [],
+      "ACTUAL": [],
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-13",
+      "DESCRIPTION": "primary window-start overlap",
+      "EXPECTED": [],
+      "ACTUAL": [],
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-14",
+      "DESCRIPTION": "extension window-start overlap",
+      "EXPECTED": [],
+      "ACTUAL": [],
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-15",
+      "DESCRIPTION": "cohort deterministic derivation hash",
+      "EXPECTED": "7466480e4ba800c841a7b9c152b6e1b028de506e5fcf28e777ff18ee51427763",
+      "ACTUAL": "7466480e4ba800c841a7b9c152b6e1b028de506e5fcf28e777ff18ee51427763",
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-16",
+      "DESCRIPTION": "model forcing acquisition status",
+      "EXPECTED": "NOT_ACQUIRED (cohort gate failed first)",
+      "ACTUAL": "attempted=False",
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-17",
+      "DESCRIPTION": "trajectory execution status",
+      "EXPECTED": "NOT RUN",
+      "ACTUAL": 0,
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-18",
+      "DESCRIPTION": "endpoint status",
+      "EXPECTED": "NOT RUN",
+      "ACTUAL": 0,
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-19",
+      "DESCRIPTION": "bootstrap status",
+      "EXPECTED": "NOT RUN",
+      "ACTUAL": 0,
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-20",
+      "DESCRIPTION": "scientific result status",
+      "EXPECTED": "NOT GENERATED",
+      "ACTUAL": "theta=0, performanceInspected=False",
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-21",
+      "DESCRIPTION": "candidate status",
+      "EXPECTED": "CANDIDATE_ONLY",
+      "ACTUAL": "CANDIDATE_ONLY",
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-22",
+      "DESCRIPTION": "operational promotion",
+      "EXPECTED": false,
+      "ACTUAL": false,
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-23",
+      "DESCRIPTION": "production claim",
+      "EXPECTED": false,
+      "ACTUAL": false,
+      "STATUS": "PASS"
+    },
+    {
+      "CHECK_ID": "AUDIT-24",
+      "DESCRIPTION": "no protocol amendment in STEP 54 or STEP 55",
+      "EXPECTED": "all false",
+      "ACTUAL": {
+        "domainExpanded": false,
+        "temporalExtended": false,
+        "eligibilityLowered": false,
+        "targetAdjusted": false,
+        "regionReplaced": false,
+        "windowsInvented": false
+      },
+      "STATUS": "PASS"
+    }
+  ],
+  "audit_all_pass": true,
+  "created_at_utc": "2026-09-07T11:06:37Z",
+  "automatic_commit": false,
+  "push": false
+}

@@ -739,6 +739,8 @@ const TILE_TIMEOUT_MS = 8000;
 // 창 중심이 이만큼 어긋나면 새 창을 받는다. 그 전까지는 옛 창을 쓰므로,
 // 덮는지 따질 때 이만큼 밀린 최악의 상태를 기준으로 삼아야 한다.
 const DETAIL_REFETCH_TILES = 1;
+/* 줌·회전이 멈춘 뒤 이만큼 지나야 새 상세 창을 받는다 (2026-09-07 깜박임 신고). */
+const DETAIL_SETTLE_MS = 320;
 // 확대 시 6×6 창이 부족해 전역 z4로 떨어지던 문제: 10×10, 최대 2560px.
 const DETAIL_TILES = 10;
 const DETAIL_SIZE = DETAIL_TILES * 256;
@@ -824,14 +826,33 @@ class DetailTerrain {
 
   update(latRad, lonRad, altKm, cam) {
     const z = DetailTerrain.zoomFor(altKm, latRad, cam);
-    // coverRatio는 양옆 재요청 마진을 이미 제외한다. 1 이상이면 상세 영상을 온전히 표시한다.
-    // 여유분을 다시 요구하면 화면을 덮는 타일도 20% 정도만 보여 흐린 전역색이 남는다.
-    // 높이도 같은 계수를 쓰므로(detailFade) 지형이 튀지도 않는다.
-    this.uniforms.uDetailAmt.value = z === 0
-      ? 0
-      : THREE.MathUtils.smoothstep(DetailTerrain.coverRatio(z, altKm, latRad, cam), 0.85, 1.0);
+    /* 섞는 비율은 '지금 붙어 있는 창'을 기준으로 잰다 — 2026-09-07 받은 지적
+       "두 개 맵이 줌인 줌아웃 과정에서 자꾸 서로 나왔다 사라졌다".
+       예전에는 새로 받을 창(z)을 기준으로 재고 받기 직전에 0 으로 내렸다 →
+       줌 한 번에 z 가 6→7→8→9 로 바뀌면서 위성지도가 세 번 꺼졌다 켜졌다 했다.
+       타일 받는 동안에도 GPU 에는 옛 창이 그대로 있다(needsUpdate 는 마지막에만 올린다). */
+    const curCover = this.cur ? DetailTerrain.coverRatio(this.cur.z, altKm, latRad, cam) : 0;
+    this.uniforms.uDetailAmt.value = this.cur ? THREE.MathUtils.smoothstep(curCover, 0.85, 1.0) : 0;
+    // 진단 표시는 항상 최신으로 — 창 안에 있을 때만 쓰면 줌 도중 상태를 볼 수 없다.
+    {
+      const state = `${this.cur ? this.cur.z : 0}:${this.uniforms.uDetailAmt.value.toFixed(3)}`;
+      if (state !== this.lastState) {
+        this.lastState = state;
+        document.getElementById('scene')?.setAttribute('data-terrain-blend', state);
+      }
+    }
+
+    /* 조작 중인가 — 고도·시선이 멈춘 뒤에만 새 창을 받는다(아래 z 변경에만 적용). */
+    const tNow = (typeof performance !== 'undefined' ? performance.now() : Date.now());
+    const dLon = Math.abs(((lonRad - (this._pLon ?? lonRad)) + Math.PI) % (2 * Math.PI) - Math.PI);
+    if (Math.abs(altKm - (this._pAlt ?? altKm)) > Math.max(1, altKm * 0.002)
+      || Math.abs(latRad - (this._pLat ?? latRad)) > 3e-4 || dLon > 3e-4) this._movedAt = tNow;
+    this._pAlt = altKm; this._pLat = latRad; this._pLon = lonRad;
+    const settled = tNow - (this._movedAt ?? -1e9) > DETAIL_SETTLE_MS;
+
     if (z === 0) {
-      if (this.cur) {
+      // 다 페이드된 뒤에만 뗄다 — 보이는 채 떼면 그게 깜박임이다.
+      if (this.cur && this.uniforms.uDetailAmt.value <= 0) {
         this.cur = null;
         this.uniforms.uHasDetail.value = 0;
         this.uniforms.uHasDetailImg.value = 0;
@@ -849,17 +870,11 @@ class DetailTerrain {
     if (this.cur && this.cur.z === z) {
       const dtx = ((tx0 - this.cur.tx0) % n + n) % n;
       const drift = Math.max(Math.min(dtx, n - dtx), Math.abs(ty0 - this.cur.ty0));
-      if (drift < DETAIL_REFETCH_TILES) {
-        const state = `${z}:${this.uniforms.uDetailAmt.value.toFixed(3)}`;
-        if (state !== this.lastState) {
-          this.lastState = state;
-          document.getElementById('scene')?.setAttribute('data-terrain-blend', state);
-        }
-        return;  // 아직 창 안이다
-      }
+      if (drift < DETAIL_REFETCH_TILES) return;  // 아직 창 안이다
     }
-    // 창을 벗어났다. 새 창이 올 때까지 낡은 창을 보여주면 화면에 경계선이 남는다.
-    this.uniforms.uDetailAmt.value = 0;
+    /* 새 창이 필요하다. 받는 동안은 옛 창을 그대로 둔다 — 경계는 셀이더(detailFade)가
+       8% 마진으로 번지므로 선이 생기지 않고, 전역지도로 통째 되돌아가는 깜박임이 없어진다. */
+    if (this.cur && this.cur.z !== z && !settled) return;  // 줌 하는 중에는 다시 받지 않는다
     if (this.busy) return;
     this.busy = true;
     this.fetchWindow(z, tx0, ty0).finally(() => { this.busy = false; });

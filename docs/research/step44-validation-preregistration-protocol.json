@@ -1,0 +1,586 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "validation-preregistration-step44",
+  "step": 44,
+  "status": "VALIDATION_PREREGISTRATION_DESIGN_COMPLETE (uncommitted)",
+  "designOnly": true,
+  "head": "e5fac7fc4b3c6faefc8284213e3e63280745cfe5",
+  "ancestry": {
+    "step36": "043a09b8539955868651a06e7c2c44e3c606803f",
+    "step37": "74d19f0a9661a41d63a08c56bbd3f91e9d8b312d",
+    "step38": "23e78f863fb092aa9e3c36e4d74d4afd4393e7f4",
+    "step40": "2b1a7baa7ef9e69d25cecbff2b09fca8700fca80",
+    "step41": "9a3223089099bcb09a2589cc8a4bda82fcb47ae5",
+    "step42": "bae85245e827f53ee9782201c442ea7849c04e82",
+    "step43": "15970d9735330fb937e86af449c1deef6763b5d1",
+    "runtime": "155995dd062b557b7a2ba90e5e5fb5a54ee28048"
+  },
+  "frozenInputs": {
+    "docs/research/cohort-step16.json": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474",
+    "docs/research/step16-selection-audit.json": "ba5b8a5410e2787a326639cdc2db866b4f898e279bc3d48296c914bb57a0f1bd",
+    "docs/research/step36-cohort-extension-manifest.json": "bda31c3ca36a395acadc95c1cb18663964ee9a00e4a72a7c2504182f51df06ca",
+    "docs/research/step36-cohort-extension-protocol.json": "9832f5c4ec709531e8965be6d38c0628ab2be70507cf684076298a7dedfcafed",
+    "docs/research/step37-experiment-preregistration-protocol.json": "eae40cde609155a32ccbe0c01a6090715e2324d72cc080e2e7043ecbd90f2d0d",
+    "docs/research/step38-source-acquisition-manifest.json": "c9d3109fbab2970b43b887cc7ba81d3aacbdd094375b091e8e185097a22dc2a0",
+    "docs/research/step39-execution-protocol.json": "5bd1eb236d2d423f2af24440cceea798e150fd20ee2a4acb754b78522b6aba23",
+    "docs/research/step39-summary.json": "7d90ba995733071f9536df598332bffdc2bd75d4206e7ef23a2c1f9bde67ea83",
+    "docs/research/step40-bootstrap-protocol.json": "60dbf72cd91d91cc4cc2c72d96c4aec41ffd39ce8368db2d4081070f77786fb4",
+    "docs/research/step40-bootstrap-result.json": "e7fe94c8f527846721f856418f1c4686a75132e21a72b122006d3d7bdbe6482f",
+    "docs/research/step42-final-scientific-results-report.md": "c490669413a83bee73a2a33733432073f3e898ee52ce47722b4b365a5da5f1f0",
+    "docs/research/step43-reproducibility-verification.json": "d1ce6d7d5d0550e5b93d3ad5cd1fa2e67fb0f4ced0d87b0e2b9a44ad18b0b632",
+    "docs/research/step30a-rule.json": "9251be51fc3fc8cc3a3b9570a0b3902c01e653754389da55852bdd4e83ab803d"
+  },
+  "frozenInputsByHashUncommitted": {
+    "docs/research/step35-phase-a-protocol.json": "7c3cc487568c1a063790e17fdae11ffe712047d78ea4761719bf6df7e7142f2f",
+    "docs/research/step35-window-eligibility.json": "d01d06a3430def6ea77a814bb4379a9b45ca058713fa0901c9c30b035fbb635b",
+    "docs/research/step35-period-lock.json": "c2f6e862704a52e39685c4c4e61931e276d4934492e6d2e8c49ad0642f6f2b92",
+    "docs/research/step35-frame-inventory.json": "5bdb5c779ab4b7bc0607dab907452263f4306c7d0d77681ead7d058e3090add8"
+  },
+  "frozenInputsNote": "The STEP 35 files are not yet committed; they are frozen by SHA-256 in the committed STEP 36 manifest (inherited.*Sha256) and must be present at exactly these hashes when the rule is executed, otherwise VALIDATION_BLOCKED (PROVENANCE).",
+  "1_primaryExperimentFrozen": {
+    "cohort": "STEP 36: 9 windows GS-Y1..GS-Y9 (Gulf Stream box, 2010-07-27T12Z .. 2010-10-19T12Z), 20 unique drifters",
+    "primaryWindows": [
+      {
+        "windowId": "GS-Y1",
+        "start": "2010-07-27T12:00:00Z",
+        "end": "2010-07-30T12:00:00Z"
+      },
+      {
+        "windowId": "GS-Y2",
+        "start": "2010-07-30T12:00:00Z",
+        "end": "2010-08-02T12:00:00Z"
+      },
+      {
+        "windowId": "GS-Y3",
+        "start": "2010-08-02T12:00:00Z",
+        "end": "2010-08-05T12:00:00Z"
+      },
+      {
+        "windowId": "GS-Y4",
+        "start": "2010-08-05T12:00:00Z",
+        "end": "2010-08-08T12:00:00Z"
+      },
+      {
+        "windowId": "GS-Y5",
+        "start": "2010-08-08T12:00:00Z",
+        "end": "2010-08-11T12:00:00Z"
+      },
+      {
+        "windowId": "GS-Y6",
+        "start": "2010-08-22T12:00:00Z",
+        "end": "2010-08-25T12:00:00Z"
+      },
+      {
+        "windowId": "GS-Y7",
+        "start": "2010-08-28T12:00:00Z",
+        "end": "2010-08-31T12:00:00Z"
+      },
+      {
+        "windowId": "GS-Y8",
+        "start": "2010-09-16T12:00:00Z",
+        "end": "2010-09-19T12:00:00Z"
+      },
+      {
+        "windowId": "GS-Y9",
+        "start": "2010-10-16T12:00:00Z",
+        "end": "2010-10-19T12:00:00Z"
+      }
+    ],
+    "primaryDrifterIds": [
+      "81994",
+      "88532",
+      "88538",
+      "89822",
+      "90466",
+      "92863",
+      "92869",
+      "92872",
+      "92885",
+      "92906",
+      "92917",
+      "92918",
+      "92919",
+      "92920",
+      "93015",
+      "98904",
+      "98936",
+      "98941",
+      "98942",
+      "98944"
+    ],
+    "primaryResult": {
+      "Theta_km": -31.331,
+      "CI95_km": [
+        -72.0725,
+        -11.7435
+      ],
+      "H1": "SUPPORTED",
+      "candidate": "CANDIDATE_ONLY",
+      "operationalPromotion": false
+    },
+    "rule": "The primary result is frozen history. It was not used, and must not be used, to choose the validation period, region, cohort, sources, parameters, endpoint, bootstrap or success criterion. Every selection rule below is defined as an objective function of frozen pre-existing records that contain no candidate/baseline performance."
+  },
+  "2_validationQuestion": {
+    "question": "Does the exact frozen Candidate C configuration (GLORYS12V1 15.810070 m + WW3 GLOB-30M CFSR Stokes x 1.0 + NCEP-R2, alpha 0.002) reproduce the direction of the primary 72 h effect (Theta < 0 km versus HYCOM_NATIVE_3H) on a genuinely independent, predefined validation cohort?",
+    "notAllowed": "No optimisation question; no new candidate; no parameter, forcing, depth, Stokes, temporal-representation or model search. The validation tests transportability / reproducibility of the frozen configuration only."
+  },
+  "3_independence": {
+    "requirements": {
+      "A_noDrifterIdOverlap": "validation drifter IDs are disjoint from the 20 primary IDs and from the 68 prior-cohort IDs (STEP 20 calibration/holdout, STEP 32) = 88 excluded IDs listed in exclusionIdentity",
+      "B_noWindowOverlap": "validation window starts are >= 30 days after the last primary window end (temporalSeparation) and >= 72 h from every STEP 20 / STEP 32 window start (STEP 35 exclusion inherited); the validation region is not the primary region, so no validation window shares a region-date with a primary window",
+      "C_noObservationOverlap": "an observation record (drifter id, timestamp) used in any primary or prior window cannot appear in a validation window: guaranteed by A (disjoint IDs) and by the different region and later period",
+      "D_noTuning": "validation results are never used for parameter tuning",
+      "E_noForcingSelection": "validation results are never used for forcing selection",
+      "F_noModelSelection": "validation results are never used for model selection",
+      "G_noCohortModification": "validation results are never used to modify the validation or primary cohort"
+    },
+    "leakageInventory": [
+      {
+        "form": "drifter identity reuse",
+        "control": "88-ID exclusion list (exact string match) applied at derivation; validator re-checks the derived cohort against it"
+      },
+      {
+        "form": "temporal overlap with primary windows",
+        "control": "start >= 2010-11-18T12:00:00Z (last primary end + 30 d); primary windows all end <= 2010-10-19T12:00:00Z"
+      },
+      {
+        "form": "temporal / spatial overlap with STEP 20 and STEP 32 windows",
+        "control": "STEP 35 notNearPriorWindow test (+-72 h from every prior window start in the same region) inherited unchanged"
+      },
+      {
+        "form": "same regional flow season as STEP 32 (KE 2011 descriptive candidate evidence, PARTIAL)",
+        "control": "disclosed; STEP 32 drifters and window starts are excluded; STEP 32 informed no parameter (alpha frozen in STEP 20 before STEP 32) and no source choice; STEP 32 results are descriptive history and are not an input to STEP 44/45 rules"
+      },
+      {
+        "form": "forcing-field overlap",
+        "control": "validation forcing periods are disjoint in time from the primary (2010-07..2010-10) and STEP 38 artefacts are never reused for validation windows; validation sources are re-acquired under the STEP 38 mechanism with their own manifests"
+      },
+      {
+        "form": "parameter leakage",
+        "control": "alpha 0.002 / Stokes 1.0 / depths / dt were frozen in STEP 20/29/37 before any validation data existed; no parameter is read from validation data"
+      },
+      {
+        "form": "result-dependent selection",
+        "control": "period, region and cohort are pure functions of the SHA-frozen STEP 35 inventory (metadata: dates, frame completeness, observation-only eligibility) executed by a deterministic tool before any validation forcing is downloaded"
+      },
+      {
+        "form": "analyst knowledge of frozen inventory counts",
+        "control": "disclosed: the STEP 44 author read per-region/year counts of STEP 35 window-eligible windows (metadata only, no model output) while writing the region rule; the rule is therefore stated as an objective count function and its expected outcome is recorded (expectedRegionUnderRule) so that STEP 45 can be checked against it"
+      }
+    ],
+    "primaryStep36ExclusionsRespected": true
+  },
+  "4_validationCohortRule": {
+    "ruleId": "validation-cohort-rule-step44",
+    "basis": "STEP 35/36 chronological accumulation rule applied unchanged to a preregistered validation domain (different region, later period)",
+    "calendarPeriod": {
+      "t0": "2010-11-18T12:00:00Z",
+      "t1": "2015-12-31T21:00:00Z",
+      "derivation": "t0 = last primary window end (2010-10-19T12:00:00Z) + 30 days; t1 = STEP 35 period lock end (HYCOM expt_53.X coverage)"
+    },
+    "regionRule": {
+      "candidates": [
+        "KE",
+        "BM",
+        "AG"
+      ],
+      "excluded": [
+        "GS (primary region)"
+      ],
+      "boxes": {
+        "GS": {
+          "south": 32,
+          "north": 40,
+          "west": -75,
+          "east": -55
+        },
+        "KE": {
+          "south": 30,
+          "north": 40,
+          "west": 135,
+          "east": 160
+        },
+        "BM": {
+          "south": -40,
+          "north": -30,
+          "west": -60,
+          "east": -45
+        },
+        "AG": {
+          "south": -40,
+          "north": -30,
+          "west": 15,
+          "east": 35
+        }
+      },
+      "selection": "rank the candidate regions by N_r = number of STEP 35 windowEligible == true rows with region r and start >= t0 (frozen file step35-window-eligibility.json at SHA d01d06a3...), descending; tie-break alphabetical regionId; the validation region is rank 1 only",
+      "expectedRegionUnderRule": "KE",
+      "expectedRegionNote": "recorded prediction from the frozen counts read by the author (KE 26, BM 3, AG 0 windowEligible rows with start >= t0; GS 99 excluded as the primary region); STEP 45 must reproduce this from the file and BLOCK if the rule output differs from the STEP 45 tool output for any reason other than an amended rule",
+      "noFallback": "if the rank-1 region cannot form the minimum cohort the status is VALIDATION_BLOCKED; rank-2 or other regions are NOT used without a new, separately preregistered protocol"
+    },
+    "eligibility": "STEP 16 E1-E5 (drogue attached to window end; SVP/SVPB; 73 hourly samples gap <= 1 h; coast > 100 km; start inside the box) + A1-A3 (>= 0.30 m/s; >= 40 km; <= 90 deg) verbatim; window eligible iff eligibleCount >= 8 AND A1-A3 PASS AND STEP 35 frameCoverageComplete (every UTC day of [t0-1 d, t0+72 h+1 d] complete at 00..21Z) AND notNearPriorWindow AND afterCalibrationCutoff",
+    "drifterRequirements": "STEP 16 E1-E5 per drifter; observation at exactly t0, t0+24 h, t0+48 h, t0+72 h required for a valid pair at that horizon (exact drifter_id + exact UTC timestamp)",
+    "chronologicalOrdering": "windows of the selected region sorted by start ascending (12:00 UTC daily starts); no ties possible",
+    "temporalSeparation": "start >= 2010-11-18T12:00:00Z; selected starts in the region >= 72 h apart (STEP 35 minimumStartSeparationHours)",
+    "geographicSeparation": "different region from the primary (region box disjoint from the GS box); no within-region geographic rule",
+    "exclusionIdentity": {
+      "excludedDrifterIdCount": 88,
+      "excludedDrifterIds": [
+        "127198",
+        "127199",
+        "127272",
+        "127281",
+        "127313",
+        "127314",
+        "127315",
+        "132511",
+        "132528",
+        "132634",
+        "34469",
+        "34471",
+        "34702",
+        "34711",
+        "34740",
+        "34741",
+        "35221",
+        "35223",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35487",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "36476",
+        "39153",
+        "39160",
+        "39974",
+        "39986",
+        "39994",
+        "39995",
+        "39996",
+        "39997",
+        "40006",
+        "40082",
+        "47591",
+        "48965",
+        "48985",
+        "71155",
+        "72569",
+        "81801",
+        "81802",
+        "81805",
+        "81806",
+        "81807",
+        "81811",
+        "81813",
+        "81814",
+        "81816",
+        "81961",
+        "81994",
+        "88532",
+        "88538",
+        "89822",
+        "89898",
+        "90135",
+        "90141",
+        "90142",
+        "90145",
+        "90146",
+        "90149",
+        "90150",
+        "90466",
+        "92863",
+        "92869",
+        "92872",
+        "92885",
+        "92906",
+        "92917",
+        "92918",
+        "92919",
+        "92920",
+        "92958",
+        "92981",
+        "93015",
+        "98904",
+        "98924",
+        "98936",
+        "98941",
+        "98942",
+        "98944",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "sha256OfSortedIdList": "9e9415f57fb8682a25d347628627e5a5c2069f21779dddbe4725f7ea891d6b69",
+      "priorWindowStartsByRegion": {
+        "KE": [
+          "2010-05-11T12:00:00Z",
+          "2010-06-30T12:00:00Z",
+          "2010-08-10T12:00:00Z",
+          "2010-08-16T12:00:00Z",
+          "2010-11-15T12:00:00Z",
+          "2011-05-08T12:00:00Z",
+          "2011-05-13T12:00:00Z",
+          "2011-05-28T12:00:00Z",
+          "2011-06-10T12:00:00Z",
+          "2011-06-13T12:00:00Z",
+          "2011-06-16T12:00:00Z",
+          "2011-06-19T12:00:00Z",
+          "2011-06-22T12:00:00Z"
+        ],
+        "GS": [],
+        "BM": [],
+        "AG": [
+          "2015-04-23T12:00:00Z",
+          "2015-04-26T12:00:00Z"
+        ]
+      }
+    },
+    "accumulation": "walk the ordered windows; a window is SELECTED iff it is eligible and contributes >= 1 drifter ID absent from the exclusion list and from the accumulated validation cohort; otherwise NO_NEW_IDS / SKIPPED_OVERLAP as in STEP 35/36; new IDs of a selected window join the cohort",
+    "firstPrefixRule": "the validation cohort is the shortest chronological prefix of SELECTED windows with >= minimumWindows AND >= minimumDrifters; the walk stops at that window",
+    "tieBreaking": "none needed for windows (unique starts); regions alphabetical",
+    "minimumWindows": 6,
+    "minimumUniqueDrifters": 20,
+    "maximumWindows": 12,
+    "ifMinimumNotFormed": "VALIDATION_BLOCKED (INSUFFICIENT_INDEPENDENT_COHORT); no period extension, no region change, no relaxation of any threshold, no manual addition",
+    "manualChoice": "forbidden; the rule is executed by a tool that reads only the SHA-frozen STEP 35 inventory, the STEP 16 observation file and the exclusion list; no forcing, model or performance input; validation velocity/forcing download is forbidden before the cohort manifest is locked"
+  },
+  "5_temporalIndependence": {
+    "design": "later calendar period than every primary window",
+    "rule": "t0 = 2010-10-19T12:00:00Z + 30 d = 2010-11-18T12:00:00Z; the walk is chronological from t0; no year is preferred or skipped; the first prefix that satisfies the minimum defines the period actually used",
+    "tieBreak": "chronological order has no ties (one start per day per region)",
+    "yearSelectedForExpectedPerformance": false
+  },
+  "6_geographicIndependence": {
+    "designType": "C: different-region / later-time",
+    "statement": "The validation region is a non-primary registered western-boundary-current box selected by the objective count rule in 4_validationCohortRule.regionRule; the period is later than all primary windows. Interpretations A and B are not mixed: same-region windows (GS) are excluded from the validation frame entirely.",
+    "comparableDynamics": "all four STEP 16 boxes were preregistered in STEP 16 as western-boundary-current / strong-advection regions with identical eligibility and advection criteria (A1-A3)",
+    "performanceBasedRegionSelection": false
+  },
+  "7_sampleSizeGate": {
+    "minimumValidationWindows": 6,
+    "minimumUniqueDrifters": 20,
+    "minimumPrimaryValidWindowsAfterQC": 4,
+    "maximumWindows": 12,
+    "justification": "6 / 20 replicate the STEP 36 primary minimum so that the validation is at least as large as the primary design; 4 valid windows is the smallest cluster count for which the window-level percentile bootstrap has more than 3 distinct support points per replicate and for which a median over available windows is not determined by a single pair of windows; these numbers are locked now and are not adjusted after the sample is observed",
+    "ifCohortMinimumNotMet": "VALIDATION_BLOCKED",
+    "ifValidWindowsAfterQCBelowMinimum": "VALIDATION_INVALID (INSUFFICIENT_VALID_WINDOWS); the success criterion is not evaluated and is not relaxed",
+    "criterionChangeForSmallSample": "forbidden"
+  },
+  "8_modelConfiguration": {
+    "conditions": {
+      "A": "HYCOM_NATIVE_3H: HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis water_u/water_v at 15.000 m, 3 h, STEP 38 derivation (25 frames per window) + NCEP-R2 10 m wind",
+      "B": "HYCOM_DAILY: UTC-daily unweighted mean of the 8 frames per day from the frozen day files, label 00Z, STEP 32/39 derivation unchanged + NCEP-R2",
+      "C": "GLORYS12V1 cmems_mod_glo_phy_my_0.083deg_P1D-m uo/vo at native 15.810070 m, linear in time at 3 h instants + WW3 GLOB-30M CFSR surface Stokes drift x 1.0 + NCEP-R2; STEP 29 TEST-06 composite construction applied unchanged (crop to window area + 1 node)"
+    },
+    "parameters": {
+      "alpha": 0.002,
+      "stokesMultiplier": 1.0,
+      "depthA_B_m": 15.0,
+      "depthC_m": 15.81007,
+      "integrator": "RK4",
+      "dtSeconds": 300,
+      "outputSeconds": 900,
+      "durationHours": 72,
+      "horizonsHours": [
+        24,
+        48,
+        72
+      ],
+      "interpolation": "bilinear space / linear time",
+      "boundaryPolicy": "STOP_AT_FIRST_CROSSING",
+      "runtimeCommit": "155995dd",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3"
+    },
+    "prohibited": [
+      "tuning",
+      "calibration",
+      "optimisation",
+      "parameter search",
+      "alternate forcing source",
+      "alternate depth",
+      "alternate Stokes multiplier",
+      "alternate temporal representation",
+      "runtime modification"
+    ]
+  },
+  "9_sourceRule": {
+    "sources": {
+      "HYCOM": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis, NCSS https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/{year}, water_u/water_v, vertCoord 15, STEP 17/38 mechanism, -180..180 longitude rule",
+      "GLORYS": "GLORYS12V1 GLOBAL_MULTIYEAR_PHY_001_030 cmems_mod_glo_phy_my_0.083deg_P1D-m, uo/vo, -z 15.81 -Z 15.81, official Copernicus Marine toolbox (credentials: exit code only; CREDENTIALS_REQUIRED if absent)",
+      "WW3": "WW3 GLOB-30M CFSR hindcast monthly uss files ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/{year}_CFSR/uss/ for every month intersecting [t0-1 d, t0+72 h+1 d] of each selected window",
+      "NCEP": "NCEP-DOE Reanalysis 2 10 m u/v, PSL THREDDS NCSS (STEP 17 wind_parts), t0-12 h .. t0+84 h",
+      "observations": "STEP 15 observation file (SHA 22c0ecff...), no new observation acquisition"
+    },
+    "identityFrozenBeforeAcquisition": true,
+    "ifUnavailable": "the affected validation branch (window x condition) is BLOCKED with the frozen reason; no substitute product, version, depth, month, mirror or reconstruction; a window whose A or C forcing is BLOCKED yields NA pairs for that window (never removed, never filled)",
+    "performanceBasedSourceChoice": false
+  },
+  "10_primaryValidationEndpoint": {
+    "perDrifter": "delta_i = E_C,i(72 h) - E_A,i(72 h), E = haversine position error (R = 6371008.8 m) between modelled and observed position at exactly t0 + 72 h, km",
+    "window": "Delta_w = median_i(delta_i within validation window w) over drifters with a valid A/C pair",
+    "primaryStatistic": "Theta_validation = median_w(Delta_w over validation windows with >= 1 valid pair)",
+    "windowWeighting": "equal",
+    "hierarchy": "window > drifter pair > trajectory points (never independent)",
+    "naHandling": "NA never imputed, substituted, interpolated, removed or set to zero; a window with no valid pair is NOT_AVAILABLE and contributes nothing",
+    "identicalToPrimary": true
+  },
+  "11_primaryValidationHypothesis": {
+    "id": "H_V",
+    "statement": "Theta_validation < 0 km: Candidate C has lower 72 h position error than HYCOM_NATIVE_3H on the independent validation cohort",
+    "null": "Theta_validation >= 0 km or the preregistered uncertainty criterion is not met",
+    "directional": true,
+    "singleConfirmatory": true,
+    "note": "a negative observed median alone does not establish H_V; the interval criterion in 13_successCriterion must also hold"
+  },
+  "12_validationUncertainty": {
+    "method": "window-level percentile bootstrap, identical structure to STEP 40",
+    "samplingUnit": "validation window",
+    "samplingFrame": "all validation windows of the locked cohort (NA windows included in the frame)",
+    "B": 10000,
+    "seed": 20260944,
+    "generator": "numpy.random.default_rng(20260944); idx = rng.integers(0, n_windows, size=n_windows) per replicate, sequential",
+    "seedRationale": "a separate seed from the primary (20260907) so the validation replicate stream is not the primary stream; fixed now, before any validation data access",
+    "replicate": "n_windows windows drawn with replacement; every valid drifter delta of a drawn window retained; Delta_w recomputed; a window drawn k times contributes k times; Theta_b = median over drawn windows with >= 1 valid pair; a replicate with no available window is NOT_AVAILABLE, counted, never redrawn",
+    "interval": "numpy.quantile(available Theta_b, [0.025, 0.975], method='linear')",
+    "noTrajectoryPointResampling": true,
+    "noIndependentDrifterResamplingForPrimary": true,
+    "sensitivityOnly": "drifter-level bootstrap of the pooled median (separate default_rng(20260944), B 10000) reported as SENSITIVITY ONLY; never replaces the primary interval"
+  },
+  "13_successCriterion": {
+    "descriptiveLabel": {
+      "name": "CANDIDATE_VALIDATION_DESCRIPTIVELY_FAVORED",
+      "rule": "STEP 30A rule (step30a-rule.json, SHA 9251be51...) applied to the pooled valid 72 h validation pairs: pooled median delta_i < 0 km AND candidate lower error in >= 2/3 of non-tied pairs (tie |delta_i| < 1e-6 km); otherwise NO_CLEAR_VALIDATION_DIFFERENCE or HYCOM_VALIDATION_DESCRIPTIVELY_FAVORED"
+    },
+    "VALIDATION_SUPPORTED_iff": [
+      "descriptive label == CANDIDATE_VALIDATION_DESCRIPTIVELY_FAVORED",
+      "validation window-level 95 % interval upper bound Q0.975 < 0 km",
+      "sample-size gate satisfied: cohort minimum met AND valid windows after QC >= 4"
+    ],
+    "VALIDATION_NOT_SUPPORTED_iff": "the validation executed validly (gate satisfied, provenance and replay PASS) and at least one of the two criteria above fails",
+    "secondaryMetricsMayReplacePrimary": false,
+    "changeAfterObservation": "forbidden"
+  },
+  "14_failureStates": {
+    "VALIDATION_SUPPORTED": "criterion 13 satisfied",
+    "VALIDATION_NOT_SUPPORTED": "criterion 13 not satisfied on a valid execution",
+    "VALIDATION_BLOCKED": [
+      "INSUFFICIENT_INDEPENDENT_COHORT (minimum 6 windows / 20 drifters not reached within 12 windows)",
+      "SOURCE_UNAVAILABLE for every window of a condition",
+      "CREDENTIALS_REQUIRED",
+      "PROVENANCE (a frozen input hash differs)"
+    ],
+    "VALIDATION_INVALID": [
+      "INSUFFICIENT_VALID_WINDOWS (< 4 windows with a valid pair after execution)",
+      "COORDINATE_MISMATCH",
+      "IMMUTABILITY_VIOLATION (STEP 36-44 record or runtime changed)",
+      "DETERMINISTIC_REPLAY_MISMATCH",
+      "EXCLUSION_VIOLATION (an excluded ID or overlapping window in the cohort)"
+    ],
+    "rules": [
+      "BLOCKED is never reported as NOT_SUPPORTED",
+      "NOT_SUPPORTED is never reported as a negative or positive finding beyond the frozen criterion",
+      "INVALID is never reported as NOT_SUPPORTED",
+      "per-window FORCING_UNAVAILABLE / OUT_OF_DOMAIN terminations are availability facts recorded per window and condition, not failure states of the validation"
+    ]
+  },
+  "15_noPooledRescue": {
+    "rule": "The validation decision is computed from the validation cohort alone. Primary (STEP 39/40) and validation results are never pooled, concatenated or jointly bootstrapped for the confirmatory decision; apparent sample size is never increased by combination. Any pooled analysis requires a separate future preregistration, is labelled exploratory and cannot replace this validation."
+  },
+  "16_secondaryMetrics": {
+    "list": [
+      "delta C-A at 24 h and 48 h (nested Theta and pooled median)",
+      "B-A temporal comparison at 24/48/72 h (STEP 32 rule label)",
+      "M1 endpoint displacement",
+      "M2 total path",
+      "M3 position error per condition",
+      "M4 separation C-A / B-A",
+      "M5 observed displacement"
+    ],
+    "role": "SECONDARY / descriptive; never determine VALIDATION_SUPPORTED",
+    "additionAfterResults": "forbidden"
+  },
+  "17_availabilityMissingness": {
+    "mustReport": [
+      "A availability per horizon",
+      "B availability per horizon",
+      "C availability per horizon",
+      "A/C paired count per horizon",
+      "valid windows",
+      "invalid / NA windows with reason",
+      "OUT_OF_DOMAIN terminations per window and condition",
+      "FORCING_UNAVAILABLE terminations per window and condition",
+      "candidate-only terminations (C terminated while A completed) with the composite-crop cause"
+    ],
+    "prohibited": [
+      "imputation",
+      "substitution",
+      "silent removal",
+      "conversion of NA to zero",
+      "conversion of NA to success or failure without the preregistered rule"
+    ],
+    "rule": "exact drifter_id + exact UTC timestamp pairing only, identical to STEP 39"
+  },
+  "18_primaryValidationComparison": {
+    "requiredTable": {
+      "PRIMARY": [
+        "cohort STEP 36",
+        "n windows 9",
+        "n drifters 20",
+        "valid windows 6",
+        "paired n 16",
+        "Theta -31.331 km",
+        "95 % CI [-72.0725, -11.7435] km",
+        "H1 SUPPORTED"
+      ],
+      "VALIDATION": [
+        "cohort STEP 45 manifest",
+        "n windows",
+        "n drifters",
+        "valid windows",
+        "paired n",
+        "Theta_validation",
+        "95 % CI",
+        "H_V status"
+      ]
+    },
+    "combinedConfirmatoryStatistic": "forbidden without a separate future protocol"
+  },
+  "19_transportabilityInterpretation": {
+    "levels": {
+      "A_replicationOfDirection": "Theta_validation < 0 km observed",
+      "B_replicationOfStatisticalSupport": "VALIDATION_SUPPORTED (label AND Q0.975 < 0 AND gate)",
+      "C_transportability": "B achieved on a different-region / later-time cohort under the identical frozen configuration: supports reproducibility within the predefined validation domain only",
+      "D_operationalSuperiority": "NOT established by any outcome of this validation; requires a separate decision and additional evidence"
+    },
+    "automaticOperationalPromotion": false,
+    "candidateStatusAfterValidation": "remains CANDIDATE_ONLY regardless of outcome; any status change is a separate, later decision"
+  },
+  "20_amendmentProcedure": {
+    "rule": "After the STEP 44 lock commit, any change to this protocol requires an explicit amendment record with: field path, old value, new value, reason, UTC timestamp, commit SHA of the amendment, whether validation data were accessed before the amendment, whether validation results were accessed before the amendment. Silent edits are forbidden; the validator fails if the committed protocol hash changes without an amendment record.",
+    "amendmentHistory": []
+  },
+  "21_executionOrderAfterLock": [
+    "STEP 45 cohort derivation (tool; reads only frozen inventory / observations / exclusion; locks validation cohort manifest before any forcing access)",
+    "STEP 46 source acquisition + data freeze (STEP 38 mechanism, own manifests)",
+    "STEP 47 deterministic execution A/B/C + replay + evaluation (STEP 39 tools, config unchanged)",
+    "STEP 48 validation bootstrap (seed 20260944) + decision",
+    "STEP 49 validation report with the primary/validation comparison table"
+  ],
+  "noValidationDataAccess": {
+    "validationForcingDownloaded": false,
+    "validationObservationsInspected": false,
+    "validationSourceFilesInspected": false,
+    "trajectoriesRun": 0,
+    "bootstrapRun": 0,
+    "performanceEvaluated": false,
+    "inventoryMetadataRead": "STEP 35 window-eligibility counts per region/year and the STEP 16 region boxes (frozen metadata; no model output)"
+  },
+  "noPostHocSelection": true,
+  "automaticCommit": false,
+  "push": false
+}

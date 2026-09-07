@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "validation-preregistration-step44",
+  "step": 44,
+  "status": "VALIDATION_PREREGISTRATION_DESIGN_COMPLETE",
+  "protocolSha256": "6a2e2f04f7948e4ff3ac5dec065fc93a6072ce112bb2e072ce77c2606056de9f",
+  "head": "e5fac7fc4b3c6faefc8284213e3e63280745cfe5",
+  "ancestry": {
+    "step36": "043a09b8539955868651a06e7c2c44e3c606803f",
+    "step37": "74d19f0a9661a41d63a08c56bbd3f91e9d8b312d",
+    "step38": "23e78f863fb092aa9e3c36e4d74d4afd4393e7f4",
+    "step40": "2b1a7baa7ef9e69d25cecbff2b09fca8700fca80",
+    "step41": "9a3223089099bcb09a2589cc8a4bda82fcb47ae5",
+    "step42": "bae85245e827f53ee9782201c442ea7849c04e82",
+    "step43": "15970d9735330fb937e86af449c1deef6763b5d1",
+    "runtime": "155995dd062b557b7a2ba90e5e5fb5a54ee28048"
+  },
+  "designType": "C: different-region / later-time",
+  "validationPeriod": [
+    "2010-11-18T12:00:00Z",
+    "2015-12-31T21:00:00Z"
+  ],
+  "regionRule": "rank-1 non-GS region by count of STEP 35 window-eligible rows with start >= t0; alphabetical tie-break; expected KE; no fallback",
+  "cohortMinimum": {
+    "windows": 6,
+    "drifters": 20,
+    "maxWindows": 12,
+    "validWindowsAfterQC": 4
+  },
+  "excludedDrifterIds": 88,
+  "endpoint": "Theta_validation = median_w[ median_i( E_C,i(72h) - E_A,i(72h) ) ], equal window weighting",
+  "hypothesis": "H_V: Theta_validation < 0 km",
+  "bootstrap": {
+    "unit": "validation window",
+    "B": 10000,
+    "seed": 20260944,
+    "generator": "numpy.random.default_rng(20260944)",
+    "quantiles": [
+      0.025,
+      0.975
+    ],
+    "method": "linear"
+  },
+  "successCriterion": "CANDIDATE_VALIDATION_DESCRIPTIVELY_FAVORED AND Q0.975 < 0 km AND gate (cohort minimum met, >= 4 valid windows)",
+  "statuses": [
+    "VALIDATION_SUPPORTED",
+    "VALIDATION_NOT_SUPPORTED",
+    "VALIDATION_BLOCKED",
+    "VALIDATION_INVALID"
+  ],
+  "validationDataAccessed": false,
+  "validationExperimentExecuted": false,
+  "modelRunCount": 0,
+  "bootstrapRunCount": 0,
+  "primaryResultUnchanged": {
+    "Theta_km": -31.331,
+    "CI95_km": [
+      -72.0725,
+      -11.7435
+    ],
+    "H1": "SUPPORTED",
+    "candidate": "CANDIDATE_ONLY",
+    "operationalPromotion": false
+  },
+  "validator": "tools/research/check_step44_validation_preregistration.py",
+  "report": "docs/research/step44-validation-preregistration-report.md",
+  "automaticCommit": false,
+  "push": false
+}

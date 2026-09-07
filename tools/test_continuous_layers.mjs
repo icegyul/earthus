@@ -64,8 +64,17 @@ assert.match(overlay, /sc\.imageSmoothingEnabled = !scale\.stepped/,
   '단계색 확대에서 중간색을 만들면 안 된다');
 assert.match(overlay, /pressureEa:[\s\S]*pressure-ea\.json/,
   '동아시아 기압 색면은 등압선과 같은 1° 전용판을 써야 한다');
-assert.match(overlay, /key !== 'sstanom'[\s\S]*marineEa/,
-  '0.5° 실황과 5° 평년장을 섞어 수온 편차를 계산하면 안 된다');
+assert.match(overlay, /srcName === 'sstAnomEa'[\s\S]{0,240}?g\.sstAnom[\s\S]{0,240}?await this\.sstAnomaly\(\)/,
+  '0.5° 실황과 5° 평년장을 섞어 수온 편차를 계산하면 안 된다 — 보강판은 서버가 같은 격자에서 뺀 값을 쓴다');
+assert.match(overlay, /if \(base === 'marine'\) return 'marineEa'/,
+  '파고·너울·해류에는 동아시아 0.5° 보강판이 있어야 한다');
+/* ⚠️ 전지구 판을 **대체**하면 상자 밖이 비어 "저기는 바다가 없다"가 된다.
+   반대로 전지구 5°만 쓰면 서해·동해가 한 칸에 뭉개진다. 두 장을 겹쳐 그린다. */
+assert.match(overlay, /this\.layers\[key\] = this\._paint\([\s\S]{0,900}?this\.fine\[key\] = this\._paint\(/,
+  '전지구 판 위에 동아시아 보강판을 덧그려야 한다');
+/* ⚠️ 네 꼭짓점을 모두 요구하면 5° 격자에서 한반도 주변 12칸 중 1칸만 칠해졌다(실측). */
+assert.match(overlay, /const near = tx < 0\.5[\s\S]{0,600}?weight > 0 \? acc \/ weight/,
+  '결측 꼭짓점이 있어도 속한 격자점이 살아 있으면 칠해야 한다');
 assert.match(overlay, /refreshResolution\(\)[\s\S]*desired !== rendered\.sourceName/,
   '카메라가 전용 보강판 경계를 넘을 때만 해상도를 교체해야 한다');
 assert.match(contours, /CONTOUR_PROFILES[\s\S]*temp:[\s\S]*wind:[\s\S]*tpw:[\s\S]*sst:[\s\S]*sstanom:[\s\S]*wave:/,

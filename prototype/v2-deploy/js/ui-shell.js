@@ -448,8 +448,8 @@ export function initShell(hooks) {
       <div class="intel-tabs">
         <button data-tab="feed" class="on">${i18n.ko?'사건':'Feed'}</button>
         <!-- STEP 55: 3열 그리드에서 '내 장소 · FOR ME' 가 칸을 넘어 옆 탭 글자를 덮었다(실측 375폭).
-             하단 바가 이미 '내 곳'으로 부르고 있으니 같은 말로 맞춘다 — 가는 곳은 그대로다. -->
-        <button data-tab="my">${i18n.ko?'내 곳':'My place'}</button>
+             하단 바가 이미 '내 지역'으로 부르고 있으니 같은 말로 맞춘다 — 가는 곳은 그대로다. -->
+        <button data-tab="my">${i18n.ko?'내 지역':'My place'}</button>
         <button data-tab="now">${i18n.ko?'선택 자료':'Now'}</button>
         <button data-tab="why">${i18n.ko?'자료의 근거':'Why'}</button>
         <button data-tab="next">${i18n.ko?'예보·예정':'Next'}</button>
@@ -462,7 +462,8 @@ export function initShell(hooks) {
     </div>`;
   root.appendChild(intel);
 
-  /* ---------- 하단 바 — 내 곳 / 무슨 일 / 날씨 / 바다 / 우주 / 더보기 ----------
+  /* ---------- 하단 바 — 내 지역 / 무슨 일 / 날씨 / 바다 / 우주 / 더보기 ----------
+     2026-09-07 개명: '내 곳' → '내 지역'. 인용한 원 지시문은 그대로 둔다.
      2026-09-07 v1/v2 역할 분리 지시 §15: "109개 SCENES 를 그대로 노출하지 않는다.
      최종 V2 메인 하단 메뉴: 내 곳 무슨 일 날씨 바다 우주 더보기." §17: 기본 화면은
      6탭 우측 패널이 아니라 대표 카드 하나 — 이 바가 그 대표 진입점이다.
@@ -478,7 +479,7 @@ export function initShell(hooks) {
     more: '<circle cx="6" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18" cy="12" r="1.2"/>',
   };
   const NAV_ITEMS = [
-    { id: 'myplace', ko: '내 곳', en: 'My place' },
+    { id: 'myplace', ko: '내 지역', en: 'My place' },
     { id: 'feed', ko: '무슨 일', en: "What's up" },
     { id: 'weather', ko: '날씨', en: 'Weather' },
     { id: 'ocean', ko: '바다', en: 'Ocean' },

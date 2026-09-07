@@ -29,6 +29,22 @@ export const airStations = {
       color: '#8a97a8',   // 등급 없는 측정소용 기본값 (아래서 대부분 덮어씀)
       radius: 3.5,
       cluster: true,
+      /* ⚠️⚠️ 전국이 보이는 줌에서는 측정소가 늘 묶인다. 묶음이 회색이면
+         등급색을 아무리 잘 칠해도 화면에는 **회색 방울 안의 숫자**만 남는다
+         (받은 신고: "숫자로만 나와? 색으로는 안 돼?" — 그 숫자는 값이 아니라
+         묶인 측정소 **개수**였다).
+         ⚠️ 그래서 묶음 색은 **그 묶음에서 가장 나쁜 등급**이다. 평균이 아니다 —
+            평균은 우리가 만든 숫자고, 건강 정보로는 "여기 나쁜 곳이 있다"가 맞다.
+            등급은 환경부가 매긴 것을 그대로 옮긴 값이다(위 머리말).
+         ⚠️ 등급이 하나도 없는 묶음은 색을 만들지 않는다 — 회색 그대로 둔다. */
+      clusterStyle: (entities) => {
+        let worst = 0;
+        entities.forEach(entity => {
+          const grade = Number(entity?._meta?._obs?.grade) || 0;
+          if (grade > worst) worst = grade;
+        });
+        return worst ? { color: GRADE_COLOR[worst] } : null;
+      },
     });
     return this.layer;
   },

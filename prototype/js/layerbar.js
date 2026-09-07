@@ -20,6 +20,39 @@ import { i18n } from './i18n.js';
 import { toast } from './ui.js';
 import { CONFIG } from './config.local.js';
 import { QUESTION_ENTRIES, matchesLayerQuery, partitionLayerItems, clearSelectedLayers, openQuestionEntry } from './menu-information.js?v=20260905';
+import { flyTo, viewer } from './viewer.js';
+
+/* ── 지역 한정 레이어 ────────────────────────────────────────────
+   ⚠️ 자료가 한 나라에만 있는 레이어는, 켜 놓고 지구 반대편을 보고 있으면
+      **켜졌는데 아무것도 없는 화면**이 된다. 실제로 대기오염(실측)을 켜고
+      태평양을 보고 있으면 673개 측정소가 한 점도 안 보인다.
+   ⚠️ 이미 그 지역을 보고 있으면 카메라를 건드리지 않는다 — 보던 자리를
+      뺏는 것도 똑같이 나쁘다. */
+const KOREA_REGION = Object.freeze({
+  ko: '한반도', en: 'the Korean peninsula',
+  west: 124.0, east: 132.5, south: 33.0, north: 39.0, height: 1_150_000,
+});
+const LAYER_REGION = Object.freeze({ airkr: KOREA_REGION });
+
+/** 켜는 순간 그 지역이 화면에 없으면 데려간다. 이미 보고 있으면 그대로 둔다. */
+function flyToLayerRegion(id) {
+  const region = LAYER_REGION[id];
+  if (!region) return;
+  try {
+    const rect = viewer?.camera?.computeViewRectangle?.();
+    if (rect) {
+      const west = Cesium.Math.toDegrees(rect.west), east = Cesium.Math.toDegrees(rect.east);
+      const south = Cesium.Math.toDegrees(rect.south), north = Cesium.Math.toDegrees(rect.north);
+      const height = viewer.camera.positionCartographic?.height ?? Infinity;
+      /* 상자 전체가 화면 안에 있고, 측정소가 점으로 갈릴 만큼 가까우면 그대로 둔다. */
+      const inside = west <= region.west && east >= region.east
+        && south <= region.south && north >= region.north;
+      if (inside && height < 3_000_000) return;
+    }
+  } catch (_) { /* 판단이 안 되면 데려간다 — 빈 화면보다 낫다 */ }
+  flyTo((region.west + region.east) / 2, (region.south + region.north) / 2,
+        region.height, 1.6);
+}
 
 const $ = s => document.querySelector(s);
 const el = (t, c) => { const n = document.createElement(t); if (c) n.className = c; return n; };
@@ -1412,7 +1445,12 @@ export const layerBar = {
             : `${it.en} is available with a subscription.`);
         };
       } else {
-        b.onclick = () => { if (!store.isOn(it.id)) this.leave({ keep: groupsOfLayer(it.id) }); store.toggle(it.id); };
+        b.onclick = () => {
+          const turningOn = !store.isOn(it.id);
+          if (turningOn) this.leave({ keep: groupsOfLayer(it.id) });
+          store.toggle(it.id);
+          if (turningOn) flyToLayerRegion(it.id);
+        };
       }
       strip.appendChild(b);
     }

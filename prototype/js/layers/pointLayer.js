@@ -176,12 +176,19 @@ export class PointLayer {
         cluster.billboard.show = false;
         cluster.point.show = true;
         cluster.label.show = true;
+        /* 층이 묶음 색을 스스로 정할 수 있다(clusterStyle). 안 정하면 층 대표색 그대로다.
+           ⚠️ 왜 필요한가 — 대기오염 측정소는 **등급마다 색이 다른데**, 묶이는 순간
+              전부 회색 숫자 방울이 됐다. 전국이 보이는 줌에서는 늘 묶여 있으니
+              "색으로 읽는 지도"가 아니라 "숫자만 뜨는 지도"가 됐다(실측 신고).
+           ⚠️ 묶음 색으로 평균을 쓰지 않는다. 평균은 우리가 만든 숫자다. */
+        const style = this.clusterStyle ? this.clusterStyle(entities) : null;
+        const css = style?.color || this.color;
         cluster.point.pixelSize = 19 + Math.min(entities.length, 14);
-        cluster.point.color = Cesium.Color.fromCssColorString(this.color).withAlpha(0.2);
-        cluster.point.outlineColor = Cesium.Color.fromCssColorString(this.color);
-        cluster.point.outlineWidth = 1.4;
+        cluster.point.color = Cesium.Color.fromCssColorString(css).withAlpha(0.2);
+        cluster.point.outlineColor = Cesium.Color.fromCssColorString(css);
+        cluster.point.outlineWidth = style?.color ? 2.2 : 1.4;
         cluster.point.disableDepthTestDistance = Number.POSITIVE_INFINITY;
-        cluster.label.text = String(entities.length);
+        cluster.label.text = style?.text ?? String(entities.length);
         cluster.label.font = '500 12px ui-monospace, SFMono-Regular, Menlo, monospace';
         cluster.label.fillColor = Cesium.Color.WHITE;
         cluster.label.pixelOffset = new Cesium.Cartesian2(0, 0);

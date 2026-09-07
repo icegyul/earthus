@@ -9,7 +9,7 @@
 
 import { viewer, onCameraIdle, viewRect } from './viewer.js';
 import { gridOverlay } from './gridoverlay.js';
-import { gridBounds, nearestGridValue } from './gridmath.js';
+import { gridBounds, nearestGridPoint, nearestGridValue } from './gridmath.js';
 import { worldPlaces, describePlace, latLonText } from './geoname.js';
 import { i18n } from './i18n.js';
 import { store } from './store.js';
@@ -58,6 +58,22 @@ const fmt = value => {
   return abs >= 100 ? String(Math.round(value)) : abs >= 10 ? value.toFixed(1) : value.toFixed(2);
 };
 const fmtStop = value => Number.isInteger(value) ? String(value) : fmt(value);
+/* 원격자점이 도시에서 이만큼 넘게 떨어져 있으면 그 도시의 값이라고 부르지 않는다.
+   50km — 수도권 하나가 들어가는 거리다. 그 안쪽이면 같은 날씨라고 봐도 된다. */
+const FAR_KM = 50;
+const isFar = point => Number.isFinite(point?.km) && point.km > FAR_KM;
+const pointNote = (place, unit) => {
+  const point = place.point;
+  if (!point) return i18n.lang === 'ko' ? '가장 가까운 실제 격자점 값' : 'Nearest source grid-cell value';
+  const where = `${fmt(Math.abs(point.lat))}°${point.lat >= 0 ? 'N' : 'S'} `
+    + `${fmt(Math.abs(point.lon))}°${point.lon >= 0 ? 'E' : 'W'}`;
+  const km = Math.round(point.km);
+  return i18n.lang === 'ko'
+    ? `가장 가까운 원격자점(${where})의 값 ${fmt(place.value)}${unit} · `
+      + `${place.ko}에서 ${km}km 떨어져 있습니다${isFar(point) ? ' — 그 도시의 관측값이 아닙니다' : ''}`
+    : `Value at the nearest source grid point (${where}) — ${km} km from ${place.en}`
+      + `${isFar(point) ? '; not an observation for that city' : ''}`;
+};
 const timeText = value => {
   if (!value) return null;
   const d = new Date(value);
@@ -266,6 +282,16 @@ export const readability = {
         : ` · ${this.contourMeta.pathCount} paths · ${this.contourMeta.labelCount} labels`;
     }
     if (contour.textContent) children.push(contour);
+    /* ⚠️ 격자가 성기면 도시 이름 옆 숫자는 그 도시의 값이 아니다. 범례에서 한 번
+       말해 둔다 — 툴팁만으로는 마우스를 올린 사람만 알게 된다. */
+    if (Number.isFinite(this.grid.res) && this.grid.res * 111 > FAR_KM * 2) {
+      const approx = document.createElement('p');
+      approx.className = 'rd-contour-meta';
+      approx.textContent = i18n.lang === 'ko'
+        ? `~ 표시 = 그 도시에서 ${FAR_KM}km 넘게 떨어진 격자점 값 · 도시 관측값이 아님`
+        : `~ marks a grid point more than ${FAR_KM} km from that city — not a city observation`;
+      children.push(approx);
+    }
     /* Cesium의 기본 credit 영역은 이 앱에서 숨겨져 있다. imagery provider에만 credit을
        넣으면 화면에서는 출처가 사라지므로, 참조 타일을 켠 동안 패널에도 항상 적는다. */
     if (this.reference) {
@@ -305,15 +331,23 @@ export const readability = {
       if (seen.has(key)) continue;
       const value = nearestGridValue(this.grid, this.field, place.lat, place.lon);
       if (!Number.isFinite(value)) continue;
-      seen.add(key); chosen.push({ ...place, value });
+      /* ⚠️⚠️ 도시 이름을 붙였다고 **그 도시의 값이 되는 게 아니다.**
+         5° 전지구 격자에서 서울의 가장 가까운 격자점은 40°N·125°E — 300km 떨어진
+         서해 북부다. 그 값 87% 가 "서울 87%" 로 나갔고, 같은 시각 서울 관측은 57% 였다.
+         숫자를 지어내지도, 보간해서 도시값인 척하지도 않는다 — 대신 **얼마나 떨어진
+         점인지 화면에 밝힌다.** 멀면 물결표를 달고, 정확한 격자점은 툴팁에 적는다. */
+      const point = nearestGridPoint(this.grid, place.lat, place.lon);
+      seen.add(key); chosen.push({ ...place, value, point });
       if (chosen.length >= max) break;
     }
     const unit = gridOverlay.scaleOf(this.activeLayer)?.unit || '';
     this.cities.replaceChildren(...chosen.map(place => {
       const item = document.createElement('li');
+      const far = isFar(place.point);
       item.innerHTML = `<span>${i18n.lang === 'ko' ? place.ko : place.en}</span>`
-        + `<b>${fmt(place.value)}${unit}</b>`;
-      item.title = i18n.lang === 'ko' ? '가장 가까운 실제 격자점 값' : 'Nearest source grid-cell value';
+        + `<b>${far ? '~' : ''}${fmt(place.value)}${unit}</b>`;
+      item.title = pointNote(place, unit);
+      if (far) item.dataset.far = '1';
       return item;
     }));
     this.cities.hidden = chosen.length === 0;
@@ -345,7 +379,8 @@ export const readability = {
       const placement = this._screenPlacement(place);
       if (!placement) return;
       const { position, screen } = placement;
-      const text = `${i18n.lang === 'ko' ? place.ko : place.en} ${fmt(place.value)}${unit}`;
+      const text = `${i18n.lang === 'ko' ? place.ko : place.en} `
+        + `${isFar(place.point) ? '~' : ''}${fmt(place.value)}${unit}`;
       const width = Math.max(74, text.length * 7.2), height = 24;
       const box = { left: screen.x - width / 2, right: screen.x + width / 2,
                     top: screen.y - height / 2, bottom: screen.y + height / 2 };

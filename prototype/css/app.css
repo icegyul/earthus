@@ -49,12 +49,25 @@ a{color:var(--teal);text-decoration:none}
 
 /* ══════════ AMBIENT ══════════ */
 #ambient{position:absolute;inset:0;pointer-events:none;
-  transition:opacity .55s ease,transform .55s ease}
-#ambient.hidden{opacity:0;transform:translateY(-10px)}
+  transition:opacity .55s ease,transform .55s ease,visibility 0s linear 0s}
+/* ⚠️ opacity:0 은 **그리기만** 멈춘다. 히트 테스트는 그대로라,
+   줄하여 온도가 사라진 뒤에도 그 자리에서 커서가 손가락으로 바뀌고
+   누르면 날씨 시트가 열렸다(실측). 보이지 않는 것은 눌리지도, 탭으로
+   초점이 가지도 않아야 한다 — visibility 가 세 가지를 한꿠번에 막는다.
+   ⚠️ visibility 는 지연 전환으로 둘려야 페이드가 끝난 뒤에 숨는다.
+      즉시 숨기면 0.55s 페이드가 보이지 않고 퀆 꺼진다. */
+/* ⚠️ pointer-events 는 **지연 없이** 끈는다. 페이드 도중(0.55s)에도 누르면
+   안 되기 때문이다. visibility 만 지연해 페이드가 보이게 하고,
+   문자 그려지는 동안에도 클릭과 초점은 이미 가 있다. */
+#ambient.hidden{opacity:0;transform:translateY(-10px);pointer-events:none;
+  visibility:hidden;transition:opacity .55s ease,transform .55s ease,visibility 0s linear .55s}
+#ambient.hidden #ambBottom{pointer-events:none}
 /* 일반 시트가 떠 있는 동안 시계·온도를 감춘다 — 반투명 시트 뒤로 큰 글자가
    겹쳐 비쳐서(특히 모바일) 이중 노출처럼 읽혔다. keep-open 지도 화면은
    panel-open-modal 이 아니어서 그대로 남는다 (panels.js 참고). */
-body.panel-open-modal #ambient{opacity:0;transform:translateY(-10px)}
+body.panel-open-modal #ambient{opacity:0;transform:translateY(-10px);pointer-events:none;
+  visibility:hidden;transition:opacity .55s ease,transform .55s ease,visibility 0s linear .55s}
+body.panel-open-modal #ambBottom{pointer-events:none}
 
 .amb-top{position:absolute;top:max(40px,env(safe-area-inset-top));left:0;right:0;text-align:center}
 .clock{font-size:clamp(44px,8.6vw,74px);font-weight:200;line-height:1;

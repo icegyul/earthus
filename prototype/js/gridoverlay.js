@@ -330,6 +330,9 @@ function colorAt(scale, v) {
   return st[st.length - 1][1];
 }
 
+/* 동아시아 보강판이 덮는 상자 — 천리안 동아시아 영상과 같은 범위다. */
+const EA_BOX = Object.freeze({ south: 23, north: 47, west: 114, east: 150 });
+
 /* 소스 이름 → 실제 파일 */
 const SRC_URL = {
   wind:   () => `${API.WIND}/global.json`,
@@ -354,7 +357,9 @@ const SRC_URL = {
 export const gridOverlay = {
   grid: null,        // 하위호환 — 기상 격자
   grids: {},         // 소스 이름 → 격자
-  layers: {},        // key → Cesium ImageryLayer
+  layers: {},        // key → Cesium ImageryLayer (전지구 판)
+  fine: {},          // key → Cesium ImageryLayer (동아시아 보강판, 전지구 판 **위**)
+  _fineMissing: new Set(),   // 없다고 확인된 보강판 — 다시 조르지 않는다
   _fetchedAt: {},
   _labels: null,
   _labelState: null,
@@ -376,32 +381,51 @@ export const gridOverlay = {
     return j;
   },
 
-  /** 지금 화면 한가운데가 동아시아 상자 안이고, 충분히 확대돼 있는가.
-   *  ⚠️ 상자 밖에서 촘촘한 판을 쓰면 화면 대부분이 빈다 — 반드시 안일 때만 쓴다.
-   *  ⚠️ 아주 멀리서 볼 때는 전지구 판이 맞다. 촘촘한 판은 동아시아 밖이 통째로 비어
-   *     "저기는 바다가 없다"처럼 보인다. */
-  _eastAsiaView() {
+  /** 촘촘한 동아시아 판이 지금 화면에 걸쳐 있는가.
+   *
+   *  ⚠️ 예전에는 **화면 한가운데 한 점**이 상자 안인지만 봤고, 고도 4,000km 를
+   *     넘으면 껐다. 그래서 사람들이 실제로 보는 줌(한반도·일본이 함께 보이는 화면)에서
+   *     번번이 전지구 5° 판이 나왔다 — 한반도 주변 12칸 중 1칸만 칠해지는 그 화면이다.
+   *  ⚠️ 이제 촘촘한 판은 전지구 판을 **대체하지 않고 위에 덧그린다**(show 참고).
+   *     상자 밖이 빌 걱정이 없으니, 상자와 화면이 **겹치는지**만 보면 된다.
+   *  ⚠️ 지구 절반이 보이는 화면에서는 0.5°가 한 픽셀도 못 되므로 그리지 않는다.
+   *     캔버스 한 장과 텍스처 업로드를 아끼는 자리다. */
+  _fineInView() {
     try {
-      const p = viewer?.camera?.positionCartographic;
-      if (!p) return false;
-      const lat = Cesium.Math.toDegrees(p.latitude);
-      const lon = Cesium.Math.toDegrees(p.longitude);
-      // 고도 4,000km 보다 가까울 때만. 그보다 멀면 지구 절반이 보인다.
-      return p.height < 4_000_000
-        && lat >= 23 && lat <= 47 && lon >= 114 && lon <= 150;
+      const camera = viewer?.camera;
+      if (!(camera?.positionCartographic?.height < 9_000_000)) return false;
+      const rect = camera.computeViewRectangle?.();
+      // 지평선까지 보이면 undefined 를 준다 — 그때는 전지구 판만으로 충분하다.
+      if (!rect) return false;
+      const west = Cesium.Math.toDegrees(rect.west);
+      const east = Cesium.Math.toDegrees(rect.east);
+      const south = Cesium.Math.toDegrees(rect.south);
+      const north = Cesium.Math.toDegrees(rect.north);
+      if (north < EA_BOX.south || south > EA_BOX.north) return false;
+      // 날짜변경선을 걸친 화면은 west > east 로 온다. 상자는 안 걸치므로 한쪽만 맞으면 된다.
+      return west <= east
+        ? east >= EA_BOX.west && west <= EA_BOX.east
+        : east >= EA_BOX.west || west <= EA_BOX.east;
     } catch (_) { return false; }
   },
 
-  _desiredSource(key) {
+  /** 이 레이어에 촘촘한 동아시아 판이 있는가 — 화면과 무관한 정적인 표다. */
+  _fineSource(key) {
     const base = SOURCE_OF[key] || 'wind';
-    if (!this._eastAsiaView()) return base;
     /* 동아시아에서는 이미 받는 NOAA OISST 0.5° 관측판을 함께 쓴다.
-       전지구 2°판보다 촘촘하고, SST와 편차가 같은 날짜·같은 원격자다. */
-    if (key === 'sst') return 'sstAnomEa';
-    if (key === 'sstanom') return 'sstAnomEa';
-    if (base === 'marine' && key !== 'sstanom') return 'marineEa';
+       전지구 판보다 촘촘하고, SST와 편차가 같은 날짜·같은 원격자다. */
+    if (key === 'sst' || key === 'sstanom') return 'sstAnomEa';
+    if (base === 'marine') return 'marineEa';
     if (key === 'pressure') return 'pressureEa';
-    return base;
+    return null;
+  },
+
+  /** refreshResolution 이 "판이 바뀌었나"를 볼 때 쓰는 이름. 실제로 그려지는 것은
+   *  전지구 판 + (선택) 촘촘한 판 두 장이고, 이 이름은 **위에 놓인 판**을 가리킨다. */
+  _desiredSource(key) {
+    const fine = this._fineInView() ? this._fineSource(key) : null;
+    if (fine && this._fineMissing.has(fine)) return SOURCE_OF[key] || 'wind';
+    return fine || SOURCE_OF[key] || 'wind';
   },
 
   /** key = 레이어 id (temp · rh · sst · pm25 · fog …) */
@@ -418,132 +442,57 @@ export const gridOverlay = {
     }
     if (!on) { this._remove(key); return; }
     try {
-      /* ⚠️ 동아시아를 보고 있으면 촘촘한 판으로 바꾼다.
-         ⚠️⚠️ 지금은 **레이어를 켜는 순간**에만 고른다. 켜 둔 채로 지구를 돌려
-            동아시아로 오면 전지구 판 그대로다 — 껐다 켜야 바뀐다.
-            (카메라가 멈출 때마다 격자를 다시 그리면 발열이 는다. 그 대가로 택한 것이다.)
-         ⚠️ 못 받으면 조용히 전지구 판으로 돌아간다. 안 그러면 화면이 통째로 빈다. */
+      /* ⚠️⚠️ **전지구 판을 먼저 깔고, 촘촘한 동아시아 판을 그 위에 덧그린다.**
+         예전에는 둘 중 하나만 골라 그렸다. 그래서
+           · 촘촘한 판을 고르면 상자 밖이 통째로 비어 "저기는 바다가 없다"가 되고,
+           · 전지구 판을 고르면 5°(약 550km) 한 칸에 서해·남해·동해가 뭉개졌다.
+         겹쳐 그리면 둘 다 없다. 못 받으면 전지구 판만 남는다 — 화면은 비지 않는다. */
       const baseSource = SOURCE_OF[key] || 'wind';
-      let srcName = this._desiredSource(key);
+      const srcName = this._desiredSource(key);
       /* applyAll·카메라 임계 이벤트가 같은 판을 다시 요청해도 캔버스와 등치선을
          다시 만들지 않는다. 자료 갱신은 레이어를 다시 켜거나 load TTL 이후 별도 경로다. */
       if (this._rendered[key]?.sourceName === srcName && this.layers[key]) return this._rendered[key];
-      if (srcName !== baseSource) {
-        try { await this.load(srcName); } catch (_) { srcName = baseSource; }
-      }
-      const g0 = await this.load(srcName);
-      /* ⚠️ 편차 레이어는 격자 값이 아니라 "지금 − 평년"이다.
-         평년값을 못 받으면 **그리지 않는다**. 실측값을 편차인 척 칠하면
-         평년과 같은 바다가 +25°C 로 새빨갛게 나온다. */
-      let g = g0, field;
-      if (key === 'sstanom') {
-        const an = srcName === 'sstAnomEa'
-          ? { diff: g0.sstAnom, period: g0.period, doy: g0.doy, n: g0.sea,
-              time: g0.observed, source: g0.source }
-          : await this.sstAnomaly();
-        if (!an?.diff) throw new Error('평년값 없음 — 편차를 그리지 않는다');
-        g = { ...g0, _anom: an.diff, time: an.time || g0.time };
-        field = an.diff;
-        const sum = an.diff.reduce((total, value) => total + (Number.isFinite(value) ? value : 0), 0);
-        this._anomInfo = { period: an.period, doy: an.doy, mean: sum / an.n, n: an.n,
-                           source: an.source || g0.source };
-      } else if (key === 'wind' || key === 'windfc') {
-        const U = key === 'windfc' ? g.fu : g.u;
-        const V = key === 'windfc' ? g.fv : g.v;
-        if (!Array.isArray(U) || !Array.isArray(V) || U.length !== V.length) {
-          throw new Error(`격자에 ${key} 없음`);
-        }
-        field = U.map((u, index) => Number.isFinite(u) && Number.isFinite(V[index])
-          ? Math.round(Math.hypot(u, V[index]) * 100) / 100 : null);
-        /* 계산값의 식과 입력 필드를 메타데이터로 남긴다. source/time은 원 격자 그대로다. */
-        g = { ...g, [FIELD_OF[key]]: field,
-          derivation: { kind: 'VECTOR_MAGNITUDE', formula: 'sqrt(u^2+v^2)',
-            inputs: key === 'windfc' ? ['fu', 'fv'] : ['u', 'v'] } };
-      } else {
-        field = g[FIELD_OF[key]];
-      }
+
+      const g0 = await this.load(baseSource);
+      const base = await this._fieldOf(key, g0, baseSource);
       /* ⚠️ 없으면 다른 값으로 대신 칠하지 않는다.
          예보 격자가 아직 안 올라온 서버에서 tmax 를 t 로 칠하면
          "내일 최고기온"이라는 이름 아래 지금 기온이 나온다 — 거짓말이 된다. */
-      if (!field) throw new Error(`격자에 ${key} 없음`);
-      this._remove(key);
+      if (!base?.field) throw new Error(`격자에 ${key} 없음`);
 
       const scale = SCALES[SCALE_OF[key] || key];
       if (!scale) throw new Error(`${key} 눈금 없음`);
-      // 전지구 격자는 날짜변경선에서 감고, 지역 격자는 양 끝을 이어 붙이지 않는다.
-      // ⚠️ 지역 격자를 전지구처럼 % 연산하면 180° 끝이 90° 시작과 섞인다.
-      const globalGrid = isGlobalGrid(g);
-      const W = Math.max(4, (globalGrid ? g.nx : Math.max(1, g.nx - 1)) * 4);
-      const H = Math.max(4, Math.max(1, g.ny - 1) * 4);
-      const cv = document.createElement('canvas');
-      cv.width = W; cv.height = H;
-      const ctx = cv.getContext('2d');
-      const img = ctx.createImageData(W, H);
 
-      for (let y = 0; y < H; y++) {
-        // 캔버스는 위가 북쪽, 격자는 lat0(남쪽)부터라 뒤집는다
-        const fy = (H - 1 - y) / (H - 1) * (g.ny - 1);
-        const y0 = Math.floor(fy), y1 = Math.min(y0 + 1, g.ny - 1), ty = fy - y0;
-        for (let x = 0; x < W; x++) {
-          const fx = globalGrid
-            ? x / W * g.nx
-            : x / Math.max(1, W - 1) * Math.max(0, g.nx - 1);
-          const x0 = Math.min(g.nx - 1, Math.floor(fx));
-          const x1 = globalGrid ? (x0 + 1) % g.nx : Math.min(x0 + 1, g.nx - 1);
-          const tx = fx - Math.floor(fx);
-          const q = (xx, yy) => field[yy * g.nx + xx];
-          const a = q(x0, y0), b = q(x1, y0), c = q(x0, y1), d = q(x1, y1);
-          const i = (y * W + x) * 4;
-          if (a == null || b == null || c == null || d == null) { img.data[i + 3] = 0; continue; }
-          const v = a * (1 - tx) * (1 - ty) + b * tx * (1 - ty) + c * (1 - tx) * ty + d * tx * ty;
-          /* ⚠️⚠️ **아무 일도 없는 곳은 칠하지 않는다.**
-             강수처럼 "대부분 0" 인 값은 눈금 아래를 그대로 칠하면
-             **비가 안 오는 곳까지 전부 파랗게** 된다 — 실측 화면에서 지구 전체가
-             젖은 것처럼 보였다. 눈금 시작값 아래는 투명하게 두고,
-             시작값 근처에서는 서서히 나타나게 한다(계단이 보이지 않게).
-             ⚠️ `mute` 를 안 준 눈금(기온·습도 등)은 예전 그대로 전부 칠한다 —
-                기온은 "0도 지역"이 없어서 투명하게 두면 구멍이 뚫린다. */
-          if (scale.mute != null && v < scale.mute) { img.data[i + 3] = 0; continue; }
-          const [R, G, B] = colorAt(scale, v);
-          img.data[i] = R; img.data[i + 1] = G; img.data[i + 2] = B;
-          let al = scale.alpha;
-          if (scale.mute != null) {
-            const fade = scale.fade ?? (scale.mute * 3);
-            if (v < fade) al *= (v - scale.mute) / (fade - scale.mute || 1);
+      this._remove(key);
+      this.layers[key] = this._paint(base.grid, base.field, scale);
+      let shown = { ...base, sourceName: baseSource };
+
+      /* 촘촘한 판 — 화면에 걸쳐 있을 때만. 실패는 조용히 넘어간다(전지구 판이 이미 있다). */
+      const fineName = srcName !== baseSource ? srcName : null;
+      if (fineName) {
+        try {
+          const gf = await this.load(fineName);
+          const fine = await this._fieldOf(key, gf, fineName);
+          if (fine?.field) {
+            this.fine[key] = this._paint(fine.grid, fine.field, scale);
+            shown = { ...fine, sourceName: fineName };
           }
-          img.data[i + 3] = Math.round(Math.max(0, Math.min(1, al)) * 255);
+        } catch (error) {
+          /* ⚠️ 한 번 없으면 카메라가 멈출 때마다 다시 조르지 않는다.
+             전지구 판은 이미 깔려 있어 화면은 멀쩡하고, 재시도는 발열만 된다.
+             자료가 올라오면 레이어를 껐다 켜거나 새로 고칠 때 다시 본다. */
+          this._fineMissing.add(fineName);
+          console.warn('[gridOverlay] 보강판 없음', key, error.message);
         }
       }
-      ctx.putImageData(img, 0, 0);
 
-      /* 단계색은 경계가 목적이다. 저해상도 캔버스를 다시 선형 확대하면 색 사이에
-         존재하지 않는 중간색이 생기므로 nearest-neighbour로 키운다. 원자료 자체의
-         공간 보간은 위 루프에서 한 번만 하고, 범례 경계를 그대로 보존한다.
-         ⚠️ 1° SST 전지구판을 무조건 3배로 키우면 폭 4,320px이 되어 일부 모바일의
-            4,096px GPU 텍스처 한도를 넘는다. 원판 크기에 따라 1~3배로 제한한다. */
-      const soft = document.createElement('canvas');
-      const upscale = Math.max(1, Math.min(3, Math.floor(4096 / Math.max(W, H))));
-      soft.width = W * upscale; soft.height = H * upscale;
-      const sc = soft.getContext('2d');
-      sc.imageSmoothingEnabled = !scale.stepped;
-      if (!scale.stepped) sc.imageSmoothingQuality = 'high';
-      sc.drawImage(cv, 0, 0, soft.width, soft.height);
-
-      const bounds = gridBounds(g);
-      if (!bounds) throw new Error(`${key} 격자 범위 없음`);
-      const L = viewer.imageryLayers.addImageryProvider(
-        new Cesium.SingleTileImageryProvider({
-          url: soft.toDataURL('image/png'),
-          rectangle: Cesium.Rectangle.fromDegrees(bounds.west, bounds.south, bounds.east, bounds.north),
-          tileWidth: soft.width, tileHeight: soft.height,
-          credit: g.attribution || g.source || 'Open-Meteo',
-        })
-      );
-      this.layers[key] = L;
-      this._rendered[key] = { grid: g, field, sourceName: srcName };
-      this._showValueLabels(key, g, field);
+      /* ⚠️ 읽는 값(도시 수치·물어보기·등치선)은 **위에 놓인 판**을 따른다.
+         화면에 0.5°가 보이는데 5° 값을 숫자로 적으면 그림과 숫자가 어긋난다. */
+      if (shown.anomInfo) this._anomInfo = shown.anomInfo;
+      this._rendered[key] = { grid: shown.grid, field: shown.field, sourceName: shown.sourceName };
+      this._showValueLabels(key, shown.grid, shown.field);
       document.dispatchEvent(new CustomEvent('earthus:grid-ready', {
-        detail: { layer: key, grid: g, field, sourceName: srcName },
+        detail: { layer: key, grid: shown.grid, field: shown.field, sourceName: shown.sourceName },
       }));
     } catch (e) {
       console.warn('[gridOverlay]', key, e.message);
@@ -564,10 +513,143 @@ export const gridOverlay = {
     }
   },
 
+  /** 한 판에서 이 레이어가 칠할 값 배열을 꺼낸다.
+   *  전지구 판과 보강판이 같은 규칙을 지나가도록 한곳에 모았다.
+   *  @returns {{grid:object, field:Array, anomInfo?:object}|null} */
+  async _fieldOf(key, g, srcName) {
+    /* ⚠️ 편차 레이어는 격자 값이 아니라 "지금 − 평년"이다.
+       평년값을 못 받으면 **그리지 않는다**. 실측값을 편차인 척 칠하면
+       평년과 같은 바다가 +25°C 로 새빨갛게 나온다. */
+    if (key === 'sstanom') {
+      const an = srcName === 'sstAnomEa'
+        ? { diff: g.sstAnom, period: g.period, doy: g.doy, n: g.sea,
+            time: g.observed, source: g.source }
+        : await this.sstAnomaly();
+      if (!an?.diff) throw new Error('평년값 없음 — 편차를 그리지 않는다');
+      const sum = an.diff.reduce((total, value) => total + (Number.isFinite(value) ? value : 0), 0);
+      return {
+        grid: { ...g, _anom: an.diff, time: an.time || g.time },
+        field: an.diff,
+        anomInfo: { period: an.period, doy: an.doy, mean: sum / an.n, n: an.n,
+                    source: an.source || g.source },
+      };
+    }
+    if (key === 'wind' || key === 'windfc') {
+      const U = key === 'windfc' ? g.fu : g.u;
+      const V = key === 'windfc' ? g.fv : g.v;
+      if (!Array.isArray(U) || !Array.isArray(V) || U.length !== V.length) return null;
+      const field = U.map((u, index) => Number.isFinite(u) && Number.isFinite(V[index])
+        ? Math.round(Math.hypot(u, V[index]) * 100) / 100 : null);
+      /* 계산값의 식과 입력 필드를 메타데이터로 남긴다. source/time은 원 격자 그대로다. */
+      return { grid: { ...g, [FIELD_OF[key]]: field,
+        derivation: { kind: 'VECTOR_MAGNITUDE', formula: 'sqrt(u^2+v^2)',
+          inputs: key === 'windfc' ? ['fu', 'fv'] : ['u', 'v'] } }, field };
+    }
+    const field = g[FIELD_OF[key]];
+    return Array.isArray(field) ? { grid: g, field } : null;
+  },
+
+  /** 격자 한 장을 캔버스로 칠해 Cesium 이미지 레이어로 얹는다.
+   *  ⚠️ 전지구 판과 동아시아 보강판이 **같은 함수**를 쓴다. 두 판의 색·보간 규칙이
+   *     갈라지면 경계에서 색이 튄다.
+   *  @returns {Cesium.ImageryLayer} */
+  _paint(g, field, scale) {
+    // 전지구 격자는 날짜변경선에서 감고, 지역 격자는 양 끝을 이어 붙이지 않는다.
+    // ⚠️ 지역 격자를 전지구처럼 % 연산하면 180° 끝이 90° 시작과 섞인다.
+    const globalGrid = isGlobalGrid(g);
+    const W = Math.max(4, (globalGrid ? g.nx : Math.max(1, g.nx - 1)) * 4);
+    const H = Math.max(4, Math.max(1, g.ny - 1) * 4);
+    const cv = document.createElement('canvas');
+    cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d');
+    const img = ctx.createImageData(W, H);
+
+    for (let y = 0; y < H; y++) {
+      // 캔버스는 위가 북쪽, 격자는 lat0(남쪽)부터라 뒤집는다
+      const fy = (H - 1 - y) / (H - 1) * (g.ny - 1);
+      const y0 = Math.floor(fy), y1 = Math.min(y0 + 1, g.ny - 1), ty = fy - y0;
+      for (let x = 0; x < W; x++) {
+        const fx = globalGrid
+          ? x / W * g.nx
+          : x / Math.max(1, W - 1) * Math.max(0, g.nx - 1);
+        const x0 = Math.min(g.nx - 1, Math.floor(fx));
+        const x1 = globalGrid ? (x0 + 1) % g.nx : Math.min(x0 + 1, g.nx - 1);
+        const tx = fx - Math.floor(fx);
+        const q = (xx, yy) => field[yy * g.nx + xx];
+        const a = q(x0, y0), b = q(x1, y0), c = q(x0, y1), d = q(x1, y1);
+        const i = (y * W + x) * 4;
+        /* ⚠️⚠️ **이 픽셀이 속한 원격자점**이 결측이면 칠하지 않는다.
+           칠하는 범위는 언제나 원자료의 바다·육지 구분과 같아진다 — 없는 곳에
+           색을 만들지 않기 위한 선이다.
+           ⚠️ 예전에는 네 꼭짓점이 **모두** 있어야 칠했다. 그러면 해안 칸이 통째로
+              사라진다: 5° 전지구 해양 격자에서 한반도 주변(30~42°N·118~136°E)
+              12칸 중 **1칸**만 칠해졌다(실측). 서해·동해·남해가 전부 빈 채로
+              동중국해 한 덩어리만 남아서 "깨진 화면"으로 보였다.
+           ⚠️ 그래서 있는 꼭짓점만으로 가중평균한다. 가중치를 남은 것끼리 다시
+              나누므로 없는 값을 0 으로 세지 않는다. */
+        const near = tx < 0.5 ? (ty < 0.5 ? a : c) : (ty < 0.5 ? b : d);
+        if (near == null || !Number.isFinite(near)) { img.data[i + 3] = 0; continue; }
+        let acc = 0, weight = 0;
+        const take = (value, w) => {
+          if (value != null && Number.isFinite(value)) { acc += value * w; weight += w; }
+        };
+        take(a, (1 - tx) * (1 - ty)); take(b, tx * (1 - ty));
+        take(c, (1 - tx) * ty);       take(d, tx * ty);
+        /* 속한 격자점이 살아 있으면 그 가중치만으로도 0.25 이상이라 0 나눗셈은 없다. */
+        const v = weight > 0 ? acc / weight : near;
+        /* ⚠️⚠️ **아무 일도 없는 곳은 칠하지 않는다.**
+           강수처럼 "대부분 0" 인 값은 눈금 아래를 그대로 칠하면
+           **비가 안 오는 곳까지 전부 파랗게** 된다 — 실측 화면에서 지구 전체가
+           젖은 것처럼 보였다. 눈금 시작값 아래는 투명하게 두고,
+           시작값 근처에서는 서서히 나타나게 한다(계단이 보이지 않게).
+           ⚠️ `mute` 를 안 준 눈금(기온·습도 등)은 예전 그대로 전부 칠한다 —
+              기온은 "0도 지역"이 없어서 투명하게 두면 구멍이 뚫린다. */
+        if (scale.mute != null && v < scale.mute) { img.data[i + 3] = 0; continue; }
+        const [R, G, B] = colorAt(scale, v);
+        img.data[i] = R; img.data[i + 1] = G; img.data[i + 2] = B;
+        let al = scale.alpha;
+        if (scale.mute != null) {
+          const fade = scale.fade ?? (scale.mute * 3);
+          if (v < fade) al *= (v - scale.mute) / (fade - scale.mute || 1);
+        }
+        img.data[i + 3] = Math.round(Math.max(0, Math.min(1, al)) * 255);
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+
+    /* 단계색은 경계가 목적이다. 저해상도 캔버스를 다시 선형 확대하면 색 사이에
+       존재하지 않는 중간색이 생기므로 nearest-neighbour로 키운다. 원자료 자체의
+       공간 보간은 위 루프에서 한 번만 하고, 범례 경계를 그대로 보존한다.
+       ⚠️ 1° SST 전지구판을 무조건 3배로 키우면 폭 4,320px이 되어 일부 모바일의
+          4,096px GPU 텍스처 한도를 넘는다. 원판 크기에 따라 1~3배로 제한한다. */
+    const soft = document.createElement('canvas');
+    const upscale = Math.max(1, Math.min(3, Math.floor(4096 / Math.max(W, H))));
+    soft.width = W * upscale; soft.height = H * upscale;
+    const sc = soft.getContext('2d');
+    sc.imageSmoothingEnabled = !scale.stepped;
+    if (!scale.stepped) sc.imageSmoothingQuality = 'high';
+    sc.drawImage(cv, 0, 0, soft.width, soft.height);
+
+    const bounds = gridBounds(g);
+    if (!bounds) throw new Error(`${g.source || '격자'} 범위 없음`);
+    const L = viewer.imageryLayers.addImageryProvider(
+      new Cesium.SingleTileImageryProvider({
+        url: soft.toDataURL('image/png'),
+        rectangle: Cesium.Rectangle.fromDegrees(bounds.west, bounds.south, bounds.east, bounds.north),
+        tileWidth: soft.width, tileHeight: soft.height,
+        credit: g.attribution || g.source || 'Open-Meteo',
+      })
+    );
+    return L;
+  },
+
   _remove(key) {
-    const L = this.layers[key];
-    if (L) { try { viewer.imageryLayers.remove(L, true); } catch (_) {} }
+    /* ⚠️ 전지구 판과 보강판 두 장이다. 한 장만 지우면 남은 판이 화면에 붙박인다. */
+    [this.layers[key], this.fine[key]].forEach(layer => {
+      if (layer) { try { viewer.imageryLayers.remove(layer, true); } catch (_) {} }
+    });
     delete this.layers[key];
+    delete this.fine[key];
     delete this._rendered[key];
     if (key === 'tpw') this._clearValueLabels();
     document.dispatchEvent(new CustomEvent('earthus:grid-removed', { detail: { layer: key } }));

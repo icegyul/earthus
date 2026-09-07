@@ -29,6 +29,26 @@ export function nearestGridIndex(grid, lat, lon) {
   return iy * grid.nx + ix;
 }
 
+/** 가장 가까운 원격자점이 **어디에 있는지**까지 돌려준다.
+ *  ⚠️ 5° 격자에서는 이 점이 도시에서 300km 넘게 떨어질 수 있다. 서울(37.57°N)의
+ *     가장 가까운 점은 40°N·125°E — 서해 북부다. 그 값을 "서울"이라고 부르면
+ *     실제 서울 관측(57%)과 다른 숫자(87%)가 서울 이름을 달고 나온다(실측).
+ *  @returns {{index:number, lat:number, lon:number, km:number}|null} */
+export function nearestGridPoint(grid, lat, lon) {
+  const index = nearestGridIndex(grid, lat, lon);
+  if (index == null) return null;
+  const iy = Math.floor(index / grid.nx), ix = index % grid.nx;
+  const pointLat = grid.lat0 + iy * grid.res;
+  let pointLon = grid.lon0 + ix * grid.res;
+  // 전지구 격자는 감기므로 -180~180 으로 되돌린 뒤 가까운 쪽으로 재는다.
+  pointLon = ((pointLon + 540) % 360) - 180;
+  let dLon = pointLon - lon;
+  if (dLon > 180) dLon -= 360; else if (dLon < -180) dLon += 360;
+  const meanLat = (pointLat + lat) * Math.PI / 360;
+  const km = Math.hypot(dLon * Math.cos(meanLat), pointLat - lat) * 111.32;
+  return { index, lat: pointLat, lon: pointLon, km };
+}
+
 export function nearestGridValue(grid, field, lat, lon) {
   const index = nearestGridIndex(grid, lat, lon);
   if (index == null || !Array.isArray(field)) return null;

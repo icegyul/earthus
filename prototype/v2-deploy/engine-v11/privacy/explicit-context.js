@@ -1,0 +1,3 @@
+const KINDS=new Set(['SAVED_PLACE','WATCH','TRIP','INTEREST']);
+export function normalizeExplicitContext(rows=[]){const out={savedPlaceIds:[],watchSubjectIds:[],tripPlaceIds:[],interests:[]};for(const r of rows){if(!KINDS.has(r?.kind)||!r.subjectId)continue;if(r.kind==='SAVED_PLACE')out.savedPlaceIds.push(String(r.subjectId));if(r.kind==='WATCH')out.watchSubjectIds.push(String(r.subjectId));if(r.kind==='TRIP')out.tripPlaceIds.push(String(r.subjectId));if(r.kind==='INTEREST')out.interests.push(String(r.subjectId));}for(const k of Object.keys(out))out[k]=[...new Set(out[k])];return Object.freeze(out);}
+export function contextKindAllowed(kind){return KINDS.has(kind);}

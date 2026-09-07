@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 773.16 325" fill="none">
+  <defs><clipPath id="base"><rect x="-300" y="-300" width="1718" height="400"></rect></clipPath><clipPath id="lam"><rect x="-50" y="-50" width="220" height="112"></rect></clipPath></defs>
+  <g transform="translate(362.58,30)" clip-path="url(#lam)"><g stroke="#0A0A0A" stroke-width="6.77" stroke-miterlimit="10">
+    <path d="M-1.4 66 L24 0 L49.4 66"></path>
+  </g></g>
+  <g transform="translate(40,140) scale(0.62)"><g clip-path="url(#base)"><g stroke="#0A0A0A" stroke-width="12.90" stroke-miterlimit="10">
+      <path transform="translate(0,0)" d="M50 1.9 H1.9 V98.1 H50 M1.9 50 H50"></path>
+      <path transform="translate(177,0)" d="M-2.2 108 L28 0 L58.2 108"></path>
+      <path transform="translate(354,0)" d="M1.9 100 V1.9 H30 A22.1 22.1 0 0 1 30 48 H1.9 M30 48 L57.7 108"></path>
+      <path transform="translate(531,0)" d="M0 1.9 H56 M28 1.9 V100"></path>
+      <path transform="translate(708,0)" d="M1.9 0 V100 M54.1 0 V100 M1.9 50 H54.1"></path>
+      <path transform="translate(885,0)" d="M1.9 0 V70 A26.1 26.1 0 0 0 54.1 70 V0"></path>
+      <path transform="translate(1062,0)" d="M49 14 C42.4 5.5 35 3 28 3 C15.3 3 6.6 11.5 6.6 24 C6.6 37.5 17.1 43 28 48 C39.4 53 49.4 59 49.4 74 C49.4 88 39.8 97 28 97 C20.1 97 10.9 93.5 5.7 84.5"></path>
+  </g></g>
+  <g transform="translate(0,186)"><text x="557.5" y="0" text-anchor="middle" textLength="888" lengthAdjust="spacing" fill="#0A0A0A" font-family="&#39;Jost&#39;,&#39;Futura&#39;,&#39;Helvetica Neue&#39;,Helvetica,Arial,sans-serif" font-size="24" font-weight="300">WHERE EARTH BECOMES ONE</text></g></g>
+</svg>

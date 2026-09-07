@@ -1,0 +1,21 @@
+/* 2026-09-05 정보 접근성: 지구는 유지하고 메뉴·자료를 읽을 수 있게 한다. */
+#menu-panel{width:min(470px,calc(100vw - 46px))}#menu-panel .mp-body{min-height:0;padding:12px 16px 28px}
+.mp-search{padding:14px 16px;border-bottom:1px solid #344758;display:grid;gap:10px;background:#111e2d;color:#d5e5ef}
+.mp-search label{font-size:14px}.mp-search input[type=search]{display:block;width:100%;box-sizing:border-box;margin-top:6px;border:1px solid #52677b;border-radius:7px;background:#091420;color:#edf5fb;padding:12px;font:inherit;min-height:44px}
+.mp-active-only{display:flex;gap:8px;align-items:center;min-height:30px}.mp-active-only input{width:18px;height:18px}
+.mp-title button{display:flex;gap:8px;align-items:center;background:none;border:0;color:inherit;font:inherit;min-height:44px;width:100%;text-align:left;cursor:pointer}.mp-title button em{margin-left:auto;font-size:13px}.mp-title button[aria-expanded=false]::after{content:'＋'}.mp-title button[aria-expanded=true]::after{content:'−'}
+.mp-sec [hidden]{display:none!important}.mp-item{flex-wrap:wrap;gap:6px 10px;min-height:72px;padding:12px!important;font-size:15px!important}.mp-question,.mp-support{flex:0 0 100%;display:block;text-align:left;line-height:1.5}.mp-question{font-size:14px;color:#c7dce9}.mp-support{font-size:12px;color:#9db8cd}.mp-note{white-space:normal;font-size:12px;overflow-wrap:anywhere}
+#intel{width:min(480px,calc(100vw - 32px))}#intel .intel-tabs{display:flex;flex-wrap:wrap;gap:4px}#intel .intel-tabs button{font-size:14px;min-height:44px;padding:8px}.card-b{font-size:14px!important;line-height:1.65}.card-h{font-size:16px!important;line-height:1.5}.badge{font-size:11px;white-space:normal}.card-b .stat{gap:12px;padding:8px 0;align-items:flex-start}.card-b .stat .k{flex:1;min-width:70px}.card-b .stat .v{max-width:68%;overflow-wrap:anywhere;text-align:right}.card-b button,.context-details summary,.information-context button{min-height:44px;font-size:14px;cursor:pointer}
+.information-context{border:1px solid #365367;border-radius:10px;background:#102837;padding:14px;color:#cbe1ee;margin-bottom:16px;font-size:13px;line-height:1.65}.information-context strong{display:block;font-size:16px;color:#f1f8fb;margin-bottom:6px}.information-context details{margin-top:10px}.information-context summary{min-height:36px;cursor:pointer}.information-context button{border:1px solid #44647a;background:#17394e;color:#e0f2fd;border-radius:6px;padding:6px 12px}.information-time{color:#ecd7a6;border-left:3px solid #bda16c;padding-left:8px}
+.active-data-row{display:flex;align-items:center;gap:8px;border-top:1px solid #365367;padding:9px 0}.active-data-row>span{flex:1}.active-data-row small{display:block;font-size:12px;color:#aec5d3}.active-data-row button{flex:0 0 auto}
+.context-details{margin:16px 0;border:1px solid #31495b;border-radius:8px;padding:10px}.context-details>summary{font-size:14px;color:#bfd5e5;cursor:pointer}.context-details .card{margin:10px 0}.card-b details{margin:10px 0}.card-b details summary{cursor:pointer;padding:8px}
+button:focus-visible,input:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid #84daff!important;outline-offset:3px}
+.edge-tab.open,.edge-tab.beside{transform:translateX(min(470px,calc(100vw - 46px)))}
+#intel.open #intel-body{width:100%;box-sizing:border-box;max-height:75vh;background:rgba(9,22,34,.97)}
+#intel .intel-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding-right:38px;position:relative}
+#intel .intel-tabs button{letter-spacing:0;white-space:nowrap;min-width:0}
+#intel .intel-tabs #intel-close{position:absolute;right:0;top:0;width:32px}
+#intel .card-b,#intel .travel-catalog{color:#ccdee9}
+#intel .context-details label{display:block;margin:10px 0}#intel .context-details input{display:block;width:100%;box-sizing:border-box;min-height:44px;border:1px solid #567083;border-radius:6px;background:#0b1e2d;color:#e9f4fb;padding:10px;font:inherit}
+#timestrip{max-width:calc(100vw - 24px)}#ts-label{font-size:13px;white-space:normal}#ts-range{min-width:70px}
+@media(max-width:700px){#intel{right:8px;max-width:calc(100vw - 16px)}#intel-content{padding:12px}.card-b .stat{flex-wrap:wrap}.card-b .stat .v{max-width:100%}.mp-chip{min-height:40px;font-size:13px}.mp-search{padding:12px}.card{padding:14px}.information-context{margin-bottom:12px}}

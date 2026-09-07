@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "earthus.provider-receipt.v1",
+  "product": "EARTHUS far-scope data base Earth (baked)",
+  "generatedAt": "2026-08-31T14:30:39.685Z",
+  "synthetic": false,
+  "meaning": "NE2 cross-blended hypsometric colors + baked shaded relief + rivers/lakes, dark grade, Natural Earth borders burned in; ocean recolored deep navy via Natural Earth land mask",
+  "sources": [
+    {
+      "name": "Natural Earth II with Shaded Relief and Water 1:50m v2.0",
+      "url": "https://naciscdn.org/naturalearth/50m/raster/NE2_50M_SR_W.zip",
+      "license": "Public domain"
+    },
+    {
+      "name": "Natural Earth admin_0 boundary lines land 1:50m",
+      "url": "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_boundary_lines_land.geojson",
+      "license": "Public domain"
+    },
+    {
+      "name": "ocean-specular-mask.png (repo asset, Natural Earth polygons)",
+      "license": "Public domain"
+    }
+  ],
+  "outputs": {
+    "ne2-base-8192.jpg": {
+      "sha256": "1fe48ca3484e03ad2cb5823cff3d7c9cb129ec65da11698aef6ba3d6d43a59b0",
+      "bytes": 4358569,
+      "width": 8192,
+      "height": 4096
+    },
+    "ne2-base-4096.jpg": {
+      "sha256": "531dc31ca517af4cd46482fa865d58b4e833a64a71259fcdb5c7ec1c3439212d",
+      "bytes": 1266048,
+      "width": 4096,
+      "height": 2048
+    },
+    "ne2-base-2048.jpg": {
+      "sha256": "a566de4b96bbd4ecbb198abb88b0d0bc2dbb9b1dffd458813223755902c82ef8",
+      "bytes": 376639,
+      "width": 2048,
+      "height": 1024
+    },
+    "ne2-tiles": {
+      "tiles": 682,
+      "scheme": "geographic 256px z0-z4"
+    }
+  }
+}

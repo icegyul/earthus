@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "experiment-preregistration-step37",
+  "step": 40,
+  "status": "BOOTSTRAP PROTOCOL LOCKED (file-level; automatic commit forbidden)",
+  "createdAtUTC": "2026-09-07T04:07:39Z",
+  "step38LockCommit": "23e78f863fb092aa9e3c36e4d74d4afd4393e7f4",
+  "step37LockCommit": "74d19f0a9661a41d63a08c56bbd3f91e9d8b312d",
+  "definition": {
+    "input": "STEP 39 primary 72 h C-A drifter deltas (frozen); Delta_w = median(delta_i) within window; Theta = median over windows with >= 1 valid pair",
+    "samplingUnit": "window",
+    "samplingFrame": "all 9 registered windows (GS-Y1..GS-Y9), NA windows included in the frame and contributing nothing when drawn",
+    "B": 10000,
+    "seed": 20260907,
+    "rng": "one numpy.random.default_rng(20260907); rng.integers(0, 9, size=9) per replicate, sequential",
+    "replicate": "9 windows with replacement; every valid drifter delta of each sampled window retained; a window drawn k times contributes k times; no independent drifter resampling; no trajectory-point resampling; no weighting by drifter count; no imputation; a replicate with no available window is NOT_AVAILABLE and never redrawn",
+    "statistic": "Theta_b = median over sampled available windows of Delta_w (frozen nested rule)",
+    "interval": "numpy.quantile(available, [0.025, 0.975], method='linear')",
+    "successRule": "CANDIDATE_DESCRIPTIVELY_FAVORED AND upper_95 < 0 km (frozen STEP 37; unchanged)",
+    "sensitivity": "drifter-level bootstrap of the pooled median, SECONDARY / SENSITIVITY ONLY, separate generator with the same seed"
+  },
+  "frozenPrimaryInput": {
+    "Delta_w_km": {
+      "GS-Y1": -17.872,
+      "GS-Y2": -5.615,
+      "GS-Y3": -21.379,
+      "GS-Y4": -41.283,
+      "GS-Y5": "NOT_AVAILABLE",
+      "GS-Y6": -65.774,
+      "GS-Y7": "NOT_AVAILABLE",
+      "GS-Y8": "NOT_AVAILABLE",
+      "GS-Y9": -78.371
+    },
+    "Theta_km": -31.331
+  },
+  "inputs": {
+    "step39EvaluationSha256": "5ed91fc3ed18184e222c180ef712fca12775563749a3b8b47cf698165aaf76ac",
+    "step39SummarySha256": "7d90ba995733071f9536df598332bffdc2bd75d4206e7ef23a2c1f9bde67ea83"
+  },
+  "frozen": {
+    "docs/research/step39-execution-protocol.json": "5bd1eb236d2d423f2af24440cceea798e150fd20ee2a4acb754b78522b6aba23",
+    "docs/research/step39-execution-record.json": "d551faf996b85d1d76e9296302d3dca1374e2d7971802c82b637970a9fbec131",
+    "docs/research/step39-evaluation.json": "5ed91fc3ed18184e222c180ef712fca12775563749a3b8b47cf698165aaf76ac",
+    "docs/research/step39-summary.json": "7d90ba995733071f9536df598332bffdc2bd75d4206e7ef23a2c1f9bde67ea83",
+    "docs/research/step39-paired-table.csv": "30fbc404142e9b20bb83879a67821614937a146810078088cb623bbb04623035",
+    "docs/research/step39-temporal-run-manifest.json": "b267f5869a0160227545b4a4f294de10bdcac1a7dd11841ac28813b73f779634",
+    "docs/research/step39-candidate-run-manifest.json": "534cd7426f6f2af653303b9e4ae019d489d9e416524b54859ba7d227da86eba5",
+    "docs/research/step39-validator-r2-record.json": "41ae481680d44761b1a81d91c181666b727660a0066b76e728d8d2b00bf8f5cd",
+    "docs/research/step37-experiment-preregistration-protocol.json": "eae40cde609155a32ccbe0c01a6090715e2324d72cc080e2e7043ecbd90f2d0d",
+    "docs/research/step38-data-freeze-manifest.json": "5e979cff746a1ee72c877a8b1bdb8c1bc1e310605ab9fc7cc6337d9ea902da77",
+    "docs/research/step36-cohort-extension-manifest.json": "bda31c3ca36a395acadc95c1cb18663964ee9a00e4a72a7c2504182f51df06ca"
+  },
+  "tools": {
+    "tools/research/bootstrap_step40.py": "dddcaf1c02faa26d4c024f99bb668810f5add97ae504ab74d68b20fcc3f3847a",
+    "tools/research/check_step40_bootstrap.py": "3f2ba550bbf1b7399d5100f4953a256309f9425091cf05ee7cb934cf9d539fe0"
+  },
+  "noChanges": {
+    "step39Results": false,
+    "trajectoryRerun": false,
+    "parameters": false,
+    "cohort": false,
+    "endpoint": false,
+    "aggregation": false,
+    "naHandling": false
+  },
+  "automaticCommit": false
+}

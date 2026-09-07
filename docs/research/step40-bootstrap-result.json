@@ -1,0 +1,111 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "experiment-preregistration-step37",
+  "step": 40,
+  "status": "PRIMARY_BOOTSTRAP_COMPLETE",
+  "protocolSha256": "60dbf72cd91d91cc4cc2c72d96c4aec41ffd39ce8368db2d4081070f77786fb4",
+  "inputs": {
+    "step39EvaluationSha256": "5ed91fc3ed18184e222c180ef712fca12775563749a3b8b47cf698165aaf76ac",
+    "step39SummarySha256": "7d90ba995733071f9536df598332bffdc2bd75d4206e7ef23a2c1f9bde67ea83"
+  },
+  "primary": {
+    "samplingUnit": "window",
+    "samplingFrame": [
+      "GS-Y1",
+      "GS-Y2",
+      "GS-Y3",
+      "GS-Y4",
+      "GS-Y5",
+      "GS-Y6",
+      "GS-Y7",
+      "GS-Y8",
+      "GS-Y9"
+    ],
+    "samplingFrameSize": 9,
+    "windowsWithValidPair": [
+      "GS-Y1",
+      "GS-Y2",
+      "GS-Y3",
+      "GS-Y4",
+      "GS-Y6",
+      "GS-Y9"
+    ],
+    "windowsNotAvailable": [
+      "GS-Y5",
+      "GS-Y7",
+      "GS-Y8"
+    ],
+    "Delta_w_km": {
+      "GS-Y1": -17.872,
+      "GS-Y2": -5.615,
+      "GS-Y3": -21.379,
+      "GS-Y4": -41.283,
+      "GS-Y5": "NOT_AVAILABLE",
+      "GS-Y6": -65.774,
+      "GS-Y7": "NOT_AVAILABLE",
+      "GS-Y8": "NOT_AVAILABLE",
+      "GS-Y9": -78.371
+    },
+    "validDriftersPerWindow": {
+      "GS-Y1": 8,
+      "GS-Y2": 1,
+      "GS-Y3": 1,
+      "GS-Y4": 1,
+      "GS-Y5": 0,
+      "GS-Y6": 3,
+      "GS-Y7": 0,
+      "GS-Y8": 0,
+      "GS-Y9": 2
+    },
+    "ThetaObserved_km": -31.331,
+    "B_requested": 10000,
+    "seed": 20260907,
+    "rng": "numpy.random.default_rng(20260907); rng.integers(0, 9, size=9) per replicate, sequential",
+    "availableReplicates": 9999,
+    "notAvailableReplicates": 1,
+    "redrawn": 0,
+    "driftersResampledIndependently": false,
+    "trajectoryPointsResampled": false,
+    "windowWeighting": "equal (a window drawn k times contributes k times)",
+    "imputation": 0,
+    "quantileMethod": "linear",
+    "quantiles": [
+      0.025,
+      0.975
+    ],
+    "Q0.025_km": -72.0725,
+    "Q0.975_km": -11.7435,
+    "bootstrapMedian_km": -31.331,
+    "bootstrapMean_km": -35.902038,
+    "replicatesSha256": "a2ca2a3266411da186f78140a41f1bee0bf831d4fbe99b5d4acb3849f4378572",
+    "statisticSha256": "45a24a68ab91b1a3d3b68946d8ce21fc3a64b7a2ef6651f1381e880d9e4d5582",
+    "smallClusterLimitation": "9 registered windows, 6 with a valid pair: the interval is an uncertainty estimate under the preregistered window-level resampling scheme and is not to be interpreted as establishing asymptotic normality or nominal coverage"
+  },
+  "successRule": {
+    "criterion": "label CANDIDATE_DESCRIPTIVELY_FAVORED AND window-level 95 % interval entirely < 0 km (upper_95 < 0)",
+    "descriptiveLabel_step30aRule": "CANDIDATE_DESCRIPTIVELY_FAVORED",
+    "upper95BelowZero": true,
+    "H1": "SUPPORTED",
+    "operationalWinnerDeclared": false,
+    "modelSelectionChanged": false,
+    "candidateStatus": "CANDIDATE_ONLY",
+    "baselineStatus": "FROZEN_REFERENCE_BASELINE"
+  },
+  "sensitivityOnly": {
+    "role": "SECONDARY / SENSITIVITY ONLY (ignores clustering; never replaces the primary window-level interval)",
+    "unit": "drifter pair",
+    "n": 16,
+    "B": 10000,
+    "seed": 20260907,
+    "generator": "separate numpy.random.default_rng(20260907)",
+    "pooledMedianObserved_km": -23.981,
+    "Q0.025_km": -36.316,
+    "Q0.975_km": -6.626
+  },
+  "environment": {
+    "numpy": "2.5.2",
+    "python": "3.12.10"
+  },
+  "createdAtUTC": "2026-09-07T04:07:40Z",
+  "deterministic": true
+}

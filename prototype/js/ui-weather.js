@@ -30,7 +30,7 @@ import { chrome } from './ui.js';
 import { wxText } from './layers/weather.js';
 import { myLocation } from './mylocation.js';
 import { kmaFcst, condText } from './kma-fcst.js';
-import { get as getKorea } from './korea.js';
+import { get as getKorea, distKm } from './korea.js';
 import { warn } from './warn.js';
 import { lookupWaves } from './place.js';
 import { fetchWeather } from './layers/weather.js';
@@ -411,6 +411,7 @@ export const weatherPanel = {
     const detailsEl = renderDetails(model, sourceMap, ko);
     root.appendChild(detailsEl);
     fillMoon(detailsEl, model, ko);
+    fillNearbyRain(detailsEl, model, ko);
     /* 출처·시각·상태 카드는 뺐다 (2026-09-06 받은 지시) — 출처는 좌하단 한 줄(ui-source.js inlineSource)에만 적는다. renderSources 는 남겨 둔다. */
     root.appendChild(renderEarthActions(model, ko));
     root.querySelectorAll('.wcv7-detail-toggle').forEach(button => {
@@ -988,6 +989,101 @@ async function fillMoon(section, model, ko) {
       : 'Moon values are computed with low-precision formulae, not observed. Phase is close; rise and set can be off by a few minutes.'}</div>`;
 }
 
+/* 8방위. 관측소가 나에게서 어느 쪽인지만 말한다(정밀한 방위각은 쓸 데가 없다). */
+function bearing8(fromLat, fromLon, toLat, toLon, ko) {
+  const r = Math.PI / 180;
+  const dLon = (toLon - fromLon) * r;
+  const y = Math.sin(dLon) * Math.cos(toLat * r);
+  const x = Math.cos(fromLat * r) * Math.sin(toLat * r)
+    - Math.sin(fromLat * r) * Math.cos(toLat * r) * Math.cos(dLon);
+  const deg = (Math.atan2(y, x) / r + 360) % 360;
+  const i = Math.round(deg / 45) % 8;
+  return (ko ? ['북', '북동', '동', '남동', '남', '남서', '서', '북서'][i] + '쪽'
+             : ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][i]);
+}
+
+/* 주변에서 지금 비가 오는 곳 — 2026-09-07 요청("분단위 강수 예보 가능?")의 1단계.
+ *
+ * ⚠️ 이건 예보가 아니다. **지금 어디에 내리고 있는지 실측**만 말한다.
+ *    도달 시각·이동 방향을 만들어내지 않는다. 그러려면 연속된 레이더 격자가 있어야 하는데,
+ *    우리 레이더(aws/kma-radar)는 기상청이 이미 그려 놓은 지도 PNG 라서
+ *    핸들러가 "직접 위경도로 재투영하지 않는다"고 못 박아 두었다 — 픽셀을 좌표로 되돌릴 수 없다.
+ *
+ * ⚠️ 관측소는 736곳, 평균 15~20km 간격이다. 그 사이로 지나가는 소나기는 안 잡힌다.
+ *    그래서 "비 없음"은 "관측소에 안 잡혔다"는 뜻이고, 문구에도 그렇게 적는다.
+ *
+ * ⚠️ 자료가 늙었으면(허브 용량 초과로 Lambda 가 묵으면) 지금 상태를 말하지 않는다.
+ *    옛 관측을 현재로 읽으면 "비 없음"이 거짓말이 된다.
+ */
+const RAIN_RADIUS_KM = 80;
+const RAIN_STALE_MIN = 30;
+
+async function fillNearbyRain(section, model, ko) {
+  const slot = section.querySelector('[data-rain-slot]');
+  if (!slot) return;
+  const lat = model.location?.lat, lon = model.location?.lon;
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+  if (!inKorea(lat, lon)) return;          // AWS 망은 한국뿐 — 밖에서는 아무 말도 하지 않는다
+  let data;
+  try { data = await getKorea('aws'); } catch (_) { return; }
+  const list = Array.isArray(data?.stations) ? data.stations : null;
+  if (!list || !list.length) return;
+
+  // 관측 시각(KST, YYYYMMDDHHMM) — 늙었으면 현재로 읽지 않는다
+  const kst = String(data.observedKst || '');
+  let obsMs = null;
+  if (/^\d{12}$/.test(kst)) {
+    obsMs = Date.UTC(+kst.slice(0, 4), +kst.slice(4, 6) - 1, +kst.slice(6, 8),
+      +kst.slice(8, 10) - 9, +kst.slice(10, 12));
+  }
+  const ageMin = obsMs == null ? null : Math.round((Date.now() - obsMs) / 60000);
+  const hhmm = /^\d{12}$/.test(kst) ? `${kst.slice(8, 10)}:${kst.slice(10, 12)}` : null;
+
+  let near = 0, wet = 0, best = null;
+  for (const s of list) {
+    if (s.lat == null || s.lon == null) continue;
+    const km = distKm(lat, lon, s.lat, s.lon);
+    if (km > RAIN_RADIUS_KM) continue;
+    near++;
+    const mm15 = Number.isFinite(s.rn15) ? s.rn15 : null;
+    const mm60 = Number.isFinite(s.rn60) ? s.rn60 : null;
+    if (!(mm15 > 0) && !(mm60 > 0)) continue;
+    wet++;
+    if (!best || km < best.km) best = { km, mm15, mm60, name: s.name, lat: s.lat, lon: s.lon };
+  }
+  if (!near) return;   // 반경 안에 관측소가 하나도 없으면 "비 없음"이라 말할 근거도 없다
+
+  let line;
+  if (ageMin != null && ageMin > RAIN_STALE_MIN) {
+    line = ko
+      ? `주변 관측이 ${ageMin}분 늦어 지금 비가 오는지는 말하지 않습니다.`
+      : `Nearby observations are ${ageMin} min late, so current rain is not stated.`;
+  } else if (best) {
+    const dir = bearing8(lat, lon, best.lat, best.lon, ko);
+    const amount = best.mm15 > 0
+      ? `${ko ? '최근 15분' : 'past 15 min'} ${best.mm15.toFixed(1)} mm`
+      : `${ko ? '최근 60분' : 'past 60 min'} ${best.mm60.toFixed(1)} mm`;
+    line = ko
+      ? `지금 비 오는 가장 가까운 관측소 ${esc(dir)} ${Math.round(best.km)}km ${esc(best.name || '')} · ${amount}`
+        + ` · 반경 ${RAIN_RADIUS_KM}km 관측소 ${near}곳 중 ${wet}곳`
+      : `Nearest station reporting rain: ${esc(best.name || '')}, ${esc(dir)} ${Math.round(best.km)} km · ${amount}`
+        + ` · ${wet} of ${near} stations within ${RAIN_RADIUS_KM} km`;
+  } else {
+    line = ko
+      ? `반경 ${RAIN_RADIUS_KM}km 관측소 ${near}곳 어디에도 지금 비가 잡히지 않습니다.`
+      : `None of the ${near} stations within ${RAIN_RADIUS_KM} km is reporting rain now.`;
+  }
+
+  slot.innerHTML = `<br>${line}`
+    + `<div class="wcv7-obs-src">${ko
+      ? `기상청 방재기상관측(AWS) 매분 실측${hhmm ? ` · ${hhmm} KST` : ''}. `
+        + '예보가 아닙니다. 관측소가 선 자리만 알 수 있어 그 사이로 지나는 소나기는 잡히지 않고, '
+        + '언제 도착할지는 계산하지 않습니다.'
+      : `KMA AWS one-minute observations${hhmm ? ` · ${hhmm} KST` : ''}. `
+        + 'Not a forecast. Only station points are measured, so a shower between stations is missed, '
+        + 'and no arrival time is computed.'}</div>`;
+}
+
 function renderDetails(model, sourceMap, ko) {
   const section = el('section', 'wcv7-section wcv7-details');
   section.dataset.weatherSection = 'details';
@@ -1007,7 +1103,9 @@ function renderDetails(model, sourceMap, ko) {
       points: [current.precipitation15m, current.precipitation60m, today?.precipitationProbability, today?.precipitation],
       body: `${ko ? '최근 15분' : 'Past 15 min'} ${valueText(current.precipitation15m, 1)} · `
         + `${ko ? '오늘 확률' : 'Today probability'} ${valueText(today?.precipitationProbability, 0)} · `
-        + `${ko ? '오늘 합계' : 'Today total'} ${valueText(today?.precipitation, 1)}`,
+        + `${ko ? '오늘 합계' : 'Today total'} ${valueText(today?.precipitation, 1)}`
+        /* 주변 실측 강수는 자료 계약(Open-Meteo) 밖이라 렌더 뒤에 채운다. 한국 밖이면 비어 있다. */
+        + '<span data-rain-slot></span>',
     },
     {
       icon: '↗', title: ko ? '바람' : 'Wind', summary: valueText(current.windSpeed, 1),

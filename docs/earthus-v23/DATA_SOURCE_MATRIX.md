@@ -45,32 +45,34 @@
 | Anthropic API | `news-brief` | 내부 요약 | 모델 이용조건·개인정보·비용·근거 claim 계약 필요 | 사용자 사실 생성 금지, `UNKNOWN` |
 | 내부 파생·운영 | `air-evidence-archive`, `health`, `lab-report-index`, `mountain-verify`, `push-tick`, `signal-foundation`, `source-governance`, `social-draft`, `vaac-validation` | 입력과 동일 | 새 권리를 만들지 않으며 가장 엄격한 입력 권리를 승계 | `INTERNAL` |
 
-## 3. 68개 handler 인벤토리
+## 3. 82개 handler 인벤토리
 
 아래 목록은 현재 `aws/*/handler.py`를 빠짐없이 고정한 것이다. 이 중 source/data handler는
-66개이고 `signal-foundation`, `source-governance`는 기존 출력을 읽는 shadow processor다.
+80개이고 `signal-foundation`, `source-governance`는 기존 출력을 읽는 shadow processor다.
 `tools/test_data_source_matrix.mjs`가 실제 디렉터리와 이 목록의 누락·중복을 막는다.
 
 ```text
-air-evidence-archive  air-grid             air-korea            air-state
-archiver              ascat-observations   atmos-transport-spike crustal
-cwa-observations      cyclone-analog       eclipse-path         ecmwf-ingest
-ecobank               ecobird              flight-track         forest-fire
-fx-grid               gdelt-events         gk2a-clouds          gmgsi-clouds
-gts-global            health               jma-amedas           jma-warn
-khoa-coast            kma-aws              kma-aws-min          kma-fcst
-kma-life              kma-lightning        kma-mountain         kma-normal
-kma-ocean             kma-radar            kma-upper            kma-verify
-kma-warn
-lab-report-index      land-stations        lightning            marine-ea
-marine-grid           metoffice-uk         migbird              mountain-verify
-news-brief            obis-summary         ocean-depth          ocean-solar
-pressure-grid         push-tick            quake-asia           regional-hazards
-regional-news         sea-turtle           seabird              signal-foundation
-social-draft          source-governance    tokyo-vaac           tourism-flow
-tpw-grid
-tsunami-intl          typhoon-official     vaac-validation       wildfire
-wind-grid             world-alerts
+air-ea                 air-evidence-archive   air-grid               air-korea
+air-state              archiver               argo-floats            ascat-observations
+atmos-transport-spike  character-studio       climatology            crustal
+cwa-observations       cyclone-analog         earthus-llm            eclipse-path
+ecmwf-ingest           ecobank                ecobird                flight-track
+forest-fire            fx-grid                gdacs-tc               gdelt-events
+gfs-cloud-forecast     gfs-cloud-global-low   gfs-cloud-volume       gk2a-clouds
+gmgsi-clouds           gts-global             health                 jma-amedas
+jma-warn               khoa-coast             kma-aws                kma-aws-min
+kma-fcst               kma-life               kma-lightning          kma-mountain
+kma-normal             kma-ocean              kma-radar              kma-upper
+kma-verify             kma-warn               lab-events             lab-report-index
+land-stations          launch-feed            lightning              marine-ea
+marine-grid            metoffice-uk           migbird                mountain-verify
+news-brief             obis-summary           ocean-depth            ocean-solar
+pressure-grid          push-tick              quake-asia             regional-hazards
+regional-news          sea-turtle             seabird                signal-foundation
+social-draft           source-governance      space-archive          tokyo-vaac
+tourism-flow           tpw-grid               tropical-intelligence  tsunami-eta
+tsunami-intl           typhoon-official       vaac-validation        wildfire
+wind-grid              world-alerts
 ```
 
 ## 4. 2026-08-14 공식 재확인

@@ -188,4 +188,4 @@
   .wcv7-section>header{display:block}.wcv7-section>header>span{display:block;max-width:none;margin-top:6px;text-align:left}
 }
 /* 달 값의 성격을 밝히는 줄 — 관측이 아니라 계산이라 배지 대신 문장으로 적는다 (2026-09-07) */
-.wcv7-moon-src{margin-top:4px;font-size:10px;line-height:1.5;color:rgba(242,245,248,.45)}
+.wcv7-moon-src,.wcv7-obs-src{margin-top:4px;font-size:10px;line-height:1.5;color:rgba(242,245,248,.45)}

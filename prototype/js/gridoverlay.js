@@ -352,6 +352,12 @@ const SRC_URL = {
   sstAnomEa: () => `${API.MARINE_GRID}/sst-anom-ea.json`,
   /* 기압 색면도 동아시아 확대에서는 등압선과 같은 1° 전용판을 쓴다. */
   pressureEa: () => `${API.WIND}/pressure-ea.json`,
+  /* ⚠️⚠️ 대기질 0.5° 동아시아 보강판. 전지구판은 5°(약 550km)라 **먼지 봉우리를
+     통째로 놓치고 그 자리에 네모를 그린다.** 2026-09-07 실측 — 40°N 줄에서
+     5° 판이 본 값은 100E=349 · 105E=407 인데, 같은 시각 0.5° 실제값은
+     96E=245 · 98E=473 · 100E=341 · 102E=351 · **104E=817** · 106E=62 · 108E=8.
+     최고농도 817 이 격자 사이로 빠졌다. 색을 부드럽게 칠해도 없는 자료는 안 생긴다. */
+  airEa: () => `${API.AIR}/air-ea.json`,
 };
 
 export const gridOverlay = {
@@ -416,6 +422,7 @@ export const gridOverlay = {
        전지구 판보다 촘촘하고, SST와 편차가 같은 날짜·같은 원격자다. */
     if (key === 'sst' || key === 'sstanom') return 'sstAnomEa';
     if (base === 'marine') return 'marineEa';
+    if (base === 'air') return 'airEa';
     if (key === 'pressure') return 'pressureEa';
     return null;
   },

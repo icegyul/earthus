@@ -64,6 +64,12 @@ assert.match(overlay, /sc\.imageSmoothingEnabled = !scale\.stepped/,
   '단계색 확대에서 중간색을 만들면 안 된다');
 assert.match(overlay, /pressureEa:[\s\S]*pressure-ea\.json/,
   '동아시아 기압 색면은 등압선과 같은 1° 전용판을 써야 한다');
+/* ⚠️ 5°(550km) 한 칸이 먼지 봉우리를 통째로 삼킨다 — 40°N 104E 의 817µg/m³ 가
+   격자 사이로 빠지고 그 자리에 네모가 그려졌다(2026-09-07 실측). */
+assert.match(overlay, /airEa: \(\) => `\$\{API\.AIR\}\/air-ea\.json`/,
+  '동아시아 대기질 0.5° 보강판 경로가 있어야 한다');
+assert.match(overlay, /if \(base === 'air'\) return 'airEa'/,
+  '미세먼지·황사·오존·자외선도 동아시아에서는 보강판을 써야 한다');
 assert.match(overlay, /srcName === 'sstAnomEa'[\s\S]{0,240}?g\.sstAnom[\s\S]{0,240}?await this\.sstAnomaly\(\)/,
   '0.5° 실황과 5° 평년장을 섞어 수온 편차를 계산하면 안 된다 — 보강판은 서버가 같은 격자에서 뺀 값을 쓴다');
 assert.match(overlay, /if \(base === 'marine'\) return 'marineEa'/,
@@ -111,4 +117,4 @@ assert.match(renderQuality, /totalRenders\+\+[\s\S]*dataset\.totalRenders/,
 assert.match(index, /readabilityPanel[\s\S]*hidden/,
   '첫 Earth View는 수치·등치선 없이 시작해야 한다');
 
-console.log('Continuous layers PR-06: 40/40 passed');
+console.log('Continuous layers PR-06: 39/39 passed');

@@ -1,0 +1,253 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "cross-validation-interpretation-step51",
+  "step": 51,
+  "classification": "FINAL_INTERPRETATION_LOCK",
+  "status": "INTERPRETATION_LOCKED",
+  "scope": "interpretation only; no experiment, no statistic, no recomputation",
+  "ancestry": {
+    "step36": "043a09b8539955868651a06e7c2c44e3c606803f",
+    "step37": "74d19f0a9661a41d63a08c56bbd3f91e9d8b312d",
+    "step38": "23e78f863fb092aa9e3c36e4d74d4afd4393e7f4",
+    "step40": "2b1a7baa7ef9e69d25cecbff2b09fca8700fca80",
+    "step41": "9a3223089099bcb09a2589cc8a4bda82fcb47ae5",
+    "step42": "bae85245e827f53ee9782201c442ea7849c04e82",
+    "step43": "15970d9735330fb937e86af449c1deef6763b5d1",
+    "step44": "5f8d5c38bfc9cc6a168707ae0b1b643c99ad46f9",
+    "step45a": "b0f0274f14ae491e34f0bcb85874056d92260f46",
+    "step45b": "7249c38d355f97c4f264d2f4d7611ce5013bd8d7",
+    "step45c": "fa9c0590d634a6d6f30cc8a6cd2797c94e0ae7dd",
+    "step46": "f7be980e3aa1e71c4cc96b7aca699e1d4b1faec7",
+    "step48": "00516cd1562d50b9380f4eef4ad66611822ae99c",
+    "step49": "fbb080af5723c32488ddf976d64f067ba12a4555",
+    "step50": "85824367b6fd12c066da0e191f6731a0400293ab",
+    "runtime": "155995dd062b557b7a2ba90e5e5fb5a54ee28048"
+  },
+  "headAtLock": "85824367b6fd12c066da0e191f6731a0400293ab",
+  "frozenInputs": {
+    "docs/research/step42-final-scientific-results-report.md": "c490669413a83bee73a2a33733432073f3e898ee52ce47722b4b365a5da5f1f0",
+    "docs/research/step40-bootstrap-result.json": "e7fe94c8f527846721f856418f1c4686a75132e21a72b122006d3d7bdbe6482f",
+    "docs/research/step45c-validation-cohort-manifest.json": "65a9fc5a5efe40f266c94e0db9d93c969f702fde897a9030e1b01fbf264c4856",
+    "docs/research/step46-validation-extension-preregistration-protocol.json": "c824b053fdeea20336f1396dc503232492ab77e1f9d5f032586b23c47d66862d",
+    "docs/research/step47-validation-extension-cohort-manifest.json": "32d3085010185d8c1a5734ef53be227252220b74a2526dbadf5c72de5eee2cca",
+    "docs/research/step48-validation-data-freeze-manifest.json": "8d50c2aebf32cae57e8b82e318eded07e29b5546dd29a58ea8c8b33a17da8719",
+    "docs/research/step49-validation-extension-execution-manifest.json": "c9b3d59653ae79a2715c24b054e8b3f3b5319c2efe36cf124e286787b9c38bdb",
+    "docs/research/step50-validation-extension-results.json": "c1fbf574c778909be804b57a3bf81200148c5f22dfb710d3b0247d4150908903"
+  },
+  "primary": {
+    "hypothesis": "H1",
+    "status": "SUPPORTED",
+    "comparison": "C - A",
+    "horizonHours": 72,
+    "Theta_km": -31.331,
+    "CI95_km": [
+      -72.0725,
+      -11.7435
+    ],
+    "cohortWindows": 9,
+    "validWindows": 6,
+    "pairedDrifters": 16,
+    "B": 10000,
+    "seed": 20260907,
+    "candidate": "C",
+    "candidateStatus": "CANDIDATE_ONLY",
+    "operationalPromotion": false,
+    "recomputedInStep51": false
+  },
+  "validationExtension": {
+    "hypothesis": "H_EXT",
+    "status": "NOT_SUPPORTED",
+    "comparison": "C - A",
+    "horizonHours": 72,
+    "Theta_km": -2.272,
+    "CI95_km": [
+      -9.597,
+      10.246
+    ],
+    "upperBound_km": 10.246,
+    "upperBoundBelowZero": false,
+    "cohortWindows": 6,
+    "validWindows": 5,
+    "notAvailableWindows": 1,
+    "registeredDrifters": 25,
+    "B": 10000,
+    "seed": 20260946,
+    "availableReplicates": 10000,
+    "notAvailableReplicates": 0,
+    "gate": "PASS",
+    "runUnits": {
+      "planned": 18,
+      "completed": 18,
+      "replayMatched": 18
+    },
+    "byHorizon": {
+      "24h": {
+        "Theta_km": -11.815,
+        "CI95_km": [
+          -25.1625,
+          3.667
+        ]
+      },
+      "48h": {
+        "Theta_km": 2.734,
+        "CI95_km": [
+          -26.1455,
+          16.758
+        ]
+      },
+      "72h": {
+        "Theta_km": -2.272,
+        "CI95_km": [
+          -9.597,
+          10.246
+        ]
+      }
+    },
+    "decisionHorizon": "72h",
+    "secondaryHorizonsUsedForDecision": false,
+    "recomputedInStep51": false
+  },
+  "originalValidationAttempt": {
+    "step": "44/45A/45B/45C",
+    "status": "VALIDATION_COHORT_BLOCKED",
+    "gate": "FAILED",
+    "selectedWindows": 4,
+    "uniqueDrifters": 14,
+    "performanceExecuted": false,
+    "trajectoryResult": false,
+    "endpoint": false,
+    "bootstrap": false,
+    "label": "BLOCKED, preserved unchanged; a blocked attempt is never reported as NOT_SUPPORTED and is never pooled with extension results",
+    "pooledWithExtension": false
+  },
+  "interpretation": {
+    "A_primary": "In the preregistered primary experiment the primary criterion was met: H1 SUPPORTED.",
+    "B_extension": "In the geographically independent validation extension the preregistered replication criterion was not met: H_EXT NOT_SUPPORTED.",
+    "C_combined": "Primary evidence exists; replication evidence is insufficient.",
+    "D_status": "Candidate C remains CANDIDATE_ONLY; operational promotion NO.",
+    "coreStatement_en": "The primary preregistered experiment supported H1, with the candidate showing a lower 72-hour endpoint error than the frozen baseline. However, the geographically independent validation extension did not satisfy the preregistered replication criterion because its 95% bootstrap interval included zero. The observed primary effect therefore should not be interpreted as established general superiority, and additional independent validation would be required before any operational promotion.",
+    "coreStatement_ko": "1차 실험에서는 사전등록된 기준에 따라 H1이 지지되었다. 그러나 지리적으로 독립된 검증 확장에서는 사전등록된 재현 기준을 충족하지 못했다. 따라서 현재의 1차 결과는 일반적 우월성이 확립된 것으로 해석하기보다, 해당 사전등록 코호트와 실험 영역에서 관찰된 증거로 취급해야 한다.",
+    "whyExtensionDidNotMeetCriterion": {
+      "statement": "Extension endpoint did not meet the preregistered interval criterion.",
+      "Theta_extension_72h_km": -2.272,
+      "CI95_km": [
+        -9.597,
+        10.246
+      ],
+      "upperBound_km": 10.246,
+      "condition": "upper bound >= 0 km",
+      "conclusion": "H_EXT = NOT_SUPPORTED",
+      "postHocCauseAttribution": false,
+      "causesNotClaimed": [
+        "region effect",
+        "seasonal effect",
+        "source problem",
+        "GLORYS problem",
+        "HYCOM problem",
+        "WW3 problem",
+        "NCEP problem",
+        "parameter problem",
+        "drifter quality problem"
+      ],
+      "note": "the present experiments cannot discriminate among such causes; none is asserted"
+    }
+  },
+  "forbiddenOverstatementOfFailure": [
+    "C is disproven",
+    "C is false",
+    "C never works",
+    "C is scientifically invalid",
+    "C is universally ineffective",
+    "primary result was wrong"
+  ],
+  "forbiddenOverstatementOfSuccess": [
+    "validated",
+    "independently validated",
+    "generally superior",
+    "globally superior",
+    "production-ready",
+    "operationally proven",
+    "robust across regions",
+    "universally better"
+  ],
+  "independenceLanguage": {
+    "permitted": "geographically independent validation extension",
+    "basis": [
+      "no drifter ID overlap with the primary cohort",
+      "no primary window-start overlap",
+      "separate geographic domain",
+      "preregistered in STEP 46",
+      "cohort locked in STEP 47",
+      "source and data frozen in STEP 48",
+      "executed in STEP 49",
+      "preregistered endpoint and bootstrap in STEP 50"
+    ],
+    "forbidden": [
+      "fully independent in every dimension",
+      "temporally independent from the original validation attempt"
+    ],
+    "reason": "the original STEP 44 validation attempt and the STEP 46 extension share the same validation period"
+  },
+  "separation": {
+    "primaryRecomputed": false,
+    "extensionRecomputed": false,
+    "pooled": false,
+    "combinedCohort": false,
+    "combinedBootstrap": false,
+    "metaAnalysis": false,
+    "overallGlobalClaim": false,
+    "blockedAndNotSupportedConflated": false
+  },
+  "candidateStatus": {
+    "final": "CANDIDATE_ONLY",
+    "reason": "primary SUPPORTED and extension NOT_SUPPORTED; evidence is insufficient for operational promotion",
+    "forbiddenStatuses": [
+      "PROMOTED",
+      "PRODUCTION",
+      "OPERATIONAL",
+      "DEPLOYED"
+    ],
+    "operationalPromotion": false,
+    "productionClaim": false
+  },
+  "limitations": [
+    "Primary cohort size is 9 windows.",
+    "Primary valid windows are 6.",
+    "The extension has 6 registered windows.",
+    "The extension has 5 valid windows.",
+    "The extension satisfied its gate at the disclosed structural ceiling of 6 selectable windows.",
+    "The extension 95 % interval includes zero.",
+    "The extension is geographically independent but shares its validation period with the original validation attempt.",
+    "These results alone cannot support a claim of universal or general superiority.",
+    "Candidate C is not an operational model."
+  ],
+  "newAnalysisPerformed": {
+    "trajectory": 0,
+    "bootstrap": 0,
+    "hypothesisTest": 0,
+    "sensitivityAnalysis": 0,
+    "sourceAcquisition": 0,
+    "parameterTuning": 0,
+    "cohortChange": 0,
+    "windowChange": 0,
+    "drifterChange": 0,
+    "primaryResultChange": 0,
+    "step50ResultChange": 0,
+    "favourableRecomputation": 0
+  },
+  "nextResearchStatus": {
+    "candidate": "CANDIDATE_ONLY",
+    "furtherWorkRequiresNewPreregistration": true,
+    "priorResultsModified": false,
+    "startedInStep51": false,
+    "possibleFutureDirections": [
+      "additional geographic validation",
+      "additional temporal validation",
+      "larger cohort",
+      "alternative forcing validation"
+    ]
+  },
+  "automaticCommit": false,
+  "push": false,
+  "createdAtUTC": "2026-09-07T09:46:17Z"
+}

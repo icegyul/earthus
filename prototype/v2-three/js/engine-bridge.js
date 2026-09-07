@@ -210,10 +210,11 @@ export const LAYER_TRUTH = Object.freeze({
   'hazards/eq': { kind: K.OFFICIAL_OBSERVATION, slaMin: 60 },
   'hazards/tc': { kind: K.OFFICIAL_WARNING, slaMin: 180 },
   'hazards/tyoff': { kind: K.OFFICIAL_FORECAST, slaMin: 360 },
-  'hazards/tyens': { kind: K.PROVIDER_FORECAST, slaMin: 720 },
-  'hazards/eqdepth': { kind: K.OFFICIAL_OBSERVATION, slaMin: null },
-  'hazards/plates': { kind: K.OFFICIAL_OBSERVATION, slaMin: null },
-  'ocean/khoaflood': { kind: K.PROVIDER_FORECAST, slaMin: null },
+  // tyens · eqdepth · plates · khoaflood 는 위에서 이미 선언했다. 여기 있던 중복 4줄을 지웠다.
+  // 객체 리터럴은 뒤에 온 줄이 이기므로, 중복은 조용히 앞선 선언을 덮어쓴다. eqdepth 와 plates 는
+  // 그렇게 HISTORY → OFFICIAL_OBSERVATION 으로 뒤집혀 사료를 '공식 관측'으로 배지하고 있었다.
+  // eqdepth 는 eqhistory 와 '같은 카탈로그'(USGS ComCat 2001~, 18만건)를 깊이에 배치한 것이고,
+  // plates 는 Bird 2003 PB2002 정적 자료다. 둘 다 information-contract.js 의 STATIC 집합에도 들어 있다.
   // 아날로그는 예보가 아니라 과거 통계에서 우리가 유도한 것 — 등급을 반드시 분리한다
   'hazards/tyanalog': { kind: K.EARTHUS_ANALYSIS, slaMin: null },
   'hazards/tsunami': { kind: K.OFFICIAL_WARNING, slaMin: 60 },

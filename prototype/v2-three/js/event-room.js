@@ -282,7 +282,9 @@ export class EventRoom {
           this.eta = null;
         }
       }
-      rows.push({ agency: '지각 맥락', what: '판 경계 · 진원 깊이', kind: 'OFFICIAL_OBSERVATION', layerKey: 'hazards/eqdepth',
+      // 사료다. 25년 카탈로그와 2003년 정적 판 경계이므로 '공식 관측'이 아니라 HISTORY 다.
+      // layerKey 가 있으면 배지는 LAYER_TRUTH 에서 나오지만(위 107행), kind 가 어긋나 있으면 읽는 사람이 속는다.
+      rows.push({ agency: '지각 맥락', what: '판 경계 · 진원 깊이', kind: 'HISTORY', layerKey: 'hazards/eqdepth',
         value: '같은 카탈로그를 실제 진원 깊이에 배치', sub: '재해 › 판 경계선 겹쳐보기 · 지진 깊이' });
     }
 

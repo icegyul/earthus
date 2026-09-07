@@ -17,6 +17,7 @@ const shell = read('ui-shell.js');
 const main = read('main.js');
 const live = read('live-layers.js');
 const bridge = read('engine-bridge.js');
+const extScene = read('ext-scene.js');
 
 const problems = [];
 const notes = [];
@@ -46,9 +47,24 @@ const caseRe = /case '([a-z0-9]+)':/g;
 while ((m = caseRe.exec(live))) caseIds.add(m[1]);
 
 // ---- 4) 진리등급표 ----
+// 중복 선언은 조용히 앞선 줄을 덮어쓴다(객체 리터럴은 뒤가 이긴다). 2026-09-08 에 eqdepth·plates 가
+// 그렇게 HISTORY → OFFICIAL_OBSERVATION 으로 뒤집혀 사료를 '공식 관측'으로 배지하고 있었다. 다시는 못 하게 막는다.
 const truthKeys = new Set();
+const truthDupes = [];
 const truthRe = /'([a-z]+\/[a-z0-9-]+)':\s*\{\s*kind:/g;
-while ((m = truthRe.exec(bridge))) truthKeys.add(m[1]);
+while ((m = truthRe.exec(bridge))) {
+  if (truthKeys.has(m[1])) truthDupes.push(m[1]);
+  truthKeys.add(m[1]);
+}
+for (const k of truthDupes) {
+  problems.push(`[진리등급 중복] ${k} — LAYER_TRUTH에 두 번 선언됐다. 뒤의 줄이 조용히 이겨서 등급이 뒤집힌다`);
+}
+
+// ---- 5) LAB · 취미는 ext-scene 이 모듈로 연다 (main.js 의 sid === 'lab' || sid === 'hobby' 분기) ----
+// 이 표를 보지 않으면 lab·hobby 16개가 전부 '핸들러 없음'으로 잘못 잡힌다.
+const extKeys = new Set();
+const extRe = /'([a-z]+\/[a-z0-9-]+)':\s*'\.\/ext\//g;
+while ((m = extRe.exec(extScene))) extKeys.add(m[1]);
 
 // ---- 검사 ----
 const specialKeys = [...main.matchAll(/key === '([a-z]+\/[a-z0-9-]+)'/g)].map((x) => x[1]);
@@ -60,7 +76,7 @@ for (const l of layers) {
   const key = `${l.scene}/${l.id}`;
   if (l.state === 'LOCKED') continue;
   const isRouted = routed.has(key);
-  const isSpecial = handled.has(key) || idBranches.includes(l.id);
+  const isSpecial = handled.has(key) || idBranches.includes(l.id) || extKeys.has(key);
   if (!isRouted && !isSpecial) {
     problems.push(`[핸들러 없음] ${key} (${l.name}) — 메뉴에 있는데 눌러도 아무 일이 없다`);
   }
@@ -76,6 +92,55 @@ for (const l of layers) {
 const menuKeys = new Set(layers.map((l) => `${l.scene}/${l.id}`));
 for (const key of routed.keys()) {
   if (!menuKeys.has(key)) problems.push(`[유령 라우팅] ${key} — 메뉴에 없는데 라우팅만 있다`);
+}
+for (const key of extKeys) {
+  if (!menuKeys.has(key)) problems.push(`[유령 모듈] ${key} — 메뉴에 없는데 ext-scene MODULES 에만 있다`);
+}
+
+// 같은 bare id 가 두 씬에 있으면, bare id 로 조회하는 표(MENU_QUESTIONS · i18n L_EN)는 한쪽 답을 다른 쪽에 준다.
+// 2026-09-08 현재 surf · vessel 이 그렇다: hobby 가 ocean 의 질문과 영문 이름을 그대로 표시한다.
+// PHASE 2 에서 조회 키를 복합키로 옮기면 사라진다. 그때 이 경고를 실패로 올린다.
+const byBareId = new Map();
+for (const l of layers) {
+  if (!byBareId.has(l.id)) byBareId.set(l.id, []);
+  byBareId.get(l.id).push(l.scene);
+}
+for (const [id, scenesWith] of byBareId) {
+  if (scenesWith.length > 1) {
+    notes.push(`[id 충돌] '${id}' 가 ${scenesWith.join(' · ')} 에 중복 선언됐다 — bare id 로 찾는 질문·영문이름이 서로 섞인다`);
+  }
+}
+
+// ---- 현상 레지스트리(PHASE 1) 커버리지 ----
+// 레지스트리가 SCENES 와 어긋나면 조용히 틀린 질문이 뜬다. 여기서 1:1 을 강제한다.
+let reg = null;
+try {
+  reg = readFileSync(join(APP, 'phenomenon-registry.js'), 'utf8');
+} catch { /* PHASE 1 이전 체크아웃 — 레지스트리가 없으면 이 검사만 건너뛴다 */ }
+if (reg) {
+  const regKeys = new Set();
+  const regDupes = [];
+  const regRe = /^\s{2}'([a-z]+\/[a-z0-9-]+)':\s*Object\.freeze\(\{\s*phenomenon:/gm;
+  while ((m = regRe.exec(reg))) {
+    if (regKeys.has(m[1])) regDupes.push(m[1]);
+    regKeys.add(m[1]);
+  }
+  for (const k of regDupes) problems.push(`[레지스트리 중복] ${k} — LAYER_PHENOMENON 에 두 번 있다`);
+  for (const key of menuKeys) {
+    if (!regKeys.has(key)) problems.push(`[레지스트리 누락] ${key} — 메뉴에 있는데 현상 레지스트리에 없다`);
+  }
+  for (const key of regKeys) {
+    if (!menuKeys.has(key)) problems.push(`[레지스트리 유령] ${key} — 메뉴에 없는데 레지스트리에만 있다`);
+  }
+  // 참조된 현상 id 가 실제로 정의돼 있는지
+  const defined = new Set();
+  const defRe = /^\s{2}'([a-z_]+\.[a-z0-9_]+)':\s*Object\.freeze\(\{\s*$/gm;
+  while ((m = defRe.exec(reg))) defined.add(m[1]);
+  const referenced = [...reg.matchAll(/phenomenon:\s*'([a-z_]+\.[a-z0-9_]+)'/g)].map((x) => x[1]);
+  for (const pid of new Set(referenced)) {
+    if (!defined.has(pid)) problems.push(`[레지스트리 미정의] 현상 '${pid}' 이 참조되는데 PHENOMENA 에 없다`);
+  }
+  notes.push(`[레지스트리] 현상 ${defined.size} · 레이어 ${regKeys.size}`);
 }
 
 const live0 = layers.filter((l) => l.state !== 'LOCKED').length;

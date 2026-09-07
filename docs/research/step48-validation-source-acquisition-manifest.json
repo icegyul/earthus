@@ -1,0 +1,3352 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "validation-extension-preregistration-step46",
+  "step": 48,
+  "classification": "VALIDATION_EXTENSION_SOURCE_ACQUISITION",
+  "protocolSha256": "fb94f983208187c3649789607450fcb679ae464dbfa63e76158d52e5b367ef8f",
+  "step47ManifestSha256": "32d3085010185d8c1a5734ef53be227252220b74a2526dbadf5c72de5eee2cca",
+  "step47DerivationHash": "9e03db68d506358e1217db25f50ade8aa314b406063fd8c309cbe6a3092e5e45",
+  "step46ProtocolSha256": "c824b053fdeea20336f1396dc503232492ab77e1f9d5f032586b23c47d66862d",
+  "observationAggregateSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+  "coastlineSha256": "6f75ae0e0de157b14946e2255eb1f5486d9a13819032e26d4610852d296788f6",
+  "reused": {
+    "tools/research/acquire_step17_forcing.py": "040da01c4ed53af6944a8c18485900d9fad1ef273523446d10d118425daca975",
+    "tools/research/glorys_reader_step25c.py": "11b7d987434a55a9e42a9776e851fad49b8ec65d2df0f23130c7a7e6234ab63e",
+    "tools/research/select_step16_cohort.py": "b318b806216a8c5d1033964a0d2740972068edeeb90abdf99702e49db5c67139"
+  },
+  "normalizedIssuedAtUTC": "2026-09-06T05:00:00Z",
+  "startedAtUTC": "2026-09-07T08:03:38Z",
+  "sources": {
+    "HYCOM": {
+      "product": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "experiment": "expt_53.X",
+      "year": "2010",
+      "variables": [
+        "water_u",
+        "water_v"
+      ],
+      "vertCoord": 15,
+      "spatialResolutionDeg": 0.08,
+      "temporalResolution": "3 h",
+      "access": "NCSS https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010 (STEP 17 mechanism)",
+      "layouts": [
+        "STEP 17 four-part t0..t0+72h (25 frames)",
+        "six UTC-day files 00..21Z = 48 registered frames"
+      ],
+      "bbox": "STEP 36 window ocean box (-180..180)",
+      "licence": "DoD Distribution A (file distribution_statement)"
+    },
+    "NCEP": {
+      "product": "NCEP-DOE Reanalysis 2 10 m u/v",
+      "year": "2010",
+      "temporalResolution": "6 h",
+      "spatialResolution": "T62 gaussian",
+      "access": "PSL THREDDS NCSS (STEP 17 wind_parts; request longitudes converted to the PSL 0..360 request convention as in STEP 17; the frozen runtime unwraps longitudes at lookup)",
+      "period": "t0 - 12 h .. t0 + 84 h"
+    },
+    "GLORYS": {
+      "product": "GLORYS12V1 GLOBAL_MULTIYEAR_PHY_001_030 cmems_mod_glo_phy_my_0.083deg_P1D-m",
+      "variables": [
+        "uo",
+        "vo"
+      ],
+      "level": "15.81 m (native 15.810070 m)",
+      "spatialResolutionDeg": 0.0833,
+      "temporalResolution": "daily mean",
+      "access": "official Copernicus Marine toolbox in the STEP 25B isolated venv; credentials by exit code only",
+      "bbox": "ocean box +-0.5 deg",
+      "period": "t0 - 1 d 00:00 .. end + 1 d 00:00",
+      "version": "recorded from the file at acquisition"
+    },
+    "WW3": {
+      "product": "WW3 GLOB-30M CFSR surface Stokes drift (uuss/vuss), IFREMER hindcast, product_version 1.0",
+      "months": [
+        "201007",
+        "201008",
+        "201009",
+        "201010"
+      ],
+      "spatialResolutionDeg": 0.5,
+      "temporalResolution": "3 h",
+      "access": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/2010_CFSR/uss/ (anonymous FTP; own fetch, no shared log)",
+      "licence": "distribution_statement 'No restrictions' (STEP 29 LICENSE_CONFIRMED)"
+    }
+  },
+  "geometry": [
+    {
+      "windowId": "KE-X1",
+      "region": "KE",
+      "drifterIds": [
+        "37040",
+        "37090",
+        "37124",
+        "37267",
+        "37644",
+        "37647",
+        "37657",
+        "38625",
+        "38629",
+        "38630"
+      ],
+      "oceanBox": {
+        "south": 35.2301,
+        "north": 40.0,
+        "west": 141.55771,
+        "east": 148.26015
+      },
+      "windBox": {
+        "south": 32.2301,
+        "north": 43.0,
+        "west": 138.55771,
+        "east": 151.26015
+      },
+      "releasePositions": [
+        {
+          "drifterId": "37040",
+          "lon": 146.15118,
+          "lat": 37.2301
+        },
+        {
+          "drifterId": "37090",
+          "lon": 146.21999,
+          "lat": 37.49771
+        },
+        {
+          "drifterId": "37124",
+          "lon": 146.25363,
+          "lat": 37.76082
+        },
+        {
+          "drifterId": "37267",
+          "lon": 146.26015,
+          "lat": 38.07352
+        },
+        {
+          "drifterId": "37644",
+          "lon": 144.69025,
+          "lat": 39.01244
+        },
+        {
+          "drifterId": "37647",
+          "lon": 145.49481,
+          "lat": 38.74742
+        },
+        {
+          "drifterId": "37657",
+          "lon": 145.818,
+          "lat": 38.2008
+        },
+        {
+          "drifterId": "38625",
+          "lon": 145.07848,
+          "lat": 38.80145
+        },
+        {
+          "drifterId": "38629",
+          "lon": 143.55771,
+          "lat": 39.47866
+        },
+        {
+          "drifterId": "38630",
+          "lon": 144.16061,
+          "lat": 39.21284
+        }
+      ],
+      "lockedNewIdSetReproduced": true
+    },
+    {
+      "windowId": "KE-X2",
+      "region": "KE",
+      "drifterIds": [
+        "37042",
+        "37650"
+      ],
+      "oceanBox": {
+        "south": 34.17602,
+        "north": 40.0,
+        "west": 143.53297,
+        "east": 151.78249
+      },
+      "windBox": {
+        "south": 31.17602,
+        "north": 43.0,
+        "west": 140.53297,
+        "east": 154.78249
+      },
+      "releasePositions": [
+        {
+          "drifterId": "37042",
+          "lon": 149.78249,
+          "lat": 36.17602
+        },
+        {
+          "drifterId": "37650",
+          "lon": 145.53297,
+          "lat": 39.14708
+        }
+      ],
+      "lockedNewIdSetReproduced": true
+    },
+    {
+      "windowId": "KE-X3",
+      "region": "KE",
+      "drifterIds": [
+        "40083"
+      ],
+      "oceanBox": {
+        "south": 37.99414,
+        "north": 40.0,
+        "west": 156.67685,
+        "east": 160.67685
+      },
+      "windBox": {
+        "south": 34.99414,
+        "north": 43.0,
+        "west": 153.67685,
+        "east": 163.67685
+      },
+      "releasePositions": [
+        {
+          "drifterId": "40083",
+          "lon": 158.67685,
+          "lat": 39.99414
+        }
+      ],
+      "lockedNewIdSetReproduced": true
+    },
+    {
+      "windowId": "KE-X4",
+      "region": "KE",
+      "drifterIds": [
+        "39123"
+      ],
+      "oceanBox": {
+        "south": 37.04246,
+        "north": 40.0,
+        "west": 148.3716,
+        "east": 152.3716
+      },
+      "windBox": {
+        "south": 34.04246,
+        "north": 43.0,
+        "west": 145.3716,
+        "east": 155.3716
+      },
+      "releasePositions": [
+        {
+          "drifterId": "39123",
+          "lon": 150.3716,
+          "lat": 39.04246
+        }
+      ],
+      "lockedNewIdSetReproduced": true
+    },
+    {
+      "windowId": "BM-X5",
+      "region": "BM",
+      "drifterIds": [
+        "123311",
+        "123329",
+        "123330",
+        "123331",
+        "123332",
+        "123334",
+        "123335",
+        "123336",
+        "123338"
+      ],
+      "oceanBox": {
+        "south": -38.31403,
+        "north": -28.75497,
+        "west": -53.26561,
+        "east": -46.14127
+      },
+      "windBox": {
+        "south": -41.31403,
+        "north": -25.75497,
+        "west": -56.26561,
+        "east": -43.14127
+      },
+      "releasePositions": [
+        {
+          "drifterId": "123311",
+          "lon": -49.23186,
+          "lat": -35.19448
+        },
+        {
+          "drifterId": "123329",
+          "lon": -51.26561,
+          "lat": -36.08961
+        },
+        {
+          "drifterId": "123330",
+          "lon": -48.14127,
+          "lat": -33.976
+        },
+        {
+          "drifterId": "123331",
+          "lon": -49.95772,
+          "lat": -36.31403
+        },
+        {
+          "drifterId": "123332",
+          "lon": -48.3585,
+          "lat": -33.45988
+        },
+        {
+          "drifterId": "123334",
+          "lon": -50.60393,
+          "lat": -34.12824
+        },
+        {
+          "drifterId": "123335",
+          "lon": -50.95092,
+          "lat": -33.2505
+        },
+        {
+          "drifterId": "123336",
+          "lon": -50.08239,
+          "lat": -33.49907
+        },
+        {
+          "drifterId": "123338",
+          "lon": -48.41977,
+          "lat": -30.75497
+        }
+      ],
+      "lockedNewIdSetReproduced": true
+    },
+    {
+      "windowId": "BM-X6",
+      "region": "BM",
+      "drifterIds": [
+        "123339",
+        "123341"
+      ],
+      "oceanBox": {
+        "south": -33.432050000000004,
+        "north": -29.00175,
+        "west": -49.55915,
+        "east": -43.95795
+      },
+      "windBox": {
+        "south": -36.432050000000004,
+        "north": -26.00175,
+        "west": -52.55915,
+        "east": -40.95795
+      },
+      "releasePositions": [
+        {
+          "drifterId": "123339",
+          "lon": -47.55915,
+          "lat": -31.43205
+        },
+        {
+          "drifterId": "123341",
+          "lon": -45.95795,
+          "lat": -31.00175
+        }
+      ],
+      "lockedNewIdSetReproduced": true
+    }
+  ],
+  "windows": [
+    {
+      "windowId": "KE-X1",
+      "region": "KE",
+      "t0": "2011-08-16T12:00:00Z",
+      "end": "2011-08-19T12:00:00Z",
+      "drifterIds": [
+        "37040",
+        "37090",
+        "37124",
+        "37267",
+        "37644",
+        "37647",
+        "37657",
+        "38625",
+        "38629",
+        "38630"
+      ],
+      "oceanBox": {
+        "south": 35.2301,
+        "north": 40.0,
+        "west": 141.55771,
+        "east": 148.26015
+      },
+      "windBox": {
+        "south": 32.2301,
+        "north": 43.0,
+        "west": 138.55771,
+        "east": 151.26015
+      },
+      "registeredFrames": 48,
+      "requiredUtcDays": [
+        "2011-08-15",
+        "2011-08-16",
+        "2011-08-17",
+        "2011-08-18",
+        "2011-08-19",
+        "2011-08-20"
+      ],
+      "hycomWindowParts": [
+        {
+          "filename": "current-20110816T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=35.230&west=141.558&east=148.260&horizStride=1&time_start=2011-08-16T12%3A00%3A00Z&time_end=2011-08-17T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2011",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 35.2301,
+              "north": 40.0,
+              "west": 141.55771,
+              "east": 148.26015
+            }
+          },
+          "relativePath": "data/research/step48/forcing/KE-X1/hycom/current-20110816T12.nc",
+          "status": "reused",
+          "sha256": "a76a8976ccbe105fffdf0cc6a98acdfa00098f2081090670b253a5007bbeb6ba",
+          "bytes": 169956,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 61,
+              "lon": 85
+            }
+          }
+        },
+        {
+          "filename": "current-20110817T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=35.230&west=141.558&east=148.260&horizStride=1&time_start=2011-08-17T12%3A00%3A00Z&time_end=2011-08-18T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2011",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 35.2301,
+              "north": 40.0,
+              "west": 141.55771,
+              "east": 148.26015
+            }
+          },
+          "relativePath": "data/research/step48/forcing/KE-X1/hycom/current-20110817T12.nc",
+          "status": "reused",
+          "sha256": "2c31d572e966fef36ed4324411a9aedcb484290c351b9d2574941c4efdfb5855",
+          "bytes": 169956,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 61,
+              "lon": 85
+            }
+          }
+        },
+        {
+          "filename": "current-20110818T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=35.230&west=141.558&east=148.260&horizStride=1&time_start=2011-08-18T12%3A00%3A00Z&time_end=2011-08-19T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2011",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 35.2301,
+              "north": 40.0,
+              "west": 141.55771,
+              "east": 148.26015
+            }
+          },
+          "relativePath": "data/research/step48/forcing/KE-X1/hycom/current-20110818T12.nc",
+          "status": "reused",
+          "sha256": "e5b9d14eb116a454d80549d505c22bd4d436e941b11edc96f4788794856e74af",
+          "bytes": 169956,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 61,
+              "lon": 85
+            }
+          }
+        },
+        {
+          "filename": "current-20110819T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=35.230&west=141.558&east=148.260&horizStride=1&time_start=2011-08-19T12%3A00%3A00Z&time_end=2011-08-19T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2011",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 35.2301,
+              "north": 40.0,
+              "west": 141.55771,
+              "east": 148.26015
+            }
+          },
+          "relativePath": "data/research/step48/forcing/KE-X1/hycom/current-20110819T12.nc",
+          "status": "reused",
+          "sha256": "66e15a8a08d62496f431670c331e6097bfbe075d6097c9b64375aca53512bfa4",
+          "bytes": 24724,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 1,
+              "depth": 1,
+              "lat": 61,
+              "lon": 85
+            }
+          }
+        }
+      ],
+      "hycomDayParts": [
+        {
+          "utcDay": "2011-08-15",
+          "filename": "day-2011-08-15.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=35.230&west=141.558&east=148.260&horizStride=1&time_start=2011-08-15T00%3A00%3A00Z&time_end=2011-08-15T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X1/hycom-days/day-2011-08-15.nc",
+          "status": "reused",
+          "sha256": "bcc50de4314c980cbc40e2cafa8f4f03f019f7a505b12fd42aa17ffb9a4999d2",
+          "bytes": 169956,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 61,
+              "lon": 85
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2011-08-16",
+          "filename": "day-2011-08-16.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=35.230&west=141.558&east=148.260&horizStride=1&time_start=2011-08-16T00%3A00%3A00Z&time_end=2011-08-16T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X1/hycom-days/day-2011-08-16.nc",
+          "status": "reused",
+          "sha256": "2beb77de985964e4be9a1625bbfe51857fab968687ea50a757b4922f3440db87",
+          "bytes": 169956,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 61,
+              "lon": 85
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2011-08-17",
+          "filename": "day-2011-08-17.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=35.230&west=141.558&east=148.260&horizStride=1&time_start=2011-08-17T00%3A00%3A00Z&time_end=2011-08-17T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X1/hycom-days/day-2011-08-17.nc",
+          "status": "reused",
+          "sha256": "36e33f0ccacd905f441aaa4363d1a5010126a53434cd294bab93111548591e59",
+          "bytes": 169956,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 61,
+              "lon": 85
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2011-08-18",
+          "filename": "day-2011-08-18.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=35.230&west=141.558&east=148.260&horizStride=1&time_start=2011-08-18T00%3A00%3A00Z&time_end=2011-08-18T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X1/hycom-days/day-2011-08-18.nc",
+          "status": "reused",
+          "sha256": "19c49b2500719bc8c8ed4b7cebd5a3dce47497cb7970fe9b5bdd6237da5f7340",
+          "bytes": 169956,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 61,
+              "lon": 85
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2011-08-19",
+          "filename": "day-2011-08-19.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=35.230&west=141.558&east=148.260&horizStride=1&time_start=2011-08-19T00%3A00%3A00Z&time_end=2011-08-19T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X1/hycom-days/day-2011-08-19.nc",
+          "status": "reused",
+          "sha256": "1f9270ac0624e893a1f4401455bf5ca3be796088a525d3cec98ae7081da5a85a",
+          "bytes": 169956,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 61,
+              "lon": 85
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2011-08-20",
+          "filename": "day-2011-08-20.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=35.230&west=141.558&east=148.260&horizStride=1&time_start=2011-08-20T00%3A00%3A00Z&time_end=2011-08-20T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X1/hycom-days/day-2011-08-20.nc",
+          "status": "reused",
+          "sha256": "ebff2349e0e0917c469a8ef74d2dab564e988ea8d5ad8d93f94d11ff1165efe6",
+          "bytes": 169956,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 61,
+              "lon": 85
+            }
+          },
+          "frames": 8
+        }
+      ],
+      "ncep": [
+        {
+          "variable": "uwnd",
+          "filename": "uwnd.10m.gauss.20110816T00-20110820T00.nc",
+          "query": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2011.nc?var=uwnd&north=43.000&south=32.230&west=138.558&east=151.260&time_start=2011-08-16T00%3A00%3A00Z&time_end=2011-08-20T00%3A00%3A00Z&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X1/ncep/uwnd.10m.gauss.20110816T00-20110820T00.nc",
+          "status": "reused",
+          "sha256": "1fa87e856007a1971268e54737f73bc40a68dbfd98257eb7bb79e65de7c6134b",
+          "bytes": 6876,
+          "retrievedAtUTC": null
+        },
+        {
+          "variable": "vwnd",
+          "filename": "vwnd.10m.gauss.20110816T00-20110820T00.nc",
+          "query": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2011.nc?var=vwnd&north=43.000&south=32.230&west=138.558&east=151.260&time_start=2011-08-16T00%3A00%3A00Z&time_end=2011-08-20T00%3A00%3A00Z&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X1/ncep/vwnd.10m.gauss.20110816T00-20110820T00.nc",
+          "status": "reused",
+          "sha256": "75b302f912ceb19f0debda00eb7e86622529960c3474437c0f3b8cf912b3244a",
+          "bytes": 6876,
+          "retrievedAtUTC": null
+        }
+      ],
+      "glorys": {
+        "datasetId": "cmems_mod_glo_phy_my_0.083deg_P1D-m",
+        "requestedTime": [
+          "2011-08-15T00:00:00",
+          "2011-08-20T00:00:00"
+        ],
+        "requestedBox": {
+          "south": 34.7301,
+          "north": 40.5,
+          "west": 141.05771,
+          "east": 148.76015
+        },
+        "requestedDepthMeters": 15.81,
+        "command": "copernicusmarine subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x 141.05771 -X 148.76015 -y 34.7301 -Y 40.5 -t 2011-08-15T00:00:00 -T 2011-08-20T00:00:00 -z 15.81 -Z 15.81 -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step48\\glorys -f KE-X1.glorys12v1.uo_vo.15.81m.nc --disable-progress-bar",
+        "requestedAtUTC": "2026-09-07T08:04:00Z",
+        "status": "reused",
+        "sha256": "cf02a99723cafe2d14d4b0e405ced2c271fb450346e3ad319349e657de1bd723",
+        "bytes": 184114,
+        "relativePath": "data/research/step48/glorys/KE-X1.glorys12v1.uo_vo.15.81m.nc",
+        "dataset": {
+          "relativePath": "data/research/step48/forcing/normalized/KE-X1.glorys15.81m.dataset.json",
+          "sha256": "298f6c36f67e2bacfe7b09dd1e1e286e6fcbbc3b17bd76fd98856527658e80ee",
+          "bytes": 1582946,
+          "frames": 6,
+          "latRange": [
+            34.75,
+            40.5
+          ],
+          "lonRange": [
+            141.08333333333334,
+            148.75
+          ],
+          "depthMeters": 15.81007,
+          "class": "DERIVED_PREPARATION"
+        },
+        "coversBox": true
+      },
+      "reasons": [],
+      "hycomCoverage": {
+        "frames": 25,
+        "shape": [
+          25,
+          61,
+          85
+        ],
+        "valuesCount": 259250,
+        "cadenceSeconds": 10800.0,
+        "readerLonRange": [
+          141.52,
+          148.24
+        ],
+        "readerLatRange": [
+          35.2,
+          40.0
+        ],
+        "boxConvention": "-180..180",
+        "readerConvention": "-180..180",
+        "timeStart": "2011-08-16T12:00:00Z",
+        "timeEnd": "2011-08-19T12:00:00Z",
+        "coversBoxInOwnConvention": true,
+        "convention": "-180..180",
+        "transformApplied": false
+      },
+      "hycomDataset": {
+        "relativePath": "data/research/step48/forcing/normalized/KE-X1.hycom15m.dataset.json",
+        "sha256": "386a2f6c4ff6a0c8421f9d7056d4a8d943c7d70cad32fb3e068130f89ec70008",
+        "bytes": 5158783,
+        "class": "DERIVED_PREPARATION"
+      },
+      "hycomDayCoverage": {
+        "filesRequired": 6,
+        "filesAcquired": 6,
+        "framesAcquired": 48,
+        "framesRegistered": 48,
+        "complete": true
+      },
+      "ncepDataset": {
+        "relativePath": "data/research/step48/forcing/normalized/KE-X1.ncep10m.wind.json",
+        "sha256": "b4f1c6242771b2289a1c9a5ffab8efe835b1504a08991c5a7a629e92680e0866",
+        "bytes": 38853,
+        "frames": 17,
+        "class": "DERIVED_PREPARATION"
+      },
+      "status": "ACQUIRED"
+    },
+    {
+      "windowId": "KE-X2",
+      "region": "KE",
+      "t0": "2011-09-22T12:00:00Z",
+      "end": "2011-09-25T12:00:00Z",
+      "drifterIds": [
+        "37042",
+        "37650"
+      ],
+      "oceanBox": {
+        "south": 34.17602,
+        "north": 40.0,
+        "west": 143.53297,
+        "east": 151.78249
+      },
+      "windBox": {
+        "south": 31.17602,
+        "north": 43.0,
+        "west": 140.53297,
+        "east": 154.78249
+      },
+      "registeredFrames": 48,
+      "requiredUtcDays": [
+        "2011-09-21",
+        "2011-09-22",
+        "2011-09-23",
+        "2011-09-24",
+        "2011-09-25",
+        "2011-09-26"
+      ],
+      "hycomWindowParts": [
+        {
+          "filename": "current-20110922T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=34.176&west=143.533&east=151.782&horizStride=1&time_start=2011-09-22T12%3A00%3A00Z&time_end=2011-09-23T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2011",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 34.17602,
+              "north": 40.0,
+              "west": 143.53297,
+              "east": 151.78249
+            }
+          },
+          "relativePath": "data/research/step48/forcing/KE-X2/hycom/current-20110922T12.nc",
+          "status": "reused",
+          "sha256": "dad4173f3151296d2e2150f67388ee14c48bc8808ccd2d7838e5c448071d685f",
+          "bytes": 250564,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 74,
+              "lon": 104
+            }
+          }
+        },
+        {
+          "filename": "current-20110923T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=34.176&west=143.533&east=151.782&horizStride=1&time_start=2011-09-23T12%3A00%3A00Z&time_end=2011-09-24T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2011",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 34.17602,
+              "north": 40.0,
+              "west": 143.53297,
+              "east": 151.78249
+            }
+          },
+          "relativePath": "data/research/step48/forcing/KE-X2/hycom/current-20110923T12.nc",
+          "status": "reused",
+          "sha256": "79b1922e0cf4a51e9896b7eaf14f0a0eeaf0d40418604a33ca12b26f5d1fc90e",
+          "bytes": 250564,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 74,
+              "lon": 104
+            }
+          }
+        },
+        {
+          "filename": "current-20110924T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=34.176&west=143.533&east=151.782&horizStride=1&time_start=2011-09-24T12%3A00%3A00Z&time_end=2011-09-25T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2011",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 34.17602,
+              "north": 40.0,
+              "west": 143.53297,
+              "east": 151.78249
+            }
+          },
+          "relativePath": "data/research/step48/forcing/KE-X2/hycom/current-20110924T12.nc",
+          "status": "reused",
+          "sha256": "fd02e656b69d7834366626517a206264e54f44f68456f270e64dea712fa44b85",
+          "bytes": 250564,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 74,
+              "lon": 104
+            }
+          }
+        },
+        {
+          "filename": "current-20110925T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=34.176&west=143.533&east=151.782&horizStride=1&time_start=2011-09-25T12%3A00%3A00Z&time_end=2011-09-25T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2011",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 34.17602,
+              "north": 40.0,
+              "west": 143.53297,
+              "east": 151.78249
+            }
+          },
+          "relativePath": "data/research/step48/forcing/KE-X2/hycom/current-20110925T12.nc",
+          "status": "reused",
+          "sha256": "91df5d51fb5d41f0170d2eec2256896d8399d3391e866a4a267286c03cb7aab0",
+          "bytes": 35020,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 1,
+              "depth": 1,
+              "lat": 74,
+              "lon": 104
+            }
+          }
+        }
+      ],
+      "hycomDayParts": [
+        {
+          "utcDay": "2011-09-21",
+          "filename": "day-2011-09-21.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=34.176&west=143.533&east=151.782&horizStride=1&time_start=2011-09-21T00%3A00%3A00Z&time_end=2011-09-21T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X2/hycom-days/day-2011-09-21.nc",
+          "status": "reused",
+          "sha256": "19712d9dbe81f43eb67ff05e1c4ed9db035e699e4f2a9e3be64876ef3a977b96",
+          "bytes": 250564,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 74,
+              "lon": 104
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2011-09-22",
+          "filename": "day-2011-09-22.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=34.176&west=143.533&east=151.782&horizStride=1&time_start=2011-09-22T00%3A00%3A00Z&time_end=2011-09-22T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X2/hycom-days/day-2011-09-22.nc",
+          "status": "reused",
+          "sha256": "a91fc89559494d0560472beef4047c2995973e2f2218a960ce91b1d586b96f3f",
+          "bytes": 250564,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 74,
+              "lon": 104
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2011-09-23",
+          "filename": "day-2011-09-23.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=34.176&west=143.533&east=151.782&horizStride=1&time_start=2011-09-23T00%3A00%3A00Z&time_end=2011-09-23T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X2/hycom-days/day-2011-09-23.nc",
+          "status": "reused",
+          "sha256": "e5a105ab5f397f80a1a057bd38e13b6d299e514166d879327db6c3cf417dcf23",
+          "bytes": 250564,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 74,
+              "lon": 104
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2011-09-24",
+          "filename": "day-2011-09-24.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=34.176&west=143.533&east=151.782&horizStride=1&time_start=2011-09-24T00%3A00%3A00Z&time_end=2011-09-24T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X2/hycom-days/day-2011-09-24.nc",
+          "status": "reused",
+          "sha256": "b8cc1c45bac8ffd4485998c9095d5e88d04be41f1dfcfa07ebb280c6f7ac8112",
+          "bytes": 250564,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 74,
+              "lon": 104
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2011-09-25",
+          "filename": "day-2011-09-25.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=34.176&west=143.533&east=151.782&horizStride=1&time_start=2011-09-25T00%3A00%3A00Z&time_end=2011-09-25T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X2/hycom-days/day-2011-09-25.nc",
+          "status": "reused",
+          "sha256": "e5b9f2f93d10148de9ec5e6f0502aa759b5276bea95a9a55ea6d7fdf98a35b89",
+          "bytes": 250564,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 74,
+              "lon": 104
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2011-09-26",
+          "filename": "day-2011-09-26.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=34.176&west=143.533&east=151.782&horizStride=1&time_start=2011-09-26T00%3A00%3A00Z&time_end=2011-09-26T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X2/hycom-days/day-2011-09-26.nc",
+          "status": "reused",
+          "sha256": "13f25f2f8f79e61cf6d605b2047bda9221a127a097b6e628f60fe53060574c12",
+          "bytes": 250564,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 74,
+              "lon": 104
+            }
+          },
+          "frames": 8
+        }
+      ],
+      "ncep": [
+        {
+          "variable": "uwnd",
+          "filename": "uwnd.10m.gauss.20110922T00-20110926T00.nc",
+          "query": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2011.nc?var=uwnd&north=43.000&south=31.176&west=140.533&east=154.782&time_start=2011-09-22T00%3A00%3A00Z&time_end=2011-09-26T00%3A00%3A00Z&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X2/ncep/uwnd.10m.gauss.20110922T00-20110926T00.nc",
+          "status": "reused",
+          "sha256": "eb2e2bf1b6854ce7afda07470db332a0ae0380851b5cccfe935bdaf1f6f1526d",
+          "bytes": 7356,
+          "retrievedAtUTC": null
+        },
+        {
+          "variable": "vwnd",
+          "filename": "vwnd.10m.gauss.20110922T00-20110926T00.nc",
+          "query": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2011.nc?var=vwnd&north=43.000&south=31.176&west=140.533&east=154.782&time_start=2011-09-22T00%3A00%3A00Z&time_end=2011-09-26T00%3A00%3A00Z&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X2/ncep/vwnd.10m.gauss.20110922T00-20110926T00.nc",
+          "status": "reused",
+          "sha256": "88073a3d0a930e0cbf2c7dc864ff7d897797388000943e9fc32b6df0884b861f",
+          "bytes": 7356,
+          "retrievedAtUTC": null
+        }
+      ],
+      "glorys": {
+        "datasetId": "cmems_mod_glo_phy_my_0.083deg_P1D-m",
+        "requestedTime": [
+          "2011-09-21T00:00:00",
+          "2011-09-26T00:00:00"
+        ],
+        "requestedBox": {
+          "south": 33.67602,
+          "north": 40.5,
+          "west": 143.03297,
+          "east": 152.28249
+        },
+        "requestedDepthMeters": 15.81,
+        "command": "copernicusmarine subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x 143.03297 -X 152.28249 -y 33.67602 -Y 40.5 -t 2011-09-21T00:00:00 -T 2011-09-26T00:00:00 -z 15.81 -Z 15.81 -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step48\\glorys -f KE-X2.glorys12v1.uo_vo.15.81m.nc --disable-progress-bar",
+        "requestedAtUTC": "2026-09-07T08:04:01Z",
+        "status": "reused",
+        "sha256": "bceaa33c76a5fdcc04d605da3280523ccf4dceb759af77f940d74ff02b9e3097",
+        "bytes": 246314,
+        "relativePath": "data/research/step48/glorys/KE-X2.glorys12v1.uo_vo.15.81m.nc",
+        "dataset": {
+          "relativePath": "data/research/step48/forcing/normalized/KE-X2.glorys15.81m.dataset.json",
+          "sha256": "897852d5112a0c4fa2f043b8faf4aa046eb0324230eec1ae7d03f85553ea3dc1",
+          "bytes": 2265475,
+          "frames": 6,
+          "latRange": [
+            33.75,
+            40.5
+          ],
+          "lonRange": [
+            143.08333333333334,
+            152.25
+          ],
+          "depthMeters": 15.81007,
+          "class": "DERIVED_PREPARATION"
+        },
+        "coversBox": true
+      },
+      "reasons": [],
+      "hycomCoverage": {
+        "frames": 25,
+        "shape": [
+          25,
+          74,
+          104
+        ],
+        "valuesCount": 384800,
+        "cadenceSeconds": 10800.0,
+        "readerLonRange": [
+          143.52,
+          151.76
+        ],
+        "readerLatRange": [
+          34.16,
+          40.0
+        ],
+        "boxConvention": "-180..180",
+        "readerConvention": "-180..180",
+        "timeStart": "2011-09-22T12:00:00Z",
+        "timeEnd": "2011-09-25T12:00:00Z",
+        "coversBoxInOwnConvention": true,
+        "convention": "-180..180",
+        "transformApplied": false
+      },
+      "hycomDataset": {
+        "relativePath": "data/research/step48/forcing/normalized/KE-X2.hycom15m.dataset.json",
+        "sha256": "7c9ec97eece9be89b953eccb9ab8381979dbe0112efd5556e3abfe3babec4763",
+        "bytes": 7668664,
+        "class": "DERIVED_PREPARATION"
+      },
+      "hycomDayCoverage": {
+        "filesRequired": 6,
+        "filesAcquired": 6,
+        "framesAcquired": 48,
+        "framesRegistered": 48,
+        "complete": true
+      },
+      "ncepDataset": {
+        "relativePath": "data/research/step48/forcing/normalized/KE-X2.ncep10m.wind.json",
+        "sha256": "f5857989a37dc3c1d5626432c3615b64ebc86f901fab542db8f5cdb8263aa325",
+        "bytes": 43906,
+        "frames": 17,
+        "class": "DERIVED_PREPARATION"
+      },
+      "status": "ACQUIRED"
+    },
+    {
+      "windowId": "KE-X3",
+      "region": "KE",
+      "t0": "2011-09-26T12:00:00Z",
+      "end": "2011-09-29T12:00:00Z",
+      "drifterIds": [
+        "40083"
+      ],
+      "oceanBox": {
+        "south": 37.99414,
+        "north": 40.0,
+        "west": 156.67685,
+        "east": 160.67685
+      },
+      "windBox": {
+        "south": 34.99414,
+        "north": 43.0,
+        "west": 153.67685,
+        "east": 163.67685
+      },
+      "registeredFrames": 48,
+      "requiredUtcDays": [
+        "2011-09-25",
+        "2011-09-26",
+        "2011-09-27",
+        "2011-09-28",
+        "2011-09-29",
+        "2011-09-30"
+      ],
+      "hycomWindowParts": [
+        {
+          "filename": "current-20110926T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=37.994&west=156.677&east=160.677&horizStride=1&time_start=2011-09-26T12%3A00%3A00Z&time_end=2011-09-27T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2011",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 37.99414,
+              "north": 40.0,
+              "west": 156.67685,
+              "east": 160.67685
+            }
+          },
+          "relativePath": "data/research/step48/forcing/KE-X3/hycom/current-20110926T12.nc",
+          "status": "reused",
+          "sha256": "044f3282b2f0dbfa97b32793076d82f6af99db33a3ed4b8384ef4ff3274fb484",
+          "bytes": 45916,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 26,
+              "lon": 51
+            }
+          }
+        },
+        {
+          "filename": "current-20110927T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=37.994&west=156.677&east=160.677&horizStride=1&time_start=2011-09-27T12%3A00%3A00Z&time_end=2011-09-28T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2011",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 37.99414,
+              "north": 40.0,
+              "west": 156.67685,
+              "east": 160.67685
+            }
+          },
+          "relativePath": "data/research/step48/forcing/KE-X3/hycom/current-20110927T12.nc",
+          "status": "reused",
+          "sha256": "1af6e8673a6d89a4c794e6bf9ec476c5b03c939bc46dbe44ea2948c989e71089",
+          "bytes": 45916,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 26,
+              "lon": 51
+            }
+          }
+        },
+        {
+          "filename": "current-20110928T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=37.994&west=156.677&east=160.677&horizStride=1&time_start=2011-09-28T12%3A00%3A00Z&time_end=2011-09-29T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2011",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 37.99414,
+              "north": 40.0,
+              "west": 156.67685,
+              "east": 160.67685
+            }
+          },
+          "relativePath": "data/research/step48/forcing/KE-X3/hycom/current-20110928T12.nc",
+          "status": "reused",
+          "sha256": "df1a4fab752e1594f2c7c61b0fe78c88dbd42658e263ee56ba3ca69c1fdd0efe",
+          "bytes": 45916,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 26,
+              "lon": 51
+            }
+          }
+        },
+        {
+          "filename": "current-20110929T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=37.994&west=156.677&east=160.677&horizStride=1&time_start=2011-09-29T12%3A00%3A00Z&time_end=2011-09-29T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2011",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 37.99414,
+              "north": 40.0,
+              "west": 156.67685,
+              "east": 160.67685
+            }
+          },
+          "relativePath": "data/research/step48/forcing/KE-X3/hycom/current-20110929T12.nc",
+          "status": "reused",
+          "sha256": "a5f3a462ddee0240104e8446066678e9c85a87501d03cf24e2ad292fb8ace0a3",
+          "bytes": 8732,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 1,
+              "depth": 1,
+              "lat": 26,
+              "lon": 51
+            }
+          }
+        }
+      ],
+      "hycomDayParts": [
+        {
+          "utcDay": "2011-09-25",
+          "filename": "day-2011-09-25.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=37.994&west=156.677&east=160.677&horizStride=1&time_start=2011-09-25T00%3A00%3A00Z&time_end=2011-09-25T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X3/hycom-days/day-2011-09-25.nc",
+          "status": "reused",
+          "sha256": "b0699fe13ba17d01ef922f3ee80ed955895efdb1f2230412fd47aa22fb31dcf9",
+          "bytes": 45916,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 26,
+              "lon": 51
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2011-09-26",
+          "filename": "day-2011-09-26.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=37.994&west=156.677&east=160.677&horizStride=1&time_start=2011-09-26T00%3A00%3A00Z&time_end=2011-09-26T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X3/hycom-days/day-2011-09-26.nc",
+          "status": "reused",
+          "sha256": "8616310c46cda05198b34eb86e726ac421a9d85608c0de8e5e5d4356b5e906eb",
+          "bytes": 45916,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 26,
+              "lon": 51
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2011-09-27",
+          "filename": "day-2011-09-27.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=37.994&west=156.677&east=160.677&horizStride=1&time_start=2011-09-27T00%3A00%3A00Z&time_end=2011-09-27T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X3/hycom-days/day-2011-09-27.nc",
+          "status": "reused",
+          "sha256": "58c25d4cb64ea0a659856d7481db2e565de27aab4b385f8b779ee87690824188",
+          "bytes": 45916,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 26,
+              "lon": 51
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2011-09-28",
+          "filename": "day-2011-09-28.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=37.994&west=156.677&east=160.677&horizStride=1&time_start=2011-09-28T00%3A00%3A00Z&time_end=2011-09-28T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X3/hycom-days/day-2011-09-28.nc",
+          "status": "reused",
+          "sha256": "6ada898b2ddac93e773127ba24abe7cb5def3709999af01e01e90a044b7e44e9",
+          "bytes": 45916,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 26,
+              "lon": 51
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2011-09-29",
+          "filename": "day-2011-09-29.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=37.994&west=156.677&east=160.677&horizStride=1&time_start=2011-09-29T00%3A00%3A00Z&time_end=2011-09-29T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X3/hycom-days/day-2011-09-29.nc",
+          "status": "reused",
+          "sha256": "b3c293f4de221079136e912c4434b26d82d2e2f7b0a652f7f16bebe1e180c0e1",
+          "bytes": 45916,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 26,
+              "lon": 51
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2011-09-30",
+          "filename": "day-2011-09-30.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=37.994&west=156.677&east=160.677&horizStride=1&time_start=2011-09-30T00%3A00%3A00Z&time_end=2011-09-30T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X3/hycom-days/day-2011-09-30.nc",
+          "status": "reused",
+          "sha256": "c39ad49af14241be02bfee83c772d99322a6a2e1c502bd93e81d7559febd88c1",
+          "bytes": 45916,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 26,
+              "lon": 51
+            }
+          },
+          "frames": 8
+        }
+      ],
+      "ncep": [
+        {
+          "variable": "uwnd",
+          "filename": "uwnd.10m.gauss.20110926T00-20110930T00.nc",
+          "query": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2011.nc?var=uwnd&north=43.000&south=34.994&west=153.677&east=163.677&time_start=2011-09-26T00%3A00%3A00Z&time_end=2011-09-30T00%3A00%3A00Z&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X3/ncep/uwnd.10m.gauss.20110926T00-20110930T00.nc",
+          "status": "reused",
+          "sha256": "483c9dc8890b40438617dba86d2d334335a09038ada128833c6f26a2eab5f39a",
+          "bytes": 5092,
+          "retrievedAtUTC": null
+        },
+        {
+          "variable": "vwnd",
+          "filename": "vwnd.10m.gauss.20110926T00-20110930T00.nc",
+          "query": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2011.nc?var=vwnd&north=43.000&south=34.994&west=153.677&east=163.677&time_start=2011-09-26T00%3A00%3A00Z&time_end=2011-09-30T00%3A00%3A00Z&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X3/ncep/vwnd.10m.gauss.20110926T00-20110930T00.nc",
+          "status": "reused",
+          "sha256": "08c16910a4d99f22ec184f82841c7fba0cc332a3a167ff116f9f877868dff7b0",
+          "bytes": 5092,
+          "retrievedAtUTC": null
+        }
+      ],
+      "glorys": {
+        "datasetId": "cmems_mod_glo_phy_my_0.083deg_P1D-m",
+        "requestedTime": [
+          "2011-09-25T00:00:00",
+          "2011-09-30T00:00:00"
+        ],
+        "requestedBox": {
+          "south": 37.49414,
+          "north": 40.5,
+          "west": 156.17685,
+          "east": 161.17685
+        },
+        "requestedDepthMeters": 15.81,
+        "command": "copernicusmarine subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x 156.17685 -X 161.17685 -y 37.49414 -Y 40.5 -t 2011-09-25T00:00:00 -T 2011-09-30T00:00:00 -z 15.81 -Z 15.81 -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step48\\glorys -f KE-X3.glorys12v1.uo_vo.15.81m.nc --disable-progress-bar",
+        "requestedAtUTC": "2026-09-07T08:04:01Z",
+        "status": "reused",
+        "sha256": "e19078be145ae524a1686b6b9b29bdfa49b2a549756f5e3d5fdaa7d189c56be7",
+        "bytes": 81154,
+        "relativePath": "data/research/step48/glorys/KE-X3.glorys12v1.uo_vo.15.81m.nc",
+        "dataset": {
+          "relativePath": "data/research/step48/forcing/normalized/KE-X3.glorys15.81m.dataset.json",
+          "sha256": "ee3055d0f22177ec340ac0a2f682de5b40433b66caa5c9704f9f2f39e8b50b5f",
+          "bytes": 565503,
+          "frames": 6,
+          "latRange": [
+            37.5,
+            40.5
+          ],
+          "lonRange": [
+            156.25,
+            161.16666666666666
+          ],
+          "depthMeters": 15.81007,
+          "class": "DERIVED_PREPARATION"
+        },
+        "coversBox": true
+      },
+      "reasons": [],
+      "hycomCoverage": {
+        "frames": 25,
+        "shape": [
+          25,
+          26,
+          51
+        ],
+        "valuesCount": 66300,
+        "cadenceSeconds": 10800.0,
+        "readerLonRange": [
+          156.64,
+          160.64
+        ],
+        "readerLatRange": [
+          38.0,
+          40.0
+        ],
+        "boxConvention": "-180..180",
+        "readerConvention": "-180..180",
+        "timeStart": "2011-09-26T12:00:00Z",
+        "timeEnd": "2011-09-29T12:00:00Z",
+        "coversBoxInOwnConvention": true,
+        "convention": "-180..180",
+        "transformApplied": false
+      },
+      "hycomDataset": {
+        "relativePath": "data/research/step48/forcing/normalized/KE-X3.hycom15m.dataset.json",
+        "sha256": "333d5f559bd4856509f4203f558d5bcdeb9fd49ff361fdec2416b31f0f65d9c4",
+        "bytes": 1349576,
+        "class": "DERIVED_PREPARATION"
+      },
+      "hycomDayCoverage": {
+        "filesRequired": 6,
+        "filesAcquired": 6,
+        "framesAcquired": 48,
+        "framesRegistered": 48,
+        "complete": true
+      },
+      "ncepDataset": {
+        "relativePath": "data/research/step48/forcing/normalized/KE-X3.ncep10m.wind.json",
+        "sha256": "32de1735fa0b99dd492cded4f6bd254d414a52ffe23990058bb27c6dd8ba7e6a",
+        "bytes": 23078,
+        "frames": 17,
+        "class": "DERIVED_PREPARATION"
+      },
+      "status": "ACQUIRED"
+    },
+    {
+      "windowId": "KE-X4",
+      "region": "KE",
+      "t0": "2011-11-06T12:00:00Z",
+      "end": "2011-11-09T12:00:00Z",
+      "drifterIds": [
+        "39123"
+      ],
+      "oceanBox": {
+        "south": 37.04246,
+        "north": 40.0,
+        "west": 148.3716,
+        "east": 152.3716
+      },
+      "windBox": {
+        "south": 34.04246,
+        "north": 43.0,
+        "west": 145.3716,
+        "east": 155.3716
+      },
+      "registeredFrames": 48,
+      "requiredUtcDays": [
+        "2011-11-05",
+        "2011-11-06",
+        "2011-11-07",
+        "2011-11-08",
+        "2011-11-09",
+        "2011-11-10"
+      ],
+      "hycomWindowParts": [
+        {
+          "filename": "current-20111106T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=37.042&west=148.372&east=152.372&horizStride=1&time_start=2011-11-06T12%3A00%3A00Z&time_end=2011-11-07T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2011",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 37.04246,
+              "north": 40.0,
+              "west": 148.3716,
+              "east": 152.3716
+            }
+          },
+          "relativePath": "data/research/step48/forcing/KE-X4/hycom/current-20111106T12.nc",
+          "status": "reused",
+          "sha256": "e645f4e82edabe5c9768324f30992623c67083c44846af50143108227ee0a10c",
+          "bytes": 65596,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 38,
+              "lon": 51
+            }
+          }
+        },
+        {
+          "filename": "current-20111107T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=37.042&west=148.372&east=152.372&horizStride=1&time_start=2011-11-07T12%3A00%3A00Z&time_end=2011-11-08T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2011",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 37.04246,
+              "north": 40.0,
+              "west": 148.3716,
+              "east": 152.3716
+            }
+          },
+          "relativePath": "data/research/step48/forcing/KE-X4/hycom/current-20111107T12.nc",
+          "status": "reused",
+          "sha256": "ce4d5848b786df2ec7597f4650a4796cdea13ec4d5080aaf7f08922d0e628a96",
+          "bytes": 65596,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 38,
+              "lon": 51
+            }
+          }
+        },
+        {
+          "filename": "current-20111108T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=37.042&west=148.372&east=152.372&horizStride=1&time_start=2011-11-08T12%3A00%3A00Z&time_end=2011-11-09T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2011",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 37.04246,
+              "north": 40.0,
+              "west": 148.3716,
+              "east": 152.3716
+            }
+          },
+          "relativePath": "data/research/step48/forcing/KE-X4/hycom/current-20111108T12.nc",
+          "status": "reused",
+          "sha256": "da0d534f0fdc1ca0b7d2a70f83ce3e734e2882b01e4e8cf7dc9945a42a7a3e4b",
+          "bytes": 65596,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 38,
+              "lon": 51
+            }
+          }
+        },
+        {
+          "filename": "current-20111109T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=37.042&west=148.372&east=152.372&horizStride=1&time_start=2011-11-09T12%3A00%3A00Z&time_end=2011-11-09T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2011",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 37.04246,
+              "north": 40.0,
+              "west": 148.3716,
+              "east": 152.3716
+            }
+          },
+          "relativePath": "data/research/step48/forcing/KE-X4/hycom/current-20111109T12.nc",
+          "status": "reused",
+          "sha256": "227223ba05d89185bc86a394a68447e27cc685a28831bdbf22edf3598f8827ff",
+          "bytes": 11276,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 1,
+              "depth": 1,
+              "lat": 38,
+              "lon": 51
+            }
+          }
+        }
+      ],
+      "hycomDayParts": [
+        {
+          "utcDay": "2011-11-05",
+          "filename": "day-2011-11-05.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=37.042&west=148.372&east=152.372&horizStride=1&time_start=2011-11-05T00%3A00%3A00Z&time_end=2011-11-05T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X4/hycom-days/day-2011-11-05.nc",
+          "status": "reused",
+          "sha256": "25507c6ba858d482bc6b8fa9b9d29ab259086a4d80485588b014ad63237c9423",
+          "bytes": 65596,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 38,
+              "lon": 51
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2011-11-06",
+          "filename": "day-2011-11-06.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=37.042&west=148.372&east=152.372&horizStride=1&time_start=2011-11-06T00%3A00%3A00Z&time_end=2011-11-06T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X4/hycom-days/day-2011-11-06.nc",
+          "status": "reused",
+          "sha256": "e2a90ae0aa493b715d515fe663b2a9310940413e96d95540a9398f70d22c5975",
+          "bytes": 65596,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 38,
+              "lon": 51
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2011-11-07",
+          "filename": "day-2011-11-07.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=37.042&west=148.372&east=152.372&horizStride=1&time_start=2011-11-07T00%3A00%3A00Z&time_end=2011-11-07T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X4/hycom-days/day-2011-11-07.nc",
+          "status": "reused",
+          "sha256": "e3a03a1694abcfa3c4d4b2d67457f7ddc43a8b4340aeb9f9c079f8ef37c1e061",
+          "bytes": 65596,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 38,
+              "lon": 51
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2011-11-08",
+          "filename": "day-2011-11-08.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=37.042&west=148.372&east=152.372&horizStride=1&time_start=2011-11-08T00%3A00%3A00Z&time_end=2011-11-08T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X4/hycom-days/day-2011-11-08.nc",
+          "status": "reused",
+          "sha256": "d40b9c453e664d7f1156805ef2a7898b1b2bc2ea295b78af07410470f0bc7a40",
+          "bytes": 65596,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 38,
+              "lon": 51
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2011-11-09",
+          "filename": "day-2011-11-09.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=37.042&west=148.372&east=152.372&horizStride=1&time_start=2011-11-09T00%3A00%3A00Z&time_end=2011-11-09T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X4/hycom-days/day-2011-11-09.nc",
+          "status": "reused",
+          "sha256": "20998204aa383fab7aef5f770c2aef1736cca4eff3cc7690b36b5bca11c7e8b6",
+          "bytes": 65596,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 38,
+              "lon": 51
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2011-11-10",
+          "filename": "day-2011-11-10.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=37.042&west=148.372&east=152.372&horizStride=1&time_start=2011-11-10T00%3A00%3A00Z&time_end=2011-11-10T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X4/hycom-days/day-2011-11-10.nc",
+          "status": "reused",
+          "sha256": "7662bafa1e2967e5d63a0c2ef14cc6e344fbb01c7e3d7921329a663d7427df07",
+          "bytes": 65596,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 38,
+              "lon": 51
+            }
+          },
+          "frames": 8
+        }
+      ],
+      "ncep": [
+        {
+          "variable": "uwnd",
+          "filename": "uwnd.10m.gauss.20111106T00-20111110T00.nc",
+          "query": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2011.nc?var=uwnd&north=43.000&south=34.042&west=145.372&east=155.372&time_start=2011-11-06T00%3A00%3A00Z&time_end=2011-11-10T00%3A00%3A00Z&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X4/ncep/uwnd.10m.gauss.20111106T00-20111110T00.nc",
+          "status": "reused",
+          "sha256": "f372bb1e559ff98335f7f97eb87d3163f68df5fcca417f04cb68457e6c6eb7a8",
+          "bytes": 5504,
+          "retrievedAtUTC": null
+        },
+        {
+          "variable": "vwnd",
+          "filename": "vwnd.10m.gauss.20111106T00-20111110T00.nc",
+          "query": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2011.nc?var=vwnd&north=43.000&south=34.042&west=145.372&east=155.372&time_start=2011-11-06T00%3A00%3A00Z&time_end=2011-11-10T00%3A00%3A00Z&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/KE-X4/ncep/vwnd.10m.gauss.20111106T00-20111110T00.nc",
+          "status": "reused",
+          "sha256": "0471cc010a3b817b081c776b4118773e62928044477fbad2aef8ca1fda4c2e96",
+          "bytes": 5504,
+          "retrievedAtUTC": null
+        }
+      ],
+      "glorys": {
+        "datasetId": "cmems_mod_glo_phy_my_0.083deg_P1D-m",
+        "requestedTime": [
+          "2011-11-05T00:00:00",
+          "2011-11-10T00:00:00"
+        ],
+        "requestedBox": {
+          "south": 36.54246,
+          "north": 40.5,
+          "west": 147.8716,
+          "east": 152.8716
+        },
+        "requestedDepthMeters": 15.81,
+        "command": "copernicusmarine subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x 147.8716 -X 152.8716 -y 36.54246 -Y 40.5 -t 2011-11-05T00:00:00 -T 2011-11-10T00:00:00 -z 15.81 -Z 15.81 -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step48\\glorys -f KE-X4.glorys12v1.uo_vo.15.81m.nc --disable-progress-bar",
+        "requestedAtUTC": "2026-09-07T08:04:01Z",
+        "status": "reused",
+        "sha256": "e568ad84e2d8b3f804fde5f0b458585718afd6b016599c518c72e0180b706eeb",
+        "bytes": 96994,
+        "relativePath": "data/research/step48/glorys/KE-X4.glorys12v1.uo_vo.15.81m.nc",
+        "dataset": {
+          "relativePath": "data/research/step48/forcing/normalized/KE-X4.glorys15.81m.dataset.json",
+          "sha256": "132a313ba96312243c923c8c10e785d12d4ea0828bcf8d300f1b51e098acb19f",
+          "bytes": 730032,
+          "frames": 6,
+          "latRange": [
+            36.583333333333336,
+            40.5
+          ],
+          "lonRange": [
+            147.91666666666666,
+            152.83333333333334
+          ],
+          "depthMeters": 15.81007,
+          "class": "DERIVED_PREPARATION"
+        },
+        "coversBox": true
+      },
+      "reasons": [],
+      "hycomCoverage": {
+        "frames": 25,
+        "shape": [
+          25,
+          38,
+          51
+        ],
+        "valuesCount": 96900,
+        "cadenceSeconds": 10800.0,
+        "readerLonRange": [
+          148.4,
+          152.4
+        ],
+        "readerLatRange": [
+          37.04,
+          40.0
+        ],
+        "boxConvention": "-180..180",
+        "readerConvention": "-180..180",
+        "timeStart": "2011-11-06T12:00:00Z",
+        "timeEnd": "2011-11-09T12:00:00Z",
+        "coversBoxInOwnConvention": true,
+        "convention": "-180..180",
+        "transformApplied": false
+      },
+      "hycomDataset": {
+        "relativePath": "data/research/step48/forcing/normalized/KE-X4.hycom15m.dataset.json",
+        "sha256": "e5a253cda62293683595de252e0709c34dad6b0f48f8ed0452ae61fa9d034fe0",
+        "bytes": 1998506,
+        "class": "DERIVED_PREPARATION"
+      },
+      "hycomDayCoverage": {
+        "filesRequired": 6,
+        "filesAcquired": 6,
+        "framesAcquired": 48,
+        "framesRegistered": 48,
+        "complete": true
+      },
+      "ncepDataset": {
+        "relativePath": "data/research/step48/forcing/normalized/KE-X4.ncep10m.wind.json",
+        "sha256": "57392e655fdbfb47352985453f2c5f478dddc5675d88147f9e0ea511aa59c7aa",
+        "bytes": 26993,
+        "frames": 17,
+        "class": "DERIVED_PREPARATION"
+      },
+      "status": "ACQUIRED"
+    },
+    {
+      "windowId": "BM-X5",
+      "region": "BM",
+      "t0": "2013-12-19T12:00:00Z",
+      "end": "2013-12-22T12:00:00Z",
+      "drifterIds": [
+        "123311",
+        "123329",
+        "123330",
+        "123331",
+        "123332",
+        "123334",
+        "123335",
+        "123336",
+        "123338"
+      ],
+      "oceanBox": {
+        "south": -38.31403,
+        "north": -28.75497,
+        "west": -53.26561,
+        "east": -46.14127
+      },
+      "windBox": {
+        "south": -41.31403,
+        "north": -25.75497,
+        "west": -56.26561,
+        "east": -43.14127
+      },
+      "registeredFrames": 48,
+      "requiredUtcDays": [
+        "2013-12-18",
+        "2013-12-19",
+        "2013-12-20",
+        "2013-12-21",
+        "2013-12-22",
+        "2013-12-23"
+      ],
+      "hycomWindowParts": [
+        {
+          "filename": "current-20131219T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2013?var=water_u&var=water_v&north=-28.755&south=-38.314&west=-53.266&east=-46.141&horizStride=1&time_start=2013-12-19T12%3A00%3A00Z&time_end=2013-12-20T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2013",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": -38.31403,
+              "north": -28.75497,
+              "west": -53.26561,
+              "east": -46.14127
+            }
+          },
+          "relativePath": "data/research/step48/forcing/BM-X5/hycom/current-20131219T12.nc",
+          "status": "reused",
+          "sha256": "743ba097e8051ccce268f3138bdb109120d8f6f1b95ccdeaa793329cf666fe30",
+          "bytes": 353036,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 121,
+              "lon": 90
+            }
+          }
+        },
+        {
+          "filename": "current-20131220T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2013?var=water_u&var=water_v&north=-28.755&south=-38.314&west=-53.266&east=-46.141&horizStride=1&time_start=2013-12-20T12%3A00%3A00Z&time_end=2013-12-21T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2013",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": -38.31403,
+              "north": -28.75497,
+              "west": -53.26561,
+              "east": -46.14127
+            }
+          },
+          "relativePath": "data/research/step48/forcing/BM-X5/hycom/current-20131220T12.nc",
+          "status": "reused",
+          "sha256": "78fd0a20e514e2b3705d87407ecf39f1ddec51ce84f5108bab59977705132354",
+          "bytes": 353036,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 121,
+              "lon": 90
+            }
+          }
+        },
+        {
+          "filename": "current-20131221T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2013?var=water_u&var=water_v&north=-28.755&south=-38.314&west=-53.266&east=-46.141&horizStride=1&time_start=2013-12-21T12%3A00%3A00Z&time_end=2013-12-22T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2013",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": -38.31403,
+              "north": -28.75497,
+              "west": -53.26561,
+              "east": -46.14127
+            }
+          },
+          "relativePath": "data/research/step48/forcing/BM-X5/hycom/current-20131221T12.nc",
+          "status": "reused",
+          "sha256": "3565f1ed8d204ece08fe0b22253ffa38cb9a288a39d0464404c56e16fe848b9a",
+          "bytes": 353036,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 121,
+              "lon": 90
+            }
+          }
+        },
+        {
+          "filename": "current-20131222T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2013?var=water_u&var=water_v&north=-28.755&south=-38.314&west=-53.266&east=-46.141&horizStride=1&time_start=2013-12-22T12%3A00%3A00Z&time_end=2013-12-22T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2013",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": -38.31403,
+              "north": -28.75497,
+              "west": -53.26561,
+              "east": -46.14127
+            }
+          },
+          "relativePath": "data/research/step48/forcing/BM-X5/hycom/current-20131222T12.nc",
+          "status": "reused",
+          "sha256": "c2bbc8d4fb6dc83f0261b9aa17f6290299f5ade670f937b1e943190f1d471ea5",
+          "bytes": 48060,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 1,
+              "depth": 1,
+              "lat": 121,
+              "lon": 90
+            }
+          }
+        }
+      ],
+      "hycomDayParts": [
+        {
+          "utcDay": "2013-12-18",
+          "filename": "day-2013-12-18.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2013?var=water_u&var=water_v&north=-28.755&south=-38.314&west=-53.266&east=-46.141&horizStride=1&time_start=2013-12-18T00%3A00%3A00Z&time_end=2013-12-18T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/BM-X5/hycom-days/day-2013-12-18.nc",
+          "status": "reused",
+          "sha256": "c980a1c4516a7674c4147958442cc1d5cf7435b3ac5f9c7ef5ef59393e6e749f",
+          "bytes": 353032,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 121,
+              "lon": 90
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2013-12-19",
+          "filename": "day-2013-12-19.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2013?var=water_u&var=water_v&north=-28.755&south=-38.314&west=-53.266&east=-46.141&horizStride=1&time_start=2013-12-19T00%3A00%3A00Z&time_end=2013-12-19T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/BM-X5/hycom-days/day-2013-12-19.nc",
+          "status": "reused",
+          "sha256": "cf1dbd05a792e1735155c49f547117ec18c0ba4fa9d30857f48ab4dbba9daaf5",
+          "bytes": 353036,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 121,
+              "lon": 90
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2013-12-20",
+          "filename": "day-2013-12-20.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2013?var=water_u&var=water_v&north=-28.755&south=-38.314&west=-53.266&east=-46.141&horizStride=1&time_start=2013-12-20T00%3A00%3A00Z&time_end=2013-12-20T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/BM-X5/hycom-days/day-2013-12-20.nc",
+          "status": "reused",
+          "sha256": "00547d00711010e58d8a4d95c8943e98f0d7571f603ecee664454ad847b4cd59",
+          "bytes": 353036,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 121,
+              "lon": 90
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2013-12-21",
+          "filename": "day-2013-12-21.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2013?var=water_u&var=water_v&north=-28.755&south=-38.314&west=-53.266&east=-46.141&horizStride=1&time_start=2013-12-21T00%3A00%3A00Z&time_end=2013-12-21T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/BM-X5/hycom-days/day-2013-12-21.nc",
+          "status": "reused",
+          "sha256": "d4c0b839e3f740fae4aa2f24e9457d960ad3aaf35595e02da52921db75742e40",
+          "bytes": 353036,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 121,
+              "lon": 90
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2013-12-22",
+          "filename": "day-2013-12-22.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2013?var=water_u&var=water_v&north=-28.755&south=-38.314&west=-53.266&east=-46.141&horizStride=1&time_start=2013-12-22T00%3A00%3A00Z&time_end=2013-12-22T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/BM-X5/hycom-days/day-2013-12-22.nc",
+          "status": "reused",
+          "sha256": "dd1c496e83fc55778d2629d6a68e93fd1b00f590eef1ff79f35a969cad1396b7",
+          "bytes": 353036,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 121,
+              "lon": 90
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2013-12-23",
+          "filename": "day-2013-12-23.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2013?var=water_u&var=water_v&north=-28.755&south=-38.314&west=-53.266&east=-46.141&horizStride=1&time_start=2013-12-23T00%3A00%3A00Z&time_end=2013-12-23T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/BM-X5/hycom-days/day-2013-12-23.nc",
+          "status": "reused",
+          "sha256": "b9e407d4254d531583fe95d622ac3ee03c16a5a6b8365f94eb90ed9aff3135ef",
+          "bytes": 353036,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 121,
+              "lon": 90
+            }
+          },
+          "frames": 8
+        }
+      ],
+      "ncep": [
+        {
+          "variable": "uwnd",
+          "filename": "uwnd.10m.gauss.20131219T00-20131223T00.nc",
+          "query": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2013.nc?var=uwnd&north=-25.755&south=-41.314&west=303.734&east=316.859&time_start=2013-12-19T00%3A00%3A00Z&time_end=2013-12-23T00%3A00%3A00Z&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/BM-X5/ncep/uwnd.10m.gauss.20131219T00-20131223T00.nc",
+          "status": "reused",
+          "sha256": "6a2369508116a9cc597d7c600c0bdf19e7aa7e5852bcc7ca1f240db8506189d9",
+          "bytes": 7972,
+          "retrievedAtUTC": null
+        },
+        {
+          "variable": "vwnd",
+          "filename": "vwnd.10m.gauss.20131219T00-20131223T00.nc",
+          "query": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2013.nc?var=vwnd&north=-25.755&south=-41.314&west=303.734&east=316.859&time_start=2013-12-19T00%3A00%3A00Z&time_end=2013-12-23T00%3A00%3A00Z&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/BM-X5/ncep/vwnd.10m.gauss.20131219T00-20131223T00.nc",
+          "status": "reused",
+          "sha256": "3e807d2ffd67b093582e5cfcbc6ec22d052a4e5d66feee38cd107f45aaec8682",
+          "bytes": 7972,
+          "retrievedAtUTC": null
+        }
+      ],
+      "glorys": {
+        "datasetId": "cmems_mod_glo_phy_my_0.083deg_P1D-m",
+        "requestedTime": [
+          "2013-12-18T00:00:00",
+          "2013-12-23T00:00:00"
+        ],
+        "requestedBox": {
+          "south": -38.81403,
+          "north": -28.25497,
+          "west": -53.76561,
+          "east": -45.64127
+        },
+        "requestedDepthMeters": 15.81,
+        "command": "copernicusmarine subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x -53.76561 -X -45.64127 -y -38.81403 -Y -28.25497 -t 2013-12-18T00:00:00 -T 2013-12-23T00:00:00 -z 15.81 -Z 15.81 -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step48\\glorys -f BM-X5.glorys12v1.uo_vo.15.81m.nc --disable-progress-bar",
+        "requestedAtUTC": "2026-09-07T08:04:02Z",
+        "status": "reused",
+        "sha256": "674eb82e284e0be78015248accbe5fea58244baf089393d0a2fdb15e254e76b9",
+        "bytes": 324238,
+        "relativePath": "data/research/step48/glorys/BM-X5.glorys12v1.uo_vo.15.81m.nc",
+        "dataset": {
+          "relativePath": "data/research/step48/forcing/normalized/BM-X5.glorys15.81m.dataset.json",
+          "sha256": "25f94d4094a7499030b093dee8f50fea65d9a1b5ba102c8b074164e1dcce8cd7",
+          "bytes": 2686457,
+          "frames": 6,
+          "latRange": [
+            -38.75,
+            -28.333333333333332
+          ],
+          "lonRange": [
+            -53.75,
+            -45.666666666666664
+          ],
+          "depthMeters": 15.81007,
+          "class": "DERIVED_PREPARATION"
+        },
+        "coversBox": true
+      },
+      "reasons": [],
+      "hycomCoverage": {
+        "frames": 25,
+        "shape": [
+          25,
+          121,
+          90
+        ],
+        "valuesCount": 544500,
+        "cadenceSeconds": 10800.0,
+        "readerLonRange": [
+          -53.28,
+          -46.16
+        ],
+        "readerLatRange": [
+          -38.32,
+          -28.72
+        ],
+        "boxConvention": "-180..180",
+        "readerConvention": "-180..180",
+        "timeStart": "2013-12-19T12:00:00Z",
+        "timeEnd": "2013-12-22T12:00:00Z",
+        "coversBoxInOwnConvention": true,
+        "convention": "-180..180",
+        "transformApplied": false
+      },
+      "hycomDataset": {
+        "relativePath": "data/research/step48/forcing/normalized/BM-X5.hycom15m.dataset.json",
+        "sha256": "0c57b1cc6ec8248a790abf1479d6af1529cda7eed6c7624766bb859df6a61737",
+        "bytes": 9690139,
+        "class": "DERIVED_PREPARATION"
+      },
+      "hycomDayCoverage": {
+        "filesRequired": 6,
+        "filesAcquired": 6,
+        "framesAcquired": 48,
+        "framesRegistered": 48,
+        "complete": true
+      },
+      "ncepDataset": {
+        "relativePath": "data/research/step48/forcing/normalized/BM-X5.ncep10m.wind.json",
+        "sha256": "08f53663b2343c364375875921f68fc157a85c35aad0f3ad6449c5041f88920d",
+        "bytes": 49833,
+        "frames": 17,
+        "class": "DERIVED_PREPARATION"
+      },
+      "status": "ACQUIRED"
+    },
+    {
+      "windowId": "BM-X6",
+      "region": "BM",
+      "t0": "2014-01-06T12:00:00Z",
+      "end": "2014-01-09T12:00:00Z",
+      "drifterIds": [
+        "123339",
+        "123341"
+      ],
+      "oceanBox": {
+        "south": -33.432050000000004,
+        "north": -29.00175,
+        "west": -49.55915,
+        "east": -43.95795
+      },
+      "windBox": {
+        "south": -36.432050000000004,
+        "north": -26.00175,
+        "west": -52.55915,
+        "east": -40.95795
+      },
+      "registeredFrames": 48,
+      "requiredUtcDays": [
+        "2014-01-05",
+        "2014-01-06",
+        "2014-01-07",
+        "2014-01-08",
+        "2014-01-09",
+        "2014-01-10"
+      ],
+      "hycomWindowParts": [
+        {
+          "filename": "current-20140106T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2014?var=water_u&var=water_v&north=-29.002&south=-33.432&west=-49.559&east=-43.958&horizStride=1&time_start=2014-01-06T12%3A00%3A00Z&time_end=2014-01-07T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2014",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": -33.432050000000004,
+              "north": -29.00175,
+              "west": -49.55915,
+              "east": -43.95795
+            }
+          },
+          "relativePath": "data/research/step48/forcing/BM-X6/hycom/current-20140106T12.nc",
+          "status": "reused",
+          "sha256": "5f6f479ab46e5efc7d72f1817092b833582223a26f5de1882bd49afd629c64de",
+          "bytes": 131116,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 56,
+              "lon": 71
+            }
+          }
+        },
+        {
+          "filename": "current-20140107T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2014?var=water_u&var=water_v&north=-29.002&south=-33.432&west=-49.559&east=-43.958&horizStride=1&time_start=2014-01-07T12%3A00%3A00Z&time_end=2014-01-08T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2014",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": -33.432050000000004,
+              "north": -29.00175,
+              "west": -49.55915,
+              "east": -43.95795
+            }
+          },
+          "relativePath": "data/research/step48/forcing/BM-X6/hycom/current-20140107T12.nc",
+          "status": "reused",
+          "sha256": "326bdaf12e933952a5711654068db0472d20f3b619cf6eb02ef6fadd4a483e4f",
+          "bytes": 131116,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 56,
+              "lon": 71
+            }
+          }
+        },
+        {
+          "filename": "current-20140108T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2014?var=water_u&var=water_v&north=-29.002&south=-33.432&west=-49.559&east=-43.958&horizStride=1&time_start=2014-01-08T12%3A00%3A00Z&time_end=2014-01-09T09%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2014",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": -33.432050000000004,
+              "north": -29.00175,
+              "west": -49.55915,
+              "east": -43.95795
+            }
+          },
+          "relativePath": "data/research/step48/forcing/BM-X6/hycom/current-20140108T12.nc",
+          "status": "reused",
+          "sha256": "bc482bdae54adb23cd00d793691fd8cf7b38feab3bee1cc994576304fab54a21",
+          "bytes": 131116,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 56,
+              "lon": 71
+            }
+          }
+        },
+        {
+          "filename": "current-20140109T12.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2014?var=water_u&var=water_v&north=-29.002&south=-33.432&west=-49.559&east=-43.958&horizStride=1&time_start=2014-01-09T12%3A00%3A00Z&time_end=2014-01-09T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "requestParameters": {
+            "dataset": "GLBv0.08/expt_53.X",
+            "year": "2014",
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": -33.432050000000004,
+              "north": -29.00175,
+              "west": -49.55915,
+              "east": -43.95795
+            }
+          },
+          "relativePath": "data/research/step48/forcing/BM-X6/hycom/current-20140109T12.nc",
+          "status": "reused",
+          "sha256": "e719f4ff4edceb491d385090e988afc5e072c100297c252ee0a2c431076ddea6",
+          "bytes": 19732,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 1,
+              "depth": 1,
+              "lat": 56,
+              "lon": 71
+            }
+          }
+        }
+      ],
+      "hycomDayParts": [
+        {
+          "utcDay": "2014-01-05",
+          "filename": "day-2014-01-05.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2014?var=water_u&var=water_v&north=-29.002&south=-33.432&west=-49.559&east=-43.958&horizStride=1&time_start=2014-01-05T00%3A00%3A00Z&time_end=2014-01-05T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/BM-X6/hycom-days/day-2014-01-05.nc",
+          "status": "reused",
+          "sha256": "fc105b465c94e7525351ad0c9f327a74de16b66b5fae81e5a7fe6e839821dcca",
+          "bytes": 131116,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 56,
+              "lon": 71
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2014-01-06",
+          "filename": "day-2014-01-06.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2014?var=water_u&var=water_v&north=-29.002&south=-33.432&west=-49.559&east=-43.958&horizStride=1&time_start=2014-01-06T00%3A00%3A00Z&time_end=2014-01-06T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/BM-X6/hycom-days/day-2014-01-06.nc",
+          "status": "reused",
+          "sha256": "4c229dadf1a00befabb819a0315253702d1d6ec2c179c95c032d3068bf9c5efc",
+          "bytes": 131116,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 56,
+              "lon": 71
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2014-01-07",
+          "filename": "day-2014-01-07.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2014?var=water_u&var=water_v&north=-29.002&south=-33.432&west=-49.559&east=-43.958&horizStride=1&time_start=2014-01-07T00%3A00%3A00Z&time_end=2014-01-07T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/BM-X6/hycom-days/day-2014-01-07.nc",
+          "status": "reused",
+          "sha256": "53be44b06c90dd4e0621e81e149fc44660deab0a66a0a1e9cd1e99fa2e29266a",
+          "bytes": 131116,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 56,
+              "lon": 71
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2014-01-08",
+          "filename": "day-2014-01-08.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2014?var=water_u&var=water_v&north=-29.002&south=-33.432&west=-49.559&east=-43.958&horizStride=1&time_start=2014-01-08T00%3A00%3A00Z&time_end=2014-01-08T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/BM-X6/hycom-days/day-2014-01-08.nc",
+          "status": "reused",
+          "sha256": "9a2e0bf4ee612b098dc3ef340e88e97060bb8e2d5cb1c763f7609b3fccb8bff8",
+          "bytes": 131116,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 56,
+              "lon": 71
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2014-01-09",
+          "filename": "day-2014-01-09.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2014?var=water_u&var=water_v&north=-29.002&south=-33.432&west=-49.559&east=-43.958&horizStride=1&time_start=2014-01-09T00%3A00%3A00Z&time_end=2014-01-09T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/BM-X6/hycom-days/day-2014-01-09.nc",
+          "status": "reused",
+          "sha256": "cdde85d6cb3979054f2d36b81715ce1a6821f0fac88b8eff2127213ac1045b60",
+          "bytes": 131116,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 56,
+              "lon": 71
+            }
+          },
+          "frames": 8
+        },
+        {
+          "utcDay": "2014-01-10",
+          "filename": "day-2014-01-10.nc",
+          "query": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2014?var=water_u&var=water_v&north=-29.002&south=-33.432&west=-49.559&east=-43.958&horizStride=1&time_start=2014-01-10T00%3A00%3A00Z&time_end=2014-01-10T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/BM-X6/hycom-days/day-2014-01-10.nc",
+          "status": "reused",
+          "sha256": "49bc0aa556447b56457863540843a284796282d35281b8c308402df4dda4724e",
+          "bytes": 131116,
+          "retrievedAtUTC": null,
+          "netcdf": {
+            "variables": [
+              "depth",
+              "lat",
+              "lon",
+              "time",
+              "water_u",
+              "water_v"
+            ],
+            "dimensions": {
+              "time": 8,
+              "depth": 1,
+              "lat": 56,
+              "lon": 71
+            }
+          },
+          "frames": 8
+        }
+      ],
+      "ncep": [
+        {
+          "variable": "uwnd",
+          "filename": "uwnd.10m.gauss.20140106T00-20140110T00.nc",
+          "query": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/uwnd.10m.gauss.2014.nc?var=uwnd&north=-26.002&south=-36.432&west=307.441&east=319.042&time_start=2014-01-06T00%3A00%3A00Z&time_end=2014-01-10T00%3A00%3A00Z&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/BM-X6/ncep/uwnd.10m.gauss.20140106T00-20140110T00.nc",
+          "status": "reused",
+          "sha256": "565c5c7a130f66c0c8c0bec2c95bd07fe0a0108d2d67af6beb5f7e5d26286a8f",
+          "bytes": 6396,
+          "retrievedAtUTC": null
+        },
+        {
+          "variable": "vwnd",
+          "filename": "vwnd.10m.gauss.20140106T00-20140110T00.nc",
+          "query": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/vwnd.10m.gauss.2014.nc?var=vwnd&north=-26.002&south=-36.432&west=307.441&east=319.042&time_start=2014-01-06T00%3A00%3A00Z&time_end=2014-01-10T00%3A00%3A00Z&accept=netcdf",
+          "relativePath": "data/research/step48/forcing/BM-X6/ncep/vwnd.10m.gauss.20140106T00-20140110T00.nc",
+          "status": "reused",
+          "sha256": "f0ca8c95c6882fa468365cb99c481503aaa60be2e29a0b7c35aabb438938a0e4",
+          "bytes": 6396,
+          "retrievedAtUTC": null
+        }
+      ],
+      "glorys": {
+        "datasetId": "cmems_mod_glo_phy_my_0.083deg_P1D-m",
+        "requestedTime": [
+          "2014-01-05T00:00:00",
+          "2014-01-10T00:00:00"
+        ],
+        "requestedBox": {
+          "south": -33.932050000000004,
+          "north": -28.50175,
+          "west": -50.05915,
+          "east": -43.45795
+        },
+        "requestedDepthMeters": 15.81,
+        "command": "copernicusmarine subset -i cmems_mod_glo_phy_my_0.083deg_P1D-m -v uo -v vo -x -50.05915 -X -43.45795 -y -33.932050000000004 -Y -28.50175 -t 2014-01-05T00:00:00 -T 2014-01-10T00:00:00 -z 15.81 -Z 15.81 -o D:\\## APP\\EARTHUS v2_APP\\data\\research\\step48\\glorys -f BM-X6.glorys12v1.uo_vo.15.81m.nc --disable-progress-bar",
+        "requestedAtUTC": "2026-09-07T08:04:03Z",
+        "status": "reused",
+        "sha256": "d0244435bfae9e93c94886fe5a321198b3c8c2533fa021d5cf7e8625b115fcaf",
+        "bytes": 151114,
+        "relativePath": "data/research/step48/glorys/BM-X6.glorys12v1.uo_vo.15.81m.nc",
+        "dataset": {
+          "relativePath": "data/research/step48/forcing/normalized/BM-X6.glorys15.81m.dataset.json",
+          "sha256": "dbd887e035c52dbe5b6c7e96f3acbebc4bab98ec35aefe0dce6b2d559be4fe69",
+          "bytes": 1288738,
+          "frames": 6,
+          "latRange": [
+            -33.916666666666664,
+            -28.583333333333332
+          ],
+          "lonRange": [
+            -50.0,
+            -43.5
+          ],
+          "depthMeters": 15.81007,
+          "class": "DERIVED_PREPARATION"
+        },
+        "coversBox": true
+      },
+      "reasons": [],
+      "hycomCoverage": {
+        "frames": 25,
+        "shape": [
+          25,
+          56,
+          71
+        ],
+        "valuesCount": 198800,
+        "cadenceSeconds": 10800.0,
+        "readerLonRange": [
+          -49.52,
+          -43.92
+        ],
+        "readerLatRange": [
+          -33.44,
+          -29.04
+        ],
+        "boxConvention": "-180..180",
+        "readerConvention": "-180..180",
+        "timeStart": "2014-01-06T12:00:00Z",
+        "timeEnd": "2014-01-09T12:00:00Z",
+        "coversBoxInOwnConvention": true,
+        "convention": "-180..180",
+        "transformApplied": false
+      },
+      "hycomDataset": {
+        "relativePath": "data/research/step48/forcing/normalized/BM-X6.hycom15m.dataset.json",
+        "sha256": "c1405b2b98c2ca20f92bfccddbeeef61b6199191b4768cf31babbf8e562dd676",
+        "bytes": 4060027,
+        "class": "DERIVED_PREPARATION"
+      },
+      "hycomDayCoverage": {
+        "filesRequired": 6,
+        "filesAcquired": 6,
+        "framesAcquired": 48,
+        "framesRegistered": 48,
+        "complete": true
+      },
+      "ncepDataset": {
+        "relativePath": "data/research/step48/forcing/normalized/BM-X6.ncep10m.wind.json",
+        "sha256": "42ae1dd38ffe6266856287cec9e974213e150356afa0ea4d7b696e77ac810ce6",
+        "bytes": 35324,
+        "frames": 17,
+        "class": "DERIVED_PREPARATION"
+      },
+      "status": "ACQUIRED"
+    }
+  ],
+  "ww3": {
+    "files": [
+      {
+        "month": "201108",
+        "filename": "WW3-GLOB-30M_201108_uss.nc",
+        "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/2011_CFSR/uss/WW3-GLOB-30M_201108_uss.nc",
+        "relativePath": "data/research/step48/DATA-06/2011_CFSR/WW3-GLOB-30M_201108_uss.nc",
+        "status": "reused",
+        "sha256": "c1d658d467443ce52be3fbc3345a462c9c913842bff6e3c8107deea385420d61",
+        "bytes": 76955488,
+        "retrievedAtUTC": null,
+        "netcdf": {
+          "variables": [
+            "MAPSTA",
+            "latitude",
+            "longitude",
+            "time",
+            "uuss",
+            "vuss"
+          ],
+          "dimensions": {
+            "level": 1,
+            "longitude": 720,
+            "latitude": 317,
+            "time": 248
+          }
+        }
+      },
+      {
+        "month": "201109",
+        "filename": "WW3-GLOB-30M_201109_uss.nc",
+        "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/2011_CFSR/uss/WW3-GLOB-30M_201109_uss.nc",
+        "relativePath": "data/research/step48/DATA-06/2011_CFSR/WW3-GLOB-30M_201109_uss.nc",
+        "status": "reused",
+        "sha256": "e1c2c0eaaa6a4a29d036dbc1b1b1fd6424ccfd462fae23b709b003662fed058e",
+        "bytes": 74447327,
+        "retrievedAtUTC": null,
+        "netcdf": {
+          "variables": [
+            "MAPSTA",
+            "latitude",
+            "longitude",
+            "time",
+            "uuss",
+            "vuss"
+          ],
+          "dimensions": {
+            "level": 1,
+            "longitude": 720,
+            "latitude": 317,
+            "time": 240
+          }
+        }
+      },
+      {
+        "month": "201111",
+        "filename": "WW3-GLOB-30M_201111_uss.nc",
+        "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/2011_CFSR/uss/WW3-GLOB-30M_201111_uss.nc",
+        "relativePath": "data/research/step48/DATA-06/2011_CFSR/WW3-GLOB-30M_201111_uss.nc",
+        "status": "reused",
+        "sha256": "af769a93fd109f3685bc77812e2b9645f392985ca837c93bb673b7c21fbdf0d8",
+        "bytes": 73758984,
+        "retrievedAtUTC": null,
+        "netcdf": {
+          "variables": [
+            "MAPSTA",
+            "latitude",
+            "longitude",
+            "time",
+            "uuss",
+            "vuss"
+          ],
+          "dimensions": {
+            "level": 1,
+            "longitude": 720,
+            "latitude": 317,
+            "time": 240
+          }
+        }
+      },
+      {
+        "month": "201312",
+        "filename": "WW3-GLOB-30M_201312_uss.nc",
+        "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/2013_CFSR/uss/WW3-GLOB-30M_201312_uss.nc",
+        "relativePath": "data/research/step48/DATA-06/2013_CFSR/WW3-GLOB-30M_201312_uss.nc",
+        "status": "reused",
+        "sha256": "a30c25e1fdcd6024e339cf0996fc070045a6fb60cd904968c1f99d27b9682c6a",
+        "bytes": 226881200,
+        "retrievedAtUTC": null,
+        "netcdf": {
+          "variables": [
+            "MAPSTA",
+            "latitude",
+            "longitude",
+            "time",
+            "uuss",
+            "vuss"
+          ],
+          "dimensions": {
+            "level": 1,
+            "longitude": 720,
+            "latitude": 317,
+            "time": 248
+          }
+        }
+      },
+      {
+        "month": "201401",
+        "filename": "WW3-GLOB-30M_201401_uss.nc",
+        "url": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/2014_CFSR/uss/WW3-GLOB-30M_201401_uss.nc",
+        "relativePath": "data/research/step48/DATA-06/2014_CFSR/WW3-GLOB-30M_201401_uss.nc",
+        "status": "reused",
+        "sha256": "c8f198c0b7f6b3f8c1fdde04be995eda58643cc79607d8800fc99063ea0d620c",
+        "bytes": 226881200,
+        "retrievedAtUTC": null,
+        "netcdf": {
+          "variables": [
+            "MAPSTA",
+            "latitude",
+            "longitude",
+            "time",
+            "uuss",
+            "vuss"
+          ],
+          "dimensions": {
+            "level": 1,
+            "longitude": 720,
+            "latitude": 317,
+            "time": 248
+          }
+        }
+      }
+    ]
+  },
+  "glorysAccess": {
+    "toolboxPresent": true,
+    "method": "copernicusmarine login --check-credentials-valid (exit code only)",
+    "credentialsValid": true,
+    "credentialsEntered": false,
+    "credentialsStored": false,
+    "contentsRead": false
+  },
+  "credentialsInManifest": false,
+  "scientificProcessing": false,
+  "trajectoryComputed": false,
+  "endpointCalculated": false,
+  "performanceDataRead": false,
+  "cohortModified": false,
+  "summary": {
+    "windows": 6,
+    "acquired": 6,
+    "blocked": 0,
+    "ww3Files": 5,
+    "ww3Ok": 5
+  },
+  "status": "VALIDATION_SOURCE_ACQUISITION_PASS",
+  "completedAtUTC": "2026-09-07T08:04:03Z",
+  "forbiddenInputAccess": 0
+}

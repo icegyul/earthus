@@ -1,0 +1,219 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "validation-extension-preregistration-step46",
+  "step": 48,
+  "classification": "VALIDATION_EXTENSION_SOURCE_ACQUISITION_AND_FREEZE",
+  "status": "VALIDATION_SOURCE_ACQUISITION_PASS",
+  "stageSeparation": {
+    "step47": "COHORT LOCK",
+    "step48": "SOURCE LOCK",
+    "step49": "VALIDATION EXECUTION",
+    "stagesCombined": false
+  },
+  "protocolSha256": "fb94f983208187c3649789607450fcb679ae464dbfa63e76158d52e5b367ef8f",
+  "acquisitionManifestSha256": "e8b5cacadebaba3c7672ea627551f26a84f0ca783b5077db5bcba66a39615c38",
+  "freezeManifestSha256": "8d50c2aebf32cae57e8b82e318eded07e29b5546dd29a58ea8c8b33a17da8719",
+  "ancestry": {
+    "step46": "f7be980e3aa1e71c4cc96b7aca699e1d4b1faec7",
+    "step45c": "fa9c0590d634a6d6f30cc8a6cd2797c94e0ae7dd",
+    "step45b": "7249c38d355f97c4f264d2f4d7611ce5013bd8d7",
+    "step44": "5f8d5c38bfc9cc6a168707ae0b1b643c99ad46f9",
+    "step38": "23e78f863fb092aa9e3c36e4d74d4afd4393e7f4",
+    "step37": "74d19f0a9661a41d63a08c56bbd3f91e9d8b312d",
+    "step36": "043a09b8539955868651a06e7c2c44e3c606803f",
+    "runtime": "155995dd062b557b7a2ba90e5e5fb5a54ee28048"
+  },
+  "cohort": {
+    "lockedBy": "STEP 47",
+    "status": "VALIDATION_EXTENSION_COHORT_LOCKED",
+    "derivationHash": "9e03db68d506358e1217db25f50ade8aa314b406063fd8c309cbe6a3092e5e45",
+    "windows": 6,
+    "uniqueDrifters": 25,
+    "modified": false
+  },
+  "sourceIdentities": {
+    "hycom": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+    "ncep": "NCEP-DOE Reanalysis 2 10 m u/v",
+    "glorys": "cmems_mod_glo_phy_my_0.083deg_P1D-m",
+    "ww3": "WW3 GLOB-30M CFSR hindcast, uss monthly v1.0"
+  },
+  "substitutionPerformed": false,
+  "summary": {
+    "windows": 6,
+    "acquired": 6,
+    "blocked": 0,
+    "ww3Files": 5,
+    "ww3Ok": 5,
+    "artefacts": 101,
+    "originalSource": 83,
+    "derivedPreparation": 18,
+    "totalBytes": 728642548
+  },
+  "coverage": {
+    "KE-X1": {
+      "hycomNativeFrames": 25,
+      "hycomDayFiles": [
+        6,
+        6
+      ],
+      "hycomDayFrames": [
+        48,
+        48
+      ],
+      "ncepFrames": 17,
+      "glorysFrames": 6,
+      "glorysDepthMeters": 15.81007,
+      "coversBox": [
+        true,
+        true
+      ],
+      "coordinateConvention": "-180..180",
+      "transformApplied": false,
+      "status": "ACQUIRED"
+    },
+    "KE-X2": {
+      "hycomNativeFrames": 25,
+      "hycomDayFiles": [
+        6,
+        6
+      ],
+      "hycomDayFrames": [
+        48,
+        48
+      ],
+      "ncepFrames": 17,
+      "glorysFrames": 6,
+      "glorysDepthMeters": 15.81007,
+      "coversBox": [
+        true,
+        true
+      ],
+      "coordinateConvention": "-180..180",
+      "transformApplied": false,
+      "status": "ACQUIRED"
+    },
+    "KE-X3": {
+      "hycomNativeFrames": 25,
+      "hycomDayFiles": [
+        6,
+        6
+      ],
+      "hycomDayFrames": [
+        48,
+        48
+      ],
+      "ncepFrames": 17,
+      "glorysFrames": 6,
+      "glorysDepthMeters": 15.81007,
+      "coversBox": [
+        true,
+        true
+      ],
+      "coordinateConvention": "-180..180",
+      "transformApplied": false,
+      "status": "ACQUIRED"
+    },
+    "KE-X4": {
+      "hycomNativeFrames": 25,
+      "hycomDayFiles": [
+        6,
+        6
+      ],
+      "hycomDayFrames": [
+        48,
+        48
+      ],
+      "ncepFrames": 17,
+      "glorysFrames": 6,
+      "glorysDepthMeters": 15.81007,
+      "coversBox": [
+        true,
+        true
+      ],
+      "coordinateConvention": "-180..180",
+      "transformApplied": false,
+      "status": "ACQUIRED"
+    },
+    "BM-X5": {
+      "hycomNativeFrames": 25,
+      "hycomDayFiles": [
+        6,
+        6
+      ],
+      "hycomDayFrames": [
+        48,
+        48
+      ],
+      "ncepFrames": 17,
+      "glorysFrames": 6,
+      "glorysDepthMeters": 15.81007,
+      "coversBox": [
+        true,
+        true
+      ],
+      "coordinateConvention": "-180..180",
+      "transformApplied": false,
+      "status": "ACQUIRED"
+    },
+    "BM-X6": {
+      "hycomNativeFrames": 25,
+      "hycomDayFiles": [
+        6,
+        6
+      ],
+      "hycomDayFrames": [
+        48,
+        48
+      ],
+      "ncepFrames": 17,
+      "glorysFrames": 6,
+      "glorysDepthMeters": 15.81007,
+      "coversBox": [
+        true,
+        true
+      ],
+      "coordinateConvention": "-180..180",
+      "transformApplied": false,
+      "status": "ACQUIRED"
+    }
+  },
+  "inventoryHash": "058dc5e72ec01f1e8f148e53bf900941c41cd813923e741a7e2cd1f9dcd05003",
+  "integrityFailures": [],
+  "originalsImmutable": true,
+  "originalsRewritten": false,
+  "credentialsInManifest": false,
+  "credentialsHandling": "copernicusmarine login --check-credentials-valid, exit code only; never read, printed, logged or stored",
+  "noExperiment": {
+    "trajectoryIntegration": false,
+    "modelExecution": false,
+    "endpointCalculation": false,
+    "errorCalculation": false,
+    "bootstrap": false,
+    "hypothesisTest": false,
+    "performanceComparison": false,
+    "parameterTuning": false,
+    "operationalEvaluation": false
+  },
+  "primaryResult": {
+    "Theta_km": -31.331,
+    "CI95_km": [
+      -72.0725,
+      -11.7435
+    ],
+    "H1": "SUPPORTED",
+    "candidateStatus": "CANDIDATE_ONLY",
+    "operationalPromotion": false,
+    "PRIMARY_RESULT_MODIFIED": false
+  },
+  "PRIMARY_RESULT_MODIFIED": false,
+  "blockedNeverReportedAsSuccess": true,
+  "tools": {
+    "tools/research/acquire_step48_validation_sources.py": "d9f855b7a98c266dc93b4ca7cf8d38a453f490a88e5be5d7deb1fef1c156cddd",
+    "tools/research/freeze_step48_validation_data.py": "aea29673251e4e4d2e9003980be5713e24870c9ca9ada3df40b6f2fb8674c5a3",
+    "tools/research/check_step48_validation_source_acquisition.py": "7272cf12ea6151658f54be33bfdbc8e300a8a1f68ebf2123ebc42f2658499e08"
+  },
+  "dataLocation": "data/research/step48/ (gitignored; never staged)",
+  "nextStage": "STEP 49 VALIDATION EXECUTION (not started)",
+  "automaticCommit": false,
+  "push": false
+}

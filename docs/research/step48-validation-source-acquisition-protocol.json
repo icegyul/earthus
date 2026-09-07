@@ -1,0 +1,423 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "validation-extension-preregistration-step46",
+  "step": 48,
+  "classification": "VALIDATION_EXTENSION_SOURCE_ACQUISITION_AND_FREEZE",
+  "status": "PENDING",
+  "stageSeparation": {
+    "step47": "COHORT LOCK",
+    "step48": "SOURCE LOCK",
+    "step49": "VALIDATION EXECUTION",
+    "stagesCombined": false
+  },
+  "ancestry": {
+    "step46": "f7be980e3aa1e71c4cc96b7aca699e1d4b1faec7",
+    "step45c": "fa9c0590d634a6d6f30cc8a6cd2797c94e0ae7dd",
+    "step45b": "7249c38d355f97c4f264d2f4d7611ce5013bd8d7",
+    "step44": "5f8d5c38bfc9cc6a168707ae0b1b643c99ad46f9",
+    "step38": "23e78f863fb092aa9e3c36e4d74d4afd4393e7f4",
+    "step37": "74d19f0a9661a41d63a08c56bbd3f91e9d8b312d",
+    "step36": "043a09b8539955868651a06e7c2c44e3c606803f",
+    "runtime": "155995dd062b557b7a2ba90e5e5fb5a54ee28048"
+  },
+  "frozenInputs": {
+    "docs/research/step46-validation-extension-preregistration-protocol.json": "c824b053fdeea20336f1396dc503232492ab77e1f9d5f032586b23c47d66862d",
+    "docs/research/step47-validation-extension-cohort-manifest.json": "32d3085010185d8c1a5734ef53be227252220b74a2526dbadf5c72de5eee2cca",
+    "docs/research/step47-validation-extension-cohort-status.json": "327f755a3514782939bbebe0a63aa70eb6295fb626d0c4b2893f95c5a2ccf677",
+    "docs/research/step38-source-acquisition-protocol.json": "a4dfbcbea6562e02b032e0557397a61870e31b53e980931c396f44905b9b88cd",
+    "docs/research/step38-source-acquisition-manifest.json": "c9d3109fbab2970b43b887cc7ba81d3aacbdd094375b091e8e185097a22dc2a0",
+    "docs/research/step37-experiment-preregistration-protocol.json": "eae40cde609155a32ccbe0c01a6090715e2324d72cc080e2e7043ecbd90f2d0d"
+  },
+  "cohort": {
+    "lockedBy": "STEP 47",
+    "status": "VALIDATION_EXTENSION_COHORT_LOCKED",
+    "derivationHash": "9e03db68d506358e1217db25f50ade8aa314b406063fd8c309cbe6a3092e5e45",
+    "windows": 6,
+    "uniqueDrifters": 25,
+    "drifterIds": [
+      "123311",
+      "123329",
+      "123330",
+      "123331",
+      "123332",
+      "123334",
+      "123335",
+      "123336",
+      "123338",
+      "123339",
+      "123341",
+      "37040",
+      "37042",
+      "37090",
+      "37124",
+      "37267",
+      "37644",
+      "37647",
+      "37650",
+      "37657",
+      "38625",
+      "38629",
+      "38630",
+      "39123",
+      "40083"
+    ],
+    "byRegion": {
+      "KE": 4,
+      "BM": 2,
+      "AG": 0
+    },
+    "windowList": [
+      {
+        "windowId": "KE-X1",
+        "region": "KE",
+        "start": "2011-08-16T12:00:00Z",
+        "end": "2011-08-19T12:00:00Z",
+        "requiredUtcDays": [
+          "2011-08-15",
+          "2011-08-16",
+          "2011-08-17",
+          "2011-08-18",
+          "2011-08-19",
+          "2011-08-20"
+        ],
+        "requiredFrameCount": 48,
+        "newUniqueDrifterIds": [
+          "37040",
+          "37090",
+          "37124",
+          "37267",
+          "37644",
+          "37647",
+          "37657",
+          "38625",
+          "38629",
+          "38630"
+        ]
+      },
+      {
+        "windowId": "KE-X2",
+        "region": "KE",
+        "start": "2011-09-22T12:00:00Z",
+        "end": "2011-09-25T12:00:00Z",
+        "requiredUtcDays": [
+          "2011-09-21",
+          "2011-09-22",
+          "2011-09-23",
+          "2011-09-24",
+          "2011-09-25",
+          "2011-09-26"
+        ],
+        "requiredFrameCount": 48,
+        "newUniqueDrifterIds": [
+          "37042",
+          "37650"
+        ]
+      },
+      {
+        "windowId": "KE-X3",
+        "region": "KE",
+        "start": "2011-09-26T12:00:00Z",
+        "end": "2011-09-29T12:00:00Z",
+        "requiredUtcDays": [
+          "2011-09-25",
+          "2011-09-26",
+          "2011-09-27",
+          "2011-09-28",
+          "2011-09-29",
+          "2011-09-30"
+        ],
+        "requiredFrameCount": 48,
+        "newUniqueDrifterIds": [
+          "40083"
+        ]
+      },
+      {
+        "windowId": "KE-X4",
+        "region": "KE",
+        "start": "2011-11-06T12:00:00Z",
+        "end": "2011-11-09T12:00:00Z",
+        "requiredUtcDays": [
+          "2011-11-05",
+          "2011-11-06",
+          "2011-11-07",
+          "2011-11-08",
+          "2011-11-09",
+          "2011-11-10"
+        ],
+        "requiredFrameCount": 48,
+        "newUniqueDrifterIds": [
+          "39123"
+        ]
+      },
+      {
+        "windowId": "BM-X5",
+        "region": "BM",
+        "start": "2013-12-19T12:00:00Z",
+        "end": "2013-12-22T12:00:00Z",
+        "requiredUtcDays": [
+          "2013-12-18",
+          "2013-12-19",
+          "2013-12-20",
+          "2013-12-21",
+          "2013-12-22",
+          "2013-12-23"
+        ],
+        "requiredFrameCount": 48,
+        "newUniqueDrifterIds": [
+          "123311",
+          "123329",
+          "123330",
+          "123331",
+          "123332",
+          "123334",
+          "123335",
+          "123336",
+          "123338"
+        ]
+      },
+      {
+        "windowId": "BM-X6",
+        "region": "BM",
+        "start": "2014-01-06T12:00:00Z",
+        "end": "2014-01-09T12:00:00Z",
+        "requiredUtcDays": [
+          "2014-01-05",
+          "2014-01-06",
+          "2014-01-07",
+          "2014-01-08",
+          "2014-01-09",
+          "2014-01-10"
+        ],
+        "requiredFrameCount": 48,
+        "newUniqueDrifterIds": [
+          "123339",
+          "123341"
+        ]
+      }
+    ],
+    "cohortModified": false
+  },
+  "geometryPreparation": {
+    "required": true,
+    "reason": "the STEP 47 manifest deliberately omitted release positions and ocean boxes under its data-minimisation rule, but the frozen STEP 38/39 acquisition architecture needs the per-window ocean box and release positions to request forcing subsets",
+    "method": "recompute per-window eligible drifters with the identical frozen STEP 16 evaluate() on the 6 LOCKED windows only (regions KE and BM), then keep exactly the LOCKED new-unique drifter IDs recorded in the STEP 47 manifest; oceanBox is the frozen STEP 36 formula south = max(-40, min(lat) - 2), north = min(40, max(lat) + 2), west = min(lon) - 2, east = max(lon) + 2 over those drifters' release positions; windBox = oceanBox +- 3 deg",
+    "assertion": "the recomputed new-unique ID set of every window must equal the STEP 47 locked set exactly; any difference stops the acquisition",
+    "cohortModificationPossible": false,
+    "observationFieldsUsed": [
+      "ID",
+      "time",
+      "latitude",
+      "longitude",
+      "gap",
+      "drogue_lost_date",
+      "typebuoy"
+    ],
+    "authorisation": "STEP 45B amendment scope (identity recovery from the frozen STEP 15 dataset, seven fields, KE/BM only); the release position is the same latitude/longitude field already authorised, used here for the forcing box the frozen architecture requires. No new field and no new region."
+  },
+  "modelConfiguration": {
+    "A": "HYCOM_NATIVE_3H",
+    "B": "HYCOM_DAILY",
+    "C": "GLORYS12V1 + WW3 Stokes x1.0 + NCEP-R2",
+    "alpha": 0.002,
+    "stokesMultiplier": 1.0,
+    "depthA_B_m": 15.0,
+    "depthC_m": 15.81007,
+    "integrator": "RK4",
+    "dtSeconds": 300,
+    "outputSeconds": 900,
+    "durationHours": 72,
+    "horizonsHours": [
+      24,
+      48,
+      72
+    ],
+    "runtimeCommit": "155995dd",
+    "tuning": false,
+    "recalibration": false,
+    "optimisation": false
+  },
+  "sources": {
+    "HYCOM": {
+      "product": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "experiment": "expt_53.X",
+      "year": "2010",
+      "variables": [
+        "water_u",
+        "water_v"
+      ],
+      "vertCoord": 15,
+      "spatialResolutionDeg": 0.08,
+      "temporalResolution": "3 h",
+      "access": "NCSS https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010 (STEP 17 mechanism)",
+      "layouts": [
+        "STEP 17 four-part t0..t0+72h (25 frames)",
+        "six UTC-day files 00..21Z = 48 registered frames"
+      ],
+      "bbox": "STEP 36 window ocean box (-180..180)",
+      "licence": "DoD Distribution A (file distribution_statement)"
+    },
+    "NCEP": {
+      "product": "NCEP-DOE Reanalysis 2 10 m u/v",
+      "year": "2010",
+      "temporalResolution": "6 h",
+      "spatialResolution": "T62 gaussian",
+      "access": "PSL THREDDS NCSS (STEP 17 wind_parts; request longitudes converted to the PSL 0..360 request convention as in STEP 17; the frozen runtime unwraps longitudes at lookup)",
+      "period": "t0 - 12 h .. t0 + 84 h"
+    },
+    "GLORYS": {
+      "product": "GLORYS12V1 GLOBAL_MULTIYEAR_PHY_001_030 cmems_mod_glo_phy_my_0.083deg_P1D-m",
+      "variables": [
+        "uo",
+        "vo"
+      ],
+      "level": "15.81 m (native 15.810070 m)",
+      "spatialResolutionDeg": 0.0833,
+      "temporalResolution": "daily mean",
+      "access": "official Copernicus Marine toolbox in the STEP 25B isolated venv; credentials by exit code only",
+      "bbox": "ocean box +-0.5 deg",
+      "period": "t0 - 1 d 00:00 .. end + 1 d 00:00",
+      "version": "recorded from the file at acquisition"
+    },
+    "WW3": {
+      "product": "WW3 GLOB-30M CFSR surface Stokes drift (uuss/vuss), IFREMER hindcast, product_version 1.0",
+      "months": [
+        "201007",
+        "201008",
+        "201009",
+        "201010"
+      ],
+      "spatialResolutionDeg": 0.5,
+      "temporalResolution": "3 h",
+      "access": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/2010_CFSR/uss/ (anonymous FTP; own fetch, no shared log)",
+      "licence": "distribution_statement 'No restrictions' (STEP 29 LICENSE_CONFIRMED)"
+    }
+  },
+  "sourceIdentityRule": "exactly the STEP 38/39 frozen product identities; substituting a product, version, analysis system, temporal or spatial resolution, depth, interpolation source or forcing source is forbidden and blocks the affected branch",
+  "acquisition": {
+    "hycom": {
+      "product": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "endpoint": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/{year}",
+      "variables": [
+        "water_u",
+        "water_v"
+      ],
+      "vertCoord": 15,
+      "depthMeters": 15.0,
+      "years": [
+        "2011",
+        "2013",
+        "2014"
+      ],
+      "layouts": [
+        "A: STEP 17 four-part t0..t0+72h = 25 frames (condition A native 3-hourly)",
+        "B source: six UTC-day files 00..21Z = the 48 registered frames, the material required to reproduce HYCOM_DAILY; no daily field is derived in STEP 48"
+      ]
+    },
+    "ncep": {
+      "product": "NCEP-DOE Reanalysis 2 10 m u/v",
+      "endpoint": "https://psl.noaa.gov/thredds/ncss/grid/Datasets/ncep.reanalysis2/gaussian_grid/{var}.10m.gauss.{year}.nc",
+      "period": "t0 - 12 h .. t0 + 84 h",
+      "requestConvention": "longitudes converted to the PSL 0..360 request convention exactly as STEP 17/38; the frozen runtime unwraps at lookup"
+    },
+    "glorys": {
+      "product": "GLORYS12V1 GLOBAL_MULTIYEAR_PHY_001_030",
+      "datasetId": "cmems_mod_glo_phy_my_0.083deg_P1D-m",
+      "variables": [
+        "uo",
+        "vo"
+      ],
+      "depthRequestMeters": 15.81,
+      "nativeDepthMeters": 15.81007,
+      "period": "t0 - 1 d .. end + 1 d",
+      "mechanism": "official Copernicus Marine toolbox in the STEP 25B isolated venv; credentials by exit code only, never read, printed, logged or stored",
+      "alternativeLevel": false,
+      "substituteWithHycom": false
+    },
+    "ww3": {
+      "product": "WW3 GLOB-30M CFSR hindcast, uss monthly",
+      "version": "1.0",
+      "endpoint": "ftp://ftp.ifremer.fr/ifremer/ww3/HINDCAST/GLOBAL/{year}_CFSR/uss/",
+      "months": [
+        "201108",
+        "201109",
+        "201111",
+        "201312",
+        "201401"
+      ],
+      "stokesMultiplier": 1.0,
+      "ownFetch": true,
+      "sharedLogAppended": false
+    }
+  },
+  "coverageRequirement": {
+    "perWindowPerSource": [
+      "temporal coverage",
+      "spatial coverage",
+      "required variables",
+      "required depth or level",
+      "coordinate convention"
+    ],
+    "discoveryByTrajectory": false
+  },
+  "coordinateRule": {
+    "hycom": "-180..180, the frozen STEP 37 field 20 rule; the reader axis must cover the window box in the box's own convention",
+    "silentTransform": false,
+    "unresolvableMismatch": "VALIDATION_SOURCE_BLOCKED"
+  },
+  "integrity": {
+    "checks": [
+      "checksum",
+      "byte size",
+      "corruption",
+      "required frames present",
+      "no unexpected missing frames",
+      "spatial coverage",
+      "coordinate convention",
+      "source identity",
+      "deterministic inventory"
+    ],
+    "patchWithAnotherSource": false
+  },
+  "freeze": {
+    "originalsImmutable": true,
+    "classes": [
+      "ORIGINAL_SOURCE",
+      "DERIVED_PREPARATION"
+    ],
+    "derivedFilesHashed": true,
+    "originalsRewritten": false
+  },
+  "statuses": {
+    "VALIDATION_SOURCE_ACQUISITION_PASS": "every required source acquired and verified",
+    "VALIDATION_SOURCE_BLOCKED": "a required source is unavailable",
+    "VALIDATION_SOURCE_INVALID": "provenance, checksum, coverage or coordinate integrity failed"
+  },
+  "blockedNeverReportedAsSuccess": true,
+  "prohibited": [
+    "trajectory integration",
+    "model execution",
+    "endpoint calculation",
+    "error calculation",
+    "bootstrap",
+    "hypothesis test",
+    "performance comparison",
+    "parameter tuning",
+    "operational evaluation",
+    "product substitution",
+    "cohort modification"
+  ],
+  "primaryResult": {
+    "Theta_km": -31.331,
+    "CI95_km": [
+      -72.0725,
+      -11.7435
+    ],
+    "H1": "SUPPORTED",
+    "candidateStatus": "CANDIDATE_ONLY",
+    "operationalPromotion": false,
+    "PRIMARY_RESULT_MODIFIED": false
+  },
+  "outputData": "data/research/step48/ (gitignored)",
+  "automaticCommit": false,
+  "push": false
+}

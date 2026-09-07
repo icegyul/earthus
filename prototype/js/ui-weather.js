@@ -255,8 +255,10 @@ export const weatherPanel = {
     const ko = i18n.lang === 'ko';
     body.innerHTML = '';
 
-    $('#wxTitle').textContent = chrome.place.name
-      || (chrome.isDefault ? chrome.defaultName : (ko ? '위치 확인 중…' : 'Locating…'));
+    /* ⚠️ 제목에 지명을 쓰지 않는다. 히어로가 지명을 말하므로 같은 이름이 60px 안에 두 번 나온다.
+       지명은 renderHero 가 chrome.place 에서 직접 읽는다 — 자료 계약의 location.name 은
+       비어 있을 수 있고, 실제로 비어서 히어로가 '선택 위치'라고 적고 있었다(실측). */
+    $('#wxTitle').textContent = ko ? '지점 날씨' : 'Local weather';
 
     this._renderV7(body, ko);
     return;
@@ -993,6 +995,19 @@ function windFrom8(deg, ko) {
 }
 
 /** 히어로의 큰 기온 — 단위는 도 기호 하나로 줄인다(항상 섭씨다). */
+/* 화면에 적을 지명. 좌상단 도시 이름(ui.js render)과 **같은 순서**로 고른다 —
+   두 곳이 다른 이름을 말하면 어느 쪽이 맞는지 알 수 없다.
+   ⚠️ 위치 권한이 없어 기본 위치(인천)를 쓰는 중이면 그 사실을 밝힌다 (감사 P1-5 와 같은 규칙).
+      지명만 크게 적으면 사용자는 자기 동네로 읽는다. */
+function placeMarkup(model, ko) {
+  const name = chrome.place?.name
+    || (chrome.isDefault ? chrome.defaultName : null)
+    || model.location?.name
+    || (ko ? '위치 확인 중…' : 'Locating…');
+  return `${esc(name)}${chrome.isDefault
+    ? `<small class="wcv7-hero-default">${ko ? '기본 위치' : 'default location'}</small>` : ''}`;
+}
+
 function heroTemp(point) {
   const n = numOf(point);
   return n == null ? '—' : `${Math.round(n)}<sup>°</sup>`;
@@ -1026,7 +1041,7 @@ function renderHero(model, sourceMap, ko, activeHour = null) {
     : (ko ? '출처 확인 중' : 'Source pending');
   section.innerHTML = `<div class="wcv7-eyebrow"><span>${activeHour
     ? (ko ? '선택 시각' : 'SELECTED TIME') : (ko ? '지금' : 'NOW')}</span></div>`
-    + `<div class="wcv7-hero-place">${esc(model.location.name || (ko ? '선택 위치' : 'Selected location'))}</div>`
+    + `<div class="wcv7-hero-place">${placeMarkup(model, ko)}</div>`
     + `<div class="wcv7-temperature">${heroTemp(temperaturePoint)}</div>`
     + `<div class="wcv7-hero-cond"><span aria-hidden="true">${condition.icon}</span> ${esc(condition.label)}`
     + `${feels ? ` · ${ko ? '체감' : 'feels'} ${esc(feels)}` : ''}</div>`

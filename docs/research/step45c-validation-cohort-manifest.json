@@ -1,0 +1,1262 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "validation-preregistration-step44",
+  "step": "45C",
+  "status": "VALIDATION_COHORT_BLOCKED",
+  "authorization": {
+    "step45bAmendmentSha256": "88398dc62fb6a18e1fe5d2d8d83feff17a77f2aa4c9d0c9136008c47d38a2e4b",
+    "amendmentId": "STEP44-AMENDMENT-001-INPUT-SCOPE",
+    "amendmentIdentityHash": "a2481bc695915435d41f94cf53bf4d4f6a40b3e9d23bccc0671b78c346069ed5",
+    "step44ProtocolSha256": "6a2e2f04f7948e4ff3ac5dec065fc93a6072ce112bb2e072ce77c2606056de9f",
+    "step45aRecordSha256": "d186cf424eb691d2e7b0d0f12ae2967c027c3e75d07956a5197a840cc3fc781f",
+    "step35EligibilitySha256": "d01d06a3430def6ea77a814bb4379a9b45ca058713fa0901c9c30b035fbb635b",
+    "cohortStep16Sha256": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474"
+  },
+  "source": {
+    "path": "data/research/step15/noaa-gdp-hourly-qc/",
+    "observationAggregateSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+    "filesInAggregate": 176,
+    "coastlineSha256": "6f75ae0e0de157b14946e2255eb1f5486d9a13819032e26d4610852d296788f6",
+    "coastlineUsed": true,
+    "regionFilesRead": [
+      "KE-2010-q1.csv",
+      "KE-2010-q2.csv",
+      "KE-2010-q3.csv",
+      "KE-2010-q4.csv",
+      "KE-2011-q1.csv",
+      "KE-2011-q2.csv",
+      "KE-2011-q3.csv",
+      "KE-2011-q4.csv",
+      "KE-2012-q1.csv",
+      "KE-2012-q2.csv",
+      "KE-2012-q3.csv",
+      "KE-2012-q4.csv",
+      "KE-2013-q1.csv",
+      "KE-2013-q2.csv",
+      "KE-2013-q3.csv",
+      "KE-2013-q4.csv",
+      "KE-2014-q1.csv",
+      "KE-2014-q2.csv",
+      "KE-2014-q3.csv",
+      "KE-2014-q4.csv",
+      "KE-2015-q1.csv",
+      "KE-2015-q2.csv",
+      "KE-2015-q3.csv",
+      "KE-2015-q4.csv",
+      "KE-2016-q1.csv",
+      "KE-2016-q2.csv",
+      "KE-2016-q3.csv",
+      "KE-2016-q4.csv",
+      "KE-2017-q1.csv",
+      "KE-2017-q2.csv",
+      "KE-2017-q3.csv",
+      "KE-2017-q4.csv",
+      "KE-2018-q1.csv",
+      "KE-2018-q2.csv",
+      "KE-2018-q3.csv",
+      "KE-2018-q4.csv",
+      "KE-2019-q1.csv",
+      "KE-2019-q2.csv",
+      "KE-2019-q3.csv",
+      "KE-2019-q4.csv",
+      "KE-2020-q1.csv",
+      "KE-2020-q2.csv",
+      "KE-2020-q3.csv",
+      "KE-2020-q4.csv"
+    ],
+    "regionFileCount": 44,
+    "duplicateConflictDrifters": 0
+  },
+  "authorizedFields": [
+    "ID",
+    "time",
+    "latitude",
+    "longitude",
+    "gap",
+    "drogue_lost_date",
+    "typebuoy"
+  ],
+  "temporalScope": {
+    "t0": "2010-11-18T12:00:00Z",
+    "t1": "2015-12-31T21:00:00Z",
+    "perWindow": "[start, start + 72 h]",
+    "extraIntervalRead": "no observation before t0 is required: window membership, separation and frame coverage are evaluated from already-frozen metadata (STEP 35 eligibility, prior window starts), not from observations; the only extension is the 72 h of each candidate window itself",
+    "regionFileScopeNote": "the frozen STEP 16 loader reads region KE's complete quarterly CSV set because the duplicate-conflict exclusion (a frozen per-drifter eligibility component) is determined over the region's full file set exactly as STEP 15/16/35/36 did; no other region is read"
+  },
+  "geographicScope": {
+    "region": "KE",
+    "box": {
+      "south": 30,
+      "north": 40,
+      "west": 135,
+      "east": 160
+    },
+    "otherRegionsRead": []
+  },
+  "regionRanking": {
+    "counts": {
+      "KE": 26,
+      "BM": 3,
+      "AG": 0
+    },
+    "ranked": [
+      [
+        "KE",
+        26
+      ],
+      [
+        "BM",
+        3
+      ],
+      [
+        "AG",
+        0
+      ]
+    ],
+    "selectedRegion": "KE",
+    "source": "frozen STEP 35 eligibility metadata (not observations)"
+  },
+  "candidateWindowsExamined": 26,
+  "accumulationLog": [
+    {
+      "start": "2010-11-22T12:00:00Z",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 8,
+      "eligibleDrifterIds": [
+        "81806",
+        "89898",
+        "90146",
+        "92981",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "excludedDuplicates": [
+        "81806",
+        "89898",
+        "90146",
+        "92981",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2010-11-23T12:00:00Z",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 8,
+      "eligibleDrifterIds": [
+        "81806",
+        "89898",
+        "90146",
+        "92981",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "excludedDuplicates": [
+        "81806",
+        "89898",
+        "90146",
+        "92981",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-07-05T12:00:00Z",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 20,
+      "eligibleDrifterIds": [
+        "34469",
+        "34471",
+        "34702",
+        "34711",
+        "34741",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "36476",
+        "39153",
+        "39160",
+        "39974",
+        "39996",
+        "40006"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34471",
+        "34702",
+        "34711",
+        "34741",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "36476",
+        "39153",
+        "39160",
+        "39974",
+        "39996",
+        "40006"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-07-06T12:00:00Z",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 19,
+      "eligibleDrifterIds": [
+        "34469",
+        "34471",
+        "34702",
+        "34711",
+        "34741",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39974",
+        "39996",
+        "40006"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34471",
+        "34702",
+        "34711",
+        "34741",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39974",
+        "39996",
+        "40006"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-07-07T12:00:00Z",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 19,
+      "eligibleDrifterIds": [
+        "34469",
+        "34471",
+        "34702",
+        "34711",
+        "34741",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39974",
+        "39996",
+        "40006"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34471",
+        "34702",
+        "34711",
+        "34741",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39974",
+        "39996",
+        "40006"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-07-10T12:00:00Z",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 18,
+      "eligibleDrifterIds": [
+        "34469",
+        "34471",
+        "34702",
+        "34711",
+        "34741",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34471",
+        "34702",
+        "34711",
+        "34741",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-07-14T12:00:00Z",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 16,
+      "eligibleDrifterIds": [
+        "34469",
+        "34471",
+        "34702",
+        "34741",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39996"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34471",
+        "34702",
+        "34741",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39996"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-07-27T12:00:00Z",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 15,
+      "eligibleDrifterIds": [
+        "34469",
+        "34471",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34471",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-07-28T12:00:00Z",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 15,
+      "eligibleDrifterIds": [
+        "34469",
+        "34471",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34471",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-07-31T12:00:00Z",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 16,
+      "eligibleDrifterIds": [
+        "34469",
+        "34471",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39996",
+        "40006",
+        "47591"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34471",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39996",
+        "40006",
+        "47591"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-08-08T12:00:00Z",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 12,
+      "eligibleDrifterIds": [
+        "34469",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "36473",
+        "39160",
+        "39996",
+        "40006",
+        "47591"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "36473",
+        "39160",
+        "39996",
+        "40006",
+        "47591"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-08-09T12:00:00Z",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 12,
+      "eligibleDrifterIds": [
+        "34469",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "36473",
+        "39160",
+        "39996",
+        "40006",
+        "47591"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "36473",
+        "39160",
+        "39996",
+        "40006",
+        "47591"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-08-13T12:00:00Z",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 12,
+      "eligibleDrifterIds": [
+        "34469",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35266",
+        "35490",
+        "36473",
+        "39160",
+        "39996",
+        "40006",
+        "47591"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35266",
+        "35490",
+        "36473",
+        "39160",
+        "39996",
+        "40006",
+        "47591"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-08-14T12:00:00Z",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 11,
+      "eligibleDrifterIds": [
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35266",
+        "35490",
+        "36473",
+        "39160",
+        "39996",
+        "40006",
+        "47591"
+      ],
+      "excludedDuplicates": [
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35266",
+        "35490",
+        "36473",
+        "39160",
+        "39996",
+        "40006",
+        "47591"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-08-15T12:00:00Z",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 9,
+      "eligibleDrifterIds": [
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35490",
+        "36473",
+        "39160",
+        "40006",
+        "47591"
+      ],
+      "excludedDuplicates": [
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35490",
+        "36473",
+        "39160",
+        "40006",
+        "47591"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-08-16T12:00:00Z",
+      "status": "SELECTED",
+      "auditEligibleCount": 19,
+      "new": 10,
+      "cumulative": 10
+    },
+    {
+      "start": "2011-08-18T12:00:00Z",
+      "status": "SKIPPED_OVERLAP",
+      "auditEligibleCount": 22
+    },
+    {
+      "start": "2011-09-22T12:00:00Z",
+      "status": "SELECTED",
+      "auditEligibleCount": 11,
+      "new": 2,
+      "cumulative": 12
+    },
+    {
+      "start": "2011-09-25T12:00:00Z",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 11,
+      "eligibleDrifterIds": [
+        "36473",
+        "37040",
+        "37042",
+        "37090",
+        "37124",
+        "37267",
+        "37650",
+        "38630",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "excludedDuplicates": [
+        "36473",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "accumulatedDuplicates": [
+        "37040",
+        "37042",
+        "37090",
+        "37124",
+        "37267",
+        "37650",
+        "38630"
+      ]
+    },
+    {
+      "start": "2011-09-26T12:00:00Z",
+      "status": "SELECTED",
+      "auditEligibleCount": 12,
+      "new": 1,
+      "cumulative": 13
+    },
+    {
+      "start": "2011-10-09T12:00:00Z",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 15,
+      "eligibleDrifterIds": [
+        "35228",
+        "35266",
+        "36037",
+        "36473",
+        "37040",
+        "37042",
+        "37090",
+        "37124",
+        "37644",
+        "38629",
+        "38630",
+        "39153",
+        "39160",
+        "40006",
+        "40083"
+      ],
+      "excludedDuplicates": [
+        "35228",
+        "35266",
+        "36037",
+        "36473",
+        "39153",
+        "39160",
+        "40006"
+      ],
+      "accumulatedDuplicates": [
+        "37040",
+        "37042",
+        "37090",
+        "37124",
+        "37644",
+        "38629",
+        "38630",
+        "40083"
+      ]
+    },
+    {
+      "start": "2011-11-06T12:00:00Z",
+      "status": "SELECTED",
+      "auditEligibleCount": 10,
+      "new": 1,
+      "cumulative": 14
+    },
+    {
+      "start": "2011-11-09T12:00:00Z",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 8,
+      "eligibleDrifterIds": [
+        "35228",
+        "36473",
+        "37040",
+        "37644",
+        "38630",
+        "39123",
+        "39153",
+        "40083"
+      ],
+      "excludedDuplicates": [
+        "35228",
+        "36473",
+        "39153"
+      ],
+      "accumulatedDuplicates": [
+        "37040",
+        "37644",
+        "38630",
+        "39123",
+        "40083"
+      ]
+    },
+    {
+      "start": "2011-11-10T12:00:00Z",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 8,
+      "eligibleDrifterIds": [
+        "35228",
+        "36473",
+        "37040",
+        "37644",
+        "38630",
+        "39123",
+        "39153",
+        "40083"
+      ],
+      "excludedDuplicates": [
+        "35228",
+        "36473",
+        "39153"
+      ],
+      "accumulatedDuplicates": [
+        "37040",
+        "37644",
+        "38630",
+        "39123",
+        "40083"
+      ]
+    },
+    {
+      "start": "2011-11-11T12:00:00Z",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 8,
+      "eligibleDrifterIds": [
+        "35228",
+        "36473",
+        "37040",
+        "37644",
+        "38630",
+        "39123",
+        "39153",
+        "40083"
+      ],
+      "excludedDuplicates": [
+        "35228",
+        "36473",
+        "39153"
+      ],
+      "accumulatedDuplicates": [
+        "37040",
+        "37644",
+        "38630",
+        "39123",
+        "40083"
+      ]
+    },
+    {
+      "start": "2011-11-12T12:00:00Z",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 9,
+      "eligibleDrifterIds": [
+        "35228",
+        "36473",
+        "37040",
+        "37090",
+        "37644",
+        "38630",
+        "39123",
+        "39153",
+        "40083"
+      ],
+      "excludedDuplicates": [
+        "35228",
+        "36473",
+        "39153"
+      ],
+      "accumulatedDuplicates": [
+        "37040",
+        "37090",
+        "37644",
+        "38630",
+        "39123",
+        "40083"
+      ]
+    }
+  ],
+  "selectedWindows": [
+    {
+      "chronologicalRank": 1,
+      "windowId": "KE-V1",
+      "region": "KE",
+      "date": "2011-08-16",
+      "start": "2011-08-16T12:00:00Z",
+      "end": "2011-08-19T12:00:00Z",
+      "eligibleCount": 19,
+      "eligibleDrifterIds": [
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35490",
+        "36473",
+        "37040",
+        "37090",
+        "37124",
+        "37267",
+        "37644",
+        "37647",
+        "37657",
+        "38625",
+        "38629",
+        "38630",
+        "39160",
+        "40006",
+        "47591"
+      ],
+      "newUniqueDrifterIds": [
+        "37040",
+        "37090",
+        "37124",
+        "37267",
+        "37644",
+        "37647",
+        "37657",
+        "38625",
+        "38629",
+        "38630"
+      ],
+      "newUniqueCount": 10,
+      "excludedDuplicateIds": [
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35490",
+        "36473",
+        "39160",
+        "40006",
+        "47591"
+      ],
+      "accumulatedDuplicateIds": [],
+      "cumulativeUniqueDrifters": 10,
+      "requiredUtcDays": [
+        "2011-08-15",
+        "2011-08-16",
+        "2011-08-17",
+        "2011-08-18",
+        "2011-08-19",
+        "2011-08-20"
+      ],
+      "requiredFrameCount": 48,
+      "step35WindowEligible": true,
+      "inheritedEligibilityTests": {
+        "insidePeriod": true,
+        "afterCalibrationCutoff": true,
+        "notNearPriorWindow": true,
+        "frameCoverageComplete": true
+      },
+      "sourceObservationReference": {
+        "region": "KE",
+        "datasetSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+        "files": 44
+      }
+    },
+    {
+      "chronologicalRank": 2,
+      "windowId": "KE-V2",
+      "region": "KE",
+      "date": "2011-09-22",
+      "start": "2011-09-22T12:00:00Z",
+      "end": "2011-09-25T12:00:00Z",
+      "eligibleCount": 11,
+      "eligibleDrifterIds": [
+        "36473",
+        "37040",
+        "37042",
+        "37090",
+        "37124",
+        "37267",
+        "37650",
+        "38630",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "newUniqueDrifterIds": [
+        "37042",
+        "37650"
+      ],
+      "newUniqueCount": 2,
+      "excludedDuplicateIds": [
+        "36473",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "accumulatedDuplicateIds": [
+        "37040",
+        "37090",
+        "37124",
+        "37267",
+        "38630"
+      ],
+      "cumulativeUniqueDrifters": 12,
+      "requiredUtcDays": [
+        "2011-09-21",
+        "2011-09-22",
+        "2011-09-23",
+        "2011-09-24",
+        "2011-09-25",
+        "2011-09-26"
+      ],
+      "requiredFrameCount": 48,
+      "step35WindowEligible": true,
+      "inheritedEligibilityTests": {
+        "insidePeriod": true,
+        "afterCalibrationCutoff": true,
+        "notNearPriorWindow": true,
+        "frameCoverageComplete": true
+      },
+      "sourceObservationReference": {
+        "region": "KE",
+        "datasetSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+        "files": 44
+      }
+    },
+    {
+      "chronologicalRank": 3,
+      "windowId": "KE-V3",
+      "region": "KE",
+      "date": "2011-09-26",
+      "start": "2011-09-26T12:00:00Z",
+      "end": "2011-09-29T12:00:00Z",
+      "eligibleCount": 12,
+      "eligibleDrifterIds": [
+        "36473",
+        "37040",
+        "37042",
+        "37090",
+        "37124",
+        "37267",
+        "37650",
+        "38630",
+        "39160",
+        "39996",
+        "40006",
+        "40083"
+      ],
+      "newUniqueDrifterIds": [
+        "40083"
+      ],
+      "newUniqueCount": 1,
+      "excludedDuplicateIds": [
+        "36473",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "accumulatedDuplicateIds": [
+        "37040",
+        "37042",
+        "37090",
+        "37124",
+        "37267",
+        "37650",
+        "38630"
+      ],
+      "cumulativeUniqueDrifters": 13,
+      "requiredUtcDays": [
+        "2011-09-25",
+        "2011-09-26",
+        "2011-09-27",
+        "2011-09-28",
+        "2011-09-29",
+        "2011-09-30"
+      ],
+      "requiredFrameCount": 48,
+      "step35WindowEligible": true,
+      "inheritedEligibilityTests": {
+        "insidePeriod": true,
+        "afterCalibrationCutoff": true,
+        "notNearPriorWindow": true,
+        "frameCoverageComplete": true
+      },
+      "sourceObservationReference": {
+        "region": "KE",
+        "datasetSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+        "files": 44
+      }
+    },
+    {
+      "chronologicalRank": 4,
+      "windowId": "KE-V4",
+      "region": "KE",
+      "date": "2011-11-06",
+      "start": "2011-11-06T12:00:00Z",
+      "end": "2011-11-09T12:00:00Z",
+      "eligibleCount": 10,
+      "eligibleDrifterIds": [
+        "35228",
+        "36473",
+        "37040",
+        "37042",
+        "37090",
+        "37644",
+        "38630",
+        "39123",
+        "39153",
+        "40083"
+      ],
+      "newUniqueDrifterIds": [
+        "39123"
+      ],
+      "newUniqueCount": 1,
+      "excludedDuplicateIds": [
+        "35228",
+        "36473",
+        "39153"
+      ],
+      "accumulatedDuplicateIds": [
+        "37040",
+        "37042",
+        "37090",
+        "37644",
+        "38630",
+        "40083"
+      ],
+      "cumulativeUniqueDrifters": 14,
+      "requiredUtcDays": [
+        "2011-11-05",
+        "2011-11-06",
+        "2011-11-07",
+        "2011-11-08",
+        "2011-11-09",
+        "2011-11-10"
+      ],
+      "requiredFrameCount": 48,
+      "step35WindowEligible": true,
+      "inheritedEligibilityTests": {
+        "insidePeriod": true,
+        "afterCalibrationCutoff": true,
+        "notNearPriorWindow": true,
+        "frameCoverageComplete": true
+      },
+      "sourceObservationReference": {
+        "region": "KE",
+        "datasetSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+        "files": 44
+      }
+    }
+  ],
+  "cohort": {
+    "windows": 4,
+    "windowIds": [
+      "KE-V1",
+      "KE-V2",
+      "KE-V3",
+      "KE-V4"
+    ],
+    "uniqueDrifters": 14,
+    "drifterIds": [
+      "37040",
+      "37042",
+      "37090",
+      "37124",
+      "37267",
+      "37644",
+      "37647",
+      "37650",
+      "37657",
+      "38625",
+      "38629",
+      "38630",
+      "39123",
+      "40083"
+    ],
+    "firstPrefixWindowCount": null
+  },
+  "gate": {
+    "minimumWindows": 6,
+    "minimumUniqueDrifters": 20,
+    "maximumWindows": 12,
+    "satisfied": false
+  },
+  "exclusionIdentity": {
+    "excludedDrifterIdCount": 88,
+    "sha256OfSortedIdList": "9e9415f57fb8682a25d347628627e5a5c2069f21779dddbe4725f7ea891d6b69",
+    "priorWindowStartsByRegion": {
+      "KE": [
+        "2010-05-11T12:00:00Z",
+        "2010-06-30T12:00:00Z",
+        "2010-08-10T12:00:00Z",
+        "2010-08-16T12:00:00Z",
+        "2010-11-15T12:00:00Z",
+        "2011-05-08T12:00:00Z",
+        "2011-05-13T12:00:00Z",
+        "2011-05-28T12:00:00Z",
+        "2011-06-10T12:00:00Z",
+        "2011-06-13T12:00:00Z",
+        "2011-06-16T12:00:00Z",
+        "2011-06-19T12:00:00Z",
+        "2011-06-22T12:00:00Z"
+      ],
+      "GS": [],
+      "BM": [],
+      "AG": [
+        "2015-04-23T12:00:00Z",
+        "2015-04-26T12:00:00Z"
+      ]
+    }
+  },
+  "independence": {
+    "overlapWithPrimaryDrifterIds": [],
+    "overlapWithExcludedIds": [],
+    "allStartsAfterT0": true,
+    "overlapWithPrimaryWindowStarts": []
+  },
+  "derivationHash": "b7ef0fd0476154bd3ea20f7ac248e341e58ac08751890f862c50d78849e3bc22",
+  "sourceAccessAudit": {
+    "observationFilesRead": 44,
+    "forbiddenInputAccess": 0,
+    "totalOpens": 44,
+    "observationRecordsRead": 2065664,
+    "driftersLoaded": 584
+  },
+  "noExperiment": {
+    "modelRun": 0,
+    "trajectoryComputed": false,
+    "forcingDownloaded": false,
+    "velocityRead": false,
+    "bootstrapRun": 0,
+    "performanceInspected": false,
+    "errorCalculated": false,
+    "sourceSelected": false,
+    "parameterTuned": false,
+    "manualSelection": false
+  },
+  "createdAtUTC": "2026-09-07T06:48:00Z",
+  "automaticCommit": false
+}

@@ -1,0 +1,83 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "validation-preregistration-step44",
+  "step": "45C",
+  "status": "VALIDATION_COHORT_BLOCKED",
+  "manifestSha256": "65a9fc5a5efe40f266c94e0db9d93c969f702fde897a9030e1b01fbf264c4856",
+  "derivationHash": "b7ef0fd0476154bd3ea20f7ac248e341e58ac08751890f862c50d78849e3bc22",
+  "authorization": {
+    "step45bAmendmentSha256": "88398dc62fb6a18e1fe5d2d8d83feff17a77f2aa4c9d0c9136008c47d38a2e4b",
+    "amendmentId": "STEP44-AMENDMENT-001-INPUT-SCOPE",
+    "amendmentIdentityHash": "a2481bc695915435d41f94cf53bf4d4f6a40b3e9d23bccc0671b78c346069ed5",
+    "step44ProtocolSha256": "6a2e2f04f7948e4ff3ac5dec065fc93a6072ce112bb2e072ce77c2606056de9f",
+    "step45aRecordSha256": "d186cf424eb691d2e7b0d0f12ae2967c027c3e75d07956a5197a840cc3fc781f",
+    "step35EligibilitySha256": "d01d06a3430def6ea77a814bb4379a9b45ca058713fa0901c9c30b035fbb635b",
+    "cohortStep16Sha256": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474"
+  },
+  "source": {
+    "observationAggregateSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+    "coastlineSha256": "6f75ae0e0de157b14946e2255eb1f5486d9a13819032e26d4610852d296788f6",
+    "regionFileCount": 44
+  },
+  "region": "KE",
+  "regionRanking": {
+    "KE": 26,
+    "BM": 3,
+    "AG": 0
+  },
+  "period": [
+    "2010-11-18T12:00:00Z",
+    "2015-12-31T21:00:00Z"
+  ],
+  "candidateWindowsExamined": 26,
+  "selectedWindows": 4,
+  "uniqueDrifters": 14,
+  "gate": {
+    "minimumWindows": 6,
+    "minimumUniqueDrifters": 20,
+    "maximumWindows": 12,
+    "satisfied": false
+  },
+  "blockReason": "the first prefix rule exhausted all 26 frozen-eligible KE candidate windows with only 4 selected windows and 14 unique drifters; 21 candidates contributed no drifter ID outside the 88-ID exclusion set and the accumulated cohort, 1 was skipped by the >=72 h separation rule",
+  "ruleRelaxed": false,
+  "periodExtended": false,
+  "regionAdded": false,
+  "thresholdReduced": false,
+  "separationAltered": false,
+  "manualSelection": false,
+  "independence": {
+    "overlapWithPrimaryDrifterIds": [],
+    "overlapWithExcludedIds": [],
+    "allStartsAfterT0": true,
+    "overlapWithPrimaryWindowStarts": []
+  },
+  "sourceAccessAudit": {
+    "observationFilesRead": 44,
+    "forbiddenInputAccess": 0,
+    "totalOpens": 44,
+    "observationRecordsRead": 2065664,
+    "driftersLoaded": 584
+  },
+  "noExperiment": {
+    "modelRun": 0,
+    "trajectoryComputed": false,
+    "forcingDownloaded": false,
+    "velocityRead": false,
+    "bootstrapRun": 0,
+    "performanceInspected": false,
+    "errorCalculated": false,
+    "sourceSelected": false,
+    "parameterTuned": false,
+    "manualSelection": false
+  },
+  "replay": {
+    "runs": 2,
+    "byteIdenticalExceptCreatedAtUTC": true,
+    "derivationHashStable": true
+  },
+  "validator": "tools/research/check_step45c_validation_cohort.py",
+  "deriver": "tools/research/derive_step45c_validation_cohort.py",
+  "deriverSha256": "1ad7e5a69605f1b4eb30d48409add4213718509389e3cd41560cbf259720328c",
+  "automaticCommit": false,
+  "push": false
+}

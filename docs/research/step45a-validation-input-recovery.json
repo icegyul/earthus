@@ -1,0 +1,430 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "validation-preregistration-step44",
+  "step": "45A",
+  "purpose": "metadata/provenance recovery only: establish whether an authoritative, hash-identified per-window eligible-drifter-identity source exists inside frozen STEP 35 / STEP 36 metadata for the candidate validation windows; no cohort derivation, no scientific data access",
+  "status": "VALIDATION_COHORT_INPUT_MISSING",
+  "head": "f7e1906973b97ee4c4be18f724bab382b30720f0",
+  "ancestry": {
+    "step36": "043a09b8539955868651a06e7c2c44e3c606803f",
+    "step41": "9a3223089099bcb09a2589cc8a4bda82fcb47ae5",
+    "step42": "bae85245e827f53ee9782201c442ea7849c04e82",
+    "step43": "15970d9735330fb937e86af449c1deef6763b5d1",
+    "step44": "5f8d5c38bfc9cc6a168707ae0b1b643c99ad46f9",
+    "runtime": "155995dd062b557b7a2ba90e5e5fb5a54ee28048"
+  },
+  "step44ProtocolSha256": "6a2e2f04f7948e4ff3ac5dec065fc93a6072ce112bb2e072ce77c2606056de9f",
+  "step35EligibilitySha256": {
+    "expected": "d01d06a3430def6ea77a814bb4379a9b45ca058713fa0901c9c30b035fbb635b",
+    "computed": "d01d06a3430def6ea77a814bb4379a9b45ca058713fa0901c9c30b035fbb635b",
+    "match": true,
+    "tracked": false,
+    "modified": false
+  },
+  "searchScope": {
+    "restrictedTo": "STEP 35 / STEP 36 research metadata and the exact SHA-bound auxiliary records they reference (STEP 35 protocol inputs)",
+    "directoriesSearched": [
+      "docs/research"
+    ],
+    "scientificDataDirectoriesSearched": [],
+    "rawDataInspected": 0,
+    "trajectoryFilesInspected": 0,
+    "velocityFilesInspected": 0,
+    "forcingFilesInspected": 0,
+    "observationFilesInspected": 0
+  },
+  "candidateSources": [
+    {
+      "path": "docs/research/step35-window-eligibility.json",
+      "present": true,
+      "sha256": "d01d06a3430def6ea77a814bb4379a9b45ca058713fa0901c9c30b035fbb635b",
+      "expectedSha256": "d01d06a3430def6ea77a814bb4379a9b45ca058713fa0901c9c30b035fbb635b",
+      "shaMatchesFrozenReference": true,
+      "size": 290338,
+      "role": "STEP 35 window eligibility (the file the STEP 44 rule ranks and filters on)",
+      "frozenReference": "STEP 36 manifest inherited.step35EligibilitySha256",
+      "identityFields": [],
+      "windowsCarryingIdentities": 0,
+      "distinctIdentities": 0,
+      "windowsWithIdentitiesAtOrAfterT0": 0,
+      "keWindowsWithIdentitiesAtOrAfterT0": 0,
+      "carriesPerWindowIdentities": false,
+      "coversCandidateValidationWindows": false,
+      "usable": false,
+      "reason": "AGGREGATE_COUNTS_ONLY_REJECTED"
+    },
+    {
+      "path": "docs/research/step35-cohort-manifest.json",
+      "present": true,
+      "sha256": "07ebc185099e7f2e81377b3b186719814b4625eeea9688aa73887f4aa5c97d29",
+      "expectedSha256": "07ebc185099e7f2e81377b3b186719814b4625eeea9688aa73887f4aa5c97d29",
+      "shaMatchesFrozenReference": true,
+      "size": 23642,
+      "role": "STEP 35 cohort manifest (selected primary-candidate windows)",
+      "frozenReference": "STEP 36 manifest inherited.step35CohortManifestSha256",
+      "identityFields": [
+        "drifterIds",
+        "drifters"
+      ],
+      "windowsCarryingIdentities": 8,
+      "distinctIdentities": 18,
+      "windowsWithIdentitiesAtOrAfterT0": 0,
+      "keWindowsWithIdentitiesAtOrAfterT0": 0,
+      "carriesPerWindowIdentities": true,
+      "coversCandidateValidationWindows": false,
+      "usable": false,
+      "reason": "IDENTITIES_ONLY_FOR_PREVIOUSLY_SELECTED_WINDOWS_BEFORE_T0"
+    },
+    {
+      "path": "docs/research/step35-frame-inventory.json",
+      "present": true,
+      "sha256": "5bdb5c779ab4b7bc0607dab907452263f4306c7d0d77681ead7d058e3090add8",
+      "expectedSha256": "5bdb5c779ab4b7bc0607dab907452263f4306c7d0d77681ead7d058e3090add8",
+      "shaMatchesFrozenReference": true,
+      "size": 194047,
+      "role": "STEP 35 HYCOM time-axis frame inventory (frames only)",
+      "frozenReference": "STEP 36 manifest inherited.step35FrameInventorySha256",
+      "identityFields": [],
+      "windowsCarryingIdentities": 0,
+      "distinctIdentities": 0,
+      "windowsWithIdentitiesAtOrAfterT0": 0,
+      "keWindowsWithIdentitiesAtOrAfterT0": 0,
+      "carriesPerWindowIdentities": false,
+      "coversCandidateValidationWindows": false,
+      "usable": false,
+      "reason": "AGGREGATE_COUNTS_ONLY_REJECTED"
+    },
+    {
+      "path": "docs/research/step35-period-lock.json",
+      "present": true,
+      "sha256": "c2f6e862704a52e39685c4c4e61931e276d4934492e6d2e8c49ad0642f6f2b92",
+      "expectedSha256": "c2f6e862704a52e39685c4c4e61931e276d4934492e6d2e8c49ad0642f6f2b92",
+      "shaMatchesFrozenReference": true,
+      "size": 1267,
+      "role": "STEP 35 period lock",
+      "frozenReference": "STEP 36 manifest inherited.step35PeriodLockSha256",
+      "identityFields": [],
+      "windowsCarryingIdentities": 0,
+      "distinctIdentities": 0,
+      "windowsWithIdentitiesAtOrAfterT0": 0,
+      "keWindowsWithIdentitiesAtOrAfterT0": 0,
+      "carriesPerWindowIdentities": false,
+      "coversCandidateValidationWindows": false,
+      "usable": false,
+      "reason": "AGGREGATE_COUNTS_ONLY_REJECTED"
+    },
+    {
+      "path": "docs/research/step35-phase-a-protocol.json",
+      "present": true,
+      "sha256": "7c3cc487568c1a063790e17fdae11ffe712047d78ea4761719bf6df7e7142f2f",
+      "expectedSha256": "7c3cc487568c1a063790e17fdae11ffe712047d78ea4761719bf6df7e7142f2f",
+      "shaMatchesFrozenReference": true,
+      "size": 11563,
+      "role": "STEP 35 Phase A protocol",
+      "frozenReference": "STEP 36 manifest inherited.step35ProtocolSha256",
+      "identityFields": [],
+      "windowsCarryingIdentities": 0,
+      "distinctIdentities": 0,
+      "windowsWithIdentitiesAtOrAfterT0": 0,
+      "keWindowsWithIdentitiesAtOrAfterT0": 0,
+      "carriesPerWindowIdentities": false,
+      "coversCandidateValidationWindows": false,
+      "usable": false,
+      "reason": "AGGREGATE_COUNTS_ONLY_REJECTED"
+    },
+    {
+      "path": "docs/research/step36-cohort-extension-manifest.json",
+      "present": true,
+      "sha256": "bda31c3ca36a395acadc95c1cb18663964ee9a00e4a72a7c2504182f51df06ca",
+      "expectedSha256": "bda31c3ca36a395acadc95c1cb18663964ee9a00e4a72a7c2504182f51df06ca",
+      "shaMatchesFrozenReference": true,
+      "size": 34641,
+      "role": "STEP 36 cohort-extension manifest (primary cohort, committed)",
+      "frozenReference": "STEP 44 protocol frozenInputs / STEP 36 lock commit",
+      "identityFields": [
+        "drifterIds",
+        "drifters"
+      ],
+      "windowsCarryingIdentities": 9,
+      "distinctIdentities": 20,
+      "windowsWithIdentitiesAtOrAfterT0": 0,
+      "keWindowsWithIdentitiesAtOrAfterT0": 0,
+      "carriesPerWindowIdentities": true,
+      "coversCandidateValidationWindows": false,
+      "usable": false,
+      "reason": "IDENTITIES_ONLY_FOR_PREVIOUSLY_SELECTED_WINDOWS_BEFORE_T0"
+    },
+    {
+      "path": "docs/research/step36-cohort-extension-protocol.json",
+      "present": true,
+      "sha256": "9832f5c4ec709531e8965be6d38c0628ab2be70507cf684076298a7dedfcafed",
+      "expectedSha256": null,
+      "shaMatchesFrozenReference": true,
+      "size": 5561,
+      "role": "STEP 36 cohort-extension protocol",
+      "frozenReference": "STEP 36 lock commit",
+      "identityFields": [],
+      "windowsCarryingIdentities": 0,
+      "distinctIdentities": 0,
+      "windowsWithIdentitiesAtOrAfterT0": 0,
+      "keWindowsWithIdentitiesAtOrAfterT0": 0,
+      "carriesPerWindowIdentities": false,
+      "coversCandidateValidationWindows": false,
+      "usable": false,
+      "reason": "AGGREGATE_COUNTS_ONLY_REJECTED"
+    },
+    {
+      "path": "docs/research/step36-cohort-extension-status.json",
+      "present": true,
+      "sha256": "fa17d06115b3c9904058e2e2d45a693257e3f63a7d306a53c3467814ce6ff147",
+      "expectedSha256": null,
+      "shaMatchesFrozenReference": true,
+      "size": 671,
+      "role": "STEP 36 status",
+      "frozenReference": "STEP 36 lock commit",
+      "identityFields": [],
+      "windowsCarryingIdentities": 0,
+      "distinctIdentities": 0,
+      "windowsWithIdentitiesAtOrAfterT0": 0,
+      "keWindowsWithIdentitiesAtOrAfterT0": 0,
+      "carriesPerWindowIdentities": false,
+      "coversCandidateValidationWindows": false,
+      "usable": false,
+      "reason": "AGGREGATE_COUNTS_ONLY_REJECTED"
+    },
+    {
+      "path": "docs/research/step16-selection-audit.json",
+      "present": true,
+      "sha256": "ba5b8a5410e2787a326639cdc2db866b4f898e279bc3d48296c914bb57a0f1bd",
+      "expectedSha256": "ba5b8a5410e2787a326639cdc2db866b4f898e279bc3d48296c914bb57a0f1bd",
+      "shaMatchesFrozenReference": true,
+      "size": 11202181,
+      "role": "STEP 16 selection audit (16072 window rows)",
+      "frozenReference": "STEP 35 protocol inputs.auditSha256",
+      "identityFields": [
+        "duplicateDrifterIds",
+        "newDrifterIds"
+      ],
+      "windowsCarryingIdentities": 10,
+      "distinctIdentities": 43,
+      "windowsWithIdentitiesAtOrAfterT0": 4,
+      "keWindowsWithIdentitiesAtOrAfterT0": 0,
+      "carriesPerWindowIdentities": true,
+      "coversCandidateValidationWindows": false,
+      "usable": false,
+      "reason": "IDENTITIES_ONLY_FOR_PREVIOUSLY_SELECTED_WINDOWS_BEFORE_T0"
+    },
+    {
+      "path": "docs/research/cohort-step16.json",
+      "present": true,
+      "sha256": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474",
+      "expectedSha256": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474",
+      "shaMatchesFrozenReference": true,
+      "size": 29692,
+      "role": "STEP 16 cohort record",
+      "frozenReference": "STEP 35 protocol inputs.cohortSha256",
+      "identityFields": [],
+      "windowsCarryingIdentities": 0,
+      "distinctIdentities": 0,
+      "windowsWithIdentitiesAtOrAfterT0": 0,
+      "keWindowsWithIdentitiesAtOrAfterT0": 0,
+      "carriesPerWindowIdentities": false,
+      "coversCandidateValidationWindows": false,
+      "usable": false,
+      "reason": "AGGREGATE_COUNTS_ONLY_REJECTED"
+    },
+    {
+      "path": "docs/research/step20-holdout-derivation.json",
+      "present": true,
+      "sha256": "68dce1d200c73fd6f1c392446f61d2d240c40068bd34992efce8c14622becfb8",
+      "expectedSha256": "68dce1d200c73fd6f1c392446f61d2d240c40068bd34992efce8c14622becfb8",
+      "shaMatchesFrozenReference": true,
+      "size": 16271,
+      "role": "STEP 20 calibration/holdout derivation",
+      "frozenReference": "STEP 35 protocol inputs.step20HoldoutDerivationSha256",
+      "identityFields": [
+        "drifters",
+        "newDrifterIds"
+      ],
+      "windowsCarryingIdentities": 3,
+      "distinctIdentities": 13,
+      "windowsWithIdentitiesAtOrAfterT0": 0,
+      "keWindowsWithIdentitiesAtOrAfterT0": 0,
+      "carriesPerWindowIdentities": true,
+      "coversCandidateValidationWindows": false,
+      "usable": false,
+      "reason": "IDENTITIES_ONLY_FOR_PREVIOUSLY_SELECTED_WINDOWS_BEFORE_T0"
+    },
+    {
+      "path": "docs/research/step32-holdout-derivation.json",
+      "present": true,
+      "sha256": "ab3d06de6582802462637b5e307e4bee9d39bbdfdb9d2b461b232335ab357e95",
+      "expectedSha256": "ab3d06de6582802462637b5e307e4bee9d39bbdfdb9d2b461b232335ab357e95",
+      "shaMatchesFrozenReference": true,
+      "size": 51716,
+      "role": "STEP 32 expanded-holdout derivation (KE 2011 selected windows)",
+      "frozenReference": "STEP 35 protocol inputs.step32HoldoutDerivationSha256",
+      "identityFields": [
+        "drifters",
+        "newDrifterIds"
+      ],
+      "windowsCarryingIdentities": 8,
+      "distinctIdentities": 32,
+      "windowsWithIdentitiesAtOrAfterT0": 8,
+      "keWindowsWithIdentitiesAtOrAfterT0": 0,
+      "carriesPerWindowIdentities": true,
+      "coversCandidateValidationWindows": false,
+      "usable": false,
+      "reason": "IDENTITIES_ONLY_FOR_PREVIOUSLY_SELECTED_WINDOWS_BEFORE_T0"
+    }
+  ],
+  "requiredCapability": "for each candidate validation window in chronological order, the set of ELIGIBLE drifter IDs, so the STEP 44 accumulation rule can test '>= 1 ID absent from the 88-ID exclusion list and from the accumulated cohort' and reach the 20-unique-drifter minimum",
+  "findings": {
+    "authoritativePerWindowIdentitySourceForValidationWindows": false,
+    "sourcesCarryingPerWindowIdentities": [
+      "docs/research/step35-cohort-manifest.json",
+      "docs/research/step36-cohort-extension-manifest.json",
+      "docs/research/step16-selection-audit.json",
+      "docs/research/step20-holdout-derivation.json",
+      "docs/research/step32-holdout-derivation.json"
+    ],
+    "identityFieldsFound": [
+      "drifterIds",
+      "drifters",
+      "duplicateDrifterIds",
+      "newDrifterIds"
+    ],
+    "coverageLimitation": "every identity-carrying record lists IDs only for windows that a prior selection rule already SELECTED, and every such window starts before the validation t0 (2010-11-18T12:00:00Z); zero identity-carrying windows are KE windows at or after t0",
+    "semanticLimitation": "the available fields are 'drifterIds' / 'newDrifterIds' = the IDs new to that run's accumulated cohort at selection time, not the full per-window ELIGIBLE set the STEP 44 rule requires",
+    "aggregateOnlySourcesRejected": [
+      "docs/research/step35-window-eligibility.json",
+      "docs/research/step35-frame-inventory.json",
+      "docs/research/step35-period-lock.json",
+      "docs/research/step35-phase-a-protocol.json",
+      "docs/research/step36-cohort-extension-protocol.json",
+      "docs/research/step36-cohort-extension-status.json",
+      "docs/research/cohort-step16.json"
+    ],
+    "step35EligibilityIsCountOnly": true,
+    "step35EligibilityFields": [
+      "auditEligibleCount",
+      "date",
+      "end",
+      "missingFrames",
+      "region",
+      "requiredUtcDays",
+      "start",
+      "tests",
+      "windowEligible"
+    ],
+    "candidateValidationWindows": {
+      "region": "KE",
+      "count": 15,
+      "dates": [
+        "2010-11-22",
+        "2011-07-05",
+        "2011-07-10",
+        "2011-07-14",
+        "2011-07-27",
+        "2011-07-31",
+        "2011-08-08",
+        "2011-08-13",
+        "2011-08-16",
+        "2011-09-22",
+        "2011-09-25",
+        "2011-10-09",
+        "2011-11-06",
+        "2011-11-09",
+        "2011-11-12"
+      ],
+      "identitiesAvailable": 0,
+      "presentInStep32CandidateDatesWithoutIdentities": [
+        "2010-11-22",
+        "2011-07-05",
+        "2011-07-10",
+        "2011-07-14",
+        "2011-07-27",
+        "2011-07-31",
+        "2011-08-08",
+        "2011-08-13",
+        "2011-08-16",
+        "2011-09-22",
+        "2011-09-25",
+        "2011-10-09",
+        "2011-11-06",
+        "2011-11-09",
+        "2011-11-12"
+      ],
+      "overlapWithStep32SelectedWindows": []
+    },
+    "step32SelectedKeWindowsHaveIdentitiesButAreExcluded": [
+      {
+        "windowId": "KE-X1",
+        "start": "2011-05-08T12:00:00Z"
+      },
+      {
+        "windowId": "KE-X2",
+        "start": "2011-05-13T12:00:00Z"
+      },
+      {
+        "windowId": "KE-X3",
+        "start": "2011-05-28T12:00:00Z"
+      },
+      {
+        "windowId": "KE-X4",
+        "start": "2011-06-10T12:00:00Z"
+      },
+      {
+        "windowId": "KE-X5",
+        "start": "2011-06-13T12:00:00Z"
+      },
+      {
+        "windowId": "KE-X6",
+        "start": "2011-06-16T12:00:00Z"
+      },
+      {
+        "windowId": "KE-X7",
+        "start": "2011-06-19T12:00:00Z"
+      },
+      {
+        "windowId": "KE-X8",
+        "start": "2011-06-22T12:00:00Z"
+      }
+    ]
+  },
+  "multipleSourceClassification": {
+    "classification": "B_COMPLEMENTARY_DETERMINISTIC",
+    "detail": "STEP 36 is the deterministic extension of STEP 35: its first 8 windows are identical in start, region and drifterIds; it adds exactly one window (2010-10-16T12:00:00Z, IDs 92919, 92906). No conflict.",
+    "step35Windows": 8,
+    "step36Windows": 9,
+    "prefixIdentical": true
+  },
+  "inputAuthorizationOnly": false,
+  "inputAuthorizationNote": "This is not an authorisation-only case. The STEP 35 eligibility file is untracked but readable and was read (SHA verified); the blocker is that no authorised metadata artefact CONTAINS the required identities. The only artefact known to contain them is the STEP 15 observation dataset (observationSha256 22c0ecff..., raw location data/research/step15/noaa-gdp-hourly-qc/, not committed), which STEP 45/45A prohibit accessing and which was NOT accessed.",
+  "consequence": {
+    "uniqueDrifterAccumulationPossible": false,
+    "step44ValidationCohortDeterminable": false,
+    "validationCohortDerivationRemainsBlocked": true,
+    "cohortFabricated": false,
+    "step44RuleRelaxed": false,
+    "countsConvertedToIdentities": false,
+    "manualCohortSelection": false
+  },
+  "noScientificDataAccess": {
+    "hycom": 0,
+    "glorys": 0,
+    "ww3": 0,
+    "ncep": 0,
+    "velocity": 0,
+    "forcing": 0,
+    "observations": 0,
+    "trajectories": 0,
+    "validationResults": 0,
+    "modelRun": 0,
+    "bootstrapRun": 0,
+    "performanceCalculated": false,
+    "cohortDerived": false
+  },
+  "automaticCommit": false,
+  "push": false
+}

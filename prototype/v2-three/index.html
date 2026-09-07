@@ -529,6 +529,14 @@
     color: var(--text); font-weight: 600;
   }
   /* STEP 56 §4: MY EARTH 의 LEVEL 2(날씨·환경) 두 값은 나란히 — 세로로 길게 늘어놓지 않는다 */
+  /* UI FINAL: 접히는 상태 카드(감시 등). 요약 줄만 보이고 배지로 상태를 알린다. */
+  .me-fold > summary { display: flex; align-items: center; gap: 7px; cursor: pointer;
+    font-size: 12.5px; font-weight: 600; color: var(--text); list-style: none; }
+  .me-fold > summary::-webkit-details-marker { display: none; }
+  .me-fold > summary::after { content: "▾"; margin-left: auto; color: var(--text-dim); font-size: 10px; }
+  .me-fold[open] > summary::after { content: "▴"; }
+  .me-fold > summary b { font-weight: 600; }
+  .me-fold > .card-b { margin-top: 6px; }
   .me-envrow { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 6px 0 2px; }
   .me-env { border: 1px solid rgba(120,160,200,0.14); border-radius: 7px; padding: 6px 8px; min-width: 0; }
   /* 셀은 두 줄까지만 — 세 줄이 되면 2단으로 나눠도 원래보다 되레 길어진다(실측) */
@@ -588,8 +596,9 @@
     color: var(--text-dim); border-radius: 6px; cursor: pointer;
   }
   .intel-tabs button.on { color: var(--accent); border-color: var(--accent); }
-  .card { border: 1px solid rgba(120,160,200,0.16); border-radius: 9px; padding: 10px 12px; margin-bottom: 8px; }
-  .card-h { font-size: 12.5px; font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 7px; }
+  /* UI FINAL: 카드가 형제로 8장 늘어서면서 카드 사이 여백이 누적된다. 읽기는 그대로 두고 간격만 줄인다. */
+  .card { border: 1px solid rgba(120,160,200,0.16); border-radius: 9px; padding: 10px 12px; margin-bottom: 6px; }
+  .card-h { font-size: 12.5px; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 7px; }
   .card-b { font-size: 11px; color: var(--text-dim); line-height: 1.65; }
   .card-b .stat { display: flex; justify-content: space-between; padding: 3px 0; border-top: 1px solid rgba(120,160,200,0.09); color: var(--text); }
   .card-b .stat .k { color: var(--text-dim); }

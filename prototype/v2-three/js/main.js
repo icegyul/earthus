@@ -3555,18 +3555,20 @@ async function main() {
        내 현재 상태(MY EARTH)와 내가 볼 사건(FOR ME)은 형제여야 한다.
        닫는 것은 셋이다: 특보 묶음 래퍼 div(위 margin-top:8px) → .card-b → .card */
     html += '</div></div></div>';
+    html += forMeHtml();
+    /* UI FINAL: 상태성 정보는 사건 뒤로, 그리고 접어서. 배지는 요약줄에 남겨
+       접힌 채로도 감시 중인지 아닌지가 보이게 한다. 자료를 다시 받지 않는다. */
     const wv = myEarth.watch;
     if (wv) {
-      html += '<div class="card" style="margin-top:8px"><div class="card-h">감시 <span class="badge ' + (wv.monitoring === 'ON' ? 'model' : 'demo') + '">' + (wv.monitoring === 'ON' ? '감시 중' : '감시 중단') + '</span></div><div class="card-b">';
+      html += '<div class="card"><details class="me-fold"><summary><b>감시</b> <span class="badge ' + (wv.monitoring === 'ON' ? 'model' : 'demo') + '">' + (wv.monitoring === 'ON' ? '감시 중' : '감시 중단') + '</span></summary><div class="card-b">';
       html += wv.monitoring === 'ON'
         ? '조건 3종 — 내 구역 특보 · 팔로우한 사건의 새 회차 · 400 km 안 M5+ 지진. 같은 건은 한 번만 적습니다.<br/><b>앱을 열었을 때와 ⟳ 를 눌렀을 때만 판정</b>합니다 — 닫혀 있는 동안은 감시하지 않고, 푸시 알림도 보내지 않습니다.'
         : `<b>감시 중단</b> — ${escUI(wv.reason)}. 안전하다는 뜻이 아닙니다.`;
       if (wv.log.length) html += '<div style="margin-top:6px">' + wv.log.map((h) => `<div class="stat"><span class="k">${escUI(h.at.slice(5, 16).replace('T', ' '))}Z</span><span class="v">${escUI(h.reasonKo)}</span></div>`).join('') + '</div>';
       else if (wv.monitoring === 'ON') html += '<div style="margin-top:6px;color:var(--text-dim)">아직 기록 없음</div>';
-      html += '</div></div>';
+      html += '</div></details></div>';
     }
     // FOR ME 카드 묶음 — 이제 MY EARTH 밖의 형제다. 닫고/여는 곱예가 필요 없다.
-    html += forMeHtml();
     html += `<div class="card"><div class="card-b"><details><summary>각 자료의 기준 시각</summary><p>특보: ${escUI(d.warnAt||'제공되지 않음')}<br/>대기질: ${escUI(d.airAt||'제공되지 않음')}<br/>바람·기온: ${escUI(d.awsAt||'제공되지 않음')}</p></details>조회 ${d.at} · 한국 관측망 기준 · 조회 시각과 자료 시각은 다릅니다.</div></div>`;
     return html;
   };

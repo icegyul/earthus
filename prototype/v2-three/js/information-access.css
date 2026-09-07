@@ -23,7 +23,7 @@ button:focus-visible,input:focus-visible,summary:focus-visible,a:focus-visible{o
 #intel .card-b,#intel .travel-catalog{color:#ccdee9}
 #intel .context-details label{display:block;margin:10px 0}#intel .context-details input{display:block;width:100%;box-sizing:border-box;min-height:44px;border:1px solid #567083;border-radius:6px;background:#0b1e2d;color:#e9f4fb;padding:10px;font:inherit}
 #ts-label{font-size:13px;white-space:normal}#ts-range{min-width:70px}
-@media(max-width:700px){#intel{right:8px;max-width:calc(100vw - 16px)}#intel-content{padding:12px}.card-b .stat{flex-wrap:wrap}.card-b .stat .v{max-width:100%}.mp-chip{min-height:40px;font-size:13px}.mp-search{padding:12px}.card{padding:14px}.information-context{margin-bottom:12px}}
+@media(max-width:700px){#intel{right:8px;max-width:calc(100vw - 16px)}#intel-content{padding:10px}.card-b .stat{flex-wrap:wrap}.card-b .stat .v{max-width:100%}.mp-chip{min-height:40px;font-size:13px}.mp-search{padding:12px}.card{padding:11px}.information-context{margin-bottom:12px}}
 
 /* STEP 55 (2026-09-07 지시 §4-D): CTA 는 분명하되 화면을 지배하면 안 된다.
    44px 최소 터치 크기는 접근성 기준이므로 손가락 화면에서는 그대로 두고,

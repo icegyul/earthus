@@ -20,6 +20,7 @@
 import json
 import os
 import re
+import warnings
 from datetime import datetime, timedelta, timezone
 
 import boto3
@@ -82,6 +83,28 @@ def smooth1d(v, w=41):
     return np.convolve(p, k, mode="valid")[: len(v)]
 
 
+# ⚠️⚠️ **자료 없음은 255 로 온다. _FillValue(-9999) 가 아니다.**
+#    GMGSI 는 여러 정지위성을 이어 붙인 합성본이라 위성이 못 보는 자리가 남는다.
+#    NOAA 는 그 자리를 파일 속성의 _FillValue 가 아니라 밝기 최댓값 255 로 채운다.
+#    이 격자는 "값이 클수록 차갑고 = 구름" 이므로, 그대로 먹이면
+#    **없는 자료가 가장 두꺼운 구름**이 된다.
+#    2026-09-07 14:00Z 실측 — 실제 자료 최댓값은 231 이고 232~254 는 단 한 화소도
+#    없는데 255 만 105,341 화소(0.70%)다. 즉 255 는 밝기가 아니라 '없음' 표시다.
+#    이걸 구름으로 읽어서 93.6~108.9°E 중국 상공에 통짜 회색 쐐기가 그려졌다
+#    (알파 255 · 밝기 234 고정 · 132px 구간 표준편차 0.0 — 구름이면 있을 수 없는 값).
+GAP = 254.0
+
+
+def _fill_gaps_1d(v):
+    """행 통계가 NaN 이면 이웃 행에서 잇는다.
+    ⚠️ smooth1d 는 컨볼루션이라 NaN 하나가 좌우 20행을 함께 NaN 으로 만든다."""
+    idx = np.arange(len(v))
+    good = np.isfinite(v)
+    if not good.any():
+        return np.zeros_like(v)
+    return np.interp(idx, idx[good], v[good])
+
+
 def to_alpha(data):
     """밝기 → 구름 불투명도.
 
@@ -91,13 +114,22 @@ def to_alpha(data):
     → 위도(행)마다 그 위도의 '맑은 하늘' 기준을 따로 잡는다.
       45 백분위를 맑음, 97 백분위를 짙은 구름으로 보고 그 사이를 부드럽게 잇는다.
       행별로 튀지 않게 위도 방향으로 평활한다.
+
+    ⚠️ 자료가 없는 칸(255)은 백분위 계산에서도 빼야 한다. 넣어 두면 그 행의
+       97 백분위가 255 쪽으로 끌려가 **주변 진짜 구름까지 옅어진다.**
     """
-    lo = smooth1d(np.percentile(data, 45, axis=1))
-    hi = smooth1d(np.percentile(data, 97, axis=1))
+    gap = data >= GAP
+    clean = np.where(gap, np.nan, data)
+
+    lo = smooth1d(_fill_gaps_1d(np.nanpercentile(clean, 45, axis=1)))
+    hi = smooth1d(_fill_gaps_1d(np.nanpercentile(clean, 97, axis=1)))
     hi = np.maximum(hi, lo + 45)          # 대비가 너무 좁아지면 노이즈가 구름이 된다
 
-    t = np.clip((data - lo[:, None]) / (hi - lo)[:, None], 0, 1)
-    return t * t * (3 - 2 * t)            # smoothstep — 가장자리를 부드럽게
+    t = np.clip((clean - lo[:, None]) / (hi - lo)[:, None], 0, 1)
+    alpha = t * t * (3 - 2 * t)           # smoothstep — 가장자리를 부드럽게
+    # 자료가 없는 자리는 **투명**하다. "구름이 없다"가 아니라 "모른다"는 뜻이고,
+    # 우리가 아는 척하지 않는 쪽이 맞다. 바탕 지도가 그대로 비친다.
+    return np.where(gap, 0.0, alpha)
 
 
 def sun_cos(lat, lon, when):
@@ -202,7 +234,11 @@ def handler(event, context):
         lon2d = f["lon"][:]
 
     north, south = float(np.nanmax(lat2d)), float(np.nanmin(lat2d))
-    alpha = to_alpha(ir)
+    gap_px = int((ir >= GAP).sum())
+    print(f"[gap] 자료 없음(255) {gap_px} 화소 = {gap_px / ir.size * 100:.2f}% — 투명 처리")
+    with warnings.catch_warnings():          # 행 전체가 빈 경우의 All-NaN 경고
+        warnings.simplefilter("ignore", RuntimeWarning)
+        alpha = to_alpha(ir)
 
     # 명암 — 가시광이 있으면 입체감을, 없으면 평평한 흰색
     if vis_key:

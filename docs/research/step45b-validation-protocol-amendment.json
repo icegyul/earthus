@@ -1,0 +1,252 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "validation-preregistration-step44",
+  "step": "45B",
+  "amendmentId": "STEP44-AMENDMENT-001-INPUT-SCOPE",
+  "type": "PRE-EXECUTION PROVENANCE / INPUT-SCOPE AMENDMENT",
+  "status": "AMENDMENT_DESIGN_COMPLETE (uncommitted)",
+  "baseProtocol": {
+    "step": 44,
+    "path": "docs/research/step44-validation-preregistration-protocol.json",
+    "sha256": "6a2e2f04f7948e4ff3ac5dec065fc93a6072ce112bb2e072ce77c2606056de9f",
+    "lockCommit": "5f8d5c38bfc9cc6a168707ae0b1b643c99ad46f9",
+    "modifiedInPlace": false,
+    "note": "STEP 44 remains permanently immutable; this amendment references it and is never merged into it"
+  },
+  "discovery": {
+    "steps": [
+      "STEP 45",
+      "STEP 45A"
+    ],
+    "step45aLockCommit": "b0f0274f14ae491e34f0bcb85874056d92260f46",
+    "step45aRecordSha256": "d186cf424eb691d2e7b0d0f12ae2967c027c3e75d07956a5197a840cc3fc781f",
+    "step45aStatus": "VALIDATION_COHORT_INPUT_MISSING",
+    "finding": "The frozen STEP 35 eligibility representation (SHA d01d06a3...) carries aggregate per-window counts (auditEligibleCount) but no per-window eligible drifter identities; 12 probed STEP 35/36 artefacts and their SHA-bound references carry identities only for previously selected windows, all starting before the validation t0, and in a field (new-to-that-run IDs) that is not the eligible set. Unique-drifter accumulation, and therefore the locked STEP 44 first-prefix rule, cannot be executed from aggregate metadata."
+  },
+  "reason": "to make the already-locked STEP 44 cohort-selection rule executable by authorising the minimum read-only access to the frozen upstream observation dataset that is the sole source of the per-window eligible drifter identities the rule requires. The amendment changes only the INPUT SCOPE; it changes no selection, eligibility, endpoint, statistical or success rule.",
+  "oldAuthorizationRule": {
+    "source": "docs/research/step44-validation-preregistration-protocol.json field 4_validationCohortRule.manualChoice",
+    "text": "forbidden; the rule is executed by a tool that reads only the SHA-frozen STEP 35 inventory, the STEP 16 observation file and the exclusion list; no forcing, model or performance input; validation velocity/forcing download is forbidden before the cohort manifest is locked",
+    "effect": "the derivation tool was authorised to read the SHA-frozen STEP 35 inventory, the STEP 16 observation file and the exclusion list, but STEP 45/45A operated under an explicit prohibition on opening the observation dataset, leaving the rule unexecutable"
+  },
+  "newAuthorizationRule": {
+    "grant": "LIMITED READ-ONLY ACCESS to the frozen STEP 15 observation dataset, for the sole purpose of reconstructing the deterministic mapping validation window -> eligible drifter IDs required by the unchanged STEP 44 rule",
+    "readOnly": true,
+    "regenerate": false,
+    "redownload": false,
+    "modify": false,
+    "overwrite": false,
+    "substituteAnotherSource": false
+  },
+  "authorizedSource": {
+    "path": "data/research/step15/noaa-gdp-hourly-qc/",
+    "frozenSourceIdentity": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+    "identityRecordedIn": [
+      "docs/research/step16-observation-manifest.json observationSha256",
+      "docs/research/step35-phase-a-protocol.json inputs.observationSha256"
+    ],
+    "product": "NOAA Global Drifter Program hourly QC dataset (STEP 15 acquisition; tools/research/acquire_step15_observations.sh; no new download)",
+    "committed": false,
+    "tracked": false,
+    "auxiliaryFrozenInput": {
+      "file": "ne_10m_coastline.geojson",
+      "sha256": "6f75ae0e0de157b14946e2255eb1f5486d9a13819032e26d4610852d296788f6",
+      "purpose": "STEP 16 E4 coast-distance test only",
+      "recordedIn": "docs/research/step35-phase-a-protocol.json inputs.coastlineSha256"
+    },
+    "identityVerificationBeforeAccess": "the dataset identity must equal the frozen SHA-256 above before any content is read; on mismatch the downstream step reports VALIDATION_COHORT_PROVENANCE_BLOCKED and reads nothing"
+  },
+  "purpose": {
+    "allowed": [
+      "reconstruct the mapping validation window -> eligible drifter IDs by applying the unchanged frozen STEP 16 E1-E5 + A1-A3 evaluation to the KE candidate windows"
+    ],
+    "forbidden": [
+      "model evaluation",
+      "trajectory integration",
+      "velocity extraction",
+      "forcing extraction",
+      "candidate evaluation",
+      "baseline evaluation",
+      "error calculation",
+      "validation scoring",
+      "parameter selection",
+      "source selection",
+      "bootstrap",
+      "hypothesis testing",
+      "performance inspection"
+    ]
+  },
+  "allowedFields": {
+    "fields": [
+      "ID",
+      "time",
+      "latitude",
+      "longitude",
+      "gap",
+      "drogue_lost_date",
+      "typebuoy"
+    ],
+    "justification": {
+      "ID": "drifter identity (the quantity being recovered)",
+      "time": "exact UTC sample instant for E3 sample completeness and window membership",
+      "latitude": "E4 coast distance, E5 box membership, A1-A3 displacement and turn",
+      "longitude": "E4 coast distance, E5 box membership, A1-A3 displacement and turn",
+      "gap": "E3 provider gap <= 3600 s",
+      "drogue_lost_date": "E1 drogue attached to window end",
+      "typebuoy": "E2 SVP / SVPB"
+    },
+    "source": "exactly the fields read by the frozen STEP 16 evaluation function (tools/research/select_step16_cohort.py, load/evaluate)",
+    "toolSha256": "b318b806216a8c5d1033964a0d2740972068edeeb90abdf99702e49db5c67139",
+    "additionalFieldsRequireAmendment": true,
+    "silentFieldAddition": "forbidden",
+    "retention": "only the minimal identifier / time / location representation needed for the eligibility evaluation; full observation records are not retained in any committed artefact"
+  },
+  "temporalScope": {
+    "validationPeriodT0": "2010-11-18T12:00:00Z",
+    "validationPeriodT1": "2015-12-31T21:00:00Z",
+    "observationReadWindowPerCandidateWindow": "[window start, window start + 72 h] (E3 requires the 73 hourly samples; E1 compares drogue_lost_date with the window end)",
+    "marginBeforeT0Hours": 0,
+    "marginAfterT1Hours": 72,
+    "maximumObservationInstantReadable": "2016-01-03T21:00:00Z",
+    "marginJustification": "no observation before t0 is required: window membership, separation and frame coverage are evaluated from already-frozen metadata (STEP 35 eligibility, prior window starts), not from observations; the only extension is the 72 h of each candidate window itself",
+    "broadeningForConvenience": "forbidden"
+  },
+  "geographicScope": {
+    "region": "KE",
+    "box": {
+      "south": 30,
+      "north": 40,
+      "west": 135,
+      "east": 160
+    },
+    "determinedBy": "the frozen STEP 44 deterministic region ranking executed on metadata only (KE 26, BM 3, AG 0; KE rank 1)",
+    "bmAgObservationContentAccess": "NOT AUTHORIZED (their counts remain metadata-only)",
+    "otherRegions": "NOT AUTHORIZED",
+    "gs": "NOT AUTHORIZED (primary region, excluded)"
+  },
+  "cohortRuleUnchanged": {
+    "region": "KE",
+    "chronologicalOrdering": "windows of the selected region sorted by start ascending (12:00 UTC daily starts); no ties possible",
+    "frameCoverage": "required, unchanged",
+    "eligibility": "STEP 16 E1-E5 (drogue attached to window end; SVP/SVPB; 73 hourly samples gap <= 1 h; coast > 100 km; start inside the box) + A1-A3 (>= 0.30 m/s; >= 40 km; <= 90 deg) verbatim; window eligible iff eligibleCount >= 8 AND A1-A3 PASS AND STEP 35 frameCoverageComplete (every UTC day of [t0-1 d, t0+72 h+1 d] complete at 00..21Z) AND notNearPriorWindow AND afterCalibrationCutoff",
+    "step20And32Exclusions": "±72 h, unchanged",
+    "excludedDrifterIdCount": 88,
+    "excludedIdListSha256": "9e9415f57fb8682a25d347628627e5a5c2069f21779dddbe4725f7ea891d6b69",
+    "startSeparationHours": 72,
+    "newIdRequirementPerSelectedWindow": 1,
+    "minimumWindows": 6,
+    "minimumUniqueDrifters": 20,
+    "maximumWindows": 12,
+    "firstPrefixRule": "the validation cohort is the shortest chronological prefix of SELECTED windows with >= minimumWindows AND >= minimumDrifters; the walk stops at that window",
+    "manualAddOrRemove": "forbidden",
+    "performanceBasedSelection": "forbidden",
+    "anyRuleChangedByThisAmendment": false
+  },
+  "step15IsNotANewEligibilityRule": {
+    "statement": "The STEP 15 observation dataset is an INPUT SOURCE, not a new scientific selection criterion.",
+    "prohibited": [
+      "reinterpreting the observations to create a new definition of eligibility",
+      "inventing a new quality-control rule",
+      "adding a new spatial filter",
+      "adding a new temporal filter",
+      "removing a drifter because of expected model behaviour",
+      "selecting drifters because they are easier to simulate"
+    ],
+    "evaluationFunction": "the frozen STEP 16 evaluate() applied verbatim; no threshold, test or ordering is added, removed or altered"
+  },
+  "dataMinimization": {
+    "derivedStructure": [
+      "window_id",
+      "window_start",
+      "window_end",
+      "region",
+      "eligible_drifter_ids",
+      "eligible_count",
+      "source_observation_reference"
+    ],
+    "perMappingProvenanceRequired": [
+      "source dataset SHA-256",
+      "source file identity",
+      "extraction timestamp (UTC)",
+      "exact field names used",
+      "exact temporal filter",
+      "exact geographic filter",
+      "exact QC rule",
+      "script / code SHA-256",
+      "deterministic derivation hash"
+    ],
+    "excludedFromDerivedArtefact": [
+      "model forcing",
+      "trajectory results",
+      "velocity fields",
+      "error metrics",
+      "any validation performance quantity"
+    ]
+  },
+  "primaryExperimentProtection": {
+    "Theta_km": -31.331,
+    "CI95_km": [
+      -72.0725,
+      -11.7435
+    ],
+    "H1": "SUPPORTED",
+    "candidateStatus": "CANDIDATE_ONLY",
+    "operationalPromotion": false,
+    "step40ResultUsedForSelection": false,
+    "statement": "The STEP 40 primary result was NOT used to choose the validation source, region, period, drifters, or selection rule. The region ranking, period and accumulation rule were fixed in STEP 44 before this amendment and are unchanged by it; this amendment only authorises the input needed to execute them.",
+    "primaryRecordsModified": 0
+  },
+  "leakageControls": {
+    "step40ResultIsFrozenHistory": true,
+    "selectionRuleEstablishedInStep44": true,
+    "identitiesFoundAbsentInStep45A": true,
+    "step15UsedOnlyAsUpstreamIdentitySource": true,
+    "validationPerformanceObserved": false,
+    "validationTrajectoriesExecuted": false,
+    "validationForcingInspected": false,
+    "validationModelResultInspected": false,
+    "statement": "No validation outcome may influence the cohort derivation; at amendment time no validation outcome exists."
+  },
+  "accessState": {
+    "experimentDataAccessed": false,
+    "validationResultsAccessed": false,
+    "step15ContentOpened": false,
+    "step15FilesRead": 0,
+    "observationRecordsRead": 0,
+    "cohortDerived": false,
+    "modelRun": 0,
+    "bootstrapRun": 0,
+    "forcingDownloaded": false,
+    "trajectoryComputed": false,
+    "performanceCalculated": false,
+    "note": "PRE-EXECUTION amendment: no STEP 15 content may be opened before this amendment is locked; only frozen metadata records and research code were read to write it"
+  },
+  "amendmentHistory": [
+    {
+      "amendmentId": "STEP44-AMENDMENT-001-INPUT-SCOPE",
+      "field": "4_validationCohortRule.manualChoice (input scope only)",
+      "oldValue": "derivation tool inputs treated as metadata-only; observation-dataset access prohibited before cohort lock, rendering the accumulation rule unexecutable",
+      "newValue": "limited read-only access to the frozen STEP 15 observation dataset (SHA 22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841) for identity recovery only, with the field, temporal, geographic, purpose and minimisation limits recorded in this amendment",
+      "reason": "STEP 45/45A established that the per-window eligible drifter identities required by the unchanged STEP 44 rule are absent from every authorised frozen metadata artefact",
+      "timestampUTC": "PRE-EXECUTION (recorded at amendment creation)",
+      "commitSha": "PENDING (this amendment's own lock commit)",
+      "headAtCreation": "b0f0274f14ae491e34f0bcb85874056d92260f46",
+      "validationDataAccessedBeforeAmendment": false,
+      "validationResultsAccessedBeforeAmendment": false,
+      "status": "PROPOSED (uncommitted)"
+    }
+  ],
+  "parentProvenance": {
+    "step36": "043a09b8539955868651a06e7c2c44e3c606803f",
+    "step41": "9a3223089099bcb09a2589cc8a4bda82fcb47ae5",
+    "step42": "bae85245e827f53ee9782201c442ea7849c04e82",
+    "step43": "15970d9735330fb937e86af449c1deef6763b5d1",
+    "step44": "5f8d5c38bfc9cc6a168707ae0b1b643c99ad46f9",
+    "step45a": "b0f0274f14ae491e34f0bcb85874056d92260f46",
+    "runtime": "155995dd062b557b7a2ba90e5e5fb5a54ee28048"
+  },
+  "currentHead": "b0f0274f14ae491e34f0bcb85874056d92260f46",
+  "automaticCommit": false,
+  "push": false,
+  "amendmentIdentityHash": "a2481bc695915435d41f94cf53bf4d4f6a40b3e9d23bccc0671b78c346069ed5"
+}

@@ -3550,19 +3550,24 @@ async function main() {
       envCells.push(`<div class="me-env"><span class="k">🌬 바람·기온<small>${escUI(a.name)} ${d.aws.km}km</small></span><b>${a.wind_ms != null ? `${a.wind_ms}m/s` : '—'} · ${a.temp_c != null ? `${a.temp_c}°C` : '—'}</b></div>`);
     }
     if (envCells.length) html += `<div class="me-envrow">${envCells.join('')}</div>`;
+    /* STEP 57: 여기서 MY EARTH 카드를 **닫는다**. 예전엔 card-b 하나만 닫고 카드를 열어둔 채 끝나서,
+       브라우저가 뒤의 감시·FOR ME 카드를 전부 MY EARTH 안으로 집어넣었다(실측: 중첩 .card 5장).
+       내 현재 상태(MY EARTH)와 내가 볼 사건(FOR ME)은 형제여야 한다.
+       닫는 것은 셋이다: 특보 묶음 래퍼 div(위 margin-top:8px) → .card-b → .card */
+    html += '</div></div></div>';
     const wv = myEarth.watch;
     if (wv) {
-      html += '</div><div class="card" style="margin-top:8px"><div class="card-h">감시 <span class="badge ' + (wv.monitoring === 'ON' ? 'model' : 'demo') + '">' + (wv.monitoring === 'ON' ? '감시 중' : '감시 중단') + '</span></div><div class="card-b">';
+      html += '<div class="card" style="margin-top:8px"><div class="card-h">감시 <span class="badge ' + (wv.monitoring === 'ON' ? 'model' : 'demo') + '">' + (wv.monitoring === 'ON' ? '감시 중' : '감시 중단') + '</span></div><div class="card-b">';
       html += wv.monitoring === 'ON'
         ? '조건 3종 — 내 구역 특보 · 팔로우한 사건의 새 회차 · 400 km 안 M5+ 지진. 같은 건은 한 번만 적습니다.<br/><b>앱을 열었을 때와 ⟳ 를 눌렀을 때만 판정</b>합니다 — 닫혀 있는 동안은 감시하지 않고, 푸시 알림도 보내지 않습니다.'
         : `<b>감시 중단</b> — ${escUI(wv.reason)}. 안전하다는 뜻이 아닙니다.`;
       if (wv.log.length) html += '<div style="margin-top:6px">' + wv.log.map((h) => `<div class="stat"><span class="k">${escUI(h.at.slice(5, 16).replace('T', ' '))}Z</span><span class="v">${escUI(h.reasonKo)}</span></div>`).join('') + '</div>';
       else if (wv.monitoring === 'ON') html += '<div style="margin-top:6px;color:var(--text-dim)">아직 기록 없음</div>';
-      html += '</div></div><div>';
+      html += '</div></div>';
     }
-    // FOR ME 카드 묶음 — 감시 카드와 같은 자리 규칙: 열린 <div> 를 닫고, 카드를 내고, 다시 <div> 를 연다 (아래 줄이 그것을 닫는다)
-    html += '</div>' + forMeHtml() + '<div>';
-    html += `</div><details><summary>각 자료의 기준 시각</summary><p>특보: ${escUI(d.warnAt||'제공되지 않음')}<br/>대기질: ${escUI(d.airAt||'제공되지 않음')}<br/>바람·기온: ${escUI(d.awsAt||'제공되지 않음')}</p></details>조회 ${d.at} · 한국 관측망 기준 · 조회 시각과 자료 시각은 다릅니다.</div></div>`;
+    // FOR ME 카드 묶음 — 이제 MY EARTH 밖의 형제다. 닫고/여는 곱예가 필요 없다.
+    html += forMeHtml();
+    html += `<div class="card"><div class="card-b"><details><summary>각 자료의 기준 시각</summary><p>특보: ${escUI(d.warnAt||'제공되지 않음')}<br/>대기질: ${escUI(d.airAt||'제공되지 않음')}<br/>바람·기온: ${escUI(d.awsAt||'제공되지 않음')}</p></details>조회 ${d.at} · 한국 관측망 기준 · 조회 시각과 자료 시각은 다릅니다.</div></div>`;
     return html;
   };
 

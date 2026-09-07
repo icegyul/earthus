@@ -164,7 +164,7 @@ try {
     assert.equal(state.hours, 24);
     assert.equal(state.days, 10);
     assert.equal(state.details, 8);
-    assert.match(state.allText, /27°C/);
+    assert.match(state.allText, /27°/);
     assert.match(state.allText, /관측/);
     assert.match(state.allText, /공식 예보/);
     assert.match(state.allText, /폭염 경보/);
@@ -191,7 +191,7 @@ try {
     assert.ok(timeState.events[0].validAt);
     assert.equal(timeState.events[0].hour.temperature.value, kmaHours[9].t);
     assert.equal(timeState.selected, 1);
-    assert.match(timeState.hero, /29°C/);
+    assert.match(timeState.hero, /29°/);
     assert.match(timeState.hero, /선택 시각/);
     assert.match(timeState.intelligence, /선택한 시각/);
     assert.match(timeState.intelligence, /공식 예보/);

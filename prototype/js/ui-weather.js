@@ -437,7 +437,28 @@ export const weatherPanel = {
       + `<h4>${ko ? '앞으로 24시간' : 'Next 24 hours'}</h4></div>`
       + `<span>${ko ? '시간을 누르면 지구와 카드가 함께 이동합니다' : 'Choose a time to sync Earth and cards'}</span></header>`;
     const rail = el('div', 'wcv7-hour-rail');
-    model.hourly.slice(0, 24).forEach((hour, index) => {
+    const hours = model.hourly.slice(0, 24);
+    /* 일출·일몰을 시간 흐름 속에 끼워 넣는다(애플 날씨가 하는 것).
+       ⚠️ 값은 상세 카드가 쓰는 바로 그 값이다 — 여기서 따로 계산하지 않는다.
+          24시간 창 밖이면 넣지 않는다. 없는 것을 끝에 몰아 붙이면 시간 순서가 거짓말이 된다. */
+    const first = Date.parse(hours[0]?.validAt ?? '');
+    const last = Date.parse(hours[hours.length - 1]?.validAt ?? '');
+    const marks = [];
+    [[model.details.sun?.sunrise?.value, ko ? '일출' : 'Sunrise', '🌅'],
+     [model.details.sun?.sunset?.value, ko ? '일몰' : 'Sunset', '🌇']].forEach(([value, label, icon]) => {
+      const ms = Date.parse(value ?? '');
+      if (Number.isFinite(ms) && Number.isFinite(first) && Number.isFinite(last)
+        && ms > first && ms < last) marks.push({ ms, label, icon });
+    });
+    hours.forEach((hour, index) => {
+      const hourMs = Date.parse(hour.validAt ?? '');
+      while (marks.length && Number.isFinite(hourMs) && marks[0].ms <= hourMs) {
+        const mark = marks.shift();
+        const cell = el('div', 'wcv7-hour-mark');
+        cell.innerHTML = `<time>${clockText(new Date(mark.ms).toISOString(), model.location.timezone)}</time>`
+          + `<span aria-hidden="true">${mark.icon}</span><b>${esc(mark.label)}</b>`;
+        rail.appendChild(cell);
+      }
       const button = el('button', 'wcv7-hour');
       button.type = 'button';
       button.dataset.weatherTime = hour.validAt || '';
@@ -445,10 +466,12 @@ export const weatherPanel = {
         ? hour.validAt === this.selectedAt : index === 0;
       button.setAttribute('aria-pressed', String(selected));
       const condition = weatherCondition(hour.condition, ko);
+      const pop = numOf(hour.precipitationProbability);
       button.innerHTML = `<time>${hourLabel(hour.validAt, model.location.timezone, ko)}</time>`
         + `<span aria-hidden="true">${condition.icon}</span>`
-        + `<b>${temperature(hour.temperature, ko)}</b>`
-        + `<em>${valueText(hour.precipitationProbability, 0)}</em>`;
+        + `<b>${temperature(hour.temperature, ko).replace('C', '')}</b>`
+        /* 0% 를 24칸에 늘어놓으면 읽을 것이 없다 — 비가 올 가능성이 있을 때만 적는다. */
+        + (pop != null && pop > 0 ? `<em>${Math.round(pop)}%</em>` : '');
       button.addEventListener('click', () => {
         this.selectedAt = hour.validAt;
         this.render();
@@ -869,6 +892,120 @@ function normalizeWeatherPlace(place = {}) {
   };
 }
 
+/* ── 값을 그림으로 읽는 부품 (2026-09-08) ──────────────────────────────
+   애플 날씨에서 가져온 것은 색이 아니라 **정보를 배치하는 방식**이다 — 눌러야 펼쳐지던
+   아코디언을 없애고, 값을 그림 안에 넣어 카드 앞면에서 바로 읽게 한다.
+   색은 전부 app.css 정본 토큰과 이 파일 CSS 의 배지색이고, 피그마 키트에서 가져온 것은 없다.
+
+   ⚠️ 그림은 값을 만들지 않는다. 값이 없으면 그림을 아예 그리지 않는다 —
+      게이지가 왼쪽 끝을 가리키는 것과 값이 없는 것은 전혀 다른 뜻이다. */
+const GRAPH_TEAL = '#3fc7c0';
+
+/** 값 하나를 숫자로. 없으면 null.
+    ⚠️ Number(null) 은 0 이다. 이 한 줄이 없으면 자료가 없는 칸이 화면에서 '0' 이 되고,
+       그건 이 제품이 하지 않기로 한 바로 그 거짓말이다. 숫자로 바꾸는 곳은 여기 하나뿐이다. */
+function numOf(point) {
+  const raw = (point && typeof point === 'object') ? point.value : point;
+  if (raw == null || raw === '') return null;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** 값을 [min,max] 안의 0~1 로. 값이 없으면 null(= 그리지 않는다). */
+function ratio(value, min, max) {
+  const n = numOf(value);
+  if (n == null) return null;
+  return Math.min(1, Math.max(0, (n - min) / (max - min)));
+}
+
+/** 카드 앞면의 큰 숫자. 값이 없으면 null 을 돌려주고, 부르는 쪽이 이유를 적는다. */
+function faceBig(point, digits = 1, unitOverride = null) {
+  const n = numOf(point);
+  if (n == null) return null;
+  const num = n.toFixed(digits).replace(/\.0$/, '');
+  const unit = unitOverride ?? point.unit ?? '';
+  return `<span class="wcv7-c-big">${esc(num)}${unit ? `<small>${esc(unit)}</small>` : ''}</span>`;
+}
+
+/** 값 없음 — 칸을 0 으로 채우지 않고 왜 없는지 적는다. */
+function faceNa(text) { return `<span class="wcv7-c-na">${esc(text)}</span>`; }
+
+/** 색 막대 — 자외선·공기질처럼 '어느 구간인가'가 숫자보다 중요한 값. */
+function faceBar(r) {
+  if (r == null) return '';
+  return `<span class="wcv7-c-bar"><i style="left:${(r * 100).toFixed(1)}%"></i></span>`;
+}
+
+/* 반원 게이지 — 시안의 호는 반지름 42 라 위가 잘려 나갔다(현 30 · 화살 26 이면 반지름은 46.9).
+   진행 부분은 삼각함수 대신 pathLength=100 + dasharray 로 자른다 — 같은 d 를 쓰니 어긋날 수 없다. */
+const GAUGE_D = 'M8 30 A46.9 46.9 0 0 1 92 30';
+const GAUGE_R = 46.9, GAUGE_CY = 50.9, GAUGE_HALF = 1.1065;   // 반호 63.4°
+function faceGauge(r) {
+  if (r == null) return '';
+  const phi = -GAUGE_HALF + r * GAUGE_HALF * 2;
+  const x = 50 + GAUGE_R * Math.sin(phi);
+  const y = GAUGE_CY - GAUGE_R * Math.cos(phi);
+  return '<svg class="wcv7-c-arc" viewBox="0 0 100 34" aria-hidden="true">'
+    + `<path d="${GAUGE_D}" stroke="rgba(242,245,248,.16)" stroke-width="5"/>`
+    + `<path d="${GAUGE_D}" pathLength="100" stroke-dasharray="${(r * 100).toFixed(1)} 100"`
+    + ` stroke="${GRAPH_TEAL}" stroke-width="5"/>`
+    + `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.6" fill="#f2f5f8"/></svg>`;
+}
+
+/* 해가 뜬 뒤 어디쯤 왔는지 — 2차 베지에 위의 점으로 찍는다(시안의 호 그대로). */
+function faceSunArc(r) {
+  let sun = '';
+  if (r != null) {
+    const t = r, u = 1 - t;
+    const x = u * u * 6 + 2 * u * t * 160 + t * t * 314;
+    const y = u * u * 30 + 2 * u * t * -12 + t * t * 30;
+    sun = `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" fill="#f2a65a"/>`;
+  }
+  return '<svg class="wcv7-c-arc is-wide" viewBox="0 0 320 34" aria-hidden="true">'
+    + '<path d="M6 30 Q160 -12 314 30" stroke="rgba(242,245,248,.18)" stroke-width="1.6"/>'
+    + '<line x1="6" y1="30" x2="314" y2="30" stroke="rgba(242,245,248,.1)" stroke-width="1"/>'
+    + sun + '</svg>';
+}
+
+/* 바람 — 나침반. 화살은 **바람이 불어오는 쪽**을 가리킨다(북풍이면 위). 풍향이 없으면 화살을 뺀다. */
+function faceCompass(dirPoint, speedPoint) {
+  const deg = numOf(dirPoint);
+  const spd = numOf(speedPoint);
+  const arrow = deg != null
+    ? `<g transform="rotate(${deg.toFixed(0)} 26 26)"><path d="M26 12 L30 30 L26 26.5 L22 30 Z" fill="${GRAPH_TEAL}"/></g>`
+    : '';
+  const num = spd != null ? spd.toFixed(1).replace(/\.0$/, '') : '—';
+  return '<svg class="wcv7-c-compass" viewBox="0 0 52 52" aria-hidden="true">'
+    + '<circle cx="26" cy="26" r="22" fill="none" stroke="rgba(242,245,248,.16)" stroke-width="1.3"/>'
+    + '<text x="26" y="9.5" fill="rgba(242,245,248,.5)" font-size="6.5" text-anchor="middle">N</text>'
+    + arrow
+    + `<text x="26" y="29" fill="#f2f5f8" font-size="12" text-anchor="middle">${esc(num)}</text>`
+    + `<text x="26" y="37" fill="rgba(242,245,248,.5)" font-size="6" text-anchor="middle">${esc(speedPoint?.unit || 'm/s')}</text>`
+    + '</svg>';
+}
+
+/* 풍향 각도 → 바람 이름. 기상에서 '북풍'은 북에서 불어오는 바람이다. */
+function windFrom8(deg, ko) {
+  if (deg == null || !Number.isFinite(deg)) return null;
+  const i = Math.round(((deg % 360) + 360) % 360 / 45) % 8;
+  return (ko ? ['북', '북동', '동', '남동', '남', '남서', '서', '북서'][i] + '풍'
+             : ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][i]);
+}
+
+/** 히어로의 큰 기온 — 단위는 도 기호 하나로 줄인다(항상 섭씨다). */
+function heroTemp(point) {
+  const n = numOf(point);
+  return n == null ? '—' : `${Math.round(n)}<sup>°</sup>`;
+}
+
+function roundDeg(point) {
+  const n = numOf(point);
+  return n == null ? null : `${Math.round(n)}°`;
+}
+
+/* 히어로 — 애플식: 지명 → 큰 기온 → 조건 → 최고·최저 → 출처 한 줄.
+   ⚠️ 출처는 없애지 않는다. 알약 배지를 색 점 하나로 줄였을 뿐이다. 애플은 자료를 직접 만드니
+      안 밝혀도 되지만 우리는 여러 기관 자료를 섞어 쓴다 — 밝히는 것이 제품 그 자체다. */
 function renderHero(model, sourceMap, ko, activeHour = null) {
   const section = el('section', 'wcv7-hero');
   section.dataset.weatherSection = 'hero';
@@ -877,18 +1014,26 @@ function renderHero(model, sourceMap, ko, activeHour = null) {
   const conditionPoint = activeHour?.condition || current.condition;
   const source = sourceMap.get(temperaturePoint.sourceRef);
   const condition = weatherCondition(conditionPoint, ko);
-  const time = evidenceTime(temperaturePoint, model.location.timezone, ko);
+  const today = model.daily[0];
+  const feels = roundDeg(current.feelsLike);
+  const range = [
+    roundDeg(today?.temperatureMax) ? `${ko ? '최고' : 'H'} ${roundDeg(today.temperatureMax)}` : null,
+    roundDeg(today?.temperatureMin) ? `${ko ? '최저' : 'L'} ${roundDeg(today.temperatureMin)}` : null,
+  ].filter(Boolean).join('   ');
+  const instant = formatInstant(temperaturePoint.observedAt || temperaturePoint.issuedAt
+    || temperaturePoint.validAt, model.location.timezone, ko);
+  const srcLabel = source ? (ko ? source.label : (source.labelEn || source.label))
+    : (ko ? '출처 확인 중' : 'Source pending');
   section.innerHTML = `<div class="wcv7-eyebrow"><span>${activeHour
-    ? (ko ? '선택 시각' : 'SELECTED TIME') : (ko ? '지금' : 'NOW')}</span>`
-    + `<b class="wcv7-badge ${sourceTypeClass(temperaturePoint.sourceType)}">`
-    + `${sourceTypeLabel(temperaturePoint.sourceType, ko)}</b></div>`
-    + `<div class="wcv7-hero-main"><div class="wcv7-hero-condition">`
-    + `<span aria-hidden="true">${condition.icon}</span><div><strong>${esc(condition.label)}</strong>`
-    + `<small>${esc(model.location.name || (ko ? '선택 위치' : 'Selected location'))}</small></div></div>`
-    + `<div class="wcv7-temperature">${temperature(temperaturePoint, ko)}</div></div>`
-    + `<div class="wcv7-evidence"><b>${esc(ko ? (source?.label || '출처 확인 중')
-      : (source?.labelEn || source?.label || 'Source pending'))}</b>`
-    + `<span>${esc(time)}</span>${stateNotice(temperaturePoint, ko)}</div>`;
+    ? (ko ? '선택 시각' : 'SELECTED TIME') : (ko ? '지금' : 'NOW')}</span></div>`
+    + `<div class="wcv7-hero-place">${esc(model.location.name || (ko ? '선택 위치' : 'Selected location'))}</div>`
+    + `<div class="wcv7-temperature">${heroTemp(temperaturePoint)}</div>`
+    + `<div class="wcv7-hero-cond"><span aria-hidden="true">${condition.icon}</span> ${esc(condition.label)}`
+    + `${feels ? ` · ${ko ? '체감' : 'feels'} ${esc(feels)}` : ''}</div>`
+    + (range ? `<div class="wcv7-hero-range">${esc(range)}</div>` : '')
+    + `<div class="wcv7-hero-src"><i class="wcv7-c-dot ${sourceTypeClass(temperaturePoint.sourceType)}"></i>`
+    + `<span>${esc(sourceTypeLabel(temperaturePoint.sourceType, ko))} · ${esc(srcLabel)} · ${esc(instant)}</span>`
+    + `${stateNotice(temperaturePoint, ko)}</div>`;
   return section;
 }
 
@@ -897,22 +1042,35 @@ function renderDaily(model, ko) {
   section.dataset.weatherSection = '10-day';
   section.innerHTML = `<header><div><small>${ko ? '공식·모델 구분' : 'OFFICIAL / MODEL'}</small>`
     + `<h4>${ko ? '10일 날씨' : '10-day weather'}</h4></div>`
-    + `<span>${ko ? '항목별 출처가 다르면 각각 표시합니다' : 'Each field keeps its own source label'}</span></header>`;
+    + `<span>${ko ? '막대는 그날 최저~최고 구간입니다' : 'Bars show each day low-to-high'}</span></header>`;
   const list = el('div', 'wcv7-day-list');
-  model.daily.slice(0, 10).forEach((day, index) => {
+  const days = model.daily.slice(0, 10);
+  /* 막대는 10일 전체의 최저~최고를 기준으로 그린다 — 날마다 기준이 달라지면 비교가 안 된다. */
+  const temps = days.flatMap(day => [numOf(day.temperatureMin), numOf(day.temperatureMax)])
+    .filter(value => value != null);
+  const floor = temps.length ? Math.min(...temps) : null;
+  const span = temps.length ? (Math.max(...temps) - floor) || 1 : null;
+  days.forEach((day, index) => {
     const row = el('article', 'wcv7-day');
     const condition = weatherCondition(day.condition, ko);
-    const maxType = day.temperatureMax?.sourceType;
-    const minType = day.temperatureMin?.sourceType;
+    const min = numOf(day.temperatureMin);
+    const max = numOf(day.temperatureMax);
+    /* 최저·최고가 다 있어야 구간이다. 하나만 있으면 막대를 그리지 않는다(반쪽을 지어내지 않는다). */
+    const bar = (floor != null && min != null && max != null)
+      ? `<span class="wcv7-day-track"><i style="left:${((min - floor) / span * 100).toFixed(1)}%;`
+        + `right:${(100 - (max - floor) / span * 100).toFixed(1)}%"></i></span>`
+      : '<span class="wcv7-day-track"></span>';
+    const pop = numOf(day.precipitationProbability);
     row.innerHTML = `<div class="wcv7-day-date"><b>${dayLabel(day.date, index, ko)}</b>`
       + `<span>${shortDate(day.date, ko)}</span></div>`
       + `<div class="wcv7-day-condition"><span aria-hidden="true">${condition.icon}</span>`
-      + `<small>${esc(condition.label)}</small></div>`
-      + `<div class="wcv7-day-temp"><span>${ko ? '최저' : 'L'} ${temperature(day.temperatureMin, ko)}</span>`
-      + `<b>${ko ? '최고' : 'H'} ${temperature(day.temperatureMax, ko)}</b></div>`
-      + `<div class="wcv7-day-rain"><span>${ko ? '강수' : 'Rain'} ${valueText(day.precipitationProbability, 0)}</span>`
-      + `<small>${valueText(day.precipitation, 1)}</small></div>`
-      + `<div class="wcv7-day-sources">${fieldBadge(minType, ko)}${maxType === minType ? '' : fieldBadge(maxType, ko)}</div>`;
+      + (pop != null && pop > 0 ? `<em>${Math.round(pop)}%</em>` : '')
+      + `</div>`
+      + `<span class="wcv7-day-lo">${temperature(day.temperatureMin, ko).replace('C', '')}</span>`
+      + bar
+      + `<span class="wcv7-day-hi">${temperature(day.temperatureMax, ko).replace('C', '')}</span>`
+      + `<i class="wcv7-c-dot ${sourceTypeClass(day.temperatureMax?.sourceType || day.temperatureMin?.sourceType)}"`
+      + ` title="${esc(sourceTypeLabel(day.temperatureMax?.sourceType || day.temperatureMin?.sourceType, ko))}"></i>`;
     list.appendChild(row);
   });
   if (!list.children.length) list.appendChild(el('p', 'wcv7-empty', ko
@@ -983,10 +1141,13 @@ async function fillMoon(section, model, ko) {
   if (times.set) parts.push(`${ko ? '월몰' : 'Moonset'} ${clock(times.set)}`);
   if (full) { const d = Math.max(0, Math.round((full - now) / 86400000));
     parts.push(ko ? `다음 보름 ${d}일 뒤` : `Next full moon in ${d} d`); }
-  slot.innerHTML = ` · ${parts.join(' · ')}`
-    + `<div class="wcv7-moon-src">${ko
-      ? '달 값은 관측이 아니라 천문 계산입니다(저정밀 공식). 위상은 거의 정확하고 월출·월몰은 몇 분 틀릴 수 있습니다.'
-      : 'Moon values are computed with low-precision formulae, not observed. Phase is close; rise and set can be off by a few minutes.'}</div>`;
+  slot.innerHTML = ` · ${parts.join(' · ')}`;
+  /* 계산이라는 단서는 카드 앞면이 아니라 근거 칸에 둔다 — 앞면은 값만 읽게 하고,
+     성격을 밝히는 문장은 누르면 나온다. 밝히기를 그만두는 것이 아니다. */
+  const note = section.querySelector('[data-moon-note]');
+  if (note) note.innerHTML = `<div class="wcv7-moon-src">${ko
+    ? '달 값은 관측이 아니라 천문 계산입니다(저정밀 공식). 위상은 거의 정확하고 월출·월몰은 몇 분 틀릴 수 있습니다.'
+    : 'Moon values are computed with low-precision formulae, not observed. Phase is close; rise and set can be off by a few minutes.'}</div>`;
 }
 
 /* 8방위. 관측소가 나에게서 어느 쪽인지만 말한다(정밀한 방위각은 쓸 데가 없다). */
@@ -1053,8 +1214,9 @@ async function fillNearbyRain(section, model, ko) {
   }
   if (!near) return;   // 반경 안에 관측소가 하나도 없으면 "비 없음"이라 말할 근거도 없다
 
-  let line;
+  let line, short;
   if (ageMin != null && ageMin > RAIN_STALE_MIN) {
+    short = ko ? `주변 관측 ${ageMin}분 늦음` : `Nearby obs ${ageMin} min late`;
     line = ko
       ? `주변 관측이 ${ageMin}분 늦어 지금 비가 오는지는 말하지 않습니다.`
       : `Nearby observations are ${ageMin} min late, so current rain is not stated.`;
@@ -1063,18 +1225,26 @@ async function fillNearbyRain(section, model, ko) {
     const amount = best.mm15 > 0
       ? `${ko ? '최근 15분' : 'past 15 min'} ${best.mm15.toFixed(1)} mm`
       : `${ko ? '최근 60분' : 'past 60 min'} ${best.mm60.toFixed(1)} mm`;
+    short = ko
+      ? `${esc(dir)} ${Math.round(best.km)}km 지금 비`
+      : `Rain now ${esc(dir)} ${Math.round(best.km)} km`;
     line = ko
       ? `지금 비 오는 가장 가까운 관측소 ${esc(dir)} ${Math.round(best.km)}km ${esc(best.name || '')} · ${amount}`
         + ` · 반경 ${RAIN_RADIUS_KM}km 관측소 ${near}곳 중 ${wet}곳`
       : `Nearest station reporting rain: ${esc(best.name || '')}, ${esc(dir)} ${Math.round(best.km)} km · ${amount}`
         + ` · ${wet} of ${near} stations within ${RAIN_RADIUS_KM} km`;
   } else {
+    short = ko ? `반경 ${RAIN_RADIUS_KM}km 안 비 없음` : `No rain within ${RAIN_RADIUS_KM} km`;
     line = ko
       ? `반경 ${RAIN_RADIUS_KM}km 관측소 ${near}곳 어디에도 지금 비가 잡히지 않습니다.`
       : `None of the ${near} stations within ${RAIN_RADIUS_KM} km is reporting rain now.`;
   }
 
-  slot.innerHTML = `<br>${line}`
+  /* 앞면은 한 마디만. 관측소 수·한계·"예보가 아니다"는 근거 칸에 그대로 남는다. */
+  slot.innerHTML = ` · ${short}`;
+  const note = section.querySelector('[data-rain-note]');
+  if (!note) return;
+  note.innerHTML = `<br>${line}`
     + `<div class="wcv7-obs-src">${ko
       ? `기상청 방재기상관측(AWS) 매분 실측${hhmm ? ` · ${hhmm} KST` : ''}. `
         + '예보가 아닙니다. 관측소가 선 자리만 알 수 있어 그 사이로 지나는 소나기는 잡히지 않고, '
@@ -1089,33 +1259,65 @@ function renderDetails(model, sourceMap, ko) {
   section.dataset.weatherSection = 'details';
   section.innerHTML = `<header><div><small>${ko ? '값·단위·근거' : 'VALUE / UNIT / EVIDENCE'}</small>`
     + `<h4>${ko ? '상세 날씨' : 'Weather details'}</h4></div>`
-    + `<span>${ko ? '카드를 누르면 근거가 펼쳐집니다' : 'Open a card for evidence'}</span></header>`;
+    + `<span>${ko ? '값은 앞면에, 근거는 누르면' : 'Values up front, evidence on tap'}</span></header>`;
   const current = model.current;
   const air = model.details.airQuality;
   const uv = model.details.uv;
   const sun = model.details.sun;
   const waves = model.details.waves;
   const today = model.daily[0];
+  const na = ko ? '자료 없음' : 'Unavailable';
+
+  /* 공기질 — 통합대기환경지수(CAI)는 251 부터 '매우나쁨' 한 칸이라 막대는 0~250 으로 그린다. */
+  const aqi = numOf(air.index);
+  const aqiFace = aqi != null
+    ? `<span class="wcv7-c-big">${Math.round(aqi)}${air.grade ? `<small>${esc(air.grade)}</small>` : ''}</span>`
+      + faceBar(ratio(aqi, 0, 250))
+    : (air.grade ? `<span class="wcv7-c-big">${esc(air.grade)}</span>` : faceNa(na));
+  const uvNum = numOf(uv.value);
+  const uvFace = uvNum != null
+    ? `<span class="wcv7-c-big">${Math.round(uvNum)}${uv.level ? `<small>${esc(uv.level)}</small>` : ''}</span>`
+      + faceBar(ratio(uvNum, 0, 11))
+    : faceNa(na);
+  /* 해가 뜬 뒤 어디쯤인지 — 밤이면 호만 그리고 해는 찍지 않는다(없는 위치를 지어내지 않는다). */
+  const sunriseMs = Date.parse(sun.sunrise?.value ?? '');
+  const sunsetMs = Date.parse(sun.sunset?.value ?? '');
+  const nowMs = Date.now();
+  const dayRatio = (Number.isFinite(sunriseMs) && Number.isFinite(sunsetMs) && sunsetMs > sunriseMs
+    && nowMs >= sunriseMs && nowMs <= sunsetMs) ? (nowMs - sunriseMs) / (sunsetMs - sunriseMs) : null;
+  const visKm = current.visibility?.value != null
+    ? (current.visibility.value / 1000).toFixed(current.visibility.value >= 10000 ? 0 : 1) : null;
+  const windDeg = numOf(current.windDirection);
+
   const items = [
     {
       icon: '☔', title: ko ? '비·눈' : 'Rain & snow',
-      summary: `${ko ? '최근 60분' : 'Past 60 min'} ${valueText(current.precipitation60m, 1)}`,
-      points: [current.precipitation15m, current.precipitation60m, today?.precipitationProbability, today?.precipitation],
-      body: `${ko ? '최근 15분' : 'Past 15 min'} ${valueText(current.precipitation15m, 1)} · `
-        + `${ko ? '오늘 확률' : 'Today probability'} ${valueText(today?.precipitationProbability, 0)} · `
-        + `${ko ? '오늘 합계' : 'Today total'} ${valueText(today?.precipitation, 1)}`
+      face: faceBig(current.precipitation60m, 1) || faceNa(na),
+      say: `${ko ? '최근 60분' : 'Past 60 min'}${numOf(current.precipitation60m) === 0
+        ? (ko ? ' 비 없음' : ' no rain') : ` ${valueText(current.precipitation60m, 1)}`}`
+        + ` · ${ko ? '오늘 확률' : 'today'} ${valueText(today?.precipitationProbability, 0)}`
         /* 주변 실측 강수는 자료 계약(Open-Meteo) 밖이라 렌더 뒤에 채운다. 한국 밖이면 비어 있다. */
         + '<span data-rain-slot></span>',
+      points: [current.precipitation15m, current.precipitation60m, today?.precipitationProbability, today?.precipitation],
+      body: `${ko ? '최근 15분' : 'Past 15 min'} ${valueText(current.precipitation15m, 1)} · `
+        + `${ko ? '오늘 합계' : 'Today total'} ${valueText(today?.precipitation, 1)}`
+        + '<span data-rain-note></span>',
     },
     {
-      icon: '↗', title: ko ? '바람' : 'Wind', summary: valueText(current.windSpeed, 1),
+      icon: '↗', title: ko ? '바람' : 'Wind',
+      face: faceCompass(current.windDirection, current.windSpeed),
+      say: [windFrom8(windDeg, ko) && `${windFrom8(windDeg, ko)} ${Math.round(windDeg)}°`,
+        numOf(current.windGust) != null && `${ko ? '돌풍' : 'gust'} ${valueText(current.windGust, 1)}`]
+        .filter(Boolean).join(' · ') || (ko ? '풍향 자료 없음' : 'Direction unavailable'),
       points: [current.windSpeed, current.windDirection, current.windGust],
-      body: `${ko ? '풍향' : 'Direction'} ${valueText(current.windDirection, 0)} · `
+      body: `${ko ? '풍속' : 'Speed'} ${valueText(current.windSpeed, 1)} · `
+        + `${ko ? '풍향' : 'Direction'} ${valueText(current.windDirection, 0)} · `
         + `${ko ? '최대 순간풍속' : 'Gust'} ${valueText(current.windGust, 1)}`,
     },
     {
       icon: '◌', title: ko ? '공기질' : 'Air quality',
-      summary: air.grade || `${ko ? '자료 없음' : 'Unavailable'}`,
+      face: aqiFace,
+      say: `PM2.5 ${valueText(air.pm25, 0)} · PM10 ${valueText(air.pm10, 0)}`,
       points: [air.pm10, air.pm25, air.index],
       body: `PM10 ${valueText(air.pm10, 0)} · PM2.5 ${valueText(air.pm25, 0)} · `
         + `${ko ? '통합지수' : 'Index'} ${valueText(air.index, 0)}`
@@ -1123,14 +1325,20 @@ function renderDetails(model, sourceMap, ko) {
     },
     {
       icon: '☀', title: ko ? '자외선' : 'UV',
-      summary: `${uv.level || (ko ? '자료 없음' : 'Unavailable')} ${valueText(uv.value, 0)}`.trim(),
-      points: [uv.value], body: ko
+      face: uvFace,
+      say: ko ? '기상청 생활기상지수 예보값입니다.' : 'Official life-weather index forecast.',
+      points: [uv.value],
+      body: ko
         ? '기상청 생활기상지수 예보값입니다. 피부 영향은 개인 조건에 따라 다릅니다.'
         : 'Official life-weather index forecast. Personal effects vary.',
     },
     {
       icon: '≈', title: ko ? '체감·습도' : 'Feels like & humidity',
-      summary: `${ko ? '습도' : 'Humidity'} ${valueText(current.humidity, 0)}`,
+      face: faceBig(current.humidity, 0) || faceNa(na),
+      say: [numOf(current.feelsLike) != null && `${ko ? '체감' : 'Feels'} ${valueText(current.feelsLike, 0)}`,
+        numOf(current.dewPoint) != null && `${ko ? '이슬점' : 'dew point'} ${valueText(current.dewPoint, 0)}`]
+        .filter(Boolean).join(' · ')
+        || (ko ? '체감온도를 관측값으로 지어내지 않습니다.' : 'No apparent temperature is invented.'),
       points: [current.feelsLike, current.humidity, current.dewPoint],
       body: `${ko ? '체감' : 'Feels like'} ${valueText(current.feelsLike, 1)} · `
         + `${ko ? '이슬점' : 'Dew point'} ${valueText(current.dewPoint, 1)}. `
@@ -1139,30 +1347,40 @@ function renderDetails(model, sourceMap, ko) {
     },
     {
       icon: '◎', title: ko ? '기압·가시거리' : 'Pressure & visibility',
-      summary: valueText(current.pressure, 0), points: [current.pressure, current.visibility],
-      /* 가시거리는 모델값이라 기압(관측)과 같은 줄에 썬다고 같은 성격으로 읽힌다.
-         그래서 문장에서 집어 말한다 — 관측소 시정계 값이 아니다. */
+      face: (faceBig(current.pressure, 0) || faceNa(na)) + faceGauge(ratio(current.pressure, 970, 1040)),
+      say: visKm != null
+        ? `${ko ? '가시거리' : 'Visibility'} ${visKm} km`
+        : (ko ? '가시거리 응답 없음' : 'Visibility unavailable'),
+      points: [current.pressure, current.visibility],
+      /* 가시거리는 모델값이라 기압(관측)과 같은 카드에 있다고 같은 성격으로 읽힌다. 그래서 집어 말한다. */
       body: `${ko ? '현지기압' : 'Surface pressure'} ${valueText(current.pressure, 0)}`
-        + (current.visibility?.value != null
-          ? ` · ${ko ? '가시거리' : 'Visibility'} ${(current.visibility.value / 1000).toFixed(current.visibility.value >= 10000 ? 0 : 1)} km`
+        + (visKm != null
+          ? ` · ${ko ? '가시거리' : 'Visibility'} ${visKm} km`
             + `<div class="wcv7-moon-src">${ko
               ? '가시거리는 관측소 시정계 값이 아니라 모델 예상치입니다(방재기상관측에는 시정계가 없습니다).'
               : 'Visibility is a model value, not a station measurement.'}</div>`
           : ` · ${ko ? '가시거리 응답 없음' : 'Visibility unavailable'}`),
     },
     {
-      icon: '◐', title: ko ? '해·달' : 'Sun & moon',
-      summary: `${clockText(sun.sunrise?.value, model.location.timezone)}–${clockText(sun.sunset?.value, model.location.timezone)}`,
+      icon: '◐', title: ko ? '해·달' : 'Sun & moon', wide: true,
+      face: faceSunArc(dayRatio),
+      say: `${ko ? '일출' : 'Sunrise'} ${clockText(sun.sunrise?.value, model.location.timezone)} · `
+        + `${ko ? '일몰' : 'Sunset'} ${clockText(sun.sunset?.value, model.location.timezone)}`
+        /* 달은 관측이 아니라 계산이라 자료 계약 밖에 있다. sky.js(18KB)를 지연해 열고 렌더 뒤에 채운다. */
+        + '<span data-moon-slot></span>',
       points: [sun.sunrise, sun.sunset],
       body: `${ko ? '해뜸' : 'Sunrise'} ${clockText(sun.sunrise?.value, model.location.timezone)} · `
         + `${ko ? '해짐' : 'Sunset'} ${clockText(sun.sunset?.value, model.location.timezone)}`
-        /* 달은 관측이 아니라 계산이라 자료 계약 밖에 있다. sky.js(18KB)를 지연해 열고
-           렌더 뒤에 이 자리를 채운다 — 첫 로딩에 얹지 않기 위해서다. 못 여는 경우 해 정보만 남는다. */
-        + '<span data-moon-slot></span>',
+        + '<span data-moon-note></span>',
     },
     {
-      icon: '≋', title: ko ? '파도·조석' : 'Waves & tide',
-      summary: waves?.wave_height != null ? `${waves.wave_height} m` : (ko ? '해상 자료 없음' : 'Marine data unavailable'),
+      icon: '≋', title: ko ? '파도·조석' : 'Waves & tide', wide: true,
+      face: waves?.wave_height != null
+        ? `<span class="wcv7-c-big">${esc(String(waves.wave_height))}<small>m</small></span>`
+        : faceNa(ko ? '해상 자료 없음 — 육지이거나 해상 모델값이 없습니다' : 'No marine data — inland or model absent'),
+      say: waves?.wave_height != null
+        ? `${ko ? '주기' : 'Period'} ${waves.wave_period ?? '—'} s · ${ko ? '유효시각' : 'valid'} ${esc(waves.time || '—')}`
+        : (ko ? '없는 값을 0 으로 표시하지 않습니다.' : 'Missing values are not shown as zero.'),
       points: [],
       body: waves?.wave_height != null
         ? `${ko ? '모델 파고' : 'Model wave height'} ${waves.wave_height} m · `
@@ -1175,13 +1393,19 @@ function renderDetails(model, sourceMap, ko) {
   ];
   const grid = el('div', 'wcv7-detail-grid');
   items.forEach((item, index) => {
-    const card = el('article', 'wcv7-detail');
+    const card = el('article', `wcv7-detail${item.wide ? ' is-wide' : ''}`);
     const point = item.points.find(candidate => candidate?.sourceRef);
     const source = sourceMap.get(point?.sourceRef);
     const bodyId = `wcv7-detail-${index}`;
+    /* 출처는 색 점 하나로만 남긴다 — 알약 배지 여덟 개가 카드 앞면을 덮으면 값이 안 보인다.
+       점을 없애지는 않는다. 누르면 기관 이름과 시각이 그대로 펼쳐진다. */
+    const dotLabel = sourceTypeLabel(point?.sourceType, ko);
     card.innerHTML = `<button type="button" class="wcv7-detail-toggle" aria-expanded="false" aria-controls="${bodyId}">`
-      + `<span class="wcv7-detail-icon" aria-hidden="true">${item.icon}</span>`
-      + `<span><b>${esc(item.title)}</b><small>${esc(item.summary)}</small></span><i aria-hidden="true">＋</i></button>`
+      + `<span class="wcv7-c-lab"><i class="wcv7-c-ic" aria-hidden="true">${item.icon}</i>`
+      + `<b>${esc(item.title)}</b>`
+      + `<i class="wcv7-c-dot ${sourceTypeClass(point?.sourceType)}" title="${esc(dotLabel)}"></i></span>`
+      + `<span class="wcv7-c-face">${item.face}</span>`
+      + `<span class="wcv7-c-say">${item.say}</span></button>`
       + `<div id="${bodyId}" class="wcv7-detail-body" hidden><p>${item.body}</p>`
       + `<small>${source ? `${esc(sourceTypeLabel(source.sourceType, ko))} · ${esc(ko ? source.label : source.labelEn)}`
         : (ko ? '해당 값의 출처 자료 없음' : 'No source record for this value')}</small></div>`;
@@ -1226,10 +1450,6 @@ function renderEarthActions(model, ko) {
     + `<button type="button" data-weather-layer="wind">${ko ? '바람' : 'Wind'}</button>`
     + `<button type="button" data-weather-layer="pm25">PM2.5</button></div>`;
   return section;
-}
-
-function fieldBadge(type, ko) {
-  return `<span class="wcv7-badge ${sourceTypeClass(type)}">${esc(sourceTypeLabel(type, ko))}</span>`;
 }
 
 function sourceTypeClass(type) {

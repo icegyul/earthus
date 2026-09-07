@@ -1,0 +1,578 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "validation-extension-preregistration-step46",
+  "step": 46,
+  "classification": "VALIDATION_EXTENSION_PRE_REGISTRATION",
+  "status": "VALIDATION_EXTENSION_DESIGN_COMPLETE (uncommitted)",
+  "designOnly": true,
+  "head": "fa9c0590d634a6d6f30cc8a6cd2797c94e0ae7dd",
+  "ancestry": {
+    "step36": "043a09b8539955868651a06e7c2c44e3c606803f",
+    "step37": "74d19f0a9661a41d63a08c56bbd3f91e9d8b312d",
+    "step38": "23e78f863fb092aa9e3c36e4d74d4afd4393e7f4",
+    "step40": "2b1a7baa7ef9e69d25cecbff2b09fca8700fca80",
+    "step41": "9a3223089099bcb09a2589cc8a4bda82fcb47ae5",
+    "step42": "bae85245e827f53ee9782201c442ea7849c04e82",
+    "step43": "15970d9735330fb937e86af449c1deef6763b5d1",
+    "step44": "5f8d5c38bfc9cc6a168707ae0b1b643c99ad46f9",
+    "step45a": "b0f0274f14ae491e34f0bcb85874056d92260f46",
+    "step45b": "7249c38d355f97c4f264d2f4d7611ce5013bd8d7",
+    "step45c": "fa9c0590d634a6d6f30cc8a6cd2797c94e0ae7dd",
+    "runtime": "155995dd062b557b7a2ba90e5e5fb5a54ee28048"
+  },
+  "frozenInputs": {
+    "docs/research/step36-cohort-extension-manifest.json": "bda31c3ca36a395acadc95c1cb18663964ee9a00e4a72a7c2504182f51df06ca",
+    "docs/research/step37-experiment-preregistration-protocol.json": "eae40cde609155a32ccbe0c01a6090715e2324d72cc080e2e7043ecbd90f2d0d",
+    "docs/research/step40-bootstrap-result.json": "e7fe94c8f527846721f856418f1c4686a75132e21a72b122006d3d7bdbe6482f",
+    "docs/research/step44-validation-preregistration-protocol.json": "6a2e2f04f7948e4ff3ac5dec065fc93a6072ce112bb2e072ce77c2606056de9f",
+    "docs/research/step45a-validation-input-recovery.json": "d186cf424eb691d2e7b0d0f12ae2967c027c3e75d07956a5197a840cc3fc781f",
+    "docs/research/step45b-validation-protocol-amendment.json": "88398dc62fb6a18e1fe5d2d8d83feff17a77f2aa4c9d0c9136008c47d38a2e4b",
+    "docs/research/step45c-validation-cohort-manifest.json": "65a9fc5a5efe40f266c94e0db9d93c969f702fde897a9030e1b01fbf264c4856",
+    "docs/research/step45c-validation-cohort-status.json": "5969c8aebfaff1936072409e29f7e949fc1e107d518be02dd7394d5ce312c891",
+    "docs/research/step30a-rule.json": "9251be51fc3fc8cc3a3b9570a0b3902c01e653754389da55852bdd4e83ab803d",
+    "docs/research/cohort-step16.json": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474"
+  },
+  "frozenInputsByHashUncommitted": {
+    "docs/research/step35-window-eligibility.json": "d01d06a3430def6ea77a814bb4379a9b45ca058713fa0901c9c30b035fbb635b",
+    "docs/research/step35-phase-a-protocol.json": "7c3cc487568c1a063790e17fdae11ffe712047d78ea4761719bf6df7e7142f2f"
+  },
+  "1_frozenPrimaryResult": {
+    "Theta_km": -31.331,
+    "CI95_km": [
+      -72.0725,
+      -11.7435
+    ],
+    "H1": "SUPPORTED",
+    "candidateStatus": "CANDIDATE_ONLY",
+    "operationalPromotion": false,
+    "immutable": true,
+    "usedToDesignThisExtension": false
+  },
+  "2_frozenOriginalValidation": {
+    "step44": "5f8d5c38bfc9cc6a168707ae0b1b643c99ad46f9",
+    "step45a": "b0f0274f14ae491e34f0bcb85874056d92260f46",
+    "step45b": "7249c38d355f97c4f264d2f4d7611ce5013bd8d7",
+    "step45c": "fa9c0590d634a6d6f30cc8a6cd2797c94e0ae7dd",
+    "originalValidationStatus": "VALIDATION_COHORT_BLOCKED",
+    "region": "KE",
+    "candidateWindows": 26,
+    "regionRank": 1,
+    "newIdWindows": 4,
+    "cumulativeUniqueDrifters": 14,
+    "minimumRequired": 20,
+    "gateMet": false,
+    "originalCohortExists": false,
+    "fourteenDrifterSetLabel": "INTERMEDIATE DERIVATION RESULT ONLY - never a validation cohort",
+    "step44Altered": false,
+    "step45cReopened": false,
+    "validationPerformanceAccessedInOriginalAttempt": false
+  },
+  "3_extensionPurpose": {
+    "question": "Can the frozen Candidate C configuration be independently evaluated on a predefined, out-of-sample validation domain when the original single-region validation feasibility gate cannot be satisfied?",
+    "testsGeneralizability": true,
+    "usesValidationPerformanceToChooseCohort": false,
+    "isNotOriginalConfirmatoryValidation": true,
+    "doesNotReplaceOriginalValidation": true
+  },
+  "4_extensionClassification": {
+    "label": "VALIDATION_EXTENSION",
+    "notLabel": "original confirmatory validation",
+    "statements": [
+      "the original validation attempt was BLOCKED (STEP 45C) and remains blocked",
+      "this extension exists because the original minimum cohort could not be formed",
+      "extension rules are fixed in this protocol before any extension performance is accessed",
+      "extension results cannot retroactively change the primary result",
+      "extension results cannot erase the original validation block",
+      "extension success does not automatically imply operational promotion"
+    ]
+  },
+  "5_independentDataRequirement": {
+    "noOverlapWithPrimary20": true,
+    "noOverlapWith88Excluded": true,
+    "noPrimaryObservationRecordReuse": true,
+    "periodLaterThanPrimaryCohort": true,
+    "noPrimaryWindowReuse": true,
+    "exclusionIdentity": {
+      "excludedDrifterIdCount": 88,
+      "sha256OfSortedIdList": "9e9415f57fb8682a25d347628627e5a5c2069f21779dddbe4725f7ea891d6b69",
+      "excludedDrifterIds": [
+        "127198",
+        "127199",
+        "127272",
+        "127281",
+        "127313",
+        "127314",
+        "127315",
+        "132511",
+        "132528",
+        "132634",
+        "34469",
+        "34471",
+        "34702",
+        "34711",
+        "34740",
+        "34741",
+        "35221",
+        "35223",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35487",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "36476",
+        "39153",
+        "39160",
+        "39974",
+        "39986",
+        "39994",
+        "39995",
+        "39996",
+        "39997",
+        "40006",
+        "40082",
+        "47591",
+        "48965",
+        "48985",
+        "71155",
+        "72569",
+        "81801",
+        "81802",
+        "81805",
+        "81806",
+        "81807",
+        "81811",
+        "81813",
+        "81814",
+        "81816",
+        "81961",
+        "81994",
+        "88532",
+        "88538",
+        "89822",
+        "89898",
+        "90135",
+        "90141",
+        "90142",
+        "90145",
+        "90146",
+        "90149",
+        "90150",
+        "90466",
+        "92863",
+        "92869",
+        "92872",
+        "92885",
+        "92906",
+        "92917",
+        "92918",
+        "92919",
+        "92920",
+        "92958",
+        "92981",
+        "93015",
+        "98904",
+        "98924",
+        "98936",
+        "98941",
+        "98942",
+        "98944",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "priorWindowStartsByRegion": {
+        "KE": [
+          "2010-05-11T12:00:00Z",
+          "2010-06-30T12:00:00Z",
+          "2010-08-10T12:00:00Z",
+          "2010-08-16T12:00:00Z",
+          "2010-11-15T12:00:00Z",
+          "2011-05-08T12:00:00Z",
+          "2011-05-13T12:00:00Z",
+          "2011-05-28T12:00:00Z",
+          "2011-06-10T12:00:00Z",
+          "2011-06-13T12:00:00Z",
+          "2011-06-16T12:00:00Z",
+          "2011-06-19T12:00:00Z",
+          "2011-06-22T12:00:00Z"
+        ],
+        "GS": [],
+        "BM": [],
+        "AG": [
+          "2015-04-23T12:00:00Z",
+          "2015-04-26T12:00:00Z"
+        ]
+      }
+    },
+    "step20And32SeparationRule": "±72 h from every STEP 20 and STEP 32 window start in the same region, inherited unchanged (already applied inside the frozen STEP 35 eligibility test notNearPriorWindow)"
+  },
+  "6_extensionDomain": {
+    "candidateRegionSet": [
+      "KE",
+      "BM",
+      "AG"
+    ],
+    "candidateRegionSetIsComplete": true,
+    "definition": "every registered region of the frozen STEP 16 / STEP 35 four-box framework except the primary region GS",
+    "excludedRegions": {
+      "GS": "primary experiment region"
+    },
+    "boxes": {
+      "KE": {
+        "south": 30,
+        "north": 40,
+        "west": 135,
+        "east": 160
+      },
+      "BM": {
+        "south": -40,
+        "north": -30,
+        "west": -60,
+        "east": -45
+      },
+      "AG": {
+        "south": -40,
+        "north": -30,
+        "west": 15,
+        "east": 35
+      }
+    },
+    "basedOn": "frozen STEP 35 eligibility metadata and the frozen STEP 16 region boxes; no Candidate C quantity, no model output, no performance",
+    "noUndefinedOtherRegions": true,
+    "regionQualityUsed": false,
+    "expectedPerformanceUsed": false
+  },
+  "7_regionSelectionRule": {
+    "procedure": "NO region ranking or subsetting is performed: all three candidate regions are mandatory members of the extension domain. Feasibility quantities are recorded for transparency only and never select or deselect a region.",
+    "feasibilityQuantities": {
+      "KE": {
+        "eligibleWindows": 26,
+        "windowStarts": [
+          "2010-11-22T12:00:00Z",
+          "2010-11-23T12:00:00Z",
+          "2011-07-05T12:00:00Z",
+          "2011-07-06T12:00:00Z",
+          "2011-07-07T12:00:00Z",
+          "2011-07-10T12:00:00Z",
+          "2011-07-14T12:00:00Z",
+          "2011-07-27T12:00:00Z",
+          "2011-07-28T12:00:00Z",
+          "2011-07-31T12:00:00Z",
+          "2011-08-08T12:00:00Z",
+          "2011-08-09T12:00:00Z",
+          "2011-08-13T12:00:00Z",
+          "2011-08-14T12:00:00Z",
+          "2011-08-15T12:00:00Z",
+          "2011-08-16T12:00:00Z",
+          "2011-08-18T12:00:00Z",
+          "2011-09-22T12:00:00Z",
+          "2011-09-25T12:00:00Z",
+          "2011-09-26T12:00:00Z",
+          "2011-10-09T12:00:00Z",
+          "2011-11-06T12:00:00Z",
+          "2011-11-09T12:00:00Z",
+          "2011-11-10T12:00:00Z",
+          "2011-11-11T12:00:00Z",
+          "2011-11-12T12:00:00Z"
+        ],
+        "auditEligibleCounts": [
+          8,
+          8,
+          20,
+          19,
+          19,
+          18,
+          16,
+          15,
+          15,
+          16,
+          12,
+          12,
+          12,
+          11,
+          9,
+          19,
+          22,
+          11,
+          11,
+          12,
+          15,
+          10,
+          8,
+          8,
+          8,
+          9
+        ]
+      },
+      "BM": {
+        "eligibleWindows": 3,
+        "windowStarts": [
+          "2013-12-19T12:00:00Z",
+          "2013-12-20T12:00:00Z",
+          "2014-01-06T12:00:00Z"
+        ],
+        "auditEligibleCounts": [
+          9,
+          9,
+          10
+        ]
+      },
+      "AG": {
+        "eligibleWindows": 0,
+        "windowStarts": [],
+        "auditEligibleCounts": []
+      }
+    },
+    "rankingUsed": false,
+    "subsetSelection": false,
+    "tieBreaking": "not required (no selection); window ordering ties are broken by (start, region) with alphabetical region, the frozen STEP 35 order",
+    "theoreticalGateFeasibilityPerRegion": {
+      "KE": {
+        "eligibleWindows": 26,
+        "canAloneReach6Windows": true
+      },
+      "BM": {
+        "eligibleWindows": 3,
+        "canAloneReach6Windows": false
+      },
+      "AG": {
+        "eligibleWindows": 0,
+        "canAloneReach6Windows": false
+      }
+    },
+    "prohibited": [
+      "trajectory performance",
+      "model error",
+      "Candidate C inspection",
+      "validation forcing inspection",
+      "region choice after scientific outcomes"
+    ]
+  },
+  "8_multiRegionDesign": {
+    "multiRegion": true,
+    "justification": "This is NOT a newly invented multi-region rule. The frozen STEP 35 / STEP 36 accumulation rule is itself multi-region: 'one chronological sequence over all regions; a window enters only if it contributes >= 1 drifter ID absent from every prior cohort and from the accumulated cohort; selected starts in the same region >= 72 h apart'. STEP 44 restricted that frozen rule to a single rank-1 region. The extension returns to the original frozen multi-region semantics over the non-primary regions, which is a stronger transportability test (several western-boundary-current systems) than any single-region design.",
+    "notARescueAnalysis": "the region set is the COMPLETE non-primary set, so no region is chosen, added or dropped for any reason, including feasibility or expected outcome",
+    "completeRegionSet": [
+      "KE",
+      "BM",
+      "AG"
+    ],
+    "allRegionsMandatory": true,
+    "weighting": "equal WINDOW weighting (identical to the frozen primary endpoint); regions are NOT weighted equally and no region quota, balancing or minimum per-region contribution exists",
+    "windowSelectionAcrossRegions": "one chronological sequence over the whole domain, ordered by (start, region); a window enters only if it contributes >= 1 new eligible drifter ID; same-region selected starts >= 72 h apart; different-region starts are not separated (frozen STEP 35 semantics)",
+    "chronologicalOrdering": "(start, region), ascending; alphabetical region tie-break"
+  },
+  "9_sampleSizeGate": {
+    "minimumWindows": 6,
+    "minimumUniqueDrifters": 20,
+    "maximumWindows": 12,
+    "minimumValidWindowsAfterQC": 4,
+    "identicalToOriginalGate": true,
+    "relaxedRelativeToOriginal": false,
+    "justification": "the gate is inherited unchanged from STEP 36 / STEP 44; it is NOT re-derived, weakened or fitted to the extension domain",
+    "ifNotReached": "VALIDATION_EXTENSION_BLOCKED",
+    "relaxationAfterResult": "forbidden",
+    "disclosedStructuralCeiling": {
+      "statement": "From frozen metadata alone the extension domain admits at most 6 selected windows: the KE part of the chronological walk is identical to STEP 45C (4 selected windows, 14 unique drifters, already committed and derived without any performance access), and BM contributes at most 2 further windows because its three eligible starts are 2013-12-19, 2013-12-20 and 2014-01-06 and the first two are 24 h apart, so the >= 72 h same-region separation admits only one of them; AG has 0 eligible windows in the extension period.",
+      "maximumSelectableWindows": 6,
+      "gateMinimumWindows": 6,
+      "consequence": "the extension can satisfy the window part of the gate only in the single case where both admissible BM windows contribute at least one new eligible drifter ID, and can satisfy the drifter part only if BM contributes at least 6 new unique drifter IDs; whether it does is NOT known at preregistration time because per-window drifter identities require the observation read that STEP 47 performs",
+      "gateNotAdjustedToThisCeiling": true
+    }
+  },
+  "10_temporalRule": {
+    "t0_extension": "2010-11-18T12:00:00Z",
+    "t1_extension": "2015-12-31T21:00:00Z",
+    "t0Derivation": "last primary window end 2010-10-19T12:00:00Z + 30 days, the same frozen derivation used by STEP 44; required because the extension period must be later than the primary cohort",
+    "t1Derivation": "frozen STEP 35 period lock end, which is the HYCOM GOFS 3.1 expt_53.X reanalysis coverage end (2015-12)",
+    "overlapWithOriginalValidationPeriod": true,
+    "overlapDisclosure": "the extension period necessarily coincides with the original validation period: the frozen source coverage ends 2015-12 and the extension period must be later than the primary cohort, so no non-overlapping later period exists. The extension differs from the original validation in DOMAIN (all non-primary regions instead of the single rank-1 region), not in period. An earlier period would violate the later-than-primary requirement and is not used.",
+    "multiYearSelectionMechanism": "none required: the whole period is used and the chronological first-prefix rule determines which years actually contribute; no year is preferred, skipped or weighted",
+    "yearChosenForExpectedPerformance": false
+  },
+  "11_cohortAccumulation": {
+    "ordering": "(start, region) ascending",
+    "eligibility": "frozen STEP 16 E1-E5 + A1-A3 applied verbatim via select_step16_cohort.evaluate; window eligible iff eligibleCount >= 8 AND A1-A3 PASS AND frame coverage complete AND notNearPriorWindow AND afterCalibrationCutoff, exactly as recorded in the frozen STEP 35 eligibility file",
+    "exclusionSet": "the 88 frozen IDs (20 STEP 36 primary + 68 prior)",
+    "separationRule": "same-region selected starts >= 72 h apart",
+    "newIdAccumulation": "a window is SELECTED iff it contributes >= 1 eligible drifter ID absent from the exclusion set and from the accumulated cohort; its new IDs join the cohort",
+    "firstPrefixRule": "the extension cohort is the shortest chronological prefix of SELECTED windows with >= 6 windows AND >= 20 unique drifters",
+    "maxWindowGate": 12,
+    "manualAddOrRemove": "forbidden",
+    "performanceBasedPruning": "forbidden",
+    "easeOfSimulationSelection": "forbidden",
+    "eligibilityRuleChanged": false,
+    "newQcRule": false,
+    "newSpatialFilter": false,
+    "newTemporalFilter": false
+  },
+  "12_modelConfiguration": {
+    "conditions": {
+      "A": "HYCOM_NATIVE_3H (HYCOM GOFS 3.1 GLBv0.08 expt_53.X, 3 h, 15.000 m) + NCEP-R2",
+      "B": "HYCOM_DAILY (UTC-daily unweighted mean of the 8 frames per day, label 00Z) + NCEP-R2",
+      "C": "GLORYS12V1 15.810070 m linear in time at 3 h instants + WW3 GLOB-30M CFSR Stokes x 1.0 + NCEP-R2, STEP 29 TEST-06 composite construction unchanged"
+    },
+    "parameters": {
+      "alpha": 0.002,
+      "stokesMultiplier": 1.0,
+      "depthA_B_m": 15.0,
+      "depthC_m": 15.81007,
+      "integrator": "RK4",
+      "dtSeconds": 300,
+      "outputSeconds": 900,
+      "durationHours": 72,
+      "horizonsHours": [
+        24,
+        48,
+        72
+      ],
+      "interpolation": "bilinear space / linear time",
+      "boundaryPolicy": "STOP_AT_FIRST_CROSSING",
+      "runtimeCommit": "155995dd",
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3"
+    },
+    "forcingRule": "exact frozen product identities only (HYCOM expt_53.X NCSS; GLORYS12V1 cmems_mod_glo_phy_my_0.083deg_P1D-m uo/vo at -z 15.81 -Z 15.81 via the official Copernicus toolbox, credentials by exit code only; WW3 GLOB-30M CFSR monthly uss; NCEP-R2 10 m via PSL THREDDS; the STEP 15 observation file). If an exact source is unavailable the affected window x condition is BLOCKED; no substitute product, version, depth, month, mirror or reconstruction",
+    "tuning": "forbidden",
+    "recalibration": "forbidden",
+    "optimisation": "forbidden",
+    "newModel": false,
+    "purpose": "transportability of a frozen configuration"
+  },
+  "13_primaryExtensionEndpoint": {
+    "perDrifter": "delta_i = E_C,i(72 h) - E_A,i(72 h), haversine position error, R = 6371008.8 m, km, at exactly t0 + 72 h",
+    "window": "Delta_w = median_i(delta_i within window)",
+    "primaryStatistic": "Theta_extension = median_w(Delta_w across windows with >= 1 valid pair)",
+    "windowWeighting": "equal",
+    "statisticalUnit": "window",
+    "hierarchy": "window > drifter pair > trajectory points (never independent)",
+    "naHandling": "NA never imputed, substituted, interpolated, removed or set to zero",
+    "identicalToPrimaryEndpoint": true
+  },
+  "14_primaryExtensionHypothesis": {
+    "id": "H_EXT",
+    "statement": "Theta_extension < 0 km",
+    "null": "Theta_extension >= 0 km or the preregistered uncertainty criterion is not met",
+    "singleConfirmatory": true,
+    "isNotH1": true,
+    "mergedWithH1": false,
+    "note": "H_EXT is the extension hypothesis and is reported separately from the frozen primary H1; the two are never combined"
+  },
+  "15_extensionUncertainty": {
+    "method": "window-level percentile bootstrap",
+    "samplingUnit": "window",
+    "samplingFrame": "all registered extension windows (NA windows included in the frame)",
+    "B": 10000,
+    "seed": 20260946,
+    "seedIsNew": true,
+    "seedsNotReused": [
+      20260907,
+      20260944
+    ],
+    "generator": "numpy.random.default_rng(20260946); idx = rng.integers(0, n_windows, size=n_windows) per replicate, sequential",
+    "replicate": "n_windows windows drawn with replacement; every valid drifter delta of a drawn window retained; Delta_w recomputed; a window drawn k times contributes k times; Theta_b = median over drawn windows with >= 1 valid pair; a replicate with no available window is NOT_AVAILABLE, counted, never redrawn",
+    "interval": "numpy.quantile(available Theta_b, [0.025, 0.975], method='linear')",
+    "noIndependentDrifterResamplingForPrimary": true,
+    "noTrajectoryPointResampling": true,
+    "sensitivityOnly": "drifter-level bootstrap of the pooled median (separate numpy.random.default_rng(20260946), B 10000), SENSITIVITY ONLY, never replaces the primary interval"
+  },
+  "16_successCriterion": {
+    "descriptiveLabel": {
+      "name": "CANDIDATE_EXTENSION_DESCRIPTIVELY_FAVORED",
+      "rule": "STEP 30A rule (step30a-rule.json, SHA 9251be51fc3fc8cc...) applied to the pooled valid 72 h extension pairs: pooled median delta_i < 0 km AND candidate lower error in >= 2/3 of non-tied pairs (tie |delta_i| < 1e-6 km); otherwise NO_CLEAR_EXTENSION_DIFFERENCE or HYCOM_EXTENSION_DESCRIPTIVELY_FAVORED"
+    },
+    "VALIDATION_EXTENSION_SUPPORTED_iff": [
+      "descriptive label == CANDIDATE_EXTENSION_DESCRIPTIVELY_FAVORED",
+      "extension window-level 95 % interval upper bound Q0.975 < 0 km",
+      "extension sample-size / QC gate satisfied (>= 6 windows, >= 20 unique drifters, >= 4 valid windows after QC)"
+    ],
+    "VALIDATION_EXTENSION_NOT_SUPPORTED": "the extension executed validly and at least one of the three conditions fails",
+    "VALIDATION_EXTENSION_BLOCKED": [
+      "extension cohort cannot be constructed under the frozen rule",
+      "source unavailable for a whole condition",
+      "credentials required",
+      "provenance mismatch"
+    ],
+    "VALIDATION_EXTENSION_INVALID": [
+      "fewer than 4 valid windows after execution",
+      "coordinate mismatch",
+      "immutability violation",
+      "deterministic replay mismatch",
+      "exclusion violation"
+    ],
+    "statusRedefinitionAfterResults": "forbidden",
+    "secondaryMetricsMayReplacePrimary": false
+  },
+  "17_originalVersusExtension": {
+    "reportingRule": "the final report keeps the two completely separate",
+    "ORIGINAL_VALIDATION": "BLOCKED (STEP 45C, VALIDATION_COHORT_BLOCKED, 4 windows / 14 drifters, gate 6 / 20 not met)",
+    "VALIDATION_EXTENSION": "independent status determined by this protocol",
+    "extensionPresentedAsOriginalValidation": false,
+    "pooledWithOriginalBlockedAttempt": false,
+    "combinedStatistic": "forbidden; the blocked original attempt contributes no statistic and is never pooled with extension results"
+  },
+  "18_operationalStatus": {
+    "candidateStatusAfterExtension": "CANDIDATE_ONLY regardless of extension outcome",
+    "operationalPromotion": "NO",
+    "extensionIsEvidenceAbout": "generalization only",
+    "deploymentRequires": "a separate future decision with additional evidence"
+  },
+  "19_leakageDisclosure": {
+    "designedAfterOriginalFeasibilityFailure": true,
+    "primaryScientificResultIsAlreadyKnown": true,
+    "primaryPerformanceUsedInExtensionCohortRules": false,
+    "knownAtDesignTime": [
+      "the frozen primary result (STEP 40/42)",
+      "the original validation block and its 4 windows / 14 drifters (STEP 45C, derived without any performance access)",
+      "per-region eligible window counts from the frozen STEP 35 eligibility metadata (KE 26, BM 3, AG 0)"
+    ],
+    "notKnownAtDesignTime": [
+      "per-window eligible drifter identities for BM",
+      "whether the extension gate can be satisfied",
+      "any extension trajectory, error, endpoint or bootstrap quantity"
+    ],
+    "extensionSourceAndProductChoiceDeterministic": true,
+    "extensionPerformanceViewed": false,
+    "extensionTrajectoryExecuted": false,
+    "extensionForcingInspected": false,
+    "statement": "The extension domain, period, accumulation rule, endpoint, bootstrap and success criterion are functions of frozen metadata and of rules that pre-date this step. No Candidate C performance quantity, from the primary experiment or elsewhere, entered any of them."
+  },
+  "20_amendmentProcedure": {
+    "rule": "After the STEP 46 lock, any change requires an explicit amendment record with field path, old value, new value, reason, UTC timestamp, commit SHA, whether extension data were accessed before the amendment and whether extension results were accessed before the amendment. Silent edits are forbidden.",
+    "amendmentHistory": []
+  },
+  "21_integrityCheck": {
+    "isRescueProtocol": false,
+    "originalGateRemainsFailed": true,
+    "extensionSeparatelyLabelled": true,
+    "extensionCanModifyPrimaryResult": false,
+    "extensionCanEraseOriginalLimitation": false,
+    "domainJustifiedByExpectedFavorableResults": false,
+    "justificationTest": "the domain is the complete non-primary region set under the frozen multi-region accumulation semantics; no region, period, threshold or rule was chosen for its expected effect on the outcome, and the gate is inherited unchanged even though the domain's structural ceiling (6 windows) leaves almost no margin",
+    "designBlockedStatus": "NOT TRIGGERED"
+  },
+  "22_executionOrderAfterLock": [
+    "STEP 47 extension cohort derivation (frozen metadata + authorised observation identity read under a STEP 45B-equivalent scope; cohort locked before any forcing access)",
+    "STEP 48 extension source acquisition and data freeze",
+    "STEP 49 deterministic execution A/B/C with replay",
+    "STEP 50 extension bootstrap (seed 20260946) and decision",
+    "STEP 51 extension report with the original-versus-extension separation table"
+  ],
+  "noExtensionDataAccess": {
+    "extensionForcingDownloaded": false,
+    "extensionObservationsInspected": false,
+    "extensionSourceFilesInspected": false,
+    "trajectoriesRun": 0,
+    "bootstrapRun": 0,
+    "performanceEvaluated": false,
+    "cohortDerived": false,
+    "metadataRead": "frozen STEP 35 eligibility counts per region, the frozen STEP 16 region boxes and the committed STEP 45C manifest (no observation content, no model output)"
+  },
+  "automaticCommit": false,
+  "push": false,
+  "protocolIdentityHash": "d7ec8fd5400f2460c2a516b215369eebf4737ec724f779841b4f6e6d480e8f8d"
+}

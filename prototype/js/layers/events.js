@@ -167,8 +167,26 @@ export const events = {
     const d = {};
     d[ko ? '분류' : 'Type'] = ko ? e.kindKo : e.kindEn;
     d[ko ? '위치' : 'Place'] = e.place || '—';
+    /* ⚠️ 서버가 "제목은 다른 곳을 말하는데 마커는 여기"라고 표시한 것.
+       위치를 지우지 않고 그대로 두되, 왜 확정이 아닌지 사람이 알 수 있어야 한다.
+       (실측 사례: 베를린 발전소 화재 기사가 모스크바 마커에 붙었다) */
+    if (e.placeDoubt) {
+      const far = (e.placeElsewhere || [])[0];
+      d[ko ? '위치 주의' : 'Place caution'] = far
+        ? (ko ? `제목은 ${far.name}(약 ${far.km.toLocaleString()}km 밖)을 말합니다`
+              : `Headline names ${far.name}, ~${far.km.toLocaleString()}km away`)
+        : (ko ? '제목과 위치가 어긋납니다' : 'Headline and marker disagree');
+    }
+    /* 같은 기사가 여러 지역에 코딩됐을 때 나머지 지역. 합쳐서 지웠다고 하지 않고 밝힌다. */
+    if (e.alsoPlaces && e.alsoPlaces.length) {
+      d[ko ? '함께 언급된 곳' : 'Also mentioned'] =
+        e.alsoPlaces.map(p => (p.place || '').split(',')[0]).filter(Boolean).join(' · ');
+    }
     d[ko ? '신뢰도' : 'Credibility'] = `${e.score}/100 · ` + (e.status === 'confirmed'
       ? (ko ? '확정' : 'Confirmed') : (ko ? '미확정' : 'Unconfirmed'));
+    /* ⚠️ 여기 숫자의 뜻이 2026-09-07 에 바뀌었다. 예전에는 합쳐진 사건들의 소스 수를
+       **더한** 값이라 부풀려져 있었다(무관한 기사 15건이 '매체 15곳'이 됐다).
+       지금은 GDELT 가 센 소스 수와 실제 서로 다른 매체 수 중 큰 쪽이다. */
     d[ko ? '교차 검증' : 'Cross-checked'] = ko
       ? `${e.sources}개 매체 · ${e.mentions}회 언급`
       : `${e.sources} sources · ${e.mentions} mentions`;

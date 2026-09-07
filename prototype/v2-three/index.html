@@ -302,7 +302,7 @@
   }
   .edge-tab.aeth span { color: #c9b3f0; }
   .edge-tab:hover { background: rgba(24,30,40,0.8); }
-  .edge-tab.open, .edge-tab.beside { transform: translateX(286px); }
+  .edge-tab.open, .edge-tab.beside { transform: translateX(min(470px, calc(100vw - 46px))); }
   .edge-tab.open { background: rgba(22,30,42,0.88); }
 
   /* ---------- 하단 바 (2026-09-07 v1/v2 역할 분리 지시 §15) ----------
@@ -372,8 +372,10 @@
     pointer-events: none;   /* 열려 있지 않을 땐 절대 터치를 가로채지 않는다 */
   }
   #menu-scrim.on { opacity: 1; pointer-events: auto; }
+  /* STEP 56: 레이아웃 값의 주인은 이 파일이다. 접근성 파일(information-access.css)이
+     나중에 로드되며 폭·높이를 덮어쓰던 것을 이리로 옮겼다 — 470px 은 그때 정한 읽기 폭. */
   #menu-panel {
-    position: fixed; left: 0; top: 50%; z-index: 5; width: 286px;
+    position: fixed; left: 0; top: 50%; z-index: 5; width: min(470px, calc(100vw - 46px));
     transform: translateY(-50%) translateX(-102%);
     max-height: calc(100vh - 96px); display: flex; flex-direction: column;
     background: rgba(10,14,20,0.78); backdrop-filter: blur(26px);
@@ -526,6 +528,15 @@
     background: rgba(127,183,245,0.2); border-color: var(--sc, var(--accent));
     color: var(--text); font-weight: 600;
   }
+  /* STEP 56 §4: MY EARTH 의 LEVEL 2(날씨·환경) 두 값은 나란히 — 세로로 길게 늘어놓지 않는다 */
+  .me-envrow { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 6px 0 2px; }
+  .me-env { border: 1px solid rgba(120,160,200,0.14); border-radius: 7px; padding: 6px 8px; min-width: 0; }
+  /* 셀은 두 줄까지만 — 세 줄이 되면 2단으로 나눠도 원래보다 되레 길어진다(실측) */
+  .me-env .k { color: var(--text-dim); font-size: 10.5px; }
+  .me-env small { color: rgba(150,175,195,0.55); font-size: 9.5px; margin-left: 3px; }
+  .me-env b { display: block; color: var(--text); font-size: 12px; margin-top: 2px; }
+  .me-env b.na { color: #8a7350; font-weight: 500; }
+  @media (max-width: 380px) { .me-envrow { grid-template-columns: 1fr; } }
   .mp-chip-note { padding: 4px 18px 8px; font-size: 9px; color: rgba(150,175,195,0.55); line-height: 1.45; }
   /* 장기 기후 시나리오 소제목(§13) — 지금 예보 목록과 같은 배지·같은 굵기라 구분이 안 됐다 */
   .mp-subdiv {
@@ -555,6 +566,7 @@
 
   #intel {
     position: fixed; right: 14px; bottom: 14px; z-index: 4;
+    width: min(480px, calc(100vw - 32px));
     display: flex; flex-direction: column; align-items: flex-end;
   }
   #intel-tab {
@@ -564,7 +576,7 @@
   }
   #intel-body { display: none; }
   #intel.open #intel-body {
-    display: block; width: 372px; max-height: 62vh; overflow-y: auto; overscroll-behavior: contain;
+    display: block; width: 100%; max-width: 100%; box-sizing: border-box; max-height: 62vh; overflow-y: auto; overscroll-behavior: contain;
     margin-bottom: 8px; background: var(--panel-bg); border: 1px solid var(--panel-line);
     border-radius: 12px; padding: 12px 14px; backdrop-filter: blur(8px);
   }
@@ -632,6 +644,7 @@
 
   #timestrip {
     position: fixed; left: 50%; bottom: 12px; transform: translateX(-50%);
+    max-width: calc(100vw - 24px);
     display: flex; align-items: center; gap: 10px; z-index: 4;
     background: var(--panel-bg); border: 1px solid var(--panel-line);
     border-radius: 10px; padding: 7px 14px; backdrop-filter: blur(6px);
@@ -1011,8 +1024,8 @@
   @media (max-width: 720px) {
     /* 메뉴가 286px 고정이라 360px 폰에서 지구가 74px만 남았다. 화면에 맞춰 줄이고
        뒤를 눌러 닫을 수 있게 스크림을 깐다. */
-    #menu-panel { width: min(286px, 82vw); }
-    .edge-tab.open, .edge-tab.beside { transform: translateX(min(286px, 82vw)); }
+    #menu-panel { width: min(470px, calc(100vw - 46px)); }
+    .edge-tab.open, .edge-tab.beside { transform: translateX(min(470px, calc(100vw - 46px))); }
     /* ⚠️ 여기서 그냥 display:block 을 주면 메뉴가 닫혀 있어도 투명한 전면 요소가 남아
        모바일에서 지구 터치가 통째로 죽는다(실측 2026-09-02). 열렸을 때만 깐다. */
     #menu-scrim.on { display: block; }

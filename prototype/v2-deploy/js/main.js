@@ -3536,16 +3536,20 @@ async function main() {
     if (d.warns == null) html += '<div class="stat"><span class="k">⚠ 특보</span><span class="v na">확인 실패 — 판단하지 않음</span></div>';
     else if (!d.warns.length) html += `<div class="stat"><span class="k">⚠ 특보</span><span class="v${d.warnStale ? ' na' : ''}">${d.warnStale ? `묵은 자료(${d.warnAgeMin}분 전) 기준 주변 60km 0건 — 최신 여부 미확인` : '주변 60km 유효 특보 없음'}</span></div>`;
     else html += `<div class="stat"><span class="k">⚠ 특보 ${d.warns.length}건</span><span class="v">${[...new Set(d.warns.map((w) => `${w.icon || ''}${w.kind} ${w.level}`))].slice(0, 3).join(' · ')}</span></div>`;
+    /* STEP 56 지시 §4(LEVEL 2 — 날씨·환경은 보조 정보): 위아래로 길게 늨리는 대신 나란히 둔다.
+       값·관측소·거리를 하나도 빼지 않는다 — 정보 삭제가 아니라 밀도 개선이다. */
+    const envCells = [];
     if (d.air && d.air.km < 400) {
       const g = AIR_GRADE_KO[d.air.it.grade] || ['—', '#7f95a8'];
-      html += `<div class="stat"><span class="k">💨 대기질 (${d.air.it.name} ${d.air.km}km)</span><span class="v" style="color:${g[1]}">${g[0]} · PM2.5 ${d.air.it.pm25 ?? '—'}㎍</span></div>`;
+      envCells.push(`<div class="me-env"><span class="k">💨 대기질<small>${escUI(d.air.it.name)} ${d.air.km}km</small></span><b style="color:${g[1]}">${g[0]} · PM2.5 ${d.air.it.pm25 ?? '—'}㎡</b></div>`);
     } else {
-      html += '<div class="stat"><span class="k">💨 대기질</span><span class="v na">주변 측정소 없음 (한국 관측망)</span></div>';
+      envCells.push('<div class="me-env"><span class="k">💨 대기질<small>한국 관측망</small></span><b class="na">주변 측정소 없음</b></div>');
     }
     if (d.aws && d.aws.km < 400) {
       const a = d.aws.it;
-      html += `<div class="stat"><span class="k">🌬 바람·기온 (${a.name} ${d.aws.km}km)</span><span class="v">${a.wind_ms != null ? `${a.wind_ms}m/s` : '—'} · ${a.temp_c != null ? `${a.temp_c}°C` : '—'}</span></div>`;
+      envCells.push(`<div class="me-env"><span class="k">🌬 바람·기온<small>${escUI(a.name)} ${d.aws.km}km</small></span><b>${a.wind_ms != null ? `${a.wind_ms}m/s` : '—'} · ${a.temp_c != null ? `${a.temp_c}°C` : '—'}</b></div>`);
     }
+    if (envCells.length) html += `<div class="me-envrow">${envCells.join('')}</div>`;
     const wv = myEarth.watch;
     if (wv) {
       html += '</div><div class="card" style="margin-top:8px"><div class="card-h">감시 <span class="badge ' + (wv.monitoring === 'ON' ? 'model' : 'demo') + '">' + (wv.monitoring === 'ON' ? '감시 중' : '감시 중단') + '</span></div><div class="card-b">';

@@ -1857,6 +1857,13 @@ const DYNAMIC_BLOCKS = [
   '.title-orig',    // 제목 원문 (번역했을 때)
   '.safety-actions', // 공식 행동요령 + 한국 긴급전화
   '.launch-block',  // 발사 — 미션·탑재·중계·궤적 (2026-09-06)
+  /* 태풍 정보창 보강 — 2026-09-07 받은 지적 "태풍 누르면 정보창에 내용이 반복되":
+     ui-cyclone.js 가 붙이는 다섯 블록이 이 목록에 없어 시트를 다시 열 때마다 그대로 쌓였다. */
+  '.tc-share',      // 공유 링크 줄
+  '.tc-chips',      // 같이 보면 좋은 화면
+  '.tc-exp',        // 태풍은 어떻게 생기나 — 접기 설명
+  '.tc-news',       // 「이름」 소식
+  '.tc-links',      // 공식 창구
 ].join(', ');
 
 function clearDynamic() {

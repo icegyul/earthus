@@ -1,0 +1,19 @@
+{
+  "ruleId": "cohort-extension-preregistration-step36",
+  "status": "COHORT_EXTENSION_LOCKED",
+  "protocolSha256": "9832f5c4ec709531e8965be6d38c0628ab2be70507cf684076298a7dedfcafed",
+  "manifestSha256": "bda31c3ca36a395acadc95c1cb18663964ee9a00e4a72a7c2504182f51df06ca",
+  "selectedWindows": 9,
+  "selectedDrifters": 20,
+  "primaryCohortFound": true,
+  "primaryPrefix": 9,
+  "minimum620": "PASS",
+  "step35Modified": false,
+  "forbiddenInputAccess": 0,
+  "scientificExperimentExecuted": false,
+  "modelSelected": false,
+  "parameterSelected": false,
+  "forcingSelected": false,
+  "automaticCommit": false,
+  "finalizedAtUTC": "2026-09-07T01:11:57Z"
+}

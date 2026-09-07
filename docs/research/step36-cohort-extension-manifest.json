@@ -1,0 +1,1341 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "cohort-extension-preregistration-step36",
+  "status": "COHORT_LOCKED",
+  "protocolSha256": "9832f5c4ec709531e8965be6d38c0628ab2be70507cf684076298a7dedfcafed",
+  "accumulationRule": {
+    "minimumWindows": 6,
+    "minimumDrifters": 20,
+    "maxWindows": 12,
+    "stopAtTarget8": false,
+    "primaryCohort": "first chronological prefix with selected_windows >= 6 AND unique_drifters >= 20",
+    "insufficientIf": "not reached within 12 selected windows"
+  },
+  "accumulationRuleSha256": "91b752bc8df55079aa338923e76f97c493c5faf1fa0573dffa85d42b38103e86",
+  "inherited": {
+    "period": "STEP 35 period lock, unchanged",
+    "frameInventory": "STEP 35 inventory, unchanged (no new inventory)",
+    "eligibility": "STEP 35 window eligibility (178 rows), unchanged (no new eligibility computation)",
+    "chronologicalOrder": "(start, region) as STEP 35",
+    "regionSeparation": "same-region starts >= 72 h apart",
+    "exclusion": "STEP 35 exclusion (68 prior IDs; STEP 20 and STEP 32 window starts +-72 h)",
+    "drifterIdentity": "per-window drifter IDs from the identical STEP 16 function on the STEP 15 observations (observation data only; audit eligibleCount re-verified), exactly as STEP 35 did during accumulation",
+    "step35ProtocolSha256": "7c3cc487568c1a063790e17fdae11ffe712047d78ea4761719bf6df7e7142f2f",
+    "step35EligibilitySha256": "d01d06a3430def6ea77a814bb4379a9b45ca058713fa0901c9c30b035fbb635b",
+    "step35CohortManifestSha256": "07ebc185099e7f2e81377b3b186719814b4625eeea9688aa73887f4aa5c97d29",
+    "step35PeriodLockSha256": "c2f6e862704a52e39685c4c4e61931e276d4934492e6d2e8c49ad0642f6f2b92",
+    "step35FrameInventorySha256": "5bdb5c779ab4b7bc0607dab907452263f4306c7d0d77681ead7d058e3090add8",
+    "cohortStep16Sha256": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474"
+  },
+  "periodLock": {
+    "t0": "2010-01-01T00:00:00Z",
+    "t1": "2015-12-31T21:00:00Z",
+    "timezone": "UTC",
+    "lockedAtUTC": "2026-09-07T01:01:18Z",
+    "selectionRationale": "The least selective admissible period: the union of every calendar year in which the STEP 16 selection audit contains eligible windows in any registered region (KE 2010-2011, GS 2010-2014, BM 2013-2014, AG 2015), clipped to HYCOM expt_53.X coverage (ends 2015-12). No sub-period is preferred; availability is examined only after this lock and the period is never changed afterwards."
+  },
+  "chronologicalOrder": "identical to STEP 35: (start, region); same-region starts >= 72 h apart",
+  "candidatesInherited": 178,
+  "windows": [
+    {
+      "chronologicalRank": 1,
+      "windowId": "GS-Y1",
+      "region": "GS",
+      "date": "2010-07-27",
+      "start": "2010-07-27T12:00:00Z",
+      "end": "2010-07-30T12:00:00Z",
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "sourceExperiment": "expt_53.X",
+      "eligibleCount": 8,
+      "A1_median": null,
+      "A2_median": null,
+      "A3_median": null,
+      "drifterIds": [
+        "92918",
+        "92920",
+        "89822",
+        "92885",
+        "92917",
+        "98904",
+        "98942",
+        "98944"
+      ],
+      "priorCohortDuplicateIds": [],
+      "accumulatedDuplicateIds": [],
+      "cumulativeUniqueDrifters": 8,
+      "oceanBox": {
+        "south": 30.949379999999998,
+        "north": 37.43114,
+        "west": -75.01929,
+        "east": -55.39547
+      },
+      "requiredUtcDays": [
+        "2010-07-26",
+        "2010-07-27",
+        "2010-07-28",
+        "2010-07-29",
+        "2010-07-30",
+        "2010-07-31"
+      ],
+      "requiredFrameCount": 48,
+      "step35WindowEligible": true,
+      "inheritedEligibilityTests": {
+        "insidePeriod": true,
+        "afterCalibrationCutoff": true,
+        "notNearPriorWindow": true,
+        "frameCoverageComplete": true
+      },
+      "exclusionResult": {
+        "priorIdsExcluded": 0,
+        "newIds": 8
+      },
+      "drifters": [
+        {
+          "drifterId": "92918",
+          "typebuoy": "SVP",
+          "startLon": -73.01929,
+          "startLat": 33.90254,
+          "coastKm": 273.7,
+          "speedMps": 0.6154399579063587,
+          "displacement72hKm": 208.03091563654894,
+          "turnDeg": 25.656932869693264,
+          "drogueLostDate": "2010-12-11T00:00:00Z"
+        },
+        {
+          "drifterId": "92920",
+          "typebuoy": "SVP",
+          "startLon": -66.59662,
+          "startLat": 32.94938,
+          "coastKm": 176.0,
+          "speedMps": 0.045783372224290006,
+          "displacement72hKm": 28.7702488430832,
+          "turnDeg": 27.917564968930918,
+          "drogueLostDate": "2010-12-11T00:00:00Z"
+        },
+        {
+          "drifterId": "89822",
+          "typebuoy": "SVPB",
+          "startLon": -60.76162,
+          "startLat": 34.44322,
+          "coastKm": 428.1,
+          "speedMps": 0.5360059758880541,
+          "displacement72hKm": 81.38656780437438,
+          "turnDeg": 40.35610829212243,
+          "drogueLostDate": "2010-08-29T00:00:00Z"
+        },
+        {
+          "drifterId": "92885",
+          "typebuoy": "SVP",
+          "startLon": -57.39547,
+          "startLat": 34.50576,
+          "coastKm": 713.5,
+          "speedMps": 0.05889278779908471,
+          "displacement72hKm": 32.518998391245525,
+          "turnDeg": 56.892770553292934,
+          "drogueLostDate": "2010-11-30T00:00:00Z"
+        },
+        {
+          "drifterId": "92917",
+          "typebuoy": "SVP",
+          "startLon": -59.29284,
+          "startLat": 35.43114,
+          "coastKm": 600.0,
+          "speedMps": 0.2638208908853722,
+          "displacement72hKm": 109.65302853829918,
+          "turnDeg": 32.27180418659054,
+          "drogueLostDate": "2010-09-03T00:00:00Z"
+        },
+        {
+          "drifterId": "98904",
+          "typebuoy": "SVP",
+          "startLon": -72.59993,
+          "startLat": 35.12271,
+          "coastKm": 263.6,
+          "speedMps": 0.28064923409045656,
+          "displacement72hKm": 100.20577971256877,
+          "turnDeg": 16.14017505582757,
+          "drogueLostDate": "2010-12-22T00:00:00Z"
+        },
+        {
+          "drifterId": "98942",
+          "typebuoy": "SVP",
+          "startLon": -72.56452,
+          "startLat": 35.19182,
+          "coastKm": 265.3,
+          "speedMps": 0.3484812608477205,
+          "displacement72hKm": 109.18334732207519,
+          "turnDeg": 10.970596316059982,
+          "drogueLostDate": "2010-10-03T00:00:00Z"
+        },
+        {
+          "drifterId": "98944",
+          "typebuoy": "SVP",
+          "startLon": -72.4793,
+          "startLat": 35.15014,
+          "coastKm": 273.8,
+          "speedMps": 0.39775866000400234,
+          "displacement72hKm": 87.99180208998717,
+          "turnDeg": 34.09431896269399,
+          "drogueLostDate": "2010-09-12T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "chronologicalRank": 2,
+      "windowId": "GS-Y2",
+      "region": "GS",
+      "date": "2010-07-30",
+      "start": "2010-07-30T12:00:00Z",
+      "end": "2010-08-02T12:00:00Z",
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "sourceExperiment": "expt_53.X",
+      "eligibleCount": 10,
+      "A1_median": null,
+      "A2_median": null,
+      "A3_median": null,
+      "drifterIds": [
+        "92872",
+        "98941"
+      ],
+      "priorCohortDuplicateIds": [],
+      "accumulatedDuplicateIds": [
+        "92918",
+        "92920",
+        "89822",
+        "92885",
+        "92917",
+        "98904",
+        "98942",
+        "98944"
+      ],
+      "cumulativeUniqueDrifters": 10,
+      "oceanBox": {
+        "south": 36.35383,
+        "north": 40.0,
+        "west": -71.93419,
+        "east": -61.87165
+      },
+      "requiredUtcDays": [
+        "2010-07-29",
+        "2010-07-30",
+        "2010-07-31",
+        "2010-08-01",
+        "2010-08-02",
+        "2010-08-03"
+      ],
+      "requiredFrameCount": 48,
+      "step35WindowEligible": true,
+      "inheritedEligibilityTests": {
+        "insidePeriod": true,
+        "afterCalibrationCutoff": true,
+        "notNearPriorWindow": true,
+        "frameCoverageComplete": true
+      },
+      "exclusionResult": {
+        "priorIdsExcluded": 0,
+        "newIds": 2
+      },
+      "drifters": [
+        {
+          "drifterId": "92872",
+          "typebuoy": "SVP",
+          "startLon": -63.87165,
+          "startLat": 39.82583,
+          "coastKm": 425.7,
+          "speedMps": 0.3727373752786783,
+          "displacement72hKm": 240.17520873053792,
+          "turnDeg": 3.459234247035454,
+          "drogueLostDate": "2010-11-07T00:00:00Z"
+        },
+        {
+          "drifterId": "98941",
+          "typebuoy": "SVP",
+          "startLon": -69.93419,
+          "startLat": 38.35383,
+          "coastKm": 320.9,
+          "speedMps": 1.8491539885258739,
+          "displacement72hKm": 392.25716374611443,
+          "turnDeg": 29.41807703665455,
+          "drogueLostDate": "2010-09-01T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "chronologicalRank": 3,
+      "windowId": "GS-Y3",
+      "region": "GS",
+      "date": "2010-08-02",
+      "start": "2010-08-02T12:00:00Z",
+      "end": "2010-08-05T12:00:00Z",
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "sourceExperiment": "expt_53.X",
+      "eligibleCount": 11,
+      "A1_median": null,
+      "A2_median": null,
+      "A3_median": null,
+      "drifterIds": [
+        "93015"
+      ],
+      "priorCohortDuplicateIds": [],
+      "accumulatedDuplicateIds": [
+        "92918",
+        "92920",
+        "89822",
+        "92872",
+        "92885",
+        "92917",
+        "98904",
+        "98941",
+        "98942",
+        "98944"
+      ],
+      "cumulativeUniqueDrifters": 11,
+      "oceanBox": {
+        "south": 30.62728,
+        "north": 34.62728,
+        "west": -65.45829,
+        "east": -61.45829
+      },
+      "requiredUtcDays": [
+        "2010-08-01",
+        "2010-08-02",
+        "2010-08-03",
+        "2010-08-04",
+        "2010-08-05",
+        "2010-08-06"
+      ],
+      "requiredFrameCount": 48,
+      "step35WindowEligible": true,
+      "inheritedEligibilityTests": {
+        "insidePeriod": true,
+        "afterCalibrationCutoff": true,
+        "notNearPriorWindow": true,
+        "frameCoverageComplete": true
+      },
+      "exclusionResult": {
+        "priorIdsExcluded": 0,
+        "newIds": 1
+      },
+      "drifters": [
+        {
+          "drifterId": "93015",
+          "typebuoy": "SVPB",
+          "startLon": -63.45829,
+          "startLat": 32.62728,
+          "coastKm": 115.2,
+          "speedMps": 0.38672708120503707,
+          "displacement72hKm": 68.33123780748943,
+          "turnDeg": 6.96920597954329,
+          "drogueLostDate": "2010-10-21T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "chronologicalRank": 4,
+      "windowId": "GS-Y4",
+      "region": "GS",
+      "date": "2010-08-05",
+      "start": "2010-08-05T12:00:00Z",
+      "end": "2010-08-08T12:00:00Z",
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "sourceExperiment": "expt_53.X",
+      "eligibleCount": 12,
+      "A1_median": null,
+      "A2_median": null,
+      "A3_median": null,
+      "drifterIds": [
+        "92863"
+      ],
+      "priorCohortDuplicateIds": [],
+      "accumulatedDuplicateIds": [
+        "92918",
+        "92920",
+        "89822",
+        "92872",
+        "92885",
+        "92917",
+        "93015",
+        "98904",
+        "98941",
+        "98942",
+        "98944"
+      ],
+      "cumulativeUniqueDrifters": 12,
+      "oceanBox": {
+        "south": 34.5677,
+        "north": 38.5677,
+        "west": -57.24397,
+        "east": -53.24397
+      },
+      "requiredUtcDays": [
+        "2010-08-04",
+        "2010-08-05",
+        "2010-08-06",
+        "2010-08-07",
+        "2010-08-08",
+        "2010-08-09"
+      ],
+      "requiredFrameCount": 48,
+      "step35WindowEligible": true,
+      "inheritedEligibilityTests": {
+        "insidePeriod": true,
+        "afterCalibrationCutoff": true,
+        "notNearPriorWindow": true,
+        "frameCoverageComplete": true
+      },
+      "exclusionResult": {
+        "priorIdsExcluded": 0,
+        "newIds": 1
+      },
+      "drifters": [
+        {
+          "drifterId": "92863",
+          "typebuoy": "SVP",
+          "startLon": -55.24397,
+          "startLat": 36.5677,
+          "coastKm": 906.3,
+          "speedMps": 0.4639628152341614,
+          "displacement72hKm": 93.65333001050318,
+          "turnDeg": 40.78571585410464,
+          "drogueLostDate": "2011-11-26T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "chronologicalRank": 5,
+      "windowId": "GS-Y5",
+      "region": "GS",
+      "date": "2010-08-08",
+      "start": "2010-08-08T12:00:00Z",
+      "end": "2010-08-11T12:00:00Z",
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "sourceExperiment": "expt_53.X",
+      "eligibleCount": 12,
+      "A1_median": null,
+      "A2_median": null,
+      "A3_median": null,
+      "drifterIds": [
+        "98936"
+      ],
+      "priorCohortDuplicateIds": [],
+      "accumulatedDuplicateIds": [
+        "92918",
+        "92920",
+        "89822",
+        "92885",
+        "92917",
+        "93015",
+        "92863",
+        "98904",
+        "98941",
+        "98942",
+        "98944"
+      ],
+      "cumulativeUniqueDrifters": 13,
+      "oceanBox": {
+        "south": 36.04509,
+        "north": 40.0,
+        "west": -72.20186,
+        "east": -68.20186
+      },
+      "requiredUtcDays": [
+        "2010-08-07",
+        "2010-08-08",
+        "2010-08-09",
+        "2010-08-10",
+        "2010-08-11",
+        "2010-08-12"
+      ],
+      "requiredFrameCount": 48,
+      "step35WindowEligible": true,
+      "inheritedEligibilityTests": {
+        "insidePeriod": true,
+        "afterCalibrationCutoff": true,
+        "notNearPriorWindow": true,
+        "frameCoverageComplete": true
+      },
+      "exclusionResult": {
+        "priorIdsExcluded": 0,
+        "newIds": 1
+      },
+      "drifters": [
+        {
+          "drifterId": "98936",
+          "typebuoy": "SVP",
+          "startLon": -70.20186,
+          "startLat": 38.04509,
+          "coastKm": 355.6,
+          "speedMps": 1.530648498590667,
+          "displacement72hKm": 86.2020109866989,
+          "turnDeg": 31.910041211738474,
+          "drogueLostDate": "2010-11-27T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "chronologicalRank": 6,
+      "windowId": "GS-Y6",
+      "region": "GS",
+      "date": "2010-08-22",
+      "start": "2010-08-22T12:00:00Z",
+      "end": "2010-08-25T12:00:00Z",
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "sourceExperiment": "expt_53.X",
+      "eligibleCount": 15,
+      "A1_median": null,
+      "A2_median": null,
+      "A3_median": null,
+      "drifterIds": [
+        "81994",
+        "88538",
+        "90466"
+      ],
+      "priorCohortDuplicateIds": [],
+      "accumulatedDuplicateIds": [
+        "92920",
+        "89822",
+        "92872",
+        "92885",
+        "92917",
+        "93015",
+        "92863",
+        "98904",
+        "98936",
+        "98941",
+        "98942",
+        "98944"
+      ],
+      "cumulativeUniqueDrifters": 16,
+      "oceanBox": {
+        "south": 35.36032,
+        "north": 39.46704,
+        "west": -65.94471999999999,
+        "east": -61.89941
+      },
+      "requiredUtcDays": [
+        "2010-08-21",
+        "2010-08-22",
+        "2010-08-23",
+        "2010-08-24",
+        "2010-08-25",
+        "2010-08-26"
+      ],
+      "requiredFrameCount": 48,
+      "step35WindowEligible": true,
+      "inheritedEligibilityTests": {
+        "insidePeriod": true,
+        "afterCalibrationCutoff": true,
+        "notNearPriorWindow": true,
+        "frameCoverageComplete": true
+      },
+      "exclusionResult": {
+        "priorIdsExcluded": 0,
+        "newIds": 3
+      },
+      "drifters": [
+        {
+          "drifterId": "81994",
+          "typebuoy": "SVP",
+          "startLon": -63.94472,
+          "startLat": 37.43389,
+          "coastKm": 564.9,
+          "speedMps": 0.5668436781759195,
+          "displacement72hKm": 186.28671259852055,
+          "turnDeg": 48.63022858188975,
+          "drogueLostDate": "2010-11-13T00:00:00Z"
+        },
+        {
+          "drifterId": "88538",
+          "typebuoy": "SVP",
+          "startLon": -63.89941,
+          "startLat": 37.46704,
+          "coastKm": 569.1,
+          "speedMps": 0.6636303754677714,
+          "displacement72hKm": 198.40175129606175,
+          "turnDeg": 45.887541190517936,
+          "drogueLostDate": "2010-09-28T00:00:00Z"
+        },
+        {
+          "drifterId": "90466",
+          "typebuoy": "SVP",
+          "startLon": -63.93894,
+          "startLat": 37.36032,
+          "coastKm": 556.9,
+          "speedMps": 0.5023661057178518,
+          "displacement72hKm": 149.701054198508,
+          "turnDeg": 40.429468094122456,
+          "drogueLostDate": "2010-11-30T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "chronologicalRank": 7,
+      "windowId": "GS-Y7",
+      "region": "GS",
+      "date": "2010-08-28",
+      "start": "2010-08-28T12:00:00Z",
+      "end": "2010-08-31T12:00:00Z",
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "sourceExperiment": "expt_53.X",
+      "eligibleCount": 12,
+      "A1_median": null,
+      "A2_median": null,
+      "A3_median": null,
+      "drifterIds": [
+        "92869"
+      ],
+      "priorCohortDuplicateIds": [],
+      "accumulatedDuplicateIds": [
+        "92872",
+        "92885",
+        "92917",
+        "93015",
+        "81994",
+        "88538",
+        "90466",
+        "98936",
+        "98941",
+        "98942",
+        "98944"
+      ],
+      "cumulativeUniqueDrifters": 17,
+      "oceanBox": {
+        "south": 37.92722,
+        "north": 40.0,
+        "west": -62.42588,
+        "east": -58.42588
+      },
+      "requiredUtcDays": [
+        "2010-08-27",
+        "2010-08-28",
+        "2010-08-29",
+        "2010-08-30",
+        "2010-08-31",
+        "2010-09-01"
+      ],
+      "requiredFrameCount": 48,
+      "step35WindowEligible": true,
+      "inheritedEligibilityTests": {
+        "insidePeriod": true,
+        "afterCalibrationCutoff": true,
+        "notNearPriorWindow": true,
+        "frameCoverageComplete": true
+      },
+      "exclusionResult": {
+        "priorIdsExcluded": 0,
+        "newIds": 1
+      },
+      "drifters": [
+        {
+          "drifterId": "92869",
+          "typebuoy": "SVP",
+          "startLon": -60.42588,
+          "startLat": 39.92722,
+          "coastKm": 444.6,
+          "speedMps": 1.0707752592413073,
+          "displacement72hKm": 172.82003837362947,
+          "turnDeg": 31.890593100838316,
+          "drogueLostDate": "2010-09-24T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "chronologicalRank": 8,
+      "windowId": "GS-Y8",
+      "region": "GS",
+      "date": "2010-09-16",
+      "start": "2010-09-16T12:00:00Z",
+      "end": "2010-09-19T12:00:00Z",
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "sourceExperiment": "expt_53.X",
+      "eligibleCount": 9,
+      "A1_median": null,
+      "A2_median": null,
+      "A3_median": null,
+      "drifterIds": [
+        "88532"
+      ],
+      "priorCohortDuplicateIds": [],
+      "accumulatedDuplicateIds": [
+        "92918",
+        "92920",
+        "92872",
+        "92885",
+        "93015",
+        "81994",
+        "90466",
+        "98942"
+      ],
+      "cumulativeUniqueDrifters": 18,
+      "oceanBox": {
+        "south": 34.0663,
+        "north": 38.0663,
+        "west": -75.50465,
+        "east": -71.50465
+      },
+      "requiredUtcDays": [
+        "2010-09-15",
+        "2010-09-16",
+        "2010-09-17",
+        "2010-09-18",
+        "2010-09-19",
+        "2010-09-20"
+      ],
+      "requiredFrameCount": 48,
+      "step35WindowEligible": true,
+      "inheritedEligibilityTests": {
+        "insidePeriod": true,
+        "afterCalibrationCutoff": true,
+        "notNearPriorWindow": true,
+        "frameCoverageComplete": true
+      },
+      "exclusionResult": {
+        "priorIdsExcluded": 0,
+        "newIds": 1
+      },
+      "drifters": [
+        {
+          "drifterId": "88532",
+          "typebuoy": "SVP",
+          "startLon": -73.50465,
+          "startLat": 36.0663,
+          "coastKm": 182.0,
+          "speedMps": 1.613702893819875,
+          "displacement72hKm": 412.90202596603376,
+          "turnDeg": 27.957024929679164,
+          "drogueLostDate": "2010-12-17T00:00:00Z"
+        }
+      ]
+    },
+    {
+      "chronologicalRank": 9,
+      "windowId": "GS-Y9",
+      "region": "GS",
+      "date": "2010-10-16",
+      "start": "2010-10-16T12:00:00Z",
+      "end": "2010-10-19T12:00:00Z",
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "sourceExperiment": "expt_53.X",
+      "eligibleCount": 9,
+      "A1_median": null,
+      "A2_median": null,
+      "A3_median": null,
+      "drifterIds": [
+        "92919",
+        "92906"
+      ],
+      "priorCohortDuplicateIds": [],
+      "accumulatedDuplicateIds": [
+        "92918",
+        "92872",
+        "92885",
+        "93015",
+        "81994",
+        "88532",
+        "90466"
+      ],
+      "cumulativeUniqueDrifters": 20,
+      "oceanBox": {
+        "south": 33.17507,
+        "north": 38.89012,
+        "west": -68.26377,
+        "east": -53.13004
+      },
+      "requiredUtcDays": [
+        "2010-10-15",
+        "2010-10-16",
+        "2010-10-17",
+        "2010-10-18",
+        "2010-10-19",
+        "2010-10-20"
+      ],
+      "requiredFrameCount": 48,
+      "step35WindowEligible": true,
+      "inheritedEligibilityTests": {
+        "insidePeriod": true,
+        "afterCalibrationCutoff": true,
+        "notNearPriorWindow": true,
+        "frameCoverageComplete": true
+      },
+      "exclusionResult": {
+        "priorIdsExcluded": 0,
+        "newIds": 2
+      },
+      "drifters": [
+        {
+          "drifterId": "92919",
+          "typebuoy": "SVP",
+          "startLon": -66.26377,
+          "startLat": 36.89012,
+          "coastKm": 521.2,
+          "speedMps": 3.1286255983061544,
+          "displacement72hKm": 244.94155723524,
+          "turnDeg": 126.61932706580507,
+          "drogueLostDate": "2012-01-11T00:00:00Z"
+        },
+        {
+          "drifterId": "92906",
+          "typebuoy": "SVP",
+          "startLon": -55.13004,
+          "startLat": 35.17507,
+          "coastKm": 933.0,
+          "speedMps": 0.40269824434584045,
+          "displacement72hKm": 74.80093803417547,
+          "turnDeg": 10.872773307678244,
+          "drogueLostDate": "2011-08-24T00:00:00Z"
+        }
+      ]
+    }
+  ],
+  "step35FirstEightReproduced": true,
+  "primaryCohort": {
+    "found": true,
+    "windows": 9,
+    "windowIds": [
+      "GS-Y1",
+      "GS-Y2",
+      "GS-Y3",
+      "GS-Y4",
+      "GS-Y5",
+      "GS-Y6",
+      "GS-Y7",
+      "GS-Y8",
+      "GS-Y9"
+    ],
+    "drifters": 20,
+    "rule": "first chronological prefix with >= 6 windows AND >= 20 unique drifters; <= 12 windows"
+  },
+  "summary": {
+    "selectedWindows": 9,
+    "selectedDrifters": 20,
+    "selectedByRegion": {
+      "KE": 0,
+      "GS": 9,
+      "BM": 0,
+      "AG": 0
+    },
+    "accumulationSkips": {
+      "SKIPPED_OVERLAP": 14,
+      "NO_NEW_IDS": 20
+    },
+    "minimumWindows": 6,
+    "minimumDrifters": 20,
+    "maxWindows": 12,
+    "minimumMet": true
+  },
+  "accumulationLog": [
+    {
+      "start": "2010-07-27T12:00:00Z",
+      "region": "GS",
+      "status": "SELECTED",
+      "new": 8
+    },
+    {
+      "start": "2010-07-28T12:00:00Z",
+      "region": "GS",
+      "status": "SKIPPED_OVERLAP"
+    },
+    {
+      "start": "2010-07-29T12:00:00Z",
+      "region": "GS",
+      "status": "SKIPPED_OVERLAP"
+    },
+    {
+      "start": "2010-07-30T12:00:00Z",
+      "region": "GS",
+      "status": "SELECTED",
+      "new": 2
+    },
+    {
+      "start": "2010-07-31T12:00:00Z",
+      "region": "GS",
+      "status": "SKIPPED_OVERLAP"
+    },
+    {
+      "start": "2010-08-01T12:00:00Z",
+      "region": "GS",
+      "status": "SKIPPED_OVERLAP"
+    },
+    {
+      "start": "2010-08-02T12:00:00Z",
+      "region": "GS",
+      "status": "SELECTED",
+      "new": 1
+    },
+    {
+      "start": "2010-08-03T12:00:00Z",
+      "region": "GS",
+      "status": "SKIPPED_OVERLAP"
+    },
+    {
+      "start": "2010-08-04T12:00:00Z",
+      "region": "GS",
+      "status": "SKIPPED_OVERLAP"
+    },
+    {
+      "start": "2010-08-05T12:00:00Z",
+      "region": "GS",
+      "status": "SELECTED",
+      "new": 1
+    },
+    {
+      "start": "2010-08-06T12:00:00Z",
+      "region": "GS",
+      "status": "SKIPPED_OVERLAP"
+    },
+    {
+      "start": "2010-08-07T12:00:00Z",
+      "region": "GS",
+      "status": "SKIPPED_OVERLAP"
+    },
+    {
+      "start": "2010-08-08T12:00:00Z",
+      "region": "GS",
+      "status": "SELECTED",
+      "new": 1
+    },
+    {
+      "start": "2010-08-09T12:00:00Z",
+      "region": "GS",
+      "status": "SKIPPED_OVERLAP"
+    },
+    {
+      "start": "2010-08-10T12:00:00Z",
+      "region": "GS",
+      "status": "SKIPPED_OVERLAP"
+    },
+    {
+      "start": "2010-08-11T12:00:00Z",
+      "region": "GS",
+      "status": "NO_NEW_IDS",
+      "priorCohortDuplicates": [],
+      "accumulatedDuplicates": [
+        "92918",
+        "92920",
+        "89822",
+        "92872",
+        "92885",
+        "92917",
+        "93015",
+        "98904",
+        "98936",
+        "98941",
+        "98942",
+        "98944"
+      ]
+    },
+    {
+      "start": "2010-08-12T12:00:00Z",
+      "region": "GS",
+      "status": "NO_NEW_IDS",
+      "priorCohortDuplicates": [],
+      "accumulatedDuplicates": [
+        "92918",
+        "92920",
+        "89822",
+        "92872",
+        "92885",
+        "92917",
+        "93015",
+        "98904",
+        "98936",
+        "98941",
+        "98942",
+        "98944"
+      ]
+    },
+    {
+      "start": "2010-08-22T12:00:00Z",
+      "region": "GS",
+      "status": "SELECTED",
+      "new": 3
+    },
+    {
+      "start": "2010-08-23T12:00:00Z",
+      "region": "GS",
+      "status": "SKIPPED_OVERLAP"
+    },
+    {
+      "start": "2010-08-24T12:00:00Z",
+      "region": "GS",
+      "status": "SKIPPED_OVERLAP"
+    },
+    {
+      "start": "2010-08-25T12:00:00Z",
+      "region": "GS",
+      "status": "NO_NEW_IDS",
+      "priorCohortDuplicates": [],
+      "accumulatedDuplicates": [
+        "92920",
+        "89822",
+        "92872",
+        "92885",
+        "92917",
+        "93015",
+        "81994",
+        "88538",
+        "90466",
+        "92863",
+        "98936",
+        "98941",
+        "98942",
+        "98944"
+      ]
+    },
+    {
+      "start": "2010-08-26T12:00:00Z",
+      "region": "GS",
+      "status": "NO_NEW_IDS",
+      "priorCohortDuplicates": [],
+      "accumulatedDuplicates": [
+        "92872",
+        "92885",
+        "92917",
+        "93015",
+        "81994",
+        "90466",
+        "92863",
+        "98936",
+        "98941",
+        "98942",
+        "98944"
+      ]
+    },
+    {
+      "start": "2010-08-27T12:00:00Z",
+      "region": "GS",
+      "status": "NO_NEW_IDS",
+      "priorCohortDuplicates": [],
+      "accumulatedDuplicates": [
+        "92872",
+        "92885",
+        "92917",
+        "93015",
+        "92863",
+        "98936",
+        "98941",
+        "98942",
+        "98944"
+      ]
+    },
+    {
+      "start": "2010-08-28T12:00:00Z",
+      "region": "GS",
+      "status": "SELECTED",
+      "new": 1
+    },
+    {
+      "start": "2010-08-29T12:00:00Z",
+      "region": "GS",
+      "status": "SKIPPED_OVERLAP"
+    },
+    {
+      "start": "2010-08-30T12:00:00Z",
+      "region": "GS",
+      "status": "SKIPPED_OVERLAP"
+    },
+    {
+      "start": "2010-08-31T12:00:00Z",
+      "region": "GS",
+      "status": "NO_NEW_IDS",
+      "priorCohortDuplicates": [],
+      "accumulatedDuplicates": [
+        "92872",
+        "92885",
+        "93015",
+        "81994",
+        "90466",
+        "92863",
+        "98936",
+        "98942",
+        "98944"
+      ]
+    },
+    {
+      "start": "2010-09-01T12:00:00Z",
+      "region": "GS",
+      "status": "NO_NEW_IDS",
+      "priorCohortDuplicates": [],
+      "accumulatedDuplicates": [
+        "92918",
+        "92872",
+        "92885",
+        "93015",
+        "81994",
+        "90466",
+        "92863",
+        "98936",
+        "98942",
+        "98944"
+      ]
+    },
+    {
+      "start": "2010-09-02T12:00:00Z",
+      "region": "GS",
+      "status": "NO_NEW_IDS",
+      "priorCohortDuplicates": [],
+      "accumulatedDuplicates": [
+        "92918",
+        "92872",
+        "92885",
+        "93015",
+        "81994",
+        "90466",
+        "92863",
+        "98936",
+        "98942",
+        "98944"
+      ]
+    },
+    {
+      "start": "2010-09-03T12:00:00Z",
+      "region": "GS",
+      "status": "NO_NEW_IDS",
+      "priorCohortDuplicates": [],
+      "accumulatedDuplicates": [
+        "92918",
+        "92872",
+        "92885",
+        "93015",
+        "81994",
+        "90466",
+        "92863",
+        "98936",
+        "98942",
+        "98944"
+      ]
+    },
+    {
+      "start": "2010-09-04T12:00:00Z",
+      "region": "GS",
+      "status": "NO_NEW_IDS",
+      "priorCohortDuplicates": [],
+      "accumulatedDuplicates": [
+        "92918",
+        "92872",
+        "92885",
+        "93015",
+        "81994",
+        "88538",
+        "90466",
+        "92863",
+        "98936",
+        "98942",
+        "98944"
+      ]
+    },
+    {
+      "start": "2010-09-05T12:00:00Z",
+      "region": "GS",
+      "status": "NO_NEW_IDS",
+      "priorCohortDuplicates": [],
+      "accumulatedDuplicates": [
+        "92918",
+        "92872",
+        "92885",
+        "93015",
+        "81994",
+        "90466",
+        "92863",
+        "98942",
+        "98944"
+      ]
+    },
+    {
+      "start": "2010-09-06T12:00:00Z",
+      "region": "GS",
+      "status": "NO_NEW_IDS",
+      "priorCohortDuplicates": [],
+      "accumulatedDuplicates": [
+        "92918",
+        "92872",
+        "92885",
+        "93015",
+        "81994",
+        "90466",
+        "92863",
+        "98942",
+        "98944"
+      ]
+    },
+    {
+      "start": "2010-09-07T12:00:00Z",
+      "region": "GS",
+      "status": "NO_NEW_IDS",
+      "priorCohortDuplicates": [],
+      "accumulatedDuplicates": [
+        "92918",
+        "92872",
+        "92885",
+        "93015",
+        "81994",
+        "90466",
+        "92863",
+        "98942",
+        "98944"
+      ]
+    },
+    {
+      "start": "2010-09-08T12:00:00Z",
+      "region": "GS",
+      "status": "NO_NEW_IDS",
+      "priorCohortDuplicates": [],
+      "accumulatedDuplicates": [
+        "92918",
+        "92920",
+        "92872",
+        "92885",
+        "93015",
+        "81994",
+        "90466",
+        "92863",
+        "98942",
+        "98944"
+      ]
+    },
+    {
+      "start": "2010-09-09T12:00:00Z",
+      "region": "GS",
+      "status": "NO_NEW_IDS",
+      "priorCohortDuplicates": [],
+      "accumulatedDuplicates": [
+        "92918",
+        "92920",
+        "92872",
+        "92885",
+        "93015",
+        "81994",
+        "90466",
+        "92863",
+        "98942"
+      ]
+    },
+    {
+      "start": "2010-09-10T12:00:00Z",
+      "region": "GS",
+      "status": "NO_NEW_IDS",
+      "priorCohortDuplicates": [],
+      "accumulatedDuplicates": [
+        "92918",
+        "92920",
+        "92872",
+        "92885",
+        "93015",
+        "81994",
+        "90466",
+        "92863",
+        "98942"
+      ]
+    },
+    {
+      "start": "2010-09-11T12:00:00Z",
+      "region": "GS",
+      "status": "NO_NEW_IDS",
+      "priorCohortDuplicates": [],
+      "accumulatedDuplicates": [
+        "92918",
+        "92920",
+        "92872",
+        "92885",
+        "93015",
+        "81994",
+        "90466",
+        "92863",
+        "98942"
+      ]
+    },
+    {
+      "start": "2010-09-15T12:00:00Z",
+      "region": "GS",
+      "status": "NO_NEW_IDS",
+      "priorCohortDuplicates": [],
+      "accumulatedDuplicates": [
+        "92918",
+        "92920",
+        "92872",
+        "92885",
+        "93015",
+        "81994",
+        "90466",
+        "98942"
+      ]
+    },
+    {
+      "start": "2010-09-16T12:00:00Z",
+      "region": "GS",
+      "status": "SELECTED",
+      "new": 1
+    },
+    {
+      "start": "2010-09-23T12:00:00Z",
+      "region": "GS",
+      "status": "NO_NEW_IDS",
+      "priorCohortDuplicates": [],
+      "accumulatedDuplicates": [
+        "92918",
+        "92920",
+        "92872",
+        "92885",
+        "93015",
+        "81994",
+        "88532",
+        "90466",
+        "98942"
+      ]
+    },
+    {
+      "start": "2010-09-24T12:00:00Z",
+      "region": "GS",
+      "status": "NO_NEW_IDS",
+      "priorCohortDuplicates": [],
+      "accumulatedDuplicates": [
+        "92918",
+        "92920",
+        "92872",
+        "92885",
+        "93015",
+        "81994",
+        "88532",
+        "90466",
+        "98942"
+      ]
+    },
+    {
+      "start": "2010-10-16T12:00:00Z",
+      "region": "GS",
+      "status": "SELECTED",
+      "new": 2
+    }
+  ],
+  "drifterIds": [
+    "92918",
+    "92920",
+    "89822",
+    "92885",
+    "92917",
+    "98904",
+    "98942",
+    "98944",
+    "92872",
+    "98941",
+    "93015",
+    "92863",
+    "98936",
+    "81994",
+    "88538",
+    "90466",
+    "92869",
+    "88532",
+    "92919",
+    "92906"
+  ],
+  "derivationHash": "46892c3724f99e3425d50695d848b8ef966cc5d54cd040031c6e81b512c65b7d",
+  "forbiddenInputAccess": 0,
+  "velocityDownloaded": false,
+  "forcingDownloaded": false,
+  "trajectoryComputed": false,
+  "performanceDataRead": false,
+  "modelRun": false,
+  "newEligibilityComputed": false,
+  "newInventory": false
+}

@@ -33,13 +33,16 @@ v1 에는 진짜 중앙 이음매가 있다 — `prototype/js/access-mode.js` �
 
 | 문제 | 내용 |
 |---|---|
-| CHECK 불일치 | `profiles.tier` 는 `('free','paid')` 로 제약되는데 `apply_paid_order` 는 `'explorer'`/`'intelligence'` 를 쓴다 |
-| 트리거 연동 | `sync_profile_membership_class` 와 `expire_subscriptions` 가 **둘 다** `tier='paid'` 에 걸려 있다 |
-| 서버 게이트 | `forecast-v8-policy.js:18` 이 `tier==='paid'` **문자열 일치**다 — 등급 비교가 아니다 |
+| CHECK 불일치 | `profiles.tier` 는 `('free','paid')` 로 제약되는데 `apply_paid_order` 는 `'explorer'`/`'intelligence'` 를 쓴다 (`schema.sql:17` vs `billing.sql:39,160,172`) |
+| 만료 처리 | `expire_subscriptions` 가 `where tier='paid'` 라 explorer·intelligence 구독자가 **영원히 안 내려간다.** 게다가 정의가 **두 벌**이다(`billing.sql:215`, `migrations/20260811080000:97`) — 어느 쪽이 운영에 사는지 저장소로는 확정 불가 |
+| 트리거 | `sync_profile_membership_class` 가 `before insert or update of tier, manual_access_until` 이라 **`subscription_ends` 가 빠져 있다**(`20260827090000:41`). 구독 기간만 갱신하는 흔한 쓰기가 트리거를 안 돌려 `membership_class` 가 낡는다 |
+| 서버 게이트 | `forecast-v8-policy.js:18` 이 `tier==='paid'` **문자열 일치**였다 — 등급 비교가 아니다 |
 
-→ **셋을 한 번에** 고친다. `CHECK` 만 넓히면 유료 가입자가 전부 `membership_class='free'` 로 찍힌다.
+> **2026-09-08 정정.** 이 표는 처음에 "CHECK 만 넓히면 유료 가입자가 **전부** `membership_class='free'` 로 찍힌다" 고 적었다. 과장이었다. precedence fix(`20260827193000:18-23`)가 `subscription_ends` 를 먼저 보므로, 구독 기간이 살아 있으면 `'paid'` 로 바르게 찍힌다. 실제 피해 범위는 **기간 필드가 빈 유료 등급 행**으로 좁고, 진짜 구멍은 위 표의 트리거 행(`subscription_ends` 누락)이다.
 
-→ 그다음 `forecast-v8-policy.js` 를 등급 비교로 바꾸고, `store.js` 의 fail-OPEN 을 닫는다.
+→ **넷을 한 커밋에서** 고친다. 특히 SQL 만 적용하면 **상황이 나빠진다** — 문자열 일치 게이트가 남아 있으면 결제가 성공해 `tier='explorer'` 가 되는 순간 유료 구독자가 전부 예보에서 차단된다.
+
+→ 2026-09-08 현재: `forecast-v8-policy.js` 는 등급 서열 비교로 **고쳤다**(테스트 동봉). SQL 은 `migrations/20260908120000_tier_vocabulary_unification.sql` 에 **초안만** 두었고 운영 적용은 사람이 한다. `store.js` 의 fail-OPEN 은 아직 열려 있다.
 
 ---
 

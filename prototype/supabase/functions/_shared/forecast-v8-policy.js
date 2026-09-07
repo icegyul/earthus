@@ -14,8 +14,32 @@ function timeIsAfter(value, boundary) {
   return Number.isFinite(instant) && Number.isFinite(edge) && instant > edge;
 }
 
+// 등급 서열. ⚠️ prototype/js/access-mode.js 의 TIER_RANK 와 **정수가 같아야 한다.**
+// Edge Function 은 functions/ 밖을 import 할 수 없어(전례 0건) 일부러 복제한다.
+// 두 표가 어긋나면 서버가 막는 것을 화면은 열어 준다.
+//
+// 왜 문자열 일치를 버렸나: plans.tier 는 이미 'explorer'/'intelligence' 이고
+// apply_paid_order 가 그 값을 profiles.tier 에 쓴다. `tier !== 'paid'` 로 두면
+// 결제가 성공하는 순간 유료 구독자가 전부 예보에서 차단된다.
+// 'paid' 는 기존 행이 전부 그 값이라 explorer 동급의 영구 입력 별칭으로 남긴다.
+const TIER_RANK = Object.freeze({
+  free: 0,
+  paid: 1,          // 레거시 별칭 — explorer 와 동급
+  explorer: 1,
+  intelligence: 2,
+  business: 3,      // 소비자 티어 아님
+});
+
+const FORECAST_MIN_RANK = 1;   // explorer 이상
+
+/** 모르는 값은 0(무료)으로 읽는다 — 오타가 권한을 열어주면 안 된다. */
+export function tierRank(tier) {
+  const r = TIER_RANK[String(tier || '').toLowerCase()];
+  return Number.isInteger(r) ? r : 0;
+}
+
 export function hasActiveForecastEntitlement(profile, now = new Date().toISOString()) {
-  if (profile?.tier !== 'paid') return false;
+  if (tierRank(profile?.tier) < FORECAST_MIN_RANK) return false;
   return timeIsAfter(profile.subscription_ends, now)
     || timeIsAfter(profile.manual_access_until, now);
 }

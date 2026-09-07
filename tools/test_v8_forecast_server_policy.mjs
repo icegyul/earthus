@@ -49,6 +49,38 @@ assert.equal(policy.hasActiveForecastEntitlement({
   tier: 'paid', subscription_ends: null, manual_access_until: '2026-08-22T03:00:00Z',
 }, NOW), true);
 
+// PHASE 2 STEP 2.2 — 등급 서열. 문자열 일치였을 때는 apply_paid_order 가 쓰는
+// 'explorer'/'intelligence' 가 전부 차단됐다. 결제가 성공하는 순간 유료 구독자가 막히는 상태였다.
+assert.equal(policy.hasActiveForecastEntitlement({ ...activeProfile, tier: 'explorer' }, NOW), true);
+assert.equal(policy.hasActiveForecastEntitlement({ ...activeProfile, tier: 'intelligence' }, NOW), true);
+assert.equal(policy.hasActiveForecastEntitlement({ ...activeProfile, tier: 'INTELLIGENCE' }, NOW), true);
+// 모르는 값·빈 값은 무료로 읽는다 — 오타가 권한을 열어주면 안 된다.
+assert.equal(policy.hasActiveForecastEntitlement({ ...activeProfile, tier: 'gold' }, NOW), false);
+assert.equal(policy.hasActiveForecastEntitlement({ ...activeProfile, tier: null }, NOW), false);
+// 등급이 높아도 구독이 끝났으면 못 본다 — 서열이 기간 판정을 덮지 않는다.
+assert.equal(policy.hasActiveForecastEntitlement({
+  tier: 'intelligence', subscription_ends: '2026-08-20T03:00:00Z', manual_access_until: null,
+}, NOW), false);
+// 화면(access-mode.js)과 서버가 같은 정수를 써야 한다. 어긋나면 한쪽만 열린다.
+assert.equal(policy.tierRank('free'), 0);
+assert.equal(policy.tierRank('paid'), 1);
+assert.equal(policy.tierRank('explorer'), 1);
+assert.equal(policy.tierRank('intelligence'), 2);
+
+// Edge Function 은 functions/ 밖을 import 할 수 없어 서열표를 복제해 둔다.
+// 복제본은 반드시 어긋난다 — 그래서 여기서 두 파일의 정수를 직접 대조한다.
+{
+  const { readFileSync } = await import('node:fs');
+  const rankTable = (src) => {
+    const m = src.match(/TIER_RANK\s*=\s*Object\.freeze\(\{([\s\S]*?)\}\)/);
+    assert.ok(m, 'TIER_RANK 표를 못 찾았다');
+    return Object.fromEntries([...m[1].matchAll(/(\w+)\s*:\s*(\d+)/g)].map((x) => [x[1], Number(x[2])]));
+  };
+  const client = rankTable(readFileSync(new URL('../prototype/js/access-mode.js', import.meta.url), 'utf8'));
+  const server = rankTable(readFileSync(new URL('../prototype/supabase/functions/_shared/forecast-v8-policy.js', import.meta.url), 'utf8'));
+  assert.deepEqual(server, client, 'access-mode.js 와 forecast-v8-policy.js 의 등급 서열이 어긋났다 — 서버와 화면이 다른 판정을 한다');
+}
+
 assert.equal(policy.validateReleasedForecast(released, NOW).ok, true);
 assert.equal(policy.validateReleasedForecast({ ...released, skill_gate: false }, NOW).code, 'RELEASE_GATE_CLOSED');
 assert.equal(policy.validateReleasedForecast({ ...released, release_state: 'SHADOW' }, NOW).code, 'FORECAST_NOT_RELEASED');

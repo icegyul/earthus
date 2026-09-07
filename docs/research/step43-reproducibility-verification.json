@@ -1,0 +1,301 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "experiment-preregistration-step37",
+  "step": 43,
+  "purpose": "independent reproducibility verification of the locked STEP 36-42 result from the frozen committed records; validation only, no new scientific result",
+  "currentHead": "097c157038cd18b579b535094e89f6817d467a3b",
+  "expectedHead": "bae85245e827f53ee9782201c442ea7849c04e82",
+  "headAdvancedByOtherSession": true,
+  "headAfterStep42": {
+    "commitsAfterStep42": [
+      {
+        "commit": "097c157038cd18b579b535094e89f6817d467a3b",
+        "subject": "v1 sheet: clear cyclone extras blocks on reopen (content was repeating)",
+        "files": [
+          "prototype/js/ui.js"
+        ]
+      }
+    ],
+    "researchFilesTouchedAfterStep42": []
+  },
+  "inputCommits": {
+    "step36": "043a09b8539955868651a06e7c2c44e3c606803f",
+    "step37": "74d19f0a9661a41d63a08c56bbd3f91e9d8b312d",
+    "step38": "23e78f863fb092aa9e3c36e4d74d4afd4393e7f4",
+    "step40": "2b1a7baa7ef9e69d25cecbff2b09fca8700fca80",
+    "step41": "9a3223089099bcb09a2589cc8a4bda82fcb47ae5",
+    "step42": "bae85245e827f53ee9782201c442ea7849c04e82",
+    "runtime": "155995dd062b557b7a2ba90e5e5fb5a54ee28048"
+  },
+  "uiCommitBetweenStep41And42": "43dd07ff6ed6ee53ec5e2d565e4cf499dae57b55",
+  "inputShaIdentities": {
+    "docs/research/step36-cohort-extension-manifest.json": "bda31c3ca36a395acadc95c1cb18663964ee9a00e4a72a7c2504182f51df06ca",
+    "docs/research/step37-experiment-preregistration-protocol.json": "eae40cde609155a32ccbe0c01a6090715e2324d72cc080e2e7043ecbd90f2d0d",
+    "docs/research/step38-data-freeze-manifest.json": "5e979cff746a1ee72c877a8b1bdb8c1bc1e310605ab9fc7cc6337d9ea902da77",
+    "docs/research/step39-execution-protocol.json": "5bd1eb236d2d423f2af24440cceea798e150fd20ee2a4acb754b78522b6aba23",
+    "docs/research/step39-evaluation.json": "5ed91fc3ed18184e222c180ef712fca12775563749a3b8b47cf698165aaf76ac",
+    "docs/research/step39-summary.json": "7d90ba995733071f9536df598332bffdc2bd75d4206e7ef23a2c1f9bde67ea83",
+    "docs/research/step39-execution-record.json": "d551faf996b85d1d76e9296302d3dca1374e2d7971802c82b637970a9fbec131",
+    "docs/research/step40-bootstrap-protocol.json": "60dbf72cd91d91cc4cc2c72d96c4aec41ffd39ce8368db2d4081070f77786fb4",
+    "docs/research/step40-bootstrap-result.json": "e7fe94c8f527846721f856418f1c4686a75132e21a72b122006d3d7bdbe6482f",
+    "docs/research/step40-bootstrap-replicates.csv": "a2ca2a3266411da186f78140a41f1bee0bf831d4fbe99b5d4acb3849f4378572",
+    "docs/research/step41-lock-record.json": "672b7def2f157fe976c98e5b501f5504f4cdba89707d6a95486c7e42ffd855df",
+    "docs/research/step42-final-scientific-results-report.md": "c490669413a83bee73a2a33733432073f3e898ee52ce47722b4b365a5da5f1f0",
+    "tools/research/check_step42_final_report.py": "ba9f7fe334dc71b499152460f20d2292b6fd4fc194b3c7c56475d16de26a3111"
+  },
+  "ancestry": {
+    "step36": true,
+    "step37": true,
+    "step38": true,
+    "step40": true,
+    "step41": true,
+    "step42": true,
+    "runtime": true,
+    "step42ParentIs43dd07ff": true,
+    "43dd07ffDescendantOfStep41": true
+  },
+  "ancestryStatus": "PASS",
+  "step42Immutability": {
+    "commit": "bae85245e827f53ee9782201c442ea7849c04e82",
+    "files": [
+      "docs/research/step42-final-scientific-results-report.md",
+      "tools/research/check_step42_final_report.py"
+    ],
+    "exactlyTwoResearchFiles": true,
+    "expectedSha256": {
+      "docs/research/step42-final-scientific-results-report.md": "c490669413a83bee73a2a33733432073f3e898ee52ce47722b4b365a5da5f1f0",
+      "tools/research/check_step42_final_report.py": "ba9f7fe334dc71b499152460f20d2292b6fd4fc194b3c7c56475d16de26a3111"
+    },
+    "workingCopySha256": {
+      "docs/research/step42-final-scientific-results-report.md": "c490669413a83bee73a2a33733432073f3e898ee52ce47722b4b365a5da5f1f0",
+      "tools/research/check_step42_final_report.py": "ba9f7fe334dc71b499152460f20d2292b6fd4fc194b3c7c56475d16de26a3111"
+    },
+    "committedBlobSha256": {
+      "docs/research/step42-final-scientific-results-report.md": "c490669413a83bee73a2a33733432073f3e898ee52ce47722b4b365a5da5f1f0",
+      "tools/research/check_step42_final_report.py": "ba9f7fe334dc71b499152460f20d2292b6fd4fc194b3c7c56475d16de26a3111"
+    },
+    "status": "PASS"
+  },
+  "step36to41Immutability": {
+    "step36": {
+      "commit": "043a09b8539955868651a06e7c2c44e3c606803f",
+      "researchFiles": 6,
+      "modified": []
+    },
+    "step37": {
+      "commit": "74d19f0a9661a41d63a08c56bbd3f91e9d8b312d",
+      "researchFiles": 4,
+      "modified": []
+    },
+    "step38": {
+      "commit": "23e78f863fb092aa9e3c36e4d74d4afd4393e7f4",
+      "researchFiles": 8,
+      "modified": []
+    },
+    "step40": {
+      "commit": "2b1a7baa7ef9e69d25cecbff2b09fca8700fca80",
+      "researchFiles": 5,
+      "modified": []
+    },
+    "step41": {
+      "commit": "9a3223089099bcb09a2589cc8a4bda82fcb47ae5",
+      "researchFiles": 22,
+      "modified": []
+    },
+    "step42": {
+      "commit": "bae85245e827f53ee9782201c442ea7849c04e82",
+      "researchFiles": 2,
+      "modified": []
+    }
+  },
+  "step36to41ImmutabilityStatus": "PASS",
+  "reconstructedPrimary": {
+    "Delta_w_km": {
+      "GS-Y1": -17.872,
+      "GS-Y2": -5.615,
+      "GS-Y3": -21.379,
+      "GS-Y4": -41.283,
+      "GS-Y5": "NOT_AVAILABLE",
+      "GS-Y6": -65.774,
+      "GS-Y7": "NOT_AVAILABLE",
+      "GS-Y8": "NOT_AVAILABLE",
+      "GS-Y9": -78.371
+    },
+    "validWindows": 6,
+    "registeredWindows": 9,
+    "Theta_km": -31.331,
+    "B": 10000,
+    "B_recorded": 10000,
+    "seed": 20260907,
+    "availableReplicates": 9999,
+    "notAvailableReplicates": 1,
+    "CI95_km": [
+      -72.0725,
+      -11.7435
+    ],
+    "H1": "SUPPORTED",
+    "descriptiveLabel": "CANDIDATE_DESCRIPTIVELY_FAVORED",
+    "candidateStatus": "CANDIDATE_ONLY",
+    "operationalPromotion": false,
+    "source": "Delta_w and Theta re-aggregated from step39-evaluation.json primaryDeltas72h; replicate counts re-counted from step40-bootstrap-replicates.csv; interval, seed, H1 and status read from step40-bootstrap-result.json"
+  },
+  "expectedPrimary": {
+    "Delta_w_km": {
+      "GS-Y1": -17.872,
+      "GS-Y2": -5.615,
+      "GS-Y3": -21.379,
+      "GS-Y4": -41.283,
+      "GS-Y5": "NOT_AVAILABLE",
+      "GS-Y6": -65.774,
+      "GS-Y7": "NOT_AVAILABLE",
+      "GS-Y8": "NOT_AVAILABLE",
+      "GS-Y9": -78.371
+    },
+    "validWindows": 6,
+    "registeredWindows": 9,
+    "Theta_km": -31.331,
+    "B": 10000,
+    "B_recorded": 10000,
+    "seed": 20260907,
+    "availableReplicates": 9999,
+    "notAvailableReplicates": 1,
+    "CI95_km": [
+      -72.0725,
+      -11.7435
+    ],
+    "H1": "SUPPORTED",
+    "descriptiveLabel": "CANDIDATE_DESCRIPTIVELY_FAVORED",
+    "candidateStatus": "CANDIDATE_ONLY",
+    "operationalPromotion": false
+  },
+  "exactMatch": true,
+  "secondaryConsistency": {
+    "reconstructed": {
+      "nested_CA_km": {
+        "24h": -8.105,
+        "48h": -30.15,
+        "72h": -31.331
+      },
+      "pooled_CA_km": {
+        "24h": -9.229,
+        "48h": -23.862,
+        "72h": -23.981
+      },
+      "nested_BA_km": {
+        "24h": 1.171,
+        "48h": 3.308,
+        "72h": 9.44
+      },
+      "temporalLabel": "NO_CLEAR_TEMPORAL_DIFFERENCE",
+      "sensitivity": {
+        "unit": "drifter pair",
+        "n": 16,
+        "pooledMedian_km": -23.981,
+        "CI95_km": [
+          -36.316,
+          -6.626
+        ],
+        "B": 10000,
+        "seed": 20260907
+      }
+    },
+    "expected": {
+      "nested_CA_km": {
+        "24h": -8.105,
+        "48h": -30.15,
+        "72h": -31.331
+      },
+      "pooled_CA_km": {
+        "24h": -9.229,
+        "48h": -23.862,
+        "72h": -23.981
+      },
+      "nested_BA_km": {
+        "24h": 1.171,
+        "48h": 3.308,
+        "72h": 9.44
+      },
+      "temporalLabel": "NO_CLEAR_TEMPORAL_DIFFERENCE",
+      "sensitivity": {
+        "unit": "drifter pair",
+        "n": 16,
+        "pooledMedian_km": -23.981,
+        "CI95_km": [
+          -36.316,
+          -6.626
+        ],
+        "B": 10000,
+        "seed": 20260907
+      }
+    },
+    "match": true
+  },
+  "missingnessConsistency": {
+    "frozen": {
+      "GS-Y7/92869": {
+        "A": {
+          "OUT_OF_DOMAIN": 1
+        },
+        "B": {
+          "OUT_OF_DOMAIN": 1
+        },
+        "C": {
+          "OUT_OF_DOMAIN": 1
+        },
+        "delta72h": "NOT_AVAILABLE"
+      },
+      "GS-Y8/88532": {
+        "A": {
+          "FORCING_UNAVAILABLE": 1
+        },
+        "B": {
+          "FORCING_UNAVAILABLE": 1
+        },
+        "C": {
+          "FORCING_UNAVAILABLE": 1
+        },
+        "delta72h": "NOT_AVAILABLE"
+      },
+      "GS-Y5/98936": {
+        "A": {},
+        "B": {},
+        "C": {
+          "FORCING_UNAVAILABLE": 1
+        },
+        "delta72h": "NOT_AVAILABLE"
+      },
+      "GS-Y2/92872": {
+        "A": {},
+        "B": {},
+        "C": {
+          "FORCING_UNAVAILABLE": 1,
+          "COMPLETED": 1
+        },
+        "delta72h": "NOT_AVAILABLE"
+      },
+      "availability72h": {
+        "A": 18,
+        "C": 16,
+        "pairs_CA": 16
+      }
+    },
+    "match": true
+  },
+  "interpretationSafety": {
+    "requiredPresent": [],
+    "forbiddenPresent": [],
+    "negatedClaimsRetained": [],
+    "status": "PASS"
+  },
+  "noNewScience": {
+    "trajectoriesRun": 0,
+    "bootstrapRedrawn": 0,
+    "dataAcquired": 0,
+    "parametersChanged": 0,
+    "cohortChanged": 0,
+    "statisticalTestsAdded": 0
+  },
+  "finalStatus": "PASS",
+  "automaticCommit": false,
+  "push": false
+}

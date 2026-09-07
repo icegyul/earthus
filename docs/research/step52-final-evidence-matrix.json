@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "final-research-audit-step52",
+  "step": 52,
+  "role": "FINAL EVIDENCE MATRIX",
+  "PRIMARY": {
+    "hypothesis": "H1",
+    "comparison": "C vs A",
+    "horizon": "72h",
+    "Theta_km": -31.331,
+    "CI95_km": [
+      -72.0725,
+      -11.7435
+    ],
+    "validWindows": "6/9",
+    "result": "SUPPORTED"
+  },
+  "VALIDATION_EXTENSION": {
+    "hypothesis": "H_EXT",
+    "comparison": "C vs A",
+    "horizon": "72h",
+    "Theta_km": -2.272,
+    "CI95_km": [
+      -9.597,
+      10.246
+    ],
+    "validWindows": "5/6",
+    "gate": "PASS",
+    "result": "NOT_SUPPORTED"
+  },
+  "ORIGINAL_VALIDATION": {
+    "status": "BLOCKED",
+    "uniqueDrifters": 14,
+    "requiredDrifters": 20,
+    "selectedWindows": 4,
+    "requiredWindows": 6,
+    "performance": "NOT RUN"
+  },
+  "pooled": false,
+  "combinedStatistic": false,
+  "createdAtUTC": "2026-09-07T09:56:26Z"
+}

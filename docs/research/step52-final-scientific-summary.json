@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "final-research-audit-step52",
+  "step": 52,
+  "status": "FINAL_RESEARCH_AUDIT_PASS",
+  "auditManifestSha256": "d8fbc591c523645760576ec57ddd495023b6bb39141144d6a91e1a3723e91052",
+  "evidenceMatrixSha256": "b71ff585692150fec7248e75e7a66adc9e8a45f107d1a47158b5b9e8630e57db",
+  "hashInventorySha256": "d93027974522c3ce63451145f75fff257cc2f042192e26f7b2e2877f05bdc9cb",
+  "primary": {
+    "H1": "SUPPORTED",
+    "Theta_72h_km": -31.331,
+    "CI95_km": [
+      -72.0725,
+      -11.7435
+    ],
+    "validWindows": "6/9"
+  },
+  "validationExtension": {
+    "H_EXT": "NOT_SUPPORTED",
+    "Theta_72h_km": -2.272,
+    "CI95_km": [
+      -9.597,
+      10.246
+    ],
+    "validWindows": "5/6",
+    "gate": "PASS"
+  },
+  "originalValidation": {
+    "status": "BLOCKED",
+    "uniqueDrifters": 14,
+    "selectedWindows": 4,
+    "performanceExecuted": false
+  },
+  "candidateStatus": "CANDIDATE_ONLY",
+  "operationalPromotion": false,
+  "productionClaim": false,
+  "primaryResult": "UNCHANGED",
+  "extensionResult": "UNCHANGED",
+  "pooling": false,
+  "reproducibility": "PASS",
+  "audit": "PASS",
+  "finalInterpretation": "Primary H1 was supported in the preregistered primary experiment, but the geographically independent validation extension did not satisfy the preregistered replication criterion. Therefore, the candidate remains CANDIDATE_ONLY and no operational promotion is justified without additional independent validation.",
+  "forbiddenLanguage": [
+    "universally superior",
+    "globally superior",
+    "validated model",
+    "production ready",
+    "operationally proven",
+    "causally proven",
+    "C is false",
+    "C is disproven",
+    "primary result was wrong"
+  ],
+  "allowedLanguage": [
+    "supported in the preregistered primary experiment",
+    "not reproduced under the preregistered validation-extension criterion",
+    "geographically independent validation extension",
+    "evidence remains insufficient for operational promotion",
+    "candidate-only"
+  ],
+  "validator": "tools/research/check_step52_final_research_package.py",
+  "createdAtUTC": "2026-09-07T09:56:26Z",
+  "automaticCommit": false,
+  "push": false
+}

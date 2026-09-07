@@ -1,0 +1,397 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "final-research-audit-step52",
+  "step": 52,
+  "role": "SHA-256 inventory of the current disk state of the locked artefacts; no file was modified",
+  "headAtInventory": "539205efba50cb1940c337db3f51717d9b5c14be",
+  "inventory": {
+    "STEP 36": [
+      {
+        "path": "docs/research/step36-cohort-extension-protocol.json",
+        "sha256": "9832f5c4ec709531e8965be6d38c0628ab2be70507cf684076298a7dedfcafed",
+        "bytes": 5561,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      },
+      {
+        "path": "docs/research/step36-cohort-extension-manifest.json",
+        "sha256": "bda31c3ca36a395acadc95c1cb18663964ee9a00e4a72a7c2504182f51df06ca",
+        "bytes": 34641,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      },
+      {
+        "path": "docs/research/step36-cohort-extension-status.json",
+        "sha256": "fa17d06115b3c9904058e2e2d45a693257e3f63a7d306a53c3467814ce6ff147",
+        "bytes": 671,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      }
+    ],
+    "STEP 37": [
+      {
+        "path": "docs/research/step37-experiment-preregistration-protocol.json",
+        "sha256": "eae40cde609155a32ccbe0c01a6090715e2324d72cc080e2e7043ecbd90f2d0d",
+        "bytes": 49784,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      },
+      {
+        "path": "docs/research/step37-experiment-preregistration-status.json",
+        "sha256": "61de721a97b57b04692f7b357cb8ef3a62088ef3cecdfbf010af4c760434a767",
+        "bytes": 2202,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      }
+    ],
+    "STEP 38": [
+      {
+        "path": "docs/research/step38-source-acquisition-protocol.json",
+        "sha256": "a4dfbcbea6562e02b032e0557397a61870e31b53e980931c396f44905b9b88cd",
+        "bytes": 6254,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      },
+      {
+        "path": "docs/research/step38-source-acquisition-manifest.json",
+        "sha256": "c9d3109fbab2970b43b887cc7ba81d3aacbdd094375b091e8e185097a22dc2a0",
+        "bytes": 390664,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      },
+      {
+        "path": "docs/research/step38-data-freeze-manifest.json",
+        "sha256": "5e979cff746a1ee72c877a8b1bdb8c1bc1e310605ab9fc7cc6337d9ea902da77",
+        "bytes": 112621,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      },
+      {
+        "path": "docs/research/step38-source-acquisition-status.json",
+        "sha256": "560f079a37bcec976f0e5132f7c6c47141a52f6c89d633ea6845d8f242875fd1",
+        "bytes": 1713,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      }
+    ],
+    "STEP 39": [
+      {
+        "path": "docs/research/step39-execution-protocol.json",
+        "sha256": "5bd1eb236d2d423f2af24440cceea798e150fd20ee2a4acb754b78522b6aba23",
+        "bytes": 5281,
+        "tracked": true,
+        "present": true
+      },
+      {
+        "path": "docs/research/step39-execution-record.json",
+        "sha256": "d551faf996b85d1d76e9296302d3dca1374e2d7971802c82b637970a9fbec131",
+        "bytes": 210375,
+        "tracked": true,
+        "present": true
+      },
+      {
+        "path": "docs/research/step39-evaluation.json",
+        "sha256": "5ed91fc3ed18184e222c180ef712fca12775563749a3b8b47cf698165aaf76ac",
+        "bytes": 47141,
+        "tracked": true,
+        "present": true
+      },
+      {
+        "path": "docs/research/step39-summary.json",
+        "sha256": "7d90ba995733071f9536df598332bffdc2bd75d4206e7ef23a2c1f9bde67ea83",
+        "bytes": 13092,
+        "tracked": true,
+        "present": true
+      },
+      {
+        "path": "docs/research/step39-paired-table.csv",
+        "sha256": "30fbc404142e9b20bb83879a67821614937a146810078088cb623bbb04623035",
+        "bytes": 4904,
+        "tracked": true,
+        "present": true
+      }
+    ],
+    "STEP 40": [
+      {
+        "path": "docs/research/step40-bootstrap-protocol.json",
+        "sha256": "60dbf72cd91d91cc4cc2c72d96c4aec41ffd39ce8368db2d4081070f77786fb4",
+        "bytes": 3999,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      },
+      {
+        "path": "docs/research/step40-bootstrap-result.json",
+        "sha256": "e7fe94c8f527846721f856418f1c4686a75132e21a72b122006d3d7bdbe6482f",
+        "bytes": 3503,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      },
+      {
+        "path": "docs/research/step40-bootstrap-replicates.csv",
+        "sha256": "a2ca2a3266411da186f78140a41f1bee0bf831d4fbe99b5d4acb3849f4378572",
+        "bytes": 368759,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      }
+    ],
+    "STEP 41": [
+      {
+        "path": "docs/research/step41-lock-record.json",
+        "sha256": "672b7def2f157fe976c98e5b501f5504f4cdba89707d6a95486c7e42ffd855df",
+        "bytes": 7846,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      }
+    ],
+    "STEP 42": [
+      {
+        "path": "docs/research/step42-final-scientific-results-report.md",
+        "sha256": "c490669413a83bee73a2a33733432073f3e898ee52ce47722b4b365a5da5f1f0",
+        "bytes": 21349,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      }
+    ],
+    "STEP 43": [
+      {
+        "path": "docs/research/step43-reproducibility-verification.json",
+        "sha256": "d1ce6d7d5d0550e5b93d3ad5cd1fa2e67fb0f4ced0d87b0e2b9a44ad18b0b632",
+        "bytes": 9784,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      }
+    ],
+    "STEP 44": [
+      {
+        "path": "docs/research/step44-validation-preregistration-protocol.json",
+        "sha256": "6a2e2f04f7948e4ff3ac5dec065fc93a6072ce112bb2e072ce77c2606056de9f",
+        "bytes": 30374,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      },
+      {
+        "path": "docs/research/step44-validation-preregistration-status.json",
+        "sha256": "7da00c5b9fe3c04ab676a5db73025b72cfd2f5efeb034e64f4e6ccf608d45d1a",
+        "bytes": 2444,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      }
+    ],
+    "STEP 45A": [
+      {
+        "path": "docs/research/step45a-validation-input-recovery.json",
+        "sha256": "d186cf424eb691d2e7b0d0f12ae2967c027c3e75d07956a5197a840cc3fc781f",
+        "bytes": 17428,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      }
+    ],
+    "STEP 45B": [
+      {
+        "path": "docs/research/step45b-validation-protocol-amendment.json",
+        "sha256": "88398dc62fb6a18e1fe5d2d8d83feff17a77f2aa4c9d0c9136008c47d38a2e4b",
+        "bytes": 13467,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      }
+    ],
+    "STEP 45C": [
+      {
+        "path": "docs/research/step45c-validation-cohort-manifest.json",
+        "sha256": "65a9fc5a5efe40f266c94e0db9d93c969f702fde897a9030e1b01fbf264c4856",
+        "bytes": 27681,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      },
+      {
+        "path": "docs/research/step45c-validation-cohort-status.json",
+        "sha256": "5969c8aebfaff1936072409e29f7e949fc1e107d518be02dd7394d5ce312c891",
+        "bytes": 3150,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      }
+    ],
+    "STEP 46": [
+      {
+        "path": "docs/research/step46-validation-extension-preregistration-protocol.json",
+        "sha256": "c824b053fdeea20336f1396dc503232492ab77e1f9d5f032586b23c47d66862d",
+        "bytes": 26574,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      },
+      {
+        "path": "docs/research/step46-validation-extension-preregistration-status.json",
+        "sha256": "ae79299a4cc1c7fc0b290abe80b6b82f4c81f8baf892acbea15e04fb9cffb5ce",
+        "bytes": 2974,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      }
+    ],
+    "STEP 47": [
+      {
+        "path": "docs/research/step47-validation-extension-cohort-manifest.json",
+        "sha256": "32d3085010185d8c1a5734ef53be227252220b74a2526dbadf5c72de5eee2cca",
+        "bytes": 40675,
+        "tracked": false,
+        "present": true
+      },
+      {
+        "path": "docs/research/step47-validation-extension-cohort-status.json",
+        "sha256": "327f755a3514782939bbebe0a63aa70eb6295fb626d0c4b2893f95c5a2ccf677",
+        "bytes": 4813,
+        "tracked": false,
+        "present": true
+      },
+      {
+        "path": "docs/research/step47-validation-extension-cohort-report.md",
+        "sha256": "8b8ae25f7f14f536e7275890332886ef452bbbbc463a4f848467404ff12968b5",
+        "bytes": 7415,
+        "tracked": false,
+        "present": true
+      },
+      {
+        "path": "tools/research/derive_step47_validation_extension_cohort.py",
+        "sha256": "b5fc67ecc7663892287539ac1f3b74268584329796308d8d0916cc3c4c974a44",
+        "bytes": 17214,
+        "tracked": false,
+        "present": true
+      },
+      {
+        "path": "tools/research/check_step47_validation_extension_cohort.py",
+        "sha256": "a10ed38477deb384a4feb117e3ec058bba1319d91416ab7ecb22cee0713f9fb3",
+        "bytes": 14986,
+        "tracked": false,
+        "present": true
+      }
+    ],
+    "STEP 48": [
+      {
+        "path": "docs/research/step48-validation-source-acquisition-protocol.json",
+        "sha256": "fb94f983208187c3649789607450fcb679ae464dbfa63e76158d52e5b367ef8f",
+        "bytes": 14078,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      },
+      {
+        "path": "docs/research/step48-validation-source-acquisition-manifest.json",
+        "sha256": "e8b5cacadebaba3c7672ea627551f26a84f0ca783b5077db5bcba66a39615c38",
+        "bytes": 120524,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      },
+      {
+        "path": "docs/research/step48-validation-data-freeze-manifest.json",
+        "sha256": "8d50c2aebf32cae57e8b82e318eded07e29b5546dd29a58ea8c8b33a17da8719",
+        "bytes": 35517,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      },
+      {
+        "path": "docs/research/step48-validation-source-acquisition-status.json",
+        "sha256": "282c207802bb99f2fed46d94f4fae55488683ec419327b44407e7cbe1d7b4dae",
+        "bytes": 6156,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      }
+    ],
+    "STEP 49": [
+      {
+        "path": "docs/research/step49-validation-extension-execution-protocol.json",
+        "sha256": "6ec1ee2aa012fa54b67e90ae3c7976b95a733ee5f8aba1342e18bbda9cf42b79",
+        "bytes": 5826,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      },
+      {
+        "path": "docs/research/step49-validation-extension-execution-manifest.json",
+        "sha256": "c9b3d59653ae79a2715c24b054e8b3f3b5319c2efe36cf124e286787b9c38bdb",
+        "bytes": 42837,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      },
+      {
+        "path": "docs/research/step49-validation-extension-execution-status.json",
+        "sha256": "0792e65bd8f00e809e9ac7c00b34458613674bfb1e328a140fe06fc021859b16",
+        "bytes": 2792,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      }
+    ],
+    "STEP 50": [
+      {
+        "path": "docs/research/step50-validation-extension-endpoint-protocol.json",
+        "sha256": "89fb79f35256a30bd17dca4c91a899215203bba5a6063751fba8d095738591ab",
+        "bytes": 6037,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      },
+      {
+        "path": "docs/research/step50-validation-extension-results.json",
+        "sha256": "c1fbf574c778909be804b57a3bf81200148c5f22dfb710d3b0247d4150908903",
+        "bytes": 11524,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      },
+      {
+        "path": "docs/research/step50-validation-extension-endpoint-status.json",
+        "sha256": "70fd2d7b32c87a6848a0f91eb1259480e33849883889120a79dde7b20f76ad98",
+        "bytes": 2942,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      }
+    ],
+    "STEP 51": [
+      {
+        "path": "docs/research/step51-cross-validation-interpretation-lock.json",
+        "sha256": "7c3c70b88dbadd2c56fefccf9e110cb267df5526888583fec9386ec4a87edbd0",
+        "bytes": 9960,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      },
+      {
+        "path": "docs/research/step51-independent-validation-final-summary.json",
+        "sha256": "8f05e63d418fdda0f403cd6f5a2dafcbcb8ea21b3da540fead00b88b24e1f025",
+        "bytes": 2954,
+        "tracked": true,
+        "present": true,
+        "matchesLockCommitBlob": true
+      }
+    ]
+  },
+  "unverifiedPolicy": "a value that cannot be verified is recorded as UNVERIFIED and never guessed",
+  "createdAtUTC": "2026-09-07T09:56:26Z"
+}

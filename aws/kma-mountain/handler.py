@@ -182,6 +182,15 @@ def fetch_latest():
 def handler(event, context):
     if not KEY:
         return {"ok": False, "reason": "no-key"}
+    # ── 하루 예산 배분 (2026-09-07) ────────────────────────────────
+    # 이 자료는 늦어도 사람이 위험해지지 않는다. 허브 예산이 시각 대비 앞서 있으면
+    # 이번 회차를 양보한다 — 특보·지진·낙뢰·태풍·AWS 실측이 저녁에 굶지 않게 하는 것이 먼저다.
+    # (2026-09-06·09-07 이틀 다 19시쯤 용량이 말라 그 다섯이 자정까지 묵었다.)
+    ok, why = kma_hub.pace(s3, BUCKET, "kma-mountain", cost=MAX_NUM)
+    if not ok:
+        print(f"[kma-mountain] PACED — {why}. 이번 회차는 건너뛴다")
+        return {"ok": True, "skipped": "paced", "why": why, "calls": 0}
+
     try:
         d, bt, out = fetch_latest()
     except urllib.error.HTTPError as e:

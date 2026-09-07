@@ -199,6 +199,28 @@ def shape(items):
     return ordered, {k: v for k, v in sorted(days.items())}
 
 
+# 이미 받아 둔 회차와 같으면 다시 받지 않는다. 이 비율 이상이 최신 회차면 "다 받았다"로 본다 —
+# 칸 하나가 폴백으로 한 회차 뒤처졌다고 78칸을 통째로 다시 받을 이유는 없다(다음 발표 때 어차피 다 받는다).
+SKIP_SHARE = 0.95
+
+
+def stored_base():
+    """S3 에 올려둔 예보의 회차·실패 칸 수. 없거나 못 읽으면 None — 그때는 그냥 받는다."""
+    try:
+        doc = json.loads(s3.get_object(Bucket=BUCKET, Key=DST)["Body"].read())
+    except Exception:                                        # noqa: BLE001
+        return None
+    pts = doc.get("points") or []
+    if not pts:
+        return None
+    bases = [p.get("baseKst") for p in pts]
+    newest = max(b for b in bases if b)
+    return {"newest": newest,
+            "share": sum(1 for b in bases if b == newest) / len(bases),
+            "behind": sum(1 for b in bases if b != newest),
+            "failed": int(doc.get("failedCells") or 0)}
+
+
 @kma_hub.accounted("kma-fcst")
 def handler(event, context):
     if not KEY:
@@ -222,6 +244,32 @@ def handler(event, context):
 
     now = datetime.now(KST)
     runs = base_runs(now)
+
+    # ── 같은 회차를 다시 받지 않는다 (2026-09-07) ────────────────────────────
+    # 동네예보 발표는 하루 8번(02·05·08·11·14·17·20·23시)뿐인데 스케줄은 매시다.
+    # 그래서 24회 중 16회가 **같은 값을 다시 받고 있었다** — 2026-09-06 실측으로
+    # 이 Lambda 혼자 1,883회, 허브 하루 사용량 4,391회의 43%였다. 키는 14개 Lambda 가
+    # 나눠 쓰기 때문에 이 낭비가 저녁에 특보·AWS·낙뢰를 굶겼다.
+    #
+    # 스케줄을 8회로 줄이지 않고 여기서 거르는 이유: 매시 실행을 남겨 둬야
+    # 발표를 놓쳤거나 칸이 실패했을 때 **다음 시간에 저절로 다시 받는다.**
+    # 이미 최신 회차를 받아 뒀을 때만 허브 호출 0으로 끝낸다.
+    want = f"{runs[0][0]}{runs[0][1]}"
+    prev = stored_base()
+    if prev and prev["newest"] == want and prev["failed"] == 0 and prev["share"] >= SKIP_SHARE:
+        print(f"[kma-fcst] SKIP — 최신 회차 {want} 를 이미 받아 뒀다"
+              f"(뒤처진 칸 {prev['behind']}, 실패 0). 허브 호출 0")
+        return {"ok": True, "skipped": "same-base", "baseKst": want,
+                "behind": prev["behind"], "calls": 0}
+
+    # ── 하루 예산 배분 (2026-09-07) ────────────────────────────────
+    # 예보는 늦어도 사람이 위험해지지 않는다. 허브 예산이 시각 대비 앞서 있으면 양보한다 —
+    # 특보·지진·낙뢰·태풍·AWS 실측이 저녁에 굶지 않게 하는 것이 먼저다.
+    # 매시 실행이라 여기서 건너뛰어도 다음 시간에 다시 받는다.
+    ok, why = kma_hub.pace(s3, BUCKET, "kma-fcst", cost=len(cells))
+    if not ok:
+        print(f"[kma-fcst] PACED — {why}. 이번 회차는 건너뛴다(다음 시간에 다시 받는다)")
+        return {"ok": True, "skipped": "paced", "why": why, "calls": 0}
 
     results = {}
     with cf.ThreadPoolExecutor(max_workers=WORKERS) as ex:

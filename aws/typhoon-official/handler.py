@@ -290,11 +290,15 @@ def kma_rows(year, typ, seq):
     return rows
 
 
-def latest_seq(year, typ, hi=60):
-    """⚠️ 최신 발표번호를 찾아야 한다. seq 는 계속 늘어난다."""
+# 직전에 알던 회차에서 위로 몇 개까지 확인하나. 기상청 태풍 발표는 6시간마다 한 번이라
+# (2026-09-06 아카이브 실측: 06:00Z seq22 → 12:00Z seq23) 여섯이면 하루 반을 덮는다.
+PROBE_AHEAD = 6
+
+
+def _bisect_seq(year, typ, lo, hi):
+    """아무것도 모를 때만 쓰는 이분 탐색. 호출 약 6회."""
     best = 0
-    lo = 1
-    while lo <= hi:                       # 이분 탐색 (호출 수를 줄인다)
+    while lo <= hi:
         mid = (lo + hi) // 2
         try:
             r = kma_rows(year, typ, mid)
@@ -308,7 +312,45 @@ def latest_seq(year, typ, hi=60):
     return best
 
 
-def from_kma(year, numbers):
+def latest_seq(year, typ, hi=60, known=0):
+    """⚠️ 최신 발표번호를 찾아야 한다. seq 는 계속 늘어난다.
+
+    직전 산출물에 적어 둔 회차(known)가 있으면 **거기서 위로만** 확인한다.
+    왜: 매시 1~60 을 이분 탐색하면 태풍 하나당 6회다. 발표는 6시간마다 한 번이라
+        그 탐색의 대부분은 이미 아는 답을 다시 찾는 것이었다 —
+        2026-09-06 실측으로 하루 138회 중 약 120회가 이 프로브였고, 그동안
+        같은 키를 쓰는 특보·AWS·낙뢰가 저녁마다 용량 부족으로 묵었다.
+    """
+    if not known:
+        return _bisect_seq(year, typ, 1, hi)
+    seq = known
+    for step in range(1, PROBE_AHEAD + 1):
+        try:
+            got = bool(kma_rows(year, typ, known + step))
+        except Exception:                                    # noqa: BLE001
+            return seq
+        if not got:
+            return seq                                       # 여기서 끊긴다 — 위는 볼 필요 없다
+        seq = known + step
+    # 여섯 회차를 내리 넘겼다 = 오래 멈춰 있었다. 그때만 나머지를 이분 탐색한다.
+    return _bisect_seq(year, typ, seq, hi) or seq
+
+
+def known_seqs(prev, year):
+    """직전 산출물에 적힌 기상청 발표번호 {태풍번호: seq}. 없으면 빈 표(그때는 이분 탐색)."""
+    out = {}
+    for storm in (prev or {}).get("storms") or []:
+        for a in storm.get("agencies") or []:
+            if a.get("agency") != "KMA":
+                continue
+            m = re.match(rf"{year}-(\d+)호$", str(a.get("number") or ""))
+            sq = a.get("seq")
+            if m and isinstance(sq, int) and sq > 0:
+                out[int(m.group(1))] = max(out.get(int(m.group(1)), 0), sq)
+    return out
+
+
+def from_kma(year, numbers, known=None):
     """⚠️ numbers 는 {태풍번호: 이름} 이다. 기상청 API 는 **이름을 주지 않아서**
        JMA 가 준 이름을 붙여야 같은 태풍으로 묶인다.
        안 붙이면 'Dolphin(JMA)' 과 '2026-13(KMA)' 이 서로 다른 태풍으로 잡힌다(실측)."""
@@ -316,8 +358,10 @@ def from_kma(year, numbers):
     if not KMA_KEY:
         print("[kma] 키 없음 — 건너뜀")
         return out
+    known = known or {}
     for typ, nm in sorted(numbers.items()):
-        sq = latest_seq(year, typ)
+        seen = known.get(typ, 0)
+        sq = latest_seq(year, typ, known=seen)
         if not sq:
             continue
         try:
@@ -325,6 +369,16 @@ def from_kma(year, numbers):
         except Exception as e:                               # noqa: BLE001
             print(f"[kma] {typ}호 실패 {e!r}")
             continue
+        if not rows and seen:
+            # ⚠️ 막다른 길 방지. 저장해 둔 회차가 더 이상 응답하지 않으면(번호 재배정 등)
+            #    다음 실행도 같은 회차를 물어 영영 못 빠져나온다. 그때 한 번만 처음부터 찾는다.
+            print(f"[kma] {typ}호 — 저장된 회차 {seen} 이 비었다. 처음부터 다시 찾는다")
+            sq = latest_seq(year, typ)
+            try:
+                rows = kma_rows(year, typ, sq) if sq else []
+            except Exception as e:                           # noqa: BLE001
+                print(f"[kma] {typ}호 재탐색 실패 {e!r}")
+                continue
         if not rows:
             continue
         # ⚠️⚠️ mode=1 은 **누적 이력**을 준다 — seq=32 를 물으면 1~32 회차가 전부 온다.
@@ -457,13 +511,15 @@ def handler(event=None, context=None):
         n = str(r.get("number") or "")
         if len(n) == 4 and n.isdigit():
             nums[int(n[2:])] = r.get("name")
-    kma = from_kma(year, nums)
+    # 직전 산출물을 한 번만 읽어 둔다 — 발표번호 재사용(호출 절감)과 실패 시 보존에 둘 다 쓴다.
+    prev = load_previous()
+    kma = from_kma(year, nums, known=known_seqs(prev, year))
     # 지시서 §4(2026-09-05): 기상청이 403(일일 용량)·timeout 으로 비면 "기상청 행 없음"이 되면 안 된다.
     # 직전 문서의 기상청 발표를 stale 표시로 그대로 둔다 — 값은 그때 것이고, 그렇게 적힌다.
     kma_state = "OK"
     if nums and not kma:
         kma_state = "QUOTA_EXHAUSTED" if kma_hub.stop() else "FAILED_OR_EMPTY"
-        kma = retain_previous_kma(load_previous(), kma_state, keys=[(n or "").upper() for n in nums.values()])
+        kma = retain_previous_kma(prev, kma_state, keys=[(n or "").upper() for n in nums.values()])
         print(f"[kma] {kma_state} — 직전 발표 {len(kma)}건 유지(stale)")
     nhc = from_nhc()
 

@@ -59,6 +59,12 @@ SIDO = [
     ("4800000000", "경남"), ("5000000000", "제주"),
 ]
 
+# ⚠️ 위 ② 의 공백 지역. 시군구까지 훑어도 전부 "검색결과가 없습니다"였다.
+#    출력에는 그대로 "자료 없음"으로 남기되(그게 이 파일의 원칙이다) **부르지는 않는다** —
+#    없는 걸 매번 확인하느라 하루 32회를 허브에 쓰고 있었다(2026-09-06 실측).
+#    허브 키는 Lambda 14개가 나눠 쓰고, 그 낭비가 저녁에 특보·AWS 를 굶겼다.
+NO_DATA_SIDO = {"2900000000", "4600000000"}      # 광주 · 전남
+
 IDX = [
     ("uv",   LIV + "getUVIdxV3",            "자외선지수",   "UV index"),
     ("disp", LIV + "getAirDiffusionIdxV3",  "대기확산지수", "Air dispersion index"),
@@ -111,6 +117,15 @@ def pick_now(item, issued, now):
 def handler(event, context):
     if not KEY:
         return {"ok": False, "reason": "no-key"}
+    # ── 하루 예산 배분 (2026-09-07) ────────────────────────────────
+    # 이 자료는 늦어도 사람이 위험해지지 않는다. 허브 예산이 시각 대비 앞서 있으면
+    # 이번 회차를 양보한다 — 특보·지진·낙뢰·태풍·AWS 실측이 저녁에 굶지 않게 하는 것이 먼저다.
+    # (2026-09-06·09-07 이틀 다 19시쯤 용량이 말라 그 다섯이 자정까지 묵었다.)
+    ok, why = kma_hub.pace(s3, BUCKET, "kma-life", cost=len(IDX) * (len(SIDO) - len(NO_DATA_SIDO)))
+    if not ok:
+        print(f"[kma-life] PACED — {why}. 이번 회차는 건너뛴다")
+        return {"ok": True, "skipped": "paced", "why": why, "calls": 0}
+
     now = datetime.now(KST)
     # 3시간 간격 발표. 조금 물러나 물어야 이미 나온 것을 받는다.
     tm = (now - timedelta(hours=3)).strftime("%Y%m%d%H")
@@ -120,6 +135,9 @@ def handler(event, context):
         regions, gone = {}, []
         season_msg = None
         for code, name in SIDO:
+            if code in NO_DATA_SIDO:
+                gone.append(name)                    # 부르지 않고 "자료 없음"으로 적는다
+                continue
             try:
                 j = get(path, areaNo=code, time=tm)
             except Exception as e:                       # noqa: BLE001

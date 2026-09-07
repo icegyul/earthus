@@ -27,6 +27,24 @@ from contextlib import contextmanager
 from datetime import datetime, timedelta, timezone
 
 KMA_HOST = "apihub.kma.go.kr"
+KST = timezone(timedelta(hours=9))
+
+# ── 하루 예산 (2026-09-07 추가) ────────────────────────────────
+# 허브의 일일 용량값은 여전히 공표돼 있지 않다. 다만 소진 지점은 실측으로 좁혀졌다.
+#   · 용량은 **KST 자정**에 풀린다 — 09-05·09-06 이틀 모두 차단 구간이 정확히 자정에 끝났다
+#     (낙뢰 5분·레이더 5분·AWS 10분 수집기의 403 개수 ÷ 시간당 실행수 = 같은 시각).
+#   · 09-06 은 19:00 KST 에, 09-07 은 18:35~19:00 KST 에 소진됐다. 그때까지의 예정 호출을
+#     스케줄로 적분하면 약 3,570건이다. 그래서 한도는 3,500~3,600 사이로 본다(추정이다).
+# 목표는 추정치의 약 4분의 3이다. 추정이 틀려도 하루가 통째로 끊기지 않아야 한다.
+# ⚠️ 이건 한도가 아니라 **우리 목표**다. 진짜 한도를 알게 되면 이 값을 고친다.
+#    2026-09-07 낭비 제거 뒤 예상 사용량은 하루 약 3,020회이므로, 이 값이면
+#    kma-mountain·kma-fcst 가 늦은 시간에 가끔 양보한다(그게 의도한 동작이다).
+#    kma-mountain 을 하루 4회로 낮추면 약 2,520회가 되어 양보가 거의 없어진다.
+DAILY_BUDGET = int(os.environ.get("KMA_DAILY_BUDGET", "2800") or 2800)
+# 자정 직후에도 한 회차는 돌 수 있어야 한다. 가장 비싼 회차(kma-mountain ≈125)보다 넉넉히.
+BUDGET_GRACE = int(os.environ.get("KMA_BUDGET_GRACE", "200") or 200)
+# ⚠️ 늦으면 사람이 위험해지는 자료는 배분에서 빼지 않는다. 예산이 말라도 이건 계속 부른다.
+ALWAYS_ON = {"kma-warn", "quake-asia", "kma-lightning", "typhoon-official", "kma-aws-min"}
 FIELDS = ("calls", "success", "quota_exhausted", "timeout", "upstream_error", "empty", "invalid_response")
 PREFIX = "wind/kma-calls"
 
@@ -166,8 +184,10 @@ def flush(s3, bucket, name, now=None):
     if not bucket or not ledger.counts["calls"] and not ledger.quota_hit:
         return None
     now = now or datetime.now(timezone.utc)
-    day = now.strftime("%Y-%m-%d")
-    yday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+    # ⚠️ 하루의 기준은 KST 다. 허브 용량이 KST 자정에 풀리기 때문에, UTC 로 세면
+    #    "오늘 얼마나 남았나"를 영영 알 수 없다(9시간이 어긋난다).
+    day = kst_day(now)
+    yday = (now.astimezone(KST) - timedelta(days=1)).strftime("%Y-%m-%d")
     delta = dict(ledger.counts)
     endpoints = {k: dict(v) for k, v in ledger.endpoints.items()}
     stamp = now.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -214,6 +234,51 @@ def flush(s3, bucket, name, now=None):
                 print(f"[kma-hub] summary write failed: {e}")
                 return None
     return None
+
+
+def kst_day(now=None):
+    """하루의 경계는 KST 자정이다 — 허브 용량이 그때 풀린다."""
+    return (now or datetime.now(timezone.utc)).astimezone(KST).strftime("%Y-%m-%d")
+
+
+def spent_today(s3, bucket, now=None):
+    """오늘(KST) 지금까지 허브를 몇 번 불렀나. 회계 파일이 없으면 None(모름)."""
+    doc, _ = _load(s3, bucket, f"{PREFIX}/{kst_day(now)}.json")
+    if not doc:
+        return None
+    try:
+        return int((doc.get("total") or {}).get("calls", 0))
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def pace(s3, bucket, name, cost=1, now=None):
+    """이번 회차를 돌려도 되나 — (ok, 이유) 를 돌려준다.
+
+    왜 있나
+      하루 예산에 시각 개념이 없으면 이른 시간 수집기가 다 써버리고 저녁 수집기가 굶는다.
+      실제로 2026-09-06·09-07 이틀 다 19시쯤 용량이 말라 특보·AWS·낙뢰가 자정까지 5시간 묵었다.
+
+    어떻게
+      자정부터 지금까지 흐른 **시간 비율만큼만** 쓴다. 12시면 하루 예산의 절반까지다.
+      ALWAYS_ON(특보·지진·낙뢰·태풍·AWS 실측)은 이 제한을 받지 않는다.
+
+    ⚠️ 실패하면 통과시킨다. 회계를 못 읽었다고 수집을 멈추면 안 된다(회계는 보조 장치다).
+    """
+    if name in ALWAYS_ON:
+        return True, "safety"
+    try:
+        used = spent_today(s3, bucket, now)
+        if used is None:
+            return True, "no-ledger"
+        t = (now or datetime.now(timezone.utc)).astimezone(KST)
+        elapsed = (t.hour * 3600 + t.minute * 60 + t.second) / 86400.0
+        allowed = DAILY_BUDGET * elapsed + BUDGET_GRACE
+        if used + cost > allowed:
+            return False, f"paced: {used}+{cost} > {allowed:.0f} (예산 {DAILY_BUDGET}, {t:%H:%M} KST)"
+        return True, f"ok: {used}/{allowed:.0f}"
+    except Exception as e:  # noqa: BLE001
+        return True, f"pace-check-failed: {e}"
 
 
 def accounted(name):

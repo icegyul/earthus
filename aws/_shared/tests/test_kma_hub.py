@@ -64,6 +64,66 @@ class LedgerTest(unittest.TestCase):
         self.assertNotIn("quota_limit", json.dumps(doc)); self.assertTrue(doc["quotaHitToday"])
         own = json.loads(s3.objs["wind/kma-calls/2026-09-06/kma-warn.json"]); self.assertEqual(own["runs"], 2)
 
+class BudgetTest(unittest.TestCase):
+    """하루 경계는 KST · 시간당 배분 (2026-09-07 추가).
+
+    왜 이 테스트가 필요한가: 허브 용량은 KST 자정에 풀린다(09-05·09-06 차단 구간으로 확인).
+    UTC 로 세면 9시간이 어긋나 '오늘 얼마나 남았나'를 계산할 수 없다.
+    """
+    def setUp(self): kma_hub.ledger.reset()
+
+    def test_day_key_is_kst_not_utc(self):
+        from datetime import datetime, timezone
+        # 2026-09-06 16:00Z = 2026-09-07 01:00 KST → 회계는 09-07 로 가야 한다
+        now = datetime(2026, 9, 6, 16, 0, tzinfo=timezone.utc)
+        self.assertEqual(kma_hub.kst_day(now), "2026-09-07")
+        s3 = FakeS3()
+        with kma_hub.track("a.php"): pass
+        kma_hub.flush(s3, "b", "kma-warn", now)
+        self.assertIn("wind/kma-calls/2026-09-07.json", s3.objs)
+        self.assertIn("wind/kma-calls/2026-09-07/kma-warn.json", s3.objs)
+
+    def _ledger(self, s3, day, calls):
+        s3.objs[f"wind/kma-calls/{day}.json"] = json.dumps({"total": {"calls": calls}}).encode()
+
+    def test_safety_feeds_never_paced(self):
+        from datetime import datetime, timezone
+        s3 = FakeS3(); self._ledger(s3, "2026-09-07", 99999)
+        now = datetime(2026, 9, 6, 21, 0, tzinfo=timezone.utc)      # 09-07 06:00 KST
+        for name in ("kma-warn", "quake-asia", "kma-lightning", "typhoon-official", "kma-aws-min"):
+            ok, why = kma_hub.pace(s3, "b", name, 1, now)
+            self.assertTrue(ok, f"{name} 은 배분에서 빼면 안 된다 ({why})")
+
+    def test_early_hour_overspend_is_blocked(self):
+        from datetime import datetime, timezone
+        s3 = FakeS3(); self._ledger(s3, "2026-09-07", 1000)
+        now = datetime(2026, 9, 6, 21, 0, tzinfo=timezone.utc)      # 06:00 KST = 하루의 25%
+        self.assertLess(kma_hub.DAILY_BUDGET * 0.25 + kma_hub.BUDGET_GRACE, 1000, "이 테스트의 전제")
+        ok, why = kma_hub.pace(s3, "b", "kma-fcst", 80, now)        # 허용 = 예산*0.25 + 유예
+        self.assertFalse(ok, why)
+
+    def test_late_hour_same_spend_passes(self):
+        from datetime import datetime, timezone
+        s3 = FakeS3(); self._ledger(s3, "2026-09-07", 1000)
+        now = datetime(2026, 9, 7, 9, 0, tzinfo=timezone.utc)       # 18:00 KST = 하루의 75%
+        ok, why = kma_hub.pace(s3, "b", "kma-fcst", 80, now)        # 허용 = 예산*0.75 + 유예
+        self.assertTrue(ok, why)
+
+    def test_missing_ledger_does_not_block(self):
+        from datetime import datetime, timezone
+        # 회계를 못 읽었다고 수집을 멈추면 안 된다 — 회계는 보조 장치다
+        ok, why = kma_hub.pace(FakeS3(), "b", "kma-fcst", 80,
+                               datetime(2026, 9, 6, 21, 0, tzinfo=timezone.utc))
+        self.assertTrue(ok, why)
+
+    def test_grace_lets_first_run_through_at_midnight(self):
+        from datetime import datetime, timezone
+        s3 = FakeS3(); self._ledger(s3, "2026-09-07", 0)
+        now = datetime(2026, 9, 6, 15, 1, tzinfo=timezone.utc)      # 00:01 KST
+        ok, why = kma_hub.pace(s3, "b", "kma-mountain", 125, now)   # 가장 비싼 회차
+        self.assertTrue(ok, why)
+
+
 def load_handler(name):
     if "boto3" not in sys.modules:
         boto3 = types.ModuleType("boto3"); boto3.client = lambda *a, **k: object(); sys.modules["boto3"] = boto3
@@ -89,6 +149,62 @@ class FcstTest(unittest.TestCase):
         self.assertEqual(out.get("reason"), "quota_exhausted")
         self.assertEqual(len(calls), 1, f"403 뒤에도 호출했다: {len(calls)}")
         self.assertEqual(puts, [], "용량 초과인데 S3 를 덮어썼다")
+
+    def _s3(self, M, stored):
+        """SRC_STATIONS 는 지점표, DST 는 이미 올려둔 예보를 돌려주는 가짜 S3."""
+        puts = []
+        stations = {"stations": [{"id": "1", "name": "a", "lat": 37.5, "lon": 127.0},
+                                 {"id": "2", "name": "b", "lat": 35.1, "lon": 129.0}]}
+        def get_object(**k):
+            body = stored if k["Key"] == M.DST else stations
+            if body is None:
+                raise KeyError(k["Key"])
+            return {"Body": io.BytesIO(json.dumps(body).encode())}
+        return types.SimpleNamespace(get_object=get_object,
+                                     put_object=lambda **k: puts.append(k["Key"])), puts
+
+    def _want(self, M):
+        from datetime import datetime
+        d, t = M.base_runs(datetime.now(M.KST))[0]
+        return f"{d}{t}"
+
+    def test_skips_when_latest_base_already_stored(self):
+        """같은 회차를 다시 받지 않는다 — 허브 호출 0 (2026-09-07).
+
+        왜: 동네예보는 하루 8회 발표인데 스케줄이 매시라 24회 중 16회가 같은 값을 다시 받았다.
+        2026-09-06 실측으로 이 Lambda 혼자 1,883회 — 허브 하루 사용량의 43%였다.
+        """
+        M = self.M; calls = []
+        M.get_json = lambda url: calls.append(url)
+        want = self._want(M)
+        M.s3, puts = self._s3(M, {"points": [{"baseKst": want}, {"baseKst": want}], "failedCells": 0})
+        out = M.handler.__wrapped__({}, None)
+        self.assertEqual(out.get("skipped"), "same-base", out)
+        self.assertEqual(calls, [], "이미 받아 둔 회차인데 허브를 불렀다")
+        self.assertEqual(puts, [], "받은 게 없는데 S3 를 덮어썼다")
+
+    def test_does_not_skip_when_a_cell_failed_last_time(self):
+        """실패한 칸이 남아 있으면 다음 시간에 다시 받는다 — 매시 실행을 남겨 둔 이유다."""
+        M = self.M; calls = []
+        def fake_get_json(url):
+            calls.append(url)
+            raise urllib.error.URLError("boom")
+        M.get_json = fake_get_json
+        want = self._want(M)
+        M.s3, _ = self._s3(M, {"points": [{"baseKst": want}], "failedCells": 3})
+        M.handler.__wrapped__({}, None)
+        self.assertTrue(calls, "실패 칸이 있는데 건너뛰었다")
+
+    def test_does_not_skip_when_base_is_old(self):
+        """발표 회차가 바뀌었으면 당연히 다시 받는다."""
+        M = self.M; calls = []
+        def fake_get_json(url):
+            calls.append(url)
+            raise urllib.error.URLError("boom")
+        M.get_json = fake_get_json
+        M.s3, _ = self._s3(M, {"points": [{"baseKst": "202001010200"}], "failedCells": 0})
+        M.handler.__wrapped__({}, None)
+        self.assertTrue(calls, "낡은 회차인데 건너뛰었다")
 
 class RadarTest(unittest.TestCase):
     def setUp(self): kma_hub.ledger.reset(); self.M = load_handler("kma-radar")

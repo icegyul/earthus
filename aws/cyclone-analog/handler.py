@@ -1240,7 +1240,13 @@ def _score(groups, actual):
                          "verifiedAt": point["at"]})
         if rows:
             out.append({"agency": group.get("agency"), "n": len(rows),
+                        # ⚠️ 이 값은 **여러 예보시간을 섞은** 평균이다(6시간~120시간).
+                        #    표시용으로만 쓴다. 이것으로 기관 우열을 매기면 안 된다 —
+                        #    6시간을 잘 맞히는 기관이 120시간을 못 맞혀도 위로 올라간다.
+                        #    비교는 byLead 의 같은 h 끼리만 한다(INTEGRATION-2 §3).
                         "meanErrorKm": round(sum(x["errorKm"] for x in rows) / len(rows)),
+                        "crossLead": True,
+                        "rankingBasis": False,
                         "byLead": rows})
     return out
 
@@ -1473,8 +1479,28 @@ def _heading_scores(groups, truth):
             bucket["rows"].extend(rows)
     for bucket in out.values():
         bucket["n"] = len(bucket["rows"])
+        # ⚠️ 이 평균은 **여러 예보시간을 섞은** 값이다. 6시간 뒤 방향과 120시간 뒤 방향은
+        #    난이도가 전혀 다르다. 표시용으로만 쓰고 순위 근거로 삼지 않는다(INTEGRATION-2 §3).
         bucket["meanErrDeg"] = round(sum(r["errDeg"] for r in bucket["rows"]) / len(bucket["rows"]))
         bucket["within45"] = sum(r["errDeg"] <= 45 for r in bucket["rows"])
+        bucket["crossLead"] = True
+        bucket["rankingBasis"] = False
+        # 같은 리드끼리 비교할 수 있도록 예보시간별로 나눠 둔다.
+        # ⚠️ 예전에는 rows 를 마지막 12개로 자르고 공개 패킷에서 아예 뺐다 —
+        #    그래서 소비자가 리드별로 비교하고 싶어도 자료가 없었다. 이제 남긴다.
+        per = {}
+        for r in bucket["rows"]:
+            h = r.get("h")
+            if h is None:
+                continue
+            L = per.setdefault(int(h), {"h": int(h), "n": 0, "sum": 0, "within45": 0})
+            L["n"] += 1
+            L["sum"] += r["errDeg"]
+            L["within45"] += 1 if r["errDeg"] <= 45 else 0
+        bucket["byLead"] = [{"h": L["h"], "n": L["n"],
+                             "meanErrDeg": round(L["sum"] / L["n"]),
+                             "within45": L["within45"]}
+                            for L in sorted(per.values(), key=lambda x: x["h"])]
         bucket["rows"] = bucket["rows"][-12:]
     return out
 
@@ -1512,7 +1538,9 @@ def public_detail(session, now):
         "models": models,
         "truthAgency": truth_agency,
         "interimScores": interim,
-        "headingScores": sorted(heading.values(), key=lambda x: x["meanErrDeg"]),
+        # ⚠️ 교차리드 평균으로 정렬하면 그것이 곧 순위다. 이름순으로만 둔다(§3).
+        #    같은 리드끼리의 비교는 heading_lead_ranking() 이 한다.
+        "headingScores": sorted(heading.values(), key=lambda x: str(x.get("agency"))),
         "landfall": next(({"agency": o["agency"], "agencyKo": o["agencyKo"], **o["landfall"]} for o in outlooks if o["landfall"]), None),
         "note": {"observed": "기관이 발표한 실황(예보 0시간) 위치·강도입니다. 우리가 만든 값이 아닙니다.",
                  "interim": f"활동 중 오차는 {AGENCY_KO.get(truth_agency, truth_agency)} 실황 위치를 기준으로 한 잠정값입니다. "
@@ -1688,6 +1716,37 @@ def _compact(obj):
     return obj
 
 
+def heading_lead_ranking(heading_scores, lead_h):
+    """§3 — 방향 오차도 **같은 예보시간끼리만** 비교한다.
+
+    화면이 "방향을 가장 가깝게 본 자료"를 말하려면 이 함수를 써야 한다.
+    교차리드 meanErrDeg 로 뽑으면 6시간을 잘 맞힌 기관이 120시간을 못 맞혀도 1등이 된다.
+    """
+    rows = []
+    for h in heading_scores or []:
+        for L in h.get("byLead") or []:
+            if L.get("h") == lead_h and L.get("n"):
+                rows.append({"agency": h.get("agency"), "agencyKo": h.get("agencyKo"),
+                             "h": lead_h, "meanErrDeg": L.get("meanErrDeg"),
+                             "n": L.get("n"), "within45": L.get("within45")})
+    return sorted(rows, key=lambda x: (x["meanErrDeg"], str(x["agency"])))
+
+
+def lead_separated_ranking(aggregated, lead_h):
+    """§3 — **같은 예보시간끼리만** 비교한 순위. 이것이 허용된 비교다.
+
+    돌려주는 것: [{agency, h, meanErrorKm, n}] — 오차가 작은 순.
+    그 리드의 표본이 없는 기관은 빠진다(0 으로 채우지 않는다).
+    """
+    rows = []
+    for a in aggregated or []:
+        for L in a.get("byLead") or []:
+            if L.get("h") == lead_h and L.get("n"):
+                rows.append({"agency": a.get("agency"), "h": lead_h,
+                             "meanErrorKm": L.get("meanErrorKm"), "n": L.get("n")})
+    return sorted(rows, key=lambda x: (x["meanErrorKm"], str(x["agency"])))
+
+
 def _aggregate_scores(scores):
     """발표 회차별 오차 → 기관별 합계(n 가중 평균)와 예보시간별 평균. 값을 새로 만들지 않고 더하기만 한다."""
     by = {}
@@ -1707,8 +1766,15 @@ def _aggregate_scores(scores):
         if not a["n"]:
             continue
         out.append({"agency": a["agency"], "n": a["n"], "meanErrorKm": round(a["sumKm"] / a["n"]),
+                    # 위와 같은 이유로 표식을 단다. 소비자가 이 값을 순위 근거로 쓰지 않게.
+                    "crossLead": True,
+                    "rankingBasis": False,
                     "byLead": [{"h": L["h"], "n": L["n"], "meanErrorKm": round(L["sumKm"] / L["n"])} for L in sorted(a["lead"].values(), key=lambda x: x["h"])]})
-    return sorted(out, key=lambda x: x["meanErrorKm"])
+    # ⚠️⚠️ 예전에는 `sorted(out, key=meanErrorKm)` 이었다 — 서로 다른 예보시간을 섞은
+    #    하나의 숫자로 **기관 순위를 매기고 있었다.** 공개 제품에서 금지다(INTEGRATION-2 §3).
+    #    같은 리드끼리 비교하려면 byLead 를 쓴다. 여기서는 순위를 만들지 않고
+    #    기관 이름으로만 정렬한다 — 결정적이되 우열이 아니다.
+    return sorted(out, key=lambda x: str(x["agency"]))
 
 
 def slim_detail(detail):
@@ -1717,7 +1783,10 @@ def slim_detail(detail):
         return detail
     obs = [{k: p.get(k) for k in ("at", "lat", "lon", "windMs", "hpa", "gradeKo", "courseKo", "agency")}
            for p in (detail.get("observed") or [])[-PACKET_OBSERVED:]]
-    heads = [{k: h.get(k) for k in ("agency", "agencyKo", "n", "meanErrDeg", "within45")} for h in detail.get("headingScores") or []]
+    # byLead 를 반드시 함께 내보낸다 — 이것이 없으면 소비자는 교차리드 숫자밖에 못 본다.
+    heads = [{k: h.get(k) for k in ("agency", "agencyKo", "n", "meanErrDeg", "within45",
+                                    "byLead", "crossLead", "rankingBasis")}
+             for h in detail.get("headingScores") or []]
     return _compact({
         "observed": obs, "latestObserved": detail.get("latestObserved"), "intensity": detail.get("intensity"),
         "official": detail.get("official"), "models": detail.get("models"), "truthAgency": detail.get("truthAgency"),

@@ -91,9 +91,15 @@ class EarthCapture(unittest.TestCase):
 
     def test_경도는_180도에서_감기는_것을_오차로_세지_않는다(self):
         req = cap.request_for_fact(self._fact(), geometry={"type": "point", "lat": 0, "lon": 179.9})
-        v = cap.verify_capture(req, {"ready": True, "activeIds": req["liveIds"],
-                                     "lat": req["camera"]["lat"], "lon": -179.9,
-                                     "dist": cap.dist_for_height_km(req["camera"]["heightKm"])})
+        obs = {"ready": True, "activeIds": req["liveIds"],
+               "lat": req["camera"]["lat"], "lon": -179.9,
+               "dist": cap.dist_for_height_km(req["camera"]["heightKm"])}
+        # INTEGRATION-2 — 확인은 이제 여섯 조건이다. 카메라 축만 보려면 나머지를 채워 준다.
+        doc = {"observed": obs, "link": req["link"], "fileHash": "sha256:x",
+               "sourceRoute": "http://x", "capturedAt": "t",
+               "pixelCheck": {"passed": True, "stdev": 40},
+               "readBack": {"hashMatches": True, "decoded": {"ok": True}}}
+        v = cap.verify_capture(req, obs, capture_doc=doc)
         self.assertTrue(v["verified"], v["problems"])
 
     def test_확인_실패한_캡처도_버리지_않고_남긴다(self):

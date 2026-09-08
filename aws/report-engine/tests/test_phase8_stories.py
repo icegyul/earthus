@@ -345,11 +345,23 @@ class Publish(unittest.TestCase):
                 "type": "RETROSPECTIVE_MONTHLY"}
 
     def test_자격증명이_없으면_가짜_성공을_돌려주지_않는다(self):
+        # INTEGRATION-2 §6 — 이제 승인 게이트가 앞에 있다. 승인을 통과시킨 뒤
+        # **자격증명 단계에서** 막히는지 본다. 불변식은 그대로다: 가짜 성공 없음.
         a = pub.S3PublishAdapter(bucket=None)
-        out = pub.publish_pipeline(self._report(), a)
+        approved = pub.approve(self._report(), actor="tester", at=NOW)
+        out = pub.publish_pipeline(approved, a)
         self.assertFalse(out["ok"])
         self.assertEqual(out["reason"], pub.BLOCKED_NO_CREDENTIALS)
         self.assertFalse(out["published"])
+
+    def test_승인_없이는_올리지_않는다(self):
+        """검증 통과(lifecycle=PUBLISHED)는 기계 판정이지 사람 승인이 아니다."""
+        import tempfile
+        a = pub.LocalPublishAdapter(tempfile.mkdtemp())
+        out = pub.publish_pipeline(self._report(), a)
+        self.assertFalse(out["ok"])
+        self.assertEqual(out["reason"], "NOT_APPROVED")
+        self.assertEqual(out["approvalState"], "READY_FOR_REVIEW")
 
     def test_검증을_통과하지_않은_리포트는_올리지_않는다(self):
         import tempfile

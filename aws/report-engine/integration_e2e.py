@@ -28,6 +28,7 @@ sys.path.insert(0, os.path.join(_AWS, "_shared"))
 
 import pipeline as pl                # noqa: E402  (리포트 파이프라인 — 정본)
 import capture as cap                # noqa: E402
+import social_publish as sposts      # noqa: E402
 import report_period as rp           # noqa: E402
 
 
@@ -50,7 +51,17 @@ report_bridge = _load("earthus_report_bridge", os.path.join(_DIST, "sources", "r
 vis = _load("earthus_visual", os.path.join(_DIST, "visual.py"))
 val = _load("earthus_validation", os.path.join(_DIST, "validation.py"))
 
-E2E_VERSION = "earthus.integration-e2e/1.0.0"
+E2E_VERSION = "earthus.integration-e2e/1.1.0"
+
+
+def _adapter_for(platform):
+    """배포 엔진의 어댑터를 그대로 쓴다(고치지 않는다).
+
+    MOCK 모드 — 실제로 아무 데도 보내지 않는다. 그리고 MOCK 은 **발행이 아니다**:
+    social_publish.verify_published 가 mock 을 확인된 발행으로 세지 않는다(§8).
+    """
+    mod = _load("earthus_sns_adapters", os.path.join(_DIST, "sns_adapters", "__init__.py"))
+    return mod.get(platform, mod.MODE_MOCK)
 
 
 def numbers_in_content(content):
@@ -153,27 +164,48 @@ def run(period, *, cache_dir=None, capture_meta=None, platforms=("x", "instagram
             top_fact = next((f for f in report["facts"] if f["factId"] == st["factIds"][0]), None)
             if top_fact:
                 break
+    top_story_id = None
+    for sid in report.get("topStoryIds") or []:
+        st = next((s for s in report.get("stories") or [] if s["storyId"] == sid), None)
+        if st and st.get("factIds"):
+            top_story_id = sid
+            break
     cap_req = cap.request_for_fact(top_fact) if top_fact else None
     visual_assets = []
     if cap_req and capture_meta and os.path.exists(capture_meta):
         with open(capture_meta, encoding="utf-8") as fh:
             observed_doc = json.load(fh)
-        verification = cap.verify_capture(cap_req, observed_doc.get("observed") or {})
+        # §1 — 여섯 조건을 전부 본다. 캡처 기록(픽셀검사·되읽기·해시)까지 넘긴다.
+        verification = cap.verify_capture(cap_req, observed_doc.get("observed") or {},
+                                          capture_doc=observed_doc)
         asset = cap.asset_metadata(
             cap_req, asset_id="vis:%s:earth" % report["reportId"].replace(":", "_"),
             captured_at=observed_doc.get("capturedAt"),
             dataset_snapshot=report.get("dataSnapshotId"),
             verification=verification,
             canvas=observed_doc.get("canvas"),
-            file_ref=observed_doc.get("fileRef"))
+            file_ref=observed_doc.get("fileRef"),
+            capture_doc=observed_doc,
+            story_id=top_story_id)
         visual_assets.append(asset)
+        failed = [k for k, v in (verification.get("conditions") or {}).items() if not v]
         step("VISUAL", verification["verified"],
-             "캡처 %s" % (observed_doc.get("fileRef") or "?"),
-             problems=verification["problems"])
+             "캡처 %s · 조건 %d/6" % (observed_doc.get("fileRef") or "?",
+                                      6 - len(failed)),
+             problems=verification["problems"], failedConditions=failed)
     else:
         step("VISUAL", False,
              "캡처 결과가 없다 — tools/earthus_capture.mjs 를 먼저 돌린다",
              request=bool(cap_req))
+
+    # §10 — **확인되지 않은 자산은 어디에도 쓰지 않는다.** 리포트·콘텐츠·페이로드 전부.
+    verified_assets = [a for a in visual_assets if a.get("verified")]
+    rejected_assets = [a for a in visual_assets if not a.get("verified")]
+    step("VISUAL_GATE", not rejected_assets or bool(verified_assets),
+         "확인 %d · 제외 %d" % (len(verified_assets), len(rejected_assets)),
+         rejected=[a.get("assetId") for a in rejected_assets])
+    # 매니페스트에는 실패한 것도 남긴다(왜 그림이 없는지 알아야 하므로).
+    # 다만 내보내기·콘텐츠는 verified 인 것만 쓴다 — export._visual_html 이 그걸 거른다.
     report["visualManifest"] = cap.manifest(
         visual_assets, report_id=report["reportId"], generated_at=report.get("generatedAt"))
 
@@ -196,8 +228,13 @@ def run(period, *, cache_dir=None, capture_meta=None, platforms=("x", "instagram
         content["contentId"], content["type"], content["eligibility"]),
         blockReasons=content.get("blockReasons"))
 
-    # 시각자산을 콘텐츠에 이어 붙인다 — 리포트 그림과 SNS 그림이 같은 것이어야 한다(§13).
-    content["visualAssetIds"] = [a["assetId"] for a in visual_assets]
+    # §2 · §9 — 연결 사슬을 콘텐츠에 싣는다. 어느 보고서의 어느 이야기에서 왔는지
+    # 되짚을 수 있어야 한다. 시각자산은 **확인된 것만** 붙인다(§10).
+    content["visualAssetIds"] = [a["assetId"] for a in verified_assets]
+    content["storyIds"] = [top_story_id] if top_story_id else []
+    content["factIds"] = sorted({fid for a in verified_assets for fid in (a.get("factRefs") or [])})
+    content["sourceRoute"] = (verified_assets[0].get("sourceRoute")
+                              if verified_assets else None)
 
     # ── 6. 단일 팩트 규칙 대조 (§16 · §33)
     cmp_ = compare_report_and_content(report, content)
@@ -210,14 +247,36 @@ def run(period, *, cache_dir=None, capture_meta=None, platforms=("x", "instagram
     step("SNS_PAYLOAD", bool(made), "판 %s" % (", ".join(made) or "없음"),
          problems=content.get("platformProblems"))
 
-    # ── 8. 승인 — 자동 게시는 없다(§19)
-    step("APPROVAL", True,
-         "상태 %s — 사람이 승인해야 큐로 간다. 자동 게시 경로 없음" % content.get("status"))
+    # ── 8. 준비 판정 (§13) — 확인 안 된 시각자산이 붙어 있으면 준비된 게 아니다
+    ready = sposts.readiness(content, visual_assets=visual_assets, report=report)
+    step("CONTENT_READY", ready["state"] == "PAYLOAD_READY",
+         "상태 %s" % ready["state"], problems=ready["problems"])
 
-    # ── 9. 게시 — 자격증명 없으면 여기서 멈춘다
-    published = False
-    step("PUBLISH", True, "PAYLOAD_READY · NOT_PUBLISHED — 자격증명 없이 게시하지 않는다",
-         published=published)
+    # ── 9. 승인 (§6) — 페이로드 준비는 승인이 아니다.
+    #    이 파이프라인에는 **자동 승인 경로가 없다.** 사람이 관리 화면에서 승인해야 한다.
+    appr = sposts.approval_state(content)
+    step("APPROVAL", appr in ("PAYLOAD_READY", "APPROVED"),
+         "%s — 사람 승인 전이면 여기서 멈춘다(자동 승인 경로 없음)" % appr,
+         approvalState=appr)
+
+    # ── 10. 게시 (§7 · §8) — 승인·자격증명·되읽기를 전부 통과해야 PUBLISHED
+    pub_results = []
+    for p in made:
+        try:
+            adapter = _adapter_for(p)
+        except Exception as e:                      # noqa: BLE001
+            pub_results.append({"platform": p, "state": "FAILED",
+                                "reason": "어댑터를 얻지 못했다: %s" % str(e)[:120]})
+            continue
+        pub_results.append(sposts.publish_platform(
+            content, p, adapter, actor=None, at=report.get("generatedAt"),
+            visual_assets=visual_assets, confirmed=False))
+    summary = sposts.publication_summary(pub_results)
+    published = bool(summary["published"])
+    # 게시되지 않은 것이 **정상**이다 — 승인도 자격증명도 없다. 실패로 세지 않는다.
+    step("PUBLISH", True,
+         "상태 %s · 실제 발행 %d건" % (summary["counts"], len(summary["published"])),
+         results=[{k: r.get(k) for k in ("platform", "state", "reason")} for r in pub_results])
 
     result = {
         "ok": all(s["ok"] for s in steps if s["step"] != "VISUAL") ,
@@ -229,7 +288,10 @@ def run(period, *, cache_dir=None, capture_meta=None, platforms=("x", "instagram
         "singleFact": cmp_,
         "visualAssets": visual_assets,
         "platforms": made,
-        "publishState": "PAYLOAD_READY_NOT_PUBLISHED",
+        "publishState": ("PUBLISHED" if published else "PAYLOAD_READY_NOT_PUBLISHED"),
+        "publication": summary,
+        "readiness": ready,
+        "approvalState": appr,
     }
     if out_dir:
         os.makedirs(out_dir, exist_ok=True)

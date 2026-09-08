@@ -477,9 +477,15 @@ def aurora_detail(session):
             "engine": {"name": "지속성 추정 (최근 24시간 최대 Kp 유지)", "method": "회차마다 최근 24시간 관측 최대 Kp 가 다음 3시간 슬롯에도 이어진다고 두고, 관측이 들어오면 SWPC 예보와 같은 슬롯으로 채점합니다. 태양풍 입력이 없는 기준선입니다.",
                        "current": f"현재 지속성 추정 Kp {last.get('persistence')}" if last.get("persistence") is not None else "관측 없음",
                        "rows": ours["rows"] if ours else [], "unit": "Kp",
-                       "verdict": (f"EARTHUS 평균오차 {ours['meanAbsError']} · SWPC {scores['SWPC']['meanAbsError']} (n={ours['n']})" if ours and scores.get("SWPC") else "관측 슬롯이 들어오면 채점합니다.")},
-            "verification": {"rows": [{"source": "SWPC 예보" if a == "SWPC" else "EARTHUS 지속성", "n": s["n"], "score": s["meanAbsError"], "unit": f"Kp 평균오차 · G1 적중 {s['g1Hit']}/{s['n']}"} for a, s in scores.items()],
-                             "note": "기준은 SWPC 관측 Kp 입니다. 예보 슬롯은 발표 시각 이후의 것만 셉니다."},
+                       # ⚠️ 이 평균오차는 **여러 예보 리드를 합친** 값이다(0~72시간 슬롯이 섞인다).
+                       #    두 값을 나란히 두되 우열을 선언하지 않는다 — 같은 리드끼리 나누기 전에는
+                       #    어느 쪽이 낫다고 말할 수 없다(INTEGRATION-2 §3).
+                       "verdict": (f"EARTHUS 평균오차 {ours['meanAbsError']} · SWPC {scores['SWPC']['meanAbsError']} "
+                                   f"(n={ours['n']} · 예보 리드 합산 — 리드별로 나누면 순위가 달라질 수 있습니다)"
+                                   if ours and scores.get("SWPC") else "관측 슬롯이 들어오면 채점합니다.")},
+            "verification": {"rows": [{"source": "SWPC 예보" if a == "SWPC" else "EARTHUS 지속성", "n": s["n"], "score": s["meanAbsError"], "unit": f"Kp 평균오차(리드 합산) · G1 적중 {s['g1Hit']}/{s['n']}"} for a, s in scores.items()],
+                             "note": "기준은 SWPC 관측 Kp 입니다. 예보 슬롯은 발표 시각 이후의 것만 셉니다. "
+                                     "평균오차는 여러 예보 리드를 합친 값이라 우열 판정에 쓰지 않습니다."},
             "notes": ["오로라 가시 경계는 Kp 로 본 대략값이며 구름·달·광공해는 별도입니다."],
             "sourceLinks": [{"label": "SWPC 3일 예보", "url": "https://www.swpc.noaa.gov/products/3-day-forecast"}]}
 

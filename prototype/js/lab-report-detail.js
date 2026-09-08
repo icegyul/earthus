@@ -97,15 +97,37 @@ function renderVerification(report, detail, allowed) {
   const merged = new Map();
   posRows.forEach(s => { const m = merged.get(s.agency) || { agency: s.agency }; m.n = (m.n || 0) + (s.n || 0); m.sum = (m.sum || 0) + (s.meanErrorKm || 0) * (s.n || 0); merged.set(s.agency, m); });
   headRows.forEach(h => { const m = merged.get(h.agency) || { agency: h.agency }; m.headN = h.n; m.headErr = h.meanErrDeg; m.within45 = h.within45; merged.set(h.agency, m); });
+  // ⚠️⚠️ 예보시간이 다른 오차를 섞은 숫자로 **정렬하지 않는다**(INTEGRATION-2 §3).
+  //    6시간 뒤 방향과 120시간 뒤 방향은 난이도가 전혀 다르다. 섞어서 1등을 뽑으면
+  //    "가까운 예보만 잘하는 기관"이 장기 예보까지 잘하는 것처럼 보인다.
+  //    목록은 이름순으로 두고, 우열은 같은 리드끼리만 말한다.
   const list = [...merged.values()].map(m => ({ ...m, meanKm: m.n ? Math.round(m.sum / m.n) : null }))
-    .sort((a, b) => (a.headErr ?? 999) - (b.headErr ?? 999));
-  const table = `<div class="wrap"><table class="score"><thead><tr><th>자료</th><th>방향 오차</th><th>45° 안</th><th>위치 오차</th></tr></thead><tbody>${list.map(m =>
+    .sort((a, b) => String(agencyKo(a.agency)).localeCompare(String(agencyKo(b.agency)), 'ko'));
+  const table = `<div class="wrap"><table class="score"><thead><tr><th>자료</th><th>방향 오차<small>(리드 합산)</small></th><th>45° 안</th><th>위치 오차<small>(리드 합산)</small></th></tr></thead><tbody>${list.map(m =>
     `<tr class="${isOurs(m.agency) ? 'ours' : ''}"><td>${esc(agencyKo(m.agency))}</td><td>${m.headErr != null ? `${m.headErr}°` : '—'}</td>`
     + `<td>${m.headN ? `${m.within45}/${m.headN}` : '—'}</td><td>${m.meanKm != null ? `${m.meanKm} km (n=${m.n})` : '—'}</td></tr>`).join('')}</tbody></table></div>`;
-  const best = list.find(m => m.headErr != null);
-  const ours = list.find(m => isOurs(m.agency));
-  const verdict = best ? `<p class="rd-verdict">방향을 가장 가깝게 본 자료: <b>${esc(agencyKo(best.agency))}</b> (평균 ${best.headErr}°)`
-    + (ours && ours.headErr != null ? ` · EARTHUS 계산 ${ours.headErr}°${ours.meanKm != null ? `, 위치 ${ours.meanKm} km` : ''}` : ' · EARTHUS 계산은 이 태풍에 없음') + '</p>' : '';
+
+  // 같은 리드끼리의 비교. 표본이 가장 많은 예보시간 하나를 골라 그 안에서만 말한다.
+  const byLead = new Map();
+  headRows.forEach(h => (h.byLead || []).forEach(L => {
+    if (!L || !L.n) return;
+    const b = byLead.get(L.h) || { h: L.h, n: 0, rows: [] };
+    b.n += L.n; b.rows.push({ agency: h.agency, err: L.meanErrDeg, n: L.n });
+    byLead.set(L.h, b);
+  }));
+  const pick = [...byLead.values()].sort((a, b) => b.n - a.n)[0];
+  let verdict = '';
+  if (pick && pick.rows.length > 1) {
+    const rows = pick.rows.slice().sort((a, b) => a.err - b.err);
+    const w = rows[0];
+    verdict = `<p class="rd-verdict"><b>${esc(pick.h)}시간 예보</b>에서 방향을 가장 가깝게 본 자료: `
+      + `<b>${esc(agencyKo(w.agency))}</b> (평균 ${w.err}° · n=${w.n})`
+      + ` <small>다른 예보시간에서는 순위가 다를 수 있습니다 — 리드를 섞어 비교하지 않습니다.</small></p>`;
+  } else if (list.some(m => m.headErr != null)) {
+    // 리드별 자료가 없으면 **1등을 뽑지 않는다.** 섞인 숫자로 우열을 말하지 않는다.
+    verdict = '<p class="rd-verdict">예보시간별로 나눈 자료가 없어 순위를 매기지 않았습니다. '
+      + '아래 값은 여러 예보시간을 합친 참고치입니다.</p>';
+  }
   return section(isFinal ? '종료 검증 (IBTrACS 최종 경로 기준)' : `지금까지의 검증 (잠정 · ${esc(agencyKo(detail.truthAgency))} 실황 기준)`,
     verdict + table, `${isFinal ? '' : detail.note?.interim || ''} 한 사건의 결과로 기관의 장기 우열을 일반화하지 않습니다.`.trim());
 }

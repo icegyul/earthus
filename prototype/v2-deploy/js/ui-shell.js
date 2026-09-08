@@ -805,11 +805,31 @@ export function initShell(hooks) {
         applyCapabilityGating();
         hooks.onLayerAction(sid, ly);
         closeFlyout();
-        if (!intelOpen) intel.querySelector('#intel-tab').click();
         // ⚠️ 보고서에서 현상으로 왔는데 사건 피드가 떠 있으면, 누른 것과 다른 화면이 나온다.
-        //    '선택 자료' 로 옮겨서 방금 고른 현상의 값을 바로 보여 준다.
-        const nowTab = intel.querySelector('[data-tab="now"]');
-        if (nowTab) nowTab.click(); else renderIntel();
+        //    누른 행동에 맞는 탭으로 옮긴다(§12).
+        //      자세히 보기 → 선택 자료 · 분석 → 자료의 근거 · 조건을 바꿔보기 → 시뮬레이션
+        //
+        // ⚠️⚠️ 순서가 중요하다: **showTab 을 먼저, 패널 열기를 나중에.**
+        //    반대로 하면 패널 여는 쪽이 기본 탭으로 되돌려 내 선택을 덮어쓴다 —
+        //    DOM 탭을 클릭하는 방식으로도 같은 이유로 덮였다('분석'을 눌러도 '선택 자료'가 떴다).
+        //    아래 nav 처리(case 'myplace')가 이미 쓰는 순서를 그대로 따른다.
+        const ACTION_TAB = { phenomenon: 'now', intelligence: 'why', simulation: 'scenario' };
+        const want = ACTION_TAB[toStoryPhen.dataset.storyAction] || 'now';
+        // 능력이 없는 탭으로는 보내지 않는다. 버튼 자체가 능력이 있을 때만 그려지지만
+        // (report-center.storyActionsHtml), 실제 탭이 있는지도 확인한다.
+        const has = !!intel.querySelector(`[data-tab="${want}"]`);
+        const target = has ? want : 'now';
+        showTab(target);
+        if (!intelOpen) intel.querySelector('#intel-tab').click();
+        // ⚠️ main.js 는 레이어를 다 받은 **뒤에** shell.showTab('now') 를 부른다
+        //    (main.js:2794 · :3834 등). 그래서 여기서 한 번만 고르면 로딩이 끝나는 순간
+        //    '선택 자료'로 돌아간다 — 실제로 '분석'을 눌러도 그렇게 됐다.
+        //    로딩이 끝난 뒤 한 번 더 고른다. 사용자가 그사이 다른 탭을 눌렀으면 존중한다.
+        if (target !== 'now') {
+          const reassert = () => { if (curTab === 'now') showTab(target); };
+          setTimeout(reassert, 400);
+          setTimeout(reassert, 1200);
+        }
       }
       return;
     }

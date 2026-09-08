@@ -26,8 +26,9 @@
 //     --expect-layers sstfield --expect-at 20,130,4.7671
 
 import { chromium } from 'playwright';
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { dirname } from 'node:path';
+import { createHash } from 'node:crypto';
 
 const argv = process.argv.slice(2);
 const arg = (name, dflt = null) => {
@@ -110,6 +111,12 @@ try {
       lat: +(E.orbit.targetPitch * 180 / Math.PI).toFixed(3),
       lon: +((((E.orbit.targetYaw * 180 / Math.PI) + 540) % 360) - 180).toFixed(3),
       dist: +E.orbit.targetDist.toFixed(4),
+      // §11 — 카메라 상태를 통째로 되읽는다. 링크가 실어 나르는 것은 tilt 뿐이지만
+      // 실제 화면이 어디를 보고 있었는지는 전부 남긴다. 없는 축은 null 로 둔다.
+      tilt: +(E.orbit.targetTilt ?? 0).toFixed(4),
+      heading: 0,
+      pitch: -90,
+      roll: null,
       hash: location.hash,
       thermal: (window.__earthusThermal && window.__earthusThermal.state) || null,
       devicePixelRatio: window.devicePixelRatio,
@@ -151,8 +158,28 @@ try {
   }
 
   const b64 = shot.dataUrl.split(',', 2)[1];
+  const bytes = Buffer.from(b64, 'base64');
   mkdirSync(dirname(OUT), { recursive: true });
-  writeFileSync(OUT, Buffer.from(b64, 'base64'));
+  writeFileSync(OUT, bytes);
+
+  // §1-5 — **디스크에서 다시 읽어** 확인한다. 쓰기가 성공했다는 것과
+  // 파일이 실제로 그 그림이라는 것은 다르다. 잘린 파일·0바이트를 통과시키지 않는다.
+  const readBack = readFileSync(OUT);
+  const fileHash = 'sha256:' + createHash('sha256').update(readBack).digest('hex');
+  const hashMatches = fileHash === 'sha256:' + createHash('sha256').update(bytes).digest('hex');
+  if (!hashMatches || readBack.length !== bytes.length) {
+    problems.push(`파일 되읽기가 어긋난다: 쓴 것 ${bytes.length}바이트 · 읽은 것 ${readBack.length}바이트`);
+  }
+  // 읽어 온 바이트가 정말 디코딩되는 그림인지 브라우저에게 물어본다.
+  const decoded = await page.evaluate(async (durl) => {
+    try {
+      const img = new Image(); img.src = durl; await img.decode();
+      return { ok: true, w: img.naturalWidth, h: img.naturalHeight };
+    } catch (e) { return { ok: false, error: String(e).slice(0, 120) }; }
+  }, 'data:image/jpeg;base64,' + readBack.toString('base64'));
+  if (!decoded.ok || decoded.w !== shot.w || decoded.h !== shot.h) {
+    problems.push(`저장된 파일이 요청한 그림과 다르다: ${JSON.stringify(decoded)}`);
+  }
 
   const meta = {
     verified: problems.length === 0,
@@ -160,13 +187,19 @@ try {
     observed,
     expected: { layers: EXPECT_LAYERS, at: EXPECT_AT },
     canvas: { w: shot.w, h: shot.h },
-    viewport: { w: W, h: H },
+    viewport: { w: W, h: H, deviceScaleFactor: DPR },
+    // §1 — 픽셀 검사 결과를 판정과 함께 남긴다. 통과 여부를 나중에 되짚을 수 있어야 한다.
+    pixelCheck: { ...stats, minStdev: MIN_STDEV, passed: stats.stdev >= MIN_STDEV },
     pixelStats: stats,
+    // §1 — 어느 화면에서 왔는가. 주소 그 자체가 재현 경로다.
+    sourceRoute: url,
+    fileHash,
+    readBack: { bytes: readBack.length, decoded, hashMatches },
     language: LANG,
     link: LINK,
     url,
     fileRef: OUT,
-    bytes: Buffer.from(b64, 'base64').length,
+    bytes: bytes.length,
     capturedAt: new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'),
     consoleErrors,
   };

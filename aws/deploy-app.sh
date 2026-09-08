@@ -29,6 +29,13 @@ echo "▸ 원본: ${SRC}"
 #                         사업자 정보도 법적으로 공개 대상이다.
 #                         그래도 "무엇이 공개되는지" 모르고 올라가는 일이 없도록
 #                         아래 목록을 배포 때마다 눈으로 확인할 것.
+# ⚠️⚠️ 승인되지 않은 배포 후보를 여기서 올리지 않는다 (INTEGRATION-2 §5).
+#    aws/distribution/handler.py 의 write_local() 이 개발용으로
+#    prototype/events/distribution-content/ 에 후보를 쓴다. 그 후보는 status=DRAFT 이고
+#    그중에는 eligibility=BLOCKED 인 것도 있다 — 람다는 그런 것을 공개 경로에 올리기를
+#    거부한다. 그런데 이 sync 는 prototype/ 을 통째로 올리므로 **그 거부가 무의미해진다.**
+#    .gitignore 는 git 만 막지 sync 는 못 막는다 — sync 는 작업 트리를 읽기 때문이다.
+#    2026-09-08 실측: 그 디렉터리에 DRAFT 8건(그중 eligibility=BLOCKED 1건)이 있었다.
 # ⚠️ --delete 는 s3:DeleteObject 권한이 필요한데 earthus-deploy 에 없다.
 #    권한이 생기기 전까지는 끈다. set -e 때문에 실패하면 스크립트가 통째로 멈춰
 #    뒤의 Content-Type 교정까지 안 돌기 때문이다.
@@ -40,6 +47,9 @@ aws s3 sync "$SRC" "s3://${BUCKET}/${PREFIX}/" \
   --exclude '.DS_Store' --exclude '__pycache__/*' \
   --exclude 'supabase/*' \
   --exclude 'legal/README.md' \
+  --exclude 'events/distribution-content/*' \
+  --exclude 'events/distribution-content.json' \
+  --exclude '_verify/*' \
   --cache-control 'public, max-age=60'
 
 # sync 가 추측한 Content-Type 이 틀리면 모듈 로딩이 깨진다.
@@ -52,6 +62,8 @@ echo "▸ Content-Type 교정"
 for f in $(cd "$SRC" && find . -name '*.js' \
     -not -path './supabase/*' \
     -not -path './__pycache__/*' \
+    -not -path './events/distribution-content/*' \
+    -not -path './_verify/*' \
     | sed 's|^\./||'); do
   aws s3 cp "s3://${BUCKET}/${PREFIX}/${f}" "s3://${BUCKET}/${PREFIX}/${f}" \
     --region "$REGION" --metadata-directive REPLACE \

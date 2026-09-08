@@ -107,7 +107,16 @@ class PublicDetailTest(unittest.TestCase):
         heading = {h["agency"]: h for h in self.detail["headingScores"]}
         self.assertLess(heading["KMA"]["meanErrDeg"], 20)
         self.assertGreater(heading["EARTHUS_MULTI_SOURCE"]["meanErrDeg"], 60)
-        self.assertEqual(self.detail["headingScores"][0]["agency"], "KMA")   # 정렬: 방향을 맞춘 쪽이 먼저
+        # ⚠️ 예전에는 여기서 headingScores[0] == "KMA" 를 못박았다 — 즉 **교차리드 평균으로
+        #    기관 순위를 매기는 동작**을 시험이 지키고 있었다. INTEGRATION-2 §3 이 그걸 금지한다.
+        #    (6시간 방향과 120시간 방향을 섞은 하나의 숫자로 우열을 말하면 안 된다.)
+        #    이제 목록은 우열이 아니라 이름순이고, 비교는 같은 리드끼리만 한다.
+        order = [h["agency"] for h in self.detail["headingScores"]]
+        self.assertEqual(order, sorted(order), "목록이 이름순이 아니다 — 오차순이면 그것이 순위다")
+        for h in self.detail["headingScores"]:
+            self.assertTrue(h["crossLead"])
+            self.assertFalse(h["rankingBasis"])
+            self.assertTrue(h.get("byLead"), "리드별 분해가 없으면 제대로 비교할 수 없다")
 
     def test_no_official_analysis_means_no_interim_scores(self):
         session = {"id": "2", "name": "NONE-26", "status": "ACTIVE", "events": [],

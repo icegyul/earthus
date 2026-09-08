@@ -129,29 +129,49 @@ def request_for_fact(fact, *, layer_refs=None, geometry=None, app_base="", cloud
     }
 
 
-def verify_capture(request, observed):
-    """§31 — 실제로 그 화면이었는지 되읽어 확인한다.
+# §1 — verified=true 가 되려면 **여섯 가지가 전부** 참이어야 한다.
+#   1 실제 V2 화면 캡처   2 요청한 레이어 존재   3 카메라 상태 일치
+#   4 픽셀 분산 > 0       5 파일 되읽기 성공     6 메타데이터 일치
+# 하나라도 어긋나면 false 다. '거의 맞음'을 맞음으로 올리지 않는다 —
+# 그 순간 이 그림은 증거가 아니라 장식이 된다.
+VERIFY_CONDITIONS = (
+    "runtime_capture", "layer_present", "camera_match",
+    "pixel_variance", "file_read_back", "metadata_match",
+)
 
-    observed 는 브라우저에서 읽어 온 실제 상태다:
-      {"activeIds": [...], "lat":.., "lon":.., "dist":.., "ready": bool}
 
-    돌려주는 것: {verified, problems[], observed}
-    ⚠️ 한 가지라도 어긋나면 verified=False 다. '거의 맞음'을 맞음으로 올리지 않는다 —
-       그 순간 이 그림은 증거가 아니라 장식이 된다.
+def verify_capture(request, observed, *, capture_doc=None):
+    """§31 · §1 — 실제로 그 화면이었는지 되읽어 확인한다.
+
+    observed      브라우저에서 읽어 온 실제 상태
+    capture_doc   earthus_capture.mjs 가 쓴 메타 전체(픽셀검사·되읽기·해시)
+
+    돌려주는 것: {verified, conditions{...}, problems[], observed}
     """
     problems = []
+    cond = {k: False for k in VERIFY_CONDITIONS}
     obs = observed or {}
-    if not obs.get("ready"):
+    doc = capture_doc or {}
+
+    # 1) 실제 런타임이었나
+    if obs.get("ready"):
+        cond["runtime_capture"] = True
+    else:
         problems.append("런타임이 준비되지 않았다")
 
+    # 2) 요청한 레이어가 켜졌나
     want_ids = set(request.get("liveIds") or [])
     got_ids = set(obs.get("activeIds") or [])
     missing = sorted(want_ids - got_ids)
     if missing:
         problems.append("요청한 레이어가 켜지지 않았다: %s" % ", ".join(missing))
+    else:
+        cond["layer_present"] = True
 
+    # 3) 카메라가 그 자리인가
     cam = request.get("camera") or {}
     want_dist = dist_for_height_km(cam.get("heightKm"))
+    cam_ok = True
     for name, want, got, tol in (
         ("위도", cam.get("lat"), obs.get("lat"), TOL_DEG),
         ("경도", cam.get("lon"), obs.get("lon"), TOL_DEG),
@@ -159,6 +179,7 @@ def verify_capture(request, observed):
     ):
         if want is None or got is None:
             problems.append("%s를 확인할 수 없다" % name)
+            cam_ok = False
             continue
         # 경도는 ±180 에서 감긴다. 감긴 차이를 오차로 세지 않는다.
         d = abs(float(want) - float(got))
@@ -166,13 +187,47 @@ def verify_capture(request, observed):
             d = min(d, 360.0 - d)
         if d > tol:
             problems.append("%s가 요청과 다르다: 요청 %s · 실제 %s" % (name, want, got))
+            cam_ok = False
+    cond["camera_match"] = cam_ok
 
-    return {"verified": not problems, "problems": problems, "observed": obs}
+    # 4) 빈 프레임이 아닌가
+    pc = doc.get("pixelCheck") or {}
+    if pc:
+        if pc.get("passed"):
+            cond["pixel_variance"] = True
+        else:
+            problems.append("빈 프레임으로 보인다(표준편차 %s < %s)"
+                            % (pc.get("stdev"), pc.get("minStdev")))
+    else:
+        problems.append("픽셀 검사 결과가 없다 — 빈 프레임인지 알 수 없다")
+
+    # 5) 파일을 다시 읽어 확인했나
+    rb = doc.get("readBack") or {}
+    if rb.get("hashMatches") and (rb.get("decoded") or {}).get("ok"):
+        cond["file_read_back"] = True
+    elif doc:
+        problems.append("파일 되읽기를 확인하지 못했다: %s" % (rb or "기록 없음"))
+    else:
+        problems.append("캡처 기록이 없어 파일을 확인할 수 없다")
+
+    # 6) 메타데이터가 요청과 맞나 — 링크·해시가 있어야 재현할 수 있다
+    if doc.get("fileHash") and doc.get("sourceRoute") and doc.get("capturedAt"):
+        if doc.get("link") and request.get("link") and doc["link"] != request["link"]:
+            problems.append("캡처한 링크가 요청한 링크와 다르다")
+        else:
+            cond["metadata_match"] = True
+    elif doc:
+        problems.append("재현에 필요한 메타(fileHash·sourceRoute·capturedAt)가 없다")
+    else:
+        problems.append("캡처 메타가 없다")
+
+    verified = all(cond.values()) and not problems
+    return {"verified": verified, "conditions": cond, "problems": problems, "observed": obs}
 
 
 def asset_metadata(request, *, asset_id, captured_at, dataset_snapshot, verification,
                    canvas=None, file_ref=None, commit_sha=None, runtime_version=None,
-                   language="ko"):
+                   language="ko", capture_doc=None, story_id=None):
     """§11 VisualManifest 항목. 자산 메타의 뼈대는 distribution/visual 것을 그대로 쓴다.
 
     ⚠️ 확인에 실패한 캡처도 **버리지 않고** 남긴다. 다만 verified=False 로 남긴다 —
@@ -190,20 +245,44 @@ def asset_metadata(request, *, asset_id, captured_at, dataset_snapshot, verifica
         asset_id=asset_id, content_id=request.get("factId"), spec=spec,
         captured_at=captured_at, dataset_snapshot=dataset_snapshot)
     # 캡처 고유 정보를 얹는다. 그림 하나에서 팩트·현상·기간·커밋까지 되짚을 수 있어야 한다.
+    doc = capture_doc or {}
     meta.update({
         "captureSchema": CAPTURE_SCHEMA,
         "captureId": request.get("captureId"),
         "visualType": "EARTH_CAPTURE",
         "phenomenonId": request.get("phenomenonId"),
         "factRefs": [request.get("factId")] if request.get("factId") else [],
+        "storyId": story_id,
         "period": request.get("period"),
         "sourceRefs": request.get("sourceRefs") or [],
         "link": request.get("link"),
+        # ── §1 필수 항목 ───────────────────────────────────────────────
+        "sourceRoute": doc.get("sourceRoute") or request.get("url") or request.get("link"),
+        "cameraState": {
+            "lat": (request.get("camera") or {}).get("lat"),
+            "lon": (request.get("camera") or {}).get("lon"),
+            "heightKm": (request.get("camera") or {}).get("heightKm"),
+            "heading": (doc.get("observed") or {}).get("heading"),
+            "pitch": (doc.get("observed") or {}).get("pitch"),
+            "roll": (doc.get("observed") or {}).get("roll"),
+            "tilt": (doc.get("observed") or {}).get("tilt"),
+        },
+        "layerState": {
+            "requested": request.get("layerRefs") or [],
+            "requestedLive": request.get("liveIds") or [],
+            "observed": (doc.get("observed") or {}).get("activeIds") or [],
+        },
+        "viewport": doc.get("viewport") or canvas,
+        "pixelCheck": doc.get("pixelCheck"),
+        "fileHash": doc.get("fileHash"),
+        "readBack": doc.get("readBack"),
+        # ────────────────────────────────────────────────────────────────
         "language": language,
         "runtimeVersion": runtime_version,
         "commitSha": commit_sha,
-        "fileRef": file_ref,
+        "fileRef": file_ref or doc.get("fileRef"),
         "verified": bool(verification and verification.get("verified")),
+        "verifyConditions": (verification or {}).get("conditions") or {},
         "verificationProblems": list((verification or {}).get("problems") or []),
         "observedState": (verification or {}).get("observed"),
     })

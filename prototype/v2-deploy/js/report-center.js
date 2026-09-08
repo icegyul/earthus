@@ -17,6 +17,16 @@ import { representativeLayerFor, PHENOMENA } from './phenomenon-registry.js?v=4'
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+// §4 — 숫자 자리에는 **진짜 숫자만** 넣는다.
+//   참/거짓을 숫자로 캐스팅하지 않는다(true→1, false→0 이 되면 없는 값이 0점으로 보인다).
+//   NaN·Infinity 도 값이 아니다. 값이 아니면 '—' 로 남긴다 — 0 으로 채우지 않는다.
+const num = (v, dash = '—') => (
+  typeof v === 'number' && Number.isFinite(v) ? String(v) : dash);
+
+// 평가하지 못한 것을 0 으로 바꾸지 않기 위한 표식.
+const isMissing = (v) => v === null || v === undefined || typeof v === 'boolean'
+  || (typeof v === 'number' && !Number.isFinite(v));
+
 // §13 — reportId ↔ 정본 주소. 파이썬 report_contract.report_url 과 같은 규칙이다.
 // 두 곳에 있는 규칙이라 어긋나면 링크가 죽는다. 시험이 양쪽을 같이 본다.
 export const reportUrl = (reportId) => {
@@ -127,8 +137,29 @@ export const storyCardHtml = (story, ko) => {
     <p class="rc-story-s">${esc(ko ? story.summary : (story.summaryEn || story.summary))}</p>
     ${why ? `<p class="rc-why"><b>${ko ? '왜 중요한가' : 'Why it matters'}</b> ${esc(why)}</p>` : ''}
     <p class="rc-evi" data-testid="story-evidence"><b>${ko ? '근거' : 'Evidence'}</b> ${esc(refs || (ko ? '보고서 팩트' : 'report facts'))} · ${ko ? `팩트 ${nFacts}건` : `${nFacts} facts`}</p>
-    ${layerKey ? `<button class="rp-phen" data-story-phenomenon="${esc(layerKey)}" data-testid="story-to-phenomenon">${ko ? '이 현상 보기' : 'Open this phenomenon'}</button>` : ''}
+    ${storyActionsHtml(story, phen, layerKey, ko)}
   </article>`;
+};
+
+// §12 — 보고서에서 나갈 수 있는 곳. **능력이 있는 것만 보여 준다.**
+// ⚠️ 없는 기능을 버튼으로 만들지 않는다. 시뮬레이션 능력은 레지스트리에서 정확히 2개다
+//    (hazards.tsunami · ocean.wave). 나머지 현상에 '조건을 바꿔보기'를 달면
+//    눌러도 아무 일이 없거나 엉뚱한 화면이 뜬다 — 그건 거짓 약속이다.
+export const storyActionsHtml = (story, phenomenonId, layerKey, ko) => {
+  if (!layerKey) return '';
+  const cap = ((PHENOMENA[phenomenonId] || {}).capabilities) || {};
+  const btn = (action, testid, labelKo, labelEn) =>
+    `<button class="rp-phen" data-story-action="${action}" data-story-phenomenon="${esc(layerKey)}"`
+    + ` data-story-id="${esc(story.storyId)}" data-testid="${testid}">`
+    + `${ko ? labelKo : labelEn}</button>`;
+  const out = [btn('phenomenon', 'story-to-phenomenon', '자세히 보기', 'Open phenomenon')];
+  if (cap.intelligence) {
+    out.push(btn('intelligence', 'story-to-intelligence', '분석', 'Analysis'));
+  }
+  if (cap.simulation) {
+    out.push(btn('simulation', 'story-to-simulation', '조건을 바꿔보기', 'Change the conditions'));
+  }
+  return `<div class="rc-actions">${out.join('')}</div>`;
 };
 
 // ── 절 ──────────────────────────────────────────────────────────────────────
@@ -175,9 +206,11 @@ const factTableHtml = (refs, report, ko) => {
     <thead><tr><th>${ko ? '항목' : 'Item'}</th><th>${ko ? '값' : 'Value'}</th><th>${ko ? '평년 대비' : 'vs normal'}</th><th>${ko ? '표본' : 'Sample'}</th><th>${ko ? '출처' : 'Source'}</th></tr></thead>
     <tbody>${rows.map((f) => {
     const c = f.comparison || {};
-    const anom = typeof c.anomaly === 'number' ? `${c.anomaly > 0 ? '+' : ''}${c.anomaly}` : '—';
-    return `<tr><td>${esc(f.metric)}</td><td>${esc(f.value)}${f.unit ? ' ' + esc(f.unit) : ''}</td>`
-      + `<td>${esc(anom)}</td><td>${esc(f.sampleCount ?? '—')}</td><td>${esc(f.source || '')}</td></tr>`;
+    const anom = (typeof c.anomaly === 'number' && Number.isFinite(c.anomaly))
+      ? `${c.anomaly > 0 ? '+' : ''}${c.anomaly}` : '—';
+    const val = isMissing(f.value) ? '—' : `${esc(f.value)}${f.unit ? ' ' + esc(f.unit) : ''}`;
+    return `<tr><td>${esc(f.metric)}</td><td>${val}</td>`
+      + `<td>${esc(anom)}</td><td>${num(f.sampleCount)}</td><td>${esc(f.source || '')}</td></tr>`;
   }).join('')}</tbody></table></div>`;
 };
 
@@ -235,8 +268,8 @@ export const scorecardHtml = (report, ko) => {
     }
     const sc = r.scores || {};
     return `<tr data-evaluated="true"><td>${esc(r.phenomenonId)}</td><td>${esc(r.modelId ?? '—')}</td>`
-      + `<td>${esc(r.leadHours ?? '—')}h</td><td>MAE</td>`
-      + `<td>${esc(sc.mae ?? '—')}</td><td>${esc(r.sampleCount ?? '—')}</td></tr>`;
+      + `<td>${num(r.leadHours)}h</td><td>MAE</td>`
+      + `<td>${num(sc.mae)}</td><td>${num(r.sampleCount)}</td></tr>`;
   }).join('')}</tbody></table></div>
     <p class="rc-note-sm">${ko
     ? `채점 ${card.evaluatedCount}건 · 평가 불가 ${card.notEvaluatedCount}건. 리드타임을 합치지 않고 모델을 섞지 않습니다. 평가하지 못한 분야도 사유와 함께 남깁니다.`

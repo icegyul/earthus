@@ -238,8 +238,46 @@ def next_version(report):
     return out
 
 
-def publish_pipeline(report, adapter, *, index=None):
-    """§15 — BUILD/VALIDATE 는 이미 끝난 상태로 들어온다. 여기서는 올리고 확인만 한다."""
+# INTEGRATION-2 §6 — 리포트도 사람 승인을 거친다.
+# 검증 통과(VALIDATING→PUBLISHED)는 **기계 판정**이지 승인이 아니다.
+# 승인 표식이 없으면 올리지 않는다. require_approval=False 로 끌 수 있지만
+# 그건 개발용이고, 그렇게 올린 결과에는 approvalBypassed 가 박혀 나간다.
+APPROVAL_FIELD = "approval"
+
+
+def approve(report, *, actor, at, note=None):
+    """사람이 승인했다는 표식. 누가·언제인지 없으면 승인이 아니다."""
+    if not actor:
+        raise ValueError("승인자 없이 승인할 수 없다")
+    out = dict(report)
+    out[APPROVAL_FIELD] = {"state": "APPROVED", "actor": actor, "at": at, "note": note}
+    return out
+
+
+def approval_state(report):
+    a = (report or {}).get(APPROVAL_FIELD) or {}
+    st = a.get("state")
+    if st == "APPROVED" and a.get("actor"):
+        return "APPROVED"
+    if (report or {}).get("lifecycle") == "PUBLISHED":
+        # 검증은 통과했지만 사람은 아직 안 봤다. 이 둘을 같은 것으로 부르지 않는다.
+        return "READY_FOR_REVIEW"
+    return "DRAFT"
+
+
+def publish_pipeline(report, adapter, *, index=None, require_approval=True):
+    """§15 — BUILD/VALIDATE 는 이미 끝난 상태로 들어온다. 여기서는 올리고 확인만 한다.
+
+    INTEGRATION-2 §6 — 승인 없이는 올리지 않는다.
+    """
+    if require_approval:
+        st = approval_state(report)
+        if st != "APPROVED":
+            return {"stage": "APPROVE", "ok": False, "published": False,
+                    "reason": "NOT_APPROVED",
+                    "approvalState": st,
+                    "detail": ("검증 통과는 승인이 아니다(현재 %s). "
+                               "publisher.approve(report, actor=…) 를 거쳐야 올린다." % st)}
     avail = adapter.available()
     if not avail.get("ok"):
         return {"stage": "PUBLISH", "ok": False,
@@ -251,6 +289,8 @@ def publish_pipeline(report, adapter, *, index=None):
                 "detail": put.get("detail"), "published": False}
     check = adapter.verify(report)
     out = {"stage": "PUBLISH", "ok": bool(check.get("ok")), "published": put.get("published"),
+           "approvalState": approval_state(report),
+           "approvalBypassed": not require_approval,
            "alreadyPreserved": put.get("alreadyPreserved", False),
            "key": put.get("key"), "url": put.get("url"), "hash": put.get("hash"),
            "verify": check, "adapter": adapter.name,

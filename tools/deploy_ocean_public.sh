@@ -45,7 +45,7 @@ aws s3 cp "$PUBLIC_ROOT/data/ocean" "s3://$BUCKET/$APP_PREFIX/data/ocean" \
 
 # 심해·해구·해양생물 실제 화면이 읽는 운영 자료와 사진.
 for file in sea-life.json trenches.json trench-footprints.json ocean-comparisons.json; do
-  upload "prototype/data/$file" "data/$file" 'application/json; charset=utf-8' 'no-cache'
+  upload "data/$file" "data/$file" 'application/json; charset=utf-8' 'no-cache'
 done
 upload prototype/data/trench-bathymetry.webp data/trench-bathymetry.webp image/webp 'public, max-age=86400'
 aws s3 cp "$PUBLIC_ROOT/ocean/thumbs" "s3://$BUCKET/$APP_PREFIX/ocean/thumbs" \

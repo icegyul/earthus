@@ -4,6 +4,7 @@
 
     python3 aws/verify-public-access.py                # 정해진 항목을 두드린다
     python3 aws/verify-public-access.py --audit-denied # 거름망이 막는 경로를 **전부** 두드린다
+    python3 aws/verify-public-access.py --audit-live   # 버킷을 **목록으로** 훑는다 (자격증명 필요)
 
 버킷을 **자격증명 없이** 두드려 본다. 세 가지를 확인한다:
 
@@ -162,7 +163,83 @@ def audit_denied(limit=None, workers=8):
     return {"probed": len(out), "live": live, "unknown": unknown}
 
 
+def audit_live(workers=10):
+    """버킷을 목록으로 훑어 **부류로** 금지 객체를 찾는다. (자격증명 필요)
+
+    ⚠️ --audit-denied 는 거름망 계획을 두드린다. 계획은 지금 prototype/ 에 있는
+       경로만 안다 — 옛 배포가 남긴 객체는 거기 없다.
+       2026-09-08 실측: 계획 기준 26건, 목록 기준 **99건**이었다. 73건 차이는
+       전부 app/v2/ 아래 잔존물(스키마·마이그레이션 29건 포함)이었다.
+    """
+    import concurrent.futures as cf
+    import json as _json
+    import subprocess
+    here = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, os.path.join(here, "_shared"))
+    import public_build as pb                        # noqa: E402
+
+    def listing(prefix):
+        out, token = [], None
+        while True:
+            cmd = ["aws", "s3api", "list-objects-v2", "--bucket", BUCKET,
+                   "--prefix", prefix, "--region", REGION, "--output", "json",
+                   "--max-items", "1000"]
+            if token:
+                cmd += ["--starting-token", token]
+            p = subprocess.run(cmd, capture_output=True)
+            if p.returncode != 0:
+                err = p.stderr.decode("utf-8", "replace")[:200]
+                raise RuntimeError("목록을 못 읽었다 (자격증명?): %s" % err)
+            doc = _json.loads(p.stdout.decode("utf-8", "replace") or "{}")
+            for c in doc.get("Contents") or []:
+                out.append({"key": c["Key"], "size": c["Size"]})
+            token = doc.get("NextToken")
+            if not token:
+                return out
+
+    try:
+        objs = listing("app/") + listing("events/")
+    except RuntimeError as e:
+        print("❌ %s" % e)
+        print("   AWS_PROFILE=earthus-deploy 로 다시 시도하거나, 자격증명 없이는")
+        print("   --audit-denied 를 쓴다(계획 기준이라 잔존물은 놓친다).")
+        return {"ok": False, "reason": "NO_CREDENTIALS"}
+
+    cand = [dict(o, reason=pb.forbidden_class(o["key"])) for o in objs]
+    cand = [c for c in cand if c["reason"]]
+    with cf.ThreadPoolExecutor(workers) as ex:
+        codes = list(ex.map(lambda c: _status(
+            "%s/%s" % (BASE, urllib.parse.quote(c["key"])), method="HEAD")[0], cand))
+    for c, code in zip(cand, codes):
+        c["http"] = code
+    live = sorted((c for c in cand if c["http"] == 200), key=lambda x: x["key"])
+    unknown = [c for c in cand if c["http"] is None]
+
+    print("▸ 버킷 객체 %d · 부류로 걸린 것 %d" % (len(objs), len(cand)))
+    print("  이미 공개(지워야 함) %d · 확인 못 함 %d" % (len(live), len(unknown)))
+    print("")
+    import collections
+    for why, n in collections.Counter(c["reason"] for c in live).most_common():
+        print("   %-26s %4d" % (why, n))
+    print("")
+    for c in live:
+        print("  DELETE  %-74s %8d  %s" % (c["key"], c["size"], c["reason"]))
+    if unknown:
+        print("")
+        print("  ⚠️ 확인 못 함 %d건 — 통과로 세지 않는다" % len(unknown))
+    print("")
+    if live:
+        print("  지우는 법 (s3:DeleteObject 권한이 있는 자격증명으로):")
+        print("    aws s3 rm s3://%s/<위 경로> --region %s" % (BUCKET, REGION))
+        print("  지운 뒤 이 명령을 다시 돌려 목록이 비는지 확인한다.")
+    return {"ok": not (live or unknown), "live": live, "unknown": unknown,
+            "probed": len(objs)}
+
+
 def main():
+    if "--audit-live" in sys.argv:
+        res = audit_live()
+        return 0 if res.get("ok") else 1
     if "--audit-denied" in sys.argv:
         res = audit_denied()
         return 0 if not (res["live"] or res["unknown"]) else 1

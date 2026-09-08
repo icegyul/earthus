@@ -367,6 +367,61 @@ def residual_private(src, kept):
     return problems
 
 
+# ── 운영 객체 부류 판정 (§2 · §6) ────────────────────────────────────────────
+# ⚠️ DENY_RULES 는 **지금 prototype/ 에 있는 경로**만 안다. 버킷에는 옛 배포가 남긴,
+#    지금 트리에 없는 객체가 있다. 그것들은 규칙으로 못 찾는다 — 부류로 찾는다.
+#    실측(2026-09-08): app/v2/supabase/ 에 스키마·마이그레이션 29건이 그대로 있었다.
+LIVE_BAD_EXT = {
+    ".sql": "DB 스키마·마이그레이션", ".ddl": "DB 스키마",
+    ".py": "개발 스크립트", ".pem": "인증서/키", ".key": "키", ".env": "환경 변수",
+    ".bak": "편집 부산물", ".orig": "병합 부산물", ".rej": "병합 부산물",
+    ".log": "로그", ".pyc": "파이썬 캐시", ".map": "소스 맵",
+    ".zip": "묶음", ".ipynb": "노트북", ".sqlite": "DB 파일", ".db": "DB 파일",
+}
+LIVE_BAD_MARK = {
+    "/handoff/": "내부 인계 문서", "/__pycache__/": "파이썬 캐시",
+    "/qa/": "QA 하네스", "/.git/": "git 내부", "/node_modules/": "의존성 트리",
+    "/_verify/": "검증 부스러기", "/supabase/": "DB 스키마 트리",
+    "/.temp/": "도구 임시 상태", "/.python-packages/": "벤더 패키지",
+    "/.satellite-sources/": "위성 원본",
+}
+LIVE_BAD_NAME = {
+    "README.md": "저장소 안쪽 문서", "NEXT_STEPS.md": "내부 로드맵",
+    "CONTRACT.md": "내부 계약 문서", "config.local.example.js": "개발자 설정 서식",
+    "wiring-manifest.v1.json": "내부 통합 명세",
+    "menu-composition-rules.v1.json": "내부 구성 명세",
+    "aetherus-device-rc-rollback-probe.json": "카나리 점검 산출물",
+    "trench-bathymetry-audit.json": "감사 산출물",
+    "social-drafts.json": "승인 전 SNS 초안",
+    "ocean-dive-assets.md": "내부 자산 노트",
+    "source-panorama.webp": "제작 원본", "panorama.webp": "해시 없는 옛 원본",
+    "panorama-6000.webp": "해시 없는 옛 원본",
+}
+# 앱이 실제로 화면에 띄우는 것. 이름만 보고 막지 않는다.
+LIVE_ALLOW_SUFFIX = (".ko.md",)
+
+
+def forbidden_class(key):
+    """운영 객체 키 → 금지 사유, 아니면 None.
+
+    DENY_RULES 와 **독립**이다. 규칙이 못 보는 잔존물을 부류로 잡기 위한 것이다.
+    """
+    if not isinstance(key, str) or not key:
+        return None
+    if key.endswith(LIVE_ALLOW_SUFFIX):
+        return None
+    name = key.rsplit("/", 1)[-1]
+    if name in LIVE_BAD_NAME:
+        return LIVE_BAD_NAME[name]
+    ext = os.path.splitext(name.lower())[1]
+    if ext in LIVE_BAD_EXT:
+        return LIVE_BAD_EXT[ext]
+    for mark, why in LIVE_BAD_MARK.items():
+        if mark in "/" + key:
+            return why
+    return None
+
+
 def _same(a, b):
     try:
         sa, sb = os.stat(a), os.stat(b)
@@ -418,6 +473,56 @@ def build(src, out, *, strict=True):
         "deniedPaths": p["denied"],
         "residual": residual,
         "rules": len(DENY_RULES),
+    }
+
+
+def manifest(src, keep, *, generated_at=None):
+    """§10 — 무엇을 왜 공개하는지 한 줄씩 적은 목록.
+
+    ⚠️ 이 파일 자체는 **공개하지 않는다.** 무엇이 어디 있는지 통째로 알려 주는
+       지도이기 때문이다. build/ 아래(= .gitignore, 그리고 build/public-app 밖)에
+       두므로 어떤 업로더도 집어 가지 않는다.
+    """
+    rows = []
+    for rel in sorted(keep):
+        full = os.path.join(src, rel)
+        try:
+            size = os.path.getsize(full)
+        except OSError:
+            continue
+        h = hashlib.sha256()
+        try:
+            with open(full, "rb") as fh:
+                for chunk in iter(lambda: fh.read(1 << 20), b""):
+                    h.update(chunk)
+        except OSError:
+            continue
+        keep_rule = keep_for(rel)
+        decided = _decided_public(rel)
+        if keep_rule:
+            why = "허용 규칙: %s" % keep_rule[1]
+        elif decided:
+            why = "공개 결정: %s" % decided[1]
+        else:
+            why = "거름망에 걸리지 않는 제품 파일"
+        rows.append({
+            "path": rel,
+            "sha256": h.hexdigest(),
+            "size": size,
+            "source": "%s/%s" % (SOURCE_DIR, rel),
+            "publicReason": why,
+            "generated": bool(decided and "생성" in (decided[1] or "")),
+        })
+    return {
+        "schemaVersion": "earthus.public-manifest.v1",
+        "generatedAt": generated_at,
+        "source": SOURCE_DIR,
+        "out": PUBLIC_BUILD_DIR,
+        "count": len(rows),
+        "manifestHash": manifest_hash(src, keep),
+        "rules": {"deny": len(DENY_RULES), "keep": len(KEEP_RULES),
+                  "decided": len(PUBLIC_BY_DECISION)},
+        "files": rows,
     }
 
 

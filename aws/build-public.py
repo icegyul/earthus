@@ -34,6 +34,9 @@ def main(argv=None):
     ap.add_argument("--source", default=os.path.join(REPO, pb.SOURCE_DIR))
     ap.add_argument("--out", default=os.path.join(REPO, pb.PUBLIC_BUILD_DIR))
     ap.add_argument("--quiet", action="store_true")
+    ap.add_argument("--manifest", metavar="PATH", nargs="?", const="",
+                    help="공개 목록을 JSON 으로 쓴다 (기본: build/public-manifest.json). "
+                         "⚠️ 이 파일은 공개 트리 밖에 둔다 — 올리지 않는다")
     a = ap.parse_args(argv)
 
     plan = pb.plan(a.source)
@@ -67,6 +70,17 @@ def main(argv=None):
         return 0
 
     man = pb.build(a.source, a.out)
+    if a.manifest is not None:
+        import json
+        dest = a.manifest or os.path.join(REPO, "build", "public-manifest.json")
+        doc = pb.manifest(a.source, plan["keep"])
+        d = os.path.dirname(dest)
+        if d and not os.path.isdir(d):
+            os.makedirs(d)
+        with open(dest, "w", encoding="utf-8") as fh:
+            json.dump(doc, fh, ensure_ascii=False, indent=1)
+        if not a.quiet:
+            print("   매니페스트 %d줄 → %s" % (doc["count"], dest))
     if not a.quiet:
         print("")
         print("✅ %s" % a.out)

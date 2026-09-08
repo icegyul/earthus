@@ -10,6 +10,10 @@ import { rewriteV2Paths, relativeModuleSpecifiers } from './rewrite_v2_paths.mjs
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const OUTPUT = path.join(ROOT, 'out', 'information-release-20260905');
+// INTEGRATION-5 §3 — 공개 배포 원본은 build/public-app 하나다.
+//   예전에는 prototype/ 에서 바로 떠 왔다 — 거름망을 통째로 비컰다.
+//   막힌 파일은 여기서 없어지므로 inside() 가 던진다.
+const PUBLIC_SRC = 'build/public-app';
 const OWNER = 'earthus-information-release-20260905';
 const posix = value => value.split(path.sep).join('/');
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -67,8 +71,10 @@ function parseExtras(args) {
     const key = value.slice(split + 1).replace(/\\/g, '/');
     if (!key.startsWith('app/') || key.split('/').includes('..') || source.split('/').includes('..')) throw new Error(`Invalid explicit extra: ${value}`);
     inside(ROOT, source); contentType(key);
+    // 외부에서 넘기는 경로도 걸러진 트리 안이어야 한다(§3).
+    if (!source.startsWith(`${PUBLIC_SRC}/`)) throw new Error(`공개 원본 밖입니다: ${source} — ${PUBLIC_SRC}/ 아래 경로만 받습니다`);
     extras.push({ source, key, service: key.startsWith('app/v2/') ? 'v2' : 'v1',
-      rewrite: source.startsWith('prototype/v2-three/js/') && /\.js$/.test(source), explicitExtra: true });
+      rewrite: source.startsWith(`${PUBLIC_SRC}/v2-three/js/`) && /\.js$/.test(source), explicitExtra: true });
   }
   return extras;
 }
@@ -76,9 +82,14 @@ function parseExtras(args) {
 async function build() {
   const startedAt = new Date().toISOString();
   const head = git(['rev-parse', 'HEAD']);
+  // 거름망을 먼저 돌린다. 누출이 있으면 여기서 멈췄다 — 올리기 전에.
+  for (const py of ['python3', 'python']) {
+    try { execFileSync(py, [path.join(ROOT, 'aws', 'build-public.py'), '--quiet'], { cwd: ROOT, stdio: 'inherit' }); break; }
+    catch (e) { if (py === 'python') throw new Error(`공개 빌드 실패 — 올리지 않습니다: ${e.message}`); }
+  }
   const selections = [
-    ...V1_FILES.map(file => ({ source: `prototype/${file}`, key: `app/${file}`, service: 'v1', rewrite: false })),
-    ...V2_FILES.map(file => ({ source: `prototype/v2-three/${file}`, key: `app/v2/${file}`, service: 'v2', rewrite: file.endsWith('.js') })),
+    ...V1_FILES.map(file => ({ source: `${PUBLIC_SRC}/${file}`, key: `app/${file}`, service: 'v1', rewrite: false })),
+    ...V2_FILES.map(file => ({ source: `${PUBLIC_SRC}/v2-three/${file}`, key: `app/v2/${file}`, service: 'v2', rewrite: file.endsWith('.js') })),
     ...parseExtras(process.argv.slice(2)),
   ];
   const keys = new Set();

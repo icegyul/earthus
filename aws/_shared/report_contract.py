@@ -296,3 +296,178 @@ def assert_snapshot_unchanged(locked, candidate):
         if locked.get(f) != candidate.get(f):
             raise ValueError(f"얼린 예보가 바뀌었다: {f}")
     return True
+
+
+# ═══ PHASE 8 — 스토리 · 중요도 · 교차도메인 · 자료 라벨 · 정본 주소 ═══════════
+# PHASE 2/6/7 의 봉투 위에 얹는다. 여기서도 새 팩트 계보를 만들지 않는다 —
+# 스토리는 팩트를 **가리킬 뿐** 값을 새로 담지 않는다.
+
+# §1 — 스토리 종류. registry capability 와 충돌하지 않게, 화면 기능이 아니라
+# '이 기간에 무슨 일이 있었나' 의 종류만 둔다.
+STORY_TYPES = (
+    "EXTREME",         # 기록에 남을 값
+    "PERSISTENT",      # 오래 이어진 상태
+    "FAST_CHANGE",     # 짧은 기간의 큰 변화
+    "WIDESPREAD",      # 여러 지역에서 동시에
+    "UNEXPECTED",      # 예보와 크게 달랐다 (예보가 있을 때만)
+    "HIGH_IMPACT",     # 노출 인구·피해 자료가 있을 때만
+    "CROSS_DOMAIN",    # 서로 다른 분야가 같은 기간에 함께 움직였다
+    "FORECAST_MISS",
+    "FORECAST_HIT",
+)
+
+# §4 — 관계 종류. '원인' 은 여기에 없다. 인과는 별도 검증을 통과해야만 말한다.
+RELATION_TYPES = (
+    "TEMPORAL_ASSOCIATION",
+    "SPATIAL_ASSOCIATION",
+    "PHYSICAL_RELATION",        # 교과서 물리로 알려진 관계 — 이 기간의 인과 주장이 아니다
+    "STATISTICAL_ASSOCIATION",
+    "POSSIBLE_INFLUENCE",
+)
+
+# §4 — 근거 수준. 표현 강도는 여기서만 정한다. 문장 생성기가 임의로 못 올린다.
+EVIDENCE_LEVELS = ("COINCIDING", "ASSOCIATED", "CONSISTENT_WITH", "CONNECTED", "POSSIBLE_INFLUENCE")
+EVIDENCE_PHRASE = {
+    "COINCIDING":        {"ko": "같은 기간에 함께 나타났습니다", "en": "coincided in the same period"},
+    "ASSOCIATED":        {"ko": "함께 움직였습니다", "en": "moved together"},
+    "CONSISTENT_WITH":   {"ko": "알려진 관계와 어긋나지 않습니다", "en": "is consistent with the known relation"},
+    "CONNECTED":         {"ko": "연결돼 있습니다", "en": "are connected"},
+    "POSSIBLE_INFLUENCE": {"ko": "영향을 주었을 가능성이 있습니다", "en": "may have influenced"},
+}
+# 이 문구들은 **금지**다. 검증을 통과하지 않은 인과 주장이다.
+FORBIDDEN_CAUSAL = ("때문에", "때문이다", "탓에", "원인이다", "원인으로", "초래", "야기", "causes", "caused by")
+
+# §3 — 예보와 실제가 어긋난 방식. 예보가 없는 현상에는 쓰지 않는다.
+SURPRISE_TYPES = (
+    "DIRECTION_WRONG",
+    "MAGNITUDE_OFF",
+    "TIMING_OFF",
+    "SPATIAL_MISS",
+    "UNEXPECTED_EVENT",
+    "INSUFFICIENT_FORECAST_COVERAGE",
+)
+
+# §11 — 자료 라벨. 없는 부분을 내용으로 채우지 않기 위해, '없다' 를 값으로 갖는다.
+DATA_LABELS = ("DATA_COMPLETE", "DATA_PARTIAL", "INSUFFICIENT_DATA", "NOT_EVALUABLE")
+DATA_LABEL_TEXT = {
+    "DATA_COMPLETE":    {"ko": "자료 충분", "en": "Data complete"},
+    "DATA_PARTIAL":     {"ko": "일부 자료", "en": "Partial data"},
+    "INSUFFICIENT_DATA": {"ko": "자료 부족", "en": "Insufficient data"},
+    "NOT_EVALUABLE":    {"ko": "평가 불가", "en": "Not evaluable"},
+}
+
+
+def make_story(*, story_id, report_id, title, summary, importance_score, confidence,
+               story_type, phenomenon_ids=None, event_ids=None, fact_ids=None,
+               source_refs=None, temporal_extent=None, spatial_extent=None,
+               comparison=None, factors=None, evidence_level=None,
+               title_en=None, summary_en=None):
+    """§1 ReportStory — '이번 기간에 중요한 변화'.
+
+    ⚠️ 스토리는 값을 담지 않는다. fact_ids 로 팩트를 가리킨다 — 그래야 팩트를 고치면
+       스토리가 같이 바뀌고, 스토리에만 있는 유령 숫자가 생기지 않는다.
+    ⚠️ importance_score 는 **위험도가 아니다**(§2). 화면에 '위험' 이라고 쓰지 않는다.
+    """
+    if story_type not in STORY_TYPES:
+        raise ValueError(f"알 수 없는 스토리 종류: {story_type}")
+    if not fact_ids:
+        raise ValueError("팩트를 가리키지 않는 스토리는 만들지 않는다")
+    if not 0.0 <= float(importance_score) <= 1.0:
+        raise ValueError("importance_score 는 0~1 이다")
+    return {
+        "schemaVersion": REPORT_SCHEMA,
+        "storyId": story_id,
+        "reportId": report_id,
+        "title": title,
+        "summary": summary,
+        # 영어 문장도 **엔진이** 만든다. 화면에서 번역하면 서술 검증을 안 거친 문장이 나간다.
+        "titleEn": title_en,
+        "summaryEn": summary_en,
+        "importanceScore": round(float(importance_score), 4),
+        "importanceIsNotRisk": True,      # §2 — 읽는 쪽이 위험도로 오해하지 않게 봉투에 박아 둔다
+        "confidence": confidence,
+        "storyType": story_type,
+        "phenomenonIds": list(phenomenon_ids or []),
+        "eventIds": list(event_ids or []),
+        "factIds": list(fact_ids),
+        "sourceRefs": list(source_refs or []),
+        "temporalExtent": temporal_extent,    # {"from","to","days"}
+        "spatialExtent": spatial_extent,      # {"scope","regions":[...]}
+        "comparison": comparison,             # {"baseline","anomaly","rank","of"} — 없으면 None
+        "factors": dict(factors or {}),       # 중요도를 이룬 정규화 요소들 (근거 공개)
+        "evidenceLevel": evidence_level,
+    }
+
+
+def make_cross_domain_link(*, link_id, source_phenomenon, target_phenomenon, relation_type,
+                           evidence_level, fact_refs, confidence, explanation_ko,
+                           explanation_en=None, period=None, notes=None):
+    """§4 CrossDomainLink — 'A 가 B 의 원인이다' 는 여기서 만들 수 없다.
+
+    relation_type 에 인과가 없고, 설명 문장은 FORBIDDEN_CAUSAL 을 통과해야 한다.
+    """
+    if relation_type not in RELATION_TYPES:
+        raise ValueError(f"알 수 없는 관계 종류: {relation_type}")
+    if evidence_level not in EVIDENCE_LEVELS:
+        raise ValueError(f"알 수 없는 근거 수준: {evidence_level}")
+    if not fact_refs:
+        raise ValueError("팩트 없이 관계를 주장하지 않는다")
+    for w in FORBIDDEN_CAUSAL:
+        if w in (explanation_ko or "") or w in (explanation_en or ""):
+            raise ValueError(f"검증되지 않은 인과 표현: '{w}'")
+    return {
+        "schemaVersion": REPORT_SCHEMA,
+        "linkId": link_id,
+        "sourcePhenomenon": source_phenomenon,
+        "targetPhenomenon": target_phenomenon,
+        "relationType": relation_type,
+        "evidenceLevel": evidence_level,
+        "factRefs": list(fact_refs),
+        "confidence": confidence,
+        "period": period,
+        "explanation": {"ko": explanation_ko, "en": explanation_en},
+        "notes": notes,
+    }
+
+
+# ── §13 정본 주소 ────────────────────────────────────────────────────────────
+# reportId ↔ URL 은 **결정적**이어야 한다. 어느 쪽에서 만들어도 같은 주소가 나온다.
+#   report:2026-09  ↔ /reports/2026-09
+#   report:2026-Q3  ↔ /reports/2026-q3
+#   report:2026     ↔ /reports/2026
+#   outlook:2026-10 ↔ /reports/outlook/2026-10
+
+def report_url(report_id):
+    """reportId → 정본 경로. 모르는 모양이면 None — 아무 주소나 만들지 않는다."""
+    if not isinstance(report_id, str) or ":" not in report_id:
+        return None
+    kind, _, period = report_id.partition(":")
+    if not period:
+        return None
+    slug = period.lower()
+    if kind == "report":
+        return f"/reports/{slug}"
+    if kind == "outlook":
+        return f"/reports/outlook/{slug}"
+    return None
+
+
+def report_id_from_url(path):
+    """정본 경로 → reportId. report_url 의 역함수다."""
+    if not isinstance(path, str):
+        return None
+    p = path.strip().rstrip("/")
+    if p.startswith("/reports/outlook/"):
+        return "outlook:" + _period_case(p[len("/reports/outlook/"):])
+    if p.startswith("/reports/"):
+        rest = p[len("/reports/"):]
+        if not rest or "/" in rest:
+            return None
+        return "report:" + _period_case(rest)
+    return None
+
+
+def _period_case(slug):
+    """주소는 소문자, 기간 표기는 대문자 Q 다. 2026-q3 → 2026-Q3."""
+    s = slug.strip()
+    return s[:5] + s[5:].upper() if len(s) == 7 and s[5:6].lower() == "q" else s

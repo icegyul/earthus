@@ -29,7 +29,13 @@ CAUSAL = ("때문에", "때문이다", "탓에", "원인이다", "초래", "야�
 
 # 기간 표기는 값이 아니라 이름이다. 2026-08 · 2026-Q3 · 2026 을 숫자로 세면
 # 멀쩡한 문장이 '팩트에 없는 숫자' 로 걸린다.
-PERIOD_TOKEN = re.compile(r"\d{4}(?:-(?:Q[1-4]|\d{2}))?")
+# ⚠️ 앞뒤로 숫자가 더 붙어 있으면 기간 표기가 아니다. 양쪽 경계가 **둘 다** 필요하다.
+#    뒤만 막으면: "1991-2020" 에서 "1991-20" 을 먹고 "20" 을 남긴다 → 멀쩡한 평년 표기가
+#      '팩트에 없는 숫자 20' 으로 걸린다.
+#    앞을 안 막으면: 표본 수 "59697" 에서 뒤 네 자리 "9697" 을 기간으로 착각해 지우고
+#      "5" 만 남긴다 → 한 자리 수라 검사를 그냥 통과한다. 즉 **틀린 다섯 자리 숫자가
+#      검사를 빠져나간다.** 검증기가 조용히 헐거워지는 쪽이 더 위험하다.
+PERIOD_TOKEN = re.compile(r"(?<!\d)\d{4}(?:-(?:Q[1-4]|\d{2}))?(?!\d)")
 # 24시간 · 48시간 같은 리드 표기도 값이 아니라 조건이다.
 LEAD_TOKEN = re.compile(r"\d+\s*시간")
 
@@ -86,7 +92,7 @@ def build_scorecard_narrative(scorecard, *, lang="ko"):
             "factNumbers": [len(rows), n_total, scorecard.get("notEvaluatedCount", 0)]}
 
 
-def validate_narrative(text, facts, *, allowed_numbers=None, truth_types=None):
+def validate_narrative(text, facts, *, allowed_numbers=None, truth_types=None, mask_texts=None):
     """§9 — 문장이 팩트와 어긋나면 발행하지 않는다.
 
     검사
@@ -98,6 +104,13 @@ def validate_narrative(text, facts, *, allowed_numbers=None, truth_types=None):
     problems = []
     if not text:
         return True, problems
+
+    # 지역 **이름**에 숫자가 들어 있는 경우가 있다 — "60°S–60°N", "20°S–20°N".
+    # 이건 값이 아니라 이름이다. 기간·리드 표기와 같은 이유로 먼저 가린다.
+    # 가릴 문자열은 팩트가 들고 있는 라벨에서만 온다(마음대로 못 가린다).
+    for m in sorted(mask_texts or [], key=len, reverse=True):
+        if m:
+            text = text.replace(m, " ")
 
     allowed = set()
     for f in facts or []:
@@ -148,4 +161,71 @@ def validate_report_narrative(report):
         ok, probs = validate_narrative(t, facts, allowed_numbers=allowed, truth_types=truth_types)
         if not ok:
             problems.extend(probs)
+    # PHASE 8 — 스토리 문장도 같은 잣대로 본다. 스토리만 검사를 피해 가면 안 된다.
+    ok_s, probs_s = validate_stories(report.get("stories"), facts)
+    if not ok_s:
+        problems.extend(probs_s)
+    return (not problems), problems
+
+
+# ═══ PHASE 8 §12 — 스토리 문장도 팩트와 대조한다 ═════════════════════════════
+# 스토리는 제목·요약을 스스로 만든다. 그 문장에 쓴 숫자가 **그 스토리가 가리키는
+# 팩트**에서 나오는지 여기서 확인한다.
+#
+# ⚠️ 허용 숫자를 스토리가 스스로 신고하게 두지 않는다. 그러면 검사가 아니라 자백이다.
+#    팩트 봉투(value · sampleCount · comparison 안의 숫자)에서 **우리가 뽑는다.**
+
+def allowed_numbers_for(facts):
+    """팩트에서 문장에 나와도 되는 숫자를 모은다.
+
+    value 와 sampleCount 는 물론, comparison 안의 숫자(평년값·순위·기준연도·표본일수)도
+    팩트가 들고 있는 사실이므로 문장에 쓸 수 있다.
+    """
+    out = set()
+
+    def walk(v, depth=0):
+        if depth > 4:
+            return
+        if isinstance(v, bool):
+            return
+        if isinstance(v, (int, float)):
+            out.add(round(float(v), 6))
+        elif isinstance(v, dict):
+            for x in v.values():
+                walk(x, depth + 1)
+        elif isinstance(v, (list, tuple)):
+            for x in v:
+                walk(x, depth + 1)
+
+    for f in facts or []:
+        walk(f.get("value"))
+        walk(f.get("sampleCount"))
+        walk(f.get("comparison"))
+    return sorted(out)
+
+
+def validate_stories(stories, facts):
+    """스토리 제목·요약을 그 스토리가 가리키는 팩트와 대조한다."""
+    by_id = {f.get("factId"): f for f in (facts or [])}
+    problems = []
+    for st in stories or []:
+        mine = [by_id[i] for i in (st.get("factIds") or []) if i in by_id]
+        if not mine:
+            problems.append("스토리 %s 가 가리키는 팩트를 찾을 수 없다" % st.get("storyId"))
+            continue
+        allowed = allowed_numbers_for(mine)
+        truth = {f.get("truthType") for f in mine if f.get("truthType")}
+        # 지역 이름은 한국어·영어 둘 다 숫자를 품을 수 있다("60°S–60°N", "Tropics 20S-20N").
+        masks = {(f.get("comparison") or {}).get("regionLabel") for f in mine}
+        masks |= {(f.get("comparison") or {}).get("regionLabelEn") for f in mine}
+        masks |= {(st.get("spatialExtent") or {}).get("regionLabel"),
+                  (st.get("spatialExtent") or {}).get("regionLabelEn")}
+        masks = {m for m in masks if isinstance(m, str) and any(c.isdigit() for c in m)}
+        # 영어 문장도 같은 잣대로 본다. 한쪽만 검사하면 다른 쪽으로 숫자가 샌다.
+        for text in (st.get("title"), st.get("summary"),
+                     st.get("titleEn"), st.get("summaryEn")):
+            ok, probs = validate_narrative(text, mine, allowed_numbers=allowed,
+                                           truth_types=truth, mask_texts=masks)
+            if not ok:
+                problems.extend("스토리 %s: %s" % (st.get("storyId"), p) for p in probs)
     return (not problems), problems

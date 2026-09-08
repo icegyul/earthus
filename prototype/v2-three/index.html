@@ -591,6 +591,68 @@
   .hist-lede { margin: 0 0 8px; font-size: 12px; line-height: 1.6; color: #ecd7a6; border-left: 3px solid #bda16c; padding-left: 8px; }
   .hist-lede:last-child { margin: 8px 0 0; color: rgba(150,175,195,0.85); border-left-color: rgba(150,175,195,0.4); }
   .rp-note { margin: 6px 18px 12px; font-size: 11.5px; line-height: 1.6; color: rgba(150,175,195,0.85); }
+  /* PHASE 8 §13 · §19 — 리포트 센터. 이야기가 먼저, 표는 그 다음. */
+  .rc-tabs { display: flex; gap: 4px; padding: 4px 14px 8px 18px; flex-wrap: wrap; }
+  .rc-tab {
+    min-height: 30px; padding: 4px 10px; border-radius: 999px; cursor: pointer;
+    background: none; border: 1px solid rgba(255,255,255,0.16); color: rgba(190,210,225,0.85);
+    font-family: inherit; font-size: 11.5px;
+  }
+  .rc-tab:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+  .rc-tab.on { border-color: #7FB7F5; color: #cfe6ff; background: rgba(127,183,245,0.10); }
+  .rc-tab:focus-visible, .rc-tab:focus-visible { outline: 2px solid #7FB7F5; outline-offset: 2px; }
+  .rc-row { display: flex; align-items: center; gap: 8px; padding: 7px 14px 7px 18px; font-size: 12.5px; }
+  .rc-row span { flex: 1; }
+  .rc-doc { padding: 2px 14px 14px 18px; }
+  .rc-doc-h { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 6px 0 10px; }
+  .rc-doc-h b { font-size: 15px; letter-spacing: 0.02em; }
+  .rc-url { font-size: 10.5px; color: rgba(150,175,195,0.7); }
+  .rc-label {
+    display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 999px;
+    font-size: 10.5px; font-style: normal; color: rgba(200,220,235,0.9);
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+  }
+  .rc-sec { margin: 0 0 14px; }
+  .rc-sec-h { margin: 10px 0 6px; font-size: 12px; font-weight: 600; color: rgba(205,222,236,0.95); }
+  .rc-story {
+    margin: 0 0 8px; padding: 9px 11px; border-radius: 9px;
+    background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.08);
+  }
+  .rc-story-h { display: flex; gap: 5px; margin-bottom: 5px; flex-wrap: wrap; }
+  .rc-badge {
+    padding: 1px 7px; border-radius: 999px; font-size: 10.5px;
+    background: rgba(127,183,245,0.14); color: #bcd9f6;
+  }
+  .rc-badge-ev { background: rgba(236,215,166,0.14); color: #ecd7a6; }
+  .rc-story-t { margin: 0 0 4px; font-size: 13px; line-height: 1.45; font-weight: 600; }
+  .rc-story-s { margin: 0 0 6px; font-size: 12px; line-height: 1.6; color: rgba(196,214,228,0.92); }
+  .rc-why, .rc-evi { margin: 3px 0; font-size: 11px; line-height: 1.55; color: rgba(150,175,195,0.9); }
+  .rc-why b, .rc-evi b { color: rgba(190,210,225,0.95); margin-right: 5px; font-weight: 600; }
+  .rc-story .rp-phen { margin-top: 6px; }
+  .rc-empty, .rc-gap, .rc-lock, .rc-note-sm {
+    margin: 4px 0 8px; font-size: 11.5px; line-height: 1.6; color: rgba(150,175,195,0.85);
+  }
+  .rc-lock { border-left: 2px solid rgba(236,215,166,0.55); padding-left: 8px; color: #ecd7a6; }
+  .rc-list { margin: 4px 0 8px; padding-left: 16px; font-size: 11.5px; line-height: 1.65; }
+  .rc-list li { margin-bottom: 4px; color: rgba(196,214,228,0.92); }
+  /* 표는 좁은 화면에서 **자기 안에서** 가로로 넘어간다. 본문이 옆으로 밀리면 안 된다. */
+  .rc-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .rc-table { border-collapse: collapse; font-size: 11px; min-width: 100%; }
+  .rc-table th, .rc-table td {
+    padding: 4px 8px; text-align: left; white-space: nowrap;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+  }
+  .rc-table th { color: rgba(150,175,195,0.9); font-weight: 600; }
+  .rc-foot {
+    display: flex; gap: 10px; flex-wrap: wrap; padding-top: 8px; margin-top: 6px;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    font-size: 10.5px; color: rgba(150,175,195,0.7);
+  }
+  @media (max-width: 520px) {
+    .rc-doc { padding: 2px 10px 14px 12px; }
+    .rc-tabs { padding-left: 12px; }
+    .rc-story-t { font-size: 12.5px; }
+  }
   .mp-item:hover { opacity: 1; background: rgba(255,255,255,0.05); }
   .mp-item:active { transform: scale(0.99); }
   .mp-item.locked { opacity: 0.4; }

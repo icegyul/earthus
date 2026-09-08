@@ -95,6 +95,11 @@ def build_facts(daily_doc, period):
         if not phen:
             continue
         base = f"{rp.label(period)}:{model}:{var}:{lead}h"
+        # 팩트가 **스스로** 어느 모델의 몇 시간 예보인지 말하게 한다.
+        # 이걸 source 문자열에만 두면 뒷단이 문자열을 파싱하게 되고, 그러다
+        # 모델이 뒤바뀌면 두 줄이 그냥 상충하는 값으로 읽힌다.
+        ctx = {"modelId": MODEL_LABEL.get(model, model), "modelKey": model,
+               "leadHours": lead, "variable": var, "days": m["days"]}
         for metric in ("mae", "rmse", "me"):
             facts.append(rc.make_fact(
                 fact_id=f"fact:{base}:{metric}",
@@ -105,6 +110,7 @@ def build_facts(daily_doc, period):
                 period=rp.label(period),
                 source=f"{MODEL_LABEL.get(model, model)} 예보 vs 기상청 ASOS",
                 truth_type="EARTHUS_ANALYSIS",   # 우리가 채점한 값이다. 관측도 예보도 아니다.
+                comparison=dict(ctx),
                 sample_count=m["n"],
                 evidence_refs=[SOURCE_REF],
             ))

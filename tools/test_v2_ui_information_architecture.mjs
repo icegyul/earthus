@@ -9,6 +9,7 @@ import { readFileSync } from 'node:fs';
 const reg = await import('../prototype/v2-three/js/phenomenon-registry.js');
 const src = (p) => readFileSync(new URL(`../prototype/v2-three/js/${p}`, import.meta.url), 'utf8');
 const shellSrc = src('ui-shell.js');
+const rcSrc = src('report-center.js');   // PHASE 8 — 리포트 센터 렌더러
 const mainSrc = src('main.js');
 const switchSrc = readFileSync(new URL('../prototype/js/earth-switch.js', import.meta.url), 'utf8');
 
@@ -220,18 +221,91 @@ test('리포트가 최상위 진입면으로 있다', () => {
 
 test('없는 보고서를 지어내지 않는다', () => {
   const i = shellSrc.indexOf('const reportPanelHtml');
-  const body = shellSrc.slice(i, i + 5200);
-  // 월간·분기·연간과 세 전망은 생성기가 없다 — 상태를 그대로 적는다.
-  assert.match(body, /아직 생성되지 않음/);
-  // PHASE 7 — 목록을 색인에서 읽는다. 없다는 말이 화면에 박혀 있으면 엔진이 내놓아도 영원히 없다고 한다.
-  assert.match(shellSrc, /const findReports = \(type\) =>/, '보고서 목록을 색인에서 읽지 않는다');
-  assert.match(shellSrc, /REPORT_INDEX_URL/);
+  const body = shellSrc.slice(i, i + 6400);
+  // ⚠️ 이 시험은 원래 '아직 생성되지 않음' 이라는 **문구 전문**을 못박고 있었다.
+  //    PHASE 8 이 목록을 리포트 센터(탭 5종)로 바꾸자 문구가 옮겨지면서 깨졌다 —
+  //    화면이 나아졌는데 시험이 깨진 것이니 시험이 틀린 것이다(지시서 §17).
+  //    그래서 문구가 아니라 **불변식**을 본다: 목록은 색인에서 오고, 발행된 것만 열 수 있고,
+  //    비었을 때는 비었다고 말한다.
+  assert.match(shellSrc, /reports\/index\.json/, '보고서 목록을 색인에서 읽지 않는다');
+  assert.match(shellSrc, /allReports = \(\) =>/, '색인을 훑는 helper 가 없다');
+  // 발행된 것만 열 수 있다 — 생성 중인 것을 완성본처럼 보여 주지 않는다.
+  assert.match(shellSrc, /lifecycle === 'PUBLISHED'/, '발행 여부를 보지 않고 목록을 그린다');
+  assert.match(shellSrc, /data-report-open=/, '보고서를 여는 진입점이 없다');
+  // 목록이 비면 비었다고 적는다. 어떤 문구든 좋지만 '있는 척'은 안 된다.
+  assert.match(shellSrc, /data-testid="report-list-empty"/, '빈 목록을 말하는 자리가 없다');
+  assert.ok(!/준비 중|Coming Soon/i.test(body), "'준비 중'으로 빈 자리를 덮고 있다");
   assert.ok(!/TEMP-VERIFY/.test(shellSrc), '검증용 임시 주소가 남아 있다');
-  // 실제 보고서는 실제 종류로만 링크한다. 종류 조회는 위 helper(reportKindRows)가 한다.
+  // 실제 사건 보고서는 실제 종류로만 링크한다.
   assert.match(shellSrc, /const reportKindRows = \(\) =>[\s\S]{0,400}reportKindsForPhenomenon/);
   assert.match(body, /lab-reports\.html\?kind=/);
   // 지난 예측을 고쳐서 맞은 것처럼 만들지 않는다는 약속이 화면에 있다.
   assert.match(body, /고쳐서 맞은 것처럼/);
+});
+
+// ── PHASE 8 §13 · §14 · §20 — 리포트 센터 ────────────────────────────────────
+test('리포트 센터가 다섯 갈래를 갖는다', () => {
+  for (const id of ['latest', 'monthly', 'quarterly', 'annual', 'outlook']) {
+    assert.match(shellSrc, new RegExp(`id: '${id}'`), `리포트 탭 ${id} 가 없다`);
+  }
+});
+
+test('보고서 주소가 파이썬 규칙과 같은 값을 낸다', async () => {
+  // ⚠️ 같은 규칙이 파이썬(report_contract)과 화면(report-center) 두 곳에 있다.
+  //    어긋나면 발행한 링크가 죽는다. 그래서 화면 쪽을 **실제로 실행해** 대조한다.
+  //    기대값은 파이썬 시험(test_phase8_stories.CanonicalUrl)과 같은 표다.
+  const rc = await import('../prototype/v2-three/js/report-center.js');
+  const cases = [
+    ['report:2026-09', '/reports/2026-09'],
+    ['report:2026-Q3', '/reports/2026-q3'],
+    ['report:2026', '/reports/2026'],
+    ['outlook:2026-10', '/reports/outlook/2026-10'],
+  ];
+  for (const [id, url] of cases) {
+    assert.equal(rc.reportUrl(id), url, `${id} 의 주소가 다르다`);
+    assert.equal(rc.reportIdFromUrl(url), id, `${url} 를 되돌리지 못한다`);
+  }
+  assert.equal(rc.reportUrl('weird'), null);
+  assert.equal(rc.reportIdFromUrl('/nope/2026-09'), null);
+  // 발행 키도 publisher.report_key 와 같아야 같은 파일을 가리킨다.
+  assert.equal(rc.reportKey('report:2026-08', 1), 'reports/report/2026-08/v1.json');
+  assert.equal(rc.reportKey('report:2026-08', 2), 'reports/report/2026-08/v2.json');
+});
+
+test('보고서 주소는 결정적이다', () => {
+  // 파이썬(report_contract.report_url)과 화면(report-center.js)이 같은 규칙을 써야
+  // 링크가 죽지 않는다. 양쪽에 규칙이 있다는 사실 자체를 확인한다.
+  assert.match(rcSrc, /export const reportUrl =/);
+  assert.match(rcSrc, /export const reportIdFromUrl =/);
+  assert.match(rcSrc, /\/reports\/outlook\//);
+});
+
+test('중요도를 위험도라고 부르지 않는다', () => {
+  // 노출 인구 자료 없이 위험도를 말하면 거짓말이다(§2).
+  assert.ok(!/위험도|위험 점수/.test(rcSrc), '중요도를 위험이라고 표시한다');
+  assert.match(rcSrc, /importanceIsNotRisk|중요도를 '위험'이라 부르지 않는다/);
+});
+
+test('무료 화면을 일부러 빈약하게 만들지 않는다', () => {
+  // 이야기·핵심 숫자·예보 평가는 무료에서 다 열린다(§14).
+  for (const id of ['top_stories', 'snapshot', 'what_surprised_us', 'forecast_review']) {
+    assert.match(rcSrc, new RegExp(`'${id}'`), `무료 절 ${id} 가 빠졌다`);
+  }
+  // 배너가 아니라 결과 일부를 보여 준 뒤 잠근다.
+  assert.match(rcSrc, /data-testid="pro-gate"/);
+});
+
+test('화면이 문장을 만들지 않는다', () => {
+  // 스토리 문장은 엔진이 만들고 서술 검증을 통과한 것만 쓴다.
+  assert.match(rcSrc, /story\.title/);
+  assert.match(rcSrc, /story\.titleEn/, '영어 문장을 화면에서 번역하고 있다');
+});
+
+test('보고서 스토리에서 그 현상으로 갈 수 있다', () => {
+  assert.match(rcSrc, /data-story-phenomenon="/);
+  assert.match(shellSrc, /toStoryPhen\.dataset\.storyPhenomenon\.split\('\/'\)/);
+  // 현상으로 옮긴 뒤에는 그 현상의 값을 보여 준다 — 사건 피드가 아니라.
+  assert.match(shellSrc, /data-tab="now"/);
 });
 
 test('리포트에서 그 현상으로 갈 수 있다', () => {

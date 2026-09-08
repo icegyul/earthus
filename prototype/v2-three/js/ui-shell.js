@@ -11,6 +11,8 @@ import { renderBadge, layerBadge } from './engine-bridge.js?v=15';
 // (bare id 조회였기 때문에 hobby/surf 가 ocean/surf 의 질문을 그대로 표시하고 있었다.)
 import { questionForLayer, phenomenonForLayer, LAYER_PHENOMENON, reportKindsForPhenomenon, PHENOMENA, representativeLayerFor } from './phenomenon-registry.js?v=4';
 import { menuCoverage, menuTime, canClearLayer, matchesMenu } from './information-contract.js';
+// PHASE 8 §13 — 리포트 센터. 보고서 렌더링은 그쪽 모듈이 한다. 여기서 문장을 만들지 않는다.
+import { reportDocHtml, reportKey, reportUrl, reportIdFromUrl, currentTier, DATA_LABEL_TEXT } from './report-center.js?v=1';
 const safeText = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 // ---------------------------------------------------------------------------
@@ -564,37 +566,38 @@ export function initShell(hooks) {
      "생성되지 않음" 과 "생성됐지만 자료 부족" 을 구분해서 보여 준다. */
   let REPORT_INDEX = null;      // null = 아직 안 받아 봄 · {} = 받았는데 비어 있음
   let reportIndexTried = false;
-  const REPORT_INDEX_URL = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/reports/index.json';
+  /* PHASE 8 §13 — 발행 저장소의 기준 주소. 운영에서는 S3 다.
+     window.EARTHUS_REPORT_BASE 로 바꿀 수 있게 둔 것은 **설정**이지 시험용 자료가 아니다 —
+     번들에 가짜 보고서를 넣지 않고도 다른 저장소를 가리켜 확인할 수 있어야 한다. */
+  const reportBase = () => (typeof window !== 'undefined' && window.EARTHUS_REPORT_BASE)
+    || 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
+  let openReport = null;          // 지금 읽고 있는 보고서 본문 (없으면 목록)
+  let openReportId = null;
+  let reportLoading = false;
+  let reportError = null;
+  const REPORT_DOCS = new Map();  // reportId → 본문. 같은 것을 두 번 받지 않는다.
+  let reportTab = 'latest';       // latest · monthly · quarterly · annual · outlook
+
+  // 보고서 본문을 받는다. 없으면 없다고 말한다 — 빈 화면을 그럴듯하게 채우지 않는다.
+  const loadReport = (reportId, version) => {
+    if (REPORT_DOCS.has(reportId)) {
+      openReport = REPORT_DOCS.get(reportId); openReportId = reportId; refreshFlyout(); return;
+    }
+    reportLoading = true; reportError = null; openReportId = reportId; openReport = null;
+    refreshFlyout();
+    fetch(reportBase() + '/' + reportKey(reportId, version || 1), { cache: 'no-cache' })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
+      .then((doc) => { REPORT_DOCS.set(reportId, doc); openReport = doc; reportLoading = false; refreshFlyout(); })
+      .catch((e) => { reportLoading = false; reportError = String(e && e.message || e); refreshFlyout(); });
+  };
   const loadReportIndex = () => {
     if (reportIndexTried) return;
     reportIndexTried = true;
-    fetch(REPORT_INDEX_URL, { cache: 'no-cache' })
+    fetch(reportBase() + '/reports/index.json', { cache: 'no-cache' })
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => { REPORT_INDEX = j && typeof j === 'object' ? j : {}; if (openBrand === 'report') refreshFlyout(); })
       .catch(() => { REPORT_INDEX = {}; if (openBrand === 'report') refreshFlyout(); });
   };
-
-  // 색인에서 이 종류·기간의 보고서를 찾는다. 엔진의 필드 이름을 그대로 쓴다(§37 계약 정렬).
-  const findReports = (type) => {
-    const years = (REPORT_INDEX && REPORT_INDEX.years) || null;
-    if (!years) return [];
-    const out = [];
-    for (const list of Object.values(years)) {
-      for (const r of (list || [])) if (r && r.type === type) out.push(r);
-    }
-    return out.sort((a, b) => String((b.period || {}).from || '').localeCompare(String((a.period || {}).from || '')));
-  };
-
-  const REPORT_PERIODIC = [
-    { id: 'monthly',   ko: '월간',   en: 'Monthly',   type: 'RETROSPECTIVE_MONTHLY' },
-    { id: 'quarterly', ko: '분기',   en: 'Quarterly', type: 'RETROSPECTIVE_QUARTERLY' },
-    { id: 'annual',    ko: '연간',   en: 'Annual',    type: 'RETROSPECTIVE_ANNUAL' },
-  ];
-  const REPORT_OUTLOOK = [
-    { id: 'next_month',   ko: '다음달',   en: 'Next month',   type: 'OUTLOOK_NEXT_MONTH' },
-    { id: 'next_quarter', ko: '다음분기', en: 'Next quarter', type: 'OUTLOOK_NEXT_QUARTER' },
-    { id: 'next_year',    ko: '다음연간', en: 'Next year',    type: 'OUTLOOK_NEXT_YEAR' },
-  ];
 
   // 사건 보고서는 현상에서 온다 — 레지스트리가 이미 종류↔현상을 안다.
   const reportKindRows = () => {
@@ -609,8 +612,76 @@ export function initShell(hooks) {
     return rows;
   };
 
+  // §13 — 리포트 센터의 다섯 갈래. 주소와 1:1 로 맞춘다.
+  const REPORT_TABS = [
+    { id: 'latest',    ko: '최신',   en: 'Latest' },
+    { id: 'monthly',   ko: '월간',   en: 'Monthly',   type: 'RETROSPECTIVE_MONTHLY' },
+    { id: 'quarterly', ko: '분기',   en: 'Quarterly', type: 'RETROSPECTIVE_QUARTERLY' },
+    { id: 'annual',    ko: '연간',   en: 'Annual',    type: 'RETROSPECTIVE_ANNUAL' },
+    { id: 'outlook',   ko: '전망',   en: 'Outlook' },
+  ];
+
+  const allReports = () => {
+    const years = (REPORT_INDEX && REPORT_INDEX.years) || null;
+    if (!years) return [];
+    const out = [];
+    for (const list of Object.values(years)) for (const r of (list || [])) if (r) out.push(r);
+    return out.sort((a, b) => String((b.period || {}).from || '').localeCompare(String((a.period || {}).from || '')));
+  };
+
+  // 보고서 한 줄. 발행된 것만 열 수 있다 — 생성 중인 것을 완성본처럼 보여 주지 않는다.
+  const reportRowHtml = (r, ko) => {
+    const per = ((r.period || {}).from || '').slice(0, 7);
+    const published = r.lifecycle === 'PUBLISHED';
+    const lab = DATA_LABEL_TEXT[r.dataLabel];
+    return '<div class="rc-row' + (published ? '' : ' rp-pending') + '" data-testid="report-row">'
+      + '<span>' + safeText(per) + (lab ? ' <em class="rc-label">' + safeText(ko ? lab.ko : lab.en) + '</em>' : '') + '</span>'
+      + (published
+        ? '<button class="rp-phen" data-report-open="' + safeText(r.reportId || '') + '" data-report-version="'
+          + safeText(r.version || 1) + '" data-testid="report-open">' + (ko ? '읽기' : 'Read') + '</button>'
+        : '<em>' + safeText((ko ? '생성 중 · ' : 'generating · ') + (r.lifecycle || r.status || '')) + '</em>')
+      + '</div>';
+  };
+
+  const tabBodyHtml = (ko) => {
+    if (REPORT_INDEX === null) {
+      return '<p class="rp-note" data-testid="report-list-loading">' + (ko ? '목록을 받는 중입니다…' : 'Loading…') + '</p>';
+    }
+    const tab = REPORT_TABS.find((t) => t.id === reportTab) || REPORT_TABS[0];
+    let rows;
+    if (tab.id === 'latest') rows = allReports().filter((r) => r.lifecycle === 'PUBLISHED').slice(0, 6);
+    else if (tab.id === 'outlook') rows = allReports().filter((r) => String(r.type || '').startsWith('OUTLOOK_'));
+    else rows = allReports().filter((r) => r.type === tab.type);
+    if (!rows.length) {
+      return '<p class="rp-note" data-testid="report-list-empty">' + (ko
+        ? '아직 발행된 보고서가 없습니다. 엔진은 준비돼 있습니다(aws/report-engine) — 없는 보고서를 미리 그려 두지 않습니다.'
+        : 'Nothing published yet. The engine exists (aws/report-engine); we do not draw reports that do not exist.') + '</p>';
+    }
+    return rows.map((r) => reportRowHtml(r, ko)).join('');
+  };
+
+  const reportCenterHtml = (ko) => {
+    // 본문을 읽는 중이면 본문이 화면 전체를 쓴다.
+    if (openReportId) {
+      if (reportLoading) return '<p class="rp-note" data-testid="report-loading">' + (ko ? '보고서를 받는 중입니다…' : 'Loading the report…') + '</p>';
+      if (reportError) {
+        return '<div class="rc-doc"><button class="rp-phen" data-report-back="1" data-testid="report-back">'
+          + (ko ? '← 목록' : '← Back') + '</button><p class="rc-empty" data-testid="report-error">'
+          + (ko ? '보고서를 받지 못했습니다: ' : 'Could not load the report: ') + safeText(reportError) + '</p></div>';
+      }
+      if (openReport) return reportDocHtml(openReport, { ko, tier: currentTier() });
+    }
+    return '<nav class="rc-tabs" role="tablist" data-testid="report-tabs">'
+      + REPORT_TABS.map((t) => '<button role="tab" class="rc-tab' + (t.id === reportTab ? ' on' : '') + '"'
+        + ' aria-selected="' + (t.id === reportTab ? 'true' : 'false') + '"'
+        + ' data-report-tab="' + t.id + '">' + safeText(ko ? t.ko : t.en) + '</button>').join('')
+      + '</nav><div class="rc-list" data-testid="report-list">' + tabBodyHtml(ko) + '</div>';
+  };
+
   const reportPanelHtml = () => {
     const ko = i18n.ko;
+    // 본문을 읽는 중에는 다른 절을 그리지 않는다 — 읽는 데 방해된다.
+    if (openReportId) return reportCenterHtml(ko);
     const rows = reportKindRows();
     const live = rows.map((r) => {
       const key = representativeLayerFor(r.pid);
@@ -624,29 +695,6 @@ export function initShell(hooks) {
         + '</div>';
     }).join('');
 
-    // 색인에 있으면 그 상태를 그대로 보여 준다. 없으면 없다고 말한다.
-    const periodicRow = (x) => {
-      const found = findReports(x.type);
-      if (!found.length) {
-        return '<div class="rp-row rp-pending"><span>' + (ko ? x.ko : x.en) + '</span>'
-          + '<em>' + (ko ? '아직 생성되지 않음' : 'not generated yet') + '</em></div>';
-      }
-      const r = found[0];
-      const per = (r.period || {}).from || '';
-      const published = r.lifecycle === 'PUBLISHED';
-      // 발행된 것만 열 수 있다. 생성 중이거나 실패한 것을 완성본처럼 보여 주지 않는다.
-      const state = published ? (ko ? '발행' : 'published')
-        : (ko ? '생성 중 · ' : 'generating · ') + (r.lifecycle || r.status || '');
-      return '<div class="rp-row' + (published ? '' : ' rp-pending') + '">'
-        + '<span>' + (ko ? x.ko : x.en) + ' <small>' + safeText(per.slice(0, 7)) + '</small></span>'
-        + (published
-          ? '<button class="rp-phen" data-report-open="' + safeText(r.reportId || '') + '">'
-            + (ko ? '읽기' : 'Read') + '</button>'
-          : '<em>' + safeText(state) + '</em>')
-        + '</div>';
-    };
-    const pending = (list) => list.map(periodicRow).join('');
-
     return '<section class="mp-sec" data-section="__rep-live" style="--sc:#8fd0ff">'
       + '<h3 class="mp-title"><button data-collapse="__rep-live" aria-expanded="true"><i></i>'
       + (ko ? '사건 분석 보고서' : 'Event analysis reports') + '<em>' + rows.length + '</em></button></h3>'
@@ -656,21 +704,12 @@ export function initShell(hooks) {
         : 'Each closed event keeps its calculation and verification. The list and detail open in the 1.0 report view.') + '</p>'
       + '</div></section>'
 
-      + '<section class="mp-sec" data-section="__rep-past" style="--sc:#9fb9ff">'
-      + '<h3 class="mp-title"><button data-collapse="__rep-past" aria-expanded="true"><i></i>'
-      + (ko ? '지구 회고' : 'Earth retrospective') + '</button></h3>'
-      + '<div>' + pending(REPORT_PERIODIC)
+      + '<section class="mp-sec" data-section="__rep-center" style="--sc:#9fb9ff">'
+      + '<h3 class="mp-title"><button data-collapse="__rep-center" aria-expanded="true"><i></i>'
+      + (ko ? '지구 회고 · 전망' : 'Retrospective / outlook') + '</button></h3>'
+      + '<div>' + reportCenterHtml(ko)
       + '<p class="rp-note">' + (ko
-        ? '엔진은 준비돼 있습니다(aws/report-engine). 위 목록은 발행된 보고서 색인을 그대로 읽습니다 — 아직 발행된 것이 없으면 없다고 적습니다.'
-        : 'The engine exists (aws/report-engine). The list above reads the published report index directly — if nothing is published yet, it says so.') + '</p>'
-      + '</div></section>'
-
-      + '<section class="mp-sec" data-section="__rep-outlook" style="--sc:#ecd7a6">'
-      + '<h3 class="mp-title"><button data-collapse="__rep-outlook" aria-expanded="true"><i></i>'
-      + (ko ? '전망' : 'Outlook') + '</button></h3>'
-      + '<div>' + pending(REPORT_OUTLOOK)
-      + '<p class="rp-note">' + (ko
-        ? '전망 보고서에는 지난 전망이 얼마나 맞았는지가 함께 들어갑니다. 예보 스냅샷은 발행 시점 그대로 얼려 두고 나중에 실측과 대조합니다 — 지난 예측을 고쳐서 맞은 것처럼 만들지 않습니다.'
+        ? '전망에는 지난 전망이 얼마나 맞았는지가 함께 들어갑니다. 예보 스냅샷은 발행 시점 그대로 얼려 두고 나중에 실측과 대조합니다 — 지난 예측을 고쳐서 맞은 것처럼 만들지 않습니다.'
         : 'An outlook carries how the previous outlook actually scored. Forecast snapshots are frozen as issued and compared with observations later — a past prediction is never edited to look right.') + '</p>'
       + '</div></section>';
   };
@@ -745,6 +784,35 @@ export function initShell(hooks) {
   panel.addEventListener('click', (e) => {
     if (e.target.closest('[data-x]')) { closeFlyout(); return; }
     const collapse=e.target.closest('[data-collapse]');
+    // PHASE 8 §13 — 리포트 센터 조작. 목록 ↔ 본문, 탭 전환, 보고서 → 현상.
+    const tab = e.target.closest('[data-report-tab]');
+    if (tab) { reportTab = tab.dataset.reportTab; refreshFlyout(); return; }
+    const back = e.target.closest('[data-report-back]');
+    if (back) { openReport = null; openReportId = null; reportError = null; refreshFlyout(); return; }
+    const openRep = e.target.closest('[data-report-open]');
+    if (openRep) {
+      loadReport(openRep.dataset.reportOpen, Number(openRep.dataset.reportVersion) || 1);
+      return;
+    }
+    // §20 REPORT → PHENOMENON. 스토리에서 그 현상을 바로 연다.
+    const toStoryPhen = e.target.closest('[data-story-phenomenon]');
+    if (toStoryPhen) {
+      const [sid, lid] = toStoryPhen.dataset.storyPhenomenon.split('/');
+      const sc = SCENES.find((x) => x.id === sid);
+      const ly = sc && sc.layers.find((x) => x.id === lid);
+      if (ly && hooks.onLayerAction) {
+        selectedMenu = { s: sc, l: ly };
+        applyCapabilityGating();
+        hooks.onLayerAction(sid, ly);
+        closeFlyout();
+        if (!intelOpen) intel.querySelector('#intel-tab').click();
+        // ⚠️ 보고서에서 현상으로 왔는데 사건 피드가 떠 있으면, 누른 것과 다른 화면이 나온다.
+        //    '선택 자료' 로 옮겨서 방금 고른 현상의 값을 바로 보여 준다.
+        const nowTab = intel.querySelector('[data-tab="now"]');
+        if (nowTab) nowTab.click(); else renderIntel();
+      }
+      return;
+    }
     const toPhen = e.target.closest('[data-report-phenomenon]');
     if(toPhen){const [sid,lid]=toPhen.dataset.reportPhenomenon.split('/');const sc=SCENES.find(x=>x.id===sid);const ly=sc&&sc.layers.find(x=>x.id===lid);if(ly&&hooks.onLayerAction){selectedMenu={s:sc,l:ly};applyCapabilityGating();hooks.onLayerAction(sid,ly);closeFlyout();if(!intelOpen)intel.querySelector('#intel-tab').click();else renderIntel();}return;}
     const expand = e.target.closest('[data-expand]');

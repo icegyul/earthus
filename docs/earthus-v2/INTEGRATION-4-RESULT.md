@@ -2,8 +2,9 @@
 
 ```text
 STATUS:  PARTIAL
-COMMIT:  (아래 "변경 파일" 참고 — 이 문서와 같은 커밋)
-PARENT:  0d3dab8c
+COMMIT:  6130dc4e
+PARENT:  efd29916  (지시서 기준선 0d3dab8c 의 자손 — 작업 중 다른 세션이
+                    efd29916 "해안선에 검은 가시…" 를 같은 브랜치에 올렸다)
 DATE:    2026-09-08
 ```
 

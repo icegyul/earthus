@@ -251,7 +251,7 @@ def main(argv=None):
             print("   " + " / ".join(report["validationProblems"][:4]))
         adapter = (pub.S3PublishAdapter() if args.publish_target == "s3"
                    else pub.LocalPublishAdapter(args.publish_root))
-        result = pub.publish_pipeline(report, adapter)
+        result = pub.publish_pipeline(report, adapter, published_at=_now())
         print("  올리기: ok=%s published=%s %s" % (
             result.get("ok"), result.get("published"),
             result.get("reason") or result.get("key") or ""))

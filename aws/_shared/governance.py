@@ -171,6 +171,27 @@ SYSTEM_WORDS = frozenset("""
     anonymous unknown none null na noreply
 """.split())
 
+# ⚠️ 위 목록은 **영문 전용**이다. `_TOKEN` 이 한글을 구분자로 지워 버리기 때문에
+#    `스크립트` 로 승인하면 낱말이 하나도 안 남아 사람으로 통과한다(INTEGRATION-9 실측).
+#    한국어를 쓰는 저장소에서 그 구멍은 이론이 아니다 — 한글은 따로, 부분일치로 본다.
+#    (한글은 낱말 사이를 띄우지 않고 붙여 쓰는 이름이 흔해 토큰 나누기가 통하지 않는다.)
+SYSTEM_WORDS_KO = (
+    "시스템", "자동화", "자동", "봇", "로봇", "스크립트", "배치", "크론", "데몬",
+    "서비스계정", "에이전트", "파이프라인", "스케줄러", "워크플로", "람다",
+    "익명", "무명", "알수없음", "없음",
+)
+
+# 기계 검증을 지났다는 뜻으로 이 저장소가 쓰는 상태들. **이 표에 있는 것만**
+# 사람 승인을 받아 APPROVED 가 될 수 있다. 표에 없으면 DRAFT 로 떨어진다.
+#   PUBLISHED   리포트 어휘로 "검증 통과" (generator.run_publication_pipeline)
+#   VALIDATING · REVIEW · FACT_CHECK · SCHEDULED · READY_FOR_REVIEW
+#   APPROVED    이미 승인 상태로 적혀 있는 문서(social_publish 가 그렇게 쓴다)
+# ⚠️ BLOCKED · REJECTED · FAILED · GENERATING · DRAFT · 모르는 값은 여기 없다.
+VALIDATED_STATES = frozenset((
+    "PUBLISHED", "VALIDATING", "REVIEW", "FACT_CHECK", "SCHEDULED",
+    "READY_FOR_REVIEW", "APPROVED",
+))
+
 _TOKEN = re.compile(r"[^0-9a-z]+")
 _TAIL_DIGITS = re.compile(r"[0-9]+$")
 
@@ -204,6 +225,10 @@ def is_system_actor(actor):
     for tok in _tokens(name):
         if tok in SYSTEM_WORDS:
             return True, "시스템 계정으로 보인다(%s): %s" % (tok, name)
+    low = name.lower()
+    for word in SYSTEM_WORDS_KO:
+        if word in low:
+            return True, "시스템 계정으로 보인다(%s): %s" % (word, name)
     return False, None
 
 
@@ -231,9 +256,20 @@ def approve(doc, *, approved_by, approved_at, approval_method, note=None):
         "approvedAt": approved_at,
         "approvalMethod": approval_method,
         "approvalRevision": revision_hash(doc),
+        # ⚠️ 승인은 "이 문서"가 아니라 **"이 상태의 이 문서"** 에 대한 것이다.
+        #    상태를 정하는 칸(status)이 서명 밖이라 승인 뒤에 바꿔칠 수 있었다:
+        #      status=DRAFT 로 승인 → 금지 전이
+        #      승인 뒤 status=REVIEW 로 바꿔치기 → 허용 전이
+        #    승인이 난 바탕 상태를 함께 적고, 문이 그것을 대조한다.
+        "approvedFrom": base_state(doc),
         "note": note,
     }
     return out
+
+
+def base_state(doc):
+    """승인을 **빼고** 계산한 상태. 승인 자체가 상태를 바꾸므로 기준점이 필요하다."""
+    return _derive_state(doc, {"state": "NOT_APPROVED", "reasons": []})
 
 
 def approval_check(doc):
@@ -305,6 +341,17 @@ def gate(doc, *, want="PUBLISHING"):
                 "reason": "문서가 적어 둔 상태(%s)가 실제 상태(%s)와 다르다" % (said, cur),
                 "approval": chk, "from": cur, "to": want}
     step = can_transition(cur, want)
+    if chk["state"] == "APPROVED":
+        said = ((doc or {}).get(APPROVAL_FIELD) or {}).get("approvedFrom")
+        now = base_state(doc)
+        # 옛 승인 기록에는 이 칸이 없다. **없으면 통과시키지 않는다** — 없는 것을
+        # 괜찮다고 읽으면 그 자체가 우회로가 된다.
+        if said != now:
+            return {"ok": False, "code": "APPROVAL_STATE_MOVED",
+                    "reason": ("승인은 %s 상태에서 났는데 지금은 %s 다 — 승인 뒤 상태가 "
+                               "바뀌었다. 다시 승인받아야 한다"
+                               % (said or "(기록 없음)", now)),
+                    "approval": chk, "from": cur, "to": want}
     if chk["state"] != "APPROVED":
         return {"ok": False,
                 "code": "NOT_APPROVED" if chk["state"] == "NOT_APPROVED" else chk["state"],
@@ -338,10 +385,16 @@ def _derive_state(doc, chk=None):
     if chk["state"] == "APPROVED":
         # ⚠️ 승인 도장이 있어도 **기계 검증을 지나지 않은 문서**는 APPROVED 가 아니다.
         #    사람이 초안을 승인했다고 해서 검증을 건너뛰는 길이 열리면 안 된다(§7).
-        if life in ("DRAFT", "GENERATING"):
-            return "DRAFT"
-        return "APPROVED"
-    if life in ("PUBLISHED", "VALIDATING", "REVIEW", "FACT_CHECK", "SCHEDULED"):
+        #
+        # ⚠️⚠️ 예전에는 이것을 **거부 목록**으로 걸렀다
+        #      (`if life in ("DRAFT","GENERATING"): return "DRAFT"` → 나머지는 APPROVED).
+        #      그래서 아는 이름이 아닌 상태는 전부 통과했다 — BLOCKED 도, 빈 값도, 오타도.
+        #      승인 하나만 있으면 "발행하지 마라"라고 적힌 문서가 발행됐다.
+        #      허용 목록으로 뒤집는다: **표에 없는 상태는 DRAFT** 다.
+        if life in VALIDATED_STATES:
+            return "APPROVED"
+        return "DRAFT"
+    if life in VALIDATED_STATES:
         return "READY_FOR_REVIEW"
     return "DRAFT"
 

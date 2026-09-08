@@ -52,7 +52,12 @@ export const reportIdFromUrl = (path) => {
 };
 
 // 발행 키. publisher.report_key 와 같은 규칙 — 판이 키에 들어가므로 v1 은 덮이지 않는다.
-export const reportKey = (reportId, version = 1) => `reports/${String(reportId).replace(':', '/')}/v${version}.json`;
+// S3 키. 앱 주소(reportUrl)와 다른 것이다 — 위 reportUrl 은 브라우저 경로,
+// 이것은 저장소 키다. 발행본은 `reports/published/` 아래에만 있고 버킷 정책도
+// 그 접두사만 연다 (INTEGRATION-9 §1). 여기를 `reports/` 로 되돌리면 403 이 된다.
+export const PUBLIC_REPORT_PREFIX = 'reports/published/';
+export const reportKey = (reportId, version = 1) => `${PUBLIC_REPORT_PREFIX}${String(reportId).replace(':', '/')}/v${version}.json`;
+export const reportIndexKey = () => `${PUBLIC_REPORT_PREFIX}index.json`;
 
 // §11 자료 라벨 → 사람이 읽는 말
 export const DATA_LABEL_TEXT = {

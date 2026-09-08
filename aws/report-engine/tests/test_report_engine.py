@@ -228,10 +228,19 @@ class Publication(unittest.TestCase):
                                           evaluations=[], generated_at=NOW,
                                           algorithm_version="test/1")
 
-    def test_검증을_통과해야_발행된다(self):
+    def test_검증을_통과하면_발행_자격을_얻는다(self):
+        """검증 통과는 **발행이 아니다** (INTEGRATION-9 §3).
+
+        예전에는 여기서 publishedAt 을 찍었다. 그러면 아무것도 올리지 않은 문서가
+        "발행됨"이라고 적힌 채 남고, governance 가 그 도장을 보고 상태를 PUBLISHED 로
+        읽어 PUBLISHED→PUBLISHING 금지 전이에 걸려 **실제 발행이 영원히 막혔다.**
+        발행 도장은 올린 쪽(publisher)만 찍는다.
+        """
         rep = gen.publish(self._good(), published_at=NOW)
-        self.assertEqual(rep["lifecycle"], "PUBLISHED")
-        self.assertTrue(rep["publishedAt"])
+        self.assertEqual(rep["lifecycle"], "PUBLISHED")   # 이 저장소 어휘로 '검증 통과'
+        self.assertEqual(rep["validatedAt"], NOW)
+        self.assertIsNone(rep.get("publishedAt"), "올리지도 않고 발행 도장을 찍었다")
+        self.assertIsNone(rep.get("immutableRef"))
 
     def test_검증에_실패하면_발행되지_않는다(self):
         bad = self._good()

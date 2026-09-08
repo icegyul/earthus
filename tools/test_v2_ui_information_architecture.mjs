@@ -268,8 +268,10 @@ test('보고서 주소가 파이썬 규칙과 같은 값을 낸다', async () =>
   assert.equal(rc.reportUrl('weird'), null);
   assert.equal(rc.reportIdFromUrl('/nope/2026-09'), null);
   // 발행 키도 publisher.report_key 와 같아야 같은 파일을 가리킨다.
-  assert.equal(rc.reportKey('report:2026-08', 1), 'reports/report/2026-08/v1.json');
-  assert.equal(rc.reportKey('report:2026-08', 2), 'reports/report/2026-08/v2.json');
+  assert.equal(rc.reportKey('report:2026-08', 1), 'reports/published/report/2026-08/v1.json');
+  assert.equal(rc.reportKey('report:2026-08', 2), 'reports/published/report/2026-08/v2.json');
+  // 색인도 같은 자리에 있어야 한다 — 버킷 정책이 여는 접두사는 이것 하나뿐이다.
+  assert.equal(rc.reportIndexKey(), 'reports/published/index.json');
 });
 
 test('보고서 주소는 결정적이다', () => {

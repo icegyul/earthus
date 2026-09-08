@@ -1,0 +1,44 @@
+{
+ "Version": "2012-10-17",
+ "Statement": [
+  {
+   "Sid": "PublicReadData",
+   "Effect": "Allow",
+   "Principal": "*",
+   "Action": "s3:GetObject",
+   "Resource": [
+    "arn:aws:s3:::earthus-cache-kr/app/*",
+    "arn:aws:s3:::earthus-cache-kr/celestrak/*",
+    "arn:aws:s3:::earthus-cache-kr/clouds/*",
+    "arn:aws:s3:::earthus-cache-kr/wind/*",
+    "arn:aws:s3:::earthus-cache-kr/events/*",
+    "arn:aws:s3:::earthus-cache-kr/ocean/*",
+    "arn:aws:s3:::earthus-cache-kr/solar/*",
+    "arn:aws:s3:::earthus-cache-kr/reports/published/*"
+   ]
+  },
+  {
+   "Sid": "AllowCloudFrontRead",
+   "Effect": "Allow",
+   "Principal": {
+    "Service": "cloudfront.amazonaws.com"
+   },
+   "Action": "s3:GetObject",
+   "Resource": [
+    "arn:aws:s3:::earthus-cache-kr/app/*",
+    "arn:aws:s3:::earthus-cache-kr/wind/*",
+    "arn:aws:s3:::earthus-cache-kr/events/*",
+    "arn:aws:s3:::earthus-cache-kr/ocean/*",
+    "arn:aws:s3:::earthus-cache-kr/solar/*",
+    "arn:aws:s3:::earthus-cache-kr/clouds/*",
+    "arn:aws:s3:::earthus-cache-kr/celestrak/*",
+    "arn:aws:s3:::earthus-cache-kr/reports/published/*"
+   ],
+   "Condition": {
+    "StringEquals": {
+     "AWS:SourceArn": "arn:aws:cloudfront::294951922100:distribution/E193CZEBLWEB56"
+    }
+   }
+  }
+ ]
+}

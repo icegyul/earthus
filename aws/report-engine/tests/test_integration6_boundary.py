@@ -67,14 +67,24 @@ class PrefixSemantics(unittest.TestCase):
             self.assertEqual(priv.prefix_visibility(k), "PRIVATE", k)
 
     def test_공개_접두사에는_발행본만(self):
+        # INTEGRATION-9 §1 — 발행본 자리는 reports/published/ 다.
+        key = "reports/published/R1/v1.json"
         pub = {"reportId": "R1", "lifecycle": "PUBLISHED"}
-        self.assertTrue(priv.check_public_write("reports/R1/v1.json", pub,
-                                                kind="report")["allowed"])
+        self.assertTrue(priv.check_public_write(key, pub, kind="report")["allowed"])
         for life in ("DRAFT", "GENERATING", "VALIDATING", "FAILED"):
-            out = priv.check_public_write("reports/R1/v1.json",
+            out = priv.check_public_write(key,
                                           {"reportId": "R1", "lifecycle": life},
                                           kind="report")
             self.assertFalse(out["allowed"], "%s 가 공개로 허용된다" % life)
+
+    def test_발행본_자리_밖의_reports_는_쓰기_거부(self):
+        """접두사를 가른 이유. 쓰는 쪽이 깨져도 초안이 공개 자리로 못 간다."""
+        pub = {"reportId": "R1", "lifecycle": "PUBLISHED"}
+        for key in ("reports/R1/v1.json", "reports/draft/R1.json",
+                    "reports/index.json", "reports/published-ish/R1.json"):
+            out = priv.check_public_write(key, pub, kind="report")
+            self.assertFalse(out["allowed"], "%s 가 허용된다" % key)
+            self.assertEqual(out["keyVisibility"], "UNKNOWN", key)
 
 
 # ── §15 교차리드 순위 ────────────────────────────────────────────────────────

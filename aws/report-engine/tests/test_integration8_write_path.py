@@ -333,10 +333,14 @@ class 정책표가_현실을_가리킨다(unittest.TestCase):
 class 운영_경계_사실(unittest.TestCase):
     """실측으로 못 박는다. 코드의 **의도**와 버킷 정책의 **현실**은 다르다."""
 
-    def test_공개_접두사_표와_버킷_정책의_차이(self):
-        # 2026-09-08 `aws s3api get-bucket-policy` 로 읽었다.
-        # reports/ 는 발행 경로인데 정책에 없다 — 올려도 아무도 못 읽는다.
-        self.assertEqual(priv.PUBLIC_PREFIX_GAP, ("reports/",))
+    def test_공개_접두사_표와_버킷_정책의_차이가_없다(self):
+        """INTEGRATION-8 에서는 `reports/` 가 여기 걸렸다 — 발행해도 못 읽었다.
+
+        INTEGRATION-9 에서 `reports/published/*` 를 버킷 정책에 넣어 차이를 없앴다.
+        다시 벌어지면(표에 넣고 정책을 안 고치면) 여기서 깨진다.
+        """
+        self.assertEqual(priv.PUBLIC_PREFIX_GAP, ())
+        self.assertIn("reports/published/", priv.BUCKET_PUBLIC_PREFIXES)
 
     def test_character_studio_는_비공개다(self):
         self.assertIn("character-studio/", priv.PRIVATE_PREFIXES)

@@ -204,9 +204,10 @@ def build_forecast_scorecard(period, verifications):
 # ── §27 아카이브 ─────────────────────────────────────────────────────────────
 def build_report_archive_index(reports):
     """연도 → 종류별 목록. 발행된 것만 immutable 참조를 갖는다."""
+    import publisher as _pub          # 연도 판정을 한 곳에서 한다
     years = {}
     for r in reports:
-        label = (r.get("period") or {}).get("from", "")[:4] or "unknown"
+        label = _pub.report_year(r)
         years.setdefault(label, []).append({
             "reportId": r.get("reportId"),
             "type": r.get("type"),
@@ -218,7 +219,7 @@ def build_report_archive_index(reports):
             "immutableRef": r.get("reportId") if r.get("lifecycle") == "PUBLISHED" else None,
         })
     for v in years.values():
-        v.sort(key=lambda x: (x["period"] or {}).get("from", ""))
+        v.sort(key=lambda x: (_pub.report_year(x), str(x.get("reportId") or "")))
     return {"schemaVersion": rc.REPORT_SCHEMA, "years": dict(sorted(years.items()))}
 
 
@@ -261,7 +262,7 @@ def publish(report, *, published_at):
         return out
     out["lifecycle"] = "PUBLISHED"
     out["status"] = "PUBLISHED"
-    out["publishedAt"] = published_at
+    out["validatedAt"] = published_at      # 발행 시각이 아니라 **검증** 시각이다
     return out
 
 
@@ -314,10 +315,16 @@ def run_publication_pipeline(report, *, quality=None, published_at, mode="PRODUC
     if not ok:
         return _fail(out, problems)
 
+    # ⚠️ 여기서 publishedAt·immutableRef 를 찍지 않는다 (INTEGRATION-9 §3).
+    #    그 둘은 **올렸다는 사실**의 기록이고, 올리는 쪽만 찍을 수 있다.
+    #    예전에는 여기서 찍었고, 그러면 governance 가 상태를 PUBLISHED 로 읽어
+    #    PUBLISHED→PUBLISHING 금지 전이에 걸려 **아무것도 올라가지 못했다**.
+    #    그러면서 올린 적 없는 문서가 발행 도장을 달고 남았다.
+    #    lifecycle="PUBLISHED" 는 이 저장소의 기존 어휘로 **기계 검증 통과**를 뜻한다
+    #    (governance._derive_state 가 그것을 승인으로 읽지 않고 READY_FOR_REVIEW 로 본다).
     out["lifecycle"] = "PUBLISHED"
     out["status"] = "PUBLISHED"
-    out["publishedAt"] = published_at
-    out["immutableRef"] = out.get("reportId")
+    out["validatedAt"] = published_at
     return out
 
 
@@ -325,6 +332,8 @@ def _fail(report, problems):
     report["lifecycle"] = "FAILED"
     report["validationProblems"] = list(problems)
     report.pop("publishedAt", None)
+    report.pop("immutableRef", None)
+    report.pop("validatedAt", None)
     return report
 
 

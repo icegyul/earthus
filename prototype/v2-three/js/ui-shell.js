@@ -12,7 +12,7 @@ import { renderBadge, layerBadge } from './engine-bridge.js?v=15';
 import { questionForLayer, phenomenonForLayer, LAYER_PHENOMENON, reportKindsForPhenomenon, PHENOMENA, representativeLayerFor } from './phenomenon-registry.js?v=4';
 import { menuCoverage, menuTime, canClearLayer, matchesMenu } from './information-contract.js';
 // PHASE 8 §13 — 리포트 센터. 보고서 렌더링은 그쪽 모듈이 한다. 여기서 문장을 만들지 않는다.
-import { reportDocHtml, reportKey, reportUrl, reportIdFromUrl, currentTier, DATA_LABEL_TEXT } from './report-center.js?v=1';
+import { reportDocHtml, reportKey, reportIndexKey, reportUrl, reportIdFromUrl, currentTier, DATA_LABEL_TEXT } from './report-center.js?v=2';
 const safeText = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 // ---------------------------------------------------------------------------
@@ -593,7 +593,7 @@ export function initShell(hooks) {
   const loadReportIndex = () => {
     if (reportIndexTried) return;
     reportIndexTried = true;
-    fetch(reportBase() + '/reports/index.json', { cache: 'no-cache' })
+    fetch(reportBase() + '/' + reportIndexKey(), { cache: 'no-cache' })
       .then((r) => (r.ok ? r.json() : null))
       .then((j) => { REPORT_INDEX = j && typeof j === 'object' ? j : {}; if (openBrand === 'report') refreshFlyout(); })
       .catch(() => { REPORT_INDEX = {}; if (openBrand === 'report') refreshFlyout(); });

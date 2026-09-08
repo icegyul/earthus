@@ -121,11 +121,31 @@ class NarrativeValidation(unittest.TestCase):
 
 # ── §21 발행 파이프라인 ──────────────────────────────────────────────────────
 class Pipeline(unittest.TestCase):
-    def test_정상이면_발행되고_불변참조를_갖는다(self):
+    def test_정상이면_발행_자격을_얻되_발행_도장은_없다(self):
+        """§21 + INTEGRATION-9 §3 — 검증 파이프라인은 **올리지 않는다.**
+
+        이 시험이 예전에 `immutableRef` 를 요구했고, 그래서 generator 가 올리기 전에
+        도장을 찍었다. 그 도장 때문에 실제 발행이 금지 전이로 막혀 있었다
+        (`PUBLISHED → PUBLISHING` 불가). 도장은 publisher 가 put 직전에 찍는다.
+        """
         out = gen.run_publication_pipeline(report_with_facts(), quality={"status": qc.PASS},
                                            published_at=NOW)
         self.assertEqual(out["lifecycle"], "PUBLISHED")
-        self.assertEqual(out["immutableRef"], out["reportId"])
+        self.assertEqual(out["validatedAt"], NOW)
+        self.assertIsNone(out.get("publishedAt"))
+        self.assertIsNone(out.get("immutableRef"))
+
+    def test_검증만으로는_올리기_단계로_못_간다(self):
+        """사람 승인이 있어야 열린다 — 그리고 승인하면 **실제로 열린다**."""
+        import governance as gov                      # noqa: PLC0415
+        out = gen.run_publication_pipeline(report_with_facts(), quality={"status": qc.PASS},
+                                           published_at=NOW)
+        self.assertEqual(gov.gate(out, want="PUBLISHING")["code"], "NOT_APPROVED")
+        appr = gov.approve(dict(out), approved_by="dalur", approved_at=NOW,
+                           approval_method="CLI_CONFIRM")
+        g = gov.gate(appr, want="PUBLISHING")
+        self.assertTrue(g["ok"], "승인했는데도 올리기 단계로 못 간다: %s" % g["reason"])
+        self.assertEqual((g["from"], g["to"]), ("APPROVED", "PUBLISHING"))
 
     def test_QC_실패는_발행을_막는다(self):
         out = gen.run_publication_pipeline(

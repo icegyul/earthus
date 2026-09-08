@@ -515,6 +515,11 @@ export const readability = {
       this.reference = null;
     }
     if (this.reference) {
+      /* ⚠️ 색면이 켜지면 gridOverlay 가 그 **아래 판들을 눌러 어둡게** 만든다.
+         해안선·국경은 눌리면 안 된다 — 어두운 바탕 위의 어두운 선은 사라진다.
+         (윈디가 색면 위에 얇은 해안선만 남기는 것과 같은 이유다.)
+         그래서 이 판에 표를 붙여 둔다. gridOverlay 가 이 표를 보고 건너뛴다. */
+      this.reference.__earthusKeepBright = true;
       this.reference.alpha = enhanced ? REFERENCE_ALPHA.read : REFERENCE_ALPHA.data;
       this.reference.brightness = enhanced ? 1.12 : 1.04;
       this.reference.contrast = enhanced ? 1.16 : 1.08;

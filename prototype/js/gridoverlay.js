@@ -283,8 +283,6 @@ const SCALES = {
           알파 경사는 3m/s 까지만 짧게 준다(위성 영상이 잔잔한 곳에서 살아난다). */
   wind: {
     unit: 'm/s',
-    mute: 0,
-    fade: 3,
     /* ⚠️⚠️ **눈금을 자료가 실제로 갖는 범위에 맞춘다 (2026-09-08 재조정).**
        예전 눈금은 0·2·5·10·15·20·30·45·60 이었다. 그런데 이 층의 원자료인
        전지구 5° 격자를 그날 통째로 재 보니 **최대가 23.8m/s** 였다(2,376칸 중
@@ -295,13 +293,24 @@ const SCALES = {
          윈디 화면에서 한국·일본의 갈색·주황 자리가 20~30kt(10~15m/s)다.
        ⚠️ 최고 단계 32 는 자료가 아니라 **상한**이다. 그 위는 같은 색으로 물린다.
           동아시아 1° 보강판이 들어오면 그 칸들이 비로소 쓰인다. */
+    /* ⚠️ 바닥색을 검게 두지 않는다. 이 층이 켜지면 아래 판이 눌려 어두워지므로
+       (syncBaseDim 참고) 검은 바닥색은 어두운 바탕에 묻혀 통째로 사라진다.
+       윈디의 0m/s 도 검정이 아니라 중간 밝기의 남보라 rgb(98,113,183) 다. */
     stops: [
-      [0, [ 22,  30,  66]], [2, [ 28,  70, 138]], [4, [ 26, 122, 176]],
-      [6, [ 34, 168, 166]], [9, [ 96, 200, 124]], [12, [212, 210,  84]],
-      [16, [244, 150,  54]], [20, [234,  72,  68]], [25, [190,  54, 130]],
-      [32, [146,  62, 178]],
+      [0, [ 44,  58, 120]], [2, [ 38,  92, 170]], [4, [ 30, 140, 190]],
+      [6, [ 34, 178, 168]], [9, [ 96, 205, 118]], [12, [216, 214,  78]],
+      [16, [246, 148,  48]], [20, [236,  66,  62]], [25, [194,  48, 128]],
+      [32, [150,  58, 182]],
     ],
-    alpha: 0.62,
+    /* ⚠️⚠️ **거의 불투명하게 올린다 (2026-09-08).** 0.62 로는 아래 판을 눌러도
+       색이 회색과 섞여 파스텔이 된다. 윈디 화면이 선명한 건 색면이 **불투명**하고
+       그 위에 얇은 해안선만 있기 때문이다 — 색이 진해서가 아니다.
+       ⚠️ 예전의 `mute 0 · fade 3`(약한 바람을 투명하게)도 함께 뺐다. 그건 위성
+          영상을 살리려던 장치인데, 이제 아래 판을 눌러 지구가 어두운 부조로만
+          남으므로 목적이 사라졌다. 남겨 두면 잔잔한 바다에 얼룩만 생긴다.
+       ⚠️ 진짜 위성 지구는 화면의 **"지구 보기"** 가 그 자리다. 두 개를 한 화면에서
+          다 만족시키려다 둘 다 잃었던 것이 이 층의 지난 이틀이었다. */
+    alpha: 0.88,
   },
 };
 
@@ -374,6 +383,11 @@ function colorAt(scale, v) {
    ⚠️ 대기질만 서쪽으로 훨씬 넓다(90°E). 바다는 한반도 주변만 촘촘하면 되지만
       먼지는 **오는 길**을 함께 봐야 한다 — 고비·타클라마칸이 85~110°E 다.
       (처음엔 114°E 로 만들었다가, 문제의 봉우리 40°N 104°E 가 상자 밖이었다.) */
+/* 색면이 켜져 있는 동안 그 아래 판들에 곱하는 배수. syncBaseDim() 참고.
+   ⚠️ 0 으로 만들지 않는다 — 지구가 사라지면 "여기가 어디인지"를 잃는다.
+      어두운 부조로 남겨서 대륙 모양과 지형은 계속 읽히게 한다. */
+const DIM = Object.freeze({ brightness: 0.42, saturation: 0.35 });
+
 const FINE_BOX = Object.freeze({
   marineEa:   { south: 23, north: 47, west: 114, east: 150 },
   sstAnomEa:  { south: 23, north: 47, west: 114, east: 150 },
@@ -537,6 +551,7 @@ export const gridOverlay = {
       this._remove(key);
       const baseLayer = this._paint(base.grid, base.field, scale);
       this.layers[key] = baseLayer;
+      this.syncBaseDim();
       let shown = { ...base, sourceName: baseSource };
       /* ⚠️ 아래 await 동안 이 레이어가 꺼질 수 있다(applyAll·배타 그룹·사용자 조작).
          그때 계속 그리면 **꺼진 레이어의 그림이 지구에 남는다.** 매번 확인한다. */
@@ -745,7 +760,67 @@ export const gridOverlay = {
     delete this.fine[key];
     delete this._rendered[key];
     if (key === 'tpw') this._clearValueLabels();
+    this.syncBaseDim();
     document.dispatchEvent(new CustomEvent('earthus:grid-removed', { detail: { layer: key } }));
+  },
+
+  /* ── 색면 아래 판 누르기 ────────────────────────────────────────────
+     ⚠️⚠️ **색면이 흐리멍텅해 보이던 마지막 원인.** 2026-09-08 실측 스택
+     (바람 + 전지구 구름을 켠 상태, 아래에서 위로):
+        0 GIBS BlueMarble      alpha 1.00
+        1 GIBS VIIRS 위성       alpha 1.00 · brightness 1.35
+        2 GMGSI 구름 미리보기    alpha 0.28
+        3 GMGSI 구름 3072px     alpha 1.00   ← **불투명한 흰 판**
+        4 Esri 해안선           alpha 0.78
+        5 우리 색면             픽셀 알파 0.62
+     62% 색을 흰 판 위에 칠하면 무슨 색이든 파스텔이 된다. 윈디 화면이 선명한 건
+     색이 진해서가 아니라 **아래에 아무것도 없기 때문**이다(단색 바탕 + 얇은 해안선).
+     → 색면이 켜져 있는 동안만 아래 판들을 눌러 둔다. 지구는 어두운 부조로 남고
+       색면이 주인공이 된다. 끄면 원래 값으로 정확히 되돌린다.
+     ⚠️ 해안선 판은 건너뛴다(`__earthusKeepBright`). 어두운 바탕 위의 어두운 선은
+        사라진다 — 윈디도 해안선만은 그대로 둔다.
+     ⚠️ 원래 값은 **처음 누를 때 한 번만** 저장한다. 이미 눌린 판을 다시 저장하면
+        누른 값이 "원래 값"이 되어 레이어를 껐다 켤 때마다 지구가 계속 어두워진다. */
+  _dimmed: null,
+  _dimHooked: false,
+
+  syncBaseDim() {
+    const L = viewer.imageryLayers;
+    if (!this._dimHooked) {
+      /* 색면을 켠 뒤 구름을 켜면 새 판이 색면 아래로 들어온다 — 그때도 눌러야 한다. */
+      const relist = () => queueMicrotask(() => this.syncBaseDim());
+      try { L.layerAdded.addEventListener(relist); L.layerRemoved.addEventListener(relist); } catch (_) {}
+      this._dimHooked = true;
+    }
+    if (!this._dimmed) this._dimmed = new Map();
+
+    // 색면 중 가장 아래에 있는 판보다 밑에 있는 것들이 대상이다
+    const ours = new Set([...Object.values(this.layers), ...Object.values(this.fine)]);
+    let floor = Infinity;
+    for (let i = 0; i < L.length; i++) if (ours.has(L.get(i))) floor = Math.min(floor, i);
+
+    const want = new Set();
+    if (floor !== Infinity) {
+      for (let i = 0; i < floor; i++) {
+        const layer = L.get(i);
+        if (layer.__earthusKeepBright) continue;
+        want.add(layer);
+      }
+    }
+
+    for (const layer of want) {
+      if (this._dimmed.has(layer)) continue;
+      this._dimmed.set(layer, { brightness: layer.brightness, saturation: layer.saturation });
+      layer.brightness = layer.brightness * DIM.brightness;
+      layer.saturation = layer.saturation * DIM.saturation;
+    }
+    for (const [layer, was] of [...this._dimmed]) {
+      if (want.has(layer)) continue;
+      this._dimmed.delete(layer);
+      /* 이미 지워진 판이면 되돌릴 것이 없다 — 조용히 넘어간다. */
+      try { layer.brightness = was.brightness; layer.saturation = was.saturation; } catch (_) {}
+    }
+    viewer.scene.requestRender?.();
   },
 
   /* TPW는 색만 보면 값이 기억나지 않는다. 주요 도시를 제한된 수만 표시한다.

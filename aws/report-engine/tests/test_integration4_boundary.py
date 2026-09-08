@@ -141,6 +141,7 @@ class SocialDraftPrivacy(unittest.TestCase):
                 if rel.startswith(("aws/_shared/publication_privacy.py",
                                    "aws/_shared/public_build.py",
                                    "aws/verify-public-access.py",
+                                   "aws/live-audit.py",
                                    "aws/social-draft/handler.py",
                                    "aws/report-engine/tests/")):
                     continue                     # 설명·검사기·시험

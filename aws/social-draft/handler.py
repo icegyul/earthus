@@ -61,7 +61,7 @@ def s3_client():
 #    람다 묶음에 그 모듈을 넣지 않으므로(패키지를 키우지 않는다) 여기 적되,
 #    aws/report-engine/tests/test_integration4_boundary.py 가 두 값이 같은지 검사한다.
 #    어긋나면 시험이 깨진다 — 조용히 갈라지지 않는다.
-PRIVATE_PREFIXES = ("archive/",)
+PRIVATE_PREFIXES = ("archive/", "analysis/")
 
 DST = "archive/social-drafts.json"
 

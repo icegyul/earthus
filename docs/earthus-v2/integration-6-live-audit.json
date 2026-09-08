@@ -1,0 +1,1536 @@
+{
+ "schemaVersion": "earthus.live-audit.v2",
+ "bucket": "earthus-cache-kr",
+ "region": "us-east-2",
+ "prefixes": [
+  "app/",
+  "events/",
+  "archive/",
+  "reports/",
+  "wind/",
+  "ocean/",
+  "clouds/",
+  "solar/",
+  "celestrak/",
+  "analysis/"
+ ],
+ "objectCount": 25310,
+ "probedCount": 5981,
+ "tally": {
+  "KEEP_PUBLIC": 14429,
+  "LEGACY_PUBLIC_FORBIDDEN": 95,
+  "KEEP_PRIVATE": 10782,
+  "EXEMPT_PRODUCT_PATH": 4
+ },
+ "note": "aws/live-audit.py 가 만든 원본을 저장소용으로 줄인 것. 손으로 고치지 않는다.\n금지(LEGACY_PUBLIC_FORBIDDEN)와 제품 예외(EXEMPT_PRODUCT_PATH)는 전부 남겼다.\n공개·비공개로 정상 판정된 것은 접두사별 집계로 접었다 — 그건 숫자로 충분하다.\n전체 목록이 필요하면 aws/live-audit.py 를 다시 돌린다.",
+ "keepPublicByPrefix": [
+  {
+   "prefix": "analysis/",
+   "count": 9,
+   "bytes": 470283
+  },
+  {
+   "prefix": "app/",
+   "count": 40,
+   "bytes": 1118229
+  },
+  {
+   "prefix": "app/Intelligence/",
+   "count": 2,
+   "bytes": 148294
+  },
+  {
+   "prefix": "app/aetherus/",
+   "count": 4,
+   "bytes": 980850
+  },
+  {
+   "prefix": "app/canary/",
+   "count": 3,
+   "bytes": 25069
+  },
+  {
+   "prefix": "app/css/",
+   "count": 24,
+   "bytes": 547897
+  },
+  {
+   "prefix": "app/data/",
+   "count": 277,
+   "bytes": 24168429
+  },
+  {
+   "prefix": "app/img/",
+   "count": 9,
+   "bytes": 2719376
+  },
+  {
+   "prefix": "app/js/",
+   "count": 608,
+   "bytes": 5166601
+  },
+  {
+   "prefix": "app/legal/",
+   "count": 3,
+   "bytes": 36879
+  },
+  {
+   "prefix": "app/logo/",
+   "count": 9,
+   "bytes": 11160
+  },
+  {
+   "prefix": "app/ocean/",
+   "count": 45,
+   "bytes": 4513699
+  },
+  {
+   "prefix": "app/shots/",
+   "count": 12,
+   "bytes": 1868554
+  },
+  {
+   "prefix": "app/space/",
+   "count": 100,
+   "bytes": 51682890
+  },
+  {
+   "prefix": "app/tools/",
+   "count": 1,
+   "bytes": 7150
+  },
+  {
+   "prefix": "app/tourism/",
+   "count": 5474,
+   "bytes": 2174819090
+  },
+  {
+   "prefix": "app/v2-deploy/",
+   "count": 930,
+   "bytes": 21930170
+  },
+  {
+   "prefix": "app/v2-three/",
+   "count": 138,
+   "bytes": 9209344
+  },
+  {
+   "prefix": "app/v2/",
+   "count": 1823,
+   "bytes": 118705469
+  },
+  {
+   "prefix": "app/v3/",
+   "count": 383,
+   "bytes": 287886068
+  },
+  {
+   "prefix": "app/vendor/",
+   "count": 6,
+   "bytes": 817492
+  },
+  {
+   "prefix": "app/wonder/",
+   "count": 2,
+   "bytes": 48490
+  },
+  {
+   "prefix": "celestrak/",
+   "count": 2,
+   "bytes": 1754498
+  },
+  {
+   "prefix": "celestrak/archive/",
+   "count": 3,
+   "bytes": 4835340
+  },
+  {
+   "prefix": "clouds/",
+   "count": 2,
+   "bytes": 5479680
+  },
+  {
+   "prefix": "clouds/gfs-fc/",
+   "count": 2789,
+   "bytes": 331379151
+  },
+  {
+   "prefix": "clouds/gfs/",
+   "count": 2,
+   "bytes": 212238
+  },
+  {
+   "prefix": "clouds/gk2a/",
+   "count": 886,
+   "bytes": 53331733
+  },
+  {
+   "prefix": "events/",
+   "count": 38,
+   "bytes": 5572298
+  },
+  {
+   "prefix": "events/space-archive/",
+   "count": 37,
+   "bytes": 420537
+  },
+  {
+   "prefix": "events/typhoon-official/",
+   "count": 64,
+   "bytes": 53742
+  },
+  {
+   "prefix": "ocean/",
+   "count": 18,
+   "bytes": 18776524
+  },
+  {
+   "prefix": "ocean/clim/",
+   "count": 366,
+   "bytes": 4808113
+  },
+  {
+   "prefix": "ocean/cyclone-events/",
+   "count": 23,
+   "bytes": 431470
+  },
+  {
+   "prefix": "ocean/khoa/",
+   "count": 71,
+   "bytes": 324792439
+  },
+  {
+   "prefix": "ocean/series/",
+   "count": 2,
+   "bytes": 790415
+  },
+  {
+   "prefix": "ocean/thumbs/",
+   "count": 41,
+   "bytes": 3776828
+  },
+  {
+   "prefix": "ocean/tsunami-eta/",
+   "count": 2,
+   "bytes": 43391
+  },
+  {
+   "prefix": "solar/",
+   "count": 2,
+   "bytes": 136821
+  },
+  {
+   "prefix": "wind/",
+   "count": 31,
+   "bytes": 9557930
+  },
+  {
+   "prefix": "wind/kma-calls/",
+   "count": 56,
+   "bytes": 35614
+  },
+  {
+   "prefix": "wind/kma-radar-history/",
+   "count": 13,
+   "bytes": 456401
+  },
+  {
+   "prefix": "wind/series/",
+   "count": 75,
+   "bytes": 39414877
+  },
+  {
+   "prefix": "wind/status/",
+   "count": 4,
+   "bytes": 1765
+  }
+ ],
+ "keepPrivateByPrefix": [
+  {
+   "prefix": "app/v3/",
+   "count": 16
+  },
+  {
+   "prefix": "archive/",
+   "count": 3
+  },
+  {
+   "prefix": "archive/_gaps/",
+   "count": 45
+  },
+  {
+   "prefix": "archive/_manifest/",
+   "count": 45
+  },
+  {
+   "prefix": "archive/air-evidence/",
+   "count": 676
+  },
+  {
+   "prefix": "archive/air-state/",
+   "count": 36
+  },
+  {
+   "prefix": "archive/atmos-transport-spike/",
+   "count": 2
+  },
+  {
+   "prefix": "archive/buoy/",
+   "count": 1056
+  },
+  {
+   "prefix": "archive/canonical/",
+   "count": 3
+  },
+  {
+   "prefix": "archive/cyclone/",
+   "count": 931
+  },
+  {
+   "prefix": "archive/ecmwf/",
+   "count": 150
+  },
+  {
+   "prefix": "archive/forecast/",
+   "count": 177
+  },
+  {
+   "prefix": "archive/gdacs-tc-map/",
+   "count": 68
+  },
+  {
+   "prefix": "archive/governance/",
+   "count": 3
+  },
+  {
+   "prefix": "archive/launch-ll2/",
+   "count": 44
+  },
+  {
+   "prefix": "archive/mtgap/",
+   "count": 890
+  },
+  {
+   "prefix": "archive/news/",
+   "count": 1056
+  },
+  {
+   "prefix": "archive/quake/",
+   "count": 1056
+  },
+  {
+   "prefix": "archive/solar/",
+   "count": 1056
+  },
+  {
+   "prefix": "archive/tourism/",
+   "count": 112
+  },
+  {
+   "prefix": "archive/tsunami/",
+   "count": 2
+  },
+  {
+   "prefix": "archive/vaac-validation/",
+   "count": 108
+  },
+  {
+   "prefix": "archive/verify/",
+   "count": 1027
+  },
+  {
+   "prefix": "archive/volcanic-ash-vaac/",
+   "count": 112
+  },
+  {
+   "prefix": "archive/wildfire/",
+   "count": 1052
+  },
+  {
+   "prefix": "archive/wind/",
+   "count": 1056
+  }
+ ],
+ "objects": [
+  {
+   "key": "app/v3/data/audit-trench-bathymetry.py",
+   "size": 2503,
+   "etag": "bd644dc2d80f024f98ef7beb4d84e5a5",
+   "lastModified": "2026-09-05T00:41:33+00:00",
+   "httpStatus": 200,
+   "classification": "EXEMPT_PRODUCT_PATH",
+   "reason": "금지 부류(개발 스크립트)지만 운영 제품 경로다 — 종이 지구(v3). aws/deploy-v3-paper.sh 가 소유한다. 개별 판단 필요",
+   "probed": true
+  },
+  {
+   "key": "app/v3/data/prepare-bathymetry.py",
+   "size": 5833,
+   "etag": "0db4f99f2d662aace4c94a889ceec846",
+   "lastModified": "2026-09-05T00:41:34+00:00",
+   "httpStatus": 200,
+   "classification": "EXEMPT_PRODUCT_PATH",
+   "reason": "금지 부류(개발 스크립트)지만 운영 제품 경로다 — 종이 지구(v3). aws/deploy-v3-paper.sh 가 소유한다. 개별 판단 필요",
+   "probed": true
+  },
+  {
+   "key": "app/v3/data/prepare-ocean-trenches.py",
+   "size": 11530,
+   "etag": "7a10e872e2456b817b414d00ea918019",
+   "lastModified": "2026-09-05T00:41:34+00:00",
+   "httpStatus": 200,
+   "classification": "EXEMPT_PRODUCT_PATH",
+   "reason": "금지 부류(개발 스크립트)지만 운영 제품 경로다 — 종이 지구(v3). aws/deploy-v3-paper.sh 가 소유한다. 개별 판단 필요",
+   "probed": true
+  },
+  {
+   "key": "app/v3/data/trench-bathymetry-audit.json",
+   "size": 6787,
+   "etag": "22a0c431215a5a26ccfc3db4bb7afa9b",
+   "lastModified": "2026-09-07T05:04:26+00:00",
+   "httpStatus": 200,
+   "classification": "EXEMPT_PRODUCT_PATH",
+   "reason": "금지 부류(감사 산출물)지만 운영 제품 경로다 — 종이 지구(v3). aws/deploy-v3-paper.sh 가 소유한다. 개별 판단 필요",
+   "probed": true
+  },
+  {
+   "key": "app/README.md",
+   "size": 11598,
+   "etag": "fcd8a87ffb850c800eadc3a65464ed17",
+   "lastModified": "2026-08-19T13:48:57+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "저장소 안쪽 문서",
+   "probed": true,
+   "sha256": "fad899005a8649e44f6d2a5c124b5b8b3b4551a50f5ce4001b769a7164c598fa",
+   "contentLength": 11598
+  },
+  {
+   "key": "app/canary/aetherus-device-rc-rollback-probe.json",
+   "size": 293,
+   "etag": "de4b643a9608a63d4b717e9776afc6b1",
+   "lastModified": "2026-08-13T17:55:16+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "카나리 점검 산출물",
+   "probed": true,
+   "sha256": "e64ca235212604eef33298f318ede3b305126735b93ca7213eea6a15d828eb73",
+   "contentLength": 293
+  },
+  {
+   "key": "app/img/ocean-dive-assets.md",
+   "size": 955,
+   "etag": "f84b5a3d23581f93a4600236a00584d4",
+   "lastModified": "2026-08-19T13:48:57+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "내부 자산 노트",
+   "probed": true,
+   "sha256": "103f3ff6452dd7be4bf344c5d59367faec7a0308b36508b2bf91eba5ba9a76ef",
+   "contentLength": 955
+  },
+  {
+   "key": "app/js/config.local.example.js",
+   "size": 9295,
+   "etag": "5836c4898a9433f389d14277bc57df03",
+   "lastModified": "2026-09-02T16:34:17+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "개발자 설정 서식",
+   "probed": true,
+   "sha256": "34a5b36c13bd64aee452fd050f8b56c6c74413b3781e4c3577652b25dc00952b",
+   "contentLength": 9295
+  },
+  {
+   "key": "app/js/earthus2/config/menu-composition-rules.v1.json",
+   "size": 1487,
+   "etag": "3765aea825f824ea3edc17eaecef58a9",
+   "lastModified": "2026-09-02T16:32:19+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "내부 구성 명세",
+   "probed": true,
+   "sha256": "14cdbe8939be48c3c87c377adacc47331f573470aaa4d6e008a07fdcf677cf57",
+   "contentLength": 1487
+  },
+  {
+   "key": "app/js/earthus2/config/wiring-manifest.v1.json",
+   "size": 2947,
+   "etag": "9bd2f697a1dfecced71f0becf74d43a8",
+   "lastModified": "2026-09-02T16:32:19+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "내부 통합 명세",
+   "probed": true,
+   "sha256": "156180e22aeeb6088ecb75045c9e76df0adee7096c329ba8c446a7238a6ea03a",
+   "contentLength": 2947
+  },
+  {
+   "key": "app/js/earthus2/greenfield/README.md",
+   "size": 609,
+   "etag": "0c3080c2073c99452a94849fddc3e61e",
+   "lastModified": "2026-09-02T16:32:20+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "저장소 안쪽 문서",
+   "probed": true,
+   "sha256": "76e7c59c4d82ad2af91d39d48cfa11bfeb121f12fe048a526a5898b8eda79752",
+   "contentLength": 609
+  },
+  {
+   "key": "app/js/earthus2/v03/qa/contract-harness.js",
+   "size": 376,
+   "etag": "160a1808ef47338f5549641fc59ea488",
+   "lastModified": "2026-09-02T16:38:33+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "QA 하네스",
+   "probed": true,
+   "sha256": "b7a6e2b808ebe9ff55354a39dec91ec56af2bd907c3976a9fad6830ff1f026ef",
+   "contentLength": 376
+  },
+  {
+   "key": "app/js/earthus2/v03/qa/fault-injection.js",
+   "size": 443,
+   "etag": "0a21fa8a22314240664c82823332f4ad",
+   "lastModified": "2026-09-02T16:38:35+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "QA 하네스",
+   "probed": true,
+   "sha256": "4b1ce198d34ddb942d047ee148c5613a52084e803130eb21f18d820612972e6c",
+   "contentLength": 443
+  },
+  {
+   "key": "app/js/earthus2/v03/qa/launch-gate.js",
+   "size": 518,
+   "etag": "8f19f49094d4e4fba2eb2019c8ddf561",
+   "lastModified": "2026-09-02T16:38:37+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "QA 하네스",
+   "probed": true,
+   "sha256": "fdc0dba09a72dd3dcc24f3688b2d59f83c4ed48d6b17ece01687a5ef2a338056",
+   "contentLength": 518
+  },
+  {
+   "key": "app/js/earthus2/v03/qa/replay-regression.js",
+   "size": 511,
+   "etag": "27ea8406693e8b25763b52bfdca9b736",
+   "lastModified": "2026-09-02T16:38:39+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "QA 하네스",
+   "probed": true,
+   "sha256": "49ca42ef1859e5c299f7684fa1049629f3bf2a782fed9cde824ecf21cbabf567",
+   "contentLength": 511
+  },
+  {
+   "key": "app/js/earthus2/v04/qa/completion-evidence.js",
+   "size": 1071,
+   "etag": "782fc0ed9f488d2780ea6bd11ceb9a63",
+   "lastModified": "2026-09-02T16:39:45+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "QA 하네스",
+   "probed": true,
+   "sha256": "655f70e7d272bcb2b34128f7c0b9fd5ac8431e58f44c04b3f4562527c3b6abe7",
+   "contentLength": 1071
+  },
+  {
+   "key": "app/js/earthus2/v07/postgres/20260826_v07_backend_metadata_contract.sql",
+   "size": 4248,
+   "etag": "f91df4c3673d72860d8e4f2b2d6e1410",
+   "lastModified": "2026-09-02T16:32:29+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "4039051de98073bb9b03997b030059f8e89a0fa8b781103a663d03c9a6a91034",
+   "contentLength": 4248
+  },
+  {
+   "key": "app/js/earthus2/v10/postgres/20260826_v10_backend_closed_loop.sql",
+   "size": 1733,
+   "etag": "22615f622888afe8964af963d8437bee",
+   "lastModified": "2026-09-02T16:32:30+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "7c50a8fc0f05122283d3f759b3de976646be5013bf915489f7e27ac09985e7f5",
+   "contentLength": 1733
+  },
+  {
+   "key": "app/js/earthus2/v11/postgres/20260826_v11_advanced_intelligence.sql",
+   "size": 9055,
+   "etag": "9f0512ca20abc2719d72fbb1fbedd624",
+   "lastModified": "2026-09-02T16:32:32+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "567d4df79b85404cd39b00ca0122f06a3c8b5f40fdf55dc22cfc4e7c1eaadbd1",
+   "contentLength": 9055
+  },
+  {
+   "key": "app/legal/README.md",
+   "size": 46,
+   "etag": "f96bc1e0adc005c0531ed03f01be0711",
+   "lastModified": "2026-07-26T01:11:20+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "저장소 안쪽 문서",
+   "probed": true,
+   "sha256": "13c81bda5e37f8c793a63481bd6f10ef7fa31d7c54d593706c5b952b55059453",
+   "contentLength": 46
+  },
+  {
+   "key": "app/space/planets/README.md",
+   "size": 4321,
+   "etag": "d99e8e46b7cd36553c47ca9660870b7c",
+   "lastModified": "2026-08-10T02:06:15+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "저장소 안쪽 문서",
+   "probed": true,
+   "sha256": "3b897ea42b017c229824977399df4980a6d61337b41dcc685a44c24ea1d57138",
+   "contentLength": 4321
+  },
+  {
+   "key": "app/space/skybox/earthus-milky-way/README.md",
+   "size": 1964,
+   "etag": "f73f682f155a268f27b8a5c207036f17",
+   "lastModified": "2026-08-19T13:48:58+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "저장소 안쪽 문서",
+   "probed": true,
+   "sha256": "8b1998de16eef42c459b08bd09e7fa623ade7337fd98bbc14c8768fa6d71841c",
+   "contentLength": 1964
+  },
+  {
+   "key": "app/space/skybox/earthus-milky-way/panorama-6000.webp",
+   "size": 2867644,
+   "etag": "045f014f3a2cfeba7bdcdce91deb8c49",
+   "lastModified": "2026-08-12T22:56:12+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "해시 없는 옛 원본",
+   "probed": true,
+   "sha256": "99e94e7efde12245c5951f3af9b2ff446dd9efa381b97e9d5656ca176a468770",
+   "contentLength": 2867644
+  },
+  {
+   "key": "app/space/skybox/earthus-milky-way/panorama.webp",
+   "size": 1371048,
+   "etag": "e1541203c6c76d8630aa77340e618895",
+   "lastModified": "2026-08-12T22:56:10+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "해시 없는 옛 원본",
+   "probed": true,
+   "sha256": "56cb0ba149f3e044fbb7d3a4bee5ab4235cc1aca38e77a272720a5223163a431",
+   "contentLength": 1371048
+  },
+  {
+   "key": "app/space/skybox/earthus-milky-way/source-panorama.webp",
+   "size": 350550,
+   "etag": "bd3f720169317626a982001bedbe5efc",
+   "lastModified": "2026-08-19T13:48:58+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "제작 원본",
+   "probed": true,
+   "sha256": "80417df844022df7c5562598e0b969eac8a14453ad525946f255bacf05164a08",
+   "contentLength": 350550
+  },
+  {
+   "key": "app/supabase/functions/_shared/research-report-job-policy.js",
+   "size": 6786,
+   "etag": "93b4b3bbd4998a3eb2493cd96aab780f",
+   "lastModified": "2026-08-23T18:45:00+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "978eff343a70caa1c5f9d88e1728bb470a128cd4bca4cfdf2f6c3518e47e6711",
+   "contentLength": 6786
+  },
+  {
+   "key": "app/supabase/functions/_shared/research-report-policy.js",
+   "size": 8315,
+   "etag": "3d0187b3ad6d5d0da0d7f99bbd4179aa",
+   "lastModified": "2026-08-23T18:45:01+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "8ad33fe32f5487c037c29c16f0c2c4bad6a10ec7c50f8d4eb517bf639855ae0d",
+   "contentLength": 8315
+  },
+  {
+   "key": "app/supabase/schema.sql",
+   "size": 46,
+   "etag": "f96bc1e0adc005c0531ed03f01be0711",
+   "lastModified": "2026-07-26T01:11:19+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "13c81bda5e37f8c793a63481bd6f10ef7fa31d7c54d593706c5b952b55059453",
+   "contentLength": 46
+  },
+  {
+   "key": "app/v2-deploy/engine-v11/postgres/20260826_v11_advanced_intelligence.sql",
+   "size": 9055,
+   "etag": "9f0512ca20abc2719d72fbb1fbedd624",
+   "lastModified": "2026-09-02T16:33:09+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "567d4df79b85404cd39b00ca0122f06a3c8b5f40fdf55dc22cfc4e7c1eaadbd1",
+   "contentLength": 9055
+  },
+  {
+   "key": "app/v2-three/NEXT_STEPS.md",
+   "size": 13005,
+   "etag": "5a0a2edaeef4d2fb58cc724189a0b7d4",
+   "lastModified": "2026-09-02T16:33:15+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "내부 로드맵",
+   "probed": true,
+   "sha256": "d915c397c693534c0f3d2f24cd1884c3b9e0f1bc820a3c79b260b6ed6fd37e83",
+   "contentLength": 13005
+  },
+  {
+   "key": "app/v2/README.md",
+   "size": 717,
+   "etag": "0d9d2e5898d7191b0af411b79fa5b922",
+   "lastModified": "2026-08-29T01:38:58+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "저장소 안쪽 문서",
+   "probed": true,
+   "sha256": "c2b192615c3dedd37e4d026174e4e21ee3b6f0efbb90d09c3ab95fa28926d8a5",
+   "contentLength": 717
+  },
+  {
+   "key": "app/v2/canary/aetherus-device-rc-rollback-probe.json",
+   "size": 293,
+   "etag": "de4b643a9608a63d4b717e9776afc6b1",
+   "lastModified": "2026-08-28T13:40:14+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "카나리 점검 산출물",
+   "probed": true,
+   "sha256": "e64ca235212604eef33298f318ede3b305126735b93ca7213eea6a15d828eb73",
+   "contentLength": 293
+  },
+  {
+   "key": "app/v2/devserver.py",
+   "size": 5055,
+   "etag": "00ef88b0ecd81f419c7a4fa8d652c8ed",
+   "lastModified": "2026-08-28T13:40:27+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "개발 스크립트",
+   "probed": true,
+   "sha256": "87a2e57f9262093ffe3190b7a1321400a5e75430e5221b2c0a664d43fb5de8af",
+   "contentLength": 5055
+  },
+  {
+   "key": "app/v2/engine-v11/postgres/20260826_v11_advanced_intelligence.sql",
+   "size": 9055,
+   "etag": "9f0512ca20abc2719d72fbb1fbedd624",
+   "lastModified": "2026-09-02T15:13:12+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "567d4df79b85404cd39b00ca0122f06a3c8b5f40fdf55dc22cfc4e7c1eaadbd1",
+   "contentLength": 9055
+  },
+  {
+   "key": "app/v2/img/ocean-dive-assets.md",
+   "size": 955,
+   "etag": "f84b5a3d23581f93a4600236a00584d4",
+   "lastModified": "2026-08-28T13:40:27+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "내부 자산 노트",
+   "probed": true,
+   "sha256": "103f3ff6452dd7be4bf344c5d59367faec7a0308b36508b2bf91eba5ba9a76ef",
+   "contentLength": 955
+  },
+  {
+   "key": "app/v2/js/config.local.example.js",
+   "size": 9750,
+   "etag": "1173fd1ad5a628fb12b29a8922bca296",
+   "lastModified": "2026-08-28T13:40:29+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "개발자 설정 서식",
+   "probed": true,
+   "sha256": "c97297e8ff8972893a993418495e5969ba9b3b9390072ebf04f1c7d1c220314f",
+   "contentLength": 9750
+  },
+  {
+   "key": "app/v2/js/ext/CONTRACT.md",
+   "size": 5148,
+   "etag": "f19fe9ac71927e0ec5720139fce39a77",
+   "lastModified": "2026-09-06T12:45:31+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "내부 계약 문서",
+   "probed": true,
+   "sha256": "4c0171ba754e6a9370a229c154f9e4502dcdde514728ea37849e09cfc604c1cd",
+   "contentLength": 5148
+  },
+  {
+   "key": "app/v2/legal/README.md",
+   "size": 7967,
+   "etag": "83d5c376b81cd3ae7b875e60d69cd792",
+   "lastModified": "2026-08-28T13:40:40+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "저장소 안쪽 문서",
+   "probed": true,
+   "sha256": "169a80cc35da49c1fa778c8b35a799e493079e7e47a7d5ebdeac1d29598a9607",
+   "contentLength": 7967
+  },
+  {
+   "key": "app/v2/space/planets/README.md",
+   "size": 4321,
+   "etag": "d99e8e46b7cd36553c47ca9660870b7c",
+   "lastModified": "2026-08-28T13:40:44+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "저장소 안쪽 문서",
+   "probed": true,
+   "sha256": "3b897ea42b017c229824977399df4980a6d61337b41dcc685a44c24ea1d57138",
+   "contentLength": 4321
+  },
+  {
+   "key": "app/v2/space/skybox/earthus-milky-way/README.md",
+   "size": 1964,
+   "etag": "f73f682f155a268f27b8a5c207036f17",
+   "lastModified": "2026-08-28T13:40:46+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "저장소 안쪽 문서",
+   "probed": true,
+   "sha256": "8b1998de16eef42c459b08bd09e7fa623ade7337fd98bbc14c8768fa6d71841c",
+   "contentLength": 1964
+  },
+  {
+   "key": "app/v2/space/skybox/earthus-milky-way/panorama-6000.webp",
+   "size": 2867644,
+   "etag": "045f014f3a2cfeba7bdcdce91deb8c49",
+   "lastModified": "2026-08-28T13:40:46+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "해시 없는 옛 원본",
+   "probed": true,
+   "sha256": "99e94e7efde12245c5951f3af9b2ff446dd9efa381b97e9d5656ca176a468770",
+   "contentLength": 2867644
+  },
+  {
+   "key": "app/v2/space/skybox/earthus-milky-way/panorama.webp",
+   "size": 1371048,
+   "etag": "e1541203c6c76d8630aa77340e618895",
+   "lastModified": "2026-08-28T13:40:46+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "해시 없는 옛 원본",
+   "probed": true,
+   "sha256": "56cb0ba149f3e044fbb7d3a4bee5ab4235cc1aca38e77a272720a5223163a431",
+   "contentLength": 1371048
+  },
+  {
+   "key": "app/v2/space/skybox/earthus-milky-way/source-panorama.webp",
+   "size": 350550,
+   "etag": "bd3f720169317626a982001bedbe5efc",
+   "lastModified": "2026-08-28T13:40:46+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "제작 원본",
+   "probed": true,
+   "sha256": "80417df844022df7c5562598e0b969eac8a14453ad525946f255bacf05164a08",
+   "contentLength": 350550
+  },
+  {
+   "key": "app/v2/supabase/.temp/gotrue-version",
+   "size": 8,
+   "etag": "dc6247bac8cc534a3684e00639e7f349",
+   "lastModified": "2026-08-28T13:40:49+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "165691a635c13b4e2094d17132e0e710bd0c2c1fed3219f6487d2262c7031dec",
+   "contentLength": 8
+  },
+  {
+   "key": "app/v2/supabase/.temp/linked-project.json",
+   "size": 141,
+   "etag": "b5cee6934c9db20478e46d791a8b4a1e",
+   "lastModified": "2026-08-28T13:40:49+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "1f0800bbe63301c5b6fab6659e1cf135ac0936ffa73e80fc295ab8dca1c0c940",
+   "contentLength": 141
+  },
+  {
+   "key": "app/v2/supabase/.temp/pooler-url",
+   "size": 97,
+   "etag": "d80f09e0541c4ab208e3687734a0e594",
+   "lastModified": "2026-08-28T13:40:49+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "6b5fac36c52de60197d1c0bdf2921635c31a163355b8df684ad7d5a250b3ee0d",
+   "contentLength": 97
+  },
+  {
+   "key": "app/v2/supabase/.temp/postgres-version",
+   "size": 10,
+   "etag": "d26ac04767d6296401232a04830c4170",
+   "lastModified": "2026-08-28T13:40:49+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "c698b0ad787708e9c1334ca246ef8bb2a6fbd69b5863ea8b24f60b3c9e057732",
+   "contentLength": 10
+  },
+  {
+   "key": "app/v2/supabase/.temp/project-ref",
+   "size": 20,
+   "etag": "3e29e5a4d1aec8e3342cdcf44d030811",
+   "lastModified": "2026-08-28T13:40:49+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "fb450aa8c02cc52e00f2c8b1cc3938756e3db977861951a8deba3d5e2a6b9576",
+   "contentLength": 20
+  },
+  {
+   "key": "app/v2/supabase/.temp/rest-version",
+   "size": 5,
+   "etag": "d05d8b700eb2fea6d618bf1cff75ad7d",
+   "lastModified": "2026-08-28T13:40:49+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "b25de4a023eef82d4780a9f7816c5685ca35437308a9d457585eece9945485dc",
+   "contentLength": 5
+  },
+  {
+   "key": "app/v2/supabase/.temp/storage-migration",
+   "size": 33,
+   "etag": "b5a813eee5605d93374db80e4a70045a",
+   "lastModified": "2026-08-28T13:40:49+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "5eefa09f2bf47edfbd65e0307f2ebf6eec935a663b45e36cbd9395c3f10695d0",
+   "contentLength": 33
+  },
+  {
+   "key": "app/v2/supabase/.temp/storage-version",
+   "size": 8,
+   "etag": "7d55f2c6cadfbea9180f39f59eaf3afa",
+   "lastModified": "2026-08-28T13:40:49+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "ba07e0b1550d9e95ea75e74ccec7db8060b5bcb29a5c9a19a4e26d754f32dc34",
+   "contentLength": 8
+  },
+  {
+   "key": "app/v2/supabase/billing.sql",
+   "size": 12572,
+   "etag": "68ded0d2f0178c0441cc043c89fe1958",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "a2b88f6c4a9aab7adab4d222d08ce59c8756930f4008e3276a5e34045d2971e8",
+   "contentLength": 12572
+  },
+  {
+   "key": "app/v2/supabase/config.toml",
+   "size": 2625,
+   "etag": "f4d33a3e1ba050dc335e0eeb439748a7",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "99ac4bb20ab2aa0ee3a49c7a4df759a1c079d5c685ca98abe7731d42e2754a17",
+   "contentLength": 2625
+  },
+  {
+   "key": "app/v2/supabase/expiry-cron.sql",
+   "size": 1282,
+   "etag": "5eb763a35b3782ad0095cc36e3dc9e9c",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "12a47555e71b7d1d2a45763a2ded78ff010fec07ee350ee8471f43f859ac7ab0",
+   "contentLength": 1282
+  },
+  {
+   "key": "app/v2/supabase/founding-verify.sql",
+   "size": 9529,
+   "etag": "893695f71034a83fbcec8d9a5699d3c3",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "42fc6f1c28b387dcac9064943d1e0db335175faa5e46b0007ff7ee7818aaed07",
+   "contentLength": 9529
+  },
+  {
+   "key": "app/v2/supabase/founding.sql",
+   "size": 10062,
+   "etag": "eebcef66046cfc84753225e7208e96ff",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "e9ce0b5c94d35377bad8c412ffbe75de9c1cb1cb7bcff228fc3dc35b8b2dade2",
+   "contentLength": 10062
+  },
+  {
+   "key": "app/v2/supabase/functions/_shared/admin-access.ts",
+   "size": 11354,
+   "etag": "1e18de78ae7113c2fded9940c398a03f",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "be673d8a1ec778e2c4859cf376f28e66920660243d2cb101f4f3bc0358deb1ba",
+   "contentLength": 11354
+  },
+  {
+   "key": "app/v2/supabase/functions/_shared/forecast-v8-policy.js",
+   "size": 5689,
+   "etag": "41c23473cbdf36d40b22618a60de04d7",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "031765db120df9550c27a18529f04d1f89bd225fff1786f3173c6a8417a9ffca",
+   "contentLength": 5689
+  },
+  {
+   "key": "app/v2/supabase/functions/_shared/member-admin-handler.ts",
+   "size": 2283,
+   "etag": "9a5ea2027ec1ef4ae5524af06cbf933c",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "a42593a665117233d746cad1ec9cdab01e0b19194162856d03abeecd8b8f8122",
+   "contentLength": 2283
+  },
+  {
+   "key": "app/v2/supabase/functions/_shared/research-report-job-policy.js",
+   "size": 7305,
+   "etag": "3b11df34a9503a402498714e67b34867",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "679a2ec997c3235dd238bff7e62799d6efb311d6eb71250d536332f5e3685ea8",
+   "contentLength": 7305
+  },
+  {
+   "key": "app/v2/supabase/functions/_shared/research-report-policy.js",
+   "size": 8995,
+   "etag": "e4f3b4af8f8284c226abc01a51f8bc38",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "06e5dfcaf3254ca0653178db158d8e9b774a843f105f40d9daf9e4654c5ed630",
+   "contentLength": 8995
+  },
+  {
+   "key": "app/v2/supabase/functions/_shared/social-comments.ts",
+   "size": 12128,
+   "etag": "58fe81ebf64e2731812b70f61e9f4e15",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "ba52c513ace96259dd563fbb9e8482e3dc9d85c26df5285558e752b2f7a7064d",
+   "contentLength": 12128
+  },
+  {
+   "key": "app/v2/supabase/functions/_shared/social-credentials.ts",
+   "size": 12031,
+   "etag": "3ba9795969e83777d372b0f9b4e8cef4",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "5f5f695db99ad97b55f9a67333f7340a3508a816a06db764937991c689b14f3e",
+   "contentLength": 12031
+  },
+  {
+   "key": "app/v2/supabase/functions/_shared/social-platform-status.ts",
+   "size": 10558,
+   "etag": "0ebf965236de33a9ead87df9960b60da",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "de8e8bc5fbaa909a9e1f0ba6c40bd2b3de7468bb6113c45a67d5d88f9cc94460",
+   "contentLength": 10558
+  },
+  {
+   "key": "app/v2/supabase/functions/_shared/social-workflow.ts",
+   "size": 17723,
+   "etag": "9311f3924b4dac39af4ffc5b20aca2d7",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "c3c19a4c52cfb6097f9b4e705f30b7d12e229cee5a489534e0d9fcbd6bd163c1",
+   "contentLength": 17723
+  },
+  {
+   "key": "app/v2/supabase/functions/checkout/index.ts",
+   "size": 8326,
+   "etag": "9e5d3d9924f1df1f94c4d61ff60995d1",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "4d928cd6571ae062cd4ce76f2916086fa3d8618ef02cd7d264b9592fa548528f",
+   "contentLength": 8326
+  },
+  {
+   "key": "app/v2/supabase/functions/forecast-v8/index.ts",
+   "size": 3072,
+   "etag": "a161e7afc2e83adf7856cfa5c184fecd",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "874247565707e0a27bfa62a72bd214cf31d424bde25ae1a9e966172d334ae859",
+   "contentLength": 3072
+  },
+  {
+   "key": "app/v2/supabase/functions/member-admin/index.ts",
+   "size": 801,
+   "etag": "54835be8dda34c2dea56b89717da7a8d",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "0edf99cfcafc29e3e8ddda2e8ae58a98ffec6221babaf63efff2bc7fa06e7ef9",
+   "contentLength": 801
+  },
+  {
+   "key": "app/v2/supabase/functions/payment-confirm/index.ts",
+   "size": 6590,
+   "etag": "0ded1976829791e48096944a1b97245f",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "c8769f8726365ad1ceb90221df874e29f25f466dfbd08499907c012d7d164276",
+   "contentLength": 6590
+  },
+  {
+   "key": "app/v2/supabase/functions/payment-refund/index.ts",
+   "size": 4701,
+   "etag": "d206aec02a065a05f94e8f258c66cf70",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "68c6b2b8e1533c366edbcc8c5171df2c0e3bc80a1136bff8ff82d664f57c3d52",
+   "contentLength": 4701
+  },
+  {
+   "key": "app/v2/supabase/functions/push-tick/index.ts",
+   "size": 16123,
+   "etag": "e38bb917aa1e4eff4185f3cb9ff234cd",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "4245caa41d2313be447ee8220891b00ec9a3e1279569f452dbf67108939fd3c5",
+   "contentLength": 16123
+  },
+  {
+   "key": "app/v2/supabase/functions/research-report-detail/index.ts",
+   "size": 5998,
+   "etag": "46ed145877b70e41deb1cf64439a2c7c",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "1f6083085066610ab9e6f49e1dd425f039b755382be8540ece9d74056ba17f65",
+   "contentLength": 5998
+  },
+  {
+   "key": "app/v2/supabase/functions/research-report-jobs/index.ts",
+   "size": 4195,
+   "etag": "576c482e3ea47695064e1f71164588ef",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "075cf11cc606ab50fee65715ea8d4f4dfb32ac02e6fd679221b1fe5d02b59805",
+   "contentLength": 4195
+  },
+  {
+   "key": "app/v2/supabase/functions/social-admin/index.ts",
+   "size": 52429,
+   "etag": "3975758eb4b8b373b6129a49be3f0469",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마 트리",
+   "probed": true,
+   "sha256": "dab6921093318f9be8dabd3507e097ade7564b0de6300cd8a209ecfe4ffec473",
+   "contentLength": 52429
+  },
+  {
+   "key": "app/v2/supabase/migrations/20260811080000_member_invites.sql",
+   "size": 5733,
+   "etag": "29c271a6c1726000d69a4675486f048c",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "ecf4075eb652ea9a4ca1d3204009863224d6bf81c96dd5aaf19349c237372629",
+   "contentLength": 5733
+  },
+  {
+   "key": "app/v2/supabase/migrations/20260811080500_member_invite_trusted_write.sql",
+   "size": 2385,
+   "etag": "41075aee27a6c22f336447c096dd5e2a",
+   "lastModified": "2026-08-28T13:40:50+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "e281195ae26ee591648e6a4736aedc85bcf3ec7ce6ba97c0e0438072ee2b79e6",
+   "contentLength": 2385
+  },
+  {
+   "key": "app/v2/supabase/migrations/20260811081000_refund_preserves_invite.sql",
+   "size": 2496,
+   "etag": "40c4ed0c4d37af3c93ddb4383e997f2a",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "57f02d9bb1e65c9cc6ef49801dc809218993af97f0b6fd30841a050ebe2fd7fe",
+   "contentLength": 2496
+  },
+  {
+   "key": "app/v2/supabase/migrations/20260811090000_contentsdalur_admin.sql",
+   "size": 520,
+   "etag": "12333e79f23e4d6c4a52e8cca582bfc3",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "491f4b34f7bd08a544d2b18650e5547cc98e5696852225c9d6ebb5d466ab4ea3",
+   "contentLength": 520
+  },
+  {
+   "key": "app/v2/supabase/migrations/20260814090000_aetherus_private_data.sql",
+   "size": 16379,
+   "etag": "1b91308115c0973aae3364cc222fd48b",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "4299f361ca537354fddd3f245f2672d2c9cc142dffdd0ee5395a47653322d821",
+   "contentLength": 16379
+  },
+  {
+   "key": "app/v2/supabase/migrations/20260814193000_earthus_usage_analytics.sql",
+   "size": 8115,
+   "etag": "63a1d5da9ec3724f676c9a37fccab1be",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "6d589f11bdb2311c86b3fba7f81413edda6bc4b4b937c024c344a6ace4b77fce",
+   "contentLength": 8115
+  },
+  {
+   "key": "app/v2/supabase/migrations/20260814194500_earthus_usage_analytics_value_guard.sql",
+   "size": 5489,
+   "etag": "12279e12d8688e2f9ff2432ca250b24d",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "84037e31ae75880a2ae79a7feefdae0798461163c29bc501293df8c2a057b99c",
+   "contentLength": 5489
+  },
+  {
+   "key": "app/v2/supabase/migrations/20260814200000_earthus_privacy_version_20260814.sql",
+   "size": 1215,
+   "etag": "3048964c3ced41d227ae9ebed626e9f0",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "b2ed42aaf3c1211866fe80f2f16bf6a9e285652c8a754f053871f5956f050cdd",
+   "contentLength": 1215
+  },
+  {
+   "key": "app/v2/supabase/migrations/20260814201500_earthus_privacy_effective_20260821.sql",
+   "size": 1209,
+   "etag": "ebea0146a4bc12bd80eebc48536b6db4",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "869d89c7e84e6e47cc092e3bc443265866d82b3a179a4ef9c4355c08aab65b11",
+   "contentLength": 1209
+  },
+  {
+   "key": "app/v2/supabase/migrations/20260820090000_tourism_flow_watch.sql",
+   "size": 7302,
+   "etag": "9619fbb484fe238d3e0e743468b3404e",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "0591e6f2fa2ce02f0abeb280beb0efed1cf4529d789a029098bb045815af702c",
+   "contentLength": 7302
+  },
+  {
+   "key": "app/v2/supabase/migrations/20260821120000_earthus_v8_forecast_private.sql",
+   "size": 6386,
+   "etag": "0da8213bcca60ce56c0c6edd34198cb2",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "d2544e779958044f2f06ac0ef986e794a9de0a36f0ea70f2d03e373bf72a1f25",
+   "contentLength": 6386
+  },
+  {
+   "key": "app/v2/supabase/migrations/20260823_research_reports.sql",
+   "size": 12510,
+   "etag": "f33c221c6097754d7619415b79c2ee33",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "0013e2178842864400f1a856db9c59f116920dc2036209aca950888f6c794591",
+   "contentLength": 12510
+  },
+  {
+   "key": "app/v2/supabase/migrations/20260827140000_member_rbac.sql",
+   "size": 41611,
+   "etag": "69d597d1427323eb4d342af52529ab9e",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "c6e80090c1e2807ceba434c9572d9ef12599ee4b1446171ed7436d26103a2898",
+   "contentLength": 41611
+  },
+  {
+   "key": "app/v2/supabase/migrations/20260827143000_member_rbac_active_subject.sql",
+   "size": 16977,
+   "etag": "f107138d836fff7de95235bfc3bd7ce7",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "23c771eae0ad41fcf61cd38bb5e3b9047fcfe28fbf8366684396cd90eb55cd5a",
+   "contentLength": 16977
+  },
+  {
+   "key": "app/v2/supabase/migrations/20260828090000_provider_control.sql",
+   "size": 17846,
+   "etag": "e18c09e631f743754ab3a4e6bc7a9cf9",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "2f4f5fe4086f67225207bf3d7d764e0e55b495ddd8ccc8b5d77779c1cba0b992",
+   "contentLength": 17846
+  },
+  {
+   "key": "app/v2/supabase/migrations/20260828100000_social_workflow.sql",
+   "size": 27587,
+   "etag": "6b9a652832503617f0c9de318a58d065",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "cc04f31129bd854abd80d538f5ff717df366ec4c066aaad2715aeeab82b46cf5",
+   "contentLength": 27587
+  },
+  {
+   "key": "app/v2/supabase/migrations/20260828103000_social_credentials.sql",
+   "size": 16486,
+   "etag": "46ae31039ad11d79b3bc80e65c47934f",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "ec4831048755c7985d73d73b25a5842294cd36e1f8b3a4d62df50ec724b7a211",
+   "contentLength": 16486
+  },
+  {
+   "key": "app/v2/supabase/migrations/20260828103500_social_control_generation.sql",
+   "size": 8098,
+   "etag": "b23d5269028706e5d95914b933d69b94",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "da783b1da9a4774b5f123949c33edf61eb8185bad736fe05fce878ff7863cc98",
+   "contentLength": 8098
+  },
+  {
+   "key": "app/v2/supabase/migrations/20260828110000_social_comments.sql",
+   "size": 21825,
+   "etag": "cab9d3b39d9cd1c0833c6bbe124e12d2",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "8d6d2709b8edc27795b625990c63a34946b181467556874d269211e1cf2871b3",
+   "contentLength": 21825
+  },
+  {
+   "key": "app/v2/supabase/migrations/20260828110500_social_comment_retention_schedule.sql",
+   "size": 334,
+   "etag": "d408b79dfc3b750ecba5ccb75e47b6a7",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "bb2118a2ce6d9b71ec48a672d5346846256b2255976e5f6739119f7a57766ecd",
+   "contentLength": 334
+  },
+  {
+   "key": "app/v2/supabase/push.sql",
+   "size": 11201,
+   "etag": "0869f1d0bea409420bf56c188176afd5",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "5d5ca3ec71064a0c217b8db7f0eb51f853c216520afc3df6abcf712944ecc2f5",
+   "contentLength": 11201
+  },
+  {
+   "key": "app/v2/supabase/refund-verify.sql",
+   "size": 2682,
+   "etag": "8718be6309bd180fd5dde459de43d052",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "3b5bc32954061a47a266ae54763c68bebe2bcbe91f2ae8e23192c3903b4cbe75",
+   "contentLength": 2682
+  },
+  {
+   "key": "app/v2/supabase/refund.sql",
+   "size": 3210,
+   "etag": "dd205e6add8a756a5d4f3187f209cd67",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "0f8d5259e0b0781e35332bbe57b7e62beb08a59c8df0f3e67615d369345c7cd7",
+   "contentLength": 3210
+  },
+  {
+   "key": "app/v2/supabase/schema.sql",
+   "size": 14244,
+   "etag": "11b186347ee33f148cc7855e8d9adaa3",
+   "lastModified": "2026-08-28T13:40:51+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "DB 스키마·마이그레이션",
+   "probed": true,
+   "sha256": "65f4315731155771e1605c11b23546b550b4ffec2fe337fadc3d854f9865203b",
+   "contentLength": 14244
+  },
+  {
+   "key": "events/social-drafts.json",
+   "size": 5112,
+   "etag": "024f3ce38a11ea79b959c0b8110ea0d6",
+   "lastModified": "2026-09-08T07:28:24+00:00",
+   "httpStatus": 200,
+   "classification": "LEGACY_PUBLIC_FORBIDDEN",
+   "reason": "승인 전 SNS 초안",
+   "probed": true,
+   "sha256": "09bda57264731390fb423fc69f4b3ced57e7ee6ea481f593b46cc98941975bc0",
+   "contentLength": 5112
+  }
+ ]
+}

@@ -37,8 +37,16 @@ BLOCKING_ELIGIBILITY = ("BLOCKED", "INSUFFICIENT_DATA")
 BLOCKING_SAFETY = ("LEVEL_3_HUMAN_ONLY",)
 
 # ── 접두사 ───────────────────────────────────────────────────────────────────
-PUBLIC_PREFIXES = ("events/", "wind/", "ocean/", "reports/", "clouds/", "app/")
-PRIVATE_PREFIXES = ("archive/",)
+# ⚠️ INTEGRATION-6 §6 — 표가 비어 있던 세 접두사를 **실측으로** 채웠다(2026-09-08).
+#      solar/meta.json              200  → 공개
+#      celestrak/catalog.json.gz    200  → 공개
+#      celestrak/history-14d.json.gz 200
+#      analysis/aurora-reports.json 403  → 비공개 (버킷 정책이 이 접두사를 열지 않는다)
+#    그전까지 셋 다 UNKNOWN 이었고, check_public_write 가 UNKNOWN 을 **통과**시켰다.
+#    즉 "모르는 자리"가 곧 "써도 되는 자리"였다 — 그 기본값을 뒤집는다(아래).
+PUBLIC_PREFIXES = ("events/", "wind/", "ocean/", "reports/", "clouds/", "app/",
+                   "solar/", "celestrak/")
+PRIVATE_PREFIXES = ("archive/", "analysis/")
 
 # 지금 알려진 예외. **고쳐야 할 목록이지 허용 목록이 아니다.**
 # 여기 들어 있다고 통과시키지 않는다 — 검사는 이것들을 KNOWN_LEAK 로 보고한다.
@@ -118,6 +126,19 @@ def check_public_write(key, artifact, *, kind="content"):
     kv = prefix_visibility(key)
     vis, why = (content_visibility(artifact) if kind == "content"
                 else report_visibility(artifact))
+    # ⚠️⚠️ 모르는 자리에는 쓰지 않는다.
+    #    예전에는 UNKNOWN 이면 그냥 통과였다 — 표에 없는 접두사가 곧 허가였다.
+    #    그러면 새 접두사를 만드는 순간 경계가 조용히 열린다. 기본값을 뒤집는다:
+    #    공개인지 비공개인지 **표가 말해 주지 않으면 거부**하고, 사람이 표를 채운다.
+    if kv == "UNKNOWN":
+        return {
+            "allowed": False,
+            "visibility": vis,
+            "keyVisibility": kv,
+            "reason": ("접두사가 표에 없다: %s — 공개인지 비공개인지 정해지지 않은 자리에는 "
+                       "쓰지 않는다. PUBLIC_PREFIXES/PRIVATE_PREFIXES 를 실측으로 채워라." % key),
+            "knownLeak": None,
+        }
     leak = None
     for k, note in KNOWN_PUBLIC_LEAKS.items():
         if key == k or key.startswith(k):

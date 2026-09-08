@@ -95,7 +95,14 @@ function renderVerification(report, detail, allowed) {
     return section('검증', `<p class="empty">${esc(detail.note?.interim || '대조할 실황이 아직 없습니다.')}</p>`);
   }
   const merged = new Map();
-  posRows.forEach(s => { const m = merged.get(s.agency) || { agency: s.agency }; m.n = (m.n || 0) + (s.n || 0); m.sum = (m.sum || 0) + (s.meanErrorKm || 0) * (s.n || 0); merged.set(s.agency, m); });
+  // ⚠️ 값이 없는 행을 0 km 로 넣지 않는다(§16) — 없는 것이 가장 잘한 것이 된다.
+  posRows.forEach(s => {
+    const m = merged.get(s.agency) || { agency: s.agency };
+    const km = Number(s.meanErrorKm);
+    const n = Number(s.n) || 0;
+    if (Number.isFinite(km) && n > 0) { m.n = (m.n || 0) + n; m.sum = (m.sum || 0) + km * n; }
+    merged.set(s.agency, m);
+  });
   headRows.forEach(h => { const m = merged.get(h.agency) || { agency: h.agency }; m.headN = h.n; m.headErr = h.meanErrDeg; m.within45 = h.within45; merged.set(h.agency, m); });
   // ⚠️⚠️ 예보시간이 다른 오차를 섞은 숫자로 **정렬하지 않는다**(INTEGRATION-2 §3).
   //    6시간 뒤 방향과 120시간 뒤 방향은 난이도가 전혀 다르다. 섞어서 1등을 뽑으면

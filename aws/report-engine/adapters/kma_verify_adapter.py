@@ -66,21 +66,36 @@ def aggregate(daily_doc, period):
             n = v.get("n") or 0
             if n <= 0:
                 continue
-            cur = acc.setdefault(parsed, {"me": 0.0, "mae": 0.0, "sq": 0.0, "n": 0, "days": 0})
-            # 표본 수로 가중한다. rmse 는 제곱을 가중해 합치고 마지막에 다시 제곱근을 낸다.
-            cur["me"] += (v.get("me") or 0.0) * n
-            cur["mae"] += (v.get("mae") or 0.0) * n
-            cur["sq"] += ((v.get("rmse") or 0.0) ** 2) * n
+            # ⚠️⚠️ 지표가 없는 날을 0.0 으로 바꿔 가중하지 않는다(§16).
+            #    `(v.get("me") or 0.0) * n` 은 **자료가 없는 날을 오차 0 인 완벽한 날로 만든다.**
+            #    표본 수는 그대로 더해지므로 평균이 0 쪽으로 끌려간다 —
+            #    없는 것이 가장 잘한 것이 된다. 지표마다 따로 가중치를 센다.
+            me, mae, rmse = v.get("me"), v.get("mae"), v.get("rmse")
+            if me is None and mae is None and rmse is None:
+                continue                      # 그 조합에 그날 값이 아예 없다
+            cur = acc.setdefault(parsed, {"me": 0.0, "meN": 0, "mae": 0.0, "maeN": 0,
+                                          "sq": 0.0, "sqN": 0, "n": 0, "days": 0})
+            if isinstance(me, (int, float)) and not isinstance(me, bool):
+                cur["me"] += me * n
+                cur["meN"] += n
+            if isinstance(mae, (int, float)) and not isinstance(mae, bool):
+                cur["mae"] += mae * n
+                cur["maeN"] += n
+            if isinstance(rmse, (int, float)) and not isinstance(rmse, bool):
+                cur["sq"] += (rmse ** 2) * n
+                cur["sqN"] += n
             cur["n"] += n
             cur["days"] += 1
     out = {}
     for k, a in acc.items():
-        n = a["n"]
+        # 지표마다 그 지표가 실제로 있었던 표본 수로만 나눈다.
+        # 값이 하나도 없으면 None 이다 — 0 이 아니다(§16).
         out[k] = {
-            "me": round(a["me"] / n, 3),
-            "mae": round(a["mae"] / n, 3),
-            "rmse": round((a["sq"] / n) ** 0.5, 3),
-            "n": n,
+            "me": round(a["me"] / a["meN"], 3) if a["meN"] else None,
+            "mae": round(a["mae"] / a["maeN"], 3) if a["maeN"] else None,
+            "rmse": round((a["sq"] / a["sqN"]) ** 0.5, 3) if a["sqN"] else None,
+            "n": a["n"],
+            "nByMetric": {"me": a["meN"], "mae": a["maeN"], "rmse": a["sqN"]},
             "days": a["days"],
         }
     return out

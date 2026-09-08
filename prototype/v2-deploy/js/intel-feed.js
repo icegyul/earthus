@@ -630,15 +630,34 @@ export class IntelFeed {
     const pos = isFinal ? (d.scores || []) : (d.interimScores || []);
     if (!head.length && !pos.length) return `<div class="card"><div class="card-h">당시 전망 검증</div><div class="card-b">${d.note && d.note.interim ? d.note.interim : '대조할 실황이 아직 없습니다.'}</div></div>`;
     const byAgency = new Map();
-    pos.forEach((s) => { const m = byAgency.get(s.agency) || { agency: s.agency, n: 0, sum: 0 }; m.n += s.n || 0; m.sum += (s.meanErrorKm || 0) * (s.n || 0); byAgency.set(s.agency, m); });
+    // ⚠️⚠️ 값이 없는 행을 0 km 로 바꿔 넣지 않는다(§16).
+    //    `(s.meanErrorKm || 0) * s.n` 은 **자료가 없는 기관을 오차 0 으로 만든다.**
+    //    표본 수는 더해지고 오차는 안 더해져서 평균이 0 쪽으로 끌려간다 — 없는 것이
+    //    가장 잘한 것이 된다. 숫자가 아닌 행은 가중평균에서 빼고, 별도로 센다.
+    pos.forEach((s) => {
+      const m = byAgency.get(s.agency) || { agency: s.agency, n: 0, sum: 0, skipped: 0 };
+      const km = Number(s.meanErrorKm);
+      const n = Number(s.n) || 0;
+      if (Number.isFinite(km) && n > 0) { m.n += n; m.sum += km * n; }
+      else if (n > 0) { m.skipped = (m.skipped || 0) + n; }
+      byAgency.set(s.agency, m);
+    });
     head.forEach((h) => { const m = byAgency.get(h.agency) || { agency: h.agency, n: 0, sum: 0 }; m.headN = h.n; m.headErr = h.meanErrDeg; m.within45 = h.within45; byAgency.set(h.agency, m); });
     const nameKo = (a) => ({ KMA: '한국 기상청', JMA: '일본 기상청', NHC: '미국 허리케인센터', ECMWF: 'ECMWF 모델', EARTHUS_MULTI_SOURCE: 'EARTHUS 기준선', EARTHUS_ANALOG_MEDIAN: 'EARTHUS 유사사례 기준선' }[a] || a);
-    const list = [...byAgency.values()].sort((x, y) => (x.headErr ?? 999) - (y.headErr ?? 999));
+    // ⚠️⚠️ 예보시간이 다른 오차를 섮은 숫자로 **정렬하지 않는다**(§15).
+    //    6시간 뒤 방향과 120시간 뒤 방향은 난이도가 전혀 다르다. 섮어서 1등을 뽑으면
+    //    "가까운 예보만 잘하는 기관"이 장기 예보까지 잘하는 것처럼 보인다.
+    //    이 표는 headErr 로 정렬했고(= 교차리드 순위), 정작 아래 설명은
+    //    "같은 리드타임에서만 비교"라고 **반대로** 적어 두고 있었다.
+    //    prototype/js/lab-report-detail.js 는 이미 이름순으로 고쳤다 — 그 화면만 고치고
+    //    이 화면(사건 방)을 빼먹었다. 같은 규칙으로 맞춘다.
+    const list = [...byAgency.values()]
+      .sort((x, y) => String(nameKo(x.agency)).localeCompare(String(nameKo(y.agency)), 'ko'));
     const rows = list.map((m) => `<tr class="${/^EARTHUS/.test(m.agency) ? 'ours' : ''}"><td>${nameKo(m.agency)}</td><td>${m.headErr != null ? `${m.headErr}°` : '—'}</td><td>${m.headN ? `${m.within45}/${m.headN}` : '—'}</td><td>${m.n ? `${Math.round(m.sum / m.n)} km (n=${m.n})` : '—'}</td></tr>`).join('');
     return `<div class="card"><div class="card-h">${isFinal ? '종료 검증 (IBTrACS 최종 경로 기준)' : `당시 전망 검증 (잠정 · ${nameKo(d.truthAgency)} 실황 기준)`}</div>
       <div class="card-b">
-        <div class="wrap"><table class="room-cmp"><thead><tr><th>자료</th><th>방향 오차</th><th>45° 안</th><th>위치 오차</th></tr></thead><tbody>${rows}</tbody></table></div>
-        <div class="room-sub">같은 리드타임·같은 표본에서만 비교 · 한 사건으로 기관의 장기 우열을 말하지 않습니다 · EARTHUS 줄은 기준선(일반 매개변수)입니다</div>
+        <div class="wrap"><table class="room-cmp"><thead><tr><th>자료</th><th>방향 오차<small>(리드 합산)</small></th><th>45° 안</th><th>위치 오차<small>(리드 합산)</small></th></tr></thead><tbody>${rows}</tbody></table></div>
+        <div class="room-sub">아래 오차는 <b>여러 예보시간을 합친 값</b>입니다 — 순위를 매기지 않고 이름순으로 둡니다 · 우열은 같은 예보시간끼리 나눈 뒤에만 말합니다 · 한 사건으로 기관의 장기 우열을 말하지 않습니다 · EARTHUS 줄은 기준선(일반 매개변수)입니다</div>
       </div></div>`;
   }
 

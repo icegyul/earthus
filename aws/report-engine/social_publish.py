@@ -25,11 +25,15 @@ _AWS = os.path.dirname(_HERE)
 sys.path.insert(0, os.path.join(_AWS, "_shared"))
 
 import publication_privacy as priv    # noqa: E402
+import governance as gov             # noqa: E402
 
 PUBLISH_SCHEMA = "earthus.social-publication.v1"
 
 # §6 — 게이트 상태. 페이로드 준비와 승인과 발행은 서로 다른 사건이다.
-GATE_STATES = ("NOT_READY", "PAYLOAD_READY", "APPROVED", "PUBLISHED", "REJECTED", "FAILED")
+# STATUS_ONLY 는 INTEGRATION-3 §2 에서 생겼다 — 상태 문자열만 승인이고 사람 기록이 없는 경우.
+# APPROVAL_INVALID 는 §3 — 승인 뒤 내용이 바뀐 경우.
+GATE_STATES = ("NOT_READY", "PAYLOAD_READY", "STATUS_ONLY", "APPROVAL_INVALID",
+               "APPROVED", "PUBLISHED", "REJECTED", "FAILED")
 
 BLOCKED_NO_CREDENTIALS = "PUBLISH_BLOCKED_NO_CREDENTIALS"
 
@@ -61,12 +65,20 @@ def readiness(content, *, visual_assets=None, report=None):
     need("phenomenon", bool(content.get("phenomenonIds")) or bool(content.get("eventIds")),
          "현상도 사건도 가리키지 않는다")
 
-    # §10 — 시각자산이 붙어 있으면 **전부 확인된 것**이어야 한다.
+    # §10 → INTEGRATION-3 §8 — 시각자산이 붙어 있으면 **여덟 가지를 전부** 통과해야 한다.
+    # 예전에는 verified 표식 하나만 봤다. 그 표식은 우리가 직접 쓰는 값이라,
+    # 되읽기·픽셀검사·레이어 일치가 빠져도 True 로 남을 수 있었다.
     assets = {a.get("assetId"): a for a in (visual_assets or [])}
     attached = list(content.get("visualAssetIds") or [])
-    unverified = [i for i in attached if not (assets.get(i) or {}).get("verified")]
-    need("visual_verified", not unverified,
-         "확인되지 않은 시각자산이 붙어 있다: %s" % unverified)
+    missing = [i for i in attached if i not in assets]
+    vcheck = gov.public_visuals_check([assets[i] for i in attached if i in assets])
+    bad = [r for r in vcheck["assets"] if not r["ok"]]
+    need("visual_verified", not missing and vcheck["ok"],
+         ("시각자산 %s 의 메타를 찾지 못했다" % missing) if missing else
+         "시각자산이 공개 조건을 못 넘었다(%s): %s"
+         % (gov.public_visuals_check([])["code"] or "PUBLIC_CONTENT_INVALID",
+            "; ".join("%s — %s" % (r["assetId"], "; ".join(r["problems"][:2])) for r in bad[:3])))
+    checks["visual_checks"] = {r["assetId"]: r["checks"] for r in vcheck["assets"]}
 
     # 숫자 검증 — 콘텐츠가 리포트에 없는 숫자를 말하지 않는가
     pool = set(content.get("numericPool") or [])
@@ -90,15 +102,45 @@ def readiness(content, *, visual_assets=None, report=None):
 
 # ── §6 승인 ──────────────────────────────────────────────────────────────────
 def approval_state(content):
-    """사람이 승인했는가. 페이로드가 있다는 것과 승인은 다르다."""
+    """사람이 승인했는가. 페이로드가 있다는 것과 승인은 다르다.
+
+    ⚠️⚠️ INTEGRATION-3 §2 로 판정 근거가 바뀌었다.
+       예전에는 **status 문자열만** 봤다 — status 가 'APPROVED' 면 승인이었다.
+       그런데 그 상태를 자동으로 걸어 주는 경로가 있다
+       (aws/distribution/cli.py 가 FACT_CHECK→REVIEW→APPROVED 를 이어서 건다).
+       그러면 사람이 아무것도 보지 않았는데 승인이 된다 — 승인란이 아무 정보도
+       담지 않게 된다. 이제 **사람 승인 기록**이 있어야 APPROVED 다.
+    """
     st = content.get("status")
-    if st in APPROVED_STATES:
-        return "APPROVED"
-    if st == "REJECTED":
-        return "REJECTED"
     if st == "PUBLISHED":
         return "PUBLISHED"
+    chk = gov.approval_check(content)
+    if chk["state"] in ("APPROVED", "APPROVAL_INVALID", "REJECTED"):
+        return chk["state"]
+    if st == "REJECTED":
+        return "REJECTED"
+    if st in APPROVED_STATES:
+        # 상태만 승인이고 사람 기록이 없다. 승인으로 세지 않는다.
+        return "STATUS_ONLY"
     return "PAYLOAD_READY" if content.get("platformVersions") else "NOT_READY"
+
+
+def approval_detail(content):
+    """왜 그 상태인지. 화면·시험이 사유를 그대로 보여줄 수 있게."""
+    chk = gov.approval_check(content)
+    chk["gateState"] = approval_state(content)
+    if chk["gateState"] == "STATUS_ONLY":
+        chk["reasons"] = ["상태는 %s 이지만 사람 승인 기록(approval)이 없다"
+                          % content.get("status")]
+    return chk
+
+
+def approve(content, *, approved_by, approved_at, approval_method="UI_CLICK", note=None):
+    """사람이 콘텐츠를 승인한다. 리포트와 같은 문을 쓴다."""
+    out = gov.approve(content, approved_by=approved_by, approved_at=approved_at,
+                      approval_method=approval_method, note=note)
+    out["status"] = "APPROVED"
+    return out
 
 
 # ── §7 발행 ──────────────────────────────────────────────────────────────────
@@ -133,9 +175,12 @@ def publish_platform(content, platform, adapter, *, actor=None, at=None,
 
     # 2) 사람이 승인했나 (§6) — 페이로드가 있다고 올리지 않는다
     appr = approval_state(content)
+    detail = approval_detail(content)
+    result["approval"] = detail
     if appr != "APPROVED":
         result["state"] = "PAYLOAD_READY" if appr == "PAYLOAD_READY" else appr
-        result["reason"] = "사람 승인 전이다(현재 %s). 페이로드 준비는 승인이 아니다." % appr
+        result["reason"] = ("사람 승인 전이다(현재 %s). 페이로드 준비는 승인이 아니다. %s"
+                            % (appr, "; ".join(detail.get("reasons") or [])))
         return result
 
     pv = (content.get("platformVersions") or {}).get(platform)

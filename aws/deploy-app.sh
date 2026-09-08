@@ -1,70 +1,62 @@
 #!/usr/bin/env bash
-# earthus — 프로토타입을 S3 에 올린다
+# earthus — 걸러진 공개 빌드를 S3 에 올린다
 #
 #   ./deploy-app.sh
 #
 # 데이터(celestrak/)와 같은 버킷의 app/ 아래에 넣는다.
 # 버킷이 us-east-2 라 REST 엔드포인트가 HTTPS 를 지원한다 → 폰에서 위치정보가 된다.
 # (S3 "정적 웹사이트 호스팅" 엔드포인트는 HTTP 전용이라 쓰지 않는다)
+#
+# ⚠️⚠️ INTEGRATION-3 §0 — **작업 트리를 직접 올리지 않는다.**
+#    예전에는 prototype/ 을 통째로 sync 하면서 --exclude 를 몇 줄 붙여 막았다.
+#    그건 *아는* 구멍만 막는 방식이라 실제로 계속 샜다: supabase/ 는 제외했지만
+#    prototype/v2-deploy/engine-v11/postgres/*.sql 은 그대로 올라갔고,
+#    저장소 안쪽 README.md 들도 마찬가지였다.
+#    이제 순서가 이렇다:
+#
+#        작업 트리 → aws/build-public.py(명시적 거름망) → build/public-app/ → S3
+#
+#    거름망을 빠져나간 비공개 파일이 하나라도 있으면 빌드가 **멈추고** 배포도 멈춘다.
+#    규칙표는 aws/_shared/public_build.py 의 DENY_RULES 한 곳에 있다.
 set -euo pipefail
 
 BUCKET="earthus-cache-kr"
 REGION="us-east-2"
 PREFIX="app"
-SRC="$(cd "$(dirname "$0")/../prototype" && pwd)"
+REPO="$(cd "$(dirname "$0")/.." && pwd)"
+SRC="${REPO}/build/public-app"
 URL="https://${BUCKET}.s3.${REGION}.amazonaws.com/${PREFIX}/index.html"
 
-echo "▸ 원본: ${SRC}"
+PY="${PYTHON:-python3}"
+command -v "$PY" >/dev/null 2>&1 || PY=python
 
-# ⚠️ 올리면 안 되는 것
-#    - .devcert/.devkey : 개발용 자체 서명 인증서와 개인키
-#    - devserver.py     : 개발 서버, 배포본에 필요 없음
-#    - supabase/schema.sql : DB 스키마. 비밀은 아니지만 테이블·RLS 정책·RPC 이름이
-#                            그대로 드러난다. 배포본에 있을 이유가 없다.
-#    - legal/README.md  : 미해결 법적 요건을 적어둔 내부 체크리스트.
-#                         "위치기반서비스사업 신고 안 됨" 같은 내용이라 공개 금지.
-#                         (legal/*.md 초안 본문은 앱이 화면에 띄우므로 올린다)
-#    - config.local.js  : 지금은 비어 있지만 나중에 값이 들어간다.
-#                         Supabase anon 키는 공개 전제라 괜찮고(RLS 로 보호),
-#                         사업자 정보도 법적으로 공개 대상이다.
-#                         그래도 "무엇이 공개되는지" 모르고 올라가는 일이 없도록
-#                         아래 목록을 배포 때마다 눈으로 확인할 것.
-# ⚠️⚠️ 승인되지 않은 배포 후보를 여기서 올리지 않는다 (INTEGRATION-2 §5).
-#    aws/distribution/handler.py 의 write_local() 이 개발용으로
-#    prototype/events/distribution-content/ 에 후보를 쓴다. 그 후보는 status=DRAFT 이고
-#    그중에는 eligibility=BLOCKED 인 것도 있다 — 람다는 그런 것을 공개 경로에 올리기를
-#    거부한다. 그런데 이 sync 는 prototype/ 을 통째로 올리므로 **그 거부가 무의미해진다.**
-#    .gitignore 는 git 만 막지 sync 는 못 막는다 — sync 는 작업 트리를 읽기 때문이다.
-#    2026-09-08 실측: 그 디렉터리에 DRAFT 8건(그중 eligibility=BLOCKED 1건)이 있었다.
+echo "▸ 공개 빌드"
+"$PY" "${REPO}/aws/build-public.py"
+
+echo "▸ 원본: ${SRC}"
+[ -f "${SRC}/index.html" ] || { echo "❌ 빌드 결과가 없다 — ${SRC}/index.html"; exit 1; }
+
 # ⚠️ --delete 는 s3:DeleteObject 권한이 필요한데 earthus-deploy 에 없다.
 #    권한이 생기기 전까지는 끈다. set -e 때문에 실패하면 스크립트가 통째로 멈춰
 #    뒤의 Content-Type 교정까지 안 돌기 때문이다.
 #    → 로컬에서 지운 파일이 S3 에 남는다. 권한 추가되면 --delete 를 되살릴 것.
+#    ⚠️⚠️ 그래서 **예전에 이미 올라간 파일은 이 변경으로 사라지지 않는다.**
+#       거름망은 앞으로 올라갈 것을 막을 뿐이다. 이미 공개된 객체는 따로 지워야 한다
+#       (docs/earthus-v2/INTEGRATION-3-HANDOFF.md 인계 D).
+#
+# --exclude 는 일부러 하나도 쓰지 않는다. 걸러내기는 빌드가 이미 끝냈고,
+# 여기에 예외를 다시 적기 시작하면 규칙이 두 곳으로 갈라진다.
 aws s3 sync "$SRC" "s3://${BUCKET}/${PREFIX}/" \
   --region "$REGION" \
-  --exclude '.devcert.pem' --exclude '.devkey.pem' \
-  --exclude 'devserver.py' \
-  --exclude '.DS_Store' --exclude '__pycache__/*' \
-  --exclude 'supabase/*' \
-  --exclude 'legal/README.md' \
-  --exclude 'events/distribution-content/*' \
-  --exclude 'events/distribution-content.json' \
-  --exclude '_verify/*' \
   --cache-control 'public, max-age=60'
 
 # sync 가 추측한 Content-Type 이 틀리면 모듈 로딩이 깨진다.
 # 브라우저는 text/javascript 가 아닌 스크립트를 ES 모듈로 실행하지 않는다.
-# ⚠️ 이 목록은 위 sync 의 --exclude 와 반드시 같아야 한다.
-#    올리지 않은 파일(supabase/, devserver.py …)까지 훑으면 s3 cp 가 404 로 죽고,
-#    set -e 때문에 스크립트가 통째로 멈춘다. 그러면 **뒤의 sw.js no-cache 교정이
-#    실행되지 않아** 서비스워커가 캐시된 채로 나간다. 실제로 그렇게 배포된 적이 있다.
+# ⚠️ 걸러진 트리를 훑기 때문에 목록을 따로 맞출 필요가 없다 — 여기 있는 것은 전부 올라갔다.
+#    (예전에는 이 목록과 위 --exclude 가 어긋나면 s3 cp 가 404 로 죽고, set -e 때문에
+#     뒤의 sw.js no-cache 교정이 실행되지 않아 서비스워커가 캐시된 채로 나갔다.)
 echo "▸ Content-Type 교정"
-for f in $(cd "$SRC" && find . -name '*.js' \
-    -not -path './supabase/*' \
-    -not -path './__pycache__/*' \
-    -not -path './events/distribution-content/*' \
-    -not -path './_verify/*' \
-    | sed 's|^\./||'); do
+for f in $(cd "$SRC" && find . -name '*.js' | sed 's|^\./||'); do
   aws s3 cp "s3://${BUCKET}/${PREFIX}/${f}" "s3://${BUCKET}/${PREFIX}/${f}" \
     --region "$REGION" --metadata-directive REPLACE \
     --content-type 'text/javascript; charset=utf-8' \

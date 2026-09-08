@@ -809,27 +809,19 @@ export function initShell(hooks) {
         //    누른 행동에 맞는 탭으로 옮긴다(§12).
         //      자세히 보기 → 선택 자료 · 분석 → 자료의 근거 · 조건을 바꿔보기 → 시뮬레이션
         //
-        // ⚠️⚠️ 순서가 중요하다: **showTab 을 먼저, 패널 열기를 나중에.**
-        //    반대로 하면 패널 여는 쪽이 기본 탭으로 되돌려 내 선택을 덮어쓴다 —
-        //    DOM 탭을 클릭하는 방식으로도 같은 이유로 덮였다('분석'을 눌러도 '선택 자료'가 떴다).
-        //    아래 nav 처리(case 'myplace')가 이미 쓰는 순서를 그대로 따른다.
+        // ⚠️⚠️ 이 호출이 **마지막 사용자 의도**를 세운다(§11).
+        //    바로 위 onLayerAction 이 '선택 자료'로 카드를 띄우며 의도를 한 번 세우는데,
+        //    사용자가 실제로 누른 것은 이쪽이므로 여기서 덮어쓴다. 그 뒤 자료가 도착해
+        //    카드가 갱신돼도 'follow' 요청이라 이 의도를 이기지 못한다.
+        //    (예전에는 setTimeout 으로 400ms·1200ms 뒤에 다시 골랐다 — 지웠다.)
         const ACTION_TAB = { phenomenon: 'now', intelligence: 'why', simulation: 'scenario' };
         const want = ACTION_TAB[toStoryPhen.dataset.storyAction] || 'now';
         // 능력이 없는 탭으로는 보내지 않는다. 버튼 자체가 능력이 있을 때만 그려지지만
         // (report-center.storyActionsHtml), 실제 탭이 있는지도 확인한다.
-        const has = !!intel.querySelector(`[data-tab="${want}"]`);
-        const target = has ? want : 'now';
-        showTab(target);
+        const btn = intel.querySelector(`[data-tab="${want}"]`);
+        const target = btn && !btn.hidden ? want : 'now';
+        showTab(target, 'intent');
         if (!intelOpen) intel.querySelector('#intel-tab').click();
-        // ⚠️ main.js 는 레이어를 다 받은 **뒤에** shell.showTab('now') 를 부른다
-        //    (main.js:2794 · :3834 등). 그래서 여기서 한 번만 고르면 로딩이 끝나는 순간
-        //    '선택 자료'로 돌아간다 — 실제로 '분석'을 눌러도 그렇게 됐다.
-        //    로딩이 끝난 뒤 한 번 더 고른다. 사용자가 그사이 다른 탭을 눌렀으면 존중한다.
-        if (target !== 'now') {
-          const reassert = () => { if (curTab === 'now') showTab(target); };
-          setTimeout(reassert, 400);
-          setTimeout(reassert, 1200);
-        }
       }
       return;
     }
@@ -962,6 +954,8 @@ export function initShell(hooks) {
   const intelContent = intel.querySelector('#intel-content');
   let intelOpen = false;
   let curTab = 'feed';
+  // INTEGRATION-3 §11 — '마지막 사용자 의도'. showTab() 아래 설명 참고.
+  let tabIntent = 'feed';
 
   // 지금 켜져 있는 레이어 — 씬 매니페스트를 한 번 훑어 모은다.
   const activeLayers = () => {
@@ -1131,9 +1125,9 @@ export function initShell(hooks) {
   });
   intel.querySelectorAll('.intel-tabs button[data-tab]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      curTab = btn.dataset.tab;
-      intel.querySelectorAll('.intel-tabs button[data-tab]').forEach((b) => b.classList.toggle('on', b === btn));
-      renderIntel();
+      // §11 — 사용자가 직접 고른 것이므로 여기서 의도가 갱신된다.
+      // 이 줄 덕분에 "자료를 기다리는 동안 다른 탭을 눌렀다"가 존중된다.
+      showTab(btn.dataset.tab, 'intent');
     });
   });
 
@@ -1261,10 +1255,29 @@ export function initShell(hooks) {
     });
   };
 
-  const showTab = (t) => {
+  /* ── 탭 선택 — INTEGRATION-3 §11 ────────────────────────────────────────
+     예전에는 원하는 탭을 400ms·1200ms 뒤에 setTimeout 으로 다시 골랐다.
+     자료 로딩이 그보다 느린 기기에서는 그대로 깨지는 방식이고, 무엇보다
+     "언제 도착하느냐"가 화면을 정하게 된다. 규칙을 바꾼다:
+
+         마지막 **사용자 의도**가 이긴다.
+
+       source 'intent' — 사용자가 고른 것이다(탭 단추 · 메뉴 행 · 보고서 행동
+                         단추 · 지구 클릭). 지금부터 이 탭이 서 있는 의도다.
+       source 'follow' — 뒤따르는 요청이다(자료가 도착해 카드를 갈아 끼우는 것).
+                         서 있는 의도와 다르면 **조용히 무시한다.**
+                         보던 화면을 자료 도착이 뺏지 않는다.
+
+     기본값이 'intent' 인 이유: 기존 호출부는 전부 사용자 제스처다.
+     뒤따르는 요청만 호출부에서 'follow' 라고 명시한다.
+     돌려주는 값: 실제로 탭을 옮겼으면 true. */
+  const showTab = (t, source) => {
+    if (source === 'follow' && t !== tabIntent) return false;
+    tabIntent = t;
     curTab = t;
     intel.querySelectorAll('.intel-tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
     if (intelOpen) renderIntel();
+    return true;
   };
 
   return {

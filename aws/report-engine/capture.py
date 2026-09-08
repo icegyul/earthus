@@ -37,6 +37,7 @@ sys.path.insert(0, os.path.join(_AWS, "distribution"))
 
 import report_period as rp        # noqa: E402
 import visual as vis              # noqa: E402
+import governance as gov         # noqa: E402
 
 EARTH_RADIUS_KM = 6371.0          # main.js:55 EARTH_RADIUS_M 과 같은 값
 CAPTURE_SCHEMA = "earthus.earth-capture.v1"
@@ -134,10 +135,9 @@ def request_for_fact(fact, *, layer_refs=None, geometry=None, app_base="", cloud
 #   4 픽셀 분산 > 0       5 파일 되읽기 성공     6 메타데이터 일치
 # 하나라도 어긋나면 false 다. '거의 맞음'을 맞음으로 올리지 않는다 —
 # 그 순간 이 그림은 증거가 아니라 장식이 된다.
-VERIFY_CONDITIONS = (
-    "runtime_capture", "layer_present", "camera_match",
-    "pixel_variance", "file_read_back", "metadata_match",
-)
+# 조건 이름의 정본은 aws/_shared/governance.py 다. 여기서 다시 적지 않는다 —
+# 두 곳에 적으면 갈라지고, 갈라지면 공개 게이트가 다른 것을 검사하게 된다.
+VERIFY_CONDITIONS = gov.CAPTURE_VERIFY_CONDITIONS
 
 
 def verify_capture(request, observed, *, capture_doc=None):

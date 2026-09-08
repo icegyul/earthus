@@ -24,6 +24,7 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "_shared"))
 import report_contract as rc      # noqa: E402
+import governance as gov          # noqa: E402
 
 BLOCKED_NO_CREDENTIALS = "PUBLISH_BLOCKED_NO_CREDENTIALS"
 IMMUTABLE_CACHE = "public, max-age=31536000, immutable"
@@ -238,31 +239,44 @@ def next_version(report):
     return out
 
 
-# INTEGRATION-2 §6 — 리포트도 사람 승인을 거친다.
-# 검증 통과(VALIDATING→PUBLISHED)는 **기계 판정**이지 승인이 아니다.
-# 승인 표식이 없으면 올리지 않는다. require_approval=False 로 끌 수 있지만
-# 그건 개발용이고, 그렇게 올린 결과에는 approvalBypassed 가 박혀 나간다.
-APPROVAL_FIELD = "approval"
+# 리포트도 사람 승인을 거친다 — INTEGRATION-2 §6 → INTEGRATION-3 §2 · §3 · §5.
+#
+# ⚠️ 승인 판정은 여기서 하지 않는다. aws/_shared/governance.py 한 곳에서 한다.
+#    예전에는 이 파일과 social_publish.py 가 각자 판정했다. 두 곳이면 한쪽만
+#    조여도 다른 쪽으로 나간다. SNS 발행과 **같은 문**을 지나게 바꿨다.
+#
+# 바뀐 것 두 가지:
+#   §2  누가·언제·어떤 방법으로 승인했는지를 전부 요구한다. 시스템 계정은 막힌다.
+#   §3  승인한 판본의 지문을 함께 적는다. 승인 뒤 내용이 바뀌면 APPROVAL_INVALID 다.
+APPROVAL_FIELD = gov.APPROVAL_FIELD
 
 
-def approve(report, *, actor, at, note=None):
-    """사람이 승인했다는 표식. 누가·언제인지 없으면 승인이 아니다."""
-    if not actor:
-        raise ValueError("승인자 없이 승인할 수 없다")
-    out = dict(report)
-    out[APPROVAL_FIELD] = {"state": "APPROVED", "actor": actor, "at": at, "note": note}
-    return out
+def approve(report, *, approved_by, approved_at, approval_method="CLI_CONFIRM", note=None):
+    """사람이 승인했다는 표식. 누가·언제·어떻게·무엇을 — 넷 다 없으면 승인이 아니다."""
+    return gov.approve(report, approved_by=approved_by, approved_at=approved_at,
+                       approval_method=approval_method, note=note)
 
 
 def approval_state(report):
-    a = (report or {}).get(APPROVAL_FIELD) or {}
-    st = a.get("state")
-    if st == "APPROVED" and a.get("actor"):
-        return "APPROVED"
+    """리포트의 승인 상태.
+
+    APPROVED / APPROVAL_INVALID / REJECTED / NOT_APPROVED 는 governance 어휘 그대로다.
+    다만 **검증만 통과한** 상태(lifecycle=PUBLISHED, 사람은 아직 안 봄)를
+    READY_FOR_REVIEW 로 구분해 부른다 — 그 둘을 같은 말로 부르지 않는다.
+    """
+    chk = gov.approval_check(report)
+    if chk["state"] != "NOT_APPROVED":
+        return chk["state"]
     if (report or {}).get("lifecycle") == "PUBLISHED":
-        # 검증은 통과했지만 사람은 아직 안 봤다. 이 둘을 같은 것으로 부르지 않는다.
         return "READY_FOR_REVIEW"
     return "DRAFT"
+
+
+def approval_detail(report):
+    """왜 그 상태인지까지. 화면·시험이 사유를 그대로 보여줄 수 있게."""
+    chk = gov.approval_check(report)
+    chk["reportState"] = approval_state(report)
+    return chk
 
 
 def publish_pipeline(report, adapter, *, index=None, require_approval=True):
@@ -271,13 +285,35 @@ def publish_pipeline(report, adapter, *, index=None, require_approval=True):
     INTEGRATION-2 §6 — 승인 없이는 올리지 않는다.
     """
     if require_approval:
-        st = approval_state(report)
-        if st != "APPROVED":
+        # §5 — 승인 여부와 **전이 가능 여부**를 함께 본다.
+        #     이미 발행된 것을 다시 올리는 길도 여기서 막힌다.
+        g = gov.gate(report, want="PUBLISHING")
+        if not g["ok"]:
+            st = approval_state(report)
             return {"stage": "APPROVE", "ok": False, "published": False,
-                    "reason": "NOT_APPROVED",
+                    "reason": g["code"] or "NOT_APPROVED",
                     "approvalState": st,
-                    "detail": ("검증 통과는 승인이 아니다(현재 %s). "
-                               "publisher.approve(report, actor=…) 를 거쳐야 올린다." % st)}
+                    "approval": g["approval"],
+                    "governanceFrom": g["from"], "governanceTo": g["to"],
+                    "detail": ("검증 통과는 승인이 아니다(현재 %s). %s"
+                               % (st, g["reason"] or
+                                  "publisher.approve(report, approved_by=…, approved_at=…) 를 거쳐야 올린다."))}
+    # INTEGRATION-3 §8 — verified 표식을 달고 있는 자산은 여덟 조건을 전부 넘어야 한다.
+    # 표식은 우리가 쓰는 값이라 그것만 믿으면 확인 없이 공개된다.
+    # ⚠️ 확인 실패한 자산 자체는 매니페스트에 남겨 둔다(왜 그림이 없는지 알아야 한다).
+    #    막는 것은 "확인됐다고 적혀 있는데 조건을 못 넘는" 경우다.
+    assets = ((report or {}).get("visualManifest") or {}).get("assets") or []
+    claimed = [a for a in assets if a.get("verified")]
+    vis = gov.public_visuals_check(claimed)
+    if not vis["ok"]:
+        bad = [r for r in vis["assets"] if not r["ok"]]
+        return {"stage": "VISUAL", "ok": False, "published": False,
+                "reason": vis["code"],
+                "visuals": vis,
+                "detail": "확인됐다고 적힌 시각자산이 공개 조건을 못 넘는다: %s"
+                          % "; ".join("%s(%s)" % (r["assetId"], ", ".join(r["problems"][:2]))
+                                      for r in bad[:3])}
+
     avail = adapter.available()
     if not avail.get("ok"):
         return {"stage": "PUBLISH", "ok": False,

@@ -30,6 +30,7 @@ import pipeline as pl                # noqa: E402  (리포트 파이프라인 �
 import capture as cap                # noqa: E402
 import social_publish as sposts      # noqa: E402
 import report_period as rp           # noqa: E402
+import governance as gov             # noqa: E402
 
 
 def _load(name, path):
@@ -201,9 +202,18 @@ def run(period, *, cache_dir=None, capture_meta=None, platforms=("x", "instagram
     # §10 — **확인되지 않은 자산은 어디에도 쓰지 않는다.** 리포트·콘텐츠·페이로드 전부.
     verified_assets = [a for a in visual_assets if a.get("verified")]
     rejected_assets = [a for a in visual_assets if not a.get("verified")]
-    step("VISUAL_GATE", not rejected_assets or bool(verified_assets),
+    # ⚠️ 예전 조건은 `not rejected or bool(verified)` 였다 — 자산이 **하나도 없으면**
+    #    참이 된다. 캡처를 요청해 놓고 아무것도 못 얻었는데 문이 열리는 셈이다(§8).
+    #    확인된 것이 여덟 조건을 실제로 넘는지도 같이 본다.
+    gate_visuals = gov.public_visuals_check(verified_assets)
+    gate_ok = (not rejected_assets
+               and (bool(verified_assets) or not cap_req)
+               and gate_visuals["ok"])
+    step("VISUAL_GATE", gate_ok,
          "확인 %d · 제외 %d" % (len(verified_assets), len(rejected_assets)),
-         rejected=[a.get("assetId") for a in rejected_assets])
+         rejected=[a.get("assetId") for a in rejected_assets],
+         publicChecks=gate_visuals["code"],
+         problems=[p for r in gate_visuals["assets"] for p in r["problems"]][:5])
     # 매니페스트에는 실패한 것도 남긴다(왜 그림이 없는지 알아야 하므로).
     # 다만 내보내기·콘텐츠는 verified 인 것만 쓴다 — export._visual_html 이 그걸 거른다.
     report["visualManifest"] = cap.manifest(
@@ -273,10 +283,27 @@ def run(period, *, cache_dir=None, capture_meta=None, platforms=("x", "instagram
             visual_assets=visual_assets, confirmed=False))
     summary = sposts.publication_summary(pub_results)
     published = bool(summary["published"])
-    # 게시되지 않은 것이 **정상**이다 — 승인도 자격증명도 없다. 실패로 세지 않는다.
-    step("PUBLISH", True,
+    # 게시되지 않은 것이 **정상**이다 — 승인도 자격증명도 없다.
+    #
+    # ⚠️⚠️ 그렇다고 이 단계를 무조건 통과시키면 안 된다(INTEGRATION-3 §4).
+    #    예전에는 step("PUBLISH", True, …) 로 못박혀 있었다. 그러면 자격증명이 하나도
+    #    없는 환경에서도 E2E 가 PASS 를 찍는다 — "막혔다"가 "됐다"로 읽힌다.
+    #    통과 조건을 명시한다:
+    #      · 올라갔다고 적힌 것은 전부 되읽기를 통과했어야 하고,
+    #      · 안 올라간 것은 **막힌 이유가 설명돼야** 한다.
+    EXPECTED_BLOCKS = ("NOT_READY", "PAYLOAD_READY", "STATUS_ONLY",
+                       "APPROVAL_INVALID", "REJECTED")
+    lying = [r for r in pub_results
+             if r.get("state") == "PUBLISHED"
+             and not (r.get("readBack") or {}).get("verified")]
+    unexplained = [r for r in pub_results
+                   if r.get("state") not in ("PUBLISHED",) + EXPECTED_BLOCKS
+                   and r.get("reason") != sposts.BLOCKED_NO_CREDENTIALS]
+    step("PUBLISH", not lying and not unexplained,
          "상태 %s · 실제 발행 %d건" % (summary["counts"], len(summary["published"])),
-         results=[{k: r.get(k) for k in ("platform", "state", "reason")} for r in pub_results])
+         results=[{k: r.get(k) for k in ("platform", "state", "reason")} for r in pub_results],
+         unverifiedClaims=[r.get("platform") for r in lying],
+         unexplained=[r.get("platform") for r in unexplained])
 
     result = {
         "ok": all(s["ok"] for s in steps if s["step"] != "VISUAL") ,

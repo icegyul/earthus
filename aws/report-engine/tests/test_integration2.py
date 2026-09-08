@@ -20,6 +20,9 @@ sys.path.insert(0, os.path.join(ENGINE, "adapters"))
 sys.path.insert(0, os.path.join(AWS, "_shared"))
 
 import capture as cap                    # noqa: E402
+import governance as gov                 # noqa: E402
+import governance as gov                 # noqa: E402
+import public_build as pubbuild           # noqa: E402
 import publication_privacy as priv       # noqa: E402
 import social_publish as sp              # noqa: E402
 
@@ -260,28 +263,26 @@ class DraftPrivacy(unittest.TestCase):
         self.assertTrue(problems)
         self.assertIn("report:2026-09", problems[0])
 
-    def test_배포_소스의_초안이_공개_동기화에서_빠진다(self):
-        """§5 — `deploy-app.sh` 는 prototype/ 을 **통째로** 공개 app/ 로 올린다.
+    def test_배포_소스의_초안이_공개_빌드에서_빠진다(self):
+        """§5 → INTEGRATION-3 §0/§1 — 공개 빌드가 비공개 산출물을 걸러 내는가.
 
         ⚠️ 실제로 있었던 일: distribution 의 write_local() 이 개발용으로
            prototype/events/distribution-content/ 에 후보를 썼고, 그 안에
            status=DRAFT · eligibility=BLOCKED 인 것이 있었다. 람다는 그걸 공개에
-           올리기를 거부하는데, 이 sync 는 거부를 우회한다.
-           .gitignore 는 git 만 막지 sync 는 못 막는다.
+           올리기를 거부하는데, 배포 sync 는 그 거부를 우회했다.
 
-        이 시험은 **비공개 상태를 담은 파일이 배포 소스에 있으면
-        그 경로가 반드시 --exclude 로 막혀 있어야 한다**고 요구한다.
+        INTEGRATION-2 는 `deploy-app.sh` 에 `--exclude` 를 붙여 막았고,
+        이 시험도 그 문자열을 찾고 있었다. **문자열을 찾는 시험은 약하다** —
+        규칙이 스크립트에 있으면 스크립트를 안 거치는 경로에서 그대로 샌다.
+        이제 거름망(aws/_shared/public_build.py)에 직접 묻는다.
         """
         proto = os.path.join(REPO, "prototype")
-        deploy_sh = os.path.join(AWS, "deploy-app.sh")
-        if not os.path.isdir(proto) or not os.path.exists(deploy_sh):
-            self.skipTest("배포 소스나 스크립트가 없다")
-        with open(deploy_sh, encoding="utf-8") as fh:
-            script = fh.read()
+        if not os.path.isdir(proto):
+            self.skipTest("배포 소스가 없다")
 
         offenders = []
         for root, dirs, files in os.walk(proto):
-            dirs[:] = [d for d in dirs if d not in ("__pycache__", "node_modules", "supabase")]
+            dirs[:] = [d for d in dirs if d not in ("__pycache__", "node_modules")]
             for fn in files:
                 if not fn.endswith(".json"):
                     continue
@@ -296,15 +297,63 @@ class DraftPrivacy(unittest.TestCase):
                 if not priv.scan_public_payload(doc):
                     continue
                 rel = os.path.relpath(p, proto).replace(os.sep, "/")
-                # 이 경로를 덮는 --exclude 가 있는가
-                parent = rel.rsplit("/", 1)[0] if "/" in rel else ""
-                covered = ("--exclude '%s'" % rel) in script \
-                    or (parent and ("--exclude '%s/*'" % parent) in script)
-                if not covered:
+                if not pubbuild.denial_for(rel):
                     offenders.append(rel)
         self.assertFalse(
             offenders,
-            "배포 소스에 비공개 상태 파일이 있는데 공개 sync 에서 빠지지 않는다: %s" % offenders[:5])
+            "배포 소스에 비공개 상태 파일이 있는데 공개 빌드가 걸러 내지 않는다: %s" % offenders[:5])
+
+    def test_공개_빌드_누출_시험(self):
+        """§1 PUBLIC_BUILD_LEAK_TEST — 거름망을 빠져나간 비공개가 없어야 한다.
+
+        거름망(DENY_RULES)과 **독립적으로** 판정한다. 규칙을 빠뜨렸는데도
+        시험이 통과하면 그 시험은 규칙표를 베낀 것뿐이다.
+        """
+        proto = os.path.join(REPO, "prototype")
+        if not os.path.isdir(proto):
+            self.skipTest("배포 소스가 없다")
+        plan = pubbuild.plan(proto)
+        residual = pubbuild.residual_private(proto, plan["keep"])
+        self.assertFalse(residual,
+                         "공개 빌드에 비공개가 남았다: %s"
+                         % [(r["path"], r["kind"]) for r in residual[:5]])
+        self.assertGreater(len(plan["keep"]), 100, "거름망이 전부를 막아 버렸다")
+        self.assertGreater(len(plan["denied"]), 0, "아무것도 안 걸렀다 — 거름망이 죽어 있다")
+
+    def test_거름망이_실제로_아는_비공개를_잡는다(self):
+        """규칙표가 살아 있는지 확인한다. 하나라도 통과하면 FAIL."""
+        must_deny = (
+            "supabase/schema.sql",
+            "v2-deploy/engine-v11/postgres/20260826_v11_advanced_intelligence.sql",
+            "README.md",
+            "legal/README.md",
+            "devserver.py",
+            ".devcert.pem",
+            ".devkey.pem",
+            "events/social-drafts.json",
+            "events/distribution-content.json",
+            "events/distribution-content/CNT-2026-000001.json",
+            "v2-three/_verify/probe.json",
+        )
+        for rel in must_deny:
+            self.assertIsNotNone(pubbuild.denial_for(rel), "거름망이 %s 를 통과시킨다" % rel)
+        # 반대로 앱 자체는 막지 않는다
+        for rel in ("index.html", "js/main.js", "v2-three/index.html",
+                    "css/app.css", "data/water.json"):
+            self.assertIsNone(pubbuild.denial_for(rel), "거름망이 앱 파일 %s 를 막는다" % rel)
+
+    def test_배포가_걸러진_트리만_올린다(self):
+        """§0 — 배포 스크립트가 작업 트리를 직접 올리면 FAIL."""
+        deploy_sh = os.path.join(AWS, "deploy-app.sh")
+        if not os.path.exists(deploy_sh):
+            self.skipTest("배포 스크립트가 없다")
+        with open(deploy_sh, encoding="utf-8") as fh:
+            script = fh.read()
+        self.assertIn(pubbuild.PUBLIC_BUILD_DIR.split("/")[-1], script,
+                      "배포가 공개 빌드 디렉터리를 쓰지 않는다")
+        self.assertNotIn('/../prototype" && pwd', script,
+                         "배포가 아직 작업 트리(prototype/)를 직접 원본으로 쓴다")
+        self.assertIn("build-public.py", script, "배포가 공개 빌드를 만들지 않는다")
 
     def test_배포_번들에_초안이_실리지_않았다(self):
         """§5 — 공개 번들을 실제로 훑는다. 초안이 있으면 FAIL."""
@@ -358,8 +407,12 @@ class _FakeAdapter:
                 "url": "https://x.test/p1", "state": self._state}
 
 
+HUMAN = dict(approved_by="dalur", approved_at="2026-09-08T00:00:00Z",
+             approval_method="UI_CLICK")
+
+
 class ApprovalAndPublish(unittest.TestCase):
-    def _content(self, status="APPROVED", **over):
+    def _content(self, status="APPROVED", approved=True, **over):
         base = {
             "contentId": "CNT-1", "status": status,
             "reportIds": ["report:2026-08"], "phenomenonIds": ["ocean.sst"],
@@ -369,10 +422,38 @@ class ApprovalAndPublish(unittest.TestCase):
             "visualAssetIds": [],
         }
         base.update(over)
+        # INTEGRATION-3 §2 — status 문자열만으로는 더 이상 승인이 아니다.
+        # 사람이 승인한 콘텐츠를 만들려면 실제 승인 기록을 찍어야 한다.
+        if approved and status == "APPROVED":
+            base = sp.approve(base, **HUMAN)
         return base
 
-    def _asset(self, verified=True):
-        return {"assetId": "v1", "verified": verified}
+    def _asset(self, verified=True, **over):
+        """§8 여덟 조건을 전부 통과하는 시각자산.
+
+        예전 픽스처는 {assetId, verified} 뿐이었다 — 그래서 '확인됐다'는 표식
+        하나만 세우면 공개 콘텐츠에 들어갔다. 되읽기·픽셀검사·레이어 일치가
+        빠져도 통과하는 픽스처는 게이트를 시험하지 않는다.
+        """
+        # ⚠️⚠️ 항목 이름을 지어내지 않는다. tools/earthus_capture.mjs 가 실제로 쓰는
+        #    모양 그대로다(fileHash 는 'sha256:' 접두사, readBack 은 hashMatches/decoded).
+        #    처음에 이걸 지어냈다가 게이트가 **진짜 자산을 전부 막는데도**
+        #    시험은 다 통과했다. 아래 test_진짜_캡처_산출물도_문을_통과한다 가
+        #    디스크의 산출물을 직접 본다 — 모양이 갈라지면 거기서 잡힌다.
+        a = {
+            "assetId": "v1",
+            "verified": verified,
+            "verifyConditions": {k: True for k in cap.VERIFY_CONDITIONS},
+            "fileHash": "sha256:" + "a" * 64,
+            "readBack": {"bytes": 62770, "decoded": {"ok": True, "w": 1280, "h": 720},
+                         "hashMatches": True},
+            "pixelCheck": {"mean": 20.2, "stdev": 40.4, "minStdev": 6, "passed": True},
+            "sourceRoute": "http://localhost:8788/v2-three/index.html#v=1&live=sstfield",
+            "layerState": {"requested": ["ocean/sstfield"],
+                           "requestedLive": ["sstfield"], "observed": ["sstfield"]},
+        }
+        a.update(over)
+        return a
 
     def test_페이로드_준비는_승인이_아니다(self):
         c = self._content(status="DRAFT")
@@ -427,6 +508,126 @@ class ApprovalAndPublish(unittest.TestCase):
     def test_리포트를_안_가리키면_준비되지_않는다(self):
         r = sp.readiness(self._content(reportIds=[]))
         self.assertEqual(r["state"], "NOT_READY")
+
+    # ── INTEGRATION-3 §2 사람 승인 ──────────────────────────
+    def test_상태만_승인이면_승인이_아니다(self):
+        """가장 중요한 하나. distribution/cli.py 가 자동으로 걸어 주는 상태다."""
+        c = self._content(status="APPROVED", approved=False)
+        self.assertEqual(sp.approval_state(c), "STATUS_ONLY")
+        out = sp.publish_platform(c, "x", _FakeAdapter(), at="t", confirmed=True)
+        self.assertNotEqual(out["state"], "PUBLISHED")
+        self.assertEqual(out["state"], "STATUS_ONLY")
+
+    def test_시스템_계정은_승인할_수_없다(self):
+        for who in ("system", "github-actions-bot", "lambda-report-publisher",
+                    "svc-earthus", "cron", "anonymous", "", None):
+            with self.assertRaises(gov.GovernanceError, msg="%r 가 승인됐다" % who):
+                sp.approve(self._content(approved=False), approved_by=who,
+                           approved_at="t", approval_method="UI_CLICK")
+
+    def test_승인_방법이_사람의_방법이_아니면_막힌다(self):
+        for m in ("AUTO", "PIPELINE", "", None, "auto_approve"):
+            with self.assertRaises(gov.GovernanceError):
+                sp.approve(self._content(approved=False), approved_by="dalur",
+                           approved_at="t", approval_method=m)
+
+    def test_승인은_네_항목을_전부_기록한다(self):
+        c = self._content()
+        a = c[gov.APPROVAL_FIELD]
+        for f in ("approvedBy", "approvedAt", "approvalMethod", "approvalRevision"):
+            self.assertTrue(a.get(f), "%s 가 비어 있다" % f)
+
+    # ── §3 승인 판본 잠금 ───────────────────────────────
+    def test_승인_뒤_내용이_바뀌면_승인이_깨진다(self):
+        c = self._content()
+        self.assertEqual(sp.approval_state(c), "APPROVED")
+        c2 = dict(c)
+        c2["platformVersions"] = {"x": {"text": "몰래 바꾸었다", "idempotencyKey": "k1"}}
+        self.assertEqual(sp.approval_state(c2), "APPROVAL_INVALID")
+        out = sp.publish_platform(c2, "x", _FakeAdapter(), at="t", confirmed=True)
+        self.assertNotEqual(out["state"], "PUBLISHED")
+
+    def test_상태_변경만으로는_승인이_깨지지_않는다(self):
+        c = self._content()
+        c2 = dict(c, status="SCHEDULED", updatedAt="2026-09-09T00:00:00Z")
+        self.assertEqual(sp.approval_state(c2), "APPROVED")
+
+    # ── §5 발행 상태 기계 ─────────────────────────────
+    def test_초안에서_발행으로_건너뛸_수_없다(self):
+        for a, b in (("DRAFT", "PUBLISHED"), ("DRAFT", "APPROVED"),
+                     ("DRAFT", "PUBLISHING"), ("READY_FOR_REVIEW", "PUBLISHED"),
+                     ("READY_FOR_REVIEW", "PUBLISHING"), ("PUBLISHED", "PUBLISHED"),
+                     ("PUBLISHED", "DRAFT"), ("ARCHIVED", "PUBLISHED")):
+            r = gov.can_transition(a, b)
+            self.assertFalse(r["allowed"], "%s -> %s 가 허용된다" % (a, b))
+            self.assertEqual(r["code"], "FORBIDDEN_TRANSITION")
+            self.assertTrue(r["reason"], "%s -> %s 를 막는 이유가 없다" % (a, b))
+
+    def test_허용된_길은_열려_있다(self):
+        for a, b in (("DRAFT", "READY_FOR_REVIEW"), ("READY_FOR_REVIEW", "APPROVED"),
+                     ("APPROVED", "PUBLISHING"), ("PUBLISHING", "PUBLISHED"),
+                     ("PUBLISHED", "ARCHIVED"), ("REJECTED", "DRAFT")):
+            self.assertTrue(gov.can_transition(a, b)["allowed"],
+                            "%s -> %s 가 막횜다" % (a, b))
+
+    def test_막힌_전이에는_전부_판정이_있다(self):
+        for a, b in gov.forbidden_transitions():
+            self.assertFalse(gov.can_transition(a, b)["allowed"])
+
+    # ── §8 시각자산 보안 ────────────────────────────
+    def test_시각자산_여덟_조건(self):
+        good = self._asset()
+        self.assertTrue(gov.visual_asset_check(good)["ok"],
+                        gov.visual_asset_check(good)["problems"])
+        broken = {
+            "asset_identified":  dict(assetId=None),
+            "verified_flag":     dict(verified=False),
+            "verify_conditions": dict(verifyConditions={"runtime_capture": False}),
+            "file_hash":         dict(fileHash="nope"),
+            "file_read_back":    dict(readBack={"bytes": 1, "hashMatches": False,
+                                                "decoded": {"ok": True}}),
+            "pixel_check":       dict(pixelCheck={"stdev": 0.2, "minStdev": 6,
+                                                  "passed": False}),
+            "source_route":      dict(sourceRoute="https://example.com/x?ref=earthus"),
+            "layer_state":       dict(layerState={"requestedLive": ["sstfield"],
+                                                  "observed": []}),
+        }
+        self.assertEqual(sorted(broken), sorted(gov.VISUAL_CHECKS),
+                         "여덟 조건 중 시험하지 않는 것이 있다")
+        for name, over in broken.items():
+            out = gov.visual_asset_check(self._asset(**over))
+            self.assertFalse(out["ok"], "%s 가 깨졌는데 통과한다" % name)
+            self.assertEqual(out["code"], "PUBLIC_CONTENT_INVALID")
+            self.assertFalse(out["checks"][name], "%s 조건이 참으로 남아 있다" % name)
+
+    def test_확인_안된_그림은_공개_콘텐츠에_못_들어간다(self):
+        c = self._content(visualAssetIds=["v1"], approved=False)
+        c = sp.approve(c, **HUMAN)
+        broken = self._asset(readBack={"bytes": 1, "hashMatches": False,
+                                       "decoded": {"ok": False}})
+        r = sp.readiness(c, visual_assets=[broken])
+        self.assertEqual(r["state"], "NOT_READY")
+        self.assertFalse(r["checks"]["visual_verified"])
+
+    def test_진짜_캡처_산출물도_문을_통과한다(self):
+        """픽스처가 아니라 디스크의 진짜 산출물로 게이트를 시험한다.
+
+        ⚠️ 게이트를 처음 썼을 때 항목 이름을 지어냈고(fileHash 를 맨헥스로,
+           readBack.ok 로), 그러자 **실제로 확인된 유일한 자산이 막혔다.**
+           픽스처만 보는 시험은 그 사실을 잡지 못한다.
+        """
+        path = os.path.join(REPO, "build", "e2e", "e2e-2026-08.json")
+        if not os.path.exists(path):
+            self.skipTest("진짜 캡처 산출물이 없다 (integration_e2e.py 를 먼저 돌린다)")
+        with open(path, encoding="utf-8") as fh:
+            doc = json.load(fh)
+        assets = [a for a in (doc.get("visualAssets") or []) if a.get("verified")]
+        if not assets:
+            self.skipTest("확인된 자산이 없다")
+        for a in assets:
+            out = gov.visual_asset_check(a)
+            self.assertTrue(out["ok"],
+                            "진짜로 확인된 자산을 게이트가 막는다: %s" % out["problems"])
 
     def test_요약이_막힌_것을_숨기지_않는다(self):
         res = [{"platform": "x", "state": "PUBLISHED"},

@@ -3829,9 +3829,11 @@ async function main() {
   };
 
   // 카드 띄우기 — 메뉴 클릭 밖(칩·단축키)에서도 같은 카드를 쓰려고 공용으로 둔다
-  const showNote = (title, body, badge) => {
+  // source: 'intent'(기본) = 사용자가 방금 고른 것 · 'follow' = 자료가 도착해 갈아 끼우는 것.
+  // 'follow' 는 사용자가 다른 탭을 보고 있으면 탭을 옮기지 않는다 (INTEGRATION-3 §11).
+  const showNote = (title, body, badge, source) => {
     lockedNote = { title, body, badge };
-    shell.showTab('now');
+    shell.showTab('now', source);
     shell.openIntel();
     shell.renderIntel();
   };
@@ -3932,7 +3934,15 @@ async function main() {
       const current = selectionGate.next();
       marineRequest?.abort();
       seaPoint = null;
-      const note = (...args) => { if(current()) showNote(...args); };
+      // INTEGRATION-3 §11 — 첫 카드는 "사용자가 이 자료를 골랐다"는 뜻이니 탭 의도를 세운다.
+      // 그 뒤 자료가 도착해 카드를 갈아 끼우는 것은 의도가 아니다. 그걸 의도로 취급했기 때문에
+      // 보고서에서 '분석'으로 들어와도 로딩이 끝나는 순간 '선택 자료'로 끌려갔다.
+      let noted = false;
+      const note = (...args) => {
+        if (!current()) return;
+        showNote(args[0], args[1], args[2], noted ? 'follow' : 'intent');
+        noted = true;
+      };
       note(layer.name, '선택한 자료를 여는 중…', 'LOADING');
       if (layer.state === 'LOCKED') {
         const alternatives = {travel:'<button data-action="open-travel">여행지 목록 열기</button>',flight:'검색에서 출발 공항 &gt; 도착 공항을 입력하면 계산 항로와 공항 날씨를 볼 수 있습니다.',vessel:'<a href="https://mtis.komsa.or.kr/" target="_blank" rel="noopener noreferrer">공식 해양교통안전정보 확인</a>'};

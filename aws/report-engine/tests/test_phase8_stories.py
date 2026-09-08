@@ -348,7 +348,8 @@ class Publish(unittest.TestCase):
         # INTEGRATION-2 §6 — 이제 승인 게이트가 앞에 있다. 승인을 통과시킨 뒤
         # **자격증명 단계에서** 막히는지 본다. 불변식은 그대로다: 가짜 성공 없음.
         a = pub.S3PublishAdapter(bucket=None)
-        approved = pub.approve(self._report(), actor="tester", at=NOW)
+        approved = pub.approve(self._report(), approved_by="dalur", approved_at=NOW,
+                               approval_method="CLI_CONFIRM")
         out = pub.publish_pipeline(approved, a)
         self.assertFalse(out["ok"])
         self.assertEqual(out["reason"], pub.BLOCKED_NO_CREDENTIALS)

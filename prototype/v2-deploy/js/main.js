@@ -4,7 +4,7 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=61-phenomenon';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=62-p3ia';
 import { createSelectionGate } from './information-contract.js';
 const escUI = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 import { OceanSim } from './sim-ocean.js?v=6';
@@ -4289,6 +4289,26 @@ async function main() {
     feedSelected: () => (feed.selected ? { title: feed.selected.title, kind: feed.selected.kind } : null),
     feedNext: () => feed.nextRows(),
     getScenario: () => {
+      /* PHASE 3 계약 불변식 9 — 능력이 약속한 것과 탭이 내놓는 것이 달라선 안 된다.
+         쓰나미는 simulation:true 라 이 탭이 열리는데, 아래 본문은 전부 태풍 전용이라
+         쓰나미를 고른 사용자에게 태풍 카드가 나오고 있었다.
+         쓰나미 도달시간은 진짜로 계산된다(aws/tsunami-eta, √(g·h) Dijkstra). 다만 사건별이라
+         '지금 고른 지진 사건' 이 있어야 한다. 그래서 여기서는 그 사실을 말하고 사건으로 보낸다.
+         파도 물리(sim-ocean)를 쓰나미인 척 돌리지 않는다. */
+      const pctx = shell && shell.getPhenomenonContext ? shell.getPhenomenonContext() : null;
+      if (pctx && pctx.phenomenonId === 'hazards.tsunami') {
+        const eq = feed && feed.selected && feed.selected.kind === 'EQ' ? feed.selected : null;
+        return `<div class="card"><div class="card-h">쓰나미 도달시간 ${dataBadge('SIMULATION_ONLY')}</div>
+          <div class="card-b">EARTHUS 가 수심에서 계산한 <b>도달시간 추정</b>입니다 — 공식 예보가 아닙니다.<br/>
+          사건마다 따로 계산하므로 지진 사건을 먼저 골라야 합니다.
+          M6.5 이상 · 진원 100 km 이하 · 바다 지진만 계산합니다.<br/>
+          ${eq ? `지금 고른 사건: ${escUI(eq.title)} — 사건 방에서 도달시간과 등시선을 봅니다.`
+               : '지금 고른 지진 사건이 없습니다.'}</div>
+          <div class="paycard" style="border-style:solid;">
+            <button class="simgo" data-action="shell-open-feed">${eq ? '사건 방 열기 →' : '사건 목록 열기 →'}</button>
+            <div class="paysub">계산이 없다는 것은 위험이 없다는 뜻이 아닙니다 · SIMULATION_ONLY</div>
+          </div></div>`;
+      }
       const hasSea = seaPoint && seaPoint.marine;
       const loc = hasSea ? seaPoint : { lat: 34.2, lon: 128.9 };
       const base = scenarioBaseline();
@@ -4642,6 +4662,27 @@ async function main() {
       focus: focus.selected ? (focus.selected.nameKo || focus.selected.code3 || null) : null,
       layers,
       available,
+      // PHASE 3 §8 — 질문은 전역 챗이 아니다. 지금 보고 있는 현상과 사건을 함께 넘긴다.
+      // 이게 없으면 "이 태풍이 서울에 영향을 주나" 를 물어도 모델이 받는 건 좌표와 레이어 목록뿐이다.
+      // 사용자 문구에는 내부 키를 노출하지 않지만(§0.5), 모델에게는 정확한 신원을 준다.
+      phenomenon: askPhenomenon(),
+      event: feed && feed.selected
+        ? { id: feed.selected.id, kind: feed.selected.kind, title: feed.selected.title }
+        : null,
+    };
+  };
+  // 선택한 메뉴가 속한 현상. 고른 것이 없거나 현상이 아닌 항목(배경·조작)이면 null 이다.
+  const askPhenomenon = () => {
+    const ctx = shell && shell.getPhenomenonContext ? shell.getPhenomenonContext() : null;
+    if (!ctx) return null;
+    return {
+      id: ctx.layerKey,                 // 복합키 scene/layer — bare id 를 넘기지 않는다
+      domain: ctx.domain,
+      label: ctx.label.ko,
+      question: ctx.question.ko,        // 이 현상이 답하기로 한 질문
+      capabilities: Object.keys(ctx.capabilities).filter((k) => ctx.capabilities[k]),
+      availability: ctx.availability,
+      evidenceProfile: ctx.evidenceProfile,
     };
   };
   const askTools = {
@@ -4753,6 +4794,8 @@ async function main() {
         applyI18n();
         paint();
         shell.refreshFlyout();     // 레이어 이름을 다시 그린다
+        shell.refreshPanelIdentity();  // 우측 손잡이(현상 이름 또는 기본 이름)도 같은 언어로
+        shell.renderIntel();       // 패널 본문(능력 줄 포함)도 — 안 그리면 이전 언어가 남는다
         askEarth.setLang(i18n.lang);   // 서랍 문구와 답변 언어를 함께 바꾼다
       };
     });

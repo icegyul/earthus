@@ -9,7 +9,7 @@ import { renderBadge, layerBadge } from './engine-bridge.js?v=15';
 // menu-guide.js 의 MENU_QUESTIONS 는 지우지 않았다 — tools/build_information_inventory.mjs 가
 // 아직 읽고, 레지스트리의 질문이 거기서 왔다. 다만 화면은 이제 레지스트리만 본다.
 // (bare id 조회였기 때문에 hobby/surf 가 ocean/surf 의 질문을 그대로 표시하고 있었다.)
-import { questionForLayer, phenomenonForLayer } from './phenomenon-registry.js?v=1';
+import { questionForLayer, phenomenonForLayer, LAYER_PHENOMENON, reportKindsForPhenomenon } from './phenomenon-registry.js?v=2';
 import { menuCoverage, menuTime, canClearLayer, matchesMenu } from './information-contract.js';
 const safeText = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -277,7 +277,9 @@ export function initShell(hooks) {
     const { s, l } = selectedMenu;
     const p = phenomenonForLayer(s.id, l.id);
     if (!p) return null;
+    const hit = LAYER_PHENOMENON[`${s.id}/${l.id}`];
     return {
+      phenomenonId: hit && hit.phenomenon ? hit.phenomenon : null,
       layerKey: `${s.id}/${l.id}`,
       sceneId: s.id,
       layerId: l.id,
@@ -306,6 +308,22 @@ export function initShell(hooks) {
       // 숨긴 탭이 열려 있었으면 사건 탭으로 되돌린다 — 빈 화면을 남기지 않는다.
       if (hide && curTab === tab) showTab('feed');
     }
+    applyPanelIdentity(ctx);
+  }
+
+  /* PHASE 3 §0.3 — 우측 손잡이가 'EARTH INTELLIGENCE' 라는 고정 이름을 달고 있으면
+     인텔리전스가 현상과 무관한 독립 기능처럼 읽힌다. 현상을 고르면 그 현상의 이름을 단다.
+     ※ 좌상단 .es-switch 의 'Intelligence' 는 건드리지 않는다 — 그것은 v2 제품 자체의
+        공개 이름이고 배포된 주소(/Intelligence)다. earth-switch.js 머리주석을 볼 것. */
+  const PANEL_HOME = () => (i18n.ko ? '지구 인텔리전스' : 'EARTH INTELLIGENCE');
+  function applyPanelIdentity(ctx) {
+    const handle = intel && intel.querySelector('#intel-tab');
+    if (!handle) return;
+    const name = ctx ? (i18n.ko ? ctx.label.ko : ctx.label.en) : null;
+    handle.textContent = name || PANEL_HOME();
+    handle.setAttribute('aria-label', name
+      ? (i18n.ko ? `${name} — 현재·해석·근거` : `${name} — current, intelligence, evidence`)
+      : PANEL_HOME());
   }
   let timelineMinutes = 0;
   const collapsedSections = new Set();
@@ -511,6 +529,9 @@ export function initShell(hooks) {
       <div id="intel-content"></div>
     </div>`;
   root.appendChild(intel);
+  // 손잡이 기본 이름을 화면 언어에 맞춘다. 마크업의 'EARTH INTELLIGENCE' 는 영어 고정이라
+  // 한국어 화면에서 혼자 영어로 남아 있었다. 현상을 고르면 그 현상 이름으로 바뀐다.
+  applyPanelIdentity(null);
 
   /* ---------- 하단 바 — 내 지역 / 무슨 일 / 날씨 / 바다 / 우주 / 더보기 ----------
      2026-09-07 개명: '내 곳' → '내 지역'. 인용한 원 지시문은 그대로 둔다.
@@ -655,10 +676,17 @@ export function initShell(hooks) {
       const ctx = getPhenomenonContext();
       if (!ctx) return '';
       const dict = i18n.ko ? CAP_KO : CAP_EN;
-      const on = Object.keys(dict).filter((k) => ctx.capabilities[k]).map((k) => dict[k]);
+      const on = Object.keys(dict).filter((k) => ctx.capabilities[k]);
       if (!on.length) return '';
       const name = i18n.ko ? ctx.label.ko : ctx.label.en;
-      return `<div class="information-caps">${safeText(name)} · ${safeText(on.join(' · '))}</div>`;
+      /* PHASE 3 §15 — 리포트 능력이 참인데 갈 곳이 없었다(현상 7종·레이어 14개에 진입점 0).
+         실제 생성기가 있는 종류만 링크한다. 없는 보고서를 '준비 중'으로 걸지 않는다.
+         목적지는 기존 1.0 리포트 화면이다 — v2 전용 렌더러를 새로 만들지 않는다. */
+      const kinds = ctx.phenomenonId ? reportKindsForPhenomenon(ctx.phenomenonId) : [];
+      const parts = on.map((k) => (k === 'report' && kinds.length
+        ? `<a class="cap-report" href="/lab-reports.html?kind=${encodeURIComponent(kinds[0])}" target="_blank" rel="noopener">${dict[k]}</a>`
+        : dict[k]));
+      return `<div class="information-caps">${safeText(name)} · ${parts.join(' · ')}</div>`;
     };
     const header=document.createElement('div');header.className='information-context';
     header.innerHTML=`${selectedMenu ? `<strong>${safeText(i18n.ko ? questionForLayer(selectedMenu.s.id, selectedMenu.l.id) || selectedMenu.l.name : selectedMenu.l.name)}</strong><div>${safeText(selectedMenu.l.src)} · ${dataBadge(selectedMenu.l.state)}</div>${phenomenonLine()}`:''}<div>${safeText(i18n.ko?'선택 장소':'Selected place')}: ${safeText(picked?.nameKo || picked?.name || (i18n.ko?'지도에서 선택':'Select on the globe'))}</div>${timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}</p>`:''}
@@ -838,6 +866,8 @@ export function initShell(hooks) {
     // 문맥 패널은 "지금 무엇이 선택돼 있나" 를 모르면 문맥이 될 수 없다.
     getSelection,
     getPhenomenonContext,
+    // 언어를 바꾸면 손잡이 이름도 그 언어로 다시 쓴다.
+    refreshPanelIdentity: () => applyPanelIdentity(getPhenomenonContext()),
     showTab,
     closeFlyout,
     refreshFlyout,

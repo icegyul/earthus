@@ -14,6 +14,9 @@
 .information-context{border:1px solid #365367;border-radius:10px;background:#102837;padding:14px;color:#cbe1ee;margin-bottom:16px;font-size:13px;line-height:1.65}.information-context strong{display:block;font-size:16px;color:#f1f8fb;margin-bottom:6px}.information-context details{margin-top:10px}.information-context summary{min-height:36px;cursor:pointer}.information-context button{border:1px solid #44647a;background:#17394e;color:#e0f2fd;border-radius:6px;padding:6px 12px}.information-time{color:#ecd7a6;border-left:3px solid #bda16c;padding-left:8px}
 /* PHASE 2 STEP 2.5 — 선택한 현상이 무엇을 할 수 있는지 한 줄. 없는 능력은 아예 안 적는다. */
 .information-caps{margin-top:6px;color:#9fc4da;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+/* PHASE 3 §15 — 리포트 능력은 글자가 아니라 갈 수 있는 곳이다. */
+.information-caps .cap-report{color:#8fd0ff;text-decoration:underline;text-underline-offset:2px}
+.information-caps .cap-report:focus-visible{outline:2px solid #7FB7F5;outline-offset:2px}
 .active-data-row{display:flex;align-items:center;gap:8px;border-top:1px solid #365367;padding:9px 0}.active-data-row>span{flex:1}.active-data-row small{display:block;font-size:12px;color:#aec5d3}.active-data-row button{flex:0 0 auto}
 /* STEP 56: 접힌 상태에서도 66px 을 먹고 있었다. 여백만 줄인다(내용·글자 크기 그대로). */
 .context-details{margin:8px 0;border:1px solid #31495b;border-radius:8px;padding:7px 10px}.context-details>summary{font-size:14px;color:#bfd5e5;cursor:pointer}.context-details .card{margin:10px 0}.card-b details{margin:10px 0}.card-b details summary{cursor:pointer;padding:8px}

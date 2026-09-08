@@ -1,0 +1,115 @@
+# EARTHUS V2 — 공개 금지 객체 청소 (INTEGRATION-6 §4 · §20)
+#
+# ⚠️ 이 파일은 aws/live-audit.py 가 만든다. 손으로 고치지 않는다.
+# ⚠️ 접두사 일괄 삭제 금지. 아래는 키를 하나씩 지정한다.
+# ⚠️ deploy-app.sh 의 --delete 를 되살리지 마라 — 그 원본(build/public-app)에는
+#    v3/ · orbital/ · aetherus/ · tourism/ 이 없어서 다른 제품을 지운다.
+#
+# 1) 권한 (app/* 와 옛 초안 키에 한정)
+aws iam put-user-policy --user-name earthus-deploy --policy-name cleanup-delete \
+  --policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow",
+    "Action":"s3:DeleteObject","Resource":[
+      "arn:aws:s3:::earthus-cache-kr/app/*",
+      "arn:aws:s3:::earthus-cache-kr/events/social-drafts.json"]}]}'
+
+# 2) 지우기 — 95건
+export AWS_PROFILE=earthus-deploy
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/README.md"   # 저장소 안쪽 문서
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/canary/aetherus-device-rc-rollback-probe.json"   # 카나리 점검 산출물
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/img/ocean-dive-assets.md"   # 내부 자산 노트
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/js/config.local.example.js"   # 개발자 설정 서식
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/js/earthus2/config/menu-composition-rules.v1.json"   # 내부 구성 명세
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/js/earthus2/config/wiring-manifest.v1.json"   # 내부 통합 명세
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/js/earthus2/greenfield/README.md"   # 저장소 안쪽 문서
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/js/earthus2/v03/qa/contract-harness.js"   # QA 하네스
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/js/earthus2/v03/qa/fault-injection.js"   # QA 하네스
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/js/earthus2/v03/qa/launch-gate.js"   # QA 하네스
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/js/earthus2/v03/qa/replay-regression.js"   # QA 하네스
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/js/earthus2/v04/qa/completion-evidence.js"   # QA 하네스
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/js/earthus2/v07/postgres/20260826_v07_backend_metadata_contract.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/js/earthus2/v10/postgres/20260826_v10_backend_closed_loop.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/js/earthus2/v11/postgres/20260826_v11_advanced_intelligence.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/legal/README.md"   # 저장소 안쪽 문서
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/space/planets/README.md"   # 저장소 안쪽 문서
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/space/skybox/earthus-milky-way/README.md"   # 저장소 안쪽 문서
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/space/skybox/earthus-milky-way/panorama-6000.webp"   # 해시 없는 옛 원본
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/space/skybox/earthus-milky-way/panorama.webp"   # 해시 없는 옛 원본
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/space/skybox/earthus-milky-way/source-panorama.webp"   # 제작 원본
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/supabase/functions/_shared/research-report-job-policy.js"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/supabase/functions/_shared/research-report-policy.js"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/supabase/schema.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2-deploy/engine-v11/postgres/20260826_v11_advanced_intelligence.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2-three/NEXT_STEPS.md"   # 내부 로드맵
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/README.md"   # 저장소 안쪽 문서
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/canary/aetherus-device-rc-rollback-probe.json"   # 카나리 점검 산출물
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/devserver.py"   # 개발 스크립트
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/engine-v11/postgres/20260826_v11_advanced_intelligence.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/img/ocean-dive-assets.md"   # 내부 자산 노트
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/js/config.local.example.js"   # 개발자 설정 서식
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/js/ext/CONTRACT.md"   # 내부 계약 문서
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/legal/README.md"   # 저장소 안쪽 문서
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/space/planets/README.md"   # 저장소 안쪽 문서
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/space/skybox/earthus-milky-way/README.md"   # 저장소 안쪽 문서
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/space/skybox/earthus-milky-way/panorama-6000.webp"   # 해시 없는 옛 원본
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/space/skybox/earthus-milky-way/panorama.webp"   # 해시 없는 옛 원본
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/space/skybox/earthus-milky-way/source-panorama.webp"   # 제작 원본
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/.temp/gotrue-version"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/.temp/linked-project.json"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/.temp/pooler-url"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/.temp/postgres-version"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/.temp/project-ref"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/.temp/rest-version"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/.temp/storage-migration"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/.temp/storage-version"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/billing.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/config.toml"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/expiry-cron.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/founding-verify.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/founding.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/functions/_shared/admin-access.ts"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/functions/_shared/forecast-v8-policy.js"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/functions/_shared/member-admin-handler.ts"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/functions/_shared/research-report-job-policy.js"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/functions/_shared/research-report-policy.js"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/functions/_shared/social-comments.ts"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/functions/_shared/social-credentials.ts"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/functions/_shared/social-platform-status.ts"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/functions/_shared/social-workflow.ts"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/functions/checkout/index.ts"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/functions/forecast-v8/index.ts"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/functions/member-admin/index.ts"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/functions/payment-confirm/index.ts"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/functions/payment-refund/index.ts"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/functions/push-tick/index.ts"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/functions/research-report-detail/index.ts"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/functions/research-report-jobs/index.ts"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/functions/social-admin/index.ts"   # DB 스키마 트리
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/migrations/20260811080000_member_invites.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/migrations/20260811080500_member_invite_trusted_write.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/migrations/20260811081000_refund_preserves_invite.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/migrations/20260811090000_contentsdalur_admin.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/migrations/20260814090000_aetherus_private_data.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/migrations/20260814193000_earthus_usage_analytics.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/migrations/20260814194500_earthus_usage_analytics_value_guard.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/migrations/20260814200000_earthus_privacy_version_20260814.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/migrations/20260814201500_earthus_privacy_effective_20260821.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/migrations/20260820090000_tourism_flow_watch.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/migrations/20260821120000_earthus_v8_forecast_private.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/migrations/20260823_research_reports.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/migrations/20260827140000_member_rbac.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/migrations/20260827143000_member_rbac_active_subject.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/migrations/20260828090000_provider_control.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/migrations/20260828100000_social_workflow.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/migrations/20260828103000_social_credentials.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/migrations/20260828103500_social_control_generation.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/migrations/20260828110000_social_comments.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/migrations/20260828110500_social_comment_retention_schedule.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/push.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/refund-verify.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/refund.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "app/v2/supabase/schema.sql"   # DB 스키마·마이그레이션
+aws s3api delete-object --bucket earthus-cache-kr --region us-east-2 --key "events/social-drafts.json"   # 승인 전 SNS 초안
+
+# 3) 되읽기 — 목록이 비어야 한다
+python3 aws/live-audit.py
+python3 aws/verify-public-access.py

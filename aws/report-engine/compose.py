@@ -286,6 +286,25 @@ def report_data_label(sections):
     return "NOT_EVALUABLE"
 
 
+def hydrate_sections(report):
+    """절의 storyRefs 를 실제 스토리 객체로 채워 준다(내보내기용).
+
+    ⚠️ 값을 복사하는 게 아니라 **가리키던 것을 붙여 주는 것**이다. 원본은 report["stories"] 하나뿐이다.
+       내보내기가 절마다 스토리를 다시 찾지 않도록 여기서 한 번만 잇는다.
+    """
+    by_id = {s["storyId"]: s for s in (report.get("stories") or [])}
+    out = dict(report)
+    secs = []
+    for sec in report.get("sections") or []:
+        row = dict(sec)
+        refs = row.get("storyRefs") or []
+        if refs:
+            row["_stories"] = [by_id[r] for r in refs if r in by_id]
+        secs.append(row)
+    out["sections"] = secs
+    return out
+
+
 def attach(report, *, stories=None, links=None, sections=None, outlook=None,
            surprise_section=None, quality=None):
     """PHASE 8 내용물을 리포트 봉투에 붙인다. 봉투 규약은 report_contract 것 그대로."""

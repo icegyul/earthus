@@ -30,9 +30,10 @@ sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "_shared"))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-import report_period as rp        # noqa: E402
-import report_contract as rc      # noqa: E402
-from base import ForecastAdapter  # noqa: E402
+import report_period as rp             # noqa: E402
+import report_contract as rc           # noqa: E402
+import phenomenon_registry as reg      # noqa: E402
+from base import ForecastAdapter       # noqa: E402
 
 BASE_FROM, BASE_TO = 1991, 2020          # WMO 표준 평년
 MIN_BASE_YEARS = 20                      # 이보다 적으면 평년을 말하지 않는다
@@ -46,7 +47,6 @@ DATASETS = {
         "unit": "degC",
         "phenomenon": "weather.temperature",
         "anomalyPhenomenon": "weather.temperature_anomaly",
-        "layerRefs": ["weather/temp"],
         "higherIsWarmer": True,
         "regionKey": "regions",
     },
@@ -56,7 +56,6 @@ DATASETS = {
         "unit": "degC",
         "phenomenon": "ocean.sst",
         "anomalyPhenomenon": "ocean.sst_anomaly",
-        "layerRefs": ["ocean/sst"],
         "higherIsWarmer": True,
         "regionKey": "regions",
     },
@@ -67,7 +66,6 @@ DATASETS = {
         "phenomenon": "ocean.sea_ice",
         # 해빙 편차 현상은 레지스트리에 없다. 있는 것만 쓴다 — 새 현상 id 를 만들지 않는다.
         "anomalyPhenomenon": "ocean.sea_ice",
-        "layerRefs": ["ocean/seaice"],
         "higherIsWarmer": False,          # 얼음은 적을수록 따뜻한 쪽이다
         "regionKey": "poles",
     },
@@ -77,7 +75,6 @@ DATASETS = {
         "unit": "degC",
         "phenomenon": "weather.temperature",
         "anomalyPhenomenon": "weather.temperature_anomaly",
-        "layerRefs": ["weather/temp"],
         "higherIsWarmer": True,
         "regionKey": None,                # 지역 축이 없다 — 한국 하나다
         "singleRegion": "kr",
@@ -259,9 +256,27 @@ def analyze(doc, dataset, region, period):
     }
 
 
+def layer_refs_for(dataset):
+    """⚠️ 레이어 키를 손으로 적지 않는다. 레지스트리가 정본이다.
+
+    전에는 여기에 'ocean/sst' 라고 적어 두었는데 실제 레이어는 'ocean/sstfield' 였다.
+    그 팩트로 지구를 캡처하니 요청한 레이어가 켜지지 않았다 — 캡처 검증이 잡아냈다.
+    """
+    spec = DATASETS[dataset]
+    out = []
+    for pid in (spec["phenomenon"], spec.get("anomalyPhenomenon")):
+        if not pid:
+            continue
+        key = reg.representative_layer_for(pid)
+        if key and key not in out:
+            out.append(key)
+    return out
+
+
 def build_facts(doc, dataset, period, regions=None):
     """§5 ReportFact. 자료가 부족한 지역은 팩트를 만들지 않는다."""
     spec = DATASETS[dataset]
+    layer_refs = layer_refs_for(dataset)
     names = regions_of(doc, dataset)
     facts = []
     for region in (regions or names):
@@ -287,20 +302,20 @@ def build_facts(doc, dataset, period, regions=None):
             value=a["mean"], unit=spec["unit"], period=rp.label(period),
             source="%s · %s" % (spec["source"], label), truth_type="EARTHUS_ANALYSIS",
             comparison=comparison, sample_count=a["days"],
-            evidence_refs=[spec["ref"]], layer_refs=spec["layerRefs"]))
+            evidence_refs=[spec["ref"]], layer_refs=layer_refs))
         facts.append(rc.make_fact(
             fact_id="fact:%s:anomaly" % base, phenomenon_id=spec["anomalyPhenomenon"],
             metric="anomaly", value=a["anomaly"], unit=spec["unit"], period=rp.label(period),
             source="%s · %s · 평년 %d~%d" % (spec["source"], label, BASE_FROM, BASE_TO),
             truth_type="EARTHUS_ANALYSIS", comparison=comparison, sample_count=a["days"],
-            evidence_refs=[spec["ref"]], layer_refs=spec["layerRefs"]))
+            evidence_refs=[spec["ref"]], layer_refs=layer_refs))
         facts.append(rc.make_fact(
             fact_id="fact:%s:warm_side_days" % base, phenomenon_id=spec["anomalyPhenomenon"],
             metric="days_on_warm_side" if spec["higherIsWarmer"] else "days_below_baseline",
             value=a["warmSideDays"], unit="day", period=rp.label(period),
             source="%s · %s" % (spec["source"], label), truth_type="EARTHUS_ANALYSIS",
             comparison=dict(comparison, expectedDays=a["expectedDays"], longestRun=a["longestRun"]),
-            sample_count=a["days"], evidence_refs=[spec["ref"]], layer_refs=spec["layerRefs"]))
+            sample_count=a["days"], evidence_refs=[spec["ref"]], layer_refs=layer_refs))
     return facts
 
 

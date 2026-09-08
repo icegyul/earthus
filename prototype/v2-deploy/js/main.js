@@ -5763,7 +5763,11 @@ async function main() {
     return { copied, url };
   };
 
-  const captureImage = () => {
+  const captureImage = (opts = {}) => {
+    // opts.dataUrl 이면 내려받지 않고 data URL 을 돌려준다.
+    // INTEGRATION-1 §8 — 리포트용 지구 캡처가 이 경로를 쓴다. 서버에서 지구를 다시
+    // 그리지 않고 **실제 런타임이 그린 화면**을 그대로 가져가기 위해서다.
+    // 기본 동작(내려받기)은 그대로 둔다 — 공유 버튼이 쓰는 길이다.
     renderer.render(scene, camera);   // preserveDrawingBuffer 없이도 같은 틱이면 읽힌다
     const src = renderer.domElement;
     const c = document.createElement('canvas');
@@ -5782,10 +5786,12 @@ async function main() {
     cx.fillRect(c.width - w - 34 * s, c.height - 38 * s, w + 22 * s, 28 * s);
     cx.fillStyle = 'rgba(244,238,233,0.9)';
     cx.fillText(txt, c.width - w - 23 * s, c.height - 17 * s);
+    if (opts.dataUrl) return { dataUrl: c.toDataURL('image/jpeg', 0.92), w: c.width, h: c.height, stamp };
     const a = document.createElement('a');
     a.download = `earthus-${stamp.replace(/[: ]/g, '-')}.jpg`;
     a.href = c.toDataURL('image/jpeg', 0.92);
     a.click();
+    return null;
   };
 
   // 개발 콘솔용 핸들 (예: __earthus.goTo(28, 87, 1.35) → 히말라야)

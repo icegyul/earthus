@@ -136,6 +136,23 @@ def cmd_scorecard(args):
         _write(args.out, f"scorecard-{card['period']}.json", card)
 
 
+def cmd_full(args):
+    """§43 — 전체 파이프라인. 계산은 pipeline.py 가 하고 여기서는 인자만 넘긴다.
+
+    두 입구가 같은 reportId 를 찍으면 불변 발행 키가 부딪힌다(감사에서 나온 문제다).
+    그래서 리포트를 만드는 입구는 이 파일 하나로 모은다.
+    """
+    import pipeline as pl
+    argv = ["--period", args.period]
+    if args.cache:
+        argv += ["--cache", args.cache]
+    if args.publish:
+        argv += ["--publish", "--publish-target", args.publish_target,
+                 "--publish-root", args.publish_root]
+    argv += ["--top", str(args.top)]
+    return pl.main(argv)
+
+
 def _emit(rep, args, ok, problems, extra=""):
     print(f"[{rep['type']}] {rep['reportId']} · {rep.get('lifecycle')} · {extra}")
     if not ok:
@@ -158,7 +175,19 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description="EARTHUS 리포트 엔진")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
-    r = sub.add_parser("report", help="회고 보고서")
+    # INTEGRATION-1 §43 — 리포트 CLI 는 **하나**다. 이 파일이 정본 입구고,
+    # PHASE 8 의 전체 파이프라인(스토리·교차도메인·전망·캡처 요청)은 여기서 부른다.
+    # pipeline.py 는 라이브러리이자 같은 일을 하는 두 번째 입구였다 — 이제 여기로 모은다.
+    fp = sub.add_parser("full", help="PHASE 8 전체 파이프라인 (스토리·교차도메인·전망까지)")
+    fp.add_argument("--period", required=True)
+    fp.add_argument("--cache", help="받아 둔 JSON 디렉터리")
+    fp.add_argument("--publish", action="store_true")
+    fp.add_argument("--publish-target", default="s3", choices=["s3", "local"])
+    fp.add_argument("--publish-root", default="./build/publish")
+    fp.add_argument("--top", type=int, default=5)
+    fp.set_defaults(fn=cmd_full)
+
+    r = sub.add_parser("report", help="회고 보고서 (기온·바람 채점만 — 좁은 경로)")
     r.add_argument("--type", required=True, choices=sorted(TYPE_TO_PERIODKIND))
     r.add_argument("--period", required=True)
     r.add_argument("--publish", action="store_true", help="파이프라인을 끝까지 돌려 발행한다")

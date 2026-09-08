@@ -189,7 +189,18 @@ def build(period, *, docs, generated_at=None, top_limit=5):
     report["coverage"] = {"previousPeriod": prev_cov, "period": rp.label(period),
                           "feeds": sorted(docs)}
 
-    # 8) 서술 — 채점 문장은 팩트에서 결정적으로 만든다
+    # 8) 정본 성적표 — 화면이 이걸 그대로 읽는다(§20 · §26).
+    #    ⚠️ 평가하지 못한 영역도 **행으로** 남긴다. 빼면 '못 한 것'이 '잘한 것'처럼 사라진다.
+    #       화면이 팩트에서 성적표를 다시 만들면 그 행들이 구조적으로 사라진다 —
+    #       실제로 리포트 센터가 그렇게 만들고 있었다(INTEGRATION-1 감사에서 잡혔다).
+    card_evals = list(evals)
+    for phen, reason in gen.UNVERIFIABLE_DOMAINS.items():
+        card_evals.append(rc.make_verification(
+            prediction_id="pred:%s:%s" % (rp.label(prev), phen),
+            phenomenon_id=phen, metric_set=None, not_verifiable=reason))
+    report["forecastScorecard"] = gen.build_forecast_scorecard(prev, card_evals)
+
+    # 9) 서술 — 채점 문장은 팩트에서 결정적으로 만든다
     if evals:
         report["narrative"] = nr.build_scorecard_narrative(
             gen.build_forecast_scorecard(prev, evals))
@@ -259,4 +270,8 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
+    # INTEGRATION-1 §43 — 정본 입구는 `python aws/report-engine/cli.py full` 이다.
+    # 여기서도 돌아가게 두는 이유는 기존 문서·스크립트를 깨지 않기 위해서다.
+    print("[note] 정본 입구는 `python aws/report-engine/cli.py full` 입니다 "
+          "(같은 코드를 부릅니다).", file=sys.stderr)
     main()

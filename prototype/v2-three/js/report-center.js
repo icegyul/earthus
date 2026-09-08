@@ -215,22 +215,32 @@ const surpriseHtml = (sec, ko) => {
 // 모델 · 변수 · 리드 · 지표 · 표본 · 기간을 **전부** 같이 보여 준다. 하나라도 빠지면
 // 두 줄이 그냥 상충하는 값으로 읽힌다.
 export const scorecardHtml = (report, ko) => {
-  const rows = (report.facts || []).filter((f) => f.metric === 'mae' && (f.comparison || {}).modelId);
-  if (!rows.length) return '';
-  const period = rows[0].period;
+  // ⚠️⚠️ 화면이 성적표를 **다시 만들지 않는다.** 엔진이 낸 report.forecastScorecard 를 그대로 그린다.
+  //    전에는 팩트에서 mae 행만 골라 표를 만들었다. 그러면 '평가하지 못한 영역'이
+  //    구조적으로 사라진다 — 강수·파고처럼 채점할 수 없는 분야가 표에서 빠지면
+  //    "못 한 것"이 "잘한 것"처럼 읽힌다. 엔진은 그걸 막으려고 일부러 행을 남긴다
+  //    (aws/report-engine/generator.py build_forecast_scorecard).
+  const card = report.forecastScorecard;
+  if (!card || !(card.rows || []).length) return '';
+  const rows = card.rows;
   return `<section class="rc-sec" data-testid="report-scorecard">
-    <h3 class="rc-sec-h">${ko ? '예보 성적표' : 'Forecast scorecard'} <span class="rc-label">${esc(period)}</span></h3>
+    <h3 class="rc-sec-h">${ko ? '예보 성적표' : 'Forecast scorecard'} <span class="rc-label">${esc(card.period)}</span></h3>
     <div class="rc-scroll"><table class="rc-table">
-      <thead><tr><th>${ko ? '모델' : 'Model'}</th><th>${ko ? '변수' : 'Variable'}</th><th>${ko ? '리드' : 'Lead'}</th><th>${ko ? '지표' : 'Metric'}</th><th>${ko ? '값' : 'Value'}</th><th>${ko ? '표본' : 'Sample'}</th></tr></thead>
-      <tbody>${rows.map((f) => {
-    const c = f.comparison || {};
-    return `<tr><td>${esc(c.modelId)}</td><td>${esc(c.variable || f.phenomenonId)}</td>`
-      + `<td>${esc(c.leadHours)}h</td><td>MAE</td><td>${esc(f.value)} ${esc(f.unit || '')}</td>`
-      + `<td>${esc(f.sampleCount ?? '—')}</td></tr>`;
+      <thead><tr><th>${ko ? '현상' : 'Phenomenon'}</th><th>${ko ? '모델' : 'Model'}</th><th>${ko ? '리드' : 'Lead'}</th><th>${ko ? '지표' : 'Metric'}</th><th>${ko ? '값' : 'Value'}</th><th>${ko ? '표본' : 'Sample'}</th></tr></thead>
+      <tbody>${rows.map((r) => {
+    if (!r.evaluated) {
+      // 평가하지 못한 행. 숫자 대신 **사유**를 적는다. 빈칸으로 두지 않는다.
+      return `<tr data-evaluated="false"><td>${esc(r.phenomenonId)}</td>`
+        + `<td colspan="5" class="rc-na">${esc(ko ? (r.reasonText || r.reason) : r.reason)}</td></tr>`;
+    }
+    const sc = r.scores || {};
+    return `<tr data-evaluated="true"><td>${esc(r.phenomenonId)}</td><td>${esc(r.modelId ?? '—')}</td>`
+      + `<td>${esc(r.leadHours ?? '—')}h</td><td>MAE</td>`
+      + `<td>${esc(sc.mae ?? '—')}</td><td>${esc(r.sampleCount ?? '—')}</td></tr>`;
   }).join('')}</tbody></table></div>
     <p class="rc-note-sm">${ko
-    ? '리드타임을 합치지 않고 모델을 섞지 않습니다. 표본 수가 다르면 같은 조건이 아니므로 비교하지 않습니다.'
-    : 'Lead times are never merged and models never blended. Different sample sizes are not compared.'}</p>
+    ? `채점 ${card.evaluatedCount}건 · 평가 불가 ${card.notEvaluatedCount}건. 리드타임을 합치지 않고 모델을 섞지 않습니다. 평가하지 못한 분야도 사유와 함께 남깁니다.`
+    : `${card.evaluatedCount} scored · ${card.notEvaluatedCount} not evaluable. Lead times are never merged and models never blended; what we could not score is listed with its reason.`}</p>
   </section>`;
 };
 

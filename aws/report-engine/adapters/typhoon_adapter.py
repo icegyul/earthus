@@ -29,9 +29,10 @@ sys.path.insert(0, os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "_shared"))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-import report_period as rp        # noqa: E402
-import report_contract as rc      # noqa: E402
-from base import ForecastAdapter  # noqa: E402
+import report_period as rp             # noqa: E402
+import report_contract as rc           # noqa: E402
+import phenomenon_registry as reg      # noqa: E402
+from base import ForecastAdapter       # noqa: E402
 
 SOURCE_REF = "ocean/ibtracs-wp.json"
 SOURCE = "IBTrACS v04r01 (NOAA NCEI) · 서태평양"
@@ -168,7 +169,8 @@ def build_facts(doc, period):
             value=v, unit=unit, period=rp.label(period),
             source="%s · %s" % (SOURCE, label), truth_type="EARTHUS_ANALYSIS",
             comparison=comparison, sample_count=st["storms"],
-            evidence_refs=[SOURCE_REF], layer_refs=["hazards/tyoff"]))
+            evidence_refs=[SOURCE_REF],
+            layer_refs=[k for k in [reg.representative_layer_for(PHENOMENON)] if k]))
     return facts
 
 

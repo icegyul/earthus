@@ -194,3 +194,101 @@ def can_publish(report, gate_results):
     """모든 게이트가 참일 때만 PUBLISHED. 아니면 무엇이 막았는지 함께 돌려준다."""
     blocked = [g for g in PUBLISH_GATES if not gate_results.get(g)]
     return (not blocked), blocked
+
+
+# ═══ PHASE 6 — 스냅샷 · 팩트 · 예보 스냅샷 상태 ═══════════════════════════════
+# PHASE 2 에서 정한 봉투 위에 얹는다. 새 계보를 만들지 않는다.
+
+# §3 — 리포트 생애. PHASE 2 의 REPORT_STATUS 를 넓힌다(기존 값은 그대로 둔다).
+REPORT_LIFECYCLE = ("DRAFT", "GENERATING", "VALIDATING", "PUBLISHED", "FAILED", "ARCHIVED")
+
+# §14 — 예보 스냅샷 상태. LOCKED 이후 예보값은 불변이다.
+FORECAST_STATUS = ("ACTIVE", "LOCKED", "VERIFIED", "EXPIRED")
+
+
+# §6 — 자료 상태. 문제 있는 자료를 숨기지도, 과장하지도 않는다.
+DATASET_STATE = ("AVAILABLE", "PARTIAL", "STALE", "UNAVAILABLE")
+
+
+def make_data_snapshot(*, snapshot_id, created_at, datasets):
+    """§4 — 리포트를 재현하려면 '그때 무엇을 봤는지'가 있어야 한다.
+
+    datasets 는 [{ref, sourceVersion, observedAt, retrievedAt, checksum?, state}] 다.
+    **모든 자료가 같은 시각이라고 가정하지 않는다** — 관측 시각과 우리가 받은 시각을 나눈다.
+    """
+    if not datasets:
+        raise ValueError("자료가 하나도 없는 스냅샷은 만들 수 없다")
+    rows = []
+    for d in datasets:
+        if not d.get("ref"):
+            raise ValueError("dataset 에 ref 가 없다")
+        state = d.get("state", "AVAILABLE")
+        if state not in DATASET_STATE:
+            raise ValueError(f"알 수 없는 자료 상태: {state}")
+        rows.append({
+            "ref": d["ref"],
+            "sourceVersion": d.get("sourceVersion"),
+            "observedAt": d.get("observedAt"),      # 원자료가 말하는 시각
+            "retrievedAt": d.get("retrievedAt"),    # 우리가 받은 시각
+            "checksum": d.get("checksum"),
+            "state": state,
+        })
+    return {
+        "schemaVersion": REPORT_SCHEMA,
+        "snapshotId": snapshot_id,
+        "createdAt": created_at,
+        "datasets": rows,
+    }
+
+
+
+
+def make_fact(*, fact_id, phenomenon_id, metric, value, unit=None, period=None,
+              source=None, truth_type=None, confidence=None, comparison=None,
+              evidence_refs=None, sample_count=None, event_id=None, layer_refs=None):
+    """§5 — 산문보다 먼저 있어야 하는 것. LLM 은 이걸 만들지도 고치지도 않는다.
+
+    phenomenon_id 를 들고 있으면 보고서에서 그 현상으로 갈 수 있다(§20).
+    """
+    if value is None:
+        raise ValueError("값이 없는 팩트는 만들지 않는다 — 없으면 팩트를 만들지 마라")
+    if not phenomenon_id:
+        raise ValueError("phenomenon_id 가 없으면 보고서에서 현상으로 갈 수 없다")
+    return {
+        "schemaVersion": REPORT_SCHEMA,
+        "factId": fact_id,
+        "phenomenonId": phenomenon_id,
+        "eventId": event_id,
+        "layerRefs": list(layer_refs or []),
+        "metric": metric,
+        "value": value,
+        "unit": unit,
+        "comparison": comparison,       # 평년 대비 등. 없으면 None — 지어내지 않는다
+        "period": period,
+        "source": source,
+        "truthType": truth_type,        # OFFICIAL_OBSERVATION · PROVIDER_FORECAST · EARTHUS_ANALYSIS …
+        "confidence": confidence,
+        "sampleCount": sample_count,    # §18 — 점수에는 항상 표본 수를 같이 적는다
+        "evidenceRefs": list(evidence_refs or []),
+    }
+
+
+def lock_prediction(snapshot):
+    """§14 — 발행 후 예보값을 얼린다. 이후 값 변경은 새 prediction_id 로만 한다."""
+    if snapshot.get("recordType") != "PREDICTION":
+        raise ValueError("예보 스냅샷이 아니다")
+    out = dict(snapshot)
+    out["status"] = "LOCKED"
+    return out
+
+
+def assert_snapshot_unchanged(locked, candidate):
+    """얼린 예보가 사후에 바뀌지 않았는지 확인한다.
+
+    §0 의 '과거를 고쳐 맞은 것처럼 만들지 않는다' 를 코드로 강제하는 자리다.
+    """
+    for f in ("predictionId", "phenomenonId", "forecastOriginTime", "targetPeriod",
+              "forecastValue", "forecastDistribution", "unit"):
+        if locked.get(f) != candidate.get(f):
+            raise ValueError(f"얼린 예보가 바뀌었다: {f}")
+    return True

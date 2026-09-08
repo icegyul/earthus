@@ -574,6 +574,23 @@
   .mp-subs { flex: 1 0 100%; border-left: 2px solid rgba(255,255,255,0.08); margin-left: 18px; }
   .mp-item.mp-sub { padding-left: 14px; font-size: 12px; opacity: 0.78; }
   .mp-item.mp-sub:hover { opacity: 1; }
+  /* PHASE 5 §5 — 리포트 진입면. 있는 것과 아직 없는 것을 눈으로 구분한다. */
+  .rp-row { display: flex; align-items: center; gap: 8px; padding: 8px 14px 8px 18px; font-size: 12.5px; }
+  .rp-open { flex: 1; color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
+  .rp-open:hover { color: #8fd0ff; }
+  .rp-phen {
+    flex: none; min-height: 30px; padding: 4px 10px; border-radius: 6px; cursor: pointer;
+    background: none; border: 1px solid rgba(255,255,255,0.18); color: rgba(200,220,235,0.9);
+    font-family: inherit; font-size: 11.5px;
+  }
+  .rp-phen:hover { background: rgba(255,255,255,0.07); color: var(--text); }
+  .rp-phen:focus-visible, .rp-open:focus-visible { outline: 2px solid #7FB7F5; outline-offset: 2px; }
+  .rp-row.rp-pending { opacity: 0.55; }
+  .rp-row.rp-pending span { flex: 1; }
+  .rp-row.rp-pending em { font-style: normal; font-size: 11px; color: rgba(150,175,195,0.8); }
+  .hist-lede { margin: 0 0 8px; font-size: 12px; line-height: 1.6; color: #ecd7a6; border-left: 3px solid #bda16c; padding-left: 8px; }
+  .hist-lede:last-child { margin: 8px 0 0; color: rgba(150,175,195,0.85); border-left-color: rgba(150,175,195,0.4); }
+  .rp-note { margin: 6px 18px 12px; font-size: 11.5px; line-height: 1.6; color: rgba(150,175,195,0.85); }
   .mp-item:hover { opacity: 1; background: rgba(255,255,255,0.05); }
   .mp-item:active { transform: scale(0.99); }
   .mp-item.locked { opacity: 0.4; }
@@ -1222,7 +1239,7 @@
   <div class="err" id="load-err"></div>
 </div>
 
-<script type="module" src="./js/main.js?v=189-p4menu"></script>
+<script type="module" src="./js/main.js?v=191-p5final"></script>
 <script src="/js/earth-switch.js" defer></script>
 </body>
 </html>

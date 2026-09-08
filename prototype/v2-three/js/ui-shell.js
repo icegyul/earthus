@@ -9,7 +9,7 @@ import { renderBadge, layerBadge } from './engine-bridge.js?v=15';
 // menu-guide.js 의 MENU_QUESTIONS 는 지우지 않았다 — tools/build_information_inventory.mjs 가
 // 아직 읽고, 레지스트리의 질문이 거기서 왔다. 다만 화면은 이제 레지스트리만 본다.
 // (bare id 조회였기 때문에 hobby/surf 가 ocean/surf 의 질문을 그대로 표시하고 있었다.)
-import { questionForLayer, phenomenonForLayer, LAYER_PHENOMENON, reportKindsForPhenomenon, PHENOMENA } from './phenomenon-registry.js?v=3';
+import { questionForLayer, phenomenonForLayer, LAYER_PHENOMENON, reportKindsForPhenomenon, PHENOMENA, representativeLayerFor } from './phenomenon-registry.js?v=4';
 import { menuCoverage, menuTime, canClearLayer, matchesMenu } from './information-contract.js';
 const safeText = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -297,7 +297,7 @@ export function initShell(hooks) {
   // 능력이 없는 행동은 노출하지 않는다(지침서 STEP 2.6).
   // "준비 중"으로 위장하지 않는다 — 없으면 없는 것이다.
   // 선택이 없을 때는 기존 전역 동작 그대로 둔다. 이 단계는 문맥 배선이지 디자인 개편이 아니다.
-  const CAP_TAB = { scenario: 'simulation', next: 'forecast' };
+  const CAP_TAB = { scenario: 'simulation', next: 'forecast', history: 'history' };
   function applyCapabilityGating() {
     const ctx = getPhenomenonContext();
     for (const [tab, cap] of Object.entries(CAP_TAB)) {
@@ -553,27 +553,103 @@ export function initShell(hooks) {
   const scrim = document.getElementById('menu-scrim');
   if (scrim) scrim.addEventListener('click', () => closeFlyout());
 
+  /* ── PHASE 5 §5 — 리포트 진입면 ────────────────────────────────────────────
+     실제로 있는 것: 사건별 분석 보고서 9종(aws/lab-report-index → ocean/lab-reports.json).
+     아직 없는 것: 월간·분기·연간 회고와 세 전망 — 생성기가 없다.
+     없는 것을 있는 것처럼 그리지 않는다. 상태를 그대로 적고, 왜 없는지 말한다. */
+  const REPORT_PERIODIC = [
+    { id: 'monthly',   ko: '월간',   en: 'Monthly' },
+    { id: 'quarterly', ko: '분기',   en: 'Quarterly' },
+    { id: 'annual',    ko: '연간',   en: 'Annual' },
+  ];
+  const REPORT_OUTLOOK = [
+    { id: 'next_month',   ko: '다음달',   en: 'Next month' },
+    { id: 'next_quarter', ko: '다음분기', en: 'Next quarter' },
+    { id: 'next_year',    ko: '다음연간', en: 'Next year' },
+  ];
+
+  // 사건 보고서는 현상에서 온다 — 레지스트리가 이미 종류↔현상을 안다.
+  const reportKindRows = () => {
+    const rows = [];
+    for (const [pid, p] of Object.entries(PHENOMENA)) {
+      if (!p.capabilities.report) continue;
+      const kinds = reportKindsForPhenomenon(pid);
+      if (!kinds.length) continue;
+      rows.push({ pid, p, kind: kinds[0] });
+    }
+    rows.sort((a, b) => a.p.label.ko.localeCompare(b.p.label.ko, 'ko'));
+    return rows;
+  };
+
+  const reportPanelHtml = () => {
+    const ko = i18n.ko;
+    const rows = reportKindRows();
+    const live = rows.map((r) => {
+      const key = representativeLayerFor(r.pid);
+      const name = ko ? r.p.label.ko : r.p.label.en;
+      return '<div class="rp-row">'
+        + '<a class="rp-open" href="/lab-reports.html?kind=' + encodeURIComponent(r.kind) + '" target="_blank" rel="noopener">'
+        + safeText(name) + '</a>'
+        // §11 — 보고서에서 그 현상으로 바로 간다.
+        + (key ? '<button class="rp-phen" data-report-phenomenon="' + key + '">'
+            + (ko ? '현상 보기' : 'Open phenomenon') + '</button>' : '')
+        + '</div>';
+    }).join('');
+
+    const pending = (list) => list.map((x) => '<div class="rp-row rp-pending">'
+      + '<span>' + (ko ? x.ko : x.en) + '</span>'
+      + '<em>' + (ko ? '아직 생성되지 않음' : 'not generated yet') + '</em></div>').join('');
+
+    return '<section class="mp-sec" data-section="__rep-live" style="--sc:#8fd0ff">'
+      + '<h3 class="mp-title"><button data-collapse="__rep-live" aria-expanded="true"><i></i>'
+      + (ko ? '사건 분석 보고서' : 'Event analysis reports') + '<em>' + rows.length + '</em></button></h3>'
+      + '<div>' + (live || '<p class="rp-note">' + (ko ? '아직 발행된 보고서가 없습니다.' : 'No reports published yet.') + '</p>')
+      + '<p class="rp-note">' + (ko
+        ? '끝난 사건마다 계산 결과와 검증을 남깁니다. 목록과 상세는 1.0 보고서 화면에서 엽니다.'
+        : 'Each closed event keeps its calculation and verification. The list and detail open in the 1.0 report view.') + '</p>'
+      + '</div></section>'
+
+      + '<section class="mp-sec" data-section="__rep-past" style="--sc:#9fb9ff">'
+      + '<h3 class="mp-title"><button data-collapse="__rep-past" aria-expanded="true"><i></i>'
+      + (ko ? '지구 회고' : 'Earth retrospective') + '</button></h3>'
+      + '<div>' + pending(REPORT_PERIODIC)
+      + '<p class="rp-note">' + (ko
+        ? '월간·분기·연간 회고는 생성 엔진이 아직 없습니다. 없는 보고서를 미리 그려 두지 않습니다.'
+        : 'The monthly, quarterly and annual retrospectives have no generator yet. We do not draw reports that do not exist.') + '</p>'
+      + '</div></section>'
+
+      + '<section class="mp-sec" data-section="__rep-outlook" style="--sc:#ecd7a6">'
+      + '<h3 class="mp-title"><button data-collapse="__rep-outlook" aria-expanded="true"><i></i>'
+      + (ko ? '전망' : 'Outlook') + '</button></h3>'
+      + '<div>' + pending(REPORT_OUTLOOK)
+      + '<p class="rp-note">' + (ko
+        ? '전망 보고서에는 지난 전망이 얼마나 맞았는지가 함께 들어갑니다. 예보 스냅샷은 발행 시점 그대로 얼려 두고 나중에 실측과 대조합니다 — 지난 예측을 고쳐서 맞은 것처럼 만들지 않습니다.'
+        : 'An outlook carries how the previous outlook actually scored. Forecast snapshots are frozen as issued and compared with observations later — a past prediction is never edited to look right.') + '</p>'
+      + '</div></section>';
+  };
+
   const openPanel = (brand) => {
     openBrand = brand;
     const aeth = brand === 'aetherus';
+    const isReport = brand === 'report';
     // PHASE 4 — 브랜드로 도메인을 고른다. AETHERUS 는 우주 하나(기존 계약 유지, §1).
-    const domains = aeth ? ['space'] : ['land', 'weather', 'ocean', 'people', 'travel', 'hazards'];
+    const domains = isReport ? [] : aeth ? ['space'] : ['land', 'weather', 'ocean', 'people', 'travel', 'hazards'];
     panel.classList.toggle('aeth', aeth);
     panel.innerHTML = `
       <div class="mp-head">
-        <div class="mp-head-copy"><b>${aeth ? 'AETHERUS' : 'EARTHUS'}</b><small>${i18n.t(aeth ? 'mpTagA' : 'mpTagE')}</small></div>
+        <div class="mp-head-copy"><b>${isReport ? (i18n.ko ? '리포트' : 'REPORTS') : aeth ? 'AETHERUS' : 'EARTHUS'}</b><small>${isReport ? (i18n.ko ? '사건 분석 · 지구 회고 · 전망' : 'Event analysis · retrospective · outlook') : i18n.t(aeth ? 'mpTagA' : 'mpTagE')}</small></div>
         <button class="ui-x" data-x="1" aria-label="${i18n.ko ? '메뉴 닫기':'Close menu'}">✕</button>
       </div>
-      <div class="mp-search"><label>${i18n.ko ? '메뉴·질문 검색':'Find a topic'}<input type="search" data-menu-search value="${safeText(menuQuery)}" placeholder="${i18n.ko ? '예: 파고, 무장애, 한국':'Search topics'}"></label>
-      <label class="mp-active-only"><input type="checkbox" data-active-only ${activeOnly ? 'checked':''}>${i18n.ko ? '켜진 자료만':'Active only'}</label></div>
+      ${isReport ? '' : `<div class="mp-search"><label>${i18n.ko ? '메뉴·질문 검색':'Find a topic'}<input type="search" data-menu-search value="${safeText(menuQuery)}" placeholder="${i18n.ko ? '예: 파고, 무장애, 한국':'Search topics'}"></label>
+      <label class="mp-active-only"><input type="checkbox" data-active-only ${activeOnly ? 'checked':''}>${i18n.ko ? '켜진 자료만':'Active only'}</label></div>`}
       <div class="mp-body">
-        ${(domains.map(domainSectionHtml).join('') + (aeth ? '' : looseSectionHtml())) || `<p role="status">${i18n.ko ? '조건에 맞는 메뉴가 없습니다. 검색어 또는 필터를 바꿔 주세요.':'No matching topics. Change the search or filter.'}</p>`}
-        <div class="mp-foot">${i18n.t('mpFoot')}</div>
+        ${isReport ? reportPanelHtml() : (domains.map(domainSectionHtml).join('') + (aeth ? '' : looseSectionHtml())) || `<p role="status">${i18n.ko ? '조건에 맞는 메뉴가 없습니다. 검색어 또는 필터를 바꿔 주세요.':'No matching topics. Change the search or filter.'}</p>`}
+        ${isReport ? '' : `<div class="mp-foot">${i18n.t('mpFoot')}</div>`}
       </div>`;
     panel.classList.add('open');
     if (scrim) scrim.classList.add('on');
-    tabE.classList.toggle('open', !aeth);
-    tabE.classList.toggle('beside', aeth);
+    tabE.classList.toggle('open', !aeth && !isReport);
+    tabE.classList.toggle('beside', aeth || isReport);
     tabA.classList.toggle('open', aeth);
     tabA.classList.toggle('beside', !aeth);
     if (hooks.onFlyoutOpened) hooks.onFlyoutOpened();
@@ -621,6 +697,8 @@ export function initShell(hooks) {
   panel.addEventListener('click', (e) => {
     if (e.target.closest('[data-x]')) { closeFlyout(); return; }
     const collapse=e.target.closest('[data-collapse]');
+    const toPhen = e.target.closest('[data-report-phenomenon]');
+    if(toPhen){const [sid,lid]=toPhen.dataset.reportPhenomenon.split('/');const sc=SCENES.find(x=>x.id===sid);const ly=sc&&sc.layers.find(x=>x.id===lid);if(ly&&hooks.onLayerAction){selectedMenu={s:sc,l:ly};applyCapabilityGating();hooks.onLayerAction(sid,ly);closeFlyout();if(!intelOpen)intel.querySelector('#intel-tab').click();else renderIntel();}return;}
     const expand = e.target.closest('[data-expand]');
     if(expand){const pid=expand.dataset.expand;expandedPhenomena.has(pid)?expandedPhenomena.delete(pid):expandedPhenomena.add(pid);refreshFlyout();return;}
     if(collapse){const id=collapse.dataset.collapse;collapsedSections.has(id)?collapsedSections.delete(id):collapsedSections.add(id);refreshFlyout();return;}
@@ -667,6 +745,8 @@ export function initShell(hooks) {
         <button data-tab="now">${i18n.ko?'선택 자료':'Now'}</button>
         <button data-tab="why">${i18n.ko?'자료의 근거':'Why'}</button>
         <button data-tab="next">${i18n.ko?'예보·예정':'Next'}</button>
+        <!-- PHASE 5 §4 — 이력. 사료를 '지금'처럼 보이지 않게 따로 둔다. -->
+        <button data-tab="history">${i18n.ko?'이력':'History'}</button>
         <!-- 2026-09-07 지시 §18: 사용자가 찾을 수 있는 이름을 먼저 쓴다. "가정 실험/What-if"
              는 고급 기능 쪽 표현으로 남기고(탭 안 내용·main.js 는 그대로), 탭 이름만 바꾼다. -->
         <button data-tab="scenario">${i18n.ko?'시뮬레이션':'Simulation'}</button>
@@ -694,18 +774,29 @@ export function initShell(hooks) {
     ocean: '<path d="M2 14c3-4 6-4 9 0s6 4 9 0"/><path d="M2 19c3-4 6-4 9 0s6 4 9 0"/>',
     space: '<rect x="9" y="9" width="6" height="6"/><path d="M2 12h5M17 12h5M4 9v6M20 9v6"/>',
     more: '<circle cx="6" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18" cy="12" r="1.2"/>',
+    explore: '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>',
+    report: '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 12h7M9 16h5"/>',
   };
+  /* PHASE 5 §2 — 하단 바는 6개였고 그중 5개가 다른 진입점이 이미 가는 곳으로 다시 갔다.
+     날씨·바다는 '탐색' 안의 도메인이 됐으므로 하단에서 뺀다(같은 곳으로 가는 길을 셋씩 두지 않는다).
+     '더보기'는 '탐색'과 같은 곳이라 합친다. '무슨 일'은 '지금'으로 이름을 하나로 모은다(§15).
+     리포트는 EARTHUS 의 핵심 콘텐츠라 최상위로 올린다(§5). */
   const NAV_ITEMS = [
+    { id: 'feed', ko: '지금', en: 'Now' },
+    { id: 'explore', ko: '탐색', en: 'Explore' },
     { id: 'myplace', ko: '내 지역', en: 'My place' },
-    { id: 'feed', ko: '무슨 일', en: "What's up" },
-    { id: 'weather', ko: '날씨', en: 'Weather' },
-    { id: 'ocean', ko: '바다', en: 'Ocean' },
+    { id: 'report', ko: '리포트', en: 'Reports' },
     { id: 'space', ko: '우주', en: 'Space' },
-    { id: 'more', ko: '더보기', en: 'More' },
   ];
-  bottomNav.innerHTML = NAV_ITEMS.map((n) => `<button type="button" data-nav="${n.id}">
+  // 언어를 바꾸면 라벨도 바뀐다. 한 번만 그리면 영어 화면에 한국어가 남는다(실측으로 잡았다).
+  const renderNav = () => {
+    const cur = bottomNav.querySelector('button.on');
+    const curId = cur ? cur.dataset.nav : null;
+    bottomNav.innerHTML = NAV_ITEMS.map((n) => `<button type="button" data-nav="${n.id}"${n.id === curId ? ' class="on"' : ''}>
       <svg viewBox="0 0 24 24">${NAV_ICON[n.id]}</svg><span>${i18n.ko ? n.ko : n.en}</span>
     </button>`).join('');
+  };
+  renderNav();
   root.appendChild(bottomNav);
 
   // 씬 목록 패널에서 특정 그룹(날씨·바다)까지 열어 스크롤해 보여준다 — 접혀 있었다면 편다.
@@ -725,10 +816,9 @@ export function initShell(hooks) {
     switch (btn.dataset.nav) {
       case 'myplace': showTab('my'); if (!intelOpen) intel.querySelector('#intel-tab').click(); break;
       case 'feed': showTab('feed'); if (!intelOpen) intel.querySelector('#intel-tab').click(); break;
-      case 'weather': gotoScene('earthus', 'weather'); break;
-      case 'ocean': gotoScene('earthus', 'ocean'); break;
+      case 'explore': openPanel('earthus'); break;
+      case 'report': openPanel('report'); break;
       case 'space': gotoScene('aetherus', 'space'); break;
-      case 'more': openPanel('earthus'); break;
     }
   });
 
@@ -745,6 +835,39 @@ export function initShell(hooks) {
       if (st.on) rows.push({ s, l, st, key: `${s.id}/${l.id}` });
     }));
     return rows;
+  };
+
+  /* PHASE 5 §4 — 이력 탭. 값을 새로 만들지 않는다. 이 현상에 속한 자료 중
+     진리등급이 사료(HISTORY)인 것만 모아, 지금 자료와 섞이지 않게 따로 보여 준다.
+     선택이 없거나 history 능력이 없으면 탭 자체가 안 보인다(위 CAP_TAB). */
+  const historyHtml = () => {
+    const ctx = getPhenomenonContext();
+    const ko = i18n.ko;
+    if (!ctx) {
+      return `<div class="card"><div class="card-b">${ko ? '현상을 고르면 그 현상의 과거 기록을 봅니다.' : 'Pick a phenomenon to see its past record.'}</div></div>`;
+    }
+    const name = ko ? ctx.label.ko : ctx.label.en;
+    const members = (DOMAIN_INDEX.get(ctx.domain) || []).find((e) => e.id === ctx.phenomenonId);
+    const rows = members ? members.members : [];
+    // 사료와 지금을 갈라 놓는다. 판단 기준은 우리가 정한 진리등급표다.
+    const past = rows.filter((m) => layerBadge(m.key) && /HISTORY|기록/.test(layerBadge(m.key)));
+    const listed = past.length ? past : rows;
+    const body = listed.map((m) => `<div class="stat">
+        <span class="k">${safeText(i18n.layer(m.l.id, m.l.name, m.s.id))}</span>
+        <span class="v">${layerBadge(m.key) || renderBadge(m.l.state)} ${safeText(m.l.src)}</span>
+      </div>`).join('');
+    return `<div class="card"><div class="card-h">${safeText(name)} · ${ko ? '이력' : 'History'} ${renderBadge('HISTORY')}</div>
+      <div class="card-b">
+        <p class="hist-lede">${ko
+          ? '아래는 <b>지나간 기록</b>입니다. 지금 상태가 아닙니다.'
+          : 'Below is the <b>past record</b>. It is not the current state.'}</p>
+        ${safeText(ctx.temporalMode || '')
+          ? `<div class="stat"><span class="k">${ko ? '기간' : 'Period'}</span><span class="v">${safeText(ctx.temporalMode)}</span></div>` : ''}
+        ${body}
+        <p class="hist-lede">${ko
+          ? '값을 새로 계산하지 않습니다 — 각 자료의 원 출처와 기준 시각을 그대로 씁니다.'
+          : 'No value is recomputed here — each source keeps its own reference time.'}</p>
+      </div></div>`;
   };
 
   const evidenceRow = ({ s, l, st }) => `<div class="stat">
@@ -808,6 +931,8 @@ export function initShell(hooks) {
       intelContent.innerHTML = hooks.getMy ? hooks.getMy() : '';
     } else if (curTab === 'scenario') {
       intelContent.innerHTML = hooks.getScenario();
+    } else if (curTab === 'history') {
+      intelContent.innerHTML = historyHtml();
     } else if (curTab === 'why') {
       intelContent.innerHTML = whyHtml();
     } else {
@@ -1015,7 +1140,7 @@ export function initShell(hooks) {
     getSelection,
     getPhenomenonContext,
     // 언어를 바꾸면 손잡이 이름도 그 언어로 다시 쓴다.
-    refreshPanelIdentity: () => applyPanelIdentity(getPhenomenonContext()),
+    refreshPanelIdentity: () => { applyPanelIdentity(getPhenomenonContext()); renderNav(); },
     showTab,
     closeFlyout,
     refreshFlyout,

@@ -757,7 +757,12 @@ export class IntelFeed {
   updateMarkers(camera, altKm, onPick) {
     this._frame += 1;
     if (this._frame % 3 !== 0) return;
-    if (this.state !== 'ready' || altKm < 400) {
+    // 목록이 보여 주는 사건은 지구에도 보여 준다. 전에는 state 가 정확히 'ready' 일 때만
+    // 비컨을 그려서, 두 출처 중 하나만 실패해도(예: GDACS 태풍 실패 → state 'partial')
+    // 성공한 USGS 지진까지 지구에서 통째로 사라졌다 — 목록에는 그대로 있는데 지구만 비었다.
+    // html() 이 목록을 그리는 상태(ready · partial · stale)와 같은 기준을 쓴다.
+    const drawable = this.items.length && !['loading', 'error', 'empty'].includes(this.state);
+    if (!drawable || altKm < 400) {
       this.pool.forEach((d) => { d.style.display = 'none'; });
       return;
     }

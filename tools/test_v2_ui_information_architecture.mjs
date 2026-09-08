@@ -40,7 +40,9 @@ test('UI 는 자체 현상 목록을 만들지 않는다', () => {
 
 // ── 불변식 4 — 능력이 없으면 진입점이 없다 ───────────────────────────────────
 test('능력 없는 행동은 렌더하지 않는다 (준비 중 금지)', () => {
-  assert.match(shellSrc, /CAP_TAB = \{ scenario: 'simulation', next: 'forecast' \}/);
+  // CAP_TAB 은 능력이 늘 때마다 커진다. 모양을 통째로 못박지 않고 '있어야 할 짝'만 확인한다.
+  assert.match(shellSrc, /CAP_TAB = \{[^}]*scenario: 'simulation'[^}]*\}/);
+  assert.match(shellSrc, /CAP_TAB = \{[^}]*next: 'forecast'[^}]*\}/);
   assert.match(shellSrc, /btn\.hidden = hide/);
 });
 
@@ -176,4 +178,70 @@ test('하단 바로 들어와도 그 도메인이 펼쳐진다', () => {
   const body = shellSrc.slice(i, i + 420);
   assert.ok(body.indexOf('collapsedSections.delete') < body.indexOf('openPanel(brand)'),
     'gotoScene 이 접힘 해제보다 먼저 그린다 — 하단 바가 빈 제목만 연다');
+});
+
+// ── PHASE 5 §2 — 하단 바 중복 제거 ───────────────────────────────────────────
+test('하단 바는 5개이고 탐색 안의 도메인을 다시 꺼내지 않는다', () => {
+  const i = shellSrc.indexOf('const NAV_ITEMS = [');
+  const block = shellSrc.slice(i, shellSrc.indexOf('];', i));
+  const ids = [...block.matchAll(/id: '([a-z]+)'/g)].map((m) => m[1]);
+  assert.deepEqual(ids, ['feed', 'explore', 'myplace', 'report', 'space']);
+  // 날씨·바다는 '탐색' 안의 도메인이다. 하단에 또 두면 같은 곳으로 가는 길이 셋이 된다.
+  assert.ok(!ids.includes('weather') && !ids.includes('ocean'), '날씨·바다가 하단에 다시 있다');
+  assert.ok(!ids.includes('more'), "'더보기'가 '탐색'과 중복이다");
+});
+
+// ── PHASE 5 §4 — 이력 UI ─────────────────────────────────────────────────────
+test('이력은 능력이 있는 현상에만 탭이 생긴다', () => {
+  assert.match(shellSrc, /CAP_TAB = \{ scenario: 'simulation', next: 'forecast', history: 'history' \}/);
+  assert.match(shellSrc, /data-tab="history"/);
+  assert.match(shellSrc, /const historyHtml = \(\) =>/);
+  const hist = Object.entries(reg.PHENOMENA).filter(([, p]) => p.capabilities.history);
+  assert.equal(hist.length, 6, 'history 능력 현상 수가 바뀌었다');
+});
+
+test('이력 화면은 사료를 지금이라고 말하지 않는다', () => {
+  const i = shellSrc.indexOf('const historyHtml');
+  const body = shellSrc.slice(i, i + 1800);
+  assert.match(body, /지나간 기록/);
+  assert.match(body, /지금 상태가 아닙니다/);
+  // 값을 새로 만들지 않는다 — 각 자료의 원 출처와 기준 시각을 그대로 쓴다.
+  assert.match(body, /값을 새로 계산하지 않습니다/);
+});
+
+// ── PHASE 5 §5·§19 — 리포트 최상위, 없는 보고서는 없다고 말한다 ───────────────
+test('리포트가 최상위 진입면으로 있다', () => {
+  assert.match(shellSrc, /const reportPanelHtml = \(\) =>/);
+  assert.match(shellSrc, /case 'report': openPanel\('report'\)/);
+  assert.match(shellSrc, /isReport = brand === 'report'/);
+});
+
+test('없는 보고서를 지어내지 않는다', () => {
+  const i = shellSrc.indexOf('const reportPanelHtml');
+  const body = shellSrc.slice(i, i + 5200);
+  // 월간·분기·연간과 세 전망은 생성기가 없다 — 상태를 그대로 적는다.
+  assert.match(body, /아직 생성되지 않음/);
+  assert.match(body, /생성 엔진이 아직 없습니다/);
+  // 실제 보고서는 실제 종류로만 링크한다. 종류 조회는 위 helper(reportKindRows)가 한다.
+  assert.match(shellSrc, /const reportKindRows = \(\) =>[\s\S]{0,400}reportKindsForPhenomenon/);
+  assert.match(body, /lab-reports\.html\?kind=/);
+  // 지난 예측을 고쳐서 맞은 것처럼 만들지 않는다는 약속이 화면에 있다.
+  assert.match(body, /고쳐서 맞은 것처럼/);
+});
+
+test('리포트에서 그 현상으로 갈 수 있다', () => {
+  assert.match(shellSrc, /data-report-phenomenon="/);
+  assert.match(shellSrc, /toPhen\.dataset\.reportPhenomenon\.split\('\/'\)/);
+});
+
+// ── PHASE 5 §15 — 지구 비컨이 목록과 같은 사건을 보여 준다 ────────────────────
+test('출처 하나가 실패해도 성공한 출처의 비컨은 지구에 남는다', () => {
+  const feedSrc = src('intel-feed.js');
+  const i = feedSrc.indexOf('updateMarkers(camera, altKm, onPick)');
+  const body = feedSrc.slice(i, i + 900);
+  // 전에는 state 가 정확히 'ready' 일 때만 그려서, 두 출처 중 하나만 실패해도
+  // (state 'partial') 성공한 쪽 사건까지 지구에서 통째로 사라졌다.
+  assert.ok(!/this\.state !== 'ready'/.test(body), "state === 'ready' 강제가 되살아났다");
+  assert.match(body, /\['loading', 'error', 'empty'\]\.includes\(this\.state\)/);
+  assert.match(body, /this\.items\.length/);
 });

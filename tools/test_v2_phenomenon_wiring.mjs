@@ -121,7 +121,9 @@ test('선택이 바뀌는 모든 지점에서 능력 게이팅이 다시 돈다'
 });
 
 test('능력 없는 행동은 숨긴다 — 준비 중으로 위장하지 않는다', () => {
-  assert.match(shellSrc, /CAP_TAB = \{ scenario: 'simulation', next: 'forecast' \}/);
+  // 능력이 늘면 CAP_TAB 도 는다. 모양을 통째로 못박지 않고 '있어야 할 짝'만 본다.
+  assert.match(shellSrc, /CAP_TAB = \{[^}]*scenario: 'simulation'[^}]*\}/);
+  assert.match(shellSrc, /CAP_TAB = \{[^}]*next: 'forecast'[^}]*\}/);
   assert.match(shellSrc, /btn\.hidden = hide/);
   // 숨긴 탭이 열려 있었으면 되돌린다 — 빈 화면을 남기지 않는다.
   assert.match(shellSrc, /if \(hide && curTab === tab\) showTab\('feed'\)/);

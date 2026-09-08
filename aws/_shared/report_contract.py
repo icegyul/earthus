@@ -134,7 +134,8 @@ def make_prediction_snapshot(*, prediction_id, phenomenon_id, forecast_origin_ti
 
 def make_verification(*, prediction_id, phenomenon_id, metric_set,
                       observation_period=None, observation_value=None, observation_source=None,
-                      scores=None, lead_hours=None, not_verifiable=None, notes=None):
+                      scores=None, lead_hours=None, not_verifiable=None, notes=None,
+                      model_id=None):
     """검증 결과. 리드타임은 평균 내지 않는다 — 리드별 행을 남긴다(저장소 규약).
 
     검증이 불가능하면 not_verifiable 에 사유 키를 넣는다. **점수를 지어내지 않는다.**
@@ -171,6 +172,9 @@ def make_verification(*, prediction_id, phenomenon_id, metric_set,
         "observationValue": observation_value,
         "observationSource": observation_source,   # 진실값 출처를 명시하고 섞지 않는다
         "scores": dict(scores or {}),
+        # 모델을 섞지 않는다. 같은 현상·같은 리드라도 GFS 와 ECMWF 는 다른 행이고,
+        # 어느 쪽 숫자인지 모르면 두 줄이 그냥 상충하는 값으로 읽힌다.
+        "modelId": model_id,
         "notes": notes,
     }
 

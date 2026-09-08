@@ -173,13 +173,22 @@ def build_forecast_scorecard(period, verifications):
                 "reasonText": v.get("reasonText"),
             })
             continue
+        # §18 — 점수에는 표본 수가 **반드시** 따라붙는다. 표본 없이 숫자만 보이면
+        # 3개로 낸 오차와 1,159개로 낸 오차가 같은 무게로 읽힌다.
+        obs = v.get("observationValue")
+        n = (v.get("scores") or {}).get("n")
+        if n is None and isinstance(obs, dict):
+            n = obs.get("sampleCount")
+        if n is None:
+            n = v.get("sampleCount")
         rows.append({
             "phenomenonId": v.get("phenomenonId"),
             "evaluated": True,
             "metricSet": v.get("metricSet"),
+            "modelId": v.get("modelId"),
             "leadHours": v.get("leadHours"),
             "scores": v.get("scores"),
-            "sampleCount": (v.get("scores") or {}).get("n") or v.get("sampleCount"),
+            "sampleCount": n,
             "observationSource": v.get("observationSource"),
         })
     return {
@@ -254,3 +263,90 @@ def publish(report, *, published_at):
     out["status"] = "PUBLISHED"
     out["publishedAt"] = published_at
     return out
+
+
+# ═══ PHASE 7 — 발행 파이프라인 · 중복 방지 · 시험/운영 분리 ═══════════════════
+
+MODES = ("TEST", "DEMO", "PRODUCTION")
+
+
+def run_publication_pipeline(report, *, quality=None, published_at, mode="PRODUCTION",
+                             published_index=None):
+    """§21 — GENERATING → QC → 팩트검증 → 서술검증 → 리포트검증 → PUBLISHED.
+
+    어느 단계에서든 실패하면 FAILED 로 남기고 그 이유를 적는다. 조용히 넘어가지 않는다.
+    """
+    import narrative as nr   # 지연 import — 계약 계층이 서술 계층에 의존하지 않게 한다
+
+    out = dict(report)
+    out["mode"] = mode
+    if mode not in MODES:
+        return _fail(out, [f"알 수 없는 모드: {mode}"])
+
+    # §23 — 시험 자료가 운영 아카이브로 새는 것을 막는다.
+    if mode == "PRODUCTION":
+        leak = _test_data_leak(out)
+        if leak:
+            return _fail(out, [f"운영 리포트에 시험 자료가 섞였다: {leak}"])
+
+    # §4 — QC 가 FAIL 이면 발행하지 않는다.
+    if quality is not None:
+        out["quality"] = quality
+        if quality.get("status") == "FAIL":
+            return _fail(out, ["자료 품질검사 실패: "
+                               + ", ".join(c["check"] for c in quality.get("failures", []))])
+        if quality.get("status") == "WARN":
+            # 막지는 않되 보고서가 한계를 안고 간다는 사실을 남긴다.
+            out["limitations"] = [c["detail"] for c in quality.get("warnings", []) if c.get("detail")]
+
+    # §22 — 같은 종류·기간·판이 이미 발행돼 있으면 새로 만들지 않는다.
+    dup = _find_duplicate(out, published_index or [])
+    if dup:
+        return _fail(out, [f"이미 발행된 리포트가 있다: {dup} — 새 판을 만들려면 version 을 올린다"])
+
+    # §9 — 서술이 팩트와 어긋나면 발행하지 않는다.
+    ok_n, probs_n = nr.validate_report_narrative(out)
+    if not ok_n:
+        return _fail(out, ["서술이 팩트와 어긋난다: " + " / ".join(probs_n[:5])])
+
+    # §33 — 마지막으로 리포트 자체 검증.
+    ok, problems = validate_report(out)
+    if not ok:
+        return _fail(out, problems)
+
+    out["lifecycle"] = "PUBLISHED"
+    out["status"] = "PUBLISHED"
+    out["publishedAt"] = published_at
+    out["immutableRef"] = out.get("reportId")
+    return out
+
+
+def _fail(report, problems):
+    report["lifecycle"] = "FAILED"
+    report["validationProblems"] = list(problems)
+    report.pop("publishedAt", None)
+    return report
+
+
+def _find_duplicate(report, published_index):
+    """같은 (종류, 기간, version) 이 이미 PUBLISHED 인가."""
+    key = (report.get("type"), (report.get("period") or {}).get("from"), report.get("version"))
+    for r in published_index:
+        if r.get("lifecycle") != "PUBLISHED":
+            continue
+        if (r.get("type"), (r.get("period") or {}).get("from"), r.get("version")) == key:
+            return r.get("reportId")
+    return None
+
+
+# 시험 자료에 붙는 표식. 운영 리포트에 하나라도 있으면 발행을 막는다.
+TEST_MARKERS = ("fixture", "sample", "test:", "dummy", "FIXTURE", "SAMPLE")
+
+
+def _test_data_leak(report):
+    blob = repr(report.get("provenance")) + repr(report.get("dataSnapshotId")) \
+        + repr([f.get("evidenceRefs") for f in report.get("facts", [])])
+    for m in TEST_MARKERS:
+        if m in blob:
+            return m
+    return None

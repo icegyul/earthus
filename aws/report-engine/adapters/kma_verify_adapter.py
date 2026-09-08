@@ -130,6 +130,7 @@ def build_verifications(daily_doc, period):
             observation_value={"source": "KMA ASOS", "sampleCount": m["n"]},
             observation_source="기상청 ASOS 97지점",
             lead_hours=lead,
+            model_id=MODEL_LABEL.get(model, model),
             scores={"mae": m["mae"], "rmse": m["rmse"], "bias": m["me"]},
             notes=f"{MODEL_LABEL.get(model, model)} · 표본 {m['n']} · {m['days']}일",
         ))

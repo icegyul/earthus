@@ -557,15 +557,43 @@ export function initShell(hooks) {
      실제로 있는 것: 사건별 분석 보고서 9종(aws/lab-report-index → ocean/lab-reports.json).
      아직 없는 것: 월간·분기·연간 회고와 세 전망 — 생성기가 없다.
      없는 것을 있는 것처럼 그리지 않는다. 상태를 그대로 적고, 왜 없는지 말한다. */
+  /* PHASE 7 §15 — 정기 보고서 목록을 엔진 산출물에서 읽는다.
+     전에는 여섯 종을 '아직 생성되지 않음' 으로 화면에 박아 두었다. 그러면 엔진이
+     실제로 보고서를 내놓아도 화면이 영원히 없다고 말한다.
+     이제 아카이브 색인을 받아서 그리고, 색인이 없으면 그때 없다고 말한다.
+     "생성되지 않음" 과 "생성됐지만 자료 부족" 을 구분해서 보여 준다. */
+  let REPORT_INDEX = null;      // null = 아직 안 받아 봄 · {} = 받았는데 비어 있음
+  let reportIndexTried = false;
+  const REPORT_INDEX_URL = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/reports/index.json';
+  const loadReportIndex = () => {
+    if (reportIndexTried) return;
+    reportIndexTried = true;
+    fetch(REPORT_INDEX_URL, { cache: 'no-cache' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => { REPORT_INDEX = j && typeof j === 'object' ? j : {}; if (openBrand === 'report') refreshFlyout(); })
+      .catch(() => { REPORT_INDEX = {}; if (openBrand === 'report') refreshFlyout(); });
+  };
+
+  // 색인에서 이 종류·기간의 보고서를 찾는다. 엔진의 필드 이름을 그대로 쓴다(§37 계약 정렬).
+  const findReports = (type) => {
+    const years = (REPORT_INDEX && REPORT_INDEX.years) || null;
+    if (!years) return [];
+    const out = [];
+    for (const list of Object.values(years)) {
+      for (const r of (list || [])) if (r && r.type === type) out.push(r);
+    }
+    return out.sort((a, b) => String((b.period || {}).from || '').localeCompare(String((a.period || {}).from || '')));
+  };
+
   const REPORT_PERIODIC = [
-    { id: 'monthly',   ko: '월간',   en: 'Monthly' },
-    { id: 'quarterly', ko: '분기',   en: 'Quarterly' },
-    { id: 'annual',    ko: '연간',   en: 'Annual' },
+    { id: 'monthly',   ko: '월간',   en: 'Monthly',   type: 'RETROSPECTIVE_MONTHLY' },
+    { id: 'quarterly', ko: '분기',   en: 'Quarterly', type: 'RETROSPECTIVE_QUARTERLY' },
+    { id: 'annual',    ko: '연간',   en: 'Annual',    type: 'RETROSPECTIVE_ANNUAL' },
   ];
   const REPORT_OUTLOOK = [
-    { id: 'next_month',   ko: '다음달',   en: 'Next month' },
-    { id: 'next_quarter', ko: '다음분기', en: 'Next quarter' },
-    { id: 'next_year',    ko: '다음연간', en: 'Next year' },
+    { id: 'next_month',   ko: '다음달',   en: 'Next month',   type: 'OUTLOOK_NEXT_MONTH' },
+    { id: 'next_quarter', ko: '다음분기', en: 'Next quarter', type: 'OUTLOOK_NEXT_QUARTER' },
+    { id: 'next_year',    ko: '다음연간', en: 'Next year',    type: 'OUTLOOK_NEXT_YEAR' },
   ];
 
   // 사건 보고서는 현상에서 온다 — 레지스트리가 이미 종류↔현상을 안다.
@@ -596,9 +624,28 @@ export function initShell(hooks) {
         + '</div>';
     }).join('');
 
-    const pending = (list) => list.map((x) => '<div class="rp-row rp-pending">'
-      + '<span>' + (ko ? x.ko : x.en) + '</span>'
-      + '<em>' + (ko ? '아직 생성되지 않음' : 'not generated yet') + '</em></div>').join('');
+    // 색인에 있으면 그 상태를 그대로 보여 준다. 없으면 없다고 말한다.
+    const periodicRow = (x) => {
+      const found = findReports(x.type);
+      if (!found.length) {
+        return '<div class="rp-row rp-pending"><span>' + (ko ? x.ko : x.en) + '</span>'
+          + '<em>' + (ko ? '아직 생성되지 않음' : 'not generated yet') + '</em></div>';
+      }
+      const r = found[0];
+      const per = (r.period || {}).from || '';
+      const published = r.lifecycle === 'PUBLISHED';
+      // 발행된 것만 열 수 있다. 생성 중이거나 실패한 것을 완성본처럼 보여 주지 않는다.
+      const state = published ? (ko ? '발행' : 'published')
+        : (ko ? '생성 중 · ' : 'generating · ') + (r.lifecycle || r.status || '');
+      return '<div class="rp-row' + (published ? '' : ' rp-pending') + '">'
+        + '<span>' + (ko ? x.ko : x.en) + ' <small>' + safeText(per.slice(0, 7)) + '</small></span>'
+        + (published
+          ? '<button class="rp-phen" data-report-open="' + safeText(r.reportId || '') + '">'
+            + (ko ? '읽기' : 'Read') + '</button>'
+          : '<em>' + safeText(state) + '</em>')
+        + '</div>';
+    };
+    const pending = (list) => list.map(periodicRow).join('');
 
     return '<section class="mp-sec" data-section="__rep-live" style="--sc:#8fd0ff">'
       + '<h3 class="mp-title"><button data-collapse="__rep-live" aria-expanded="true"><i></i>'
@@ -614,8 +661,8 @@ export function initShell(hooks) {
       + (ko ? '지구 회고' : 'Earth retrospective') + '</button></h3>'
       + '<div>' + pending(REPORT_PERIODIC)
       + '<p class="rp-note">' + (ko
-        ? '월간·분기·연간 회고는 생성 엔진이 아직 없습니다. 없는 보고서를 미리 그려 두지 않습니다.'
-        : 'The monthly, quarterly and annual retrospectives have no generator yet. We do not draw reports that do not exist.') + '</p>'
+        ? '엔진은 준비돼 있습니다(aws/report-engine). 위 목록은 발행된 보고서 색인을 그대로 읽습니다 — 아직 발행된 것이 없으면 없다고 적습니다.'
+        : 'The engine exists (aws/report-engine). The list above reads the published report index directly — if nothing is published yet, it says so.') + '</p>'
       + '</div></section>'
 
       + '<section class="mp-sec" data-section="__rep-outlook" style="--sc:#ecd7a6">'
@@ -632,6 +679,7 @@ export function initShell(hooks) {
     openBrand = brand;
     const aeth = brand === 'aetherus';
     const isReport = brand === 'report';
+    if (isReport) loadReportIndex();
     // PHASE 4 — 브랜드로 도메인을 고른다. AETHERUS 는 우주 하나(기존 계약 유지, §1).
     const domains = isReport ? [] : aeth ? ['space'] : ['land', 'weather', 'ocean', 'people', 'travel', 'hazards'];
     panel.classList.toggle('aeth', aeth);

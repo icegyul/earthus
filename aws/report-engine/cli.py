@@ -25,6 +25,8 @@ sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(os.path.dirname(HERE), "_shared"))
 
 import generator as gen                              # noqa: E402
+import quality as qcmod                              # noqa: E402
+import narrative as nr                               # noqa: E402
 import report_period as rp                           # noqa: E402
 import report_contract as rc                         # noqa: E402
 from adapters import kma_verify_adapter as kma       # noqa: E402
@@ -86,10 +88,16 @@ def cmd_report(args):
         period, snapshot=snap, facts=facts, evaluations=evals,
         generated_at=_now(), algorithm_version=gen.GENERATOR_VERSION)
     rep["coverage"] = {"period": cov, "previousPeriod": prev_cov}
+    # §4 QC · §8 서술 — 팩트가 있을 때만 문장을 만든다. 빈 보고서에 말을 붙이지 않는다.
+    quality = qcmod.check_verify_daily(daily, period=period)
+    if evals:
+        rep["narrative"] = nr.build_scorecard_narrative(
+            gen.build_forecast_scorecard(prev, evals))
+    rep = gen.run_publication_pipeline(rep, quality=quality, published_at=_now(),
+                                       mode=args.mode) if args.publish else rep
     ok, problems = gen.validate_report(rep)
-    if ok and args.publish:
-        rep = gen.publish(rep, published_at=_now())
-    _emit(rep, args, ok, problems, extra=f"팩트 {len(facts)} · 검증 {len(evals)} · 이전기간 {prev}")
+    _emit(rep, args, ok, problems,
+          extra=f"팩트 {len(facts)} · 검증 {len(evals)} · 이전기간 {prev} · QC {quality['status']}")
 
 
 def cmd_outlook(args):
@@ -153,7 +161,8 @@ def main(argv=None):
     r = sub.add_parser("report", help="회고 보고서")
     r.add_argument("--type", required=True, choices=sorted(TYPE_TO_PERIODKIND))
     r.add_argument("--period", required=True)
-    r.add_argument("--publish", action="store_true", help="검증을 통과하면 PUBLISHED 로 올린다")
+    r.add_argument("--publish", action="store_true", help="파이프라인을 끝까지 돌려 발행한다")
+    r.add_argument("--mode", default="PRODUCTION", choices=["TEST", "DEMO", "PRODUCTION"])
     r.set_defaults(fn=cmd_report)
 
     o = sub.add_parser("outlook", help="전망")

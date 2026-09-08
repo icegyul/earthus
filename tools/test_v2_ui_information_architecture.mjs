@@ -82,7 +82,9 @@ test('리포트 진입점이 UI 에 실제로 있다', () => {
   assert.match(shellSrc, /reportKindsForPhenomenon/, '리포트 종류를 조회하지 않는다');
   assert.match(shellSrc, /lab-reports\.html\?kind=/, '리포트로 가는 링크가 없다');
   // 기존 1.0 화면으로 보낸다 — v2 전용 렌더러를 새로 만들지 않는다(계약: 새 계보 금지).
-  assert.ok(!/report-engine/.test(shellSrc), 'v2 가 자체 리포트 엔진을 부르고 있다');
+  // 문서 문구에 엔진 경로가 등장하는 것은 괜찮다. 막아야 하는 것은 v2 가 엔진을 import/실행하는 것이다.
+  assert.ok(!/from '.*report-engine/.test(shellSrc), 'v2 가 리포트 엔진을 import 하고 있다');
+  assert.ok(!/generate(Monthly|Retrospective|Outlook)/.test(shellSrc), 'v2 가 보고서를 직접 생성하고 있다');
 });
 
 // ── 불변식 6 — 질문은 현상 문맥을 상속한다 ───────────────────────────────────
@@ -221,7 +223,10 @@ test('없는 보고서를 지어내지 않는다', () => {
   const body = shellSrc.slice(i, i + 5200);
   // 월간·분기·연간과 세 전망은 생성기가 없다 — 상태를 그대로 적는다.
   assert.match(body, /아직 생성되지 않음/);
-  assert.match(body, /생성 엔진이 아직 없습니다/);
+  // PHASE 7 — 목록을 색인에서 읽는다. 없다는 말이 화면에 박혀 있으면 엔진이 내놓아도 영원히 없다고 한다.
+  assert.match(shellSrc, /const findReports = \(type\) =>/, '보고서 목록을 색인에서 읽지 않는다');
+  assert.match(shellSrc, /REPORT_INDEX_URL/);
+  assert.ok(!/TEMP-VERIFY/.test(shellSrc), '검증용 임시 주소가 남아 있다');
   // 실제 보고서는 실제 종류로만 링크한다. 종류 조회는 위 helper(reportKindRows)가 한다.
   assert.match(shellSrc, /const reportKindRows = \(\) =>[\s\S]{0,400}reportKindsForPhenomenon/);
   assert.match(body, /lab-reports\.html\?kind=/);

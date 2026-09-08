@@ -15,11 +15,43 @@ import { i18n } from './i18n.js';
 // ⚠️ power 는 더 이상 쓰지 않는다 — 아래 _tick() 끝의 주석 참고.
 //    입자는 자기 캔버스에 그리므로 Cesium 렌더를 깨울 이유가 없다.
 
-const COUNT_MAX = 3000;      // 입자 수. 많을수록 촘촘하지만 프레임을 먹는다.
+/* ⚠️⚠️ **2026-09-08 밀도 재계산 — 전지구에 입자가 540개뿐이었다.**
+   예전 식은 `캔버스 장치픽셀 / 2400` 이었다. 1440×900 화면(dpr 1)에서 **540개**다.
+   전지구 뷰에서 지구가 차지하는 면적은 화면의 1/4쯤이니 실제로 바람을 그리는
+   입자는 **130개 남짓**이었다 — 태평양 하나에 열몇 개다. 흐름이 보일 수가 없다.
+   ⚠️ 게다가 장치픽셀 기준이라 dpr 2 화면에서는 같은 넓이에 **4배**가 뿌려졌다.
+      기기마다 밀도가 달랐다. → CSS 픽셀 기준으로 바꿔 어느 화면에서든 같게 만든다. */
+const DENSITY_CSS_PX = 460;  // 입자 하나가 맡는 CSS 픽셀 면적 (1440×900 → 2,817개)
+const COUNT_MAX = 4200;      // 상한. 넘으면 4K 화면에서 계산이 프레임을 먹는다.
 const LIFE_SEC = 3.0;        // 입자 수명(초)
 const FADE = 0.98;           // 잔상이 남는 정도. 1 에 가까울수록 꼬리가 길다.
                              // 0.94 는 꼬리가 약 1초라 느린 바람이 점이 됐다 → 0.98(약 3초, LIFE_SEC 과 같다)
+/* 카메라가 움직이는 동안의 꼬리. 예전에는 통째로 지워서 **지구를 돌리는 내내
+   바람이 사라졌다**. 짧은 꼬리(약 0.25초)로 바꿔 흐름은 남기고 번짐은 곧 지운다. */
+const FADE_MOVE = 0.72;
+const JUMP_PX = 60;          // 이만큼 넘게 튄 입자는 선을 잇지 않는다 (지평선·카메라 점프)
 const FRAME_MS = Math.round(1000 / 30); // 120Hz 폰에서도 30회만 계산·그린다
+
+/* ── 입자 색 (mapped.earth 문법) ─────────────────────────────────────
+   예전에는 전부 `rgba(255,255,255,a)` 흰 선이었다. 흰 선 하나로는 두 가지를 잃는다.
+     ① 세기가 안 읽힌다 — 알파만 다르면 "연한 흰 선/진한 흰 선"이라 비교가 안 된다.
+     ② 색면 위에서 묻힌다 — 그래서 색면 alpha 를 0.28 까지 낮췄던 것이고,
+        그 바람에 "색이 흐리멍텅하다"가 됐다. 둘 다 같은 원인이었다.
+   → 세기에 따라 얼음빛(약)에서 따뜻한 빛(태풍)으로 간다. **색면보다 항상 밝은**
+     계열만 써서 어떤 색면 위에서도 선이 먼저 읽힌다.
+   ⚠️ 구간별로 모아 한 번씩만 stroke 한다. 입자마다 stroke 하면 2,800번이 된다. */
+const BUCKETS = Object.freeze([
+  { maxKt:  8, rgb: '168,212,246', a: 0.34, w: 0.9  },  // 실바람
+  { maxKt: 16, rgb: '202,233,252', a: 0.50, w: 1.05 },  // 산들바람
+  { maxKt: 26, rgb: '229,246,255', a: 0.66, w: 1.2  },  // 센바람
+  { maxKt: 40, rgb: '255,252,231', a: 0.80, w: 1.4  },  // 강풍
+  { maxKt: 60, rgb: '255,231,148', a: 0.90, w: 1.7  },  // 폭풍
+  { maxKt: Infinity, rgb: '255,196, 96', a: 0.98, w: 2.1 }, // 태풍
+]);
+function bucketOf(kt) {
+  for (let i = 0; i < BUCKETS.length; i++) if (kt < BUCKETS[i].maxKt) return i;
+  return BUCKETS.length - 1;
+}
 
 /* ── 속도 기준 (윈디 척도) ──────────────────────────────────────
    ⚠️ 처음엔 "프레임당" 이동시켰다. 그러면 주사율에 따라 속도가 달라진다.
@@ -44,20 +76,35 @@ const FRAME_MS = Math.round(1000 / 30); // 120Hz 폰에서도 30회만 계산·�
       → 약한 바람의 바닥을 올렸다(2.5배). 강풍은 1.6배만 올려 과장이 더 벌어지지
         않게 했다. 꼬리 지속(FADE)도 1초 → 3초로 늘려 LIFE_SEC 과 맞췄다.
 
-   기준점 (전지구 뷰, 경도 1° ≈ 4.7픽셀 · 꼬리 약 3초)
-     10 kt   5 m/s  산들바람       0.70°/s ≈  3 px/s   꼬리 ≈ 10 px  ← 선으로 읽힌다
-     20 kt  10 m/s  선선한 바람     1.55°/s ≈  7 px/s   꼬리 ≈ 22 px
-     34 kt  17 m/s  강풍주의보급    2.86°/s ≈ 13 px/s
-     40 kt  21 m/s  강풍           3.45°/s ≈ 16 px/s
-     64 kt  33 m/s  태풍(TY) 시작   5.92°/s ≈ 28 px/s   확실히 몰아친다
-     90 kt  46 m/s  강한 태풍       8.76°/s ≈ 41 px/s
+   ⚠️⚠️ **2026-09-08 (2) — 같은 바람이 줌에 따라 8배 다르게 보였다.**
+      입자는 **도/초**로 움직이는데, 화면에서 1°가 몇 픽셀인지는 줌마다 다르다.
+        전지구 뷰      1° ≈ 4.7px   → 10kt 꼬리 ≈ 10px  (점에 가깝다)
+        4,200km 뷰     1° ≈  40px   → 10kt 꼬리 ≈ 78px  (시원하게 흐른다)
+      같은 바람인데 지구를 당겨 보면 8배 빨라 보였다. "전지구에서만 구리다"의 정체다.
+      윈디·mapped.earth 는 **화면 기준**으로 흐르게 해서 어느 줌에서도 같아 보인다.
+      → 매 틱 화면의 1°가 몇 픽셀인지 재서(_pxPerDeg) REF_PX_PER_DEG 로 정규화한다.
+      ⚠️ 이 배율은 **한 화면 전체에 똑같이** 곱해진다. 화면 안에서 강풍과 약풍의
+         비(比)는 그대로다 — 바뀌는 것은 줌 사이의 비교뿐이고, 그건 원래 비교
+         대상이 아니다(같은 바람을 당겨 본 것뿐이다).
+
+   기준점 (정규화 후 · 어느 줌에서나 · 꼬리 약 3초)
+     10 kt   5 m/s  산들바람        8 px/s   꼬리 ≈  25 px  ← 선으로 읽힌다
+     20 kt  10 m/s  선선한 바람     18 px/s   꼬리 ≈  53 px
+     34 kt  17 m/s  강풍주의보급    33 px/s
+     40 kt  21 m/s  강풍           40 px/s
+     64 kt  33 m/s  태풍(TY) 시작   68 px/s   확실히 몰아친다
+     90 kt  46 m/s  강한 태풍      100 px/s
 
    실제보다 수천 배 과장돼 있다. 실제 속도로 그리면 초당 0.003픽셀이라
    아예 안 움직인다. 목적이 "어디로 부는지"를 보이는 것이므로 과장은 불가피하고,
-   대신 배율을 일정하게 유지해 바람 간 상대 세기는 정확하다. */
+   대신 배율을 화면 안에서 일정하게 유지해 바람 간 상대 세기는 정확하다. */
 export const MS_TO_KT = 1 / 0.5144;
 const BASE = 0.70;           // 10kt 일 때의 도/초 (2026-09-08: 0.285 → 0.70)
 const EXP = 1.15;            // 클수록 강풍이 더 두드러진다 (1.35 → 1.15)
+/* 이 화면 밀도를 기준으로 삼는다. 전지구 뷰(4.7px/°)에서 배율 2.55 가 되어
+   10kt 꼬리가 10px → 25px 로 늘어난다 — mapped.earth 의 줄 길이와 같은 자리다. */
+const REF_PX_PER_DEG = 12;
+const BOOST_MIN = 0.05, BOOST_MAX = 4;   // 극단적인 줌에서 폭주하지 않게
 
 function degPerSec(ms) {
   const kt = ms * MS_TO_KT;
@@ -77,6 +124,8 @@ export const windField = {
   _tickCostSum: 0, _tickCostN: 0,
   _scratchWind: { u: 0, v: 0 },
   _scratchCur: null, _scratchNormal: null, _scratchToCam: null, _scratchScreen: null,
+  _scratchMeasA: null, _scratchMeasB: null, _scratchMeas2A: null, _scratchMeas2B: null,
+  _boost: 1,
 
   init() {
     const cv = document.createElement('canvas');
@@ -92,6 +141,10 @@ export const windField = {
     this._scratchNormal = new Cesium.Cartesian3();
     this._scratchToCam = new Cesium.Cartesian3();
     this._scratchScreen = new Cesium.Cartesian2();
+    this._scratchMeasA = new Cesium.Cartesian3();
+    this._scratchMeasB = new Cesium.Cartesian3();
+    this._scratchMeas2A = new Cesium.Cartesian2();
+    this._scratchMeas2B = new Cesium.Cartesian2();
     this._resize();
     new ResizeObserver(() => this._resize()).observe(scene.canvas.parentElement);
     document.addEventListener('visibilitychange', () => {
@@ -109,6 +162,8 @@ export const windField = {
     this.canvas.style.width = el.clientWidth + 'px';
     this.canvas.style.height = el.clientHeight + 'px';
     this._dpr = dpr;
+    // 밀도는 CSS 픽셀로 센다 — dpr 2 화면에서 4배가 뿌려지지 않게 한다
+    this._cssW = el.clientWidth; this._cssH = el.clientHeight;
     // 캔버스 크기를 바꾸면 내용이 지워진다 → 이전 좌표를 남겨두면 엉뚱한 선이 그어진다
     for (const p of (this.parts || [])) p.px = null;
   },
@@ -201,9 +256,12 @@ export const windField = {
     return result;
   },
 
+  /* ⚠️ 뷰 사각형은 **틱마다 한 번만** 구한다(_tick 이 _viewRect 에 넣어 준다).
+     입자마다 computeViewRectangle 을 부르면, 2,800개가 3초마다 죽고 살아나는
+     지금 밀도에서 초당 900번 넘게 카메라 절두체를 다시 푼다. */
   _spawn(p) {
     // 화면에 보이는 범위 안에 뿌려야 낭비가 없다
-    const r = viewer.camera.computeViewRectangle(scene.globe.ellipsoid);
+    const r = this._viewRect;
     let lat, lon;
     if (r) {
       const s = Cesium.Math.toDegrees(r.south), n = Cesium.Math.toDegrees(r.north);
@@ -238,8 +296,10 @@ export const windField = {
 
   _start() {
     if (this._timer != null || document.hidden || !this.on || !this.grid) return;
-    const n = Math.min(COUNT_MAX, Math.round(this.canvas.width * this.canvas.height / 2400));
+    const n = Math.min(COUNT_MAX,
+      Math.round((this._cssW || 1) * (this._cssH || 1) / DENSITY_CSS_PX));
     if (this.parts.length !== n) {
+      this._viewRect = viewer.camera.computeViewRectangle(scene.globe.ellipsoid);
       this.parts = Array.from({ length: n }, () => { const p = {}; this._spawn(p); return p; });
     }
     const step = () => {
@@ -251,6 +311,28 @@ export const windField = {
       this._timer = setTimeout(step, FRAME_MS);
     };
     this._timer = setTimeout(step, 0);
+  },
+
+  /** 지금 화면에서 경도 1°가 몇 CSS 픽셀인가 — 줌 보정의 유일한 입력.
+   *  ⚠️ 계산으로 어림하지 않고 **화면에 실제로 찍어 본다**. 지구는 구라서 화면
+   *     중심과 지평선 근처가 다르고, 카메라 기울기·투영에 따라서도 달라진다.
+   *     보이는 범위의 한가운데에서 1° 떨어진 두 점을 투영해 그 거리를 쓴다.
+   *  ⚠️ 실패하면(지평선 밖·투영 불가) 이전 값을 유지한다. 0 을 돌려주면 배율이
+   *     무한대가 되어 입자가 지구 밖으로 튀어 나간다. */
+  _measurePxPerDeg() {
+    const r = this._viewRect;
+    if (!r) return null;
+    let lat = Cesium.Math.toDegrees((r.south + r.north) / 2);
+    let lon = Cesium.Math.toDegrees(r.west + Cesium.Rectangle.computeWidth(r) / 2);
+    lat = Math.max(-70, Math.min(70, lat));   // 극 근처의 경도 수렴을 기준으로 삼지 않는다
+    const ell = scene.globe.ellipsoid;
+    const a = Cesium.Cartesian3.fromDegrees(lon, lat, 0, ell, this._scratchMeasA);
+    const b = Cesium.Cartesian3.fromDegrees(lon + 1, lat, 0, ell, this._scratchMeasB);
+    const pa = scene.cartesianToCanvasCoordinates(a, this._scratchMeas2A);
+    const pb = scene.cartesianToCanvasCoordinates(b, this._scratchMeas2B);
+    if (!pa || !pb) return null;
+    const d = Math.hypot(pb.x - pa.x, pb.y - pa.y);
+    return Number.isFinite(d) && d > 0.01 ? d : null;
   },
 
   _stop() {
@@ -274,44 +356,59 @@ export const windField = {
 
     const ctx = this.ctx, W = this.canvas.width, H = this.canvas.height;
 
-    /* ⚠️ 카메라가 움직이면 이전 프레임의 꼬리를 지워야 한다.
-       꼬리는 "그때 그 화면 좌표"에 그려진 그림이다. 지구를 돌리면 그 좌표가
-       전혀 다른 곳을 가리키게 되는데, 부분 지우기(fade)만 하면 옛 자국이
-       화면에 그대로 끌려다닌다 — 지구를 돌릴 때 잔상이 남는 원인이었다.
-       → 카메라가 바뀐 프레임은 통째로 지우고, 입자의 이전 좌표도 버린다
-         (안 버리면 옛 위치에서 새 위치로 긴 직선이 그어진다). */
+    /* 꼬리는 "그때 그 화면 좌표"에 그려진 그림이다. 지구를 돌리면 그 좌표가 전혀
+       다른 곳을 가리키게 되므로, 카메라가 움직인 프레임의 꼬리는 오래 두면 번진다.
+
+       ⚠️⚠️ **2026-09-08 — 예전에는 이 프레임을 통째로 지웠다(clearRect).**
+          그래서 지구를 돌리는 동안 바람이 **한 줄도 없었다.** 손을 떼야 다시
+          그려지기 시작하니, 돌려 보는 사람에게는 바람 레이어가 꺼진 것과 같았다.
+       → 통째로 지우는 대신 **짧은 꼬리(FADE_MOVE ≈ 0.25초)**로 바꾼다. 번짐은
+         네 프레임 안에 사라지고, 흐름은 돌리는 내내 살아 있다.
+       ⚠️ 대신 화면에서 크게 튄 입자는 선을 잇지 않는다(아래 JUMP_PX). 안 그러면
+          카메라가 크게 움직인 프레임에서 옛 위치→새 위치로 긴 직선이 그어진다. */
     const c = viewer.camera;
     const key = `${c.positionWC.x.toFixed(0)},${c.positionWC.y.toFixed(0)},${c.positionWC.z.toFixed(0)},`
               + `${c.directionWC.x.toFixed(3)},${c.directionWC.y.toFixed(3)}`;
     const moved = key !== this._camKey;
     this._camKey = key;
-
-    if (moved) {
-      ctx.clearRect(0, 0, W, H);
-      for (const p of this.parts) p.px = null;
-    } else {
-      // 가만히 있을 때만 꼬리를 남긴다
-      ctx.globalCompositeOperation = 'destination-out';
-      // 60fps 기준으로 FADE 가 되도록 dt 로 보정 — 주사율이 달라도 꼬리 길이가 같다
-      const fade = 1 - Math.pow(FADE, dt * 60);
-      ctx.fillStyle = `rgba(0,0,0,${fade})`;
-      ctx.fillRect(0, 0, W, H);
-      ctx.globalCompositeOperation = 'source-over';
+    /* 카메라가 움직였으면 뿌릴 범위도, 1°가 몇 픽셀인지도 달라졌다.
+       ⚠️ 둘 다 **틱당 한 번만** 구한다. 입자마다 부르면 초당 수천 번이 된다. */
+    if (moved || !this._viewRect) {
+      this._viewRect = c.computeViewRectangle(scene.globe.ellipsoid);
+      const pxPerDeg = this._measurePxPerDeg();
+      if (pxPerDeg) {
+        this._boost = Math.max(BOOST_MIN,
+          Math.min(BOOST_MAX, REF_PX_PER_DEG / pxPerDeg));
+      }
     }
+
+    ctx.globalCompositeOperation = 'destination-out';
+    // 60fps 기준으로 FADE 가 되도록 dt 로 보정 — 주사율이 달라도 꼬리 길이가 같다
+    const fade = 1 - Math.pow(moved ? FADE_MOVE : FADE, dt * 60);
+    ctx.fillStyle = `rgba(0,0,0,${fade})`;
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'source-over';
 
     const cam = c.positionWC;
     const ell = scene.globe.ellipsoid;
-    ctx.lineWidth = 1.1 * this._dpr;
     ctx.lineCap = 'round';
+
+    /* 세기 구간별 선분 모음. 입자마다 stroke() 하면 2,800번이라 캔버스가 못 버틴다.
+       ⚠️ 배열은 한 번 만들어 두고 길이만 0 으로 되돌린다 — 매 틱 새로 만들면
+          초당 180개의 배열이 생겨 짧은 GC 가 계속 난다. */
+    if (!this._segs) this._segs = BUCKETS.map(() => []);
+    const segs = this._segs;
+    const jump = JUMP_PX * this._dpr;
 
     for (const p of this.parts) {
       if ((p.age += dt) > LIFE_SEC) { this._spawn(p); continue; }
       const w = this.sample(p.lat, p.lon, this._scratchWind);
       if (!w) { this._spawn(p); continue; }
 
-      // 크기는 윈디 척도로 매핑하고 방향(단위벡터)은 그대로 쓴다
+      // 크기는 윈디 척도로 매핑하고 방향(단위벡터)은 그대로 쓴다.
+      // _boost 는 이 화면 전체에 같은 값이라 바람 사이의 상대 세기는 안 바뀐다.
       const ms = Math.hypot(w.u, w.v);
-      const step = degPerSec(ms) * dt;
+      const step = degPerSec(ms) * dt * this._boost;
       const ux = ms > 0.01 ? w.u / ms : 0, uy = ms > 0.01 ? w.v / ms : 0;
       const nlat = p.lat + uy * step;
       // 고위도로 갈수록 경도 1도의 실제 거리가 짧아진다 → 보정 안 하면 극 근처가 느려 보인다
@@ -331,12 +428,11 @@ export const windField = {
         : null;
       if (sc) {
         const x = sc.x * this._dpr, y = sc.y * this._dpr;
-        if (p.px != null) {
-          // 강할수록 밝게. 60kt(윈디 범례 상한)에서 최대가 되도록 맞췄다.
-          const kt = ms * MS_TO_KT;
-          const a = Math.min(0.9, 0.2 + kt / 60 * 0.7);
-          ctx.strokeStyle = `rgba(255,255,255,${a})`;
-          ctx.beginPath(); ctx.moveTo(p.px, p.py); ctx.lineTo(x, y); ctx.stroke();
+        /* ⚠️ 카메라가 크게 움직였거나 지평선을 넘어 다시 나타난 입자는 이전 좌표가
+           전혀 다른 곳이다. 그대로 이으면 화면을 가로지르는 가짜 선이 생긴다. */
+        if (p.px != null && Math.abs(x - p.px) < jump && Math.abs(y - p.py) < jump) {
+          const list = segs[bucketOf(ms * MS_TO_KT)];
+          list.push(p.px, p.py, x, y);
         }
         p.px = x; p.py = y;
       } else p.px = null;
@@ -344,6 +440,22 @@ export const windField = {
       p.lat = nlat;
       if (p.lat > 84 || p.lat < -84) { this._spawn(p); continue; }
       p.lon = ((nlon + 540) % 360) - 180;
+    }
+
+    /* 약한 바람부터 그린다 — 겹치는 자리에서 강한 바람이 위에 오게. */
+    for (let b = 0; b < BUCKETS.length; b++) {
+      const list = segs[b];
+      if (!list.length) continue;
+      const spec = BUCKETS[b];
+      ctx.strokeStyle = `rgba(${spec.rgb},${spec.a})`;
+      ctx.lineWidth = spec.w * this._dpr;
+      ctx.beginPath();
+      for (let i = 0; i < list.length; i += 4) {
+        ctx.moveTo(list[i], list[i + 1]);
+        ctx.lineTo(list[i + 2], list[i + 3]);
+      }
+      ctx.stroke();
+      list.length = 0;
     }
 
     /* ⚠️⚠️ 여기 있던 power.animate(200) 을 없앴다. 이 앱 최대의 발열 경로였다.
@@ -369,6 +481,8 @@ export const windField = {
       this.canvas.dataset.ticks = String(this._ticks);
       this.canvas.dataset.tickMs = (this._tickCostSum / this._tickCostN).toFixed(2);
       this.canvas.dataset.particles = String(this.parts.length);
+      // 줌 보정 배율 — "전지구에서만 점으로 보인다"의 회귀를 여기서 잰다
+      this.canvas.dataset.boost = this._boost.toFixed(2);
       this._tickCostSum = 0;
       this._tickCostN = 0;
     }

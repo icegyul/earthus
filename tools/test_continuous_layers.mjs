@@ -52,10 +52,26 @@ const earthViewState = await source('prototype/js/earth-view-state.js');
 const main = await source('prototype/js/main.js');
 const index = await source('prototype/index.html');
 
-for (const key of ['temp', 'tmax', 'tmin', 'sst', 'wave', 'sstAnom', 'mslp', 'wind']) {
+for (const key of ['temp', 'tmax', 'tmin', 'sst', 'wave', 'sstAnom', 'mslp']) {
   assert.match(overlay, new RegExp(`${key}:[\\s\\S]{0,240}?stepped: true`),
     `${key} 단계색 계약이 있어야 한다`);
 }
+/* ⚠️ 바람만 단계색에서 뺐다(2026-09-08). `stepped` 는 확대에 nearest-neighbour 를
+   강제하므로 5° 격자가 550km 네모로 드러난다. 기온은 "몇 도 선"이 의미를 갖지만
+   풍속은 흐름을 읽는 층이라 세울 경계가 없다 — 부드럽게 보간한다. */
+assert.doesNotMatch(overlay, /wind: \{[\s\S]{0,240}?stepped: true/,
+  '풍속 색면은 단계색이면 안 된다 — 5° 격자의 네모가 그대로 드러난다');
+/* ⚠️ `wind: {` 부터 세면 주석 한 줄에 창이 넘친다. 풍속 눈금의 마지막 단계에
+   붙여 잰다 — 팔레트와 알파가 같은 블록임을 확인하면서 주석 길이에 안 흔들린다. */
+assert.match(overlay, /\[60, \[226,  70,  96\]\],[\s\S]{0,80}?alpha: 0\.62/,
+  '풍속 색면은 "바람의 양"이 읽힐 만큼 진해야 한다');
+/* ⚠️ 이 층은 위성 영상 위(지구 보기)와 검은 지구 위(판독 모드)에 같이 올라간다.
+   바닥색이 검정에 가까우면 판독 모드에서 통째로 사라지고, 알파가 0m/s 부터
+   가득 차면 지구 보기에서 위성 영상이 통째로 덮인다. 둘 다 실측으로 겪었다. */
+assert.match(overlay, /wind: \{[\s\S]{0,240}?mute: 0,[\s\S]{0,40}?fade: 3/,
+  '거의 잔잔한 곳만 투명해야 한다 — 경사가 길면 판독 모드가 검게 빈다');
+assert.match(overlay, /stops: \[\s*\n\s*\[0, \[ 14,  30,  60\]\]/,
+  '풍속 바닥색은 검정이 아니라 짙은 남색이어야 한다 — 검은 지구에서도 보여야 한다');
 assert.match(overlay, /Math\.hypot\(u, V\[index\]\)/,
   '풍속은 u/v 벡터 크기에서 계산해야 한다');
 assert.match(overlay, /derivation:[\s\S]*VECTOR_MAGNITUDE[\s\S]*sqrt\(u\^2\+v\^2\)/,
@@ -89,8 +105,12 @@ assert.match(overlay, /const near = tx < 0\.5[\s\S]{0,600}?weight > 0 \? acc \/ 
   '결측 꼭짓점이 있어도 속한 격자점이 살아 있으면 칠해야 한다');
 assert.match(overlay, /refreshResolution\(\)[\s\S]*desired !== rendered\.sourceName/,
   '카메라가 전용 보강판 경계를 넘을 때만 해상도를 교체해야 한다');
-assert.match(contours, /CONTOUR_PROFILES[\s\S]*temp:[\s\S]*wind:[\s\S]*tpw:[\s\S]*sst:[\s\S]*sstanom:[\s\S]*wave:/,
+assert.match(contours, /CONTOUR_PROFILES[\s\S]*temp:[\s\S]*tpw:[\s\S]*sst:[\s\S]*sstanom:[\s\S]*wave:/,
   'PR-06 연속 레이어 등치선 프로필이 모두 있어야 한다');
+/* ⚠️ 바람에는 등치선을 그리지 않는다(2026-09-08 제거). 5° 격자에 얹으면 바다에
+   각진 다각형 260개가 뜨고, 그 각은 바람이 아니라 격자 칸의 모양이다. */
+assert.doesNotMatch(contours, /^\s*wind(fc)?:\s*\{ levels:/m,
+  '풍속에는 등치선 프로필이 있으면 안 된다 — 격자 칸 모양이 바람 모양으로 읽힌다');
 assert.match(contours, /clampToGround: false/);
 assert.doesNotMatch(contours, /setInterval|requestAnimationFrame/,
   '등치선은 유한 렌더여야 한다');

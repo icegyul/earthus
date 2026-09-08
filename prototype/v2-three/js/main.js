@@ -4,14 +4,14 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=63-p4menu';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=65-p5final';
 import { createSelectionGate } from './information-contract.js';
 // PHASE 4 §9 — 지도에서 고른 사건을 어느 현상으로 읽을지는 레지스트리가 정한다.
-import { layerForEventKind } from './phenomenon-registry.js?v=3';
+import { layerForEventKind } from './phenomenon-registry.js?v=4';
 const escUI = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
-import { IntelFeed } from './intel-feed.js?v=8';
+import { IntelFeed } from './intel-feed.js?v=9';
 import { evaluateWatch, myZone, loadWatch, saveWatch } from './watch.js?v=1';
 import { LiveLayers } from './live-layers.js?v=39-information';
 import { StationModel } from './station-model.js?v=2';

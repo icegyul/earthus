@@ -112,8 +112,10 @@ WATCH = [
     # ⚠️ 하루 한 번이면 충분하다 — 원본(네바다 MIDAS)이 그보다 자주 안 바뀐다.
     {"key": "events/crustal.json", "everyMin": 1440, "graceMin": 720,
      "ko": "땅의 움직임 (GNSS)"},
-    {"key": "events/social-drafts.json", "everyMin": 60, "graceMin": 180,
-     "ko": "SNS 초안"},
+    # ⚠️ INTEGRATION-4 §0 — 키가 events/(공개) 에서 archive/(비공개) 로 옮겨졌다.
+    #    이 람다는 S3 API 로 읽으므로 비공개여도 그대로 확인된다.
+    {"key": "archive/social-drafts.json", "everyMin": 60, "graceMin": 180,
+     "ko": "SNS 초안 (비공개)"},
     # ── 2026-08-04 추가 ────────────────────────────────────────
     # ⚠️ 만든 날 여기 안 넣으면, 죽어도 화면에 옛 자료가 그대로 떠 있어 아무도 모른다.
     #    (mountain-verify 가 15시간 죽어 있던 게 정확히 그래서였다)

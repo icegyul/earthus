@@ -29,7 +29,8 @@ SCHEDULED_OUTPUTS = {
     "events/uk-forecast.json", "wind/series/mountain-gap-daily.json",
     "ocean/obis-summary.json", "wind/pressure-ea.json", "events/push-tick.json",
     "events/quake-asia.json", "events/regional.json", "events/regional-news.json",
-    "events/sea-turtle.json", "events/social-drafts.json", "wind/tpw-ea.json",
+    # INTEGRATION-4 §0 — 승인 전 초안이라 events/(공개) 에서 archive/(비공개) 로 옮겨졌다
+    "events/sea-turtle.json", "archive/social-drafts.json", "wind/tpw-ea.json",
     "events/typhoon-official.json", "events/world-alerts.json",
     "app/tourism/health.json",
 }

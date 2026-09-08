@@ -5,8 +5,12 @@ BUCKET="${EARTHUS_BUCKET:-earthus-cache-kr}"
 REGION="${EARTHUS_REGION:-us-east-2}"
 PREFIX="${EARTHUS_APP_PREFIX:-app}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-V2="$ROOT/prototype/v2"
-E2="$ROOT/prototype/js/earthus2"
+# INTEGRATION-4 §4 — 공개 배포 원본은 build/public-app 하나다.
+#   작업 트리를 직접 올리지 않는다 — 거름망이 막은 파일은 여기서 멈춘다.
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/_shared/public-source.sh
+PUBLIC_ROOT="$(public_source_root)"
+V2="$(public_dir v2)"
+E2="$(public_dir js/earthus2)"
 [[ -f "$V2/index.html" ]] || { echo "missing $V2/index.html" >&2; exit 2; }
 [[ -d "$E2" ]] || { echo "missing $E2" >&2; exit 2; }
 
@@ -17,7 +21,7 @@ aws s3 sync "$E2" "s3://${BUCKET}/${PREFIX}/js/earthus2/" --region "$REGION" --c
 fix_type(){
   local base="$1" pattern="$2" type="$3"
   while IFS= read -r file; do
-    local rel="${file#$ROOT/prototype/}"
+    local rel="${file#$PUBLIC_ROOT/}"
     aws s3 cp "s3://${BUCKET}/${PREFIX}/${rel}" "s3://${BUCKET}/${PREFIX}/${rel}" \
       --region "$REGION" --metadata-directive REPLACE --content-type "$type" --cache-control 'public, max-age=60' >/dev/null
   done < <(find "$base" -type f -name "$pattern" | sort)

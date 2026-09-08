@@ -3,6 +3,10 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# INTEGRATION-4 §4 — 공개 배포 원본은 build/public-app 하나다.
+#   작업 트리를 직접 올리지 않는다 — 거름망이 막은 파일은 여기서 멈춘다.
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/../aws/_shared/public-source.sh
+PUBLIC_ROOT="$(public_source_root)"
 BUCKET="earthus-cache-kr"
 APP_PREFIX="app"
 DISTRIBUTION_ID="E193CZEBLWEB56"
@@ -10,11 +14,9 @@ REGION="us-east-2"
 
 upload() {
   local source_path="$1" public_path="$2" content_type="$3" cache_control="$4"
-  [[ -f "$REPO_ROOT/$source_path" ]] || {
-    printf 'Missing deployment source: %s\n' "$source_path" >&2
-    exit 1
-  }
-  aws s3 cp "$REPO_ROOT/$source_path" "s3://$BUCKET/$APP_PREFIX/$public_path" \
+  local local_path
+  local_path="$(public_file "$source_path")" || exit 1
+  aws s3 cp "$local_path" "s3://$BUCKET/$APP_PREFIX/$public_path" \
     --region "$REGION" \
     --content-type "$content_type" \
     --cache-control "$cache_control" \
@@ -32,11 +34,11 @@ upload prototype/sw.js sw.js 'text/javascript; charset=utf-8' 'no-cache'
 upload prototype/ocean.html ocean.html 'text/html; charset=utf-8' 'no-cache'
 
 # Ocean 0–51장으로 만든 클라이언트 계약 전체. 일부만 골라 canary에 남기지 않는다.
-aws s3 cp "$REPO_ROOT/prototype/js/ocean" "s3://$BUCKET/$APP_PREFIX/js/ocean" \
+aws s3 cp "$PUBLIC_ROOT/js/ocean" "s3://$BUCKET/$APP_PREFIX/js/ocean" \
   --recursive --exclude '*' --include '*.js' --region "$REGION" \
   --content-type 'text/javascript; charset=utf-8' --cache-control 'no-cache' \
   --metadata-directive REPLACE --only-show-errors
-aws s3 cp "$REPO_ROOT/prototype/data/ocean" "s3://$BUCKET/$APP_PREFIX/data/ocean" \
+aws s3 cp "$PUBLIC_ROOT/data/ocean" "s3://$BUCKET/$APP_PREFIX/data/ocean" \
   --recursive --exclude '*' --include '*.json' --region "$REGION" \
   --content-type 'application/json; charset=utf-8' --cache-control 'no-cache' \
   --metadata-directive REPLACE --only-show-errors
@@ -46,11 +48,11 @@ for file in sea-life.json trenches.json trench-footprints.json ocean-comparisons
   upload "prototype/data/$file" "data/$file" 'application/json; charset=utf-8' 'no-cache'
 done
 upload prototype/data/trench-bathymetry.webp data/trench-bathymetry.webp image/webp 'public, max-age=86400'
-aws s3 cp "$REPO_ROOT/prototype/ocean/thumbs" "s3://$BUCKET/$APP_PREFIX/ocean/thumbs" \
+aws s3 cp "$PUBLIC_ROOT/ocean/thumbs" "s3://$BUCKET/$APP_PREFIX/ocean/thumbs" \
   --recursive --exclude '*' --include '*.jpg' --region "$REGION" \
   --content-type image/jpeg --cache-control 'public, max-age=86400' \
   --metadata-directive REPLACE --only-show-errors
-aws s3 cp "$REPO_ROOT/prototype/ocean/thumbs" "s3://$BUCKET/$APP_PREFIX/ocean/thumbs" \
+aws s3 cp "$PUBLIC_ROOT/ocean/thumbs" "s3://$BUCKET/$APP_PREFIX/ocean/thumbs" \
   --recursive --exclude '*' --include '*.png' --region "$REGION" \
   --content-type image/png --cache-control 'public, max-age=86400' \
   --metadata-directive REPLACE --only-show-errors

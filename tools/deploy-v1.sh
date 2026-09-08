@@ -8,6 +8,10 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# INTEGRATION-4 §4 — 공개 배포 원본은 build/public-app 하나다.
+#   작업 트리를 직접 올리지 않는다 — 거름망이 막은 파일은 여기서 멈춘다.
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/../aws/_shared/public-source.sh
+
 BUCKET="earthus-cache-kr"
 PREFIX="app"
 DIST="E193CZEBLWEB56"
@@ -33,7 +37,7 @@ for f in "$@"; do
   [ -f "$ROOT/prototype/$f" ] || { echo "  없는 파일: $f" >&2; exit 1; }
   case "$f" in
     # 문법이 깨진 채 올리면 앱 전체가 멈춘다. 올리기 전에 본다.
-    *.js) node --check "$ROOT/prototype/$f"; printf '  OK %s\n' "$f" ;;
+    *.js) node --check "$(public_file "$f")" || exit 1; printf '  OK %s\n' "$f" ;;
     *)    printf '  -- %s\n' "$f" ;;
   esac
 done
@@ -41,7 +45,9 @@ done
 echo "== 2/3 업로드 =="
 PATHS=()
 for f in "$@"; do
-  aws s3 cp "$ROOT/prototype/$f" "s3://$BUCKET/$PREFIX/$f" \
+  # 대입으로 받아 실패를 붙잡는다 — 인자 안에서 부르면 빈 문자열로 그대로 간다.
+  src="$(public_file "$f")" || exit 1
+  aws s3 cp "$src" "s3://$BUCKET/$PREFIX/$f" \
     --region "$REGION" --content-type "$(ctype "$f")" \
     --cache-control 'no-cache' --metadata-directive REPLACE --only-show-errors
   printf '  올림 %s\n' "$f"

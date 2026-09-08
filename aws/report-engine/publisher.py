@@ -25,6 +25,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "_shared"))
 import report_contract as rc      # noqa: E402
 import governance as gov          # noqa: E402
+import publication_privacy as priv  # noqa: E402
 
 BLOCKED_NO_CREDENTIALS = "PUBLISH_BLOCKED_NO_CREDENTIALS"
 IMMUTABLE_CACHE = "public, max-age=31536000, immutable"
@@ -111,6 +112,14 @@ class S3PublishAdapter(PublishAdapter):
             return {"ok": False, "published": False, "reason": "NOT_VALIDATED",
                     "detail": "발행 단계를 통과하지 않은 리포트는 올리지 않는다"}
         key = report_key(report)
+        # INTEGRATION-4 §7 — 공개 키에 쓰기 직전에 **경계 판정을 한 곳에 묻는다.**
+        # ⚠️ publication_privacy.check_public_write 는 INTEGRATION-2 가 "핵심 검사"라고
+        #    적어 놓고도 부르는 곳이 시험뿐이었다. 부르지 않는 검사는 검사가 아니다.
+        allowed = priv.check_public_write(key, report, kind="report")
+        if not allowed["allowed"]:
+            return {"ok": False, "published": False, "reason": "PUBLIC_WRITE_REFUSED",
+                    "detail": allowed["reason"], "visibility": allowed["visibility"],
+                    "keyVisibility": allowed["keyVisibility"]}
         body = json.dumps(report, ensure_ascii=False, sort_keys=True).encode("utf-8")
         try:
             # IfNoneMatch="*" — 이미 있으면 쓰지 않는다. 덮어쓰기 경로가 아예 없다.

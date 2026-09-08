@@ -18,7 +18,20 @@
    무엇보다 사람이 어차피 보고 올릴 것이라 **브라우저에서 그리는 편이 낫다.**
    → 초안은 "사실 + 문구 + 카드 사양"이고, 그림은 studio.html 이 그린다.
 
-출력  s3://<CACHE_BUCKET>/events/social-drafts.json
+출력  s3://<CACHE_BUCKET>/archive/social-drafts.json   ← **비공개 접두사**
+
+■⚠️⚠️ INTEGRATION-4 §0 — 예전에는 `events/social-drafts.json` 에 썼다.
+   `events/` 는 **공개 접두사**다. 즉 "아무 데도 안 올렸다"고 적어 둔 초안이
+   주소만 알면 누구나 읽을 수 있는 자리에 놓여 있었다.
+   2026-09-08 실측: `https://earthus-cache-kr.s3.us-east-2.amazonaws.com/events/social-drafts.json` → **200**.
+
+   공개 빌드 거름망(aws/_shared/public_build.py)으로는 이걸 막을 수 없다 —
+   그 거름망은 배포가 올리는 파일만 거른다. 이 파일은 **람다가 직접 쓴다.**
+   그래서 쓰는 자리를 옮겼다.
+
+   읽는 쪽(prototype/js/studio.js)은 이제 이 파일을 받지 못한다. 그게 맞다 —
+   자격증명 없는 화면이 승인 전 문구를 읽고 있었던 것이 문제였다.
+   인증된 관리 읽기 경로가 생기기 전까지 그 화면은 "받을 수 없다"고 말한다.
 """
 
 import hashlib
@@ -29,12 +42,32 @@ from datetime import datetime, timedelta, timezone
 
 import boto3
 
-BUCKET = os.environ["CACHE_BUCKET"]
+BUCKET = os.environ.get("CACHE_BUCKET")   # 람다에서는 항상 있다. 시험에서 import 되게 get 을 쓴다
 REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 CDN = os.environ.get("CDN_BASE", "https://earthus.net")
-s3 = boto3.client("s3", region_name=REGION)
+# ⚠️ 클라이언트를 모듈 읽을 때 만들지 않는다. 자격증명 탐색이 그때 일어나서,
+#    자격증명이 없는 곳(시험 등)에서는 **import 자체가 실패한다.**
+#    람다에서는 첫 호출 때 한 번 만들어지고 그 뒤로는 재사용된다 — 비용 차이가 없다.
+_S3 = None
 
-DST = "events/social-drafts.json"
+
+def s3_client():
+    global _S3
+    if _S3 is None:
+        _S3 = boto3.client("s3", region_name=REGION)
+    return _S3
+
+# ⚠️ 이 목록은 aws/_shared/publication_privacy.PRIVATE_PREFIXES 와 **같아야 한다.**
+#    람다 묶음에 그 모듈을 넣지 않으므로(패키지를 키우지 않는다) 여기 적되,
+#    aws/report-engine/tests/test_integration4_boundary.py 가 두 값이 같은지 검사한다.
+#    어긋나면 시험이 깨진다 — 조용히 갈라지지 않는다.
+PRIVATE_PREFIXES = ("archive/",)
+
+DST = "archive/social-drafts.json"
+
+# 승인 상태 어휘. aws/_shared/governance.PUBLISH_STATES 의 부분집합이다.
+# 이 람다는 **DRAFT 만 만든다.** 다른 상태로 올리는 경로가 여기에는 없다.
+DRAFT_STATUS = "DRAFT"
 SRC = f"{CDN}/events/typhoon-official.json"
 UA = {"User-Agent": "earthus/1.0 (dalur@kakao.com)"}
 KST = timezone(timedelta(hours=9))
@@ -201,7 +234,17 @@ def fit(text, limit, tail):
     return f"{body}\n\n{warn}{tail}"
 
 
+def _assert_private(key):
+    """공개 접두사에는 쓰지 않는다. 실수로 되돌려도 여기서 멈춘다."""
+    if not any(key.startswith(p) for p in PRIVATE_PREFIXES):
+        raise RuntimeError(
+            "승인 전 초안을 공개 경로에 쓰려 한다: %s (허용: %s)"
+            % (key, ", ".join(PRIVATE_PREFIXES)))
+    return key
+
+
 def handler(event=None, context=None):
+    _assert_private(DST)
     j = get(SRC)
     storms = j.get("storms") or []
     now = datetime.now(timezone.utc).astimezone(KST)
@@ -239,11 +282,17 @@ def handler(event=None, context=None):
             },
             "text": {p: fit(base, lim, link) for p, lim in LIMITS.items()},
             # ⚠️ **아직 아무 데도 안 올렸다.** 사람이 관리자 화면에서 올린다.
+            #    상태를 글로 적어 둔다 — 초안과 게시물을 같은 것으로 읽지 않게(§0.5·§0.6).
+            "status": DRAFT_STATUS,
+            "approval": None,
             "posted": {},
         })
 
     doc = {
         "generated": now.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:00Z"),
+        # 이 문서 전체가 승인 전이다. 공개 문서와 섞이지 않도록 봉투에도 적는다.
+        "status": DRAFT_STATUS,
+        "visibility": "PRIVATE",
         "count": len(drafts),
         "source": "기상청·JMA·NHC 공식 예보 (typhoon-official.json)",
         "note": {
@@ -256,7 +305,9 @@ def handler(event=None, context=None):
         "drafts": drafts,
     }
     body = json.dumps(doc, ensure_ascii=False, separators=(",", ":")).encode()
-    s3.put_object(Bucket=BUCKET, Key=DST, Body=body,
+    if not BUCKET:
+        raise RuntimeError("CACHE_BUCKET 이 없다")
+    s3_client().put_object(Bucket=BUCKET, Key=_assert_private(DST), Body=body,
                   ContentType="application/json; charset=utf-8",
                   CacheControl="no-cache")
     print(f"[social] 초안 {len(drafts)}건 · {[d['name'] for d in drafts]}")

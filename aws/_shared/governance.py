@@ -116,9 +116,19 @@ def forbidden_transitions():
 #   상태·시각도 마찬가지다 — APPROVED → PUBLISHING 은 내용 변화가 아니다.
 # 그 밖의 모든 것(제목·수치·스토리·팩트·판 번호)은 지문에 들어간다.
 UNSIGNED_FIELDS = (
-    "approval", "publication", "publishedAt", "immutableRef",
-    "lifecycle", "status", "state", "updatedAt",
+    "approval", "publishedAt", "immutableRef",
+    "status", "state", "updatedAt", "governanceState",
 )
+# ⚠️⚠️ INTEGRATION-4 §7 — 여기서 `lifecycle` 과 `publication` 을 뺐었다. 구멍이었다.
+#    검증을 통과하지 않은 초안(lifecycle=DRAFT)을 사람이 승인한 뒤 lifecycle 만
+#    PUBLISHED 로 바꾸면 승인이 그대로 살아 있었다. 발행 어댑터는 lifecycle 하나만
+#    보므로 그대로 올라간다. `publication` 도 마찬가지다 — 서명 밖 열쇠 구멍에
+#    내용을 옮겨 두면 승인 뒤에 마음대로 바꿀 수 있었다.
+#    이제 둘 다 서명에 들어간다. 승인 뒤 lifecycle 이 바뀌면 APPROVAL_INVALID 다.
+#
+#    반대로 `status` 는 계속 뺀다: 콘텐츠는 APPROVED → SCHEDULED 처럼 상태가
+#    정상적으로 움직이고, 그건 내용 변화가 아니다.
+#    `governanceState` 도 뺀다 — 아래에서 **읽지 않고 다시 계산**하기 때문이다.
 
 
 def revision_hash(doc, *, unsigned=UNSIGNED_FIELDS):
@@ -141,13 +151,42 @@ APPROVAL_METHODS = ("UI_CLICK", "CLI_CONFIRM", "SIGNED_TOKEN")
 # 시스템 계정 표식. **자동화가 스스로를 승인할 수 없다.**
 # 승인이 자동으로 찍히면 승인란은 아무 정보도 담지 않는다 — 그럴 바엔 없는 게 낫다.
 SYSTEM_ACTOR_PATTERNS = (
-    re.compile(r"^(system|auto|automation|bot|robot|daemon|worker)\b", re.I),
-    re.compile(r"\b(lambda|cron|scheduler|pipeline|ci|cd|runner|deploy)\b", re.I),
     re.compile(r"@(system|bot|noreply|no-reply|localhost)\b", re.I),
-    re.compile(r"^(service|svc)[-_.]", re.I),
-    re.compile(r"[-_.](bot|service|svc|automation)$", re.I),
-    re.compile(r"^(anonymous|unknown|n/a|none|null|-)$", re.I),
+    re.compile(r"^(n/a|-)$", re.I),
 )
+
+# ⚠️⚠️ INTEGRATION-4 §7 — 예전에는 정규식 `^(system|auto|bot…)\b` 로만 봤다.
+#    `\b` 는 글자와 숫자 사이에 경계를 두지 않는다. 그래서 **`system1` 이 사람으로
+#    통과했다.** `systemd` · `autobot9` · `lambda2` 도 전부 통과했다.
+#    숫자 하나로 승인 게이트가 열리는 셈이었다.
+#
+#    이제 이름을 토막으로 끊고, 각 토막의 꼬리 숫자를 떼어 낸 뒤 낱말로 대조한다.
+#    사람 이름이 잘못 걸리는 쪽이 자동화가 통과하는 쪽보다 낫다 —
+#    걸린 사람은 다른 식별자를 쓰면 되지만, 통과한 자동화는 아무도 못 본다.
+SYSTEM_WORDS = frozenset("""
+    system systemd sys auto automation automated autobot bot robot robo daemon
+    worker service services svc svcacct serviceaccount agent job task cron
+    scheduler schedule pipeline ci cd runner lambda function deploy deployer
+    deployment machine api script batch nightly headless
+    anonymous unknown none null na noreply
+""".split())
+
+_TOKEN = re.compile(r"[^0-9a-z]+")
+_TAIL_DIGITS = re.compile(r"[0-9]+$")
+
+
+def _tokens(name):
+    for t in _TOKEN.split(name.lower()):
+        if not t:
+            continue
+        yield t
+        stripped = _TAIL_DIGITS.sub("", t)
+        if stripped and stripped != t:
+            yield stripped
+            t = stripped
+        # 복수형도 같은 낱말이다 — 'Systems' 가 사람으로 통과하던 것을 막는다.
+        if len(t) > 3 and t.endswith("s"):
+            yield t[:-1]
 
 
 def is_system_actor(actor):
@@ -162,6 +201,9 @@ def is_system_actor(actor):
     for pat in SYSTEM_ACTOR_PATTERNS:
         if pat.search(name):
             return True, "시스템 계정으로 보인다: %s" % name
+    for tok in _tokens(name):
+        if tok in SYSTEM_WORDS:
+            return True, "시스템 계정으로 보인다(%s): %s" % (tok, name)
     return False, None
 
 
@@ -254,7 +296,14 @@ def gate(doc, *, want="PUBLISHING"):
     돌려주는 것: {ok, code, reason, approval, from, to}
     """
     chk = approval_check(doc)
-    cur = (doc or {}).get("governanceState") or _derive_state(doc, chk)
+    # ⚠️ 문서가 적어 둔 governanceState 를 **믿지 않는다.** 항상 다시 계산한다.
+    #    적어 둔 값이 있으면 계산값과 같은지만 본다 — 다르면 그 문서를 신뢰할 수 없다.
+    cur = _derive_state(doc, chk)
+    said = (doc or {}).get("governanceState")
+    if said and said != cur:
+        return {"ok": False, "code": "STATE_MISMATCH",
+                "reason": "문서가 적어 둔 상태(%s)가 실제 상태(%s)와 다르다" % (said, cur),
+                "approval": chk, "from": cur, "to": want}
     step = can_transition(cur, want)
     if chk["state"] != "APPROVED":
         return {"ok": False,
@@ -287,6 +336,10 @@ def _derive_state(doc, chk=None):
     if life in ("REJECTED",) or chk["state"] == "REJECTED":
         return "REJECTED"
     if chk["state"] == "APPROVED":
+        # ⚠️ 승인 도장이 있어도 **기계 검증을 지나지 않은 문서**는 APPROVED 가 아니다.
+        #    사람이 초안을 승인했다고 해서 검증을 건너뛰는 길이 열리면 안 된다(§7).
+        if life in ("DRAFT", "GENERATING"):
+            return "DRAFT"
         return "APPROVED"
     if life in ("PUBLISHED", "VALIDATING", "REVIEW", "FACT_CHECK", "SCHEDULED"):
         return "READY_FOR_REVIEW"

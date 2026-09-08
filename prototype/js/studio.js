@@ -388,9 +388,35 @@ async function loadDrafts() {
   state.draftsLoaded = true;
   list.innerHTML = '<div class="skeleton-list" aria-label="초안 불러오는 중"><i></i><i></i><i></i></div>';
   $('#draftCount').textContent = '불러오는 중';
+  // ⚠️⚠️ INTEGRATION-4 §0 — 예전에는 `/events/social-drafts.json` 을 받았다.
+  //    `events/` 는 **공개 접두사**다. 즉 이 화면이 자격증명 없이 받을 수 있었다는 것은
+  //    **누구나 받을 수 있었다**는 뜻이다. 승인 전 문구가 그렇게 공개돼 있었다.
+  //    람다가 쓰는 자리를 `archive/`(비공개)로 옮겼고, 여기서도 그 주소를 놓는다.
+  //
+  //    근본 해결은 **인증된 관리 읽기 경로**다. 그게 생기면 그 주소를
+  //    window.EARTHUS_ADMIN_DRAFTS_URL 로 주면 이 화면이 그대로 받는다.
+  //    없는 동안에는 **없다고 말한다** — 공개 주소를 다시 두드리지 않는다.
+  const draftsUrl = (typeof window !== 'undefined' && window.EARTHUS_ADMIN_DRAFTS_URL) || null;
+  if (!draftsUrl) {
+    state.drafts = [];
+    state.draftDiagnostics = [];
+    state.draftRawCount = 0;
+    state.selectedDraft = null;
+    $('#draftCount').textContent = '읽을 수 없음';
+    list.innerHTML = '';
+    const box = create('div', 'error-state');
+    box.append('초안은 비공개 저장소(archive/)에 있습니다. 인증된 관리 읽기 경로가 아직 없습니다.');
+    list.append(box);
+    $('#draftDetail').innerHTML = '<div class="empty-state"><strong>초안을 읽을 수 없습니다.</strong>'
+      + '<p>승인 전 문구를 공개 주소에 두지 않기 위해 저장 위치를 옮겼습니다. '
+      + '인증된 관리 읽기 경로가 생기면 <code>window.EARTHUS_ADMIN_DRAFTS_URL</code> 로 연결됩니다.</p>'
+      + '<p>0건과 읽기 실패를 같은 상태로 보여주지 않습니다.</p></div>';
+    if (state.draftController === controller) state.draftController = null;
+    return;
+  }
   try {
-    const response = await fetch(`/events/social-drafts.json?t=${Date.now()}`, {
-      cache: 'no-store', signal: controller.signal,
+    const response = await fetch(`${draftsUrl}${draftsUrl.includes('?') ? '&' : '?'}t=${Date.now()}`, {
+      cache: 'no-store', signal: controller.signal, credentials: 'include',
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const doc = await response.json();

@@ -13,10 +13,11 @@
     reports/**                     → 403  (아직 발행 없음)
 
 ⚠️⚠️ 지금 남아 있는 구멍을 숨기지 않는다.
-   `events/social-drafts.json` 은 **공개 경로에 초안이 놓여 있다.** 옮기면 자격증명 없는
-   관리 화면(prototype/js/studio.js)이 깨진다. 근본 해결은 인증된 관리 API 이고
-   그건 별도 작업이다. 이 파일은 그 사실을 **검사로 드러내는** 역할을 한다 —
-   조용히 통과시키지 않는다.
+   `events/social-drafts.json` — **코드에서는 닫았다**(INTEGRATION-4 §0).
+   람다가 쓰는 자리를 `archive/social-drafts.json` 으로 옮겼고, 자격증명 없이 읽던
+   관리 화면도 그 주소를 놓았다. 그런데 **예전에 쓰인 객체가 S3 에 남아 있다** —
+   지울 권한(s3:DeleteObject)이 없어서다. 그래서 아직 알려진 구멍으로 둔다.
+   지우고 나면 이 항목을 뺀다. 지우기 전에 빼면 검사가 거짓말을 하게 된다.
 """
 
 # ── 상태 어휘 ────────────────────────────────────────────────────────────────
@@ -43,8 +44,8 @@ PRIVATE_PREFIXES = ("archive/",)
 # 여기 들어 있다고 통과시키지 않는다 — 검사는 이것들을 KNOWN_LEAK 로 보고한다.
 KNOWN_PUBLIC_LEAKS = {
     "events/social-drafts.json":
-        "SNS 초안이 공개 경로에 있다. 관리 화면(studio.js)이 자격증명 없이 읽어서 옮기지 못했다. "
-        "인증된 관리 API 가 먼저다.",
+        "옛 객체가 공개 경로에 남아 있다. 쓰는 자리는 archive/ 로 옮겼고 읽는 쪽도 놓았지만"
+        "(INTEGRATION-4 §0), 이미 올라간 객체는 삭제 권한이 없어 못 지웠다.",
     "events/distribution-content.json":
         "배포 후보 색인이 공개 경로다. 관리 화면(distribution-admin.js)이 같은 이유로 읽는다.",
     "events/distribution-content/":

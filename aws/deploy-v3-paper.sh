@@ -16,10 +16,14 @@ BUCKET="${EARTHUS_BUCKET:-earthus-cache-kr}"
 REGION="${EARTHUS_REGION:-us-east-2}"
 PREFIX="${EARTHUS_APP_PREFIX:-app}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SRC="$ROOT/prototype/v3-paper"
+# INTEGRATION-4 §4 — 공개 배포 원본은 build/public-app 하나다.
+#   작업 트리를 직접 올리지 않는다 — 거름망이 막은 파일은 여기서 멈춘다.
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/_shared/public-source.sh
+# 사전 점검은 작업 트리에서 한다(원본이 있는지). 올리는 것은 거름망을 지난 트리다.
+TREE="$ROOT/prototype/v3-paper"
 
-[[ -f "$SRC/index.html" ]] || { echo "missing $SRC/index.html" >&2; exit 2; }
-[[ -d "$SRC/pack124/characters" ]] || { echo "missing $SRC/pack124/characters — 124종 이미지가 없다" >&2; exit 2; }
+[[ -f "$TREE/index.html" ]] || { echo "missing $TREE/index.html" >&2; exit 2; }
+[[ -d "$TREE/pack124/characters" ]] || { echo "missing $TREE/pack124/characters — 124종 이미지가 없다" >&2; exit 2; }
 
 echo "▸ 자격증명: $(aws sts get-caller-identity --query Arn --output text)"
 echo "▸ 전제 확인: 이 페이지가 상대경로로 읽는 자산"
@@ -33,6 +37,8 @@ echo "▸ 올리는 범위: ${PREFIX}/v3 (검토 도구·인계 문서·원본 Z
 # earthus-deploy 에는 s3:DeleteObject 가 없다 — --delete 를 쓰면 여기서 죽는다(실측 2026-09-05). 옛 v3-kids 파일은 남는다.
 # 2026-09-07: assets 의 PNG 는 제작 원본이다 — 배포는 tools/v3-webp.py 가 만든 .webp 만 올린다(첫 접속 34MB→4MB).
 python "$ROOT/tools/v3-webp.py" || { echo 'webp 변환 실패' >&2; exit 4; }
+# webp 가 만들어진 **뒤에** 거름망을 돌린다 — 순서가 바뀌면 새 webp 가 빠진다.
+SRC="$(public_dir v3-paper)"
 aws s3 sync "$SRC" "s3://${BUCKET}/${PREFIX}/v3/" --region "$REGION" \
   --exclude '.DS_Store' --exclude '__pycache__/*' --exclude 'tools/*' --exclude 'handoff/*' --exclude 'verify-*.mjs' \
   --exclude 'build-package.py' --exclude 'preview-server.mjs' --exclude 'README.md' --exclude '*.zip' \

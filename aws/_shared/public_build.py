@@ -44,6 +44,11 @@ PUBLIC_BUILD_DIR = "build/public-app"      # .gitignore 의 build/ 아래다
 # 앱이 실제로 읽는 몇 개만 남기려고 있다. 좁은 예외를 명시적으로 적는다.
 KEEP_RULES = (
     ("legal/*.ko.md", "앱이 화면에 띄우는 약관·개인정보·자료 라이선스 (js/ui-account.js)"),
+    # ⚠️ canary/ 를 통째로 막았더니 **실제 배포가 깨졌다.**
+    #    tools/manifests/free-open-policy-files.tsv 와 ocean-aetherus-v3-canary-files.tsv
+    #    가 이 세 파일을 운영에 올린다 — 점검용 부스러기가 아니라 공개 화면이다.
+    #    (같은 디렉터리의 rc-rollback-probe.json 은 점검 산출물이라 그대로 막는다)
+    ("canary/ocean-aetherus-v3/*", "실제로 배포되는 카나리 화면. tools/manifests/*.tsv 가 올린다"),
 )
 
 DENY_RULES = (
@@ -80,7 +85,24 @@ DENY_RULES = (
     ("v3-kids/character-studio.css",  "캐릭터 저작 도구"),
 
     # 실험 배포 확인용
-    ("canary/",             "카나리 점검용. 제품 화면이 아니다"),
+    ("canary/",             "카나리 점검 산출물. 배포되는 화면은 위 KEEP_RULES 가 통과시킨다"),
+
+    # ── INTEGRATION-4 §5 — 부류별로 훑어 찾은 것들 ──────────────────────────
+    # 전부 "앱이 읽지 않는다"를 실제로 확인하고 넣었다. 참조가 있는 것은 넣지 않았다.
+    ("v3-paper/data/*.py",  "자료 준비 스크립트(numpy·PIL). 브라우저가 읽지 않는다"),
+    ("v3-paper/data/trench-bathymetry-audit.json",
+                            "감사 산출물. 제품 자료가 아니다 — handoff/PACKAGE.json 만 가리킨다"),
+    ("v3-paper/data/weather-source-*.json",
+                            "개발 중 받아 둔 피드 사본(2026-09-04 고정). 런타임은 S3 를 직접 읽는다"),
+    ("v3-kids/characters/*/*_master_sheet.png",
+                            "캐릭터 제작 원본 시트. 런타임은 runtime_3q·parts_atlas 만 읽는다"),
+    ("v3-kids/character-config.js", "캐릭터 저작 도구 설정. character-studio.js 만 읽는다"),
+    ("js/earthus2/config/", "내부 통합 명세(커밋 SHA·경로 상태·전달 계획). 앱이 읽지 않는다"),
+    ("js/earthus2/*/qa/*",  "QA 하네스(결함 주입 등). 제품 코드가 아니다"),
+    ("js/config.local.example.js", "개발자 설정 서식. 앱이 읽지 않는다"),
+    ("space/skybox/*/source-*.webp", "제작 원본 파노라마"),
+    ("space/skybox/*/panorama.webp", "해시 없는 옛 파노라마. 매니페스트가 고른 세 장만 쓴다"),
+    ("space/skybox/*/panorama-6000.webp", "해시 없는 옛 파노라마"),
 
     # 승인되지 않은 산출물 (INTEGRATION-2 §5 에서 확인된 실제 유출)
     ("events/distribution-content/",     "배포 후보 본문. status=DRAFT, 그중 eligibility=BLOCKED 도 있었다"),

@@ -6,7 +6,10 @@ set -euo pipefail
 # It never syncs prototype/ root and never writes app/js or EARTHUS 1.0 root assets.
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-V2="$ROOT/prototype/v2"
+# INTEGRATION-4 §4 — 공개 배포 원본은 build/public-app 하나다.
+#   작업 트리를 직접 올리지 않는다 — 거름망이 막은 파일은 여기서 멈춘다.
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/../aws/_shared/public-source.sh
+V2="$(public_dir v2)"
 BUCKET="${EARTHUS_APP_BUCKET:-earthus-cache-kr}"
 S3_REGION="${EARTHUS_APP_REGION:-us-east-2}"
 PREFIX="${EARTHUS_APP_PREFIX:-app}"

@@ -11,18 +11,19 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# INTEGRATION-4 §4 — 공개 배포 원본은 build/public-app 하나다.
+#   작업 트리를 직접 올리지 않는다 — 거름망이 막은 파일은 여기서 멈춘다.
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/../aws/_shared/public-source.sh
+
 BUCKET="earthus-cache-kr"
 APP_PREFIX="app"
 DISTRIBUTION_ID="E193CZEBLWEB56"
 REGION="us-east-2"
 
 upload() {
-  local source_path="$1" public_path="$2"
-  [[ -f "$REPO_ROOT/$source_path" ]] || {
-    printf '없는 파일: %s\n' "$source_path" >&2
-    exit 1
-  }
-  aws s3 cp "$REPO_ROOT/$source_path" "s3://$BUCKET/$APP_PREFIX/$public_path" \
+  local source_path="$1" public_path="$2" local_path
+  local_path="$(public_file "$source_path")" || exit 1
+  aws s3 cp "$local_path" "s3://$BUCKET/$APP_PREFIX/$public_path" \
     --region "$REGION" \
     --content-type 'text/javascript; charset=utf-8' \
     --cache-control 'no-cache' \
@@ -34,7 +35,7 @@ upload() {
 # 문법이 깨진 채로 올리면 앱 전체가 멈춘다. 올리기 전에 반드시 본다.
 echo "== 1/3 문법 =="
 for f in prototype/js/station-model.js prototype/js/main.js prototype/js/layerbar.js; do
-  node --check "$REPO_ROOT/$f"
+  node --check "$(public_file "$f")"
   printf '  OK %s\n' "$f"
 done
 

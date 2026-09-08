@@ -46,7 +46,20 @@ BLOCKING_SAFETY = ("LEVEL_3_HUMAN_ONLY",)
 #    즉 "모르는 자리"가 곧 "써도 되는 자리"였다 — 그 기본값을 뒤집는다(아래).
 PUBLIC_PREFIXES = ("events/", "wind/", "ocean/", "reports/", "clouds/", "app/",
                    "solar/", "celestrak/")
-PRIVATE_PREFIXES = ("archive/", "analysis/")
+# INTEGRATION-8 §6 — character-studio/ 를 실측으로 채웠다(2026-09-08).
+#   버킷 정책의 PublicReadData 에 그 접두사가 **없다** → 익명 GET 403.
+#   지금 객체 0건. 그 람다의 작업 공간이고 공개로 나가는 것은 app/v3/characters/ 뿐이다.
+PRIVATE_PREFIXES = ("archive/", "analysis/", "character-studio/")
+
+# ⚠️ 위 PUBLIC_PREFIXES 는 **의도**다. 아래는 2026-09-08 버킷 정책에서 읽은 **현실**이다.
+#    (aws s3api get-bucket-policy · Sid=PublicReadData)
+BUCKET_PUBLIC_PREFIXES = ("app/", "celestrak/", "clouds/", "wind/", "events/",
+                          "ocean/", "solar/")
+# 의도에는 있는데 정책에는 없는 것. 여기 올라간 객체는 **아무도 못 읽는다**.
+#   reports/  — 보고서 발행 경로. 실측 403. 지금 객체 0건이라 겉으로는 조용하다.
+#               prototype .../js/ui-shell.js 가 이 접두사에서 index.json 을 받는다.
+PUBLIC_PREFIX_GAP = tuple(p for p in PUBLIC_PREFIXES
+                          if p not in BUCKET_PUBLIC_PREFIXES)
 
 # 지금 알려진 예외. **고쳐야 할 목록이지 허용 목록이 아니다.**
 # 여기 들어 있다고 통과시키지 않는다 — 검사는 이것들을 KNOWN_LEAK 로 보고한다.

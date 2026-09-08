@@ -87,14 +87,28 @@ class SocialDraftPrivacy(unittest.TestCase):
         self.assertEqual(priv.prefix_visibility(key), "PRIVATE",
                          "SNS 초안을 %s 에 쓴다 — 공개 접두사다" % key)
 
-    def test_비공개_접두사_목록이_정본과_같다(self):
-        """람다 묶음에 _shared 를 넣지 않으므로 목록을 복사해 뒀다.
-        복사본은 갈라진다 — 그래서 여기서 같은지 본다."""
+    def test_비공개_접두사_목록이_정본에서_갈라지지_않는다(self):
+        """람다 묶음에 _shared 를 넣지 않으므로 목록을 복사해 뒀다. 복사본은 갈라진다.
+
+        갈라지는 방향이 둘인데 위험은 한쪽뿐이다.
+
+          람다에만 있는 접두사   정본이 비공개로 치지 않는 자리에 쓴다  → **위험**
+          정본에만 있는 접두사   람다가 그 자리 쓰기를 거부한다        → 안전(fail-closed)
+
+        그래서 위험한 방향만 막는다. INTEGRATION-8 에서 정본에
+        `character-studio/` 가 실측으로 추가됐고(버킷 정책에 그 접두사가 없다),
+        운영에 올라가 있는 이 람다는 `archive/` 한 자리만 쓴다 — 갈라짐이 아니라
+        정본이 넓어진 것이다. 이것 때문에 운영 람다를 다시 올리지 않는다.
+        """
         m = re.search(r"^PRIVATE_PREFIXES\s*=\s*\(([^)]*)\)", self.src, re.M)
         self.assertIsNotNone(m, "PRIVATE_PREFIXES 를 찾지 못했다")
         got = tuple(x.strip().strip("\"'") for x in m.group(1).split(",") if x.strip())
-        self.assertEqual(got, priv.PRIVATE_PREFIXES,
-                         "람다의 비공개 접두사 목록이 publication_privacy 와 다르다")
+        extra = set(got) - set(priv.PRIVATE_PREFIXES)
+        self.assertEqual(extra, set(),
+                         "람다가 정본에 없는 접두사를 비공개로 친다: %s" % sorted(extra))
+        dst = re.search(r'^DST\s*=\s*"([^"]+)"', self.src, re.M).group(1)
+        self.assertTrue(any(dst.startswith(p) for p in got),
+                        "람다가 쓰는 %s 가 제 비공개 목록에 없다" % dst)
 
     def test_공개_키로는_쓰지_못한다(self):
         mod = _load("earthus_social_draft", self.path)

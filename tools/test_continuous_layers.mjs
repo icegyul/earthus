@@ -63,15 +63,32 @@ assert.doesNotMatch(overlay, /wind: \{[\s\S]{0,240}?stepped: true/,
   '풍속 색면은 단계색이면 안 된다 — 5° 격자의 네모가 그대로 드러난다');
 /* ⚠️ `wind: {` 부터 세면 주석 한 줄에 창이 넘친다. 풍속 눈금의 마지막 단계에
    붙여 잰다 — 팔레트와 알파가 같은 블록임을 확인하면서 주석 길이에 안 흔들린다. */
-assert.match(overlay, /\[60, \[226,  70,  96\]\],[\s\S]{0,80}?alpha: 0\.62/,
+assert.match(overlay, /\[32, \[146,  62, 178\]\],[\s\S]{0,80}?alpha: 0\.62/,
   '풍속 색면은 "바람의 양"이 읽힐 만큼 진해야 한다');
 /* ⚠️ 이 층은 위성 영상 위(지구 보기)와 검은 지구 위(판독 모드)에 같이 올라간다.
    바닥색이 검정에 가까우면 판독 모드에서 통째로 사라지고, 알파가 0m/s 부터
    가득 차면 지구 보기에서 위성 영상이 통째로 덮인다. 둘 다 실측으로 겪었다. */
 assert.match(overlay, /wind: \{[\s\S]{0,240}?mute: 0,[\s\S]{0,40}?fade: 3/,
   '거의 잔잔한 곳만 투명해야 한다 — 경사가 길면 판독 모드가 검게 빈다');
-assert.match(overlay, /stops: \[\s*\n\s*\[0, \[ 14,  30,  60\]\]/,
+assert.match(overlay, /stops: \[\s*\n\s*\[0, \[ 22,  30,  66\]\]/,
   '풍속 바닥색은 검정이 아니라 짙은 남색이어야 한다 — 검은 지구에서도 보여야 한다');
+/* ⚠️⚠️ 원자료(전지구 5°)의 실측 최대가 23.8m/s 다. 옛 눈금(…30·45·60)은 위 네 칸이
+   한 번도 칠해질 수 없는 색이었다 — 화면이 늘 파랑에만 몰렸던 진짜 이유. */
+assert.match(overlay, /\[16, \[244, 150,  54\]\], \[20, \[234,  72,  68\]\]/,
+  '실제로 부는 세기(16·20m/s)에서 주황·빨강이 나와야 한다 — 눈금이 자료 범위를 넘으면 안 된다');
+const windfield = await source('prototype/js/windfield.js');
+/* ⚠️ 입자 색 경계도 같은 이유로 m/s 다. kt 경계(…40·60kt)는 위 세 칸이 안 쓰였다. */
+assert.match(windfield, /BUCKETS = Object\.freeze\(\[[\s\S]{0,120}?maxMs:/,
+  '입자 색 경계는 kt 가 아니라 m/s 여야 한다 — 자료가 닿지 않는 칸을 만들면 안 된다');
+/* ⚠️⚠️ 투영이 틱 비용의 79%(2.16ms 중 1.76ms)였다. 입자마다 Cesium 에 물어보면
+   메인 스레드가 막혀 지구를 돌리는 조작 자체가 끊긴다. 행렬을 직접 곱한다. */
+assert.match(windfield, /_prepareProjection\(\)[\s\S]{0,600}?Matrix4\.multiply\(proj, cam\.viewMatrix/,
+  '뷰·투영 행렬은 틱당 한 번만 만들어야 한다');
+assert.doesNotMatch(windfield, /for \(const p of this\.parts\)[\s\S]{0,2000}?scene\.cartesianToCanvasCoordinates\(cur/,
+  '입자 루프에서 Cesium 투영을 부르면 안 된다 — 틱 비용의 79% 였다');
+/* ⚠️ 카메라가 움직인 프레임의 꼬리를 남기면 "선이 옆으로 휘었다가 제자리를 찾는다". */
+assert.match(windfield, /if \(moved\) \{\s*\n\s*ctx\.clearRect\(0, 0, W, H\);/,
+  '카메라가 움직인 프레임은 통째로 지워야 한다 — 남기면 선이 옆으로 미끄러진다');
 assert.match(overlay, /Math\.hypot\(u, V\[index\]\)/,
   '풍속은 u/v 벡터 크기에서 계산해야 한다');
 assert.match(overlay, /derivation:[\s\S]*VECTOR_MAGNITUDE[\s\S]*sqrt\(u\^2\+v\^2\)/,

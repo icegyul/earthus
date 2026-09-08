@@ -26,32 +26,52 @@ const COUNT_MAX = 4200;      // 상한. 넘으면 4K 화면에서 계산이 프�
 const LIFE_SEC = 3.0;        // 입자 수명(초)
 const FADE = 0.98;           // 잔상이 남는 정도. 1 에 가까울수록 꼬리가 길다.
                              // 0.94 는 꼬리가 약 1초라 느린 바람이 점이 됐다 → 0.98(약 3초, LIFE_SEC 과 같다)
-/* 카메라가 움직이는 동안의 꼬리. 예전에는 통째로 지워서 **지구를 돌리는 내내
-   바람이 사라졌다**. 짧은 꼬리(약 0.25초)로 바꿔 흐름은 남기고 번짐은 곧 지운다. */
-const FADE_MOVE = 0.72;
+/* ⚠️⚠️ **카메라가 움직인 프레임은 통째로 지운다.** 한 번 짧은 페이드로 바꿔 봤다가
+   되돌렸다(2026-09-08). 꼬리는 "그때 그 화면 좌표"에 그려진 그림이라, 지구가
+   돌아가는 동안 남겨 두면 **선이 옆으로 휘었다가 제자리를 찾는 것처럼 보인다** —
+   지구를 돌리면 바람이 미끄러지는 것 같다는 지적을 받았다. 잘못 그린 선을 남기느니
+   그 프레임은 비우는 게 정직하다. 손을 떼면 0.1초 안에 다시 찬다. */
 const JUMP_PX = 60;          // 이만큼 넘게 튄 입자는 선을 잇지 않는다 (지평선·카메라 점프)
 const FRAME_MS = Math.round(1000 / 30); // 120Hz 폰에서도 30회만 계산·그린다
 
-/* ── 입자 색 (mapped.earth 문법) ─────────────────────────────────────
+/* ── 입자 색 ─────────────────────────────────────────────────────────
    예전에는 전부 `rgba(255,255,255,a)` 흰 선이었다. 흰 선 하나로는 두 가지를 잃는다.
      ① 세기가 안 읽힌다 — 알파만 다르면 "연한 흰 선/진한 흰 선"이라 비교가 안 된다.
-     ② 색면 위에서 묻힌다 — 그래서 색면 alpha 를 0.28 까지 낮췄던 것이고,
-        그 바람에 "색이 흐리멍텅하다"가 됐다. 둘 다 같은 원인이었다.
-   → 세기에 따라 얼음빛(약)에서 따뜻한 빛(태풍)으로 간다. **색면보다 항상 밝은**
+     ② 색면 위에서 묻힌다.
+   → 세기에 따라 얼음빛(약)에서 따뜻한 빛(강풍)으로 간다. **색면보다 항상 밝은**
      계열만 써서 어떤 색면 위에서도 선이 먼저 읽힌다.
+   ⚠️ 경계는 **m/s** 다(예전엔 kt). 전지구 5° 격자의 실측 분포는 중앙값 6.1 ·
+      90% 11.5 · 99% 17.2 · 최대 23.8 m/s 다(2026-09-08 실측). kt 로 잡은 옛 경계
+      (8·16·26·40·60kt = 4·8·13·20·31m/s)는 위 세 칸이 사실상 안 쓰였다.
    ⚠️ 구간별로 모아 한 번씩만 stroke 한다. 입자마다 stroke 하면 2,800번이 된다. */
 const BUCKETS = Object.freeze([
-  { maxKt:  8, rgb: '168,212,246', a: 0.34, w: 0.9  },  // 실바람
-  { maxKt: 16, rgb: '202,233,252', a: 0.50, w: 1.05 },  // 산들바람
-  { maxKt: 26, rgb: '229,246,255', a: 0.66, w: 1.2  },  // 센바람
-  { maxKt: 40, rgb: '255,252,231', a: 0.80, w: 1.4  },  // 강풍
-  { maxKt: 60, rgb: '255,231,148', a: 0.90, w: 1.7  },  // 폭풍
-  { maxKt: Infinity, rgb: '255,196, 96', a: 0.98, w: 2.1 }, // 태풍
+  { maxMs:  3, rgb: '150,196,236', a: 0.30, w: 0.9 },  // 실바람
+  { maxMs:  6, rgb: '190,224,248', a: 0.46, w: 1.0 },  // 남실바람
+  { maxMs:  9, rgb: '224,242,255', a: 0.60, w: 1.1 },  // 산들바람
+  { maxMs: 13, rgb: '255,250,226', a: 0.74, w: 1.3 },  // 센바람
+  { maxMs: 18, rgb: '255,226,140', a: 0.88, w: 1.5 },  // 큰바람
+  { maxMs: Infinity, rgb: '255,190, 96', a: 0.98, w: 1.9 }, // 노대바람 이상
 ]);
-function bucketOf(kt) {
-  for (let i = 0; i < BUCKETS.length; i++) if (kt < BUCKETS[i].maxKt) return i;
+function bucketOf(ms) {
+  for (let i = 0; i < BUCKETS.length; i++) if (ms < BUCKETS[i].maxMs) return i;
   return BUCKETS.length - 1;
 }
+
+/* ── 좌표 변환을 직접 한다 (2026-09-08) ──────────────────────────────
+   ⚠️⚠️ **`scene.cartesianToCanvasCoordinates` 가 틱 비용의 79% 였다.**
+      실측(입자 2,800개 · 1회 틱): 전체 2.16ms 중 투영만 **1.76ms**.
+      나머지는 fromDegrees 0.18 · 법선·내적 0.14 · 격자 보간 0.16 이고,
+      선 2,800개를 실제로 긋는 비용은 0.10ms 로 사실상 공짜였다.
+      같은 일을 **행렬 한 번 곱으로 하면 0.04ms** 다 — 44배.
+      (400점 무작위 대조에서 화면 좌표가 **소수점까지 동일**함을 확인했다.)
+   → 틱마다 뷰·투영 행렬을 한 번 만들어 두고 입자는 직접 곱한다.
+      메인 스레드를 놓아 주는 것이 목적이다 — 이 계산이 길면 지구를 돌리고
+      확대하는 조작 자체가 끊긴다("엄청 버벅거린다", 2026-09-08).
+   ⚠️ 3D 모드가 아닐 때(2D·컬럼버스 뷰)는 이 행렬이 안 맞는다. 그때는 예전처럼
+      Cesium 에 물어본다. */
+const WGS84_A2 = 6378137.0 * 6378137.0;
+const WGS84_B2 = 6356752.3142451793 * 6356752.3142451793;
+const D2R = Math.PI / 180;
 
 /* ── 속도 기준 (윈디 척도) ──────────────────────────────────────
    ⚠️ 처음엔 "프레임당" 이동시켰다. 그러면 주사율에 따라 속도가 달라진다.
@@ -123,7 +143,7 @@ export const windField = {
   _ticks: 0,
   _tickCostSum: 0, _tickCostN: 0,
   _scratchWind: { u: 0, v: 0 },
-  _scratchCur: null, _scratchNormal: null, _scratchToCam: null, _scratchScreen: null,
+  _scratchCur: null, _scratchScreen: null,   // 2D·컬럼버스 뷰 폴백에서만 쓴다
   _scratchMeasA: null, _scratchMeasB: null, _scratchMeas2A: null, _scratchMeas2B: null,
   _boost: 1,
 
@@ -138,8 +158,6 @@ export const windField = {
     this.canvas = cv;
     this.ctx = cv.getContext('2d');
     this._scratchCur = new Cesium.Cartesian3();
-    this._scratchNormal = new Cesium.Cartesian3();
-    this._scratchToCam = new Cesium.Cartesian3();
     this._scratchScreen = new Cesium.Cartesian2();
     this._scratchMeasA = new Cesium.Cartesian3();
     this._scratchMeasB = new Cesium.Cartesian3();
@@ -335,6 +353,21 @@ export const windField = {
     return Number.isFinite(d) && d > 0.01 ? d : null;
   },
 
+  /** 틱당 한 번 뷰·투영 행렬을 만들어 `_vp`(열 우선 16개)에 담는다.
+   *  @returns {boolean} 이 행렬로 직접 투영해도 되는가 (3D 모드일 때만 true)
+   *  ⚠️ `uniformState.viewProjection` 을 읽지 않고 카메라에서 다시 만든다.
+   *     requestRenderMode 에서는 렌더가 없으면 uniformState 가 한 프레임 늦는다. */
+  _prepareProjection() {
+    if (scene.mode !== Cesium.SceneMode.SCENE3D) return false;
+    if (!this._vp) { this._vp = new Float64Array(16); this._vpM = new Cesium.Matrix4(); }
+    const cam = viewer.camera;
+    const proj = cam.frustum.projectionMatrix;
+    if (!proj) return false;
+    Cesium.Matrix4.multiply(proj, cam.viewMatrix, this._vpM);
+    Cesium.Matrix4.toArray(this._vpM, this._vp);
+    return true;
+  },
+
   _stop() {
     clearTimeout(this._timer); this._timer = null;
     this._last = 0;
@@ -357,15 +390,9 @@ export const windField = {
     const ctx = this.ctx, W = this.canvas.width, H = this.canvas.height;
 
     /* 꼬리는 "그때 그 화면 좌표"에 그려진 그림이다. 지구를 돌리면 그 좌표가 전혀
-       다른 곳을 가리키게 되므로, 카메라가 움직인 프레임의 꼬리는 오래 두면 번진다.
-
-       ⚠️⚠️ **2026-09-08 — 예전에는 이 프레임을 통째로 지웠다(clearRect).**
-          그래서 지구를 돌리는 동안 바람이 **한 줄도 없었다.** 손을 떼야 다시
-          그려지기 시작하니, 돌려 보는 사람에게는 바람 레이어가 꺼진 것과 같았다.
-       → 통째로 지우는 대신 **짧은 꼬리(FADE_MOVE ≈ 0.25초)**로 바꾼다. 번짐은
-         네 프레임 안에 사라지고, 흐름은 돌리는 내내 살아 있다.
-       ⚠️ 대신 화면에서 크게 튄 입자는 선을 잇지 않는다(아래 JUMP_PX). 안 그러면
-          카메라가 크게 움직인 프레임에서 옛 위치→새 위치로 긴 직선이 그어진다. */
+       다른 곳을 가리키게 되므로, 카메라가 움직인 프레임은 통째로 지운다.
+       (짧은 페이드로 남겨 봤다가 "선이 옆으로 휜다"는 지적을 받고 되돌렸다.
+        파일 머리말의 JUMP_PX 위 주석 참고.) */
     const c = viewer.camera;
     const key = `${c.positionWC.x.toFixed(0)},${c.positionWC.y.toFixed(0)},${c.positionWC.z.toFixed(0)},`
               + `${c.directionWC.x.toFixed(3)},${c.directionWC.y.toFixed(3)}`;
@@ -382,23 +409,33 @@ export const windField = {
       }
     }
 
-    ctx.globalCompositeOperation = 'destination-out';
-    // 60fps 기준으로 FADE 가 되도록 dt 로 보정 — 주사율이 달라도 꼬리 길이가 같다
-    const fade = 1 - Math.pow(moved ? FADE_MOVE : FADE, dt * 60);
-    ctx.fillStyle = `rgba(0,0,0,${fade})`;
-    ctx.fillRect(0, 0, W, H);
-    ctx.globalCompositeOperation = 'source-over';
+    if (moved) {
+      ctx.clearRect(0, 0, W, H);
+      for (const p of this.parts) p.px = null;
+    } else {
+      // 가만히 있을 때만 꼬리를 남긴다.
+      // 60fps 기준으로 FADE 가 되도록 dt 로 보정 — 주사율이 달라도 꼬리 길이가 같다
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.fillStyle = `rgba(0,0,0,${1 - Math.pow(FADE, dt * 60)})`;
+      ctx.fillRect(0, 0, W, H);
+      ctx.globalCompositeOperation = 'source-over';
+    }
 
     const cam = c.positionWC;
-    const ell = scene.globe.ellipsoid;
+    const camX = cam.x, camY = cam.y, camZ = cam.z;
     ctx.lineCap = 'round';
+
+    /* 틱당 한 번: 뷰·투영 행렬. 입자마다 Cesium 에 물어보는 대신 이걸 직접 곱한다
+       (파일 머리말의 실측 근거 참고 — 투영이 틱 비용의 79% 였다). */
+    const fast = this._prepareProjection();
+    const M = this._vp, cssW = this._cssW, cssH = this._cssH, dpr = this._dpr;
 
     /* 세기 구간별 선분 모음. 입자마다 stroke() 하면 2,800번이라 캔버스가 못 버틴다.
        ⚠️ 배열은 한 번 만들어 두고 길이만 0 으로 되돌린다 — 매 틱 새로 만들면
           초당 180개의 배열이 생겨 짧은 GC 가 계속 난다. */
     if (!this._segs) this._segs = BUCKETS.map(() => []);
     const segs = this._segs;
-    const jump = JUMP_PX * this._dpr;
+    const jump = JUMP_PX * dpr;
 
     for (const p of this.parts) {
       if ((p.age += dt) > LIFE_SEC) { this._spawn(p); continue; }
@@ -414,25 +451,42 @@ export const windField = {
       // 고위도로 갈수록 경도 1도의 실제 거리가 짧아진다 → 보정 안 하면 극 근처가 느려 보인다
       const nlon = p.lon + ux * step / Math.max(0.25, Math.cos(p.lat * Math.PI / 180));
 
-      /* 프레임마다 입자 수 × 4개의 좌표 객체를 새로 만들면 짧은 GC가 계속 난다.
-         한 번 만든 scratch 객체를 순서대로 재사용한다 — 값은 p 에 숫자로만 남긴다. */
-      const cur = Cesium.Cartesian3.fromDegrees(
-        p.lon, p.lat, 0, ell, this._scratchCur);
-      // ⚠️ 지구 뒤편 입자는 그리지 않는다. 카메라→점 벡터와 법선의 각도로 판정한다.
-      const normal = ell.geodeticSurfaceNormal(cur, this._scratchNormal);
-      const toCam = Cesium.Cartesian3.subtract(cam, cur, this._scratchToCam);
-      const front = Cesium.Cartesian3.dot(normal, toCam) > 0;
+      /* 위경도 → 지구중심 좌표. Cartesian3.fromDegrees 와 같은 식을 그대로 편다
+         (WGS84 타원체 위의 점). 객체를 안 만들고 숫자 세 개만 남긴다. */
+      const latR = p.lat * D2R, lonR = p.lon * D2R;
+      const cl = Math.cos(latR);
+      const nx = cl * Math.cos(lonR), ny = cl * Math.sin(lonR), nz = Math.sin(latR);
+      const kx = WGS84_A2 * nx, ky = WGS84_A2 * ny, kz = WGS84_B2 * nz;
+      const gamma = Math.sqrt(nx * kx + ny * ky + nz * kz);
+      const X = kx / gamma, Y = ky / gamma, Z = kz / gamma;
 
-      const sc = front
-        ? scene.cartesianToCanvasCoordinates(cur, this._scratchScreen)
-        : null;
-      if (sc) {
-        const x = sc.x * this._dpr, y = sc.y * this._dpr;
+      /* ⚠️ 지구 뒤편 입자는 그리지 않는다. P·(C−P) > 0 이면 앞면이다.
+         (예전엔 측지 법선을 썼다. 지심 방향과 최대 0.2° 차이인데 지평선 판정에는
+          보이지 않는 차이라, 함수 호출 세 번을 줄이는 쪽을 택했다.) */
+      let x = null, y = null;
+      if (X * camX + Y * camY + Z * camZ > X * X + Y * Y + Z * Z) {
+        if (fast) {
+          // 열 우선 4×4. w > 0 이어야 카메라 앞이다.
+          const cwv = M[3] * X + M[7] * Y + M[11] * Z + M[15];
+          if (cwv > 0) {
+            const cxv = M[0] * X + M[4] * Y + M[8] * Z + M[12];
+            const cyv = M[1] * X + M[5] * Y + M[9] * Z + M[13];
+            x = (cxv / cwv * 0.5 + 0.5) * cssW * dpr;
+            y = (0.5 - cyv / cwv * 0.5) * cssH * dpr;
+          }
+        } else {
+          // 2D·컬럼버스 뷰 — 행렬이 안 맞는다. 예전 경로로 물어본다.
+          this._scratchCur.x = X; this._scratchCur.y = Y; this._scratchCur.z = Z;
+          const sc = scene.cartesianToCanvasCoordinates(this._scratchCur, this._scratchScreen);
+          if (sc) { x = sc.x * dpr; y = sc.y * dpr; }
+        }
+      }
+
+      if (x !== null) {
         /* ⚠️ 카메라가 크게 움직였거나 지평선을 넘어 다시 나타난 입자는 이전 좌표가
            전혀 다른 곳이다. 그대로 이으면 화면을 가로지르는 가짜 선이 생긴다. */
         if (p.px != null && Math.abs(x - p.px) < jump && Math.abs(y - p.py) < jump) {
-          const list = segs[bucketOf(ms * MS_TO_KT)];
-          list.push(p.px, p.py, x, y);
+          segs[bucketOf(ms)].push(p.px, p.py, x, y);
         }
         p.px = x; p.py = y;
       } else p.px = null;

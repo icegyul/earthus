@@ -80,11 +80,15 @@ BLOCKED_NO_DELETE_PERMISSION
 ## PRIVATE
 
 ```text
-403  character-studio/jobs/x.json
-403  archive/social-drafts.json · analysis/aurora-reports.json
+403  archive/ · archive/social-drafts.json     ← 실객체 10,806건을 실제로 막고 있다
+403  analysis/aurora-reports.json              ← 실객체 9건
 403  reports/index.json · reports/draft/x.json
-403  reports/published-ish/x.json        ← 접두사 흉내도 막힌다
+403  reports/published-ish/x.json              ← 접두사 흉내도 막힌다
 403  서명 없는 PUT
+403  character-studio/ · character-studio/jobs/x.json
+     ⚠️ 이 둘은 **공허한 통과**다 — 그 접두사에 객체가 0건이다.
+        정책이 그 접두사를 열지 않는다는 것만 보여 줄 뿐, 지키고 있는 것은 아직 없다.
+        (그 람다가 쓰기 시작하면 그때 의미가 생긴다)
 ```
 
 ## UNKNOWN
@@ -185,8 +189,13 @@ APPROVED + 승인 뒤 상태 변조                          → APPROVAL_STATE_
 리드 6h · 12h · 24h · 48h · 72h · 120h  각각 독립
 교차리드 순위 0 · 교차모델 집계 0
 값 없음 → None (0 이 되지 않는다) · bool → 숫자 거부
-NOT_EVALUABLE 사유 보존 · 표본 수 n · nByMetric 노출
+NOT_EVALUABLE 사유 보존
+표본 수       어댑터가 n 과 nByMetric 을 낸다 (kma_verify_adapter.py:98) · 시험이 못 박는다
 ```
+
+⚠️ 다만 **어느 산출물에도 `nByMetric` 이 실려 있지 않다**(실측: 0건).
+채점표의 `evaluatedCount` 가 0 이라 점수가 실린 줄이 한 번도 만들어진 적이 없기 때문이다.
+규칙은 어댑터 계약과 시험으로 지켜지고 있지만, **제품 산출물에서 확인된 적은 없다.**
 
 ## MEDIA
 
@@ -209,6 +218,21 @@ VIDEO             DEFERRED
 
 영상을 구현했다고 주장하지 않는다. 저장소에 영상 생성 경로가 없고, 배포 UI 어디에도
 영상을 만들 수 있다는 표시가 없다(릴스 탭은 "1단계 출력은 순번이 붙은 PNG 묶음"이라고 적는다).
+
+⚠️ 그런데 **어느 산출물에도 VIDEO 가 `NOT_AVAILABLE` 로 적혀 있지 않다**(실측: 0건).
+파이프라인은 영상에 대해 그냥 **침묵한다.** 이 저장소 자신의 §119 교리와 어긋난다:
+
+```text
+aws/report-engine/sections.py:5
+  자료가 없다고 절을 지우지 않는다 — 지우면 독자는 그런 주제가 아예 없다고 읽는다.
+  대신 `NOT_AVAILABLE` 과 사유를 적는다(§119).
+```
+
+리포트 절은 그 교리를 지킨다(채점표가 `NOT_EVALUABLE` 과 사유를 남긴다).
+미디어 매니페스트만 지키지 않는다. **거짓말은 아니지만 침묵이고**, 그래서
+"VIDEO = DEFERRED" 는 지금 이 문서들에만 있고 시스템 안에는 없다.
+§11 의 요구("구현했다고 주장하지 않는다")는 충족하므로 이번 단계에서 고치지 않았다 —
+새 개발 금지이기도 하다. 인계에 P2 로 적는다.
 
 ## BUNDLE
 

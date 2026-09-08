@@ -20,7 +20,18 @@
 
 실측(2026-08-03): 304점 6.8초. 아래 범위(1,581점)면 16회 요청, 약 11초.
 
-출력  wind/pressure-ea.json
+⚠️⚠️ **바람도 같이 받는다 (2026-09-08).** Open-Meteo 는 요청 수로 한도를 세지
+   변수 수로 세지 않는다 — 이미 던지는 16회 요청에 `wind_speed_10m`,
+   `wind_direction_10m` 을 얹으면 **추가 요청 0회**로 1° 바람 격자가 나온다.
+   왜 필요했나: 전지구 바람 격자가 5°(555km)라 **태풍이 통째로 격자 사이로
+   빠진다.** 2026-09-08 실측 — 전지구 2,376칸의 최대 풍속이 23.8m/s 였고
+   30m/s 이상은 0칸이었다. 같은 시각 일본 주변 5° 격자의 최대는 14.2m/s 다.
+   화면에서 "태풍인데 바람이 전혀 안 느껴진다"가 된 이유가 이것이다.
+   ⚠️ 1°(약 111km)도 태풍 눈벽(약 50km)을 온전히 담지는 못한다. 담는 것은
+      **폭풍역**이다 — 그것만으로도 5° 가 놓치던 25~35m/s 가 살아난다.
+
+출력  wind/pressure-ea.json   (mslp — 등압선)
+      wind/wind-ea.json       (u·v — 바람 색면·입자 보강판)
 """
 
 import json
@@ -38,6 +49,7 @@ REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 s3 = boto3.client("s3", region_name=REGION)
 
 DST = "wind/pressure-ea.json"
+DST_WIND = "wind/wind-ea.json"
 API = "https://api.open-meteo.com/v1/forecast"
 
 # 동아시아 — 북태평양 고기압이 들어오도록 동쪽을 넓게
@@ -54,13 +66,18 @@ def handler(event=None, context=None):
     pts = [(a, o) for a in lats for o in lons]
 
     vals = [None] * len(pts)
+    # 바람은 u/v 로 저장한다 — 클라이언트가 벡터 크기와 방향을 둘 다 쓴다.
+    wu = [None] * len(pts)
+    wv = [None] * len(pts)
     fail = 0
     for i in range(0, len(pts), BATCH):
         ch = pts[i:i + BATCH]
         q = urllib.parse.urlencode({
             "latitude": ",".join(f"{a:g}" for a, _ in ch),
             "longitude": ",".join(f"{o:g}" for _, o in ch),
-            "current": "pressure_msl",
+            # ⚠️ 변수를 늘려도 **요청 수는 그대로**다. 바람은 여기 얹어서 공짜로 얻는다.
+            "current": "pressure_msl,wind_speed_10m,wind_direction_10m",
+            "wind_speed_unit": "ms",
             "timezone": "UTC",
         })
         # ⚠️⚠️ **Open-Meteo 는 분당 한도가 있다.** 쉬지 않고 던지면 6회쯤에서
@@ -87,10 +104,18 @@ def handler(event=None, context=None):
             continue
         rows = d if isinstance(d, list) else [d]
         for k, row in enumerate(rows):
-            v = (row.get("current") or {}).get("pressure_msl")
+            cur = row.get("current") or {}
+            v = cur.get("pressure_msl")
             # ⚠️ 결측을 채우지 않는다. 등압선은 빈 칸을 만나면 그 구간을 안 그린다.
             if v is not None and i + k < len(vals):
                 vals[i + k] = round(v, 1)
+            sp, dr = cur.get("wind_speed_10m"), cur.get("wind_direction_10m")
+            if sp is not None and dr is not None and i + k < len(wu):
+                # ⚠️ 기상 풍향은 **불어오는 쪽**이다. 벡터는 불어가는 쪽이라 부호가 뒤집힌다.
+                #    이걸 틀리면 바람이 통째로 거꾸로 흐른다(소말리 제트로 검산 가능).
+                rad = math.radians(dr)
+                wu[i + k] = round(-sp * math.sin(rad), 2)
+                wv[i + k] = round(-sp * math.cos(rad), 2)
         # ⚠️ 묶음 사이 간격. 0.25 초로는 한도에 걸렸다 — 넉넉히 둔다.
         time.sleep(1.2)
 
@@ -119,4 +144,44 @@ def handler(event=None, context=None):
                   CacheControl="public, max-age=1800")
     print(f"[pressure] {nx}x{ny} · 채움 {ok}/{len(vals)} · "
           f"{min(got):.1f}~{max(got):.1f}hPa · {len(body)/1024:.0f}KB")
-    return {"ok": True, "nx": nx, "ny": ny, "filled": ok, "failed": fail}
+
+    # ── 바람 1° 보강판 ────────────────────────────────────────────────
+    # ⚠️ 기압이 충분히 찼는데 바람만 비었다면 그건 응답 형식이 바뀐 것이다.
+    #    없는 자료를 0 으로 채우지 않는다 — 파일을 아예 안 쓰고 이유를 남긴다.
+    wok = sum(1 for a in wu if a is not None)
+    wind_written = False
+    if wok >= len(wu) * 0.7:
+        speeds = [math.hypot(a, b) for a, b in zip(wu, wv)
+                  if a is not None and b is not None]
+        wdoc = {
+            "time": doc["time"],
+            "lat0": LAT0, "lon0": LON0, "res": RES, "nx": nx, "ny": ny,
+            "unit": "m/s",
+            "source": "Open-Meteo (GFS/ECMWF)",
+            "filled": wok, "failed": len(wu) - wok,
+            "max": round(max(speeds), 1) if speeds else None,
+            "derivation": {
+                "method": "WIND_DIR_TO_UV",
+                "formula": "u=-speed*sin(dir), v=-speed*cos(dir)",
+                "inputs": ["wind_speed_10m", "wind_direction_10m"],
+            },
+            "note": {
+                "ko": f"동아시아 {RES}° 지상 10m 바람 격자입니다. 전지구 격자는 5°"
+                      f"(약 555km)라 태풍이 격자 사이로 빠집니다. "
+                      f"⚠️ 1°는 약 111km 입니다 — 태풍의 눈벽(약 50km)은 이 자료에도 "
+                      f"없습니다. 담기는 것은 폭풍역의 넓이와 세기입니다.",
+            },
+            "u": wu, "v": wv,
+        }
+        wbody = json.dumps(wdoc, ensure_ascii=False, separators=(",", ":")).encode()
+        s3.put_object(Bucket=BUCKET, Key=DST_WIND, Body=wbody,
+                      ContentType="application/json; charset=utf-8",
+                      CacheControl="public, max-age=1800")
+        wind_written = True
+        print(f"[wind-ea] {nx}x{ny} · 채움 {wok}/{len(wu)} · "
+              f"최대 {wdoc['max']}m/s · {len(wbody)/1024:.0f}KB")
+    else:
+        print(f"[wind-ea] 건너뜀 — 채움 {wok}/{len(wu)} (70% 미만)")
+
+    return {"ok": True, "nx": nx, "ny": ny, "filled": ok, "failed": fail,
+            "windFilled": wok, "windWritten": wind_written}

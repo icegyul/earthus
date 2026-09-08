@@ -32,6 +32,9 @@ const FADE = 0.98;           // 잔상이 남는 정도. 1 에 가까울수록 �
    지구를 돌리면 바람이 미끄러지는 것 같다는 지적을 받았다. 잘못 그린 선을 남기느니
    그 프레임은 비우는 게 정직하다. 손을 떼면 0.1초 안에 다시 찬다. */
 const JUMP_PX = 60;          // 이만큼 넘게 튄 입자는 선을 잇지 않는다 (지평선·카메라 점프)
+/* 보강판 가장자리에서 전지구 판과 섞는 폭(도). 0 이면 상자 경계에 보이지 않는
+   벽이 생긴다 — 같은 모델을 다르게 표본한 두 판이라 값이 조금 다르기 때문이다. */
+const EDGE_DEG = 2.5;
 const FRAME_MS = Math.round(1000 / 30); // 120Hz 폰에서도 30회만 계산·그린다
 
 /* ── 입자 색 ─────────────────────────────────────────────────────────
@@ -107,13 +110,12 @@ const D2R = Math.PI / 180;
          비(比)는 그대로다 — 바뀌는 것은 줌 사이의 비교뿐이고, 그건 원래 비교
          대상이 아니다(같은 바람을 당겨 본 것뿐이다).
 
-   기준점 (정규화 후 · 어느 줌에서나 · 꼬리 약 3초)
-     10 kt   5 m/s  산들바람        8 px/s   꼬리 ≈  25 px  ← 선으로 읽힌다
-     20 kt  10 m/s  선선한 바람     18 px/s   꼬리 ≈  53 px
-     34 kt  17 m/s  강풍주의보급    33 px/s
-     40 kt  21 m/s  강풍           40 px/s
-     64 kt  33 m/s  태풍(TY) 시작   68 px/s   확실히 몰아친다
-     90 kt  46 m/s  강한 태풍      100 px/s
+   기준점 (정규화 후 · 어느 줌에서나 · 꼬리 약 3초 · **천저 기준** 길이.
+           지구는 구라서 같은 선이 가장자리로 갈수록 3분의 1까지 짧아진다.)
+     10 kt   5 m/s  산들바람       16 px/s   꼬리 ≈  48 px (가장자리 ≈ 14)
+     20 kt  10 m/s  선선한 바람     36 px/s
+     34 kt  17 m/s  강풍주의보급    66 px/s
+     64 kt  33 m/s  태풍(TY) 시작  136 px/s   확실히 몰아친다
 
    실제보다 수천 배 과장돼 있다. 실제 속도로 그리면 초당 0.003픽셀이라
    아예 안 움직인다. 목적이 "어디로 부는지"를 보이는 것이므로 과장은 불가피하고,
@@ -121,9 +123,11 @@ const D2R = Math.PI / 180;
 export const MS_TO_KT = 1 / 0.5144;
 const BASE = 0.70;           // 10kt 일 때의 도/초 (2026-09-08: 0.285 → 0.70)
 const EXP = 1.15;            // 클수록 강풍이 더 두드러진다 (1.35 → 1.15)
-/* 이 화면 밀도를 기준으로 삼는다. 전지구 뷰(4.7px/°)에서 배율 2.55 가 되어
-   10kt 꼬리가 10px → 25px 로 늘어난다 — mapped.earth 의 줄 길이와 같은 자리다. */
-const REF_PX_PER_DEG = 12;
+/* 이 화면 밀도(천저에서 1°당 픽셀)를 기준으로 삼는다.
+   ⚠️ 재는 자리를 지평선 근처 → 천저로 고친 뒤 값이 달라졌다(_measurePxPerDeg 참고).
+      실측 천저값: 11,000km 10.5 · 6,000km 19.2 · 3,200km 36 · 400km 287.5 px/°.
+      23 은 전지구 뷰에서 배율 2.19 가 되는 값 — 화면으로 확인해 채택한 그 자리다. */
+const REF_PX_PER_DEG = 23;
 const BOOST_MIN = 0.05, BOOST_MAX = 4;   // 극단적인 줌에서 폭주하지 않게
 
 function degPerSec(ms) {
@@ -143,6 +147,8 @@ export const windField = {
   _ticks: 0,
   _tickCostSum: 0, _tickCostN: 0,
   _scratchWind: { u: 0, v: 0 },
+  _scratchFine: { u: 0, v: 0 },
+  fine: null, _fineAt: 0, _fineBox: null,   // 동아시아 1° 보강판
   _scratchCur: null, _scratchScreen: null,   // 2D·컬럼버스 뷰 폴백에서만 쓴다
   _scratchMeasA: null, _scratchMeasB: null, _scratchMeas2A: null, _scratchMeas2B: null,
   _boost: 1,
@@ -193,7 +199,32 @@ export const windField = {
     if (!r.ok) throw new Error('wind ' + r.status);
     this.grid = await r.json();
     this._lastFetch = Date.now();
+    this._loadFine();          // 기다리지 않는다 — 없어도 전지구 판으로 분다
     return this.grid;
+  },
+
+  /* ⚠️⚠️ **동아시아 1° 보강판.** 전지구 판은 5°(약 555km)라 태풍이 격자 사이로
+     빠진다. 2026-09-08 실측 — 42N 155E 의 저기압을 5° 판은 14.2m/s 로 봤고
+     1° 판은 **20.0m/s** 로 봤다. 입자 속도도 색면과 같은 자료를 봐야 한다.
+     ⚠️ 실패는 조용히 넘어간다. 이건 **보강판**이고, 전지구 판은 이미 있다 —
+        여기서 예외를 던지면 없어도 되는 이유로 바람 레이어 전체가 안 켜진다. */
+  async _loadFine() {
+    if (this.fine && Date.now() - this._fineAt < 30 * 60_000) return;
+    try {
+      const r = await fetch(`${API.WIND}/wind-ea.json`, { cache: 'no-cache' });
+      if (!r.ok) throw new Error('wind-ea ' + r.status);
+      const g = await r.json();
+      if (!g?.u || !g?.v || !g.nx || !g.ny) throw new Error('wind-ea 형식');
+      this.fine = g;
+      this._fineAt = Date.now();
+      this._fineBox = {
+        south: g.lat0, north: g.lat0 + (g.ny - 1) * g.res,
+        west: g.lon0, east: g.lon0 + (g.nx - 1) * g.res,
+      };
+    } catch (e) {
+      this.fine = null; this._fineBox = null;
+      console.warn('[wind] 보강판 없음 —', e.message);
+    }
   },
 
   /* 어느 바람을 그릴지. 'now' = 지금(u/v), 'fc' = 내일(fu/fv).
@@ -236,30 +267,27 @@ export const windField = {
         예보 시각에 실황 바람을 그리는 것보다 빈 것이 정직하다. */
   override: null,
 
-  /** 격자에서 (lat,lon) 의 바람 — 양선형 보간 */
-  sample(lat, lon, out = null) {
-    const g = this.override || this.grid;
-    if (!g) return null;
+  /** 격자 하나에서 (lat,lon) 의 u/v — 양선형 보간. 없으면 null.
+   *  @param wrap 경도가 한 바퀴 도는 전지구 격자인가 (지역 격자는 false)
+   *  ⚠️ 이 함수는 입자마다 매 틱 호출된다. 예전의 at/bl 화살표 함수 두 개와
+   *     {u,v} 반환 객체는 초당 13만 개가 넘는 짧은 객체를 만들었다.
+   *     인덱스·보간을 직접 계산하고 호출자가 준 결과 객체를 재사용한다. */
+  _bilinear(g, U, V, lat, lon, wrap, out) {
+    if (!g || !U || !V) return null;
     let fx;
-    if (this.override) {
+    if (wrap) {
+      fx = ((lon - g.lon0) / g.res + g.nx) % g.nx;
+    } else {
       fx = (lon - g.lon0) / g.res;
       if (fx < 0 || fx > g.nx - 1) return null;       // 지역 격자 밖
-    } else {
-      fx = ((lon - g.lon0) / g.res + g.nx) % g.nx;
     }
     const fy = (lat - g.lat0) / g.res;
     if (fy < 0 || fy > g.ny - 1) return null;         // 극지는 자료가 없다
 
     const x0 = Math.floor(fx), y0 = Math.floor(fy);
-    const x1 = (x0 + 1) % g.nx, y1 = Math.min(y0 + 1, g.ny - 1);
+    const x1 = wrap ? (x0 + 1) % g.nx : Math.min(x0 + 1, g.nx - 1);
+    const y1 = Math.min(y0 + 1, g.ny - 1);
     const tx = fx - x0, ty = fy - y0;
-    const U = this.override ? g.u : (this.field === 'fc' ? g.fu : g.u);
-    const V = this.override ? g.v : (this.field === 'fc' ? g.fv : g.v);
-    // ⚠️ 예보 격자가 없으면 지금 바람으로 대신 그리지 않는다 — 아무것도 안 그린다.
-    if (!U || !V) return null;
-    /* ⚠️ 이 함수는 입자마다 매 틱 호출된다. 예전의 at/bl 화살표 함수 두 개와
-       {u,v} 반환 객체는 1,500입자 × 30fps 에서 초당 13만 개가 넘는 짧은 객체를
-       만들었다. 인덱스·보간을 직접 계산하고 호출자가 준 결과 객체를 재사용한다. */
     const i00 = y0 * g.nx + x0, i10 = y0 * g.nx + x1;
     const i01 = y1 * g.nx + x0, i11 = y1 * g.nx + x1;
     const a = U[i00], b = U[i10], c = U[i01], d = U[i11];
@@ -272,6 +300,43 @@ export const windField = {
     result.u = a * w00 + b * w10 + c * w01 + d * w11;
     result.v = e * w00 + f * w10 + h * w01 + i * w11;
     return result;
+  },
+
+  /** 격자에서 (lat,lon) 의 바람. 동아시아 1° 보강판이 있으면 그쪽을 먼저 본다.
+   *
+   *  ⚠️⚠️ **상자 경계에서 섞는다.** 5° 판과 1° 판은 같은 모델을 다르게 표본한
+   *     것이라 값이 조금 다르다. 그냥 갈아 끼우면 110°E·160°E·20°N·50°N 선에서
+   *     입자 속도가 계단처럼 바뀌어 **보이지 않는 벽**이 생긴다. 가장자리
+   *     `EDGE_DEG` 안쪽에서 선형으로 섞어 그 선을 없앤다.
+   *  ⚠️ 예보(fc)와 타임라인 override 에는 보강판을 쓰지 않는다 — 보강판에는
+   *     fu/fv 가 없다. 실황을 예보 자리에 그리면 거짓말이 된다. */
+  sample(lat, lon, out = null) {
+    const g = this.override || this.grid;
+    if (!g) return null;
+    const U = this.override ? g.u : (this.field === 'fc' ? g.fu : g.u);
+    const V = this.override ? g.v : (this.field === 'fc' ? g.fv : g.v);
+    // ⚠️ 예보 격자가 없으면 지금 바람으로 대신 그리지 않는다 — 아무것도 안 그린다.
+    const base = this._bilinear(g, U, V, lat, lon, !this.override, out);
+
+    const f = this.fine;
+    if (!f || this.override || this.field === 'fc') return base;
+    const w = this._fineWeight(lat, lon);
+    if (w <= 0) return base;
+    const fw = this._bilinear(f, f.u, f.v, lat, lon, false, this._scratchFine);
+    if (!fw) return base;
+    if (!base) return out ? Object.assign(out, fw) : { u: fw.u, v: fw.v };
+    base.u += (fw.u - base.u) * w;
+    base.v += (fw.v - base.v) * w;
+    return base;
+  },
+
+  /** 보강판을 얼마나 섞을 것인가 (0 = 전지구 판만, 1 = 보강판만) */
+  _fineWeight(lat, lon) {
+    const b = this._fineBox;
+    if (!b) return 0;
+    const inset = Math.min(lat - b.south, b.north - lat, lon - b.west, b.east - lon);
+    if (inset <= 0) return 0;
+    return inset >= EDGE_DEG ? 1 : inset / EDGE_DEG;
   },
 
   /* ⚠️ 뷰 사각형은 **틱마다 한 번만** 구한다(_tick 이 _viewRect 에 넣어 준다).
@@ -334,14 +399,20 @@ export const windField = {
   /** 지금 화면에서 경도 1°가 몇 CSS 픽셀인가 — 줌 보정의 유일한 입력.
    *  ⚠️ 계산으로 어림하지 않고 **화면에 실제로 찍어 본다**. 지구는 구라서 화면
    *     중심과 지평선 근처가 다르고, 카메라 기울기·투영에 따라서도 달라진다.
-   *     보이는 범위의 한가운데에서 1° 떨어진 두 점을 투영해 그 거리를 쓴다.
-   *  ⚠️ 실패하면(지평선 밖·투영 불가) 이전 값을 유지한다. 0 을 돌려주면 배율이
-   *     무한대가 되어 입자가 지구 밖으로 튀어 나간다. */
+   *
+   *  ⚠️⚠️ **재는 자리는 카메라 바로 아래(천저)다.** 처음엔 `computeViewRectangle`
+   *     한가운데에서 쟀는데, 지평선이 보이는 높이에서는 그 사각형이 지구 절반만큼
+   *     커져 중심이 **지평선 근처**로 간다. 거기서는 1°가 몇 픽셀로 찌그러져
+   *     배율이 상한(4)까지 튀었다 — 실측으로 3,200km 상공에서 배율 3.80 이 나왔다.
+   *     확대할수록 빨라져야 하는데 오히려 더 빨라진 것이다. 천저는 항상 화면 안이고
+   *     찌그러지지 않는다.
+   *  ⚠️ 실패하면(투영 불가) 이전 값을 유지한다. 0 을 돌려주면 배율이 무한대가 되어
+   *     입자가 지구 밖으로 튀어 나간다. */
   _measurePxPerDeg() {
-    const r = this._viewRect;
-    if (!r) return null;
-    let lat = Cesium.Math.toDegrees((r.south + r.north) / 2);
-    let lon = Cesium.Math.toDegrees(r.west + Cesium.Rectangle.computeWidth(r) / 2);
+    const carto = viewer.camera.positionCartographic;
+    if (!carto) return null;
+    let lat = Cesium.Math.toDegrees(carto.latitude);
+    const lon = Cesium.Math.toDegrees(carto.longitude);
     lat = Math.max(-70, Math.min(70, lat));   // 극 근처의 경도 수렴을 기준으로 삼지 않는다
     const ell = scene.globe.ellipsoid;
     const a = Cesium.Cartesian3.fromDegrees(lon, lat, 0, ell, this._scratchMeasA);

@@ -379,6 +379,10 @@ const FINE_BOX = Object.freeze({
   sstAnomEa:  { south: 23, north: 47, west: 114, east: 150 },
   pressureEa: { south: 20, north: 50, west: 110, east: 160 },
   airEa:      { south: 20, north: 50, west:  90, east: 150 },
+  /* ⚠️ 바람 보강판은 기압판과 **같은 요청에서 나온다**(pressure-grid Lambda).
+     Open-Meteo 는 요청 수로 한도를 세지 변수 수로 세지 않아, 이미 던지는 16회에
+     풍속·풍향을 얹어 추가 요청 0회로 얻는다. 그래서 상자도 기압판과 같다. */
+  windEa:     { south: 20, north: 50, west: 110, east: 160 },
 });
 
 /* 소스 이름 → 실제 파일 */
@@ -400,6 +404,12 @@ const SRC_URL = {
   sstAnomEa: () => `${API.MARINE_GRID}/sst-anom-ea.json`,
   /* 기압 색면도 동아시아 확대에서는 등압선과 같은 1° 전용판을 쓴다. */
   pressureEa: () => `${API.WIND}/pressure-ea.json`,
+  /* ⚠️⚠️ **동아시아 1° 바람 보강판.** 전지구 판은 5°(약 555km)라 **태풍이 격자
+     사이로 빠진다.** 2026-09-08 실측 — 전지구 2,376칸의 최대 풍속이 23.8m/s,
+     30m/s 이상은 0칸이었다. 같은 시각 42N 155E 의 저기압을 5° 판은 14.2m/s 로
+     봤고 1° 판은 **20.0m/s** 로 봤다. 색을 아무리 바꿔도 없는 값은 안 생긴다.
+     ⚠️ 1°(약 111km)도 태풍 눈벽(약 50km)은 못 담는다. 담기는 것은 폭풍역이다. */
+  windEa: () => `${API.WIND}/wind-ea.json`,
   /* ⚠️⚠️ 대기질 0.5° 동아시아 보강판. 전지구판은 5°(약 550km)라 **먼지 봉우리를
      통째로 놓치고 그 자리에 네모를 그린다.** 2026-09-07 실측 — 40°N 줄에서
      5° 판이 본 값은 100E=349 · 105E=407 인데, 같은 시각 0.5° 실제값은
@@ -474,6 +484,9 @@ export const gridOverlay = {
     if (base === 'marine') return 'marineEa';
     if (base === 'air') return 'airEa';
     if (key === 'pressure') return 'pressureEa';
+    /* ⚠️ 실황 바람만이다. `windfc`(내일 예보)는 보강판에 fu/fv 가 없다 —
+       여기서 걸러 두지 않으면 "내일 예보"라는 이름으로 지금 바람이 칠해진다. */
+    if (key === 'wind') return 'windEa';
     return null;
   },
 

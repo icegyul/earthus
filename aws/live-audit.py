@@ -257,8 +257,27 @@ def main(argv=None):
                 r["sha256"] = sha
                 r["contentLength"] = n
 
+    # ⚠️ 전량을 그대로 두면 8 MB 다 — 저장소에 둘 크기가 아니다.
+    #    금지·제품예외·UNKNOWN 은 **한 건도 빼지 않고** 남기고,
+    #    정상 판정된 공개·비공개만 접두사별 숫자로 접는다. 숨기는 게 아니라 접는 것이다.
+    import collections as _c
+
+    def _top2(k):
+        parts = k.split("/")
+        return "/".join(parts[:2]) + "/" if len(parts) > 2 else parts[0] + "/"
+
+    normal = [r for r in rows if r["classification"] in ("KEEP_PUBLIC", "KEEP_PRIVATE")]
+    kept = [r for r in rows if r["classification"] not in ("KEEP_PUBLIC", "KEEP_PRIVATE")]
+    fold = _c.defaultdict(lambda: {"count": 0, "bytes": 0})
+    for r in normal:
+        f = fold[(r["classification"], _top2(r["key"]))]
+        f["count"] += 1
+        f["bytes"] += r["size"]
+
     audit = {
-        "schemaVersion": "earthus.live-audit.v1",
+        "schemaVersion": "earthus.live-audit.v2",
+        "foldedByPrefix": [{"classification": c, "prefix": p2, **v}
+                           for (c, p2), v in sorted(fold.items())],
         "bucket": BUCKET, "region": REGION,
         "prefixes": list(PREFIXES),
         "objectCount": len(rows),
@@ -266,7 +285,7 @@ def main(argv=None):
         "tally": dict(tally),
         "note": ("aws/live-audit.py 가 만든다. 손으로 고치지 않는다. "
                  "지우는 것은 사람이 한다 — 이 도구는 아무것도 지우지 않는다."),
-        "objects": rows,
+        "objects": sorted(kept, key=lambda x: (x["classification"], x["key"])),
     }
     os.makedirs(os.path.dirname(a.out), exist_ok=True)
     with open(a.out, "w", encoding="utf-8") as fh:

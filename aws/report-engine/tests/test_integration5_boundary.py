@@ -68,6 +68,20 @@ SCAN_EXT = (".sh", ".mjs", ".js", ".py")
 SCAN_DIRS = ("aws", "tools")
 
 
+_JS_BLOCK = re.compile(r"/\*.*?\*/", re.S)
+_JS_LINE = re.compile(r"(?m)^\s*//.*$")
+_HASH_LINE = re.compile(r"(?m)^\s*#.*$")
+
+
+def _strip_comments(rel, text):
+    """주석을 뺀다 — 설명에 적힌 옛 경로를 위반으로 세지 않는다."""
+    if rel.endswith((".js", ".mjs")):
+        return _JS_LINE.sub("", _JS_BLOCK.sub("", text))
+    if rel.endswith((".py", ".sh")):
+        return _HASH_LINE.sub("", text)
+    return text
+
+
 def _writes_up(text):
     """올리는가, 내리는가.
 
@@ -81,6 +95,13 @@ def _writes_up(text):
         if re.search(r"s3api['\"]?,?\s*['\"]?put-object", line):
             return True
         if re.search(r"aws\s+s3api\s+put-object", line):
+            return True
+        # ⚠️⚠️ CLI 동사만 알면 SDK 로 올리는 것을 통째로 놓친다.
+        #    INTEGRATION-4 에서 "확장자로 거르지 마라"를 배웠는데,
+        #    그 구멍이 **한 층 아래로 옮겨 갔을 뿐**이었다 — 이번엔 업로드 API 다.
+        #    boto3(put_object/upload_file) 도 @aws-sdk(PutObjectCommand) 도 업로드다.
+        if re.search(r"\b(put_object|upload_file|upload_fileobj|copy_object"
+                     r"|PutObjectCommand|CopyObjectCommand)\b", line):
             return True
     return False
 
@@ -127,16 +148,21 @@ class UploaderCensus(unittest.TestCase):
         self.assertFalse(bad, "공개 경계를 따로 갖고 있는 업로더: %s" % bad)
 
     def test_작업_트리를_공개_원본으로_쓰지_않는다(self):
+        """⚠️ 예전 정규식은 `prototype/` 바로 앞에 따옴표가 있어야만 잡았다.
+        이 저장소에서 흔한 형태인 "$ROOT/prototype/..." 는 그대로 빠져나갔다 —
+        정작 잡으려던 모양을 못 잡는 검사였다. 이제 줄 어디에 있든 잡고,
+        주석은 위치가 아니라 **주석이라서** 뺀다."""
         bad = []
         for rel, s in _uploaders():
             if rel in BOUNDARY_EXEMPT:
                 continue
-            for m in re.finditer(r"[`'\"]prototype/[^`'\"]*[`'\"]", s):
-                frag = m.group(0)
-                # 설명·주석에 적힌 경로는 잡지 않는다. 실제 인용부호 안 경로만 본다.
-                if "${" in frag or "$(" in frag or "/*" in frag:
+            for line in _strip_comments(rel, s).splitlines():
+                if "prototype/" not in line:
                     continue
-                bad.append("%s: %s" % (rel, frag))
+                # 존재 확인(-f 검사)은 원본으로 쓰는 것이 아니다. 업로드·대입만 본다.
+                if re.search(r"(aws\s+s3|--body|SRC=|ROOT=|source_path=|local_path=|"
+                             r"public_file|public_dir|cp\s)", line):
+                    bad.append("%s: %s" % (rel, line.strip()[:90]))
         self.assertFalse(bad, "작업 트리 경로를 원본으로 쓴다: %s" % bad[:6])
 
     def test_정보공개_빌더가_걸러진_트리에서_뽑는다(self):
@@ -165,29 +191,83 @@ class LambdaWritePath(unittest.TestCase):
         key = re.search(r'^DST\s*=\s*"([^"]+)"', s, re.M).group(1)
         self.assertEqual(priv.prefix_visibility(key), "PRIVATE")
 
-    def test_공개_접두사에_쓰는_람다를_센다(self):
-        """app/ 에 직접 쓰는 람다가 있으면 목록에 적혀 있어야 한다.
+    # app/ 에 직접 쓰는 람다. **없애라는 뜻이 아니다** — 관광·캐릭터처럼
+    # 생성 자료를 쓰는 것은 정당하다. 다만 거름망 밖이라는 사실이 조용해지면 안 된다.
+    LAMBDA_APP_WRITERS = {
+        "tourism-flow": "관광 혼잡도 생성 자료 (app/tourism/*)",
+        "current-earth-snow-ice": "눈·얼음 생성 자료 (app/v2/data/current-earth/*)",
+        "character-studio": "캐릭터 생성 자산 (app/v3/characters/*)",
+    }
 
-        ⚠️ 없애라는 뜻이 아니다 — 관광·캐릭터처럼 **생성 자료**를 쓰는 것은 정당하다.
-           다만 거름망 밖이라는 사실이 조용해지면 안 된다.
+    def _lambda_app_writers(self):
+        """app/ 키로 **쓰는** 람다 디렉터리.
+
+        ⚠️⚠️ 두 번 틀렸다. 기록해 둔다 — 다음 사람이 같은 길을 걷지 않게.
+           (1) 처음엔 `Key="app/…"` 처럼 호출 자리의 리터럴만 봤다. 이 저장소의 람다는
+               키를 전부 상수로 빼 두므로(`OUTPUT_KEY = "app/tourism/seoul-flow.json"`
+               뒤에 `put_json(OUTPUT_KEY, …)`) 탐지기가 **0건**을 잡았다.
+               시험은 통과했지만 아무것도 지키지 않고 있었다.
+           (2) "app/ 문자열 + put 호출"로 넓혔더니 app/ 를 **읽는** 람다 넷
+               (air-state·health·obis-summary·space-archive)까지 잡혔다.
+               잘못 잡는 검사기는 곧 무시당한다.
+
+        지금은 이렇게 본다:
+           app/ 리터럴이 붙은 상수 → 그 상수에서 파생된 이름까지 한 단계 따라가고,
+           **쓰기 호출 뒤 창(窓)** 안에 그 이름이나 리터럴이 있는지 본다.
+           읽기 호출(read_json·load…)은 창을 열지 않는다.
         """
-        known = {
-            "tourism-flow": "관광 혼잡도 생성 자료 (app/tourism/*)",
-            "current-earth-snow-ice": "눈·얼음 생성 자료 (app/v2/data/current-earth/*)",
-            "character-studio": "캐릭터 생성 자산 (app/v3/characters/*)",
-        }
+        appkey = re.compile(r"""["'`](app/[^"'`]*)["'`]""")
+        # NAME = ... "app/..."   (py/js 공통)
+        assign_app = re.compile(
+            r"""(?m)^\s*(?:const|let|var)?\s*([A-Za-z_][\w]*)\s*=[^=\n]*["'`]app/""")
+        # NAME2 = ... NAME1 ...  (한 단계 파생: `${PREFIX}/snow-ice.png` 같은 것)
+        assign_any = re.compile(
+            r"""(?m)^\s*(?:const|let|var)?\s*([A-Za-z_][\w]*)\s*=([^=\n].*)$""")
+        writecall = re.compile(
+            r"\b(put_object|upload_file|upload_fileobj|copy_object"
+            r"|PutObjectCommand|CopyObjectCommand"
+            r"|put_json|put_bytes|save_json|write_json|\bput)\s*\(")
         found = set()
         for name in sorted(os.listdir(AWS)):
             d = os.path.join(AWS, name)
-            if not os.path.isdir(d):
+            if not os.path.isdir(d) or name.startswith((".", "_")):
                 continue
             for fn in os.listdir(d):
-                if not fn.endswith((".py", ".mjs")):
+                if not fn.endswith((".py", ".mjs", ".js")):
                     continue
-                s = _text(os.path.join(d, fn))
-                if re.search(r"""Key\s*=\s*[f]?["']app/|key:\s*[`'"]app/""", s):
+                body = _strip_comments(fn, _text(os.path.join(d, fn)))
+                names = {m.group(1) for m in assign_app.finditer(body)}
+                # 한 단계 파생을 따라간다 (imageKey = `${PREFIX}/snow-ice.png`).
+                # ⚠️ **문자열을 만드는 대입만** 따라간다. `conj = read_json(KEY_CONJ)` 처럼
+                #    읽어 온 *내용*을 담는 변수를 키로 오해하면, 그 변수를 쓰는 곳 근처의
+                #    무관한 put 이 전부 오탐이 된다(space-archive 가 실제로 그렇게 걸렸다).
+                for m in assign_any.finditer(body):
+                    rhs = m.group(2)
+                    if not any(c in rhs for c in names):
+                        continue
+                    if not any(q in rhs for q in ('"', "'", '`')):
+                        continue                      # 문자열 조립이 아니다
+                    names.add(m.group(1))
+                hit = False
+                for m in writecall.finditer(body):
+                    window = body[m.end():m.end() + 400]
+                    if appkey.search(window) or any(c in window for c in names):
+                        hit = True
+                        break
+                if hit:
                     found.add(name)
-        unexpected = sorted(found - set(known))
+                    break
+        return found
+
+    def test_람다_탐지기가_공허하지_않다(self):
+        """탐지기가 아무것도 못 찾으면 그 시험은 아무것도 지키지 않는다."""
+        found = self._lambda_app_writers()
+        self.assertTrue(found, "app/ 에 쓰는 람다를 하나도 못 찾았다 — 탐지기가 죽었다")
+        for name in self.LAMBDA_APP_WRITERS:
+            self.assertIn(name, found, "%s 를 탐지기가 놓친다" % name)
+
+    def test_공개_접두사에_쓰는_람다를_센다(self):
+        unexpected = sorted(self._lambda_app_writers() - set(self.LAMBDA_APP_WRITERS))
         self.assertFalse(unexpected,
                          "공개 app/ 에 직접 쓰는 람다가 목록에 없다: %s" % unexpected)
 

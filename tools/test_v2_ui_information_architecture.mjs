@@ -123,3 +123,57 @@ test('109 레이어가 전부 자리를 갖는다 — 단순화로 기능이 사
       `${k} 가 현상도 아니고 역할도 불명이다`);
   }
 });
+
+// ── PHASE 4 §9 — 지도 클릭과 메뉴 클릭이 같은 문맥으로 수렴한다 ───────────────
+test('지도 비컨도 배열 인덱스가 아니라 사건 id 로 주소를 잡는다', () => {
+  const feedSrc = src('intel-feed.js');
+  assert.match(feedSrc, /d\.onclick = \(\) => onPick\(it\.id, it\.kind\)/, '비컨이 아직 인덱스를 넘긴다');
+  assert.ok(!/onPick\(i\)/.test(feedSrc), 'onPick(i) 가 남아 있다 — 정렬이 바뀌면 엉뚱한 사건이 열린다');
+  assert.ok(!/d\._idx/.test(feedSrc), '_idx 캐시가 남아 있다');
+});
+
+test('지도 클릭이 사건과 현상을 함께 맞춘다', () => {
+  assert.match(mainSrc, /feed\.updateMarkers\(camera, altKm, \(eventId, kind\) =>/);
+  assert.match(mainSrc, /feed\.selectById\(eventId, orbit\)/);
+  assert.match(mainSrc, /const key = layerForEventKind\(kind\)/);
+  assert.match(mainSrc, /shell\.setSelection\(sid, lid\)/, '지도 클릭이 패널 선택을 안 맞춘다');
+});
+
+test('사건 종류가 현상으로 해석된다 — 하드코딩이 아니라 레지스트리다', () => {
+  assert.equal(reg.EVENT_KIND_PHENOMENON.TC, 'hazards.typhoon');
+  assert.equal(reg.EVENT_KIND_PHENOMENON.EQ, 'hazards.earthquake');
+  // 대표 레이어는 실제 존재하는 복합키여야 한다.
+  for (const kind of Object.keys(reg.EVENT_KIND_PHENOMENON)) {
+    const key = reg.layerForEventKind(kind);
+    assert.ok(key && reg.LAYER_PHENOMENON[key], `${kind} 의 대표 레이어가 레지스트리에 없다`);
+    assert.equal(reg.LAYER_PHENOMENON[key].phenomenon, reg.EVENT_KIND_PHENOMENON[kind]);
+  }
+  assert.equal(reg.layerForEventKind('없는종류'), null, '모르는 종류에 아무 레이어나 주면 안 된다');
+});
+
+// ── PHASE 4 §2 — 1차 메뉴는 도메인만 ─────────────────────────────────────────
+test('메뉴가 레이어가 아니라 도메인 → 현상으로 그려진다', () => {
+  assert.match(shellSrc, /const DOMAIN_INDEX =/, '도메인 색인이 없다');
+  assert.match(shellSrc, /const domainSectionHtml = \(dom\) =>/);
+  assert.match(shellSrc, /const phenomenonRowHtml = \(entry\) =>/);
+  // 도메인 목록은 레지스트리에서 만든다 — 손으로 쓴 두 번째 현상 목록을 만들지 않는다.
+  assert.match(shellSrc, /Object\.entries\(LAYER_PHENOMENON\)/);
+  // 1차는 접혀 있어야 한다. 58줄을 펼쳐 두면 '줄였다'가 화면에서 사실이 아니다.
+  assert.match(shellSrc, /collapsedSections = new Set\(\['land','weather','ocean','people','travel','hazards','space','__loose'\]\)/);
+});
+
+test('현상이 여러 자료를 가지면 펼쳐서 전부 켤 수 있다 — 기능이 사라지지 않는다', () => {
+  assert.match(shellSrc, /data-expand="/, '펼치기 버튼이 없다 — 흡수된 레이어에 도달할 수 없다');
+  assert.match(shellSrc, /expandedPhenomena/);
+  // 배경·조작 9개도 자리가 있어야 한다.
+  assert.match(shellSrc, /const looseSectionHtml = \(\) =>/);
+  assert.match(shellSrc, /LOOSE_LAYERS/);
+});
+
+test('하단 바로 들어와도 그 도메인이 펼쳐진다', () => {
+  // 펼침을 먼저 정하고 그린다. 순서가 뒤바뀌면 접힌 채로 그려 놓고 상태만 바꾼다.
+  const i = shellSrc.indexOf('const gotoScene');
+  const body = shellSrc.slice(i, i + 420);
+  assert.ok(body.indexOf('collapsedSections.delete') < body.indexOf('openPanel(brand)'),
+    'gotoScene 이 접힘 해제보다 먼저 그린다 — 하단 바가 빈 제목만 연다');
+});

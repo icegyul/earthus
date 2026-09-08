@@ -52,8 +52,12 @@ test('ui-shell 이 더 이상 bare id 로 질문을 찾지 않는다', () => {
   assert.ok(!/MENU_QUESTIONS\[/.test(shellSrc), 'ui-shell 에 bare id 질문 조회가 남아 있다');
   assert.match(shellSrc, /questionForLayer\(s\.id,\s*l\.id\)/);
   assert.match(shellSrc, /questionForLayer\(selectedMenu\.s\.id,\s*selectedMenu\.l\.id\)/);
-  // 메뉴·근거·켜진자료 세 곳 모두 씬을 넘겨야 한다.
-  assert.equal((shellSrc.match(/i18n\.layer\([^)]*s\.id\)/g) || []).length, 3);
+  // i18n.layer 호출은 **전부** 씬을 함께 넘겨야 한다. 개수를 못박으면 렌더러가 늘 때마다 깨진다 —
+  // 지켜야 하는 것은 '세 곳'이 아니라 '씬 없이 부르는 곳이 0'이다.
+  const calls = shellSrc.match(/i18n\.layer\([^;]*?\)/g) || [];
+  assert.ok(calls.length >= 3, `i18n.layer 호출이 ${calls.length}곳뿐이다`);
+  const withoutScene = calls.filter((c) => !/s\.id|sceneId/.test(c));
+  assert.deepEqual(withoutScene, [], '씬 없이 부르는 i18n.layer 가 남아 있다 — bare id 충돌이 되살아난다');
 });
 
 test('레지스트리에 없는 레이어는 조용히 넘어가지 않는다', () => {

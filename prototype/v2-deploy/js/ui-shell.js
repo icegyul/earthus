@@ -9,7 +9,7 @@ import { renderBadge, layerBadge } from './engine-bridge.js?v=15';
 // menu-guide.js 의 MENU_QUESTIONS 는 지우지 않았다 — tools/build_information_inventory.mjs 가
 // 아직 읽고, 레지스트리의 질문이 거기서 왔다. 다만 화면은 이제 레지스트리만 본다.
 // (bare id 조회였기 때문에 hobby/surf 가 ocean/surf 의 질문을 그대로 표시하고 있었다.)
-import { questionForLayer, phenomenonForLayer, LAYER_PHENOMENON, reportKindsForPhenomenon } from './phenomenon-registry.js?v=2';
+import { questionForLayer, phenomenonForLayer, LAYER_PHENOMENON, reportKindsForPhenomenon, PHENOMENA } from './phenomenon-registry.js?v=3';
 import { menuCoverage, menuTime, canClearLayer, matchesMenu } from './information-contract.js';
 const safeText = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -326,7 +326,9 @@ export function initShell(hooks) {
       : PANEL_HOME());
   }
   let timelineMinutes = 0;
-  const collapsedSections = new Set();
+  // PHASE 4 §2 — 1차 메뉴는 도메인만 보인다. 도메인을 열어야 현상 목록이 나온다.
+  // 처음부터 58줄을 펼쳐 두면 '메뉴를 줄였다'가 화면에서 사실이 아니게 된다.
+  const collapsedSections = new Set(['land','weather','ocean','people','travel','hazards','space','__loose']);
 
   // 권역 이동 (v5.3 스케일 사다리: GLOBAL → CONTINENT → REGION → COUNTRY).
   // 3D 지구를 벗어나지 않고 카메라만 그 권역 구도로 옮긴다 — 평면 전환이 아니다.
@@ -359,6 +361,147 @@ export function initShell(hooks) {
       if (openBrand) refreshFlyout();
     })
     .catch(() => { /* 목록이 없으면 칩 없이 국가 클릭으로만 쓴다 */ });
+
+  /* ── PHASE 4 — 도메인 → 현상 메뉴 ─────────────────────────────────────────
+     지금까지 메뉴는 109개 레이어를 그대로 4~5줄씩 그렸다. 사용자는 자료 목록을 먼저
+     읽어야 했다. 이제 1차는 도메인, 2차는 현상 66개다.
+
+     레이어를 지우지 않는다(§0). 한 현상이 여러 레이어를 흡수하면 그 레이어들은
+     현상 줄의 펼치기 안에 그대로 남는다 — 109개 전부 계속 도달 가능하다.
+     목록은 레지스트리에서 만든다. 손으로 쓴 두 번째 목록을 만들지 않는다(§2). */
+  const DOMAIN_KO = { land: '땅', weather: '날씨', ocean: '바다', people: '사람', travel: '여행', hazards: '재해', space: '우주' };
+  const DOMAIN_EN = { land: 'Land', weather: 'Weather', ocean: 'Ocean', people: 'People', travel: 'Travel', hazards: 'Hazards', space: 'Space' };
+  const expandedPhenomena = new Set();
+
+  const LAYER_BY_KEY = new Map();
+  for (const sc of SCENES) for (const l of sc.layers) LAYER_BY_KEY.set(sc.id + '/' + l.id, { s: sc, l });
+
+  // 도메인 → 현상 → 레이어. 대표 레이어는 primary 역할을 먼저 고른다.
+  const DOMAIN_INDEX = (() => {
+    const byPhen = new Map();
+    for (const [key, hit] of Object.entries(LAYER_PHENOMENON)) {
+      if (!hit.phenomenon) continue;
+      const rec = LAYER_BY_KEY.get(key);
+      if (!rec) continue;
+      if (!byPhen.has(hit.phenomenon)) byPhen.set(hit.phenomenon, []);
+      byPhen.get(hit.phenomenon).push({ key, role: hit.role, s: rec.s, l: rec.l });
+    }
+    const out = new Map();
+    for (const [pid, members] of byPhen) {
+      const p = PHENOMENA[pid];
+      if (!p) continue;
+      const rep = members.find((x) => x.role === 'primary') || members[0];
+      if (!out.has(p.domain)) out.set(p.domain, []);
+      out.get(p.domain).push({ id: pid, p, members, rep });
+    }
+    // 준비된 것부터 — planned 를 위에 두면 첫 화면이 빈 약속으로 시작한다.
+    const rank = { ready: 0, partial: 1, planned: 2 };
+    for (const list of out.values()) {
+      list.sort((a, b) => (rank[a.p.availability] - rank[b.p.availability])
+        || a.p.label.ko.localeCompare(b.p.label.ko, 'ko'));
+    }
+    return out;
+  })();
+
+  // 현상이 아닌 것(배경·조작·진입점). 지우지 않고 한 곳에 모은다.
+  const LOOSE_LAYERS = Object.entries(LAYER_PHENOMENON)
+    .filter((e) => !e[1].phenomenon)
+    .map((e) => ({ key: e[0], role: e[1].role, rec: LAYER_BY_KEY.get(e[0]) }))
+    .filter((x) => x.rec)
+    .map((x) => ({ key: x.key, role: x.role, s: x.rec.s, l: x.rec.l }));
+
+  const layerOnState = (rec) => (hooks.getLayerState && hooks.getLayerState(rec.s.id, rec.l)) || {};
+  const domainAccent = (dom) => {
+    const list = DOMAIN_INDEX.get(dom) || [];
+    return (list[0] && list[0].rep.s.accent) || '#7FB7F5';
+  };
+
+  // 현상 한 줄이 검색어에 걸리는가 — 이름·질문뿐 아니라 속한 레이어 이름·출처까지 본다.
+  const phenMatches = (entry) => matchesMenu(menuQuery, [
+    entry.p.label.ko, entry.p.label.en, entry.p.question.ko, entry.p.question.en,
+    entry.members.map((m) => m.l.name).join(' '),
+    entry.members.map((m) => m.l.src).join(' '),
+  ]);
+
+  const layerRowHtml = (rec, sub = true) => {
+    const st = layerOnState(rec);
+    return '<button class="mp-item' + (sub ? ' mp-sub' : '') + (rec.l.state === 'LOCKED' ? ' locked' : '') + (st.on ? ' on' : '') + '"'
+      + ' data-fscene="' + rec.s.id + '" data-flayer="' + rec.l.id + '"'
+      + ' title="' + safeText(rec.l.src) + '" aria-pressed="' + (!!st.on) + '">'
+      + '<span class="mp-lbl">' + i18n.layer(rec.l.id, rec.l.name, rec.s.id) + '</span>' + dataBadge(rec.l.state)
+      + (st.on && st.note ? '<span class="mp-note">' + st.note + '</span>' : '')
+      + '</button>';
+  };
+
+  const phenomenonRowHtml = (entry) => {
+    const anyOn = entry.members.some((m) => layerOnState(m).on);
+    const sel = !!selectedMenu && (selectedMenu.s.id + '/' + selectedMenu.l.id) === entry.rep.key;
+    const name = i18n.ko ? entry.p.label.ko : entry.p.label.en;
+    const more = entry.members.length > 1;
+    const open = expandedPhenomena.has(entry.id) || !!menuQuery;
+    // 자료가 여럿이면 펼쳐서 그 안의 레이어를 그대로 켤 수 있다 — 기능은 하나도 안 사라진다.
+    const expander = more
+      ? '<button class="mp-expand" data-expand="' + entry.id + '" aria-expanded="' + (open ? 'true' : 'false')
+        + '" aria-label="' + safeText(name) + ' ' + (i18n.ko ? '자료 목록' : 'data list') + '">' + entry.members.length + '</button>'
+      : '';
+    return '<div class="mp-phen' + (anyOn ? ' has-on' : '') + (sel ? ' sel' : '') + '">'
+      + '<button class="mp-item mp-phen-main' + (entry.rep.l.state === 'LOCKED' ? ' locked' : '') + (anyOn ? ' on' : '') + '"'
+      + ' data-fscene="' + entry.rep.s.id + '" data-flayer="' + entry.rep.l.id + '"'
+      + ' title="' + safeText(i18n.ko ? entry.p.question.ko : entry.p.question.en) + '" aria-pressed="' + anyOn + '">'
+      + '<span class="mp-lbl">' + safeText(name) + '</span>' + dataBadge(entry.rep.l.state)
+      + '</button>' + expander
+      + (open && more ? '<div class="mp-subs">' + entry.members.map(layerRowHtml).join('') + '</div>' : '')
+      + '</div>';
+  };
+
+  const chipsFor = (dom) => {
+    if (dom === 'land') {
+      return '<div class="mp-chips" role="group" aria-label="' + i18n.t('regionMove') + '">'
+        + REGION_CHIPS.map((r) => '<button class="mp-chip" data-region="' + r.id + '">' + i18n.region(r.id, r.ko) + '</button>').join('')
+        + '</div><div class="mp-chip-note">' + i18n.t('regionNote') + '</div>';
+    }
+    if (dom === 'people' && POP_COUNTRIES.length) {
+      const cname = (c) => (hooks.countryName ? hooks.countryName(c.iso3, c.nameKo) : c.nameKo);
+      const loc = i18n.ko ? 'ko-KR' : 'en-US';
+      return '<div class="mp-chips" role="group" aria-label="' + i18n.t('popChips') + '">'
+        + POP_COUNTRIES.map((c) => '<button class="mp-chip" data-pop="' + c.iso3 + '" data-popname="' + c.nameKo + '" title="'
+          + i18n.t('popTitle').replace('{n}', c.total.toLocaleString(loc)).replace('{y}', c.year) + '">' + cname(c) + '</button>').join('')
+        + '</div><div class="mp-chip-note">' + i18n.t('popNote').replace('{n}', POP_COUNTRIES.length) + '</div>';
+    }
+    return '';
+  };
+
+  const domainSectionHtml = (dom) => {
+    const all = DOMAIN_INDEX.get(dom) || [];
+    const shown = all.filter((e) => {
+      if (activeOnly && !e.members.some((m) => layerOnState(m).on)) return false;
+      return phenMatches(e);
+    });
+    if (!shown.length) return '';
+    const label = i18n.ko ? DOMAIN_KO[dom] : DOMAIN_EN[dom];
+    const hidden = !menuQuery && collapsedSections.has(dom);
+    return '<section class="mp-sec" data-section="' + dom + '" style="--sc:' + domainAccent(dom) + '">'
+      + '<h3 class="mp-title"><button data-collapse="' + dom + '" aria-expanded="' + (hidden ? 'false' : 'true') + '">'
+      + '<i></i>' + safeText(label) + '<em>' + shown.length + '</em></button></h3>'
+      + '<div ' + (hidden ? 'hidden' : '') + '>'
+      + (menuQuery || activeOnly ? '' : chipsFor(dom))
+      + shown.map(phenomenonRowHtml).join('')
+      + '</div></section>';
+  };
+
+  // 배경·조작 — 현상이 아니다. 맨 아래 한 곳에 모아 둔다.
+  const looseSectionHtml = () => {
+    const shown = LOOSE_LAYERS.filter((rec) => {
+      const st = layerOnState(rec);
+      return (!activeOnly || st.on) && matchesMenu(menuQuery, [rec.l.name, rec.l.src, questionForLayer(rec.s.id, rec.l.id)]);
+    });
+    if (!shown.length) return '';
+    const hidden = !menuQuery && collapsedSections.has('__loose');
+    return '<section class="mp-sec" data-section="__loose" style="--sc:#8aa0b4">'
+      + '<h3 class="mp-title"><button data-collapse="__loose" aria-expanded="' + (hidden ? 'false' : 'true') + '">'
+      + '<i></i>' + (i18n.ko ? '지구 표현 · 이동' : 'Globe view & controls') + '<em>' + shown.length + '</em></button></h3>'
+      + '<div ' + (hidden ? 'hidden' : '') + '>' + shown.map((r) => layerRowHtml(r, false)).join('') + '</div></section>';
+  };
 
   const sectionHtml = (s) => {
     const shown = s.layers.filter(l => {
@@ -413,7 +556,8 @@ export function initShell(hooks) {
   const openPanel = (brand) => {
     openBrand = brand;
     const aeth = brand === 'aetherus';
-    const scenes = SCENES.filter((s) => (s.group || 'earthus') === brand);
+    // PHASE 4 — 브랜드로 도메인을 고른다. AETHERUS 는 우주 하나(기존 계약 유지, §1).
+    const domains = aeth ? ['space'] : ['land', 'weather', 'ocean', 'people', 'travel', 'hazards'];
     panel.classList.toggle('aeth', aeth);
     panel.innerHTML = `
       <div class="mp-head">
@@ -423,7 +567,7 @@ export function initShell(hooks) {
       <div class="mp-search"><label>${i18n.ko ? '메뉴·질문 검색':'Find a topic'}<input type="search" data-menu-search value="${safeText(menuQuery)}" placeholder="${i18n.ko ? '예: 파고, 무장애, 한국':'Search topics'}"></label>
       <label class="mp-active-only"><input type="checkbox" data-active-only ${activeOnly ? 'checked':''}>${i18n.ko ? '켜진 자료만':'Active only'}</label></div>
       <div class="mp-body">
-        ${scenes.map(sectionHtml).join('') || `<p role="status">${i18n.ko ? '조건에 맞는 메뉴가 없습니다. 검색어 또는 필터를 바꿔 주세요.':'No matching topics. Change the search or filter.'}</p>`}
+        ${(domains.map(domainSectionHtml).join('') + (aeth ? '' : looseSectionHtml())) || `<p role="status">${i18n.ko ? '조건에 맞는 메뉴가 없습니다. 검색어 또는 필터를 바꿔 주세요.':'No matching topics. Change the search or filter.'}</p>`}
         <div class="mp-foot">${i18n.t('mpFoot')}</div>
       </div>`;
     panel.classList.add('open');
@@ -477,6 +621,8 @@ export function initShell(hooks) {
   panel.addEventListener('click', (e) => {
     if (e.target.closest('[data-x]')) { closeFlyout(); return; }
     const collapse=e.target.closest('[data-collapse]');
+    const expand = e.target.closest('[data-expand]');
+    if(expand){const pid=expand.dataset.expand;expandedPhenomena.has(pid)?expandedPhenomena.delete(pid):expandedPhenomena.add(pid);refreshFlyout();return;}
     if(collapse){const id=collapse.dataset.collapse;collapsedSections.has(id)?collapsedSections.delete(id):collapsedSections.add(id);refreshFlyout();return;}
     const chip = e.target.closest('.mp-chip');
     if (chip) {
@@ -564,8 +710,10 @@ export function initShell(hooks) {
 
   // 씬 목록 패널에서 특정 그룹(날씨·바다)까지 열어 스크롤해 보여준다 — 접혀 있었다면 편다.
   const gotoScene = (brand, sceneId) => {
-    openPanel(brand);
+    // 펼침을 먼저 정하고 그린다. 순서가 뒤바뀌면 접힌 채로 그려 놓고 상태만 바꿔
+    // 하단 바로 들어온 사용자는 빈 제목만 보게 된다(도메인 기본 접힘 이후 생긴 문제).
     collapsedSections.delete(sceneId);
+    openPanel(brand);
     requestAnimationFrame(() => {
       panel.querySelector(`[data-section="${sceneId}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });

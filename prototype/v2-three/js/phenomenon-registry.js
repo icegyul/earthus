@@ -1007,3 +1007,29 @@ export function reportKindsForPhenomenon(phenomenonId) {
     .filter(([, v]) => v.phenomenon === phenomenonId)
     .map(([k]) => k);
 }
+
+// ── PHASE 4 §9 — 지도 클릭과 메뉴 클릭이 같은 문맥으로 수렴하게 하는 표 ──────────
+// 사건 피드의 kind(TC/EQ)는 현상 id 가 아니다. 둘을 잇는 곳이 없어서 지도에서 태풍을
+// 눌러도 패널은 무엇을 고른 것인지 몰랐다. 여기가 그 자리다.
+// 새 종류를 임의로 늘리지 않는다 — intel-feed 가 실제로 만드는 kind 만 적는다.
+export const EVENT_KIND_PHENOMENON = Object.freeze({
+  TC: 'hazards.typhoon',
+  EQ: 'hazards.earthquake',
+});
+
+/** 이 현상을 대표하는 레이어 복합키. primary 역할을 먼저 고른다. */
+export function representativeLayerFor(phenomenonId) {
+  let fallback = null;
+  for (const [key, hit] of Object.entries(LAYER_PHENOMENON)) {
+    if (hit.phenomenon !== phenomenonId) continue;
+    if (hit.role === 'primary') return key;
+    if (!fallback) fallback = key;
+  }
+  return fallback;
+}
+
+/** 사건(kind) → 그 사건이 속한 현상의 대표 레이어. 지도 클릭이 이걸로 패널을 맞춘다. */
+export function layerForEventKind(kind) {
+  const pid = EVENT_KIND_PHENOMENON[kind];
+  return pid ? representativeLayerFor(pid) : null;
+}

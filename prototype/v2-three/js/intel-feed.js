@@ -781,9 +781,10 @@ export class IntelFeed {
       d.style.top = `${(-this._proj.y * 0.5 + 0.5) * H}px`;
       d.className = `feed-mark ${it.kind === 'TC' ? 'tc' : 'eq'} a-${it.alert.toLowerCase()}${this.selected === it ? ' sel' : ''}`;
       d.title = it.title;
-      if (d._idx !== i) {
-        d._idx = i;
-        d.onclick = () => onPick(i);
+      // 지도 비컨도 목록과 같은 주소를 쓴다 — 인덱스는 정착할 때마다 어긋난다(PHASE 2 와 같은 이유).
+      if (d._eid !== it.id) {
+        d._eid = it.id;
+        d.onclick = () => onPick(it.id, it.kind);
       }
     }
     for (let i = used; i < this.pool.length; i += 1) this.pool[i].style.display = 'none';

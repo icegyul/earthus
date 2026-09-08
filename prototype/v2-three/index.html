@@ -559,6 +559,21 @@
     padding: 8px 14px 8px 18px; text-align: left;
     opacity: 0.86; transition: opacity 0.15s ease, background 0.15s ease;
   }
+  /* PHASE 4 — 현상 한 줄. 이름 + 상태만. 질문·범위·시각은 선택 뒤 패널에서 본다. */
+  .mp-phen { position: relative; display: flex; flex-wrap: wrap; align-items: stretch; }
+  .mp-phen .mp-phen-main { flex: 1; min-width: 0; }
+  .mp-phen.sel .mp-phen-main { background: rgba(127,183,245,0.10); }
+  .mp-expand {
+    flex: none; min-width: 34px; min-height: 35px; margin: 0; padding: 0 8px;
+    background: none; border: 0; cursor: pointer; font-family: inherit; font-size: 11px;
+    color: rgba(150,175,195,0.85); border-radius: 6px;
+  }
+  .mp-expand:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+  .mp-expand[aria-expanded="true"] { color: var(--sc, var(--accent)); }
+  .mp-expand:focus-visible { outline: 2px solid #7FB7F5; outline-offset: -2px; }
+  .mp-subs { flex: 1 0 100%; border-left: 2px solid rgba(255,255,255,0.08); margin-left: 18px; }
+  .mp-item.mp-sub { padding-left: 14px; font-size: 12px; opacity: 0.78; }
+  .mp-item.mp-sub:hover { opacity: 1; }
   .mp-item:hover { opacity: 1; background: rgba(255,255,255,0.05); }
   .mp-item:active { transform: scale(0.99); }
   .mp-item.locked { opacity: 0.4; }
@@ -1207,7 +1222,7 @@
   <div class="err" id="load-err"></div>
 </div>
 
-<script type="module" src="./js/main.js?v=188-p3ia"></script>
+<script type="module" src="./js/main.js?v=189-p4menu"></script>
 <script src="/js/earth-switch.js" defer></script>
 </body>
 </html>

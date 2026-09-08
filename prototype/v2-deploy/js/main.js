@@ -4,12 +4,14 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=62-p3ia';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=63-p4menu';
 import { createSelectionGate } from './information-contract.js';
+// PHASE 4 §9 — 지도에서 고른 사건을 어느 현상으로 읽을지는 레지스트리가 정한다.
+import { layerForEventKind } from './phenomenon-registry.js?v=3';
 const escUI = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
-import { IntelFeed } from './intel-feed.js?v=7';
+import { IntelFeed } from './intel-feed.js?v=8';
 import { evaluateWatch, myZone, loadWatch, saveWatch } from './watch.js?v=1';
 import { LiveLayers } from './live-layers.js?v=39-information';
 import { StationModel } from './station-model.js?v=2';
@@ -5880,8 +5882,13 @@ async function main() {
     buildLabelCandidates();
     shell.updateLabels(camera, altKm);
     synop.update(camera, altKm);
-    feed.updateMarkers(camera, altKm, (i) => {
-      feed.select(i, orbit);
+    // PHASE 4 §9 — 지도 클릭과 메뉴 클릭이 같은 문맥으로 수렴한다.
+    // 사건을 열고(정본 id), 그 사건이 속한 현상을 패널 선택으로도 맞춘다.
+    // 이게 없으면 지도에서 태풍을 눌러도 패널은 무엇을 고른 것인지 모른다.
+    feed.updateMarkers(camera, altKm, (eventId, kind) => {
+      feed.selectById(eventId, orbit);
+      const key = layerForEventKind(kind);
+      if (key) { const [sid, lid] = key.split('/'); shell.setSelection(sid, lid); }
       shell.openIntel();
       shell.renderIntel();
     });

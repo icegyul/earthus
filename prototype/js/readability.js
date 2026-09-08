@@ -24,6 +24,9 @@ const ESRI_CREDIT = 'Esri, Garmin, HERE, © OpenStreetMap contributors, and the 
 /* 국가·해안선은 색면을 가리지 않는 범위에서 기본 표시하고, 사용자가 판독 모드를
    명시적으로 켰을 때만 더 강하게 보인다. 첫 Earth View에는 reference 자체가 없다. */
 const REFERENCE_ALPHA = Object.freeze({ data: 0.78, read: 0.96 });
+/* 좁은 화면에서 패널이 스스로 접히기까지의 시간. 처음 몇 초는 출처·시각을
+   읽을 수 있어야 하고, 그 뒤로는 지도가 주인공이어야 한다. */
+const LEAN_AFTER_MS = 7000;
 const GRID_LAYERS = new Set([
   'temp', 'tmax', 'tmin', 'wind', 'windfc', 'humidity', 'tpw', 'rain', 'pressure', 'fog', 'drought',
   'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone', 'sst', 'sstanom', 'wave', 'swell', 'current',
@@ -123,6 +126,7 @@ export const readability = {
   toggle: null,
   earthButton: null,
   pointClose: null,
+  detailsButton: null,
   reference: null,
   activeLayer: null,
   grid: null,
@@ -146,6 +150,15 @@ export const readability = {
     this.toggle = document.getElementById('readabilityToggle');
     this.earthButton = document.getElementById('readabilityEarth');
     this.pointClose = document.getElementById('readabilityPointClose');
+    this.detailsButton = document.getElementById('readabilityDetails');
+
+    /* ⚠️ 사용자가 직접 편 뒤에는 다시 접지 않는다. 읽으려고 편 것을 도로 접으면
+       "화면이 제멋대로 움직인다"가 된다. 접는 것은 처음 한 번뿐이다. */
+    this.detailsButton?.addEventListener('click', () => {
+      clearTimeout(this._leanTimer);
+      this._leanTimer = null;
+      this._setLean(!this.root.classList.contains('rd-lean'), true);
+    });
 
     this.toggle?.addEventListener('click', () => {
       document.dispatchEvent(new CustomEvent('earthus:read-mode', {
@@ -160,6 +173,15 @@ export const readability = {
     this.pointClose?.addEventListener('click', () => {
       document.dispatchEvent(new CustomEvent('earthus:earth-point-clear'));
     });
+
+    /* ⚠️ 하단에 겹쳐 있는 것들(레이어 칩)이 이 패널을 피하려면 **실제 키**를 알아야 한다.
+       접힘·펼침·언어·눈금 단계 수에 따라 71px↔300px 로 변하므로 상수로는 못 맞춘다. */
+    try {
+      new ResizeObserver(() => {
+        const h = this.root.hidden ? 0 : Math.round(this.root.getBoundingClientRect().height);
+        document.body.style.setProperty('--rd-panel-h', `${h}px`);
+      }).observe(this.root);
+    } catch (_) { }
 
     store.on('earthView', state => this._state(state));
     store.on('scene', () => this._state(store.earthView));
@@ -191,6 +213,7 @@ export const readability = {
     this.activeLayer = active ? state.layer : null;
     this.gridLayer = this.activeLayer === 'humidity' ? 'rh' : this.activeLayer;
     this.root.hidden = !active;
+    if (!active) document.body.style.setProperty('--rd-panel-h', '0px');
     document.body.classList.toggle('earth-data-view', active);
     document.body.classList.toggle('earth-read-mode', active && state.read === true);
     this.toggle?.setAttribute('aria-pressed', String(active && state.read === true));
@@ -203,6 +226,7 @@ export const readability = {
     this.cities?.setAttribute('aria-label', i18n.lang === 'ko'
       ? '현재 화면의 도시 원격자값' : 'Nearest source grid-cell values for visible cities');
     if (!active) {
+      clearTimeout(this._leanTimer); this._leanTimer = null;
       this._clearGrid();
       this._clearPoint();
       this._setReference(false);
@@ -213,6 +237,12 @@ export const readability = {
     const info = KIND[this.activeLayer] || [this.activeLayer, this.activeLayer, 'MODEL'];
     this.title.textContent = info[i18n.lang === 'ko' ? 0 : 1];
     this.badge.textContent = info[2];
+    /* ⚠️ **레이어가 바뀔 때만** 다시 펴고 다시 센다. store 이벤트마다 부르면
+       (카메라·줌·시간 변경도 여기로 온다) 패널이 몇 초마다 폈다 접혔다 한다. */
+    if (this.activeLayer !== this._leanLayer) {
+      this._leanLayer = this.activeLayer;
+      this._scheduleLean();
+    }
     /* 받은 지적: 온도·수증기 같은 색면을 켜면 도시값은 보여도 어느 국가인지 읽기
        어려웠다. 경계/해안선/국가 지명 reference는 Data View 진입 즉시 올리고,
        판독 모드는 같은 reference의 대비를 더 높이는 단계로 유지한다. */
@@ -263,6 +293,44 @@ export const readability = {
 
   acceptsLayer(layer) {
     return layer === this.activeLayer || layer === this.gridLayer;
+  },
+
+  /* ── 좁은 화면에서 스스로 접기 ───────────────────────────────────────
+     ⚠️ 이 패널은 세로로 여덟 줄이다(제목·배지·단추 둘·색 눈금·출처·주의문 둘·크레딧).
+        폰에서는 그것만으로 화면의 3분의 1을 먹었다(2026-09-08 실측 화면).
+        윈디는 같은 정보를 위쪽에 한 줄로 띄우고 잠시 뒤 지운다.
+     → 레이어를 켠 뒤 LEAN_AFTER_MS 동안은 다 보여 주고(처음 볼 때는 출처·시각이
+       중요하다), 그 뒤 **제목 + 눈금**만 남긴다. "정보" 단추로 다시 편다.
+     ⚠️ 눈금은 접어도 남긴다 — 색을 못 읽으면 지도 자체가 못 읽힌다.
+     ⚠️ 넓은 화면에서는 접지 않는다. 자리가 있는데 감추면 정보만 잃는다. */
+  _leanTimer: null,
+
+  _isNarrow() {
+    return window.matchMedia?.('(max-width: 820px)').matches === true;
+  },
+
+  _setLean(on, byUser = false) {
+    if (!this.root) return;
+    this.root.classList.toggle('rd-lean', on);
+    if (this.detailsButton) {
+      this.detailsButton.setAttribute('aria-expanded', String(!on));
+      const ko = i18n.lang === 'ko';
+      this.detailsButton.textContent = on ? (ko ? '정보' : 'Info') : (ko ? '접기' : 'Less');
+    }
+    if (byUser) this._leanByUser = true;
+  },
+
+  /** 레이어가 새로 켜졌을 때만 부른다 — 자료가 바뀌면 출처를 다시 보여 준다. */
+  _scheduleLean() {
+    clearTimeout(this._leanTimer);
+    this._leanTimer = null;
+    this._leanByUser = false;
+    if (!this._isNarrow()) { this._setLean(false); return; }
+    this._setLean(false);
+    this._leanTimer = setTimeout(() => {
+      this._leanTimer = null;
+      if (!this._leanByUser) this._setLean(true);
+    }, LEAN_AFTER_MS);
   },
 
   _renderLegend() {

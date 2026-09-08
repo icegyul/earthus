@@ -448,6 +448,10 @@
         <header class="rd-heading">
           <h2 id="readabilityTitle">자료 판독</h2>
           <span id="readabilityBadge" class="rd-badge">MODEL</span>
+          <!-- 좁은 화면에서 이 패널은 몇 초 뒤 제목+눈금 두 줄로 접힌다.
+               접힌 상태에서 출처·시각·주의문을 다시 펴는 단추다. -->
+          <button id="readabilityDetails" class="rd-more" type="button"
+                  aria-expanded="true" aria-controls="readabilityLegend">정보</button>
         </header>
         <div class="rd-actions">
           <button id="readabilityToggle" type="button" aria-pressed="false">판독 모드</button>

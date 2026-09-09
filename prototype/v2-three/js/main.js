@@ -24,6 +24,7 @@ import { SatLayer } from './sat-layer.js?v=1';
 import { CloudVolume } from './cloud-volume.js?v=4';
 import { PopSculpture } from './pop-sculpture.js?v=13';
 import { PopMetricMenu } from './pop-metric-menu.js?v=1';
+import { QuickMenu } from './quick-menu.js?v=1';
 import { QuakeHistory } from './quake-history.js?v=3';
 import { initOnboard } from './onboard.js?v=2';
 import { SolarView } from './solar-view.js?v=4';
@@ -54,6 +55,13 @@ import {
 import { globeAdapter, overlayAdapter, takeoverAdapter } from './engine-adapters.js?v=1';
 
 const EARTH_RADIUS_M = 6371000;
+
+// 지형 과장 클램프가 프레임마다 고도를 읽는 시점 링 — 카메라 바로 아래와 2.5°·5.5°
+// 4방위(18km에서 약 280·610km). 시야 안에서 지형이 카메라 위로 솟는 걸 잡는다.
+const RING_SAMPLES = Object.freeze([
+  [0, 0], [2.5, 0], [-2.5, 0], [0, 2.5], [0, -2.5],
+  [5.5, 0], [-5.5, 0], [0, 5.5], [0, -5.5],
+]);
 
 // 세 지구(EARTHUS·Intelligence·WONDER)가 같은 자리에서 시작한다 — 기준은 한국이다.
 // v3(v3-kids)의 HOME 과 같은 뜻의 값이고, 두 곳이 어긋나면 전환기로 오갈 때 지구가 튄다.
@@ -2592,8 +2600,12 @@ async function main() {
     el.addEventListener('input', sync);
     sync();
   };
+  // 사용자가 고른 지형 과장 설정. 프레임 루프가 카메라 아래 지형을 계산해
+  // uniforms.uExagger.value 에 '이것보다 못 낮추지 않는' 실제 그릴 값을 넣는다 —
+  // 설정값과 그리는 값을 분리한 이유는 아래 프레임 루프 주석(2026-09-10 실측).
+  let exagUser = 50;
   bind('c-exagger', 'v-exagger', (v) => `${v}×`, (v) => {
-    uniforms.uExagger.value = v;
+    exagUser = v;
     if (window.__earthusLive) window.__earthusLive.onExaggerChanged();
   });
   // 해저 등심선 간격 — 500 m 간격, 5번째(2,500 m)마다 주곡선
@@ -2622,6 +2634,37 @@ async function main() {
   const focus = new CountryFocus(uniforms, orbit, document.getElementById('focus-chip'));
   const rayc = new THREE.Raycaster();
   let downAt = null;
+
+  // 화면 좌표 → 지구 표면 (lat, lon) | null. 좌클릭 픽킹과 우클릭 퀵메뉴가 같은
+  // 교산을 쓴다 — 두 경로가 다른 교산을 쓰면 우클릭 메뉴가 엉뚱한 나라를 잡는다.
+  const raycastGlobe = (clientX, clientY) => {
+    const ndc = new THREE.Vector2(
+      (clientX / window.innerWidth) * 2 - 1,
+      -(clientY / window.innerHeight) * 2 + 1,
+    );
+    rayc.setFromCamera(ndc, camera);
+    const ro = rayc.ray.origin;
+    const rd = rayc.ray.direction;
+    const b = ro.dot(rd);
+    const c = ro.lengthSq() - 1;
+    const disc = b * b - c;
+    if (disc < 0) return null;
+    const p = ro.clone().addScaledVector(rd, -b - Math.sqrt(disc));
+    let lat = THREE.MathUtils.radToDeg(Math.asin(Math.min(Math.max(p.y, -1), 1)));
+    let lon = THREE.MathUtils.radToDeg(Math.atan2(p.x, p.z));
+    // 과장된 지형은 반경 1보다 위에 그려져 시차가 생긴다 → 그 지점 고도로
+    // 팽창 반경을 잡아 두 번 재교차 (한국 폭 ~3°인데 시차가 1~3°라 필수)
+    for (let it = 0; it < 2; it += 1) {
+      const h = Math.max(heightAtJs(lat, lon), 0);
+      const r1 = 1 + (h / EARTH_RADIUS_M) * uniforms.uExagger.value;
+      const disc2 = b * b - (ro.lengthSq() - r1 * r1);
+      if (disc2 <= 0) break;
+      const p2 = ro.clone().addScaledVector(rd, -b - Math.sqrt(disc2));
+      lat = THREE.MathUtils.radToDeg(Math.asin(Math.min(Math.max(p2.y / r1, -1), 1)));
+      lon = THREE.MathUtils.radToDeg(Math.atan2(p2.x, p2.z));
+    }
+    return { lat, lon };
+  };
 
   // JS쪽 고도 샘플러: 클릭 픽킹의 지형 시차 보정용 (전역 z4 캔버스에서 직접 읽음)
   let heightPix = null;   // 캔버스 전체 픽셀을 한 번만 읽어 둔다
@@ -2675,35 +2718,14 @@ async function main() {
   });
   canvas.addEventListener('pointerup', (e) => {
     if (!downAt) return;
+    if (e.button === 2) return; // 오른쪽 버튼은 퀵메뉴의 것 — 선택(픽)은 왼쪽 클릭의 일이다
     const moved = Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y);
     const held = performance.now() - downAt.t;
     downAt = null;
     if (moved > 6 || held > 400) return;
-    const ndc = new THREE.Vector2(
-      (e.clientX / window.innerWidth) * 2 - 1,
-      -(e.clientY / window.innerHeight) * 2 + 1,
-    );
-    rayc.setFromCamera(ndc, camera);
-    const ro = rayc.ray.origin;
-    const rd = rayc.ray.direction;
-    const b = ro.dot(rd);
-    const c = ro.lengthSq() - 1;
-    const disc = b * b - c;
-    if (disc < 0) { focus.clear(); return; }
-    const p = ro.clone().addScaledVector(rd, -b - Math.sqrt(disc));
-    let lat = THREE.MathUtils.radToDeg(Math.asin(Math.min(Math.max(p.y, -1), 1)));
-    let lon = THREE.MathUtils.radToDeg(Math.atan2(p.x, p.z));
-    // 과장된 지형은 반경 1보다 위에 그려져 시차가 생긴다 → 그 지점 고도로
-    // 팽창 반경을 잡아 두 번 재교차 (한국 폭 ~3°인데 시차가 1~3°라 필수)
-    for (let it = 0; it < 2; it += 1) {
-      const h = Math.max(heightAtJs(lat, lon), 0);
-      const r1 = 1 + (h / EARTH_RADIUS_M) * uniforms.uExagger.value;
-      const disc2 = b * b - (ro.lengthSq() - r1 * r1);
-      if (disc2 <= 0) break;
-      const p2 = ro.clone().addScaledVector(rd, -b - Math.sqrt(disc2));
-      lat = THREE.MathUtils.radToDeg(Math.asin(Math.min(Math.max(p2.y / r1, -1), 1)));
-      lon = THREE.MathUtils.radToDeg(Math.atan2(p2.x, p2.z));
-    }
+    const hit = raycastGlobe(e.clientX, e.clientY);
+    if (!hit) { focus.clear(); return; }
+    const { lat, lon } = hit;
     // 해구 표시가 켜져 있으면 해구선 우선 — 바다 클릭이 해상 실황으로 새지 않게
     // 여행 씬이 켜져 있으면 시군구 비콘 우선 — 근거 5줄 카드
     // 확장 화면(취미)이 켜져 있으면 그 표시가 우선 — 해변·활공장·거북 같은 것을 눌렀을 때
@@ -2816,6 +2838,40 @@ async function main() {
 
   const fmtPt = (lat, lon) => `${lat >= 0 ? 'N' : 'S'}${Math.abs(lat).toFixed(1)}° ${lon >= 0 ? 'E' : 'W'}${Math.abs(lon).toFixed(1)}°`;
 
+  // 지점 날씨 — 퀵메뉴(기온·습도·바람·강수)가 부르는 실제 값. 국가 단위 격자가 없어
+  // 지표 메뉴에선 '준비 중'이던 지표도, 지점으로 물으면 Open-Meteo(GFS 분석)의 현재값으로
+  // 정직하게 답한다. 출처·유효 시각·조회 시각을 함께 쓴다 — 원칙 §1.
+  // marineSelect 와 같은 선택 경쟁 문(selectionGate)을 쓴다: 이전 질의가 늦게 와서
+  // 나중 결과를 덮지 않게 한다(지시서 §27 stale).
+  let pointWeatherReq = null;
+  let pointWeatherLast = null; // { lat, lon, metric } — '다시 조회' 버튼이 쓴다
+  const pointWeather = async (lat, lon, metric = 'temperature') => {
+    pointWeatherLast = { lat, lon, metric };
+    const current = selectionGate.next();
+    const ctrl = new AbortController();
+    pointWeatherReq = ctrl;
+    showNote('지점 실황', `<div class="card"><div class="card-h">지점 ${fmtPt(lat, lon)}</div><div class="card-b" role="status">모델 분석값 조회 중…</div></div>`, 'LOADING');
+    try {
+      const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,wind_direction_10m&wind_speed_unit=ms&timezone=UTC`, { signal: ctrl.signal });
+      if (!r.ok) throw new Error(`weather ${r.status}`);
+      const j = await r.json();
+      if (pointWeatherReq !== ctrl || ctrl.signal.aborted || !current()) return;
+      const c = j.current || {};
+      const stat = (k, v) => `<div class="stat"><span class="k">${k}</span><span class="v">${v != null ? v : '—'}</span></div>`;
+      showNote('지점 실황', `<div class="card"><div class="card-h">지점 실황(모델 분석) ${dataBadge('MODEL_SIGNAL')}</div>
+        <div class="card-b">
+        ${stat('기온', c.temperature_2m != null ? `${c.temperature_2m} °C` : null)}
+        ${stat('습도', c.relative_humidity_2m != null ? `${c.relative_humidity_2m} %` : null)}
+        ${stat('강수', c.precipitation != null ? `${c.precipitation} mm` : null)}
+        ${stat('바람', c.wind_speed_10m != null ? `${c.wind_speed_10m} m/s` : null)}
+        <p>출처: Open-Meteo (GFS 분석) · 유효 ${c.time || '시각 미제공'} UTC · 조회 ${new Date().toISOString()}</p>
+        </div></div>`, 'MODEL_SIGNAL');
+    } catch (err) {
+      if (pointWeatherReq !== ctrl || ctrl.signal.aborted) return;
+      showNote('지점 실황', `<div class="card"><div class="card-h">지점 실황 ${dataBadge('UNAVAILABLE')}</div><div class="card-b">모델 값을 받지 못했습니다. 잠시 후 다시 시도해 주세요.<br/><button data-action="point-weather-retry">다시 조회</button></div></div>`, 'UNAVAILABLE');
+    }
+  };
+
   const seaCardHtml = () => {
     if (!seaPoint) return '';
     if (seaPoint.loading) {
@@ -2893,6 +2949,25 @@ async function main() {
       </div>`;
   };
 
+  // sim-now(해상 카드 버튼)와 추천 질문(sim-q · wave-now)이 같은 문으로 진입한다 —
+  // 두 경로가 다른 파라미터를 넣으면 어느 쪽이 거짓말인지 알 수 없다.
+  const openWaveNow = () => {
+    const m = seaPoint.marine;
+    const w = seaPoint.wind;
+    const sun = sunAtPoint(seaPoint.lat, seaPoint.lon);
+    sim.open({
+      Hs: m.wave_height != null ? m.wave_height : 1,
+      swellH: m.swell_wave_height != null ? m.swell_wave_height : 0,
+      swellT: m.swell_wave_period != null ? m.swell_wave_period : 8,
+      swellDirDeg: m.swell_wave_direction != null ? m.swell_wave_direction : 0,
+      windWaveH: m.wind_wave_height != null ? m.wind_wave_height : (m.wave_height || 1) * 0.6,
+      windSpeed: w.wind_speed_10m != null ? w.wind_speed_10m : 5,
+      windDirDeg: w.wind_direction_10m != null ? w.wind_direction_10m : 0,
+      sunElev: sun.elev,
+      sunAz: sun.azDeg,
+    }, simNowInfoHtml(), '');
+  };
+
   // ---------- 화면 문법 셸 통합 (§19.12): 레일 + EARTH INTELLIGENCE + 타임 스트립 ----------
   let timeOffsetMs = 0;
   let focusStatsRows = '';
@@ -2923,6 +2998,35 @@ async function main() {
   // 클릭 지점에 뜨는 지표 메뉴. 오늘 실제로 세울 수 있는 건 인구뿐이다 — 나머지는
   // 국가 단위 격자가 없어 '준비 중'으로 정직하게 막아 둔다(모듈 안 METRICS 표 참고).
   const popMetricMenu = new PopMetricMenu(i18n, () => {});
+  // 우클릭 퀵 메뉴 — 게임식 래디얼(지시서 §28·29). 오른쪽 버튼은 궤도 카메라가 안 쓰므로
+  // (좌드래그 회전 · 휠클릭 틸트) 자리가 비어 있다. 기준은 국가 중심이 아니라 누른 지점이다.
+  // 평소엔 숨고, ESC·바깥 클릭·항목 선택으로 닫힌다.
+  const quickMenu = new QuickMenu(i18n, (metricId, hit, x, y) => {
+    if (metricId === 'settings') { document.getElementById('btn-settings').click(); return; }
+    if (metricId === 'population') {
+      if (!hit) return;
+      const f = focus.pick(hit.lat, hit.lon);
+      if (f && !f.region && !f.ocean) {
+        focus.select(f);
+        popMetricMenu.showAt(x, y, 'population');
+      } else {
+        showNote('인구', '<div class="card"><div class="card-h">인구 기둥</div><div class="card-b">인구 기둥은 나라 위에 섭니다 — 바다가 아니라 육지 국가를 우클릭해 주세요.</div></div>', 'VISUALIZATION_ONLY');
+      }
+      return;
+    }
+    // 기온·습도·바람·강수 — 국가 격자는 없어도 지점 실황은 실제로 조회할 수 있다.
+    if (hit) pointWeather(hit.lat, hit.lon, metricId);
+  });
+  let rightDownAt = null;
+  canvas.addEventListener('pointerdown', (e) => {
+    if (e.button === 2) rightDownAt = { x: e.clientX, y: e.clientY };
+  });
+  canvas.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+    // 오른쪽 버튼을 끌어 이동한 손(궤도 보조)은 메뉴가 아니라 조작으로 본다.
+    if (rightDownAt && Math.hypot(e.clientX - rightDownAt.x, e.clientY - rightDownAt.y) > 6) return;
+    quickMenu.open(e.clientX, e.clientY, raycastGlobe(e.clientX, e.clientY));
+  });
   window.__earthusSculpt = popSculpt;
 
   const liveLayers = new LiveLayers(scene, heightAtJs, () => uniforms.uExagger.value, dataBadge);
@@ -4298,6 +4402,8 @@ async function main() {
       }
     },
     getNow: getNowHtml,
+    // 추천 질문의 입력 상태 — 파도 계산은 선택한 바다 지점값을 먹는다(없으면 not_evaluable).
+    hasSeaInput: () => !!(seaPoint && seaPoint.marine),
     getMy: () => getMyHtml(),
     getFeed: () => feed.html(),
     // WHY 탭이 "고른 사건"을 가리킬 수 있게 — 피드가 무엇을 열어 두었는지만 알려준다
@@ -4458,20 +4564,30 @@ async function main() {
         return;
       }
       if (action === 'sim-now' && seaPoint && seaPoint.marine) {
-        const m = seaPoint.marine;
-        const w = seaPoint.wind;
-        const sun = sunAtPoint(seaPoint.lat, seaPoint.lon);
-        sim.open({
-          Hs: m.wave_height != null ? m.wave_height : 1,
-          swellH: m.swell_wave_height != null ? m.swell_wave_height : 0,
-          swellT: m.swell_wave_period != null ? m.swell_wave_period : 8,
-          swellDirDeg: m.swell_wave_direction != null ? m.swell_wave_direction : 0,
-          windWaveH: m.wind_wave_height != null ? m.wind_wave_height : (m.wave_height || 1) * 0.6,
-          windSpeed: w.wind_speed_10m != null ? w.wind_speed_10m : 5,
-          windDirDeg: w.wind_direction_10m != null ? w.wind_direction_10m : 0,
-          sunElev: sun.elev,
-          sunAz: sun.azDeg,
-        }, simNowInfoHtml(), '');
+        openWaveNow();
+      } else if (action === 'sim-q') {
+        // 추천 질문 → 시뮬레이션 능력 레지스트리(js/sim-questions.js)가 정한 경로.
+        // 여기 오는 질문은 레지스트리가 available 로 표시한 것뿐이다 — 없는 엔진을
+        // 부르는 버튼은 애초에 그리지 않는다(sim-why 로 이유만 말한다).
+        if (ds.sim === 'wave-now') {
+          if (seaPoint && seaPoint.marine) openWaveNow();
+          else showNote('파도 시뮬레이션', `<div class="card"><div class="card-h">파도 시뮬레이션 ${dataBadge('INSUFFICIENT_DATA')}</div><div class="card-b">먼저 바다 지점을 선택하세요 — 바다를 클릭하면 그 지점의 해양 모델 값을 조회해 계산에 넣습니다.</div></div>`, 'INSUFFICIENT_DATA');
+        } else if (ds.sim === 'wave-typhoon' || ds.sim === 'tsunami-reach') {
+          // 시나리오 탭이 정직하게 안내한다: 쓰나미는 사건을, 태풍은 기준선을 요구한다.
+          shell.showTab('scenario');
+          shell.openIntel();
+          shell.renderIntel();
+        } else if (ds.sim === 'cyclone-track') {
+          shell.showTab('feed');
+          shell.openIntel();
+          shell.renderIntel();
+        } else if (ds.sim === 'satellite-track') {
+          shell.gotoScene('aetherus', 'space');
+        }
+      } else if (action === 'point-weather-retry' && pointWeatherLast) {
+        pointWeather(pointWeatherLast.lat, pointWeatherLast.lon, pointWeatherLast.metric);
+      } else if (action === 'shell-open-ask') {
+        document.getElementById('btn-ask').click();
       } else if (action === 'sim-scenario') {
         launchScenario(parseFloat(ds.lat), parseFloat(ds.lon));
       } else if (action === 'sim-scenario-event') {
@@ -5109,8 +5225,6 @@ async function main() {
         if (la > maxLa) maxLa = la;
       }
     }
-    const cLa = (minLa + maxLa) / 2;
-    const cLo = (minLo + maxLo) / 2;
     let maxH = 0;
     for (let iy = 0; iy < 20; iy += 1) {
       for (let ix = 0; ix < 20; ix += 1) {
@@ -5121,9 +5235,11 @@ async function main() {
       }
     }
     const area = sphericalAreaKm2(polysOf(f));
+    // '중심 좌표' 행은 뺐다 (지시서 §5) — 나라를 부르는 건 이름이지 좌표가 아니고,
+    // 좌표값은 사용자가 묻거나 근거를 열 때 필요한 것이다. 면적·최고 고도는 근사임을
+    // 행 이름에 그대로 적는다(값을 지어내지 않는 원칙의 표면).
     focusStatsRows =
-      statRow('중심 좌표', `${cLa >= 0 ? 'N' : 'S'}${Math.abs(cLa).toFixed(1)}° ${cLo >= 0 ? 'E' : 'W'}${Math.abs(cLo).toFixed(1)}°`)
-      + statRow('면적 (근사)', `${Math.round(area).toLocaleString()} km²`)
+      statRow('면적 (근사)', `${Math.round(area).toLocaleString()} km²`)
       + statRow('최고 고도 (근사)', `${Math.round(maxH).toLocaleString()} m`)
       + statRow('인구', '불러오는 중…', true)
       + statRow('GDP', 'UNAVAILABLE', true)
@@ -5896,6 +6012,31 @@ async function main() {
     // 어려웠다. 18km로 올려 그 구간 자체에 못 들어가게 한다 — 인구 기둥을 보기엔
     // 기본값(127km)보다 여전히 훨씬 가깝다.
     orbit.minDist = closeUp ? 1 + 18 / 6371 : 1.02;
+    // ⚠️ 2026-09-10 실측: 18km까지 내려가면 지구가 통째로 검어지는 버그 — 원인은 near 평면이
+    // 고정 0.005(≈31.9km)여서 closeUp 하한(18km)보다 컸던 것. 그 거리에서는 시야의 모든
+    // 광선이 지표면에 닿기 전에 near에서 잘려 지구 몸통이 통째로 프러스텀 밖으로 나가고
+    // 별·대기 후광만 남았다. 8fcea076 이 하한을 3km→18km로 올릴 때 near를 함께 못 고친 회귀.
+    // 하한을 다시 올려 버그를 숨기지 않고, near를 실제 카메라 반지름에서 매 프레임 따라가게
+    // 한다(고도의 1/4, 상한 0.005 유지 — 원래 고도에선 깊이 정밀도가 변하지 않는다).
+    const surfDist = Math.max(camera.position.length() - 1, 1e-6);
+    camera.near = THREE.MathUtils.clamp(surfDist * 0.25, 1e-6, 0.005);
+    camera.updateProjectionMatrix();
+    // ⚠️ 2026-09-10 실측(18km 블랙 화면 후속): near 를 고쳐도 여전히 검었다. 50× 과장은
+    // 오리건 1,465m만 돼도 변위 반경이 1.0115라 18km(반경 1.0028) 카메라를 덮는다 —
+    // 카메라가 변위된 지형 껍질 '안'으로 들어가면 지형 앞면이 모두 뒷면이 되어 그려지지
+    // 않고(뒷면 컬링) 별만 남는다. 127km 기본 시점의 티베트가 회색으로 뭉개진 것도 같은
+    // 원인이다. 사용자 설정(exagUser)은 그대로 두고, 그릴 배율만 낮춘다 — 카메라 바로
+    // 아래와 주변(2.5°·5.5° 링) 최고 고도가 카메라 고도의 35% 이상 못 올라오게 한다.
+    // near 는 고도의 25%라(위 블록) 35% 여유 아래 지형은 절대 near 에 잘리지 않는다.
+    const latCam = THREE.MathUtils.radToDeg(orbit.pitch);
+    const lonCam = THREE.MathUtils.radToDeg(orbit.yaw);
+    let elevMax = 0;
+    for (const [dLat, dLon] of RING_SAMPLES) {
+      const e = heightAtJs(Math.min(85, Math.max(-85, latCam + dLat)), lonCam + dLon);
+      if (e > elevMax) elevMax = e;
+    }
+    const exagCeil = Math.max(0.65 * surfDist * EARTH_RADIUS_M / Math.max(elevMax, 50), 1);
+    uniforms.uExagger.value = Math.min(exagUser, exagCeil);
 
     if (detail) detail.update(orbit.pitch, orbit.yaw, altKm, camera);
     satLayer.update(now);

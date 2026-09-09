@@ -3,8 +3,8 @@
 ```text
 STATUS:   LOCKED
 CREATED:  2026-09-09
-UPDATED:  2026-09-09  (인텔리전스 진입점 통합 — UI 만, 경계는 그대로)
-COMMIT:   ba4be7ad   (잠금 생성 당시 725d7b1a)
+UPDATED:  2026-09-09  (인텔리전스를 문맥층으로 — UI 만, 경계는 그대로)
+COMMIT:   682d3aa6   (잠금 생성 당시 725d7b1a)
 BUCKET:   earthus-cache-kr (us-east-2)
 DIST:     E193CZEBLWEB56
 ```
@@ -193,10 +193,10 @@ OBJECT LOCK:  설정 없음     (ObjectLockConfigurationNotFoundError — 권한
 ## 14. BUNDLE HASH
 
 ```text
-v2 번들 (prototype/v2-deploy)   69afe811d5cbbeb5f5ff35b61fb215c8bc23e94186874f1a02d43a207daeca76
-공개 빌드 매니페스트            fcd07d73c5d11531  (3,599 파일)
-커밋                            ba4be7ad
-CloudFront 무효화               I4LGMB6E19L26HH6GTPC2CTLT6
+v2 번들 (prototype/v2-deploy)   be10b9a44ae07e4e5b47cca01e1954f11f9ccea965a47c934808ab2e95d5945d
+공개 빌드 매니페스트            6b54bdab7baf05b1  (3,599 파일)
+커밋                            682d3aa6
+CloudFront 무효화               IAR84FF9AXACOVCIUT7JHILGAW
 ```
 
 ### 2026-09-09 갱신 — 인텔리전스 진입점 통합
@@ -214,8 +214,23 @@ UI 만 바뀌었다. 이 문서가 잠근 것 중 **바뀐 항목은 없다.**
 지운 95건 되살아남   0   (익명 응답 {403: 95} · head-object 잔존 0)
 공개 정상 파일        9/9  200
 비공개 경계           7/7  403
-시험                505/505
+시험                538/538   (npm 묶음 45 → 78: IA 가드 33개를 물렸다)
 ```
+
+### 2026-09-09 (2차) — 시험 회계를 정정한다
+
+`tools/test_v2_ui_information_architecture.mjs` 는 **어떤 시험 묶음에도 물려 있지 않았다.**
+그래서 직전 갱신의 `505/505` 는 내가 돌린 네 묶음에 대해서는 참이지만
+이 파일을 세지 않았다. 그 사이 내 변경이 그 파일의 2건을 깼다.
+
+```text
+ffc0725e   32 중 31 통과       (1건은 그 전부터 실패 — 낡은 기대)
+ba4be7ad   32 중 29 통과       ← 2건이 내 탓
+682d3aa6   33 중 33 통과       (package.json test 에 물렸다)
+```
+
+이 파일의 절 제목이 **'불변식 1 — Intelligence 는 최상위 기능 메뉴가 아니다'** 다.
+가드는 있었는데 돌지 않았다. 이제 `npm test` 가 돌린다.
 
 ---
 

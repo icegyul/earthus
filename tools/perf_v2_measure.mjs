@@ -33,10 +33,10 @@ async function measure(browser, label, ctxOpts, { warm = false } = {}) {
   const t = {}; const mark = (k, t0) => { t[k] = R(performance.now() - t0); };
   const click = (sel, i = 0) => page.evaluate(([s, k]) => { const el = document.querySelectorAll(s)[k]; if (!el) return false; el.scrollIntoView(); el.dispatchEvent(new MouseEvent('click', { bubbles: true })); return true; }, [sel, i]);
   const T0 = performance.now();
-  if (warm) { await page.goto(`${SITE}/v2/`, { waitUntil: 'load', timeout: 90000 }); await page.waitForSelector('#bottom-nav button[data-nav="intel"]', { timeout: 90000 }).catch(() => {}); await page.waitForTimeout(3000); }
+  if (warm) { await page.goto(`${SITE}/v2/`, { waitUntil: 'load', timeout: 90000 }); await page.waitForSelector('#bottom-nav button[data-nav="myplace"]', { timeout: 90000 }).catch(() => {}); await page.waitForTimeout(3000); }
   const t0 = performance.now();
   await page.goto(`${SITE}/v2/`, { waitUntil: 'domcontentloaded', timeout: 90000 });
-  await page.waitForSelector('#bottom-nav button[data-nav="intel"]', { timeout: 120000 }); mark('firstEarthShell', t0);
+  await page.waitForSelector('#bottom-nav button[data-nav="myplace"]', { timeout: 120000 }); mark('firstEarthShell', t0);
   const nav = await page.evaluate(() => {
     const n = performance.getEntriesByType('navigation')[0] || {};
     const paint = Object.fromEntries(performance.getEntriesByType('paint').map((p) => [p.name, p.startTime]));
@@ -44,7 +44,7 @@ async function measure(browser, label, ctxOpts, { warm = false } = {}) {
       ttfb: n.responseStart - n.requestStart, dcl: n.domContentLoadedEventEnd, load: n.loadEventEnd, fcp: paint['first-contentful-paint'] };
   });
   const lcp = await page.evaluate(() => new Promise((res) => { let v = null; try { const po = new PerformanceObserver((l) => { for (const e of l.getEntries()) v = e.startTime; }); po.observe({ type: 'largest-contentful-paint', buffered: true }); } catch (e) { /* */ } setTimeout(() => res(v), 800); }));
-  for (let k = 0; k < 6; k++) { await click('#bottom-nav button[data-nav="intel"]'); const open = await page.evaluate(() => { const b = document.querySelector('[data-tab="feed"]'); return !!(b && b.getBoundingClientRect().height > 0); }); if (open) break; await page.waitForTimeout(1500); }
+  for (let k = 0; k < 6; k++) { await click('#bottom-nav button[data-nav="myplace"]'); const open = await page.evaluate(() => { const b = document.querySelector('[data-tab="feed"]'); return !!(b && b.getBoundingClientRect().height > 0); }); if (open) break; await page.waitForTimeout(1500); }
   let t1 = performance.now(); await click('[data-tab="feed"]');
   await page.waitForFunction(() => document.querySelector('#intel-content .feed-item'), null, { timeout: 90000 }).catch(() => {}); mark('firstFeed', t1);
   await page.waitForFunction(() => !/받는 중/.test((document.querySelector('#intel-content .feed-note') || {}).textContent || ''), null, { timeout: 60000 }).catch(() => {}); mark('eventListSettled', t1);

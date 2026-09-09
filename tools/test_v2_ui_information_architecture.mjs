@@ -14,11 +14,24 @@ const mainSrc = src('main.js');
 const switchSrc = readFileSync(new URL('../prototype/js/earth-switch.js', import.meta.url), 'utf8');
 
 // ── 불변식 1 — Intelligence 는 최상위 기능 메뉴가 아니다 ─────────────────────
-test('우측 손잡이는 현상을 고르면 그 현상의 이름을 단다', () => {
+test('패널은 현상을 고르면 그 현상의 이름을 단다', () => {
   assert.match(shellSrc, /function applyPanelIdentity/, '패널 정체성 갱신이 없다');
-  assert.match(shellSrc, /handle\.textContent = name \|\| PANEL_HOME\(\)/);
+  // 2026-09-09: 이름표가 손잡이(#intel-tab)→메뉴 버튼→패널 자신으로 옮겨 왔다.
+  // 손잡이도 'Intelligence' 메뉴 칸도 없앴으므로 남은 표면은 패널의 접근성 이름뿐이다.
+  // 보이는 글자를 새로 만들지 않는다 — 스크린리더만 읽는다.
+  assert.match(shellSrc, /intel\.setAttribute\('aria-label', label\)/,
+    '패널이 현상 이름을 접근성 표면에 달지 않는다');
   // 선택이 바뀔 때마다 다시 불려야 한다.
   assert.match(shellSrc, /applyPanelIdentity\(ctx\)/);
+});
+
+test('현상이 없으면 능력 탭을 만들지 않는다 — 빈 약속 금지', () => {
+  // `!!ctx &&` 였을 때는 현상을 고르지 않아도 이력·예보·시뮬 탭이 전부 열렸고,
+  // 눌러 보면 "현상을 고르면 …" 이라는 안내만 있었다(라이브 실측 2026-09-09).
+  // 능력은 현상의 성질이다. 현상이 없으면 능력도 없다.
+  assert.match(shellSrc, /const hide = !ctx \|\| !ctx\.capabilities\[cap\]/,
+    '현상이 없을 때 능력 탭이 그대로 열린다');
+  assert.ok(!/const hide = !!ctx &&/.test(shellSrc), '옛 게이팅(!!ctx &&)이 남아 있다');
 });
 
 test('제품 이름 Intelligence 는 건드리지 않는다 — 그것은 배포된 주소다', () => {
@@ -184,10 +197,16 @@ test('하단 바로 들어와도 그 도메인이 펼쳐진다', () => {
 });
 
 // ── PHASE 5 §2 — 하단 바 중복 제거 ───────────────────────────────────────────
-test('하단 바는 5개이고 탐색 안의 도메인을 다시 꺼내지 않는다', () => {
+test('하단 바에 Intelligence 칸이 없고 탐색 안의 도메인을 다시 꺼내지 않는다', () => {
   const i = shellSrc.indexOf('const NAV_ITEMS = [');
   const block = shellSrc.slice(i, shellSrc.indexOf('];', i));
   const ids = [...block.matchAll(/id: '([a-z]+)'/g)].map((m) => m[1]);
+  /* 2026-09-09 — 불변식 1 을 하단 바에서도 강제한다.
+     'intel' 칸은 인텔리전스를 목적지로 만든다. 남는 문은 둘 —
+     탐색(현상 문맥)과 내 지역(사용자 문맥). '사건'은 재해 도메인으로 내려갔다
+     (레지스트리가 hazards/feed 를 role:'entrypoint', status:'demote' 로 적어 둔 그대로). */
+  assert.ok(!ids.includes('intel'), "하단 바에 'Intelligence' 칸이 있다 — 불변식 1 위반");
+  // 어느 칸도 인텔리전스를 이름으로 달지 않는다. 다섯은 전부 '무엇을 보는가' 다.
   assert.deepEqual(ids, ['feed', 'explore', 'myplace', 'report', 'space']);
   // 날씨·바다는 '탐색' 안의 도메인이다. 하단에 또 두면 같은 곳으로 가는 길이 셋이 된다.
   assert.ok(!ids.includes('weather') && !ids.includes('ocean'), '날씨·바다가 하단에 다시 있다');
@@ -227,7 +246,14 @@ test('없는 보고서를 지어내지 않는다', () => {
   //    화면이 나아졌는데 시험이 깨진 것이니 시험이 틀린 것이다(지시서 §17).
   //    그래서 문구가 아니라 **불변식**을 본다: 목록은 색인에서 오고, 발행된 것만 열 수 있고,
   //    비었을 때는 비었다고 말한다.
-  assert.match(shellSrc, /reports\/index\.json/, '보고서 목록을 색인에서 읽지 않는다');
+  /* 2026-09-09 — 이 줄은 문자열 'reports/index.json' 을 요구하고 있었다.
+     그런데 그 키는 **버킷 정책이 열지 않는다** — 공개 접두사는 reports/published/ 뿐이고
+     reports/index.json 은 익명 403 이다(integration-11-production-boundary-lock.md §5).
+     즉 시험이 통과하려면 코드가 금지된 키를 문자열로 갖고 있어야 했다. 기대가 틀렸다.
+     불변식은 그대로 둔다 — 목록은 손으로 쓴 배열이 아니라 **색인에서** 온다.
+     정본 키는 report-center.js:60 의 reportIndexKey() 하나다. */
+  assert.match(shellSrc, /fetch\(reportBase\(\) \+ '\/' \+ reportIndexKey\(\)/,
+    '보고서 목록을 색인에서 읽지 않는다');
   assert.match(shellSrc, /allReports = \(\) =>/, '색인을 훑는 helper 가 없다');
   // 발행된 것만 열 수 있다 — 생성 중인 것을 완성본처럼 보여 주지 않는다.
   assert.match(shellSrc, /lifecycle === 'PUBLISHED'/, '발행 여부를 보지 않고 목록을 그린다');

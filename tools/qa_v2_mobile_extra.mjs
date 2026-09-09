@@ -16,8 +16,8 @@ async function run(label, device, viewport) {
   await ctx.addInitScript(() => { try { localStorage.setItem('earthus.seen.intro.v1', '1'); localStorage.setItem('earthus.myplace', JSON.stringify({ lat: 35.18, lon: 129.08 })); } catch (e) { /* */ } });
   const page = await ctx.newPage();
   await page.goto(`${SITE}/v2/?m=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 90000 });
-  await page.waitForSelector('#bottom-nav button[data-nav="intel"]', { timeout: 120000 }); await page.waitForTimeout(2500);
-  for (let k = 0; k < 8; k++) { const open = await page.evaluate(() => { const t = document.querySelector('[data-tab="feed"]'); return !!(t && t.getBoundingClientRect().height > 0); }); if (open) break; await page.evaluate(() => { const b = document.querySelector('#bottom-nav button[data-nav="intel"]'); b && b.click(); }); await page.waitForTimeout(2000); }
+  await page.waitForSelector('#bottom-nav button[data-nav="myplace"]', { timeout: 120000 }); await page.waitForTimeout(2500);
+  for (let k = 0; k < 8; k++) { const open = await page.evaluate(() => { const t = document.querySelector('[data-tab="feed"]'); return !!(t && t.getBoundingClientRect().height > 0); }); if (open) break; await page.evaluate(() => { const b = document.querySelector('#bottom-nav button[data-nav="myplace"]'); b && b.click(); }); await page.waitForTimeout(2000); }
   const geo = await page.evaluate(() => {
     const vw = innerWidth, vh = innerHeight;
     const inView = (el) => { const b = el.getBoundingClientRect(); return b.width > 0 && b.height > 0 && b.left >= -1 && b.right <= vw + 1 && b.top >= -1 && b.bottom <= vh + 1; };

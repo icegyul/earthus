@@ -309,7 +309,11 @@ export function initShell(hooks) {
     for (const [tab, cap] of Object.entries(CAP_TAB)) {
       const btn = intel && intel.querySelector(`.intel-tabs [data-tab="${tab}"]`);
       if (!btn) continue;
-      const hide = !!ctx && !ctx.capabilities[cap];
+      /* 2026-09-09 — `!!ctx &&` 였다. 그래서 **현상을 고르지 않으면 셋이 전부 열렸고**,
+         이력은 "현상을 고르면 그 현상의 과거 기록을 봅니다", 시뮬은 "사건 탭에서
+         태풍을 고르면 …" 이라는 빈 약속만 냈다(라이브 실측). 능력은 현상의 성질이다 —
+         현상이 없으면 능력도 없다. 없는 것을 탭으로 만들지 않는다. */
+      const hide = !ctx || !ctx.capabilities[cap];
       btn.hidden = hide;
       // 숨긴 탭이 열려 있었으면 사건 탭으로 되돌린다 — 빈 화면을 남기지 않는다.
       if (hide && curTab === tab) showTab('feed');
@@ -322,19 +326,18 @@ export function initShell(hooks) {
      ※ 좌상단 .es-switch 의 'Intelligence' 는 건드리지 않는다 — 그것은 v2 제품 자체의
         공개 이름이고 배포된 주소(/Intelligence)다. earth-switch.js 머리주석을 볼 것. */
   const PANEL_HOME = () => (i18n.ko ? '지구 인텔리전스' : 'EARTH INTELLIGENCE');
-  /* 손잡이가 없어졌으므로 이름표는 **메뉴 버튼**이 단다(진입점 통합).
-     보이는 글자는 'Intelligence' 로 고정한다 — 주 메뉴 항목의 글자가 상황에 따라
-     바뀌면 누르려던 자리가 움직인다. 현상 이름은 title·aria-label 로 남긴다. */
+  /* 이름표는 **패널 자신**이 단다.
+     손잡이(#intel-tab)에 달려 있던 것을 잠깐 메뉴 버튼으로 옮겼었지만, 그 버튼도
+     없앴다 — Intelligence 는 목적지가 아니라 지금 보고 있는 것의 문맥층이다.
+     보이는 글자를 새로 만들지 않는다(§8 긴 설명 금지). 접근성 표면에만 남긴다:
+     스크린리더는 "지진 — 현재·해석·근거 영역" 으로 읽고, 화면은 조용하다. */
   function applyPanelIdentity(ctx) {
-    // navRoot 가 아직 null 이면 메뉴가 없는 시점이다 — 조용히 지나간다.
-    const btn = navRoot && navRoot.querySelector('button[data-nav="intel"]');
-    if (!btn) return;
+    if (!intel) return;
     const name = ctx ? (i18n.ko ? ctx.label.ko : ctx.label.en) : null;
     const label = name
       ? (i18n.ko ? `${name} — 현재·해석·근거` : `${name} — current, intelligence, evidence`)
       : PANEL_HOME();
-    btn.title = label;
-    btn.setAttribute('aria-label', label);
+    intel.setAttribute('aria-label', label);
   }
   let timelineMinutes = 0;
   // PHASE 4 §2 — 1차 메뉴는 도메인만 보인다. 도메인을 열어야 현상 목록이 나온다.
@@ -922,12 +925,35 @@ export function initShell(hooks) {
      날씨·바다는 '탐색' 안의 도메인이 됐으므로 하단에서 뺀다(같은 곳으로 가는 길을 셋씩 두지 않는다).
      '더보기'는 '탐색'과 같은 곳이라 합친다. '무슨 일'은 '지금'으로 이름을 하나로 모은다(§15).
      리포트는 EARTHUS 의 핵심 콘텐츠라 최상위로 올린다(§5). */
-  /* 2026-09-09 진입점 통합: '지금'(사건 탭)과 '내 지역'(내 지역 탭)은 둘 다
-     같은 Intelligence 패널을 열던 중복 진입점이었다. 떠 있던 손잡이까지 셋이
-     한 곳으로 갔다. 한 칸으로 합치고, 일곱 갈래는 패널 안 탭으로 이어진다. */
+  /* 2026-09-09 (2차) — 'Intelligence' 칸을 없앤다.
+     하루 전에 만든 그 칸은 인텔리전스를 **목적지**로 만들었다. 맥락 없이 누르면
+     일곱 탭이 통째로 열리고 이력·시뮬은 "현상을 고르면 …" 이라는 빈 약속만 냈다.
+     이 저장소는 그것을 이미 불변식으로 금지하고 있었다 —
+     tools/test_v2_ui_information_architecture.mjs 의 '불변식 1: Intelligence 는
+     최상위 기능 메뉴가 아니다'. 내 직전 커밋이 그 시험을 깼다.
+
+     인텔리전스는 지금 보고 있는 것의 **문맥층**이다. 그래서 하단 바에는
+     인텔리전스가 아니라 **무엇을 보는가**만 남는다:
+       지금    → 사건 문맥 (지구에서 지금 벌어지는 일)
+       탐색    → 도메인 → 현상 → 그 현상의 문맥
+       내 지역 → 사용자 문맥 (씬이 아니다 — 한 장소에서 태풍·지진·쓰나미·파고를
+                 가로지른다. for-me-signal.js:210,360,392,442)
+       리포트 · 우주
+     어느 칸도 'Intelligence' 라고 적혀 있지 않다. 사람은 "인텔리전스가 어디 있지"
+     를 묻지 않고 "지금 무슨 일이 있지 / 내 동네는 / 바다를 보자" 를 묻는다.
+
+     ⚠️ '사건'을 하단에서 빼고 탐색 안으로 보내려다 되돌렸다. 실측했더니
+     'hazards/feed' 는 phenomenon:null 이라 재해 절이 아니라 **접힌 '지구 표현·이동'**
+     절로 빠진다(role:'entrypoint' 인 넷 중 land/locate 는 진짜 이동 조작이라
+     role 만으로 가르는 일반 규칙은 그것까지 잘못 옮긴다). 묻어 두는 것은 이동이 아니라
+     상실이다. 이 목록은 결국 이 저장소가 원래 갖고 있던 다섯이고,
+     가드 시험의 원래 기대값이기도 하다.
+
+     새 메뉴를 만들지 않았다. 뺀 것은 어제 내가 만든 'Intelligence' 칸 하나뿐이다. */
   const NAV_ITEMS = [
-    { id: 'intel', ko: 'Intelligence', en: 'Intelligence' },
+    { id: 'feed', ko: '지금', en: 'Now' },
     { id: 'explore', ko: '탐색', en: 'Explore' },
+    { id: 'myplace', ko: '내 지역', en: 'My place' },
     { id: 'report', ko: '리포트', en: 'Reports' },
     { id: 'space', ko: '우주', en: 'Space' },
   ];
@@ -961,10 +987,11 @@ export function initShell(hooks) {
     if (!btn) return;
     bottomNav.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === btn));
     switch (btn.dataset.nav) {
-      // Intelligence 는 이제 메뉴 한 칸이다. 일곱 갈래는 패널 안 탭으로 이어진다.
-      // 없앤 손잡이가 토글이었으므로 여기서도 토글한다 — 같은 칸을 다시 누르면 닫힌다.
-      // 마지막으로 보던 탭을 기억해 두 번 눌러 되돌아오는 길을 없애지 않는다.
-      case 'intel': if (intelOpen) closeIntel(); else openIntel(curTab || 'feed'); break;
+      /* 두 칸 다 '문맥'이다. 같은 칸을 다시 누르면 닫힌다(없앤 손잡이와 같은 몸짓).
+         맥락 없이 열리는 문은 이제 없다 — 여는 순간 applyCapabilityGating 이
+         능력 없는 탭을 지운다(setIntelOpen). */
+      case 'feed': if (intelOpen && curTab === 'feed') closeIntel(); else openIntel('feed'); break;
+      case 'myplace': if (intelOpen && curTab === 'my') closeIntel(); else openIntel('my'); break;
       case 'explore': openPanel('earthus'); break;
       case 'report': openPanel('report'); break;
       case 'space': gotoScene('aetherus', 'space'); break;
@@ -1150,11 +1177,22 @@ export function initShell(hooks) {
 
   /* 패널을 여닫는 **유일한** 자리. 예전에는 네 곳이 손잡이 버튼에 click() 을 합성해
      열었고, 그래서 손잡이 DOM 을 지우면 그 넷이 조용히 죽었다. 문을 하나로 모은다. */
+  /* 패널이 열려 있다고 아무 칸이나 켜지 않는다 — 켜야 할 칸은 '지금 무슨 문맥인가'
+     에 달렸다. 사용자 문맥(my)일 때만 '내 지역'이 켜진다. 현상 문맥이면 하단에
+     대응하는 칸이 없다(그게 요점이다 — 현상은 탐색 안에 있다). */
+  const NAV_FOR_TAB = { feed: 'feed', my: 'myplace' };
   const syncIntelNav = () => {
-    const btn = navRoot && navRoot.querySelector('button[data-nav="intel"]');
-    if (btn) btn.classList.toggle('on', intelOpen);
+    if (!navRoot) return;
+    const want = intelOpen ? NAV_FOR_TAB[curTab] : null;
+    navRoot.querySelectorAll('button[data-nav="feed"], button[data-nav="myplace"]')
+      .forEach((b) => b.classList.toggle('on', b.dataset.nav === want));
   };
   const setIntelOpen = (open) => {
+    /* 게이팅은 여는 순간에도 한 번 건다.
+       전에는 '선택이 바뀔 때'에만 걸었다(817·841·860·1340·1341). 그래서 앱을 켠 직후처럼
+       선택이 한 번도 없었던 상태에서 패널을 열면 btn.hidden 이 아직 아무에게도 안 걸려
+       일곱 탭이 통째로 열렸다 — 능력 표(66현상×7)가 화면에 반영되지 않은 채였다. */
+    if (open) applyCapabilityGating();
     if (intelOpen === open) { if (open) renderIntel(); syncIntelNav(); return; }
     intelOpen = open;
     intel.classList.toggle('open', intelOpen);

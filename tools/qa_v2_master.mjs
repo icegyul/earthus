@@ -167,10 +167,10 @@ async function sectionBrowser() {
   const t0 = Date.now();
   try {
     await page.goto(`${SITE}/v2/?qa=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-    await page.waitForSelector('#bottom-nav button[data-nav="intel"]', { timeout: 90000 });
+    await page.waitForSelector('#bottom-nav button[data-nav="myplace"]', { timeout: 90000 });
     const tBoot = (Date.now() - t0) / 1000;
     R('E1', '첫 화면(셸 준비)까지 ≤ 20초', tBoot <= 20, `${tBoot.toFixed(1)}초 (헤드리스·소프트웨어 GL)`);
-    for (let k = 0; k < 6; k++) { await click('#bottom-nav button[data-nav="intel"]'); if (await page.$('[data-tab="feed"]')) break; await page.waitForTimeout(1500); }
+    for (let k = 0; k < 6; k++) { await click('#bottom-nav button[data-nav="myplace"]'); if (await page.$('[data-tab="feed"]')) break; await page.waitForTimeout(1500); }
     const tabs = await page.evaluate(() => [...document.querySelectorAll('[data-tab]')].map((b) => b.dataset.tab));
     R('D1', '인텔리전스 탭 6개(사건·내 장소·선택 자료·근거·예보·가정 실험)', ['feed', 'my', 'now', 'why', 'next', 'scenario'].every((t) => tabs.includes(t)), tabs.join(','));
     await click('[data-tab="feed"]');
@@ -275,11 +275,11 @@ async function sectionBrowser() {
     await mctx.addInitScript(() => { try { localStorage.setItem('earthus.seen.intro.v1', '1'); } catch (e) { /* */ } });
     const mp = await mctx.newPage();
     await mp.goto(`${SITE}/v2/?qa=m${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-    await mp.waitForSelector('#bottom-nav button[data-nav="intel"]', { timeout: 90000 }); await mp.waitForTimeout(2500);
+    await mp.waitForSelector('#bottom-nav button[data-nav="myplace"]', { timeout: 90000 }); await mp.waitForTimeout(2500);
     for (let k = 0; k < 8; k++) {
       const open = await mp.evaluate(() => { const t = document.querySelector('[data-tab="feed"]'); return !!(t && t.getBoundingClientRect().height > 0); });
       if (open) break;
-      await mp.evaluate(() => { const b = document.querySelector('#bottom-nav button[data-nav="intel"]'); b && b.click(); });
+      await mp.evaluate(() => { const b = document.querySelector('#bottom-nav button[data-nav="myplace"]'); b && b.click(); });
       await mp.waitForTimeout(2000);
     }
     const m = await mp.evaluate(() => { const tabs = [...document.querySelectorAll('[data-tab]')]; const r = tabs.map((t) => t.getBoundingClientRect()); const inView = r.filter((b) => b.right <= innerWidth && b.left >= 0 && b.height > 0).length; const small = tabs.filter((t) => t.getBoundingClientRect().height < 32).length; return { tabs: tabs.length, inView, small, scrollW: document.documentElement.scrollWidth, innerW: innerWidth, content: (() => { const c = document.querySelector('#intel-content'); return c ? { sh: c.scrollHeight, ch: c.clientHeight, ov: getComputedStyle(c).overflowY } : null; })() }; });

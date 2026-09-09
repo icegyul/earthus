@@ -3,7 +3,8 @@
 ```text
 STATUS:   LOCKED
 CREATED:  2026-09-09
-COMMIT:   725d7b1a
+UPDATED:  2026-09-09  (인텔리전스 진입점 통합 — UI 만, 경계는 그대로)
+COMMIT:   ba4be7ad   (잠금 생성 당시 725d7b1a)
 BUCKET:   earthus-cache-kr (us-east-2)
 DIST:     E193CZEBLWEB56
 ```
@@ -23,7 +24,7 @@ prototype/            개발 소스
 ```
 
 ```text
-매니페스트   3,599 파일 · 지문 ca85670af54c3608
+매니페스트   3,599 파일 · 지문 fcd07d73c5d11531   (잠금 생성 당시 ca85670af54c3608)
 ```
 
 거름망을 지나지 않은 트리를 올리는 배포기는 없다.
@@ -43,7 +44,8 @@ prototype/v2-three         소스
 **증명**: 빌드를 두 번 돌려 번들 전체 sha256 이 같았다 — 번들은 소스의 함수다.
 
 ```text
-1c2be8c503700ac551bab8abe8a1eb78ffa1e539d5ed70f6bab7d81c3adca820
+69afe811d5cbbeb5f5ff35b61fb215c8bc23e94186874f1a02d43a207daeca76
+  (잠금 생성 당시 1c2be8c503700ac551bab8abe8a1eb78ffa1e539d5ed70f6bab7d81c3adca820)
 ```
 
 배포기 자체도 바이트 대조를 한다(`deploy-v2-three.sh` 3/5 단계 · 5/5 단계).
@@ -191,10 +193,28 @@ OBJECT LOCK:  설정 없음     (ObjectLockConfigurationNotFoundError — 권한
 ## 14. BUNDLE HASH
 
 ```text
-v2 번들 (prototype/v2-deploy)   1c2be8c503700ac551bab8abe8a1eb78ffa1e539d5ed70f6bab7d81c3adca820
-공개 빌드 매니페스트            ca85670af54c3608  (3,599 파일)
-커밋                            725d7b1a
-CloudFront 무효화               I7V1RFIF43TC192AAX7UZBVRE9
+v2 번들 (prototype/v2-deploy)   69afe811d5cbbeb5f5ff35b61fb215c8bc23e94186874f1a02d43a207daeca76
+공개 빌드 매니페스트            fcd07d73c5d11531  (3,599 파일)
+커밋                            ba4be7ad
+CloudFront 무효화               I4LGMB6E19L26HH6GTPC2CTLT6
+```
+
+### 2026-09-09 갱신 — 인텔리전스 진입점 통합
+
+UI 만 바뀌었다. 이 문서가 잠근 것 중 **바뀐 항목은 없다.**
+
+```text
+바뀐 것   prototype/v2-three/index.html · js/ui-shell.js  (진입점·겹침·가시성)
+          tools/ QA 하네스 7 (없앤 선택자를 새 진입점으로)
+안 바뀐 것 계산 · 자료 provider · Supabase · API · report-engine · 보고서 스키마
+          시뮬레이션 · 예보 로직 · 인증 · 저장 정책 · S3 정책 · 배포 구조 · DB 스키마
+```
+
+```text
+지운 95건 되살아남   0   (익명 응답 {403: 95} · head-object 잔존 0)
+공개 정상 파일        9/9  200
+비공개 경계           7/7  403
+시험                505/505
 ```
 
 ---

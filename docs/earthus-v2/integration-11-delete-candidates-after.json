@@ -1,0 +1,8 @@
+{
+ "schemaVersion": "earthus.delete-candidates.v1",
+ "bucket": "earthus-cache-kr",
+ "region": "us-east-2",
+ "count": 0,
+ "generatedBy": "aws/live-audit.py",
+ "objects": []
+}

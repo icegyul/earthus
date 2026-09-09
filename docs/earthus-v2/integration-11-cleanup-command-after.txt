@@ -1,0 +1,20 @@
+# EARTHUS V2 — 공개 금지 객체 청소 (INTEGRATION-6 §4 · §20)
+#
+# ⚠️ 이 파일은 aws/live-audit.py 가 만든다. 손으로 고치지 않는다.
+# ⚠️ 접두사 일괄 삭제 금지. 아래는 키를 하나씩 지정한다.
+# ⚠️ deploy-app.sh 의 --delete 를 되살리지 마라 — 그 원본(build/public-app)에는
+#    v3/ · orbital/ · aetherus/ · tourism/ 이 없어서 다른 제품을 지운다.
+#
+# 1) 권한 (app/* 와 옛 초안 키에 한정)
+aws iam put-user-policy --user-name earthus-deploy --policy-name cleanup-delete \
+  --policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow",
+    "Action":"s3:DeleteObject","Resource":[
+      "arn:aws:s3:::earthus-cache-kr/app/*",
+      "arn:aws:s3:::earthus-cache-kr/events/social-drafts.json"]}]}'
+
+# 2) 지우기 — 0건
+export AWS_PROFILE=earthus-deploy
+
+# 3) 되읽기 — 목록이 비어야 한다
+python3 aws/live-audit.py
+python3 aws/verify-public-access.py

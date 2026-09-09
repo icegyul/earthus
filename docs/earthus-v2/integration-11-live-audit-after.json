@@ -1,0 +1,495 @@
+{
+ "schemaVersion": "earthus.live-audit.v2",
+ "foldedByPrefix": [
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "analysis/",
+   "count": 9,
+   "bytes": 500814
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "app/v3/",
+   "count": 16,
+   "bytes": 8049596
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/",
+   "count": 3,
+   "bytes": 8373557
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/_gaps/",
+   "count": 46,
+   "bytes": 918631
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/_manifest/",
+   "count": 46,
+   "bytes": 393258
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/air-evidence/",
+   "count": 696,
+   "bytes": 84024470
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/air-state/",
+   "count": 37,
+   "bytes": 70142
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/atmos-transport-spike/",
+   "count": 2,
+   "bytes": 70870
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/buoy/",
+   "count": 1075,
+   "bytes": 56385246
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/canonical/",
+   "count": 3,
+   "bytes": 6217777
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/cyclone/",
+   "count": 946,
+   "bytes": 332561
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/ecmwf/",
+   "count": 153,
+   "bytes": 1919414
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/forecast/",
+   "count": 180,
+   "bytes": 18525370
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/gdacs-tc-map/",
+   "count": 87,
+   "bytes": 17700299
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/governance/",
+   "count": 3,
+   "bytes": 16922
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/launch-ll2/",
+   "count": 63,
+   "bytes": 3673111
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/mtgap/",
+   "count": 910,
+   "bytes": 2607461
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/news/",
+   "count": 1075,
+   "bytes": 5884247
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/quake/",
+   "count": 1075,
+   "bytes": 17120827
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/solar/",
+   "count": 1075,
+   "bytes": 257792
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/tourism/",
+   "count": 120,
+   "bytes": 628187413
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/tsunami/",
+   "count": 2,
+   "bytes": 4896
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/vaac-validation/",
+   "count": 108,
+   "bytes": 3742360
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/verify/",
+   "count": 1046,
+   "bytes": 295358190
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/volcanic-ash-vaac/",
+   "count": 112,
+   "bytes": 24725548
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/wildfire/",
+   "count": 1071,
+   "bytes": 43867545
+  },
+  {
+   "classification": "KEEP_PRIVATE",
+   "prefix": "archive/wind/",
+   "count": 1075,
+   "bytes": 29057598
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "app/",
+   "count": 40,
+   "bytes": 1118229
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "app/Intelligence/",
+   "count": 2,
+   "bytes": 148294
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "app/aetherus/",
+   "count": 4,
+   "bytes": 980850
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "app/canary/",
+   "count": 3,
+   "bytes": 25069
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "app/css/",
+   "count": 24,
+   "bytes": 547897
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "app/data/",
+   "count": 277,
+   "bytes": 24168429
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "app/img/",
+   "count": 9,
+   "bytes": 2719376
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "app/js/",
+   "count": 608,
+   "bytes": 5166601
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "app/legal/",
+   "count": 3,
+   "bytes": 36879
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "app/logo/",
+   "count": 9,
+   "bytes": 11160
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "app/ocean/",
+   "count": 45,
+   "bytes": 4513699
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "app/shots/",
+   "count": 12,
+   "bytes": 1868554
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "app/space/",
+   "count": 100,
+   "bytes": 51682890
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "app/tools/",
+   "count": 1,
+   "bytes": 7150
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "app/tourism/",
+   "count": 5705,
+   "bytes": 2261616420
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "app/v2-deploy/",
+   "count": 930,
+   "bytes": 21930170
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "app/v2-three/",
+   "count": 138,
+   "bytes": 9209344
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "app/v2/",
+   "count": 1823,
+   "bytes": 118705469
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "app/v3/",
+   "count": 383,
+   "bytes": 287886068
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "app/vendor/",
+   "count": 6,
+   "bytes": 817492
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "app/wonder/",
+   "count": 2,
+   "bytes": 48490
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "celestrak/",
+   "count": 2,
+   "bytes": 1785488
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "celestrak/archive/",
+   "count": 4,
+   "bytes": 6458570
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "clouds/",
+   "count": 2,
+   "bytes": 5418836
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "clouds/gfs-fc/",
+   "count": 3158,
+   "bytes": 374588706
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "clouds/gfs/",
+   "count": 2,
+   "bytes": 212235
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "clouds/gk2a/",
+   "count": 886,
+   "bytes": 64060487
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "events/",
+   "count": 38,
+   "bytes": 5529540
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "events/space-archive/",
+   "count": 56,
+   "bytes": 643150
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "events/typhoon-official/",
+   "count": 72,
+   "bytes": 58164
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "ocean/",
+   "count": 18,
+   "bytes": 18768631
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "ocean/clim/",
+   "count": 366,
+   "bytes": 4808113
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "ocean/cyclone-events/",
+   "count": 23,
+   "bytes": 422075
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "ocean/khoa/",
+   "count": 71,
+   "bytes": 324792439
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "ocean/series/",
+   "count": 2,
+   "bytes": 790454
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "ocean/thumbs/",
+   "count": 41,
+   "bytes": 3776828
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "ocean/tsunami-eta/",
+   "count": 2,
+   "bytes": 43391
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "reports/published/",
+   "count": 2,
+   "bytes": 117199
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "solar/",
+   "count": 2,
+   "bytes": 137116
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "wind/",
+   "count": 31,
+   "bytes": 8251559
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "wind/kma-calls/",
+   "count": 70,
+   "bytes": 44693
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "wind/kma-radar-history/",
+   "count": 13,
+   "bytes": 393414
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "wind/series/",
+   "count": 77,
+   "bytes": 40173993
+  },
+  {
+   "classification": "KEEP_PUBLIC",
+   "prefix": "wind/status/",
+   "count": 4,
+   "bytes": 1761
+  }
+ ],
+ "bucket": "earthus-cache-kr",
+ "region": "us-east-2",
+ "prefixes": [
+  "app/",
+  "events/",
+  "archive/",
+  "reports/",
+  "wind/",
+  "ocean/",
+  "clouds/",
+  "solar/",
+  "celestrak/",
+  "analysis/"
+ ],
+ "objectCount": 26104,
+ "probedCount": 6117,
+ "tally": {
+  "KEEP_PUBLIC": 15066,
+  "KEEP_PRIVATE": 11034,
+  "EXEMPT_PRODUCT_PATH": 4
+ },
+ "note": "aws/live-audit.py 가 만든다. 손으로 고치지 않는다. 지우는 것은 사람이 한다 — 이 도구는 아무것도 지우지 않는다.",
+ "objects": [
+  {
+   "key": "app/v3/data/audit-trench-bathymetry.py",
+   "size": 2503,
+   "etag": "bd644dc2d80f024f98ef7beb4d84e5a5",
+   "lastModified": "2026-09-05T00:41:33+00:00",
+   "httpStatus": 200,
+   "classification": "EXEMPT_PRODUCT_PATH",
+   "reason": "금지 부류(개발 스크립트)지만 운영 제품 경로다 — 종이 지구(v3). aws/deploy-v3-paper.sh 가 소유한다. 개별 판단 필요",
+   "probed": true
+  },
+  {
+   "key": "app/v3/data/prepare-bathymetry.py",
+   "size": 5833,
+   "etag": "0db4f99f2d662aace4c94a889ceec846",
+   "lastModified": "2026-09-05T00:41:34+00:00",
+   "httpStatus": 200,
+   "classification": "EXEMPT_PRODUCT_PATH",
+   "reason": "금지 부류(개발 스크립트)지만 운영 제품 경로다 — 종이 지구(v3). aws/deploy-v3-paper.sh 가 소유한다. 개별 판단 필요",
+   "probed": true
+  },
+  {
+   "key": "app/v3/data/prepare-ocean-trenches.py",
+   "size": 11530,
+   "etag": "7a10e872e2456b817b414d00ea918019",
+   "lastModified": "2026-09-05T00:41:34+00:00",
+   "httpStatus": 200,
+   "classification": "EXEMPT_PRODUCT_PATH",
+   "reason": "금지 부류(개발 스크립트)지만 운영 제품 경로다 — 종이 지구(v3). aws/deploy-v3-paper.sh 가 소유한다. 개별 판단 필요",
+   "probed": true
+  },
+  {
+   "key": "app/v3/data/trench-bathymetry-audit.json",
+   "size": 6787,
+   "etag": "22a0c431215a5a26ccfc3db4bb7afa9b",
+   "lastModified": "2026-09-07T05:04:26+00:00",
+   "httpStatus": 200,
+   "classification": "EXEMPT_PRODUCT_PATH",
+   "reason": "금지 부류(감사 산출물)지만 운영 제품 경로다 — 종이 지구(v3). aws/deploy-v3-paper.sh 가 소유한다. 개별 판단 필요",
+   "probed": true
+  }
+ ]
+}

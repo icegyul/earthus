@@ -23,6 +23,7 @@ window.__earthusT = (k) => i18n.t(k);
 import { SatLayer } from './sat-layer.js?v=1';
 import { CloudVolume } from './cloud-volume.js?v=4';
 import { PopSculpture } from './pop-sculpture.js?v=13';
+import { PopMetricMenu } from './pop-metric-menu.js?v=1';
 import { QuakeHistory } from './quake-history.js?v=3';
 import { initOnboard } from './onboard.js?v=2';
 import { SolarView } from './solar-view.js?v=4';
@@ -2741,10 +2742,9 @@ async function main() {
     const f = focus.pick(lat, lon);
     if (f) {
       focus.select(f);
-      // 국가를 고르면 그 나라의 인구 격자가 국경 안쪽에서 솟아오른다 (R-03 문법)
-      if (popSculpt.on) {
-        popSculpt.show(f.code3, f.nameKo).then(() => { shell.renderIntel(); shell.refreshFlyout(); });
-      }
+      // 인구 자동 표시는 focus.onChange 가 한다 — 탭이든 검색이든 국가를 고르는
+      // 경로가 늘어도 한 곳에서만 켠다. 여기서는 누른 화면 자리에 지표 메뉴만 띄운다.
+      if (!f.region && !f.ocean) popMetricMenu.showAt(e.clientX, e.clientY, 'population');
     } else {
       // 바다 클릭: 국가 선택 중이면 해제만, 아니면 해상 실황 조회 (①)
       const hadSelection = !!focus.selected;
@@ -2920,6 +2920,9 @@ async function main() {
   const quakeHistory = new QuakeHistory(scene, () => uniforms.uExagger.value, () => baseHeightCanvas);
   window.__earthusQuakes = quakeHistory;
   const popSculpt = new PopSculpture(scene, heightAtJs, () => uniforms.uExagger.value);
+  // 클릭 지점에 뜨는 지표 메뉴. 오늘 실제로 세울 수 있는 건 인구뿐이다 — 나머지는
+  // 국가 단위 격자가 없어 '준비 중'으로 정직하게 막아 둔다(모듈 안 METRICS 표 참고).
+  const popMetricMenu = new PopMetricMenu(i18n, () => {});
   window.__earthusSculpt = popSculpt;
 
   const liveLayers = new LiveLayers(scene, heightAtJs, () => uniforms.uExagger.value, dataBadge);
@@ -5090,6 +5093,13 @@ async function main() {
         });
       return;
     }
+    // 국가를 고르면 그 나라의 인구 격자가 국경 안쪽에서 솟아오른다 (R-03 문법) — 항상 자동으로.
+    // 메뉴에서 미리 켜 둔 적이 없어도 클릭 자체가 인구 조각을 켠다.
+    const popIso = (f.properties || f).code3;
+    (popSculpt.on ? Promise.resolve() : popSculpt.toggle().then(() => {}))
+      .then(() => popSculpt.show(popIso, f.nameKo))
+      .then(() => { shell.renderIntel(); shell.refreshFlyout(); });
+
     let minLo = 180; let maxLo = -180; let minLa = 90; let maxLa = -90;
     for (const poly of polysOf(f)) {
       for (const [lo, la] of poly[0]) {
@@ -5880,7 +5890,12 @@ async function main() {
     // 2026-09-05 PD 결정: 위의 자동 지도 전환 정책을 대체한다.
     // Intelligence 시뮬레이션은 같은 3D 공간에서 이어져야 하므로 고도에 따라
     // MapView로 전환하지 않는다. 지형·데이터 레이어·시점과 시간축을 유지한다.
-    orbit.minDist = closeUp ? 1 + 3 / 6371 : 1.02;
+    // ⚠️ 2026-09-08 실측 지적: 3km까지 허용했더니 배경 텍스처(GMGSI 합성·Natural Earth II —
+    // 둘 다 전지구용 저해상도 래스터라 이 고도의 대체 이미지가 없다)가 뭉개지고, 지구중심
+    // 축 회전 카메라가 이 거리에서는 아주 작은 각도에도 시야를 확 훑어 마우스 이동이
+    // 어려웠다. 18km로 올려 그 구간 자체에 못 들어가게 한다 — 인구 기둥을 보기엔
+    // 기본값(127km)보다 여전히 훨씬 가깝다.
+    orbit.minDist = closeUp ? 1 + 18 / 6371 : 1.02;
 
     if (detail) detail.update(orbit.pitch, orbit.yaw, altKm, camera);
     satLayer.update(now);

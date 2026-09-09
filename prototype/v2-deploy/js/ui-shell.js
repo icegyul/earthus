@@ -13,6 +13,10 @@ import { questionForLayer, phenomenonForLayer, LAYER_PHENOMENON, reportKindsForP
 import { menuCoverage, menuTime, canClearLayer, matchesMenu } from './information-contract.js';
 // PHASE 8 §13 — 리포트 센터. 보고서 렌더링은 그쪽 모듈이 한다. 여기서 문장을 만들지 않는다.
 import { reportDocHtml, reportKey, reportIndexKey, reportUrl, reportIdFromUrl, currentTier, DATA_LABEL_TEXT } from './report-center.js?v=2';
+// 지시서 §8·§16 — 궁금한 점(추천 질문)은 시뮬레이션 능력 레지스트리가 정한다.
+// 없는 엔진의 질문 버튼은 여기서도 만들지 않는다. 다만 '왜 없는지'를 말하는 버튼은
+// pop-metric-menu 의 선례처럼 둔다 — 조용히 아무 말도 하지 않는 게 더 큰 거짓말이다.
+import { simEntryFor, questionsForPhenomenon } from './sim-questions.js?v=1';
 const safeText = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 // ---------------------------------------------------------------------------
@@ -1148,8 +1152,27 @@ export function initShell(hooks) {
         : dict[k]));
       return `<div class="information-caps">${safeText(name)} · ${parts.join(' · ')}</div>`;
     };
+    /* 지시서 §6·§8 — 궁금한 점. 선택한 현상에서 실제로 부를 수 있는 계산(available)만
+       실행 버튼이 되고, 엔진이 없는 질문은 눌렀을 때 이유를 말한다(sim-why).
+       기본 노출은 3개까지 — 레지스트리가 잘라 준다. 입력이 없어 못 부르는 것은
+       not_evaluable 로 내려가 실행 대신 입력 방법을 안내한다(§19 validate input). */
+    const simQuestionsHtml = () => {
+      const pctx = getPhenomenonContext();
+      if (!pctx || !pctx.phenomenonId || !simEntryFor(pctx.phenomenonId)) return '';
+      const qs = questionsForPhenomenon(pctx.phenomenonId, i18n, {
+        hasInput: pctx.phenomenonId !== 'ocean.wave' || !!hooks.hasSeaInput?.(),
+        whyKo: '먼저 바다 지점을 선택하세요 — 바다를 클릭하면 해양 모델 값을 조회합니다',
+        whyEn: 'Select a sea area first — its marine model values feed the computation',
+      });
+      if (!qs.length) return '';
+      return `<div class="sim-questions"><div class="sq-h">${i18n.ko?'궁금한 점':'Questions'}</div>`
+        + qs.map((q) => (q.runnable
+          ? `<button class="sq-q" data-action="sim-q" data-sim="${q.action}">${safeText(q.text)}</button>`
+          : `<button class="sq-q sq-na" data-action="sim-why" data-why="${safeText(q.reason)}">${safeText(q.text)}</button>`)).join('')
+        + `<button class="sq-ask" data-action="shell-open-ask">${i18n.ko?'직접 질문하기':'Ask directly'}</button></div>`;
+    };
     const header=document.createElement('div');header.className='information-context';
-    header.innerHTML=`${selectedMenu ? `<strong>${safeText(i18n.ko ? questionForLayer(selectedMenu.s.id, selectedMenu.l.id) || selectedMenu.l.name : selectedMenu.l.name)}</strong><div>${safeText(selectedMenu.l.src)} · ${dataBadge(selectedMenu.l.state)}</div>${phenomenonLine()}`:''}<div>${safeText(i18n.ko?'선택 장소':'Selected place')}: ${safeText(picked?.nameKo || picked?.name || (i18n.ko?'지도에서 선택':'Select on the globe'))}</div>${timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}</p>`:''}
+    header.innerHTML=`${selectedMenu ? `<strong>${safeText(i18n.ko ? questionForLayer(selectedMenu.s.id, selectedMenu.l.id) || selectedMenu.l.name : selectedMenu.l.name)}</strong><div>${safeText(selectedMenu.l.src)} · ${dataBadge(selectedMenu.l.state)}</div>${phenomenonLine()}${simQuestionsHtml()}`:''}<div>${safeText(i18n.ko?'선택 장소':'Selected place')}: ${safeText(picked?.nameKo || picked?.name || (i18n.ko?'지도에서 선택':'Select on the globe'))}</div>${timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}</p>`:''}
       ${active.length ? `<details><summary>${i18n.ko?'현재 켜진 자료':'Active data'} ${active.length}</summary>${active.map(({s,l})=>`<div class="active-data-row"><span>${safeText(i18n.layer(l.id,l.name,s.id))}<small>${safeText(menuTime(l.id,i18n.ko))}</small></span>${canClearLayer(l.id)?`<button data-action="shell-layer-off" data-scene="${s.id}" data-layer="${l.id}" aria-label="${safeText(l.name)} 끄기">${i18n.ko?'끄기':'Off'}</button>`:''}</div>`).join('')}<button data-action="shell-clear-layers">${i18n.ko?'추가 자료 모두 끄기':'Clear overlays'}</button></details>`:''}`;
     intelContent.prepend(header);
     intelContent.scrollTop=scrollTop;
@@ -1165,6 +1188,16 @@ export function initShell(hooks) {
     if(a==='shell-clear-layers'){hooks.clearLayers?.();return;}
     if (a === 'shell-open-menu') { openPanel('earthus'); return; }
     if (a === 'shell-open-feed') { showTab('feed'); return; }
+    if (a === 'sim-why') {
+      // 엔진이 없는 질문 — 누르면 왜 없는지를 말한다. 조용히 무시하지 않는다.
+      const prev = btn.parentElement.querySelector('.sq-why');
+      if (prev) prev.remove();
+      const tip = document.createElement('div');
+      tip.className = 'sq-why';
+      tip.textContent = btn.dataset.why || '';
+      btn.after(tip);
+      return;
+    }
     if (a === 'shell-play5d') { strip.querySelector('#ts-play').click(); return; }
     if (hooks.onAction) hooks.onAction(a, btn.dataset);
   });
@@ -1375,6 +1408,8 @@ export function initShell(hooks) {
     // main.js 열네 자리가 이걸 쓴다(바다 클릭·국가 클릭·내 지역 …).
     // 손잡이 click() 합성이던 것을 같은 문(setIntelOpen)으로 돌린다.
     openIntel: (tab) => { if (tab) showTab(tab, 'intent'); setIntelOpen(true); },
+    // 추천 질문의 위성 경로 — 우주 씬으로 보내 SGP4 전파를 실제로 보여준다 (sim-q · satellite-track).
+    gotoScene,
   };
 }
 

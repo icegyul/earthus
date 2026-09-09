@@ -1208,6 +1208,57 @@
     border: 5px solid transparent; border-top-color: rgba(10,9,11,0.96);
   }
 
+  /* ---------- 우클릭 퀵 메뉴 (radial) — 지시서 §28·29 ----------
+     작고 가볍게. 지구를 가리지 않는다. 0×0 컨테이너를 클릭 지점에 두고
+     항목 6개를 --qk-x/--qk-y 오프셋으로 원형 배치한다. 180ms 등장. */
+  #quick-menu { position: fixed; width: 0; height: 0; z-index: 40; pointer-events: none; }
+  #quick-menu .qk-item {
+    position: absolute; left: var(--qk-x); top: var(--qk-y);
+    transform: translate(-50%, -50%) scale(.4); width: 54px; height: 54px;
+    border-radius: 50%; pointer-events: auto; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    background: rgba(18,16,20,0.90); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.14); box-shadow: 0 8px 22px rgba(0,0,0,0.42);
+    color: rgba(255,255,255,0.78); font: inherit; opacity: 0;
+    transition: transform .18s ease, opacity .18s ease, background .12s;
+  }
+  #quick-menu.show .qk-item { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  #quick-menu .qk-item:hover { background: rgba(52,38,48,0.94); color: #ffd7de; }
+  #quick-menu .qk-item i { font-style: normal; font-size: 15px; line-height: 1; }
+  #quick-menu .qk-item b { font-size: 10px; font-weight: 500; }
+  #quick-menu .qk-dot {
+    position: absolute; left: 0; top: 0; transform: translate(-50%, -50%);
+    width: 7px; height: 7px; border-radius: 50%;
+    background: rgba(255,255,255,0.4); opacity: 0; transition: opacity .18s;
+  }
+  #quick-menu.show .qk-dot { opacity: 1; }
+
+  /* ---------- 궁금한 점 (추천 질문) — 지시서 §6·§8 ---------- */
+  .sim-questions { margin: 8px 0 2px; }
+  .sim-questions .sq-h {
+    font-size: 10.5px; letter-spacing: .08em; color: rgba(255,255,255,0.45);
+    margin: 0 0 5px; font-weight: 600;
+  }
+  .sim-questions .sq-q {
+    display: block; width: 100%; text-align: left; margin: 0 0 4px;
+    padding: 7px 10px; border-radius: 9px; cursor: pointer; font: inherit;
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.10);
+    color: rgba(255,255,255,0.85); font-size: 12px; line-height: 1.45;
+  }
+  .sim-questions .sq-q:hover { background: rgba(255,255,255,0.10); }
+  .sim-questions .sq-q.sq-na {
+    color: rgba(255,255,255,0.45); border-style: dashed; cursor: help;
+  }
+  .sim-questions .sq-ask {
+    display: inline-block; margin-top: 3px; padding: 4px 2px; border: 0; background: none;
+    color: rgba(236,122,166,0.9); font-size: 11.5px; cursor: pointer; font: inherit;
+    text-decoration: underline; text-underline-offset: 3px;
+  }
+  .sim-questions .sq-why {
+    margin: -2px 0 6px; padding: 0 2px; font-size: 11px; line-height: 1.5;
+    color: rgba(255,255,255,0.5);
+  }
+
   /* ---------- 좁은 화면 정리 (기본 규칙보다 뒤에 와야 이긴다) ---------- */
   @media (max-width: 720px) {
     #sculpt-cap { left: 12px; top: 72px; width: min(260px, 72vw); padding: 13px 15px 11px; }

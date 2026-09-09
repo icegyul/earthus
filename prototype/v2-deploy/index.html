@@ -470,51 +470,9 @@
     /* 좁은 화면에서 고도 표시가 재생 버튼 위에 겹쳐 타임스트립을 못 눌렀다 */
     #hud { bottom: 66px; font-size: 10px; padding: 5px 10px; }
   }
-  /* ---------- 인구 데이터 조각 (R-03 포스터 문법) ---------- */
-  #sculpt-ui { position: fixed; inset: 0; z-index: 6; pointer-events: none; }
-  #sculpt-cap {
-    position: absolute; left: 96px; bottom: 58px; max-width: 400px;
-    opacity: 0; transform: translateY(6px); transition: opacity 0.5s, transform 0.5s;
-  }
-  #sculpt-cap.show { opacity: 1; transform: none; }
-  #sculpt-cap > b {
-    display: block; font-size: 30px; font-weight: 300; letter-spacing: 0.22em;
-    color: #f4eee9; text-shadow: 0 2px 24px rgba(0,0,0,0.85);
-  }
-  #sculpt-cap .sc-src b { font-weight: 600; color: rgba(244,238,233,0.8); }
-  #sculpt-cap .sc-sub {
-    display: block; margin-top: 4px; font: 500 9.5px/1.4 ui-monospace, Consolas, monospace;
-    letter-spacing: 0.3em; color: rgba(236,122,166,0.9);
-  }
-  #sculpt-cap .sc-num {
-    display: block; margin-top: 12px; font-size: 19px; font-weight: 300;
-    color: #f4eee9; letter-spacing: 0.04em; text-shadow: 0 2px 18px rgba(0,0,0,0.8);
-  }
-  #sculpt-cap .sc-num i { font-style: normal; font-size: 11px; color: rgba(244,238,233,0.65); margin-left: 3px; }
-  #sculpt-cap .sc-legend { display: flex; align-items: center; gap: 2px; margin-top: 10px; }
-  #sculpt-cap .sc-legend i { width: 15px; height: 7px; border-radius: 1px; }
-  #sculpt-cap .sc-legend em {
-    font-style: normal; margin-left: 8px; font: 500 9px/1 ui-monospace, Consolas, monospace;
-    letter-spacing: 0.08em; color: rgba(244,238,233,0.75);
-  }
-  #sculpt-cap .sc-legend u { text-decoration: none; color: rgba(244,238,233,0.45); margin-left: 4px; }
-  #sculpt-cap .sc-src {
-    display: block; margin-top: 9px; font-size: 9.5px; line-height: 1.6;
-    color: rgba(226,214,224,0.55); max-width: 330px;
-  }
-  .sc-peak {
-    position: absolute; transform: translate(-50%, -100%); display: none; white-space: nowrap;
-    text-align: center;
-  }
-  .sc-peak i {
-    display: block; width: 1px; height: 16px; margin: 0 auto 3px;
-    background: linear-gradient(to bottom, rgba(236,122,166,0.95), rgba(236,122,166,0));
-  }
-  .sc-peak span {
-    font: 500 10px/1 ui-monospace, Consolas, monospace; color: #f6dfe9;
-    letter-spacing: 0.06em; text-shadow: 0 1px 10px rgba(0,0,0,0.9);
-  }
-  .sc-peak em { font-style: normal; font-size: 8px; color: rgba(246,223,233,0.6); margin-left: 2px; }
+  /* 인구 데이터 조각(R-03 포스터 문법) 스타일은 아래쪽 "인구 데이터 조각 — 포스터
+     타이포그래피" 블록 하나로 합쳤다(2026-09-08) — 여기 있던 첫 판은 그 블록이 나중에
+     선언돼 사실상 다 덮여 있었다(같은 선택자, 카드 배경·위치가 그쪽에만 있었다). */
 
   .mp-chips {
     display: flex; flex-wrap: wrap; gap: 4px; padding: 4px 14px 2px 18px;
@@ -1127,8 +1085,130 @@
   #loading .bar i { display: block; height: 100%; width: 0%; background: var(--accent); transition: width 0.15s; }
   #loading .msg { font-size: 11px; color: var(--text-dim); }
   #loading .err { color: #e08a7a; font-size: 12px; max-width: 320px; text-align: center; line-height: 1.6; display: none; }
+  /* ---------- 인구 데이터 조각 — 포스터 타이포그래피 ----------------------
+     지시서 R-03: 국경선이 아니라 격자 자체가 나라 모양을 만든다. 여기서는
+     그 옆에 뜨는 캡션·범례·봉우리 라벨을 rayshader 인구밀도 포스터 문법으로 앉힌다 —
+     작은 대문자 킥커, 세리프 국가명, 옅은 카드 위 색 칩 범례, 리더라인 도시 라벨.
+     지금까지 이 요소들(#sculpt-cap 등)에는 스타일이 전혀 없었다(브라우저 기본값). */
+  #sculpt-ui { position: fixed; inset: 0; pointer-events: none; z-index: 6; }
+  #sculpt-cap {
+    position: absolute; left: 20px; top: 84px; width: min(300px, 78vw);
+    padding: 16px 18px 14px; border-radius: 14px;
+    background: linear-gradient(180deg, rgba(20,16,20,0.72), rgba(14,12,16,0.62));
+    border: 1px solid rgba(255,255,255,0.10);
+    backdrop-filter: blur(10px) saturate(1.1);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+    opacity: 0; transform: translateY(-6px); transition: opacity .35s, transform .35s;
+  }
+  #sculpt-cap.show { opacity: 1; transform: none; }
+  #sculpt-cap b {
+    display: block; font: 600 26px/1.15 Georgia, "Iowan Old Style", "Noto Serif KR", serif;
+    letter-spacing: .01em; color: #fbeef0;
+  }
+  #sculpt-cap .sc-sub {
+    display: block; margin: 3px 0 10px; font: 700 10px/1 "Segoe UI", sans-serif;
+    letter-spacing: .16em; text-transform: uppercase; color: rgba(255,255,255,0.42);
+  }
+  #sculpt-cap .sc-num {
+    display: block; font: 500 13.5px/1.4 "Segoe UI", sans-serif; color: rgba(255,255,255,0.86);
+    margin-bottom: 10px;
+  }
+  #sculpt-cap .sc-num i { font-style: normal; color: rgba(255,255,255,0.5); font-size: 11.5px; }
+  #sculpt-cap .sc-legend { display: block; margin: 4px 0 10px; }
+  #sculpt-cap .sc-legend i {
+    display: inline-block; width: 15px; height: 8px; margin: 0 1px; border-radius: 2px;
+    vertical-align: middle;
+  }
+  #sculpt-cap .sc-legend em {
+    display: block; font-style: normal; margin-top: 5px; font-size: 11px;
+    color: rgba(255,255,255,0.55);
+  }
+  #sculpt-cap .sc-legend em u { display: block; text-decoration: none; font-size: 9.5px; color: rgba(255,255,255,0.34); }
+  /* 순위 목록 — "어느 도시가 큰가"에 직접 답하는 자리. 렌더링 방식 설명은 여기 없다(2026-09-08). */
+  #sculpt-cap .sc-h {
+    display: block; margin: 12px 0 5px; font: 700 9.5px/1 "Segoe UI", sans-serif;
+    letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,0.4);
+  }
+  #sculpt-cap .sc-rank { list-style: none; margin: 0; padding: 0; }
+  #sculpt-cap .sc-rank li {
+    display: flex; align-items: baseline; gap: 7px; padding: 3px 0;
+    font: 500 12.5px/1.3 "Segoe UI", sans-serif; color: rgba(255,255,255,0.9);
+  }
+  #sculpt-cap .sc-rank b {
+    flex: none; width: 15px; font-weight: 700; font-size: 10.5px;
+    color: rgba(255,255,255,0.4);
+  }
+  #sculpt-cap .sc-rank span { flex: 1; }
+  #sculpt-cap .sc-rank em {
+    flex: none; font-style: normal; font-size: 11px; color: rgba(255,213,222,0.85);
+  }
+  #sculpt-cap .sc-note {
+    display: block; margin-top: 6px; font-size: 10px; line-height: 1.5;
+    color: rgba(255,255,255,0.32);
+  }
+  #sculpt-cap .sc-src {
+    display: block; font-size: 10px; line-height: 1.6; color: rgba(255,255,255,0.36);
+    padding-top: 9px; border-top: 1px solid rgba(255,255,255,0.09);
+  }
+  #sculpt-cap .sc-src b { display: inline; font: inherit; color: rgba(255,255,255,0.5); }
+  /* 봉우리(도시) 라벨 — 점 + 리더라인 + 값. 포스터의 'PARIS' 같은 손짓 표를 화면 좌표로 흉내 */
+  .sc-peak {
+    position: absolute; transform: translate(-50%, -100%); pointer-events: none;
+    display: flex; align-items: center; gap: 5px; white-space: nowrap;
+  }
+  .sc-peak i {
+    width: 5px; height: 5px; border-radius: 50%; background: #ffd7de;
+    box-shadow: 0 0 6px 1px rgba(255,150,170,0.7);
+  }
+  .sc-peak span {
+    font: 500 10.5px/1 "Segoe UI", sans-serif; color: #fff2f4;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.65);
+  }
+  .sc-peak em { font-style: normal; color: rgba(255,255,255,0.55); margin-left: 2px; }
+
+  /* ---------- 국가 클릭 시 뜨는 지표 미니 메뉴 (pop-metric-menu.js) --------
+     인구는 오늘 실제로 세울 수 있어 바로 켜진다. 나머지는 자료가 없어 '준비 중'
+     — 죽은 버튼으로 조용히 있지 않고 눌렀을 때 이유를 말한다(.pm-tip). */
+  #pop-menu {
+    position: fixed; z-index: 30; display: flex; gap: 4px; padding: 5px;
+    border-radius: 12px; background: rgba(18,16,20,0.86); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 10px 26px rgba(0,0,0,0.4);
+    opacity: 0; transform: translateY(4px) scale(.97); pointer-events: none;
+    transition: opacity .16s, transform .16s;
+  }
+  #pop-menu.show { opacity: 1; transform: none; pointer-events: auto; }
+  .pm-item {
+    position: relative; display: flex; flex-direction: column; align-items: center;
+    gap: 2px; width: 56px; padding: 7px 4px 6px; border-radius: 9px; border: 0;
+    background: transparent; color: rgba(255,255,255,0.72); cursor: pointer;
+    font: inherit;
+  }
+  .pm-item:hover { background: rgba(255,255,255,0.08); }
+  .pm-item.active { background: rgba(236,122,166,0.20); color: #ffd7de; }
+  .pm-item .pm-ic { font-size: 14px; line-height: 1; color: inherit; }
+  .pm-item b { font-size: 10.5px; font-weight: 500; }
+  .pm-item.pm-soon { color: rgba(255,255,255,0.32); cursor: not-allowed; }
+  .pm-item.pm-soon .pm-ic { opacity: .5; }
+  .pm-item.pm-soon em {
+    font-style: normal; font-size: 8px; letter-spacing: .04em; color: rgba(255,255,255,0.3);
+  }
+  .pm-tip {
+    position: absolute; bottom: calc(100% + 7px); left: 50%; transform: translateX(-50%) translateY(3px);
+    width: 148px; padding: 7px 9px; border-radius: 8px; background: rgba(10,9,11,0.96);
+    border: 1px solid rgba(255,255,255,0.14); color: rgba(255,255,255,0.78);
+    font-size: 10.5px; line-height: 1.5; text-align: left; white-space: normal;
+    opacity: 0; transition: opacity .15s, transform .15s; pointer-events: none;
+  }
+  .pm-tip.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .pm-tip::after {
+    content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+    border: 5px solid transparent; border-top-color: rgba(10,9,11,0.96);
+  }
+
   /* ---------- 좁은 화면 정리 (기본 규칙보다 뒤에 와야 이긴다) ---------- */
   @media (max-width: 720px) {
+    #sculpt-cap { left: 12px; top: 72px; width: min(260px, 72vw); padding: 13px 15px 11px; }
+    #sculpt-cap b { font-size: 21px; }
     /* 메뉴가 286px 고정이라 360px 폰에서 지구가 74px만 남았다. 화면에 맞춰 줄이고
        뒤를 눌러 닫을 수 있게 스크림을 깐다. */
     #menu-panel { width: min(470px, calc(100vw - 46px)); }

@@ -11,15 +11,23 @@ import * as THREE from '../vendor/three-r184.module.min.js';
 const GRID_URL = (iso3) => `./popgrid/${iso3.toLowerCase()}.json?v=2025a`;
 const R_M = 6371000;
 
-// 예술 방향: 저밀도는 차갑고 낮게 깔리고, 도시는 뜨겁게 솟는다.
-// (튀르키예 포스터의 크림-마젠타 대비를 어두운 지구 위에서 재해석)
+// 봉우리를 도시 이름으로 부르기 — 지금은 한국만 이름 자료가 있다(CC BY 3.0, 시군구 228개).
+// 다른 19개국은 이런 지명 자료가 없어 좌표만 쓴다 — 없는 이름을 지어내지 않는다.
+const KR_PLACES_URL = './data/kr-places.json';
+const KR_MATCH_KM = 25; // 이보다 멀면 '그 근처'라고 부르지 않는다(시군구가 넓은 곳도 있다)
+
+// 예술 방향(포스터 문법으로 개정): 저밀도는 옅고 밝게 '지면'처럼 깔리고,
+// 도시는 짙은 장미-마젠타로 솟는다. rayshader 인구밀도 포스터(France/Italia/Egypt류)의
+// '창백한 배경 위 장미색 첨탑' 대비를 지구 표면 조각에 그대로 옮긴 것이다.
+// 이전 판(크림-마젠타, 저밀도=거의 검정)은 지구 배경과 섞여 저밀도 셀이 안 보였다 —
+// 셀 자체의 값은 그대로고, 색만 '보이는 지면'이 되도록 바꿨다.
 const RAMP = [
-  [0.00, 0.10, 0.13, 0.22],
-  [0.30, 0.20, 0.22, 0.38],
-  [0.55, 0.52, 0.26, 0.52],
-  [0.75, 0.86, 0.24, 0.44],
-  [0.90, 1.00, 0.34, 0.40],
-  [1.00, 1.00, 0.62, 0.50],
+  [0.00, 0.93, 0.90, 0.91],
+  [0.25, 0.86, 0.78, 0.82],
+  [0.50, 0.78, 0.52, 0.62],
+  [0.72, 0.70, 0.26, 0.42],
+  [0.88, 0.62, 0.14, 0.30],
+  [1.00, 0.44, 0.08, 0.20],
 ];
 const rampAt = (t, out) => {
   for (let i = 1; i < RAMP.length; i += 1) {
@@ -73,6 +81,7 @@ export class PopSculpture {
     this.error = null;
     this.peaks = [];
     this.nameKo = null;
+    this.krPlaces = undefined; // undefined=아직 안 불러옴, null=불러왔지만 실패, []=성공
     // 포스터 캡션 + 도시 라벨 (R-03의 타이포그래피 문법)
     this.dom = document.createElement('div');
     this.dom.id = 'sculpt-ui';
@@ -84,7 +93,57 @@ export class PopSculpture {
     this._v = new THREE.Vector3();
   }
 
+  // 한국 시군구 228개(CC BY 3.0) — 봉우리를 도시 이름으로 부르는 유일한 자료.
+  // 다른 나라는 이 자료가 없어 이름을 붙이지 않는다(지어내지 않는다).
+  async loadKrPlaces() {
+    if (this.krPlaces !== undefined) return this.krPlaces;
+    try {
+      const res = await fetch(KR_PLACES_URL, { cache: 'force-cache' });
+      this.krPlaces = res.ok ? ((await res.json()).items || []) : null;
+    } catch (e) { this.krPlaces = null; }
+    return this.krPlaces;
+  }
+
+  // 광역명 줄임 — "서구"·"중구"·"남구"는 여러 도시에 같은 이름이 있어 구 이름만으론
+  // 어느 도시인지 알 수 없다("인천 서구"인지 "대구 서구"인지). 그래서 항상 앞에 붙인다.
+  // ⚠️ 정규식으로 자르지 않는다 — "충청북도→충북"처럼 관용 줄임은 규칙이 아니라 이름마다
+  // 다르다("경상"→"경", "충청"→"충" + 방향자). kr-places.json 이 실제로 쓰는 17개 광역명을
+  // 그대로 표로 확인해 옮겼다 — 표에 없는 값이 오면 지어내지 않고 원문 그대로 쓴다.
+  static REGION_SHORT = Object.freeze({
+    '서울특별시': '서울', '부산광역시': '부산', '대구광역시': '대구', '인천광역시': '인천',
+    '광주광역시': '광주', '대전광역시': '대전', '울산광역시': '울산', '세종특별자치시': '세종',
+    '경기도': '경기', '강원특별자치도': '강원',
+    '충청북도': '충북', '충청남도': '충남',
+    '전북특별자치도': '전북', '전라남도': '전남',
+    '경상북도': '경북', '경상남도': '경남', '제주특별자치도': '제주',
+  });
+
+  static shortRegion(region) {
+    return PopSculpture.REGION_SHORT[region] || region || '';
+  }
+
+  // 가장 가까운 시군구 이름("광역명 시군구"). KR_MATCH_KM보다 멀면 null(지어내지 않는다).
+  nameNear(lat, lon) {
+    const places = this.krPlaces;
+    if (!places || !places.length) return null;
+    const cosLat = Math.cos((lat * Math.PI) / 180);
+    let best = null;
+    let bestKm = Infinity;
+    for (const [nameKo, , region, plat, plon] of places) {
+      const dLat = (lat - plat) * 111.0;
+      const dLon = (lon - plon) * 111.0 * cosLat;
+      const km = Math.hypot(dLat, dLon);
+      if (km < bestKm) { bestKm = km; best = { nameKo, region }; }
+    }
+    if (bestKm > KR_MATCH_KM || !best) return null;
+    const reg = PopSculpture.shortRegion(best.region);
+    // 같은 이름이 시(市) 자체이면(예: "속초시") 광역명이 딱히 필요 없지만, 붙여도 틀리지
+    // 않고 일관성이 생긴다 — 매번 붙인다.
+    return reg && !best.nameKo.startsWith(reg) ? `${reg} ${best.nameKo}` : best.nameKo;
+  }
+
   // 상위 인구 봉우리 N개 (같은 도시가 여러 셀로 겹치지 않게 최소 간격 유지)
+  // 한국이면 이름을 붙인다(krPlaces 가 미리 로딩돼 있어야 한다 — show()가 보장한다).
   findPeaks(doc, cells, n = 5, minDeg = 0.6) {
     const { nx } = doc;
     const [cw, ch] = doc.cellDeg;
@@ -99,12 +158,16 @@ export class PopSculpture {
       const lon = lon0 + (x + 0.5) * cw;
       const lat = lat0 - (y + 0.5) * ch;
       if (out.some((p) => Math.abs(p.lat - lat) < minDeg && Math.abs(p.lon - lon) < minDeg)) continue;
-      out.push({ lat, lon, pop: doc.max * ((cells[i] / 255) ** 3) });
+      const pop = doc.max * ((cells[i] / 255) ** 3);
+      const name = doc.iso3 === 'KOR' ? this.nameNear(lat, lon) : null;
+      out.push({ lat, lon, pop, name });
       if (out.length >= n) break;
     }
     return out;
   }
 
+  // 캡션은 인구 얘기만 한다 — 렌더링 방식(등급·상한·언덕 규칙)은 여기 안 적는다.
+  // "어느 도시가 큰가"에 바로 답하도록 상위 5곳 순위를 싣는다(2026-09-08, 실측 지적으로 개정).
   setCaption(nameKo) {
     this.nameKo = nameKo || null;
     const d = this.doc;
@@ -118,19 +181,25 @@ export class PopSculpture {
     }).join('');
     const cellTxt = this.cellKm ? `${this.cellKm[0].toFixed(1)}×${this.cellKm[1].toFixed(1)}km` : '칸';
     const legend = b.length
-      ? `<span class="sc-legend">${swatches}<em>${fmtB(b[0])} → ${fmtB(b[9])}<u>명 / ${cellTxt} · 10단계</u></em></span>`
+      ? `<span class="sc-legend">${swatches}<em>${fmtB(b[0])} ~ ${fmtB(b[9])}명 / ${cellTxt}</em></span>`
       : '';
-    const over = this.overflowCells
-      ? ` · 상한 초과 ${this.overflowCells.toLocaleString()}칸은 바깥 고리로 퍼뜨렸습니다`
-      : '';
-    const dens = this.denseCells
-      ? `<br/>3×3이 꽉 찬 밀집 ${this.denseCells.toLocaleString()}칸은 낱개 말뚝 대신 <b>언덕</b>으로 — 가운데가 솟고 가장자리로 낮아집니다.`
-      : '';
-    this.capEl.innerHTML = `<b>${(nameKo || d.iso3)}</b>
+    // 순위 — 이름은 한국만(kr-places.json 이 있는 만큼만). 없는 나라는 좌표로, 지어내지 않는다.
+    const perKm2 = (p) => (this.cellAreaKm2 ? p.pop / this.cellAreaKm2 : p.pop) / 1000;
+    const rankRows = (this.peaks || []).map((p, i) => {
+      const where = p.name
+        || `${p.lat >= 0 ? 'N' : 'S'}${Math.abs(p.lat).toFixed(1)}° ${p.lon >= 0 ? 'E' : 'W'}${Math.abs(p.lon).toFixed(1)}°`;
+      return `<li><b>${i + 1}</b><span>${where}</span><em>${perKm2(p).toFixed(1)}천/km²</em></li>`;
+    }).join('');
+    const noName = (d.iso3 !== 'KOR' && this.peaks && this.peaks.length)
+      ? '<span class="sc-note">지명 자료가 없는 나라라 좌표로 표시합니다.</span>' : '';
+    const ranks = rankRows
+      ? `<b class="sc-h">가장 밀집한 곳</b><ol class="sc-rank">${rankRows}</ol>${noName}` : '';
+    this.capEl.innerHTML = `<b>${(nameKo || this.nameFor(d.iso3) || d.iso3)}</b>
       <span class="sc-sub">POPULATION DENSITY · ${d.source || 'WorldPop 1km'}</span>
       <span class="sc-num">${(d.total / 1e6).toFixed(1)}<i>백만 명</i> · 격자 ${d.nonzero.toLocaleString()}칸</span>
       ${legend}
-      <span class="sc-src">국경선을 그리지 않았습니다 — 나라의 모양은 인구 데이터가 만듭니다.<br/>기둥 높이·색은 <b>10단계 등급</b>이며 상위 1%에서 잘립니다${over}.${dens}<br/>CC BY 4.0 WorldPop</span>`;
+      ${ranks}
+      <span class="sc-src">CC BY 4.0 WorldPop</span>`;
     this.capEl.classList.add('show');
   }
 
@@ -343,9 +412,12 @@ export class PopSculpture {
       el.style.display = 'block';
       el.style.left = `${(this._v.x * 0.5 + 0.5) * W}px`;
       el.style.top = `${(-this._v.y * 0.5 + 0.5) * H}px`;
-      // 셀은 집계 후 1km가 아닐 수 있다 — 실제 셀 면적으로 나눠 km²당 값으로 적는다
+      // 셀은 집계 후 1km가 아닐 수 있다 — 실제 셀 면적으로 나눠 km²당 값으로 적는다.
+      // 순위를 항상 붙인다 — 이름이 없는 나라도 "몇 번째로 큰가"는 알 수 있게.
+      // 이름은 한국만(kr-places.json) — 다른 나라는 지어내지 않고 순위+숫자만 보인다.
       const perKm2 = this.cellAreaKm2 ? p.pop / this.cellAreaKm2 : p.pop;
-      el.innerHTML = `<i></i><span>${(perKm2 / 1000).toFixed(1)}<em>천 명/km²</em></span>`;
+      const label = p.name ? `${i + 1}위 ${p.name}` : `${i + 1}위`;
+      el.innerHTML = `<i></i><span>${label}</span><em>${(perKm2 / 1000).toFixed(1)}천 명/km²</em>`;
     });
     for (let i = this.peaks.length; i < this.labelPool.length; i += 1) this.labelPool[i].style.display = 'none';
   }
@@ -392,6 +464,13 @@ export class PopSculpture {
     return this.index;
   }
 
+  // 이름이 안 넘어온 경로가 있어도 원시 코드("KOR")를 그대로 보여주지 않는다 —
+  // popgrid/index.json 에 21개국 이름이 이미 있으니 거기서 찾는다(2026-09-08 실측 지적).
+  nameFor(iso3) {
+    const rows = (this.index && this.index.countries) || [];
+    return (rows.find((r) => r.iso3 === iso3) || {}).nameKo || null;
+  }
+
   readyCountriesText() {
     const rows = (this.index && this.index.countries) || [];
     if (!rows.length) return '';
@@ -418,6 +497,7 @@ export class PopSculpture {
         this.cache[iso3] = doc;
       }
       this.doc = doc;
+      if (iso3 === 'KOR') await this.loadKrPlaces();
       this.build(doc);
       this.peaks = this.findPeaks(doc, doc._cells);
       this.setCaption(this.pendingName);
@@ -444,7 +524,12 @@ export class PopSculpture {
       }
       return doc.max;
     };
-    const lo = Math.max(at(0.10), 1);
+    // ⚠️ 2026-09-08 실측 지적: 하위 10%를 1등급 바닥으로 잡으니 산간까지도 사람이
+    // 어느 정도는 사는 한국에서는 국토의 90%가 2등급 이상(=눈에 띔)이 됐다 — "전국토가
+    // 다 인구가 많아 보인다". 바닥을 중앙값 위(65%)로 올려 평균 이하 지역은 눈에 안
+    // 띄고 진짜 밀집지만 도드라지게 한다. 값 자체(cells 원자료)는 손대지 않는다 —
+    // 등급 경계는 원래부터 표현용 구간이다(위 주석 "기둥을 무한정 높이지 않고…").
+    const lo = Math.max(at(0.65), 1);
     const hi = Math.max(at(0.99), lo * 10);
     const breaks = [];
     for (let k = 1; k <= 10; k += 1) {
@@ -546,7 +631,10 @@ export class PopSculpture {
     // 인구 표현 높이: 지형 과장과 같은 축척계로 환산해 지형 위로 솟게 한다.
     // u8 자체가 이미 세제곱근 정규화라, 화면 높이는 u8에 선형으로 대응시킨다.
     // 등급 10칸의 최대 높이 — 여기서 잘린다. 더 큰 값은 옆 칸으로 표현한다.
-    const H_MAX = (0.030 * exag) / 50;
+    // ⚠️ 계수를 0.030→0.006으로 낮췄다(2026-09-08). 기본 배율(지형 과장 50×)에서
+    //    1등 기둥이 나라 폭만큼 치솟아 "어디가 큰지" 오히려 안 보였다 — 실측 지적.
+    //    같은 국가 뷰 거리에서 최고 기둥이 나라 폭의 대략 8~12% 정도가 되도록 잡았다.
+    const H_MAX = (0.006 * exag) / 50;
     const n = stacks.length;
     const pos = new Float32Array(n * 6);
     const col = new Float32Array(n * 6);
@@ -556,7 +644,9 @@ export class PopSculpture {
     const c = new THREE.Color();
     for (let k = 0; k < n; k += 1) {
       const s = stacks[k];
-      const u = s.cls / 10; // 등급(1~10)이 곧 높이·색 단계
+      // 등급(1~10)을 그대로 쓰지 않고 제곱한다 — 중간 등급은 낮고 옅게 깔리고
+      // 상위 등급만 확 솟아 색도 짙어진다("조용한 국토 + 뚜렷한 정점" 대비, 2026-09-08).
+      const u = (s.cls / 10) ** 2;
       const groundH = Math.max(this.heightAt(s.lat, s.lon), 0);
       const r0 = 1 + (groundH / R_M) * exag + 0.0008;
       llToV3(s.lat, s.lon, r0, p);
@@ -570,8 +660,12 @@ export class PopSculpture {
       ups[k * 6 + 3] = up.x; ups[k * 6 + 4] = up.y; ups[k * 6 + 5] = up.z;
       lens[k * 2] = 0;
       lens[k * 2 + 1] = h;
-      // 바닥은 거의 잠기고 끝만 발광 — 세로 그라데이션이 조각의 부피감을 만든다
-      col[k * 6] = c.r * 0.10; col[k * 6 + 1] = c.g * 0.10; col[k * 6 + 2] = c.b * 0.14;
+      // 바닥은 지면처럼 옅게, 꼭대기만 원래 등급 색 — 세로 그라데이션이 부피감을 만든다.
+      // (예전엔 바닥을 검정 쪽으로 죽였다 — 저밀도 셀이 어두운 지구 배경에 묻혀 안 보였다.
+      //  값은 그대로 두고 색만 '보이는 지면'이 되도록 흰 쪽으로 섞는다.)
+      col[k * 6] = c.r + (0.97 - c.r) * 0.55;
+      col[k * 6 + 1] = c.g + (0.96 - c.g) * 0.55;
+      col[k * 6 + 2] = c.b + (0.97 - c.b) * 0.55;
       col[k * 6 + 3] = c.r; col[k * 6 + 4] = c.g; col[k * 6 + 5] = c.b;
     }
     // 최고 셀은 등급이 아니라 원값으로 찾는다 (라벨에 실제 인구를 적기 위해)

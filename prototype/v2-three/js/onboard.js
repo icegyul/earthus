@@ -31,8 +31,8 @@ const STEPS = EN ? [
   },
   {
     icon: '🛰',
-    title: 'EARTH INTELLIGENCE on the right',
-    body: 'What is happening now, the sky where you are, and the source and freshness of whatever you are looking at.',
+    title: 'A panel that opens when you pick',
+    body: 'Pick a phenomenon, country or sea area and it opens on the right — current numbers, what is happening, questions (some run real computations), and evidence. Right-click the globe for a quick menu right there.',
   },
   {
     icon: '⤴',
@@ -51,9 +51,11 @@ const STEPS = EN ? [
     body: 'EARTHUS는 지형·날씨·해양·사람·재해, AETHERUS는 우주·궤도. 지금 켤 수 있는 실데이터 레이어가 모두 여기 있습니다.',
   },
   {
+    // 2026-09-10: 패널 손잡이·하단 Intelligence 칸은 없다 — 고르면 열리는 문맥층이다.
+    // 추천 질문(궁금한 점)과 우클릭 퀵 메뉴를 함께 알린다.
     icon: '🛰',
-    title: '오른쪽 EARTH INTELLIGENCE',
-    body: '지금 일어나는 사건, 내 위치의 하늘, 지금 보고 있는 것의 출처와 신선도를 읽는 곳입니다.',
+    title: '고르면 열리는 문맥 패널',
+    body: '현상·나라·바다를 고르면 오른쪽에서 열립니다 — 지금 숫자, 무슨 일인지, 궁금한 점(누르면 실제 계산), 근거까지. 지구를 우클릭하면 그 자리의 빠른 메뉴가 뜹니다.',
   },
   {
     icon: '⤴',

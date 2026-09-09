@@ -29,11 +29,11 @@ const shot = (name) => page.screenshot({ path: path.join(out, name) });
 const log = { emulated: 'Playwright iPhone 13 (390×844, DPR 3, iOS UA) — 실기기 아님', shots: [], ts: new Date().toISOString() };
 try {
   await page.goto(`http://127.0.0.1:${srv.address().port}/v2/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-  await page.waitForSelector('#intel-tab', { timeout: 90000 });
+  await page.waitForSelector('#bottom-nav button[data-nav="intel"]', { timeout: 90000 });
   await page.waitForTimeout(3000);
   // 패널 토글은 셸 초기화 뒤에야 듣는다 — 탭 줄이 보일 때까지 몇 번 더 누른다
   for (let k = 0; k < 6; k++) {
-    await click('#intel-tab');
+    await click('#bottom-nav button[data-nav="intel"]');
     const ok = await page.waitForSelector('[data-tab="feed"]', { timeout: 5000 }).then(() => true).catch(() => false);
     if (ok) break;
   }

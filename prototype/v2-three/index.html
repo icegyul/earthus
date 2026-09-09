@@ -316,7 +316,13 @@
     border-radius: 14px; padding: 5px; backdrop-filter: blur(16px);
     transition: opacity 0.2s ease, transform 0.3s ease;
   }
-  body:has(#intel.open) #bottom-nav { opacity: 0; pointer-events: none; transform: translateX(-50%) translateY(10px); }
+  /* 2026-09-09 — 이 자리에 있던 `body:has(#intel.open) #bottom-nav { opacity: 0 }` 를 없앴다.
+     그 규칙은 패널에 제 손잡이가 따로 있던 시절의 것이다(하단 바는 '지름길'이었다).
+     진입점을 이 바 한 곳으로 모은 뒤로는 **패널이 열리면 유일한 진입점이 사라지는** 규칙이 된다:
+     같은 칸을 다시 눌러 닫을 수 없고, 탐색·리포트·우주도 못 누르며, 켜진 하이라이트가 안 보인다.
+     (opacity:0 + pointer-events:none 이라 스크립트 click() 은 통과해서 시험은 지나갔다 —
+      실제 손가락만 canvas 에 닿았다. 화면을 찍어 보고서야 잡혔다.)
+     대신 패널을 바 위로 비켜 세운다 — 아래 #intel 의 bottom 값이 그 일을 한다. */
   #bottom-nav button {
     display: flex; flex-direction: column; align-items: center; gap: 3px;
     min-width: 54px; padding: 6px 6px 5px; border: 0; border-radius: 10px; cursor: pointer;
@@ -629,14 +635,12 @@
   .mp-foot { padding: 9px 18px 10px; font-size: 9px; color: rgba(150,175,195,0.5); line-height: 1.5; }
 
   #intel {
-    position: fixed; right: 14px; bottom: 14px; z-index: 4;
+    /* 하단 바(bottom 84 · 높이 64 → 윗변 148) 위 8px. 1272px 아래에서는 패널의 왼쪽 끝과
+       가운데 바가 가로로 겹치는데, 바가 z-index 6 이라 위에 그려져 패널 아래 글을 지운다.
+       세로로 비켜 두면 폭에 상관없이 둘 다 보인다. */
+    position: fixed; right: 14px; bottom: 156px; z-index: 4;
     width: min(480px, calc(100vw - 32px));
     display: flex; flex-direction: column; align-items: flex-end;
-  }
-  #intel-tab {
-    padding: 9px 16px; background: var(--panel-bg); border: 1px solid var(--panel-line);
-    border-radius: 10px; color: var(--accent); font-family: inherit;
-    font-size: 10.5px; letter-spacing: 2px; cursor: pointer; backdrop-filter: blur(6px);
   }
   #intel-body { display: none; }
   #intel.open #intel-body {
@@ -644,7 +648,6 @@
     margin-bottom: 8px; background: var(--panel-bg); border: 1px solid var(--panel-line);
     border-radius: 12px; padding: 12px 14px; backdrop-filter: blur(8px);
   }
-  #intel.open { flex-direction: column-reverse; }
   .intel-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
   .intel-tabs button {
     flex: 1; padding: 6px 0; font-size: 10.5px; letter-spacing: 1px; font-family: inherit;
@@ -1230,13 +1233,17 @@
       justify-content: center; gap: 8px; padding: 7px 10px;
     }
     #hud { bottom: calc(66px + env(safe-area-inset-bottom)); }
-    #intel { bottom: calc(66px + env(safe-area-inset-bottom)); }
     #quake-cap { bottom: calc(148px + env(safe-area-inset-bottom)); }
     #chrome { padding-top: calc(8px + env(safe-area-inset-top)); }
     #timestrip input[type="range"] { width: auto; flex: 1 1 auto; min-width: 0; }
-    /* 인텔 손잡이는 타임스트립 위로 — 아니면 재생 버튼 옆을 덮는다 */
-    #intel { right: 8px; bottom: 66px; }
-    #intel-tab { padding: 7px 12px; font-size: 11px; }
+    /* 좁은 화면에서 패널은 폭을 거의 다 쓰므로 좌하단 출처 상자(#hud)와 하단 메뉴를
+       **가로로는 피할 수 없다.** 그래서 #bottom-nav 가 hud 를 피한 방법(158px 로 띄우기)
+       을 그대로 따라 세로로 비킨다 — 겹치면 z-index 가 높은 hud·메뉴가 위에 그려져
+       패널 아래쪽 글이 잘린다(실측 2026-09-09: 79px 가림).
+         hud   bottom 66  (2줄이면 79 까지 자란다)
+         메뉴  bottom 158 · 높이 ~56  → 윗변이 214
+       그 위 6px 에 패널 바닥을 둔다. 손잡이(39px)가 있던 시절엔 그 두께가 완충이었다. */
+    #intel { right: 8px; bottom: calc(220px + env(safe-area-inset-bottom)); }
     #intel.open #intel-body { width: calc(100vw - 16px); max-height: 52vh; }
     /* AETHERUS 전체화면 뷰(태양계·사진관·은하) — 좁은 화면에서 윗줄이 통째로 겹쳤다.
        '◀ 지구로'·경로·가운데 제목이 한 줄에 몰려 서로의 글자를 지웠고, 사진관은 카드가

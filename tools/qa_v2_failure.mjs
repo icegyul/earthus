@@ -24,8 +24,8 @@ async function scenario(label, routes, run, ctxOpts = {}) {
   const text = () => page.evaluate(() => (document.querySelector('#intel-content') || {}).textContent || '');
   const openFeed = async () => {
     await page.goto(`${SITE}/v2/?fx=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 90000 });
-    await page.waitForSelector('#intel-tab', { timeout: 120000 });
-    for (let k = 0; k < 6; k++) { await click('#intel-tab'); const open = await page.evaluate(() => { const b = document.querySelector('[data-tab="feed"]'); return !!(b && b.getBoundingClientRect().height > 0); }); if (open) break; await page.waitForTimeout(1500); }
+    await page.waitForSelector('#bottom-nav button[data-nav="intel"]', { timeout: 120000 });
+    for (let k = 0; k < 6; k++) { await click('#bottom-nav button[data-nav="intel"]'); const open = await page.evaluate(() => { const b = document.querySelector('[data-tab="feed"]'); return !!(b && b.getBoundingClientRect().height > 0); }); if (open) break; await page.waitForTimeout(1500); }
     await click('[data-tab="feed"]');
     await page.waitForFunction(() => { const c = document.querySelector('#intel-content'); return c && (c.querySelector('.feed-item') || /조회 불가|응답 없음/.test(c.textContent)); }, null, { timeout: 90000 }).catch(() => {});
     await page.waitForFunction(() => !/받는 중/.test((document.querySelector('#intel-content .feed-note') || {}).textContent || ''), null, { timeout: 120000 }).catch(() => {});
@@ -63,8 +63,8 @@ await scenario('gdacs-cache-then-down', [], async ({ page, text, openFeed }) => 
   await openFeed();                                        // 1차: 정상 → localStorage 에 마지막 축약본 저장
   await page.route(/events\/gdacs-tc\.json/, abort); await page.route(/gdacs\.org/, abort);
   await page.evaluate(() => { const b = document.querySelector('[data-action="feed-retry"]'); if (b) b.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-  await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForSelector('#intel-tab', { timeout: 120000 });
-  for (let k = 0; k < 6; k++) { await page.evaluate(() => document.querySelector('#intel-tab').click()); const open = await page.evaluate(() => { const b = document.querySelector('[data-tab="feed"]'); return !!(b && b.getBoundingClientRect().height > 0); }); if (open) break; await page.waitForTimeout(1500); }
+  await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForSelector('#bottom-nav button[data-nav="intel"]', { timeout: 120000 });
+  for (let k = 0; k < 6; k++) { await page.evaluate(() => document.querySelector('#bottom-nav button[data-nav="intel"]').click()); const open = await page.evaluate(() => { const b = document.querySelector('[data-tab="feed"]'); return !!(b && b.getBoundingClientRect().height > 0); }); if (open) break; await page.waitForTimeout(1500); }
   await page.evaluate(() => document.querySelector('[data-tab="feed"]').dispatchEvent(new MouseEvent('click', { bubbles: true })));
   await page.waitForFunction(() => document.querySelector('#intel-content .feed-item') && !/받는 중/.test((document.querySelector('#intel-content .feed-note') || {}).textContent || ''), null, { timeout: 90000 }).catch(() => {});
   const t = await text();

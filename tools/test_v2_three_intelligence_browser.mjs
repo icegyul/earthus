@@ -38,8 +38,8 @@ page.on('pageerror', (e) => consoleErrors.push(String(e.message || e)));
 const evidence = { ok: false, target: 'prototype/v2-three (served at earthus.net/v2)', checks: {}, timestamp: new Date().toISOString() };
 try {
   await page.goto(`http://127.0.0.1:${srv.address().port}/v2/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
-  await page.waitForSelector('#intel-tab', { timeout: 90000 });
-  await page.click('#intel-tab');
+  await page.waitForSelector('#bottom-nav button[data-nav="intel"]', { timeout: 90000 });
+  await page.click('#bottom-nav button[data-nav="intel"]');
   await page.waitForSelector('[data-tab="feed"]', { timeout: 30000 });
   await page.click('[data-tab="feed"]');
   // 실제 소스가 도착할 때까지 — 카드가 뜨거나, 소스 상태가 실패로 확정될 때까지

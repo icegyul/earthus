@@ -86,8 +86,14 @@ push({ service: 'v2', group: '상단 도구', id: 'brand-tab-a', label: 'AETHERU
 for (const [id, label, q] of [
   ['btn-search', '검색', '나라·시군구·도시·공항'], ['btn-ask', '지구에 묻기', '지금 켜 놓은 자료만 근거로 답합니다'], ['btn-share', '이 화면 공유', '링크 복사 · 그림 저장'],
   ['btn-help', '사용법 다시 보기', ''], ['btn-settings', '설정', ''], ['btn-login', '로그인 / 계정', 'EARTHUS 계정 화면'], ['map-3d', '3D 지형', '지역 지형 모드'], ['map-exit', '3D 지구로', '지형 모드 종료'],
-  ['hud-more', '진단 정보', '상태를 텍스트로 복사'], ['ts-now', '지금', '시간 막대 현재로'], ['ts-play', '5일 예보 재생', '예보 시간축 연결 레이어에만 적용'], ['intel-tab', 'EARTH INTELLIGENCE', '결과 패널 열기'],
+  ['hud-more', '진단 정보', '상태를 텍스트로 복사'], ['ts-now', '지금', '시간 막대 현재로'], ['ts-play', '5일 예보 재생', '예보 시간축 연결 레이어에만 적용'],
 ]) push({ service: 'v2', group: '상단 도구', id, label, question: q, source: '', kind: '', coverage: '', time: '', check: '목록·소스', ...finding('v2', id) });
+// 2026-09-09 진입점 통합: 떠 있던 손잡이(intel-tab)를 없애고 하단 메뉴 한 칸으로 모았다.
+// 목록에서 지우지 않고 있는 자리로 옮겨 적는다.
+for (const [id, label, q] of [
+  ['nav:intel', 'Intelligence', '결과 패널 열기 (일곱 갈래는 패널 안 탭)'], ['nav:explore', '탐색', '자료 서랍 열기'],
+  ['nav:report', '리포트', '리포트 센터'], ['nav:space', '우주', 'AETHERUS 장면'],
+]) push({ service: 'v2', group: '하단 메뉴', id, label, question: q, source: '', kind: '', coverage: '', time: '', check: '목록·소스', ...finding('v2', id) });
 push({ service: 'v2', group: '메뉴 도구', id: 'menu-search', label: '메뉴·질문 검색', question: '메뉴 이름·질문·출처·지원 범위로 찾기', source: '', kind: '', coverage: '', time: '', check: check('v2:tool:menu-search'), finding: 'F15', priority: 'P1', proposal: '5절 v2 제안 — 구현됨' });
 push({ service: 'v2', group: '메뉴 도구', id: 'active-only', label: '켜진 자료만', question: '', source: '', kind: '', coverage: '', time: '', check: check('v2:tool:active-only'), finding: 'F13', priority: 'P1', proposal: '5절 v2 제안 — 구현됨' });
 for (const r of ['한반도', '전 지구', '동북아시아', '동남아시아', '남아시아', '오세아니아', '유럽', '중동', '아프리카', '북미', '남미', '북극', '남극'])

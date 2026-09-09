@@ -299,6 +299,10 @@ export function initShell(hooks) {
   // 능력이 없는 행동은 노출하지 않는다(지침서 STEP 2.6).
   // "준비 중"으로 위장하지 않는다 — 없으면 없는 것이다.
   // 선택이 없을 때는 기존 전역 동작 그대로 둔다. 이 단계는 문맥 배선이지 디자인 개편이 아니다.
+  /* 하단 메뉴가 만들어지면 여기에 담긴다. `const bottomNav` 를 직접 쓰면 셸 조립
+     도중(applyCapabilityGating)에 TDZ 로 죽고, document.querySelector 로 찾으면
+     아직 root 에 붙지 않아 못 찾는다. 그 사이를 이 참조가 잇는다. */
+  let navRoot = null;
   const CAP_TAB = { scenario: 'simulation', next: 'forecast', history: 'history' };
   function applyCapabilityGating() {
     const ctx = getPhenomenonContext();
@@ -318,14 +322,19 @@ export function initShell(hooks) {
      ※ 좌상단 .es-switch 의 'Intelligence' 는 건드리지 않는다 — 그것은 v2 제품 자체의
         공개 이름이고 배포된 주소(/Intelligence)다. earth-switch.js 머리주석을 볼 것. */
   const PANEL_HOME = () => (i18n.ko ? '지구 인텔리전스' : 'EARTH INTELLIGENCE');
+  /* 손잡이가 없어졌으므로 이름표는 **메뉴 버튼**이 단다(진입점 통합).
+     보이는 글자는 'Intelligence' 로 고정한다 — 주 메뉴 항목의 글자가 상황에 따라
+     바뀌면 누르려던 자리가 움직인다. 현상 이름은 title·aria-label 로 남긴다. */
   function applyPanelIdentity(ctx) {
-    const handle = intel && intel.querySelector('#intel-tab');
-    if (!handle) return;
+    // navRoot 가 아직 null 이면 메뉴가 없는 시점이다 — 조용히 지나간다.
+    const btn = navRoot && navRoot.querySelector('button[data-nav="intel"]');
+    if (!btn) return;
     const name = ctx ? (i18n.ko ? ctx.label.ko : ctx.label.en) : null;
-    handle.textContent = name || PANEL_HOME();
-    handle.setAttribute('aria-label', name
+    const label = name
       ? (i18n.ko ? `${name} — 현재·해석·근거` : `${name} — current, intelligence, evidence`)
-      : PANEL_HOME());
+      : PANEL_HOME();
+    btn.title = label;
+    btn.setAttribute('aria-label', label);
   }
   let timelineMinutes = 0;
   // PHASE 4 §2 — 1차 메뉴는 도메인만 보인다. 도메인을 열어야 현상 목록이 나온다.
@@ -821,12 +830,12 @@ export function initShell(hooks) {
         const btn = intel.querySelector(`[data-tab="${want}"]`);
         const target = btn && !btn.hidden ? want : 'now';
         showTab(target, 'intent');
-        if (!intelOpen) intel.querySelector('#intel-tab').click();
+        openIntel();
       }
       return;
     }
     const toPhen = e.target.closest('[data-report-phenomenon]');
-    if(toPhen){const [sid,lid]=toPhen.dataset.reportPhenomenon.split('/');const sc=SCENES.find(x=>x.id===sid);const ly=sc&&sc.layers.find(x=>x.id===lid);if(ly&&hooks.onLayerAction){selectedMenu={s:sc,l:ly};applyCapabilityGating();hooks.onLayerAction(sid,ly);closeFlyout();if(!intelOpen)intel.querySelector('#intel-tab').click();else renderIntel();}return;}
+    if(toPhen){const [sid,lid]=toPhen.dataset.reportPhenomenon.split('/');const sc=SCENES.find(x=>x.id===sid);const ly=sc&&sc.layers.find(x=>x.id===lid);if(ly&&hooks.onLayerAction){selectedMenu={s:sc,l:ly};applyCapabilityGating();hooks.onLayerAction(sid,ly);closeFlyout();openIntel();}return;}
     const expand = e.target.closest('[data-expand]');
     if(expand){const pid=expand.dataset.expand;expandedPhenomena.has(pid)?expandedPhenomena.delete(pid):expandedPhenomena.add(pid);refreshFlyout();return;}
     if(collapse){const id=collapse.dataset.collapse;collapsedSections.has(id)?collapsedSections.delete(id):collapsedSections.add(id);refreshFlyout();return;}
@@ -862,8 +871,9 @@ export function initShell(hooks) {
   // --- 우측 EARTH INTELLIGENCE 패널 (§106.1: 접힘 기본, 지구 65% 이상 유지) ---
   const intel = document.createElement('div');
   intel.id = 'intel';
+  // 손잡이(#intel-tab)는 없앴다 — 진입점은 하단 메뉴의 Intelligence 한 곳뿐이다.
+  // 375 폭에서 이 손잡이가 출처 상자(#hud, z=7)에 덮여 글자가 잘리던 문제도 같이 사라진다.
   intel.innerHTML = `
-    <button id="intel-tab">EARTH INTELLIGENCE</button>
     <div id="intel-body">
       <div class="intel-tabs">
         <button data-tab="feed" class="on">${i18n.ko?'사건':'Feed'}</button>
@@ -883,9 +893,9 @@ export function initShell(hooks) {
       <div id="intel-content"></div>
     </div>`;
   root.appendChild(intel);
-  // 손잡이 기본 이름을 화면 언어에 맞춘다. 마크업의 'EARTH INTELLIGENCE' 는 영어 고정이라
-  // 한국어 화면에서 혼자 영어로 남아 있었다. 현상을 고르면 그 현상 이름으로 바뀐다.
-  applyPanelIdentity(null);
+  // ⚠️ 이름표는 이제 하단 메뉴 버튼이 단다. 그 버튼은 아래에서 만들어지므로
+  //    여기서 applyPanelIdentity 를 부르면 bottomNav 가 아직 없어 죽는다(TDZ).
+  //    renderNav() 뒤로 옮겼다.
 
   /* ---------- 하단 바 — 내 지역 / 무슨 일 / 날씨 / 바다 / 우주 / 더보기 ----------
      2026-09-07 개명: '내 곳' → '내 지역'. 인용한 원 지시문은 그대로 둔다.
@@ -895,6 +905,7 @@ export function initShell(hooks) {
      좌측 세로 손잡이·우측 패널은 지우지 않는다. "더보기"가 정확히 그 기존 화면을 연다. */
   const bottomNav = document.createElement('div');
   bottomNav.id = 'bottom-nav';
+  navRoot = bottomNav;
   const NAV_ICON = {
     myplace: '<path d="M3 11 12 4l9 7"/><path d="M5 10v9h14v-9"/><path d="M10 19v-5h4v5"/>',
     feed: '<path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7a5 5 0 1 0 5 5"/><circle cx="12" cy="12" r="1.5"/>',
@@ -904,15 +915,19 @@ export function initShell(hooks) {
     more: '<circle cx="6" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18" cy="12" r="1.2"/>',
     explore: '<circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/>',
     report: '<path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4"/><path d="M9 12h7M9 16h5"/>',
+    // 새 자산을 만들지 않는다 — 사건 탭이 쓰던 표적 아이콘을 그대로 쓴다.
+    intel: '<path d="M12 3a9 9 0 1 0 9 9"/><path d="M12 7a5 5 0 1 0 5 5"/><circle cx="12" cy="12" r="1.5"/>',
   };
   /* PHASE 5 §2 — 하단 바는 6개였고 그중 5개가 다른 진입점이 이미 가는 곳으로 다시 갔다.
      날씨·바다는 '탐색' 안의 도메인이 됐으므로 하단에서 뺀다(같은 곳으로 가는 길을 셋씩 두지 않는다).
      '더보기'는 '탐색'과 같은 곳이라 합친다. '무슨 일'은 '지금'으로 이름을 하나로 모은다(§15).
      리포트는 EARTHUS 의 핵심 콘텐츠라 최상위로 올린다(§5). */
+  /* 2026-09-09 진입점 통합: '지금'(사건 탭)과 '내 지역'(내 지역 탭)은 둘 다
+     같은 Intelligence 패널을 열던 중복 진입점이었다. 떠 있던 손잡이까지 셋이
+     한 곳으로 갔다. 한 칸으로 합치고, 일곱 갈래는 패널 안 탭으로 이어진다. */
   const NAV_ITEMS = [
-    { id: 'feed', ko: '지금', en: 'Now' },
+    { id: 'intel', ko: 'Intelligence', en: 'Intelligence' },
     { id: 'explore', ko: '탐색', en: 'Explore' },
-    { id: 'myplace', ko: '내 지역', en: 'My place' },
     { id: 'report', ko: '리포트', en: 'Reports' },
     { id: 'space', ko: '우주', en: 'Space' },
   ];
@@ -923,6 +938,10 @@ export function initShell(hooks) {
     bottomNav.innerHTML = NAV_ITEMS.map((n) => `<button type="button" data-nav="${n.id}"${n.id === curId ? ' class="on"' : ''}>
       <svg viewBox="0 0 24 24">${NAV_ICON[n.id]}</svg><span>${i18n.ko ? n.ko : n.en}</span>
     </button>`).join('');
+    /* innerHTML 을 다시 쓰면 방금 단 이름표(title·aria-label)가 버튼과 함께 사라진다.
+       그래서 부르는 쪽 순서에 맡기지 않고 **그리는 쪽**이 다시 단다.
+       (refreshPanelIdentity 가 이름표→renderNav 순서라 이름표가 지워지고 있었다.) */
+    applyPanelIdentity(getPhenomenonContext());
   };
   renderNav();
   root.appendChild(bottomNav);
@@ -942,17 +961,28 @@ export function initShell(hooks) {
     if (!btn) return;
     bottomNav.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === btn));
     switch (btn.dataset.nav) {
-      case 'myplace': showTab('my'); if (!intelOpen) intel.querySelector('#intel-tab').click(); break;
-      case 'feed': showTab('feed'); if (!intelOpen) intel.querySelector('#intel-tab').click(); break;
+      // Intelligence 는 이제 메뉴 한 칸이다. 일곱 갈래는 패널 안 탭으로 이어진다.
+      // 없앤 손잡이가 토글이었으므로 여기서도 토글한다 — 같은 칸을 다시 누르면 닫힌다.
+      // 마지막으로 보던 탭을 기억해 두 번 눌러 되돌아오는 길을 없애지 않는다.
+      case 'intel': if (intelOpen) closeIntel(); else openIntel(curTab || 'feed'); break;
       case 'explore': openPanel('earthus'); break;
       case 'report': openPanel('report'); break;
       case 'space': gotoScene('aetherus', 'space'); break;
     }
+    // 위 forEach 가 하이라이트를 누른 칸으로 옮긴다. 패널이 그대로 열려 있으면
+    // Intelligence 칸도 켠 채로 둔다 — 열려 있는데 꺼져 보이면 상태가 거짓말이 된다.
+    syncIntelNav();
   });
 
   const intelBody = intel.querySelector('#intel-body');
   const intelContent = intel.querySelector('#intel-content');
   let intelOpen = false;
+  /* 열기: 탭을 주면 그 탭으로, 안 주면 지금 탭 그대로. 이미 열려 있으면 다시 그린다.
+     리포트→현상·리포트→분석·하단바가 전부 이 문으로만 들어온다. */
+  function openIntel(tab) {
+    if (tab) showTab(tab, 'intent');
+    setIntelOpen(true);
+  }
   let curTab = 'feed';
   // INTEGRATION-3 §11 — '마지막 사용자 의도'. showTab() 아래 설명 참고.
   let tabIntent = 'feed';
@@ -1118,11 +1148,19 @@ export function initShell(hooks) {
     if (el && hooks.onAction) hooks.onAction(el.dataset.action, el.dataset, el.value);
   });
 
-  intel.querySelector('#intel-tab').addEventListener('click', () => {
-    intelOpen = !intelOpen;
+  /* 패널을 여닫는 **유일한** 자리. 예전에는 네 곳이 손잡이 버튼에 click() 을 합성해
+     열었고, 그래서 손잡이 DOM 을 지우면 그 넷이 조용히 죽었다. 문을 하나로 모은다. */
+  const syncIntelNav = () => {
+    const btn = navRoot && navRoot.querySelector('button[data-nav="intel"]');
+    if (btn) btn.classList.toggle('on', intelOpen);
+  };
+  const setIntelOpen = (open) => {
+    if (intelOpen === open) { if (open) renderIntel(); syncIntelNav(); return; }
+    intelOpen = open;
     intel.classList.toggle('open', intelOpen);
     if (intelOpen) renderIntel();
-  });
+    syncIntelNav();
+  };
   intel.querySelectorAll('.intel-tabs button[data-tab]').forEach((btn) => {
     btn.addEventListener('click', () => {
       // §11 — 사용자가 직접 고른 것이므로 여기서 의도가 갱신된다.
@@ -1131,9 +1169,7 @@ export function initShell(hooks) {
     });
   });
 
-  const closeIntel = () => {
-    if (intelOpen) intel.querySelector('#intel-tab').click();
-  };
+  const closeIntel = () => setIntelOpen(false);
   intel.querySelector('#intel-close').addEventListener('click', closeIntel);
 
   // --- 하단 타임 스트립 (§19.7): 태양 위치는 진짜 재계산(LIVE), 관측 구름은 STALE ---
@@ -1298,7 +1334,9 @@ export function initShell(hooks) {
     isIntelOpen: () => intelOpen,
     renderIntel: () => { if (intelOpen) renderIntel(); },
     updateLabels,
-    openIntel: () => { if (!intelOpen) intel.querySelector('#intel-tab').click(); },
+    // main.js 열네 자리가 이걸 쓴다(바다 클릭·국가 클릭·내 지역 …).
+    // 손잡이 click() 합성이던 것을 같은 문(setIntelOpen)으로 돌린다.
+    openIntel: (tab) => { if (tab) showTab(tab, 'intent'); setIntelOpen(true); },
   };
 }
 

@@ -70,7 +70,7 @@ Publisher(유지 분리) / History(유지) / Analytics(신설: 자동수집기)
 - DATABASE: NONE. API: NONE(공개 REST·MCP 신설 없음). DEPENDENCIES: NONE(표준lib만).
 - TESTS: python distribution 71→100 pass + subtests 14 pass (신규 29). report-engine 320 pass. _shared 37 pass. 각 suite 단독 실행 기준.
 - KNOWN NON-REGRESSIONS (내 변경 아님, 손대지 않음):
-  1. npm 1 fail — `test_v2_ui_information_architecture.mjs` 위성 시뮬능력 불변식. 세션 중 09:55 외부 동시편집(`phenomenon-registry.js` simulation:false→true)이 원인. 내 호출은 해당 파일에 닿지 않음.
+  1. npm 2 fail (둘 다 v2-three UI suite, 배포 계약 suite 9/9 pass) — 세션 중 외부 동시편집이 원인. `phenomenon-registry.js` 09:55 위성 시뮬능력 불변식, `main.js` 09:54 메뉴 불변식. 시험 파일 자체도 09:59 외부 편집. 내 호출은 이들 파일에 닿지 않음.
   2. pytest 결합실행 실패 — `aws/distribution`·`aws/report-engine` 동명모듈(`generator.py` 등)+`sys.path.insert` 충돌로 기존부터 suite 단독 실행이 정본. 기존 파일 미변경.
 - BROWSER: 1440/1024/390/375 PASS (로드·5탭·overflow 0·콘솔에러 0, 실데이터 렌더 확인).
 - SECURITY: Secrets exposed 0 / Unauthorized publish paths 0 / APPROVAL BYPASS 0 / DUPLICATE PUBLISH 0 (멱등키).

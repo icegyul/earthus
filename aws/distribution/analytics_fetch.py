@@ -27,6 +27,14 @@ STATUS_FETCH_FAILED = "FETCH_FAILED"
 STATUS_AUTH_FAILED = "AUTH_FAILED"
 STATUS_NOT_CONFIGURED = "NOT_CONFIGURED"
 
+# 출처 어휘. live 는 실제 provider transport 에서 실제 응답을 받았을 때만
+# 호출자가 증거(via="live")와 함께 달 수 있다. 증거 없는 live 는 없다.
+PV_UNAVAILABLE = "unavailable"
+PV_STUB = "stub"
+PV_LIVE = "live"
+PV_ERROR = "error"
+PV_UNVERIFIED = "unverified"
+
 # 어댑터 오류 → 읽기 상태. 인증 실패는 실패가 아니라 막힘이다.
 _AUTH_CODES = ("INVALID_CREDENTIAL", "PERMISSION_DENIED", "NOT_CONFIGURED",
                "TOKEN_EXPIRED", "X_TOKEN_EXPIRED", "VAULT_NOT_CONFIGURED")
@@ -37,12 +45,15 @@ def _now_utc():
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def fetch(publication, adapter, *, at=None):
+def fetch(publication, adapter, *, at=None, via=None):
     """발행 한 건의 지표를 읽는다. adapter 는 sns_adapters 호환 객체다.
 
     publication: archive_publication() 모양 (postId · platform 필요)
     adapter: .platform · .metrics · .fetch_analytics(publication) 를 갖는다.
       fetch_analytics 가 없으면(구 어댑터) NOT_CONFIGURED 로 끝낸다.
+    via: 전송 증거. "live" (실제 provider 응답) 또는 "stub" (시험 경로).
+      없으면 지표가 있어도 provenance 는 "unverified" 다 —
+      mock 을 live 로 승격하지 않는다.
     """
     now = at or _now_utc()
     platform = (publication or {}).get("platform") \
@@ -57,6 +68,7 @@ def fetch(publication, adapter, *, at=None):
         "rawReference": None,
         "status": STATUS_NOT_AVAILABLE,
         "reason": None,
+        "provenance": PV_UNAVAILABLE,
     }
     if not (publication or {}).get("postId"):
         base["reason"] = "MOCK 발행이라 주소·지표가 없다"
@@ -75,6 +87,7 @@ def fetch(publication, adapter, *, at=None):
         else:
             base["status"] = STATUS_FETCH_FAILED
         base["reason"] = "%s: %s" % (code, e)
+        base["provenance"] = PV_ERROR
         return base
     allowed = tuple(getattr(adapter, "metrics", None) or ())
     values = raw.get("metrics") if isinstance(raw, dict) else None
@@ -91,6 +104,12 @@ def fetch(publication, adapter, *, at=None):
     base["rawReference"] = raw.get("reference")
     if metrics:
         base["status"] = STATUS_AVAILABLE
+        if via == PV_LIVE:
+            base["provenance"] = PV_LIVE
+        elif via == PV_STUB:
+            base["provenance"] = PV_STUB
+        else:
+            base["provenance"] = PV_UNVERIFIED
     else:
         base["reason"] = "플랫폼이 준 지표가 없다"
     return base

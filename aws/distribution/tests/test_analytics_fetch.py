@@ -101,5 +101,59 @@ class AnalyticsFetchTest(unittest.TestCase):
         self.assertEqual(s["lastFetchedAt"], "2026-09-10T01:00:00Z")
 
 
+class AnalyticsProvenanceTest(unittest.TestCase):
+    def _pub(self):
+        return {"contentId": "CNT-2026-000001", "platform": "threads",
+                "postId": "p123"}
+
+    def _ad(self, raw=None, error=None):
+        return _Adapter(raw, error)
+
+    def test_no_provider_path(self):
+        class _Bare:
+            platform = "threads"
+            metrics = ("likes",)
+        r = af.fetch(self._pub(), _Bare(), at="2026-09-10T00:00:00Z")
+        self.assertEqual(r["status"], af.STATUS_NOT_CONFIGURED)
+        self.assertEqual(r["provenance"], af.PV_UNAVAILABLE)
+
+    def test_stub_provenance(self):
+        r = af.fetch(self._pub(), self._ad({"metrics": {"likes": 3}}),
+                     at="2026-09-10T00:00:00Z", via="stub")
+        self.assertEqual(r["status"], af.STATUS_AVAILABLE)
+        self.assertEqual(r["provenance"], af.PV_STUB)
+
+    def test_failure_provenance(self):
+        r = af.fetch(self._pub(), self._ad(error=_TimeoutError("t")),
+                     at="2026-09-10T00:00:00Z")
+        self.assertEqual(r["status"], af.STATUS_FETCH_FAILED)
+        self.assertEqual(r["provenance"], af.PV_ERROR)
+
+    def test_auth_provenance(self):
+        r = af.fetch(self._pub(), self._ad(error=_AuthError("e")),
+                     at="2026-09-10T00:00:00Z")
+        self.assertEqual(r["status"], af.STATUS_AUTH_FAILED)
+        self.assertEqual(r["provenance"], af.PV_ERROR)
+
+    def test_live_only_with_evidence(self):
+        r = af.fetch(self._pub(), self._ad({"metrics": {"likes": 3}}),
+                     at="2026-09-10T00:00:00Z", via="live")
+        self.assertEqual(r["provenance"], af.PV_LIVE)
+
+    def test_fixture_is_not_live(self):
+        # 증거 없는 지표는 AVAILABLE 이어도 live 가 아니다.
+        r = af.fetch(self._pub(), self._ad({"metrics": {"likes": 3}}),
+                     at="2026-09-10T00:00:00Z")
+        self.assertEqual(r["status"], af.STATUS_AVAILABLE)
+        self.assertNotEqual(r["provenance"], af.PV_LIVE)
+
+    def test_backward_compat_keys(self):
+        r = af.fetch(self._pub(), self._ad({"metrics": {"likes": 1}}),
+                     at="2026-09-10T00:00:00Z")
+        for k in ("schemaVersion", "platform", "contentId", "postId",
+                  "fetchedAt", "metrics", "rawReference", "status", "reason"):
+            self.assertIn(k, r)
+
+
 if __name__ == "__main__":
     unittest.main()

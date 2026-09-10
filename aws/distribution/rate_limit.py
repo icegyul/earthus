@@ -195,3 +195,68 @@ def backoff_minutes(attempt):
 
 def next_attempt_at(now, wait_minutes):
     return _plus_minutes(now, wait_minutes)
+
+
+# ── SNS FACTORY: 범위별 설정 (추가만. 미설정=미강제 유지) ─────────────────
+def scoped_key(provider, account=None, operation=None):
+    """결정적 범위 키. 비밀을 넣지 않는다 — 호출자가 넣은 것만 들어간다.
+
+    계층: provider → provider:operation → provider:account:operation.
+    account 는 식별자(ID)만 쓴다. 토큰·비밀을 키로 쓰지 않는다.
+    """
+    parts = [str(provider)]
+    if account is not None:
+        parts.append(str(account))
+    if operation is not None:
+        parts.append(str(operation))
+    return ":".join(parts)
+
+
+def empty_config():
+    """값 없음. 강제하지 않는다."""
+    return {"limit": None, "windowSeconds": None, "configured": False,
+            "enforced": False}
+
+
+def make_config(limit, window_seconds):
+    """명시값만 받는다. 0·음수·문자는 거부한다 — 지어내지 않는다."""
+    if not isinstance(limit, int) or limit <= 0:
+        raise ValueError("limit 은 1 이상의 정수여야 한다")
+    if not isinstance(window_seconds, int) or window_seconds <= 0:
+        raise ValueError("window_seconds 는 1 이상의 정수여야 한다")
+    return {"limit": limit, "windowSeconds": window_seconds,
+            "configured": True, "enforced": True}
+
+
+def load_config(mapping, *, at=None):
+    """{scope_key: {limit, window_seconds}} → {scope_key: state}.
+
+    없는 범위는 만들지 않는다. 잘못된 값은 예외다 — 조용히 기본값을
+    넣지 않는다.
+    """
+    states = {}
+    for key, cfg in (mapping or {}).items():
+        cfg = cfg or {}
+        if cfg.get("limit") is None:
+            continue
+        window = cfg.get("window_seconds", cfg.get("windowSeconds"))
+        state = new_state(key.split(":")[0], at=at)
+        states[key] = configure(state, limit=cfg["limit"],
+                                window_seconds=window, at=at)
+    return states
+
+
+def decide(states, provider, *, account=None, operation=None, now=None):
+    """가장 구체적인 설정부터 본다. 없으면 막지 않는다."""
+    now = now or _now_utc()
+    candidates = []
+    if account is not None and operation is not None:
+        candidates.append(scoped_key(provider, account, operation))
+    if operation is not None:
+        candidates.append(scoped_key(provider, None, operation))
+    candidates.append(scoped_key(provider))
+    for key in candidates:
+        if key in (states or {}):
+            return check(states[key], now=now)
+    return {"decision": DECISION_OK, "reason": "상한 미설정 — 강제하지 않음",
+            "waitMinutes": 0}

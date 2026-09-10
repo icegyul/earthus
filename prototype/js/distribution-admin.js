@@ -452,7 +452,34 @@ function renderChannels() {
         <td>${v.mediaRequired ? tag('필수', 'warn') : tag('선택', 'mut')}</td>
         <td>${v.primary ? tag('기본 5종', 'ok') : tag('추가', 'mut')}</td>
         <td class="mut">studio.html → social-admin</td></tr>`).join('')}
-    </tbody></table></div>`;
+    </tbody></table></div>
+    <h4 style="margin-top:18px">제공자 상태</h4>
+    ${providerHealthHtml()}`;
+}
+
+/* ── SNS FACTORY: 제공자 상태 (추가. 확인 안 된 것은 LIVE 라고 안 한다) ─── */
+function providerHealthHtml() {
+  const health = state.index.providerHealth;
+  if (!health || !Object.keys(health).length) {
+    return '<p class="mut">제공자 상태를 아직 확인하지 못했습니다 — '
+      + '자격증명이 연결되지 않은 제공자는 NOT_CONFIGURED 입니다.</p>';
+  }
+  const ST_KO = {
+    NOT_CONFIGURED: ['미연결', 'mut'], CONFIGURED: ['설정됨', 'warn'],
+    AUTHENTICATED: ['인증됨', 'ok'], PUBLISH_READY: ['발행 가능', 'ok'],
+    ANALYTICS_READY: ['읽기 가능', 'ok'], AUTH_FAILED: ['인증 실패', 'bad'],
+    PUBLISH_NOT_AVAILABLE: ['발행 불가', 'bad'],
+    ANALYTICS_NOT_AVAILABLE: ['읽기 불가', 'bad'], STUB: ['시험 경로', 'warn'],
+  };
+  return `<div class="dist-scroll"><table class="dist-table"><thead><tr>
+    <th>플랫폼</th><th>상태</th><th>모드</th><th>성과 읽기</th></tr></thead><tbody>
+    ${Object.entries(health).map(([k, v]) => {
+      const [txt, cls] = ST_KO[v.state] || [v.state || '—', 'mut'];
+      const an = v.analytics_ready ? tag('가능', 'ok') : tag('NOT_CONFIGURED', 'mut');
+      return `<tr><td>${esc(k)}</td><td>${tag(txt, cls)}</td>`
+        + `<td class="mut">${esc(v.mode || '—')}</td><td>${an}</td></tr>`;
+    }).join('')}
+  </tbody></table></div>`;
 }
 
 /* ── 배선 ────────────────────────────────────────────────────────────────── */

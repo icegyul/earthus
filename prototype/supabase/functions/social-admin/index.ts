@@ -849,6 +849,48 @@ Deno.serve(async (req) => {
       return json(req, { ok: true, id });
     }
 
+    if (action === 'provider_analytics') {
+      const provider = providerOf(body.provider);
+      const postId = cleanText(body.postId, 200);
+      if (!provider || !postId) {
+        return json(req, { error: 'ANALYTICS_BAD_REQUEST', provider: provider ?? null }, 400);
+      }
+      const credentials = await loadCredentials(admin, provider);
+      if (!credentials) return json(req, { error: 'NOT_CONFIGURED', provider }, 409);
+      // FIRST PROVIDER: threads. 다른 provider 는 모양을 속이지 않고 막는다.
+      if (provider !== 'threads') {
+        return json(req, { error: 'ANALYTICS_NOT_SUPPORTED', provider }, 409);
+      }
+      const token = cleanText(credentials.accessToken, 20_000);
+      if (!token) return json(req, { error: 'NOT_CONFIGURED', provider }, 409);
+      const query = new URLSearchParams({
+        metric: 'views,likes,replies,reposts,quotes',
+        access_token: token,
+      });
+      const resp: any = await remoteJson(await fetch(
+        `https://graph.threads.net/v1.0/${encodeURIComponent(postId)}/insights?${query}`,
+      ), 'Threads 지표 확인 실패');
+      // data: [{name, values:[{value}]}] — 있는 것만 담는다. 없는 지표는 만들지 않는다.
+      const metrics: Json = {};
+      for (const row of (Array.isArray(resp?.data) ? resp.data : [])) {
+        const name = String(row?.name ?? '');
+        const values = Array.isArray(row?.values) ? row.values : [];
+        const value = values.length ? values[values.length - 1]?.value : undefined;
+        if (typeof value !== 'number' || !Number.isFinite(value)) continue;
+        if (name === 'likes') metrics.likes = value;
+        else if (name === 'replies') metrics.comments = value;
+        else if (name === 'reposts' || name === 'quotes') {
+          metrics.shares = (typeof metrics.shares === 'number' ? metrics.shares : 0) + value;
+        } else if (name === 'views') metrics.views = value;
+      }
+      return json(req, {
+        ok: true, provider, postId,
+        metrics,
+        reference: 'threads-insights-v1.0',
+        fetchedAt: new Date().toISOString(),
+      });
+    }
+
     if (action === 'publish') {
       const provider = providerOf(body.provider);
       const text = cleanText(body.text, 10_000);

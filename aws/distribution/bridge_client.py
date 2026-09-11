@@ -101,7 +101,9 @@ def parse_publish_response(body):
         raise BridgeError("publication ID 없음", code="NO_PUBLICATION_ID")
     return {"postId": post_id, "url": body.get("url"),
             "publishedAt": body.get("publishedAt"),
-            "publishedBy": body.get("publishedBy")}
+            "publishedBy": body.get("publishedBy"),
+            # 비동기 provider(접수≠확정)는 True. 없으면 확정으로 본다.
+            "pending": body.get("pending") is True}
 
 
 def parse_analytics_response(provider, body):
@@ -160,6 +162,7 @@ def make_transport(endpoint, jwt, provider):
                 "postId": parsed["postId"], "url": parsed["url"],
                 "publishedAt": parsed["publishedAt"],
                 "publishedBy": parsed["publishedBy"],
+                "pending": parsed["pending"],
                 "idempotencyKey": payload.get("idempotencyKey")}
     _transport.bridge = True
     _transport.provider = provider

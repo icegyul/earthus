@@ -132,6 +132,8 @@ def _publish_queued(item, content, pv, adapter, *, now, actor, source,
         reason=fetched.get("reason"))
     base.update({"outcome": OUT_PUBLISHED, "postId": result.get("postId"),
                  "mock": bool(result.get("mock")),
+                 # 비동기 접수(REQUESTED)는 True. 확정(PUBLISHED)과 다르다.
+                 "pending": bool(result.get("pending")),
                  "analytics": fetched["status"],
                  "analyticsProvenance": fetched["provenance"]})
     return done, base, record, audit

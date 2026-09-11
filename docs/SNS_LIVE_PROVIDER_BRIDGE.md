@@ -106,6 +106,17 @@ WHY: TEXT 전용 발행(미디어 불필요) · 어댑터 계약 최명확 ·
 토큰 구조·갱신·검증 전부 in-repo 실재 · 공식 샘플 커버 ·
 insights 패턴 확인. 나머지 6종은 동일 구조로 확장.
 
+## 13. PHASE 01 (2026-09-10)
+
+- REQUESTED 분리: TikTok/YouTube 서버 응답에 `pending` 추가,
+  bridge parse → executor result로 전달. 접수≠확정.
+- `response_archive.py` 신규: 비밀 소독 보관
+  (provider/endpoint class/status/object id/schema/지문만).
+- 공통계약 감사: payload 공통기반 6키 7종 동일, preview·caps 키 동일.
+- UI 감사: LIVE 배지 없음 (주석 1줄만). 변경 없음.
+- 시험: `tests/test_live_phase01.py` 14 tests.
+- Current: 전 provider NOT_CONFIGURED (credential 없음).
+
 ## 12. EXPANSION (2026-09-10, 6종 완료)
 
 - `provider_analytics`: instagram·facebook insights 분기 추가

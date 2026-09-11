@@ -30,3 +30,12 @@
 
 전 provider `configured=false, enforced=false` (공식 수치 미확인).
 임의 숫자 0건.
+
+## live verification (2026-09-10 PHASE 01)
+
+- 전 provider Current=NOT_CONFIGURED (credential 없음 — 코드 실패 아님).
+- BRIDGE: threads/instagram/facebook (publish+analytics 경로).
+- MISSING analytics: linkedin/tiktok/youtube/x (honest).
+- REQUESTED 분리: TikTok publish_id, YouTube 미processed (`pending`).
+- UI LIVE badge 없음 감사 완료 (주석 1줄 외 `LIVE` 표현 없음).
+- 상세: `docs/SNS_LIVE_VERIFICATION.md` · `docs/SNS_ANALYTICS_STATUS.md`.

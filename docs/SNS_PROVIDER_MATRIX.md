@@ -39,3 +39,10 @@
 - REQUESTED 분리: TikTok publish_id, YouTube 미processed (`pending`).
 - UI LIVE badge 없음 감사 완료 (주석 1줄 외 `LIVE` 표현 없음).
 - 상세: `docs/SNS_LIVE_VERIFICATION.md` · `docs/SNS_ANALYTICS_STATUS.md`.
+
+## EVIDENCE PHASE (2026-09-10)
+
+- LIVE EVIDENCE: 0. Threads NOT_CONFIGURED 유지.
+- `tests/test_live_evidence.py` 12 tests (증거경로).
+- 상태 정의 BRIDGE/MISSING/NOT_CONFIGURED/READY/REQUESTED/
+  PROCESSING/PUBLISHED/FAILED/VERIFIED/LIVE — VERIFIED·LIVE 0건.

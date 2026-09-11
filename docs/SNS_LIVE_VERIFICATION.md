@@ -28,6 +28,20 @@
 - Analytics: BRIDGE (필드 5종 매핑) / VERIFIED 아님 (실제 응답 없음)
 - LIVE badge 조건 미충족 → UI 에 LIVE 표시 없음 (감사 완료)
 
+## EVIDENCE PHASE (2026-09-10)
+
+- 라이프사이클 (사용자 확인):
+  Threads NOT_CONFIGURED → (Credential 연결) READY →
+  (실제 publish) REQUESTED → (provider 처리) PROCESSING/PUBLISHED →
+  (실제 analytics) VERIFIED.
+- credential 4종(THREADS_ACCESS_TOKEN·THREADS_USER_ID·
+  SOCIAL_VAULT_KEY·SOCIAL_ADMIN_UIDS) 전부 MISSING 실측 →
+  이번 단계 live 시도 없음 (정상).
+- LIVE EVIDENCE: 0. 그래서 Threads=NOT_CONFIGURED 유지.
+- 시험: `tests/test_live_evidence.py` 12 tests (증거경로만 본다).
+- 2층 필터 확정: bridge parse 는 숫자 보관,
+  `analytics_fetch` 가 어댑터 어휘로 여과. 모르는 키는 아카이브에 안 간다.
+
 ## LIVE 증거 규칙
 
 1. `postId` 실재 + mock 아님 (E)

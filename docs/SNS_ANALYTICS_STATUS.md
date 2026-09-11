@@ -19,3 +19,8 @@
 - 어댑터 어휘 밖 키는 아카이브에 안 담는다 (어휘 확장은 live 후).
 - 읽기는 발행 상태를 바꾸지 않는다.
 - `views` 는 브릿지 응답에만 유지 (threads/IG).
+
+## EVIDENCE PHASE (2026-09-10)
+
+- 실제 응답 0건 → VERIFIED 0건. BRIDGE/MISSING 유지.
+- 필터 2층 확정 (parse 보관 → fetch 여과), 시험 12번이 고정한다.

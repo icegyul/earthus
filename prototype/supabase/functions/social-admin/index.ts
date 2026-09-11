@@ -665,7 +665,8 @@ async function publishTikTok(admin: SupabaseClient, stored: Json, text: string, 
     });
     if (![200, 201, 206].includes(uploaded.status)) throw new Error(`TikTok 영상 전송 실패: ${uploaded.status}`);
   }
-  return { id: publishId, url: null };
+  // publish_id 는 접수 식별자다. 최종 게시 확정이 아니다(REQUESTED).
+  return { id: publishId, url: null, pending: true };
 }
 
 async function uploadLinkedInImage(credentials: Json, owner: string, blob: Blob) {
@@ -778,7 +779,9 @@ async function publishYouTube(admin: SupabaseClient, stored: Json, text: string,
   });
   const result = await remoteJson(uploaded, 'YouTube 영상 업로드 실패');
   const id = String(result.id || '');
-  return { id, url: id ? `https://www.youtube.com/watch?v=${encodeURIComponent(id)}` : null };
+  // 업로드 접수됨. 처리(processing) 중일 수 있어 확정으로 적지 않는다(REQUESTED).
+  const pending = String(result.status?.uploadStatus || '') !== 'processed';
+  return { id, url: id ? `https://www.youtube.com/watch?v=${encodeURIComponent(id)}` : null, pending };
 }
 
 async function publish(admin: SupabaseClient, provider: Provider, credentials: Json, text: string, meta: any | null, options: Json) {

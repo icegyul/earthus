@@ -105,3 +105,15 @@ APPROVAL → SCHEDULE → QUEUE → EXECUTOR (Python, 토큰 없음)
 WHY: TEXT 전용 발행(미디어 불필요) · 어댑터 계약 최명확 ·
 토큰 구조·갱신·검증 전부 in-repo 실재 · 공식 샘플 커버 ·
 insights 패턴 확인. 나머지 6종은 동일 구조로 확장.
+
+## 12. EXPANSION (2026-09-10, 6종 완료)
+
+- `provider_analytics`: instagram·facebook insights 분기 추가
+  (UNVERIFIED shape, 있는 키만. 실패는 그대로 반환).
+  linkedin·tiktok·youtube·x 는 `ANALYTICS_NOT_SUPPORTED` 유지 (honest MISSING).
+- Python 변경 없음 (브릿지 파서가 정식 키만 통과 — provider 공용).
+- 시험: `tests/test_bridge_expansion.py` 6종 × 22 = 126 pass + 6 skip
+  (skip = MISSING 4종의 live-parse + 지원 2종의 unavailable 분기, 설계대로).
+- 상세: `docs/SNS_PROVIDER_MATRIX.md`.
+- 비동기 주의: TikTok publish_id=REQUESTED, YouTube 처리 중 가능 —
+  executor PUBLISHED = "provider accepted + ID". 최종 보장은 provider 측.

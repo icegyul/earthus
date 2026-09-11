@@ -271,6 +271,42 @@ function linkedInHeaders(credentials: Json, jsonBody = false) {
   };
 }
 
+async function metaInsights(admin: SupabaseClient, provider: 'instagram' | 'facebook', credentials: Json, postId: string, req: Request) {
+  // Meta per-media insights. UNVERIFIED endpoint shape — 있는 키만 담고,
+  // 실패는 그대로 돌려준다. 없는 지표를 만들지 않는다.
+  const token = provider === 'facebook'
+    ? cleanText(credentials.pageAccessToken, 20_000)
+    : cleanText(credentials.accessToken, 20_000);
+  if (!token) return json(req, { error: 'NOT_CONFIGURED', provider }, 409);
+  const host = provider === 'instagram' ? 'graph.instagram.com' : 'graph.facebook.com';
+  const query = new URLSearchParams({ access_token: token });
+  if (provider === 'instagram') {
+    query.set('metric', 'impressions,reach,likes,comments,shares,saves,views');
+  }
+  const proof = await appSecretProof(token, String(credentials.appSecret ?? ''));
+  if (proof) query.set('appsecret_proof', proof);
+  const resp: any = await remoteJson(await fetch(
+    `https://${host}/${graphVersion(credentials)}/${encodeURIComponent(postId)}/insights?${query}`,
+  ), `${provider} 지표 확인 실패`);
+  // data: [{name, values:[{value}]}] 또는 {data:[...]} — 있는 숫자만 담는다.
+  const metrics: Json = {};
+  const CANON = ['impressions', 'reach', 'likes', 'comments', 'shares', 'saves', 'views', 'clicks'];
+  for (const row of (Array.isArray(resp?.data) ? resp.data : [])) {
+    const name = String(row?.name ?? '');
+    if (!CANON.includes(name)) continue;
+    const values = Array.isArray(row?.values) ? row.values : [];
+    const value = values.length ? values[values.length - 1]?.value : undefined;
+    if (typeof value !== 'number' || !Number.isFinite(value)) continue;
+    metrics[name] = value;
+  }
+  return json(req, {
+    ok: true, provider, postId,
+    metrics,
+    reference: `${provider}-insights-${graphVersion(credentials)}`,
+    fetchedAt: new Date().toISOString(),
+  });
+}
+
 async function testCredentials(admin: SupabaseClient, provider: Provider, stored: Json) {
   let credentials = stored;
   if (provider === 'x') {
@@ -857,12 +893,16 @@ Deno.serve(async (req) => {
       }
       const credentials = await loadCredentials(admin, provider);
       if (!credentials) return json(req, { error: 'NOT_CONFIGURED', provider }, 409);
-      // FIRST PROVIDER: threads. 다른 provider 는 모양을 속이지 않고 막는다.
-      if (provider !== 'threads') {
+      // analytics 지원: threads · instagram · facebook.
+      // linkedin · tiktok · youtube · x 는 읽기 경로가 없어 모양을 속이지 않고 막는다.
+      if (provider !== 'threads' && provider !== 'instagram' && provider !== 'facebook') {
         return json(req, { error: 'ANALYTICS_NOT_SUPPORTED', provider }, 409);
       }
       const token = cleanText(credentials.accessToken, 20_000);
       if (!token) return json(req, { error: 'NOT_CONFIGURED', provider }, 409);
+      if (provider === 'instagram' || provider === 'facebook') {
+        return await metaInsights(admin, provider, credentials, postId, req);
+      }
       const query = new URLSearchParams({
         metric: 'views,likes,replies,reposts,quotes',
         access_token: token,

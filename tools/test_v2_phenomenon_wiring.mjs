@@ -50,8 +50,13 @@ test('vessel 은 같은 현상이므로 하나로 합쳐져 있다', () => {
 
 test('ui-shell 이 더 이상 bare id 로 질문을 찾지 않는다', () => {
   assert.ok(!/MENU_QUESTIONS\[/.test(shellSrc), 'ui-shell 에 bare id 질문 조회가 남아 있다');
-  assert.match(shellSrc, /questionForLayer\(s\.id,\s*l\.id\)/);
-  assert.match(shellSrc, /questionForLayer\(selectedMenu\.s\.id,\s*selectedMenu\.l\.id\)/);
+  /* 2026-09-13: 씬 기반 렌더러를 지우면서 `questionForLayer(s.id, l.id)` 호출 하나가 없어졌다.
+     모양을 못박으면 렌더러가 바뀔 때마다 깨진다 — 지켜야 하는 것은 한 줄의 철자가 아니라
+     '씬 없이 부르는 곳이 0' 이다. i18n.layer 를 아래에서 그렇게 재는 것과 같은 방식으로 바꾼다. */
+  const qCalls = shellSrc.match(/questionForLayer\([^)]*\)/g) || [];
+  assert.ok(qCalls.length >= 2, `questionForLayer 호출이 ${qCalls.length}곳뿐이다`);
+  const qWithoutScene = qCalls.filter((c) => !/\.s\.id/.test(c));
+  assert.deepEqual(qWithoutScene, [], '씬 없이 부르는 questionForLayer 가 남아 있다 — bare id 충돌이 되살아난다');
   // i18n.layer 호출은 **전부** 씬을 함께 넘겨야 한다. 개수를 못박으면 렌더러가 늘 때마다 깨진다 —
   // 지켜야 하는 것은 '세 곳'이 아니라 '씬 없이 부르는 곳이 0'이다.
   const calls = shellSrc.match(/i18n\.layer\([^;]*?\)/g) || [];

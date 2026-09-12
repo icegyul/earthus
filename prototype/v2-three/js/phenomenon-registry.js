@@ -1033,3 +1033,97 @@ export function layerForEventKind(kind) {
   const pid = EVENT_KIND_PHENOMENON[kind];
   return pid ? representativeLayerFor(pid) : null;
 }
+
+// ── 2026-09-13 · 아이콘 시스템 인수 패키지 §3.2 — 1차 메뉴 묶음과 순서 ─────────
+// 출처: docs/icon-system/EARTHUS_V2_CURRENT_UX_PROBLEM_REPAIR_DIRECTIVE_v1.0.md §3.2
+//
+// 왜 여기 있나: 불변식 2 가 "UI 는 자체 현상 목록을 만들지 않는다" 이다.
+//   메뉴의 묶음과 순서도 현상 목록이다. ui-shell 이 따로 들면 그 순간 두 정본이 생긴다.
+//
+// 왜 도메인(land/weather/ocean/…)을 그대로 쓰지 않나: 지시서의 묶음이 도메인을 가로지른다.
+//   연안 침수는 ocean 도메인이지만 §3.2 에서는 '재해' 줄에 있고, 해빙도 ocean 이지만 '눈·얼음' 줄이다.
+//   도메인은 자료의 출신이고, 이 표는 **사람이 찾는 순서**다. 둘은 같을 이유가 없다.
+//
+// ⚠️ 지시서 §3.2 목록에는 빙하·홍수·수문·산사태·영구동토·농업·도시·인프라·에너지·수자원·
+//    식량·식생이 함께 적혀 있다. 그 열은 여기 없다 — EARTHUS 에 그 자료가 아직 없기 때문이다.
+//    없는 칸을 "준비 중" 으로 그리면 이 저장소가 스스로 금지한 빈 약속이 된다
+//    (tools/test_v2_ui_information_architecture.mjs 불변식 4). 아이콘은 이미 있으니,
+//    자료가 붙는 날 members 에 한 줄 더하면 그 칸이 열린다.
+//
+// ⚠️ space 묶음은 AETHERUS 서랍 전용이다. EARTHUS 서랍은 앞의 여섯만 그린다.
+export const MENU_GROUPS = Object.freeze([
+  Object.freeze({
+    id: 'atmosphere', accent: '#9FB9FF',
+    label: Object.freeze({ ko: '대기', en: 'Atmosphere' }),
+    members: Object.freeze([
+      'weather.temperature', 'weather.temperature_anomaly', 'weather.daily_extremes',
+      'weather.precipitation', 'weather.cloud', 'weather.fog', 'weather.upper_moisture',
+      'weather.wind', 'weather.pressure',
+    ]),
+  }),
+  Object.freeze({
+    id: 'sea', accent: '#5AD1E8',
+    label: Object.freeze({ ko: '바다', en: 'Ocean' }),
+    members: Object.freeze([
+      'ocean.sea_level_rise', 'ocean.wave', 'ocean.surface_current',
+      'ocean.sst', 'ocean.sst_anomaly', 'ocean.subsurface_profile', 'ocean.sea_observation',
+      'ocean.bathymetry', 'ocean.trench', 'ocean.deep_sea', 'ocean.vessel_traffic',
+    ]),
+  }),
+  Object.freeze({
+    id: 'hazard', accent: '#FFB36A',
+    label: Object.freeze({ ko: '재해', en: 'Hazards' }),
+    members: Object.freeze([
+      'hazards.typhoon', 'weather.warning', 'hazards.lightning', 'hazards.wildfire',
+      'hazards.earthquake', 'hazards.crustal_motion', 'land.crustal_motion',
+      'hazards.tsunami', 'ocean.coastal_inundation', 'hazards.glacial_lake_flood',
+    ]),
+  }),
+  Object.freeze({
+    id: 'cryosphere', accent: '#BFE3FF',
+    label: Object.freeze({ ko: '눈·얼음', en: 'Snow & Ice' }),
+    members: Object.freeze(['land.snow_cover', 'ocean.sea_ice']),
+  }),
+  Object.freeze({
+    id: 'observation', accent: '#7FB7F5',
+    label: Object.freeze({ ko: '대기질 · 관측', en: 'Air quality & observation' }),
+    members: Object.freeze([
+      'weather.air_quality', 'weather.uv', 'weather.station_obs',
+      'weather.climate_series', 'land.surface_temperature', 'land.terrain',
+    ]),
+  }),
+  Object.freeze({
+    id: 'society', accent: '#EC7AA6',
+    label: Object.freeze({ ko: '생태 · 사람 · 여행', en: 'Life, people & travel' }),
+    members: Object.freeze([
+      'land.forest', 'land.bird_migration', 'land.bird_survey',
+      'ocean.sea_turtle', 'ocean.seabird',
+      'people.population', 'people.crowding', 'people.night_lights', 'people.news',
+      'travel.today_pick', 'travel.place_catalog', 'travel.place_sequence',
+      'travel.visitor_pressure', 'travel.poi', 'travel.flight',
+      'ocean.coastal_spots', 'ocean.surf_conditions', 'ocean.fishing_conditions',
+      'weather.paragliding', 'weather.mountain_summit',
+    ]),
+  }),
+  Object.freeze({
+    // ⚠️ id 를 'space' 로 유지한다 — ui-shell 의 gotoScene('aetherus','space') 과
+    //    하단 바 '우주' 칸이 이 문자열로 절을 찾아 펼친다.
+    id: 'space', accent: '#B79AEC',
+    label: Object.freeze({ ko: '우주', en: 'Space' }),
+    members: Object.freeze([
+      'space.satellite', 'space.orbital_debris', 'space.rocket_launch',
+      'space.aurora', 'space.solar_activity', 'space.solar_system',
+      'space.photo', 'space.galaxy',
+    ]),
+  }),
+]);
+
+/** EARTHUS 서랍이 그리는 묶음(우주 제외)의 id — 순서 그대로. */
+export const EARTHUS_MENU_GROUPS = Object.freeze(
+  MENU_GROUPS.filter((g) => g.id !== 'space').map((g) => g.id));
+
+const PHENOMENON_GROUP = Object.freeze(Object.fromEntries(
+  MENU_GROUPS.flatMap((g) => g.members.map((pid) => [pid, g.id]))));
+
+/** 이 현상이 어느 메뉴 묶음에 속하나. 표에 없으면 null(그리지 않는다). */
+export const menuGroupOf = (phenomenonId) => PHENOMENON_GROUP[phenomenonId] || null;

@@ -21,6 +21,10 @@ import { toast } from './ui.js';
 import { CONFIG } from './config.local.js';
 import { QUESTION_ENTRIES, matchesLayerQuery, partitionLayerItems, clearSelectedLayers, openQuestionEntry } from './menu-information.js?v=20260905';
 import { flyTo, viewer } from './viewer.js';
+/* EARTHUS 아이콘 시스템 (docs/icon-system/, 2026-09-12 인수).
+   ⚠️ 표는 v1·v2 공용 모듈 한 곳에만 있다 — 여기서 layerId→아이콘 표를 따로 만들지 않는다.
+      만드는 순간 지시서 §13 의 "같은 라벨에 같은 아이콘 ID" 가 깨진다. */
+import { iconForV1Layer, iconSrc, iconSrcSet } from './earthus-icons.js?v=1';
 
 /* ── 지역 한정 레이어 ────────────────────────────────────────────
    ⚠️ 자료가 한 나라에만 있는 레이어는, 켜 놓고 지구 반대편을 보고 있으면
@@ -1375,12 +1379,29 @@ export const layerBar = {
             그림은 나중에 도착한다. 캔버스에 그리려면 도착을 기다렸다 다시 그려야 하고,
             이 앱은 '변할 때만 그리는' 모드라 그 다시 그리기를 또 요청해야 한다.
             그림 태그로 두면 브라우저가 알아서 한다. */
+      /* 순서가 곧 규칙이다 (2026-09-12 아이콘 시스템 적용):
+           1) 위성 사진이 있으면 사진 — 그 자료 **자체의 미리보기**라 아이콘보다 많은 것을 말한다.
+              (넷을 아이콘으로 바꾸면 천리안·히마와리·수오미·합성이 전부 같은 동그라미가 된다)
+           2) 아이콘 시스템에 그림이 있으면 아이콘
+           3) 둘 다 없으면 예전의 절차적 색 썸네일
+         3)을 지우지 않는다 — 레이어를 새로 만들 때 아이콘이 아직 없어도 화면이 비지 않는다. */
+      const iconSlug = it.img ? null : iconForV1Layer(it.id);
       if (it.img) {
         const im = document.createElement('img');
         im.className = 'ly-sat';
         im.src = it.img;
         im.alt = '';                       // ⚠️ 이름은 옆에 글자로 있다. 두 번 읽히면 안 된다
         im.loading = 'lazy';
+        b.appendChild(im);
+      } else if (iconSlug) {
+        const im = document.createElement('img');
+        im.className = 'ly-icon';
+        im.src = iconSrc(iconSlug, 64);
+        const ss = iconSrcSet(iconSlug, 64);
+        if (ss) im.srcset = ss;
+        im.alt = '';                       // ⚠️ 위와 같은 이유 — 이름은 옆에 글자로 있다
+        im.loading = 'lazy';
+        im.decoding = 'async';
         b.appendChild(im);
       } else {
         const cv = document.createElement('canvas');

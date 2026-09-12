@@ -169,15 +169,67 @@ test('사건 종류가 현상으로 해석된다 — 하드코딩이 아니라 �
   assert.equal(reg.layerForEventKind('없는종류'), null, '모르는 종류에 아무 레이어나 주면 안 된다');
 });
 
-// ── PHASE 4 §2 — 1차 메뉴는 도메인만 ─────────────────────────────────────────
-test('메뉴가 레이어가 아니라 도메인 → 현상으로 그려진다', () => {
-  assert.match(shellSrc, /const DOMAIN_INDEX =/, '도메인 색인이 없다');
-  assert.match(shellSrc, /const domainSectionHtml = \(dom\) =>/);
+// ── PHASE 4 §2 · 아이콘 패키지 §3.2 — 1차 메뉴는 묶음만 ──────────────────────
+test('메뉴가 레이어가 아니라 묶음 → 현상으로 그려진다', () => {
+  assert.match(shellSrc, /const GROUP_INDEX =/, '묶음 색인이 없다');
+  assert.match(shellSrc, /const groupSectionHtml = \(gid\) =>/);
   assert.match(shellSrc, /const phenomenonRowHtml = \(entry\) =>/);
-  // 도메인 목록은 레지스트리에서 만든다 — 손으로 쓴 두 번째 현상 목록을 만들지 않는다.
+  // 묶음 목록은 레지스트리에서 만든다 — 손으로 쓴 두 번째 현상 목록을 만들지 않는다.
   assert.match(shellSrc, /Object\.entries\(LAYER_PHENOMENON\)/);
+  assert.match(shellSrc, /\[\.\.\.EARTHUS_MENU_GROUPS\]/, 'ui-shell 이 묶음 이름을 손으로 적고 있다');
   // 1차는 접혀 있어야 한다. 58줄을 펼쳐 두면 '줄였다'가 화면에서 사실이 아니다.
-  assert.match(shellSrc, /collapsedSections = new Set\(\['land','weather','ocean','people','travel','hazards','space','__loose'\]\)/);
+  assert.match(shellSrc, /collapsedSections = new Set\(\[\.\.\.MENU_GROUPS\.map\(\(g\) => g\.id\), '__loose'\]\)/);
+  // 2026-09-13: 옛 도메인 렌더러가 남아 있으면 안 된다 — 그리는 곳이 둘이면 갈라진다.
+  assert.ok(!/const DOMAIN_INDEX =/.test(shellSrc), '옛 도메인 색인이 남아 있다');
+  assert.ok(!/const sectionHtml = /.test(shellSrc), '옛 씬 렌더러가 남아 있다 — 검색하면 다른 메뉴가 나온다');
+});
+
+// ── 아이콘 패키지 §3.2 — 묶음표는 레지스트리에만 있고 현상을 빠짐없이 덮는다 ──
+test('§3.2 메뉴 묶음이 66개 현상을 정확히 한 번씩 덮는다', () => {
+  const listed = reg.MENU_GROUPS.flatMap((g) => g.members);
+  assert.equal(new Set(listed).size, listed.length, '한 현상이 두 묶음에 있다');
+  assert.deepEqual([...listed].sort(), Object.keys(reg.PHENOMENA).sort(),
+    '묶음표와 현상 목록이 어긋난다 — 메뉴에서 사라지거나 없는 것을 그린다');
+  // 우주는 AETHERUS 서랍 전용이다. EARTHUS 서랍이 그것까지 그리면 브랜드 계약이 깨진다.
+  assert.ok(!reg.EARTHUS_MENU_GROUPS.includes('space'));
+  assert.equal(reg.EARTHUS_MENU_GROUPS.length, reg.MENU_GROUPS.length - 1);
+  // gotoScene('aetherus','space') 와 하단 바 '우주' 칸이 이 id 로 절을 찾는다.
+  assert.ok(reg.MENU_GROUPS.some((g) => g.id === 'space'));
+});
+
+test('자료가 없는 메뉴 칸을 만들지 않는다 — 지시서 §3.2 를 그대로 베끼지 않은 이유', () => {
+  // 지시서 §3.2 목록에는 빙하·산사태·농업·에너지 따위가 함께 적혀 있다.
+  // EARTHUS 에 그 현상이 없으므로 묶음표에도 없어야 한다(불변식 4: 능력 없으면 진입점 없음).
+  for (const g of reg.MENU_GROUPS) {
+    for (const pid of g.members) {
+      assert.ok(reg.PHENOMENA[pid], `${pid} 는 현상 레지스트리에 없다 — 빈 약속이다`);
+    }
+  }
+});
+
+// ── 아이콘 시스템 §13 — v1·v2 가 같은 라벨에 같은 아이콘 ID ──────────────────
+test('아이콘 표는 v1·v2 공용 모듈 하나뿐이다', async () => {
+  const icons = await import('../prototype/js/earthus-icons.js');
+  // ui-shell 이 자체 아이콘 표를 만들면 두 화면이 갈라진다.
+  assert.match(shellSrc, /from '\.\.\/\.\.\/js\/earthus-icons\.js/);
+  assert.ok(!/LAYER_ICON\s*=/.test(shellSrc), 'ui-shell 이 아이콘 표를 따로 들고 있다');
+  // 66개 현상 전부 그릴 수 있는 아이콘이 있어야 한다 — 한 줄만 빈 칸이면 목록이 들쭉날쭉해진다.
+  const missing = Object.keys(reg.PHENOMENA).filter((id) => !icons.iconForPhenomenon(id));
+  assert.deepEqual(missing, [], '아이콘 없는 현상이 있다');
+  // 그림 없는 slug 를 가리키면 깨진 이미지가 뜬다. 부모 상속으로도 못 그리면 실패다.
+  const v1bad = Object.entries(icons.V1_LAYER_ICON).filter(([, s]) => !icons.resolveIcon(s));
+  assert.deepEqual(v1bad, [], 'V1 이 그릴 수 없는 아이콘을 가리킨다');
+});
+
+test('아이콘은 이름을 대신하지 않는다 — 아이콘만 남긴 메뉴 금지', () => {
+  // 지시서 §3 "never replace the whole menu with unlabeled icon-only navigation".
+  // 아이콘 줄에는 반드시 이름(mp-lbl)이 함께 나와야 하고, alt 는 비어야 한다(두 번 읽힘 방지).
+  const i = shellSrc.indexOf('const phenomenonRowHtml');
+  const body = shellSrc.slice(i, shellSrc.indexOf('const chipsFor', i));
+  assert.match(body, /class="mp-ico"/);
+  assert.match(body, /alt=""/);
+  assert.ok(body.indexOf('class="mp-ico"') < body.indexOf('class="mp-lbl"'), '아이콘이 이름 뒤에 있다');
+  assert.match(body, /<span class="mp-lbl">/);
 });
 
 test('현상이 여러 자료를 가지면 펼쳐서 전부 켤 수 있다 — 기능이 사라지지 않는다', () => {

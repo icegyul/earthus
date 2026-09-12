@@ -1,0 +1,35 @@
+{
+  "system": "EARTHUS ICON SYSTEM",
+  "version": "1.2",
+  "scope": "EARTHUS V1 + V2",
+  "primary_nav_rule": "Primary icons represent observable data/phenomena. Intelligence and Simulation are NOT independent primary navigation items.",
+  "icon_count": 44,
+  "variants": [
+    "128",
+    "64",
+    "32",
+    "24"
+  ],
+  "style": {
+    "visual": "premium glossy semi-3D circular illustrated icon",
+    "surface": "deep navy / charcoal",
+    "lighting": "soft blue atmospheric glow, restrained highlights",
+    "geometry": "consistent circular silhouette and visual weight",
+    "language": "Korean primary, English subtitle where room permits",
+    "accessibility": "labels remain visible; icon never carries meaning alone"
+  },
+  "interaction": {
+    "default": "clean circular icon",
+    "hover": "slightly brighter glow and lift",
+    "active": "thin luminous ring + restrained scale emphasis",
+    "disabled": "desaturated, reduced glow"
+  },
+  "product_flow": [
+    "Primary data/phenomenon",
+    "Current / change / anomaly / compare",
+    "Inline Intelligence action",
+    "Evidence-based report for Explorer",
+    "Simulation transition for Pro+",
+    "User AI is used only at the Simulation interaction layer"
+  ]
+}

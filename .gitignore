@@ -109,3 +109,6 @@ data/research/step27/
 data/research/step28/
 # STEP 29 TEST-06 composite forcing and trajectories are never committed; docs/research/step29-* records are
 data/research/step29/
+
+# 인수 패키지 원본 zip — 풀어서 쓴 것(prototype/assets/earthus-icons/, docs/icon-system/)이 정본이다
+v3si/*.zip

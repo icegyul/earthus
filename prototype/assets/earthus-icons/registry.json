@@ -1,0 +1,673 @@
+{
+  "version": "1.2",
+  "scope": [
+    "EARTHUS V1",
+    "EARTHUS V2"
+  ],
+  "design_system": "EARTHUS circular glossy semi-3D icon family",
+  "primary_icons": [
+    {
+      "id": "temperature",
+      "label_ko": "기온",
+      "label_en": "Temperature",
+      "asset": "earthus-icon-temperature-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "precipitation",
+      "label_ko": "강수",
+      "label_en": "Precipitation",
+      "asset": "earthus-icon-precipitation-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "wind",
+      "label_ko": "바람",
+      "label_en": "Wind",
+      "asset": "earthus-icon-wind-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "pressure",
+      "label_ko": "기압",
+      "label_en": "Pressure",
+      "asset": "earthus-icon-pressure-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "sea-level",
+      "label_ko": "해수면",
+      "label_en": "Sea Level",
+      "asset": "earthus-icon-sea-level-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "ocean-current",
+      "label_ko": "해류",
+      "label_en": "Ocean Current",
+      "asset": "earthus-icon-ocean-current-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "sea-temperature",
+      "label_ko": "수온",
+      "label_en": "Sea Temperature",
+      "asset": "earthus-icon-sea-temperature-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "typhoon",
+      "label_ko": "태풍",
+      "label_en": "Typhoon",
+      "asset": "earthus-icon-typhoon-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "glacier",
+      "label_ko": "빙하",
+      "label_en": "Glacier",
+      "asset": "earthus-icon-glacier-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "snow-ice",
+      "label_ko": "적설·빙설",
+      "label_en": "Snow & Ice",
+      "asset": "earthus-icon-snow-ice-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "flood-hydrology",
+      "label_ko": "홍수·수문",
+      "label_en": "Flood & Hydrology",
+      "asset": "earthus-icon-flood-hydrology-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "drought",
+      "label_ko": "가뭄",
+      "label_en": "Drought",
+      "asset": "earthus-icon-drought-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "wildfire",
+      "label_ko": "산불",
+      "label_en": "Wildfire",
+      "asset": "earthus-icon-wildfire-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "landslide",
+      "label_ko": "산사태",
+      "label_en": "Landslide",
+      "asset": "earthus-icon-landslide-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "earthquake",
+      "label_ko": "지진",
+      "label_en": "Earthquake",
+      "asset": "earthus-icon-earthquake-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "tsunami",
+      "label_ko": "지진해일",
+      "label_en": "Tsunami",
+      "asset": "earthus-icon-tsunami-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "storm-surge",
+      "label_ko": "해안재해",
+      "label_en": "Storm Surge",
+      "asset": "earthus-icon-storm-surge-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "sea-ice",
+      "label_ko": "해빙",
+      "label_en": "Sea Ice",
+      "asset": "earthus-icon-sea-ice-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "permafrost",
+      "label_ko": "영구동토",
+      "label_en": "Permafrost",
+      "asset": "earthus-icon-permafrost-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "air-quality",
+      "label_ko": "대기질",
+      "label_en": "Air Quality",
+      "asset": "earthus-icon-air-quality-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "satellite-observation",
+      "label_ko": "위성·관측",
+      "label_en": "Satellite & Observation",
+      "asset": "earthus-icon-satellite-observation-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "ecosystem",
+      "label_ko": "생태계",
+      "label_en": "Ecosystem",
+      "asset": "earthus-icon-ecosystem-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "agriculture",
+      "label_ko": "농업",
+      "label_en": "Agriculture",
+      "asset": "earthus-icon-agriculture-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "population-society",
+      "label_ko": "인구·사회",
+      "label_en": "Population & Society",
+      "asset": "earthus-icon-population-society-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "forecast-scenario",
+      "label_ko": "미래예측",
+      "label_en": "Forecast & Scenario",
+      "asset": "earthus-icon-forecast-scenario-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "tourism-culture",
+      "label_ko": "관광·문화",
+      "label_en": "Tourism & Culture",
+      "asset": "earthus-icon-tourism-culture-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "urban-infrastructure",
+      "label_ko": "도시·인프라",
+      "label_en": "Urban & Infrastructure",
+      "asset": "earthus-icon-urban-infrastructure-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "energy",
+      "label_ko": "에너지",
+      "label_en": "Energy",
+      "asset": "earthus-icon-energy-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "water-resources",
+      "label_ko": "수자원",
+      "label_en": "Water Resources",
+      "asset": "earthus-icon-water-resources-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "food-vegetation",
+      "label_ko": "식량·식생",
+      "label_en": "Food & Vegetation",
+      "asset": "earthus-icon-food-vegetation-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "health",
+      "label_ko": "건강",
+      "label_en": "Health",
+      "asset": "earthus-icon-health-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "economy",
+      "label_ko": "경제",
+      "label_en": "Economy",
+      "asset": "earthus-icon-economy-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "education",
+      "label_ko": "교육",
+      "label_en": "Education",
+      "asset": "earthus-icon-education-64.png",
+      "placement": "V1 top menu / V2 left menu"
+    },
+    {
+      "id": "policy-regulation",
+      "label_ko": "정책·규제",
+      "label_en": "Policy & Regulation",
+      "asset": "earthus-icon-policy-regulation-64.png",
+      "placement": "secondary/system surface"
+    },
+    {
+      "id": "ai-research",
+      "label_ko": "AI 연구",
+      "label_en": "AI Research",
+      "asset": "earthus-icon-ai-research-64.png",
+      "placement": "developer/research surface only"
+    },
+    {
+      "id": "settings",
+      "label_ko": "설정",
+      "label_en": "Settings",
+      "asset": "earthus-icon-settings-64.png",
+      "placement": "utility/settings only"
+    },
+    {
+      "id": "humidity",
+      "label_ko": "습도",
+      "label_en": "Humidity",
+      "asset": "earthus-icon-humidity-64.png",
+      "placement": "V1 top menu / V2 left menu",
+      "added": "v1.2"
+    },
+    {
+      "id": "water-vapor",
+      "label_ko": "수증기",
+      "label_en": "Water Vapour",
+      "asset": "earthus-icon-water-vapor-64.png",
+      "placement": "V1 top menu / V2 left menu",
+      "added": "v1.2"
+    },
+    {
+      "id": "pm10",
+      "label_ko": "미세먼지",
+      "label_en": "PM10",
+      "asset": "earthus-icon-pm10-64.png",
+      "placement": "V1 top menu / V2 left menu",
+      "added": "v1.2"
+    },
+    {
+      "id": "dust",
+      "label_ko": "먼지·황사",
+      "label_en": "Dust & Yellow Sand",
+      "asset": "earthus-icon-dust-64.png",
+      "placement": "V1 top menu / V2 left menu",
+      "added": "v1.2"
+    },
+    {
+      "id": "aqi",
+      "label_ko": "대기질 지수",
+      "label_en": "Air Quality Index",
+      "asset": "earthus-icon-aqi-64.png",
+      "placement": "V1 top menu / V2 left menu",
+      "added": "v1.2"
+    },
+    {
+      "id": "uv",
+      "label_ko": "자외선",
+      "label_en": "UV Index",
+      "asset": "earthus-icon-uv-64.png",
+      "placement": "V1 top menu / V2 left menu",
+      "added": "v1.2"
+    },
+    {
+      "id": "ozone",
+      "label_ko": "오존",
+      "label_en": "Ozone",
+      "asset": "earthus-icon-ozone-64.png",
+      "placement": "V1 top menu / V2 left menu",
+      "added": "v1.2"
+    },
+    {
+      "id": "swell",
+      "label_ko": "너울",
+      "label_en": "Swell",
+      "asset": "earthus-icon-swell-64.png",
+      "placement": "V1 top menu / V2 left menu",
+      "added": "v1.2"
+    }
+  ],
+  "layer55_mapping": [
+    {
+      "no": 1,
+      "menu": "천리안2A 자동",
+      "icon_id": "satellite-observation",
+      "rule": "parent observation icon"
+    },
+    {
+      "no": 2,
+      "menu": "천리안2A 적외",
+      "icon_id": "satellite-observation",
+      "rule": "parent observation icon"
+    },
+    {
+      "no": 3,
+      "menu": "천리안2A 야간 하층운",
+      "icon_id": "satellite-observation",
+      "rule": "parent observation icon"
+    },
+    {
+      "no": 4,
+      "menu": "천리안2A 한반도 가시광",
+      "icon_id": "satellite-observation",
+      "rule": "parent observation icon"
+    },
+    {
+      "no": 5,
+      "menu": "천리안2A 전면 가시광",
+      "icon_id": "satellite-observation",
+      "rule": "parent observation icon"
+    },
+    {
+      "no": 6,
+      "menu": "천리안2A 동아시아 적외",
+      "icon_id": "satellite-observation",
+      "rule": "parent observation icon"
+    },
+    {
+      "no": 7,
+      "menu": "천리안2A 동아시아 가시광",
+      "icon_id": "satellite-observation",
+      "rule": "parent observation icon"
+    },
+    {
+      "no": 8,
+      "menu": "천리안2A 수증기",
+      "icon_id": "satellite-observation",
+      "rule": "parent observation icon"
+    },
+    {
+      "no": 9,
+      "menu": "히마와리9 자동",
+      "icon_id": "satellite-observation",
+      "rule": "parent observation icon"
+    },
+    {
+      "no": 10,
+      "menu": "히마와리 구름 꼭대기 온도",
+      "icon_id": "satellite-observation",
+      "rule": "parent observation icon"
+    },
+    {
+      "no": 11,
+      "menu": "전지구 합성 구름",
+      "icon_id": "satellite-observation",
+      "rule": "parent observation icon"
+    },
+    {
+      "no": 12,
+      "menu": "수오미 NPP 실사",
+      "icon_id": "satellite-observation",
+      "rule": "parent observation icon"
+    },
+    {
+      "no": 13,
+      "menu": "기온",
+      "icon_id": "temperature",
+      "rule": "exact primary icon"
+    },
+    {
+      "no": 14,
+      "menu": "바람",
+      "icon_id": "wind",
+      "rule": "exact primary icon"
+    },
+    {
+      "no": 15,
+      "menu": "습도",
+      "icon_id": "precipitation",
+      "rule": "inherit nearest moisture/weather icon until dedicated humidity primary icon exists"
+    },
+    {
+      "no": 16,
+      "menu": "수증기 통로",
+      "icon_id": "precipitation",
+      "rule": "inherit nearest moisture/weather icon until dedicated vapor primary icon exists"
+    },
+    {
+      "no": 17,
+      "menu": "내일 최고기온",
+      "icon_id": "temperature",
+      "rule": "inherit temperature icon"
+    },
+    {
+      "no": 18,
+      "menu": "내일 최저기온",
+      "icon_id": "temperature",
+      "rule": "inherit temperature icon"
+    },
+    {
+      "no": 19,
+      "menu": "내일 바람",
+      "icon_id": "wind",
+      "rule": "inherit wind icon"
+    },
+    {
+      "no": 20,
+      "menu": "오로라",
+      "icon_id": "satellite-observation",
+      "rule": "observation/space parent icon"
+    },
+    {
+      "no": 21,
+      "menu": "검증 이벤트",
+      "icon_id": "satellite-observation",
+      "rule": "generic observation/event parent icon"
+    },
+    {
+      "no": 22,
+      "menu": "태풍",
+      "icon_id": "typhoon",
+      "rule": "exact primary icon"
+    },
+    {
+      "no": 23,
+      "menu": "지진",
+      "icon_id": "earthquake",
+      "rule": "exact primary icon"
+    },
+    {
+      "no": 24,
+      "menu": "쓰나미",
+      "icon_id": "tsunami",
+      "rule": "exact primary icon"
+    },
+    {
+      "no": 25,
+      "menu": "기상경보",
+      "icon_id": "typhoon",
+      "rule": "hazard/weather family icon; no standalone primary icon"
+    },
+    {
+      "no": 26,
+      "menu": "각국 기관 재해",
+      "icon_id": "storm-surge",
+      "rule": "hazard family icon; event surface inherits hazard family"
+    },
+    {
+      "no": 27,
+      "menu": "낙뢰",
+      "icon_id": "typhoon",
+      "rule": "hazard/weather family icon"
+    },
+    {
+      "no": 28,
+      "menu": "산불",
+      "icon_id": "wildfire",
+      "rule": "exact primary icon"
+    },
+    {
+      "no": 29,
+      "menu": "초미세먼지 PM2.5",
+      "icon_id": "air-quality",
+      "rule": "exact primary icon"
+    },
+    {
+      "no": 30,
+      "menu": "미세먼지 PM10",
+      "icon_id": "air-quality",
+      "rule": "inherit air-quality icon"
+    },
+    {
+      "no": 31,
+      "menu": "먼지·황사",
+      "icon_id": "air-quality",
+      "rule": "inherit air-quality icon"
+    },
+    {
+      "no": 32,
+      "menu": "대기질 AQI",
+      "icon_id": "air-quality",
+      "rule": "inherit air-quality icon"
+    },
+    {
+      "no": 33,
+      "menu": "자외선",
+      "icon_id": "air-quality",
+      "rule": "inherit atmosphere/air icon"
+    },
+    {
+      "no": 34,
+      "menu": "오존",
+      "icon_id": "air-quality",
+      "rule": "inherit atmosphere/air icon"
+    },
+    {
+      "no": 35,
+      "menu": "해수면 온도",
+      "icon_id": "sea-temperature",
+      "rule": "exact primary icon"
+    },
+    {
+      "no": 36,
+      "menu": "수온 편차",
+      "icon_id": "sea-temperature",
+      "rule": "inherit sea-temperature icon"
+    },
+    {
+      "no": 37,
+      "menu": "파고",
+      "icon_id": "sea-level",
+      "rule": "nearest sea-surface icon; use only where wave-specific icon is unavailable"
+    },
+    {
+      "no": 38,
+      "menu": "너울",
+      "icon_id": "sea-level",
+      "rule": "nearest sea-surface icon"
+    },
+    {
+      "no": 39,
+      "menu": "해류",
+      "icon_id": "ocean-current",
+      "rule": "exact primary icon"
+    },
+    {
+      "no": 40,
+      "menu": "안개",
+      "icon_id": "precipitation",
+      "rule": "nearest weather/moisture icon"
+    },
+    {
+      "no": 41,
+      "menu": "토양 수분",
+      "icon_id": "water-resources",
+      "rule": "nearest water resource icon"
+    },
+    {
+      "no": 42,
+      "menu": "기압 배치",
+      "icon_id": "pressure",
+      "rule": "exact primary icon"
+    },
+    {
+      "no": 43,
+      "menu": "비구름·강수",
+      "icon_id": "precipitation",
+      "rule": "exact primary icon"
+    },
+    {
+      "no": 44,
+      "menu": "지상 관측소",
+      "icon_id": "satellite-observation",
+      "rule": "observation parent icon"
+    },
+    {
+      "no": 45,
+      "menu": "영국 예보",
+      "icon_id": "forecast-scenario",
+      "rule": "exact forecast icon"
+    },
+    {
+      "no": 46,
+      "menu": "관측 공백",
+      "icon_id": "satellite-observation",
+      "rule": "observation parent icon"
+    },
+    {
+      "no": 47,
+      "menu": "해양 부이",
+      "icon_id": "ocean-current",
+      "rule": "ocean observation parent icon"
+    },
+    {
+      "no": 48,
+      "menu": "대기오염 실측",
+      "icon_id": "air-quality",
+      "rule": "exact primary icon"
+    },
+    {
+      "no": 49,
+      "menu": "일식",
+      "icon_id": "satellite-observation",
+      "rule": "space observation parent icon"
+    },
+    {
+      "no": 50,
+      "menu": "열돔",
+      "icon_id": "temperature",
+      "rule": "temperature/heat family icon"
+    },
+    {
+      "no": 51,
+      "menu": "해양 환류",
+      "icon_id": "ocean-current",
+      "rule": "ocean-current family icon"
+    },
+    {
+      "no": 52,
+      "menu": "관광 밀도",
+      "icon_id": "tourism-culture",
+      "rule": "exact primary icon"
+    },
+    {
+      "no": 53,
+      "menu": "명소",
+      "icon_id": "tourism-culture",
+      "rule": "exact primary icon"
+    },
+    {
+      "no": 54,
+      "menu": "항공기",
+      "icon_id": "urban-infrastructure",
+      "rule": "nearest infrastructure/transport icon"
+    },
+    {
+      "no": 55,
+      "menu": "선박",
+      "icon_id": "ocean-current",
+      "rule": "nearest marine movement icon"
+    }
+  ],
+  "hard_rules": [
+    "Do not use emoji, Font Awesome, Lucide, Material Icons, or ad-hoc SVG glyphs for primary EARTHUS data menus.",
+    "Use the registry asset for every matching label in V1 and V2.",
+    "Keep the same icon ID across V1 and V2.",
+    "Intelligence is not a primary navigation item; it is attached to the selected primary data context.",
+    "Simulation is not a primary navigation item; it follows Intelligence and is entitlement-gated for Pro+.",
+    "Primary data icon = first-order observable Earth phenomenon. Secondary sublayer inherits the parent icon unless an approved dedicated icon exists."
+  ],
+  "notes": [
+    "v1.2 (2026-09-13): 여덟을 더했다 — 습도·수증기·미세먼지·먼지황사·대기질지수·자외선·오존·너울.",
+    "이유: V1 대기질 계열 일곱 줄이 §6 부모 상속 규칙만으로는 전부 같은 아이콘이 됐다.",
+    "화풍은 EARTHUS_ICON_GENERATION_MASTER_PROMPT_v1.0 그대로. 원판은 docs/icon-system/EARTHUS_ICON_SHEET_v1.2_ADDITIONS.png.",
+    "⚠️ 파일 이름의 -128 은 실제로 110x110 이다(36종 원본이 그렇고, 새 여덟도 같은 규격으로 맞췄다).",
+    "⚠️ 원 지름 / 캔버스 = 0.909. 새 아이콘을 만들 때 이 비율을 맞춰야 같은 CSS 크기에서 같은 크기로 보인다."
+  ]
+}

@@ -27,7 +27,9 @@ import hashlib
 import io
 import json
 import os
+import platform
 import sys
+import zlib
 from datetime import datetime, timezone
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -44,14 +46,33 @@ RAW_PREFIX = "archive/earth-events/raw/"
 PART_PATTERN = "part-*.jsonl.gz"
 PART_HEX = 12                    # 키에 쓰는 원본 해시 자릿수
 
-# ── 결정적 gzip ────────────────────────────────────────────────────────────
+# ── 결정적 gzip — **어디까지 결정적인지 정확히 적는다** ──────────────────────
 # mtime=0 이 핵심이다. 기본값은 현재 시각이라 같은 입력이 실행마다 다른 바이트가 된다.
 GZIP_MTIME = 0
 GZIP_COMPRESSLEVEL = 6           # lambda_package.ZIP_COMPRESSLEVEL 과 같은 값을 쓴다
-# gzip 머리말의 OS 바이트. CPython 은 기계에 따라 다른 값을 쓸 수 있으므로 **고정**한다 —
-# 고정하지 않으면 리눅스(Lambda)와 윈도우(이 기계)가 같은 입력에서 다른 바이트를 낸다.
+# gzip 머리말의 OS 바이트를 0xFF 로 못 박는다.
+# ⚠️ 정정(2026-09-13): 이 패치는 **CPython 에서는 사실상 no-op** 이다 — CPython 의
+#    `_write_gzip_header` 가 이미 b'\xff' 를 박는다(3.12·3.14 실측). "리눅스와 윈도우가
+#    OS 바이트에서 갈린다"고 적었던 앞선 주석은 **틀렸다.** 그래도 남겨 둔다: 다른 구현체나
+#    미래의 CPython 이 호스트 OS 를 적기 시작하면 그때 이 한 줄이 값을 지킨다.
 GZIP_OS_UNKNOWN = 0xFF
 GZIP_OS_BYTE_OFFSET = 9          # ID1 ID2 CM FLG MTIME(4) XFL OS
+
+# ⚠️⚠️ **deflate 비트스트림은 파이썬에서 고정할 수 없다.**
+#    같은 입력·같은 compresslevel 이라도 zlib 구현이 다르면 압축 결과 바이트가 달라진다.
+#    실측(2026-09-13): CPython 3.12(zlib 1.3.1)와 3.14(zlib-ng)가 같은 입력에서 다른
+#    rawSha256 을 냈다. 그래서 이 모듈이 보장하는 것은 정확히 이것이다:
+#      · 같은 압축기에서는 같은 입력 → 같은 바이트 (시각·로케일·해시시드·정렬 무관)
+#      · 압축을 풀면 **어느 압축기에서든 같은 텍스트** (재계산의 근거는 이쪽이다)
+#    그리고 압축기가 바뀌어도 보관물이 흔들리지 않게 두 가지를 둔다:
+#      ① MANIFEST 가 압축기 신원을 적는다 (아래 `compressor`)
+#      ② 같은 키가 이미 있으면 **덮어쓰지 않는다** (`assembler.archive_raw`)
+COMPRESSOR = {
+    "python": platform.python_version(),
+    "zlib": zlib.ZLIB_RUNTIME_VERSION,
+    "compresslevel": GZIP_COMPRESSLEVEL,
+    "mtime": GZIP_MTIME,
+}
 
 
 class RawArchiveError(RuntimeError):
@@ -65,9 +86,19 @@ def sha256_hex(data):
 
 
 def _line(payload):
-    """한 줄 = 한 객체. 키 순서를 고정한다 — 같은 내용이 같은 바이트가 되도록."""
-    return json.dumps(payload, ensure_ascii=False, sort_keys=True,
-                      separators=(",", ":")) + "\n"
+    """한 줄 = 한 객체. 키 순서를 고정한다 — 같은 내용이 같은 바이트가 되도록.
+
+    ⚠️ `allow_nan=False` 다. 기본값은 `NaN`·`Infinity` 를 그대로 뱉는데, 그 둘은 **JSON 이 아니다** —
+       파이썬의 관대한 파서는 되읽지만 Athena·Glue 같은 엄격한 파서는 파일 전체를 거부한다.
+       재계산하려고 보관하는 물건이 재계산 도구에서 안 열리면 보관한 의미가 없다.
+       그래서 여기서 막고 실패로 올린다(값을 0 이나 null 로 바꾸지 않는다 — 그건 자료 조작이다).
+    """
+    try:
+        return json.dumps(payload, ensure_ascii=False, sort_keys=True,
+                          allow_nan=False, separators=(",", ":")) + "\n"
+    except ValueError as exc:
+        raise RawArchiveError(
+            "JSON 으로 적을 수 없는 값이 있다(NaN·Infinity 는 JSON 이 아니다): %s" % exc) from exc
 
 
 def sort_key(record, index):
@@ -107,6 +138,9 @@ def build_manifest(document, *, source_key, source_body, generated_iso):
             "cappedByLimit": bool(rules.get("cappedByLimit")),
         },
         # 우리가 센 것
+        # ⚠️ 압축기 신원(파이썬·zlib 판)을 **여기 넣지 않는다.** 넣으면 보관물의 텍스트가
+        #    실행 환경에 따라 달라져, 어렵게 지킨 "풀면 어디서나 같은 텍스트" 가 깨진다.
+        #    그 신원은 조립 결과(`assembler.archive_raw` → HEALTH 로그)에 남긴다.
         "archived": {
             "eventCount": len(events),
             "recordOrder": "sourceId-utf8-bytes",
@@ -138,7 +172,13 @@ def gzip_bytes(payload):
     파일 이름 필드는 `fileobj` 만 주면 쓰이지 않는다(FNAME 플래그 0).
     """
     if isinstance(payload, str):
-        payload = payload.encode("utf-8")
+        try:
+            payload = payload.encode("utf-8")
+        except UnicodeEncodeError as exc:
+            # 상류 제목에 홀로 떨어진 서로게이트(U+D800 등)가 섞여 올 수 있다.
+            # json.loads 는 그것을 받아들이지만 utf-8 인코딩은 거부한다.
+            # 이 모듈의 실패는 전부 RawArchiveError 여야 한다 — 호출자가 그것만 잡는다.
+            raise RawArchiveError("utf-8 로 적을 수 없는 문자가 있다: %s" % exc) from exc
     buffer = io.BytesIO()
     with gzip.GzipFile(fileobj=buffer, mode="wb",
                        compresslevel=GZIP_COMPRESSLEVEL, mtime=GZIP_MTIME) as handle:
@@ -201,6 +241,10 @@ def build(document, *, source_key, source_body, generated_iso):
     key = "%s%s/%s" % (RAW_PREFIX, partition(generated_iso), part_name(source_digest))
     return {
         "key": key,
+        # 풀어낸 텍스트의 해시 — **압축기와 무관하게** 같은 입력이면 같다.
+        # 압축 바이트(sha256)는 zlib 구현에 따라 달라질 수 있으므로 이쪽이 더 강한 지문이다.
+        "textSha256": sha256_hex(text),
+        "compressor": dict(COMPRESSOR),
         "bytes": len(body),
         "sha256": sha256_hex(body),
         "sourceSha256": source_digest,

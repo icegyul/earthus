@@ -4,11 +4,18 @@
 하는 일: `events/global.json` 하나를 읽어 `assembler.assemble()` 을 지나
 **PRIVATE/SHADOW EarthEvent 정본**을 만든다.
 
-⚠️⚠️ **이 함수는 아직 AWS 에 배포되지 않았다.** 이번 단계의 승인 범위는 로컬·픽스처·
-   staging 실행뿐이다(AWS WRITE = 0). 그래서 기본값이 이렇다:
+⚠️ **운영 상태 (2026-09-13 갱신)**: 이 함수는 `earthus-earth-events` 로 배포돼 있고,
+   규칙 `earthus-earth-events-30min`(`cron(15,45 * * * ? *)`)이 30분마다 **LIVE 로 부른다.**
+   스케줄이 넘기는 상수 입력은 `{"mode":"LIVE","dryRun":false,"allowLive":true}` 이고
+   함수 환경변수에 `EARTH_EVENTS_ALLOW_LIVE_WRITE=1` 이 설정돼 있다.
+   (앞선 판의 머리말은 "아직 배포되지 않았다 · AWS WRITE = 0" 이라고 적고 있었다 —
+    그 문장은 배포 뒤에도 남아 있어 읽는 사람을 안전한 쪽으로 오해시켰다. 정정한다.)
+
+   그래도 **기본값은 여전히 안전한 쪽**이다. 손으로 빈 payload 로 불러도 아무것도 쓰지 않는다:
      · `mode` 기본값 = STAGING — LIVE 는 `allowLive` 없이 거부된다
-     · `writer` 없음 = 아무것도 쓰지 않고 **쓰기 계획만** 돌려준다
-     · 정본 접두사가 PRIVATE 인지 매번 확인한다 (`events/` 에 쓰지 않는다)
+     · `dryRun` 기본값 = true — `writer` 가 주입되지 않아 **쓰기 계획만** 돌려준다
+     · LIVE 쓰기에는 payload 의 `allowLive` 와 환경변수가 **둘 다** 필요하다
+     · 정본·원자료 접두사가 PRIVATE 인지 매번 확인한다 (`events/` 에 쓰지 않는다)
 
 FAIL-CLOSED (실패를 빈 결과로 바꾸지 않는다)
      · 입력 객체를 읽을 수 없다            → 실패. 이전 산출물을 지우지 않는다
@@ -104,6 +111,37 @@ def s3_writer(s3):
     return write
 
 
+def s3_exists(s3):
+    """객체가 이미 있는가. **원자료를 덮어쓰지 않기 위한** 것이다.
+
+    ⚠️ 없음과 못 읽음을 가른다. 404/NoSuchKey 만 "없다" 이고, 나머지 오류(403·네트워크)는
+       **올려 보낸다** — 모르는 채 "없다"고 답하면 있는 것을 덮어쓰게 된다.
+       이 역할에는 `s3:ListBucket` 이 없어 진짜 없는 키도 403 이 올 수 있다.
+       그래서 `s3:GetObject` 가 허용된 `archive/earth-events/*` 에 대해서만 이 판단이 성립한다
+       (그 접두사에서 403 은 "정책이 막았다"가 아니라 "그런 키가 없다"를 뜻한다).
+    """
+    def exists(key):
+        try:
+            s3.head_object(Bucket=BUCKET, Key=key)
+            return True
+        except Exception as exc:                              # noqa: BLE001
+            status = getattr(getattr(exc, "response", None), "get", lambda *_: None)(
+                "ResponseMetadata") or {}
+            code = status.get("HTTPStatusCode")
+            name = type(exc).__name__
+            if code in (403, 404) or name in ("NoSuchKey", "ClientError", "404"):
+                return False
+            raise
+    return exists
+
+
+def local_exists(directory):
+    """staging 용 — 같은 키 구조의 로컬 파일이 이미 있는가."""
+    def exists(key):
+        return os.path.isfile(os.path.join(directory, *key.split("/")))
+    return exists
+
+
 def now_epoch(event):
     """기준 시각. 입력으로 받은 값이 있으면 그것을 쓴다(재현 가능한 시험을 위해).
 
@@ -141,23 +179,25 @@ def handler(event=None, context=None):
         s3 = _s3()
     document, body = read_input(s3, local=local)
 
-    writer = None
+    writer, exists = None, None
     if not dry_run:
         if mode == assembler.LIVE:
             if not allow_live:
                 raise assembler.LiveWriteRefused(
                     "LIVE 쓰기가 승인되지 않았다 — payload.allowLive 와 환경변수 %s=1 이 둘 다 필요하다"
                     % ALLOW_LIVE_ENV)
-            writer = s3_writer(s3 or _s3())
+            client = s3 or _s3()
+            writer, exists = s3_writer(client), s3_exists(client)
         else:
             staging_dir = event.get("stagingDir")
             if not staging_dir:
                 raise assembler.AssemblyError(
                     "STAGING 쓰기에는 stagingDir 이 필요하다 — 어디에 쓸지 지어내지 않는다")
-            writer = staging_writer(staging_dir)
+            writer, exists = staging_writer(staging_dir), local_exists(staging_dir)
 
     result = assembler.assemble(document, now_epoch=reference, source_body=body,
-                               mode=mode, writer=writer, allow_live=allow_live)
+                               mode=mode, writer=writer, allow_live=allow_live,
+                               exists=exists)
 
     health = result["stages"]["HEALTH"]
     summary = {
@@ -177,6 +217,7 @@ def handler(event=None, context=None):
         "canonicalPlanned": health["canonicalPlanned"],
         "rawObject": health["rawObject"],
         "rawWritten": health["rawWritten"],
+        "rawSkipped": (result["stages"]["RAW_ARCHIVE"] or {}).get("skipped"),
         "rawSha256": health["rawSha256"],
         "publicWrites": health["publicWrites"],
         "indexConsistency": "%s(%s)" % (health["indexConsistency"],

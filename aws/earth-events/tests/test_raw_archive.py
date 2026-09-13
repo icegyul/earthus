@@ -277,3 +277,135 @@ class DryRunWritesNothing(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
+
+
+class AdversarialFindings(unittest.TestCase):
+    """2026-09-13 적대적 검증이 찾아낸 것들. 고친 뒤 그 자리를 시험으로 막는다."""
+
+    def test_nan_and_infinity_are_refused_not_written(self):
+        """㉓ `NaN`·`Infinity` 는 JSON 이 아니다 — 엄격한 파서가 파일 전체를 거부한다.
+
+        재계산하려고 보관하는 물건이 재계산 도구에서 안 열리면 보관한 뜻이 없다.
+        값을 0 이나 null 로 바꾸지 않는다(그건 자료 조작이다) — 실패로 올린다.
+        """
+        for bad in (float("nan"), float("inf"), float("-inf")):
+            document = fx.document([fx.gdelt_event(**{"tone": bad})])
+            with self.assertRaises(raw.RawArchiveError) as caught:
+                raw.build(document, source_key="k", source_body=b"x",
+                          generated_iso=fx.GENERATED)
+            self.assertIn("JSON", str(caught.exception))
+
+    def test_archived_lines_survive_a_strict_json_parser(self):
+        """㉔ 보관한 줄이 **엄격한** 파서로도 읽혀야 한다(Athena·Glue 가 그렇다)."""
+        import json as _json
+        built = raw.build(fx.document([fx.gdelt_event()]), source_key="k",
+                          source_body=b"x", generated_iso=fx.GENERATED)
+        text = gzip.decompress(built["body"]).decode("utf-8")
+
+        def strict(_value):
+            raise AssertionError("JSON 이 아닌 토큰이 보관됐다")
+
+        for line in text.splitlines():
+            _json.loads(line, parse_constant=strict)     # NaN/Infinity 면 여기서 깨진다
+
+    def test_lone_surrogate_raises_the_declared_error_type(self):
+        """㉕ 상류 제목에 홀로 떨어진 서로게이트가 와도 **선언한 오류 종류**로 끝난다.
+
+        `json.loads` 는 `\ud800` 을 받아들이지만 utf-8 인코딩은 거부한다. 그 차이가
+        `UnicodeEncodeError` 로 새어 나가면 호출자가 못 잡는다.
+        """
+        # 실제 경로를 그대로 흉내 낸다: S3 에서 온 **바이트**에는 이스케이프가 들어 있고,
+        # json.loads 가 그것을 서로게이트 문자로 바꿔 놓는다. (문자를 직접 dumps 하면
+        # 애초에 바이트를 만들 수 없어 상류를 흉내 내지 못한다.)
+        import json as _json
+        plain = fx.document([fx.gdelt_event(title="PLACEHOLDER")])
+        source_bytes = _json.dumps(plain, ensure_ascii=False).replace(
+            "PLACEHOLDER", "\\ud800").encode("utf-8")
+        document = _json.loads(source_bytes.decode("utf-8"))
+        self.assertEqual(document["events"][0]["title"], "\ud800")   # 서로게이트가 들어왔다
+
+        with self.assertRaises(raw.RawArchiveError):
+            raw.build(document, source_key="k", source_body=source_bytes,
+                      generated_iso=fx.GENERATED)
+        # 조립기를 통해서도 같은 계열의 오류여야 하고, **아무것도 쓰지 않는다**
+        wrote = []
+        with self.assertRaises(assembler.AssemblyError):
+            assembler.assemble(document, now_epoch=fx.now_for(),
+                               source_body=source_bytes, mode=assembler.STAGING,
+                               writer=lambda k, b: wrote.append(k), exists=lambda k: False)
+        self.assertEqual(wrote, [])
+
+    def test_compressed_bytes_are_not_promised_across_compressors(self):
+        """㉖ 압축 바이트는 zlib 구현에 묶인다 — 그 사실을 산출물이 **적는다**.
+
+        파이썬에서 deflate 비트스트림을 고정할 방법이 없다(실측: CPython 3.12 zlib 와
+        3.14 zlib-ng 가 같은 입력에서 다른 sha 를 냈다). 그래서 두 가지를 둔다:
+        압축기 신원을 남기고, 압축을 푼 텍스트의 해시를 따로 준다.
+        """
+        built = raw.build(fx.document([fx.gdelt_event()]), source_key="k",
+                          source_body=b"x", generated_iso=fx.GENERATED)
+        self.assertIn("zlib", built["compressor"])
+        self.assertIn("python", built["compressor"])
+        self.assertEqual(built["compressor"]["compresslevel"], raw.GZIP_COMPRESSLEVEL)
+        # 압축을 푼 텍스트의 해시는 압축기와 무관하다
+        text = gzip.decompress(built["body"]).decode("utf-8")
+        self.assertEqual(built["textSha256"], raw.sha256_hex(text))
+        self.assertNotEqual(built["textSha256"], built["sha256"])
+
+    def test_existing_raw_object_is_never_overwritten(self):
+        """㉗ 같은 키가 이미 있으면 **덮어쓰지 않는다.**
+
+        키는 입력 내용에서 나오므로 같은 키 = 같은 입력이지만, 압축 바이트는 압축기에 따라
+        달라질 수 있다. 덮어쓰면 정본이 들고 있는 `rawSha256` 계보가 조용히 끊긴다.
+        """
+        document = fx.document([fx.gdelt_event()])
+        wrote = []
+        result = fx.assemble(document, mode=assembler.STAGING,
+                             writer=lambda k, b: wrote.append(k),
+                             exists=lambda k: k.startswith("archive/earth-events/raw/"))
+        rawstage = result["stages"]["RAW_ARCHIVE"]
+        self.assertFalse(rawstage["written"])
+        self.assertIn("덮어쓰지 않는다", rawstage["skipped"])
+        self.assertEqual([k for k in wrote if "/raw/" in k], [])
+        # 정본은 그대로 쓴다 — 재료가 이미 보관돼 있기 때문이다
+        self.assertTrue(any("/canonical/v1/" in k for k in wrote))
+        # ⚠️ 건너뛴 것은 **정상**이다. PARTIAL 로 보고하면 건강한 회차가 경보로 보인다.
+        self.assertEqual(result["stages"]["HEALTH"]["status"], "SUCCESS")
+
+    def test_unknown_existence_blocks_the_write(self):
+        """㉘ 존재 여부를 **모르면** 쓰지 않는다. 모르는 채 덮어쓰는 것이 가장 나쁘다."""
+        def broken(_key):
+            raise RuntimeError("S3 가 응답하지 않는다")
+
+        wrote = []
+        with self.assertRaises(assembler.AssemblyError) as caught:
+            fx.assemble(fx.document([fx.gdelt_event()]), mode=assembler.STAGING,
+                        writer=lambda k, b: wrote.append(k), exists=broken)
+        self.assertIn("확인할 수 없다", str(caught.exception))
+        self.assertEqual(wrote, [])
+
+    def test_public_write_count_is_measured_not_asserted(self):
+        """㉙ `publicWrites` 는 상수가 아니라 **문을 지난 키의 집계**다.
+
+        상수 0 은 위반을 영영 못 잡는다 — 문이 뚫려도 0 이라고 보고한다.
+        """
+        result = fx.assemble(fx.document([fx.gdelt_event()]))
+        health = result["stages"]["HEALTH"]
+        ledger = health["writeLedger"]
+        self.assertEqual(health["publicWrites"], 0)
+        self.assertEqual(ledger["nonPrivate"], 0)
+        # 실제로 센 숫자여야 한다 — 원자료 1 + 정본 n
+        self.assertEqual(ledger["total"], ledger["private"])
+        self.assertEqual(ledger["total"], 1 + len(result["documents"]))
+        self.assertEqual(list(ledger["byVisibility"]), ["PRIVATE"])
+
+    def test_ledger_counts_every_key_that_passed_the_gate(self):
+        """㉚ 원장이 문을 지난 키를 **빠짐없이** 센다 — 정본 수가 늘면 집계도 늘어야 한다."""
+        two = fx.document([fx.gdelt_event(event_id="1"),
+                           fx.gdelt_event(event_id="2", root="14",
+                                          url="https://b.example.com/x")])
+        result = fx.assemble(two)
+        ledger = result["stages"]["HEALTH"]["writeLedger"]
+        self.assertEqual(len(result["documents"]), 2)
+        self.assertEqual(ledger["total"], 3)          # raw 1 + canonical 2
+        self.assertEqual(ledger["nonPrivate"], 0)

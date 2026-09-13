@@ -58,10 +58,21 @@ CANONICAL_OUTPUT → CANONICAL_WRITE → INDEX_CONSISTENCY → HEALTH`
 
 `archive/earth-events/raw/dt=YYYY-MM-DD/hh=HH/part-<원본 sha256 앞 12hex>.jsonl.gz`
 
-* **결정성**: gzip `mtime=0` · `compresslevel=6` 고정 · 머리말 OS 바이트 고정 · 레코드는
-  상류 id 의 utf-8 바이트 순 정렬 · JSON 키 정렬.
+* **결정성**: gzip `mtime=0` · `compresslevel=6` 고정 · 레코드는 상류 id 의 utf-8 바이트 순 정렬 ·
+  JSON 키 정렬 · `allow_nan=False`. 시각·로케일·타임존·해시시드가 바이트에 섞이지 않는다.
 * **바이트 재현 실증**: Lambda(linux/x86_64)가 쓴 객체와 이 Windows 기계가 같은 입력으로 다시 만든
   바이트가 **완전히 같다** — 26,496 B, `sha256 b7fa8ec0b61365492876744d686b4bded227a09c191f9d7f95c0de14aaddb54f`.
+* ⚠️ **정정 — 그 재현성은 "같은 압축기"까지다.** 적대적 검증이 반례를 만들었다:
+  CPython 3.12(zlib 1.3.1)와 3.14(zlib-ng)가 **같은 입력에서 다른 압축 바이트**를 냈다.
+  deflate 비트스트림은 파이썬에서 고정할 수 없다. 처음에 "어느 기계에서도 같다"고 적은 것은 **틀렸다.**
+  (같은 검증이 또 하나를 잡았다: OS 바이트를 0xFF 로 덮는 코드는 CPython 에서 **no-op** 이다 —
+   CPython 이 이미 0xFF 를 쓴다. "리눅스와 윈도우가 OS 바이트에서 갈린다"던 주석도 틀렸다.)
+  고친 방식 셋:
+    ① 풀어낸 **텍스트**의 해시(`textSha256`)를 따로 준다 — 이쪽은 압축기와 무관하게 같다
+    ② 압축기 신원(파이썬·zlib 판)을 산출물에 적는다 (보관 바이트에는 넣지 않는다 —
+       넣으면 텍스트마저 실행 환경에 따라 달라진다)
+    ③ **같은 키가 이미 있으면 덮어쓰지 않는다.** 압축기가 바뀌어도 보관물과 정본의 `rawSha256`
+       계보가 끊기지 않는다. 존재 여부를 **모르면 쓰지 않는다**(모르는 채 덮어쓰는 것이 가장 나쁘다).
 * **키도 내용에서 나온다**: 같은 입력 → 같은 키(재실행이 같은 객체를 덮어써도 손실이 없다),
   다른 입력 → 다른 키(서로 덮지 않는다).
   키의 해시 조각은 48비트(12 hex)뿐이지만 **파티션(`dt=`/`hh=`)이 키에 함께 들어 있어서**
@@ -125,7 +136,8 @@ APPLY #2   멱등 — 다시 돌려도 exit 0, 표 15개 그대로, 행 0
 | Layer | **0** |
 | Function URL | **없음** (`ResourceNotFoundException` 으로 확인) |
 | Timeout / Memory | 300s / 2048MB (실측 최대 사용 100MB — 최적화는 POST-LAUNCH) |
-| artifact SHA256 | `kzZRCm/gE/iJo986r47Y7EHP5Dcht2qCb2Vs8EpPj1s=` · 74,283 B · 구성원 14개 |
+| artifact SHA256 | `uW0rqTIpGUycES29+pyo6/VJReLvzC/zFZTKEMG1mDs=` · 77,812 B · 구성원 14개 |
+| | (최초 `kzZRCm/gE/iJo986r47Y7EHP5Dcht2qCb2Vs8EpPj1s=` → 적대적 검증 수정 2회 반영) |
 | 역할 | `earthus-lambda-earth-events` |
 
 **IAM 범위 — 인라인 2개뿐, 관리형 정책 없음:**
@@ -409,20 +421,74 @@ V2 거울이 있으면 바이트까지 같은가 · 레지스트리와 코드가
 
 | 묶음 | 결과 |
 |---|---|
-| `aws/earth-events/tests` | **74 passed** |
+| `aws/earth-events/tests` | **82 passed** |
 | `aws/_shared/tests` | **214 passed** + 45 subtests |
 | `aws/distribution/tests` | **392 passed · 6 skipped**(기존) + 21 subtests |
 | `aws/report-engine/tests` | **320 passed** |
 | `npm test` | **153 pass / 0 fail / 0 skipped** |
 | v11 `node --test` | **65 pass / 0 fail** |
 | `services/research-runtime` | **80 passed** + 8 subtests |
-| **합계** | **1,298 · failed 0** |
+| **합계** | **1,306 · failed 0** |
 
 **삭제한 테스트 0 · 추가한 skip 0.** distribution 의 skip 6건은 이 세션 이전부터 있던 것이다.
+
+> ⚠️ **이 숫자는 "이 작업 트리" 의 숫자다.** 저장소에는 앞선 승인 라운드가 일부러 추적하지 않기로 한
+> 시험 파일이 11개 있다(예: `aws/distribution/tests/test_distribution.py`,
+> `tools/earthus-v53/*.test.mjs` 4개). 갓 클론한 트리에는 그것들이 없으므로 같은 명령이
+> 더 작은 수를 낸다. 내가 만든 것이 아니고 건드리지도 않았다 — 다만 "153" 을 조건 없이 적으면
+> 새로 클론한 사람이 재현하지 못하므로 밝힌다.
+> ⚠️ `research-runtime` 80 은 **`PYTHONPATH=".;.deps"` 로 돌렸을 때**의 수다. 그것 없이 돌리면
+> 6건이 실패한다(의존 경로 문제이지 코드 결함이 아니다). 적대적 검증이 그것 없이 돌려 6 fail 을 보고했고,
+> 두 방식을 모두 재현해 확인했다.
 
 > ⚠️ 묶음은 **디렉터리별로** 돌린다. 함수마다 최상위 `handler.py` 가 있어 합쳐 돌리면
 > `sys.modules['handler']` 를 서로 가려 26건이 깨진다(기존 성질). 3G 묶음은 그 수를 늘리지
 > 않는다 — `tests/fixtures.py:load_handler()` 가 경로로 고유 이름으로 불러온다.
+
+---
+
+## 12.5 적대적 검증 — 네 주장을 무너뜨리려고 해 봤다
+
+보고서를 쓰기 전에 위험이 큰 주장 넷을 따로 세워 **반증을 목표로 하는** 검증을 붙였다
+(읽기 전용 · 쓰기 금지). 결과:
+
+| 주장 | 판정 |
+|---|---|
+| 3G 는 공개 접두사에 쓸 수 없고 산출물은 공개로 안 읽힌다 | **살아남음** |
+| 스케줄 셋은 이중 호출을 못 한다 | 부분 반증 (증거의 한계 — 아래) |
+| 원자료는 어느 기계에서도 바이트가 같다 | **반증됨 → 고쳤다** |
+| 이 세션에서 삭제·skip 한 테스트가 없다 | 부분 반증 (숫자의 전제 — §12 주석) |
+
+**고친 것 (전부 시험으로 잠갔다 — 3G 74 → 82건):**
+
+| 발견 | 무게 | 고친 내용 |
+|---|---|---|
+| 압축 바이트가 zlib 구현에 따라 달라진다 (3.12 vs 3.14 반례) | 높음 | `textSha256` + 압축기 신원 + **덮어쓰기 금지** (§2) |
+| OS 바이트 패치가 no-op 이고 주석이 사실과 다르다 | 중간 | 주석 정정. 코드는 다른 구현체 대비로 남김 |
+| `NaN`·`Infinity` 가 그대로 보관돼 엄격한 JSON 파서가 파일을 거부한다 | 중간 | `allow_nan=False` → 실패로 올린다 (값을 바꾸지 않는다) |
+| 홀로 떨어진 서로게이트가 `UnicodeEncodeError` 로 새어 나간다 | 중간 | `RawArchiveError` 로 감싼다 (선언한 오류 종류를 지킨다) |
+| `publicWrites: 0` 이 **상수**라 위반을 영영 못 잡는다 | 중간 | 문을 지난 키를 세는 원장(`WriteLedger`)으로 교체 |
+| `handler.py` 머리말이 "아직 배포 안 됨 · AWS WRITE = 0" 이라 실제와 반대로 안전해 보인다 | 정보 | 운영 상태로 정정 |
+| 원자료를 건너뛴 회차가 `PARTIAL` 로 보고돼 건강한 실행이 경보로 보인다 | (자체 발견) | 건너뜀은 `SUCCESS` 로 판정 |
+
+**살아남은 주장의 근거 (검증자가 직접 확인한 것):**
+버킷 정책의 익명 읽기 허용 접두사는 정확히 8개이고 `archive/` 는 어디에도 없다 ·
+143개 산출물 전부를 무자격 요청으로 네 경로(가상호스트·경로형·레거시·CloudFront)에서 시도해 **200 이 0건** ·
+`publication_privacy` 의 공개 목록이 실제 버킷 정책과 정확히 일치 · 3G 패키지 안의 S3 쓰기는
+`handler.py` 한 곳뿐이고 두 겹의 문을 지난다 · 경로 traversal·동형문자·대소문자 변형 모두 거부됨.
+
+**반증되지 않았지만 남는 한계 (숨기지 않는다):**
+* `events:ListTargetsByRule` · `lambda:GetFunctionEventInvokeConfig` · `iam:GetRolePolicy` 가 이 사용자에게
+  없어서 **타깃 재시도 정책과 IAM 정책 본문을 되읽지 못했다.** EventBridge→Lambda 전달은 원래
+  at-least-once 이므로 "이중 호출이 절대 없다"는 증명 불가다. 다만 중복 호출이 와도 원자료는
+  덮어쓰지 않고 정본은 같은 키를 같은 내용으로 갱신한다.
+* `earthus-distribution-daily` 는 **아직 한 번도 발화하지 않았다**(첫 틱이 00:00 UTC). 규칙·타깃·권한은
+  확인했지만 끝에서 끝까지의 증거는 내일 생긴다.
+* 검증자가 "역할이 버킷 전체 쓰기를 갖는다"고 적었는데, 그것은 `deploy-python.sh` 의 **기본 경로**를
+  읽은 추론이다. 실제 배포 로그는 `▸ 역할 있음: earthus-lambda-earth-events` 를 찍었다 — 그 분기는
+  실행되지 않았다. 다만 `iam:GetRolePolicy` 가 없어 **정책 본문으로 반박하지는 못한다.**
+* 검증자가 "`aws/_shared` 214 중 2건 실패" 라고 적었는데 **재현되지 않았다.** 저장소 루트와
+  `aws/_shared` 두 곳에서 각각 돌려 214 passed / 0 failed 를 확인했다.
 
 ---
 
@@ -468,7 +534,10 @@ scratchpad 의 검증 스크립트.
 | 8–10 | `events put-rule` · `put-targets` · `lambda add-permission` | 3G 스케줄 |
 | 11–13 | `events put-rule` · `put-targets` · `lambda add-permission` | distribution 스케줄 |
 
-이후 `14:15:24Z` 스케줄 자동 실행 1회(S3 PUT 129). **삭제 0 · 기존 객체 덮어쓰기 0 ·
+| 14 · 16 | `lambda update-function-code` ×2 | 적대적 검증 수정 반영 (환경변수 보존 확인) |
+| 15 · 17 | `lambda invoke` (LIVE) ×2 | 덮어쓰기 금지 실증 — 원자료 **쓰지 않음**, 정본만 갱신 |
+
+이후 `14:15:24Z`·`14:45:24Z` 스케줄 자동 실행 2회. **삭제 0 · 원자료 덮어쓰기 0 ·
 기존 함수 코드 변경 0 · 공개 접두사 쓰기 0 · Postgres 쓰기 0.**
 
 롤백 경로: `lambda delete-function` · `iam delete-role-policy`+`delete-role` ·

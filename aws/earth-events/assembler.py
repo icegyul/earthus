@@ -15,11 +15,11 @@
     9  TRUTH_STATUS       _shared/truth_vocabulary.judge()
    10  EARTH_EVENT        SQL earthus_earth_event 모양으로 조립
    11  EVENT_ID           _shared/earth_event_id.event_id()          ← 결정 ②③④
-   12  CANONICAL_OUTPUT   PRIVATE / SHADOW 문서
-   13  CANONICAL_WRITE    STAGING_ONLY (공개 접두사 쓰기 금지)
-   14  RAW_ARCHIVE        원자료 보관 **참조** (적재기는 아직 없다)
+   12  RAW_ARCHIVE        원자료 보관 (정본보다 **먼저** · 이미 있으면 덮어쓰지 않는다)
+   13  CANONICAL_OUTPUT   PRIVATE / SHADOW 문서 (원자료 키를 계보로 물고 있다)
+   14  CANONICAL_WRITE    공개 접두사 쓰기 금지 · 지나간 키를 원장에 센다
    15  INDEX_CONSISTENCY  _shared/index_consistency.check(mode=FIXTURE)
-   16  HEALTH             결과 요약
+   16  HEALTH             결과 요약 (publicWrites 는 상수가 아니라 원장 집계다)
 
 원칙
   · **FAILURE ≠ EMPTY.** 정상적으로 사건이 0건인 입력은 정상 empty 다. 읽을 수 없는 입력·
@@ -147,12 +147,39 @@ def public_release_allowed(state):
     return state in ("ACTIVE", "CANARY")
 
 
-def assert_not_public(key):
+class WriteLedger:
+    """실제로 지나간 쓰기를 **센다**.
+
+    ⚠️ 왜 세는가: 예전에는 산출물의 `publicWrites` 가 그냥 상수 0 이었다. 상수는 위반을
+       **영영 못 잡는다** — 문이 뚫려도 0 이라고 보고한다. 이제 문을 지난 키를 여기서 세고,
+       공개/미지 접두사가 하나라도 세어지면 그 자체가 실패다.
+    """
+
+    def __init__(self):
+        self.by_visibility = {}
+        self.keys = []
+
+    def record(self, key, visibility):
+        self.by_visibility[visibility] = self.by_visibility.get(visibility, 0) + 1
+        self.keys.append(key)
+
+    @property
+    def public(self):
+        return sum(count for vis, count in self.by_visibility.items() if vis != "PRIVATE")
+
+    def summary(self):
+        return {"total": len(self.keys), "private": self.by_visibility.get("PRIVATE", 0),
+                "nonPrivate": self.public, "byVisibility": dict(sorted(self.by_visibility.items()))}
+
+
+def assert_not_public(key, ledger=None):
     """공개 접두사면 거부한다. 모르는 접두사도 거부한다 — 모르는 것을 안전하다고 하지 않는다."""
     visibility = priv.prefix_visibility(key)
     if visibility != "PRIVATE":
         raise PublicWriteRefused(
             "3G 정본은 PRIVATE 접두사에만 쓴다 — key=%s visibility=%s" % (key, visibility))
+    if ledger is not None:
+        ledger.record(key, visibility)
     return visibility
 
 
@@ -164,7 +191,7 @@ def canonical_key(event_id):
 
 
 def archive_raw(document, *, source_body, generated_iso, mode, writer=None,
-                allow_live=False):
+                allow_live=False, exists=None, ledger=None):
     """결정 ① — 원자료를 만들고 **정본보다 먼저** 쓴다.
 
     `source_body` 가 없으면 보관하지 않는다. 그때 `object` 는 None 이고 `reason` 이 왜인지 적는다 —
@@ -187,9 +214,20 @@ def archive_raw(document, *, source_body, generated_iso, mode, writer=None,
         raise AssemblyError("원자료를 만들 수 없다: %s" % exc) from exc
 
     key = built["key"]
-    assert_not_public(key)
-    written = False
-    if writer is not None:
+    assert_not_public(key, ledger)
+    written, skipped = False, None
+    # ⚠️ **이미 있으면 덮어쓰지 않는다.** 키는 입력 내용에서 나오므로 같은 키 = 같은 입력이지만,
+    #    압축 바이트는 zlib 구현에 따라 달라질 수 있다(파이썬에서 고정 불가 — raw_archive 머리말).
+    #    덮어쓰면 정본이 들고 있는 `rawSha256` 계보가 조용히 끊긴다. 먼저 쓴 것이 이긴다.
+    if writer is not None and callable(exists):
+        try:
+            if exists(key):
+                skipped = "이미 보관돼 있다 — 같은 입력이므로 덮어쓰지 않는다"
+        except Exception as exc:                             # noqa: BLE001
+            # 존재 여부를 모르면 **쓰지 않는다.** 모르는 채 덮어쓰는 것이 가장 나쁘다.
+            raise AssemblyError("원자료 존재 여부를 확인할 수 없다 — 쓰지 않는다: %s: %s"
+                                % (type(exc).__name__, exc)) from exc
+    if writer is not None and skipped is None:
         try:
             writer(key, built["body"])
         except PublicWriteRefused:
@@ -205,6 +243,9 @@ def archive_raw(document, *, source_body, generated_iso, mode, writer=None,
         "object": key,
         "bytes": built["bytes"],
         "sha256": built["sha256"],
+        # 압축을 푼 텍스트의 해시 — 압축기가 달라도 같은 입력이면 같다. 더 강한 지문이다.
+        "textSha256": built["textSha256"],
+        "compressor": built["compressor"],
         "sourceSha256": built["sourceSha256"],
         "sourceBytes": built["sourceBytes"],
         "partition": built["partition"],
@@ -215,6 +256,7 @@ def archive_raw(document, *, source_body, generated_iso, mode, writer=None,
                  "compresslevel": raw_archive.GZIP_COMPRESSLEVEL,
                  "osByte": raw_archive.GZIP_OS_UNKNOWN},
         "written": written,
+        "skipped": skipped,
         "mode": mode,
         "reason": None,
     }
@@ -616,7 +658,7 @@ def canonical_document(event, *, envelope, freshness, raw=None):
 
 
 # ── 13 CANONICAL_WRITE ─────────────────────────────────────────────────────
-def write_canonical(documents, *, mode, writer=None, allow_live=False):
+def write_canonical(documents, *, mode, writer=None, allow_live=False, ledger=None):
     """정본을 쓴다. **STAGING 이 기본이고 LIVE 는 거부된다.**
 
     `writer(key, body)` 를 주입받는다. 주지 않으면 아무것도 쓰지 않고 계획만 돌려준다 —
@@ -631,7 +673,7 @@ def write_canonical(documents, *, mode, writer=None, allow_live=False):
     plan, written = [], 0
     for document in documents:
         key = canonical_key(document["eventId"])
-        assert_not_public(key)
+        assert_not_public(key, ledger)
         body = canonical_json(document)
         entry = {"key": key, "bytes": len(body), "sha256": sha256_hex(body),
                  "eventId": document["eventId"], "schema": document["schema"],
@@ -681,9 +723,10 @@ def check_index(objects, events, *, written_at):
 
 # ── 전체 ───────────────────────────────────────────────────────────────────
 def assemble(document, *, now_epoch, source_body=None, mode=STAGING,
-             writer=None, allow_live=False, policy=None):
+             writer=None, allow_live=False, policy=None, exists=None):
     """16 단계를 순서대로. 실패는 예외로 올라가고, 그때 산출물은 만들어지지 않는다."""
     stages = {}
+    ledger = WriteLedger()
 
     # 1 INPUT
     stages["INPUT"] = {
@@ -728,12 +771,13 @@ def assemble(document, *, now_epoch, source_body=None, mode=STAGING,
         # 사실이고, 나중에 재계산할 때 그 사실이 필요하다.
         stages["RAW_ARCHIVE"] = archive_raw(
             document, source_body=source_body, generated_iso=envelope.get("generated"),
-            mode=mode, writer=writer, allow_live=allow_live)
+            mode=mode, writer=writer, allow_live=allow_live, exists=exists, ledger=ledger)
         stages["CANONICAL_WRITE"] = write_canonical([], mode=mode, writer=writer,
-                                                    allow_live=allow_live)
+                                                    allow_live=allow_live, ledger=ledger)
         consistency, rows = check_index([], [], written_at=envelope.get("generated"))
         stages["INDEX_CONSISTENCY"] = consistency
-        stages["HEALTH"] = _health(stages, empty_reason="입력에 사건이 0건이다(정상 empty)")
+        stages["HEALTH"] = _health(stages, ledger=ledger,
+                                   empty_reason="입력에 사건이 0건이다(정상 empty)")
         return {"schema": SCHEMA, "stages": stages, "events": [], "documents": [],
                 "indexRows": rows, "envelope": envelope}
 
@@ -816,7 +860,8 @@ def assemble(document, *, now_epoch, source_body=None, mode=STAGING,
     # 12 RAW_ARCHIVE — 정본보다 먼저. 여기서 실패하면 정본을 쓰지 않는다(§12).
     raw = archive_raw(document, source_body=source_body,
                       generated_iso=envelope.get("generated"),
-                      mode=mode, writer=writer, allow_live=allow_live)
+                      mode=mode, writer=writer, allow_live=allow_live,
+                      exists=exists, ledger=ledger)
     stages["RAW_ARCHIVE"] = raw
     if raw.get("object") is None:
         raise AssemblyError("원자료를 보관하지 못했다 — 정본을 쓰지 않는다: %s"
@@ -836,7 +881,7 @@ def assemble(document, *, now_epoch, source_body=None, mode=STAGING,
 
     # 14 CANONICAL_WRITE
     stages["CANONICAL_WRITE"] = write_canonical(documents, mode=mode, writer=writer,
-                                                allow_live=allow_live)
+                                                allow_live=allow_live, ledger=ledger)
 
     # 15 INDEX_CONSISTENCY
     consistency, rows = check_index(stages["CANONICAL_WRITE"]["objects"], events,
@@ -844,7 +889,7 @@ def assemble(document, *, now_epoch, source_body=None, mode=STAGING,
     stages["INDEX_CONSISTENCY"] = consistency
 
     # 16 HEALTH
-    stages["HEALTH"] = _health(stages)
+    stages["HEALTH"] = _health(stages, ledger=ledger)
     return {"schema": SCHEMA, "stages": stages, "events": events,
             "documents": documents, "indexRows": rows, "envelope": envelope}
 
@@ -857,25 +902,35 @@ def _tally(values):
     return dict(sorted(out.items()))
 
 
-def _health(stages, empty_reason=None):
+def _health(stages, ledger=None, empty_reason=None):
     """건강 상태. 통과했다고 적을 수 있는 것만 적는다."""
     consistency = stages.get("INDEX_CONSISTENCY") or {}
     write = stages.get("CANONICAL_WRITE") or {}
     raw = stages.get("RAW_ARCHIVE") or {}
     # 상태 3분법 (§12). PARTIAL 은 "쓸 것을 다 못 썼다" 이고, 실패는 예외로 이미 빠져나갔다.
+    #
+    # ⚠️ **원자료를 건너뛴 것은 PARTIAL 이 아니다.** 같은 입력이 이미 보관돼 있어서 덮어쓰지
+    #    않은 것은 정상이고 오히려 바라던 동작이다(계보가 끊기지 않는다). 처음엔 이것을
+    #    PARTIAL 로 보고했는데, 그러면 건강한 회차가 운영에서 경보로 보인다 — 2026-09-13 실측.
     planned = len((write.get("objects") or ()))
-    if write.get("written", 0) == 0 and planned and not raw.get("written"):
+    written = write.get("written", 0)
+    raw_ok = bool(raw.get("written")) or bool(raw.get("skipped")) or not raw.get("object")
+    if writer_absent := (written == 0 and planned and not raw.get("written")
+                         and not raw.get("skipped")):
         status = "SUCCESS"                 # dryRun — 계획만 만들었다
-    elif write.get("written", 0) == planned and (raw.get("written") or not raw.get("object")):
+    elif written == planned and raw_ok:
         status = "SUCCESS"
     else:
         status = "PARTIAL"
+    del writer_absent
     return {
         "status": status,
         "stages": list(STAGES),
         # HEALTH 자신은 아직 stages 에 들어가지 않았다 — 이 함수가 그것을 만들고 있다.
         "stagesRun": [name for name in STAGES if name in stages or name == "HEALTH"],
-        "publicWrites": 0,
+        # 상수가 아니라 **실제로 문을 지난 키의 집계**다. 0 이 아니면 그 자체가 실패다.
+        "publicWrites": ledger.public if ledger is not None else None,
+        "writeLedger": ledger.summary() if ledger is not None else None,
         "awsWrites": 0 if (write.get("wroteNothing") and not raw.get("written")) else None,
         "writeMode": write.get("mode"),
         "canonicalWritten": write.get("written", 0),

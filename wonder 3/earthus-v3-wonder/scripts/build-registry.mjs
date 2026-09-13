@@ -42,11 +42,15 @@ const assets = [];
 const kindOf = r => r.startsWith('pack-1.8/backgrounds/') ? 'background'
   : r.startsWith('pack-1.8/fx/') ? 'fx'
   : r.startsWith('characters/runtime/') ? (r.endsWith('_scene.webp') ? 'character-scene' : 'character')
+  : r.startsWith('characters/thumb/') ? 'character-thumb'
+  : r.startsWith('landmarks/') && r.endsWith('.webp') ? 'landmark'
+  : r.startsWith('landmarks/') && r.endsWith('.json') ? 'data'
+  : r.startsWith('environments/') && r.endsWith('.json') ? 'data'
   : r.startsWith('backgrounds/') && r.endsWith('.json') ? 'data'
   : r.startsWith('geo/') && r.endsWith('.json') ? 'data'
   : r.startsWith('characters/') && r.endsWith('.json') ? 'data'
   : r.startsWith('pack-1.8/') && r.endsWith('.json') ? 'data' : 'other';
-const sourceOf = r => r.startsWith('pack-1.8/') ? 'pack-1.8' : r.startsWith('geo/') ? 'natural-earth' : r.startsWith('characters/runtime/') ? 'legacy-pack124→runtime-webp' : 'earthus-v3-wonder';
+const sourceOf = r => r.startsWith('pack-1.8/') ? 'pack-1.8' : r.startsWith('geo/') ? 'natural-earth' : r.startsWith('characters/runtime/') || r.startsWith('characters/thumb/') ? 'legacy-pack124→runtime-webp' : r.startsWith('landmarks/') && r.endsWith('.webp') ? 'legacy-v3-paper-atlas' : 'earthus-v3-wonder';
 for (const f of files) {
   const r = rel(f);
   const kind = kindOf(r);
@@ -58,7 +62,7 @@ for (const f of files) {
     bytes: st.size,
     sha256: sha256(f),
     source: sourceOf(r),
-    load: kind === 'background' ? 'region-lazy' : kind.startsWith('character') ? 'on-demand' : kind === 'fx' ? 'preload' : 'boot',
+    load: kind === 'background' ? 'region-lazy' : kind === 'landmark' ? 'region-lazy' : kind === 'character-thumb' ? 'lod1' : kind.startsWith('character') ? 'on-demand' : kind === 'fx' ? 'preload' : 'boot',
   });
 }
 assets.sort((a, b) => a.path.localeCompare(b.path));
@@ -105,11 +109,12 @@ const manifest = rows.map(r => {
   if (legacy && !l) problems.push(`기존 manifest 에 없는 slug: ${r.slug}`);
   if (l && (Math.abs(Number(l.lat) - r.lat) > 0.01 || Math.abs(Number(l.lon) - r.lon) > 0.01)) problems.push(`좌표가 기존 manifest 와 다름: ${r.slug}`);
   const character = artOf(r.slug, ''), scene = artOf(r.slug, '_scene');
+  const thumbRel = `characters/thumb/${r.slug}.webp`, thumb = assets.some(a => a.path === thumbRel) ? thumbRel : null;
   return {
     index: l?.index ?? null,
     ...r,
     place_basis: l?.place_basis ?? null,
-    art: { character, scene, status: character ? 'ready' : 'pending-conversion' },
+    art: { thumb, character, scene, status: character ? 'ready' : 'pending-conversion' },
   };
 });
 manifest.sort((a, b) => (a.index ?? 9999) - (b.index ?? 9999));

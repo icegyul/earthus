@@ -33,7 +33,9 @@ ap.add_argument('--source', default=DEFAULT_SOURCE)
 ap.add_argument('--only', action='append', default=[])
 ap.add_argument('--force', action='store_true')
 ap.add_argument('--method', type=int, default=6)
+ap.add_argument('--thumb', type=int, default=0, help='LOD1 썸네일도 만든다(정사각 px, 예 256). 지역에 보이는 캐릭터만 먼저 받는 용도')
 a = ap.parse_args()
+THUMB_DIR = os.path.join(ROOT, 'content', 'characters', 'thumb')
 
 chars_dir = os.path.join(a.source, 'characters'); scenes_dir = os.path.join(a.source, 'scenes')
 if not (os.path.isdir(chars_dir) and os.path.isdir(scenes_dir)):
@@ -68,6 +70,7 @@ t0 = time.time(); n_done = n_skip = 0; png_bytes = webp_bytes = 0
 src_manifest = {'_note': '런타임 WebP 의 원본 PNG 기록 — 사본이 아니라 출처 증명. 원본은 여기 적힌 경로에 그대로 있고 삭제하지 않는다.',
                 'source_root': a.source, 'generated_at': time.strftime('%Y-%m-%d %H:%M'), 'baseline': BASELINE, 'entries': {}}
 existing = json.load(open(os.path.join(SOURCE_DIR, 'source-manifest.json'), encoding='utf-8'))['entries'] if os.path.exists(os.path.join(SOURCE_DIR, 'source-manifest.json')) else {}
+src_manifest['entries'] = dict(existing)   # --only 로 일부만 돌려도 나머지 기록을 잃지 않는다(병합)
 
 def convert(slug, kind, src, dst, mode):
     global n_done, n_skip, png_bytes, webp_bytes
@@ -84,10 +87,26 @@ def convert(slug, kind, src, dst, mode):
     n_done += 1; png_bytes += os.path.getsize(src); webp_bytes += os.path.getsize(dst)
     return f'{os.path.getsize(src)//1024}KB→{os.path.getsize(dst)//1024}KB q{st["quality"]}' + (' *override' if slug in ov and kind in ov[slug] else '')
 
+def thumb(slug, src, size):
+    """LOD1 썸네일: 알파 경계로 자른 뒤 정사각 size 로. q80. 원본은 읽기만."""
+    os.makedirs(THUMB_DIR, exist_ok=True)
+    dst = os.path.join(THUMB_DIR, f'{slug}.webp')
+    if not a.force and is_current(dst, src, size): return 'skip'
+    with Image.open(src) as im0:
+        im = im0.convert('RGBA')
+        bbox = im.getchannel('A').point(lambda v: 255 if v > 12 else 0).getbbox()
+        if bbox: im = im.crop(bbox)
+        w, h = im.size; side = max(w, h)
+        sq = Image.new('RGBA', (side, side), (0, 0, 0, 0)); sq.paste(im, ((side - w) // 2, side - h))
+        sq = sq.resize((size, size), Image.LANCZOS)
+        sq.save(dst, 'WEBP', quality=80, method=6)
+    return f'{os.path.getsize(dst)//1024}KB'
+
 for s in slugs:
     cp = os.path.join(chars_dir, f'{s}.png'); sp = os.path.join(scenes_dir, f'{s}_scene.png')
     r1 = convert(s, 'character', cp, os.path.join(RUNTIME, f'{s}.webp'), 'RGBA')
     r2 = convert(s, 'scene', sp, os.path.join(RUNTIME, f'{s}_scene.webp'), 'RGB')
+    if a.thumb: print(f'  {s:28s} thumb {a.thumb}px → {thumb(s, cp, a.thumb)}')
     for kind, p in (('character', cp), ('scene', sp)):
         key = f'{s}:{kind}'
         prev = existing.get(key)

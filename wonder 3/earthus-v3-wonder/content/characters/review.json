@@ -1,0 +1,12 @@
+{
+  "_note": "런타임 WebP(1024 q85)·썸네일(256 q80) 시각 QA 기록. 접촉 시트(얼굴 부근 1:1 크롭)와 브라우저 실제 렌더로 본 것만 적는다. 나머지 121종은 pending — 지역에 등장하는 시점에 같은 방식으로 본다. 원본 PNG 는 삭제하지 않는다.",
+  "baseline": { "character": "1024px q85", "scene": "1024px q85", "thumb": "256px q80" },
+  "reviewed_at": "2026-09-13",
+  "verdict_counts": { "ok": 3, "pending": 121 },
+  "characters": {
+    "yeti":         { "verdict": "ok", "seen": "접촉 시트 1:1 — 털 결·겹 그림자 보존, 알파 가장자리 깨끗. 브라우저 히말라야 환경에서 LOD1→LOD2 교체 확인", "thumb": "ok", "runtime": "ok", "scene": "not-yet-shown" },
+    "lion":         { "verdict": "ok", "seen": "접촉 시트 1:1 — 갈기 종이 결 보존. 브라우저 사바나 환경(데스크톱·375px) 렌더 확인", "thumb": "ok", "runtime": "ok", "scene": "not-yet-shown" },
+    "electric-eel": { "verdict": "ok", "seen": "접촉 시트 1:1 — 번개 무늬·비늘 겹 보존. 브라우저 아마존 환경 렌더 확인", "thumb": "ok", "runtime": "ok", "scene": "not-yet-shown" }
+  },
+  "exceptions_requested": []
+}

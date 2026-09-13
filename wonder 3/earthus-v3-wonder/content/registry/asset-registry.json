@@ -13,7 +13,7 @@
     }
   },
   "counts": {
-    "assets": 286,
+    "assets": 295,
     "backgrounds": 24,
     "backgrounds_usable": 0,
     "fx": 5,
@@ -42,6 +42,15 @@
       "path": "backgrounds/replacement-manifest.json",
       "bytes": 10842,
       "sha256": "a4a3525dba1cadf63f66385ef7d8d07fc6373160c68e1cdbc3c0a51ad3c57c07",
+      "source": "earthus-v3-wonder",
+      "load": "boot"
+    },
+    {
+      "id": "review",
+      "kind": "data",
+      "path": "characters/review.json",
+      "bytes": 1218,
+      "sha256": "01fb82916a370457d03f4b3ea6e748c573079bc877aa6735dfd2c5307fc332b2",
       "source": "earthus-v3-wonder",
       "load": "boot"
     },
@@ -2291,7 +2300,43 @@
       "kind": "data",
       "path": "characters/source/source-manifest.json",
       "bytes": 56418,
-      "sha256": "491fafe7b85c1f2a5c5735474bf358c044b0a9bfb1aa83168877f92d7fdd2f89",
+      "sha256": "1aee5cc6c58a849c412d9448a125c94880b891f7af28c946edf5ff6bb8b90c9a",
+      "source": "earthus-v3-wonder",
+      "load": "boot"
+    },
+    {
+      "id": "electric-eel",
+      "kind": "character-thumb",
+      "path": "characters/thumb/electric-eel.webp",
+      "bytes": 11518,
+      "sha256": "396e9c939f9206229a25e4d7a5198801749acb7d49eb9bcc7085a43eadf91550",
+      "source": "legacy-pack124→runtime-webp",
+      "load": "lod1"
+    },
+    {
+      "id": "lion",
+      "kind": "character-thumb",
+      "path": "characters/thumb/lion.webp",
+      "bytes": 20366,
+      "sha256": "95669f5fb00a703b7a905197ae23bbb527a6b05ccb351b02e835ac6b3287d0b5",
+      "source": "legacy-pack124→runtime-webp",
+      "load": "lod1"
+    },
+    {
+      "id": "yeti",
+      "kind": "character-thumb",
+      "path": "characters/thumb/yeti.webp",
+      "bytes": 8532,
+      "sha256": "ad3af4233ba402a94c8f9d65291cf0825f30e1eb8957ad17e4c29e81b5bfd415",
+      "source": "legacy-pack124→runtime-webp",
+      "load": "lod1"
+    },
+    {
+      "id": "environments",
+      "kind": "data",
+      "path": "environments/environments.json",
+      "bytes": 2994,
+      "sha256": "74389b2c50c7f84322425675bc608d2d66d2f33d84922c86d1ac262a56a3c87c",
       "source": "earthus-v3-wonder",
       "load": "boot"
     },
@@ -2312,6 +2357,42 @@
       "sha256": "743a3cae01bf5a5a40c562fe4e056c043cd4159bf62037233ddf5a1109bb1e40",
       "source": "natural-earth",
       "load": "boot"
+    },
+    {
+      "id": "amazon",
+      "kind": "landmark",
+      "path": "landmarks/amazon.webp",
+      "bytes": 22486,
+      "sha256": "63d59efb3cd711943aabf0ba28bd1b7515ed7bfd36ccb0342ff594904e3f3679",
+      "source": "legacy-v3-paper-atlas",
+      "load": "region-lazy"
+    },
+    {
+      "id": "himalaya",
+      "kind": "landmark",
+      "path": "landmarks/himalaya.webp",
+      "bytes": 16946,
+      "sha256": "b564c11a64816a4069ab7231dcd32537341f3185f6dca8d95e942afb54f07f68",
+      "source": "legacy-v3-paper-atlas",
+      "load": "region-lazy"
+    },
+    {
+      "id": "landmarks",
+      "kind": "data",
+      "path": "landmarks/landmarks.json",
+      "bytes": 1519,
+      "sha256": "08c0176cd95fd7426f22ed63c43436a07a7edfab865c285d428ef8dbc166596e",
+      "source": "earthus-v3-wonder",
+      "load": "boot"
+    },
+    {
+      "id": "savanna",
+      "kind": "landmark",
+      "path": "landmarks/savanna.webp",
+      "bytes": 19848,
+      "sha256": "3c87719b850880fdb3eb00617446379ae1a0a300f204d87b610aadc9366b8fe4",
+      "source": "legacy-v3-paper-atlas",
+      "load": "region-lazy"
     },
     {
       "id": "background-catalog",

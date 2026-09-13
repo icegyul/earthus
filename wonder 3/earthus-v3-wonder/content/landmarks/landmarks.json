@@ -1,0 +1,45 @@
+{
+  "_note": "v3-paper 세계 지형 아틀라스(사내 생성 그림, 2026-09-07)에서 잘라 온 지역 랜드마크. 지형의 대표 중심 그림이지 실제 면적·경계가 아니다. 원본은 prototype/v3-paper/assets/ 에 그대로 있다.",
+  "generated_at": "2026-09-13 15:01",
+  "items": {
+    "himalaya": {
+      "path": "landmarks/himalaya.webp",
+      "label": "히말라야산맥",
+      "atlas": "prototype/v3-paper/assets/world-terrain-atlas.png",
+      "cell": 0,
+      "size": [
+        457,
+        309
+      ],
+      "bytes": 16946,
+      "source_url": "https://en.wikipedia.org/wiki/Himalayas",
+      "note": "겹종이 그림. 실제 크기·경계 아님"
+    },
+    "savanna": {
+      "path": "landmarks/savanna.webp",
+      "label": "세렝게티 초원",
+      "atlas": "prototype/v3-paper/assets/world-nature-atlas.png",
+      "cell": 10,
+      "size": [
+        444,
+        223
+      ],
+      "bytes": 19848,
+      "source_url": "https://en.wikipedia.org/wiki/Serengeti",
+      "note": "겹종이 그림. 실제 크기·경계 아님"
+    },
+    "amazon": {
+      "path": "landmarks/amazon.webp",
+      "label": "아마존 열대우림",
+      "atlas": "prototype/v3-paper/assets/world-nature-atlas.png",
+      "cell": 2,
+      "size": [
+        410,
+        369
+      ],
+      "bytes": 22486,
+      "source_url": "https://en.wikipedia.org/wiki/Amazon_rainforest",
+      "note": "겹종이 그림. 실제 크기·경계 아님"
+    }
+  }
+}

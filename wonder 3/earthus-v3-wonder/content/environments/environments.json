@@ -1,0 +1,57 @@
+{
+  "_note": "PHASE 1-B Wonder Environment 프로토타입 3곳. anchor 는 기존 124종 manifest 의 캐릭터 좌표(자료)이고, descriptor 는 감성 문구(사실 아님), fact 는 일반 상식 수준이라 verified=false 로 두고 화면에 쓰지 않는다(PHASE 2 출처 확정 뒤). landmark 는 기존 v3-paper 아틀라스 그림(지형의 대표 그림, 실제 면적·경계 아님). 재규어·카피바라는 자료상 판타나우(아마존에서 ~1,600km)라 아마존에 두지 않는다.",
+  "schema": "earthus-v3-wonder/environments@0",
+  "environments": [
+    {
+      "id": "himalaya",
+      "regionId": "south-asia",
+      "nameKo": "히말라야",
+      "nameEn": "Himalaya",
+      "descriptorKo": "구름보다 높은 산",
+      "descriptorEn": "Mountains above the clouds",
+      "anchor": { "lat": 27.99, "lon": 86.93 },
+      "radiusKm": 900,
+      "placeBasis": "에베레스트산 — 예티 설화 기준 좌표(manifest-124)",
+      "landmark": "himalaya",
+      "characters": ["yeti"],
+      "nearbyCharacters": ["red-panda"],
+      "palette": { "sky": "#dfe9f2", "far": "#c7d3e0", "mid": "#e9e7e0", "ground": "#edeff0", "ink": "#3b4a63" },
+      "ambient": { "main": "clouds", "secondary": ["landmark-breathe"] },
+      "fact": { "text": "에베레스트 8,848.86 m (2020 네팔·중국 공동 발표)", "verified": false }
+    },
+    {
+      "id": "savanna",
+      "regionId": "africa",
+      "nameKo": "아프리카 사바나",
+      "nameEn": "African Savanna",
+      "descriptorKo": "노란 풀바다 위로 해가 크게 뜨는 곳",
+      "descriptorEn": "Where the sun rises over a sea of yellow grass",
+      "anchor": { "lat": -2.33, "lon": 34.83 },
+      "radiusKm": 1200,
+      "placeBasis": "세렝게티 국립공원 — 사자 서식지 기준 좌표(manifest-124)",
+      "landmark": "savanna",
+      "characters": ["lion"],
+      "nearbyCharacters": ["zebra", "giraffe"],
+      "palette": { "sky": "#f6e3c4", "far": "#e5c996", "mid": "#d9b06a", "ground": "#c99a52", "ink": "#4a3a22" },
+      "ambient": { "main": "clouds", "secondary": ["grass-sway"] },
+      "fact": { "text": "세렝게티 국립공원 약 14,750 km²", "verified": false }
+    },
+    {
+      "id": "amazon",
+      "regionId": "south-america",
+      "nameKo": "아마존 정글",
+      "nameEn": "Amazon Jungle",
+      "descriptorKo": "비가 만든 초록 바다",
+      "descriptorEn": "A green sea made of rain",
+      "anchor": { "lat": -3.1, "lon": -60.02 },
+      "radiusKm": 1500,
+      "placeBasis": "아마존강 마나우스 — 전기뱀장어 서식지 기준 좌표(manifest-124)",
+      "landmark": "amazon",
+      "characters": ["electric-eel"],
+      "nearbyCharacters": [],
+      "palette": { "sky": "#dfeee0", "far": "#a9c9a3", "mid": "#6f9d6b", "ground": "#4e7c52", "ink": "#233a2a" },
+      "ambient": { "main": "clouds", "secondary": ["leaf-sway"] },
+      "fact": { "text": "아마존 열대우림 약 550만 km²", "verified": false }
+    }
+  ]
+}

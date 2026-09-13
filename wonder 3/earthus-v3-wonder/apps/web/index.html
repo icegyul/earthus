@@ -6,7 +6,8 @@
   <meta name="theme-color" content="#f3ead9">
   <meta name="description" content="EARTHUS V3 WONDER — 아이의 손길로 지구가 살아나는 2.5D Paper Wonder Earth. PHASE 1 Paper Earth.">
   <title>EARTHUS WONDER · 종이 지구</title>
-  <!-- 서비스워커 없음. 캐릭터·배경은 이 화면에서 받지 않는다(Master Directive §19). -->
+  <!-- 서비스워커 없음. 첫 화면은 지구 자료만 받는다(Master Directive §19). 캐릭터·랜드마크는 지역에 들어갈 때만. -->
+  <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./earth.css">
 </head>
 <body>
@@ -14,13 +15,17 @@
     <canvas id="globe" tabindex="0" aria-label="종이 지구 — 끌어서 돌리고, 두 손가락으로 당겨 가까이 보고, 톡 누르면 그 지역으로 갑니다"></canvas>
   </main>
 
+  <!-- Wonder Environment: 지역에 들어가면 종이가 펼쳐지는 층. 닫히면 숨김. -->
+  <div id="env" class="env" hidden aria-label="지역 환경"></div>
+
   <header class="topbar">
     <div class="brand"><strong>EARTHUS</strong><span>WONDER</span></div>
     <nav class="crumbs" aria-label="어디에 있나">
       <button id="btnEarth" class="crumb crumb-earth" type="button" aria-label="지구로 돌아가기" hidden>🌍 지구</button>
       <span id="regionChip" class="crumb crumb-region" hidden></span>
+      <button id="btnFart" class="crumb crumb-fart" type="button" hidden title="이 친구만 할 수 있는 장난">뿡</button>
     </nav>
-    <div class="phase" id="phase">PHASE 1 · 종이 지구</div>
+    <div class="phase" id="phase">PHASE 1-B · 종이 지구</div>
   </header>
 
   <div class="zoom" role="group" aria-label="가까이 · 멀리">

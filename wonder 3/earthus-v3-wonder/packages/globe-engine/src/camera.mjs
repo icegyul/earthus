@@ -88,14 +88,14 @@ export class OrbitCamera {
   endDrag() { this.dragging = false; if (this.reducedMotion) { this.vLon = 0; this.vLat = 0; } }
 
   /** 줌 단계를 잠근 범위 안에서 바꾼다. 트윈으로 이동(움직임 줄이기면 즉시). @returns 실제로 바뀌었는가 */
-  setZoomStep(step, { lat, lon } = {}) {
+  setZoomStep(step, { lat, lon } = {}, { durMs = 900 } = {}) {
     const s = Math.max(0, Math.min(ZOOM_STEPS - 1, Math.round(step)));
     const to = { lat: lat ?? this.lat, lon: lon ?? this.lon, dist: this.dists[s] };
     const changed = s !== this.step || lat != null || lon != null;
     this.step = s;
     this.vLon = 0; this.vLat = 0;
-    if (this.reducedMotion) { this.lat = clampLat(to.lat); this.lon = wrapLon(to.lon); this.dist = to.dist; this.tween = null; return changed; }
-    this.tween = { from: { lat: this.lat, lon: this.lon, dist: this.dist }, to, t: 0, dur: 0.9 };
+    if (this.reducedMotion || durMs <= 0) { this.lat = clampLat(to.lat); this.lon = wrapLon(to.lon); this.dist = to.dist; this.tween = null; return changed; }
+    this.tween = { from: { lat: this.lat, lon: this.lon, dist: this.dist }, to, t: 0, dur: durMs / 1000 };
     return changed;
   }
 

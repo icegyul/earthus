@@ -1,7 +1,7 @@
 {
   "_note": "런타임 WebP 의 원본 PNG 기록 — 사본이 아니라 출처 증명. 원본은 여기 적힌 경로에 그대로 있고 삭제하지 않는다.",
   "source_root": "D:\\## APP\\EARTHUS v2_APP\\prototype\\v3-paper\\pack124",
-  "generated_at": "2026-09-13 14:09",
+  "generated_at": "2026-09-13 14:57",
   "baseline": {
     "character": {
       "max": 1024,
@@ -13,6 +13,42 @@
     }
   },
   "entries": {
+    "electric-eel:character": {
+      "path": "characters/electric-eel.png",
+      "bytes": 619574,
+      "mtime": 1788565437.386749,
+      "sha256": "8445e71b1b1678ad9bad7a06f987977ddced2919f9484030e23e6818c7ba5761"
+    },
+    "electric-eel:scene": {
+      "path": "scenes/electric-eel_scene.png",
+      "bytes": 999061,
+      "mtime": 1788565437.38975,
+      "sha256": "d4ba7d5d906744bf7d35cd95be9a27b1fe31ccb5e910ca2c307aa719f4cee7d2"
+    },
+    "lion:character": {
+      "path": "characters/lion.png",
+      "bytes": 996189,
+      "mtime": 1788565437.5650678,
+      "sha256": "72cf62afb170995ef0b9236df9fac4321b97c046058b23dca3d1c813851f64cc"
+    },
+    "lion:scene": {
+      "path": "scenes/lion_scene.png",
+      "bytes": 1002508,
+      "mtime": 1788565437.5756855,
+      "sha256": "bb43f59cc1d9c35de828b07a655be6bba4acdf6ee172756309d4abfa5a6642c2"
+    },
+    "yeti:character": {
+      "path": "characters/yeti.png",
+      "bytes": 501491,
+      "mtime": 1788565437.8368757,
+      "sha256": "9b5a58067df633fa4345c7684ceec0751996bcf44ddc6d1f9e70d204dee8a198"
+    },
+    "yeti:scene": {
+      "path": "scenes/yeti_scene.png",
+      "bytes": 921110,
+      "mtime": 1788565437.8491027,
+      "sha256": "53782787ccebde7b48898ba3f8d8a7626d08634f88989305cdb8d2687cf5fe76"
+    },
     "african-elephant:character": {
       "path": "characters/african-elephant.png",
       "bytes": 934516,
@@ -445,18 +481,6 @@
       "mtime": 1788565437.3842404,
       "sha256": "38270a44e747047fbfa35923ba838c5e14e65c6e648436553639ef0ce4347560"
     },
-    "electric-eel:character": {
-      "path": "characters/electric-eel.png",
-      "bytes": 619574,
-      "mtime": 1788565437.386749,
-      "sha256": "8445e71b1b1678ad9bad7a06f987977ddced2919f9484030e23e6818c7ba5761"
-    },
-    "electric-eel:scene": {
-      "path": "scenes/electric-eel_scene.png",
-      "bytes": 999061,
-      "mtime": 1788565437.38975,
-      "sha256": "d4ba7d5d906744bf7d35cd95be9a27b1fe31ccb5e910ca2c307aa719f4cee7d2"
-    },
     "emperor-penguin:character": {
       "path": "characters/emperor-penguin.png",
       "bytes": 557334,
@@ -852,18 +876,6 @@
       "bytes": 1011758,
       "mtime": 1788565437.570577,
       "sha256": "cb6d451c65782c6f7712f9ccb4c31cf972da140d1d9e4941566cff97db4c1aac"
-    },
-    "lion:character": {
-      "path": "characters/lion.png",
-      "bytes": 996189,
-      "mtime": 1788565437.5650678,
-      "sha256": "72cf62afb170995ef0b9236df9fac4321b97c046058b23dca3d1c813851f64cc"
-    },
-    "lion:scene": {
-      "path": "scenes/lion_scene.png",
-      "bytes": 1002508,
-      "mtime": 1788565437.5756855,
-      "sha256": "bb43f59cc1d9c35de828b07a655be6bba4acdf6ee172756309d4abfa5a6642c2"
     },
     "liopleurodon:character": {
       "path": "characters/liopleurodon.png",
@@ -1476,18 +1488,6 @@
       "bytes": 1087045,
       "mtime": 1788565437.8438754,
       "sha256": "a25acd5b11b20d4a4a814f5f0560a5043ce8050958839e03c20788296f8a1a7a"
-    },
-    "yeti:character": {
-      "path": "characters/yeti.png",
-      "bytes": 501491,
-      "mtime": 1788565437.8368757,
-      "sha256": "9b5a58067df633fa4345c7684ceec0751996bcf44ddc6d1f9e70d204dee8a198"
-    },
-    "yeti:scene": {
-      "path": "scenes/yeti_scene.png",
-      "bytes": 921110,
-      "mtime": 1788565437.8491027,
-      "sha256": "53782787ccebde7b48898ba3f8d8a7626d08634f88989305cdb8d2687cf5fe76"
     },
     "zebra:character": {
       "path": "characters/zebra.png",

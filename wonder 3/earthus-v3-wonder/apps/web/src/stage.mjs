@@ -137,5 +137,5 @@ export function createStage(root, { contentBase, reducedMotion = () => false, on
     return true;
   }
 
-  return { setBackground, clearBackground, setCharacter, play, playSequence, get busy() { return busy; }, get current() { return current; }, get backgroundId() { return bgId; }, get backgroundUsed() { return bgUsed; }, get element() { return charEl; } };
+  return { setBackground, clearBackground, setCharacter, play, playSequence, anchor, get busy() { return busy; }, get current() { return current; }, get backgroundId() { return bgId; }, get backgroundUsed() { return bgUsed; }, get element() { return charEl; } };
 }

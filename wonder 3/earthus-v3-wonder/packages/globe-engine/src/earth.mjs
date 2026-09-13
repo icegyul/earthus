@@ -32,18 +32,47 @@ export function createPaperEarth({ canvas, textureCanvas, pixelRatio = 1 }) {
   const key = new THREE.DirectionalLight(0xffffff, 1.35);
   scene.add(key); scene.add(key.target);
 
-  // 지역 표식: 구 표면에 붙는 작은 종이 동그라미. 구 뒤로 돌아가면 깊이 검사로 가려진다(§2.2 "지구 뒤로 돌아가는 깊이감").
-  const marker = new THREE.Mesh(
-    new THREE.CircleGeometry(0.022, 32),
-    new THREE.MeshBasicMaterial({ color: 0xf2a541, transparent: true, opacity: 0.95, depthTest: true }),
-  );
+  // 지역 표식: 구 표면에 붙는 **얇은 흰 글로우 링**(§6 "thin glow line", 두꺼운 지도 UI 금지). 구 뒤로 돌아가면 깊이 검사로 가려진다(§2.2).
+  const marker = new THREE.Group();
   const markerRing = new THREE.Mesh(
-    new THREE.RingGeometry(0.03, 0.038, 40),
-    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, side: THREE.DoubleSide }),
+    new THREE.RingGeometry(0.028, 0.033, 48),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthWrite: false }),
   );
-  marker.add(markerRing);
+  const markerGlow = new THREE.Mesh(
+    new THREE.RingGeometry(0.02, 0.048, 48),
+    new THREE.MeshBasicMaterial({ color: 0xfff1c8, transparent: true, opacity: 0.28, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending }),
+  );
+  marker.add(markerGlow); marker.add(markerRing);
   marker.visible = false;
   scene.add(marker);
+
+  // 캐릭터 스프라이트(LOD1 썸네일): 구 표면 위 빌보드. 보이는 지역만 호출부가 넣고 뺀다. 구 뒤로 가면 가려진다.
+  const sprites = new Map();   // id → { sprite, lat, lon, texture }
+  function setSprite(id, { lat, lon, image, size = 0.09 }) {
+    let s = sprites.get(id);
+    if (!s) {
+      const tex = new THREE.Texture(image); tex.colorSpace = THREE.SRGBColorSpace; tex.needsUpdate = true;
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: true, depthWrite: false }));
+      sp.name = `char-${id}`;
+      scene.add(sp);
+      s = { sprite: sp, texture: tex, lat, lon }; sprites.set(id, s);
+    }
+    const p = llToVec(lat, lon, 1 + size * 0.55);
+    s.sprite.position.set(p.x, p.y, p.z);
+    s.sprite.scale.set(size, size, 1);
+    s.sprite.center.set(0.5, 0.15);       // 발끝이 표면 근처
+    s.lat = lat; s.lon = lon;
+    return s.sprite;
+  }
+  function removeSprite(id) {
+    const s = sprites.get(id); if (!s) return false;
+    scene.remove(s.sprite); s.sprite.material.dispose(); s.texture.dispose(); sprites.delete(id); return true;
+  }
+  /** 구 위 좌표가 카메라 쪽(앞면)인가 — cos 각 > 0.15 (가장자리는 제외). */
+  function facing(lat, lon, pose, min = 0.15) {
+    const c = llToVec(pose.lat, pose.lon, 1), q = llToVec(lat, lon, 1);
+    return c.x * q.x + c.y * q.y + c.z * q.z > min;
+  }
 
   const ray = new THREE.Raycaster();
   const ndc = new THREE.Vector2();
@@ -93,6 +122,13 @@ export function createPaperEarth({ canvas, textureCanvas, pixelRatio = 1 }) {
     return marker.position.clone().normalize().dot(new THREE.Vector3(c.x, c.y, c.z)) > 0;
   }
 
+  /** 구 위 좌표 → 캔버스 px (unfold 시작점). 카메라 자세는 마지막 render 의 것. */
+  function project(lat, lon) {
+    const p = llToVec(lat, lon, 1);
+    const v = new THREE.Vector3(p.x, p.y, p.z).project(cam);
+    return { x: (v.x + 1) / 2 * viewW, y: (1 - v.y) / 2 * viewH, inFront: v.z < 1 };
+  }
+
   const projectedDiameter = pose => diameterAtDistance(pose.dist, viewH, pose.fov);
 
   function metrics() {
@@ -104,9 +140,10 @@ export function createPaperEarth({ canvas, textureCanvas, pixelRatio = 1 }) {
 
   function dispose() {
     globe.geometry.dispose(); globe.material.dispose(); map.dispose();
-    marker.geometry.dispose(); marker.material.dispose(); markerRing.geometry.dispose(); markerRing.material.dispose();
+    markerRing.geometry.dispose(); markerRing.material.dispose(); markerGlow.geometry.dispose(); markerGlow.material.dispose();
+    for (const id of [...sprites.keys()]) removeSprite(id);
     renderer.dispose();
   }
 
-  return { renderer, scene, camera: cam, globe, resize, render, pick, setMarker, markerFacing, projectedDiameter, metrics, dispose, THREE };
+  return { renderer, scene, camera: cam, globe, resize, render, pick, project, setMarker, markerFacing, facing, setSprite, removeSprite, get spriteIds() { return [...sprites.keys()]; }, projectedDiameter, metrics, dispose, THREE };
 }

@@ -211,3 +211,50 @@ assert.ok(body.indexOf('class="mp-ico"') < body.indexOf('class="mp-lbl"'), '아�
 4. 그 트리에서 시험과 번들 빌드를 돌린다.
 
 **시험이 초록불이라는 것은 파일이 멀쩡하다는 뜻이 아니다.**
+
+---
+
+## 6. 메뉴 묶음 아이콘 (2026-09-14, `wonder 3/EARTHUS_MENU_ICONS_V2.zip`)
+
+현상 44종과 **다른 층**이다 — 현상 줄이 아니라 V2 탐색 서랍의 **절 제목(묶음)** 앞에 선다.
+V1 에는 묶음 제목이 없어 V1 은 건드리지 않았다.
+
+| 것 | 자리 |
+|---|---|
+| 그림 7종 × 3크기(48·96·192, 원형·투명) | `prototype/assets/earthus-icons/groups/menu-group-<묶음 id>-<크기>.png` |
+| 원본 이름 ↔ 묶음 id 대응·해시 | `prototype/assets/earthus-icons/groups/manifest.json` |
+| 표 | `prototype/js/earthus-icons.js` 의 `MENU_GROUP_ICON` · `groupIconSrc()` · `groupIconSrcSet()` |
+| 그리는 곳 | `ui-shell.js` `groupIconHtml()` → `groupSectionHtml` · `looseSectionHtml` |
+| 디자이너 미리보기 | `docs/icon-system/EARTHUS_MENU_ICON_PREVIEW_V2.png` |
+| 시험 | `tools/test_v2_ui_information_architecture.mjs` "묶음(절 제목) 아이콘" |
+
+### 6.1 팩 이름표와 우리 묶음이 1:1 이 아니다 — 대응 근거
+
+팩의 이름표는 `대기 · 바다 · 지형 · 눈·얼음 · 대기질·관측 · 심층·사건·예측 · 지구 표면·어둠` 이고,
+V2 서랍은 `대기 · 바다 · 재해 · 눈·얼음 · 대기질·관측 · 생태·사람·여행 · 지구 표현·이동`(+우주) 이다.
+넷은 그대로, 셋은 그림을 보고 정했다:
+
+| 팩 파일 | 묶음 | 왜 |
+|---|---|---|
+| `06_deep_events_prediction` (태풍 소용돌이) | `hazard` 재해 | 태풍·지진·쓰나미·산불이 사는 묶음 |
+| `07_surface_night` (야간 불빛 지구) | `society` 생태·사람·여행 | 야간 불빛은 사람의 대리 지표. `people.night_lights` 가 여기 산다 |
+| `03_terrain` (산맥) | `__loose` 지구 표현·이동 | 바탕 지도 3종(NE2·블루마블·실사)·지형 표현이 이 절이다 |
+
+**우주(space) 묶음은 팩에 없다.** 없는 그림을 있다고 적지 않았다 — `groupIconSrc('space')` 는 null 이고
+절 제목은 점과 이름만 남는다. 시험이 이 null 을 지킨다.
+
+### 6.2 크기 — PD "V1 디자인처럼"
+
+처음 24px → 30px 로 넣었더니 "작게 말고 기본 사이즈로, V1 처럼" 지시. V1 오른쪽 레이어 판
+`.ly-icon` 규격을 그대로 가져왔다: **52px**(≤390px 46px), 그림자 `drop-shadow(0 2px 8px)`,
+hover −1px·밝기 1.08, active 0.92. 96px 파일이 1x, 192px 이 2x. 절 제목 글자는 9px 모노 대문자에서
+15px 600 으로 올렸다(52px 아이콘 옆에 9px 는 읽히지 않는다).
+
+### 6.3 함정
+
+- `.mp-title button` 은 `information-access.css` 가 `min-height:44px` 를 준다. 그 안에 24px 아이콘을
+  넣으면 빈 줄처럼 보인다 — 아이콘은 줄 높이를 채우는 크기여야 한다.
+- `font: 500 13px/1.25 inherit` 는 **통째로 무효**다(shorthand 의 family 자리에 inherit 불가).
+  h3 기본(bold 18.72px)이 조용히 적용된다. 따로 `font-size`/`font-weight` 로 쓴다.
+- `srcset` 밀도 서술자를 쓰면 `naturalWidth` 가 고른 밀도로 나눠진 값이다(48px 파일이 2x 로 골라지면 24).
+  "그림이 작게 왔다"가 아니다.

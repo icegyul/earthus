@@ -221,6 +221,28 @@ test('아이콘 표는 v1·v2 공용 모듈 하나뿐이다', async () => {
   assert.deepEqual(v1bad, [], 'V1 이 그릴 수 없는 아이콘을 가리킨다');
 });
 
+test('묶음(절 제목) 아이콘 — EARTHUS 묶음 전부 + 지구 표현 절에 그림이 실제로 있다', async () => {
+  // 2026-09-14 인수 EARTHUS_MENU_ICONS_V2 (7종). 우주 묶음은 팩에 없으므로 null 이어야 한다(빈 약속 금지).
+  const icons = await import('../prototype/js/earthus-icons.js');
+  const fs = await import('node:fs');
+  const { fileURLToPath } = await import('node:url');
+  const need = [...reg.EARTHUS_MENU_GROUPS, '__loose'];
+  for (const gid of need) {
+    for (const size of icons.MENU_GROUP_ICON_SIZES) {
+      const src = icons.groupIconSrc(gid, size);
+      assert.ok(src, `${gid} 묶음 아이콘(${size}) 주소가 없다`);
+      assert.ok(fs.existsSync(fileURLToPath(src)), `${gid} 묶음 아이콘 파일이 없다: ${src}`);
+    }
+    assert.match(icons.groupIconSrcSet(gid), / 1x, .* 2x$/);
+  }
+  assert.equal(icons.groupIconSrc('space'), null, '우주 묶음은 그림이 없는데 있다고 한다');
+  // 절 제목에서 아이콘은 점(i)·이름 앞에 서고 alt 는 비어야 한다. 표를 ui-shell 이 따로 만들면 안 된다.
+  assert.match(shellSrc, /groupIconHtml\(gid\) \+ '<i><\/i>'/);
+  assert.match(shellSrc, /groupIconHtml\('__loose'\) \+ '<i><\/i>'/);
+  assert.match(shellSrc, /class="mp-gico"[^>]*alt=""/);
+  assert.ok(!/menu-group-/.test(shellSrc), 'ui-shell 이 묶음 아이콘 파일 이름을 직접 만든다');
+});
+
 test('아이콘은 이름을 대신하지 않는다 — 아이콘만 남긴 메뉴 금지', () => {
   // 지시서 §3 "never replace the whole menu with unlabeled icon-only navigation".
   // 아이콘 줄에는 반드시 이름(mp-lbl)이 함께 나와야 하고, alt 는 비어야 한다(두 번 읽힘 방지).

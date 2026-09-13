@@ -308,3 +308,38 @@ export const iconForPhenomenon = (phenomenonId) => resolveIcon(V2_PHENOMENON_ICO
 
 /** 점검용 — 아직 그림이 없어 부모로 내려간 항목들. 시험이 읽는다. */
 export const pendingIcons = () => Object.keys(PENDING_PARENT).filter((s) => !SHIPPED.has(s));
+
+/* ── V2 메뉴 묶음(절 제목) 아이콘 — 2026-09-14 인수 `EARTHUS_MENU_ICONS_V2.zip` ──────
+   현상 44종 아이콘과는 다른 층이다: 현상 줄이 아니라 **묶음 제목** 앞에 선다.
+   그림: assets/earthus-icons/groups/menu-group-<묶음 id>-{48,96,192}.png (원형·투명 배경).
+   묶음 id 는 phenomenon-registry.js MENU_GROUPS 의 id 그대로다. '__loose'(지구 표현·이동 절)는
+   레지스트리 밖의 절이라 여기서 'globe' 로 부른다.
+   팩 파일 ↔ 묶음 대응(팩의 이름표는 대기·바다·지형·눈얼음·대기질관측·심층사건예측·지구표면어둠):
+     atmosphere←01_atmosphere · sea←02_ocean · cryosphere←04_snow_ice · observation←05_air_quality_observation
+     hazard←06_deep_events_prediction(태풍 소용돌이) · society←07_surface_night(야간 불빛 = 사람)
+     globe←03_terrain(지형 = 바탕 지도·지구 표현 절)
+   ⚠️ 우주(space) 묶음은 팩에 없다 — 없는 그림을 있다고 적지 않는다. 부르는 쪽이 null 을 받으면 점만 그린다.
+   ⚠️ 이름표(팩)는 개발용이다. 화면 문구는 MENU_GROUPS.label 이 정본이고 여기서 바꾸지 않는다. */
+const GROUP_ICON_BASE = new URL('groups/', ICON_BASE);
+const MENU_GROUP_ICON = Object.freeze({
+  atmosphere: 'atmosphere', sea: 'sea', hazard: 'hazard', cryosphere: 'cryosphere',
+  observation: 'observation', society: 'society', __loose: 'globe',
+});
+export const MENU_GROUP_ICON_SIZES = Object.freeze([48, 96, 192]);
+
+/** 묶음 아이콘 파일 주소. size 는 48·96·192. 그림 없는 묶음(space)은 null. */
+export function groupIconSrc(groupId, size = 48) {
+  const slug = MENU_GROUP_ICON[groupId];
+  if (!slug || !MENU_GROUP_ICON_SIZES.includes(size)) return null;
+  return new URL(`menu-group-${slug}-${size}.png`, GROUP_ICON_BASE).href;
+}
+
+/** 화면 52px 기준(V1 .ly-icon 과 같다): 96 이 1x, 192 가 2x — `<img src srcset>` 에 그대로. 48 은 예비. */
+export function groupIconSrcSet(groupId) {
+  const one = groupIconSrc(groupId, 96);
+  if (!one) return null;
+  return `${one} 1x, ${groupIconSrc(groupId, 192)} 2x`;
+}
+
+/** 점검용 — 묶음 아이콘이 있는 묶음 id 목록. 시험이 읽는다. */
+export const menuGroupsWithIcon = () => Object.keys(MENU_GROUP_ICON);

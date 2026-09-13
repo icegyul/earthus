@@ -13,7 +13,7 @@ import { questionForLayer, phenomenonForLayer, LAYER_PHENOMENON, reportKindsForP
 // 2026-09-13 아이콘 시스템 — 표는 v1·v2 공용 모듈 하나뿐이다(지시서 §13).
 // ⚠️ 번들에서는 tools/build-v2-bundle.sh 가 이 경로를 ./earthus-icons.js 로 고쳐 쓰고
 //    모듈을 번들의 js/ 바로 아래에 둔다(그래야 모듈이 그림을 번들 안에서 찾는다).
-import { iconForPhenomenon, iconSrc, iconSrcSet } from '../../js/earthus-icons.js?v=1';
+import { iconForPhenomenon, iconSrc, iconSrcSet, groupIconSrc, groupIconSrcSet } from '../../js/earthus-icons.js?v=2';
 import { menuCoverage, menuTime, canClearLayer, matchesMenu } from './information-contract.js';
 // PHASE 8 §13 — 리포트 센터. 보고서 렌더링은 그쪽 모듈이 한다. 여기서 문장을 만들지 않는다.
 import { reportDocHtml, reportKey, reportIndexKey, reportUrl, reportIdFromUrl, currentTier, DATA_LABEL_TEXT } from './report-center.js?v=2';
@@ -441,6 +441,16 @@ export function initShell(hooks) {
   // 한 줄만 바꿔도 절 제목 색이 따라 바뀌었다.
   const groupAccent = (gid) => (GROUP_BY_ID.get(gid) || {}).accent || '#7FB7F5';
 
+  /* 묶음(절 제목) 아이콘 — 2026-09-14 인수 EARTHUS_MENU_ICONS_V2. 점(i) 앞에 서고 이름을
+     대신하지 않는다(§3). 표는 earthus-icons.js 하나뿐이다 — 여기서 파일 이름을 만들지 않는다.
+     그림 없는 묶음(우주)은 빈 문자열 → 점과 이름만 남는다. alt 는 비운다(이름이 바로 옆에 있다). */
+  const groupIconHtml = (gid) => {
+    const src = groupIconSrc(gid, 96);
+    return src
+      ? '<img class="mp-gico" src="' + src + '" srcset="' + groupIconSrcSet(gid) + '" alt="" loading="lazy" decoding="async">'
+      : '';
+  };
+
   // 현상 한 줄이 검색어에 걸리는가 — 이름·질문뿐 아니라 속한 레이어 이름·출처까지 본다.
   const phenMatches = (entry) => matchesMenu(menuQuery, [
     entry.p.label.ko, entry.p.label.en, entry.p.question.ko, entry.p.question.en,
@@ -522,7 +532,7 @@ export function initShell(hooks) {
     const hidden = !menuQuery && collapsedSections.has(gid);
     return '<section class="mp-sec" data-section="' + gid + '" style="--sc:' + groupAccent(gid) + '">'
       + '<h3 class="mp-title"><button data-collapse="' + gid + '" aria-expanded="' + (hidden ? 'false' : 'true') + '">'
-      + '<i></i>' + safeText(label) + '<em>' + shown.length + '</em></button></h3>'
+      + groupIconHtml(gid) + '<i></i>' + safeText(label) + '<em>' + shown.length + '</em></button></h3>'
       + '<div ' + (hidden ? 'hidden' : '') + '>'
       + (menuQuery || activeOnly ? '' : chipsFor(gid))
       + shown.map(phenomenonRowHtml).join('')
@@ -539,7 +549,7 @@ export function initShell(hooks) {
     const hidden = !menuQuery && collapsedSections.has('__loose');
     return '<section class="mp-sec" data-section="__loose" style="--sc:#8aa0b4">'
       + '<h3 class="mp-title"><button data-collapse="__loose" aria-expanded="' + (hidden ? 'false' : 'true') + '">'
-      + '<i></i>' + (i18n.ko ? '지구 표현 · 이동' : 'Globe view & controls') + '<em>' + shown.length + '</em></button></h3>'
+      + groupIconHtml('__loose') + '<i></i>' + (i18n.ko ? '지구 표현 · 이동' : 'Globe view & controls') + '<em>' + shown.length + '</em></button></h3>'
       + '<div ' + (hidden ? 'hidden' : '') + '>'
       + (menuQuery || activeOnly ? '' : chipsFor('__loose'))
       + shown.map((r) => layerRowHtml(r, false)).join('') + '</div></section>';

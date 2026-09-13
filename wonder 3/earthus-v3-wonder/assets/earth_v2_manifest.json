@@ -1,0 +1,1475 @@
+{
+ "schema": "earthus-v3-wonder/earth-v2@1",
+ "product": "WONDER_EARTH_ASSETS_v2.0",
+ "sourcePack": {
+  "file": "WONDER_EARTH_ASSETS_v2.zip",
+  "bytes": 3048843,
+  "sha256": "2f9ae64a816e02088ce64298e384654fb2caf2afe658ffd38c25d2d873506abb",
+  "entries": 85
+ },
+ "projection": "per-region local-equirectangular-crop",
+ "globalOverview": null,
+ "baseOcean": "#1b6696",
+ "oceanColors": [
+  "#1b6696"
+ ],
+ "counts": {
+  "continents": 7,
+  "oceans": 8,
+  "files": 53
+ },
+ "arctic": {
+  "ocean.avif": {
+   "path": "assets/earth-v2/polar/arctic/ocean.avif",
+   "width": 1536,
+   "height": 768,
+   "mode": "RGB",
+   "bytes": 2994,
+   "decodedBytes": 4718592,
+   "sha256": "1a56274461334bc4b562c9e35b23d589f21e490238da140508b4efc4b65ea886",
+   "uniqueColors": 2,
+   "medianColor": "#166292"
+  },
+  "ice_mask.png": {
+   "path": "assets/earth-v2/polar/arctic/ice_mask.png",
+   "width": 1536,
+   "height": 768,
+   "mode": "L",
+   "bytes": 1431,
+   "decodedBytes": 4718592,
+   "sha256": "cb77540daded29f28f9451521e9363138b36d2e55ade206667c422cc840e964c",
+   "levels": 12,
+   "coverage": 0.099,
+   "min": 0,
+   "max": 210
+  },
+  "assumedBounds": [
+   -180,
+   -90,
+   180,
+   90
+  ],
+  "note": "manifest 에 bounds 가 없다. 전지구 등장방형으로 가정"
+ },
+ "regions": [
+  {
+   "id": "north_america",
+   "group": "continents",
+   "kind": "land",
+   "name": "North America",
+   "projection": "local-equirectangular-crop",
+   "lonMin": -176.57858742097795,
+   "latMin": 4.927803834799432,
+   "lonMax": -7.421073181913264,
+   "latMax": 85.93786765529711,
+   "declaredSize": [
+    2048,
+    980
+   ],
+   "paperCut": {
+    "layers": 3,
+    "depthPixels": 10
+   },
+   "files": {
+    "color.avif": {
+     "path": "assets/earth-v2/continents/north_america/color.avif",
+     "width": 2048,
+     "height": 980,
+     "mode": "RGBA",
+     "bytes": 140499,
+     "decodedBytes": 8028160,
+     "sha256": "dcb541eaca0717dd52e837874d61c49cb559e4649e1d721a7aefdea94ca6dc70",
+     "alphaLevels": 2,
+     "coverage": 0.2753,
+     "uniqueColors": 12,
+     "medianColor": "#739e5c",
+     "flatPct": 22.8,
+     "meanStep": 4.1
+    },
+    "mask.png": {
+     "path": "assets/earth-v2/continents/north_america/mask.png",
+     "width": 2048,
+     "height": 980,
+     "mode": "L",
+     "bytes": 18384,
+     "decodedBytes": 8028160,
+     "sha256": "b65f16c2cdbacf6f9b51333465298101a73e85e3392987106fc582033f21d1f5",
+     "levels": 2,
+     "coverage": 0.2753,
+     "min": 0,
+     "max": 255
+    },
+    "height.png": {
+     "path": "assets/earth-v2/continents/north_america/height.png",
+     "width": 2048,
+     "height": 980,
+     "mode": "L",
+     "bytes": 112651,
+     "decodedBytes": 8028160,
+     "sha256": "456732738d4d7cbfea8e7712f64cc39ff366f67db30d5a1ffb44287b4e06d37f",
+     "levels": 256,
+     "coverage": 0.07,
+     "min": 0,
+     "max": 255
+    },
+    "normal.png": {
+     "path": "assets/earth-v2/continents/north_america/normal.png",
+     "width": 2048,
+     "height": 980,
+     "mode": "RGB",
+     "bytes": 175849,
+     "decodedBytes": 8028160,
+     "sha256": "8d962edf1e0a60d1fcb3da4cabce0e99795840318890fbec157444e4467fdba4",
+     "uniqueColors": 4,
+     "medianColor": "#7f7ffe"
+    },
+    "shape.svg": {
+     "path": "assets/earth-v2/continents/north_america/shape.svg",
+     "bytes": 84513,
+     "sha256": "e871421cc172d54c2fbb222e413b6a8085740668b52692ebe4639ff46caa4eb1",
+     "paths": 4,
+     "points": 6200,
+     "commands": {
+      "M": 188,
+      "L": 6012,
+      "Z": 188
+     }
+    }
+   },
+   "shape": {
+    "viewBox": [
+     0.0,
+     0.0,
+     2048.0,
+     980.0
+    ],
+    "layers": [
+     {
+      "fill": "#4e7837",
+      "opacity": 0.55,
+      "fillRule": "nonzero",
+      "translate": [
+       0.0,
+       10.0
+      ],
+      "stroke": null,
+      "strokeWidth": 0.0,
+      "points": 1550
+     },
+     {
+      "fill": "#4e7837",
+      "opacity": 0.32,
+      "fillRule": "nonzero",
+      "translate": [
+       0.0,
+       5.0
+      ],
+      "stroke": null,
+      "strokeWidth": 0.0,
+      "points": 1550
+     },
+     {
+      "fill": "#749e5d",
+      "opacity": 1.0,
+      "fillRule": "evenodd",
+      "translate": [
+       0.0,
+       0.0
+      ],
+      "stroke": null,
+      "strokeWidth": 0.0,
+      "points": 1550
+     },
+     {
+      "fill": "transparent",
+      "opacity": 1.0,
+      "fillRule": "nonzero",
+      "translate": [
+       0.0,
+       0.0
+      ],
+      "stroke": "rgba(255,255,255,.14)",
+      "strokeWidth": 2.0,
+      "points": 1550
+     }
+    ],
+    "commands": {
+     "M": 188,
+     "L": 6012,
+     "Z": 188
+    },
+    "totalPoints": 6200
+   }
+  },
+  {
+   "id": "south_america",
+   "group": "continents",
+   "kind": "land",
+   "name": "South America",
+   "projection": "local-equirectangular-crop",
+   "lonMin": -82.81137102530545,
+   "latMin": -57.65330399504532,
+   "lonMax": -33.32956498262704,
+   "latMax": 14.478777163222627,
+   "declaredSize": [
+    1404,
+    1536
+   ],
+   "paperCut": {
+    "layers": 3,
+    "depthPixels": 10
+   },
+   "files": {
+    "color.avif": {
+     "path": "assets/earth-v2/continents/south_america/color.avif",
+     "width": 1404,
+     "height": 1536,
+     "mode": "RGBA",
+     "bytes": 157318,
+     "decodedBytes": 8626176,
+     "sha256": "b49cf1c101248ffd8332a68ac0bb256f462f8c072a6e43d97e20be1c1301ae95",
+     "alphaLevels": 13,
+     "coverage": 0.4338,
+     "uniqueColors": 11,
+     "medianColor": "#589552",
+     "flatPct": 22.9,
+     "meanStep": 4.09
+    },
+    "mask.png": {
+     "path": "assets/earth-v2/continents/south_america/mask.png",
+     "width": 1404,
+     "height": 1536,
+     "mode": "L",
+     "bytes": 12509,
+     "decodedBytes": 8626176,
+     "sha256": "06da95a4e8c38493c3d06a06e754081b2f17d7b9bb2117bc3560215b749fd9d0",
+     "levels": 2,
+     "coverage": 0.4338,
+     "min": 0,
+     "max": 255
+    },
+    "height.png": {
+     "path": "assets/earth-v2/continents/south_america/height.png",
+     "width": 1404,
+     "height": 1536,
+     "mode": "L",
+     "bytes": 103978,
+     "decodedBytes": 8626176,
+     "sha256": "42b1eac20323686fb3e4541baedec600af65f24ef2d0dd4e623cc2304fb59c8f",
+     "levels": 256,
+     "coverage": 0.1619,
+     "min": 0,
+     "max": 255
+    },
+    "normal.png": {
+     "path": "assets/earth-v2/continents/south_america/normal.png",
+     "width": 1404,
+     "height": 1536,
+     "mode": "RGB",
+     "bytes": 149455,
+     "decodedBytes": 8626176,
+     "sha256": "641c505048ffe2339394cb30d2dc7ce8dec5bf568c06b5a54317089debf70605",
+     "uniqueColors": 4,
+     "medianColor": "#7f7ffe"
+    },
+    "shape.svg": {
+     "path": "assets/earth-v2/continents/south_america/shape.svg",
+     "bytes": 16258,
+     "sha256": "fd7ab4ba4b67d785c69cbdd81ba7d01f398397672a76aba95af9b2f883509a6c",
+     "paths": 4,
+     "points": 1180,
+     "commands": {
+      "M": 12,
+      "L": 1168,
+      "Z": 12
+     }
+    }
+   },
+   "shape": {
+    "viewBox": [
+     0.0,
+     0.0,
+     1404.0,
+     1536.0
+    ],
+    "layers": [
+     {
+      "fill": "#326e2d",
+      "opacity": 0.55,
+      "fillRule": "nonzero",
+      "translate": [
+       0.0,
+       10.0
+      ],
+      "stroke": null,
+      "strokeWidth": 0.0,
+      "points": 295
+     },
+     {
+      "fill": "#326e2d",
+      "opacity": 0.32,
+      "fillRule": "nonzero",
+      "translate": [
+       0.0,
+       5.0
+      ],
+      "stroke": null,
+      "strokeWidth": 0.0,
+      "points": 295
+     },
+     {
+      "fill": "#589453",
+      "opacity": 1.0,
+      "fillRule": "evenodd",
+      "translate": [
+       0.0,
+       0.0
+      ],
+      "stroke": null,
+      "strokeWidth": 0.0,
+      "points": 295
+     },
+     {
+      "fill": "transparent",
+      "opacity": 1.0,
+      "fillRule": "nonzero",
+      "translate": [
+       0.0,
+       0.0
+      ],
+      "stroke": "rgba(255,255,255,.14)",
+      "strokeWidth": 2.0,
+      "points": 295
+     }
+    ],
+    "commands": {
+     "M": 12,
+     "L": 1168,
+     "Z": 12
+    },
+    "totalPoints": 1180
+   }
+  },
+  {
+   "id": "europe",
+   "group": "continents",
+   "kind": "land",
+   "name": "Europe",
+   "projection": "local-equirectangular-crop",
+   "lonMin": -190.8,
+   "latMin": -0.3225211373735397,
+   "lonMax": 190.80000000000007,
+   "latMax": 83.62631032438952,
+   "declaredSize": [
+    2048,
+    512
+   ],
+   "paperCut": {
+    "layers": 3,
+    "depthPixels": 10
+   },
+   "files": {
+    "color.avif": {
+     "path": "assets/earth-v2/continents/europe/color.avif",
+     "width": 2048,
+     "height": 512,
+     "mode": "RGBA",
+     "bytes": 81562,
+     "decodedBytes": 4194304,
+     "sha256": "f9c0e60cc157a47e680ed40648a1c07ef921c5c9f26edc4a1058e261545aae61",
+     "alphaLevels": 12,
+     "coverage": 0.1186,
+     "uniqueColors": 11,
+     "medianColor": "#84a965",
+     "flatPct": 22.7,
+     "meanStep": 4.09
+    },
+    "mask.png": {
+     "path": "assets/earth-v2/continents/europe/mask.png",
+     "width": 2048,
+     "height": 512,
+     "mode": "L",
+     "bytes": 7076,
+     "decodedBytes": 4194304,
+     "sha256": "54337328e838b6cb9c2666205dbe39573f50c0e679bb202ef992d832c1556971",
+     "levels": 2,
+     "coverage": 0.1186,
+     "min": 0,
+     "max": 255
+    },
+    "height.png": {
+     "path": "assets/earth-v2/continents/europe/height.png",
+     "width": 2048,
+     "height": 512,
+     "mode": "L",
+     "bytes": 40344,
+     "decodedBytes": 4194304,
+     "sha256": "eb8f6f7881342f2f45bba739761fbc2b51b3d0a7d51d6e6fe4560c083f8f6fbf",
+     "levels": 256,
+     "coverage": 0.0376,
+     "min": 0,
+     "max": 255
+    },
+    "normal.png": {
+     "path": "assets/earth-v2/continents/europe/normal.png",
+     "width": 2048,
+     "height": 512,
+     "mode": "RGB",
+     "bytes": 76336,
+     "decodedBytes": 4194304,
+     "sha256": "8b49bfaf7207488d0f0d0765f6c7217670821a5f3f6c1c9fabd10098c6b57786",
+     "uniqueColors": 4,
+     "medianColor": "#7f7ffe"
+    },
+    "shape.svg": {
+     "path": "assets/earth-v2/continents/europe/shape.svg",
+     "bytes": 55853,
+     "sha256": "e85b8a3b450342c1c0b76e65a067bf1d54cacc84b743f7b6edb1fc3974de4ad5",
+     "paths": 4,
+     "points": 4064,
+     "commands": {
+      "M": 96,
+      "L": 3968,
+      "Z": 96
+     }
+    }
+   },
+   "shape": {
+    "viewBox": [
+     0.0,
+     0.0,
+     2048.0,
+     512.0
+    ],
+    "layers": [
+     {
+      "fill": "#5e833f",
+      "opacity": 0.55,
+      "fillRule": "nonzero",
+      "translate": [
+       0.0,
+       10.0
+      ],
+      "stroke": null,
+      "strokeWidth": 0.0,
+      "points": 1016
+     },
+     {
+      "fill": "#5e833f",
+      "opacity": 0.32,
+      "fillRule": "nonzero",
+      "translate": [
+       0.0,
+       5.0
+      ],
+      "stroke": null,
+      "strokeWidth": 0.0,
+      "points": 1016
+     },
+     {
+      "fill": "#84a965",
+      "opacity": 1.0,
+      "fillRule": "evenodd",
+      "translate": [
+       0.0,
+       0.0
+      ],
+      "stroke": null,
+      "strokeWidth": 0.0,
+      "points": 1016
+     },
+     {
+      "fill": "transparent",
+      "opacity": 1.0,
+      "fillRule": "nonzero",
+      "translate": [
+       0.0,
+       0.0
+      ],
+      "stroke": "rgba(255,255,255,.14)",
+      "strokeWidth": 2.0,
+      "points": 1016
+     }
+    ],
+    "commands": {
+     "M": 96,
+     "L": 3968,
+     "Z": 96
+    },
+    "totalPoints": 4064
+   }
+  },
+  {
+   "id": "africa",
+   "group": "continents",
+   "kind": "land",
+   "name": "Africa",
+   "projection": "local-equirectangular-crop",
+   "lonMin": -19.68781007120538,
+   "latMin": -36.98424117813042,
+   "lonMax": 53.19663738071472,
+   "latMax": 39.51506923477325,
+   "declaredSize": [
+    1951,
+    1536
+   ],
+   "paperCut": {
+    "layers": 3,
+    "depthPixels": 10
+   },
+   "files": {
+    "color.avif": {
+     "path": "assets/earth-v2/continents/africa/color.avif",
+     "width": 1951,
+     "height": 1536,
+     "mode": "RGBA",
+     "bytes": 213239,
+     "decodedBytes": 11986944,
+     "sha256": "ec8ec7c549c413e85c46348066dfb97e6387d9246f9923aac132dcd7d9a59ba1",
+     "alphaLevels": 13,
+     "coverage": 0.4596,
+     "uniqueColors": 13,
+     "medianColor": "#ccab5d",
+     "flatPct": 22.9,
+     "meanStep": 4.09
+    },
+    "mask.png": {
+     "path": "assets/earth-v2/continents/africa/mask.png",
+     "width": 1951,
+     "height": 1536,
+     "mode": "L",
+     "bytes": 14228,
+     "decodedBytes": 11986944,
+     "sha256": "dae37d74bc270b2abc38f907a390187b7d5e3b1e9a0e48818b6620d7a130a34d",
+     "levels": 2,
+     "coverage": 0.4596,
+     "min": 0,
+     "max": 255
+    },
+    "height.png": {
+     "path": "assets/earth-v2/continents/africa/height.png",
+     "width": 1951,
+     "height": 1536,
+     "mode": "L",
+     "bytes": 142060,
+     "decodedBytes": 11986944,
+     "sha256": "0634cc4ce99d2393e870d042468f9bf57c9120e33b4b8043427a252da57ef7b2",
+     "levels": 256,
+     "coverage": 0.1958,
+     "min": 0,
+     "max": 255
+    },
+    "normal.png": {
+     "path": "assets/earth-v2/continents/africa/normal.png",
+     "width": 1951,
+     "height": 1536,
+     "mode": "RGB",
+     "bytes": 242013,
+     "decodedBytes": 11986944,
+     "sha256": "8f5477e6b3a34a852dd1758eceb7323f8bf36a5e3c53b53235ab75a8f85b10db",
+     "uniqueColors": 4,
+     "medianColor": "#7f7ffe"
+    },
+    "shape.svg": {
+     "path": "assets/earth-v2/continents/africa/shape.svg",
+     "bytes": 22862,
+     "sha256": "3fc0ec8e5d4a1674958a278b598c983e9053d6a55bdf0e9c2c1da00f53c4213c",
+     "paths": 4,
+     "points": 1620,
+     "commands": {
+      "M": 8,
+      "L": 1612,
+      "Z": 8
+     }
+    }
+   },
+   "shape": {
+    "viewBox": [
+     0.0,
+     0.0,
+     1951.0,
+     1536.0
+    ],
+    "layers": [
+     {
+      "fill": "#a78436",
+      "opacity": 0.55,
+      "fillRule": "nonzero",
+      "translate": [
+       0.0,
+       10.0
+      ],
+      "stroke": null,
+      "strokeWidth": 0.0,
+      "points": 405
+     },
+     {
+      "fill": "#a78436",
+      "opacity": 0.32,
+      "fillRule": "nonzero",
+      "translate": [
+       0.0,
+       5.0
+      ],
+      "stroke": null,
+      "strokeWidth": 0.0,
+      "points": 405
+     },
+     {
+      "fill": "#cdaa5c",
+      "opacity": 1.0,
+      "fillRule": "evenodd",
+      "translate": [
+       0.0,
+       0.0
+      ],
+      "stroke": null,
+      "strokeWidth": 0.0,
+      "points": 405
+     },
+     {
+      "fill": "transparent",
+      "opacity": 1.0,
+      "fillRule": "nonzero",
+      "translate": [
+       0.0,
+       0.0
+      ],
+      "stroke": "rgba(255,255,255,.14)",
+      "strokeWidth": 2.0,
+      "points": 405
+     }
+    ],
+    "commands": {
+     "M": 8,
+     "L": 1612,
+     "Z": 8
+    },
+    "totalPoints": 1620
+   }
+  },
+  {
+   "id": "asia",
+   "group": "continents",
+   "kind": "land",
+   "name": "Asia",
+   "projection": "local-equirectangular-crop",
+   "lonMin": 22.458357692156667,
+   "latMin": -12.3323446102421,
+   "lonMax": 149.1281308209186,
+   "latMax": 57.35760727805768,
+   "declaredSize": [
+    2048,
+    1126
+   ],
+   "paperCut": {
+    "layers": 3,
+    "depthPixels": 10
+   },
+   "files": {
+    "color.avif": {
+     "path": "assets/earth-v2/continents/asia/color.avif",
+     "width": 2048,
+     "height": 1126,
+     "mode": "RGBA",
+     "bytes": 159460,
+     "decodedBytes": 9224192,
+     "sha256": "0439239491cb8fe15d5576690959d6d7e7d25de84b4aee77228284975b72173a",
+     "alphaLevels": 2,
+     "coverage": 0.3496,
+     "uniqueColors": 10,
+     "medianColor": "#7ca559",
+     "flatPct": 22.8,
+     "meanStep": 4.1
+    },
+    "mask.png": {
+     "path": "assets/earth-v2/continents/asia/mask.png",
+     "width": 2048,
+     "height": 1126,
+     "mode": "L",
+     "bytes": 20183,
+     "decodedBytes": 9224192,
+     "sha256": "20708fe01839c2756de56351c6352d50c677550153813372200704babe790bff",
+     "levels": 2,
+     "coverage": 0.3496,
+     "min": 0,
+     "max": 255
+    },
+    "height.png": {
+     "path": "assets/earth-v2/continents/asia/height.png",
+     "width": 2048,
+     "height": 1126,
+     "mode": "L",
+     "bytes": 128760,
+     "decodedBytes": 9224192,
+     "sha256": "1017f195d4261cd6b72c48db8dfd66a9782c654a7146333680f7872c259ebe61",
+     "levels": 256,
+     "coverage": 0.1048,
+     "min": 0,
+     "max": 255
+    },
+    "normal.png": {
+     "path": "assets/earth-v2/continents/asia/normal.png",
+     "width": 2048,
+     "height": 1126,
+     "mode": "RGB",
+     "bytes": 268293,
+     "decodedBytes": 9224192,
+     "sha256": "4603e3bd1641a546a7bf702e021b2518acc218d0c252ff071ca879bd449db542",
+     "uniqueColors": 4,
+     "medianColor": "#7f7ffe"
+    },
+    "shape.svg": {
+     "path": "assets/earth-v2/continents/asia/shape.svg",
+     "bytes": 59686,
+     "sha256": "679901ec2d9a72436b41fc6435f825f39208d5d91c61df335f8ab3437ce29a1a",
+     "paths": 4,
+     "points": 4300,
+     "commands": {
+      "M": 120,
+      "L": 4180,
+      "Z": 120
+     }
+    }
+   },
+   "shape": {
+    "viewBox": [
+     0.0,
+     0.0,
+     2048.0,
+     1126.0
+    ],
+    "layers": [
+     {
+      "fill": "#587e35",
+      "opacity": 0.55,
+      "fillRule": "nonzero",
+      "translate": [
+       0.0,
+       10.0
+      ],
+      "stroke": null,
+      "strokeWidth": 0.0,
+      "points": 1075
+     },
+     {
+      "fill": "#587e35",
+      "opacity": 0.32,
+      "fillRule": "nonzero",
+      "translate": [
+       0.0,
+       5.0
+      ],
+      "stroke": null,
+      "strokeWidth": 0.0,
+      "points": 1075
+     },
+     {
+      "fill": "#7ea45b",
+      "opacity": 1.0,
+      "fillRule": "evenodd",
+      "translate": [
+       0.0,
+       0.0
+      ],
+      "stroke": null,
+      "strokeWidth": 0.0,
+      "points": 1075
+     },
+     {
+      "fill": "transparent",
+      "opacity": 1.0,
+      "fillRule": "nonzero",
+      "translate": [
+       0.0,
+       0.0
+      ],
+      "stroke": "rgba(255,255,255,.14)",
+      "strokeWidth": 2.0,
+      "points": 1075
+     }
+    ],
+    "commands": {
+     "M": 120,
+     "L": 4180,
+     "Z": 120
+    },
+    "totalPoints": 4300
+   }
+  },
+  {
+   "id": "oceania",
+   "group": "continents",
+   "kind": "land",
+   "name": "Oceania",
+   "projection": "local-equirectangular-crop",
+   "lonMin": -190.8,
+   "latMin": -47.965472446484895,
+   "lonMax": 190.8,
+   "latMax": -1.175765130216991,
+   "declaredSize": [
+    2048,
+    512
+   ],
+   "paperCut": {
+    "layers": 3,
+    "depthPixels": 10
+   },
+   "files": {
+    "color.avif": {
+     "path": "assets/earth-v2/continents/oceania/color.avif",
+     "width": 2048,
+     "height": 512,
+     "mode": "RGBA",
+     "bytes": 74679,
+     "decodedBytes": 4194304,
+     "sha256": "7c30873d620fc4c0a2b009d109d303797163fc2f53a77738c02f4d8e447fbf8c",
+     "alphaLevels": 12,
+     "coverage": 0.044,
+     "uniqueColors": 7,
+     "medianColor": "#cdad62",
+     "flatPct": 22.7,
+     "meanStep": 4.11
+    },
+    "mask.png": {
+     "path": "assets/earth-v2/continents/oceania/mask.png",
+     "width": 2048,
+     "height": 512,
+     "mode": "L",
+     "bytes": 4799,
+     "decodedBytes": 4194304,
+     "sha256": "3d5037751af126706822eb81a69fcf401f20a6a1d60aeac370e7565e8adaa429",
+     "levels": 2,
+     "coverage": 0.044,
+     "min": 0,
+     "max": 255
+    },
+    "height.png": {
+     "path": "assets/earth-v2/continents/oceania/height.png",
+     "width": 2048,
+     "height": 512,
+     "mode": "L",
+     "bytes": 17812,
+     "decodedBytes": 4194304,
+     "sha256": "339301f6a31aaf0c794a5e23857e476da83607df0af2b54d23d8023d51c640ac",
+     "levels": 256,
+     "coverage": 0.0147,
+     "min": 0,
+     "max": 255
+    },
+    "normal.png": {
+     "path": "assets/earth-v2/continents/oceania/normal.png",
+     "width": 2048,
+     "height": 512,
+     "mode": "RGB",
+     "bytes": 33198,
+     "decodedBytes": 4194304,
+     "sha256": "ff9726633549b1576a7473e549d6613cf306d53d4294d96eab7ab03849a0ce0b",
+     "uniqueColors": 4,
+     "medianColor": "#7f7ffe"
+    },
+    "shape.svg": {
+     "path": "assets/earth-v2/continents/oceania/shape.svg",
+     "bytes": 26637,
+     "sha256": "94d4fd99a602c12c0ceadeea8f169e1f46327100b5ca76a26852e56f758c05dc",
+     "paths": 4,
+     "points": 1888,
+     "commands": {
+      "M": 76,
+      "L": 1812,
+      "Z": 76
+     }
+    }
+   },
+   "shape": {
+    "viewBox": [
+     0.0,
+     0.0,
+     2048.0,
+     512.0
+    ],
+    "layers": [
+     {
+      "fill": "#a7873c",
+      "opacity": 0.55,
+      "fillRule": "nonzero",
+      "translate": [
+       0.0,
+       10.0
+      ],
+      "stroke": null,
+      "strokeWidth": 0.0,
+      "points": 472
+     },
+     {
+      "fill": "#a7873c",
+      "opacity": 0.32,
+      "fillRule": "nonzero",
+      "translate": [
+       0.0,
+       5.0
+      ],
+      "stroke": null,
+      "strokeWidth": 0.0,
+      "points": 472
+     },
+     {
+      "fill": "#cdad62",
+      "opacity": 1.0,
+      "fillRule": "evenodd",
+      "translate": [
+       0.0,
+       0.0
+      ],
+      "stroke": null,
+      "strokeWidth": 0.0,
+      "points": 472
+     },
+     {
+      "fill": "transparent",
+      "opacity": 1.0,
+      "fillRule": "nonzero",
+      "translate": [
+       0.0,
+       0.0
+      ],
+      "stroke": "rgba(255,255,255,.14)",
+      "strokeWidth": 2.0,
+      "points": 472
+     }
+    ],
+    "commands": {
+     "M": 76,
+     "L": 1812,
+     "Z": 76
+    },
+    "totalPoints": 1888
+   }
+  },
+  {
+   "id": "antarctica",
+   "group": "continents",
+   "kind": "land",
+   "name": "Antarctica",
+   "projection": "local-equirectangular-crop",
+   "lonMin": -190.79999999999995,
+   "latMin": -90.80188018531486,
+   "lonMax": 190.8,
+   "latMax": -62.46878030418976,
+   "declaredSize": [
+    2048,
+    512
+   ],
+   "paperCut": {
+    "layers": 3,
+    "depthPixels": 10
+   },
+   "files": {
+    "color.avif": {
+     "path": "assets/earth-v2/continents/antarctica/color.avif",
+     "width": 2048,
+     "height": 512,
+     "mode": "RGBA",
+     "bytes": 72523,
+     "decodedBytes": 4194304,
+     "sha256": "8305d015b9365b2eeff7d7f903b9cf24bdee1637438de0a9fb0821b2d29130de",
+     "alphaLevels": 2,
+     "coverage": 0.5586,
+     "uniqueColors": 10,
+     "medianColor": "#e8f2f1",
+     "flatPct": 22.7,
+     "meanStep": 4.1
+    },
+    "mask.png": {
+     "path": "assets/earth-v2/continents/antarctica/mask.png",
+     "width": 2048,
+     "height": 512,
+     "mode": "L",
+     "bytes": 7767,
+     "decodedBytes": 4194304,
+     "sha256": "9a9f07c1a6c45753fd96643dd1a972a974dc17508d72076899b72bd7539b4f4b",
+     "levels": 2,
+     "coverage": 0.5586,
+     "min": 0,
+     "max": 255
+    },
+    "height.png": {
+     "path": "assets/earth-v2/continents/antarctica/height.png",
+     "width": 2048,
+     "height": 512,
+     "mode": "L",
+     "bytes": 63150,
+     "decodedBytes": 4194304,
+     "sha256": "e26fea21f4da729a0f27659fb5f15c86f1cc4fe90cf9c7ec434c124bb30b11da",
+     "levels": 256,
+     "coverage": 0.2046,
+     "min": 0,
+     "max": 255
+    },
+    "normal.png": {
+     "path": "assets/earth-v2/continents/antarctica/normal.png",
+     "width": 2048,
+     "height": 512,
+     "mode": "RGB",
+     "bytes": 117467,
+     "decodedBytes": 4194304,
+     "sha256": "6b7ebcdc50519bfa85fac7ef81df2a7d5dbe83c41ff65286775815cac1f272c6",
+     "uniqueColors": 4,
+     "medianColor": "#7f7ffe"
+    },
+    "shape.svg": {
+     "path": "assets/earth-v2/continents/antarctica/shape.svg",
+     "bytes": 35373,
+     "sha256": "8bf3af1f5d54c6452e8b902f4a111ad7daf4ca8c3e5b5096ae693d92dfe9bb73",
+     "paths": 4,
+     "points": 2644,
+     "commands": {
+      "M": 32,
+      "L": 2612,
+      "Z": 32
+     }
+    }
+   },
+   "shape": {
+    "viewBox": [
+     0.0,
+     0.0,
+     2048.0,
+     512.0
+    ],
+    "layers": [
+     {
+      "fill": "#c2cccb",
+      "opacity": 0.55,
+      "fillRule": "nonzero",
+      "translate": [
+       0.0,
+       10.0
+      ],
+      "stroke": null,
+      "strokeWidth": 0.0,
+      "points": 661
+     },
+     {
+      "fill": "#c2cccb",
+      "opacity": 0.32,
+      "fillRule": "nonzero",
+      "translate": [
+       0.0,
+       5.0
+      ],
+      "stroke": null,
+      "strokeWidth": 0.0,
+      "points": 661
+     },
+     {
+      "fill": "#e8f2f1",
+      "opacity": 1.0,
+      "fillRule": "evenodd",
+      "translate": [
+       0.0,
+       0.0
+      ],
+      "stroke": null,
+      "strokeWidth": 0.0,
+      "points": 661
+     },
+     {
+      "fill": "transparent",
+      "opacity": 1.0,
+      "fillRule": "nonzero",
+      "translate": [
+       0.0,
+       0.0
+      ],
+      "stroke": "rgba(255,255,255,.14)",
+      "strokeWidth": 2.0,
+      "points": 661
+     }
+    ],
+    "commands": {
+     "M": 32,
+     "L": 2612,
+     "Z": 32
+    },
+    "totalPoints": 2644
+   }
+  },
+  {
+   "id": "pacific_west",
+   "group": "oceans",
+   "kind": "ocean",
+   "name": "pacific_west",
+   "lonMin": 100,
+   "latMin": -52,
+   "lonMax": 180,
+   "latMax": 58,
+   "declaredSize": [
+    1024,
+    512
+   ],
+   "files": {
+    "color.avif": {
+     "path": "assets/earth-v2/oceans/pacific_west/color.avif",
+     "width": 1024,
+     "height": 512,
+     "mode": "RGBA",
+     "bytes": 7902,
+     "decodedBytes": 2097152,
+     "sha256": "4f3cda73d701e637205f5cbe285e021dd4f57f5cdebeb73085aa2544a74ae956",
+     "alphaLevels": 2,
+     "coverage": 0.7503,
+     "uniqueColors": 3,
+     "medianColor": "#1b6696",
+     "flatPct": 85.0,
+     "meanStep": 0.45
+    },
+    "mask.png": {
+     "path": "assets/earth-v2/oceans/pacific_west/mask.png",
+     "width": 1024,
+     "height": 512,
+     "mode": "L",
+     "bytes": 6884,
+     "decodedBytes": 2097152,
+     "sha256": "f76e3c9ba25c719e8e3eb131c35ecffe2f185df1c87cde2014d42f9c241109b6",
+     "levels": 2,
+     "coverage": 0.7503,
+     "min": 0,
+     "max": 255
+    }
+   }
+  },
+  {
+   "id": "pacific_east",
+   "group": "oceans",
+   "kind": "ocean",
+   "name": "pacific_east",
+   "lonMin": -180,
+   "latMin": -58,
+   "lonMax": -70,
+   "latMax": 60,
+   "declaredSize": [
+    1024,
+    512
+   ],
+   "files": {
+    "color.avif": {
+     "path": "assets/earth-v2/oceans/pacific_east/color.avif",
+     "width": 1024,
+     "height": 512,
+     "mode": "RGBA",
+     "bytes": 10904,
+     "decodedBytes": 2097152,
+     "sha256": "84033d5f0662e2b76529f430a2da1afd86eb7faeefce0635e8eeaacae00dce8c",
+     "alphaLevels": 14,
+     "coverage": 0.839,
+     "uniqueColors": 2,
+     "medianColor": "#1b6696",
+     "flatPct": 85.2,
+     "meanStep": 0.44
+    },
+    "mask.png": {
+     "path": "assets/earth-v2/oceans/pacific_east/mask.png",
+     "width": 1024,
+     "height": 512,
+     "mode": "L",
+     "bytes": 4590,
+     "decodedBytes": 2097152,
+     "sha256": "eb3c50b6a51d798dfd718ebcaf5a765c65af8133101d2ce6f9f8521d34593c7d",
+     "levels": 2,
+     "coverage": 0.839,
+     "min": 0,
+     "max": 255
+    }
+   }
+  },
+  {
+   "id": "atlantic_north",
+   "group": "oceans",
+   "kind": "ocean",
+   "name": "atlantic_north",
+   "lonMin": -82,
+   "latMin": -2,
+   "lonMax": 25,
+   "latMax": 72,
+   "declaredSize": [
+    1024,
+    512
+   ],
+   "files": {
+    "color.avif": {
+     "path": "assets/earth-v2/oceans/atlantic_north/color.avif",
+     "width": 1024,
+     "height": 512,
+     "mode": "RGBA",
+     "bytes": 8274,
+     "decodedBytes": 2097152,
+     "sha256": "097aa764ca17453632f8280613cada63d4f29f1adc24d58090336ada675e9466",
+     "alphaLevels": 2,
+     "coverage": 0.6336,
+     "uniqueColors": 3,
+     "medianColor": "#1b6696",
+     "flatPct": 85.1,
+     "meanStep": 0.45
+    },
+    "mask.png": {
+     "path": "assets/earth-v2/oceans/atlantic_north/mask.png",
+     "width": 1024,
+     "height": 512,
+     "mode": "L",
+     "bytes": 7910,
+     "decodedBytes": 2097152,
+     "sha256": "2b5916a4ccbf974d66a9b6335d91c19a6849fa6ca7beb98e81936551b78d4a5b",
+     "levels": 2,
+     "coverage": 0.6336,
+     "min": 0,
+     "max": 255
+    }
+   }
+  },
+  {
+   "id": "atlantic_south",
+   "group": "oceans",
+   "kind": "ocean",
+   "name": "atlantic_south",
+   "lonMin": -75,
+   "latMin": -62,
+   "lonMax": 25,
+   "latMax": 2,
+   "declaredSize": [
+    1024,
+    512
+   ],
+   "files": {
+    "color.avif": {
+     "path": "assets/earth-v2/oceans/atlantic_south/color.avif",
+     "width": 1024,
+     "height": 512,
+     "mode": "RGBA",
+     "bytes": 8956,
+     "decodedBytes": 2097152,
+     "sha256": "f5e894268f5adecbb025e6a6a75b3970c3411db0d42d4c64344a75277352ba49",
+     "alphaLevels": 16,
+     "coverage": 0.7326,
+     "uniqueColors": 2,
+     "medianColor": "#1b6696",
+     "flatPct": 85.2,
+     "meanStep": 0.44
+    },
+    "mask.png": {
+     "path": "assets/earth-v2/oceans/atlantic_south/mask.png",
+     "width": 1024,
+     "height": 512,
+     "mode": "L",
+     "bytes": 3907,
+     "decodedBytes": 2097152,
+     "sha256": "7958d6ada799d376a16bf32229c94124d6a75a801cd5e9b93d0bb25f872810d3",
+     "levels": 2,
+     "coverage": 0.7326,
+     "min": 0,
+     "max": 255
+    }
+   }
+  },
+  {
+   "id": "indian_ocean",
+   "group": "oceans",
+   "kind": "ocean",
+   "name": "indian_ocean",
+   "lonMin": 18,
+   "latMin": -58,
+   "lonMax": 122,
+   "latMax": 32,
+   "declaredSize": [
+    1024,
+    512
+   ],
+   "files": {
+    "color.avif": {
+     "path": "assets/earth-v2/oceans/indian_ocean/color.avif",
+     "width": 1024,
+     "height": 512,
+     "mode": "RGBA",
+     "bytes": 7148,
+     "decodedBytes": 2097152,
+     "sha256": "5c9888ef39938a4667926d5f4b6fd996bb86334e7cd9f46c135941bb74ee02e5",
+     "alphaLevels": 2,
+     "coverage": 0.7009,
+     "uniqueColors": 3,
+     "medianColor": "#1b6696",
+     "flatPct": 85.1,
+     "meanStep": 0.45
+    },
+    "mask.png": {
+     "path": "assets/earth-v2/oceans/indian_ocean/mask.png",
+     "width": 1024,
+     "height": 512,
+     "mode": "L",
+     "bytes": 6174,
+     "decodedBytes": 2097152,
+     "sha256": "f1936b5d70dbe01161c2452c8541c02b4035759f9ecbbd1dc6b1f092c69cf31c",
+     "levels": 2,
+     "coverage": 0.7009,
+     "min": 0,
+     "max": 255
+    }
+   }
+  },
+  {
+   "id": "arctic_ocean",
+   "group": "oceans",
+   "kind": "ocean",
+   "name": "arctic_ocean",
+   "lonMin": -180,
+   "latMin": 66,
+   "lonMax": 180,
+   "latMax": 90,
+   "declaredSize": [
+    1024,
+    512
+   ],
+   "files": {
+    "color.avif": {
+     "path": "assets/earth-v2/oceans/arctic_ocean/color.avif",
+     "width": 1024,
+     "height": 512,
+     "mode": "RGBA",
+     "bytes": 8415,
+     "decodedBytes": 2097152,
+     "sha256": "ee47b50195a923d19925084e59e37bd5fbf0b8fb497654263c030b0334010f38",
+     "alphaLevels": 2,
+     "coverage": 0.7343,
+     "uniqueColors": 2,
+     "medianColor": "#1b6696",
+     "flatPct": 85.0,
+     "meanStep": 0.45
+    },
+    "mask.png": {
+     "path": "assets/earth-v2/oceans/arctic_ocean/mask.png",
+     "width": 1024,
+     "height": 512,
+     "mode": "L",
+     "bytes": 8450,
+     "decodedBytes": 2097152,
+     "sha256": "f48b5840effd697f3c7e8cf3df5bd366dd174487e433ee44a9c82362f116c2cd",
+     "levels": 2,
+     "coverage": 0.7343,
+     "min": 0,
+     "max": 255
+    }
+   }
+  },
+  {
+   "id": "southern_ocean",
+   "group": "oceans",
+   "kind": "ocean",
+   "name": "southern_ocean",
+   "lonMin": -180,
+   "latMin": -90,
+   "lonMax": 180,
+   "latMax": -55,
+   "declaredSize": [
+    1024,
+    512
+   ],
+   "files": {
+    "color.avif": {
+     "path": "assets/earth-v2/oceans/southern_ocean/color.avif",
+     "width": 1024,
+     "height": 512,
+     "mode": "RGBA",
+     "bytes": 11618,
+     "decodedBytes": 2097152,
+     "sha256": "61dcd91fc87b949e2353dcb00bcfbb86bcee624d23ca0b85c2520d3e1bd295af",
+     "alphaLevels": 17,
+     "coverage": 0.5224,
+     "uniqueColors": 3,
+     "medianColor": "#1b6696",
+     "flatPct": 85.1,
+     "meanStep": 0.45
+    },
+    "mask.png": {
+     "path": "assets/earth-v2/oceans/southern_ocean/mask.png",
+     "width": 1024,
+     "height": 512,
+     "mode": "L",
+     "bytes": 5117,
+     "decodedBytes": 2097152,
+     "sha256": "2f7e7da9f1bb69ad1f1291d2c3778896891098097f638df336c21324cd40b093",
+     "levels": 2,
+     "coverage": 0.5224,
+     "min": 0,
+     "max": 255
+    }
+   }
+  },
+  {
+   "id": "mediterranean",
+   "group": "oceans",
+   "kind": "ocean",
+   "name": "mediterranean",
+   "lonMin": -7,
+   "latMin": 29,
+   "lonMax": 38,
+   "latMax": 46,
+   "declaredSize": [
+    1024,
+    512
+   ],
+   "files": {
+    "color.avif": {
+     "path": "assets/earth-v2/oceans/mediterranean/color.avif",
+     "width": 1024,
+     "height": 512,
+     "mode": "RGBA",
+     "bytes": 7690,
+     "decodedBytes": 2097152,
+     "sha256": "e23daa14d49e4fab1fd9f729e0aaf33be9adbb9fa18faf15009e5acfdbbf7656",
+     "alphaLevels": 2,
+     "coverage": 0.4027,
+     "uniqueColors": 2,
+     "medianColor": "#1b6696",
+     "flatPct": 84.9,
+     "meanStep": 0.45
+    },
+    "mask.png": {
+     "path": "assets/earth-v2/oceans/mediterranean/mask.png",
+     "width": 1024,
+     "height": 512,
+     "mode": "L",
+     "bytes": 7444,
+     "decodedBytes": 2097152,
+     "sha256": "4e7ae34b63a851e06c02310d9f5e7bf1e24fdc4e03a2c580102245182a60860d",
+     "levels": 2,
+     "coverage": 0.4027,
+     "min": 0,
+     "max": 255
+    }
+   }
+  }
+ ],
+ "defects": [
+  "europe: 경도 폭 381.6° 가 360° 를 넘는다 — 자오선에서 21.6° 가 겹친다",
+  "oceania: 경도 폭 381.6° 가 360° 를 넘는다 — 자오선에서 21.6° 가 겹친다",
+  "antarctica: 경도 폭 381.6° 가 360° 를 넘는다 — 자오선에서 21.6° 가 겹친다",
+  "antarctica: 위도 [-90.80,-62.47] 가 극(±90°)을 넘어간다",
+  "oceans/pacific_west/shape.svg: path 가 없다(파란 사각형 하나뿐) — 벡터 원본이 아니다",
+  "oceans/pacific_east/shape.svg: path 가 없다(파란 사각형 하나뿐) — 벡터 원본이 아니다",
+  "oceans/atlantic_north/shape.svg: path 가 없다(파란 사각형 하나뿐) — 벡터 원본이 아니다",
+  "oceans/atlantic_south/shape.svg: path 가 없다(파란 사각형 하나뿐) — 벡터 원본이 아니다",
+  "oceans/indian_ocean/shape.svg: path 가 없다(파란 사각형 하나뿐) — 벡터 원본이 아니다",
+  "oceans/arctic_ocean/shape.svg: path 가 없다(파란 사각형 하나뿐) — 벡터 원본이 아니다",
+  "oceans/southern_ocean/shape.svg: path 가 없다(파란 사각형 하나뿐) — 벡터 원본이 아니다",
+  "oceans/mediterranean/shape.svg: path 가 없다(파란 사각형 하나뿐) — 벡터 원본이 아니다",
+  "polar/arctic: boundsLonLat 이 없다 — 전지구 등장방형으로 가정한다(실측으로 확인함)",
+  "polar/antarctica: 5개 파일이 continents/antarctica 와 바이트까지 같다(289KB 중복) — 복사하지 않는다",
+  "normal.png 7장이 사실상 평평하다(고유색 ≤32, (128,128,255) 근처) — 요철 정보가 없다. 1038KB. 런타임에서 쓰지 않는다"
+ ],
+ "policy": {
+  "base": "바다는 단색 한 장으로 칠한다(팩의 바다 8장은 전부 같은 색) — 오버뷰가 없어도 구멍이 생기지 않는다",
+  "land": "shape.svg 를 Path2D 로 그린다(벡터라 줌해도 또렷하다). color.avif 는 폴백",
+  "normal": "쓰지 않는다(평평함)",
+  "height": "해안 가까운 쪽만 약하게 — 거리변환이라 DEM 이 아니다",
+  "wrap": "경도 폭이 360° 를 넘는 지역은 -360/0/+360 세 번 그린다"
+ }
+}

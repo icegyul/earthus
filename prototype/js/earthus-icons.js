@@ -1,6 +1,7 @@
 // EARTHUS ICON SYSTEM — v1 · v2 공용 아이콘 정본
 // 인수 패키지: docs/icon-system/EARTHUS_ICON_SYSTEM_DEV_DIRECTIVE_v1.1.md (2026-09-12)
 // 자산: prototype/assets/earthus-icons/ (24·32·64·128px PNG · 투명 배경)
+// v1.3 (2026-09-13): 재난 다섯을 더해 49종. 그림 생성기 tools/make-hazard-icons.py
 //
 // ⚠️ 이 파일이 존재하는 이유가 지시서 §13 합격조건 그 자체다 —
 //    "V1 과 V2 가 같은 라벨에 같은 아이콘 ID 를 쓴다."
@@ -19,7 +20,7 @@
       주석까지 훑기 때문에, 설명하려고 적어 둔 경로 한 줄이 배포를 막는다(실제로 막았다). */
 const ICON_BASE = new URL('../assets/earthus-icons/', import.meta.url);
 
-/** 지금 저장소에 **실제 파일이 있는** 아이콘 44종. 없는 것을 있다고 적지 않는다. */
+/** 지금 저장소에 **실제 파일이 있는** 아이콘 49종. 없는 것을 있다고 적지 않는다. */
 const SHIPPED = new Set([
   'temperature', 'precipitation', 'wind', 'pressure',
   'sea-level', 'ocean-current', 'sea-temperature', 'typhoon',
@@ -34,11 +35,17 @@ const SHIPPED = new Set([
   // 이 여덟이 없던 동안 V1 대기질 일곱 줄이 전부 같은 동그라미였다.
   // 28px 에서 읽히는지 실측하고 넣었다(지시서 §13) — 첫 판은 풍경화라 뭉개져서 버렸다.
   'humidity', 'water-vapor', 'pm10', 'dust', 'aqi', 'uv', 'ozone', 'swell',
+  // v1.3 (2026-09-13) — 재난 묶음에서 **남의 그림을 빌려 쓰던 넷**에게 자기 그림을 준다.
+  // 실측: 기상경보·낙뢰가 typhoon 을, 각국 기관 재해가 storm-surge 를, 열돔이 temperature 를
+  // 빌려 써서 메뉴에서 태풍·기상경보·낙뢰 세 줄이 같은 소용돌이로 보였다.
+  // live-alert 는 '지금 일어난 일' 버튼용으로 새로 만든 것이다(빌려 온 것이 아니다).
+  // 그림: tools/make-hazard-icons.py
+  'live-alert', 'weather-alert', 'lightning-strike', 'agency-hazard', 'heat-dome',
 ]);
 
 /* 그림이 아직 없는 아이콘 → 그때까지 대신 쓸 부모.
    지시서 §6 의 "전용 아이콘이 생기기 전까지는 가장 가까운 부모를 상속한다" 를 코드로 옮긴 것이다.
-   ⚠️ 지금은 비어 있다(44종 전부 그림이 있다). 지우지 않는다 — 다음 메뉴가 생기면
+   ⚠️ 지금은 비어 있다(49종 전부 그림이 있다). 지우지 않는다 — 다음 메뉴가 생기면
       아이콘이 도착하기 전에도 화면이 비지 않게 하는 자리다. 새 slug 를 여기 적고,
       그림이 오면 SHIPPED 로 옮긴다(SHIPPED 가 먼저 이기므로 양쪽에 있어도 해는 없다). */
 const PENDING_PARENT = Object.freeze({});
@@ -90,6 +97,12 @@ export const ICON_LABELS = Object.freeze({
   uv: { ko: '자외선', en: 'UV Index' },
   ozone: { ko: '오존', en: 'Ozone' },
   swell: { ko: '너울', en: 'Swell' },
+  // v1.3 로 추가한 다섯 — 재난 묶음
+  'live-alert': { ko: '실시간 경보', en: 'Live Alert' },
+  'weather-alert': { ko: '기상경보', en: 'Weather Alert' },
+  'lightning-strike': { ko: '낙뢰', en: 'Lightning' },
+  'agency-hazard': { ko: '각국 기관 재해', en: 'National Agency Hazards' },
+  'heat-dome': { ko: '열돔', en: 'Heat Dome' },
 });
 
 // ---------------------------------------------------------------------------
@@ -118,7 +131,9 @@ export const V1_LAYER_ICON = Object.freeze({
   temp: 'temperature',
   tmax: 'temperature',
   tmin: 'temperature',
-  heatdome: 'temperature',
+  // ⚠️ 열돔은 기온이 아니다. temperature 를 빌려 쓰던 동안 기온·내일최고·내일최저와
+  //    **같은 그림 넷**이 메뉴에 나란히 있었다. v1.3 에서 자기 그림을 준다.
+  heatdome: 'heat-dome',
   wind: 'wind',
   windfc: 'wind',
   synop: 'satellite-observation',   // 일기도 기입 모형 = 지상 관측의 표준 표기 (§6 #44)
@@ -153,10 +168,14 @@ export const V1_LAYER_ICON = Object.freeze({
   ship: 'ocean-current',
 
   // 재해·사건
+  // ⚠️ v1.3 이전에는 alerts·lightning 이 cyclone 의 typhoon 을 빌려 써서 메뉴의 세 줄이
+  //    **같은 소용돌이**였다. 낙뢰가 회오리로, 기상경보가 토네이도로 읽히던 원인이다.
+  //    이제 셋이 각자 다른 그림을 쓴다. typhoon 은 태풍만의 것이다.
   cyclone: 'typhoon',
-  alerts: 'typhoon',
-  lightning: 'typhoon',
-  regional: 'storm-surge',
+  alerts: 'weather-alert',
+  lightning: 'lightning-strike',
+  // 각국 기관 재해는 해안재해(storm-surge)가 아니다 — 지진·화산·경보를 함께 받는 창구다.
+  regional: 'agency-hazard',
   quake: 'earthquake',
   tsunami: 'tsunami',
   wildfire: 'wildfire',
@@ -189,7 +208,8 @@ export const V2_PHENOMENON_ICON = Object.freeze({
   'weather.wind': 'wind',
   'weather.paragliding': 'wind',
   'weather.pressure': 'pressure',
-  'weather.warning': 'typhoon',
+  // V1 기상경보와 **같은 라벨이면 같은 아이콘** 이어야 한다(§13 합격조건). v1.3 에서 함께 옮긴다.
+  'weather.warning': 'weather-alert',
   'weather.air_quality': 'air-quality',
   'weather.uv': 'uv',
   'weather.station_obs': 'satellite-observation',
@@ -220,7 +240,7 @@ export const V2_PHENOMENON_ICON = Object.freeze({
   'hazards.crustal_motion': 'earthquake',
   'hazards.tsunami': 'tsunami',
   'hazards.typhoon': 'typhoon',
-  'hazards.lightning': 'typhoon',
+  'hazards.lightning': 'lightning-strike',   // V1 낙뢰와 같은 그림
   'hazards.wildfire': 'wildfire',
   'hazards.glacial_lake_flood': 'flood-hydrology',
 

@@ -1115,10 +1115,27 @@ export const layerBar = {
       go.type = 'button';
       /* ⚠️ 이 파일의 `el(t, c)` 는 **인자가 둘뿐이다** — 다른 파일의 el(t,c,html) 과 다르다.
          세 번째로 글을 넘겼더니 **조용히 버려져 빈 버튼**이 나왔다. innerHTML 로 넣는다. */
-      go.innerHTML = `<span class="ly-open-copy">`
-        + `<b>${ko ? '지금 일어난 일' : "What's happening"}</b>`
-        + `<em>${ko ? '지진 · 쓰나미 · 태풍 · 산불 · 경보' : 'Quakes, tsunami, storms, fires'}</em>`
-        + `</span><span class="ly-open-arrow" aria-hidden="true">›</span>`;
+      /* 아이콘 한 장 — 이 줄만 '무슨 일이 났나' 이고 아래 줄들은 '무엇을 켤까' 다.
+         글자만 있으면 옆의 레이어 줄들과 같은 무게로 보인다.
+         ⚠️ 못 읽어 오면 스스로 빠진다. 깨진 그림 표시가 남으면 글자보다 더 나쁘다. */
+      go.classList.add('ly-open--hazard');
+      const alertIcon = document.createElement('img');
+      alertIcon.className = 'ly-open-icon';
+      alertIcon.src = iconSrc('live-alert', 64);
+      const alertSet = iconSrcSet('live-alert', 64);
+      if (alertSet) alertIcon.srcset = alertSet;
+      alertIcon.alt = '';                  // 이름은 바로 옆에 글자로 있다
+      alertIcon.decoding = 'async';
+      alertIcon.onerror = () => alertIcon.remove();
+      go.appendChild(alertIcon);
+      const copy = el('span', 'ly-open-copy');
+      copy.innerHTML = `<b>${ko ? '지금 일어난 일' : "What's happening"}</b>`
+        + `<em>${ko ? '지진 · 쓰나미 · 태풍 · 산불 · 경보' : 'Quakes, tsunami, storms, fires'}</em>`;
+      go.appendChild(copy);
+      const arrow = el('span', 'ly-open-arrow');
+      arrow.setAttribute('aria-hidden', 'true');
+      arrow.textContent = '›';
+      go.appendChild(arrow);
       go.onclick = async () => {
         /* ⚠️ 여기서 `this.close()` 를 불렀다가 조용히 터졌다 —
            **layerBar 에는 close() 가 없다.** onclick 이 async 라 그 오류가
@@ -1402,6 +1419,14 @@ export const layerBar = {
         im.alt = '';                       // ⚠️ 위와 같은 이유 — 이름은 옆에 글자로 있다
         im.loading = 'lazy';
         im.decoding = 'async';
+        /* 그림을 못 읽어 오면 예전의 절차적 썸네일로 되돌린다. 깨진 그림 표시를
+           남기면 그 줄만 빈칸처럼 보이고 왜 그런지 알 방법이 없다. */
+        im.onerror = () => {
+          im.remove();
+          const cv = document.createElement('canvas');
+          drawThumb(cv, it.paint);
+          b.insertBefore(cv, b.firstChild);
+        };
         b.appendChild(im);
       } else {
         const cv = document.createElement('canvas');

@@ -38,7 +38,15 @@ const ALLOW = [
   ['content/characters', p => p.endsWith('manifest-124.json') || /\/(runtime|thumb)\/[^/]+\.webp$/.test(p)],
   ['content/pack-1.8', p => p.endsWith('background-review.json') || /\/fx\/[^/]+\.svg$/.test(p)],
   ['assets', p => p === 'assets/background_manifest.json' || /^assets\/background\/[^/]+\.webp$/.test(p)                       // Background Pack v1 (품질 보고서·팩 manifest 사본은 안 올린다)
-    || p === 'assets/material/paper_earth_material_manifest.json' || /^assets\/material\/paper-earth\/[^/]+\.webp$/.test(p)],  // Paper Earth Material v1 (첫 화면 뒤 on-demand)
+    || p === 'assets/material/paper_earth_material_manifest.json' || /^assets\/material\/paper-earth\/[^/]+\.webp$/.test(p)   // Paper Earth Material v1 (첫 화면 뒤 on-demand)
+    // WONDER EARTH ASSETS v2.0 — 기본 지구. **런타임이 실제로 받는 것만** 올린다:
+    // 대륙 벡터 7장(294KB) + 북극 얼음 마스크 1장. 대륙 color.avif·height·normal 은 쓰지 않으므로 올리지 않는다
+    // (normal 7장은 실측상 평평해서 정보가 없다 — assets/earth_v2_manifest.json 의 defects 참고).
+    || p === 'assets/earth_v2_manifest.json'
+    || /^assets\/earth-v2\/continents\/[^/]+\/shape\.svg$/.test(p)
+    || p === 'assets/earth-v2/polar/arctic/ice_mask.png'
+    // v1.2 기복도 팩 — ?earth=assets 비교용(기본 경로가 아니다)
+    || p === 'assets/earth/earth_assets_manifest.json' || /^assets\/earth\/(continents|oceans|polar|shared)\/.+\.(avif|png)$/.test(p)],
 ];
 const DENY_HINT = ['docs/', 'tests/', 'scripts/', 'benchmarks/', 'build/', 'node_modules/', 'package.json', 'README.md', '.ts', 'source-manifest', 'background-qa', 'background-catalog', 'characters-124-interactions', 'replacement-manifest', 'runtime-overrides', 'review.json', 'pack-1.8/backgrounds/'];
 

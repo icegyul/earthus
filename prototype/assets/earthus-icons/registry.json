@@ -1,5 +1,5 @@
 {
-  "version": "1.2",
+  "version": "1.3",
   "scope": [
     "EARTHUS V1",
     "EARTHUS V2"
@@ -321,6 +321,46 @@
       "asset": "earthus-icon-swell-64.png",
       "placement": "V1 top menu / V2 left menu",
       "added": "v1.2"
+    },
+    {
+      "id": "live-alert",
+      "label_ko": "실시간 경보",
+      "label_en": "Live Alert",
+      "asset": "earthus-icon-live-alert-64.png",
+      "placement": "V1 hazard group live-events button",
+      "added_in": "v1.3"
+    },
+    {
+      "id": "weather-alert",
+      "label_ko": "기상경보",
+      "label_en": "Weather Alert",
+      "asset": "earthus-icon-weather-alert-64.png",
+      "placement": "V1 top menu / V2 left menu",
+      "added_in": "v1.3"
+    },
+    {
+      "id": "lightning-strike",
+      "label_ko": "낙뢰",
+      "label_en": "Lightning",
+      "asset": "earthus-icon-lightning-strike-64.png",
+      "placement": "V1 top menu / V2 left menu",
+      "added_in": "v1.3"
+    },
+    {
+      "id": "agency-hazard",
+      "label_ko": "각국 기관 재해",
+      "label_en": "National Agency Hazards",
+      "asset": "earthus-icon-agency-hazard-64.png",
+      "placement": "V1 top menu",
+      "added_in": "v1.3"
+    },
+    {
+      "id": "heat-dome",
+      "label_ko": "열돔",
+      "label_en": "Heat Dome",
+      "asset": "earthus-icon-heat-dome-64.png",
+      "placement": "V1 top menu",
+      "added_in": "v1.3"
     }
   ],
   "layer55_mapping": [
@@ -471,20 +511,20 @@
     {
       "no": 25,
       "menu": "기상경보",
-      "icon_id": "typhoon",
-      "rule": "hazard/weather family icon; no standalone primary icon"
+      "icon_id": "weather-alert",
+      "rule": "exact primary icon (v1.3 — typhoon 을 빌려 쓰던 것을 끝낸다)"
     },
     {
       "no": 26,
       "menu": "각국 기관 재해",
-      "icon_id": "storm-surge",
-      "rule": "hazard family icon; event surface inherits hazard family"
+      "icon_id": "agency-hazard",
+      "rule": "exact primary icon (v1.3 — storm-surge 를 빌려 쓰던 것을 끝낸다)"
     },
     {
       "no": 27,
       "menu": "낙뢰",
-      "icon_id": "typhoon",
-      "rule": "hazard/weather family icon"
+      "icon_id": "lightning-strike",
+      "rule": "exact primary icon (v1.3 — typhoon 을 빌려 쓰던 것을 끝낸다)"
     },
     {
       "no": 28,
@@ -621,8 +661,8 @@
     {
       "no": 50,
       "menu": "열돔",
-      "icon_id": "temperature",
-      "rule": "temperature/heat family icon"
+      "icon_id": "heat-dome",
+      "rule": "exact primary icon (v1.3 — temperature 를 빌려 쓰던 것을 끝낸다)"
     },
     {
       "no": 51,
@@ -668,6 +708,7 @@
     "이유: V1 대기질 계열 일곱 줄이 §6 부모 상속 규칙만으로는 전부 같은 아이콘이 됐다.",
     "화풍은 EARTHUS_ICON_GENERATION_MASTER_PROMPT_v1.0 그대로. 원판은 docs/icon-system/EARTHUS_ICON_SHEET_v1.2_ADDITIONS.png.",
     "⚠️ 파일 이름의 -128 은 실제로 110x110 이다(36종 원본이 그렇고, 새 여덟도 같은 규격으로 맞췄다).",
-    "⚠️ 원 지름 / 캔버스 = 0.909. 새 아이콘을 만들 때 이 비율을 맞춰야 같은 CSS 크기에서 같은 크기로 보인다."
+    "⚠️ 원 지름 / 캔버스 = 0.909. 새 아이콘을 만들 때 이 비율을 맞춰야 같은 CSS 크기에서 같은 크기로 보인다.",
+    "v1.3 (2026-09-13) — 재난 묶음 넷이 남의 아이콘을 빌려 쓰던 것을 끝냈다. 기상경보·낙뢰가 typhoon 을, 각국 기관 재해가 storm-surge 를, 열돔이 temperature 를 쓰고 있어 메뉴에서 여러 줄이 같은 그림이었다. live-alert 는 '지금 일어난 일' 버튼용 신규. 쓰나미·산불은 slug 를 유지한 채 그림만 같은 화풍으로 다시 그렸다. 생성기: tools/make-hazard-icons.py"
   ]
 }

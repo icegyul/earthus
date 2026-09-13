@@ -99,6 +99,34 @@ z = −cos φ · sin λ
 
 근거·검증: `docs/WONDER_EARTH_ASSETS_V12_REPORT_2026-09-13.md`.
 
+## 4-F. Wonder Earth Assets v2.0 규칙 (2026-09-13, PD "여기 접속해서 분석하고 만들어봐") — **현재 기본 지구**
+
+같은 이름이지만 v1.2 와 **다른 팩**이다. 실측으로 갈린다.
+
+| | v1.2 | v2.0 |
+|---|---|---|
+| 화풍 | ETOPO 계열 사실적 기복도 (지역 고유색 709~2368) | 단색 종이 오려내기 (대륙 고유색 7~13) |
+| 벡터 | shape.svg 16장 전부 빈 path | 대륙 7장에 실제 폴리곤 1,180~6,200점 (M/L/Z) |
+| 좌표 | 마스터 2048×1024 한 장의 crop | 지역마다 자기 `boundsLonLat` 을 갖는 독립 crop |
+| 바다 | 수심 그라데이션 | **단색 #1b6696 하나** (8장 전부 같은 색) |
+
+- **바탕은 색 하나**다. 전지구 오버뷰가 없지만 바다가 단색이라 `fillRect` 한 번이면 덮인다. 내륙해(카스피·흑해·오대호) 구멍도 이걸로 저절로 메워진다. 바다 그림 8장은 **받지 않는다**.
+- **대륙은 벡터로 그린다**(`shape.svg` → `Path2D`). 래스터 `color.avif` 는 쓰지 않는다. 벡터라 텍스처를 키우면 선이 실제로 또렷해진다 — **줌 2단에서 4096×2048 로 다시 굽는 것이 LOD2**(데스크톱만, 폰은 1024×512 고정).
+- **대륙 경계는 지리가 아니라 정치 구분**이라 유럽과 아시아가 유라시아 한복판에서 맞닿는다(실측: lon 26~135°, lat 41~55° 에서 겹침 225px + 틈 152px). 그래서:
+  - 그림자는 **모든 대륙의 합집합 밖에만** 남긴다(`destination-out` 한 번). 각자 그리면 그 선이 러시아를 가로지른다.
+  - 채우기에 가는 획(1.1px)을 더해 살짝 부풀려 실틈을 메운다.
+  - 북쪽 테두리 빛은 **땅 − 아래로 민 땅**이다. 위로 민 땅과의 **교집합을 쓰면 대륙이 통째로 하얘진다**(실측: 아시아 #7ca559 → #93b177).
+- **종이 두께는 캔버스 화소로 고정**한다. 팩이 적은 `translate(0 10)` 을 그대로 쓰면 지역마다 배율이 달라 아프리카 2.8px · 유럽 9.3px 가 된다.
+- **경도 폭이 360° 를 넘는 지역**(europe·oceania·antarctica, 폭 381.6°)은 −360/0/+360 으로 여러 번 그려야 자오선에서 잘리지 않는다.
+- **북극 해빙**은 `polar/arctic/ice_mask.png` 의 밝기를 알파로 옮겨 쓴다(회색조라 그냥 그리면 마스크 구실을 못 한다). 마스크가 위도 띠라 남쪽 끝이 72.4°N 에서 직선으로 끊기므로 **14px 페이드**로 흐린다.
+- **`normal.png` 7장은 쓰지 않는다.** 값이 (128,128,255) 에서 ±2 안에 전부 들어 있어 요철 정보가 없다(1,038KB). `polar/antarctica` 5장은 `continents/antarctica` 와 바이트까지 같다(289KB 중복).
+- **배포에는 런타임이 실제로 받는 것만 올린다**: 대륙 벡터 7장(294KB) + 북극 얼음 마스크 1장. 나머지는 저장소에 보관만 한다.
+- 위치: `assets/earth-v2/`. 레지스트리 kind `earth-v2` · root `project` · 대륙 shape 은 `load: boot-vector`, 나머지는 `on-demand`. 쓸모없는 것은 `usable: false`.
+- 알려진 결함 15건은 `assets/earth_v2_manifest.json` 의 `defects` 에 적혀 있다.
+- 손잡이: `?earth=v2`(기본) · `?earth=assets`(v1.2 기복도 비교) · `?earth=material` · `?earth=paper`.
+
+근거·검증: `docs/WONDER_EARTH_ASSETS_V2_REPORT_2026-09-13.md`.
+
 ## 4-A. 지구 회전 규칙 (LOCKED — 2026-09-13 PD ROTATION RULE LOCK, 원본 = EARTHUS V2)
 
 원본: `prototype/v2-three/js/main.js` `class OrbitCam` (563~757행, v2-deploy·라이브 번들 동일). V3 는 새 회전 알고리즘을 만들지 않고 이 규칙을 옮긴다. 구조는 **Globe Interaction(`globe-engine/src/input.mjs`) → Rotation State(`camera.mjs`) → Paper Earth Visual(`earth.mjs`, `pose()` 만 읽음)** 으로 분리한다.
@@ -147,7 +175,7 @@ z = −cos φ · sin λ
 | 게이트 | 방법 |
 |---|---|
 | Implemented | 파일 존재 + 실행 경로 연결 |
-| Tested | `node --test "tests/*.test.mjs"` 전부 PASS (현재 94) |
+| Tested | `node --test "tests/*.test.mjs"` 전부 PASS (현재 108) |
 | Browser Verified | 인앱 브라우저 데스크톱 + 375×812. 콘솔 오류 0, 네트워크 200, 실제 입력(클릭/합성 포인터) |
 | Device Verified | 실기기(아이폰·안드로이드) 사람 확인 또는 원격 실기기. **자동화로 대체 불가** |
 

@@ -144,6 +144,46 @@ if (earthPack) {
   const files = earthPack.regions.length * 5 + 1;
   if (assets.filter(a => a.kind === 'earth-region').length !== files) bgProblems.push(`지구 자산 수 불일치: ${assets.filter(a => a.kind === 'earth-region').length} ≠ ${files}`);
 }
+// ── 1-E. WONDER EARTH ASSETS v2.0 (assets/earth-v2/, PD 2026-09-13) ───────────────────────
+// v1.2 와 이름만 같고 내용이 다르다: 대륙 7장에 **진짜 벡터**(M/L/Z), 바다는 단색 #1b6696 하나.
+// shape.svg 가 지구 그 자체라 kind 를 나눠 둔다(v1.2 의 빈 shape 과 섞이면 안 된다).
+const EARTH_V2_MANIFEST = path.join(ROOT, 'assets', 'earth_v2_manifest.json');
+const earthV2 = fs.existsSync(EARTH_V2_MANIFEST) ? JSON.parse(fs.readFileSync(EARTH_V2_MANIFEST, 'utf8')) : null;
+if (earthV2) {
+  const addV2 = (id, meta, extra) => {
+    const f = path.join(ROOT, meta.path);
+    if (!fs.existsSync(f)) { bgProblems.push(`지구 v2 자산 없음: ${meta.path}`); return; }
+    const st = fs.statSync(f), hash = sha256(f);
+    if (meta.sha256 && hash !== meta.sha256) bgProblems.push(`지구 v2 sha256 불일치: ${meta.path}`);
+    const px = (meta.width > 0 && meta.height > 0) ? meta.width * meta.height * 4 : 0;
+    assets.push({ id, kind: 'earth-v2', root: 'project', path: meta.path, bytes: st.size,
+      decodedBytes: px || st.size, sha256: hash, version: '2.0', source: 'wonder-earth-assets-v2.0',
+      width: meta.width ?? null, height: meta.height ?? null,
+      format: meta.path.split('.').pop(), ...extra });
+  };
+  for (const r of earthV2.regions) {
+    for (const [fn, meta] of Object.entries(r.files)) {
+      const role = fn.replace(/\.(avif|png|svg)$/, '');
+      // normal 은 평평해서 정보가 없다(실측). 등록은 하되 쓰지 않는다고 적는다.
+      const flatNormal = role === 'normal' && (meta.uniqueColors ?? 99) <= 32;
+      addV2(`v2-${r.id}-${role}`, meta, {
+        role, region: r.id, group: r.group, regionKind: r.kind,
+        load: role === 'shape' ? 'boot-vector' : 'on-demand',
+        usable: !flatNormal && !(role === 'shape' && r.group === 'oceans'),
+        note: flatNormal ? '평평한 노멀 — 런타임 미사용' : undefined,
+      });
+    }
+  }
+  for (const [fn, meta] of Object.entries(earthV2.arctic)) {
+    if (typeof meta !== 'object' || !meta.path) continue;
+    addV2(`v2-arctic-${fn.replace(/\.(avif|png)$/, '')}`, meta, { role: fn.split('.')[0], region: 'arctic', group: 'polar', load: 'on-demand', usable: true });
+  }
+  const want = earthV2.counts.files;
+  const got = assets.filter(a => a.kind === 'earth-v2').length;
+  if (got !== want) bgProblems.push(`지구 v2 자산 수 불일치: ${got} ≠ ${want}`);
+}
+const earthV2Assets = assets.filter(a => a.kind === 'earth-v2');
+
 const earthAssets = assets.filter(a => a.kind === 'earth-region');
 
 // ── 2. 팩 카탈로그 대조 ───────────────────────────────────────────────

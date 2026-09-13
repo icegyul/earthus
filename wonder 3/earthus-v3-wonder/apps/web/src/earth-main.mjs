@@ -10,6 +10,7 @@ import { createAssetRuntime, defaultImageLoader } from '../../../packages/asset-
 import { createEnvironmentFlow } from '../../../packages/wonder-environment/src/environment-state.mjs';
 import { environmentAt } from '../../../packages/wonder-environment/src/environments.mjs';
 import { createEarthAtlas, regionsInView, paintOrder, paperize, applyFiber, unionRect } from '../../../packages/globe-engine/src/earth-assets.mjs';
+import { createPaperGlobeV2, parsePaperShape } from '../../../packages/globe-engine/src/earth-v2.mjs';
 import { createBackgroundSelector, LABEL_KO } from '../../../packages/wonder-environment/src/background-select.mjs';
 import { createEnvironmentView } from './environment.mjs';
 
@@ -23,7 +24,8 @@ const sleep = ms => (ms > 0 ? new Promise(r => setTimeout(r, ms)) : Promise.reso
 
 const state = { view: 'world', region: null, envHit: null, idleSince: performance.now(), firstFrameMs: null, textureMs: null, geoBytes: null, frames: 0,
   environments: [], registryIndex: null, manifestBySlug: null, landmarks: null, spriteLoading: new Set(), bgSelector: null, bgManifest: null,
-  textureCanvas: null, textureSize: null, material: null, earth: null, earthManifest: null, earthMode: null, small: false };
+  textureCanvas: null, textureSize: null, material: null, earth: null, earthManifest: null, earthMode: null, small: false,
+  v2: null, v2Manifest: null, v2Base: null, v2Hi: null };
 const pending = {};                                        // ensure* 의 진행 중 약속 — 동시에 두 번 불려도 한 번만 받는다(스테이징 CDN 에서 JSON 2회 요청 발견, 2026-09-13)
 const prefersReduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const reducedMotion = () => $('#rm').checked || prefersReduced();
@@ -129,6 +131,73 @@ function stylize(rects = null) {
    LOD0 전지구 오버뷰 한 장(179KB) → 구멍 없이 전부 덮는다.  LOD1 카메라가 보는 지역만 uv 자리에 얹는다.
    LOD2+ 는 v1.2 에 없다(지역 파일이 마스터의 잘라내기라 픽셀 밀도가 같다 — manifest.defects 참고).
    그린 지역의 원본 이미지는 바로 놓아 준다 — 2048×731 한 장이 디코드되면 6MB 다. */
+/* ── WONDER EARTH ASSETS v2.0 ─────────────────────────────────────────────────────────
+   같은 이름이지만 v1.2 와 전혀 다른 팩이다. 대륙에 **진짜 벡터**(M/L/Z 폴리곤)가 들어 있고
+   바다는 단색 하나(#1b6696)다. 그래서 오버뷰 없이도 구멍이 안 생기고, 텍스처를 키우면
+   선이 진짜로 또렷해진다 — v1.2 에 없던 LOD2 가 여기서 생긴다. */
+let globeV2 = null, v2Shapes = null, v2Ice = null, v2Sharpening = false;
+
+async function upgradeToEarthV2(size) {
+  if (state.v2 || pending.v2) return !!state.v2;
+  pending.v2 = true;
+  try {
+    await ensureRegistry();
+    const man = await loadJson('assets/earth_v2_manifest.json');
+    const t0 = performance.now();
+    const conts = man.regions.filter(r => r.group === 'continents');
+    // 대륙 모양 7장(합 294KB)이 첫 화면의 지구 그 자체다. 얼음 마스크 한 장만 더 받는다.
+    const [pairs, ice, fiber] = await Promise.all([
+      Promise.all(conts.map(async r => {
+        const res = await fetch(new URL(r.files['shape.svg'].path, ROOT));
+        if (!res.ok) throw new Error(`${r.id} shape ${res.status}`);
+        return [r.id, parsePaperShape(await res.text())];
+      })),
+      assets.get(man.arctic['ice_mask.png'].path).then(e => e.value).catch(() => null),
+      fiberImg ? Promise.resolve(fiberImg) : loadFiber(),
+    ]);
+    v2Shapes = new Map(pairs); v2Ice = ice; fiberImg = fiber;
+    state.v2Manifest = man;
+    state.v2Base = { w: size.w, h: size.h };
+    state.v2Hi = { w: Math.min(4096, size.w * 2), h: Math.min(2048, size.h * 2) };
+    const r = bakeV2(size);
+    if (ice) assets.unload(man.arctic['ice_mask.png'].path);
+    state.v2 = { mode: 'v2', ...r, defects: man.defects.length, totalMs: Math.round(performance.now() - t0) };
+    log(`지구 자산 v2 · 벡터 대륙 ${r.continents}곳 ${r.points.toLocaleString()}점 · 바다 ${man.baseOcean} · ${r.ms}ms`);
+    return true;
+  } finally { pending.v2 = false; }
+}
+
+/** 한 번 굽기. 텍스처 크기를 바꿔 다시 부르면 그만큼 또렷해진다(벡터니까). */
+function bakeV2(size) {
+  const tex = state.textureCanvas;
+  if (tex.width !== size.w || tex.height !== size.h) { tex.width = size.w; tex.height = size.h; }
+  const t0 = performance.now();
+  globeV2 = createPaperGlobeV2({ colorCanvas: tex, manifest: state.v2Manifest });
+  globeV2.paintOcean();
+  const land = globeV2.paintLand(v2Shapes);
+  const ice = globeV2.paintIce(v2Ice);
+  if (state.paper && fiberImg) applyFiber(tex, fiberImg, { alpha: 0.28, tile: size.w >= 2048 ? 1024 : 512 });
+  earth.refreshTexture();
+  state.textureSize = [size.w, size.h];
+  const st = globeV2.stats();
+  return { continents: land.painted, points: st.points, depthPx: land.depthPx, icePct: ice?.coverage ?? null,
+           oceanMs: st.oceanMs, landMs: st.landMs, iceMs: st.iceMs, ms: Math.round(performance.now() - t0), size: [size.w, size.h] };
+}
+
+/** 줌 2단에서 텍스처를 두 배로 다시 굽는다 — 벡터라 선이 실제로 또렷해진다. 폰에서는 하지 않는다. */
+function maybeSharpenV2() {
+  if (!state.v2 || state.small || v2Sharpening || !state.v2Hi) return;
+  const want = camera.step >= 2 ? state.v2Hi : state.v2Base;
+  if (state.textureSize?.[0] === want.w || camera.dragging || camera.animating) return;
+  v2Sharpening = true;
+  try {
+    const r = bakeV2(want);
+    state.v2 = { ...state.v2, ...r };
+    log(`지구 다시 굽기 ${want.w}×${want.h} · ${r.ms}ms`);
+  } catch (e) { log(`⚠ 다시 굽기: ${e.message}`); }
+  finally { v2Sharpening = false; }
+}
+
 async function upgradeToEarthAssets(size) {
   if (state.earth || pending.earth) return !!state.earth;
   pending.earth = true;
@@ -407,18 +476,22 @@ async function boot() {
   state.textureCanvas = tex; state.textureSize = [paint.w, paint.h];
   // 첫 프레임이 나간 뒤 한가할 때 승급한다. 종이 재질 팩이 있으면 **실제 종이 견본**으로 다시 굽고(층 1~8),
   // 팩이 없거나 ?material=0 이면 절차적 종이를 고해상으로 다시 굽는다. 어느 쪽이 실패해도 화면은 그대로 남는다.
-  // 어떤 지구를 쓸까: assets(기본, WONDER EARTH ASSETS v1.2) · material(종이 재질 팩) · paper(절차적만)
-  const earthMode = params.get('earth') ?? (params.get('material') === '0' ? 'paper' : 'assets');
+  // 어떤 지구를 쓸까: v2(기본, WONDER EARTH ASSETS v2.0 벡터 종이) · assets(v1.2 기복도) · material(종이 재질 팩) · paper(절차적)
+  const earthMode = params.get('earth') ?? (params.get('material') === '0' ? 'paper' : 'v2');
   state.small = small; state.earthMode = earthMode; state.paper = params.get('paper') !== '0';   // ?paper=0 이면 팩 원본 픽셀 그대로(비교용)
   const upgrade = async () => {
     // 굽기는 300~450ms 동안 메인 스레드를 잡는다. requestIdleCallback 은 이미 시작한 콜백을 멈추지 못하므로
     // 손이 지구를 만지고 있으면 미룬다 — 돌리는 도중에 화면이 멈추는 것보다 조금 늦게 고와지는 편이 낫다.
     if (camera.dragging || camera.animating) { schedule(); return; }
+    if (earthMode === 'v2') {
+      try { if (await upgradeToEarthV2(full)) return; }
+      catch (e) { log(`⚠ 지구 자산 v2 실패 — 아래 단계로 내려간다: ${e.message}`); }
+    }
     if (earthMode === 'assets') {
       try { if (await upgradeToEarthAssets(full)) return; }
       catch (e) { log(`⚠ 지구 자산 실패 — 종이로 내려간다: ${e.message}`); }
     }
-    if (earthMode === 'assets' || earthMode === 'material') {
+    if (earthMode === 'v2' || earthMode === 'assets' || earthMode === 'material') {
       try { if (await upgradeToMaterial(geo, full)) return; }
       catch (e) { log(`⚠ 종이 재질 실패 — 절차적 종이 유지: ${e.message}`); }
     }
@@ -455,6 +528,7 @@ async function boot() {
     state.frames++;
     if (camera.step !== lastStep || (camera.step >= 1 && state.frames % 30 === 0 && !camera.animating)) { lastStep = camera.step; syncSprites(); }
     if (state.earth && state.frames % 20 === 0) maybeStream();     // 카메라가 자리 잡으면 보이는 지역을 잇는다
+    if (state.v2 && state.frames % 30 === 0) maybeSharpenV2();     // 줌 2단이면 벡터를 더 큰 텍스처에 다시 굽는다
     if (state.firstFrameMs == null) { state.firstFrameMs = Math.round(performance.now() - t0); mark('firstFrame'); log(`첫 그림 ${state.firstFrameMs}ms (자료 ${marks.geo} · 텍스처 ${marks.texture} · GL ${marks.gl}) · 지름 ${Math.round(earth.projectedDiameter(camera.pose()))}px (목표 ${Math.round(targetDiameter(w, h))})`); $('#phase').textContent = 'PHASE 1 · Paper Earth'; }
   }
   function frame(t) { const dt = Math.min(0.05, (t - last) / 1000); last = t; renderOnce(dt, t); requestAnimationFrame(frame); }
@@ -493,11 +567,13 @@ window.__wonder = {
   state, camera, flow, REGIONS, regionAt, environmentAt: (lat, lon) => environmentAt(lat, lon, state.environments), enterRegion, enterEnvironment, returnToEarth, background,
   get earth() { return earth; }, assets: null, env: null, requests,
   get atlas() { return atlas; }, streamRegions, regionsInView: () => (atlas ? regionsInView(atlas.regions, camera.pose(), { max: 8 }) : null),
+  get globeV2() { return globeV2; }, get v2Shapes() { return v2Shapes; }, bakeV2, maybeSharpenV2,
   projectedDiameter: () => earth ? earth.projectedDiameter(camera.pose()) : null,
   targetDiameter: () => { const { w, h } = viewSize(); return targetDiameter(w, h); },
   metrics: () => ({ heapMB: performance.memory ? +(performance.memory.usedJSHeapSize / 1048576).toFixed(1) : null, ...(earth ? earth.metrics() : {}), firstFrameMs: state.firstFrameMs, marks, textureMs: state.textureMs, frames: state.frames, view: viewSize(),
     assets: assets ? assets.status() : null, sprites: earth ? earth.spriteIds : [], flow: flow.state,
     earthAssets: state.earth ? { ...state.earth, atlas: atlas ? atlas.stats() : null } : null,
+    earthV2: state.v2 ? { ...state.v2, globe: globeV2 ? globeV2.stats() : null } : null,
     resources: performance.getEntriesByType('resource').map(r => ({ name: r.name.split('/').slice(-2).join('/'), kb: Math.round((r.transferSize || r.encodedBodySize) / 1024), ms: Math.round(r.duration) })) }),
 };
 boot().catch(e => { console.error(e); log(`✗ 부팅 실패: ${e.message}`); $('#phase').textContent = '부팅 실패'; });

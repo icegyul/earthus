@@ -31,7 +31,7 @@ test('registry 의 모든 항목: 파일 존재·bytes·sha256 일치, content/ 
     assert.ok(fs.existsSync(f), `없음: ${a.path}`);
     assert.equal(fs.statSync(f).size, a.bytes, a.path);
     assert.equal(sha256(f), a.sha256, a.path);
-    assert.ok(['background', 'environment-background', 'paper-material', 'earth-region', 'fx', 'character', 'character-scene', 'character-thumb', 'landmark', 'data', 'other'].includes(a.kind), a.kind);
+    assert.ok(['background', 'environment-background', 'paper-material', 'earth-region', 'earth-v2', 'fx', 'character', 'character-scene', 'character-thumb', 'landmark', 'data', 'other'].includes(a.kind), a.kind);
   }
 });
 
@@ -75,10 +75,11 @@ test('registry: 레거시 PNG 원본은 등록되지 않는다 (WebP 변환본�
   const png = reg.assets.filter(a => a.path.endsWith('.png'));
   // 예외는 지구 자산 팩의 mask·height·normal 뿐 — 이건 그림이 아니라 **자료 맵**이라 손실 압축을 쓰면 안 된다.
   for (const a of png) {
-    assert.equal(a.kind, 'earth-region', `PNG 가 등록됐다: ${a.path}`);
-    assert.ok(['mask', 'height', 'normal'].includes(a.role), `PNG 는 자료 맵만: ${a.path}`);
+    assert.ok(a.kind === 'earth-region' || a.kind === 'earth-v2', `PNG 가 등록됐다: ${a.path}`);
+    assert.ok(['mask', 'height', 'normal', 'ice_mask'].includes(a.role), `PNG 는 자료 맵만: ${a.path}`);
   }
-  assert.equal(png.length, 48, '지구 자산 16지역 × 3장');
+  assert.equal(png.filter(a => a.kind === 'earth-region').length, 48, 'v1.2 16지역 × 3장');
+  assert.equal(png.filter(a => a.kind === 'earth-v2').length, 30, 'v2: 대륙 7×3 + 바다 8 마스크 + 북극 얼음 1');
   assert.equal(reg.assets.filter(a => a.path.includes('pack124')).length, 0);
 });
 

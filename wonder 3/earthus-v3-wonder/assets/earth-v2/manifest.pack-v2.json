@@ -1,0 +1,33 @@
+{
+  "name": "WONDER EARTH ASSETS v2.0",
+  "status": "production-base",
+  "style": "2.5D paper-cut",
+  "cloudsEmbedded": false,
+  "labelsEmbedded": false,
+  "uiEmbedded": false,
+  "continents": [
+    "north_america",
+    "south_america",
+    "europe",
+    "africa",
+    "asia",
+    "oceania",
+    "antarctica"
+  ],
+  "oceans": [
+    "pacific_west",
+    "pacific_east",
+    "atlantic_north",
+    "atlantic_south",
+    "indian_ocean",
+    "arctic_ocean",
+    "southern_ocean",
+    "mediterranean"
+  ],
+  "polar": [
+    "arctic",
+    "antarctica"
+  ],
+  "vectorFirst": true,
+  "runtime": "stream regional assets; use SVG/Vector for crisp edges and AVIF for paper color."
+}

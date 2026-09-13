@@ -42,6 +42,31 @@ test('camera: 지구 목표 지름 720/660/580/350 (§2.2), 화면보다 크면 
   assert.ok(targetDiameter(800, 600) < 580 && targetDiameter(800, 600) <= 0.94 * 600, '800×600 은 높이에 캡');
 });
 
+test('camera: 창이 0×0 이어도 지구가 사라지지 않는다 — 목표 지름·거리는 언제나 숫자, NaN 이 되면 스스로 되돌린다', () => {
+  for (const [w, h] of [[0, 0], [0, 800], [1200, 0], [NaN, NaN], [-5, -5], [undefined, undefined]]) {
+    assert.ok(targetDiameter(w, h) > 0, `targetDiameter(${w},${h}) = ${targetDiameter(w, h)}`);
+    assert.ok(Number.isFinite(distanceForDiameter(targetDiameter(w, h), h)), `distanceForDiameter ${w}×${h}`);
+  }
+  // 0×0 으로 만들어져도 기본 크기로 시작한다(1px 지구·폭주하는 드래그 속도 방지)
+  const zero = new OrbitCamera({ viewW: 0, viewH: 0 });
+  assert.ok(zero.viewW > 0 && zero.viewH > 0 && Number.isFinite(zero.dist), `0×0 생성 ${zero.viewW}×${zero.viewH} dist ${zero.dist}`);
+  assert.ok(zero.degPerPx() < 1, `0×0 생성 뒤 드래그 속도 ${zero.degPerPx()}°/px — 폭주하면 안 된다`);
+  const c = new OrbitCamera({ lat: 10, lon: 20, viewW: 1440, viewH: 900 });
+  assert.equal(c.resize(0, 0), false, '0×0 크기 변경은 무시한다');
+  assert.ok(Number.isFinite(c.dist) && c.viewW === 1440, '무시했으니 값이 그대로다');
+  c.beginDrag(); c.drag(-40, 10); c.endDrag();
+  for (let i = 0; i < 60; i++) c.tick(1 / 60);
+  const p = c.pose();
+  assert.ok(Number.isFinite(p.lat) && Number.isFinite(p.lon) && Number.isFinite(p.dist), `pose ${JSON.stringify(p)}`);
+  // 이미 망가진 상태(NaN)로 들어와도 다음 프레임에 되돌린다
+  const broken = new OrbitCamera({ viewW: 375, viewH: 812 });
+  broken.lat = NaN; broken.lon = NaN; broken.dist = NaN; broken.targetDist = NaN;
+  broken.tick(1 / 60);
+  const q = broken.pose();
+  assert.ok(Number.isFinite(q.lat) && Number.isFinite(q.lon) && Number.isFinite(q.dist), `heal ${JSON.stringify(q)}`);
+  assert.ok(Math.abs(q.dist - broken.dists[0]) < 1e-9, '거리는 지금 줌 단으로 돌아온다');
+});
+
 test('camera: distanceForDiameter ↔ diameterAtDistance 왕복, 최소 거리 보장', () => {
   for (const [D, H] of [[720, 900], [660, 768], [350, 812], [1200, 800]]) {
     const d = distanceForDiameter(D, H);

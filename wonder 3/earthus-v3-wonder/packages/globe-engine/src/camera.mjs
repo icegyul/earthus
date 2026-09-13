@@ -22,10 +22,12 @@ export const MIN_DIST = 1.12;                   // 구 안으로 들어가지 �
 const SETTLE_DEG = 1e-3, SETTLE_DIST = 1e-4;    // 이 안이면 목표에 붙인다(animating 종료)
 const clampPitch = lat => Math.max(-PITCH_LIMIT_DEG, Math.min(PITCH_LIMIT_DEG, lat));
 
-/** 화면 폭 → 지구 목표 지름(px). 화면보다 크면 0.94·min(W,H) 로 캡 (375px 폰에서 350 이 나오게). */
+/** 화면 폭 → 지구 목표 지름(px). 화면보다 크면 0.94·min(W,H) 로 캡 (375px 폰에서 350 이 나오게).
+ *  창이 0×0 일 때(패널이 숨겨진 순간)도 0 을 돌려주지 않는다 — 0 이면 거리 계산이 NaN 이 되어 지구가 영영 사라진다. */
 export function targetDiameter(viewW, viewH) {
-  const byWidth = viewW >= 1440 ? 720 : viewW >= 1024 ? 660 : viewW >= 768 ? 580 : 350;
-  return Math.min(byWidth, 0.94 * Math.min(viewW, viewH));
+  const W = Number.isFinite(viewW) && viewW > 0 ? viewW : 1, H = Number.isFinite(viewH) && viewH > 0 ? viewH : 1;
+  const byWidth = W >= 1440 ? 720 : W >= 1024 ? 660 : W >= 768 ? 580 : 350;
+  return Math.max(1, Math.min(byWidth, 0.94 * Math.min(W, H)));
 }
 
 /**
@@ -33,9 +35,11 @@ export function targetDiameter(viewW, viewH) {
  * 실루엣 각반지름 θ: sinθ = R/d, 화면 반지름(px) = (H/2)·tanθ / tan(fov/2)  ⇒ tanθ = (Dpx/H)·tan(fov/2), d = R/sinθ.
  */
 export function distanceForDiameter(dPx, viewH, fovDeg = FOV_DEG, R = 1) {
-  const t = (dPx / viewH) * Math.tan(fovDeg / 2 * Math.PI / 180);
+  const D = Number.isFinite(dPx) && dPx > 0 ? dPx : 1, H = Number.isFinite(viewH) && viewH > 0 ? viewH : 1;
+  const t = (D / H) * Math.tan(fovDeg / 2 * Math.PI / 180);
   const sinTheta = t / Math.sqrt(1 + t * t);
-  return Math.max(MIN_DIST, R / sinTheta);
+  const d = R / sinTheta;
+  return Number.isFinite(d) ? Math.max(MIN_DIST, d) : MIN_DIST;     // 어떤 경우에도 숫자를 돌려준다
 }
 
 /** 반대로: 거리 d 에서 보이는 지름(px). 검증용. */
@@ -67,7 +71,10 @@ export class OrbitCamera {
   constructor({ lat = 20, lon = 127, viewW = 1440, viewH = 900, reducedMotion = false } = {}) {
     this.lat = lat; this.lon = lon; this.targetLat = lat; this.targetLon = lon;
     this.step = 0;
-    this.viewW = viewW; this.viewH = viewH;
+    // 만들 때 창이 0×0 이면(패널이 아직 안 그려진 순간) 기본 크기로 시작한다 — 0 으로 시작하면 1px 지구와 폭주하는 드래그 속도가 나온다.
+    this.viewW = Number.isFinite(viewW) && viewW > 0 ? viewW : 1440;
+    this.viewH = Number.isFinite(viewH) && viewH > 0 ? viewH : 900;
+    viewW = this.viewW; viewH = this.viewH;
     this.dists = zoomDistances(viewW, viewH);
     this.dist = this.targetDist = this.dists[0];
     this.tween = null;                          // 프로그램 이동 {from, to, t, dur} (줌 단·지역 접근)
@@ -76,12 +83,23 @@ export class OrbitCamera {
     this.dragging = false;
   }
 
-  /** 뷰포트가 바뀌면 단계 거리를 다시 계산하고 현재 단계 거리로 맞춘다(이동 연출 없음). */
+  /** 뷰포트가 바뀌면 단계 거리를 다시 계산하고 현재 단계 거리로 맞춘다(이동 연출 없음). 0×0 은 무시한다. */
   resize(viewW, viewH) {
+    if (!(Number.isFinite(viewW) && viewW > 0 && Number.isFinite(viewH) && viewH > 0)) return false;
     this.viewW = viewW; this.viewH = viewH;
     this.dists = zoomDistances(viewW, viewH);
     if (this.tween) this.tween.to.dist = this.dists[this.step];
     else this.dist = this.targetDist = this.dists[this.step];
+    return true;
+  }
+
+  /** 값이 숫자가 아니게 되면(창 0×0 같은 사고) 제자리로 돌려놓는다 — 지구가 사라진 채로 남지 않게. */
+  heal() {
+    const bad = v => !Number.isFinite(v);
+    if (bad(this.dist) || bad(this.targetDist)) { this.dists = zoomDistances(this.viewW, this.viewH); this.dist = this.targetDist = this.dists[this.step]; this.tween = null; }
+    if (bad(this.lat) || bad(this.targetLat)) { this.lat = this.targetLat = Number.isFinite(this.targetLat) ? this.targetLat : 20; this.tween = null; }
+    if (bad(this.lon) || bad(this.targetLon)) { this.lon = this.targetLon = Number.isFinite(this.targetLon) ? this.targetLon : 127; this.tween = null; }
+    return this;
   }
 
   /** 드래그 1px 이 몇 도인가 — V2 dragSpeed (°/px). 상한 없음. */
@@ -127,6 +145,7 @@ export class OrbitCamera {
 
   /** 프레임 진행(dt 초). 트윈이 있으면 트윈, 없으면 V2 update(): 목표를 k = 1−exp(−dt·damp) 로 따라간다. */
   tick(dt) {
+    if (!Number.isFinite(this.lat) || !Number.isFinite(this.lon) || !Number.isFinite(this.dist)) this.heal();
     if (this.tween) {
       const tw = this.tween; tw.t = Math.min(1, tw.t + dt / tw.dur);
       const e = easeInOut(tw.t);

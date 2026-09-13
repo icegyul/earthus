@@ -1,40 +1,52 @@
-/* EARTHUS V3 WONDER — Paper Earth (PHASE 1). 지구가 주인공이다. UI 는 가장자리에 작게. */
-:root { --paper: #f3ead9; --paper-2: #ebdfc8; --ink: #2b3a52; --ink-soft: #5b6778; --accent: #f2a541; --accent-2: #5aa9f0; --shadow: 0 10px 30px rgba(43, 58, 82, .18); }
+/* EARTHUS V3 WONDER — Paper Earth (PHASE 1). 지구가 주인공이다. 바탕은 어두운 종이 우주, UI 는 가장자리에 작게.
+   승인된 reference 기준: 어두운 종이 결 + 별 + 겹친 종이 지구. 대시보드·과한 라벨·장식 금지. */
+:root {
+  --paper: #f3ead9; --paper-2: #ebdfc8; --ink: #2b3a52; --ink-soft: #5b6778; --accent: #f2a541; --accent-2: #5aa9f0;
+  --space: #131b2b; --space-2: #0a0f19; --space-3: #1d2740; --on-space: #efe6d6; --on-space-soft: rgba(239, 230, 214, .62);
+  --shadow: 0 10px 30px rgba(6, 10, 18, .45);
+}
 * { box-sizing: border-box; }
-html, body { margin: 0; height: 100%; overflow: hidden; background: var(--paper); color: var(--ink); font-family: system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; }
-body { background: radial-gradient(ellipse at 50% 45%, #f8f2e6 0%, var(--paper) 55%, var(--paper-2) 100%); }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--space-2); color: var(--on-space); font-family: system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; }
+/* 정거장 없이 이어지는 어둠 — 중간 색 경계가 고리처럼 보이면 안 된다(2026-09-13 실측: 정거장 3개짜리 그라디언트가 지구 밖에 타원 테를 만들었다). */
+body { background: radial-gradient(ellipse 130% 100% at 50% 42%, #1e2842 0%, #1a2338 26%, #151d2f 48%, #101724 68%, #0c121d 84%, var(--space-2) 100%); }
 
-.world { position: fixed; inset: 0; }
+/* 우주 종이 결 — 어두운 종이의 섬유. 이미지 파일 없이 SVG 잡음 한 겹(고정, 조작을 가리지 않는다). */
+.space { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .34; mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='220' height='220' filter='url(%23n)' opacity='.55'/></svg>"); }
+
+.world { position: fixed; inset: 0; z-index: 1; }
 #globe { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; outline: none; cursor: grab; }   /* V2 조작면 규칙: 브라우저에게 제스처를 넘기지 않는다 */
 #globe:active { cursor: grabbing; }
 #globe:focus-visible { box-shadow: inset 0 0 0 3px var(--accent-2); }
 
 .topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 10; display: flex; align-items: center; gap: 12px; padding: max(10px, env(safe-area-inset-top)) 16px 8px; pointer-events: none; }
 .topbar > * { pointer-events: auto; }
-.brand { font-size: 15px; letter-spacing: .08em; } .brand strong { font-weight: 800; } .brand span { margin-left: 6px; color: var(--accent); font-weight: 700; }
+.brand { font-size: 15px; letter-spacing: .12em; color: var(--on-space); text-shadow: 0 1px 12px rgba(0, 0, 0, .5); } .brand strong { font-weight: 800; } .brand span { margin-left: 6px; color: var(--accent); font-weight: 700; }
 .crumbs { display: flex; align-items: center; gap: 8px; flex: 1; }
-.crumb { font: inherit; font-size: 14px; padding: 6px 12px; border-radius: 999px; background: rgba(255, 250, 240, .92); box-shadow: var(--shadow); border: 0; }
+.crumb { font: inherit; font-size: 14px; padding: 6px 12px; border-radius: 999px; background: rgba(251, 244, 230, .94); box-shadow: var(--shadow); border: 0; }
 .crumb-earth { cursor: pointer; font-weight: 700; color: var(--ink); }
 .crumb-earth:active { transform: scale(.96); }
 .crumb-region { color: var(--ink); font-weight: 700; }
-.phase { font-size: 12px; color: var(--ink-soft); background: rgba(255, 250, 240, .8); padding: 4px 10px; border-radius: 999px; }
+.phase { font-size: 12px; color: var(--on-space-soft); background: rgba(255, 255, 255, .06); padding: 4px 10px; border-radius: 999px; }
 
 .zoom { position: fixed; right: max(14px, env(safe-area-inset-right)); top: 50%; transform: translateY(-50%); z-index: 10; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-.zoom button { width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255, 250, 240, .95); box-shadow: var(--shadow); font-size: 22px; font-weight: 700; color: var(--ink); cursor: pointer; }
-.zoom button:active { transform: scale(.94); }
+.zoom button { width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(239, 230, 214, .22); background: rgba(18, 26, 42, .62); backdrop-filter: blur(6px); box-shadow: var(--shadow); font-size: 22px; font-weight: 600; color: var(--on-space); cursor: pointer; }
+.zoom button:active { transform: scale(.94); background: rgba(30, 42, 66, .8); }
 .zoom-dots { display: flex; flex-direction: column; gap: 5px; padding: 4px 0; }
-.zoom-dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(43, 58, 82, .18); }
+.zoom-dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(239, 230, 214, .22); }
 .zoom-dots i.on { background: var(--accent); }
 
-.hint { position: fixed; left: 50%; bottom: max(64px, calc(env(safe-area-inset-bottom) + 56px)); transform: translateX(-50%); z-index: 10; margin: 0; padding: 8px 14px; border-radius: 999px; background: rgba(255, 250, 240, .85); font-size: 14px; color: var(--ink-soft); white-space: nowrap; max-width: calc(100vw - 32px); overflow: hidden; text-overflow: ellipsis; transition: opacity .4s; }
+.hint { position: fixed; left: 50%; bottom: max(64px, calc(env(safe-area-inset-bottom) + 56px)); transform: translateX(-50%); z-index: 10; margin: 0; padding: 8px 14px; border-radius: 999px; background: rgba(14, 20, 34, .55); backdrop-filter: blur(6px); font-size: 14px; color: var(--on-space-soft); white-space: nowrap; max-width: calc(100vw - 32px); overflow: hidden; text-overflow: ellipsis; transition: opacity .4s; }
 .hint.hide { opacity: 0; }
 
-.foot { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 14px max(8px, env(safe-area-inset-bottom)); font-size: 11px; color: var(--ink-soft); pointer-events: none; }
+.foot { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 14px max(8px, env(safe-area-inset-bottom)); font-size: 11px; color: var(--on-space-soft); pointer-events: none; }
 .foot > * { pointer-events: auto; }
 .rm-label { display: flex; align-items: center; gap: 6px; }
-.devlink { color: var(--ink-soft); }
+.devlink { color: var(--on-space-soft); }
 
-.log { position: fixed; left: 12px; top: 56px; z-index: 9; max-width: 44vw; max-height: 26vh; overflow: auto; margin: 0; font: 11px/1.5 ui-monospace, Menlo, Consolas, monospace; color: var(--ink-soft); background: rgba(255, 250, 240, .7); padding: 6px 8px; border-radius: 8px; white-space: pre-wrap; pointer-events: none; }
+.log { position: fixed; left: 12px; top: 56px; z-index: 9; max-width: 44vw; max-height: 26vh; overflow: auto; margin: 0; font: 11px/1.5 ui-monospace, Menlo, Consolas, monospace; color: var(--on-space-soft); background: rgba(10, 15, 25, .62); padding: 6px 8px; border-radius: 8px; white-space: pre-wrap; pointer-events: none; }
+/* 개발용 표시는 기본으로 숨긴다 — 화면은 지구 하나다(복잡한 dashboard 금지). ?debug=1 · ?qa=1 일 때만 나온다. */
+body:not(.debug) .log, body:not(.debug) .phase, body:not(.debug) .devlink, body:not(.debug) .src { display: none; }
 @media (max-width: 640px) { .log { max-width: 72vw; max-height: 16vh; font-size: 10px; } .src { display: none; } .phase { display: none; } }
 @media (prefers-reduced-motion: reduce) { .hint { transition: none; } }
 

@@ -58,6 +58,15 @@ z = −cos φ · sin λ
 북극 = +y, 경도 0°(그리니치) = +x, 동경 = −z 방향. 모든 패키지가 이 식 하나를 쓴다(`packages/paper-earth/src/geo.mjs` 에 두고 다른 곳에서 재정의 금지).
 기존 두 판(v3-kids `surfaceNormal`, v3-paper `geo.js`)의 식이 서로 달랐던 것이 이식 사고의 원인이었으므로 **하나로 못 박는다.**
 
+## 4-C. Paper Earth 시각 규칙 (2026-09-13 PHASE 1, 승인된 reference)
+
+- 바탕은 **어두운 종이 우주**(방사 그라디언트 + SVG 종이 결 한 겹 + 별 420). 지구가 화면의 유일한 주인공이다.
+- 지구 텍스처는 **자료에서 런타임에 굽는다**(`paper-texture.mjs`, Natural Earth). 그림 파일을 지구에 쓰지 않는다 — Background Pack 후보와 완전히 분리.
+- 층: 바다 → 대륙붕 헤일로 → 그림자 → 생물군 위도 띠(물결 경계) → 종이 두께 → 빛 모서리 → 나라별 옅은 차이 → 자른 단면 → 극지 얼음 → 종이 결. 장식(나무·산줄기·모래)은 **고도 자료가 아니다**.
+- 둘레 장식은 `ambient.mjs` 의 순수 계획으로만 만든다: 별·종이 구름 10장·대륙 이름표 6개. **나라·바다 이름표 금지**(PHASE 2 LOD 의 몫), 대시보드 UI 금지, 중국풍 장식 금지.
+- 개발 표시(로그·PHASE 칩·출처·무대 링크)는 `?debug=1`·`?qa=1` 에서만 보인다.
+- 창이 0×0 이 되어도 카메라 값이 NaN 이 되지 않는다(목표 지름·거리 하한, `resize(0,0)` 무시, `tick` 의 `heal()`). 지구가 사라진 채 남는 경로를 만들지 않는다.
+
 ## 4-A. 지구 회전 규칙 (LOCKED — 2026-09-13 PD ROTATION RULE LOCK, 원본 = EARTHUS V2)
 
 원본: `prototype/v2-three/js/main.js` `class OrbitCam` (563~757행, v2-deploy·라이브 번들 동일). V3 는 새 회전 알고리즘을 만들지 않고 이 규칙을 옮긴다. 구조는 **Globe Interaction(`globe-engine/src/input.mjs`) → Rotation State(`camera.mjs`) → Paper Earth Visual(`earth.mjs`, `pose()` 만 읽음)** 으로 분리한다.

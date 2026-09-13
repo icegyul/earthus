@@ -3,14 +3,19 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-  <meta name="theme-color" content="#f3ead9">
+  <meta name="theme-color" content="#0a0f19">
   <meta name="description" content="EARTHUS V3 WONDER — 아이의 손길로 지구가 살아나는 2.5D Paper Wonder Earth. PHASE 1 Paper Earth.">
   <title>EARTHUS WONDER · 종이 지구</title>
-  <!-- 서비스워커 없음. 첫 화면은 지구 자료만 받는다(Master Directive §19). 캐릭터·랜드마크는 지역에 들어갈 때만. -->
+  <!-- 서비스워커 없음. 첫 화면은 지구 자료만 받는다(Master Directive §19). 캐릭터·랜드마크는 지역에 들어갈 때만.
+       첫 그림을 앞당기려고 지구에 꼭 필요한 셋만 미리 받는다(모듈 그래프가 풀리기 전에 시작). -->
+  <link rel="modulepreload" href="../../packages/shared/vendor/three/three-r184.module.min.js">
+  <link rel="modulepreload" href="../../packages/shared/vendor/three/three.core.min.js">
+  <link rel="preload" as="fetch" type="application/json" crossorigin href="../../content/geo/country-reference.json">
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./earth.css">
 </head>
 <body>
+  <div class="space" aria-hidden="true"></div>
   <main id="world" class="world" aria-label="EARTHUS WONDER 종이 지구">
     <canvas id="globe" tabindex="0" aria-label="종이 지구 — 끌어서 돌리고, 두 손가락으로 당겨 가까이 보고, 톡 누르면 그 지역으로 갑니다"></canvas>
   </main>
@@ -25,7 +30,7 @@
       <span id="regionChip" class="crumb crumb-region" hidden></span>
       <button id="btnFart" class="crumb crumb-fart" type="button" hidden title="이 친구만 할 수 있는 장난">뿡</button>
     </nav>
-    <div class="phase" id="phase">PHASE 1-B · 종이 지구</div>
+    <div class="phase" id="phase">PHASE 1 · Paper Earth</div>
   </header>
 
   <div class="zoom" role="group" aria-label="가까이 · 멀리">

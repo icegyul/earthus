@@ -74,6 +74,9 @@ PD 가 PHASE 0 READ-ONLY AUDIT 결과를 확인하고 아래 6개를 **LOCK** �
 
 결과: `PHASE1_PAPER_EARTH_REPORT_2026-09-13.md` (코드 커밋 `71e1b3c4`).
 
+11. **PHASE 0 ACCEPTANCE / PHASE 1 START (2026-09-13 밤, PD)** → ① MASTER DIRECTIVE PASS(repo 기준 문서 유지) ② STACK **ESM LOCK**(변경 금지) ③ DEPLOYMENT 설계 유지·**AWS 변경 금지** ④ CHARACTER WEBP 1024/Q85 승인, 원본 PNG 삭제 금지, 124 일괄 변환은 적절한 시점 ⑤ LEGACY CLEANUP 계속 보류(기존 V3/AWS/CI/sw.js 변경 금지) ⑥ BACKGROUND 24 = **RUNTIME CANDIDATE ONLY, PRODUCTION APPROVAL = REJECT FOR NOW**(catalog crop residue · ≈480p · upscaled · production 품질 부족). 24장 삭제 금지, candidate/fallback 유지, 향후 같은 Asset ID 로 production art 교체.
+    PHASE 1 = Paper Earth Core(2.5D 종이 지구·구형·회전·줌·터치/핀치·관성·카메라 상태·Earth↔Region·반응형). 디자인은 승인된 reference: 지구가 주인공, 대시보드·과한 라벨·중국풍 장식 금지, 따뜻한 자연 종이색, 겹친 종이 깊이, 그림책 품질. background candidate 는 Environment 테스트용으로만 연결하고 Paper Earth 와 분리. 결과 `PHASE1_PAPER_EARTH_CORE_REPORT_2026-09-13.md`.
+
 10. **BACKGROUND PACK INSERTION (2026-09-13 밤)** → PD 가 준 `EARTHUS_V3_WONDER_BACKGROUND_PACK_v1.zip`(24장) 을 `assets/background/` 에 독립 콘텐츠로 편입. 실제 픽셀 검수 결과 내용 위반 0 이지만 24장 전부 시트 여백/잔재·≈480p 라 **production 승인 0(REVIEW 24)** — safe-crop 후보로만 런타임에 씀. 24장 initial preload 금지, 지역 진입 때 한 장만, 종료 시 unpin → LRU. 배경과 캐릭터는 별도 레이어, 모션은 별도 CSS 레이어(MAIN 1 + SECONDARY ≤ 2). 기존 V3·AWS 변경 0. 보고 `BACKGROUND_PACK_V1_REPORT_2026-09-13.md`.
 9. **ROTATION RULE LOCK (2026-09-13 저녁, 스테이징 배포 뒤)** → 모바일 실기기에서 "드래그하면 남극으로 내려가고 이후 회전이 잠기는" 문제. 새 회전 규칙을 설계하지 않고 **EARTHUS V2 `OrbitCam` 의 회전 UX 를 V3 `globe-engine` 에 이식**한다(단순 위도 clamp 로 숨기지 않는다). V2 코드는 읽기만 하고 수정 금지. 줌(휠·버튼·핀치)은 V3 3단 유지, 핀치와 한 손가락 회전은 충돌하지 않게. 회귀 `node --test` + 1440/1024/390/375 + 스테이징 실기기 Android/iOS 재수행. 근거 `ARCHITECTURE_LOCK.md §4-A`, 보고 `ROTATION_RULE_PORT_2026-09-13.md`.
 

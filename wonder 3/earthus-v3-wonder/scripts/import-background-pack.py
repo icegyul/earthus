@@ -92,6 +92,9 @@ report = {'schema': 'earthus-v3-wonder/background-quality-report@1', 'pack': os.
   'reviewer': 'Claude Code — 눈 검수(1024px 미리보기 + 가장자리 확대 시트) + 자동 측정(scripts/import-background-pack.py)',
   'rule': 'PD 2026-09-13: 글자·지역명·UI·버튼·로고·워터마크·캐릭터·다른 장소 썸네일·카드 프레임·인포그래픽·합성 흔적 중 하나라도 있으면 PRODUCTION_REJECT. 통과: standalone·paper-cut 2.5D·16:9·전경 공간·합성 적합·mobile crop',
   'method': {'whiteStripPx': '가장자리에서 안쪽으로 밝고(평균 >215) 균일한(표준편차 <32) 열/행 수 = 카탈로그 시트 여백', 'edgeColorDelta': '가장자리 40px 띠 평균색 vs 안쪽 120~280px 띠 평균색 거리(0~441) = 이웃 그림 잔재(>60 의심)', 'psnrVsQuarterDb': '1/4 로 줄였다 키운 것과의 PSNR — 47~50 dB 면 유효 해상도 ≈ 480p'},
+  'pdDecision': {'at': '2026-09-13', 'by': 'PD (PHASE 1 START AUTHORIZATION)', 'verdict': 'RUNTIME CANDIDATE ONLY · PRODUCTION APPROVAL = REJECT FOR NOW',
+    'reasons': ['catalog crop residue', 'effective resolution approximately 480p', 'upscaled source', 'production quality 부족'],
+    'keep': '삭제하지 않는다 — candidate/fallback 으로 유지. 향후 같은 Asset ID 로 production art 를 교체한다(version·sha 만 갱신).'},
   'summary': {}, 'assets': []}
 manifest = {'schema': 'earthus-v3-wonder/background-manifest@1', 'version': pack['version'], 'product': pack['product'], 'assetType': 'background',
   'sourcePack': {'file': os.path.basename(args.zip), 'sha256': sha(zbytes), 'manifestCopy': 'assets/background_manifest.pack-v1.json'}, 'count': 24, 'categories': pack['categories'],

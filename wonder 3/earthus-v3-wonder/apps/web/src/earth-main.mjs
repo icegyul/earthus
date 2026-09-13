@@ -32,7 +32,8 @@ const camera = new OrbitCamera({ lat: 24, lon: 127, viewW: world.clientWidth, vi
 const flow = createEnvironmentFlow({ reducedMotion });
 let earth = null, detach = null, assets = null, envView = null;
 
-function viewSize() { return { w: world.clientWidth, h: world.clientHeight }; }
+// 패널이 아직 안 그려져 0 이 나오면 창 크기로 대신한다(0 을 그대로 쓰면 지구가 1px 이 된다).
+function viewSize() { return { w: world.clientWidth || innerWidth || 1440, h: world.clientHeight || innerHeight || 900 }; }
 async function loadJson(rel) { const r = await fetch(new URL(rel, ROOT)); if (!r.ok) throw new Error(`${rel} ${r.status}`); return r.json(); }
 
 /** 레지스트리·자산 런타임·환경 화면은 처음 필요할 때 만든다(첫 화면에 안 받는다). */
@@ -144,7 +145,7 @@ async function enterEnvironment({ environment: env, distanceKm, backgroundReason
   const bg = pickBackground(env);                               // 지역 진입 때 배경 한 장만 고른다 (Paper Unfold → Environment Background)
   $('#btnFart').hidden = !row?.interaction?.fart;
   await envView.open({ env, row, landmarkPath: lm?.path ?? null, origin, plan, background: bg?.desc ?? null });
-  if (flow.seq !== seq) return false;
+  if (flow.seq !== seq) { await envView.close({ plan: { foldMs: 0 } }); return false; }   // 펼치는 사이에 지구로 돌아갔다 — 열린 층을 도로 닫는다
   flow.unfolded();
   setView('environment', { nameKo: env.nameKo, nameEn: env.nameEn, descriptor: env.descriptorKo });
   log(`${env.synthetic ? '지역' : '환경'} ${env.id} 활성 · unfold ${plan.unfoldMs}ms(${plan.mode}) · 배경 ${bg?.desc ? `${bg.desc.id} (${backgroundReason ?? bg.reason})` : '없음(종이)'}${row ? ' · discovery-ready' : ''}`);
@@ -166,6 +167,18 @@ async function returnToEarth() {
     state.envHit = null;
     syncSprites();
     log('지구로 (접기 → 줌아웃)');
+    return true;
+  }
+  // 들어가는 중(접근·펼침)에 눌러도 지구로 돌아온다 — 지구 버튼이 먹지 않는 순간이 있으면 안 된다(PHASE 1 수용 기준 "Earth return works").
+  if (flow.state === 'approaching' || flow.state === 'unfolding' || flow.state === 'folding' || flow.state === 'zooming-out') {
+    flow.abort();                                              // seq 를 올려 진행 중이던 진입을 무효로 만든다
+    $('#btnFart').hidden = true;
+    if (envView?.isOpen) await envView.close({ plan: { foldMs: 0 } });
+    earth.setMarker(null);
+    camera.setZoomStep(0);
+    setView('world', null); updateZoomDots();
+    state.envHit = null; syncSprites();
+    log('지구로 (진입 취소)');
     return true;
   }
   if (flow.state !== 'earth') { log(`전환 중(${flow.state}) — 잠시 뒤`); return false; }
@@ -202,24 +215,37 @@ async function enterOcean(ll) {
   return enterEnvironment({ environment: { ...syntheticEnv(hit, asset), background: asset.id }, distanceKm: 0, backgroundReason: 'ocean' });
 }
 
-function resize() { const { w, h } = viewSize(); earth?.resize(w, h); camera.resize(w, h); }
+// 창이 0×0 인 순간(패널이 숨겨졌거나 전환 중)에는 크기를 반영하지 않는다 — 반영하면 카메라 거리가 NaN 이 되어 지구가 사라진다(2026-09-13 실측).
+function resize() { const { w, h } = viewSize(); if (w < 2 || h < 2) return; earth?.resize(w, h); camera.resize(w, h); }
 
 const marks = {};
 const mark = k => { marks[k] = Math.round(performance.now() - t0); };
 async function boot() {
   mark('boot');
-  const [geo, envCat] = await Promise.all([loadJson('content/geo/country-reference.json'), loadJson('content/environments/environments.json')]);
-  state.environments = envCat.environments;
+  const params = new URLSearchParams(location.search);
+  if (params.has('debug') || params.get('qa') === '1') document.body.classList.add('debug');   // 개발 표시는 요청할 때만(화면은 지구 하나다)
+  // 첫 그림은 지구 자료 하나에만 매인다. 환경 카탈로그는 옆에서 받아 온다(탭이 그때까지 기다리지 않게).
+  const geoP = loadJson('content/geo/country-reference.json');
+  const envP = loadJson('content/environments/environments.json').then(c => { state.environments = c.environments; }).catch(e => log(`⚠ 환경 카탈로그: ${e.message}`));
+  const geo = await geoP;
   mark('geo');
   const { w, h } = viewSize();
   const small = Math.min(w, h) < 600;
+  const full = small ? { w: 1024, h: 512 } : { w: 2048, h: 1024 };
   const tex = document.createElement('canvas');
-  const paint = paintPaperEarth(tex, geo, { w: small ? 1024 : 2048, h: small ? 512 : 1024 });
+  // 낮은 해상도로 먼저 굽고 바로 그린다 → 지구가 즉시 뜬다. 고해상도는 첫 프레임 뒤에 다시 굽는다(같은 캔버스, 텍스처만 갱신).
+  const first = { w: Math.min(full.w, 1024), h: Math.min(full.h, 512) };
+  const paint = paintPaperEarth(tex, geo, first);
   state.textureMs = paint.ms; mark('texture');
-  log(`종이 지구 텍스처 ${paint.w}×${paint.h} · 나라 ${paint.features} · ${paint.ms}ms · 환경 ${state.environments.length}곳`);
+  log(`종이 지구 텍스처 ${paint.w}×${paint.h} · 나라 ${paint.features} · ${paint.ms}ms`);
 
-  earth = createPaperEarth({ canvas, textureCanvas: tex, pixelRatio: Math.min(2, devicePixelRatio || 1) });
+  earth = createPaperEarth({ canvas, textureCanvas: tex, pixelRatio: Math.min(2, devicePixelRatio || 1), ambient: true, labels: !params.has('nolabel') });
   mark('gl');
+  if (full.w !== first.w) {                                     // 고해상 승급 — 첫 프레임이 나간 뒤 한가할 때
+    const upgrade = () => { const p2 = paintPaperEarth(tex, geo, full); earth.refreshTexture(); state.textureMs = p2.ms; state.textureSize = [p2.w, p2.h]; log(`텍스처 승급 ${p2.w}×${p2.h} · ${p2.ms}ms`); };
+    (globalThis.requestIdleCallback ?? (f => setTimeout(f, 120)))(() => upgrade(), { timeout: 1500 });
+  }
+  state.textureSize = [paint.w, paint.h];
   resize();
   new ResizeObserver(resize).observe(world);
   state.gestures = { drag: 0, 'pinch-in': 0, 'pinch-out': 0, 'wheel-in': 0, 'wheel-out': 0, tap: 0, touchDrag: 0, touchPinch: 0, touchTap: 0 };
@@ -244,13 +270,16 @@ async function boot() {
   function renderOnce(dt, t = performance.now()) {
     if (state.view === 'world' && !camera.tween && !camera.dragging && !camera.reducedMotion && t - state.idleSince > 6000) camera.nudgeLon(0.45 * dt);   // 첫 화면 자동 회전: 현재값·목표를 함께 민다(V2 autoRotate 와 같은 자리)
     camera.tick(dt);
+    if (!camera.reducedMotion) earth.tick(dt);                  // 종이 구름이 아주 느리게 흐른다(움직임 줄이기면 멈춘다)
     earth.render(camera.pose());
     state.frames++;
     if (camera.step !== lastStep || (camera.step >= 1 && state.frames % 30 === 0 && !camera.animating)) { lastStep = camera.step; syncSprites(); }
-    if (state.firstFrameMs == null) { state.firstFrameMs = Math.round(performance.now() - t0); mark('firstFrame'); log(`첫 그림 ${state.firstFrameMs}ms (자료 ${marks.geo} · 텍스처 ${marks.texture} · GL ${marks.gl}) · 지름 ${Math.round(earth.projectedDiameter(camera.pose()))}px (목표 ${Math.round(targetDiameter(w, h))})`); $('#phase').textContent = 'PHASE 1-B · 종이 지구 · 준비됨'; }
+    if (state.firstFrameMs == null) { state.firstFrameMs = Math.round(performance.now() - t0); mark('firstFrame'); log(`첫 그림 ${state.firstFrameMs}ms (자료 ${marks.geo} · 텍스처 ${marks.texture} · GL ${marks.gl}) · 지름 ${Math.round(earth.projectedDiameter(camera.pose()))}px (목표 ${Math.round(targetDiameter(w, h))})`); $('#phase').textContent = 'PHASE 1 · Paper Earth'; }
   }
   function frame(t) { const dt = Math.min(0.05, (t - last) / 1000); last = t; renderOnce(dt, t); requestAnimationFrame(frame); }
+  renderOnce(0);                                                // 첫 그림은 rAF 를 기다리지 않는다 — 지구가 바로 뜬다(창이 가려져 있어도 계측이 정직하다)
   requestAnimationFrame(frame);
+  await envP;                                                   // 환경 카탈로그는 지구가 뜬 뒤에 붙는다
   window.__wonder.stepFrames = (n = 60, dt = 1 / 60) => { for (let i = 0; i < n; i++) renderOnce(dt, performance.now()); return camera.pose(); };
 }
 

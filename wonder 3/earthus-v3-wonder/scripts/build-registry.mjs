@@ -97,6 +97,26 @@ if (bgPack) {
 }
 const bgPackAssets = assets.filter(a => a.kind === 'environment-background');
 
+// ── 1-C. Paper Earth Material v1 (assets/material/, PD 2026-09-13) ────────────────────────
+// 지구 표면의 종이 재질. 지리가 구워져 있지 않고(geography_baked=false) 첫 그림 뒤에 받아 갈아 끼운다.
+const MAT_MANIFEST = path.join(ROOT, 'assets', 'material', 'paper_earth_material_manifest.json');
+const matPack = fs.existsSync(MAT_MANIFEST) ? JSON.parse(fs.readFileSync(MAT_MANIFEST, 'utf8')) : null;
+if (matPack) {
+  for (const t of matPack.textures) {
+    const f = path.join(ROOT, t.path);
+    if (!fs.existsSync(f)) { bgProblems.push(`재질 파일 없음: ${t.path}`); continue; }
+    const st = fs.statSync(f), hash = sha256(f);
+    if (st.size !== t.bytes) bgProblems.push(`재질 bytes 불일치: ${t.path}`);
+    if (hash !== t.sha256) bgProblems.push(`재질 sha256 불일치: ${t.path}`);
+    assets.push({ id: t.id, kind: 'paper-material', root: 'project', path: t.path, role: t.role, layer: t.layer,
+      width: t.width, height: t.height, format: t.format, bytes: st.size, sha256: hash, version: matPack.version,
+      wrap: t.wrap, usedInV1: t.usedInV1, source: 'paper-earth-material-v1', load: 'on-demand' });
+  }
+  const actual = fs.readdirSync(path.join(ROOT, 'assets', 'material', 'paper-earth')).filter(x => x.endsWith('.webp')).length;
+  if (actual !== matPack.textures.length || matPack.count !== matPack.textures.length) bgProblems.push(`재질 manifest ${matPack.textures.length} ≠ 실제 파일 ${actual}`);
+}
+const matAssets = assets.filter(a => a.kind === 'paper-material');
+
 // ── 2. 팩 카탈로그 대조 ───────────────────────────────────────────────
 const catalog = JSON.parse(fs.readFileSync(path.join(CONTENT, 'pack-1.8', 'background-catalog.json'), 'utf8'));
 const problems = [...bgProblems];
@@ -156,12 +176,15 @@ const registry = {
   sources: {
     'pack-1.8': { file: 'wonder 3/EARTHUS_V3_WONDER_1.8_INTERACTION_BACKGROUND_ASSET_PACK.zip', sha256: PACK_ZIP_SHA256, note: '배경 24·FX 5·카탈로그·124 인터랙션 JSON. 중복 JSON(character-interactions-124.json) 은 등록하지 않음' },
     'background-pack-v1': bgPack ? { file: 'wonder 3/EARTHUS_V3_WONDER_BACKGROUND_PACK_v1.zip', sha256: bgPack.sourcePack?.sha256 ?? null, manifest: 'assets/background_manifest.json', qualityReport: 'assets/background_quality_report.json', note: '24장(world 1·korea 4·atmosphere 3·region 16) 1920×1080 WebP. 2026-09-13 검수: 내용 위반 0, 시트 여백/잔재·≈480p 로 production REJECT, REVIEW(safe-crop 후보) 로만 로드' } : null,
+    'paper-earth-material-v1': matPack ? { file: 'wonder 3/material pack_01/EARTHUS_V3_WONDER_PAPER_EARTH_MATERIAL_v1.zip', sha256: matPack.sourcePack?.sha256 ?? null, manifest: 'assets/material/paper_earth_material_manifest.json', note: '종이 재질 10장(2048²). 지리 미포함. v1 은 8장 사용, height·edge_softmask 는 등록만' } : null,
     'legacy-pack124': { file: 'prototype/v3-paper/pack124 (== prototype/v3-kids/pack124)', note: '124 PNG 원본은 등록하지 않는다. content/characters/runtime/ 의 변환본만 등록. 승인 원본은 v3_CHARACTERS/EARTHUS_V3_CHARACTERS_124' },
   },
   counts: {
     assets: assets.length,
     backgrounds: bgCount,
     backgrounds_usable: bgUsable,
+    paper_material: matAssets.length,
+    paper_material_used_v1: matAssets.filter(a => a.usedInV1).length,
     environment_backgrounds: bgPackAssets.length,
     environment_backgrounds_loadable: bgPackAssets.filter(a => a.load !== 'blocked-by-review').length,
     environment_backgrounds_by_status: bgPackAssets.reduce((m, a) => (m[a.status] = (m[a.status] ?? 0) + 1, m), {}),

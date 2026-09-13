@@ -2,7 +2,7 @@
 // 흐름: Paper Earth → tap → (환경 있으면) camera approach → paper unfold → environment active(discovery-ready) → EARTH → fold → zoom-out → Earth.
 // 첫 화면은 지구 자료(Natural Earth)와 환경 카탈로그만 받는다. 레지스트리·manifest·썸네일은 줌/진입 때, 런타임·랜드마크는 진입 때만.
 import { OrbitCamera, targetDiameter } from '../../../packages/globe-engine/src/camera.mjs';
-import { paintPaperEarth } from '../../../packages/globe-engine/src/paper-texture.mjs';
+import { paintPaperEarth, paintPaperEarthMaterial } from '../../../packages/globe-engine/src/paper-texture.mjs';
 import { createPaperEarth } from '../../../packages/globe-engine/src/earth.mjs';
 import { attachGlobeInput } from '../../../packages/globe-engine/src/input.mjs';
 import { regionAt, regionFocus, REGIONS } from '../../../packages/globe-engine/src/regions.mjs';
@@ -21,7 +21,8 @@ const t0 = performance.now();
 const sleep = ms => (ms > 0 ? new Promise(r => setTimeout(r, ms)) : Promise.resolve());
 
 const state = { view: 'world', region: null, envHit: null, idleSince: performance.now(), firstFrameMs: null, textureMs: null, geoBytes: null, frames: 0,
-  environments: [], registryIndex: null, manifestBySlug: null, landmarks: null, spriteLoading: new Set(), bgSelector: null, bgManifest: null };
+  environments: [], registryIndex: null, manifestBySlug: null, landmarks: null, spriteLoading: new Set(), bgSelector: null, bgManifest: null,
+  textureCanvas: null, textureSize: null, material: null };
 const pending = {};                                        // ensure* 의 진행 중 약속 — 동시에 두 번 불려도 한 번만 받는다(스테이징 CDN 에서 JSON 2회 요청 발견, 2026-09-13)
 const prefersReduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const reducedMotion = () => $('#rm').checked || prefersReduced();
@@ -59,6 +60,36 @@ async function loadContent() {
   await ensureRegistry();
   if (!state.manifestBySlug) { const man = await loadJson('content/characters/manifest-124.json'); state.manifestBySlug = new Map(man.map(m => [m.slug, m])); }
   if (!state.landmarks) state.landmarks = await loadJson('content/landmarks/landmarks.json');
+}
+/**
+ * Paper Earth Material v1 — 첫 그림 뒤에 받아서 지구 표면만 갈아 끼운다(MATERIAL_INTEGRATION.md 층 1~8).
+ * 앨비도 5장 + 섬유는 등장방형으로 구워 넣고, 노멀·거칠기는 지리와 무관하니 three 재질에 타일로 물린다.
+ * 실패하면 절차적 종이 지구가 그대로 남는다(화면이 비는 경로를 만들지 않는다).
+ */
+async function upgradeToMaterial(geo, size) {
+  await ensureRegistry();                                     // 레지스트리가 유일한 색인(ARCHITECTURE_LOCK §5)
+  const man = await loadJson('assets/material/paper_earth_material_manifest.json');
+  const used = man.textures.filter(t => t.usedInV1);
+  const byRole = new Map(used.map(t => [t.role, t]));
+  const need = ['ocean-albedo', 'land-albedo', 'forest-albedo', 'desert-albedo', 'ice-albedo', 'fiber-overlay', 'normal-map', 'roughness-map'];
+  for (const r of need) if (!byRole.has(r)) throw new Error(`재질 ${r} 없음`);
+  const t0 = performance.now();
+  const pairs = await Promise.all(need.map(async r => [r, (await assets.get(byRole.get(r).path)).value]));
+  const img = Object.fromEntries(pairs);
+  const res = paintPaperEarthMaterial(state.textureCanvas, geo, {
+    ocean: img['ocean-albedo'], land: img['land-albedo'], forest: img['forest-albedo'],
+    desert: img['desert-albedo'], ice: img['ice-albedo'], fiber: img['fiber-overlay'],
+  }, { w: size.w, h: size.h });
+  earth.refreshTexture();
+  const applied = earth.applyMaterial({ normal: img['normal-map'], roughness: img['roughness-map'], repeatX: size.w >= 2048 ? 6 : 4 });
+  // 다 구운 앨비도 견본은 놓아 준다 — 2048² 디코드 이미지가 남으면 메모리를 크게 먹는다. 노멀·거칠기는 three 재질이 잡고 있다.
+  for (const t of used) if (!['normal-map', 'roughness-map'].includes(t.role)) assets.unload(t.path);
+  assets.evictToBudget();
+  const kb = Math.round(used.reduce((a, t) => a + t.bytes, 0) / 1024);
+  state.textureMs = res.ms; state.textureSize = [res.w, res.h];
+  state.material = { ...applied, layers: res.layers, tile: res.tile, kb, totalMs: Math.round(performance.now() - t0), textures: used.length };
+  log(`종이 재질 v1 적용 ${res.w}×${res.h} · ${kb}KB · 굽기 ${res.ms}ms · 전체 ${state.material.totalMs}ms`);
+  return true;
 }
 /** Background Pack v1 — manifest 는 지역 진입 때 처음 받고, 그림은 그때 고른 한 장만 받는다(24장 preload 없음). */
 function ensureBackgrounds() { return state.bgSelector ? Promise.resolve() : (pending.bg ??= loadJson('assets/background_manifest.json').then(m => { state.bgManifest = m; state.bgSelector = createBackgroundSelector(m); log(`배경 팩 ${m.count}장 목록 (그림은 지역마다 한 장만)`); }).finally(() => { pending.bg = null; })); }
@@ -241,11 +272,18 @@ async function boot() {
 
   earth = createPaperEarth({ canvas, textureCanvas: tex, pixelRatio: Math.min(2, devicePixelRatio || 1), ambient: true, labels: !params.has('nolabel') });
   mark('gl');
-  if (full.w !== first.w) {                                     // 고해상 승급 — 첫 프레임이 나간 뒤 한가할 때
-    const upgrade = () => { const p2 = paintPaperEarth(tex, geo, full); earth.refreshTexture(); state.textureMs = p2.ms; state.textureSize = [p2.w, p2.h]; log(`텍스처 승급 ${p2.w}×${p2.h} · ${p2.ms}ms`); };
-    (globalThis.requestIdleCallback ?? (f => setTimeout(f, 120)))(() => upgrade(), { timeout: 1500 });
-  }
-  state.textureSize = [paint.w, paint.h];
+  state.textureCanvas = tex; state.textureSize = [paint.w, paint.h];
+  // 첫 프레임이 나간 뒤 한가할 때 승급한다. 종이 재질 팩이 있으면 **실제 종이 견본**으로 다시 굽고(층 1~8),
+  // 팩이 없거나 ?material=0 이면 절차적 종이를 고해상으로 다시 굽는다. 어느 쪽이 실패해도 화면은 그대로 남는다.
+  const wantMaterial = params.get('material') !== '0';
+  const upgrade = async () => {
+    if (wantMaterial) {
+      try { if (await upgradeToMaterial(geo, full)) return; }
+      catch (e) { log(`⚠ 종이 재질 실패 — 절차적 종이 유지: ${e.message}`); }
+    }
+    if (full.w !== first.w) { const p2 = paintPaperEarth(tex, geo, full); earth.refreshTexture(); state.textureMs = p2.ms; state.textureSize = [p2.w, p2.h]; log(`텍스처 승급 ${p2.w}×${p2.h} · ${p2.ms}ms`); }
+  };
+  (globalThis.requestIdleCallback ?? (f => setTimeout(f, 120)))(() => upgrade(), { timeout: 1500 });
   resize();
   new ResizeObserver(resize).observe(world);
   state.gestures = { drag: 0, 'pinch-in': 0, 'pinch-out': 0, 'wheel-in': 0, 'wheel-out': 0, tap: 0, touchDrag: 0, touchPinch: 0, touchTap: 0 };

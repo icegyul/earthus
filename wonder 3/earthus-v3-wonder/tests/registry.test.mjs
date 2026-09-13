@@ -31,7 +31,7 @@ test('registry 의 모든 항목: 파일 존재·bytes·sha256 일치, content/ 
     assert.ok(fs.existsSync(f), `없음: ${a.path}`);
     assert.equal(fs.statSync(f).size, a.bytes, a.path);
     assert.equal(sha256(f), a.sha256, a.path);
-    assert.ok(['background', 'environment-background', 'fx', 'character', 'character-scene', 'character-thumb', 'landmark', 'data', 'other'].includes(a.kind), a.kind);
+    assert.ok(['background', 'environment-background', 'paper-material', 'fx', 'character', 'character-scene', 'character-thumb', 'landmark', 'data', 'other'].includes(a.kind), a.kind);
   }
 });
 

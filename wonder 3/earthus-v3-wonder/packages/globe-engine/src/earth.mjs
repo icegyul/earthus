@@ -116,8 +116,31 @@ export function createPaperEarth({ canvas, textureCanvas, pixelRatio = 1, ambien
     for (const sp of cloudSprites) sp.userData.lon = ((sp.userData.lon + sp.userData.degPerSec * dt + 180) % 360) - 180;
   }
 
-  /** 텍스처 캔버스를 다시 그렸을 때(저해상 → 고해상 승급) 호출. */
+  /** 텍스처 캔버스를 다시 그렸을 때(저해상 → 고해상 승급, 재질 교체) 호출. */
   function refreshTexture() { map.needsUpdate = true; }
+
+  /**
+   * Paper Earth Material v1 의 노멀·거칠기를 구 표면에 물린다(층 4·5).
+   * 이 둘은 지리와 무관한 **종이 재질**이라 등장방형으로 굽지 않고 타일로 반복한다 — 메모리도 덜 쓴다.
+   * 두 장은 이음새가 커서(실측 37·5) 거울 반복으로 깐다. 세기는 약하게 — 골판지처럼 보이면 종이가 아니다.
+   * @param {{normal?:CanvasImageSource, roughness?:CanvasImageSource, repeatX?:number, normalScale?:number, roughness0?:number}} o
+   */
+  function applyMaterial({ normal = null, roughness = null, repeatX = 4, normalScale = 0.26, roughness0 = 1 } = {}) {
+    const mk = img => {
+      const t = new THREE.Texture(img);
+      t.wrapS = t.wrapT = THREE.MirroredRepeatWrapping;
+      t.repeat.set(repeatX, Math.max(1, Math.round(repeatX / 2)));
+      t.colorSpace = THREE.NoColorSpace;                    // 데이터 맵이다 — sRGB 로 읽으면 세기가 틀어진다
+      t.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+      t.needsUpdate = true; disposables.push(t);
+      return t;
+    };
+    const m = globe.material;
+    if (normal) { m.normalMap = mk(normal); m.normalScale.set(normalScale, normalScale); }
+    if (roughness) { m.roughnessMap = mk(roughness); m.roughness = roughness0; }
+    m.needsUpdate = true;
+    return { normal: !!normal, roughness: !!roughness, repeatX, normalScale };
+  }
 
   // 지역 표식: 구 표면에 붙는 **얇은 흰 글로우 링**(§6 "thin glow line", 두꺼운 지도 UI 금지). 구 뒤로 돌아가면 깊이 검사로 가려진다(§2.2).
   const marker = new THREE.Group();
@@ -247,7 +270,7 @@ export function createPaperEarth({ canvas, textureCanvas, pixelRatio = 1, ambien
     renderer.dispose();
   }
 
-  return { renderer, scene, camera: cam, globe, resize, render, tick, refreshTexture, pick, project, setMarker, markerFacing, facing, setSprite, removeSprite,
+  return { renderer, scene, camera: cam, globe, resize, render, tick, refreshTexture, applyMaterial, pick, project, setMarker, markerFacing, facing, setSprite, removeSprite,
     get spriteIds() { return [...sprites.keys()]; }, projectedDiameter, metrics, dispose, THREE,
     ambient: { get stars() { return stars; }, get halo() { return halo; }, clouds: cloudSprites, labels: labelSprites } };
 }

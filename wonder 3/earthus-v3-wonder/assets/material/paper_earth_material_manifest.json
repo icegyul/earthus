@@ -1,0 +1,419 @@
+{
+ "schema": "earthus-v3-wonder/paper-earth-material@1",
+ "name": "EARTHUS V3 WONDER Paper Earth Material v1",
+ "type": "globe-material",
+ "version": "1.0.0",
+ "sourcePack": {
+  "file": "EARTHUS_V3_WONDER_PAPER_EARTH_MATERIAL_v1.zip",
+  "sha256": "a96fecd146a9ff3bd2116e35ddf1e13fd17d64b3d2370b0eb0a7ed95580ba878",
+  "manifestCopy": "assets/material/paper_earth_material_manifest.pack-v1.json"
+ },
+ "declared": {
+  "resolution": "2048x2048",
+  "geography_baked": false,
+  "labels_baked": false,
+  "characters_baked": false,
+  "ui_baked": false,
+  "status": "READY_FOR_SHADER_INTEGRATION"
+ },
+ "shaderLayers": [
+  "1 ocean base material",
+  "2 land biome material",
+  "3 fiber overlay",
+  "4 height/normal",
+  "5 matte roughness",
+  "6 coast cut-edge",
+  "7 paper thickness shadow",
+  "8 soft edge highlight"
+ ],
+ "integration": "지리는 이 팩이 아니라 Natural Earth 자료가 정한다(geography_baked=false). 합치는 곳: packages/globe-engine/src/paper-material.mjs",
+ "loading": {
+  "policy": "on-demand",
+  "when": "첫 그림(절차적 종이 지구) 뒤에 받아서 재질만 갈아 끼운다 — 첫 화면을 늦추지 않는다",
+  "cache": "shared/immutable by sha (?v=sha12)",
+  "halfRes": "작은 화면(min(W,H) < 600)에서는 1024 로 줄여 쓴다"
+ },
+ "count": 10,
+ "textures": [
+  {
+   "id": "paper_desert_albedo",
+   "file": "paper_desert_albedo.webp",
+   "path": "assets/material/paper-earth/paper_desert_albedo.webp",
+   "bytes": 333320,
+   "sha256": "84936529a0b36b9067a6ff1688202483e911ab5c12caa3cfd1ddfb2deefd30ce",
+   "width": 2048,
+   "height": 2048,
+   "format": "webp",
+   "layer": 2,
+   "role": "desert-albedo",
+   "usedInV1": true,
+   "tiling": true,
+   "note": "사막 띠",
+   "measured": {
+    "width": 2048,
+    "height": 2048,
+    "mode": "RGB",
+    "format": "WEBP",
+    "meanRGB": [
+     206.3,
+     161.9,
+     83.3
+    ],
+    "stdRGB": [
+     8.8,
+     6.4,
+     5.3
+    ],
+    "seamMeanDiff": {
+     "leftRight": 8.07,
+     "topBottom": 8.42
+    }
+   },
+   "seamSeverity": "low",
+   "wrap": "repeat",
+   "packUsage": "desert paper variant"
+  },
+  {
+   "id": "paper_edge_softmask",
+   "file": "paper_edge_softmask.webp",
+   "path": "assets/material/paper-earth/paper_edge_softmask.webp",
+   "bytes": 11724,
+   "sha256": "c9e924c64027f085457df4ae86a8ea2028f823743b026252bfbb1b0dc024a6b8",
+   "width": 2048,
+   "height": 2048,
+   "format": "webp",
+   "layer": 8,
+   "role": "edge-softmask",
+   "usedInV1": false,
+   "tiling": false,
+   "note": "v1 미사용 — 카드 모양 마스크라 구면 해안선에는 안 맞는다(해안은 경로 합성으로 그린다). 등록만",
+   "measured": {
+    "width": 2048,
+    "height": 2048,
+    "mode": "RGB",
+    "format": "WEBP",
+    "meanRGB": [
+     18.9,
+     18.9,
+     18.9
+    ],
+    "stdRGB": [
+     46.3,
+     46.3,
+     46.3
+    ],
+    "seamMeanDiff": {
+     "leftRight": 7.0,
+     "topBottom": 8.0
+    }
+   },
+   "seamSeverity": "low",
+   "wrap": "repeat",
+   "packUsage": "generic soft cut-edge mask"
+  },
+  {
+   "id": "paper_fiber",
+   "file": "paper_fiber.webp",
+   "path": "assets/material/paper-earth/paper_fiber.webp",
+   "bytes": 67990,
+   "sha256": "a6d3e845f85ec08ee3bfbe41acb100f959aa65ac94cc2bf1acaf3b8246d8559f",
+   "width": 2048,
+   "height": 2048,
+   "format": "webp",
+   "layer": 3,
+   "role": "fiber-overlay",
+   "usedInV1": true,
+   "tiling": true,
+   "note": "전체 종이 섬유 한 겹",
+   "measured": {
+    "width": 2048,
+    "height": 2048,
+    "mode": "RGB",
+    "format": "WEBP",
+    "meanRGB": [
+     228.8,
+     213.8,
+     196.7
+    ],
+    "stdRGB": [
+     4.9,
+     8.8,
+     8.0
+    ],
+    "seamMeanDiff": {
+     "leftRight": 1.12,
+     "topBottom": 1.24
+    }
+   },
+   "seamSeverity": "low",
+   "wrap": "repeat",
+   "packUsage": "global paper fiber overlay"
+  },
+  {
+   "id": "paper_forest_albedo",
+   "file": "paper_forest_albedo.webp",
+   "path": "assets/material/paper-earth/paper_forest_albedo.webp",
+   "bytes": 499776,
+   "sha256": "eb0c116d8c6d5b03a8f585380be2c6665a11824779a2996a7956924be80ce790",
+   "width": 2048,
+   "height": 2048,
+   "format": "webp",
+   "layer": 2,
+   "role": "forest-albedo",
+   "usedInV1": true,
+   "tiling": true,
+   "note": "숲·정글 띠",
+   "measured": {
+    "width": 2048,
+    "height": 2048,
+    "mode": "RGB",
+    "format": "WEBP",
+    "meanRGB": [
+     52.2,
+     104.6,
+     49.6
+    ],
+    "stdRGB": [
+     5.5,
+     6.8,
+     5.3
+    ],
+    "seamMeanDiff": {
+     "leftRight": 8.02,
+     "topBottom": 8.19
+    }
+   },
+   "seamSeverity": "low",
+   "wrap": "repeat",
+   "packUsage": "forest paper variant"
+  },
+  {
+   "id": "paper_height",
+   "file": "paper_height.webp",
+   "path": "assets/material/paper-earth/paper_height.webp",
+   "bytes": 1221942,
+   "sha256": "b50f5eda792b86d41c7625f2e5c1186ba96e25d69b29129ab3fcf7f1500d1ac6",
+   "width": 2048,
+   "height": 2048,
+   "format": "webp",
+   "layer": 4,
+   "role": "height",
+   "usedInV1": false,
+   "tiling": true,
+   "note": "v1 미사용 — normalMap 과 같은 결이라 겹치면 골판지처럼 보인다. 등록만",
+   "measured": {
+    "width": 2048,
+    "height": 2048,
+    "mode": "RGB",
+    "format": "WEBP",
+    "meanRGB": [
+     125.6,
+     125.6,
+     125.6
+    ],
+    "stdRGB": [
+     32.5,
+     32.5,
+     32.5
+    ],
+    "seamMeanDiff": {
+     "leftRight": 38.16,
+     "topBottom": 31.87
+    }
+   },
+   "seamSeverity": "high",
+   "wrap": "mirrored-repeat",
+   "packUsage": "micro paper depth/relief"
+  },
+  {
+   "id": "paper_ice_albedo",
+   "file": "paper_ice_albedo.webp",
+   "path": "assets/material/paper-earth/paper_ice_albedo.webp",
+   "bytes": 298096,
+   "sha256": "a33d9a76247291ab0d80b529bac33ea6ca62b765af557cc0e1c7f00957d4f2fe",
+   "width": 2048,
+   "height": 2048,
+   "format": "webp",
+   "layer": 2,
+   "role": "ice-albedo",
+   "usedInV1": true,
+   "tiling": true,
+   "note": "극지 얼음(땅 + 바다 만년빙)",
+   "measured": {
+    "width": 2048,
+    "height": 2048,
+    "mode": "RGB",
+    "format": "WEBP",
+    "meanRGB": [
+     208.5,
+     239.0,
+     248.6
+    ],
+    "stdRGB": [
+     8.3,
+     8.9,
+     8.6
+    ],
+    "seamMeanDiff": {
+     "leftRight": 5.8,
+     "topBottom": 5.4
+    }
+   },
+   "seamSeverity": "low",
+   "wrap": "repeat",
+   "packUsage": "polar ice paper variant"
+  },
+  {
+   "id": "paper_land_albedo",
+   "file": "paper_land_albedo.webp",
+   "path": "assets/material/paper-earth/paper_land_albedo.webp",
+   "bytes": 591820,
+   "sha256": "c319d03b4fb0de2c1105a101d261bd1a7166cb82c33f7ce572a3b53333d14eb5",
+   "width": 2048,
+   "height": 2048,
+   "format": "webp",
+   "layer": 2,
+   "role": "land-albedo",
+   "usedInV1": true,
+   "tiling": true,
+   "note": "땅 기본 종이(초원·스텝)",
+   "measured": {
+    "width": 2048,
+    "height": 2048,
+    "mode": "RGB",
+    "format": "WEBP",
+    "meanRGB": [
+     147.8,
+     156.7,
+     92.6
+    ],
+    "stdRGB": [
+     8.8,
+     9.0,
+     7.1
+    ],
+    "seamMeanDiff": {
+     "leftRight": 11.51,
+     "topBottom": 10.99
+    }
+   },
+   "seamSeverity": "low",
+   "wrap": "repeat",
+   "packUsage": "matte land paper"
+  },
+  {
+   "id": "paper_normal",
+   "file": "paper_normal.webp",
+   "path": "assets/material/paper-earth/paper_normal.webp",
+   "bytes": 2551050,
+   "sha256": "07beb18963321fb2fdbb124104b8c0aa553985b7851fd59644d854f2712f9cc8",
+   "width": 2048,
+   "height": 2048,
+   "format": "webp",
+   "layer": 4,
+   "role": "normal-map",
+   "usedInV1": true,
+   "tiling": true,
+   "note": "three.js normalMap (MirroredRepeat — 이음새 큼)",
+   "measured": {
+    "width": 2048,
+    "height": 2048,
+    "mode": "RGB",
+    "format": "WEBP",
+    "meanRGB": [
+     127.0,
+     127.0,
+     231.0
+    ],
+    "stdRGB": [
+     37.5,
+     40.1,
+     22.2
+    ],
+    "seamMeanDiff": {
+     "leftRight": 37.26,
+     "topBottom": 28.56
+    }
+   },
+   "seamSeverity": "high",
+   "wrap": "mirrored-repeat",
+   "packUsage": "normal response"
+  },
+  {
+   "id": "paper_ocean_albedo",
+   "file": "paper_ocean_albedo.webp",
+   "path": "assets/material/paper-earth/paper_ocean_albedo.webp",
+   "bytes": 211608,
+   "sha256": "d57f28723c83f6f9612b04216da12e5d593d3a9f3905c67ac91f2c1a464f8d27",
+   "width": 2048,
+   "height": 2048,
+   "format": "webp",
+   "layer": 1,
+   "role": "ocean-albedo",
+   "usedInV1": true,
+   "tiling": true,
+   "note": "바다 바탕 종이",
+   "measured": {
+    "width": 2048,
+    "height": 2048,
+    "mode": "RGB",
+    "format": "WEBP",
+    "meanRGB": [
+     13.6,
+     99.7,
+     158.4
+    ],
+    "stdRGB": [
+     2.5,
+     4.4,
+     3.5
+    ],
+    "seamMeanDiff": {
+     "leftRight": 4.06,
+     "topBottom": 3.98
+    }
+   },
+   "seamSeverity": "low",
+   "wrap": "repeat",
+   "packUsage": "matte layered ocean paper"
+  },
+  {
+   "id": "paper_roughness",
+   "file": "paper_roughness.webp",
+   "path": "assets/material/paper-earth/paper_roughness.webp",
+   "bytes": 281926,
+   "sha256": "1cd0d9b0a3010d12e0f4d0311d32f74901e62f51b977b79d98e1ad7726127372",
+   "width": 2048,
+   "height": 2048,
+   "format": "webp",
+   "layer": 5,
+   "role": "roughness-map",
+   "usedInV1": true,
+   "tiling": true,
+   "note": "three.js roughnessMap",
+   "measured": {
+    "width": 2048,
+    "height": 2048,
+    "mode": "RGB",
+    "format": "WEBP",
+    "meanRGB": [
+     200.1,
+     200.1,
+     200.1
+    ],
+    "stdRGB": [
+     7.8,
+     7.8,
+     7.8
+    ],
+    "seamMeanDiff": {
+     "leftRight": 5.33,
+     "topBottom": 5.4
+    }
+   },
+   "seamSeverity": "low",
+   "wrap": "repeat",
+   "packUsage": "matte roughness"
+  }
+ ]
+}

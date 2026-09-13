@@ -37,7 +37,8 @@ const ALLOW = [
   ['content/registry', p => p.endsWith('asset-registry.json')],
   ['content/characters', p => p.endsWith('manifest-124.json') || /\/(runtime|thumb)\/[^/]+\.webp$/.test(p)],
   ['content/pack-1.8', p => p.endsWith('background-review.json') || /\/fx\/[^/]+\.svg$/.test(p)],
-  ['assets', p => p === 'assets/background_manifest.json' || /^assets\/background\/[^/]+\.webp$/.test(p)],   // Background Pack v1 (REVIEW/ACCEPT 만 런타임이 고른다; 품질 보고서·팩 manifest 사본은 안 올린다)
+  ['assets', p => p === 'assets/background_manifest.json' || /^assets\/background\/[^/]+\.webp$/.test(p)                       // Background Pack v1 (품질 보고서·팩 manifest 사본은 안 올린다)
+    || p === 'assets/material/paper_earth_material_manifest.json' || /^assets\/material\/paper-earth\/[^/]+\.webp$/.test(p)],  // Paper Earth Material v1 (첫 화면 뒤 on-demand)
 ];
 const DENY_HINT = ['docs/', 'tests/', 'scripts/', 'benchmarks/', 'build/', 'node_modules/', 'package.json', 'README.md', '.ts', 'source-manifest', 'background-qa', 'background-catalog', 'characters-124-interactions', 'replacement-manifest', 'runtime-overrides', 'review.json', 'pack-1.8/backgrounds/'];
 

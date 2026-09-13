@@ -25,11 +25,13 @@ test('registry 의 모든 항목: 파일 존재·bytes·sha256 일치, content/ 
   assert.ok(reg.assets.length > 0);
   for (const a of reg.assets) {
     assert.ok(!a.path.startsWith('..') && !path.isAbsolute(a.path), a.path);
-    const f = path.join(CONTENT, a.path);
+    // root: 'project' 는 content/ 밖 독립 콘텐츠(assets/background — Background Pack v1). 그 밖은 전부 content/ 안.
+    const f = path.join(a.root === 'project' ? path.resolve(CONTENT, '..') : CONTENT, a.path);
+    if (a.root === 'project') assert.ok(a.path.startsWith('assets/'), `project 루트 자산은 assets/ 아래만: ${a.path}`);
     assert.ok(fs.existsSync(f), `없음: ${a.path}`);
     assert.equal(fs.statSync(f).size, a.bytes, a.path);
     assert.equal(sha256(f), a.sha256, a.path);
-    assert.ok(['background', 'fx', 'character', 'character-scene', 'character-thumb', 'landmark', 'data', 'other'].includes(a.kind), a.kind);
+    assert.ok(['background', 'environment-background', 'fx', 'character', 'character-scene', 'character-thumb', 'landmark', 'data', 'other'].includes(a.kind), a.kind);
   }
 });
 

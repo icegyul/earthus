@@ -77,6 +77,14 @@ z = −cos φ · sin λ
 
 이전 V3 규칙(60°/s 상한 · 속도 관성 · 위도 ±85° · `degPerPx` 임의식 150°/지름)은 **폐기**. `docs/PHASE1_PAPER_EARTH_PLAN.md` 의 "60°/s 상한(키즈 규칙)" 은 역사 기록이다. 근거·검증: `docs/ROTATION_RULE_PORT_2026-09-13.md`.
 
+## 4-B. 배경(Background Pack) 규칙 (2026-09-13 밤, PD BACKGROUND PACK INSERTION)
+
+- 배경은 `assets/background/`(content/ 밖 독립 콘텐츠, 레지스트리 kind `environment-background`, root `project`). manifest = 실제 파일(bytes·sha256) 이어야 빌드가 된다.
+- 24장 initial preload 금지. 지역 진입 때 선택기(`packages/wonder-environment/src/background-select.mjs`)가 **한 장**만 고른다: 환경 지정 > 한국 4곳 좌표 > 지역 배정 > 시각. REJECT(`blocked-by-review`) 는 절대 고르지 않는다.
+- 배경은 `.env-bg` 레이어에 한 장, 캐릭터는 `.env-stage`, 모션은 `.env-motion` — 서로 다른 레이어. 그림 파일 안에 캐릭터·UI·글자를 굽지 않는다. 모션 예산 MAIN 1 + SECONDARY ≤ 2.
+- 여백이 있는 후보(REVIEW)는 `safeCropPx` 를 뺀 안전 상자로 화면을 덮는다(`coverLayout`, 원본 무수정). production 승인은 PD 결정(`assets/background_quality_report.json`).
+- 종료 시 unpin → LRU 30MB. 캐시는 `?v=sha12` 불변. 교체는 id·path 유지, version·sha 만 갱신.
+
 ## 5. 콘텐츠 규칙 (LOCKED)
 
 1. `content/registry/asset-registry.json` 이 유일한 자산 색인. 레지스트리에 없는 파일은 화면에 싣지 않는다.

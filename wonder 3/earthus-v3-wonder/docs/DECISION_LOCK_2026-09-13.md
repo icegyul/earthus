@@ -74,6 +74,7 @@ PD 가 PHASE 0 READ-ONLY AUDIT 결과를 확인하고 아래 6개를 **LOCK** �
 
 결과: `PHASE1_PAPER_EARTH_REPORT_2026-09-13.md` (코드 커밋 `71e1b3c4`).
 
+10. **BACKGROUND PACK INSERTION (2026-09-13 밤)** → PD 가 준 `EARTHUS_V3_WONDER_BACKGROUND_PACK_v1.zip`(24장) 을 `assets/background/` 에 독립 콘텐츠로 편입. 실제 픽셀 검수 결과 내용 위반 0 이지만 24장 전부 시트 여백/잔재·≈480p 라 **production 승인 0(REVIEW 24)** — safe-crop 후보로만 런타임에 씀. 24장 initial preload 금지, 지역 진입 때 한 장만, 종료 시 unpin → LRU. 배경과 캐릭터는 별도 레이어, 모션은 별도 CSS 레이어(MAIN 1 + SECONDARY ≤ 2). 기존 V3·AWS 변경 0. 보고 `BACKGROUND_PACK_V1_REPORT_2026-09-13.md`.
 9. **ROTATION RULE LOCK (2026-09-13 저녁, 스테이징 배포 뒤)** → 모바일 실기기에서 "드래그하면 남극으로 내려가고 이후 회전이 잠기는" 문제. 새 회전 규칙을 설계하지 않고 **EARTHUS V2 `OrbitCam` 의 회전 UX 를 V3 `globe-engine` 에 이식**한다(단순 위도 clamp 로 숨기지 않는다). V2 코드는 읽기만 하고 수정 금지. 줌(휠·버튼·핀치)은 V3 3단 유지, 핀치와 한 손가락 회전은 충돌하지 않게. 회귀 `node --test` + 1440/1024/390/375 + 스테이징 실기기 Android/iOS 재수행. 근거 `ARCHITECTURE_LOCK.md §4-A`, 보고 `ROTATION_RULE_PORT_2026-09-13.md`.
 
 ## 보고 형식

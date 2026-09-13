@@ -4,6 +4,7 @@
   "environments": [
     {
       "id": "himalaya",
+      "background": "bg-09",
       "regionId": "south-asia",
       "nameKo": "히말라야",
       "nameEn": "Himalaya",
@@ -21,6 +22,7 @@
     },
     {
       "id": "savanna",
+      "background": "bg-12",
       "regionId": "africa",
       "nameKo": "아프리카 사바나",
       "nameEn": "African Savanna",
@@ -38,6 +40,7 @@
     },
     {
       "id": "amazon",
+      "background": "bg-14",
       "regionId": "south-america",
       "nameKo": "아마존 정글",
       "nameEn": "Amazon Jungle",

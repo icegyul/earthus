@@ -68,9 +68,38 @@ for (const f of files) {
 }
 assets.sort((a, b) => a.path.localeCompare(b.path));
 
+// ── 1-B. Background Pack v1 (assets/background/, PD 2026-09-13) ─────────────────────────────
+// content/ 밖 독립 콘텐츠. manifest(assets/background_manifest.json) 의 24 항목을 실제 파일과 대조해 등록한다.
+// 필수 필드: id·category·slug·region·path·width·height·format·bytes·version·hash·status. REJECT 는 load 가 막힌 채로 등록만 된다.
+const BG_MANIFEST = path.join(ROOT, 'assets', 'background_manifest.json');
+const bgPack = fs.existsSync(BG_MANIFEST) ? JSON.parse(fs.readFileSync(BG_MANIFEST, 'utf8')) : null;
+const bgProblems = [];
+if (bgPack) {
+  const seenId = new Set(), seenPath = new Set();
+  for (const b of bgPack.assets) {
+    const f = path.join(ROOT, b.path);
+    if (!fs.existsSync(f)) { bgProblems.push(`배경 파일 없음: ${b.path}`); continue; }
+    const st = fs.statSync(f), hash = sha256(f);
+    if (st.size !== b.bytes) bgProblems.push(`배경 bytes 불일치: ${b.path} manifest ${b.bytes} ≠ 실제 ${st.size}`);
+    if (hash !== b.sha256) bgProblems.push(`배경 sha256 불일치: ${b.path}`);
+    if (seenId.has(b.id)) bgProblems.push(`배경 id 중복: ${b.id}`); seenId.add(b.id);
+    if (seenPath.has(b.path)) bgProblems.push(`배경 path 중복: ${b.path}`); seenPath.add(b.path);
+    for (const k of ['id', 'category', 'slug', 'region', 'path', 'width', 'height', 'format', 'bytes', 'version', 'sha256', 'status']) if (b[k] === undefined) bgProblems.push(`배경 필드 없음: ${b.id}.${k}`);
+    assets.push({
+      id: b.id, kind: 'environment-background', root: 'project', path: b.path, category: b.category, slug: b.slug, region: b.region, geo: b.geo ?? null,
+      width: b.width, height: b.height, format: b.format, bytes: st.size, sha256: hash, version: b.version, status: b.status, productionStatus: b.productionStatus,
+      safeCropPx: b.safeCropPx, focal: b.focal, source: 'background-pack-v1',
+      load: b.status === 'REJECT' ? 'blocked-by-review' : (b.load ?? (b.category === 'world' || b.category === 'atmosphere' ? 'on-demand' : 'region-lazy')),
+    });
+  }
+  const actual = fs.readdirSync(path.join(ROOT, 'assets', 'background')).filter(x => x.endsWith('.webp')).length;
+  if (actual !== bgPack.assets.length || bgPack.count !== bgPack.assets.length) bgProblems.push(`배경 manifest ${bgPack.assets.length} ≠ 실제 파일 ${actual}`);
+}
+const bgPackAssets = assets.filter(a => a.kind === 'environment-background');
+
 // ── 2. 팩 카탈로그 대조 ───────────────────────────────────────────────
 const catalog = JSON.parse(fs.readFileSync(path.join(CONTENT, 'pack-1.8', 'background-catalog.json'), 'utf8'));
-const problems = [];
+const problems = [...bgProblems];
 for (const c of catalog) {
   const a = assets.find(x => x.kind === 'background' && x.id === c.id);
   if (!a) { problems.push(`카탈로그에 있는데 파일이 없다: ${c.id}`); continue; }
@@ -126,12 +155,16 @@ const registry = {
   project: 'EARTHUS V3 WONDER (NEW BUILD)',
   sources: {
     'pack-1.8': { file: 'wonder 3/EARTHUS_V3_WONDER_1.8_INTERACTION_BACKGROUND_ASSET_PACK.zip', sha256: PACK_ZIP_SHA256, note: '배경 24·FX 5·카탈로그·124 인터랙션 JSON. 중복 JSON(character-interactions-124.json) 은 등록하지 않음' },
+    'background-pack-v1': bgPack ? { file: 'wonder 3/EARTHUS_V3_WONDER_BACKGROUND_PACK_v1.zip', sha256: bgPack.sourcePack?.sha256 ?? null, manifest: 'assets/background_manifest.json', qualityReport: 'assets/background_quality_report.json', note: '24장(world 1·korea 4·atmosphere 3·region 16) 1920×1080 WebP. 2026-09-13 검수: 내용 위반 0, 시트 여백/잔재·≈480p 로 production REJECT, REVIEW(safe-crop 후보) 로만 로드' } : null,
     'legacy-pack124': { file: 'prototype/v3-paper/pack124 (== prototype/v3-kids/pack124)', note: '124 PNG 원본은 등록하지 않는다. content/characters/runtime/ 의 변환본만 등록. 승인 원본은 v3_CHARACTERS/EARTHUS_V3_CHARACTERS_124' },
   },
   counts: {
     assets: assets.length,
     backgrounds: bgCount,
     backgrounds_usable: bgUsable,
+    environment_backgrounds: bgPackAssets.length,
+    environment_backgrounds_loadable: bgPackAssets.filter(a => a.load !== 'blocked-by-review').length,
+    environment_backgrounds_by_status: bgPackAssets.reduce((m, a) => (m[a.status] = (m[a.status] ?? 0) + 1, m), {}),
     fx: assets.filter(a => a.kind === 'fx').length,
     characters_ready: manifest.filter(m => m.art.status === 'ready').length,
     characters_pending: manifest.filter(m => m.art.status !== 'ready').length,

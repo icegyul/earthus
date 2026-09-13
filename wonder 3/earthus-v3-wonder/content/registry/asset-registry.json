@@ -7,15 +7,27 @@
       "sha256": "5d39bc2b1e9ca531e02ca2b5bfb8c0f23987c788cfcf95c476bdb2b20d8b679b",
       "note": "배경 24·FX 5·카탈로그·124 인터랙션 JSON. 중복 JSON(character-interactions-124.json) 은 등록하지 않음"
     },
+    "background-pack-v1": {
+      "file": "wonder 3/EARTHUS_V3_WONDER_BACKGROUND_PACK_v1.zip",
+      "sha256": "50766234ea74f094b6d75f22ccd6058562224aa1b03e2c6355b49036ae719f3f",
+      "manifest": "assets/background_manifest.json",
+      "qualityReport": "assets/background_quality_report.json",
+      "note": "24장(world 1·korea 4·atmosphere 3·region 16) 1920×1080 WebP. 2026-09-13 검수: 내용 위반 0, 시트 여백/잔재·≈480p 로 production REJECT, REVIEW(safe-crop 후보) 로만 로드"
+    },
     "legacy-pack124": {
       "file": "prototype/v3-paper/pack124 (== prototype/v3-kids/pack124)",
       "note": "124 PNG 원본은 등록하지 않는다. content/characters/runtime/ 의 변환본만 등록. 승인 원본은 v3_CHARACTERS/EARTHUS_V3_CHARACTERS_124"
     }
   },
   "counts": {
-    "assets": 297,
+    "assets": 321,
     "backgrounds": 24,
     "backgrounds_usable": 0,
+    "environment_backgrounds": 24,
+    "environment_backgrounds_loadable": 24,
+    "environment_backgrounds_by_status": {
+      "REVIEW": 24
+    },
     "fx": 5,
     "characters_ready": 124,
     "characters_pending": 0,
@@ -2335,8 +2347,8 @@
       "id": "environments",
       "kind": "data",
       "path": "environments/environments.json",
-      "bytes": 2994,
-      "sha256": "74389b2c50c7f84322425675bc608d2d66d2f33d84922c86d1ac262a56a3c87c",
+      "bytes": 3081,
+      "sha256": "99133d730d5e2576effa818eeebab55ba43252042b91ab35ff211e2e5e3615cf",
       "source": "earthus-v3-wonder",
       "load": "boot"
     },
@@ -2747,6 +2759,779 @@
       "sha256": "612eed1f1cb8433cc3a424399c3f046e667ea345b867e649b6e35fe5b058310f",
       "source": "earthus-v3-wonder",
       "load": "boot"
+    },
+    {
+      "id": "bg-01",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/01_world_earth.webp",
+      "category": "world",
+      "slug": "earth",
+      "region": [],
+      "geo": null,
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 71210,
+      "sha256": "6a065ab630bf90038c30c1890dd5e0051dabc6d2bda1cd08704e207e2e2b7f82",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 40,
+        "right": 40,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "on-demand"
+    },
+    {
+      "id": "bg-02",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/02_korea_seoul.webp",
+      "category": "korea",
+      "slug": "seoul",
+      "region": [
+        "east-asia"
+      ],
+      "geo": {
+        "lat": 37.57,
+        "lon": 126.98,
+        "radiusKm": 60
+      },
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 68540,
+      "sha256": "d887d5fdd18c1d7122e754dce40ca3c02bb39f78ba9e6e6659464e7d4a5aa8f7",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 68,
+        "right": 12,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "region-lazy"
+    },
+    {
+      "id": "bg-03",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/03_korea_busan.webp",
+      "category": "korea",
+      "slug": "busan",
+      "region": [
+        "east-asia"
+      ],
+      "geo": {
+        "lat": 35.18,
+        "lon": 129.08,
+        "radiusKm": 60
+      },
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 69102,
+      "sha256": "80d90fcd1d37641d41685276735ca9e32b11ada7b9a3ad4dfd42254ff90d3cdb",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 70,
+        "right": 43,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "region-lazy"
+    },
+    {
+      "id": "bg-04",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/04_korea_gyeongju.webp",
+      "category": "korea",
+      "slug": "gyeongju",
+      "region": [
+        "east-asia"
+      ],
+      "geo": {
+        "lat": 35.86,
+        "lon": 129.22,
+        "radiusKm": 40
+      },
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 90102,
+      "sha256": "8f69f9f09f37a10d531308c9cd51020f434305de7b88b322d0114c095559e00c",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 41,
+        "right": 11,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "region-lazy"
+    },
+    {
+      "id": "bg-05",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/05_korea_jeju.webp",
+      "category": "korea",
+      "slug": "jeju",
+      "region": [
+        "east-asia"
+      ],
+      "geo": {
+        "lat": 33.5,
+        "lon": 126.53,
+        "radiusKm": 60
+      },
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 78422,
+      "sha256": "a7c306258db61767124b6ad81e4d35c9c59713804912cc4eec45b93b77c55d39",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 73,
+        "right": 0,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "region-lazy"
+    },
+    {
+      "id": "bg-06",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/06_atmosphere_day.webp",
+      "category": "atmosphere",
+      "slug": "day",
+      "region": [],
+      "geo": null,
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 46026,
+      "sha256": "8d2281cd81fd4cb174b72f230c7a0965a83fb81d559835b4a63dedecad95b31d",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 40,
+        "right": 0,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "on-demand"
+    },
+    {
+      "id": "bg-07",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/07_atmosphere_sunset.webp",
+      "category": "atmosphere",
+      "slug": "sunset",
+      "region": [],
+      "geo": null,
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 48568,
+      "sha256": "7a0851faa764097295318613e324f6f552727c347222d830fee4f2d2a039a855",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 40,
+        "right": 10,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "on-demand"
+    },
+    {
+      "id": "bg-08",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/08_atmosphere_night.webp",
+      "category": "atmosphere",
+      "slug": "night",
+      "region": [],
+      "geo": null,
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 61186,
+      "sha256": "648669db3f4d61a85b8d496bd13793431a681483f909af1a32e2d6b3644f45ba",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 68,
+        "right": 0,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "on-demand"
+    },
+    {
+      "id": "bg-09",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/09_region_himalaya.webp",
+      "category": "region",
+      "slug": "himalaya",
+      "region": [
+        "south-asia"
+      ],
+      "geo": null,
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 102362,
+      "sha256": "3e4c79abb4f7afdcba5546e69223b6ade906777945498165b9c993cce617b224",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 13,
+        "right": 40,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "region-lazy"
+    },
+    {
+      "id": "bg-10",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/10_region_tibet.webp",
+      "category": "region",
+      "slug": "tibet",
+      "region": [
+        "south-asia"
+      ],
+      "geo": null,
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 93868,
+      "sha256": "91f35420d7ea95a976a3622b7a9ecf80431a20bd41d2668971c94ff75ed44bfd",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 67,
+        "right": 9,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "region-lazy"
+    },
+    {
+      "id": "bg-11",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/11_region_sahara.webp",
+      "category": "region",
+      "slug": "sahara",
+      "region": [
+        "north-africa"
+      ],
+      "geo": null,
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 46914,
+      "sha256": "d482eefd19b777916b0060ff4465fac6d1821095e8509901669e81e10077d410",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 70,
+        "right": 49,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "region-lazy"
+    },
+    {
+      "id": "bg-12",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/12_region_savanna.webp",
+      "category": "region",
+      "slug": "savanna",
+      "region": [
+        "africa"
+      ],
+      "geo": null,
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 90016,
+      "sha256": "382520f23c1195dfe9f52b7a848ec0751d9292e7e6b831cb6ad7fef1bb81ca83",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 40,
+        "right": 44,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "region-lazy"
+    },
+    {
+      "id": "bg-13",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/13_region_forest.webp",
+      "category": "region",
+      "slug": "forest",
+      "region": [
+        "europe"
+      ],
+      "geo": null,
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 106408,
+      "sha256": "9c396e236956e610c5a96b12e193ebd1e18346b3157a1ea5348bd49180b4ef0c",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 40,
+        "right": 40,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "region-lazy"
+    },
+    {
+      "id": "bg-14",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/14_region_jungle.webp",
+      "category": "region",
+      "slug": "jungle",
+      "region": [
+        "south-america"
+      ],
+      "geo": null,
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 105840,
+      "sha256": "5fecdffeaa3b8639bd8eb582b75e274065d932f9c869365f354500e1d6edb4ee",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 48,
+        "right": 40,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "region-lazy"
+    },
+    {
+      "id": "bg-15",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/15_region_ocean_shallow.webp",
+      "category": "region",
+      "slug": "ocean_shallow",
+      "region": [
+        "southeast-asia"
+      ],
+      "geo": null,
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 100658,
+      "sha256": "d71113d4c50b34d756eaf93f076dcfc80ea4f3702729167a4c3e4a12f37761f3",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 59,
+        "right": 40,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "region-lazy"
+    },
+    {
+      "id": "bg-16",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/16_region_underwater.webp",
+      "category": "region",
+      "slug": "underwater",
+      "region": [],
+      "geo": null,
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 68124,
+      "sha256": "04d2efa67aca2c7fc6243d03d662f911d1b3456576b74e6c93a64c74bc33dcce",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 40,
+        "right": 0,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "region-lazy"
+    },
+    {
+      "id": "bg-17",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/17_region_island.webp",
+      "category": "region",
+      "slug": "island",
+      "region": [
+        "oceania"
+      ],
+      "geo": null,
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 97430,
+      "sha256": "8d74f35beeb423639880e9342c6030ff791d84e72f09040990214fc4f47c3f01",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 40,
+        "right": 40,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "region-lazy"
+    },
+    {
+      "id": "bg-18",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/18_region_coast.webp",
+      "category": "region",
+      "slug": "coast",
+      "region": [
+        "east-asia"
+      ],
+      "geo": null,
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 107132,
+      "sha256": "c3def43c0a7459f131462af066f7cff2b22e9acda38b3e835056edc04556ce6c",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 68,
+        "right": 6,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "region-lazy"
+    },
+    {
+      "id": "bg-19",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/19_region_volcano.webp",
+      "category": "region",
+      "slug": "volcano",
+      "region": [],
+      "geo": null,
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 78730,
+      "sha256": "7b01951eeebf9a5432bc5638583794db26486a9df4447393db74ac06d0c7a912",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 69,
+        "right": 48,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "region-lazy"
+    },
+    {
+      "id": "bg-20",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/20_region_desert_oasis.webp",
+      "category": "region",
+      "slug": "desert_oasis",
+      "region": [
+        "middle-east"
+      ],
+      "geo": null,
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 110552,
+      "sha256": "efd333a73c390f604bea871a2556e32fcf0bd3d11e0d4ed37742163c5787a1fa",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 40,
+        "right": 42,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "region-lazy"
+    },
+    {
+      "id": "bg-21",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/21_region_grassland.webp",
+      "category": "region",
+      "slug": "grassland",
+      "region": [
+        "north-america"
+      ],
+      "geo": null,
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 97124,
+      "sha256": "341de72db865b489e4892ff2e04d69a2a5f1733261221da426d7d7986e66aab5",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 40,
+        "right": 40,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "region-lazy"
+    },
+    {
+      "id": "bg-22",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/22_region_tundra.webp",
+      "category": "region",
+      "slug": "tundra",
+      "region": [
+        "siberia",
+        "polar"
+      ],
+      "geo": null,
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 70688,
+      "sha256": "a5b8b6231375277abf318885041867b353fd2b7781b353af7925996e5c7ceb7f",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 50,
+        "right": 20,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "region-lazy"
+    },
+    {
+      "id": "bg-23",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/23_region_canyon.webp",
+      "category": "region",
+      "slug": "canyon",
+      "region": [
+        "north-america"
+      ],
+      "geo": null,
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 95048,
+      "sha256": "9601b57bb6a3c46a39192e608196509abd80ecf3ac085b64175c065598dd086e",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 58,
+        "right": 40,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "region-lazy"
+    },
+    {
+      "id": "bg-24",
+      "kind": "environment-background",
+      "root": "project",
+      "path": "assets/background/24_region_aurora.webp",
+      "category": "region",
+      "slug": "aurora",
+      "region": [
+        "polar"
+      ],
+      "geo": null,
+      "width": 1920,
+      "height": 1080,
+      "format": "webp",
+      "bytes": 64536,
+      "sha256": "3f59a448eda38cb9fefa9220ff218b5f703d1859d73b700b21a94b09ff25d197",
+      "version": "1.0.0",
+      "status": "REVIEW",
+      "productionStatus": "PRODUCTION_REJECT",
+      "safeCropPx": {
+        "left": 40,
+        "right": 0,
+        "top": 16,
+        "bottom": 16
+      },
+      "focal": {
+        "x": 0.5,
+        "y": 0.62
+      },
+      "source": "background-pack-v1",
+      "load": "region-lazy"
     }
   ]
 }

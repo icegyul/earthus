@@ -130,3 +130,50 @@ body:has(#storyCard:not([hidden])) .hint { display: none; }
 .story-fact { display: block; margin-top: 2px; font-size: 12px; color: var(--ink-soft); }
 .story-sec-story .story-title { margin: 4px 0 6px; }
 .env-desc { display: block; margin-top: 6px; font-size: clamp(13px, 1.6vw, 17px); opacity: .9; }
+
+/* ── Background Pack v1 (assets/background/) — 정적 그림 한 장 + 별도 모션 레이어 (PD 2026-09-13 §7·§8) ──
+   그림은 .env-bg 안에서 JS(layoutBackground)가 safe-crop 을 빼고 화면을 덮도록 크기·위치를 준다. 캐릭터·UI 는 절대 그림 안에 없다(별도 레이어). */
+.env-bg { overflow: hidden; }
+.env-bg .env-bg-img { position: absolute; max-width: none; opacity: 0; transition: opacity .5s ease; pointer-events: none; user-select: none; }
+.env-bg .env-bg-img.ready { opacity: 1; }
+.env-sheet.has-bg .env-far .hill { display: none; }                 /* 절차적 언덕·땅색은 그림이 대신한다. 잔디·구름은 모션 요소로 남긴다 */
+.env-sheet.has-bg .env-ground { background: transparent; }
+.env-sheet.has-bg .env-ground::before { display: none; }
+.env-sheet.has-bg .env-clouds .cloud { opacity: .72; }
+.env-sheet.has-bg .env-label { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.45), 0 0 14px rgba(0,0,0,.35); }
+.env-sheet.has-bg .env-label .story-tag { background: rgba(0,0,0,.35); color: #fff; }
+
+/* 모션 레이어: 입자 8개 + 반짝임 띠 + 오로라 베일. MAIN 1 + SECONDARY ≤ 2 만 클래스로 켜진다(amb-*, amb2-*). Character Focus 때 --amb-scale 4 로 느려진다. */
+.env-motion { pointer-events: none; overflow: hidden; }
+.env-motion .p { position: absolute; top: -4%; width: 7px; height: 7px; border-radius: 50%; background: #fff; opacity: 0; will-change: transform, opacity; }
+.env-motion .p1 { left: 8%;  --d: 0s;    --s: .8; } .env-motion .p2 { left: 21%; --d: -3s;   --s: 1.1; } .env-motion .p3 { left: 34%; --d: -6s;   --s: .7; } .env-motion .p4 { left: 47%; --d: -1.5s; --s: 1.3; }
+.env-motion .p5 { left: 60%; --d: -4.5s; --s: .9; } .env-motion .p6 { left: 72%; --d: -7.5s; --s: 1.2; } .env-motion .p7 { left: 84%; --d: -2.2s; --s: .6; } .env-motion .p8 { left: 93%; --d: -5.8s; --s: 1; }
+.env-motion .shimmer { position: absolute; inset: 0; opacity: 0; background: linear-gradient(112deg, transparent 38%, rgba(255,255,255,.16) 50%, transparent 62%); background-size: 60% 100%; background-repeat: no-repeat; }
+.env-motion .veil { position: absolute; inset: 0; opacity: 0; background: linear-gradient(160deg, rgba(120,255,200,.16), rgba(160,120,255,.14) 55%, transparent 80%); mix-blend-mode: screen; }
+/* 눈·꽃잎: 떨어짐 */
+.env-sheet.active:is(.amb-snow, .amb2-snow) .env-motion .p { opacity: .9; animation: env-fall calc(9s * var(--amb-scale)) linear infinite; animation-delay: var(--d); transform: scale(var(--s)); }
+.env-sheet.active:is(.amb-petals, .amb2-petals) .env-motion .p { opacity: .85; background: #f7b6c9; border-radius: 60% 40% 60% 40%; animation: env-fall-sway calc(11s * var(--amb-scale)) ease-in-out infinite; animation-delay: var(--d); }
+/* 거품·불티: 올라감 */
+.env-sheet.active:is(.amb-bubbles, .amb2-bubbles) .env-motion .p { top: auto; bottom: -4%; opacity: .7; background: rgba(255,255,255,.75); box-shadow: inset -1px -1px 2px rgba(0,0,0,.15); animation: env-rise calc(8s * var(--amb-scale)) linear infinite; animation-delay: var(--d); }
+.env-sheet.active:is(.amb-embers, .amb2-embers) .env-motion .p { top: auto; bottom: 30%; width: 4px; height: 4px; opacity: .8; background: #ffb060; box-shadow: 0 0 6px #ff7a2a; animation: env-rise calc(6s * var(--amb-scale)) ease-out infinite; animation-delay: var(--d); }
+/* 모래: 옆으로 흐름 */
+.env-sheet.active:is(.amb-sand, .amb2-sand) .env-motion .p { top: calc(55% + var(--s) * 12%); left: -4%; width: 28px; height: 3px; border-radius: 3px; opacity: .45; background: rgba(255,240,200,.8); animation: env-drift calc(7s * var(--amb-scale)) linear infinite; animation-delay: var(--d); }
+/* 별: 제자리 반짝임 */
+.env-sheet.active:is(.amb-stars, .amb2-stars) .env-motion .p { top: calc(8% + var(--s) * 22%); width: 3px; height: 3px; opacity: .6; box-shadow: 0 0 4px #fff; animation: env-twinkle calc(2.6s * var(--amb-scale)) ease-in-out infinite alternate; animation-delay: var(--d); }
+/* 물 반짝임 띠 · 오로라 베일 */
+.env-sheet.active:is(.amb-shimmer, .amb2-shimmer) .env-motion .shimmer { opacity: 1; animation: env-shimmer calc(6.5s * var(--amb-scale)) ease-in-out infinite; }
+.env-sheet.active.amb-aurora .env-motion .veil { opacity: 1; animation: env-aurora calc(9s * var(--amb-scale)) ease-in-out infinite alternate; }
+/* 잎·풀 흔들림을 main 으로도 */
+.env-sheet.active.amb-leaf-sway .env-ground .grass { animation: env-sway calc(3.6s * var(--amb-scale)) ease-in-out infinite alternate; }
+.env-sheet.active.amb-shimmer .env-clouds, .env-sheet.active.amb-sand .env-clouds, .env-sheet.active.amb-snow .env-clouds, .env-sheet.active.amb-bubbles .env-clouds, .env-sheet.active.amb-stars .env-clouds, .env-sheet.active.amb-aurora .env-clouds, .env-sheet.active.amb-leaf-sway .env-clouds { opacity: .5; }
+.env-sheet.active.amb2-clouds .env-clouds { animation: env-clouds calc(36s * var(--amb-scale)) ease-in-out infinite alternate; }
+.env-sheet.active.amb-clouds .env-motion .p, .env-sheet.active.amb-clouds .env-motion .shimmer { /* main=clouds 는 기존 구름 레이어가 움직인다 */ }
+@keyframes env-fall { from { transform: translateY(0) scale(var(--s)); } to { transform: translateY(112vh) scale(var(--s)); } }
+@keyframes env-fall-sway { 0% { transform: translate(0, 0) rotate(0); } 50% { transform: translate(24px, 56vh) rotate(140deg); } 100% { transform: translate(-16px, 112vh) rotate(300deg); } }
+@keyframes env-rise { from { transform: translateY(0) scale(var(--s)); opacity: 0; } 12% { opacity: .8; } to { transform: translateY(-112vh) scale(var(--s)); opacity: 0; } }
+@keyframes env-drift { from { transform: translateX(0); } to { transform: translateX(112vw); } }
+@keyframes env-twinkle { from { opacity: .15; } to { opacity: .9; } }
+@keyframes env-shimmer { 0% { background-position: -60% 0; } 100% { background-position: 160% 0; } }
+@keyframes env-aurora { from { opacity: .55; transform: translateX(-3%) skewX(-4deg); } to { opacity: 1; transform: translateX(3%) skewX(4deg); } }
+.env-sheet.mode-reduced.active .env-motion .p, .env-sheet.mode-reduced.active .env-motion .shimmer, .env-sheet.mode-reduced.active .env-motion .veil { animation: none !important; }
+.env-sheet.story .env-motion .p, .env-sheet.story .env-motion .shimmer { animation-play-state: paused; }

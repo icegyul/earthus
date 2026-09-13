@@ -5,6 +5,7 @@
 import { createStage } from './stage.mjs';
 import { resolveTap, resolveLongPress, resolveFart, profileOf, expandSpecial } from '../../../packages/interaction-runtime/src/index.mjs';
 import { attachGestures } from './gestures.mjs';
+import { coverLayout } from '../../../packages/wonder-environment/src/background-select.mjs';
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
@@ -18,8 +19,10 @@ export function createEnvironmentView(root, { assets, contentBase, log = () => {
     <div class="env-sheet" id="envSheet">
       <div class="env-layers">
         <div class="env-layer env-sky" data-layer="sky"></div>
+        <div class="env-layer env-bg" data-layer="bg" aria-hidden="true"></div>
         <div class="env-layer env-far" data-layer="far"><i class="hill h1"></i><i class="hill h2"></i><i class="hill h3"></i></div>
         <div class="env-layer env-clouds" data-layer="clouds"><i class="cloud c1"></i><i class="cloud c2"></i></div>
+        <div class="env-layer env-motion" data-layer="motion" aria-hidden="true"><i class="p p1"></i><i class="p p2"></i><i class="p p3"></i><i class="p p4"></i><i class="p p5"></i><i class="p p6"></i><i class="p p7"></i><i class="p p8"></i><i class="shimmer"></i><i class="veil"></i></div>
         <div class="env-layer env-landmark" data-layer="landmark"><img alt="" decoding="async"></div>
         <div class="env-layer env-ground" data-layer="ground"><i class="grass g1"></i><i class="grass g2"></i><i class="grass g3"></i></div>
         <div class="env-layer env-stage" data-layer="stage" id="envStage">
@@ -62,7 +65,56 @@ export function createEnvironmentView(root, { assets, contentBase, log = () => {
   const card = root.querySelector('#storyCard');
   const stage = createStage(stageRoot, { contentBase, reducedMotion, onLog: log, review: {} });
   const state = { open: false, envId: null, env: null, lod: 0, requests: [], row: null, profile: null, detach: null, busy: false,
-    story: 'closed', storyId: null, sceneRequested: false, storyOpens: 0, lastSequence: null };
+    story: 'closed', storyId: null, sceneRequested: false, storyOpens: 0, lastSequence: null, background: null, motion: null };
+  const bgBox = root.querySelector('.env-bg');
+
+  /* ── Background Pack v1: 정적 그림 한 장(별도 레이어) + 모션은 CSS 레이어. 그림 안에 캐릭터·UI 를 굽지 않는다. ──
+     safe-crop: 카탈로그 시트 여백(safeCropPx)이 화면에 절대 안 보이게, 그림을 '안전 상자'가 화면을 덮도록 키워 밀어 넣는다(원본 파일 그대로).
+     focal(0~1) 은 안전 상자 안에서 화면 창이 어디를 보는가 — 세로 폰에서는 하늘보다 지형·전경 공간이 남게 y=0.62 기본. */
+  function layoutBackground() {
+    const bg = state.background, img = bgBox.querySelector('img');
+    if (!bg || !img) return;
+    const Cw = bgBox.clientWidth || 1, Ch = bgBox.clientHeight || 1;
+    const L = coverLayout(bg, Cw, Ch);                        // 순수 계산(background-select.mjs) — node 시험이 같은 식을 검사한다
+    img.style.width = `${L.w}px`; img.style.height = `${L.h}px`; img.style.left = `${L.x}px`; img.style.top = `${L.y}px`;
+    state.layout = { Cw, Ch, ...L };
+  }
+  new ResizeObserver(layoutBackground).observe(bgBox);
+  const motionClasses = m => `amb-${m.main} ${m.secondary.map(s => 'amb2-' + s).join(' ')}`;
+  function setMotion(m) {
+    state.motion = m;
+    for (const k of [...sheet.classList]) if (k.startsWith('amb-') || k.startsWith('amb2-')) sheet.classList.remove(k);
+    for (const k of motionClasses(m).split(' ').filter(Boolean)) sheet.classList.add(k);
+  }
+  async function applyBackground(bg) {
+    bgBox.innerHTML = '';
+    state.background = bg;
+    if (!bg) { sheet.classList.remove('has-bg'); return false; }
+    sheet.classList.add('has-bg');
+    state.requests.push(bg.path);
+    try {
+      const e = await assets.get(bg.path, { pin: true });      // 지역 진입 때 이 한 장만 (24장 preload 없음)
+      if (state.background !== bg) return false;               // 그 사이 바뀜
+      const img = e.value; img.alt = ''; img.className = 'env-bg-img'; img.draggable = false;
+      bgBox.innerHTML = ''; bgBox.appendChild(img); layoutBackground();
+      void img.offsetWidth; img.classList.add('ready');       // rAF 가 아니라 즉시(가려진 탭에서도 나타나게) — 강제 리플로우로 페이드는 유지
+      log(`배경 ${bg.id} ${bg.slug} (${bg.status}, ${Math.round(bg.bytes / 1024)}KB)`);
+      return true;
+    } catch (err) {
+      log(`⚠ 배경 실패: ${err.message} — 종이 폴백`); if (state.background === bg) { sheet.classList.remove('has-bg'); state.background = null; }
+      return false;
+    }
+  }
+  /** 열려 있는 동안 배경만 바꾼다(지역 안 이동·검증용). 이전 배경은 pin 을 풀어 LRU 에 맡긴다. */
+  async function setBackground(bg) {
+    if (!state.open && !state.busy) return false;
+    const prev = state.background;
+    if (prev && prev.path !== bg?.path) assets.pin(prev.path, false);
+    if (bg?.motion) setMotion(bg.motion); else if (state.env) setMotion(state.env.ambient);
+    const ok = await applyBackground(bg);
+    assets.evictToBudget();
+    return ok;
+  }
 
   const setVars = (env) => {
     const p = env.palette;
@@ -164,29 +216,32 @@ export function createEnvironmentView(root, { assets, contentBase, log = () => {
   /**
    * @param {{ env: object, row: object, landmarkPath: string|null, origin: {x:number,y:number}, plan: object }} o
    */
-  async function open({ env, row, landmarkPath, origin, plan }) {
+  async function open({ env, row = null, landmarkPath = null, origin, plan, background = null }) {
     if (state.open || state.busy) return false;
     state.busy = true; state.envId = env.id; state.env = env; state.row = row; state.requests = []; state.sceneRequested = false; state.storyId = null;
     setVars(env);
     root.querySelector('#envName').textContent = env.nameKo;
-    root.querySelector('#envDesc').textContent = env.descriptorKo;
+    root.querySelector('#envDesc').textContent = env.descriptorKo ?? '';
     root.querySelector('#envStoryBtn').hidden = true;
     sheet.style.setProperty('--origin-x', `${origin.x}px`); sheet.style.setProperty('--origin-y', `${origin.y}px`);
     sheet.style.setProperty('--unfold-ms', `${plan.unfoldMs}ms`); sheet.style.setProperty('--stagger-ms', `${plan.staggerMs}ms`);
-    sheet.className = `env-sheet mode-${plan.mode} amb-${env.ambient.main} ${env.ambient.secondary.map(s => 'amb2-' + s).join(' ')}`;
+    sheet.className = `env-sheet mode-${plan.mode}`;
+    setMotion(background?.motion ?? env.ambient);            // 모션은 배경(팩) 배정이 우선, 없으면 환경 카탈로그 — MAIN 1 + SECONDARY ≤ 2
     root.hidden = false;
     const lmBox = root.querySelector('.env-landmark');
     lmBox.innerHTML = '';
+    // Paper Unfold → Environment Background: 배경 한 장을 지금 받기 시작한다(펼침과 함께 나타남). 캐릭터·랜드마크는 별도 레이어.
+    const bgP = applyBackground(background);
     // 랜드마크도 캐시된 요소를 그대로 붙인다(재방문 때 네트워크 0).
     const lmP = landmarkPath ? assets.get(landmarkPath, { pin: true }).then(e => { const im = e.value; im.alt = ''; im.classList.add('ready'); lmBox.appendChild(im); state.requests.push(landmarkPath); }).catch(e => log(`⚠ 랜드마크 실패: ${e.message}`)) : Promise.resolve();
     void sheet.offsetWidth;
     sheet.classList.add('unfolding');
-    const charP = loadCharacter(row);
+    const charP = row ? loadCharacter(row) : Promise.resolve(null);   // 캐릭터는 있을 때만(지역 배경만 있는 진입은 캐릭터 없음)
     await sleep(plan.unfoldMs);
     sheet.classList.add('active');
-    root.querySelector('#hits').dataset.discoveryReady = 'true';
+    root.querySelector('#hits').dataset.discoveryReady = row ? 'true' : 'false';
     state.open = true; state.busy = false;
-    await Promise.allSettled([lmP, charP]);
+    await Promise.allSettled([bgP, lmP, charP]);
     return true;
   }
 
@@ -204,6 +259,7 @@ export function createEnvironmentView(root, { assets, contentBase, log = () => {
     for (const p of new Set(state.requests)) assets.pin(p, false);
     assets.evictToBudget();
     root.querySelector('.env-landmark').innerHTML = '';     // 캐시 요소를 떼어 둔다(폐기 아님)
+    bgBox.innerHTML = ''; state.background = null; sheet.classList.remove('has-bg');   // 배경도 떼어 둔다 — pin 은 위에서 풀렸고 LRU 가 예산을 관리한다
     root.querySelector('#envStoryBtn').hidden = true;
     sheet.classList.remove('unfolding', 'folding'); root.hidden = true;
     setLod(0, '');
@@ -215,5 +271,5 @@ export function createEnvironmentView(root, { assets, contentBase, log = () => {
   function fart() { if (!state.profile) return Promise.resolve(false); return play('fart', resolveFart(state.profile)); }
   function special() { if (!state.profile) return Promise.resolve(false); return play('special', ['special']); }
 
-  return { open, close, fart, special, play, openStory, closeStory, stage, get state() { return state; }, get isOpen() { return state.open; } };
+  return { open, close, fart, special, play, openStory, closeStory, setBackground, layoutBackground, stage, get state() { return state; }, get isOpen() { return state.open; }, get background() { return state.background; } };
 }

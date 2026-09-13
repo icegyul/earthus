@@ -9,6 +9,7 @@ import { regionAt, regionFocus, REGIONS } from '../../../packages/globe-engine/s
 import { createAssetRuntime, defaultImageLoader } from '../../../packages/asset-runtime/src/loader.mjs';
 import { createEnvironmentFlow } from '../../../packages/wonder-environment/src/environment-state.mjs';
 import { environmentAt } from '../../../packages/wonder-environment/src/environments.mjs';
+import { createBackgroundSelector, LABEL_KO } from '../../../packages/wonder-environment/src/background-select.mjs';
 import { createEnvironmentView } from './environment.mjs';
 
 const ROOT = new URL('../../../', import.meta.url);      // earthus-v3-wonder/
@@ -20,7 +21,8 @@ const t0 = performance.now();
 const sleep = ms => (ms > 0 ? new Promise(r => setTimeout(r, ms)) : Promise.resolve());
 
 const state = { view: 'world', region: null, envHit: null, idleSince: performance.now(), firstFrameMs: null, textureMs: null, geoBytes: null, frames: 0,
-  environments: [], registryIndex: null, manifestBySlug: null, landmarks: null, spriteLoading: new Set() };
+  environments: [], registryIndex: null, manifestBySlug: null, landmarks: null, spriteLoading: new Set(), bgSelector: null, bgManifest: null };
+const pending = {};                                        // ensure* 의 진행 중 약속 — 동시에 두 번 불려도 한 번만 받는다(스테이징 CDN 에서 JSON 2회 요청 발견, 2026-09-13)
 const prefersReduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const reducedMotion = () => $('#rm').checked || prefersReduced();
 
@@ -34,11 +36,13 @@ function viewSize() { return { w: world.clientWidth, h: world.clientHeight }; }
 async function loadJson(rel) { const r = await fetch(new URL(rel, ROOT)); if (!r.ok) throw new Error(`${rel} ${r.status}`); return r.json(); }
 
 /** 레지스트리·자산 런타임·환경 화면은 처음 필요할 때 만든다(첫 화면에 안 받는다). */
-async function ensureRegistry() {
-  if (state.registryIndex) return;
+function ensureRegistry() { return state.registryIndex ? Promise.resolve() : (pending.registry ??= loadRegistry().finally(() => { pending.registry = null; })); }
+async function loadRegistry() {
   const reg = await loadJson('content/registry/asset-registry.json');
   state.registryIndex = new Map(reg.assets.map(a => [a.path, a]));
-  assets = createAssetRuntime({ lookup: p => state.registryIndex.get(p), load: defaultImageLoader, base: CONTENT.href, budgetBytes: 30 * 1024 * 1024 });
+  // content/ 자산은 content/ 기준, Background Pack(assets/…, root: project) 은 프로젝트 루트 기준. 둘 다 ?v=sha12 로 불변 캐시.
+  const urlOf = (p, sha12) => `${p.startsWith('assets/') ? ROOT.href : CONTENT.href}${p}${sha12 ? `?v=${sha12}` : ''}`;
+  assets = createAssetRuntime({ lookup: p => state.registryIndex.get(p), load: defaultImageLoader, urlOf, base: CONTENT.href, budgetBytes: 30 * 1024 * 1024 });
   envView = createEnvironmentView($('#env'), {
     assets, contentBase: ROOT, log, reducedMotion,
     onEarth: () => returnToEarth(),
@@ -49,10 +53,27 @@ async function ensureRegistry() {
   window.__wonder.assets = assets; window.__wonder.env = envView;
   log(`레지스트리 ${reg.assets.length} 자산 (지연 로드)`);
 }
-async function ensureContent() {
+function ensureContent() { return (state.manifestBySlug && state.landmarks) ? Promise.resolve() : (pending.content ??= loadContent().finally(() => { pending.content = null; })); }
+async function loadContent() {
   await ensureRegistry();
   if (!state.manifestBySlug) { const man = await loadJson('content/characters/manifest-124.json'); state.manifestBySlug = new Map(man.map(m => [m.slug, m])); }
   if (!state.landmarks) state.landmarks = await loadJson('content/landmarks/landmarks.json');
+}
+/** Background Pack v1 — manifest 는 지역 진입 때 처음 받고, 그림은 그때 고른 한 장만 받는다(24장 preload 없음). */
+function ensureBackgrounds() { return state.bgSelector ? Promise.resolve() : (pending.bg ??= loadJson('assets/background_manifest.json').then(m => { state.bgManifest = m; state.bgSelector = createBackgroundSelector(m); log(`배경 팩 ${m.count}장 목록 (그림은 지역마다 한 장만)`); }).finally(() => { pending.bg = null; })); }
+/** 선택기 결과 → 환경 화면이 쓰는 배경 설명(경로·safe-crop·초점·모션). REJECT 는 선택기가 이미 거른다. */
+function backgroundDesc(asset) { return asset ? { ...asset, motion: state.bgSelector.motionFor(asset.id) } : null; }
+function pickBackground(env) {
+  if (!state.bgSelector) return null;
+  const r = state.bgSelector.select({ envBackground: env.background ?? null, lat: env.anchor?.lat, lon: env.anchor?.lon, regionId: env.regionId ?? null, hour: new Date().getHours() });
+  return { desc: backgroundDesc(r.asset), reason: r.reason };
+}
+const PAPER_PALETTE = { sky: '#e9e2d3', far: '#d9cfbd', mid: '#cbbfa8', ground: '#bfb094', ink: '#3b3325' };
+/** 캐릭터 환경이 없는 지역·바다 진입용 합성 환경: 배경 한 장 + 라벨. 캐릭터·랜드마크·이야기 없음(Discovery 는 캐릭터가 있을 때만). */
+function syntheticEnv(hit, bg) {
+  const r = hit.region;
+  return { id: `region:${r.id}`, regionId: r.id, nameKo: r.nameKo, nameEn: r.nameEn, descriptorKo: bg ? (LABEL_KO[bg.slug] ?? '') : '', descriptorEn: '', anchor: { lat: hit.lat, lon: hit.lon },
+    radiusKm: null, placeBasis: '지역 배정(Background Pack v1)', landmark: null, characters: [], nearbyCharacters: [], palette: PAPER_PALETTE, ambient: { main: 'clouds', secondary: [] }, background: bg?.id ?? null, synthetic: true };
 }
 
 function setView(view, label) {
@@ -89,16 +110,22 @@ async function syncSprites() {
 }
 
 /* ── 지역 / 환경 진입 ────────────────────────────────────────────────────────────── */
-function enterRegion(hit) {
+/** 캐릭터 환경이 없는 지역: 배경 팩에 그 지역 배경이 있으면 종이 펼침으로 진입(§7), 없으면 예전처럼 줌만. */
+async function enterRegion(hit) {
+  if (flow.state !== 'earth') { log(`전환 중(${flow.state})`); return false; }
+  await ensureBackgrounds();
+  const r = state.bgSelector.select({ lat: hit.lat, lon: hit.lon, regionId: hit.region.id, hour: new Date().getHours() });
+  if (r.asset && r.reason !== 'atmosphere') return enterEnvironment({ environment: syntheticEnv(hit, r.asset), distanceKm: hit.distanceKm, backgroundReason: r.reason });
   const f = regionFocus(hit);
   camera.setZoomStep(2, f);
   earth.setMarker(f.lat, f.lon);
   setView('region', hit.region);
-  log(`지역 포커스 ${hit.region.id} (${hit.distanceKm}km) — 환경 없음`);
+  log(`지역 포커스 ${hit.region.id} (${hit.distanceKm}km) — 환경·배경 없음`);
   updateZoomDots();
+  return true;
 }
 
-async function enterEnvironment({ environment: env, distanceKm }) {
+async function enterEnvironment({ environment: env, distanceKm, backgroundReason = null }) {
   const r = flow.enter(env.id);
   if (!r.ok) { log(`진입 거부: ${r.reason}`); return false; }
   const { plan, seq } = r;
@@ -107,19 +134,20 @@ async function enterEnvironment({ environment: env, distanceKm }) {
   earth.setMarker(env.anchor.lat, env.anchor.lon);
   camera.setZoomStep(2, env.anchor, { durMs: plan.approachMs });
   updateZoomDots();
-  log(`환경 ${env.id} 접근 (${plan.mode}, ${distanceKm}km)`);
-  await Promise.all([ensureContent(), sleep(plan.approachMs)]);
+  log(`${env.synthetic ? '지역' : '환경'} ${env.id} 접근 (${plan.mode}, ${distanceKm}km)`);
+  await Promise.all([ensureContent(), ensureBackgrounds(), sleep(plan.approachMs)]);
   if (flow.seq !== seq || flow.state !== 'approaching') return false;
   flow.approached();
-  const row = state.manifestBySlug.get(env.characters[0]);
-  const lm = state.landmarks.items[env.landmark];
+  const row = env.characters?.[0] ? state.manifestBySlug.get(env.characters[0]) ?? null : null;
+  const lm = env.landmark ? state.landmarks.items[env.landmark] : null;
   const origin = earth.project(env.anchor.lat, env.anchor.lon);
+  const bg = pickBackground(env);                               // 지역 진입 때 배경 한 장만 고른다 (Paper Unfold → Environment Background)
   $('#btnFart').hidden = !row?.interaction?.fart;
-  await envView.open({ env, row, landmarkPath: lm?.path ?? null, origin, plan });
+  await envView.open({ env, row, landmarkPath: lm?.path ?? null, origin, plan, background: bg?.desc ?? null });
   if (flow.seq !== seq) return false;
   flow.unfolded();
   setView('environment', { nameKo: env.nameKo, nameEn: env.nameEn, descriptor: env.descriptorKo });
-  log(`환경 ${env.id} 활성 · unfold ${plan.unfoldMs}ms(${plan.mode}) · discovery-ready`);
+  log(`${env.synthetic ? '지역' : '환경'} ${env.id} 활성 · unfold ${plan.unfoldMs}ms(${plan.mode}) · 배경 ${bg?.desc ? `${bg.desc.id} (${backgroundReason ?? bg.reason})` : '없음(종이)'}${row ? ' · discovery-ready' : ''}`);
   return true;
 }
 
@@ -157,8 +185,21 @@ function onTap(at) {
   const envHit = environmentAt(ll.lat, ll.lon, state.environments);
   if (envHit) { enterEnvironment(envHit); return; }
   const hit = regionAt(ll.lat, ll.lon);
-  if (!hit) { log(`탭 (${ll.lat.toFixed(1)}, ${ll.lon.toFixed(1)}) — 지역 없음(먼바다)`); $('#hint').textContent = '여기는 넓은 바다예요'; return; }
+  if (!hit) {
+    // 먼바다: 지역은 없지만 배경 팩의 바닷속(underwater) 이 있으면 그리로 들어간다(LOCAL → 필요할 때 load).
+    log(`탭 (${ll.lat.toFixed(1)}, ${ll.lon.toFixed(1)}) — 지역 없음(먼바다)`);
+    enterOcean(ll);
+    return;
+  }
   enterRegion(hit);
+}
+async function enterOcean(ll) {
+  if (flow.state !== 'earth') return false;
+  await ensureBackgrounds();
+  const asset = state.bgSelector.loadable('bg-16') ? state.bgSelector.byId('bg-16') : null;
+  if (!asset) { $('#hint').textContent = '여기는 넓은 바다예요'; return false; }
+  const hit = { region: { id: 'ocean', nameKo: '넓은 바다', nameEn: 'Open Ocean' }, lat: ll.lat, lon: ll.lon, distanceKm: 0 };
+  return enterEnvironment({ environment: { ...syntheticEnv(hit, asset), background: asset.id }, distanceKm: 0, backgroundReason: 'ocean' });
 }
 
 function resize() { const { w, h } = viewSize(); earth?.resize(w, h); camera.resize(w, h); }
@@ -222,8 +263,24 @@ function requests() {
   return { total: rows.length, byKind, characterFiles: rows.filter(r => r.name.includes('/characters/') && !r.name.includes('manifest')).length };
 }
 
+/** 배경 팩 검증·조작 창구(브라우저 검증용): 목록·선택·지금 열린 환경의 배경 바꾸기·닫힌 상태면 그 배경으로 지역 열기. */
+const background = {
+  ensure: ensureBackgrounds,
+  list: () => state.bgSelector?.list() ?? [],
+  select: q => state.bgSelector?.select(q) ?? null,
+  async show(id) {
+    await ensureBackgrounds();
+    const asset = state.bgSelector.byId(id);
+    if (!asset || !state.bgSelector.loadable(id)) { log(`배경 ${id}: 없거나 REJECT`); return false; }
+    if (envView?.isOpen) return envView.setBackground(backgroundDesc(asset));
+    const pose = camera.pose();
+    const hit = { region: { id: `bg-${asset.slug}`, nameKo: LABEL_KO[asset.slug] ?? asset.slug, nameEn: asset.slug }, lat: pose.lat, lon: pose.lon, distanceKm: 0 };
+    return enterEnvironment({ environment: { ...syntheticEnv(hit, asset), background: asset.id }, distanceKm: 0, backgroundReason: 'manual' });
+  },
+  get current() { return envView?.background ?? null; },
+};
 window.__wonder = {
-  state, camera, flow, REGIONS, regionAt, environmentAt: (lat, lon) => environmentAt(lat, lon, state.environments), enterRegion, enterEnvironment, returnToEarth,
+  state, camera, flow, REGIONS, regionAt, environmentAt: (lat, lon) => environmentAt(lat, lon, state.environments), enterRegion, enterEnvironment, returnToEarth, background,
   get earth() { return earth; }, assets: null, env: null, requests,
   projectedDiameter: () => earth ? earth.projectedDiameter(camera.pose()) : null,
   targetDiameter: () => { const { w, h } = viewSize(); return targetDiameter(w, h); },

@@ -1,0 +1,1392 @@
+{
+ "schema": "earthus-v3-wonder/background-quality-report@1",
+ "pack": "EARTHUS_V3_WONDER_BACKGROUND_PACK_v1.zip",
+ "packSha256": "50766234ea74f094b6d75f22ccd6058562224aa1b03e2c6355b49036ae719f3f",
+ "reviewedAt": "2026-09-13",
+ "reviewer": "Claude Code — 눈 검수(1024px 미리보기 + 가장자리 확대 시트) + 자동 측정(scripts/import-background-pack.py)",
+ "rule": "PD 2026-09-13: 글자·지역명·UI·버튼·로고·워터마크·캐릭터·다른 장소 썸네일·카드 프레임·인포그래픽·합성 흔적 중 하나라도 있으면 PRODUCTION_REJECT. 통과: standalone·paper-cut 2.5D·16:9·전경 공간·합성 적합·mobile crop",
+ "method": {
+  "whiteStripPx": "가장자리에서 안쪽으로 밝고(평균 >215) 균일한(표준편차 <32) 열/행 수 = 카탈로그 시트 여백",
+  "edgeColorDelta": "가장자리 40px 띠 평균색 vs 안쪽 120~280px 띠 평균색 거리(0~441) = 이웃 그림 잔재(>60 의심)",
+  "psnrVsQuarterDb": "1/4 로 줄였다 키운 것과의 PSNR — 47~50 dB 면 유효 해상도 ≈ 480p"
+ },
+ "summary": {
+  "total": 24,
+  "ACCEPT": 0,
+  "REJECT": 0,
+  "REVIEW": 24,
+  "productionReject": 24,
+  "contentViolations": 0,
+  "verdict": "ACCEPT 0 · REJECT 0 · REVIEW 24 — REVIEW 는 safe-crop 후보로만 런타임 허용, production_approved 0"
+ },
+ "assets": [
+  {
+   "id": "bg-01",
+   "file": "01_world_earth.webp",
+   "category": "world",
+   "slug": "earth",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 71210,
+   "sha256": "6a065ab630bf90038c30c1890dd5e0051dabc6d2bda1cd08704e207e2e2b7f82",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": false,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 12,
+     "right": 16,
+     "top": 0,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 130,
+     "right": 109,
+     "top": 26,
+     "bottom": 21
+    },
+    "psnrVsQuarterDb": 48.6,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 40,
+    "right": 40,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "우주+지구 반구. 좌우 12~16px 밝은 여백. 글자·UI 없음"
+  },
+  {
+   "id": "bg-02",
+   "file": "02_korea_seoul.webp",
+   "category": "korea",
+   "slug": "seoul",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 68540,
+   "sha256": "d887d5fdd18c1d7122e754dce40ca3c02bb39f78ba9e6e6659464e7d4a5aa8f7",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": false,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 68,
+     "right": 12,
+     "top": 0,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 116,
+     "right": 54,
+     "top": 59,
+     "bottom": 43
+    },
+    "psnrVsQuarterDb": 48.4,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 68,
+    "right": 12,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "서울 스카이라인·남산타워·벚꽃. 왼쪽 68px 흰 여백, 오른쪽 12px"
+  },
+  {
+   "id": "bg-03",
+   "file": "03_korea_busan.webp",
+   "category": "korea",
+   "slug": "busan",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 69102,
+   "sha256": "80d90fcd1d37641d41685276735ca9e32b11ada7b9a3ad4dfd42254ff90d3cdb",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": true,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 70,
+     "right": 43,
+     "top": 11,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 173,
+     "right": 130,
+     "top": 4,
+     "bottom": 32
+    },
+    "psnrVsQuarterDb": 48.2,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 70,
+    "right": 43,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "부산 항만·대교. 좌 70·우 43·위 11px 여백"
+  },
+  {
+   "id": "bg-04",
+   "file": "04_korea_gyeongju.webp",
+   "category": "korea",
+   "slug": "gyeongju",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 90102,
+   "sha256": "8f69f9f09f37a10d531308c9cd51020f434305de7b88b322d0114c095559e00c",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": true,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 41,
+     "right": 11,
+     "top": 0,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 232,
+     "right": 38,
+     "top": 68,
+     "bottom": 66
+    },
+    "psnrVsQuarterDb": 47.5,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 41,
+    "right": 11,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "경주 한옥·단풍·산. 왼쪽 41px 여백, 왼쪽 가장자리에 이웃 그림 색 잔재"
+  },
+  {
+   "id": "bg-05",
+   "file": "05_korea_jeju.webp",
+   "category": "korea",
+   "slug": "jeju",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 78422,
+   "sha256": "a7c306258db61767124b6ad81e4d35c9c59713804912cc4eec45b93b77c55d39",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": false,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 73,
+     "right": 0,
+     "top": 0,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 143,
+     "right": 5,
+     "top": 62,
+     "bottom": 4
+    },
+    "psnrVsQuarterDb": 48.0,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 73,
+    "right": 0,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "제주 바다·한라산·유채. 왼쪽 73px 흰 여백"
+  },
+  {
+   "id": "bg-06",
+   "file": "06_atmosphere_day.webp",
+   "category": "atmosphere",
+   "slug": "day",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 46026,
+   "sha256": "8d2281cd81fd4cb174b72f230c7a0965a83fb81d559835b4a63dedecad95b31d",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": false,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 0,
+     "right": 0,
+     "top": 0,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 74,
+     "right": 18,
+     "top": 26,
+     "bottom": 15
+    },
+    "psnrVsQuarterDb": 50.3,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 40,
+    "right": 0,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "푸른 하늘·구름. 흰 여백 0 이나 왼쪽 띠에 이웃 그림(초록·파랑) 잔재"
+  },
+  {
+   "id": "bg-07",
+   "file": "07_atmosphere_sunset.webp",
+   "category": "atmosphere",
+   "slug": "sunset",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 48568,
+   "sha256": "7a0851faa764097295318613e324f6f552727c347222d830fee4f2d2a039a855",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": true,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 0,
+     "right": 10,
+     "top": 0,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 169,
+     "right": 54,
+     "top": 22,
+     "bottom": 29
+    },
+    "psnrVsQuarterDb": 50.0,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 40,
+    "right": 10,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "노을 하늘·해. 오른쪽 10px 여백, 왼쪽 가장자리에 이웃 하늘(파랑) 잔재"
+  },
+  {
+   "id": "bg-08",
+   "file": "08_atmosphere_night.webp",
+   "category": "atmosphere",
+   "slug": "night",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 61186,
+   "sha256": "648669db3f4d61a85b8d496bd13793431a681483f909af1a32e2d6b3644f45ba",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": true,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 68,
+     "right": 0,
+     "top": 0,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 335,
+     "right": 12,
+     "top": 24,
+     "bottom": 36
+    },
+    "psnrVsQuarterDb": 48.9,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 68,
+    "right": 0,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "은하수 밤하늘. 왼쪽 68px 흰 여백"
+  },
+  {
+   "id": "bg-09",
+   "file": "09_region_himalaya.webp",
+   "category": "region",
+   "slug": "himalaya",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 102362,
+   "sha256": "3e4c79abb4f7afdcba5546e69223b6ade906777945498165b9c993cce617b224",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": false,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 13,
+     "right": 13,
+     "top": 0,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 33,
+     "right": 64,
+     "top": 77,
+     "bottom": 48
+    },
+    "psnrVsQuarterDb": 46.9,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 13,
+    "right": 40,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "설산 연봉. 좌우 13px 여백"
+  },
+  {
+   "id": "bg-10",
+   "file": "10_region_tibet.webp",
+   "category": "region",
+   "slug": "tibet",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 93868,
+   "sha256": "91f35420d7ea95a976a3622b7a9ecf80431a20bd41d2668971c94ff75ed44bfd",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": true,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 67,
+     "right": 9,
+     "top": 0,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 160,
+     "right": 34,
+     "top": 58,
+     "bottom": 57
+    },
+    "psnrVsQuarterDb": 47.0,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 67,
+    "right": 9,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "티베트 궁전·설산. 왼쪽 67px 여백"
+  },
+  {
+   "id": "bg-11",
+   "file": "11_region_sahara.webp",
+   "category": "region",
+   "slug": "sahara",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 46914,
+   "sha256": "d482eefd19b777916b0060ff4465fac6d1821095e8509901669e81e10077d410",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": true,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 70,
+     "right": 49,
+     "top": 0,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 175,
+     "right": 138,
+     "top": 43,
+     "bottom": 8
+    },
+    "psnrVsQuarterDb": 50.1,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 70,
+    "right": 49,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "사하라 사구·해. 좌 70·우 49px 여백"
+  },
+  {
+   "id": "bg-12",
+   "file": "12_region_savanna.webp",
+   "category": "region",
+   "slug": "savanna",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 90016,
+   "sha256": "382520f23c1195dfe9f52b7a848ec0751d9292e7e6b831cb6ad7fef1bb81ca83",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": true,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 29,
+     "right": 44,
+     "top": 0,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 155,
+     "right": 136,
+     "top": 56,
+     "bottom": 21
+    },
+    "psnrVsQuarterDb": 47.1,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 40,
+    "right": 44,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "사바나 아카시아. 좌 29·우 44px 여백"
+  },
+  {
+   "id": "bg-13",
+   "file": "13_region_forest.webp",
+   "category": "region",
+   "slug": "forest",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 106408,
+   "sha256": "9c396e236956e610c5a96b12e193ebd1e18346b3157a1ea5348bd49180b4ef0c",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": true,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 32,
+     "right": 25,
+     "top": 0,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 324,
+     "right": 249,
+     "top": 8,
+     "bottom": 5
+    },
+    "psnrVsQuarterDb": 46.8,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 40,
+    "right": 40,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "숲·계곡. 좌 32·우 25px 여백"
+  },
+  {
+   "id": "bg-14",
+   "file": "14_region_jungle.webp",
+   "category": "region",
+   "slug": "jungle",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 105840,
+   "sha256": "5fecdffeaa3b8639bd8eb582b75e274065d932f9c869365f354500e1d6edb4ee",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": true,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 48,
+     "right": 12,
+     "top": 0,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 354,
+     "right": 139,
+     "top": 27,
+     "bottom": 22
+    },
+    "psnrVsQuarterDb": 46.9,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 48,
+    "right": 40,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "정글 폭포. 좌 48·우 12px 여백"
+  },
+  {
+   "id": "bg-15",
+   "file": "15_region_ocean_shallow.webp",
+   "category": "region",
+   "slug": "ocean_shallow",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 100658,
+   "sha256": "d71113d4c50b34d756eaf93f076dcfc80ea4f3702729167a4c3e4a12f37761f3",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": true,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 59,
+     "right": 37,
+     "top": 0,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 205,
+     "right": 211,
+     "top": 29,
+     "bottom": 32
+    },
+    "psnrVsQuarterDb": 46.9,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 59,
+    "right": 40,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "얕은 바다·산호 해변. 좌 59·우 37px 여백"
+  },
+  {
+   "id": "bg-16",
+   "file": "16_region_underwater.webp",
+   "category": "region",
+   "slug": "underwater",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 68124,
+   "sha256": "04d2efa67aca2c7fc6243d03d662f911d1b3456576b74e6c93a64c74bc33dcce",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": true,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 39,
+     "right": 0,
+     "top": 0,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 299,
+     "right": 39,
+     "top": 30,
+     "bottom": 25
+    },
+    "psnrVsQuarterDb": 48.9,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 40,
+    "right": 0,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "수중 암초·빛줄기. 왼쪽 39px 여백"
+  },
+  {
+   "id": "bg-17",
+   "file": "17_region_island.webp",
+   "category": "region",
+   "slug": "island",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 97430,
+   "sha256": "8d74f35beeb423639880e9342c6030ff791d84e72f09040990214fc4f47c3f01",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": false,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 13,
+     "right": 12,
+     "top": 0,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 62,
+     "right": 70,
+     "top": 75,
+     "bottom": 22
+    },
+    "psnrVsQuarterDb": 47.1,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 40,
+    "right": 40,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "열대 섬. 좌우 13px 여백, 왼쪽 가장자리에 이웃 바다색 잔재"
+  },
+  {
+   "id": "bg-18",
+   "file": "18_region_coast.webp",
+   "category": "region",
+   "slug": "coast",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 107132,
+   "sha256": "c3def43c0a7459f131462af066f7cff2b22e9acda38b3e835056edc04556ce6c",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": true,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 68,
+     "right": 6,
+     "top": 0,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 173,
+     "right": 20,
+     "top": 29,
+     "bottom": 87
+    },
+    "psnrVsQuarterDb": 46.7,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 68,
+    "right": 6,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "절벽 해안. 왼쪽 68px 여백"
+  },
+  {
+   "id": "bg-19",
+   "file": "19_region_volcano.webp",
+   "category": "region",
+   "slug": "volcano",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 78730,
+   "sha256": "7b01951eeebf9a5432bc5638583794db26486a9df4447393db74ac06d0c7a912",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": true,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 69,
+     "right": 48,
+     "top": 0,
+     "bottom": 11
+    },
+    "edgeColorDelta": {
+     "left": 234,
+     "right": 258,
+     "top": 45,
+     "bottom": 118
+    },
+    "psnrVsQuarterDb": 47.8,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 69,
+    "right": 48,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "분화 화산. 좌 69·우 48·아래 11px 여백"
+  },
+  {
+   "id": "bg-20",
+   "file": "20_region_desert_oasis.webp",
+   "category": "region",
+   "slug": "desert_oasis",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 110552,
+   "sha256": "efd333a73c390f604bea871a2556e32fcf0bd3d11e0d4ed37742163c5787a1fa",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": true,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 27,
+     "right": 42,
+     "top": 0,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 164,
+     "right": 257,
+     "top": 87,
+     "bottom": 43
+    },
+    "psnrVsQuarterDb": 46.5,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 40,
+    "right": 42,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "사막 오아시스·야자. 좌 27·우 42px 여백"
+  },
+  {
+   "id": "bg-21",
+   "file": "21_region_grassland.webp",
+   "category": "region",
+   "slug": "grassland",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 97124,
+   "sha256": "341de72db865b489e4892ff2e04d69a2a5f1733261221da426d7d7986e66aab5",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": true,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 33,
+     "right": 30,
+     "top": 122,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 175,
+     "right": 170,
+     "top": 50,
+     "bottom": 98
+    },
+    "psnrVsQuarterDb": 47.1,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 40,
+    "right": 40,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "초원·설산. 좌 33·우 30px 여백 (위쪽 흰 구름은 여백 아님)"
+  },
+  {
+   "id": "bg-22",
+   "file": "22_region_tundra.webp",
+   "category": "region",
+   "slug": "tundra",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 70688,
+   "sha256": "a5b8b6231375277abf318885041867b353fd2b7781b353af7925996e5c7ceb7f",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": false,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 50,
+     "right": 20,
+     "top": 0,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 123,
+     "right": 50,
+     "top": 40,
+     "bottom": 73
+    },
+    "psnrVsQuarterDb": 48.1,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 50,
+    "right": 20,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "툰드라 빙원. 좌 50·우 20px 여백"
+  },
+  {
+   "id": "bg-23",
+   "file": "23_region_canyon.webp",
+   "category": "region",
+   "slug": "canyon",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 95048,
+   "sha256": "9601b57bb6a3c46a39192e608196509abd80ecf3ac085b64175c065598dd086e",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": true,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 58,
+     "right": 37,
+     "top": 0,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 277,
+     "right": 311,
+     "top": 32,
+     "bottom": 34
+    },
+    "psnrVsQuarterDb": 47.0,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 58,
+    "right": 40,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "협곡·강. 좌 58·우 37px 여백"
+  },
+  {
+   "id": "bg-24",
+   "file": "24_region_aurora.webp",
+   "category": "region",
+   "slug": "aurora",
+   "width": 1920,
+   "height": 1080,
+   "ratio16_9": true,
+   "bytes": 64536,
+   "sha256": "3f59a448eda38cb9fefa9220ff218b5f703d1859d73b700b21a94b09ff25d197",
+   "checks": {
+    "text": false,
+    "placeName": false,
+    "ui": false,
+    "button": false,
+    "logo": false,
+    "watermark": false,
+    "character": false,
+    "otherPlaceThumbnail": true,
+    "cardFrame": false,
+    "infographic": false,
+    "compositeTrace": true,
+    "standalone": true,
+    "paperCut2_5D": "partial (AI 일러스트 — 종이 결·레이어 약함)",
+    "foregroundSpace": true,
+    "mobileCrop": true
+   },
+   "measured": {
+    "whiteStripPx": {
+     "left": 39,
+     "right": 0,
+     "top": 0,
+     "bottom": 0
+    },
+    "edgeColorDelta": {
+     "left": 293,
+     "right": 16,
+     "top": 39,
+     "bottom": 36
+    },
+    "psnrVsQuarterDb": 48.3,
+    "effectiveResolution": "≈480p (업스케일)"
+   },
+   "status": "REVIEW",
+   "productionStatus": "PRODUCTION_REJECT",
+   "reasons": [
+    "카탈로그 시트 여백/이웃 그림 잔재(합성 흔적)",
+    "유효 해상도 ≈480p → 2048×1152 규격 미달(업스케일)"
+   ],
+   "safeCropPx": {
+    "left": 40,
+    "right": 0,
+    "top": 16,
+    "bottom": 16
+   },
+   "note": "오로라·설원. 왼쪽 39px 여백"
+  }
+ ]
+}

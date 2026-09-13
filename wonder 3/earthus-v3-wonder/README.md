@@ -22,9 +22,17 @@ earthus-v3-wonder/
 ## 실행
 
 ```bash
-npm run registry      # content/ 를 재서 registry·manifest 생성 (팩 카탈로그 해시 대조, 검수 없는 배경은 오류)
-npm test              # 28 tests
-npm run dev           # http://127.0.0.1:8790/apps/web/   (Claude 데스크톱: launch.json "earthus-v3-wonder")
+npm run dev           # 로컬에서 보기 → http://localhost:8790/apps/web/
+npm test              # 76 tests
+npm run registry      # content/·assets/ 를 재서 registry 생성 (해시 대조, 검수 없는 배경은 오류)
+```
+
+폰에서도 보려면 같은 Wi‑Fi 에서 `node scripts/dev-server.mjs 8790 --lan` 을 띄우고 콘솔에 찍히는 `http://<PC IP>:8790/apps/web/` 를 연다.
+주소 뒤에 붙일 수 있는 것: `?debug=1`(상태 기록·PHASE 표시) · `?material=0`(종이 재질 없이 절차적 종이만) · `?nolabel`(대륙 이름표 끄기) · `?qa=1&device=1`(실기기 QA 15단계).
+
+```bash
+python scripts/import-material-pack.py                    # 종이 재질 팩 편입(ZIP 은 읽기만)
+python scripts/import-background-pack.py                  # 배경 팩 편입(ZIP 은 읽기만)
 python scripts/convert-characters-webp.py                 # 레거시 pack124 PNG → runtime WebP (원본은 읽기만, 기준 1024 q85)
 ```
 

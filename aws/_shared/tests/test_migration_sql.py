@@ -266,5 +266,41 @@ class HonestyConstraintTests(unittest.TestCase):
         self.assertIn("(latitude is null) = (longitude is null)", self.text)
 
 
+class ConflictGuardTests(unittest.TestCase):
+    """`create table if not exists` 는 이미 있는 표를 조용히 지나간다.
+
+    v11 초안이 같은 이름으로 evidence 표를 만들기 때문에, 그쪽을 먼저 적용한 DB 에서
+    이 파일을 돌리면 파생 칸·외래키·CHECK 가 빠진 채 "성공"으로 보인다.
+    그 침묵을 막는 가드가 실제로 들어 있는지 검사한다.
+    """
+
+    def setUp(self):
+        self.text = executable()
+
+    def test_guard_runs_before_any_table_is_created(self):
+        guard = self.text.index("SCHEMA_CONFLICT")
+        first_table = self.text.index("create table if not exists public.")
+        self.assertLess(guard, first_table, "가드가 표 생성보다 먼저 와야 한다")
+
+    def test_guard_detects_the_v11_evidence_shape(self):
+        self.assertIn("earthus_evidence_node", self.text)
+        self.assertIn("column_name = 'source_kind'", self.text)
+        self.assertIn("raise exception", self.text)
+
+    def test_guard_detects_the_v11_event_cluster(self):
+        self.assertIn("table_name = 'earthus_event_cluster'", self.text)
+
+    def test_guard_detects_a_foreign_earth_event_table(self):
+        self.assertIn("column_name = 'canonical_s3_key'", self.text)
+
+    def test_guard_points_at_the_reconciliation_document(self):
+        self.assertIn("EVIDENCE_SCHEMA_RECONCILIATION.md", raw())
+
+    def test_guard_aborts_rather_than_altering_anything(self):
+        """가드는 고치지 않는다 — 멈춘다. alter·drop 이 실행 구간에 없음을 다시 확인."""
+        for forbidden in ("alter table", "drop table", "drop column"):
+            self.assertNotIn(forbidden, self.text)
+
+
 if __name__ == "__main__":
     unittest.main()

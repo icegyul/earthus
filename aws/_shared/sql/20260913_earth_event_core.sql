@@ -29,6 +29,68 @@
 
 begin;
 
+-- ── 적용 전 충돌 가드 ───────────────────────────────────────────────────────
+-- ⚠️⚠️ 이 블록이 없으면 조용히 망가진다.
+--
+--   `prototype/js/earthus2/v11/postgres/20260826_v11_advanced_intelligence.sql`(미적용 초안,
+--   `prototype/v2-deploy/engine-v11/postgres/` 에 거울 사본이 하나 더 있다)도
+--   `earthus_evidence_node` · `earthus_evidence_edge` 를 **같은 이름**으로 만든다.
+--   둘 다 `create table if not exists` 다. 그래서 v11 쪽을 먼저 적용한 DB 에 이 파일을 돌리면
+--   `create table` 이 **no-op 으로 지나가고 아무 오류도 나지 않는다.** 결과는 이렇다:
+--     · `source_kind` · `truth_status` 파생 2칸이 없다
+--     · `source_id` → `earthus_source` 외래키가 없다 (근거 사슬이 DB 수준에서 끊긴다)
+--     · `evidence_kind` CHECK 가 없다 (어휘 밖 값이 들어간다)
+--   조립기는 그 사실을 모르고 쓰다가 런타임에 다른 곳에서 터진다.
+--
+--   그래서 **먼저 검사하고 크게 실패한다.** 어느 쪽을 정본으로 삼을지는
+--   docs/EVIDENCE_SCHEMA_RECONCILIATION.md 가 정한다 — 이 파일이 정본이고, v11 초안의
+--   그 4개 표는 대체된다(superseded).
+do $$
+declare
+  conflicting text;
+begin
+  -- ① v11 모양의 evidence 표가 이미 있다 (파생 2칸이 없다)
+  if exists (select 1 from information_schema.tables
+              where table_schema = 'public' and table_name = 'earthus_evidence_node')
+     and not exists (select 1 from information_schema.columns
+                      where table_schema = 'public' and table_name = 'earthus_evidence_node'
+                        and column_name = 'source_kind') then
+    raise exception using
+      errcode = '42710',
+      message = 'SCHEMA_CONFLICT: earthus_evidence_node 가 이미 있으나 source_kind 칸이 없다',
+      detail  = 'v11 초안(20260826_v11_advanced_intelligence.sql)이 먼저 적용된 DB 로 보인다. '
+                'create table if not exists 는 조용히 지나가므로 이 파일을 그대로 돌리면 '
+                '파생 칸·외래키·CHECK 가 빠진 채 "적용 성공" 으로 보인다.',
+      hint    = 'docs/EVIDENCE_SCHEMA_RECONCILIATION.md §5 의 이행 절차를 먼저 수행하라.';
+  end if;
+
+  -- ② v11 쪽 사건 표가 이미 있다 — 사건 정본이 둘이 된다
+  if exists (select 1 from information_schema.tables
+              where table_schema = 'public' and table_name = 'earthus_event_cluster') then
+    raise exception using
+      errcode = '42710',
+      message = 'SCHEMA_CONFLICT: earthus_event_cluster 가 이미 있다',
+      detail  = '이 파일의 earthus_earth_event 와 같은 것을 가리키는 두 설계다. '
+                '둘을 함께 두면 사건 정본이 둘이 된다.',
+      hint    = 'docs/EVIDENCE_SCHEMA_RECONCILIATION.md §5 를 먼저 수행하라.';
+  end if;
+
+  -- ③ 이 파일이 만들 표가 이미 있는데 우리 표식(canonical_s3_key)이 없다
+  select table_name into conflicting
+    from information_schema.tables
+   where table_schema = 'public' and table_name = 'earthus_earth_event'
+     and not exists (select 1 from information_schema.columns
+                      where table_schema = 'public' and table_name = 'earthus_earth_event'
+                        and column_name = 'canonical_s3_key')
+   limit 1;
+  if conflicting is not null then
+    raise exception using
+      errcode = '42710',
+      message = 'SCHEMA_CONFLICT: earthus_earth_event 가 다른 모양으로 이미 있다',
+      hint    = '수동으로 만든 표인지 확인하라. 덮어쓰지 않는다.';
+  end if;
+end $$;
+
 -- ── 정본 어휘 (docs/TRUTH_VOCABULARY_CANONICAL.md) ───────────────────────────
 -- 도메인으로 박는다. 표마다 CHECK 를 베껴 쓰면 한 곳만 고쳐지는 사고가 난다.
 -- ⚠️ 새 어휘를 만들지 않는다. 아래 네 도메인이 정본이고, 값은 그 문서 §2 와 같다.

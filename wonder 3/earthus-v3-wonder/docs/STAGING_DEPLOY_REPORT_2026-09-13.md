@@ -20,6 +20,10 @@ PD 지시 "STAGING DEPLOYMENT FOR DEVICE GATE" 의 결과. **production cutover 
 | **[NETWORK]** | 요청 **전부** `https://earthus.net/wonder/next/` 아래(outside 0) · 4xx/5xx **0**. 부팅 21건 / 지역 진입~스토리 10건(registry 17 KB · manifest 12 KB · landmarks 1 KB · himalaya.webp 17 KB · thumb 9 KB · runtime yeti 40 KB · stories 2 KB · yeti_scene). Content-Type `.mjs` text/javascript · `.json` application/json · `.webp` image/webp · `x-cache: Miss`(첫 요청). **서비스워커**: 이 빌드는 등록 0. earthus.net 루트 v1 `sw.js` 가 오리진을 제어하지만 fetch 핸들러가 `/wonder/` 경로를 즉시 `return`(통과, sw.js:92) — 스테이징 응답은 v1 캐시를 거치지 않고 production 캐시 이름을 참조하지 않는다 |
 | **[BLOCKERS]** | 배포 자체 **없음**. 남은 FINAL GATE 3: ① Android 실기기 ② iOS 실기기 ③ 배경 production 승인(0 유지) |
 
+## 재배포 (2026-09-13 17:19 — ROTATION RULE LOCK)
+
+회전 규칙 이식 커밋 **`d5fcec37`** 을 같은 스크립트로 재배포: **10 put**(바뀐 파일 5 + 디렉터리/주소 키 4 + BUILD.json) · 삭제 0 · prefix 객체 295 → 295 · production/`app/v3` 변경 0. CDN 의 `BUILD.json.commit = d5fcec37`, `camera.mjs`·`input.mjs`·`qa-overlay.mjs`(v2, 15단계) 새 본문 확인. 상세 `docs/ROTATION_RULE_PORT_2026-09-13.md`. 실기기 게이트는 이 빌드로 다시 돌린다.
+
 ## 배포 전 점검 (지시 순서)
 
 | # | 점검 | 결과 |

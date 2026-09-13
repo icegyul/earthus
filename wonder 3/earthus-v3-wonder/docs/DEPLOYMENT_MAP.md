@@ -88,7 +88,7 @@ v1 `sw.js` 통과 목록 밖이라 v1 워커가 요청을 중개하고, 실패 �
 
 | | 상태 |
 |---|---|
-| AWS 변경 | **스테이징만**: 2026-09-13 16:36 `app/wonder/next/**` 296 put(객체 0 → 295 + 키 `app/wonder/next`), 삭제 0, 커밋 `91bf2330`. 보고 `docs/STAGING_DEPLOY_REPORT_2026-09-13.md` |
+| AWS 변경 | **스테이징만**: 2026-09-13 16:36 `app/wonder/next/**` 296 put(객체 0 → 295 + 키 `app/wonder/next`), 삭제 0, 커밋 `91bf2330`; 17:19 회전 규칙 이식 재배포 10 put, 커밋 `d5fcec37`. 보고 `docs/STAGING_DEPLOY_REPORT_2026-09-13.md` |
 | deployment collision | `app/wonder/live/` 없음(실측, 전·후). `app/wonder/next/` 는 이제 이 프로젝트의 스테이징 거울 |
 | legacy AWS 보호 | `app/v3/`(403객체, 최신 09-07)·별칭 3키(09-07 24,245 B)·CloudFront·CI·sw.js 무변경 |
 | 실행 스크립트 | `scripts/build-staging.mjs`(정적 빌드, 허용 목록) + `scripts/deploy-staging.sh`(prefix 고정·가드·`--dry-run`) — §3 의 예정 이름 `aws/deploy-wonder-next.sh` 대신 프로젝트 안 `scripts/` 에 둠(DECISION LOCK 2 §3). `deploy-wonder-live.sh` 는 아직 없음(cutover 는 PD 결정) |

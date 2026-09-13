@@ -126,6 +126,8 @@ export function createPaperEarth({ canvas, textureCanvas, pixelRatio = 1, ambien
    * @param {{normal?:CanvasImageSource, roughness?:CanvasImageSource, repeatX?:number, normalScale?:number, roughness0?:number}} o
    */
   function applyMaterial({ normal = null, roughness = null, repeatX = 4, normalScale = 0.26, roughness0 = 1 } = {}) {
+    // 거울 반복은 반복 수가 **짝수**라야 ±180° 자오선에서 이어진다(홀수면 그 자리에서 결이 뒤집혀 줄이 생긴다).
+    repeatX = Math.max(2, Math.round(repeatX / 2) * 2);
     const mk = img => {
       const t = new THREE.Texture(img);
       t.wrapS = t.wrapT = THREE.MirroredRepeatWrapping;
@@ -136,8 +138,8 @@ export function createPaperEarth({ canvas, textureCanvas, pixelRatio = 1, ambien
       return t;
     };
     const m = globe.material;
-    if (normal) { m.normalMap = mk(normal); m.normalScale.set(normalScale, normalScale); }
-    if (roughness) { m.roughnessMap = mk(roughness); m.roughness = roughness0; }
+    if (normal) { m.normalMap?.dispose(); m.normalMap = mk(normal); m.normalScale.set(normalScale, normalScale); }   // 두 번 불려도 옛 GPU 텍스처를 남기지 않는다
+    if (roughness) { m.roughnessMap?.dispose(); m.roughnessMap = mk(roughness); m.roughness = roughness0; }
     m.needsUpdate = true;
     return { normal: !!normal, roughness: !!roughness, repeatX, normalScale };
   }
@@ -258,7 +260,11 @@ export function createPaperEarth({ canvas, textureCanvas, pixelRatio = 1, ambien
   function metrics() {
     const m = renderer.info.memory, r = renderer.info.render;
     return { geometries: m.geometries, textures: m.textures, triangles: r.triangles, calls: r.calls,
-      textureBytes: textureCanvas.width * textureCanvas.height * 4, pixelRatio: renderer.getPixelRatio(),
+      albedoCanvasBytes: textureCanvas.width * textureCanvas.height * 4,
+      // GPU 에 올라간 실제 크기 — 앨비도 캔버스만 세면 노멀·거칠기(각 2048² = 16.8MB)가 통째로 빠진다.
+      gpuTextureBytes: [globe.material.map, globe.material.normalMap, globe.material.roughnessMap]
+        .filter(t => t?.image?.width).reduce((a, t) => a + t.image.width * t.image.height * 4 * (t.generateMipmaps === false ? 1 : 4 / 3), 0) | 0,
+      pixelRatio: renderer.getPixelRatio(),
       drawingBuffer: [renderer.domElement.width, renderer.domElement.height] };
   }
 

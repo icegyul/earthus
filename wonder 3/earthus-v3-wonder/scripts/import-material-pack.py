@@ -7,10 +7,12 @@
 #   2. 텍스처 10장을 실제 픽셀로 재기 — 크기·모드·평균색·이음새(좌우/상하 끝단 차이) → 타일링 가능 여부
 #   3. assets/material/paper-earth/*.webp 로 바이트 그대로 복사(원본 보존, 덮어쓰기 가드)
 #   4. assets/material/paper_earth_material_manifest.json (실측 + 쓰임 + 타일링 판정) 과
-#      assets/material/paper_earth_material_manifest.pack-v1.json(팩 원본 사본), docs/MATERIAL_INTEGRATION.md 를 쓴다
+#      팩 원본 사본 둘(manifest·MATERIAL_INTEGRATION)을 assets/material/ 에 나란히 둔다 — docs/ 는 우리가 쓴 문서 자리다
 #
 # 이 팩은 **지리 정보가 구워져 있지 않다**(manifest geography_baked=false). 평평한 종이 재질 견본이고,
-# 지리는 Natural Earth 자료가 담당한다 — 합치는 곳은 packages/globe-engine/src/paper-material.mjs.
+# 지리는 Natural Earth 자료가 담당한다. 합치는 곳은 두 군데다:
+#   층 1·2·3·6·7·8 → packages/globe-engine/src/paper-texture.mjs 의 paintPaperEarthMaterial()
+#   층 4·5        → packages/globe-engine/src/earth.mjs 의 applyMaterial()
 import argparse, hashlib, json, math, os, sys, tempfile, zipfile
 sys.stdout.reconfigure(encoding='utf-8')
 from PIL import Image
@@ -64,7 +66,9 @@ out = {'schema': 'earthus-v3-wonder/paper-earth-material@1', 'name': pack['name'
        'declared': {k: pack.get(k) for k in ('resolution', 'geography_baked', 'labels_baked', 'characters_baked', 'ui_baked', 'status')},
        'shaderLayers': ['1 ocean base material', '2 land biome material', '3 fiber overlay', '4 height/normal', '5 matte roughness',
                         '6 coast cut-edge', '7 paper thickness shadow', '8 soft edge highlight'],
-       'integration': '지리는 이 팩이 아니라 Natural Earth 자료가 정한다(geography_baked=false). 합치는 곳: packages/globe-engine/src/paper-material.mjs',
+       'integration': {'note': '지리는 이 팩이 아니라 Natural Earth 자료가 정한다(geography_baked=false).',
+                       'layers_1_2_3_6_7_8': 'packages/globe-engine/src/paper-texture.mjs → paintPaperEarthMaterial()',
+                       'layers_4_5': 'packages/globe-engine/src/earth.mjs → applyMaterial()'},
        'loading': {'policy': 'on-demand', 'when': '첫 그림(절차적 종이 지구) 뒤에 받아서 재질만 갈아 끼운다 — 첫 화면을 늦추지 않는다',
                    'cache': 'shared/immutable by sha (?v=sha12)', 'halfRes': '작은 화면(min(W,H) < 600)에서는 1024 로 줄여 쓴다'},
        'count': len(names), 'textures': []}
@@ -103,7 +107,8 @@ if not args.report_only:
     dump(out, 'assets/material/paper_earth_material_manifest.json')
     with open(os.path.join(ROOT, 'assets', 'material', 'paper_earth_material_manifest.pack-v1.json'), 'wb') as fh:
         fh.write(z.read('paper_earth_material_manifest.json'))
-    with open(os.path.join(ROOT, 'docs', 'MATERIAL_INTEGRATION.md'), 'wb') as fh:
+    # 벤더 문서는 팩 사본 자리에 둔다 — docs/ 에 덮어쓰면 우리가 쓴 문서와 섞인다.
+    with open(os.path.join(ROOT, 'assets', 'material', 'MATERIAL_INTEGRATION.pack-v1.md'), 'wb') as fh:
         fh.write(z.read('docs/MATERIAL_INTEGRATION.md'))
     ok = sum(1 for t in out['textures'] if sha(open(os.path.join(ROOT, t['path']), 'rb').read()) == t['sha256'])
     print(f'copied {ok}/{len(out["textures"])} byte-identical → assets/material/paper-earth/')

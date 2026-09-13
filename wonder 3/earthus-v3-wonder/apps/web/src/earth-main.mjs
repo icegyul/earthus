@@ -47,7 +47,7 @@ async function loadRegistry() {
   assets = createAssetRuntime({ lookup: p => state.registryIndex.get(p), load: defaultImageLoader, urlOf, base: CONTENT.href, budgetBytes: 30 * 1024 * 1024 });
   envView = createEnvironmentView($('#env'), {
     assets, contentBase: ROOT, log, reducedMotion,
-    onEarth: () => returnToEarth(),
+    onEarth: () => returnToEarth().catch(e => log(`⚠ 복귀 실패: ${e.message}`)),
     onStoryOpen: () => flow.openStory(),
     onStoryClose: () => flow.closeStory(),
     loadStories: async () => { if (!state.stories) state.stories = (await loadJson('content/stories/stories.json')).stories; return state.stories; },
@@ -67,29 +67,38 @@ async function loadContent() {
  * 실패하면 절차적 종이 지구가 그대로 남는다(화면이 비는 경로를 만들지 않는다).
  */
 async function upgradeToMaterial(geo, size) {
-  await ensureRegistry();                                     // 레지스트리가 유일한 색인(ARCHITECTURE_LOCK §5)
-  const man = await loadJson('assets/material/paper_earth_material_manifest.json');
-  const used = man.textures.filter(t => t.usedInV1);
-  const byRole = new Map(used.map(t => [t.role, t]));
-  const need = ['ocean-albedo', 'land-albedo', 'forest-albedo', 'desert-albedo', 'ice-albedo', 'fiber-overlay', 'normal-map', 'roughness-map'];
-  for (const r of need) if (!byRole.has(r)) throw new Error(`재질 ${r} 없음`);
-  const t0 = performance.now();
-  const pairs = await Promise.all(need.map(async r => [r, (await assets.get(byRole.get(r).path)).value]));
-  const img = Object.fromEntries(pairs);
-  const res = paintPaperEarthMaterial(state.textureCanvas, geo, {
-    ocean: img['ocean-albedo'], land: img['land-albedo'], forest: img['forest-albedo'],
-    desert: img['desert-albedo'], ice: img['ice-albedo'], fiber: img['fiber-overlay'],
-  }, { w: size.w, h: size.h });
-  earth.refreshTexture();
-  const applied = earth.applyMaterial({ normal: img['normal-map'], roughness: img['roughness-map'], repeatX: size.w >= 2048 ? 6 : 4 });
-  // 다 구운 앨비도 견본은 놓아 준다 — 2048² 디코드 이미지가 남으면 메모리를 크게 먹는다. 노멀·거칠기는 three 재질이 잡고 있다.
-  for (const t of used) if (!['normal-map', 'roughness-map'].includes(t.role)) assets.unload(t.path);
-  assets.evictToBudget();
-  const kb = Math.round(used.reduce((a, t) => a + t.bytes, 0) / 1024);
-  state.textureMs = res.ms; state.textureSize = [res.w, res.h];
-  state.material = { ...applied, layers: res.layers, tile: res.tile, kb, totalMs: Math.round(performance.now() - t0), textures: used.length };
-  log(`종이 재질 v1 적용 ${res.w}×${res.h} · ${kb}KB · 굽기 ${res.ms}ms · 전체 ${state.material.totalMs}ms`);
-  return true;
+  if (state.material || pending.material) return !!state.material;          // 두 번 굽지 않는다(리사이즈·재진입)
+  pending.material = true;
+  const used = [];
+  try {
+    await ensureRegistry();                                   // 레지스트리가 유일한 색인(ARCHITECTURE_LOCK §5)
+    const man = await loadJson('assets/material/paper_earth_material_manifest.json');
+    used.push(...man.textures.filter(t => t.usedInV1));
+    const byRole = new Map(used.map(t => [t.role, t]));
+    const need = ['ocean-albedo', 'land-albedo', 'forest-albedo', 'desert-albedo', 'ice-albedo', 'fiber-overlay', 'normal-map', 'roughness-map'];
+    for (const r of need) if (!byRole.has(r)) throw new Error(`재질 ${r} 없음`);
+    const t0 = performance.now();
+    const pairs = await Promise.all(need.map(async r => [r, (await assets.get(byRole.get(r).path)).value]));
+    const img = Object.fromEntries(pairs);
+    if (!state.textureCanvas || !earth) throw new Error('지구가 아직 없다');
+    const res = paintPaperEarthMaterial(state.textureCanvas, geo, {
+      ocean: img['ocean-albedo'], land: img['land-albedo'], forest: img['forest-albedo'],
+      desert: img['desert-albedo'], ice: img['ice-albedo'], fiber: img['fiber-overlay'],
+    }, { w: size.w, h: size.h });
+    earth.refreshTexture();
+    const applied = earth.applyMaterial({ normal: img['normal-map'], roughness: img['roughness-map'], repeatX: size.w >= 2048 ? 6 : 4 });
+    const kb = Math.round(used.reduce((a, t) => a + t.bytes, 0) / 1024);
+    state.textureMs = res.ms; state.textureSize = [res.w, res.h];
+    state.material = { ...applied, layers: res.layers, coverage: res.coverage, tile: res.tile, kb, totalMs: Math.round(performance.now() - t0), textures: used.length };
+    log(`종이 재질 v1 적용 ${res.w}×${res.h} · ${kb}KB · 굽기 ${res.ms}ms · 층 ${res.layers.length}`);
+    return true;
+  } finally {
+    // 성공이든 실패든(부분 실패 포함) 앨비도 견본은 놓아 준다 — 안 그러면 받아 놓은 2048² 들이 세션 내내 남는다.
+    // 노멀·거칠기는 three 재질이 따로 잡고 있으므로 캐시에서 빼도 안전하다.
+    for (const t of used) assets?.unload(t.path);
+    assets?.evictToBudget();
+    pending.material = false;
+  }
 }
 /** Background Pack v1 — manifest 는 지역 진입 때 처음 받고, 그림은 그때 고른 한 장만 받는다(24장 preload 없음). */
 function ensureBackgrounds() { return state.bgSelector ? Promise.resolve() : (pending.bg ??= loadJson('assets/background_manifest.json').then(m => { state.bgManifest = m; state.bgSelector = createBackgroundSelector(m); log(`배경 팩 ${m.count}장 목록 (그림은 지역마다 한 장만)`); }).finally(() => { pending.bg = null; })); }
@@ -167,7 +176,14 @@ async function enterEnvironment({ environment: env, distanceKm, backgroundReason
   camera.setZoomStep(2, env.anchor, { durMs: plan.approachMs });
   updateZoomDots();
   log(`${env.synthetic ? '지역' : '환경'} ${env.id} 접근 (${plan.mode}, ${distanceKm}km)`);
-  await Promise.all([ensureContent(), ensureBackgrounds(), sleep(plan.approachMs)]);
+  // 자료를 못 받으면 approaching 에서 굳는다 — 그 자리에서 진입을 물리고 사람이 읽을 안내를 띄운다.
+  try { await Promise.all([ensureContent(), ensureBackgrounds(), sleep(plan.approachMs)]); }
+  catch (e) {
+    log(`⚠ 지역 자료 실패: ${e.message}`);
+    flow.abort(); camera.setZoomStep(0); earth.setMarker(null); setView('world', null); updateZoomDots();
+    $('#hint').textContent = '지금은 그곳에 갈 수 없어요. 잠시 뒤 다시 눌러 보세요';
+    return false;
+  }
   if (flow.seq !== seq || flow.state !== 'approaching') return false;
   flow.approached();
   const row = env.characters?.[0] ? state.manifestBySlug.get(env.characters[0]) ?? null : null;
@@ -227,15 +243,16 @@ function onTap(at) {
   const ll = earth.pick(at.x, at.y);
   if (!ll) { log('탭: 우주(빗나감)'); return; }
   const envHit = environmentAt(ll.lat, ll.lon, state.environments);
-  if (envHit) { enterEnvironment(envHit); return; }
+  const oops = e => log(`⚠ 진입 실패: ${e.message}`);
+  if (envHit) { enterEnvironment(envHit).catch(oops); return; }
   const hit = regionAt(ll.lat, ll.lon);
   if (!hit) {
     // 먼바다: 지역은 없지만 배경 팩의 바닷속(underwater) 이 있으면 그리로 들어간다(LOCAL → 필요할 때 load).
     log(`탭 (${ll.lat.toFixed(1)}, ${ll.lon.toFixed(1)}) — 지역 없음(먼바다)`);
-    enterOcean(ll);
+    enterOcean(ll).catch(oops);
     return;
   }
-  enterRegion(hit);
+  enterRegion(hit).catch(oops);
 }
 async function enterOcean(ll) {
   if (flow.state !== 'earth') return false;
@@ -277,13 +294,17 @@ async function boot() {
   // 팩이 없거나 ?material=0 이면 절차적 종이를 고해상으로 다시 굽는다. 어느 쪽이 실패해도 화면은 그대로 남는다.
   const wantMaterial = params.get('material') !== '0';
   const upgrade = async () => {
+    // 굽기는 300~450ms 동안 메인 스레드를 잡는다. requestIdleCallback 은 이미 시작한 콜백을 멈추지 못하므로
+    // 손이 지구를 만지고 있으면 미룬다 — 돌리는 도중에 화면이 멈추는 것보다 조금 늦게 고와지는 편이 낫다.
+    if (camera.dragging || camera.animating) { schedule(); return; }
     if (wantMaterial) {
       try { if (await upgradeToMaterial(geo, full)) return; }
       catch (e) { log(`⚠ 종이 재질 실패 — 절차적 종이 유지: ${e.message}`); }
     }
-    if (full.w !== first.w) { const p2 = paintPaperEarth(tex, geo, full); earth.refreshTexture(); state.textureMs = p2.ms; state.textureSize = [p2.w, p2.h]; log(`텍스처 승급 ${p2.w}×${p2.h} · ${p2.ms}ms`); }
+    if (full.w !== first.w && state.textureSize?.[0] !== full.w) { const p2 = paintPaperEarth(tex, geo, full); earth.refreshTexture(); state.textureMs = p2.ms; state.textureSize = [p2.w, p2.h]; log(`텍스처 승급 ${p2.w}×${p2.h} · ${p2.ms}ms`); }
   };
-  (globalThis.requestIdleCallback ?? (f => setTimeout(f, 120)))(() => upgrade(), { timeout: 1500 });
+  const schedule = () => (globalThis.requestIdleCallback ?? (f => setTimeout(f, 200)))(() => { upgrade().catch(e => log(`⚠ 승급 실패: ${e.message}`)); }, { timeout: 2500 });
+  schedule();
   resize();
   new ResizeObserver(resize).observe(world);
   state.gestures = { drag: 0, 'pinch-in': 0, 'pinch-out': 0, 'wheel-in': 0, 'wheel-out': 0, tap: 0, touchDrag: 0, touchPinch: 0, touchTap: 0 };
@@ -295,7 +316,7 @@ async function boot() {
   });
   // 실기기 QA 하네스: ?qa=1 일 때만 (Device Gate 용). 운영 기능 아님.
   if (new URLSearchParams(location.search).get('qa') === '1') import('./qa-overlay.mjs').then(m => m.installQaOverlay(window.__wonder, { log })).catch(e => log(`QA 오버레이 실패: ${e.message}`));
-  $('#btnEarth').addEventListener('click', returnToEarth);
+  $('#btnEarth').addEventListener('click', () => returnToEarth().catch(e => log(`⚠ 복귀 실패: ${e.message}`)));
   $('#btnFart').addEventListener('click', () => envView?.fart());
   $('#btnZoomIn').addEventListener('click', () => { if (envView?.isOpen || flow.state !== 'earth') return; camera.zoomIn(); updateZoomDots(); state.idleSince = performance.now(); });
   $('#btnZoomOut').addEventListener('click', () => { if (envView?.isOpen || flow.state !== 'earth') return; camera.zoomOut(); updateZoomDots(); state.idleSince = performance.now(); if (camera.step === 0 && state.view === 'region') { earth.setMarker(null); setView('world', null); } });

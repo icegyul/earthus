@@ -35,7 +35,21 @@ test('재질 팩: 10장 편입, 실제 파일과 bytes·sha256 일치, 전부 20
   assert.equal(manifest.declared.labels_baked, false);
   assert.equal(manifest.declared.characters_baked, false);
   assert.equal(manifest.declared.ui_baked, false);
-  assert.ok(fs.existsSync(path.join(ROOT, 'docs', 'MATERIAL_INTEGRATION.md')));
+  // 벤더 문서·manifest 원본은 팩 사본 자리에 둔다(docs/ 는 우리가 쓴 문서 자리)
+  assert.ok(fs.existsSync(path.join(ROOT, 'assets', 'material', 'MATERIAL_INTEGRATION.pack-v1.md')));
+  assert.ok(fs.existsSync(path.join(ROOT, manifest.sourcePack.manifestCopy)));
+  assert.ok(!fs.existsSync(path.join(ROOT, 'docs', 'MATERIAL_INTEGRATION.md')), '벤더 문서를 docs/ 에 덮어쓰지 않는다');
+});
+
+test('재질 팩: manifest 의 integration 이 실제로 있는 파일과 함수를 가리킨다', () => {
+  const it = manifest.integration;
+  assert.equal(typeof it, 'object');
+  for (const key of ['layers_1_2_3_6_7_8', 'layers_4_5']) {
+    const [file, fn] = it[key].split(' → ');
+    assert.ok(fs.existsSync(path.join(ROOT, file)), `${key}: ${file} 이 없다`);
+    const src = fs.readFileSync(path.join(ROOT, file), 'utf8');
+    assert.ok(src.includes(fn.replace('()', '')), `${key}: ${file} 안에 ${fn} 이 없다`);
+  }
 });
 
 test('재질 팩: v1 에 쓰는 8장의 쓰임이 모두 정해져 있고, 이음새가 큰 것은 거울 반복으로 깐다', () => {

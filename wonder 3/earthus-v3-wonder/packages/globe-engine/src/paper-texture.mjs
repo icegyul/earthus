@@ -128,11 +128,24 @@ const makeScratch = (canvas, w, h) => {
 const bandWobble = u => 5.5 * Math.sin(u * Math.PI * 2 * 2.3) + 3.2 * Math.sin(u * Math.PI * 2 * 5.7 + 1.3) + 1.8 * Math.sin(u * Math.PI * 2 * 11 + 0.7);
 const COLS_OF = px => Math.max(2, Math.round(4 * px));
 
-/** 견본을 원하는 타일 크기로 줄여 둔다(패턴 반복 간격 = 이 크기). */
-function tileOf(canvas, img, size) {
+/** 견본을 원하는 타일 크기로 줄여 둔다(패턴 반복 간격 = 이 크기). 한 번 굽는 동안 같은 (견본, 크기)는 다시 만들지 않는다. */
+function tileOf(canvas, img, size, cache) {
+  const hit = cache?.get(img);
+  if (hit?.size === size) return hit.tile;
   const c = makeScratch(canvas, size, size);
   c.getContext('2d').drawImage(img, 0, 0, size, size);
+  cache?.set(img, { size, tile: c });
   return c;
+}
+
+/** 알파가 실제로 남아 있는 비율(0~1). 층을 "그렸다"고 적기 전에 정말 그려졌는지 센다. */
+function coverageOf(c2d, w, h) {
+  let on = 0, n = 0;
+  for (const fy of [0.08, 0.28, 0.5, 0.72, 0.92]) {
+    const d = c2d.getImageData(0, Math.min(h - 1, Math.round(h * fy)), w, 1).data;
+    for (let i = 3; i < d.length; i += 4) { n++; if (d[i] > 8) on++; }
+  }
+  return n ? on / n : 0;
 }
 
 /** 지형 장식 — 모래 결 · 종이 나무 · 장식 산줄기. 두 경로가 함께 쓴다. */
@@ -323,8 +336,9 @@ export function paintPaperEarthMaterial(canvas, geo, tex, { w = 2048, h = 1024, 
   const FIBER_TILE = fiberTile || w;
   let s = seed >>> 0;
   const rnd = () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
-  const layers = [];
-  const patternOf = (c, img, size = TILE) => c.createPattern(tileOf(canvas, img, size), 'repeat');
+  const layers = [], coverage = {};
+  const tiles = new Map();                                          // 같은 견본을 여러 번 깔아도 타일은 한 장만 만든다
+  const patternOf = (c, img, size = TILE) => c.createPattern(tileOf(canvas, img, size, tiles), 'repeat');
 
   // 1 바다 바탕 종이 + 깊이감(극으로 갈수록 짙게). 견본 색을 살려야 하니 밝히는 쪽은 아주 약하게.
   ctx.fillStyle = patternOf(ctx, tex.ocean); ctx.fillRect(0, 0, w, h);
@@ -339,25 +353,35 @@ export function paintPaperEarthMaterial(canvas, geo, tex, { w = 2048, h = 1024, 
   const landC = makeScratch(canvas, w, h);
   const lc = landC.getContext('2d');
   const band = makeScratch(canvas, w, h);                            // 견본 한 장을 띠 모양으로 오려 내는 작업대(셋이 돌려 쓴다)
-  const bc = band.getContext('2d');
+  const bc = band.getContext('2d', { willReadFrequently: true });
+  const maskC = makeScratch(canvas, w, h);                           // 띠 알파 마스크 — 따로 다 그린 뒤 한 번에 물린다
+  const mc = maskC.getContext('2d');
   const COL = COLS_OF(px), STOPS = 73;                               // 2.5° 간격 — 5° 페더를 담을 만큼
   lc.save();
   lc.clip(landAll, 'evenodd');
   lc.fillStyle = patternOf(lc, tex.land); lc.fillRect(0, 0, w, h);
   for (const name of ['forest', 'desert', 'ice']) {
+    // (1) 띠 알파 마스크를 source-over 로 **다 그린다**.
+    mc.globalCompositeOperation = 'source-over';
+    mc.clearRect(0, 0, w, h);
+    for (let x = 0; x < w; x += COL) {
+      const wob = bandWobble(x / w);
+      const g = mc.createLinearGradient(0, 0, 0, h);
+      for (let i = 0; i < STOPS; i++) { const t = i / (STOPS - 1); g.addColorStop(t, `rgba(0,0,0,${swatchAlphaAt(name, 90 - t * 180 + wob).toFixed(3)})`); }
+      mc.fillStyle = g; mc.fillRect(x, 0, COL + 1, h);
+    }
+    // (2) 견본을 깔고 **한 번만** 오려 낸다.
+    //     destination-in 은 그린 사각형 '바깥'의 목적지를 전부 지운다. 기둥마다 부르면 세 번째 기둥에서 작업대가 통째로 빈다
+    //     (2026-09-13 실측: 적도 행 알파>0 픽셀 0/2048, 땅 전체가 기본 종이 한 장이 됐다).
     bc.globalCompositeOperation = 'source-over';
     bc.clearRect(0, 0, w, h);
     bc.fillStyle = patternOf(bc, tex[name]); bc.fillRect(0, 0, w, h);
-    bc.globalCompositeOperation = 'destination-in';                  // 띠 밖은 투명하게 오려 낸다
-    for (let x = 0; x < w; x += COL) {
-      const wob = bandWobble(x / w);
-      const g = bc.createLinearGradient(0, 0, 0, h);
-      for (let i = 0; i < STOPS; i++) { const t = i / (STOPS - 1); g.addColorStop(t, `rgba(0,0,0,${swatchAlphaAt(name, 90 - t * 180 + wob).toFixed(3)})`); }
-      bc.fillStyle = g; bc.fillRect(x, 0, COL + 1, h);
-    }
+    bc.globalCompositeOperation = 'destination-in';
+    bc.drawImage(maskC, 0, 0);
     bc.globalCompositeOperation = 'source-over';
-    lc.drawImage(band, 0, 0);
-    layers.push(`2 land biome material · ${name}`);
+    // (3) 정말 남았는지 세고 나서 층을 적는다 — 안 그린 층을 그렸다고 보고하면 이런 회귀를 다시 놓친다.
+    coverage[name] = +coverageOf(bc, w, h).toFixed(4);
+    if (coverage[name] > 0) { lc.drawImage(band, 0, 0); layers.push(`2 land biome material · ${name}`); }
   }
   if (decor) paintTerrainDecor(lc, w, h, rnd);
   for (const p of paths) {                                           // 나라별 옅은 색 차이(선 없음)
@@ -390,5 +414,6 @@ export function paintPaperEarthMaterial(canvas, geo, tex, { w = 2048, h = 1024, 
     ctx.restore();
     layers.push('3 fiber overlay');
   }
-  return { w, h, features: paths.length, ms: Math.round((globalThis.performance ?? Date).now() - t0), mode: 'material', layers, tile: TILE };
+  layers.sort((a, b) => Number(a[0]) - Number(b[0]));                // 층 번호 순서대로(섬유는 마지막에 그리지만 3번 층이다)
+  return { w, h, features: paths.length, ms: Math.round((globalThis.performance ?? Date).now() - t0), mode: 'material', layers, coverage, tile: TILE, fiberTile: FIBER_TILE };
 }

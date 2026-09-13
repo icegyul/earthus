@@ -26,7 +26,11 @@
   "7 paper thickness shadow",
   "8 soft edge highlight"
  ],
- "integration": "지리는 이 팩이 아니라 Natural Earth 자료가 정한다(geography_baked=false). 합치는 곳: packages/globe-engine/src/paper-material.mjs",
+ "integration": {
+  "note": "지리는 이 팩이 아니라 Natural Earth 자료가 정한다(geography_baked=false).",
+  "layers_1_2_3_6_7_8": "packages/globe-engine/src/paper-texture.mjs → paintPaperEarthMaterial()",
+  "layers_4_5": "packages/globe-engine/src/earth.mjs → applyMaterial()"
+ },
  "loading": {
   "policy": "on-demand",
   "when": "첫 그림(절차적 종이 지구) 뒤에 받아서 재질만 갈아 끼운다 — 첫 화면을 늦추지 않는다",

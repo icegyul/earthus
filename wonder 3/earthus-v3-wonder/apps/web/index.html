@@ -11,6 +11,8 @@
   <link rel="modulepreload" href="../../packages/shared/vendor/three/three-r184.module.min.js">
   <link rel="modulepreload" href="../../packages/shared/vendor/three/three.core.min.js">
   <link rel="preload" as="fetch" type="application/json" crossorigin href="../../content/geo/country-reference.json">
+  <!-- 인라인 아이콘: 선언이 없으면 브라우저가 /favicon.ico 를 찾다가 404 를 내고 콘솔이 더럽혀진다(요청도 0 이 된다). -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23356a90'/%3E%3Cpath d='M6 13c4-3 8-1 12-3s6 1 8-1v9c-3 2-6 0-9 2s-7 0-11 2z' fill='%23949d5d'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./earth.css">
 </head>

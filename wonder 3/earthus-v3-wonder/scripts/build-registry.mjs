@@ -87,7 +87,7 @@ if (bgPack) {
     for (const k of ['id', 'category', 'slug', 'region', 'path', 'width', 'height', 'format', 'bytes', 'version', 'sha256', 'status']) if (b[k] === undefined) bgProblems.push(`배경 필드 없음: ${b.id}.${k}`);
     assets.push({
       id: b.id, kind: 'environment-background', root: 'project', path: b.path, category: b.category, slug: b.slug, region: b.region, geo: b.geo ?? null,
-      width: b.width, height: b.height, format: b.format, bytes: st.size, sha256: hash, version: b.version, status: b.status, productionStatus: b.productionStatus,
+      width: b.width, height: b.height, format: b.format, bytes: st.size, decodedBytes: b.width * b.height * 4, sha256: hash, version: b.version, status: b.status, productionStatus: b.productionStatus,
       safeCropPx: b.safeCropPx, focal: b.focal, source: 'background-pack-v1',
       load: b.status === 'REJECT' ? 'blocked-by-review' : (b.load ?? (b.category === 'world' || b.category === 'atmosphere' ? 'on-demand' : 'region-lazy')),
     });
@@ -109,7 +109,7 @@ if (matPack) {
     if (st.size !== t.bytes) bgProblems.push(`재질 bytes 불일치: ${t.path}`);
     if (hash !== t.sha256) bgProblems.push(`재질 sha256 불일치: ${t.path}`);
     assets.push({ id: t.id, kind: 'paper-material', root: 'project', path: t.path, role: t.role, layer: t.layer,
-      width: t.width, height: t.height, format: t.format, bytes: st.size, sha256: hash, version: matPack.version,
+      width: t.width, height: t.height, format: t.format, bytes: st.size, decodedBytes: t.width * t.height * 4, sha256: hash, version: matPack.version,
       wrap: t.wrap, usedInV1: t.usedInV1, source: 'paper-earth-material-v1', load: 'on-demand' });
   }
   const actual = fs.readdirSync(path.join(ROOT, 'assets', 'material', 'paper-earth')).filter(x => x.endsWith('.webp')).length;

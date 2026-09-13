@@ -61,11 +61,25 @@ z = −cos φ · sin λ
 ## 4-C. Paper Earth 시각 규칙 (2026-09-13 PHASE 1, 승인된 reference)
 
 - 바탕은 **어두운 종이 우주**(방사 그라디언트 + SVG 종이 결 한 겹 + 별 420). 지구가 화면의 유일한 주인공이다.
-- 지구 텍스처는 **자료에서 런타임에 굽는다**(`paper-texture.mjs`, Natural Earth). 그림 파일을 지구에 쓰지 않는다 — Background Pack 후보와 완전히 분리.
+- 지구 텍스처는 **자료에서 런타임에 굽는다**(`paper-texture.mjs`, Natural Earth). **지리를 담은 그림 파일을 지구에 쓰지 않는다** — Background Pack 후보와 완전히 분리. 지리가 없는 종이 재질 견본은 §4-D 가 정한 조건에서만 허용한다(2026-09-13 개정, 그전 문구는 "그림 파일을 지구에 쓰지 않는다" 였다).
 - 층: 바다 → 대륙붕 헤일로 → 그림자 → 생물군 위도 띠(물결 경계) → 종이 두께 → 빛 모서리 → 나라별 옅은 차이 → 자른 단면 → 극지 얼음 → 종이 결. 장식(나무·산줄기·모래)은 **고도 자료가 아니다**.
 - 둘레 장식은 `ambient.mjs` 의 순수 계획으로만 만든다: 별·종이 구름 10장·대륙 이름표 6개. **나라·바다 이름표 금지**(PHASE 2 LOD 의 몫), 대시보드 UI 금지, 중국풍 장식 금지.
 - 개발 표시(로그·PHASE 칩·출처·무대 링크)는 `?debug=1`·`?qa=1` 에서만 보인다.
 - 창이 0×0 이 되어도 카메라 값이 NaN 이 되지 않는다(목표 지름·거리 하한, `resize(0,0)` 무시, `tick` 의 `heal()`). 지구가 사라진 채 남는 경로를 만들지 않는다.
+
+## 4-D. Paper Earth Material 규칙 (2026-09-13, PD "이거 배경으로 적용시켜봐")
+
+지구 표면에 **지리가 없는 종이 재질 견본**을 쓰는 것을 허용한다. §4-C 의 "그림 파일을 지구에 쓰지 않는다" 는 그에 맞춰 "지리를 담은 그림 파일" 로 좁혔다.
+
+- 조건: 팩 manifest 가 `geography_baked: false` · `labels_baked: false` · `characters_baked: false` · `ui_baked: false` 여야 한다. 넷 중 하나라도 true 면 지구에 쓰지 않는다.
+- 위치: `assets/material/paper-earth/`(content/ 밖 독립 콘텐츠). 레지스트리 kind `paper-material` · root `project` · load `on-demand`. 팩 원본 문서·manifest 사본은 같은 폴더에 `*.pack-v1.*` 로 둔다(`docs/` 는 우리가 쓴 문서 자리).
+- 지리는 여전히 Natural Earth 자료가 정한다. 견본을 어디에 붙일지는 `SWATCH_ZONES`(위도 띠 + 5° 페더)가 정하고, 그 배정은 PHASE 2 LOD 에서 실제 자료로 대체한다.
+- 첫 화면에 재질을 받지 않는다. 절차적 종이로 먼저 그리고, 한가할 때 갈아 끼우며, **실패하면 절차적 종이가 남는다**. 굽는 중 손이 지구를 만지고 있으면 미룬다.
+- 굽고 나면 앨비도 견본은 성공·실패 무관하게 `unload` 한다(2048² 디코드가 세션 내내 남지 않게). 노멀·거칠기는 three 재질이 잡는다.
+- 층을 "그렸다"고 보고하기 전에 실제로 그려졌는지 센다(`coverage`). 안 그린 층을 적으면 회귀를 놓친다.
+- `§2` 디렉터리: `assets/` 는 `background/`(지역 배경 후보)와 `material/`(지구 재질) 두 갈래다. `§6` 네트워크 허용에 `assets/material/**` 를 포함한다.
+
+근거·검증: `docs/PAPER_EARTH_MATERIAL_V1_REPORT_2026-09-13.md`.
 
 ## 4-A. 지구 회전 규칙 (LOCKED — 2026-09-13 PD ROTATION RULE LOCK, 원본 = EARTHUS V2)
 

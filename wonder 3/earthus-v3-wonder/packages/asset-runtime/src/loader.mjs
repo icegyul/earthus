@@ -18,7 +18,10 @@ export function createAssetRuntime({ lookup, load, urlOf, base = '', budgetBytes
   const byPath = new Map();     // path → key (stale 판정용)
   const stats = { requests: 0, loads: 0, hits: 0, retries: 0, failures: 0, timeouts: 0, evictions: 0, cancelled: 0, stale: 0 };
 
-  const keyOf = path => { const meta = lookup?.(path); const sha = meta?.sha256 ? meta.sha256.slice(0, 12) : null; return { key: `${path}@${sha ?? '-'}`, sha, bytes: meta?.bytes ?? 0 }; };
+  // 예산은 **메모리에 실제로 남는 크기**로 센다. 그림은 디코드되면 width×height×4 라서 압축 파일 크기로 세면
+  // 실제의 1/30 밖에 안 잡히고 LRU 가 영영 아무것도 안 버린다(2026-09-13 실측: 2048² WebP 68KB → 디코드 16.8MB).
+  const sizeOf = meta => (meta?.decodedBytes ?? (meta?.width > 0 && meta?.height > 0 ? meta.width * meta.height * 4 : 0)) || meta?.bytes || 0;
+  const keyOf = path => { const meta = lookup?.(path); const sha = meta?.sha256 ? meta.sha256.slice(0, 12) : null; return { key: `${path}@${sha ?? '-'}`, sha, bytes: sizeOf(meta), fileBytes: meta?.bytes ?? 0 }; };
   const bytesTotal = () => { let b = 0; for (const e of cache.values()) b += e.bytes; return b; };
 
   function evictToBudget(reserve = 0) {
@@ -44,7 +47,7 @@ export function createAssetRuntime({ lookup, load, urlOf, base = '', budgetBytes
   /** 자산 하나. 같은 경로·같은 해시면 캐시/진행 중 요청을 재사용한다. */
   function get(path, { pin = false } = {}) {
     stats.requests++;
-    const { key, sha, bytes } = keyOf(path);
+    const { key, sha, bytes, fileBytes } = keyOf(path);
     const prevKey = byPath.get(path);
     if (prevKey && prevKey !== key) {        // 레지스트리 해시가 바뀜 → 옛 사본은 stale
       const old = cache.get(prevKey); if (old) { cache.delete(prevKey); old.value?.close?.(); }
@@ -66,7 +69,7 @@ export function createAssetRuntime({ lookup, load, urlOf, base = '', budgetBytes
           const value = await attempt(url, path, signal);
           if (signal.aborted) { stats.cancelled++; value?.close?.(); throw new Error(`cancelled: ${path}`); }
           evictToBudget(bytes);
-          const entry = { path, sha, bytes, value, used: now(), pinned: pin };
+          const entry = { path, sha, bytes, fileBytes, value, used: now(), pinned: pin };
           cache.set(key, entry); byPath.set(path, key);
           return entry;
         } catch (e) { lastErr = e; if (signal.aborted) throw e; }
@@ -83,7 +86,11 @@ export function createAssetRuntime({ lookup, load, urlOf, base = '', budgetBytes
   function pin(path, on = true) { const e = cache.get(keyOf(path).key); if (e) e.pinned = on; return !!e; }
   function unload(path) { const { key } = keyOf(path); const e = cache.get(key); if (!e) return false; cache.delete(key); byPath.delete(path); e.value?.close?.(); return true; }
   function unloadWhere(pred) { let n = 0; for (const [k, e] of [...cache.entries()]) if (pred(e)) { cache.delete(k); byPath.delete(e.path); e.value?.close?.(); n++; } return n; }
-  function status() { return { ...stats, resident: cache.size, residentBytes: bytesTotal(), inflight: inflight.size, budgetBytes }; }
+  function status() {
+    let file = 0; for (const e of cache.values()) file += e.fileBytes ?? 0;
+    // residentBytes = 예산에 쓰는 값(그림은 디코드 크기), residentFileBytes = 받은 파일 크기. 둘을 구분해 내보낸다.
+    return { ...stats, resident: cache.size, residentBytes: bytesTotal(), residentFileBytes: file, inflight: inflight.size, budgetBytes };
+  }
 
   return { get, cancel, has, pin, unload, unloadWhere, evictToBudget, status, _cache: cache };
 }

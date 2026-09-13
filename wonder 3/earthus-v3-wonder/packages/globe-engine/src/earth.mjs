@@ -102,7 +102,9 @@ export function createPaperEarth({ canvas, textureCanvas, pixelRatio = 1, ambien
         x.fillStyle = '#3a3327'; x.textAlign = 'center'; x.textBaseline = 'middle';
         x.fillText(tag.ko, W / 2, 70);
         const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
-        const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, opacity: 0, depthWrite: false }));
+        // depthTest 를 끈다 — 켜 두면 구 가장자리에서 태그가 지구에 잘려 글자가 반만 남는다(2026-09-13 실측). 뒷면은 아래 facing 값으로 가린다.
+        const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, opacity: 0, depthTest: false, depthWrite: false }));
+        sp.renderOrder = 2;
         sp.scale.set(0.42, 0.115, 1); sp.userData = { ...tag };
         labelGroup.add(sp); labelSprites.push(sp); disposables.push(t, sp.material);
       }
@@ -189,7 +191,7 @@ export function createPaperEarth({ canvas, textureCanvas, pixelRatio = 1, ambien
     for (const sp of labelSprites) {
       const u = sp.userData, q = llToVec(u.lat, u.lon, 1);
       const dot = c0.x * q.x + c0.y * q.y + c0.z * q.z;
-      const t = Math.max(0, Math.min(1, (dot - 0.32) / 0.26));
+      const t = Math.max(0, Math.min(1, (dot - 0.46) / 0.22));       // 가장자리(잘려 보이는 자리)에 닿기 전에 사라진다
       sp.material.opacity = pose.step === 0 ? t * 0.92 : 0;
       sp.visible = sp.material.opacity > 0.01;
       if (sp.visible) { const p2 = llToVec(u.lat, u.lon, 1.012); sp.position.set(p2.x, p2.y, p2.z); }

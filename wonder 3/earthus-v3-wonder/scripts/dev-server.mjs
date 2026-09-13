@@ -24,6 +24,24 @@ const MIME = {
 
 // Device Gate 결과 저장: 폰의 QA 오버레이가 [저장] 을 누르면 JSON 이 docs/device-gate/{device|emulated}/ 에 떨어진다(개발 서버 전용).
 const GATE_DIR = path.join(root, 'docs', 'device-gate');
+/** 개발용 화면 저장: {name, dataUrl} → docs/screenshots/<name>.png. 브라우저에서 캔버스를 그대로 받아 파일로 남긴다(PD 에게 보여 주려고). */
+function saveShot(req, res) {
+  let body = '';
+  req.on('data', c => { body += c; if (body.length > 24e6) req.destroy(); });
+  req.on('end', () => {
+    try {
+      const { name = 'shot', dataUrl } = JSON.parse(body);
+      const b64 = String(dataUrl).split(',')[1];
+      const safe = String(name).replace(/[^a-z0-9._-]/gi, '-');
+      const dir = path.join(root, 'docs', 'screenshots'); fs.mkdirSync(dir, { recursive: true });
+      const file = path.join(dir, `${safe}.png`);
+      fs.writeFileSync(file, Buffer.from(b64, 'base64'));
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+      res.end(JSON.stringify({ ok: true, file: path.relative(root, file).split(path.sep).join('/'), bytes: fs.statSync(file).size }));
+    } catch (e) { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: false, error: e.message })); }
+  });
+}
+
 function saveGateResult(req, res) {
   let body = '';
   req.on('data', c => { body += c; if (body.length > 2_000_000) req.destroy(); });
@@ -48,6 +66,7 @@ http.createServer((req, res) => {
   const url = new URL(req.url, 'http://x');
   if (url.pathname === '/') { res.writeHead(302, { Location: '/apps/web/' }); res.end(); return; }
   if (url.pathname === '/qa-result' && req.method === 'POST') return saveGateResult(req, res);
+  if (url.pathname === '/shot' && req.method === 'POST') return saveShot(req, res);   // 개발용: 화면 그림을 docs/screenshots/ 에 저장(배포 빌드에 없는 스크립트다)
   let file = path.normalize(path.join(root, decodeURIComponent(url.pathname)));
   if (!file.startsWith(root)) { res.writeHead(403); res.end(); return; }
   let st = fs.existsSync(file) ? fs.statSync(file) : null;

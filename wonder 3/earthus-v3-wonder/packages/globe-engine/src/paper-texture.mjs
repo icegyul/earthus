@@ -208,36 +208,37 @@ export function paintPaperEarth(canvas, geo, { w = 2048, h = 1024, grain = true,
     paths.push({ path, code: f.code, lat: n ? latSum / n : 0 });
   }
 
-  // ── 3. 대륙붕 헤일로: 땅 밑에 깔린 한 장 더 넓은 종이
-  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-  ctx.strokeStyle = 'rgba(126,186,214,.30)'; ctx.lineWidth = 22 * px; ctx.stroke(landAll);
-  ctx.strokeStyle = 'rgba(150,205,226,.34)'; ctx.lineWidth = 11 * px; ctx.stroke(landAll);
-
-  // ── 4. 땅 그림자: 오른쪽 아래로 밀어 어둡게(오려 붙인 종이가 떠 있는 느낌)
-  ctx.save(); ctx.translate(5 * px, 7 * px); ctx.fillStyle = 'rgba(12,28,40,.34)'; ctx.fill(landAll, 'evenodd'); ctx.restore();
-
-  // ── 5. 땅: 생물군 띠 + 지형 장식을 오프스크린에 그려 땅 모양으로 한 번에 오려 붙인다(클립 1회 — 느려지지 않게)
-  ctx.save();
-  ctx.clip(landAll, 'evenodd');
-  ctx.fillStyle = 'hsl(84 28% 56%)'; ctx.fillRect(0, 0, w, h);
-  if (decor) ctx.drawImage(paintLandLayer(makeScratch(canvas, w, h), w, h, rnd), 0, 0);
-  else { const g2 = ctx.createLinearGradient(0, 0, 0, h); for (let i = 0; i < 41; i++) g2.addColorStop(i / 40, landToneAt(90 - (i / 40) * 180)); ctx.fillStyle = g2; ctx.fillRect(0, 0, w, h); }
-  // 나라별 옅은 색 차이 — 오려 붙인 낱장 느낌(같은 띠 안에서도 살짝 다르게)
+  // ── 3~6. 땅 한 장을 따로 만든다(투명 배경).
+  // 나라마다 선을 그으면 정치 지도가 된다(지시서 §2.1 "평면 지도처럼 보이게 하는 연출" 금지). 그래서 합성 규칙으로 **해안선에만** 긋는다:
+  //   source-atop      → 이미 그린 땅 **위에만** (안쪽 그늘·빛 모서리)
+  //   destination-over → 아직 아무것도 없는 **바깥쪽에만** (자른 단면·대륙붕·그림자) ⇒ 나라 사이 경계에는 닿지 않는다
+  const landC = makeScratch(canvas, w, h);
+  const lc = landC.getContext('2d');
+  lc.save();
+  lc.clip(landAll, 'evenodd');
+  lc.fillStyle = 'hsl(84 28% 56%)'; lc.fillRect(0, 0, w, h);
+  if (decor) lc.drawImage(paintLandLayer(makeScratch(canvas, w, h), w, h, rnd), 0, 0);
+  else { const g2 = lc.createLinearGradient(0, 0, 0, h); for (let i = 0; i < 41; i++) g2.addColorStop(i / 40, landToneAt(90 - (i / 40) * 180)); lc.fillStyle = g2; lc.fillRect(0, 0, w, h); }
+  // 나라별 옅은 색 차이 — 오려 붙인 낱장 느낌(선이 아니라 색으로만 구분된다)
   for (const p of paths) {
     const t = paperTone(p.code, p.lat);
-    ctx.fillStyle = `hsl(${(360 + 40 + t.hueShift * 3) % 360} 30% ${58 + t.lightShift}%)`;
-    ctx.globalAlpha = t.alpha; ctx.fill(p.path, 'evenodd');
+    lc.fillStyle = `hsl(${(360 + 40 + t.hueShift * 3) % 360} 30% ${58 + t.lightShift}%)`;
+    lc.globalAlpha = t.alpha; lc.fill(p.path, 'evenodd');
   }
-  ctx.globalAlpha = 1;
-  // 종이 두께: 해안 안쪽에 드리우는 그늘
-  ctx.strokeStyle = 'rgba(35,45,25,.20)'; ctx.lineWidth = 9 * px; ctx.stroke(landAll);
-  // 빛 받는 모서리: 왼쪽 위로 밀어 밝게(안쪽만 보인다)
-  ctx.save(); ctx.translate(-2.5 * px, -3.5 * px); ctx.strokeStyle = 'rgba(255,250,232,.34)'; ctx.lineWidth = 5 * px; ctx.stroke(landAll); ctx.restore();
-  ctx.restore();
-
-  // ── 6. 자른 단면: 가는 어두운 선
-  ctx.lineWidth = 1.4 * px; ctx.strokeStyle = 'rgba(62,52,28,.55)';
-  for (const p of paths) ctx.stroke(p.path);
+  lc.globalAlpha = 1;
+  lc.restore();
+  lc.lineJoin = 'round'; lc.lineCap = 'round';
+  lc.globalCompositeOperation = 'source-atop';                       // 땅 위에만
+  // 이 둘은 나라 경계에도 닿는다(합성으로 해안만 고를 수 없다) — 낱장이 맞닿은 옅은 접힘 정도로만 남기고, 해안의 또렷함은 아래 바깥쪽 선이 맡는다.
+  lc.strokeStyle = 'rgba(35,45,25,.10)'; lc.lineWidth = 9 * px; lc.stroke(landAll);                                   // 종이 두께(해안 안쪽 그늘)
+  lc.save(); lc.translate(-2.5 * px, -3.5 * px); lc.strokeStyle = 'rgba(255,250,232,.14)'; lc.lineWidth = 5 * px; lc.stroke(landAll); lc.restore();   // 빛 받는 모서리
+  lc.globalCompositeOperation = 'destination-over';                  // 땅 바깥에만 = 해안선
+  lc.strokeStyle = 'rgba(52,44,24,.5)'; lc.lineWidth = 3.4 * px; lc.stroke(landAll);                                   // 자른 단면
+  lc.strokeStyle = 'rgba(150,205,226,.34)'; lc.lineWidth = 12 * px; lc.stroke(landAll);                                // 대륙붕 안쪽
+  lc.strokeStyle = 'rgba(126,186,214,.30)'; lc.lineWidth = 24 * px; lc.stroke(landAll);                                // 대륙붕 바깥
+  lc.save(); lc.translate(5 * px, 7 * px); lc.fillStyle = 'rgba(12,28,40,.34)'; lc.fill(landAll, 'evenodd'); lc.restore();   // 떠 있는 종이 그림자
+  lc.globalCompositeOperation = 'source-over';
+  ctx.drawImage(landC, 0, 0);
 
   // ── 7. 극지 얼음(바다까지 덮는 만년빙). 아래 끝은 물결 — 자른 종이처럼.
   for (const dir of [1, -1]) {

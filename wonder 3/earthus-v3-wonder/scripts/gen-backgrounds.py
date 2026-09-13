@@ -38,15 +38,15 @@ SCENES = {
     'night_01':          ('atmosphere', 'night landscape in paper, navy sky, paper full moon and stars, two layers of low hill silhouettes, dark meadow ground in a mid tone'),
     'sunset_01':         ('atmosphere', 'sunset over the sea in paper, layered orange pink purple sky bands, sea horizon, calm water ground'),
     'australia_01':      ('region',     'Australian outback in paper, red desert plain with a big rounded rock like Uluru, sparse shrubs, red earth ground'),
-    'cave_01':           ('region',     'inside a cave in paper, stalactites and stalagmites layers, one beam of light from above, dark cave walls, flat lit floor ground'),
+    'cave_01':           ('region',     'FULL:flat layered papercraft illustration of the inside of a dark cavern, the whole picture is underground rock: layered dark brown and grey cut-paper rock walls, paper stalactites hanging from the top edge, paper stalagmites rising at the left and right sides, one soft warm light beam falling from a small hole in the ceiling onto a flat lit cave floor that spans the lower third, matte paper textures, 2.5D paper art, wide 16:9, edge to edge, no sky, no clouds, no hills, no trees, no plants, no outside landscape, no cave mouth, no window, no frame, no border, no text, no letters, no watermark, no people, no animals'),
     'coast_01':          ('region',     'cliff coast in paper, layered cliffs at the sides, wave layers, open sea in the middle, wet sand ground'),
     'desert_01':         ('region',     'southwest desert in paper, flat-topped red mesa rocks in the distance, a few cacti at the sides, pale sand plain ground'),
     'forest_01':         ('region',     'temperate forest in paper, layers of conifer and broadleaf trees, an open path through the middle, dirt path and leaves ground'),
     'grassland_01':      ('region',     'rolling green grassland in paper, three layers of hills, sky with clouds, grass ground'),
-    'ice_01':            ('region',     'Antarctic ice shelf in paper, ice cliffs and a few icebergs, pale sky, pale blue-grey snow ground'),
+    'ice_01':            ('region',     'FULL:flat layered papercraft illustration of Antarctica, pale sky with a few paper clouds, a long white and pale blue ice shelf cliff across the middle, a few paper icebergs floating on dark blue water, a flat pale blue-grey snow band across the lower third, matte paper textures, 2.5D paper art, wide 16:9, edge to edge, only ice snow water and sky, no trees, no plants, no rocks, no mountains, no frame, no border, no text, no letters, no watermark, no people, no animals'),
     'island_01':         ('region',     'tropical island in paper, turquoise shallow sea, a small island with palm trees at the sides, light beige sand beach ground'),
     'jungle_01':         ('region',     'Amazon rainforest in paper, big leaf layers, thick trees, a river and mist behind, riverbank soil ground'),
-    'ocean_01':          ('region',     'open ocean in paper, layered wave paper, horizon, clouds, no land, calm water ground'),
+    'ocean_01':          ('region',     'FULL:flat layered papercraft illustration of the open ocean, pale sky with a few paper clouds in the upper half, a straight horizon at the middle, below it many straight horizontal bands of blue cut-paper waves getting lighter toward the bottom, small wave crests, calm water band across the lower third, matte paper textures, 2.5D paper art, wide 16:9, edge to edge, only sky and sea, no land, no hills, no island, no trees, no boat, no frame, no border, no text, no letters, no watermark, no people, no animals, no fish'),
     'sahara_01':         ('region',     'Sahara dunes in paper, large sand dune layers, a tiny oasis with palms far away at the side, sand ground'),
     'savanna_01':        ('region',     'Serengeti savanna in paper, yellow grassland, two or three acacia trees at the sides, a snow-capped mountain silhouette in the far distance, dry grass ground'),
     'tajmahal_01':       ('region',     'Taj Mahal in paper, white marble domed mausoleum in the middle distance above the horizon, long reflecting pool and gardens, garden path ground'),
@@ -69,7 +69,7 @@ def generate(id_, seed):
     for k, v in wf.items():
         ins = v.get('inputs', {})
         for key, val in list(ins.items()):
-            if val == 'PARAM_PROMPT': ins[key] = STYLE.format(scene=SCENES[id_][1])
+            if val == 'PARAM_PROMPT': ins[key] = SCENES[id_][1][5:] if SCENES[id_][1].startswith('FULL:') else STYLE.format(scene=SCENES[id_][1])
             elif val == 'PARAM_INT_WIDTH': ins[key] = W
             elif val == 'PARAM_INT_HEIGHT': ins[key] = H
             elif val == 'PARAM_INT_SEED': ins[key] = seed
@@ -103,7 +103,7 @@ for i, id_ in enumerate(ids):
     webp_path = os.path.join(OUT, f'{id_}.webp'); im.save(webp_path, 'WEBP', quality=85, method=6)
     b = os.path.getsize(webp_path)
     cand['candidates'][id_] = {'class': SCENES[id_][0], 'status': 'candidate', 'production_approved': False, 'visual_review': 'pending', 'seed': seed, 'model': 'z_image_turbo_int8 (local ComfyUI)', 'seconds': secs,
-                               'png': f'png/{id_}.png', 'webp': f'{id_}.webp', 'bytes': b, 'size': [W, H], 'prompt': STYLE.format(scene=SCENES[id_][1])}
+                               'png': f'png/{id_}.png', 'webp': f'{id_}.webp', 'bytes': b, 'size': [W, H], 'prompt': (SCENES[id_][1][5:] if SCENES[id_][1].startswith('FULL:') else STYLE.format(scene=SCENES[id_][1]))}
     print(f'  {id_:20s} {secs:6.1f}s  webp {b//1024}KB  {"OK ≤500KB" if b <= 512000 else "⚠ 크기 초과"}')
     json.dump(cand, open(manifest_path, 'w', encoding='utf-8', newline='\n'), ensure_ascii=False, indent=2)
 print(f'✓ {len(ids)}장 → {OUT} (candidates.json). 승인 아님 — 접촉 시트로 눈 검수 뒤 PD 결정.')

@@ -44,6 +44,7 @@ python scripts/convert-characters-webp.py                 # 레거시 pack124 PN
 - **개발 기준 문서: `docs/MASTER_DEVELOPMENT_DIRECTIVE.md`** (2026-09-13 편입, 원본과 SHA-256 `e41a6652…ca95` 동일, 18,656 B). 현재 골격과의 차이는 `docs/MASTER_DIRECTIVE_RECONCILIATION.md`
 - PHASE 1 시작 조건 `docs/PHASE1_READINESS.md` 7/7 PASS → 착수 전 점검 `docs/PHASE1_PRESTART_CHECK.md` 6/6 → **PHASE 1 Paper Earth 보고서 `docs/PHASE1_PAPER_EARTH_REPORT_2026-09-13.md`** (커밋 `71e1b3c4`, Device Verified 0)
 - 화면: `apps/web/` = 종이 지구(PHASE 1) · `apps/web/stage/` = 캐릭터 무대(PHASE 0). 엔진 `packages/globe-engine/`, three.js `packages/shared/vendor/three/`
+- **PHASE 1-D Visual Polish + Device Gate 보고서 `docs/PHASE1D_VISUAL_DEVICE_GATE_REPORT_2026-09-13.md`** — 배경 24 검사(팩 불합격, 후보 24장 제작·승인 대기), 카드 REGION/CHARACTER/STORY, 실기기 QA 하네스(`?qa=1`, `--lan`, `docs/DEVICE_GATE_CHECKLIST.md`), 전기뱀장어 검증. **Device 0, 배경 승인 0.**
 - **PHASE 1-C Interaction · Story Card · Earth Return 보고서 `docs/PHASE1C_INTERACTION_STORY_REPORT_2026-09-13.md`** (커밋 `e1a0e1ff`, 44 tests, 3지역 e2e: 탭·꾹·special·뿡 자격·스토리 카드·복귀, 재방문 네트워크 0, Device 0). 스토리 `content/stories/stories.json`
 - **PHASE 1-B Region Entry · Unfold · Wonder Environment 보고서 `docs/PHASE1B_WONDER_ENVIRONMENT_REPORT_2026-09-13.md`** (커밋 `77498fd9`, 41 tests, 3지역 end-to-end 브라우저 검증, Device 0). 패키지 `wonder-environment`(흐름 상태기·카탈로그) · `asset-runtime`(해시 로더·재시도·LRU 30MB·stale). 콘텐츠 `content/environments/`, `content/landmarks/`, `content/characters/thumb/`
 - `docs/BUILD_DIRECTIVE_DRAFT_v0.md` 는 **SUPERSEDED** (Master Directive 도착 전 초안, 기록용)

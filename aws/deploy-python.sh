@@ -128,31 +128,16 @@ find "$TMP" -type d \( -name tests -o -name test -o -name __pycache__ \) -prune 
 find "$TMP" -maxdepth 1 -name "test_*.py" -delete 2>/dev/null || true
 find "$TMP" -name "*.pyc" -delete 2>/dev/null || true
 
-# ⚠️ Git Bash(Windows)에는 zip이 기본으로 없다(tar만 있음, 실측 2026-09-02).
-#    Lambda는 .zip만 받으므로 tar로 대체할 수 없다 — 있으면 zip, 없으면
-#    python zipfile로 만든다. 파일 모드를 0o644로 강제해야 한다: Windows에는
-#    유닉스 권한 개념이 없어 zipfile이 기본으로 0(추출 시 000)을 넣고,
-#    Lambda가 그 상태로 풀면 .so를 읽지 못해 함수가 임포트 단계에서 죽는다.
+# ── zip 만들기 — 규칙은 lambda_package.py 한 곳에 있다 ───────────────────────
+# ⚠️ 예전에는 여기 두 갈래가 있었다: `zip` 명령이 있으면 `zip -qr`, 없으면 인라인 python.
+#    그래서 **같은 나무가 기계마다 다른 바이트**가 됐다. 2026-09-13 실측 — 같은 stage 에서
+#    CodeSha256 이 세 가지 나왔다(전부 114,592 바이트, 파일별 내용은 동일):
+#      os.walk 순서 B2xXACpt… / 디렉터리별 정렬 y5J67pVZ… / 전역 정렬+create_system 3Izx…
+#    해시가 재현되지 않으면 "운영에 올라간 것이 내가 만든 그것인가"를 물을 수 없다.
+#    구성원 정렬·mtime·0o644·create_system·압축 수준을 build_zip 이 못 박는다.
 rm -f /tmp/${FN}.zip
-if command -v zip >/dev/null 2>&1; then
-  (cd "$TMP" && zip -qr /tmp/${FN}.zip .)
-else
-  echo "▸ zip 없음 — python으로 패키징"
-  "$PYBIN" - "$TMP" "/tmp/${FN}.zip" <<'PYZIP'
-import os, sys, zipfile
-src, out = sys.argv[1], sys.argv[2]
-with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zf:
-    for root, _, files in os.walk(src):
-        for name in files:
-            path = os.path.join(root, name)
-            arcname = os.path.relpath(path, src)
-            zi = zipfile.ZipInfo(arcname)
-            zi.external_attr = (0o644 << 16)
-            zi.compress_type = zipfile.ZIP_DEFLATED
-            with open(path, "rb") as f:
-                zf.writestr(zi, f.read())
-PYZIP
-fi
+"$PYBIN" "$PKGTOOL" zip "$TMP" "/tmp/${FN}.zip" --manifest "/tmp/${FN}.zip.manifest.json"
+
 SIZE=$(du -m /tmp/${FN}.zip | cut -f1)
 echo "▸ 패키지: ${SIZE}MB (직접 업로드 한도 50MB)"
 [ "$SIZE" -lt 50 ] || { echo "❌ 50MB 초과 — S3 경유 업로드 필요"; exit 1; }

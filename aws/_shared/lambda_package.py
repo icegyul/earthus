@@ -28,12 +28,16 @@ zip 루트가 sys.path 다 — 평평하게 넣어야 한다
   전이 의존(`_shared` 모듈이 다른 `_shared` 모듈을 부르는 경우)까지 닫는다.
 """
 import argparse
+import ast
 import json
 import os
 import re
 import shutil
+import base64
+import hashlib
 import subprocess
 import sys
+import zipfile
 
 SCHEMA = "earthus.lambda-package/1"
 
@@ -42,6 +46,119 @@ SKIP_DIRS = ("tests", "test", "__pycache__", "contracts", ".pytest_cache")
 
 # Lambda 런타임이 이미 갖고 있어 zip 에 넣지 않는 것. 없다고 실패로 보지 않는다.
 RUNTIME_PROVIDED = ("boto3", "botocore", "urllib3", "s3transfer", "jmespath", "dateutil", "six")
+
+# ── 결정적 ZIP — 같은 나무는 같은 CodeSha256 ─────────────────────────────────
+# 왜 필요한가 (2026-09-13 실측): 같은 stage 에서 세 가지 해시가 나왔다. 전부 114,592 바이트,
+# 파일별 내용까지 동일한데 **바이트가 달랐다.**
+#     B2xXACptGf7rtcUYZ6Or3l0yYXAp7kISMrdnTwNopug=   os.walk 순서 그대로
+#     y5J67pVZM8o8TOtizP9Al/ZoxqJgpdbZ8UgX1HxZxHk=   디렉터리별로만 정렬
+#     3IzxRWaKNUUwRAIMEhEfUYiZS6hOplE7fsWSXOsbWnQ=   전역 정렬 + create_system 고정
+# 해시가 재현되지 않으면 "지금 운영에 올라간 것이 내가 만든 그것인가"를 물을 수 없다.
+#
+# 비결정 요인과 처리
+#   구성원 순서    os.walk 는 파일시스템 순서다 → **arcname 바이트로 전역 정렬**
+#   mtime          ZipInfo(name) 의 기본이 (1980,1,1,0,0,0) 으로 이미 고정이지만 명시한다
+#   파일 모드      윈도우는 권한 개념이 없어 zipfile 기본이 0 이고, 그대로 풀면 000 이 되어
+#                  Lambda 가 .so 를 못 읽는다 → 0o644 강제 (deploy-python.sh 가 기록한 사고)
+#   create_system  **윈도우 0 / POSIX 3.** 고정하지 않으면 같은 나무가 OS 마다 다른 해시가 된다
+#                  (실측: 0 → J1UprNja5WTZIWB0/+abb6D7oHMy23DIYf4+wqiPbuo=)
+#   압축 수준      zlib 기본값은 구현에 따라 달라질 수 있어 숫자로 못 박는다
+#   디렉터리 항목  넣지 않는다 — 있으면 바이트가 늘고 Lambda 에 필요도 없다
+#   바이트코드     .pyc/.pyo 는 넣지 않는다 (같은 소스에서도 내용이 달라진다)
+ZIP_DATE_TIME = (1980, 1, 1, 0, 0, 0)
+ZIP_FILE_MODE = 0o644
+ZIP_CREATE_SYSTEM = 3          # 3 = POSIX. Lambda 가 도는 곳이다.
+ZIP_COMPRESSLEVEL = 6
+ZIP_SKIP_SUFFIXES = (".pyc", ".pyo")
+
+
+def zip_members(stage_dir):
+    """zip 에 들어갈 (arcname, 실제경로) 목록. **arcname 바이트 순으로 정렬한다.**
+
+    정렬 기준을 str 이 아니라 utf-8 바이트로 두는 이유: 로케일에 따라 str 비교 순서가
+    달라질 수 있고, zip 안에 남는 것은 바이트다. 비교도 바이트로 한다.
+    """
+    members = []
+    for root, dirs, files in os.walk(stage_dir):
+        dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
+        for name in files:
+            if name.endswith(ZIP_SKIP_SUFFIXES):
+                continue
+            full = os.path.join(root, name)
+            arcname = os.path.relpath(full, stage_dir).replace(os.sep, "/")
+            members.append((arcname, full))
+    members.sort(key=lambda pair: pair[0].encode("utf-8"))
+    seen = {}
+    for arcname, full in members:
+        if arcname in seen:
+            raise ValueError("zip 안에서 이름이 겹친다: %s (%s · %s)"
+                             % (arcname, seen[arcname], full))
+        seen[arcname] = full
+    return members
+
+
+def content_digest(members):
+    """**내용만**의 지문. 압축·순서·메타데이터와 무관하다.
+
+    CodeSha256 은 zip 바이트의 해시이므로 압축 구현이 바뀌면 값이 바뀐다.
+    "같은 코드인가"를 물을 때는 이쪽이 답한다.
+    """
+    h = hashlib.sha256()
+    for arcname, full in members:
+        h.update(arcname.encode("utf-8"))
+        h.update(b"\0")
+        with open(full, "rb") as fh:
+            h.update(hashlib.sha256(fh.read()).hexdigest().encode("ascii"))
+        h.update(b"\n")
+    return h.hexdigest()
+
+
+def build_zip(stage_dir, out_path, *, date_time=ZIP_DATE_TIME, mode=ZIP_FILE_MODE,
+              create_system=ZIP_CREATE_SYSTEM, compresslevel=ZIP_COMPRESSLEVEL):
+    """staged 나무를 **결정적** zip 으로 만든다. 돌려주는 것: 매니페스트.
+
+    `deploy-python.sh` 와 시험이 이 함수를 부른다 — 규칙이 두 곳에 있으면 한쪽만 고쳐진다.
+    인자를 노출하는 것은 시험이 "고정하지 않으면 달라진다"를 보일 수 있게 하기 위해서다.
+    """
+    members = zip_members(stage_dir)
+    # ⚠️ 이름 겹침은 **여기서도** 본다. zip_members 안에만 두면 구성원 목록을 다른 데서
+    #    만들어 넣는 순간 검사가 사라진다. zipfile 은 겹친 이름을 경고만 하고 둘 다 쓴다 —
+    #    그러면 Lambda 가 어느 쪽을 import 할지 알 수 없다.
+    names = [arcname for arcname, _ in members]
+    if len(names) != len(set(names)):
+        duplicated = sorted({n for n in names if names.count(n) > 1})
+        raise ValueError("zip 안에서 이름이 겹친다: %s" % ", ".join(duplicated))
+    with zipfile.ZipFile(out_path, "w", zipfile.ZIP_DEFLATED,
+                         compresslevel=compresslevel) as zf:
+        for arcname, full in members:
+            info = zipfile.ZipInfo(arcname, date_time=date_time)
+            info.external_attr = (mode & 0o7777) << 16
+            info.create_system = create_system
+            info.compress_type = zipfile.ZIP_DEFLATED
+            # ⚠️ **ZipInfo 에 직접 박아야 한다.** `ZipFile(..., compresslevel=N)` 은
+            #    arcname 문자열을 넘길 때만 쓰이고, 이렇게 ZipInfo 를 만들어 넘기면
+            #    `zinfo._compresslevel`(기본 None) 이 이겨서 zlib 기본값으로 압축된다.
+            #    실측 2026-09-13 — 고치기 전에는 level 0·1·3·6·9 가 **전부 같은 바이트**였다.
+            #    즉 수준이 고정된 게 아니라 아예 전달되지 않았다. zlib 구현이 기본값을
+            #    바꾸면 해시가 조용히 달라진다.
+            info._compresslevel = compresslevel
+            with open(full, "rb") as fh:
+                zf.writestr(info, fh.read())
+    blob_hash = hashlib.sha256()
+    size = 0
+    with open(out_path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            blob_hash.update(chunk)
+            size += len(chunk)
+    return {
+        "schema": SCHEMA,
+        "path": out_path,
+        "bytes": size,
+        "count": len(members),
+        "codeSha256": base64.b64encode(blob_hash.digest()).decode("ascii"),
+        "contentDigest": content_digest(members),
+        "members": [arcname for arcname, _ in members],
+    }
 
 
 def _is_skipped(path):
@@ -75,6 +192,64 @@ def _imports(paths, module):
     return False
 
 
+def cross_function_files(function_dir, shared_dir):
+    """`os.path.join(_AWS, "<함수>", …, "<파일>.py")` 로 **경로로 직접 읽는** 다른 함수의 파일.
+
+    왜 이런 관용구가 있나: `sys.path` 에 다른 함수 폴더를 넣으면 같은 이름의 패키지가 서로를
+    가린다. `aws/distribution/sources/verify_scorecard.py` 의 `_load` 주석이 그 사고를 적고 있다
+    (`ImportError: cannot import name 'lab_report_adapter'`). 그래서 경로로 읽는다.
+
+    문제는 Lambda 다. zip 이 `/var/task` 로 풀리므로 `_AWS` 는 `/var` 가 되고
+    그 경로는 패키지 **밖**이다 — 안에서 만족시킬 수 없다
+    (docs/DISTRIBUTION_DEPLOYMENT_GAP.md §4).
+
+    그래서 그 파일을 **zip 루트에 평평하게** 넣어 준다. 읽는 쪽은 패키지 안을 먼저 보고
+    없으면 저장소 경로로 떨어진다.
+
+    ⚠️ 목록을 손으로 적지 않는다. `ast` 로 그 관용구를 찾는다 — 문자열 검색이 아니라 구문 해석이라
+       주석·문자열 안의 같은 글자에 걸리지 않는다. 새로 같은 관용구가 생기면 자동으로 따라온다.
+    """
+    aws_root = os.path.dirname(os.path.abspath(shared_dir))
+    found = {}
+    for path in source_files(function_dir):
+        try:
+            with open(path, encoding="utf-8", errors="ignore") as handle:
+                tree = ast.parse(handle.read(), filename=path)
+        except (OSError, SyntaxError):
+            continue
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call) or len(node.args) < 2:
+                continue
+            if not _is_os_path_join(node.func):
+                continue
+            first, rest = node.args[0], node.args[1:]
+            if not (isinstance(first, ast.Name) and first.id == "_AWS"):
+                continue
+            if not all(isinstance(a, ast.Constant) and isinstance(a.value, str) for a in rest):
+                continue
+            parts = [a.value for a in rest]
+            if not parts[-1].endswith(".py"):
+                continue                     # `_shared` 같은 디렉터리 경로는 대상이 아니다
+            relative = "/".join(parts)
+            source = os.path.join(aws_root, *parts)
+            if os.path.isfile(source):
+                found[parts[-1]] = relative
+    return dict(sorted(found.items()))
+
+
+def _is_os_path_join(func):
+    """`os.path.join` 호출인지 — `join` / `path.join` / `os.path.join` 을 모두 받는다."""
+    names = []
+    node = func
+    while isinstance(node, ast.Attribute):
+        names.append(node.attr)
+        node = node.value
+    if isinstance(node, ast.Name):
+        names.append(node.id)
+    names.reverse()
+    return names[-1:] == ["join"] and (len(names) == 1 or names[-2:] == ["path", "join"])
+
+
 def shared_closure(function_dir, shared_dir):
     """이 함수가 실제로 필요한 `_shared` 모듈 이름 — 전이 의존까지 닫는다.
 
@@ -84,7 +259,12 @@ def shared_closure(function_dir, shared_dir):
     available = sorted(
         name[:-3] for name in os.listdir(shared_dir)
         if name.endswith(".py") and name != "__init__.py")
-    needed, scan = [], list(source_files(function_dir))
+    aws_root = os.path.dirname(os.path.abspath(shared_dir))
+    # 경로로 읽는 다른 함수 파일도 훑는다 — 그 파일의 _shared import 가 빠지면 런타임에 죽는다.
+    scan = list(source_files(function_dir)) + [
+        os.path.join(aws_root, *relative.split("/"))
+        for relative in cross_function_files(function_dir, shared_dir).values()]
+    needed = []
     while True:
         added = False
         for module in available:
@@ -120,6 +300,8 @@ def plan(function_dir, shared_dir):
         "topLevelModules": top,
         "sharedModules": shared_closure(function_dir, shared_dir),
         "subPackages": sub_packages(function_dir),
+        # 경로로 읽는 다른 함수 파일 → zip 루트에 평평하게 (파일이름: 저장소 상대경로)
+        "crossFunctionFiles": cross_function_files(function_dir, shared_dir),
     }
 
 
@@ -135,6 +317,13 @@ def stage(function_dir, shared_dir, dest):
             raise FileNotFoundError(f"_shared/{module}.py 가 없다: {source}")
         # 평평하게. _shared/ 하위로 넣으면 Lambda 의 경로 계산이 여전히 못 찾는다.
         shutil.copy2(source, os.path.join(dest, module + ".py"))
+    aws_root = os.path.dirname(os.path.abspath(shared_dir))
+    for name, relative in staged["crossFunctionFiles"].items():
+        source = os.path.join(aws_root, *relative.split("/"))
+        if not os.path.isfile(source):
+            raise FileNotFoundError(f"경로로 읽는 파일이 없다: {source}")
+        # 평평하게. 읽는 쪽이 패키지 루트를 먼저 본다.
+        shutil.copy2(source, os.path.join(dest, name))
     for package in staged["subPackages"]:
         target = os.path.join(dest, package)
         if os.path.isdir(target):
@@ -164,6 +353,9 @@ def missing_own_modules(dest, function_dir, shared_dir):
     for package in planned["subPackages"]:
         if not os.path.isdir(os.path.join(dest, package)):
             missing.append(package)
+    for name in planned["crossFunctionFiles"]:
+        if not os.path.isfile(os.path.join(dest, name)):
+            missing.append(name[:-3])
     return sorted(set(missing))
 
 
@@ -300,6 +492,11 @@ def main(argv=None):
             sub.add_argument("dest")
         if name == "verify":
             sub.add_argument("--module", default="handler")
+    # zip 은 함수 폴더를 보지 않는다 — 이미 staged 된 나무만 본다.
+    zip_cmd = commands.add_parser("zip")
+    zip_cmd.add_argument("stage_dir")
+    zip_cmd.add_argument("out_path")
+    zip_cmd.add_argument("--manifest", help="매니페스트를 JSON 으로 쓸 곳")
     args = parser.parse_args(argv)
 
     if args.command == "plan":
@@ -311,6 +508,17 @@ def main(argv=None):
             print(f"  · _shared/{module}.py 동봉")
         for package in staged["subPackages"]:
             print(f"  · {package}/ 패키지 동봉")
+        for name, relative in staged["crossFunctionFiles"].items():
+            print(f"  · {relative} → {name} 동봉 (경로로 읽는 파일)")
+        return 0
+
+    if args.command == "zip":
+        manifest = build_zip(args.stage_dir, args.out_path)
+        print("  · 구성원 %d개 · %s바이트 · CodeSha256 %s"
+              % (manifest["count"], format(manifest["bytes"], ","), manifest["codeSha256"]))
+        if args.manifest:
+            with open(args.manifest, "w", encoding="utf-8") as fh:
+                json.dump(manifest, fh, ensure_ascii=False, indent=1)
         return 0
 
     result = verify(args.function_dir, args.shared_dir, args.dest, args.module)

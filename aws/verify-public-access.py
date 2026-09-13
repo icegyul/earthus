@@ -40,6 +40,19 @@ BASE = "https://%s.s3.%s.amazonaws.com" % (BUCKET, REGION)
 PROBE_KEY = "_integration3-bypass-probe/anyone-can-write.txt"
 TIMEOUT = 15
 
+# 기대값 어휘
+#   OPEN    200 이어야 한다
+#   CLOSED  열려 있지 않아야 한다. **부재(404)도 통과로 센다** — 지워야 할 잔존물처럼
+#           "없는 것이 목표"인 줄에만 쓴다.
+#   DENIED  실제로 403 이어야 한다. 부재는 통과가 아니다 — 시스템이 **쓰는** 키에 쓴다.
+#
+# ⚠️⚠️ 403 은 "보호되고 있다"와 "아예 없다"를 구별하지 못한다. 익명 HTTP 로는 구별할 수
+#    없다(2026-09-13 실측: 비공개 접두사는 존재 여부와 무관하게 403, 공개 접두사도
+#    익명에 ListBucket 이 없어 없는 키에 403 을 준다). 그래서 DENIED 통과가 말해 주는
+#    것은 **"익명으로 읽히지 않는다"**까지다. "보호된 객체가 거기 있다"는 뜻이 아니다.
+#    그 이상을 알려면 자격증명으로 존재를 따로 확인해야 한다 — 이 스크립트의 범위 밖이다.
+ABSENT_PASSES = ("CLOSED",)          # 부재를 통과로 세는 기대값. DENIED 는 여기 없다.
+
 # (키, 무엇이어야 하나, 왜)
 READ_PROBES = (
     ("app/index.html",                    "OPEN",   "앱이 열려야 한다"),
@@ -47,7 +60,14 @@ READ_PROBES = (
     #    지워야 할 **잔존물**이다 — 지워지기 전까지 이 줄은 FAIL 로 남는다.
     ("events/social-drafts.json",         "CLOSED", "SNS 초안(옛 자리) — 지워야 할 잔존물"),
     ("archive/social-drafts.json",        "CLOSED", "SNS 초안(새 자리) — 비공개여야 한다"),
-    ("events/distribution-content.json",  "CLOSED", "배포 후보 색인 — 승인 전이다"),
+    # ⚠️ 람다는 이제 archive/ 에 쓴다. events/ 쪽은 **만들어진 적이 없어야 하는** 자리다.
+    ("events/distribution-content.json",  "CLOSED", "배포 후보 색인(옛 공개 자리) — 생기면 안 된다"),
+    ("events/distribution-content/CNT-2026-000001.json",
+                                          "CLOSED", "배포 후보 본문(옛 공개 자리) — 생기면 안 된다"),
+    # 이 둘이 람다의 실제 출력이다. 부재로는 통과시키지 않는다.
+    ("archive/distribution-content.json", "DENIED", "배포 후보 색인 — 승인 전이다"),
+    ("archive/distribution-content/CNT-2026-000001.json",
+                                          "DENIED", "배포 후보 본문 — status=DRAFT 다"),
     ("archive/",                          "CLOSED", "보관 경로는 비공개다"),
     ("app/supabase/schema.sql",           "CLOSED", "DB 스키마"),
     ("app/README.md",                     "CLOSED", "저장소 안쪽 문서"),
@@ -63,6 +83,16 @@ def _status(url, method="GET", data=None):
 
     ⚠️ 403 과 404 를 뭉치지 않는다. 403 은 "있지만 못 읽는다", 404 는 "없다" 다.
        청소가 끝났는지 보려면 그 둘을 구분해야 한다 — 404 만이 지워졌다는 뜻이다.
+
+       ⚠️ 2026-09-13 실측으로 **정정**: 403 은 "있지만 못 읽는다"를 뜻하지 않는다.
+          익명에게 s3:ListBucket 이 없으면 S3 는 없는 키에도 403 을 준다(존재를 숨기려고).
+          공개 접두사인 events/ 에서도 그랬다.
+            events/crustal.json                     200  실제로 있고 공개
+            events/definitely-not-a-real-key….json  403  없는데 403
+            archive/ 아래 전부                       403  있든 없든 403
+          그래서 403 이 말해 주는 것은 "익명으로 읽히지 않는다"까지다. 404 는 그 키가
+          없다는 뜻이 맞지만, 404 가 안 나온다고 있는 것도 아니다.
+          존재를 알아야 하면 자격증명으로 따로 확인한다 — 이 스크립트의 범위 밖이다.
     """
     req = urllib.request.Request(url, method=method, data=data)
     try:
@@ -86,9 +116,18 @@ def read_probe(key, want, why):
         state = "ABSENT"          # 아예 없다 — 지워졌거나 만든 적이 없다
     else:
         state = "UNKNOWN"
-    ok = (state == want) or (want == "CLOSED" and state == "ABSENT")
+    # 예전에는 `(want == "CLOSED" and state == "ABSENT")` 가 모든 기대값에 붙어 있었다.
+    # 부재가 곧 통과였다 — **검증 대상이 없으면 검증이 통과한다.** 기대값별로 나눈다.
+    ok = (state == want) or (want in ABSENT_PASSES and state == "ABSENT")
+    if want == "DENIED":
+        ok = (state == "CLOSED")
     return {"key": key, "want": want, "state": state, "http": code,
-            "ok": ok, "why": why, "note": note}
+            "ok": ok, "why": why, "note": note,
+            # 무엇이 증명됐는지 적어 둔다. 403 은 "익명으로 안 읽힌다"까지만 말한다.
+            "proves": ("익명으로 읽히지 않는다 (객체 존재 여부는 이것으로 알 수 없다)"
+                       if state == "CLOSED" else
+                       "익명으로 읽힌다" if state == "OPEN" else
+                       "그 자리에 객체가 없다" if state == "ABSENT" else None)}
 
 
 def write_probe():
@@ -255,8 +294,13 @@ def main():
             print("        기대 %s · %s%s" % (r["want"], r["why"],
                                               (" · " + r["note"]) if r["note"] else ""))
     print("")
+    # ⚠️⚠️ 종료코드는 **ok=False 전체**로 낸다. 예전에는 아래 세 갈래의 합집합으로 냈는데
+    #    기대값 어휘가 늘면 어느 갈래에도 안 들어가는 실패가 생긴다 — 화면에는 `!!` 가
+    #    찍히는데 exit 0 이 나가는 상태다. 갈래는 **설명용**이고 판정은 ok 가 한다.
+    failed = [r for r in rows if not r["ok"]]
     unknown = [r for r in rows if r["state"] == "UNKNOWN"]
-    opened = [r for r in rows if r["want"] == "CLOSED" and r["state"] == "OPEN"]
+    opened = [r for r in rows if r["want"] in ("CLOSED", "DENIED") and r["state"] == "OPEN"]
+    unproven = [r for r in rows if r["want"] == "DENIED" and r["state"] == "ABSENT"]
     closed_but_needed = [r for r in rows if r["want"] == "OPEN" and r["state"] != "OPEN"]
 
     if unknown:
@@ -267,17 +311,27 @@ def main():
         print("❌ 비공개여야 하는데 **열려 있다** %d건:" % len(opened))
         for r in opened:
             print("   %s — %s" % (r["key"], r["why"]))
+    if unproven:
+        print("❌ 검증 대상이 **없어서** 통과처럼 보이는 항목 %d건 — 부재는 증거가 아니다:" % len(unproven))
+        for r in unproven:
+            print("   %s — %s" % (r["key"], r["why"]))
     if closed_but_needed:
         print("❌ 열려 있어야 하는데 막혔다 %d건" % len(closed_but_needed))
     if any(r.get("created") for r in rows):
         print("🚨 서명 없는 쓰기가 성공했다. 만들어진 객체: %s" % PROBE_KEY)
         print("   자격증명 있는 사람이 즉시 지우고 버킷 정책을 고쳐야 한다.")
-    if not (unknown or opened or closed_but_needed):
+    other = [r for r in failed if r not in unknown and r not in opened
+             and r not in unproven and r not in closed_but_needed]
+    if other:
+        print("❌ 기대와 다른 항목 %d건:" % len(other))
+        for r in other:
+            print("   %s — 기대 %s · 실제 %s" % (r["key"], r["want"], r["state"]))
+    if not failed:
         print("✅ 전부 기대대로다.")
 
     print("")
     print(json.dumps({"base": BASE, "rows": rows}, ensure_ascii=False, indent=1))
-    return 0 if not (unknown or opened or closed_but_needed) else 1
+    return 0 if not failed else 1
 
 
 if __name__ == "__main__":

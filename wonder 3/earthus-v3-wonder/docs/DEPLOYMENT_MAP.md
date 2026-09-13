@@ -30,6 +30,7 @@ S3 키                                   URL                                   �
 app/wonder                              /wonder                               ┐ legacy 별칭 3키 — cutover 까지 손대지 않음
 app/wonder/                             /wonder/                              │
 app/wonder/index.html                   /wonder/index.html                    ┘
+app/wonder-test/…                       /wonder-test/…                        ★ PD 상시 테스트 URL (2026-09-13, 터미널을 닫아도 남는 S3/CloudFront) — 진입 https://earthus.net/wonder-test/ (base href 사본), 실기기 …/?qa=1&device=1
 app/wonder/next/…                       /wonder/next/…                        ★ 스테이징 거울 (earthus-v3-wonder/ 공개 부분: apps/web · packages · content)
 app/wonder/next                         /wonder/next                          ┐ 디렉터리 주소용 index 사본 (<base href="/wonder/next/apps/web/">)
 app/wonder/next/                        /wonder/next/                         ┘
@@ -93,3 +94,4 @@ v1 `sw.js` 통과 목록 밖이라 v1 워커가 요청을 중개하고, 실패 �
 | legacy AWS 보호 | `app/v3/`(403객체, 최신 09-07)·별칭 3키(09-07 24,245 B)·CloudFront·CI·sw.js 무변경 |
 | 실행 스크립트 | `scripts/build-staging.mjs`(정적 빌드, 허용 목록) + `scripts/deploy-staging.sh`(prefix 고정·가드·`--dry-run`) — §3 의 예정 이름 `aws/deploy-wonder-next.sh` 대신 프로젝트 안 `scripts/` 에 둠(DECISION LOCK 2 §3). `deploy-wonder-live.sh` 는 아직 없음(cutover 는 PD 결정) |
 | 스테이징 URL | `https://earthus.net/wonder/next/apps/web/` · 실기기 `…/?qa=1&device=1` (Browser Verified 2026-09-13, Device 0) |
+| **상시 테스트 URL** | **`https://earthus.net/wonder-test/`** = S3 `app/wonder-test/` (2026-09-13 PD 지시, 296 put · 삭제 0, 커밋 `1018db1a`). CloudFront 변경 0 — 기본 동작(origin path `/app`)이 `/wonder-test/*` → `app/wonder-test/*` 로 이미 간다(배포 전 403, 뒤 200). 실기기 `https://earthus.net/wonder-test/?qa=1&device=1`. `TARGET=wonder-test bash scripts/deploy-staging.sh` |

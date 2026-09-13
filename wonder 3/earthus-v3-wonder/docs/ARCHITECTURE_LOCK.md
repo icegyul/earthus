@@ -37,7 +37,9 @@ benchmarks/← 실험 산출물. 레지스트리 대상 아님
 |---|---|---|---|
 | `interaction-runtime` | 제스처 → 동작 시퀀스, manifest 정규화·검증, 프로필 | PHASE 0 ✅ | 없음 |
 | `stage-engine` | 배경 선택기(좌표→지역), 이후 무대 겹 관리 | PHASE 0 일부 (선택기) | 무대 부분은 루트 주입 |
-| `paper-earth` | 종이 지구: 구·재질·카메라·회전·줌·핀치·지역 진입·복귀·반응형 | **PHASE 1** | 캔버스 루트 주입 |
+| `globe-engine` | 종이 지구: 좌표·카메라·지역·종이 텍스처·three 장면(글로우 링·썸네일 스프라이트)·입력 | PHASE 1 ✅ · 1-B 확장 | 캔버스 루트 주입 |
+| `wonder-environment` | 흐름 상태기(earth→approaching→unfolding→active→folding→zooming-out), 환경 카탈로그 조회 | PHASE 1-B ✅ (순수) | 없음 — DOM 층은 `apps/web/src/environment.mjs` |
+| `asset-runtime` | 레지스트리 해시 로더: dedupe·재시도·타임아웃·취소·LRU 예산(30MB)·unload·stale | PHASE 1-B ✅ | 없음 — `defaultImageLoader` 만 브라우저 |
 | `character-renderer` | 전신 빌보드 + 몸 전체 변형, 재생 큐, (나중에) 관절 파츠 슬롯 | PHASE 3 | 무대 루트 주입 |
 | `content-registry` (scripts) | 레지스트리 생성·검사 | PHASE 0 ✅ (scripts/) | — |
 

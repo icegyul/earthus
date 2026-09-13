@@ -116,7 +116,7 @@ for s in slugs:
             src_manifest['entries'][key] = {'path': os.path.relpath(p, a.source).replace(os.sep, '/'), 'bytes': os.path.getsize(p), 'mtime': os.path.getmtime(p), 'sha256': sha256(p)}
     print(f'  {s:28s} character {r1:>24s}   scene {r2:>24s}')
 
-json.dump(src_manifest, open(os.path.join(SOURCE_DIR, 'source-manifest.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
+json.dump(src_manifest, open(os.path.join(SOURCE_DIR, 'source-manifest.json'), 'w', encoding='utf-8', newline='\n'), ensure_ascii=False, indent=2)   # LF 고정 — CRLF 면 체크아웃 뒤 레지스트리 sha256 이 어긋난다
 print(f'✓ 변환 {n_done} · 건너뜀 {n_skip} · PNG {png_bytes/1e6:.1f}MB → WebP {webp_bytes/1e6:.2f}MB · {time.time()-t0:.0f}s')
 print(f'  원본 기록: content/characters/source/source-manifest.json ({len(src_manifest["entries"])} 항목)')
 print('  다음: node scripts/build-registry.mjs')

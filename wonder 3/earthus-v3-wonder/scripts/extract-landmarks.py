@@ -67,6 +67,6 @@ for id_, atlas, cols, cell, label, url in LANDMARKS:
     manifest['items'][id_] = {'path': f'landmarks/{id_}.webp', 'label': label, 'atlas': f'prototype/v3-paper/assets/{atlas}', 'cell': cell, 'size': list(tile.size), 'bytes': os.path.getsize(dst), 'source_url': url,
                               'note': '겹종이 그림. 실제 크기·경계 아님'}
     print(f'  {id_:10s} {atlas} cell {cell:2d} → {tile.size[0]}×{tile.size[1]} {os.path.getsize(dst)//1024}KB ({label})')
-json.dump(manifest, open(os.path.join(OUT, 'landmarks.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=2)
+json.dump(manifest, open(os.path.join(OUT, 'landmarks.json'), 'w', encoding='utf-8', newline='\n'), ensure_ascii=False, indent=2)   # LF 고정 — CRLF 면 체크아웃 뒤 레지스트리 sha256 이 어긋난다
 print(f'✓ {len(LANDMARKS)} 랜드마크 → {OUT}  (landmarks.json)')
 print('  다음: node scripts/build-registry.mjs')

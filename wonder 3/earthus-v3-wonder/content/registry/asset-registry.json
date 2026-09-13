@@ -2299,8 +2299,8 @@
       "id": "source-manifest",
       "kind": "data",
       "path": "characters/source/source-manifest.json",
-      "bytes": 56418,
-      "sha256": "1aee5cc6c58a849c412d9448a125c94880b891f7af28c946edf5ff6bb8b90c9a",
+      "bytes": 54914,
+      "sha256": "785b5fc5c57c7f5c09741f2543d84d9cf5d43de80bb35461f4ecc4c8edf782dd",
       "source": "earthus-v3-wonder",
       "load": "boot"
     },
@@ -2380,8 +2380,8 @@
       "id": "landmarks",
       "kind": "data",
       "path": "landmarks/landmarks.json",
-      "bytes": 1519,
-      "sha256": "08c0176cd95fd7426f22ed63c43436a07a7edfab865c285d428ef8dbc166596e",
+      "bytes": 1475,
+      "sha256": "ac53fdf03e1510b52502c9359b684040723f07d50899ce0538d6aa69e9b8a6ba",
       "source": "earthus-v3-wonder",
       "load": "boot"
     },

@@ -91,10 +91,15 @@ JOBS=(
 #   kma-upper           kma-upper-schedule          cron(40 1,13 * * ? *)              2       6
 #   kma-normal          kma-normal-schedule         cron(20 18 1 * ? *)            월 1회   ~100
 #
-# ⚠️⚠️ **이 셋은 규칙 이름이 `<람다>-schedule` 규칙을 따르지 않는다.**
-#       kma-fcst          → earthus-kma-fcst
-#       kma-aws           → kma-aws-hourly
-#       typhoon-official  → typhoon-official-hourly
+# ⚠️⚠️ **이 다섯은 규칙 이름이 `<람다>-schedule` 규칙을 따르지 않는다.**
+#       kma-fcst              → earthus-kma-fcst
+#       kma-aws               → kma-aws-hourly
+#       typhoon-official      → typhoon-official-hourly
+#       gdelt-events          → earthus-gdelt-30min              (cron(5,35 * * * ? *))
+#       earthus-earth-events  → earthus-earth-events-30min       (cron(15,45 * * * ? *))
+#    뒤의 둘은 2026-09-13 실측으로 확인했다(`events describe-rule` · `lambda get-policy` 의
+#    `earthus-gdelt-30min-invoke` 문). 둘은 전용 스크립트가 이름을 못 박고 있다 —
+#    `aws/configure-earth-events-schedule.sh`. gdelt 쪽은 전용 스크립트가 없고 규칙만 살아 있다.
 #    아래 JOBS 는 규칙 이름을 `${FN}-schedule` 로 **만들어 낸다**. 그러니 이 셋을
 #    JOBS 에 넣으면 기존 규칙은 그대로 둔 채 **두 번째 규칙이 새로 생긴다**.
 #    두 규칙이 같은 람다를 각각 부르므로 호출이 **조용히 두 배**가 되고,

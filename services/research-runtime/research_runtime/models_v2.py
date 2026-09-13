@@ -214,8 +214,23 @@ def preflight(spec, dataset, wind):
         report["estimate"] = base["estimate"]
         report["backend"] = "oceanparcels"
         report["windage"] = {"alpha": alpha, "unit": WINDAGE_UNIT}
-        report["warnings"] = base["warnings"] + ["Wind is NCEP-DOE R2 T62 (~1.9°) 6-hourly: synoptic-scale winds only.",
-                                                  "Windage alpha is a literature value; it is not fitted to this cohort."]
+        # Name the wind actually supplied instead of asserting NCEP-DOE R2 regardless of input.
+        # The old fixed sentence claimed a reanalysis provider even for a SYNTHETIC_TEST fixture, so a
+        # synthetic wind read as real forcing (R2 in docs/RESEARCH_RUNTIME_BASELINE.md §6).
+        wmanifest = wind["manifest"]
+        wind_kind, current_kind = wmanifest["evidenceKind"], dataset["manifest"]["evidenceKind"]
+        report["windEvidenceKind"] = wind_kind
+        report["warnings"] = base["warnings"] + [
+            f"Wind forcing: {wmanifest['datasetId']} v{wmanifest['version']} ({wind_kind}, "
+            f"{wmanifest['provider']}), {wmanifest['heightMeters']:g} m, "
+            f"{wmanifest['timeStepSeconds'] / 3600:g}-hourly: synoptic-scale winds only.",
+            "Windage alpha is a literature value; it is not fitted to this cohort."]
+        # Mirror V1's current-dataset marker (models.py:170-171): a synthetic input never reads as real.
+        if wind_kind == "SYNTHETIC_TEST":
+            report["warnings"].insert(0, "SYNTHETIC_TEST wind: analytic fixture, not a reanalysis or wind forecast.")
+            if current_kind != "SYNTHETIC_TEST":
+                report["warnings"].insert(0, f"MIXED INPUTS: {current_kind} current combined with SYNTHETIC_TEST "
+                                             "wind; this run is not a real-forcing result.")
         report["ok"] = True
     except (ValueError, TypeError, KeyError) as exc:
         report["errors"].append(str(exc))
@@ -312,6 +327,13 @@ def run_experiment(spec, dataset, wind, progress=None, cancelled=None, run_id=No
                            "sourceSha256": manifest.get("sourceSha256"), "surfaceDepthMeters": manifest["surfaceDepthMeters"],
                            "landMaskVersion": manifest["landMaskVersion"], "readerVersion": manifest["readerVersion"],
                            "timeStepSeconds": manifest["timeStepSeconds"], "evidenceKind": manifest["evidenceKind"],
+                           # R2 fix: the wind's own evidenceKind had no key here, so a SYNTHETIC_TEST wind was
+                           # indistinguishable from reanalysis in the recorded provenance. syntheticInputs is
+                           # empty only when every input is real — never derive it from evidenceKind alone.
+                           "windEvidenceKind": wmanifest["evidenceKind"],
+                           "syntheticInputs": [name for name, kind in (("current", manifest["evidenceKind"]),
+                                                                       ("wind", wmanifest["evidenceKind"]))
+                                               if kind == "SYNTHETIC_TEST"],
                            "windDatasetId": wmanifest["datasetId"], "windDatasetVersion": wmanifest["version"], "windDatasetSha256": wmanifest["sha256"],
                            "windSourceSha256": wmanifest.get("sourceSha256"), "windReaderVersion": wmanifest["readerVersion"],
                            "windTimeStepSeconds": wmanifest["timeStepSeconds"], "windHeightMeters": wmanifest["heightMeters"], "windTimeMeaning": wmanifest["timeMeaning"],

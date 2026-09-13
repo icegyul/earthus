@@ -155,6 +155,50 @@ class HttpTests(unittest.TestCase):
             self.assertEqual(200,response.status)
             self.assertIn('text/html',response.headers['Content-Type'])
 
+    def test_oversize_body_error_reaches_the_client(self):
+        """A legitimate same-origin POST above MAX_BODY must be able to read its own 422.
+
+        Regression for DEFECT-1 (docs/RESEARCH_RUNTIME_BASELINE.md §3): the size check raises before
+        rfile.read(), so the body stayed unread; closing HTTP/1.0 with unread inbound data made Windows
+        send RST and the client got ConnectionAbortedError instead of BODY_SIZE_LIMIT (measured 5/5).
+        No spoofed header, no load, no timing luck — this path is deterministic.
+        """
+        from research_runtime.server import MAX_BODY
+        payload = b'{"name":"' + b'x' * MAX_BODY + b'"}'       # MAX_BODY 보다 확실히 크다
+        self.assertGreater(len(payload), MAX_BODY)
+        request = urllib.request.Request(
+            self.url + '/api/research/projects', data=payload,
+            headers={'Content-Type': 'application/json', 'Origin': self.url})
+        with self.assertRaises(urllib.error.HTTPError) as error:
+            urllib.request.urlopen(request, timeout=30)
+        self.assertEqual(422, error.exception.code)
+        self.assertEqual('BODY_SIZE_LIMIT', json.load(error.exception)['error'])
+
+    def test_error_reaches_the_client_when_body_arrives_after_the_headers(self):
+        """Same defect, other trigger: headers and body in separate TCP segments.
+
+        Measured before the fix: 40/40 aborted with the real test's 15-byte body. The only variable was
+        whether the body landed in the same segment as the headers, which is why the suite failed about
+        once in 25 runs instead of always.
+        """
+        import socket
+        body = json.dumps({'name': 'bad'}).encode()
+        head = (f'POST /api/research/projects HTTP/1.1\r\nHost: evil.invalid\r\n'
+                f'Content-Type: application/json\r\nContent-Length: {len(body)}\r\n'
+                f'Connection: close\r\n\r\n').encode()
+        with socket.create_connection(('127.0.0.1', self.server.server_port), timeout=10) as sock:
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            sock.sendall(head)
+            time.sleep(0.05)                       # force a separate segment for the body
+            sock.sendall(body)
+            received = b''
+            while True:
+                chunk = sock.recv(4096)
+                if not chunk:
+                    break
+                received += chunk
+        self.assertTrue(received.startswith(b'HTTP/1.0 403 Forbidden'), received[:64])
+
 
 if __name__ == '__main__':
     unittest.main()

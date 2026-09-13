@@ -11,6 +11,12 @@ from urllib.parse import unquote, urlsplit
 from .service import ResearchService, canonical
 
 MAX_BODY = 24 * 1024 * 1024
+# Drain budget for the DEFECT-1 fix below. Above MAX_BODY so a rejected oversize body is still
+# discarded and the connection closes with FIN instead of RST; a body larger than this is an
+# abusive request we stop reading (its error response may still be lost, which is acceptable).
+DRAIN_LIMIT = 64 * 1024 * 1024
+DRAIN_CHUNK = 64 * 1024
+DRAIN_TIMEOUT_SECONDS = 5
 
 
 class Server(ThreadingHTTPServer):
@@ -40,12 +46,61 @@ class Server(ThreadingHTTPServer):
 
 class Handler(BaseHTTPRequestHandler):
     server_version = 'EARTHUSResearch/0.1'
+    # Per-request bookkeeping for _drain_request(). Class-level defaults so a handler that fails
+    # before _dispatch() still reads a defined value instead of raising AttributeError.
+    _body_bytes_read = 0
+    _request_drained = False
 
     def log_message(self, fmt, *args):
         # Never log request bodies (coordinates may be private).
         print('%s %s' % (self.log_date_time_string(), fmt % args), flush=True)
 
+    def _drain_request(self):
+        """Discard an unread request body before an error response goes out.
+
+        Why (DEFECT-1, docs/RESEARCH_RUNTIME_BASELINE.md §3): `_check_local()` and the size check in
+        `body()` both raise *before* `self.rfile.read(size)` runs, so the POST body is still sitting in
+        the receive queue when the 4xx is written. This handler has no `protocol_version`, so it is
+        HTTP/1.0 and closes after every response. Closing a socket that still holds unread inbound data
+        makes Windows send RST, and the client loses the 4xx it had already received — measured at 5/5
+        for a legitimate same-origin POST above MAX_BODY, which could never read its own 422.
+
+        This only discards bytes; it never parses them and never lets a rejected request influence the
+        response. A 2xx path is untouched, because there `body()` has already consumed everything.
+        """
+        if self._request_drained:
+            return
+        self._request_drained = True
+        try:
+            declared = int(self.headers.get('Content-Length') or 0)
+        except (TypeError, ValueError):
+            return
+        budget = min(declared - self._body_bytes_read, DRAIN_LIMIT)
+        if budget <= 0:
+            return
+        try:
+            previous = self.connection.gettimeout()
+        except OSError:
+            return
+        try:
+            # A client that promises a body and never sends it must not hold the worker thread.
+            self.connection.settimeout(DRAIN_TIMEOUT_SECONDS)
+            while budget > 0:
+                chunk = self.rfile.read(min(DRAIN_CHUNK, budget))
+                if not chunk:
+                    break
+                budget -= len(chunk)
+        except OSError:
+            pass
+        finally:
+            try:
+                self.connection.settimeout(previous)
+            except OSError:
+                pass
+
     def respond(self, status, payload, content_type='application/json; charset=utf-8', headers=None):
+        if status >= 400:
+            self._drain_request()
         raw = payload if isinstance(payload, bytes) else canonical(payload)
         self.send_response(status)
         self.send_header('Content-Type', content_type)
@@ -81,6 +136,7 @@ class Handler(BaseHTTPRequestHandler):
         if not 0 < size <= MAX_BODY:
             raise ValueError('BODY_SIZE_LIMIT')
         raw = self.rfile.read(size)
+        self._body_bytes_read = len(raw)   # _drain_request() must not re-read what is already consumed
         if len(raw) != size:
             raise ValueError('INCOMPLETE_BODY')
         body = json.loads(raw.decode('utf-8'), parse_constant=lambda x: (_ for _ in ()).throw(ValueError('NON_FINITE_JSON')))
@@ -95,6 +151,8 @@ class Handler(BaseHTTPRequestHandler):
         self._dispatch('POST')
 
     def _dispatch(self, method):
+        self._body_bytes_read = 0
+        self._request_drained = False
         try:
             self._check_local(method == 'POST')
             path = urlsplit(self.path).path
@@ -151,6 +209,10 @@ class Handler(BaseHTTPRequestHandler):
                     if run['status'] != 'SUCCEEDED':
                         raise ValueError('RESULT_NOT_READY')
                     return self.respond(200,run['result'])
+            # PHASE 3F reverse trace: EarthEvent -> simulation runs. Read-only; the ledger stays the
+            # single source of truth and nothing is replicated into another store.
+            if len(parts) == 3 and parts[0] == 'events' and parts[2] == 'runs' and method == 'GET':
+                return self.respond(200, s.runs_for_event(unquote(parts[1])))
             if parts == ['comparisons'] and method == 'POST':
                 return self.respond(200, {'comparison':s.comparison(body.get('runIds'))})
             return self.respond(404, {'error':'NOT_FOUND'})

@@ -63,6 +63,24 @@ class Store:
                 CREATE TABLE IF NOT EXISTS submissions (
                     key TEXT PRIMARY KEY, digest TEXT NOT NULL, run_id TEXT NOT NULL
                 );
+                -- PHASE 3F: which EarthEvent a run was submitted for. Additive on purpose.
+                --
+                -- Why a separate table instead of a column on objects: the three INSERTs into objects are
+                -- positional (`VALUES (?,?,?,?)`), so a new column would silently land in the wrong slot or
+                -- fail outright. A missing row is also a better "no event" than a NULL column - legacy runs
+                -- need no backfill and read exactly as they did before.
+                --
+                -- Why not in the model provenance: the event link is a linkage, not a model input. It must
+                -- not change models.py (whose SHA is pinned by test_08_v1_immutable) and it must not alter
+                -- any manifest, forcing or validation value.
+                --
+                -- Rollback is `DROP TABLE run_event_link`, which restores the exact prior schema because
+                -- nothing outside this table changed. Only links are lost; no run, result or hash is touched.
+                CREATE TABLE IF NOT EXISTS run_event_link (
+                    run_id TEXT NOT NULL, event_id TEXT NOT NULL, linked_at TEXT NOT NULL,
+                    PRIMARY KEY (run_id, event_id)
+                );
+                CREATE INDEX IF NOT EXISTS run_event_link_event_idx ON run_event_link(event_id);
             ''')
 
     @contextmanager
@@ -103,8 +121,12 @@ class Store:
             db.execute('UPDATE objects SET body=? WHERE id=?', (json.dumps(item, allow_nan=False), identifier))
         return item
 
-    def submit(self, key, digest, body):
-        """One transaction: same key/body returns same run, conflicting body is rejected."""
+    def submit(self, key, digest, body, event_ids=()):
+        """One transaction: same key/body returns same run, conflicting body is rejected.
+
+        event_ids are written in the same transaction as the run, so a run never exists with its
+        EarthEvent link half-written. Passing none keeps the pre-PHASE-3F behaviour exactly.
+        """
         with self.lock, self.connection() as db:
             db.execute('BEGIN IMMEDIATE')
             prior = db.execute('SELECT digest, run_id FROM submissions WHERE key=?', (key,)).fetchone()
@@ -117,7 +139,26 @@ class Store:
             db.execute('INSERT INTO objects VALUES (?,?,?,?)',
                        (item['id'], 'run', item['createdAt'], json.dumps(item, allow_nan=False)))
             db.execute('INSERT INTO submissions VALUES (?,?,?)', (key, digest, item['id']))
+            linked_at = utc_now()
+            for event_id in event_ids:
+                db.execute('INSERT OR IGNORE INTO run_event_link VALUES (?,?,?)', (item['id'], event_id, linked_at))
         return item, True
+
+    def events_for_run(self, run_id):
+        """EarthEvent ids this run was submitted for. Empty for every pre-PHASE-3F run."""
+        with self.connection() as db:
+            rows = db.execute('SELECT event_id FROM run_event_link WHERE run_id=? ORDER BY event_id',
+                              (run_id,)).fetchall()
+        return [row['event_id'] for row in rows]
+
+    def runs_for_event(self, event_id):
+        """Run ids linked to one EarthEvent, newest first. Reverse leg of the event timeline trace."""
+        with self.connection() as db:
+            rows = db.execute(
+                'SELECT link.run_id AS run_id FROM run_event_link AS link '
+                'JOIN objects AS o ON o.id = link.run_id AND o.kind = \'run\' '
+                'WHERE link.event_id = ? ORDER BY o.created DESC', (event_id,)).fetchall()
+        return [row['run_id'] for row in rows]
 
     def prior_submission(self, key, digest):
         with self.connection() as db:

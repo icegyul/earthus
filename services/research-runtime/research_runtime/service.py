@@ -31,6 +31,41 @@ def check_name(value, default):
     return value.strip()
 
 
+MAX_EVENT_LINKS = 20
+
+
+def event_ids(body):
+    """EarthEvent links on a submission (PHASE 3F). Absent means an empty tuple, never a guess.
+
+    Accepts `eventId` (one) or `eventIds` (many). A list, not a single nullable field: one simulation can
+    legitimately answer more than one event, and a single column would force us to pick one and silently
+    drop the rest. "No event" is therefore an empty list.
+
+    Both keys live in the submission body, so they are already covered by the idempotency digest -
+    resubmitting the same key with a different event is an IDEMPOTENCY_CONFLICT, not a silent relink.
+
+    The id shape is only length- and control-character-checked. The canonical event id is `{kind}-{sourceId}`
+    (aws/_shared/content_contract.py) but LAB events use `{kind}:{sourceId}`, so this layer must not narrow it.
+    """
+    if not isinstance(body, dict):
+        return ()
+    raw = body.get('eventIds') if body.get('eventIds') is not None else body.get('eventId')
+    if raw is None:
+        return ()
+    values = raw if isinstance(raw, list) else [raw]
+    resolved = []
+    for value in values:
+        if not isinstance(value, str) or not 1 <= len(value) <= 200 or value.strip() != value:
+            raise ValueError('eventId는 앞뒤 공백이 없는 1~200자 문자열이어야 합니다.')
+        if any(character < ' ' or character == '\x7f' for character in value):
+            raise ValueError('eventId에 제어문자를 넣을 수 없습니다.')
+        if value not in resolved:
+            resolved.append(value)
+    if len(resolved) > MAX_EVENT_LINKS:
+        raise ValueError(f'한 실행에 연결할 수 있는 사건은 {MAX_EVENT_LINKS}개까지입니다.')
+    return tuple(resolved)
+
+
 class ResearchService:
     def __init__(self, directory, workers=1):
         from .datasets import validate_dataset
@@ -103,6 +138,7 @@ class ResearchService:
     def submit(self, body, key):
         if not isinstance(key, str) or not 8 <= len(key) <= 160:
             raise ValueError('8~160자 Idempotency-Key가 필요합니다.')
+        links = event_ids(body)   # validate before any state changes
         prior = self.store.prior_submission(key,digest(body))
         if prior:
             return prior
@@ -124,7 +160,7 @@ class ResearchService:
                 'datasetId': experiment['datasetId'], 'spec': experiment['spec'],
                 'specSha256': experiment['specSha256'], 'datasetSha256': experiment['datasetSha256'],
                 'status': 'QUEUED', 'progress': {'fraction': 0}, 'preflight': check,
-            })
+            }, event_ids=links)
             if created:
                 event = threading.Event()
                 self.events[run['id']] = event
@@ -178,8 +214,21 @@ class ResearchService:
             with self.guard:
                 self.events.pop(identifier, None)
 
+    def runs_for_event(self, event_id):
+        """Reverse trace: EarthEvent -> its simulation runs (PHASE 3F).
+
+        Reads from run_event_link, so a pre-PHASE-3F ledger simply returns an empty list.
+        """
+        links = event_ids({'eventId': event_id})   # same validation as submission
+        if not links:
+            raise ValueError('eventId가 필요합니다.')
+        return {'eventId': links[0], 'runIds': self.store.runs_for_event(links[0])}
+
     def get_run(self, identifier, include_result=True):
         run = self.store.get('run', identifier)
+        # Read the link rather than storing it twice: the ledger table stays the single source of truth,
+        # so a run row and its event link can never disagree. Legacy runs get [].
+        run['eventIds'] = self.store.events_for_run(identifier)
         if include_result and run['status'] == 'SUCCEEDED':
             path = self.store.directory / 'runs' / identifier / 'result.json'
             raw = path.read_bytes()

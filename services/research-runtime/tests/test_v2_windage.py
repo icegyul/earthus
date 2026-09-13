@@ -228,6 +228,32 @@ class WindageModelTests(unittest.TestCase):
             self.assertIn(key, schema["required"])
         self.assertNotIn("default", schema["properties"]["windage"]["properties"]["alpha"])
 
+    def test_15_synthetic_wind_is_never_recorded_as_real_forcing(self):
+        """A SYNTHETIC_TEST wind must be visible in provenance and in the warnings.
+
+        Regression for R2 (docs/RESEARCH_RUNTIME_BASELINE.md §6): provenance carried only the current
+        dataset's evidenceKind, and the fixed warning asserted NCEP-DOE R2 whatever the wind actually was.
+        A REANALYSIS current combined with a synthetic wind therefore recorded evidenceKind=REANALYSIS
+        with no marker at all — a synthetic input reading as real forcing.
+        """
+        real_current = current()
+        real_current["manifest"].update(evidenceKind="REANALYSIS", sourceSha256="0" * 64)
+        report = v2.preflight(spec(), real_current, wind())
+        self.assertTrue(report["ok"], report["errors"])
+        self.assertEqual("SYNTHETIC_TEST", report["windEvidenceKind"])
+        self.assertIn("MIXED INPUTS", report["warnings"][0])
+        self.assertFalse(any("NCEP" in w for w in report["warnings"]),
+                         "wind provider must come from the manifest, not a fixed sentence")
+
+        provenance = v2.run_experiment(spec(), real_current, wind())["provenance"]
+        self.assertEqual("REANALYSIS", provenance["evidenceKind"])
+        self.assertEqual("SYNTHETIC_TEST", provenance["windEvidenceKind"])
+        self.assertEqual(["wind"], provenance["syntheticInputs"])
+
+        # Both synthetic: still listed, so an all-real run is the only one with an empty list.
+        both = v2.run_experiment(spec(), current(), wind())["provenance"]
+        self.assertEqual(["current", "wind"], both["syntheticInputs"])
+
 
 if __name__ == "__main__":
     unittest.main()

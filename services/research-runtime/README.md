@@ -64,9 +64,23 @@ HYCOM NCSS NetCDF는 `research_runtime/netcdf_reader.py`(`earthus-hycom-netcdf/1
 
 ## 검증
 
+서비스 디렉터리에서 실행한다. `.deps`를 `PYTHONPATH`에 넣지 않으면 고정 OceanParcels가 잡히지 않아
+`OceanParcels 3.1.4 unavailable (ModuleNotFoundError)`로 5건이 실패한다 — 코드 오류가 아니라 경로 누락이다.
+
 ```powershell
+$env:PYTHONPATH = ".;.deps"
 python -m unittest discover -s tests -v
 ```
+
+Git Bash 등에서는 절대 경로를 쓴다.
+
+```bash
+export PYTHONPATH="<서비스 디렉터리>;<서비스 디렉터리>/.deps"
+python -m unittest discover -s tests -v
+```
+
+경로 순서는 `start-research.ps1`과 같다: 서비스 루트가 먼저(패키지 해석), `.deps`가 그다음(고정 버전이
+site-packages에 가려지지 않게), 기존 `PYTHONPATH`는 마지막이다.
 
 계산 시험과 서비스 시험을 분리한다. 서비스 시험은 자료 버전 충돌, 실행·취소, 중복 제출, 재시작, 결과 위변조, ZIP 해시, 외부 Origin/Host 거부를 검사한다. 수치시험·실자료 실행·관측 검증의 현황은 `../../docs/research/IMPLEMENTATION_STATUS.md`에서 확인한다.
 

@@ -1,0 +1,53 @@
+{
+  "product": "WONDER_EARTH_ASSETS_v1.2",
+  "type": "real asset starter set, not presentation sheet",
+  "projection": "equirectangular",
+  "master_canvas": [
+    2048,
+    1024
+  ],
+  "global_overview": "shared/overview_1k.avif",
+  "regions": {
+    "continents": [
+      "Africa",
+      "Asia",
+      "Europe",
+      "North_America",
+      "Oceania",
+      "South_America"
+    ],
+    "oceans": [
+      "Atlantic_North",
+      "Atlantic_South",
+      "Indian",
+      "Mediterranean",
+      "Pacific_East",
+      "Pacific_West",
+      "Regional_Seas",
+      "Southern_Ocean"
+    ],
+    "polar": [
+      "Antarctica",
+      "Arctic"
+    ]
+  },
+  "runtime_strategy": [
+    "LOD0 global overview",
+    "region streaming via UV bounds",
+    "AVIF for web delivery",
+    "SVG for shape source",
+    "height/normal for 2.5D",
+    "convert hot textures to KTX2/Basis for final WebGL runtime"
+  ],
+  "rules": [
+    "No clouds baked into base.",
+    "No labels baked into base.",
+    "No presentation/preview sheet assets.",
+    "Region files are cropped to their actual geographic bounds to reduce memory and transfer.",
+    "Height is a stylized paper-depth starter, not a scientific DEM."
+  ],
+  "color_source": "ETOPO-style global topographic visual basis, stylized into broad paper/gouache color planes; not a scientific color product.",
+  "style_rules": [
+    "Terrain detail is retained from a global topographic visual source, then simplified into Wonder paper planes."
+  ]
+}

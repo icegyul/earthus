@@ -116,8 +116,20 @@ export function createPaperEarth({ canvas, textureCanvas, pixelRatio = 1, ambien
     for (const sp of cloudSprites) sp.userData.lon = ((sp.userData.lon + sp.userData.degPerSec * dt + 180) % 360) - 180;
   }
 
-  /** 텍스처 캔버스를 다시 그렸을 때(저해상 → 고해상 승급, 재질 교체) 호출. */
-  function refreshTexture() { map.needsUpdate = true; }
+  /**
+   * 텍스처 캔버스를 다시 그렸을 때(저해상 → 고해상 승급, 재질 교체) 호출.
+   * 캔버스 **크기가 바뀌었으면 먼저 버려야 한다** — three 는 크기가 같다고 보고 texSubImage2D 로 부분 갱신을 시도해
+   * `GL_INVALID_VALUE: glTexSubImage2D: Offset overflows texture dimensions` 를 내고 **옛 그림이 그대로 남는다**
+   * (2026-09-13 실측: 1024×512 절차적 종이 위에 2048×1024 지구 자산을 올렸더니 화면은 끝까지 옛 그림이었다).
+   */
+  let mapW = textureCanvas.width, mapH = textureCanvas.height;
+  function refreshTexture() {
+    if (textureCanvas.width !== mapW || textureCanvas.height !== mapH) {
+      mapW = textureCanvas.width; mapH = textureCanvas.height;
+      map.dispose();                                      // 다음 렌더에서 새 크기로 다시 올린다
+    }
+    map.needsUpdate = true;
+  }
 
   /**
    * Paper Earth Material v1 의 노멀·거칠기를 구 표면에 물린다(층 4·5).
@@ -143,6 +155,29 @@ export function createPaperEarth({ canvas, textureCanvas, pixelRatio = 1, ambien
     m.needsUpdate = true;
     return { normal: !!normal, roughness: !!roughness, repeatX, normalScale };
   }
+
+  /**
+   * 등장방형 노멀 아틀라스를 그대로 문다(반복 없음) — WONDER EARTH ASSETS 의 지역 normal 을 합성한 캔버스용.
+   * 타일 노멀(applyMaterial)과 달리 UV 가 지구 좌표와 1:1 이라 경도는 감싸고 위도는 끝을 고정한다.
+   */
+  let equirectNormal = null;
+  function applyEquirectNormal(canvasSrc, { normalScale = 0.55 } = {}) {
+    if (!canvasSrc) return null;
+    if (equirectNormal?.image === canvasSrc) { equirectNormal.needsUpdate = true; globe.material.needsUpdate = true; return { reused: true, normalScale }; }
+    globe.material.normalMap?.dispose();
+    const t = new THREE.CanvasTexture(canvasSrc);
+    t.wrapS = THREE.RepeatWrapping; t.wrapT = THREE.ClampToEdgeWrapping;   // 경도는 ±180° 에서 이어지고, 극에서는 끝 픽셀을 고정한다
+    t.colorSpace = THREE.NoColorSpace;
+    t.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+    t.needsUpdate = true; disposables.push(t);
+    equirectNormal = t;
+    globe.material.normalMap = t;
+    globe.material.normalScale.set(normalScale, normalScale);
+    globe.material.needsUpdate = true;
+    return { equirect: true, normalScale };
+  }
+  /** 아틀라스 캔버스를 다시 그렸을 때 GPU 로 다시 올린다. */
+  function refreshEquirectNormal() { if (equirectNormal) equirectNormal.needsUpdate = true; }
 
   // 지역 표식: 구 표면에 붙는 **얇은 흰 글로우 링**(§6 "thin glow line", 두꺼운 지도 UI 금지). 구 뒤로 돌아가면 깊이 검사로 가려진다(§2.2).
   const marker = new THREE.Group();
@@ -276,7 +311,7 @@ export function createPaperEarth({ canvas, textureCanvas, pixelRatio = 1, ambien
     renderer.dispose();
   }
 
-  return { renderer, scene, camera: cam, globe, resize, render, tick, refreshTexture, applyMaterial, pick, project, setMarker, markerFacing, facing, setSprite, removeSprite,
+  return { renderer, scene, camera: cam, globe, resize, render, tick, refreshTexture, applyMaterial, applyEquirectNormal, refreshEquirectNormal, pick, project, setMarker, markerFacing, facing, setSprite, removeSprite,
     get spriteIds() { return [...sprites.keys()]; }, projectedDiameter, metrics, dispose, THREE,
     ambient: { get stars() { return stars; }, get halo() { return halo; }, clouds: cloudSprites, labels: labelSprites } };
 }

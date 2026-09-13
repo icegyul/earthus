@@ -117,6 +117,35 @@ if (matPack) {
 }
 const matAssets = assets.filter(a => a.kind === 'paper-material');
 
+// ── 1-D. WONDER EARTH ASSETS v1.2 (assets/earth/, PD 2026-09-13) ──────────────────────────
+// 등장방형 마스터 2048×1024 를 16개 지역으로 자른 팩. LOD0 오버뷰 1장 + 지역별 color/mask/height/normal.
+const EARTH_MANIFEST = path.join(ROOT, 'assets', 'earth', 'earth_assets_manifest.json');
+const earthPack = fs.existsSync(EARTH_MANIFEST) ? JSON.parse(fs.readFileSync(EARTH_MANIFEST, 'utf8')) : null;
+if (earthPack) {
+  const add = (id, rel, extra) => {
+    const f = path.join(ROOT, rel);
+    if (!fs.existsSync(f)) { bgProblems.push(`지구 자산 없음: ${rel}`); return; }
+    const st = fs.statSync(f), hash = sha256(f);
+    if (extra.sha256 && hash !== extra.sha256) bgProblems.push(`지구 자산 sha256 불일치: ${rel}`);
+    const px = (extra.width > 0 && extra.height > 0) ? extra.width * extra.height * 4 : 0;
+    // 예산은 디코드 크기로 센다 — AVIF 75KB 가 화면에서는 725KB 다(2026-09-13 실측).
+    assets.push({ id, kind: 'earth-region', root: 'project', path: rel, bytes: st.size, decodedBytes: px || st.size, sha256: hash,
+      version: earthPack.version, source: 'wonder-earth-assets-v1.2', load: 'lod-stream', ...extra, sha256Declared: undefined });
+  };
+  add('earth-overview', earthPack.overview.path, { role: 'overview', lod: 0, width: earthPack.overview.width, height: earthPack.overview.height, format: 'avif', sha256: earthPack.overview.sha256 });
+  for (const r of earthPack.regions) {
+    for (const [f, meta] of Object.entries(r.files)) {
+      const role = f.replace(/\.(avif|png|svg)$/, '');
+      add(`${r.id}-${role}`, meta.path, { role, region: r.id, group: r.group, regionKind: r.kind, lod: 1,
+        width: meta.width ?? null, height: meta.height ?? null, format: f.split('.').pop(), sha256: meta.sha256,
+        usable: role === 'shape' ? (meta.pathLength > 0) : true });
+    }
+  }
+  const files = earthPack.regions.length * 5 + 1;
+  if (assets.filter(a => a.kind === 'earth-region').length !== files) bgProblems.push(`지구 자산 수 불일치: ${assets.filter(a => a.kind === 'earth-region').length} ≠ ${files}`);
+}
+const earthAssets = assets.filter(a => a.kind === 'earth-region');
+
 // ── 2. 팩 카탈로그 대조 ───────────────────────────────────────────────
 const catalog = JSON.parse(fs.readFileSync(path.join(CONTENT, 'pack-1.8', 'background-catalog.json'), 'utf8'));
 const problems = [...bgProblems];
@@ -176,6 +205,7 @@ const registry = {
   sources: {
     'pack-1.8': { file: 'wonder 3/EARTHUS_V3_WONDER_1.8_INTERACTION_BACKGROUND_ASSET_PACK.zip', sha256: PACK_ZIP_SHA256, note: '배경 24·FX 5·카탈로그·124 인터랙션 JSON. 중복 JSON(character-interactions-124.json) 은 등록하지 않음' },
     'background-pack-v1': bgPack ? { file: 'wonder 3/EARTHUS_V3_WONDER_BACKGROUND_PACK_v1.zip', sha256: bgPack.sourcePack?.sha256 ?? null, manifest: 'assets/background_manifest.json', qualityReport: 'assets/background_quality_report.json', note: '24장(world 1·korea 4·atmosphere 3·region 16) 1920×1080 WebP. 2026-09-13 검수: 내용 위반 0, 시트 여백/잔재·≈480p 로 production REJECT, REVIEW(safe-crop 후보) 로만 로드' } : null,
+    'wonder-earth-assets-v1.2': earthPack ? { file: 'wonder 3/WONDER_EARTH_ASSETS_v1_2.zip', sha256: earthPack.sourcePack?.sha256 ?? null, manifest: 'assets/earth/earth_assets_manifest.json', note: `지역 ${earthPack.count} × 5파일 + LOD0 오버뷰. 결함 ${earthPack.defects.length}건은 manifest.defects 참고(shape.svg 16장 비어 있음 · 고해상 타일 없음)` } : null,
     'paper-earth-material-v1': matPack ? { file: 'wonder 3/material pack_01/EARTHUS_V3_WONDER_PAPER_EARTH_MATERIAL_v1.zip', sha256: matPack.sourcePack?.sha256 ?? null, manifest: 'assets/material/paper_earth_material_manifest.json', note: '종이 재질 10장(2048²). 지리 미포함. v1 은 8장 사용, height·edge_softmask 는 등록만' } : null,
     'legacy-pack124': { file: 'prototype/v3-paper/pack124 (== prototype/v3-kids/pack124)', note: '124 PNG 원본은 등록하지 않는다. content/characters/runtime/ 의 변환본만 등록. 승인 원본은 v3_CHARACTERS/EARTHUS_V3_CHARACTERS_124' },
   },
@@ -183,6 +213,9 @@ const registry = {
     assets: assets.length,
     backgrounds: bgCount,
     backgrounds_usable: bgUsable,
+    earth_regions: earthPack ? earthPack.regions.length : 0,
+    earth_files: earthAssets.length,
+    earth_shape_usable: earthAssets.filter(a => a.role === 'shape' && a.usable).length,
     paper_material: matAssets.length,
     paper_material_used_v1: matAssets.filter(a => a.usedInV1).length,
     environment_backgrounds: bgPackAssets.length,

@@ -81,6 +81,24 @@ z = −cos φ · sin λ
 
 근거·검증: `docs/PAPER_EARTH_MATERIAL_V1_REPORT_2026-09-13.md`.
 
+## 4-E. Wonder Earth Assets v1.2 규칙 (2026-09-13, PD "ASSETS v1.2 실제 적용 작업 지시서")
+
+지구 표면에 **지리를 담은 그림 팩**(등장방형 마스터 2048×1024 를 16지역으로 자른 것)을 쓰는 것을 허용한다. §4-C 의 "자료에서 런타임에 굽는다" 는 절차적 경로(`?earth=paper`)로 남고, 기본 경로는 자산 팩이 된다.
+
+- **LOD 사다리**: LOD0 `shared/overview_1k.avif` 한 장(1024×512, 179KB)이 전지구를 빈틈없이 덮고, LOD1 은 **카메라가 보는 지역만** `uv_bounds` 자리에 얹는다. 데스크톱 6곳·모바일 4곳 동시 상주, 나머지는 `forget`. **v1.2 에 LOD2 이상은 없다**(지역 파일이 마스터의 잘라내기라 픽셀 밀도 5.689 px/° 가 전부 같다).
+- **이음새(§7)**: 지역을 사각형째 깔지 않는다 — 실측 이웃차가 기준의 3.4배로 네모가 드러난다. 반대로 마스크만 쓰면 3.27% 가 빈다. **오버뷰 바탕 + 마스크 합성**만 허용한다(구멍 0, 네모 선 없음, 실측 최대 2.03배).
+- **그리는 차례**: 바다 → 극지 → 대륙(`paintOrder`). 겹치는 1.33% 에서 해안이 바다에 먹히지 않게 한다.
+- **종이 마무리(§3, 필수)**: 팩 그림은 ETOPO 계열 **사실적 지형·수심도**다. 그대로 지구에 올리면 "지나치게 사실적인 위성사진 스타일 금지" 를 어긴다. 그래서 `paperize` 가 바다 3층 · 땅은 위도 팔레트(`landToneAt`, §4-C 와 같은 색) × 밝기 4층 · 얼음 1층으로 갈아 끼우고, 땅이 바다에 닿는 줄에만 크림색 단면을 긋는다. 나라 경계에는 긋지 않는다. 4×4 정렬 디더로 층 경계의 한 줄 단차를 흩는다. **끄는 손잡이는 비교용 `?paper=0` 뿐이고, 기본은 항상 켜짐.**
+- **합성 원본 분리**: 아틀라스는 `rawCanvas` 에 합성하고, 화면에 물리는 텍스처에만 종이 마무리를 입힌다. 같은 캔버스에 겹쳐 입히면 지역이 하나 올라올 때마다 색이 눌려 검어진다.
+- **다시 칠하는 범위**: 새로 올린 지역들의 네모 합집합(사방 1px)만 다시 칠한다. 전체 2백만 픽셀을 매번 도는 것과 실측 190ms → 27~103ms 차이다.
+- **메모리(§10)**: 그린 지역의 원본 그림은 즉시 `unload`. 상주 자산 0바이트가 정상이다. GPU 텍스처는 데스크톱 21.3MB · 모바일 5.3MB 로 **줌·이동에 따라 늘지 않는다**.
+- **캔버스 크기가 바뀌면 `map.dispose()`**: three 는 크기가 같다고 보고 `texSubImage2D` 로 부분 갱신을 시도해 `GL_INVALID_VALUE` 를 내고 **옛 그림이 화면에 그대로 남는다**. 이 한 줄이 없어서 자산·재질 승급이 통째로 무효였다(2026-09-13 실측).
+- **첫 화면에 받지 않는다**: manifest 도 지역 파일도 승급 함수 안에서만 받는다. 지역 경로를 코드에 박지 않는다 — manifest 가 정한다.
+- 위치: `assets/earth/`(content/ 밖 독립 콘텐츠). 레지스트리 kind `earth-region` · root `project` · load `lod-stream`. mask·height·normal 은 **자료 맵**이라 PNG 를 유지한다(§5-3 의 "레거시 PNG 금지" 예외, 손실 압축 금지).
+- 알려진 결함은 `assets/earth/earth_assets_manifest.json` 의 `defects` 20건에 적혀 있다: `shape.svg` 16장 전부 빈 path(벡터 우선 §6 불가), 마스크 구멍 3.27%, 확대용 고해상 없음.
+
+근거·검증: `docs/WONDER_EARTH_ASSETS_V12_REPORT_2026-09-13.md`.
+
 ## 4-A. 지구 회전 규칙 (LOCKED — 2026-09-13 PD ROTATION RULE LOCK, 원본 = EARTHUS V2)
 
 원본: `prototype/v2-three/js/main.js` `class OrbitCam` (563~757행, v2-deploy·라이브 번들 동일). V3 는 새 회전 알고리즘을 만들지 않고 이 규칙을 옮긴다. 구조는 **Globe Interaction(`globe-engine/src/input.mjs`) → Rotation State(`camera.mjs`) → Paper Earth Visual(`earth.mjs`, `pose()` 만 읽음)** 으로 분리한다.
@@ -129,7 +147,7 @@ z = −cos φ · sin λ
 | 게이트 | 방법 |
 |---|---|
 | Implemented | 파일 존재 + 실행 경로 연결 |
-| Tested | `node --test "tests/*.test.mjs"` 전부 PASS (현재 17) |
+| Tested | `node --test "tests/*.test.mjs"` 전부 PASS (현재 94) |
 | Browser Verified | 인앱 브라우저 데스크톱 + 375×812. 콘솔 오류 0, 네트워크 200, 실제 입력(클릭/합성 포인터) |
 | Device Verified | 실기기(아이폰·안드로이드) 사람 확인 또는 원격 실기기. **자동화로 대체 불가** |
 

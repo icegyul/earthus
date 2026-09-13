@@ -1,227 +1,253 @@
-# DEFECT — `deploy-python.sh` 가 distribution Lambda 를 온전히 싸지 못한다
+# DEFECT — distribution Lambda 패키징 공백
 
-작성 2026-09-13 · 기준 커밋 `043f1c03`
+작성 2026-09-13 · 갱신 2026-09-13 (패키징 수정 후)
 발견 경로 [UNTRACKED_BASELINE_AUDIT.md](UNTRACKED_BASELINE_AUDIT.md) §6 의 부수 발견
-관련 [PHASE3_IMPLEMENTATION_REPORT.md](PHASE3_IMPLEMENTATION_REPORT.md)
 
-## STATUS: **BLOCKED_FOR_LIVE_DEPLOYMENT**
+## STATUS: **BLOCKED_FOR_LIVE_DEPLOYMENT — 아직 해소되지 않았다**
 
-`aws/distribution` 을 `deploy-python.sh` 로 올리면 **콜드 스타트에서 즉시 죽는다.**
-`ModuleNotFoundError` 가 init 단계에서 나므로 한 번도 실행되지 않는다.
+공백 3개 중 **2개는 고쳤고 1개가 남았다.** 남은 1개가 콜드 스타트를 여전히 막는다.
 
-이 문서는 **진단과 권고**다. 배포 스크립트를 **수정하지 않았다**(이번 범위 밖).
-실제 AWS 배포 전에 반드시 해결해야 한다.
+| # | 공백 | 상태 |
+|---|---|---|
+| 1 | `_shared` 모듈이 zip 에 하나도 안 들어갔다 | **해소** — §3 |
+| 2 | 하위 파이썬 패키지(`sns_adapters`·`sources`)가 안 들어갔다 | **해소** — §3 |
+| 3 | `sources/verify_scorecard.py` 가 **zip 루트 밖** 파일을 경로로 읽는다 | **남음** — §4 |
+
+→ **AWS LIVE 작업을 시작할 수 없다.** ③을 먼저 해결해야 한다.
+그리고 ③은 `aws/distribution/sources/verify_scorecard.py` 를 고쳐야 하는데,
+그 파일은 [UNTRACKED_BASELINE_AUDIT.md](UNTRACKED_BASELINE_AUDIT.md) 의
+`ACTION = DO NOT TOUCH` 14개 중 하나다 — **사용자 결정이 필요하다**(§6).
 
 ---
 
-## 1. 현재 packaging behavior
+## 1. Lambda 패키징 구조 (실제 파일 기준)
 
-`aws/deploy-python.sh <함수이름>` → `DIR = aws/<함수이름>` (`:36`)
+| 질문 | 답 |
+|---|---|
+| Lambda handler 위치 | `aws/<함수>/handler.py`. Lambda 설정은 `--handler handler.handler` (배포 스크립트 11개 전부 동일) → **zip 최상위**에 `handler.py` 가 있어야 한다 |
+| `_shared` 실제 위치 | `aws/_shared/` (14개 `.py` + `sql/` + `tests/`) |
+| 현재 package/build script | `aws/deploy-python.sh` (인자 = 함수 이름, `DIR=aws/<함수>`). `_shared` 를 다루는 것은 이 파일과 `deploy-lite.sh` 둘뿐이고, 둘 다 **`kma_hub.py` 하나만** 다뤘다 |
+| zip root 구조 | `$TMP` 의 내용이 그대로 zip 루트가 된다. pip 가 설치한 패키지 + 함수 `.py` + (조건부) `kma_hub.py` + (조건부) `contracts/` |
+| Lambda runtime sys.path | zip 이 `/var/task` 로 풀리고 그것이 `sys.path` 에 들어간다. **layer 는 쓰지 않는다** (`--layers`·`publish-layer-version` 참조 0건) |
+| handler ↔ `_shared` 상대경로 | 핸들러들이 `sys.path.insert(0, os.path.join(os.path.dirname(_HERE), "_shared"))` 를 쓴다. 로컬에서는 `aws/_shared` 로 맞지만 Lambda 에서는 `_HERE=/var/task` → **`/var/_shared`** 이고 존재하지 않는다 |
+| layer 사용 여부 | **없음** |
+| 현재 배포 artifact | `/tmp/<함수>.zip` (직접 업로드, 한도 50MB) |
 
-패키지에 들어가는 것 (`:103`~`:118`):
+### 1.1 영향 범위 — `distribution` 하나
 
-```bash
-cp "$DIR"/*.py "$TMP"/                      # ① 그 폴더의 최상위 .py 만. 하위 디렉터리는 안 들어간다
-SHARED=".../_shared/kma_hub.py"             # ② _shared 에서 kma_hub.py 하나만 후보다
-if grep -q "import kma_hub" "$DIR"/*.py; then
-  cp "$SHARED" "$TMP"/                      #    그것도 import kma_hub 가 있을 때만
-fi
-if [ -d "$DIR/contracts" ]; then
-  cp -R "$DIR/contracts" "$TMP"/            # ③ contracts 디렉터리만 특례로 재귀 복사
-fi
-find "$TMP" -type d \( -name tests -o -name test -o -name __pycache__ \) -prune -exec rm -rf {} +
-find "$TMP" -maxdepth 1 -name "test_*.py" -delete
+`_shared` 모듈을 import 하는 것을 전수 조사했다:
+
+```
+kma_hub 만 쓰는 함수 13개   gk2a-clouds · gts-global · kma-aws · kma-aws-min · kma-fcst ·
+                            kma-life · kma-lightning · kma-mountain · kma-normal · kma-ocean ·
+                            kma-radar · kma-upper · kma-warn · quake-asia · typhoon-official
+                            → 기존 스크립트가 옳게 처리한다
+distribution                content_contract · provenance · report_contract · report_period  ← 문제
+report-engine               content_contract · governance · phenomenon_registry ·
+                            publication_privacy · report_contract · report_period
+                            → **Lambda 가 아니다** (handler.py 없음 · 배포 스크립트 참조 0건). 영향 없음
 ```
 
-세 가지 성질이 이 결함의 원인이다:
+파이썬 하위 패키지를 가진 Lambda 도 `distribution` 하나다(`sns_adapters` · `sources`).
 
-| # | 성질 | 결과 |
+## 2. 원인 — 세 성질의 겹침 (수정 전)
+
+```bash
+cp "$DIR"/*.py "$TMP"/                      # ① 재귀하지 않는다 → 하위 패키지 누락
+SHARED=".../_shared/kma_hub.py"             # ② _shared 에서 이 한 파일만 후보
+if grep -q "import kma_hub" "$DIR"/*.py; then cp "$SHARED" "$TMP"/; fi
+                                            #    distribution 에 그 import 가 없다 → _shared 0개
+if [ -d "$DIR/contracts" ]; then cp -R ... ; fi   # ③ 재귀 특례는 contracts 이름에만
+```
+
+## 3. 수정 — 공백 ①② 해소
+
+### 3.1 규칙을 한 곳에 두었다
+
+`aws/_shared/lambda_package.py` (신규). `deploy-python.sh` 와
+`aws/_shared/tests/test_lambda_package.py` 가 **같은 함수를 부른다** —
+bash 와 Python 에 규칙을 두 번 쓰면 한쪽만 고쳐진다(그게 `kma_hub` 하나만 남은 이유다).
+
+```
+plan(function_dir, shared_dir)     넣을 것의 목록 (복사하지 않는다)
+stage(...)                         계획대로 복사. _shared 는 **최상위에 평평하게**
+missing_own_modules(...)           계획 대비 누락 (파일시스템만 본다 — 플랫폼 무관)
+import_check(...)                  실제 import. 5갈래로 분류
+verify(...)                        배포 게이트 = ① + ②
+```
+
+**목록을 손으로 적지 않는다.** `import` 문을 읽어 정하고 전이 의존까지 닫는다.
+새 `import` 가 생기면 자동으로 따라온다.
+
+**`_shared` 는 zip 최상위에 평평하게** 넣는다 — `/var/_shared` 가 없으므로
+zip 루트(`/var/task`)에서 해소되게 한다. `kma_hub.py` 를 그렇게 넣어 온 관례를 일반화한 것이다.
+
+### 3.2 `deploy-python.sh` 변경
+
+```
+- cp "$DIR"/*.py "$TMP"/                    (+ kma_hub 이름 특례 블록)
++ "$PYBIN" "$PKGTOOL" stage "$DIR" "$SHARED_DIR" "$TMP"
+
+  zip 생성 후:
++ zip 을 실제로 풀어 "$PKGTOOL" verify — 실패하면 배포하지 않는다
+```
+
+⚠️ `$TMP` 를 보지 않고 **실제 zip 을 풀어서** 검사한다. zip 만들기에서 빠진 것은 `$TMP` 에는 있다.
+
+### 3.3 기존 함수 82개에 영향이 없음을 실증했다
+
+옛 로직과 새 로직으로 각각 staging 한 뒤 (동일 prune 적용) 파일 집합을 비교했다:
+
+```
+Lambda 디렉터리 83개 중
+  동일   82개
+  차이    1개 — distribution: content_contract·provenance·report_contract·report_period +
+                sns_adapters/(9) + sources/(4)  ← 정확히 빠져 있던 것
+```
+
+배포 게이트도 전 함수에 돌렸다:
+
+```
+통과 82개 / 막힘 1개 (distribution)
+```
+
+### 3.4 게이트는 우리 잘못만 막는다
+
+개발 기계에서 판단할 수 없는 것을 실패로 부르면 **지금 잘 되는 13개의 배포가 막힌다.**
+그래서 5갈래로 나눈다:
+
+| 분류 | 배포 | 뜻 |
 |---|---|---|
-| ① | `cp "$DIR"/*.py` 는 **재귀하지 않는다** | `sns_adapters/` · `sources/` 패키지가 빠진다 |
-| ② | `_shared` 에서 **`kma_hub.py` 하나만** 후보이고, `import kma_hub` 가 있어야 복사된다 | `aws/distribution/*.py` 에 `import kma_hub` 가 **없다**(실측) → `_shared` 가 **한 파일도** 들어가지 않는다 |
-| ③ | 재귀 복사 특례는 `contracts/` 이름에만 걸려 있다 | `sns_adapters` · `sources` 는 해당되지 않는다 |
+| `IMPORTED` | 통과 | 끝까지 import 됐다 |
+| `OWN_MODULE_MISSING` | **차단** | 우리 모듈이 패키지에 없다 |
+| `PATH_ESCAPES_PACKAGE` | **차단** | 우리 코드가 패키지 밖 파일을 읽는다 (`FileNotFoundError`) |
+| `THIRD_PARTY_NOT_INSTALLED_LOCALLY` | 통과 | pip 가 넣는 것이 이 기계에 없다 |
+| `ENV_VAR_REQUIRED` | 통과 | 모듈 수준에서 `os.environ[...]` 을 읽는다. Lambda 에는 설정돼 있다 |
+| `UNVERIFIABLE_LOCALLY` | 통과 + 경고 | 그 밖 (manylinux `.so` 를 윈도우에서 로드 등) |
 
-## 2. 실제 dependency
+실측: `kma-warn`·`gk2a-clouds`·`news-brief` → `ENV_VAR_REQUIRED: CACHE_BUCKET` (통과).
+`tourism-flow` → `UNVERIFIABLE_LOCALLY` (통과). `distribution` → `PATH_ESCAPES_PACKAGE` (차단).
 
-### 2.1 `_shared` — 정확히 4개 (전부 leaf, 서로 import 하지 않는다)
+⚠️ 오분류 구멍 하나를 검사 중에 발견해 함께 막았다: 패키징이 빠뜨린 모듈은 `dest` 에 없으므로
+"제3자"로 오분류돼 통과할 수 있었다. `_looks_like_repo_module()` 이 `aws/` 에 그 이름의
+`.py` 가 실제로 있는지 보고 우리 것으로 판정한다. 시험
+`test_a_module_packaging_dropped_is_not_mistaken_for_third_party` 가 이를 고정한다.
 
-`aws/distribution/**` 가 실제로 `import` 하는 `_shared` 모듈 전수:
+## 4. 남은 공백 ③ — 패키지 밖 경로를 읽는다
 
-| 모듈 | git | 왜 필요한가 |
-|---|---|---|
-| `content_contract.py` | **추적됨** (`043f1c03` 에서 추가) | `generator` · `publish_queue` · `archive` · `sns_adapters/base` · `sources/lab_report` |
-| `provenance.py` | **추적됨** (`043f1c03` 에서 추가) | `generator` · `cli` · `validation` |
-| `report_contract.py` | 이전부터 추적됨 | `generator` · `sources/lab_report` · `sources/verify_scorecard` |
-| `report_period.py` | 이전부터 추적됨 | `sources/*` |
+### 4.1 무엇이
 
-⚠️ 넷 다 `_shared` 안에서 서로를 import 하지 않는다(실측). 그래서 **이 4개만 넣으면 닫힌다** —
-`governance` · `publication_privacy` · `write_path` · `write_policy` · `phenomenon_registry` · `kma_hub` 는 필요 없다.
-
-### 2.2 하위 패키지 — 2개
-
-| 경로 | 파일 | git |
-|---|---|---|
-| `aws/distribution/sns_adapters/` | `__init__.py` + `base.py` + 제공자 7종(`x` · `instagram` · `facebook` · `linkedin` · `threads` · `tiktok` · `youtube`) | `base.py` 만 추적됨. 나머지 8개 **미추적** |
-| `aws/distribution/sources/` | `__init__.py` · `lab_report.py` · `report_bridge.py` · `verify_scorecard.py` | 4개 전부 **미추적** |
-
-### 2.3 경로 계산이 Lambda 에서 성립하지 않는다
-
-`handler.py:25-26` · `generator.py:17-18` · `publish_queue.py:15` 가 모두 같은 방식을 쓴다:
+`aws/distribution/sources/verify_scorecard.py` 가 **모듈 수준에서**:
 
 ```python
-_HERE = os.path.dirname(os.path.abspath(__file__))        # 로컬: aws/distribution
-sys.path.insert(0, os.path.join(os.path.dirname(_HERE), "_shared"))   # 로컬: aws/_shared
+_HERE = os.path.dirname(os.path.abspath(__file__))
+_AWS = os.path.dirname(os.path.dirname(_HERE))
+...
+kma = _load("earthus_kma_verify_adapter",
+            os.path.join(_AWS, "report-engine", "adapters", "kma_verify_adapter.py"))
+SOURCE_REF = kma.SOURCE_REF
 ```
 
-Lambda 에서는 zip 내용이 `/var/task` 로 풀린다 → `_HERE = /var/task` →
-`dirname(_HERE)/_shared` = **`/var/_shared`** 다. 그런 디렉터리는 없다.
-
-즉 `_shared` 파일을 zip 에 넣더라도 **`/var/task/` 최상위에 평평하게** 넣어야 한다
-(`kma_hub.py` 를 그렇게 넣고 있다 — `cp "$SHARED" "$TMP"/`).
-`_shared/` 하위 디렉터리로 넣으면 위 경로 계산이 여전히 못 찾는다.
-
-## 3. 예상 runtime failure mode
-
-콜드 스타트 import 사슬을 따라가면 첫 실패 지점이 정해진다:
+Lambda 에서 경로가 어디가 되는지 계산했다:
 
 ```
-Lambda init → handler.py
-  :28  import generator as gen
-        → generator.py
-          :20  import content_contract as cc      ← 여기서 죽는다
+__file__ = /var/task/sources/verify_scorecard.py
+_HERE    = /var/task/sources
+_AWS     = /var                      ← zip 루트(/var/task)보다 한 단계 위
+찾는 파일 = /var/report-engine/adapters/kma_verify_adapter.py       ← 존재하지 않는다
 ```
 
+**zip 안에서 만족시킬 수 없다.** 경로가 task 루트 밖을 가리킨다.
+
+### 4.2 왜 경로로 읽는가 (파일의 설명)
+
 ```
-Runtime.ImportModuleError
-  Unable to import module 'handler': No module named 'content_contract'
+⚠️ 파일 경로로 직접 읽는다. sys.path 에 report-engine/adapters 를 넣으면
+   그 `adapters` 패키지가 배포 엔진의 `adapters` 패키지를 가린다 —
+   실제로 가렸다(ImportError: cannot import name 'lab_report_adapter').
+   두 디렉터리에 같은 이름의 패키지가 있으므로 경로를 섞지 않는다.
 ```
 
-**init 단계 실패이므로 함수 본문이 한 번도 실행되지 않는다.** 로그에 남는 것은 이 한 줄뿐이고,
-`events/distribution-content.json` 은 만들어지지 않는다. 스케줄이 걸려 있다면 매 회차가 같은 줄만 남긴다.
+즉 `sys.path` 로 해결할 수 없는 이유가 이미 문서화돼 있다. 단순히 `sys.path` 에 넣는 것은
+그 사고를 되풀이한다.
 
-`content_contract` 를 넣어도 다음 순서로 계속 실패한다:
-
-| 순서 | 실패 모듈 | 원인 |
-|---|---|---|
-| 1 | `content_contract` | `_shared` 미동봉 |
-| 2 | `report_contract` | 같음 |
-| 3 | `provenance` | 같음 |
-| 4 | `report_period` | 같음 (`sources/*` 가 부른다) |
-| 5 | `sns_adapters` | 하위 디렉터리 미동봉 |
-| 6 | `sources` | 하위 디렉터리 미동봉 |
-
-## 4. Reproduction
-
-### 4.1 패키징 내용만 재현 (AWS 불필요)
+### 4.3 재현 — 공백 ③만 남았음을 분리해 확인했다
 
 ```bash
-cd "<저장소>/aws"
-TMP=$(mktemp -d)
-cp distribution/*.py "$TMP"/                      # deploy-python.sh:103 과 동일
-grep -q "import kma_hub" distribution/*.py && echo "kma_hub 동봉" || echo "kma_hub 조건 불충족 → _shared 0개"
-[ -d distribution/contracts ] && echo "contracts 동봉" || echo "contracts 없음"
-ls -1 "$TMP" | grep -E "sns_adapters|sources|content_contract|provenance|report_contract|report_period" \
-  || echo "→ 필요한 것이 하나도 안 들어갔다"
+BASE=$(mktemp -d); T="$BASE/task"
+python aws/_shared/lambda_package.py stage aws/distribution aws/_shared "$T"
+# ③을 인위적으로 해소: 어댑터를 _AWS 위치에 둔다
+mkdir -p "$BASE/report-engine/adapters"
+cp aws/report-engine/adapters/kma_verify_adapter.py "$BASE/report-engine/adapters/"
+python aws/_shared/lambda_package.py verify aws/distribution aws/_shared "$T"
 ```
 
-실측(2026-09-13): `kma_hub 조건 불충족 → _shared 0개` · `contracts 없음` ·
-`→ 필요한 것이 하나도 안 들어갔다`.
+결과: `{"ok": true, "kind": "IMPORTED"}` · exit 0
+→ **①②는 확실히 닫혔고, 남은 것은 ③ 하나뿐이다.**
 
-### 4.2 import 실패 재현 (AWS 불필요)
-
-```bash
-TMP=$(mktemp -d) && cp aws/distribution/*.py "$TMP"/ && cd "$TMP" && python -c "import handler"
-```
-
-기대: `ModuleNotFoundError: No module named 'content_contract'`
-(로컬에서는 `_shared` 가 상대경로로 잡히므로, 반드시 `$TMP` 처럼 **저장소 밖**에서 돌려야 재현된다)
-
-### 4.3 관련 실측 — 추적 테스트 쪽 증거
-
-같은 누락이 테스트에서도 드러났다 ([UNTRACKED_BASELINE_AUDIT.md](UNTRACKED_BASELINE_AUDIT.md) §0.1):
+③을 해소하지 않으면:
 
 ```
-git archive HEAD aws → 사본에서 pytest aws/distribution/tests
-  043f1c03 이전 : 수집 오류 7건 (ModuleNotFoundError: content_contract)
-  043f1c03 이후 : 129 failed / 125 passed / 6 skipped
+python aws/_shared/lambda_package.py verify aws/distribution aws/_shared "$T"
+❌ 패키지 밖 경로를 읽는다: .../report-engine/adapters/kma_verify_adapter.py
+exit 1
 ```
 
-## 5. 지금 배포돼 있는가
+## 5. 권고 — ③을 고치는 방법 세 가지
+
+| 안 | 내용 | 장점 | 단점 |
+|---|---|---|---|
+| **가** | `verify_scorecard.py` 가 **패키지 안 경로**를 먼저 보고, 없으면 로컬 경로로 떨어진다 (`_load` 의 path 후보를 둘로) | 코드 한 곳 · Lambda·로컬 둘 다 동작 · §4.2 의 `sys.path` 오염을 피한다 | `verify_scorecard.py` 를 고쳐야 한다 — **DO NOT TOUCH 14개 중 하나** |
+| 나 | 패키징이 `report-engine/adapters/kma_verify_adapter.py` 를 zip 안 `report-engine/adapters/` 에 복사 | 코드 변경 0 | `_AWS` 가 task 루트 **밖**이라 여전히 못 찾는다 → **효과 없음** |
+| 다 | `sources/verify_scorecard.py` 를 `handler.py` 가 조건부로 import (없으면 그 기능만 끈다) | 나머지 기능은 배포된다 | 동작이 바뀐다 · 역시 코드 수정 |
+
+→ **가** 를 권고한다. 다만 그 파일이 DO NOT TOUCH 이므로 **사용자 승인이 필요하다.**
+
+`kma_verify_adapter.py` 는 **추적됨**이므로 패키징에 넣는 것 자체는 문제가 없다.
+문제는 그것을 찾는 **경로 계산**이다.
+
+## 6. 지금 배포돼 있는가
 
 | 확인 | 결과 |
 |---|---|
-| `distribution` 전용 배포 스크립트 | **없다.** `grep -rln distribution aws/*.sh` 히트 4건은 전부 앱 배포이고 Lambda 가 아니다 |
-| 스케줄 등록 | **없다.** `aws/schedules.sh` · `aws/configure-*.sh` 에 `distribution` 히트 0건 |
-| 운영 함수 존재 여부 | **확인 못 했다** — AWS 세션 만료(`aws sts get-caller-identity` → session expired) |
+| `distribution` 전용 배포 스크립트 | **없다** |
+| 스케줄 등록 | **없다** (`schedules.sh`·`configure-*.sh` 히트 0건) |
+| 운영 함수 존재 여부 | **확인 못 했다** — AWS 세션 만료 |
 
-→ 저장소 안의 어떤 스크립트도 이 Lambda 를 올리지 않는다. 다만 배포가 **파일시스템에서 복사**하므로
-누군가 수동으로 `./deploy-python.sh distribution` 을 돌렸을 가능성은 배제할 수 없다.
-그랬다면 위 실패 모드로 죽고 있을 것이다. **자격이 풀리면 가장 먼저 확인할 항목이다.**
+배포가 파일시스템에서 복사하므로 누군가 수동으로 올렸을 가능성은 배제할 수 없다.
+그랬다면 `Runtime.ImportModuleError` 로 죽고 있을 것이다. **자격이 풀리면 가장 먼저 볼 항목이다.**
 
-## 6. Recommended fix
-
-### 6.1 최소 수정 — `deploy-python.sh` 에 두 가지를 더한다
-
-```bash
-# ① _shared 동봉을 import 기반으로 일반화한다 (kma_hub 특례를 없애지 않고 확장)
-for mod in kma_hub content_contract provenance report_contract report_period \
-           governance publication_privacy phenomenon_registry write_path write_policy; do
-  if grep -qE "^\s*import ${mod}\b|^\s*from ${mod}\b" "$DIR"/*.py "$DIR"/*/*.py 2>/dev/null; then
-    SRC="$(dirname "$0")/_shared/${mod}.py"
-    [ -f "$SRC" ] || { echo "❌ ${mod}.py 없음: $SRC"; exit 1; }
-    cp "$SRC" "$TMP"/          # ⚠️ 반드시 최상위에 평평하게 — §2.3
-    echo "  · ${mod}.py 동봉"
-  fi
-done
-
-# ② 하위 패키지를 재귀 복사한다 (contracts 특례와 같은 방식)
-for pkg in "$DIR"/*/; do
-  name="$(basename "$pkg")"
-  case "$name" in tests|test|__pycache__|contracts) continue;; esac
-  [ -f "$pkg/__init__.py" ] || continue          # 파이썬 패키지만
-  cp -R "$pkg" "$TMP"/
-  echo "  · ${name}/ 패키지 동봉"
-done
-```
-
-⚠️ ①의 `exit 1` 이 중요하다. 지금은 필요한 모듈이 없어도 조용히 지나가고 런타임에 죽는다.
-`kma_hub` 분기(`:107`)는 이미 그렇게 하고 있다 — 같은 태도를 나머지에 적용한다.
-
-### 6.2 배포 후 검증을 스크립트에 넣는다
-
-패키징만 맞아도 import 가 성립하는지는 별개다. zip 을 만든 직후 로컬에서 확인할 수 있다:
-
-```bash
-(cd "$TMP" && python -c "import handler" >/dev/null) \
-  || { echo "❌ 패키지 안에서 handler import 실패 — 배포하지 않는다"; exit 1; }
-```
-
-이 한 줄이 §3 의 실패 모드 전체를 배포 **전에** 잡는다.
-
-### 6.3 미추적 22개 문제와의 관계
-
-패키징을 고쳐도 **파일이 없으면 올라가지 않는다.** `sns_adapters` 제공자 7종과 `sources/` 4개가
-여전히 git 미추적이다([UNTRACKED_BASELINE_AUDIT.md](UNTRACKED_BASELINE_AUDIT.md) ACTION = DO NOT TOUCH).
-
-배포는 파일시스템에서 복사하므로 **이 기계에서는** 올라간다. 다른 기계·CI 에서는 안 된다.
-둘은 별개 결함이고 **둘 다** 고쳐야 LIVE 배포가 성립한다.
-
-## 7. 해결 순서 (실제 AWS 배포 전)
+## 7. 해결 순서 (LIVE 전)
 
 ```
-1. 자격 확보 후 운영에 earthus-distribution 계열 함수가 있는지 확인한다
-   (있고 죽어 있다면 로그에 Runtime.ImportModuleError 가 반복돼 있을 것이다)
-2. 미추적 22개의 커밋 여부를 정한다 (사용자 결정)
-3. deploy-python.sh 에 §6.1 두 블록 + §6.2 검증 한 줄을 넣는다
-4. 로컬에서 §4.1·§4.2 재현이 통과하는지 본다
-5. 그 다음에 배포한다
+1. ③ 해결 방식을 정한다 (§5 가/다 — verify_scorecard.py 수정 승인 필요)
+2. python aws/_shared/lambda_package.py verify aws/distribution aws/_shared <staged> 가 통과할 때까지
+3. 미추적 14개 처리 결정 — 파일이 없으면 다른 기계·CI 에서는 올라가지 않는다
+4. aws login → 운영에 earthus-distribution 계열 함수가 있는지·죽어 있는지 확인
+5. 그 다음에 배포한다. deploy-python.sh 가 zip 을 풀어 스스로 검사하고, 실패하면 올리지 않는다
 ```
 
-⚠️ 3번 전에 배포하면 죽는다. 그래서 이 문서의 상태가 **`BLOCKED_FOR_LIVE_DEPLOYMENT`** 다.
+## 8. 시험
 
-## 8. 이 문서에서 하지 않은 것
+```
+python -m pytest aws/_shared/tests/test_lambda_package.py -q
+→ 23 passed, 5 subtests
+```
 
-- `aws/deploy-python.sh` 를 **수정하지 않았다** (이번 범위 밖 — 사용자 지시)
-- 미추적 22개를 **건드리지 않았다** (ACTION = DO NOT TOUCH 유지)
-- 운영 Lambda 상태를 **확인하지 못했다** (AWS 세션 만료)
-- §6.1 의 코드를 **실행해 보지 않았다** — 제안이고, 넣을 때 §4 재현으로 검증해야 한다
+고정한 것: import 기반 폐쇄(전이 포함) · 주석·문자열 속 이름은 import 아님 ·
+`_shared` 평평 배치 · 하위 패키지 재귀 · `__init__.py` 없는 디렉터리는 패키지 아님 ·
+`tests`·`contracts` 제외 · 5갈래 분류 각각 · 빠뜨린 모듈의 제3자 오분류 방지 ·
+`distribution` 이 4+2 를 필요로 함 · kma 함수 5개가 여전히 `kma_hub` 만 필요 ·
+하위 패키지를 가진 Lambda 가 `distribution` 하나 · **③ blocker 가 아직 있음** ·
+배포 스크립트가 옛 복사 줄을 더 이상 갖고 있지 않음.
+
+⚠️ 마지막에서 두 번째 시험(`test_distribution_is_still_blocked_by_the_cross_function_load`)은
+③이 해소되면 **실패한다.** 그때 이 문서의 STATUS 를 함께 고쳐야 한다 — 의도된 잠금이다.
+
+## 9. 이 문서에서 하지 않은 것
+
+- `aws/distribution/sources/verify_scorecard.py` 를 **고치지 않았다** (DO NOT TOUCH)
+- 미추적 14개를 건드리지 않았다
+- 범위 밖 미추적 6개(report-engine 3 · tourism-flow 2 · khoa-coast.zip)를 건드리지 않았다
+- 운영 Lambda 상태를 확인하지 못했다 (AWS 세션 만료)
+- `deploy-lite.sh` 는 고치지 않았다 — `kma_hub` 만 쓰는 함수용이고 이 결함에 해당하지 않는다

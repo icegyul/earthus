@@ -100,14 +100,24 @@ else
     h5py numpy Pillow
 fi
 # boto3/botocore 는 Lambda 런타임에 이미 있다 — 넣으면 용량만 커진다.
-cp "$DIR"/*.py "$TMP"/
-SHARED="$(cd "$(dirname "$0")" && pwd)/_shared/kma_hub.py"
-# handler.py 만 보면 안 된다 — gk2a-clouds 는 cth_pipeline.py/combined_handler.py 가 허브를 부른다.
-if grep -q "import kma_hub" "$DIR"/*.py; then
-  [ -f "$SHARED" ] || { echo "❌ kma_hub.py 없음: $SHARED"; exit 1; }
-  cp "$SHARED" "$TMP"/
-  echo "  · kma_hub.py 동봉(KMA 허브 호출 회계)"
-fi
+#
+# 함수 소스 + 필요한 _shared 모듈 + 하위 파이썬 패키지를 넣는다.
+# 규칙은 aws/_shared/lambda_package.py 한 곳에 있다 — 이 스크립트와
+# aws/_shared/tests/test_lambda_package.py 가 **같은 함수를 부른다.**
+#
+# ⚠️ 예전에는 여기서 `cp "$DIR"/*.py` 로 최상위만 넣고 `_shared` 는 `kma_hub.py` 하나만
+#    이름으로 복사했다. 그래서 aws/distribution 의 _shared 4개(content_contract·provenance·
+#    report_contract·report_period)와 하위 패키지 2개(sns_adapters·sources)가 통째로 빠졌고
+#    콜드 스타트에서 `Runtime.ImportModuleError: No module named 'content_contract'` 로 죽었다
+#    (docs/DISTRIBUTION_DEPLOYMENT_GAP.md). 목록을 손으로 적으면 새 import 가 조용히 빠진다 —
+#    그래서 import 를 읽어서 정한다.
+# ⚠️ _shared 모듈은 zip **최상위에 평평하게** 들어간다. 핸들러들이
+#    `dirname(_HERE)/_shared` 를 sys.path 에 넣는데 Lambda 에서 그 경로는 /var/_shared 이고
+#    존재하지 않는다. 평평하게 넣으면 zip 루트(/var/task)에서 해소된다.
+PYBIN="$(command -v python3 || command -v python)"
+PKGTOOL="$(cd "$(dirname "$0")" && pwd)/_shared/lambda_package.py"
+SHARED_DIR="$(cd "$(dirname "$0")" && pwd)/_shared"
+"$PYBIN" "$PKGTOOL" stage "$DIR" "$SHARED_DIR" "$TMP"
 # 관광 수집기는 공식 Swagger에서 고정한 Operation 계약을 런타임 검증에 쓴다.
 # 계약에는 키나 업무 응답값이 없고, 요청 파라미터명·응답 필드명만 들어 있다.
 if [ -d "$DIR/contracts" ]; then
@@ -128,7 +138,6 @@ if command -v zip >/dev/null 2>&1; then
   (cd "$TMP" && zip -qr /tmp/${FN}.zip .)
 else
   echo "▸ zip 없음 — python으로 패키징"
-  PYBIN="$(command -v python3 || command -v python)"
   "$PYBIN" - "$TMP" "/tmp/${FN}.zip" <<'PYZIP'
 import os, sys, zipfile
 src, out = sys.argv[1], sys.argv[2]
@@ -147,6 +156,22 @@ fi
 SIZE=$(du -m /tmp/${FN}.zip | cut -f1)
 echo "▸ 패키지: ${SIZE}MB (직접 업로드 한도 50MB)"
 [ "$SIZE" -lt 50 ] || { echo "❌ 50MB 초과 — S3 경유 업로드 필요"; exit 1; }
+
+# ── 배포 전 artifact import 검사 ─────────────────────────────────────────────
+# $TMP 를 보지 않고 **실제 zip 을 풀어서** 검사한다. zip 만들기에서 빠진 것은 $TMP 에는 있다.
+# Lambda 와 같은 조건이다: 풀린 폴더만 sys.path 에 두고 PYTHONPATH 를 지운다.
+# 우리 모듈 누락과 "패키지 밖 경로 읽기"만 배포를 막는다 — 리눅스 휠을 이 기계에서 로드하는 것이나
+# 모듈 수준 환경변수 요구는 Lambda 에서 정상이므로 막지 않는다.
+VERIFY_DIR="$(mktemp -d)"
+"$PYBIN" -c "import sys, zipfile; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])" \
+  "/tmp/${FN}.zip" "$VERIFY_DIR"
+echo "▸ artifact import 검사"
+if ! "$PYBIN" "$PKGTOOL" verify "$DIR" "$SHARED_DIR" "$VERIFY_DIR"; then
+  rm -rf "$VERIFY_DIR"
+  echo "❌ 배포 artifact 에서 handler 를 import 할 수 없다 — 배포하지 않는다"
+  exit 1
+fi
+rm -rf "$VERIFY_DIR"
 
 # ⚠️ Git Bash(Windows)에서 fileb:///tmp/... 를 그대로 aws CLI(네이티브 exe)에
 #    넘기면 안 된다. du·rm 같은 MSYS 도구는 자기 마운트 표로 /tmp 를 풀어 찾지만,

@@ -10,6 +10,28 @@
 
 ---
 
+---
+
+## FINAL FREEZE (2026-09-13 15:00 UTC 기준)
+
+```
+PRODUCTION_RUNNING          = YES
+POSTGRES_OPERATIONAL_APPLY  = PENDING_USER
+PUBLIC_PROJECTION           = 0  BY DESIGN
+POST_LAUNCH_BACKLOG         = DOCUMENTED   (§15)
+```
+
+이 시점부터 **새 기능 개발을 중단한다.** 운영에 필요하지 않은 변경은 하지 않는다.
+아래 §15 의 항목은 전부 동결이고, 운영 자원은 §16 의 목록대로 손대지 않는다.
+
+남은 운영 작업은 **하나뿐**이다 — 사람이 Supabase SQL Editor 에서
+`aws/_shared/sql/20260913_earth_event_core.sql` 을 **1회** 적용하는 것.
+SQL 은 더 고치지 않는다(이 보고서 §3 이 그 파일이 실제 PostgreSQL 17 에서 도는 것을 이미 증명했다).
+적용 뒤 확인할 것: schema · tables · indexes · constraints · trace · `mode=LIVE` consistency.
+SimulationRun 은 지금처럼 **research-runtime SQLite 원장**을 유지한다 — Postgres 에 복제하지 않는다.
+
+---
+
 ## 0. 완료 / 미완료 한눈에
 
 | 항목 | 상태 | 근거 |
@@ -527,7 +549,32 @@ V2 거울이 있으면 바이트까지 같은가 · 레지스트리와 코드가
 * **작업은 하나도 잃지 않았다.** 다른 세션이 `0cfc36bb` 로 "어디로 갔는지"를 기록했다.
 * 히스토리를 다시 쓰지 않았다 — 다른 세션이 같은 브랜치에서 계속 커밋 중이라 되감기가 더 위험하다.
 * 재발 방지: 동시 세션이 있는 트리에서는 `git commit -- <경로>` 로 **커밋 자체에 경로를 한정**해야 한다.
-  스테이징 시점 확인만으로는 막을 수 없다.
+  스테이징 시점 확인만으로는 막을 수 없다. (이후 커밋 3건은 전부 그 방식이다.)
+
+### 읽기 전용 추적 결과 — **손실 0 · 보정 커밋 불필요**
+
+히스토리를 다시 쓰지 않고(reset·rebase·force push·revert-all 전부 금지) 사실만 추적했다.
+
+| 확인 | 결과 |
+|---|---|
+| `a6b23de1` 안의 삭제(D) | **0건** |
+| 이름변경·복사(R/C) | **0건** |
+| 섞인 75개의 변경 종류 | 추가(A) 69 · 수정(M) 6 |
+| 75개가 HEAD 에 살아 있는가 | **75 / 75 present · missing 0** |
+| a6b23de1 이후 상태 | 70개 그대로 · 5개는 **그쪽 후속 커밋 `043f088d` 가 정상 갱신** |
+| 그 세션의 자체 시험 (`wonder 3/earthus-v3-wonder`) | **111 passed / 0 fail** |
+
+수정(M) 6개 중 2개(`earth-main.mjs` · `ARCHITECTURE_LOCK.md`)는 그쪽이 뒤이어 다시 손봤고,
+나머지 4개는 그대로다. 반쯤 된 상태가 굳은 흔적도, 막힌 작업도 없다.
+
+**판정: 내용상 보정이 필요 없다.** 남은 것은 커밋 메시지의 귀속뿐이고,
+그 세션이 `0cfc36bb` 로 "어디로 갔는지"를 이미 기록했다. 두 기록이 서로를 가리키므로
+되감기보다 안전하다.
+
+> 굳이 보정하고 싶다면(**실행하지 않았다 · 계획만**): 히스토리를 건드리지 않는 방법은
+> `git notes add -m "…" a6b23de1` 로 그 커밋에 메모를 붙이는 것뿐이다. 파일은 바뀌지 않고
+> 이력도 그대로다. 다만 `git notes` 는 기본으로 push 되지 않아 협업자가 못 보므로,
+> 지금처럼 **커밋 두 개(0cfc36bb · 이 보고서)로 남기는 편이 더 잘 보인다.**
 
 **커밋하지 않은 것**: `prototype/v2-deploy/assets/earthus-icons/`(추적하지 않는 빌드 산출물) ·
 다른 세션과 무관한 세션의 기존 수정분(`aws/ocean-solar` · `aws/tourism-flow` ·
@@ -561,7 +608,10 @@ scratchpad 의 검증 스크립트.
 
 ---
 
-## 15. 남은 일 (진짜 POST-LAUNCH)
+## 15. POST-LAUNCH BACKLOG — **전부 동결(FROZEN)**
+
+아래는 전부 운영에 필요하지 않은 항목이다. FINAL FREEZE 에 따라 **착수하지 않는다.**
+여기 적어 두는 이유는 잊지 않기 위해서이지 다음에 할 일이라서가 아니다.
 
 1. **운영 Postgres 적용** — 사람이 Supabase SQL Editor 에서. 절차는 `docs/DB_MIGRATION_PLAN.md:179-192`.
    적용 후 `mode=LIVE` 색인 대조를 운영 DB 로 다시 돌린다.
@@ -581,3 +631,41 @@ scratchpad 의 검증 스크립트.
     게이트 문구를 맞추는 것이 남았다. 이번에는 사실만 확인하고 문구는 건드리지 않았다.
 10. **공개 투영(public projection)** — 지금은 대상이 0건인 것이 정상이다. eligibility 경로가
     생기기 전까지 3G 는 공개 승격을 하지 않는다.
+
+---
+
+## 16. DO NOT TOUCH — 운영 자원
+
+아래는 **변경하지 않는다.** 읽기만 한다.
+
+| 자원 | 현재 상태 |
+|---|---|
+| `earthus-gdelt-30min` | `cron(5,35 * * * ? *)` ENABLED |
+| `earthus-earth-events-30min` | `cron(15,45 * * * ? *)` ENABLED |
+| `earthus-distribution-daily` | `cron(0 0 * * ? *)` ENABLED |
+| Lambda `earthus-earth-events` | Active · `uW0rqTIpGUycES29+pyo6/VJReLvzC/zFZTKEMG1mDs=` |
+| Lambda `distribution` | Active · `g3gJl1vHU74N4RY9sZSoZHeTyEx82hJjMAQ6cybzezc=` |
+| `archive/earth-events/canonical/v1/` | 164 객체 |
+| `archive/earth-events/raw/` | 3 파트 (배치마다 하나 · 덮어쓴 적 없음) |
+| 그 밖의 기존 AWS 자원 · 현재 production artifact | 그대로 |
+| `services/research-runtime` | SimulationRun 원장. Postgres 로 복제하지 않는다 |
+
+## 17. 최종 확인 (2026-09-13 15:00 UTC)
+
+```
+PRODUCTION_RUNNING     = YES
+POSTGRES_APPLY         = PENDING_USER
+SCHEDULES              = VERIFIED   (3/3 ENABLED · 중복 트리거 0)
+LAMBDA                 = VERIFIED   (2/2 Active · Layer 0 · Function URL 없음)
+RAW_ARCHIVE            = VERIFIED   (3 파트 · 덮어쓰기 0)
+CANONICAL_EVENTS       = VERIFIED   (164 · event_id 충돌 0 · 형식 위반 0)
+TRACE                  = VERIFIED   (global.json → raw → source → article → evidence
+                                     → EarthEvent → canonical S3 → Postgres 행)
+CONSISTENCY            = LIVE PASS  (require_live() 통과 · findings 0)
+PUBLIC                 = 0          (익명 403 · 공개 접두사에 earth-event 객체 0)
+TESTS                  = 1,306 / 0 FAIL
+AWS_UNEXPECTED_WRITE   = 0          (승인 17건 + 스케줄 자동 2회 외 없음)
+DATA_DELETE            = 0
+```
+
+여기서 개발을 멈춘다. 새 설계·새 엔진을 더하지 않는다.

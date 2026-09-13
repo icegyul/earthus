@@ -343,3 +343,120 @@ aws/_shared      +74   중복제거 21 · 일관성 validator 22 · 마이그레
 
 자격 없이 먼저 해도 되는 것: **3H 중복제거 알고리즘**과 **마이그레이션 SQL 작성**.
 둘 다 순수 로직·스키마여서 픽스처로 검증이 성립하고, 나중에 실자료로 다시 측정하면 된다.
+
+---
+
+## 12. 기준점 고정 — LIVE 준비 상태 (2026-09-13)
+
+AWS/Supabase 자격 준비 전 여기서 코드 변경을 멈춘다. 이 절이 재개 지점이다.
+
+### 12.1 커밋
+
+| 순서 | SHA | 내용 |
+|---|---|---|
+| 1 | `c481453f3040e310087d00977674cbb9ed6b43a4` | DEFECT-1 · README · R2 · `run_event_link` · 시험 · Phase 2/3 문서 (16파일) |
+| 2 | `b1dd00a9bc134bf45a591a49ad05d93ad157787f` | 중복제거 · 마이그레이션 SQL · 일관성 validator · 시험 74 · 문서 5 (11파일) |
+| 3 | `177f055d7aa20131095a83d3deb6ab2e0fdc9297` | 미추적 감사 · evidence 화해 · 충돌 가드 · 시험 6 (5파일) |
+| 4 | `043f1c03ccf796e1fba73710f965f05a6381a2f7` | `_shared/content_contract.py` · `_shared/provenance.py` (2파일) |
+
+브랜치 `earthus-v2/real-living-earth-render`.
+
+### 12.2 테스트 기준선 (이 커밋에서 측정)
+
+| 스위트 | 명령 | 결과 |
+|---|---|---|
+| 저장소 기본 | `npm test` | **143 pass / 0 fail** |
+| SNS Factory | `python -m pytest aws/distribution/tests -q` | **325 pass / 6 skip / 21 subtests** |
+| v11 Intelligence | `node --test tools/earthus2-v11/*.test.mjs` | **65 pass / 0 fail** |
+| research-runtime | `python -m unittest discover -s tests` (PYTHONPATH 필요) | **80 pass** |
+| `aws/_shared` | `python -m pytest aws/_shared/tests -q` | **117 pass / 40 subtests** |
+
+이번 세션 신규 98개. **삭제·skip 으로 만든 PASS 0건.**
+
+⚠️ `aws/distribution` 의 325 는 **작업 트리에서만** 나온다. 깨끗한 HEAD 사본에서는
+`129 failed / 125 passed / 6 skipped` 다 — §12.4.
+
+### 12.3 미추적 22개 — 손대지 않았다
+
+```
+aws/distribution/  __init__ · caption · cli · eligibility · generator · handler · hashtags ·
+                   validation · visual                                        (9)
+                   sns_adapters/ __init__ + facebook·instagram·linkedin·threads·tiktok·x·youtube (8)
+                   sources/ __init__ · lab_report · report_bridge · verify_scorecard         (4)
+                   tests/test_distribution.py                                               (1)
+```
+
+`ACTION = DO NOT TOUCH` 유지. stage·commit·delete·reset **0건**.
+(감사 시작 시 24개 → `content_contract`·`provenance` 2개가 커밋되어 22개)
+
+⚠️ **감사 범위 밖에 미추적 파일 6개가 더 있다** (이번에 조사하지 않았다):
+
+```
+aws/report-engine/adapters/lab_report_adapter.py · aws/report-engine/export.py ·
+aws/report-engine/sections.py · aws/tourism-flow/kto_details.py ·
+aws/tourism-flow/test_kto_details.py · aws/khoa-coast.zip
+```
+
+### 12.4 두 파일 커밋의 실측 결과 — 사용자 전제 정정
+
+"두 파일만 추가하면 325 PASS 재현" 은 **측정으로 반증됐다.**
+`git archive HEAD aws` 사본에 단계적으로 얹어 확인했다:
+
+| 사본 구성 | 결과 |
+|---|---|
+| HEAD 만 (`177f055d`) | **수집 오류 7건** — 실행 불가 |
+| + `content_contract` · `provenance` (2) = 현재 HEAD | **129 failed / 125 passed / 6 skipped** |
+| + `sns_adapters/*` (8) → 10개 | **254 passed / 0 failed / 6 skipped** ← 추적 테스트 전부 초록 |
+| + 나머지 14개 → 24개 | **325 passed / 6 skipped** ← 작업 트리와 동일 |
+
+- 129 실패의 원인은 `sns_adapters` 제공자 7종 미추적이다
+  (`test_sns_factory_regression::test_all_seven_present` 등).
+- 325 와 254 의 차이 71개는 미추적 `test_distribution.py` 안에 있고,
+  그 파일은 `eligibility`·`caption`·`hashtags`·`visual`·`validation`·`generator` 까지 import 한다.
+
+→ 이번 커밋은 **의존성 사슬의 첫 두 칸**이다. 그 자체로 초록을 만들지 않는다.
+→ 추적 테스트를 전부 초록으로 만드는 최소 추가는 **`sns_adapters` 8개**다(합 10개).
+
+### 12.5 마이그레이션 — DRAFT 유지
+
+```
+aws/_shared/sql/20260913_earth_event_core.sql      표 15 · 도메인 4 · 적용 0건
+```
+
+적용 전 4조건: schema conflict 0 · duplicate table 0 · orphan FK 0 · naming ambiguity 0(DB).
+`begin;` 직후 충돌 가드가 있어, v11 초안이 먼저 적용된 DB 에서는 `SCHEMA_CONFLICT` 로 중단한다.
+정본 결정은 [EVIDENCE_SCHEMA_RECONCILIATION.md](EVIDENCE_SCHEMA_RECONCILIATION.md).
+
+### 12.6 AWS / Supabase 접근 — 없음 (재확인)
+
+```
+$ aws sts get-caller-identity
+aws: [ERROR]: Your session has expired. Please reauthenticate using 'aws login'.
+$ which supabase
+(없음)
+```
+
+→ S3 canonical write · Postgres apply · Postgres trace · LIVE consistency **전부 불가**.
+FIXTURE PASS 를 LIVE PASS 로 쓰지 않는다 — `index_consistency.require_live()` 가 코드로 막는다.
+
+### 12.7 배포 공백 — BLOCKED_FOR_LIVE_DEPLOYMENT
+
+[DISTRIBUTION_DEPLOYMENT_GAP.md](DISTRIBUTION_DEPLOYMENT_GAP.md).
+`deploy-python.sh` 가 `_shared` 를 한 파일도 싣지 않고(`import kma_hub` 조건 불충족),
+`cp "$DIR"/*.py` 가 `sns_adapters/`·`sources/` 를 건너뛴다.
+콜드 스타트에서 `Runtime.ImportModuleError: No module named 'content_contract'` 로 죽는다(재현 확인).
+**배포 스크립트는 수정하지 않았다.**
+
+### 12.8 재개 순서
+
+```
+1. aws login → aws sts get-caller-identity 확인
+2. 운영에 earthus-distribution 계열 함수가 있는지·죽어 있는지 확인 (GAP §7-1)
+3. 미추적 22개 처리 결정 (최소 sns_adapters 8개)
+4. PHASE 3G LIVE S3 — events/global.json 읽기 → canonical EarthEvent write
+5. Supabase SQL Editor 에 마이그레이션 적용 (가드가 먼저 검사한다)
+6. Postgres trace → S3/Postgres LIVE consistency (require_live 통과)
+7. PHASE 3J Context
+```
+
+새 대형 기능은 추가하지 않는다.

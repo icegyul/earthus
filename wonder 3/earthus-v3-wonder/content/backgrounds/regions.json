@@ -1,0 +1,31 @@
+{
+  "_note": "팩 1.8 배경 24장의 지역 배정 (PHASE 0 잠정). 팩 카탈로그에는 지리 정보가 없어 여기서 정한다. geo 가 있는 배경만 좌표로 고르고, 나머지(generic)는 환경·시간 규칙용이다. 그림 배경은 사실 주장이 아니므로 '자료 없으면 안 그림' 규칙의 대상이 아니지만, 한국 4곳은 실제 지명에만 붙인다.",
+  "radius_km": 1500,
+  "fallback": "grassland_01",
+  "backgrounds": [
+    { "id": "korea_seoul_01",    "geo": { "lat": 37.57, "lon": 126.98 }, "radius_km": 60 },
+    { "id": "korea_busan_01",    "geo": { "lat": 35.18, "lon": 129.08 }, "radius_km": 60 },
+    { "id": "korea_gyeongju_01", "geo": { "lat": 35.86, "lon": 129.22 }, "radius_km": 40 },
+    { "id": "korea_jeju_01",     "geo": { "lat": 33.50, "lon": 126.53 }, "radius_km": 60 },
+    { "id": "tibet_01",          "geo": { "lat": 31.0,  "lon": 88.0 } },
+    { "id": "tajmahal_01",       "geo": { "lat": 27.17, "lon": 78.04 }, "radius_km": 300 },
+    { "id": "sahara_01",         "geo": { "lat": 23.0,  "lon": 12.0 } },
+    { "id": "savanna_01",        "geo": { "lat": -2.0,  "lon": 35.0 } },
+    { "id": "jungle_01",         "geo": { "lat": -3.0,  "lon": -60.0 } },
+    { "id": "australia_01",      "geo": { "lat": -25.0, "lon": 134.0 } },
+    { "id": "aurora_01",         "geo": { "lat": 69.6,  "lon": 19.0 } },
+    { "id": "ice_01",            "geo": { "lat": -75.0, "lon": 0.0 },  "radius_km": 3000 },
+    { "id": "cave_01",        "generic": true },
+    { "id": "coast_01",       "generic": true },
+    { "id": "desert_01",      "generic": true },
+    { "id": "forest_01",      "generic": true },
+    { "id": "grassland_01",   "generic": true },
+    { "id": "island_01",      "generic": true },
+    { "id": "night_01",       "generic": true },
+    { "id": "ocean_01",       "generic": true },
+    { "id": "sky_island_01",  "generic": true },
+    { "id": "sunset_01",      "generic": true },
+    { "id": "underwater_01",  "generic": true },
+    { "id": "volcano_01",     "generic": true }
+  ]
+}

@@ -1,0 +1,1505 @@
+{
+  "_note": "런타임 WebP 의 원본 PNG 기록 — 사본이 아니라 출처 증명. 원본은 여기 적힌 경로에 그대로 있고 삭제하지 않는다.",
+  "source_root": "D:\\## APP\\EARTHUS v2_APP\\prototype\\v3-paper\\pack124",
+  "generated_at": "2026-09-13 14:09",
+  "baseline": {
+    "character": {
+      "max": 1024,
+      "quality": 85
+    },
+    "scene": {
+      "max": 1024,
+      "quality": 85
+    }
+  },
+  "entries": {
+    "african-elephant:character": {
+      "path": "characters/african-elephant.png",
+      "bytes": 934516,
+      "mtime": 1788565437.1857586,
+      "sha256": "dc8ded4c5a585633fbebbefb1a6fa7c5a931ff9d41db075a10d865c93ad4ca8d"
+    },
+    "african-elephant:scene": {
+      "path": "scenes/african-elephant_scene.png",
+      "bytes": 998200,
+      "mtime": 1788565437.1857586,
+      "sha256": "1903c5644b423799503cefb51921de58412004044001a82637aafef7982bf8d1"
+    },
+    "allosaurus:character": {
+      "path": "characters/allosaurus.png",
+      "bytes": 454168,
+      "mtime": 1788565437.1920087,
+      "sha256": "5a912498df47ab3fc66a259bee112046da7695f0749f383f66d359c46f66f4fe"
+    },
+    "allosaurus:scene": {
+      "path": "scenes/allosaurus_scene.png",
+      "bytes": 1035436,
+      "mtime": 1788565437.1910074,
+      "sha256": "2d4c58e4e4c40d06d85ec98a27d67f9c0a484054bbd53f827c1c887d1351c43a"
+    },
+    "alux:character": {
+      "path": "characters/alux.png",
+      "bytes": 564729,
+      "mtime": 1788565437.1960073,
+      "sha256": "7a158e40742b80b9f810d952af9f54d48f32515e8cf1bf09c99bdb4f49a54c1e"
+    },
+    "alux:scene": {
+      "path": "scenes/alux_scene.png",
+      "bytes": 1159695,
+      "mtime": 1788565437.1960073,
+      "sha256": "88f420dd42efb2c1cccf6c9e2e359ab4a2bd9008a08cf073ccad81e27587d055"
+    },
+    "american-bison:character": {
+      "path": "characters/american-bison.png",
+      "bytes": 768798,
+      "mtime": 1788565437.202617,
+      "sha256": "2ecc129144e15f604cc0f2c12be0a48aa65db8f8c745166e22ec581371b401b0"
+    },
+    "american-bison:scene": {
+      "path": "scenes/american-bison_scene.png",
+      "bytes": 973362,
+      "mtime": 1788565437.2006242,
+      "sha256": "a67645cf0f4db14f1a2c392b843c358d02ba77e797e7e01de088a1bb74013952"
+    },
+    "anansi:character": {
+      "path": "characters/anansi.png",
+      "bytes": 609275,
+      "mtime": 1788565437.207124,
+      "sha256": "a297938b1f15996a95ff9f02148b12b9b6bb2ca264bae73656489e409b023b61"
+    },
+    "anansi:scene": {
+      "path": "scenes/anansi_scene.png",
+      "bytes": 1015259,
+      "mtime": 1788565437.2046168,
+      "sha256": "bea983613df8dc799c066ebdb094c8bc20fac97fa84096d8cdab64dabc95a56f"
+    },
+    "ankylosaurus:character": {
+      "path": "characters/ankylosaurus.png",
+      "bytes": 529433,
+      "mtime": 1788565437.2246423,
+      "sha256": "b476ce559c1b746863b23baced7229be58ccdd3474939016c1d433eed9e3f32a"
+    },
+    "ankylosaurus:scene": {
+      "path": "scenes/ankylosaurus_scene.png",
+      "bytes": 966106,
+      "mtime": 1788565437.2246423,
+      "sha256": "08ce00101d008b7b862b4c62e4879eea1baed981b09535e141ae0e7911ebe295"
+    },
+    "apatosaurus:character": {
+      "path": "characters/apatosaurus.png",
+      "bytes": 491896,
+      "mtime": 1788565437.2302794,
+      "sha256": "f325663d1d7e23865648555fe7e2dbc27c676b7d073d21d9d66f77953ea32e6b"
+    },
+    "apatosaurus:scene": {
+      "path": "scenes/apatosaurus_scene.png",
+      "bytes": 1011107,
+      "mtime": 1788565437.2302794,
+      "sha256": "d8788f48f1e7ebf28d59dc8e665601af3813a6c30f888d3964cd6b60b4aace6c"
+    },
+    "archaeopteryx:character": {
+      "path": "characters/archaeopteryx.png",
+      "bytes": 662453,
+      "mtime": 1788565437.2346857,
+      "sha256": "ccaabfe9f0ea482549b26b15e96e5bfb739133d1026cbf25c6a474e3172c3a99"
+    },
+    "archaeopteryx:scene": {
+      "path": "scenes/archaeopteryx_scene.png",
+      "bytes": 1065268,
+      "mtime": 1788565437.2368155,
+      "sha256": "2dfd26d3e3d9cc08a5b34ed039d0c2b5920648ad07e100f9633df6803bf28681"
+    },
+    "arctic-fox:character": {
+      "path": "characters/arctic-fox.png",
+      "bytes": 710125,
+      "mtime": 1788565437.2418149,
+      "sha256": "b337192106a0d4dc3bfd4dec93dffb559baabc85d1be03d107f6af4ea3c7dffb"
+    },
+    "arctic-fox:scene": {
+      "path": "scenes/arctic-fox_scene.png",
+      "bytes": 967707,
+      "mtime": 1788565437.2428148,
+      "sha256": "2f6ebf90a79da70ef7002532e5e35bc9bacfe71b1d1447441e3b29e4370a174c"
+    },
+    "argentinosaurus:character": {
+      "path": "characters/argentinosaurus.png",
+      "bytes": 620596,
+      "mtime": 1788565437.2458148,
+      "sha256": "9f1d43e52e8c840c3278bcf60a7b0b5b485a1263afcab1d95c7ac861c1192dca"
+    },
+    "argentinosaurus:scene": {
+      "path": "scenes/argentinosaurus_scene.png",
+      "bytes": 911742,
+      "mtime": 1788565437.24807,
+      "sha256": "0759ef5d0e5ba6007e1c417dd216a063f241be16ddf0d8f5f68ddae8e78afa86"
+    },
+    "asian-elephant:character": {
+      "path": "characters/asian-elephant.png",
+      "bytes": 1106721,
+      "mtime": 1788565437.2502947,
+      "sha256": "267239abeb9b4c9a110bb416063e2e4c9f60c685d5c050bb00ddae6392fbb067"
+    },
+    "asian-elephant:scene": {
+      "path": "scenes/asian-elephant_scene.png",
+      "bytes": 961182,
+      "mtime": 1788565437.253296,
+      "sha256": "83cab554aed91f34f1fe38502397073ac2a5d2fb99c3b3b1a74bf78301fc66d5"
+    },
+    "baku:character": {
+      "path": "characters/baku.png",
+      "bytes": 783325,
+      "mtime": 1788565437.2563157,
+      "sha256": "0b1934ecfc3c9641295cab78bd544023cb441b7f82a5f1273fa14c78a58b5d75"
+    },
+    "baku:scene": {
+      "path": "scenes/baku_scene.png",
+      "bytes": 958354,
+      "mtime": 1788565437.2591264,
+      "sha256": "b08e6bd98857b8616478ad1f73236ab4c2597301ae429fd3163e85914e09cfed"
+    },
+    "bakunawa:character": {
+      "path": "characters/bakunawa.png",
+      "bytes": 689520,
+      "mtime": 1788565437.261126,
+      "sha256": "a8b0e520ec8058cfe2959dcef440124ecd15e0509508630fbdccfa611337b6a9"
+    },
+    "bakunawa:scene": {
+      "path": "scenes/bakunawa_scene.png",
+      "bytes": 973880,
+      "mtime": 1788565437.2641234,
+      "sha256": "447ee7383ced378fdee00202e9340238b0d251b68f2b3c0361ee0b2a80f78383"
+    },
+    "bald-eagle:character": {
+      "path": "characters/bald-eagle.png",
+      "bytes": 727903,
+      "mtime": 1788565437.2666385,
+      "sha256": "c4df129ca37e2902645a185a8d566b2602abc6bfdf5d1bd1ab7918dc68f53b47"
+    },
+    "bald-eagle:scene": {
+      "path": "scenes/bald-eagle_scene.png",
+      "bytes": 958874,
+      "mtime": 1788565437.268808,
+      "sha256": "b1de02f6a9477a0f1bfc96a3c8cff4fa2c784f6907145454d4742c87e44b928b"
+    },
+    "barong:character": {
+      "path": "characters/barong.png",
+      "bytes": 933563,
+      "mtime": 1788565437.2726316,
+      "sha256": "8f9c76bae2feb9ec05e7b676321be64ca5b384a3ea9bb4dad76abdfc75c0bdd2"
+    },
+    "barong:scene": {
+      "path": "scenes/barong_scene.png",
+      "bytes": 960103,
+      "mtime": 1788565437.2736316,
+      "sha256": "1869ddf1a53eb3aec16b3b4ce0d0bb2cb17b061e1efee41ea8bab5cd0a2e622b"
+    },
+    "baryonyx:character": {
+      "path": "characters/baryonyx.png",
+      "bytes": 565339,
+      "mtime": 1788565437.2786634,
+      "sha256": "c4e8aa9ce68732b0979cec1d5cc3a46427657d666af9c2ba3a4e54393f5fe46e"
+    },
+    "baryonyx:scene": {
+      "path": "scenes/baryonyx_scene.png",
+      "bytes": 1039658,
+      "mtime": 1788565437.2786634,
+      "sha256": "891dfe0e0064a8f138254e07a8c486bf3c1d12a13afb1893b610d8790c50d34a"
+    },
+    "bengal-tiger:character": {
+      "path": "characters/bengal-tiger.png",
+      "bytes": 755878,
+      "mtime": 1788565437.2827897,
+      "sha256": "d8c2316aad11f9cf101d45fec3c8bc80c59e476e01c0fdd6536f0baa724561da"
+    },
+    "bengal-tiger:scene": {
+      "path": "scenes/bengal-tiger_scene.png",
+      "bytes": 1011290,
+      "mtime": 1788565437.2847917,
+      "sha256": "d65ab7b349c1d35c25fce692ee51b432f0cf4f61937b5542ae31548215cb44f4"
+    },
+    "bigfoot:character": {
+      "path": "characters/bigfoot.png",
+      "bytes": 623619,
+      "mtime": 1788565437.2870648,
+      "sha256": "63d25fd1468adc158209cdd09fe7641c890a9a52364ba8de78285da0ed705501"
+    },
+    "bigfoot:scene": {
+      "path": "scenes/bigfoot_scene.png",
+      "bytes": 1013907,
+      "mtime": 1788565437.2895727,
+      "sha256": "3f3be95ea9af28f2f51483b064e72599bdcd87e9a396652b0d7c74992dddc212"
+    },
+    "blue-whale:character": {
+      "path": "characters/blue-whale.png",
+      "bytes": 378507,
+      "mtime": 1788565437.2925737,
+      "sha256": "e1d50df5e44cc8e9e97144abb095005de0f71c58507c3c20e04e1cdd36f14b6b"
+    },
+    "blue-whale:scene": {
+      "path": "scenes/blue-whale_scene.png",
+      "bytes": 904101,
+      "mtime": 1788565437.2945726,
+      "sha256": "b874d3282ef28f39382f6881099f789fd9c5466395ea25fc1c3a09e85034ac9e"
+    },
+    "bottlenose-dolphin:character": {
+      "path": "characters/bottlenose-dolphin.png",
+      "bytes": 550436,
+      "mtime": 1788565437.2968173,
+      "sha256": "815a297566d066f48a09f2f8754d7a6dd715a5295bef704850e7c1fb473e15bd"
+    },
+    "bottlenose-dolphin:scene": {
+      "path": "scenes/bottlenose-dolphin_scene.png",
+      "bytes": 872439,
+      "mtime": 1788565437.2993243,
+      "sha256": "92c0911d5ea9fde9337b5d792f69058b8c044b392bfbc6cd5b79eaddd608aeb9"
+    },
+    "brachiosaurus:character": {
+      "path": "characters/brachiosaurus.png",
+      "bytes": 600124,
+      "mtime": 1788565437.3003283,
+      "sha256": "b7f8ab33849ed0087b261755e2d5433f6240c75df666e615e3085fffa536fdff"
+    },
+    "brachiosaurus:scene": {
+      "path": "scenes/brachiosaurus_scene.png",
+      "bytes": 1027282,
+      "mtime": 1788565437.3033292,
+      "sha256": "4b2b7a51f366330a57622bba32dce4392af468e52b9d44cbf05fc7ade1ad01a0"
+    },
+    "bulgasari:character": {
+      "path": "characters/bulgasari.png",
+      "bytes": 786651,
+      "mtime": 1788565437.3058338,
+      "sha256": "4d9c66fe8a6f4207404eef35f03235931895bd8c096b7fcbd596fc52158013b3"
+    },
+    "bulgasari:scene": {
+      "path": "scenes/bulgasari_scene.png",
+      "bytes": 850347,
+      "mtime": 1788565437.3094673,
+      "sha256": "87785f42047960a27433b2f2d0a17999f5479885d3cae051ab4ae1021c73720b"
+    },
+    "bunyip:character": {
+      "path": "characters/bunyip.png",
+      "bytes": 781691,
+      "mtime": 1788565437.3114667,
+      "sha256": "50a63e875abf43df74b9a0a41b79ae49d0bd661c2cf31def575c8d57e96e4e31"
+    },
+    "bunyip:scene": {
+      "path": "scenes/bunyip_scene.png",
+      "bytes": 1009229,
+      "mtime": 1788565437.3134668,
+      "sha256": "5d0f04b798053266e7d2be36d861d9152f0979038db8bb7c0547e74b5e026091"
+    },
+    "capybara:character": {
+      "path": "characters/capybara.png",
+      "bytes": 974404,
+      "mtime": 1788565437.3169968,
+      "sha256": "89ce853a41aa4c979848f85046e3f786bd752ffc7b8f3d999894e9d865b007b5"
+    },
+    "capybara:scene": {
+      "path": "scenes/capybara_scene.png",
+      "bytes": 1087725,
+      "mtime": 1788565437.319001,
+      "sha256": "770bc555d05d8646306fe3579e9f3765c0c378cdf6133ab17ca6b539d0c76c55"
+    },
+    "carnotaurus:character": {
+      "path": "characters/carnotaurus.png",
+      "bytes": 671334,
+      "mtime": 1788565437.3220015,
+      "sha256": "d230785ee26bea5fcc494e7fe50cd0e3ba6c1daadcf9cb701f59ac24f15510d8"
+    },
+    "carnotaurus:scene": {
+      "path": "scenes/carnotaurus_scene.png",
+      "bytes": 964966,
+      "mtime": 1788565437.325001,
+      "sha256": "7328d637ec66a2611dc3d8d4b6ff59b9f9fdc8bfeda2ae48c6f23b9105bf59ad"
+    },
+    "ceratosaurus:character": {
+      "path": "characters/ceratosaurus.png",
+      "bytes": 593030,
+      "mtime": 1788565437.327507,
+      "sha256": "2f11b214e4e8f3fba38f2a278f83251a473efeeebb21b9f92ea83aac814c7326"
+    },
+    "ceratosaurus:scene": {
+      "path": "scenes/ceratosaurus_scene.png",
+      "bytes": 1046165,
+      "mtime": 1788565437.329507,
+      "sha256": "8584016f88f4b2ab3aa739f15a36826ddea51dc654f0d75d30c83faec4d065b0"
+    },
+    "cheetah:character": {
+      "path": "characters/cheetah.png",
+      "bytes": 675033,
+      "mtime": 1788565437.3365214,
+      "sha256": "75f14b6907412e423e936e05a653db7edf5d30c725281e32061db6f6c06b4ee8"
+    },
+    "cheetah:scene": {
+      "path": "scenes/cheetah_scene.png",
+      "bytes": 1042520,
+      "mtime": 1788565437.3345065,
+      "sha256": "7f470887ac127923fcc9a1e18e3c12aca7acf14f057de956002b5391a03530ad"
+    },
+    "chinese-dragon:character": {
+      "path": "characters/chinese-dragon.png",
+      "bytes": 769277,
+      "mtime": 1788565437.3418348,
+      "sha256": "17a81260fca846c51e76f11cfa74a585f6cea1deeb14f92031e214b2db07bb31"
+    },
+    "chinese-dragon:scene": {
+      "path": "scenes/chinese-dragon_scene.png",
+      "bytes": 972659,
+      "mtime": 1788565437.340318,
+      "sha256": "7a6a2a45e68ad839c7f9410bc535dac7fc4e4117965a9b0a8fe28691d7ba6548"
+    },
+    "chupacabra:character": {
+      "path": "characters/chupacabra.png",
+      "bytes": 518834,
+      "mtime": 1788565437.347882,
+      "sha256": "fc73fd4936cdeff195f607741ca506374a64a0f66f37c5c664626b0ec47a58cc"
+    },
+    "chupacabra:scene": {
+      "path": "scenes/chupacabra_scene.png",
+      "bytes": 957991,
+      "mtime": 1788565437.3443758,
+      "sha256": "0dff372f72800266be021bb6daba94584d4d0e21f67c077351bc95f106ea4ef3"
+    },
+    "coelophysis:character": {
+      "path": "characters/coelophysis.png",
+      "bytes": 418032,
+      "mtime": 1788565437.3526437,
+      "sha256": "a71ec83fcbc25c9c07173ffab5cef1d66653bc0a343f4f2599bbccafecd7e332"
+    },
+    "coelophysis:scene": {
+      "path": "scenes/coelophysis_scene.png",
+      "bytes": 1016332,
+      "mtime": 1788565437.3508837,
+      "sha256": "b15837c93039866df511a3f00ab2ae5e9c8e5b450bd2ed55a23e4a974c416830"
+    },
+    "compsognathus:character": {
+      "path": "characters/compsognathus.png",
+      "bytes": 410189,
+      "mtime": 1788565437.3571715,
+      "sha256": "5d28cfd52b2fe87a9c3c35c9e5603031e0ff2ffbb4a18d0edfe42ab770c8d2f2"
+    },
+    "compsognathus:scene": {
+      "path": "scenes/compsognathus_scene.png",
+      "bytes": 1058452,
+      "mtime": 1788565437.355663,
+      "sha256": "4c9ea741d0364eb9e406b470bcf78a1762e6e77273b4f0c04f1424a7c2821881"
+    },
+    "deinonychus:character": {
+      "path": "characters/deinonychus.png",
+      "bytes": 462120,
+      "mtime": 1788565437.363176,
+      "sha256": "bc04f3dcb01b42aa5026d280186eed42f1cbbe80484b5b317e5522a1bb90f6f9"
+    },
+    "deinonychus:scene": {
+      "path": "scenes/deinonychus_scene.png",
+      "bytes": 1089927,
+      "mtime": 1788565437.363176,
+      "sha256": "b6200ca88aa949d1a13ded887faa9f5334b827682b92ad688c6b09119b97d12c"
+    },
+    "dilophosaurus:character": {
+      "path": "characters/dilophosaurus.png",
+      "bytes": 453475,
+      "mtime": 1788565437.3687153,
+      "sha256": "f0d92a9c6047a499c73a64fe6d26cf04fd8b59b4982183b6ce04b89d6764b731"
+    },
+    "dilophosaurus:scene": {
+      "path": "scenes/dilophosaurus_scene.png",
+      "bytes": 1011277,
+      "mtime": 1788565437.3677146,
+      "sha256": "3c34c3c47064aeecfd23df59201a47cd0c535ebf781b900f2c7e9fa7f3dd7968"
+    },
+    "dimorphodon:character": {
+      "path": "characters/dimorphodon.png",
+      "bytes": 685885,
+      "mtime": 1788565437.3737261,
+      "sha256": "c15e4d51f09105d9b8fd01aa743117b33b8e5fd4bc7aeac1f94dca102db3e4ad"
+    },
+    "dimorphodon:scene": {
+      "path": "scenes/dimorphodon_scene.png",
+      "bytes": 1055074,
+      "mtime": 1788565437.3737261,
+      "sha256": "6ff2c3fe2e23d02d24d01e5face0aca10d57d3b62841bb4c90ac2ae5d5a18406"
+    },
+    "diplodocus:character": {
+      "path": "characters/diplodocus.png",
+      "bytes": 446459,
+      "mtime": 1788565437.3792417,
+      "sha256": "85c66953c1b56ce6ad3abd795aa300064642d10c5b61f4859833e47858b89b95"
+    },
+    "diplodocus:scene": {
+      "path": "scenes/diplodocus_scene.png",
+      "bytes": 1003806,
+      "mtime": 1788565437.3792417,
+      "sha256": "812d583e82b702062176a1fc03da03177b7b4f66a1ace6a440259c74afb44cb8"
+    },
+    "dokkaebi:character": {
+      "path": "characters/dokkaebi.png",
+      "bytes": 588344,
+      "mtime": 1788565437.3832414,
+      "sha256": "4677cbca106acd9085816ebfc2c2d343c359f2610c8c5e3b1eb8cd8cdcdf77e2"
+    },
+    "dokkaebi:scene": {
+      "path": "scenes/dokkaebi_scene.png",
+      "bytes": 912695,
+      "mtime": 1788565437.3842404,
+      "sha256": "38270a44e747047fbfa35923ba838c5e14e65c6e648436553639ef0ce4347560"
+    },
+    "electric-eel:character": {
+      "path": "characters/electric-eel.png",
+      "bytes": 619574,
+      "mtime": 1788565437.386749,
+      "sha256": "8445e71b1b1678ad9bad7a06f987977ddced2919f9484030e23e6818c7ba5761"
+    },
+    "electric-eel:scene": {
+      "path": "scenes/electric-eel_scene.png",
+      "bytes": 999061,
+      "mtime": 1788565437.38975,
+      "sha256": "d4ba7d5d906744bf7d35cd95be9a27b1fe31ccb5e910ca2c307aa719f4cee7d2"
+    },
+    "emperor-penguin:character": {
+      "path": "characters/emperor-penguin.png",
+      "bytes": 557334,
+      "mtime": 1788565437.3927495,
+      "sha256": "b0bcdd7ce2c1ddfe653f4c2e82f6b93695f138fff473c937649e232308908905"
+    },
+    "emperor-penguin:scene": {
+      "path": "scenes/emperor-penguin_scene.png",
+      "bytes": 869992,
+      "mtime": 1788565437.3993113,
+      "sha256": "f5d7357dcacfe9e7bd635b566e0a6040af76b518514c7d90c49568190d5fba5a"
+    },
+    "eoraptor:character": {
+      "path": "characters/eoraptor.png",
+      "bytes": 497461,
+      "mtime": 1788565437.396806,
+      "sha256": "5cf0571d5c7ff436432af2aea5e46425bb5b04bcc1bc82c3202cf4229f807324"
+    },
+    "eoraptor:scene": {
+      "path": "scenes/eoraptor_scene.png",
+      "bytes": 1030044,
+      "mtime": 1788565437.4043655,
+      "sha256": "273c37a6f00899547315b55697c7669d909ace5d8c22ee378bfcb42477c0bff0"
+    },
+    "fenghuang:character": {
+      "path": "characters/fenghuang.png",
+      "bytes": 804706,
+      "mtime": 1788565437.401362,
+      "sha256": "2cd33e28a50fa1570ab6b914dcebbe58b4c27beda2c4d4fbe89dca399d9d49a1"
+    },
+    "fenghuang:scene": {
+      "path": "scenes/fenghuang_scene.png",
+      "bytes": 934410,
+      "mtime": 1788565437.4136753,
+      "sha256": "cc77d693aac8553234d1e681700ee8f42dde242fe65b1ed39628d6d2ad368955"
+    },
+    "formosan-black-bear:character": {
+      "path": "characters/formosan-black-bear.png",
+      "bytes": 669159,
+      "mtime": 1788565437.405871,
+      "sha256": "3292b9969cd054cf2e3feb64b6504c87aed9c1fd3d4139eb14cde6a0a16f7b7e"
+    },
+    "formosan-black-bear:scene": {
+      "path": "scenes/formosan-black-bear_scene.png",
+      "bytes": 981958,
+      "mtime": 1788565437.4196925,
+      "sha256": "0dd465e1d6764afca3cb37c6538272335a8e90be5ad1f0bebc4c13272ec5adc7"
+    },
+    "garuda:character": {
+      "path": "characters/garuda.png",
+      "bytes": 533237,
+      "mtime": 1788565437.4136753,
+      "sha256": "c7aa7b5468c0fd0668195316d89529a532b2ae4ed0531044070913d718b4df40"
+    },
+    "garuda:scene": {
+      "path": "scenes/garuda_scene.png",
+      "bytes": 957184,
+      "mtime": 1788565437.425693,
+      "sha256": "c0b51beb086d1acb07ca70d77b8d3e79464b0178926bdfd264d233afdc15b74d"
+    },
+    "giant-manta-ray:character": {
+      "path": "characters/giant-manta-ray.png",
+      "bytes": 413152,
+      "mtime": 1788565437.4186902,
+      "sha256": "f39d67ef7218ba0472398aa5e7ed5b7c27ac808abe1f13c1457f9dca4467ecc5"
+    },
+    "giant-manta-ray:scene": {
+      "path": "scenes/giant-manta-ray_scene.png",
+      "bytes": 960341,
+      "mtime": 1788565437.430208,
+      "sha256": "589ef4b39ad983fcd5f29ae7cff5a68296e70e4d99870208adf914e8f82767bf"
+    },
+    "giant-panda:character": {
+      "path": "characters/giant-panda.png",
+      "bytes": 907767,
+      "mtime": 1788565437.424692,
+      "sha256": "51be74f0b3f5d3b933769f7718d4954f3143d09676450c56029a872ec2e00a96"
+    },
+    "giant-panda:scene": {
+      "path": "scenes/giant-panda_scene.png",
+      "bytes": 970848,
+      "mtime": 1788565437.4357183,
+      "sha256": "ab931241927fecd6af87c5c826f2ce98af6a67f551d7362c489f9cb14729cd44"
+    },
+    "giganotosaurus:character": {
+      "path": "characters/giganotosaurus.png",
+      "bytes": 493153,
+      "mtime": 1788565437.429208,
+      "sha256": "fed6164e3aef86088c5f07fff7a5b9208d55c1dffb22c2658b0f263a62856aef"
+    },
+    "giganotosaurus:scene": {
+      "path": "scenes/giganotosaurus_scene.png",
+      "bytes": 1025953,
+      "mtime": 1788565437.441316,
+      "sha256": "77248dd62f092097a93a383ea68411973e954a8408ae0c17f22926396f310edb"
+    },
+    "giraffe:character": {
+      "path": "characters/giraffe.png",
+      "bytes": 399324,
+      "mtime": 1788565437.4357183,
+      "sha256": "87804c7fd0bb3cccd87854cd4c01e9d7e3ca08220ae192d00c604c63b777f59f"
+    },
+    "giraffe:scene": {
+      "path": "scenes/giraffe_scene.png",
+      "bytes": 1000188,
+      "mtime": 1788565437.4474375,
+      "sha256": "114c70c5be5afdffc9162260402c462270e636816f3491134cb37c18fba0e2d2"
+    },
+    "golem:character": {
+      "path": "characters/golem.png",
+      "bytes": 709087,
+      "mtime": 1788565437.441316,
+      "sha256": "d85f068161a5203ac7b9026b82c63a861d6690eb4481e5c3818c7e5305aedbc0"
+    },
+    "golem:scene": {
+      "path": "scenes/golem_scene.png",
+      "bytes": 986279,
+      "mtime": 1788565437.451442,
+      "sha256": "4f178e03976cd985496667ad513a2ed8b7a6e5e6c187e8b56036d14887b6500d"
+    },
+    "green-sea-turtle:character": {
+      "path": "characters/green-sea-turtle.png",
+      "bytes": 817477,
+      "mtime": 1788565437.4474375,
+      "sha256": "4fc778f15b88c3a4f930b441ba6ae58256f5ae2f91c4bcd01bc65e826750a3d9"
+    },
+    "green-sea-turtle:scene": {
+      "path": "scenes/green-sea-turtle_scene.png",
+      "bytes": 865016,
+      "mtime": 1788565437.457957,
+      "sha256": "0271d3508bed1304fbb38a62770278b08a42b04d2e5a3f758845b15daa5bd9b7"
+    },
+    "grizzly-bear:character": {
+      "path": "characters/grizzly-bear.png",
+      "bytes": 1137901,
+      "mtime": 1788565437.451442,
+      "sha256": "f91dfd035f0ad0eb0da6f21ab7f297c67b0a40667dfb3b1e674f72fd55ca98e0"
+    },
+    "grizzly-bear:scene": {
+      "path": "scenes/grizzly-bear_scene.png",
+      "bytes": 966620,
+      "mtime": 1788565437.4639554,
+      "sha256": "001ef9ccd8fb9b15db96d213d5d0ea7f1690c3e4fd131027649ce897b5cdb5cc"
+    },
+    "gumiho:character": {
+      "path": "characters/gumiho.png",
+      "bytes": 772356,
+      "mtime": 1788565437.4569511,
+      "sha256": "975d357ee2bbddd1ef00edbe69f0551777ff79f027ee5ec496758af0004bb3af"
+    },
+    "gumiho:scene": {
+      "path": "scenes/gumiho_scene.png",
+      "bytes": 937082,
+      "mtime": 1788565437.4669712,
+      "sha256": "330aa1b768ed67be37961deffa29e92cf75b7978706f4ff6431c885abb1b6e09"
+    },
+    "haetae:character": {
+      "path": "characters/haetae.png",
+      "bytes": 816131,
+      "mtime": 1788565437.4629552,
+      "sha256": "77995c24188caeb66e288163ea06872753062beecf17c634ae9dd82fa458db9f"
+    },
+    "haetae:scene": {
+      "path": "scenes/haetae_scene.png",
+      "bytes": 910016,
+      "mtime": 1788565437.473274,
+      "sha256": "ffdea3d9fd0528967ad413d3cfa9337bcf17acb2a1c86be13234d487c67918e0"
+    },
+    "hanuman:character": {
+      "path": "characters/hanuman.png",
+      "bytes": 500570,
+      "mtime": 1788565437.4669712,
+      "sha256": "0e983a3c7531bd185f237e33deb4ad9d30e549a02f4f4cfd7a4b5a3f0d464e57"
+    },
+    "hanuman:scene": {
+      "path": "scenes/hanuman_scene.png",
+      "bytes": 1000851,
+      "mtime": 1788565437.4787836,
+      "sha256": "d83d079502c25d0e18a20e913a962b6300fef53571aa006186f4d30c2f50a4c2"
+    },
+    "herrerasaurus:character": {
+      "path": "characters/herrerasaurus.png",
+      "bytes": 508996,
+      "mtime": 1788565437.471269,
+      "sha256": "cd20d1f9a8159bb519160afa1421d15cb4573715a0bb8ae0459dddae08badea5"
+    },
+    "herrerasaurus:scene": {
+      "path": "scenes/herrerasaurus_scene.png",
+      "bytes": 1022718,
+      "mtime": 1788565437.4822924,
+      "sha256": "4277750d648b614ffde0bcb2f3fa11caff606ea6a61da915f59f12c6fc5859df"
+    },
+    "hippopotamus:character": {
+      "path": "characters/hippopotamus.png",
+      "bytes": 771898,
+      "mtime": 1788565437.4787836,
+      "sha256": "870952de44d59d850e5454784520c552cfecf7a6b3e87ea58bcd8904590da5f6"
+    },
+    "hippopotamus:scene": {
+      "path": "scenes/hippopotamus_scene.png",
+      "bytes": 953147,
+      "mtime": 1788565437.487424,
+      "sha256": "6e1060fbfd2ea06e0122e8f3b65a758b5443ded5d29f9c06e1d9cb95a135ee34"
+    },
+    "hodag:character": {
+      "path": "characters/hodag.png",
+      "bytes": 918593,
+      "mtime": 1788565437.4832933,
+      "sha256": "ef07596cabbd0731383585cfbbdfbdc7cfcafd3fe763da11b1b0eb42e3e98b4f"
+    },
+    "hodag:scene": {
+      "path": "scenes/hodag_scene.png",
+      "bytes": 965326,
+      "mtime": 1788565437.4934278,
+      "sha256": "e6ab1b7c4d50365292d62ef22bb7ae15ff1b365aaaa2c6b8d7f4a3a534341d1b"
+    },
+    "huye:character": {
+      "path": "characters/huye.png",
+      "bytes": 791403,
+      "mtime": 1788565437.487424,
+      "sha256": "ca0395432bd9c993cc947e1f725c1ead8621f57f60a1a8eeeb63571daa691d26"
+    },
+    "huye:scene": {
+      "path": "scenes/huye_scene.png",
+      "bytes": 943389,
+      "mtime": 1788565437.49745,
+      "sha256": "e4b16e9562cf0a6f47ef958e4b4aed49b0c2fc5d51e2ebe3305491dde476443f"
+    },
+    "ichthyosaurus:character": {
+      "path": "characters/ichthyosaurus.png",
+      "bytes": 327270,
+      "mtime": 1788565437.4934278,
+      "sha256": "f2470949ba77ded0e26104ae0b9045645603b6214312213c941ae7fc9a4527a8"
+    },
+    "ichthyosaurus:scene": {
+      "path": "scenes/ichthyosaurus_scene.png",
+      "bytes": 938124,
+      "mtime": 1788565437.5019767,
+      "sha256": "4c82a27180a5de0caedc16c553e31fc88c7a2fdd28e1cf51ca6db03db2a79a47"
+    },
+    "iguanodon:character": {
+      "path": "characters/iguanodon.png",
+      "bytes": 600099,
+      "mtime": 1788565437.4984505,
+      "sha256": "3736723ea9c57378b72e96246ee0c9feb09e52acff1d8630e55e39ab78f6a83c"
+    },
+    "iguanodon:scene": {
+      "path": "scenes/iguanodon_scene.png",
+      "bytes": 978508,
+      "mtime": 1788565437.508521,
+      "sha256": "cc2692f281e6fe453a3fab98c55e4bbe70644785f53e2e8f75394b962a11acfd"
+    },
+    "imugi:character": {
+      "path": "characters/imugi.png",
+      "bytes": 741116,
+      "mtime": 1788565437.503734,
+      "sha256": "cd7a0cc907b9c1e1f4d92c7f13f190b61074144256777b4bc96ef687188e4a8f"
+    },
+    "imugi:scene": {
+      "path": "scenes/imugi_scene.png",
+      "bytes": 994737,
+      "mtime": 1788565437.5130303,
+      "sha256": "169c120e4d3bef3ff028cc8d30d15a240b03fcf6b6752ac4cea4b870e211da21"
+    },
+    "jackalope:character": {
+      "path": "characters/jackalope.png",
+      "bytes": 622178,
+      "mtime": 1788565437.508521,
+      "sha256": "03eec6d947ea184a63e219666c92f094910e454c18625a0f97cee2b83876b21b"
+    },
+    "jackalope:scene": {
+      "path": "scenes/jackalope_scene.png",
+      "bytes": 895324,
+      "mtime": 1788565437.517537,
+      "sha256": "821777efa484096a947f5bc01b85bedc2915c78c8b522bea8006fb6ebfb259bb"
+    },
+    "jaguar:character": {
+      "path": "characters/jaguar.png",
+      "bytes": 673650,
+      "mtime": 1788565437.5140314,
+      "sha256": "6e467d2693aaa1a77f71db7529c6f27771ac3b1dfcf7781214a5e3730aedd360"
+    },
+    "jaguar:scene": {
+      "path": "scenes/jaguar_scene.png",
+      "bytes": 1004019,
+      "mtime": 1788565437.522538,
+      "sha256": "ed51a1836642cab0752c9644fdacef2748cf875c94e8dc533b174c429a60e086"
+    },
+    "jangsanbeom:character": {
+      "path": "characters/jangsanbeom.png",
+      "bytes": 817973,
+      "mtime": 1788565437.5185378,
+      "sha256": "5f69ab99fd5ce9368c15e7d979bad498778ef97b5e790746baf75bad03587399"
+    },
+    "jangsanbeom:scene": {
+      "path": "scenes/jangsanbeom_scene.png",
+      "bytes": 927051,
+      "mtime": 1788565437.529061,
+      "sha256": "ee806dbfd786aaf91fc3b1d5034a81e283dccae1665c2be083ccee584cd918c0"
+    },
+    "japanese-macaque:character": {
+      "path": "characters/japanese-macaque.png",
+      "bytes": 785537,
+      "mtime": 1788565437.5235386,
+      "sha256": "2f0f4e90b4349f5379979cbe62438f97bf5ac8444581e067560f0a1608820171"
+    },
+    "japanese-macaque:scene": {
+      "path": "scenes/japanese-macaque_scene.png",
+      "bytes": 1125046,
+      "mtime": 1788565437.534062,
+      "sha256": "0b1a5692e3356b8b535b8cfeb211f60a8bddd8424fbe858a2c79ad9ae13b93eb"
+    },
+    "kappa:character": {
+      "path": "characters/kappa.png",
+      "bytes": 544915,
+      "mtime": 1788565437.530062,
+      "sha256": "48ba3395e9295b719331ebd772b88bd5fdaa5d70e4490fc79c0d851a65e1c905"
+    },
+    "kappa:scene": {
+      "path": "scenes/kappa_scene.png",
+      "bytes": 893484,
+      "mtime": 1788565437.5375707,
+      "sha256": "0f4c5c11289ba5b3538fc0280d0c5188ea431c99aeba551fe464ccff941a1275"
+    },
+    "kasa-obake:character": {
+      "path": "characters/kasa-obake.png",
+      "bytes": 543481,
+      "mtime": 1788565437.5350628,
+      "sha256": "bce6c469b34a54add18f0cdeed26b7f1ed2d85c4a027fcc878031fad5696dabf"
+    },
+    "kasa-obake:scene": {
+      "path": "scenes/kasa-obake_scene.png",
+      "bytes": 914736,
+      "mtime": 1788565437.546413,
+      "sha256": "3909a4063e4bcaeff70d3b894f8cde33e9f5204e58d064dbe63c7e5a9ba9ccc0"
+    },
+    "kelpie:character": {
+      "path": "characters/kelpie.png",
+      "bytes": 644465,
+      "mtime": 1788565437.5398846,
+      "sha256": "d78dfffaf4d3f5a2322bdae49b2dd714255d9f1d4aa03494c16f43335d46af25"
+    },
+    "kelpie:scene": {
+      "path": "scenes/kelpie_scene.png",
+      "bytes": 1014072,
+      "mtime": 1788565437.55197,
+      "sha256": "3d6e255d8a89391ad3cfc29502df4ed4859a78b9d538e806421900555460fde2"
+    },
+    "kitsune:character": {
+      "path": "characters/kitsune.png",
+      "bytes": 789929,
+      "mtime": 1788565437.546413,
+      "sha256": "3f1da9a415dd9b03572418b35739268f6e6e635fb8551caeaf3e28c0b7b9fcca"
+    },
+    "kitsune:scene": {
+      "path": "scenes/kitsune_scene.png",
+      "bytes": 955210,
+      "mtime": 1788565437.556494,
+      "sha256": "e2035181449f7f366615ce291363e5d3b560ec1f3e7ebc6a80bb0f388492996b"
+    },
+    "kiwi:character": {
+      "path": "characters/kiwi.png",
+      "bytes": 1041029,
+      "mtime": 1788565437.54993,
+      "sha256": "35c9243ef4aec5acef14c518b72394ddc3e81ec1be3cabe6aec0a2ebb5f7f1d5"
+    },
+    "kiwi:scene": {
+      "path": "scenes/kiwi_scene.png",
+      "bytes": 1035900,
+      "mtime": 1788565437.5620673,
+      "sha256": "009f76bf2b198406a40ea98917bc4650fc9d73c21822d664929acf5e576cb63d"
+    },
+    "koala:character": {
+      "path": "characters/koala.png",
+      "bytes": 942040,
+      "mtime": 1788565437.556494,
+      "sha256": "d404c4afc4873e00d0e9ba0a048fc8da8947186181fbe0699ea0b55362a1a6fc"
+    },
+    "koala:scene": {
+      "path": "scenes/koala_scene.png",
+      "bytes": 1069425,
+      "mtime": 1788565437.5660682,
+      "sha256": "1145b59f20a8972067c011df0d93b49429c623df7c6cd640f9345133149daba3"
+    },
+    "komodo-dragon:character": {
+      "path": "characters/komodo-dragon.png",
+      "bytes": 534221,
+      "mtime": 1788565437.561067,
+      "sha256": "816f7b305a1025ae9a4eb7772db0c36f7457c788c0942ba9e25ba81ae5e4d757"
+    },
+    "komodo-dragon:scene": {
+      "path": "scenes/komodo-dragon_scene.png",
+      "bytes": 1011758,
+      "mtime": 1788565437.570577,
+      "sha256": "cb6d451c65782c6f7712f9ccb4c31cf972da140d1d9e4941566cff97db4c1aac"
+    },
+    "lion:character": {
+      "path": "characters/lion.png",
+      "bytes": 996189,
+      "mtime": 1788565437.5650678,
+      "sha256": "72cf62afb170995ef0b9236df9fac4321b97c046058b23dca3d1c813851f64cc"
+    },
+    "lion:scene": {
+      "path": "scenes/lion_scene.png",
+      "bytes": 1002508,
+      "mtime": 1788565437.5756855,
+      "sha256": "bb43f59cc1d9c35de828b07a655be6bba4acdf6ee172756309d4abfa5a6642c2"
+    },
+    "liopleurodon:character": {
+      "path": "characters/liopleurodon.png",
+      "bytes": 442111,
+      "mtime": 1788565437.570577,
+      "sha256": "b94c3de88e05d97054f8c7d6635fc30917ec5e0fd834de1f3dc48b08b999d479"
+    },
+    "liopleurodon:scene": {
+      "path": "scenes/liopleurodon_scene.png",
+      "bytes": 995456,
+      "mtime": 1788565437.5801816,
+      "sha256": "e2cb39e0d977f2f1e2147fde463a7fb3306043598d48631310273fdfe6d488b5"
+    },
+    "llama:character": {
+      "path": "characters/llama.png",
+      "bytes": 529769,
+      "mtime": 1788565437.5756855,
+      "sha256": "53635edf3d1f32d73a2c347834e27c37e8c61d86ae1b5a9718064ab71baac50d"
+    },
+    "llama:scene": {
+      "path": "scenes/llama_scene.png",
+      "bytes": 1065740,
+      "mtime": 1788565437.5841937,
+      "sha256": "8751cdc73ba438ceaec2a2bc23c4fc67d2c71f3342f02225a4ea574669ddc0ff"
+    },
+    "meerkat:character": {
+      "path": "characters/meerkat.png",
+      "bytes": 535544,
+      "mtime": 1788565437.5801816,
+      "sha256": "027d93422ec965d01c98ef670f0be97dc2d7b95c2f26a01ec964a5cb8dc5fc51"
+    },
+    "meerkat:scene": {
+      "path": "scenes/meerkat_scene.png",
+      "bytes": 946336,
+      "mtime": 1788565437.589703,
+      "sha256": "39f51605915105fdd90ea765db0be065891990b5deaa657a745822e38c7e1427"
+    },
+    "mongolian-death-worm:character": {
+      "path": "characters/mongolian-death-worm.png",
+      "bytes": 672036,
+      "mtime": 1788565437.5841937,
+      "sha256": "578439786fef6fc8cf5c0d1970c350e10b9837f2db71851ec8d4da961410af10"
+    },
+    "mongolian-death-worm:scene": {
+      "path": "scenes/mongolian-death-worm_scene.png",
+      "bytes": 1001802,
+      "mtime": 1788565437.596207,
+      "sha256": "e54cf557710f3a29c4cc42f0422458aeb9d7d0ed598bd9be0fa9eb8cc198a0f3"
+    },
+    "mosasaurus:character": {
+      "path": "characters/mosasaurus.png",
+      "bytes": 420643,
+      "mtime": 1788565437.589703,
+      "sha256": "b4428c84295d2b84f470cbe6e9854c9b873a950071ef5c14fce69157f5b7727f"
+    },
+    "mosasaurus:scene": {
+      "path": "scenes/mosasaurus_scene.png",
+      "bytes": 923634,
+      "mtime": 1788565437.6010678,
+      "sha256": "a36d32db02f26244b3e04aea997bb79689ec3cb7c134a4e8eaad783d88a40605"
+    },
+    "mothman:character": {
+      "path": "characters/mothman.png",
+      "bytes": 706384,
+      "mtime": 1788565437.596207,
+      "sha256": "71ce7166b514e72452ceb7a9fabb0dda8e2cfaf76618e94946741f0b5eb50148"
+    },
+    "mothman:scene": {
+      "path": "scenes/mothman_scene.png",
+      "bytes": 904681,
+      "mtime": 1788565437.6050684,
+      "sha256": "938d62208f35437946e1e137288042ba55872cafd3cd41b318a94d17bdcc513c"
+    },
+    "mountain-gorilla:character": {
+      "path": "characters/mountain-gorilla.png",
+      "bytes": 904370,
+      "mtime": 1788565437.5997286,
+      "sha256": "e78abdcc08d440205af8b0d9ea63be9189093045f7e6fbe957cafa00b5458cd4"
+    },
+    "mountain-gorilla:scene": {
+      "path": "scenes/mountain-gorilla_scene.png",
+      "bytes": 1015588,
+      "mtime": 1788565437.6115966,
+      "sha256": "c8278d774b53c9f0b94275a82228385d873233010491ad5f1c1fa820d761652f"
+    },
+    "naga:character": {
+      "path": "characters/naga.png",
+      "bytes": 545629,
+      "mtime": 1788565437.6040664,
+      "sha256": "5e3f92c2032f9aebf58030c84c9c349d01a8ba43b922af5fd17e739bbe0eb103"
+    },
+    "naga:scene": {
+      "path": "scenes/naga_scene.png",
+      "bytes": 988787,
+      "mtime": 1788565437.6161263,
+      "sha256": "7d8dc71e8ce5fd2e4a39c3304d9c26cfef3d3aee620da2731971c03151e22c96"
+    },
+    "nessie:character": {
+      "path": "characters/nessie.png",
+      "bytes": 551260,
+      "mtime": 1788565437.6105964,
+      "sha256": "edd414cdf3565ce6a300bd9db277a2dda94e90670e9e3880242249d1222dabf4"
+    },
+    "nessie:scene": {
+      "path": "scenes/nessie_scene.png",
+      "bytes": 903011,
+      "mtime": 1788565437.6201308,
+      "sha256": "d93de1217ee4381ed0907c9b68fcc4caa93826193b83dc9fc7460cb43c59d618"
+    },
+    "nothosaurus:character": {
+      "path": "characters/nothosaurus.png",
+      "bytes": 303791,
+      "mtime": 1788565437.6156209,
+      "sha256": "b1b4ff5c5801987a13747bcc3886bc93cdfd5555194958612fe58a913d609f37"
+    },
+    "nothosaurus:scene": {
+      "path": "scenes/nothosaurus_scene.png",
+      "bytes": 918376,
+      "mtime": 1788565437.6273878,
+      "sha256": "2c734ebf124104d2482d89c721823a0dfb39fb04faa50aa4b91a532fa0a98729"
+    },
+    "oni:character": {
+      "path": "characters/oni.png",
+      "bytes": 814646,
+      "mtime": 1788565437.6201308,
+      "sha256": "1a29ae8a1f3122086cee9c95c351e5534af0bcb1c63a1bf48c1a261d9736ae57"
+    },
+    "oni:scene": {
+      "path": "scenes/oni_scene.png",
+      "bytes": 1001791,
+      "mtime": 1788565437.6313927,
+      "sha256": "e13a3dbd5939e253fdf23427808367c3f8c2746a95a16b63c101f5437eb5c648"
+    },
+    "orangutan:character": {
+      "path": "characters/orangutan.png",
+      "bytes": 803860,
+      "mtime": 1788565437.6256351,
+      "sha256": "f75ea5322c43810d60cf529c60d20e358963899cdfdd040d2bed72c5c0f03b96"
+    },
+    "orangutan:scene": {
+      "path": "scenes/orangutan_scene.png",
+      "bytes": 1125082,
+      "mtime": 1788565437.6359038,
+      "sha256": "bd6295a75d23b37e62e9a30a295982101823c068818d3e9a2a58ee05734a436a"
+    },
+    "orca:character": {
+      "path": "characters/orca.png",
+      "bytes": 576065,
+      "mtime": 1788565437.6313927,
+      "sha256": "3e64117f4cc4368751b9af55ef1c5db4c3bb953e4dafa558a560c3a2504c2c50"
+    },
+    "orca:scene": {
+      "path": "scenes/orca_scene.png",
+      "bytes": 952730,
+      "mtime": 1788565437.6426592,
+      "sha256": "b646ffb25ccdabfb4b9dfc00bc552e5bfdd59cdc15a7c99920ec899df08c2227"
+    },
+    "oviraptor:character": {
+      "path": "characters/oviraptor.png",
+      "bytes": 539660,
+      "mtime": 1788565437.6359038,
+      "sha256": "1be31316a9e153ead3e91a6c3e7c986ef234f75164e361456baff6325d89c741"
+    },
+    "oviraptor:scene": {
+      "path": "scenes/oviraptor_scene.png",
+      "bytes": 980465,
+      "mtime": 1788565437.6456585,
+      "sha256": "4f6bc454735ea6d56a098f2d04c5a40642e2cfc8e4e08da6272eaf233444d334"
+    },
+    "pachycephalosaurus:character": {
+      "path": "characters/pachycephalosaurus.png",
+      "bytes": 759989,
+      "mtime": 1788565437.641654,
+      "sha256": "3bc48ed4f515ef2c0c2a5c05d0b4118fcf9803467146a37aa12c65c2a1acd9cc"
+    },
+    "pachycephalosaurus:scene": {
+      "path": "scenes/pachycephalosaurus_scene.png",
+      "bytes": 975975,
+      "mtime": 1788565437.6504068,
+      "sha256": "9893984baa0c63bd7f0bbbfce0fe1fa4e0634044556e350b7ab9ee27e82f866d"
+    },
+    "parasaurolophus:character": {
+      "path": "characters/parasaurolophus.png",
+      "bytes": 621683,
+      "mtime": 1788565437.6473916,
+      "sha256": "d92ca62ddf6a80252cf951748aff26a270100b411aa5b2450c162d3d233d1a6c"
+    },
+    "parasaurolophus:scene": {
+      "path": "scenes/parasaurolophus_scene.png",
+      "bytes": 1003893,
+      "mtime": 1788565437.65874,
+      "sha256": "aa7da711fe2947c9bcd941e237be4cd0c35d104a32fdf04b1131492983c41341"
+    },
+    "plateosaurus:character": {
+      "path": "characters/plateosaurus.png",
+      "bytes": 424483,
+      "mtime": 1788565437.6533968,
+      "sha256": "134e09cfb6f23f98bff53dd4c21969183d5f45d8e9314741d46207e892fadea1"
+    },
+    "plateosaurus:scene": {
+      "path": "scenes/plateosaurus_scene.png",
+      "bytes": 940259,
+      "mtime": 1788565437.6637454,
+      "sha256": "e87d01f3352526f5ce4982c298dd7ea3e4585661520dc0e703c3a979452d62e9"
+    },
+    "platypus:character": {
+      "path": "characters/platypus.png",
+      "bytes": 506629,
+      "mtime": 1788565437.65874,
+      "sha256": "982d0e433bbd995606d25fc23b4a925af4b5b0ef2bb9d1f89c253244ff84b4f9"
+    },
+    "platypus:scene": {
+      "path": "scenes/platypus_scene.png",
+      "bytes": 965106,
+      "mtime": 1788565437.6689599,
+      "sha256": "ce6915dadb69a252d3310a02e14601a7bf0733274b0080cde62d51708395ebe9"
+    },
+    "plesiosaurus:character": {
+      "path": "characters/plesiosaurus.png",
+      "bytes": 476492,
+      "mtime": 1788565437.6637454,
+      "sha256": "9c3199d27d9a18b253bd0c3ed67daed461c45191468400e033152ca8029a64e4"
+    },
+    "plesiosaurus:scene": {
+      "path": "scenes/plesiosaurus_scene.png",
+      "bytes": 974591,
+      "mtime": 1788565437.6734478,
+      "sha256": "7f59e53bec2e2fcae037b0888505dd527d99cad5eee027d0efb87cc7846f6551"
+    },
+    "polar-bear:character": {
+      "path": "characters/polar-bear.png",
+      "bytes": 671612,
+      "mtime": 1788565437.66696,
+      "sha256": "7cc669613b5a6b7a71bd2102432a20408c18cca4341008cd30452ebe8e6e93a2"
+    },
+    "polar-bear:scene": {
+      "path": "scenes/polar-bear_scene.png",
+      "bytes": 939778,
+      "mtime": 1788565437.6782598,
+      "sha256": "cee19311ef103d648c2b64f46932ae7b0a1bf10fc69879eb8b2c2168c0ab0637"
+    },
+    "postosuchus:character": {
+      "path": "characters/postosuchus.png",
+      "bytes": 327804,
+      "mtime": 1788565437.6714673,
+      "sha256": "c1a7c0f3012a14fa8f392de9d2972809166de3c714e6f41e3e8b77f378bb304c"
+    },
+    "postosuchus:scene": {
+      "path": "scenes/postosuchus_scene.png",
+      "bytes": 1014691,
+      "mtime": 1788565437.6831806,
+      "sha256": "c69454e64b204857cdfec0c9b380851d2f6e85d75fb038cf86963b6e7d29e76d"
+    },
+    "qilin:character": {
+      "path": "characters/qilin.png",
+      "bytes": 642153,
+      "mtime": 1788565437.6782598,
+      "sha256": "ebb8258b8d6d0b2333de0559fc1c3e290112871a5e422044ed83402d5587b384"
+    },
+    "qilin:scene": {
+      "path": "scenes/qilin_scene.png",
+      "bytes": 945344,
+      "mtime": 1788565437.6872792,
+      "sha256": "0313f838e81eab922d18ec1b8199399c1ce141e7108b3d7531fdfda36f3887df"
+    },
+    "quetzalcoatl:character": {
+      "path": "characters/quetzalcoatl.png",
+      "bytes": 455512,
+      "mtime": 1788565437.6836958,
+      "sha256": "c93e9ceb645880f1df53a3c0f9964d6b76bc4fe4714fb445171fa51860c36d90"
+    },
+    "quetzalcoatl:scene": {
+      "path": "scenes/quetzalcoatl_scene.png",
+      "bytes": 1003331,
+      "mtime": 1788565437.6940994,
+      "sha256": "d83970c9a3ff8f145934ba525fc3a51281da1fad214743e044c06ff08849f342"
+    },
+    "quetzalcoatlus:character": {
+      "path": "characters/quetzalcoatlus.png",
+      "bytes": 458640,
+      "mtime": 1788565437.6872792,
+      "sha256": "c12d7fdc716738c4f67c7ef77c6462fe23e4e4c2acdbb235bca9776cba4ba8cb"
+    },
+    "quetzalcoatlus:scene": {
+      "path": "scenes/quetzalcoatlus_scene.png",
+      "bytes": 967306,
+      "mtime": 1788565437.6986156,
+      "sha256": "956d1dbc6ee86411f5bcb7553a4a98651117d5cd3730a53c1be19df1d7afdfa4"
+    },
+    "red-kangaroo:character": {
+      "path": "characters/red-kangaroo.png",
+      "bytes": 556609,
+      "mtime": 1788565437.6940994,
+      "sha256": "c4d31b57c3db6f229d0fdabd00b6a797ef68380d6be3a2c90d7510f24a22a880"
+    },
+    "red-kangaroo:scene": {
+      "path": "scenes/red-kangaroo_scene.png",
+      "bytes": 976559,
+      "mtime": 1788565437.7026381,
+      "sha256": "03d2763556828a5ca82681e84214832dc0ebd38e523638549e802fd4843c4a47"
+    },
+    "red-panda:character": {
+      "path": "characters/red-panda.png",
+      "bytes": 905653,
+      "mtime": 1788565437.697615,
+      "sha256": "99456b12989772ed75bec05ffa8f32786323185ea05616f957a206062a437ab5"
+    },
+    "red-panda:scene": {
+      "path": "scenes/red-panda_scene.png",
+      "bytes": 994791,
+      "mtime": 1788565437.709839,
+      "sha256": "f4c583fb4d145ff87080348cb4350ef54b68ef9e2d6f41dd0b18ff5875f69df7"
+    },
+    "rhamphorhynchus:character": {
+      "path": "characters/rhamphorhynchus.png",
+      "bytes": 399070,
+      "mtime": 1788565437.7026381,
+      "sha256": "6019b2109872a1659480f6d15d2cec6fee422687b672dc83d385483c0379237c"
+    },
+    "rhamphorhynchus:scene": {
+      "path": "scenes/rhamphorhynchus_scene.png",
+      "bytes": 963089,
+      "mtime": 1788565437.7133722,
+      "sha256": "130b68a72abfa9292749c1384b8ce7b78ea273e34e8e75c6f9bf796aa9edb805"
+    },
+    "samjoko:character": {
+      "path": "characters/samjoko.png",
+      "bytes": 558651,
+      "mtime": 1788565437.706824,
+      "sha256": "0e10c492bfbecda4299d70d673ccf4cf19bcce6ea7c7f1ee5237f5e77a9c13ba"
+    },
+    "samjoko:scene": {
+      "path": "scenes/samjoko_scene.png",
+      "bytes": 938648,
+      "mtime": 1788565437.71872,
+      "sha256": "85d2f24b6af3778905da4ffd35f7f8fb0979ed46c053aadebb31ffedab7d6b1d"
+    },
+    "sarimanok:character": {
+      "path": "characters/sarimanok.png",
+      "bytes": 793365,
+      "mtime": 1788565437.7123694,
+      "sha256": "61cc83a917e8fbde90cacf3509cb1746bfee2b136383e43cbdd59eaf2f2deb6e"
+    },
+    "sarimanok:scene": {
+      "path": "scenes/sarimanok_scene.png",
+      "bytes": 868640,
+      "mtime": 1788565437.7239046,
+      "sha256": "767e896f9ca0fbac6d9b6a2052924e9c0ba9e33b95f57a9ff77d62a90cb5171d"
+    },
+    "selkie:character": {
+      "path": "characters/selkie.png",
+      "bytes": 532875,
+      "mtime": 1788565437.7168934,
+      "sha256": "7049ab4ff26b6b28ecdfe9aac830d7c7890a217bbe4177205a7a536332bf589e"
+    },
+    "selkie:scene": {
+      "path": "scenes/selkie_scene.png",
+      "bytes": 910606,
+      "mtime": 1788565437.728968,
+      "sha256": "2adbd56f788ac60862adecba4e72702b9e4c48ff77ed5abe73d3ace5e62dd81e"
+    },
+    "shonisaurus:character": {
+      "path": "characters/shonisaurus.png",
+      "bytes": 405970,
+      "mtime": 1788565437.7224002,
+      "sha256": "30609f8496fcb4b423c291cbb2198dcef66ac0342dd38a772c1e7aad0c994d8c"
+    },
+    "shonisaurus:scene": {
+      "path": "scenes/shonisaurus_scene.png",
+      "bytes": 912204,
+      "mtime": 1788565437.7344806,
+      "sha256": "7dfb2490a60a8ff66a4b05f802b32e0b7a0ca3abd252293f2e30f7d4fa5d8a08"
+    },
+    "snow-leopard:character": {
+      "path": "characters/snow-leopard.png",
+      "bytes": 717859,
+      "mtime": 1788565437.728968,
+      "sha256": "c761d24b1d2d77f6fa02e05bcb0a0d801f4d093663f4084a00e3bbd1747f0779"
+    },
+    "snow-leopard:scene": {
+      "path": "scenes/snow-leopard_scene.png",
+      "bytes": 1094338,
+      "mtime": 1788565437.7404988,
+      "sha256": "63a5660e1338007540fd319ad1f774aa674736471da29c4b034c52b405bcb876"
+    },
+    "snowy-owl:character": {
+      "path": "characters/snowy-owl.png",
+      "bytes": 797859,
+      "mtime": 1788565437.7344806,
+      "sha256": "9e84ec9aeb1c92e6e41a868f29710df2f0e5e25905ecd6ac3d3df55f4a2938b4"
+    },
+    "snowy-owl:scene": {
+      "path": "scenes/snowy-owl_scene.png",
+      "bytes": 1057084,
+      "mtime": 1788565437.7476084,
+      "sha256": "a1829b4b09b715a24dd21e5c17b8f5166a90c82e93c41142837a7950706afc28"
+    },
+    "spinosaurus:character": {
+      "path": "characters/spinosaurus.png",
+      "bytes": 607737,
+      "mtime": 1788565437.7404988,
+      "sha256": "594c58ec491c9591034707f77ba524019662dab664edd3355b26677e01b78dfc"
+    },
+    "spinosaurus:scene": {
+      "path": "scenes/spinosaurus_scene.png",
+      "bytes": 1038682,
+      "mtime": 1788565437.752629,
+      "sha256": "7f1c7e11d32c3352eebdda6561e4c9143bee5dde208bb17d3ea921373054323e"
+    },
+    "stegosaurus:character": {
+      "path": "characters/stegosaurus.png",
+      "bytes": 653527,
+      "mtime": 1788565437.7466075,
+      "sha256": "74f9d74c086fa0924736ba7a28e5e632c7c08178a4a0e71b2cc5a999e66b6910"
+    },
+    "stegosaurus:scene": {
+      "path": "scenes/stegosaurus_scene.png",
+      "bytes": 938190,
+      "mtime": 1788565437.7578998,
+      "sha256": "43881606c9d58bebf9881dff816b32d1de7b24d508c93b1aad920962cb2dca03"
+    },
+    "taniwha:character": {
+      "path": "characters/taniwha.png",
+      "bytes": 688396,
+      "mtime": 1788565437.752629,
+      "sha256": "19c5b613f81eecb927c9c06df1523ff0309c4cfd9716f6d00b15225fbbbcf09c"
+    },
+    "taniwha:scene": {
+      "path": "scenes/taniwha_scene.png",
+      "bytes": 924565,
+      "mtime": 1788565437.7645195,
+      "sha256": "c11934f81f7186092dfca6d0ac2168894b304a7e3ea2e802a4964c3f4b87541d"
+    },
+    "tanuki:character": {
+      "path": "characters/tanuki.png",
+      "bytes": 685760,
+      "mtime": 1788565437.7578998,
+      "sha256": "526f82c62dc100476910ac925c874d728aabb361a3fdbde913ce2ecbfd887372"
+    },
+    "tanuki:scene": {
+      "path": "scenes/tanuki_scene.png",
+      "bytes": 943891,
+      "mtime": 1788565437.7690294,
+      "sha256": "f0d54f71f3abc92f2ec266613a9ebf42bc31f9dbb3a6d66dbd18e14f4fbb24fa"
+    },
+    "tanystropheus:character": {
+      "path": "characters/tanystropheus.png",
+      "bytes": 376564,
+      "mtime": 1788565437.7645195,
+      "sha256": "c0a220b3527b557354e082c63bfd502bf1885799ece224bf191f5bf40a2854ba"
+    },
+    "tanystropheus:scene": {
+      "path": "scenes/tanystropheus_scene.png",
+      "bytes": 991074,
+      "mtime": 1788565437.7735376,
+      "sha256": "91b9a66ce0b9f485e1839ee5d299b2d5eea97863fb94eaaabbb8096baf60d217"
+    },
+    "tengu:character": {
+      "path": "characters/tengu.png",
+      "bytes": 723974,
+      "mtime": 1788565437.7680295,
+      "sha256": "5212f4cddfdfe39ad3e5e6d4f7248ebcdd91c42d4fb627a21bdd8e43ae30ad35"
+    },
+    "tengu:scene": {
+      "path": "scenes/tengu_scene.png",
+      "bytes": 1141106,
+      "mtime": 1788565437.7795658,
+      "sha256": "4d6a6ae790e0d8f638f7ab4fc94def48feac2a1c6725f887409034d54d575e11"
+    },
+    "therizinosaurus:character": {
+      "path": "characters/therizinosaurus.png",
+      "bytes": 474398,
+      "mtime": 1788565437.77203,
+      "sha256": "0339a1a9a862fb78ad5db71d125a72badc168db14a4401bb343baf5feae1fcaf"
+    },
+    "therizinosaurus:scene": {
+      "path": "scenes/therizinosaurus_scene.png",
+      "bytes": 1033679,
+      "mtime": 1788565437.7845666,
+      "sha256": "5df393e851bb89e51efa0a4685a15dc619ef635fdfbc8b51e22fd280c362c314"
+    },
+    "three-toed-sloth:character": {
+      "path": "characters/three-toed-sloth.png",
+      "bytes": 1040247,
+      "mtime": 1788565437.778565,
+      "sha256": "15d72a1201cd95cced6de441770938fe0904b09ffe7c46a48cb5edb0946a3a85"
+    },
+    "three-toed-sloth:scene": {
+      "path": "scenes/three-toed-sloth_scene.png",
+      "bytes": 1049428,
+      "mtime": 1788565437.7880716,
+      "sha256": "6ab02e7a93503fab844f63a17ace483810f87b27dfb43f823c62fb7a744f8772"
+    },
+    "thunderbird:character": {
+      "path": "characters/thunderbird.png",
+      "bytes": 608467,
+      "mtime": 1788565437.7835667,
+      "sha256": "7224c3f847cb0c6791e287c7d1bc69dcbe06ed134e3a9189e2573e20808493de"
+    },
+    "thunderbird:scene": {
+      "path": "scenes/thunderbird_scene.png",
+      "bytes": 910931,
+      "mtime": 1788565437.794522,
+      "sha256": "d9655716b542e9d8cf82e5229f699d5625a245cdfabd3f305bebaff8bb81bd45"
+    },
+    "tikbalang:character": {
+      "path": "characters/tikbalang.png",
+      "bytes": 499622,
+      "mtime": 1788565437.7880716,
+      "sha256": "7f577fe6dd07fcf63d438a58f838fc0b9ade877bd413d7571bc093e1fc6b8d90"
+    },
+    "tikbalang:scene": {
+      "path": "scenes/tikbalang_scene.png",
+      "bytes": 958776,
+      "mtime": 1788565437.7980378,
+      "sha256": "f0f7e82c344a857b4bdc55861a7c21c5c58472da5b50070b771490f0807b905b"
+    },
+    "toco-toucan:character": {
+      "path": "characters/toco-toucan.png",
+      "bytes": 648490,
+      "mtime": 1788565437.794522,
+      "sha256": "fb9c4e2896964a5cb61c65c937e965d2053569b3275b80449d11cf580e35aba2"
+    },
+    "toco-toucan:scene": {
+      "path": "scenes/toco-toucan_scene.png",
+      "bytes": 987355,
+      "mtime": 1788565437.804546,
+      "sha256": "7f44c09ff5b72969114f8e24ab942c8f975e6493daa41f16ecf409e3747c3709"
+    },
+    "triceratops:character": {
+      "path": "characters/triceratops.png",
+      "bytes": 663363,
+      "mtime": 1788565437.8005466,
+      "sha256": "a69b6b8a3ae076c17d6e2e87103b6d84983cf904036ab6b8accdcf0ccc57072e"
+    },
+    "triceratops:scene": {
+      "path": "scenes/triceratops_scene.png",
+      "bytes": 1103300,
+      "mtime": 1788565437.8110542,
+      "sha256": "334ba2648a561fd3d4eacb47c0746f89e2e16e49d8826a8319bd1d544b6c9d3c"
+    },
+    "tyrannosaurus-rex:character": {
+      "path": "characters/tyrannosaurus-rex.png",
+      "bytes": 590652,
+      "mtime": 1788565437.8070612,
+      "sha256": "caf663cae24d57e38e86cc6a6baaeb4b12dfc2738e81cb9cfd75b80c620c3200"
+    },
+    "tyrannosaurus-rex:scene": {
+      "path": "scenes/tyrannosaurus-rex_scene.png",
+      "bytes": 1071900,
+      "mtime": 1788565437.8167536,
+      "sha256": "4c282e960db0cbb43e3d0adb7d05ab16ef8c410c5365f18f25b44aa330a321ae"
+    },
+    "utahraptor:character": {
+      "path": "characters/utahraptor.png",
+      "bytes": 663873,
+      "mtime": 1788565437.8120549,
+      "sha256": "65ccb1a2b26121c04243698381291185a19f5558a97c32fe6a3fa1b289220958"
+    },
+    "utahraptor:scene": {
+      "path": "scenes/utahraptor_scene.png",
+      "bytes": 1031732,
+      "mtime": 1788565437.821771,
+      "sha256": "67662d725c6f30679541da4da4c6747a2a958d6d13d6f37882aec066d7b8f7dd"
+    },
+    "velociraptor:character": {
+      "path": "characters/velociraptor.png",
+      "bytes": 617585,
+      "mtime": 1788565437.8177712,
+      "sha256": "41ad8ceb5274a1b7a9f0e261fa5abfe7217a8c019ba1ee197b73ab5ef72f5066"
+    },
+    "velociraptor:scene": {
+      "path": "scenes/velociraptor_scene.png",
+      "bytes": 1061921,
+      "mtime": 1788565437.828846,
+      "sha256": "5f1ae9ea3c75254892279a41b1c4eb5c724a458be09291c0ca2e5c6a63f48d29"
+    },
+    "walrus:character": {
+      "path": "characters/walrus.png",
+      "bytes": 583351,
+      "mtime": 1788565437.8237758,
+      "sha256": "336eb82fb34f399c60ce9fdf2f1ff0daa21ac5d495a2d3faf1e7f22d47e0928f"
+    },
+    "walrus:scene": {
+      "path": "scenes/walrus_scene.png",
+      "bytes": 957070,
+      "mtime": 1788565437.8328505,
+      "sha256": "196e53abf94c0c2fc66eb9aa3a0ae0fe66b28454950f131c7f6bc975a1814e8d"
+    },
+    "werewolf:character": {
+      "path": "characters/werewolf.png",
+      "bytes": 597067,
+      "mtime": 1788565437.8272784,
+      "sha256": "ae9d74293bc1caf78f1bc04ded4c893785147414e7cd4b12acdaa966c6e84291"
+    },
+    "werewolf:scene": {
+      "path": "scenes/werewolf_scene.png",
+      "bytes": 991073,
+      "mtime": 1788565437.8378754,
+      "sha256": "4df68eca7b185b0ef2919bd29115631f0939c6019d3476514080524fd817b2e2"
+    },
+    "wombat:character": {
+      "path": "characters/wombat.png",
+      "bytes": 1018687,
+      "mtime": 1788565437.8328505,
+      "sha256": "97212f11618bb58e83363b0f0e01b1eecefd4bbcb23eba67573414007248419f"
+    },
+    "wombat:scene": {
+      "path": "scenes/wombat_scene.png",
+      "bytes": 1087045,
+      "mtime": 1788565437.8438754,
+      "sha256": "a25acd5b11b20d4a4a814f5f0560a5043ce8050958839e03c20788296f8a1a7a"
+    },
+    "yeti:character": {
+      "path": "characters/yeti.png",
+      "bytes": 501491,
+      "mtime": 1788565437.8368757,
+      "sha256": "9b5a58067df633fa4345c7684ceec0751996bcf44ddc6d1f9e70d204dee8a198"
+    },
+    "yeti:scene": {
+      "path": "scenes/yeti_scene.png",
+      "bytes": 921110,
+      "mtime": 1788565437.8491027,
+      "sha256": "53782787ccebde7b48898ba3f8d8a7626d08634f88989305cdb8d2687cf5fe76"
+    },
+    "zebra:character": {
+      "path": "characters/zebra.png",
+      "bytes": 626472,
+      "mtime": 1788565437.8438754,
+      "sha256": "82f754098c09c70a61c5bc53f0599aa33b5921de7af42e4d19927c21795f18e0"
+    },
+    "zebra:scene": {
+      "path": "scenes/zebra_scene.png",
+      "bytes": 868606,
+      "mtime": 1788565437.8541024,
+      "sha256": "a688ffc246a1fe9609650c8e8d3bfb51348ff5358cb5e71be5c0673a1b5e81f0"
+    }
+  }
+}

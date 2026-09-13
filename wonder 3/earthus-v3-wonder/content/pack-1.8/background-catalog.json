@@ -1,0 +1,170 @@
+[
+  {
+    "id": "aurora_01",
+    "path": "assets/background/aurora_01.webp",
+    "bytes": 27268,
+    "sha256_12": "1f02f135e02d",
+    "load": "region-lazy"
+  },
+  {
+    "id": "australia_01",
+    "path": "assets/background/australia_01.webp",
+    "bytes": 30968,
+    "sha256_12": "c9c99f31d2ac",
+    "load": "region-lazy"
+  },
+  {
+    "id": "cave_01",
+    "path": "assets/background/cave_01.webp",
+    "bytes": 11326,
+    "sha256_12": "29d0bfc62827",
+    "load": "region-lazy"
+  },
+  {
+    "id": "coast_01",
+    "path": "assets/background/coast_01.webp",
+    "bytes": 19434,
+    "sha256_12": "0463cc7dc81c",
+    "load": "region-lazy"
+  },
+  {
+    "id": "desert_01",
+    "path": "assets/background/desert_01.webp",
+    "bytes": 14286,
+    "sha256_12": "914c9f0ab917",
+    "load": "region-lazy"
+  },
+  {
+    "id": "forest_01",
+    "path": "assets/background/forest_01.webp",
+    "bytes": 37390,
+    "sha256_12": "d35a5302f164",
+    "load": "region-lazy"
+  },
+  {
+    "id": "grassland_01",
+    "path": "assets/background/grassland_01.webp",
+    "bytes": 30282,
+    "sha256_12": "e765f034e355",
+    "load": "region-lazy"
+  },
+  {
+    "id": "ice_01",
+    "path": "assets/background/ice_01.webp",
+    "bytes": 12740,
+    "sha256_12": "6ccef70d305d",
+    "load": "region-lazy"
+  },
+  {
+    "id": "island_01",
+    "path": "assets/background/island_01.webp",
+    "bytes": 17628,
+    "sha256_12": "214b65779215",
+    "load": "region-lazy"
+  },
+  {
+    "id": "jungle_01",
+    "path": "assets/background/jungle_01.webp",
+    "bytes": 40812,
+    "sha256_12": "69eec1ff41d5",
+    "load": "region-lazy"
+  },
+  {
+    "id": "korea_busan_01",
+    "path": "assets/background/korea_busan_01.webp",
+    "bytes": 16960,
+    "sha256_12": "234dfeb952dd",
+    "load": "region-lazy"
+  },
+  {
+    "id": "korea_gyeongju_01",
+    "path": "assets/background/korea_gyeongju_01.webp",
+    "bytes": 23000,
+    "sha256_12": "df919b431094",
+    "load": "region-lazy"
+  },
+  {
+    "id": "korea_jeju_01",
+    "path": "assets/background/korea_jeju_01.webp",
+    "bytes": 26428,
+    "sha256_12": "81830df4c7a9",
+    "load": "region-lazy"
+  },
+  {
+    "id": "korea_seoul_01",
+    "path": "assets/background/korea_seoul_01.webp",
+    "bytes": 24028,
+    "sha256_12": "ce657dd4bb3d",
+    "load": "region-lazy"
+  },
+  {
+    "id": "night_01",
+    "path": "assets/background/night_01.webp",
+    "bytes": 12648,
+    "sha256_12": "fd6604ce960a",
+    "load": "region-lazy"
+  },
+  {
+    "id": "ocean_01",
+    "path": "assets/background/ocean_01.webp",
+    "bytes": 19478,
+    "sha256_12": "86ae574b3667",
+    "load": "region-lazy"
+  },
+  {
+    "id": "sahara_01",
+    "path": "assets/background/sahara_01.webp",
+    "bytes": 29570,
+    "sha256_12": "997226f36659",
+    "load": "region-lazy"
+  },
+  {
+    "id": "savanna_01",
+    "path": "assets/background/savanna_01.webp",
+    "bytes": 44116,
+    "sha256_12": "79c103763e41",
+    "load": "region-lazy"
+  },
+  {
+    "id": "sky_island_01",
+    "path": "assets/background/sky_island_01.webp",
+    "bytes": 20468,
+    "sha256_12": "1b04c03d2d15",
+    "load": "region-lazy"
+  },
+  {
+    "id": "sunset_01",
+    "path": "assets/background/sunset_01.webp",
+    "bytes": 13666,
+    "sha256_12": "018ad42d1f9c",
+    "load": "region-lazy"
+  },
+  {
+    "id": "tajmahal_01",
+    "path": "assets/background/tajmahal_01.webp",
+    "bytes": 26660,
+    "sha256_12": "34297d523176",
+    "load": "region-lazy"
+  },
+  {
+    "id": "tibet_01",
+    "path": "assets/background/tibet_01.webp",
+    "bytes": 17774,
+    "sha256_12": "fa8eb9fc2da8",
+    "load": "region-lazy"
+  },
+  {
+    "id": "underwater_01",
+    "path": "assets/background/underwater_01.webp",
+    "bytes": 22202,
+    "sha256_12": "0a0720c46d03",
+    "load": "region-lazy"
+  },
+  {
+    "id": "volcano_01",
+    "path": "assets/background/volcano_01.webp",
+    "bytes": 9980,
+    "sha256_12": "2001c36b5679",
+    "load": "region-lazy"
+  }
+]

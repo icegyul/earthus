@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f3ead9">
+  <meta name="description" content="EARTHUS V3 WONDER — NEW BUILD PHASE 0. 배경 한 장, 캐릭터 한 명, 톡·꾹 반응.">
+  <title>EARTHUS WONDER · PHASE 0</title>
+  <!-- 서비스워커 없음. 기존 v1 sw.js 와 캐시 네임스페이스를 공유하지 않는다 (CLEANUP 지시서 §10). -->
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main id="stage" class="stage" aria-label="EARTHUS WONDER 무대">
+    <div id="bg" class="layer layer-bg" aria-hidden="true"></div>
+    <div id="hits" class="layer layer-hits" aria-hidden="true"></div>
+    <div id="chars" class="layer layer-chars"></div>
+    <div id="fx" class="layer layer-fx" aria-hidden="true"></div>
+  </main>
+
+  <header class="topbar">
+    <div class="brand"><strong>EARTHUS</strong><span>WONDER</span></div>
+    <div class="phase" id="phase">PHASE 0 · 기반</div>
+  </header>
+
+  <aside id="card" class="card" hidden aria-live="polite">
+    <div class="card-head">
+      <span class="badge" id="cardCat"></span>
+      <strong id="cardName"></strong>
+      <button class="card-close" id="cardClose" aria-label="닫기">×</button>
+    </div>
+    <div class="card-scene" id="cardScene"></div>
+    <p class="card-place" id="cardPlace"></p>
+    <p class="card-note" id="cardNote"></p>
+  </aside>
+
+  <nav class="dock" aria-label="캐릭터 고르기와 시험 조작">
+    <label class="pick-label">캐릭터
+      <select id="pick" aria-label="캐릭터 고르기"></select>
+    </label>
+    <div class="dock-btns">
+      <button id="btnTap" type="button" title="캐릭터를 톡 누른 것과 같다">톡</button>
+      <button id="btnLong" type="button" title="캐릭터를 꾹 누른 것과 같다">꾹</button>
+      <button id="btnFart" type="button" hidden title="이 친구만 할 수 있는 장난">뿡</button>
+    </div>
+    <label class="rm-label"><input type="checkbox" id="rm"> 움직임 줄이기</label>
+  </nav>
+
+  <pre id="log" class="log" aria-label="동작 기록"></pre>
+
+  <script type="module" src="./src/main.mjs"></script>
+</body>
+</html>

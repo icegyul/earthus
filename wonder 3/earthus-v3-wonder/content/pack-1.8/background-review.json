@@ -1,0 +1,33 @@
+{
+  "_note": "팩 1.8 배경 24장 눈 검수 (2026-09-13, 24장 접촉 시트 bg-all24.png). 해시는 팩 카탈로그와 일치하지만 내용이 배경이 아니다 — 참고 슬라이드 덱을 1024×655 로 잘라낸 조각이다. verdict 가 ok 가 아닌 배경은 무대에 그리지 않고 종이 바탕을 쓴다. 팩 자체를 고치지 않는다(원본 보존). 실제 배경(슬라이드 조각 안에 적힌 스펙: 2048×1152 WebP)이 오면 이 파일의 verdict 를 ok 로 바꾼다.",
+  "reviewed_at": "2026-09-13",
+  "reviewer": "Claude Fable 5.1 — 접촉 시트 육안 검수, 기준: 그림이 id 의 장소·환경을 담은 온전한 풍경인가",
+  "verdict_counts": { "ok": 0, "invalid": 24 },
+  "category_counts": { "slide-text": 9, "thumbnail-with-chrome": 8, "character-crop": 4, "hero-art-crop": 3 },
+  "backgrounds": {
+    "aurora_01":         { "verdict": "invalid", "category": "slide-text",            "seen": "스펙 글머리(JPG/WebP 배경 이미지 · 해상도 2048×1152 배경 / 2048×2048 캐릭터 · WebP 권장) + 'Small Steps' 필기체" },
+    "australia_01":      { "verdict": "invalid", "category": "thumbnail-with-chrome", "seen": "해안 풍경 썸네일(둥근 프레임) + 라벨 '해안'. 호주가 아니다" },
+    "cave_01":           { "verdict": "invalid", "category": "hero-art-crop",         "seen": "종이 구름 + 'HUS' 로고 나무 간판 조각" },
+    "coast_01":          { "verdict": "invalid", "category": "hero-art-crop",         "seen": "종이 나무 4그루 조각. 해안 없음" },
+    "desert_01":         { "verdict": "invalid", "category": "slide-text",            "seen": "'웃기 Laugh · 먹기 Eat' + '폴더 구조 예시'" },
+    "forest_01":         { "verdict": "invalid", "category": "thumbnail-with-chrome", "seen": "경복궁 썸네일 + 라벨 '한국 (경복궁)'. 숲이 아니다" },
+    "grassland_01":      { "verdict": "invalid", "category": "character-crop",        "seen": "한복 소녀 + 판다 캐릭터" },
+    "ice_01":            { "verdict": "invalid", "category": "slide-text",            "seen": "'손 흔들기 Wave' + 'Folder Structure'" },
+    "island_01":         { "verdict": "invalid", "category": "thumbnail-with-chrome", "seen": "밤하늘 보름달 썸네일(프레임). 섬이 아니다" },
+    "jungle_01":         { "verdict": "invalid", "category": "thumbnail-with-chrome", "seen": "벚꽃 마을·탑 썸네일 + 라벨 '벚꽃 마을'. 정글이 아니다" },
+    "korea_busan_01":    { "verdict": "invalid", "category": "slide-text",            "seen": "폴더 트리(explorer/ animals/ dinosaur/)" },
+    "korea_gyeongju_01": { "verdict": "invalid", "category": "thumbnail-with-chrome", "seen": "동굴 썸네일(프레임). 경주가 아니다" },
+    "korea_jeju_01":     { "verdict": "invalid", "category": "thumbnail-with-chrome", "seen": "하늘 섬 썸네일(프레임). 제주가 아니다" },
+    "korea_seoul_01":    { "verdict": "invalid", "category": "thumbnail-with-chrome", "seen": "오로라 썸네일(프레임). 서울이 아니다" },
+    "night_01":          { "verdict": "invalid", "category": "slide-text",            "seen": "파일 목록(wave.png point.png tibet/ sahara/ tajm…)" },
+    "ocean_01":          { "verdict": "invalid", "category": "slide-text",            "seen": "'점프 Jump · 춤추기 Dance' + '파일 형식 (권장)'" },
+    "sahara_01":         { "verdict": "invalid", "category": "character-crop",        "seen": "티라노사우루스 + 여우 캐릭터" },
+    "savanna_01":        { "verdict": "invalid", "category": "thumbnail-with-chrome", "seen": "바닷속 산호 썸네일 + 라벨 '바다 속'. 사바나가 아니다" },
+    "sky_island_01":     { "verdict": "invalid", "category": "slide-text",            "seen": "'더 많은 이야기가 지구 위에 기다리고 있어요 / More stories are waiting on our Earth.'" },
+    "sunset_01":         { "verdict": "invalid", "category": "slide-text",            "seen": "파일 목록(bg_grassland.jpg bg_tibet.jpg bg_sahara.jpg …)" },
+    "tajmahal_01":       { "verdict": "invalid", "category": "character-crop",        "seen": "부엉이 + 새싹 캐릭터" },
+    "tibet_01":          { "verdict": "invalid", "category": "character-crop",        "seen": "북극곰(손 흔듦) + 판다·공룡 일부" },
+    "underwater_01":     { "verdict": "invalid", "category": "hero-art-crop",         "seen": "종이 나무 + 'EARTHUS V3 WONDER' 간판 조각" },
+    "volcano_01":        { "verdict": "invalid", "category": "slide-text",            "seen": "'울음/소리 Roar · 가리키기 Point'" }
+  }
+}

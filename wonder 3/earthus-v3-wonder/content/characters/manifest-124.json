@@ -1,0 +1,4713 @@
+[
+  {
+    "index": 1,
+    "slug": "yeti",
+    "name": "예티",
+    "category": "folklore",
+    "league": "BIPED_PAPER",
+    "lat": 27.99,
+    "lon": 86.93,
+    "moves": [
+      "stomp",
+      "wave",
+      "nod",
+      "wiggle"
+    ],
+    "note": "예티는 둥근 체형으로 기억되는 다정한 이야기 친구예요. (설화 기준: 에베레스트산)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wave",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wave",
+      "fart": true,
+      "fartStyle": "small-paper-puff",
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 에베레스트산",
+    "art": {
+      "character": "characters/runtime/yeti.webp",
+      "scene": "characters/runtime/yeti_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 2,
+    "slug": "haetae",
+    "name": "해태",
+    "category": "folklore",
+    "league": "QUADRUPED_PAPER",
+    "lat": 37.58,
+    "lon": 126.98,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "해태는 사자형 몸으로 기억되는 다정한 이야기 친구예요. (설화 기준: 광화문 해치상)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 광화문 해치상",
+    "art": {
+      "character": "characters/runtime/haetae.webp",
+      "scene": "characters/runtime/haetae_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 3,
+    "slug": "nessie",
+    "name": "네시",
+    "category": "folklore",
+    "league": "SERPENT_PAPER",
+    "lat": 57.32,
+    "lon": -4.44,
+    "moves": [
+      "coil",
+      "wiggle",
+      "spin",
+      "nod"
+    ],
+    "note": "네시는 작은 머리로 기억되는 다정한 이야기 친구예요. (설화 기준: 어커트성, 네스호)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 어커트성, 네스호",
+    "art": {
+      "character": "characters/runtime/nessie.webp",
+      "scene": "characters/runtime/nessie_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 4,
+    "slug": "mothman",
+    "name": "모스맨",
+    "category": "folklore",
+    "league": "FLYER_PAPER",
+    "lat": 38.84,
+    "lon": -82.14,
+    "moves": [
+      "flap",
+      "jump",
+      "spin",
+      "nod"
+    ],
+    "note": "모스맨은 커다란 나방 날개로 기억되는 다정한 이야기 친구예요. (설화 기준: 모스맨 동상, 포인트플레전트)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 모스맨 동상, 포인트플레전트",
+    "art": {
+      "character": "characters/runtime/mothman.webp",
+      "scene": "characters/runtime/mothman_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 5,
+    "slug": "bigfoot",
+    "name": "빅풋",
+    "category": "folklore",
+    "league": "BIPED_PAPER",
+    "lat": 41.44,
+    "lon": -123.7,
+    "moves": [
+      "stomp",
+      "wave",
+      "nod",
+      "wiggle"
+    ],
+    "note": "빅풋은 큰 몸과 포근한 갈색 털로 기억되는 다정한 이야기 친구예요. (설화 기준: 패터슨-김린 촬영지, 블러프크리크)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wave",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wave",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 패터슨-김린 촬영지, 블러프크리크",
+    "art": {
+      "character": "characters/runtime/bigfoot.webp",
+      "scene": "characters/runtime/bigfoot_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 6,
+    "slug": "dokkaebi",
+    "name": "도깨비",
+    "category": "folklore",
+    "league": "BIPED_PAPER",
+    "lat": 33.46,
+    "lon": 126.49,
+    "moves": [
+      "bounce",
+      "spin",
+      "wave",
+      "nod",
+      "wiggle"
+    ],
+    "note": "도깨비는 빨간 얼굴과 짧은 뿔로 기억되는 다정한 이야기 친구예요. (설화 기준: 제주 도깨비도로)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wave",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wave",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 제주 도깨비도로",
+    "art": {
+      "character": "characters/runtime/dokkaebi.webp",
+      "scene": "characters/runtime/dokkaebi_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 7,
+    "slug": "golem",
+    "name": "골렘",
+    "category": "folklore",
+    "league": "BIPED_PAPER",
+    "lat": 50.09,
+    "lon": 14.42,
+    "moves": [
+      "stomp",
+      "nod",
+      "wave"
+    ],
+    "note": "골렘은 큰 점토 인형 체형으로 기억되는 다정한 이야기 친구예요. (설화 기준: 구신회당, 프라하)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wave",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wave",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 구신회당, 프라하",
+    "art": {
+      "character": "characters/runtime/golem.webp",
+      "scene": "characters/runtime/golem_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 8,
+    "slug": "kappa",
+    "name": "갓파",
+    "category": "folklore",
+    "league": "BIPED_PAPER",
+    "lat": 39.35,
+    "lon": 141.57,
+    "moves": [
+      "jump",
+      "spin",
+      "wave",
+      "nod",
+      "wiggle"
+    ],
+    "note": "갓파는 거북 등딱지로 기억되는 다정한 이야기 친구예요. (설화 기준: 갓파부치 연못, 도노)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wave",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wave",
+      "fart": true,
+      "fartStyle": "small-paper-puff",
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 갓파부치 연못, 도노",
+    "art": {
+      "character": "characters/runtime/kappa.webp",
+      "scene": "characters/runtime/kappa_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 9,
+    "slug": "jackalope",
+    "name": "재칼로프",
+    "category": "folklore",
+    "league": "QUADRUPED_PAPER",
+    "lat": 42.76,
+    "lon": -105.39,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "재칼로프는 토끼 몸으로 기억되는 다정한 이야기 친구예요. (설화 기준: 재칼로프 광장, 더글러스)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 재칼로프 광장, 더글러스",
+    "art": {
+      "character": "characters/runtime/jackalope.webp",
+      "scene": "characters/runtime/jackalope_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 10,
+    "slug": "werewolf",
+    "name": "늑대인간",
+    "category": "folklore",
+    "league": "BIPED_PAPER",
+    "lat": 50.6,
+    "lon": 6.4,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle",
+      "jump"
+    ],
+    "note": "늑대인간은 늑대 귀와 포근한 회색 털로 기억되는 다정한 이야기 친구예요. (설화 기준: 아이펠 숲, 독일)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 아이펠 숲, 독일",
+    "art": {
+      "character": "characters/runtime/werewolf.webp",
+      "scene": "characters/runtime/werewolf_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 11,
+    "slug": "mongolian-death-worm",
+    "name": "고비 모래벌레",
+    "category": "folklore",
+    "league": "SERPENT_PAPER",
+    "lat": 44.3,
+    "lon": 103.3,
+    "moves": [
+      "coil",
+      "wiggle",
+      "spin",
+      "nod"
+    ],
+    "note": "고비 모래벌레는 둥글고 짧은 몸으로 기억되는 다정한 이야기 친구예요. (설화 기준: 고비사막)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 고비사막",
+    "art": {
+      "character": "characters/runtime/mongolian-death-worm.webp",
+      "scene": "characters/runtime/mongolian-death-worm_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 12,
+    "slug": "imugi",
+    "name": "이무기",
+    "category": "folklore",
+    "league": "SERPENT_PAPER",
+    "lat": 33.52,
+    "lon": 126.51,
+    "moves": [
+      "coil",
+      "wiggle",
+      "spin",
+      "nod"
+    ],
+    "note": "이무기는 용이 되기 전의 긴 뱀형 몸으로 기억되는 다정한 이야기 친구예요. (설화 기준: 용연 연못, 제주)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 용연 연못, 제주",
+    "art": {
+      "character": "characters/runtime/imugi.webp",
+      "scene": "characters/runtime/imugi_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 13,
+    "slug": "gumiho",
+    "name": "구미호",
+    "category": "folklore",
+    "league": "QUADRUPED_PAPER",
+    "lat": 37.26,
+    "lon": 127.12,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "구미호는 흰 여우 몸과 부채처럼 펼친 아홉 꼬리로 기억되는 다정한 이야기 친구예요. (설화 기준: 한국민속촌, 용인)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 한국민속촌, 용인",
+    "art": {
+      "character": "characters/runtime/gumiho.webp",
+      "scene": "characters/runtime/gumiho_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 14,
+    "slug": "bulgasari",
+    "name": "불가사리",
+    "category": "folklore",
+    "league": "QUADRUPED_PAPER",
+    "lat": 37.98,
+    "lon": 126.55,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "불가사리는 곰과 코끼리를 섞은 몸으로 기억되는 다정한 이야기 친구예요. (설화 기준: 만월대, 개성)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 만월대, 개성",
+    "art": {
+      "character": "characters/runtime/bulgasari.webp",
+      "scene": "characters/runtime/bulgasari_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 15,
+    "slug": "barong",
+    "name": "바롱",
+    "category": "folklore",
+    "league": "QUADRUPED_PAPER",
+    "lat": -8.6,
+    "lon": 115.26,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "바롱은 풍성한 갈기와 둥근 눈을 지닌 발리의 수호 동물로 기억되는 다정한 이야기 친구예요. (설화 기준: 바투불란 바롱 공연마을)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": true,
+      "fartStyle": "small-paper-puff",
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 바투불란 바롱 공연마을",
+    "art": {
+      "character": "characters/runtime/barong.webp",
+      "scene": "characters/runtime/barong_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 16,
+    "slug": "jangsanbeom",
+    "name": "장산범",
+    "category": "folklore",
+    "league": "QUADRUPED_PAPER",
+    "lat": 35.2,
+    "lon": 129.17,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "장산범은 흰 호랑이형 몸으로 기억되는 다정한 이야기 친구예요. (설화 기준: 장산, 부산)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 장산, 부산",
+    "art": {
+      "character": "characters/runtime/jangsanbeom.webp",
+      "scene": "characters/runtime/jangsanbeom_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 17,
+    "slug": "samjoko",
+    "name": "삼족오",
+    "category": "folklore",
+    "league": "FLYER_PAPER",
+    "lat": 37.52,
+    "lon": 126.98,
+    "moves": [
+      "flap",
+      "jump",
+      "spin",
+      "nod"
+    ],
+    "note": "삼족오는 태양을 상징하는 검은 까마귀로 기억되는 다정한 이야기 친구예요. (설화 기준: 국립중앙박물관 고구려실, 서울)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 국립중앙박물관 고구려실, 서울",
+    "art": {
+      "character": "characters/runtime/samjoko.webp",
+      "scene": "characters/runtime/samjoko_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 18,
+    "slug": "fenghuang",
+    "name": "봉황",
+    "category": "folklore",
+    "league": "FLYER_PAPER",
+    "lat": 27.95,
+    "lon": 109.6,
+    "moves": [
+      "flap",
+      "jump",
+      "spin",
+      "nod"
+    ],
+    "note": "봉황은 공작과 꿩을 닮은 긴 꼬리깃으로 기억되는 다정한 이야기 친구예요. (설화 기준: 봉황고성, 중국)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": true,
+      "fartStyle": "small-paper-puff",
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 봉황고성, 중국",
+    "art": {
+      "character": "characters/runtime/fenghuang.webp",
+      "scene": "characters/runtime/fenghuang_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 19,
+    "slug": "qilin",
+    "name": "기린(상상의 신수)",
+    "category": "folklore",
+    "league": "QUADRUPED_PAPER",
+    "lat": 35.38,
+    "lon": 116.08,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "기린(상상의 신수)은 사슴형 몸으로 기억되는 다정한 이야기 친구예요. (설화 기준: 기린대, 쥐예현)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 기린대, 쥐예현",
+    "art": {
+      "character": "characters/runtime/qilin.webp",
+      "scene": "characters/runtime/qilin_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 20,
+    "slug": "chinese-dragon",
+    "name": "중국 용",
+    "category": "folklore",
+    "league": "SERPENT_PAPER",
+    "lat": 39.92,
+    "lon": 116.4,
+    "moves": [
+      "coil",
+      "wiggle",
+      "spin",
+      "nod"
+    ],
+    "note": "중국 용은 긴 뱀형 몸으로 기억되는 다정한 이야기 친구예요. (설화 기준: 구룡벽, 자금성)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 구룡벽, 자금성",
+    "art": {
+      "character": "characters/runtime/chinese-dragon.webp",
+      "scene": "characters/runtime/chinese-dragon_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 21,
+    "slug": "huye",
+    "name": "호야",
+    "category": "folklore",
+    "league": "QUADRUPED_PAPER",
+    "lat": 23.55,
+    "lon": 120.35,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "호야는 사원을 지키는 작은 호랑이 신으로 기억되는 다정한 이야기 친구예요. (설화 기준: 신강 봉천궁, 자이)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 신강 봉천궁, 자이",
+    "art": {
+      "character": "characters/runtime/huye.webp",
+      "scene": "characters/runtime/huye_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 22,
+    "slug": "oni",
+    "name": "오니",
+    "category": "folklore",
+    "league": "BIPED_PAPER",
+    "lat": 34.39,
+    "lon": 134.05,
+    "moves": [
+      "stomp",
+      "bounce",
+      "nod",
+      "wave"
+    ],
+    "note": "오니는 파란 얼굴과 두 개의 뿔로 기억되는 다정한 이야기 친구예요. (설화 기준: 오니가시마 동굴, 메기지마)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wave",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wave",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 오니가시마 동굴, 메기지마",
+    "art": {
+      "character": "characters/runtime/oni.webp",
+      "scene": "characters/runtime/oni_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 23,
+    "slug": "tengu",
+    "name": "텐구",
+    "category": "folklore",
+    "league": "FLYER_PAPER",
+    "lat": 35.12,
+    "lon": 135.77,
+    "moves": [
+      "flap",
+      "jump",
+      "spin",
+      "nod"
+    ],
+    "note": "텐구는 붉은 얼굴과 긴 코로 기억되는 다정한 이야기 친구예요. (설화 기준: 구라마산)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 구라마산",
+    "art": {
+      "character": "characters/runtime/tengu.webp",
+      "scene": "characters/runtime/tengu_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 24,
+    "slug": "kitsune",
+    "name": "키츠네",
+    "category": "folklore",
+    "league": "QUADRUPED_PAPER",
+    "lat": 34.97,
+    "lon": 135.77,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "키츠네는 금빛 여우 몸으로 기억되는 다정한 이야기 친구예요. (설화 기준: 후시미이나리 신사)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 후시미이나리 신사",
+    "art": {
+      "character": "characters/runtime/kitsune.webp",
+      "scene": "characters/runtime/kitsune_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 25,
+    "slug": "tanuki",
+    "name": "타누키",
+    "category": "folklore",
+    "league": "BIPED_PAPER",
+    "lat": 34.88,
+    "lon": 136.05,
+    "moves": [
+      "jump",
+      "spin",
+      "wave",
+      "nod",
+      "wiggle"
+    ],
+    "note": "타누키는 둥근 너구리 체형으로 기억되는 다정한 이야기 친구예요. (설화 기준: 시가라키 도자기마을)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wave",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wave",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 시가라키 도자기마을",
+    "art": {
+      "character": "characters/runtime/tanuki.webp",
+      "scene": "characters/runtime/tanuki_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 26,
+    "slug": "sarimanok",
+    "name": "사리마녹",
+    "category": "folklore",
+    "league": "FLYER_PAPER",
+    "lat": 8,
+    "lon": 124.29,
+    "moves": [
+      "flap",
+      "jump",
+      "spin",
+      "nod"
+    ],
+    "note": "사리마녹은 화려한 꼬리와 물고기 장식을 지닌 전설의 새로 기억되는 다정한 이야기 친구예요. (설화 기준: 마라위, 라나오호)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 마라위, 라나오호",
+    "art": {
+      "character": "characters/runtime/sarimanok.webp",
+      "scene": "characters/runtime/sarimanok_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 27,
+    "slug": "baku",
+    "name": "바쿠",
+    "category": "folklore",
+    "league": "QUADRUPED_PAPER",
+    "lat": 36.76,
+    "lon": 139.6,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "바쿠는 코끼리 코로 기억되는 다정한 이야기 친구예요. (설화 기준: 닛코 도쇼구 바쿠 조각)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 닛코 도쇼구 바쿠 조각",
+    "art": {
+      "character": "characters/runtime/baku.webp",
+      "scene": "characters/runtime/baku_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 28,
+    "slug": "kasa-obake",
+    "name": "가사오바케",
+    "category": "folklore",
+    "league": "BIPED_PAPER",
+    "lat": 35.55,
+    "lon": 133.23,
+    "moves": [
+      "jump",
+      "spin",
+      "wave",
+      "nod",
+      "wiggle"
+    ],
+    "note": "가사오바케는 종이우산 몸으로 기억되는 다정한 이야기 친구예요. (설화 기준: 미즈키 시게루 로드, 사카이미나토)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wave",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wave",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 미즈키 시게루 로드, 사카이미나토",
+    "art": {
+      "character": "characters/runtime/kasa-obake.webp",
+      "scene": "characters/runtime/kasa-obake_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 29,
+    "slug": "garuda",
+    "name": "가루다",
+    "category": "folklore",
+    "league": "FLYER_PAPER",
+    "lat": -8.81,
+    "lon": 115.17,
+    "moves": [
+      "flap",
+      "jump",
+      "spin",
+      "nod"
+    ],
+    "note": "가루다는 독수리 머리와 사람형 몸으로 기억되는 다정한 이야기 친구예요. (설화 기준: 가루다 위스누 켄카나 문화공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 가루다 위스누 켄카나 문화공원",
+    "art": {
+      "character": "characters/runtime/garuda.webp",
+      "scene": "characters/runtime/garuda_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 30,
+    "slug": "naga",
+    "name": "나가",
+    "category": "folklore",
+    "league": "SERPENT_PAPER",
+    "lat": 24.7,
+    "lon": 84.99,
+    "moves": [
+      "coil",
+      "wiggle",
+      "spin",
+      "nod"
+    ],
+    "note": "나가는 코브라 머리와 긴 비늘 몸으로 기억되는 다정한 이야기 친구예요. (설화 기준: 무찰린다 연못, 보드가야)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 무찰린다 연못, 보드가야",
+    "art": {
+      "character": "characters/runtime/naga.webp",
+      "scene": "characters/runtime/naga_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 31,
+    "slug": "hanuman",
+    "name": "하누만",
+    "category": "folklore",
+    "league": "BIPED_PAPER",
+    "lat": 15.36,
+    "lon": 76.46,
+    "moves": [
+      "jump",
+      "spin",
+      "wave",
+      "nod"
+    ],
+    "note": "하누만은 원숭이 얼굴의 영웅으로 기억되는 다정한 이야기 친구예요. (설화 기준: 안자나드리 언덕, 함피)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wave",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wave",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 안자나드리 언덕, 함피",
+    "art": {
+      "character": "characters/runtime/hanuman.webp",
+      "scene": "characters/runtime/hanuman_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 32,
+    "slug": "bakunawa",
+    "name": "바쿠나와",
+    "category": "folklore",
+    "league": "SERPENT_PAPER",
+    "lat": 10.3,
+    "lon": 123.9,
+    "moves": [
+      "coil",
+      "wiggle",
+      "spin",
+      "nod"
+    ],
+    "note": "바쿠나와는 달을 바라보는 길고 둥근 바다 용으로 기억되는 다정한 이야기 친구예요. (설화 기준: 세부 유산 기념비)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 세부 유산 기념비",
+    "art": {
+      "character": "characters/runtime/bakunawa.webp",
+      "scene": "characters/runtime/bakunawa_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 33,
+    "slug": "selkie",
+    "name": "셀키",
+    "category": "folklore",
+    "league": "SERPENT_PAPER",
+    "lat": 58.98,
+    "lon": -2.96,
+    "moves": [
+      "bounce",
+      "wiggle",
+      "nod",
+      "spin"
+    ],
+    "note": "셀키는 파도를 여행하는 바다표범 모습으로 기억되는 다정한 이야기 친구예요. (설화 기준: 오크니 박물관, 커크월)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 오크니 박물관, 커크월",
+    "art": {
+      "character": "characters/runtime/selkie.webp",
+      "scene": "characters/runtime/selkie_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 34,
+    "slug": "tikbalang",
+    "name": "틱발랑",
+    "category": "folklore",
+    "league": "BIPED_PAPER",
+    "lat": 14.62,
+    "lon": 121.04,
+    "moves": [
+      "jump",
+      "spin",
+      "wave",
+      "nod",
+      "wiggle"
+    ],
+    "note": "틱발랑은 말 머리와 긴 사람형 몸으로 기억되는 다정한 이야기 친구예요. (설화 기준: 발레테 드라이브, 케손시티)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wave",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wave",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 발레테 드라이브, 케손시티",
+    "art": {
+      "character": "characters/runtime/tikbalang.webp",
+      "scene": "characters/runtime/tikbalang_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 35,
+    "slug": "alux",
+    "name": "알룩스",
+    "category": "folklore",
+    "league": "BIPED_PAPER",
+    "lat": 20.36,
+    "lon": -89.77,
+    "moves": [
+      "bounce",
+      "spin",
+      "wave",
+      "nod"
+    ],
+    "note": "알룩스는 작은 모자와 옥수수 잎옷을 입은 마야의 숲 지킴이로 기억되는 다정한 이야기 친구예요. (설화 기준: 욱스말 마야 유적)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wave",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wave",
+      "fart": true,
+      "fartStyle": "small-paper-puff",
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 욱스말 마야 유적",
+    "art": {
+      "character": "characters/runtime/alux.webp",
+      "scene": "characters/runtime/alux_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 36,
+    "slug": "bunyip",
+    "name": "버닙",
+    "category": "folklore",
+    "league": "QUADRUPED_PAPER",
+    "lat": -35.12,
+    "lon": 139.28,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "버닙은 물개와 하마를 섞은 둥근 몸으로 기억되는 다정한 이야기 친구예요. (설화 기준: 버닙 동상, 머리브리지)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": true,
+      "fartStyle": "small-paper-puff",
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 버닙 동상, 머리브리지",
+    "art": {
+      "character": "characters/runtime/bunyip.webp",
+      "scene": "characters/runtime/bunyip_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 37,
+    "slug": "taniwha",
+    "name": "타니화",
+    "category": "folklore",
+    "league": "SERPENT_PAPER",
+    "lat": -37.67,
+    "lon": 175.15,
+    "moves": [
+      "coil",
+      "wiggle",
+      "spin",
+      "nod"
+    ],
+    "note": "타니화는 도마뱀과 상어를 섞은 긴 몸으로 기억되는 다정한 이야기 친구예요. (설화 기준: 투랑가와에와에 마라에, 와이카토강)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 투랑가와에와에 마라에, 와이카토강",
+    "art": {
+      "character": "characters/runtime/taniwha.webp",
+      "scene": "characters/runtime/taniwha_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 38,
+    "slug": "thunderbird",
+    "name": "천둥새",
+    "category": "folklore",
+    "league": "FLYER_PAPER",
+    "lat": 48.42,
+    "lon": -123.37,
+    "moves": [
+      "flap",
+      "jump",
+      "spin",
+      "nod"
+    ],
+    "note": "천둥새는 거대한 독수리형 몸으로 기억되는 다정한 이야기 친구예요. (설화 기준: 선더버드 공원, 빅토리아)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 선더버드 공원, 빅토리아",
+    "art": {
+      "character": "characters/runtime/thunderbird.webp",
+      "scene": "characters/runtime/thunderbird_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 39,
+    "slug": "hodag",
+    "name": "호닥",
+    "category": "folklore",
+    "league": "QUADRUPED_PAPER",
+    "lat": 45.64,
+    "lon": -89.41,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "호닥은 등의 둥근 돌기와 밝은 눈을 지닌 숲속 상상 동물로 기억되는 다정한 이야기 친구예요. (설화 기준: 호닥 공원, 라인랜더)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 호닥 공원, 라인랜더",
+    "art": {
+      "character": "characters/runtime/hodag.webp",
+      "scene": "characters/runtime/hodag_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 40,
+    "slug": "chupacabra",
+    "name": "추파카브라",
+    "category": "folklore",
+    "league": "BIPED_PAPER",
+    "lat": 18.38,
+    "lon": -65.9,
+    "moves": [
+      "jump",
+      "spin",
+      "wave",
+      "nod",
+      "wiggle"
+    ],
+    "note": "추파카브라는 큰 눈과 등 위의 둥근 가시로 기억되는 다정한 이야기 친구예요. (설화 기준: 카노바나스)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wave",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wave",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 카노바나스",
+    "art": {
+      "character": "characters/runtime/chupacabra.webp",
+      "scene": "characters/runtime/chupacabra_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 41,
+    "slug": "quetzalcoatl",
+    "name": "케찰코아틀",
+    "category": "folklore",
+    "league": "SERPENT_PAPER",
+    "lat": 19.68,
+    "lon": -98.84,
+    "moves": [
+      "coil",
+      "wiggle",
+      "spin",
+      "nod"
+    ],
+    "note": "케찰코아틀은 깃털로 덮인 긴 뱀 몸으로 기억되는 다정한 이야기 친구예요. (설화 기준: 케찰코아틀 신전, 테오티우아칸)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 케찰코아틀 신전, 테오티우아칸",
+    "art": {
+      "character": "characters/runtime/quetzalcoatl.webp",
+      "scene": "characters/runtime/quetzalcoatl_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 42,
+    "slug": "anansi",
+    "name": "아난시",
+    "category": "folklore",
+    "league": "BIPED_PAPER",
+    "lat": 6.7,
+    "lon": -1.62,
+    "moves": [
+      "jump",
+      "spin",
+      "wave",
+      "nod",
+      "wiggle"
+    ],
+    "note": "아난시는 이야기 주머니를 든 영리한 거미 이야기꾼으로 기억되는 다정한 이야기 친구예요. (설화 기준: 만히아 궁전, 쿠마시)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wave",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wave",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 만히아 궁전, 쿠마시",
+    "art": {
+      "character": "characters/runtime/anansi.webp",
+      "scene": "characters/runtime/anansi_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 43,
+    "slug": "kelpie",
+    "name": "켈피",
+    "category": "folklore",
+    "league": "QUADRUPED_PAPER",
+    "lat": 56.02,
+    "lon": -3.76,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "켈피는 검은 물말 체형으로 기억되는 다정한 이야기 친구예요. (설화 기준: 켈피스 조각, 폴커크)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": true,
+      "fartStyle": "small-paper-puff",
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "설화 기준: 켈피스 조각, 폴커크",
+    "art": {
+      "character": "characters/runtime/kelpie.webp",
+      "scene": "characters/runtime/kelpie_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 44,
+    "slug": "coelophysis",
+    "name": "코엘로피시스",
+    "category": "prehistoric",
+    "league": "BIPED_PAPER",
+    "lat": 36.33,
+    "lon": -106.47,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle",
+      "spin"
+    ],
+    "note": "코엘로피시스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 가볍고 날씬한 몸이에요. (화석 기준: 고스트랜치 화석지, 뉴멕시코)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 고스트랜치 화석지, 뉴멕시코",
+    "art": {
+      "character": "characters/runtime/coelophysis.webp",
+      "scene": "characters/runtime/coelophysis_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 45,
+    "slug": "plateosaurus",
+    "name": "플라테오사우루스",
+    "category": "prehistoric",
+    "league": "BIPED_PAPER",
+    "lat": 48.08,
+    "lon": 8.64,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle",
+      "spin"
+    ],
+    "note": "플라테오사우루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 길고 부드러운 목이에요. (화석 기준: 트로싱엔 화석지, 독일)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 트로싱엔 화석지, 독일",
+    "art": {
+      "character": "characters/runtime/plateosaurus.webp",
+      "scene": "characters/runtime/plateosaurus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 46,
+    "slug": "herrerasaurus",
+    "name": "헤레라사우루스",
+    "category": "prehistoric",
+    "league": "BIPED_PAPER",
+    "lat": -30.12,
+    "lon": -67.9,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle",
+      "spin"
+    ],
+    "note": "헤레라사우루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 길고 낮은 머리예요. (화석 기준: 이스치구알라스토 주립공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 이스치구알라스토 주립공원",
+    "art": {
+      "character": "characters/runtime/herrerasaurus.webp",
+      "scene": "characters/runtime/herrerasaurus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 47,
+    "slug": "eoraptor",
+    "name": "에오랍토르",
+    "category": "prehistoric",
+    "league": "BIPED_PAPER",
+    "lat": -30.16,
+    "lon": -67.86,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle",
+      "spin"
+    ],
+    "note": "에오랍토르는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 작고 가벼운 몸이에요. (화석 기준: 이스치구알라스토 주립공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 이스치구알라스토 주립공원",
+    "art": {
+      "character": "characters/runtime/eoraptor.webp",
+      "scene": "characters/runtime/eoraptor_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 48,
+    "slug": "postosuchus",
+    "name": "포스토수쿠스",
+    "category": "prehistoric",
+    "league": "QUADRUPED_PAPER",
+    "lat": 33.19,
+    "lon": -101.38,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "포스토수쿠스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 큰 머리와 악어형 주둥이예요. (화석 기준: 포스트 채석장, 텍사스)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 포스트 채석장, 텍사스",
+    "art": {
+      "character": "characters/runtime/postosuchus.webp",
+      "scene": "characters/runtime/postosuchus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 49,
+    "slug": "nothosaurus",
+    "name": "노토사우루스",
+    "category": "prehistoric",
+    "league": "SERPENT_PAPER",
+    "lat": 45.91,
+    "lon": 8.95,
+    "moves": [
+      "coil",
+      "wiggle",
+      "spin",
+      "nod"
+    ],
+    "note": "노토사우루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 납작한 머리예요. (화석 기준: 몬테산조르조 화석지)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 몬테산조르조 화석지",
+    "art": {
+      "character": "characters/runtime/nothosaurus.webp",
+      "scene": "characters/runtime/nothosaurus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 50,
+    "slug": "tanystropheus",
+    "name": "타니스트로페우스",
+    "category": "prehistoric",
+    "league": "SERPENT_PAPER",
+    "lat": 45.89,
+    "lon": 8.92,
+    "moves": [
+      "coil",
+      "wiggle",
+      "spin",
+      "nod"
+    ],
+    "note": "타니스트로페우스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 몸보다 긴 막대형 목이에요. (화석 기준: 몬테산조르조 화석지)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": true,
+      "fartStyle": "small-paper-puff",
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 몬테산조르조 화석지",
+    "art": {
+      "character": "characters/runtime/tanystropheus.webp",
+      "scene": "characters/runtime/tanystropheus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 51,
+    "slug": "shonisaurus",
+    "name": "쇼니사우루스",
+    "category": "prehistoric",
+    "league": "SERPENT_PAPER",
+    "lat": 38.88,
+    "lon": -117.59,
+    "moves": [
+      "flap",
+      "bounce",
+      "nod",
+      "spin"
+    ],
+    "note": "쇼니사우루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 버스만큼 커다란 몸이에요. (화석 기준: 베를린-이크티오사우르 주립공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "flap",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "flap",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 베를린-이크티오사우르 주립공원",
+    "art": {
+      "character": "characters/runtime/shonisaurus.webp",
+      "scene": "characters/runtime/shonisaurus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 52,
+    "slug": "dilophosaurus",
+    "name": "딜로포사우루스",
+    "category": "prehistoric",
+    "league": "BIPED_PAPER",
+    "lat": 36.13,
+    "lon": -111.24,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle",
+      "spin"
+    ],
+    "note": "딜로포사우루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 머리 위 평행한 볏 두 개예요. (화석 기준: 카옌타층, 애리조나)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": true,
+      "fartStyle": "small-paper-puff",
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 카옌타층, 애리조나",
+    "art": {
+      "character": "characters/runtime/dilophosaurus.webp",
+      "scene": "characters/runtime/dilophosaurus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 53,
+    "slug": "allosaurus",
+    "name": "알로사우루스",
+    "category": "prehistoric",
+    "league": "BIPED_PAPER",
+    "lat": 39.32,
+    "lon": -110.68,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle",
+      "spin"
+    ],
+    "note": "알로사우루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 눈 위 작은 뿔이에요. (화석 기준: 클리블랜드-로이드 공룡 채석장)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 클리블랜드-로이드 공룡 채석장",
+    "art": {
+      "character": "characters/runtime/allosaurus.webp",
+      "scene": "characters/runtime/allosaurus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 54,
+    "slug": "stegosaurus",
+    "name": "스테고사우루스",
+    "category": "prehistoric",
+    "league": "QUADRUPED_PAPER",
+    "lat": 38.52,
+    "lon": -105.22,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "스테고사우루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 등을 따라 선 큰 판이에요. (화석 기준: 가든파크 화석지, 콜로라도)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 가든파크 화석지, 콜로라도",
+    "art": {
+      "character": "characters/runtime/stegosaurus.webp",
+      "scene": "characters/runtime/stegosaurus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 55,
+    "slug": "brachiosaurus",
+    "name": "브라키오사우루스",
+    "category": "prehistoric",
+    "league": "QUADRUPED_PAPER",
+    "lat": 39.16,
+    "lon": -108.73,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle"
+    ],
+    "note": "브라키오사우루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 앞다리가 긴 높은 어깨예요. (화석 기준: 프루타 화석지, 콜로라도)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 프루타 화석지, 콜로라도",
+    "art": {
+      "character": "characters/runtime/brachiosaurus.webp",
+      "scene": "characters/runtime/brachiosaurus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 56,
+    "slug": "diplodocus",
+    "name": "디플로도쿠스",
+    "category": "prehistoric",
+    "league": "QUADRUPED_PAPER",
+    "lat": 41.87,
+    "lon": -106.06,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "디플로도쿠스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 매우 긴 목과 채찍 꼬리예요. (화석 기준: 코모블러프 화석지, 와이오밍)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 코모블러프 화석지, 와이오밍",
+    "art": {
+      "character": "characters/runtime/diplodocus.webp",
+      "scene": "characters/runtime/diplodocus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 57,
+    "slug": "apatosaurus",
+    "name": "아파토사우루스",
+    "category": "prehistoric",
+    "league": "QUADRUPED_PAPER",
+    "lat": 40.44,
+    "lon": -109.31,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "아파토사우루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 굵은 목이에요. (화석 기준: 공룡국립기념물 채석장)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": true,
+      "fartStyle": "small-paper-puff",
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 공룡국립기념물 채석장",
+    "art": {
+      "character": "characters/runtime/apatosaurus.webp",
+      "scene": "characters/runtime/apatosaurus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 58,
+    "slug": "compsognathus",
+    "name": "콤프소그나투스",
+    "category": "prehistoric",
+    "league": "BIPED_PAPER",
+    "lat": 48.9,
+    "lon": 11,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle",
+      "spin"
+    ],
+    "note": "콤프소그나투스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 닭만큼 작은 몸이에요. (화석 기준: 졸른호펜 석회암 지대)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 졸른호펜 석회암 지대",
+    "art": {
+      "character": "characters/runtime/compsognathus.webp",
+      "scene": "characters/runtime/compsognathus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 59,
+    "slug": "ceratosaurus",
+    "name": "케라토사우루스",
+    "category": "prehistoric",
+    "league": "BIPED_PAPER",
+    "lat": 38.54,
+    "lon": -105.19,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle",
+      "spin"
+    ],
+    "note": "케라토사우루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 코 위 뿔 하나예요. (화석 기준: 가든파크 화석지, 콜로라도)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 가든파크 화석지, 콜로라도",
+    "art": {
+      "character": "characters/runtime/ceratosaurus.webp",
+      "scene": "characters/runtime/ceratosaurus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 60,
+    "slug": "archaeopteryx",
+    "name": "아르카이옵테릭스",
+    "category": "prehistoric",
+    "league": "FLYER_PAPER",
+    "lat": 48.89,
+    "lon": 11.19,
+    "moves": [
+      "flap",
+      "jump",
+      "spin",
+      "nod"
+    ],
+    "note": "아르카이옵테릭스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 깃털 날개예요. (화석 기준: 졸른호펜 석회암 지대)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 졸른호펜 석회암 지대",
+    "art": {
+      "character": "characters/runtime/archaeopteryx.webp",
+      "scene": "characters/runtime/archaeopteryx_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 61,
+    "slug": "plesiosaurus",
+    "name": "플레시오사우루스",
+    "category": "prehistoric",
+    "league": "SERPENT_PAPER",
+    "lat": 50.73,
+    "lon": -2.93,
+    "moves": [
+      "flap",
+      "wiggle",
+      "nod",
+      "spin"
+    ],
+    "note": "플레시오사우루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 작은 머리와 긴 목이에요. (화석 기준: 라임리지스 쥐라기 해안)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 라임리지스 쥐라기 해안",
+    "art": {
+      "character": "characters/runtime/plesiosaurus.webp",
+      "scene": "characters/runtime/plesiosaurus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 62,
+    "slug": "liopleurodon",
+    "name": "리오플레우로돈",
+    "category": "prehistoric",
+    "league": "SERPENT_PAPER",
+    "lat": 52.57,
+    "lon": -0.24,
+    "moves": [
+      "flap",
+      "wiggle",
+      "nod",
+      "spin"
+    ],
+    "note": "리오플레우로돈은 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 큰 머리와 네 개의 지느러미예요. (화석 기준: 피터버러 옥스퍼드 점토층)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 피터버러 옥스퍼드 점토층",
+    "art": {
+      "character": "characters/runtime/liopleurodon.webp",
+      "scene": "characters/runtime/liopleurodon_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 63,
+    "slug": "ichthyosaurus",
+    "name": "이크티오사우루스",
+    "category": "prehistoric",
+    "league": "SERPENT_PAPER",
+    "lat": 50.71,
+    "lon": -2.98,
+    "moves": [
+      "flap",
+      "bounce",
+      "nod",
+      "spin"
+    ],
+    "note": "이크티오사우루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 돌고래형 몸이에요. (화석 기준: 라임리지스 쥐라기 해안)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "flap",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "flap",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 라임리지스 쥐라기 해안",
+    "art": {
+      "character": "characters/runtime/ichthyosaurus.webp",
+      "scene": "characters/runtime/ichthyosaurus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 64,
+    "slug": "dimorphodon",
+    "name": "디모르포돈",
+    "category": "prehistoric",
+    "league": "FLYER_PAPER",
+    "lat": 50.73,
+    "lon": -2.9,
+    "moves": [
+      "flap",
+      "jump",
+      "spin",
+      "nod"
+    ],
+    "note": "디모르포돈은 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 큰 머리와 짧은 목이에요. (화석 기준: 라임리지스 쥐라기 해안)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 라임리지스 쥐라기 해안",
+    "art": {
+      "character": "characters/runtime/dimorphodon.webp",
+      "scene": "characters/runtime/dimorphodon_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 65,
+    "slug": "rhamphorhynchus",
+    "name": "람포링쿠스",
+    "category": "prehistoric",
+    "league": "FLYER_PAPER",
+    "lat": 48.85,
+    "lon": 11.13,
+    "moves": [
+      "flap",
+      "jump",
+      "spin",
+      "nod"
+    ],
+    "note": "람포링쿠스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 길고 좁은 부리예요. (화석 기준: 졸른호펜 석회암 지대)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 졸른호펜 석회암 지대",
+    "art": {
+      "character": "characters/runtime/rhamphorhynchus.webp",
+      "scene": "characters/runtime/rhamphorhynchus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 66,
+    "slug": "tyrannosaurus-rex",
+    "name": "티라노사우루스",
+    "category": "prehistoric",
+    "league": "BIPED_PAPER",
+    "lat": 47.61,
+    "lon": -106.91,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle"
+    ],
+    "note": "티라노사우루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 커다란 머리와 튼튼한 두 다리예요. (화석 기준: 헬크리크 주립공원, 몬태나)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 헬크리크 주립공원, 몬태나",
+    "art": {
+      "character": "characters/runtime/tyrannosaurus-rex.webp",
+      "scene": "characters/runtime/tyrannosaurus-rex_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 67,
+    "slug": "triceratops",
+    "name": "트리케라톱스",
+    "category": "prehistoric",
+    "league": "QUADRUPED_PAPER",
+    "lat": 47.06,
+    "lon": -104.68,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "트리케라톱스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 얼굴의 뿔 세 개예요. (화석 기준: 마코시카 주립공원, 몬태나)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 마코시카 주립공원, 몬태나",
+    "art": {
+      "character": "characters/runtime/triceratops.webp",
+      "scene": "characters/runtime/triceratops_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 68,
+    "slug": "velociraptor",
+    "name": "벨로키랍토르",
+    "category": "prehistoric",
+    "league": "BIPED_PAPER",
+    "lat": 44.14,
+    "lon": 103.72,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle",
+      "spin"
+    ],
+    "note": "벨로키랍토르는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 깃털 덮인 날씬한 몸이에요. (화석 기준: 바얀작 붉은 절벽, 몽골)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 바얀작 붉은 절벽, 몽골",
+    "art": {
+      "character": "characters/runtime/velociraptor.webp",
+      "scene": "characters/runtime/velociraptor_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 69,
+    "slug": "spinosaurus",
+    "name": "스피노사우루스",
+    "category": "prehistoric",
+    "league": "BIPED_PAPER",
+    "lat": 31.44,
+    "lon": -4.24,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle",
+      "spin"
+    ],
+    "note": "스피노사우루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 등 위의 커다란 돛이에요. (화석 기준: 켐켐 화석층, 모로코)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": true,
+      "fartStyle": "small-paper-puff",
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 켐켐 화석층, 모로코",
+    "art": {
+      "character": "characters/runtime/spinosaurus.webp",
+      "scene": "characters/runtime/spinosaurus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 70,
+    "slug": "ankylosaurus",
+    "name": "안킬로사우루스",
+    "category": "prehistoric",
+    "league": "QUADRUPED_PAPER",
+    "lat": 47.45,
+    "lon": -106.6,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "안킬로사우루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 낮은 갑옷 몸이에요. (화석 기준: 헬크리크층, 몬태나)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 헬크리크층, 몬태나",
+    "art": {
+      "character": "characters/runtime/ankylosaurus.webp",
+      "scene": "characters/runtime/ankylosaurus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 71,
+    "slug": "parasaurolophus",
+    "name": "파라사우롤로푸스",
+    "category": "prehistoric",
+    "league": "BIPED_PAPER",
+    "lat": 50.75,
+    "lon": -111.49,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle",
+      "spin"
+    ],
+    "note": "파라사우롤로푸스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 머리 뒤로 길게 뻗은 관 모양 볏이에요. (화석 기준: 공룡주립공원, 앨버타)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": true,
+      "fartStyle": "small-paper-puff",
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 공룡주립공원, 앨버타",
+    "art": {
+      "character": "characters/runtime/parasaurolophus.webp",
+      "scene": "characters/runtime/parasaurolophus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 72,
+    "slug": "carnotaurus",
+    "name": "카르노타우루스",
+    "category": "prehistoric",
+    "league": "BIPED_PAPER",
+    "lat": -43.25,
+    "lon": -65.31,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle",
+      "spin"
+    ],
+    "note": "카르노타우루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 눈 위의 굵은 뿔 두 개예요. (화석 기준: 에히디오 페루글리오 고생물박물관, 트렐레우)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 에히디오 페루글리오 고생물박물관, 트렐레우",
+    "art": {
+      "character": "characters/runtime/carnotaurus.webp",
+      "scene": "characters/runtime/carnotaurus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 73,
+    "slug": "giganotosaurus",
+    "name": "기가노토사우루스",
+    "category": "prehistoric",
+    "league": "BIPED_PAPER",
+    "lat": -39.26,
+    "lon": -68.78,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle",
+      "spin"
+    ],
+    "note": "기가노토사우루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 길고 큰 두개골이에요. (화석 기준: 빌라 엘초콘, 네우켄)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 빌라 엘초콘, 네우켄",
+    "art": {
+      "character": "characters/runtime/giganotosaurus.webp",
+      "scene": "characters/runtime/giganotosaurus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 74,
+    "slug": "deinonychus",
+    "name": "데이노니쿠스",
+    "category": "prehistoric",
+    "league": "BIPED_PAPER",
+    "lat": 45,
+    "lon": -108.3,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle",
+      "spin"
+    ],
+    "note": "데이노니쿠스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 낫처럼 휜 발톱이에요. (화석 기준: 클로벌리층, 빅혼 분지)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 클로벌리층, 빅혼 분지",
+    "art": {
+      "character": "characters/runtime/deinonychus.webp",
+      "scene": "characters/runtime/deinonychus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 75,
+    "slug": "utahraptor",
+    "name": "유타랍토르",
+    "category": "prehistoric",
+    "league": "BIPED_PAPER",
+    "lat": 38.57,
+    "lon": -109.55,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle",
+      "spin"
+    ],
+    "note": "유타랍토르는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 몸을 덮은 큰 깃털이에요. (화석 기준: 게스턴 채석장, 유타)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 게스턴 채석장, 유타",
+    "art": {
+      "character": "characters/runtime/utahraptor.webp",
+      "scene": "characters/runtime/utahraptor_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 76,
+    "slug": "iguanodon",
+    "name": "이구아노돈",
+    "category": "prehistoric",
+    "league": "BIPED_PAPER",
+    "lat": 50.47,
+    "lon": 3.65,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle",
+      "spin"
+    ],
+    "note": "이구아노돈은 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 넓은 부리예요. (화석 기준: 베르니사르 탄광 화석지)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 베르니사르 탄광 화석지",
+    "art": {
+      "character": "characters/runtime/iguanodon.webp",
+      "scene": "characters/runtime/iguanodon_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 77,
+    "slug": "baryonyx",
+    "name": "바리오닉스",
+    "category": "prehistoric",
+    "league": "BIPED_PAPER",
+    "lat": 51.14,
+    "lon": -0.44,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle",
+      "spin"
+    ],
+    "note": "바리오닉스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 악어형 주둥이예요. (화석 기준: 스모크잭스 채석장, 서리)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 스모크잭스 채석장, 서리",
+    "art": {
+      "character": "characters/runtime/baryonyx.webp",
+      "scene": "characters/runtime/baryonyx_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 78,
+    "slug": "pachycephalosaurus",
+    "name": "파키케팔로사우루스",
+    "category": "prehistoric",
+    "league": "BIPED_PAPER",
+    "lat": 43.93,
+    "lon": -103.57,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle",
+      "spin"
+    ],
+    "note": "파키케팔로사우루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 두꺼운 둥근 머리뼈예요. (화석 기준: 블랙힐스 지질박물관, 사우스다코타)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": true,
+      "fartStyle": "small-paper-puff",
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 블랙힐스 지질박물관, 사우스다코타",
+    "art": {
+      "character": "characters/runtime/pachycephalosaurus.webp",
+      "scene": "characters/runtime/pachycephalosaurus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 79,
+    "slug": "oviraptor",
+    "name": "오비랍토르",
+    "category": "prehistoric",
+    "league": "BIPED_PAPER",
+    "lat": 44.1,
+    "lon": 103.78,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle",
+      "spin"
+    ],
+    "note": "오비랍토르는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 앵무새형 부리와 머리 볏이에요. (화석 기준: 바얀작 붉은 절벽, 몽골)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 바얀작 붉은 절벽, 몽골",
+    "art": {
+      "character": "characters/runtime/oviraptor.webp",
+      "scene": "characters/runtime/oviraptor_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 80,
+    "slug": "therizinosaurus",
+    "name": "테리지노사우루스",
+    "category": "prehistoric",
+    "league": "BIPED_PAPER",
+    "lat": 43.5,
+    "lon": 101,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle",
+      "spin"
+    ],
+    "note": "테리지노사우루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 1m 가까운 긴 손톱이에요. (화석 기준: 네메그트층, 고비사막)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 네메그트층, 고비사막",
+    "art": {
+      "character": "characters/runtime/therizinosaurus.webp",
+      "scene": "characters/runtime/therizinosaurus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 81,
+    "slug": "argentinosaurus",
+    "name": "아르헨티노사우루스",
+    "category": "prehistoric",
+    "league": "QUADRUPED_PAPER",
+    "lat": -38.93,
+    "lon": -69.2,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle"
+    ],
+    "note": "아르헨티노사우루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 거대한 몸통이에요. (화석 기준: 플라사우인쿨 고생물박물관)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 플라사우인쿨 고생물박물관",
+    "art": {
+      "character": "characters/runtime/argentinosaurus.webp",
+      "scene": "characters/runtime/argentinosaurus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 82,
+    "slug": "quetzalcoatlus",
+    "name": "케찰코아틀루스",
+    "category": "prehistoric",
+    "league": "FLYER_PAPER",
+    "lat": 29.25,
+    "lon": -103.25,
+    "moves": [
+      "flap",
+      "jump",
+      "spin",
+      "nod"
+    ],
+    "note": "케찰코아틀루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 매우 긴 부리와 목이에요. (화석 기준: 빅벤드 국립공원, 텍사스)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 빅벤드 국립공원, 텍사스",
+    "art": {
+      "character": "characters/runtime/quetzalcoatlus.webp",
+      "scene": "characters/runtime/quetzalcoatlus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 83,
+    "slug": "mosasaurus",
+    "name": "모사사우루스",
+    "category": "prehistoric",
+    "league": "SERPENT_PAPER",
+    "lat": 50.85,
+    "lon": 5.69,
+    "moves": [
+      "coil",
+      "wiggle",
+      "spin",
+      "nod"
+    ],
+    "note": "모사사우루스는 아주 오래전 지구에 살았어요. 가장 눈에 띄는 모습은 큰 도마뱀형 머리예요. (화석 기준: 마스트리흐트 신트피터르스베르흐)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "화석 기준: 마스트리흐트 신트피터르스베르흐",
+    "art": {
+      "character": "characters/runtime/mosasaurus.webp",
+      "scene": "characters/runtime/mosasaurus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 84,
+    "slug": "polar-bear",
+    "name": "북극곰",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": 78.22,
+    "lon": 15.65,
+    "moves": [
+      "stomp",
+      "nod",
+      "wiggle"
+    ],
+    "note": "북극곰은 큰 흰 곰으로 알아볼 수 있는 자연 친구예요. (대표 서식지: 롱위에아르뷔엔, 스발바르)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 롱위에아르뷔엔, 스발바르",
+    "art": {
+      "character": "characters/runtime/polar-bear.webp",
+      "scene": "characters/runtime/polar-bear_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 85,
+    "slug": "arctic-fox",
+    "name": "북극여우",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": 66.34,
+    "lon": -22.7,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "북극여우는 작은 흰 여우로 알아볼 수 있는 자연 친구예요. (대표 서식지: 호른스트란디르 자연보호구역)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": true,
+      "fartStyle": "small-paper-puff",
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 호른스트란디르 자연보호구역",
+    "art": {
+      "character": "characters/runtime/arctic-fox.webp",
+      "scene": "characters/runtime/arctic-fox_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 86,
+    "slug": "walrus",
+    "name": "바다코끼리",
+    "category": "animal",
+    "league": "SERPENT_PAPER",
+    "lat": 58.6,
+    "lon": -160.04,
+    "moves": [
+      "bounce",
+      "nod",
+      "wiggle"
+    ],
+    "note": "바다코끼리는 길게 뻗은 엄니 두 개로 알아볼 수 있는 자연 친구예요. (대표 서식지: 라운드섬 해마보호구역, 알래스카)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": true,
+      "fartStyle": "small-paper-puff",
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 라운드섬 해마보호구역, 알래스카",
+    "art": {
+      "character": "characters/runtime/walrus.webp",
+      "scene": "characters/runtime/walrus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 87,
+    "slug": "snowy-owl",
+    "name": "흰올빼미",
+    "category": "animal",
+    "league": "FLYER_PAPER",
+    "lat": 73.15,
+    "lon": -78.95,
+    "moves": [
+      "flap",
+      "jump",
+      "spin",
+      "nod"
+    ],
+    "note": "흰올빼미는 둥근 흰 올빼미로 알아볼 수 있는 자연 친구예요. (대표 서식지: 바이롯섬, 누나부트)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 바이롯섬, 누나부트",
+    "art": {
+      "character": "characters/runtime/snowy-owl.webp",
+      "scene": "characters/runtime/snowy-owl_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 88,
+    "slug": "emperor-penguin",
+    "name": "황제펭귄",
+    "category": "animal",
+    "league": "BIPED_PAPER",
+    "lat": -74.65,
+    "lon": 165.42,
+    "moves": [
+      "wiggle",
+      "bounce",
+      "nod"
+    ],
+    "note": "황제펭귄은 검은 등과 흰 배로 알아볼 수 있는 자연 친구예요. (대표 서식지: 케이프워싱턴 황제펭귄 번식지)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 케이프워싱턴 황제펭귄 번식지",
+    "art": {
+      "character": "characters/runtime/emperor-penguin.webp",
+      "scene": "characters/runtime/emperor-penguin_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 89,
+    "slug": "african-elephant",
+    "name": "아프리카코끼리",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": -19.3,
+    "lon": 22.9,
+    "moves": [
+      "stomp",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "아프리카코끼리는 매우 큰 귀로 알아볼 수 있는 자연 친구예요. (대표 서식지: 오카방고 델타)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 오카방고 델타",
+    "art": {
+      "character": "characters/runtime/african-elephant.webp",
+      "scene": "characters/runtime/african-elephant_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 90,
+    "slug": "lion",
+    "name": "사자",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": -2.33,
+    "lon": 34.83,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "사자는 풍성한 갈기로 알아볼 수 있는 자연 친구예요. (대표 서식지: 세렝게티 국립공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 세렝게티 국립공원",
+    "art": {
+      "character": "characters/runtime/lion.webp",
+      "scene": "characters/runtime/lion_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 91,
+    "slug": "giraffe",
+    "name": "기린",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": -1.49,
+    "lon": 35.14,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "기린은 매우 긴 목과 다리로 알아볼 수 있는 자연 친구예요. (대표 서식지: 마사이마라 국립보호구역)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 마사이마라 국립보호구역",
+    "art": {
+      "character": "characters/runtime/giraffe.webp",
+      "scene": "characters/runtime/giraffe_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 92,
+    "slug": "zebra",
+    "name": "얼룩말",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": -2.2,
+    "lon": 34.6,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "얼룩말은 흑백 줄무늬로 알아볼 수 있는 자연 친구예요. (대표 서식지: 세렝게티 평원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": true,
+      "fartStyle": "small-paper-puff",
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 세렝게티 평원",
+    "art": {
+      "character": "characters/runtime/zebra.webp",
+      "scene": "characters/runtime/zebra_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 93,
+    "slug": "cheetah",
+    "name": "치타",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": -18.86,
+    "lon": 16.33,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "치타는 날씬한 황금빛 고양잇과 몸으로 알아볼 수 있는 자연 친구예요. (대표 서식지: 에토샤 국립공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 에토샤 국립공원",
+    "art": {
+      "character": "characters/runtime/cheetah.webp",
+      "scene": "characters/runtime/cheetah_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 94,
+    "slug": "mountain-gorilla",
+    "name": "마운틴고릴라",
+    "category": "animal",
+    "league": "BIPED_PAPER",
+    "lat": -1.47,
+    "lon": 29.49,
+    "moves": [
+      "jump",
+      "spin",
+      "wave",
+      "nod",
+      "wiggle"
+    ],
+    "note": "마운틴고릴라는 넓은 가슴으로 알아볼 수 있는 자연 친구예요. (대표 서식지: 화산국립공원, 르완다)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wave",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wave",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 화산국립공원, 르완다",
+    "art": {
+      "character": "characters/runtime/mountain-gorilla.webp",
+      "scene": "characters/runtime/mountain-gorilla_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 95,
+    "slug": "hippopotamus",
+    "name": "하마",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": -13.1,
+    "lon": 31.8,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "하마는 둥글고 무거운 몸으로 알아볼 수 있는 자연 친구예요. (대표 서식지: 사우스루앙과 국립공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 사우스루앙과 국립공원",
+    "art": {
+      "character": "characters/runtime/hippopotamus.webp",
+      "scene": "characters/runtime/hippopotamus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 96,
+    "slug": "meerkat",
+    "name": "미어캣",
+    "category": "animal",
+    "league": "BIPED_PAPER",
+    "lat": -25.77,
+    "lon": 20.4,
+    "moves": [
+      "bounce",
+      "nod",
+      "wave"
+    ],
+    "note": "미어캣은 곧게 선 작은 몸으로 알아볼 수 있는 자연 친구예요. (대표 서식지: 칼라가디 초국경공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wave",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wave",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 칼라가디 초국경공원",
+    "art": {
+      "character": "characters/runtime/meerkat.webp",
+      "scene": "characters/runtime/meerkat_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 97,
+    "slug": "bengal-tiger",
+    "name": "벵골호랑이",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": 21.95,
+    "lon": 89.18,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "벵골호랑이는 주황 털과 검은 줄무늬로 알아볼 수 있는 자연 친구예요. (대표 서식지: 순다르반스 맹그로브)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 순다르반스 맹그로브",
+    "art": {
+      "character": "characters/runtime/bengal-tiger.webp",
+      "scene": "characters/runtime/bengal-tiger_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 98,
+    "slug": "giant-panda",
+    "name": "자이언트판다",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": 31,
+    "lon": 103.2,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "자이언트판다는 둥근 흑백 곰으로 알아볼 수 있는 자연 친구예요. (대표 서식지: 워룽 자연보호구역)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 워룽 자연보호구역",
+    "art": {
+      "character": "characters/runtime/giant-panda.webp",
+      "scene": "characters/runtime/giant-panda_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 99,
+    "slug": "red-panda",
+    "name": "레서판다",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": 27.1,
+    "lon": 88,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "레서판다는 붉은 털로 알아볼 수 있는 자연 친구예요. (대표 서식지: 싱갈릴라 국립공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": true,
+      "fartStyle": "small-paper-puff",
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 싱갈릴라 국립공원",
+    "art": {
+      "character": "characters/runtime/red-panda.webp",
+      "scene": "characters/runtime/red-panda_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 100,
+    "slug": "snow-leopard",
+    "name": "설표",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": 33.72,
+    "lon": 77.59,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "설표는 회백색 털과 검은 장미무늬로 알아볼 수 있는 자연 친구예요. (대표 서식지: 헤미스 국립공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 헤미스 국립공원",
+    "art": {
+      "character": "characters/runtime/snow-leopard.webp",
+      "scene": "characters/runtime/snow-leopard_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 101,
+    "slug": "asian-elephant",
+    "name": "아시아코끼리",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": 12.07,
+    "lon": 99.66,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "아시아코끼리는 작은 둥근 귀로 알아볼 수 있는 자연 친구예요. (대표 서식지: 쿠이부리 국립공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 쿠이부리 국립공원",
+    "art": {
+      "character": "characters/runtime/asian-elephant.webp",
+      "scene": "characters/runtime/asian-elephant_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 102,
+    "slug": "orangutan",
+    "name": "오랑우탄",
+    "category": "animal",
+    "league": "BIPED_PAPER",
+    "lat": -2.75,
+    "lon": 111.9,
+    "moves": [
+      "jump",
+      "spin",
+      "wave",
+      "nod",
+      "wiggle"
+    ],
+    "note": "오랑우탄은 긴 팔로 알아볼 수 있는 자연 친구예요. (대표 서식지: 탄중푸팅 국립공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wave",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wave",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 탄중푸팅 국립공원",
+    "art": {
+      "character": "characters/runtime/orangutan.webp",
+      "scene": "characters/runtime/orangutan_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 103,
+    "slug": "komodo-dragon",
+    "name": "코모도왕도마뱀",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": -8.55,
+    "lon": 119.48,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "코모도왕도마뱀은 굵은 도마뱀 몸으로 알아볼 수 있는 자연 친구예요. (대표 서식지: 코모도 국립공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": true,
+      "fartStyle": "small-paper-puff",
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 코모도 국립공원",
+    "art": {
+      "character": "characters/runtime/komodo-dragon.webp",
+      "scene": "characters/runtime/komodo-dragon_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 104,
+    "slug": "japanese-macaque",
+    "name": "일본원숭이",
+    "category": "animal",
+    "league": "BIPED_PAPER",
+    "lat": 36.73,
+    "lon": 138.46,
+    "moves": [
+      "jump",
+      "spin",
+      "wave",
+      "nod",
+      "wiggle"
+    ],
+    "note": "일본원숭이는 회갈색 털로 알아볼 수 있는 자연 친구예요. (대표 서식지: 지고쿠다니 원숭이공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wave",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wave",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 지고쿠다니 원숭이공원",
+    "art": {
+      "character": "characters/runtime/japanese-macaque.webp",
+      "scene": "characters/runtime/japanese-macaque_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 105,
+    "slug": "formosan-black-bear",
+    "name": "대만흑곰",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": 23.47,
+    "lon": 120.95,
+    "moves": [
+      "stomp",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "대만흑곰은 가슴의 흰 V자 무늬로 알아볼 수 있는 자연 친구예요. (대표 서식지: 위산 국립공원, 대만)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 위산 국립공원, 대만",
+    "art": {
+      "character": "characters/runtime/formosan-black-bear.webp",
+      "scene": "characters/runtime/formosan-black-bear_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 106,
+    "slug": "red-kangaroo",
+    "name": "붉은캥거루",
+    "category": "animal",
+    "league": "BIPED_PAPER",
+    "lat": -25.34,
+    "lon": 131.04,
+    "moves": [
+      "jump",
+      "bounce",
+      "nod",
+      "wiggle"
+    ],
+    "note": "붉은캥거루는 큰 뒷다리와 긴 발로 알아볼 수 있는 자연 친구예요. (대표 서식지: 울루루-카타추타 국립공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": true,
+      "fartStyle": "small-paper-puff",
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 울루루-카타추타 국립공원",
+    "art": {
+      "character": "characters/runtime/red-kangaroo.webp",
+      "scene": "characters/runtime/red-kangaroo_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 107,
+    "slug": "koala",
+    "name": "코알라",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": -38.7,
+    "lon": 143.6,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "코알라는 둥근 회색 몸으로 알아볼 수 있는 자연 친구예요. (대표 서식지: 그레이트오트웨이 국립공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 그레이트오트웨이 국립공원",
+    "art": {
+      "character": "characters/runtime/koala.webp",
+      "scene": "characters/runtime/koala_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 108,
+    "slug": "wombat",
+    "name": "웜뱃",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": -41.68,
+    "lon": 145.95,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "웜뱃은 낮고 둥근 갈색 몸으로 알아볼 수 있는 자연 친구예요. (대표 서식지: 크레이들산-세인트클레어호 국립공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 크레이들산-세인트클레어호 국립공원",
+    "art": {
+      "character": "characters/runtime/wombat.webp",
+      "scene": "characters/runtime/wombat_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 109,
+    "slug": "platypus",
+    "name": "오리너구리",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": -42.12,
+    "lon": 146.17,
+    "moves": [
+      "wiggle",
+      "nod",
+      "bounce"
+    ],
+    "note": "오리너구리는 오리 부리로 알아볼 수 있는 자연 친구예요. (대표 서식지: 세인트클레어호, 태즈메이니아)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 세인트클레어호, 태즈메이니아",
+    "art": {
+      "character": "characters/runtime/platypus.webp",
+      "scene": "characters/runtime/platypus_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 110,
+    "slug": "kiwi",
+    "name": "키위",
+    "category": "animal",
+    "league": "BIPED_PAPER",
+    "lat": -46.9,
+    "lon": 168.13,
+    "moves": [
+      "bounce",
+      "nod",
+      "wiggle"
+    ],
+    "note": "키위는 둥근 갈색 새로 알아볼 수 있는 자연 친구예요. (대표 서식지: 라키우라 국립공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 라키우라 국립공원",
+    "art": {
+      "character": "characters/runtime/kiwi.webp",
+      "scene": "characters/runtime/kiwi_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 111,
+    "slug": "american-bison",
+    "name": "아메리카들소",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": 44.6,
+    "lon": -110.5,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "아메리카들소는 큰 어깨 혹으로 알아볼 수 있는 자연 친구예요. (대표 서식지: 옐로스톤 국립공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 옐로스톤 국립공원",
+    "art": {
+      "character": "characters/runtime/american-bison.webp",
+      "scene": "characters/runtime/american-bison_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 112,
+    "slug": "grizzly-bear",
+    "name": "회색곰",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": 63.11,
+    "lon": -151.19,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "회색곰은 큰 갈색 곰으로 알아볼 수 있는 자연 친구예요. (대표 서식지: 데날리 국립공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 데날리 국립공원",
+    "art": {
+      "character": "characters/runtime/grizzly-bear.webp",
+      "scene": "characters/runtime/grizzly-bear_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 113,
+    "slug": "bald-eagle",
+    "name": "흰머리수리",
+    "category": "animal",
+    "league": "FLYER_PAPER",
+    "lat": 59.92,
+    "lon": -149.65,
+    "moves": [
+      "flap",
+      "jump",
+      "spin",
+      "nod"
+    ],
+    "note": "흰머리수리는 흰 머리와 꼬리로 알아볼 수 있는 자연 친구예요. (대표 서식지: 케나이피오르 국립공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 케나이피오르 국립공원",
+    "art": {
+      "character": "characters/runtime/bald-eagle.webp",
+      "scene": "characters/runtime/bald-eagle_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 114,
+    "slug": "jaguar",
+    "name": "재규어",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": -17.5,
+    "lon": -57,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "재규어는 근육질 황금 고양잇과 몸으로 알아볼 수 있는 자연 친구예요. (대표 서식지: 판타나우 습지)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 판타나우 습지",
+    "art": {
+      "character": "characters/runtime/jaguar.webp",
+      "scene": "characters/runtime/jaguar_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 115,
+    "slug": "capybara",
+    "name": "카피바라",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": -18,
+    "lon": -56.5,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "카피바라는 큰 설치류 몸으로 알아볼 수 있는 자연 친구예요. (대표 서식지: 판타나우 습지)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 판타나우 습지",
+    "art": {
+      "character": "characters/runtime/capybara.webp",
+      "scene": "characters/runtime/capybara_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 116,
+    "slug": "llama",
+    "name": "라마",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": -13.16,
+    "lon": -72.55,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "라마는 긴 목으로 알아볼 수 있는 자연 친구예요. (대표 서식지: 마추픽추 역사보호지)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 마추픽추 역사보호지",
+    "art": {
+      "character": "characters/runtime/llama.webp",
+      "scene": "characters/runtime/llama_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 117,
+    "slug": "three-toed-sloth",
+    "name": "세발가락나무늘보",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": 9.39,
+    "lon": -84.14,
+    "moves": [
+      "jump",
+      "rear",
+      "nod",
+      "wiggle"
+    ],
+    "note": "세발가락나무늘보는 둥근 얼굴로 알아볼 수 있는 자연 친구예요. (대표 서식지: 마누엘안토니오 국립공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 마누엘안토니오 국립공원",
+    "art": {
+      "character": "characters/runtime/three-toed-sloth.webp",
+      "scene": "characters/runtime/three-toed-sloth_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 118,
+    "slug": "toco-toucan",
+    "name": "토코투칸",
+    "category": "animal",
+    "league": "FLYER_PAPER",
+    "lat": -25.69,
+    "lon": -54.44,
+    "moves": [
+      "flap",
+      "jump",
+      "spin",
+      "nod"
+    ],
+    "note": "토코투칸은 매우 큰 주황 부리로 알아볼 수 있는 자연 친구예요. (대표 서식지: 이구아수 국립공원)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "jump",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "jump",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 이구아수 국립공원",
+    "art": {
+      "character": "characters/runtime/toco-toucan.webp",
+      "scene": "characters/runtime/toco-toucan_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 119,
+    "slug": "blue-whale",
+    "name": "대왕고래",
+    "category": "animal",
+    "league": "SERPENT_PAPER",
+    "lat": 36.8,
+    "lon": -122,
+    "moves": [
+      "flap",
+      "bounce",
+      "nod",
+      "spin"
+    ],
+    "note": "대왕고래는 매우 긴 청회색 몸으로 알아볼 수 있는 자연 친구예요. (대표 서식지: 몬터레이만 해양보호구역)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "flap",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "flap",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 몬터레이만 해양보호구역",
+    "art": {
+      "character": "characters/runtime/blue-whale.webp",
+      "scene": "characters/runtime/blue-whale_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 120,
+    "slug": "bottlenose-dolphin",
+    "name": "큰돌고래",
+    "category": "animal",
+    "league": "SERPENT_PAPER",
+    "lat": 25.15,
+    "lon": -80.7,
+    "moves": [
+      "flap",
+      "bounce",
+      "nod",
+      "spin"
+    ],
+    "note": "큰돌고래는 유선형 회색 몸으로 알아볼 수 있는 자연 친구예요. (대표 서식지: 플로리다만)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "flap",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "flap",
+      "fart": true,
+      "fartStyle": "small-paper-puff",
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 플로리다만",
+    "art": {
+      "character": "characters/runtime/bottlenose-dolphin.webp",
+      "scene": "characters/runtime/bottlenose-dolphin_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 121,
+    "slug": "orca",
+    "name": "범고래",
+    "category": "animal",
+    "league": "SERPENT_PAPER",
+    "lat": 48.6,
+    "lon": -123.1,
+    "moves": [
+      "flap",
+      "bounce",
+      "nod",
+      "spin"
+    ],
+    "note": "범고래는 검은 몸과 흰 눈무늬·배로 알아볼 수 있는 자연 친구예요. (대표 서식지: 산후안 제도)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "flap",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "flap",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 산후안 제도",
+    "art": {
+      "character": "characters/runtime/orca.webp",
+      "scene": "characters/runtime/orca_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 122,
+    "slug": "green-sea-turtle",
+    "name": "푸른바다거북",
+    "category": "animal",
+    "league": "QUADRUPED_PAPER",
+    "lat": -11.59,
+    "lon": 144.03,
+    "moves": [
+      "wiggle",
+      "nod",
+      "spin"
+    ],
+    "note": "푸른바다거북은 타원형 등딱지로 알아볼 수 있는 자연 친구예요. (대표 서식지: 레인섬 바다거북 번식지)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 레인섬 바다거북 번식지",
+    "art": {
+      "character": "characters/runtime/green-sea-turtle.webp",
+      "scene": "characters/runtime/green-sea-turtle_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 123,
+    "slug": "electric-eel",
+    "name": "전기뱀장어",
+    "category": "animal",
+    "league": "SERPENT_PAPER",
+    "lat": -3.1,
+    "lon": -60.02,
+    "moves": [
+      "coil",
+      "wiggle",
+      "spin",
+      "nod"
+    ],
+    "note": "전기뱀장어는 길고 부드러운 몸과 작은 지느러미로 알아볼 수 있는 자연 친구예요. (대표 서식지: 아마존강, 마나우스)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 아마존강, 마나우스",
+    "art": {
+      "character": "characters/runtime/electric-eel.webp",
+      "scene": "characters/runtime/electric-eel_scene.webp",
+      "status": "ready"
+    }
+  },
+  {
+    "index": 124,
+    "slug": "giant-manta-ray",
+    "name": "대왕쥐가오리",
+    "category": "animal",
+    "league": "FLYER_PAPER",
+    "lat": 5.16,
+    "lon": 73.13,
+    "moves": [
+      "flap",
+      "wiggle",
+      "nod",
+      "spin"
+    ],
+    "note": "대왕쥐가오리는 넓은 다이아몬드형 몸으로 알아볼 수 있는 자연 친구예요. (대표 서식지: 하니파루만 해양보호구역)",
+    "interaction": {
+      "tap": [
+        "greet",
+        "wiggle",
+        "special"
+      ],
+      "longPress": [
+        "focus",
+        "point",
+        "special"
+      ],
+      "special": "wiggle",
+      "fart": false,
+      "fartStyle": null,
+      "fallback": "sprite-reaction"
+    },
+    "place_basis": "대표 서식지: 하니파루만 해양보호구역",
+    "art": {
+      "character": "characters/runtime/giant-manta-ray.webp",
+      "scene": "characters/runtime/giant-manta-ray_scene.webp",
+      "status": "ready"
+    }
+  }
+]

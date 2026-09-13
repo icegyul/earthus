@@ -1,0 +1,39 @@
+/* EARTHUS V3 WONDER — Paper Earth (PHASE 1). 지구가 주인공이다. UI 는 가장자리에 작게. */
+:root { --paper: #f3ead9; --paper-2: #ebdfc8; --ink: #2b3a52; --ink-soft: #5b6778; --accent: #f2a541; --accent-2: #5aa9f0; --shadow: 0 10px 30px rgba(43, 58, 82, .18); }
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--paper); color: var(--ink); font-family: system-ui, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; }
+body { background: radial-gradient(ellipse at 50% 45%, #f8f2e6 0%, var(--paper) 55%, var(--paper-2) 100%); }
+
+.world { position: fixed; inset: 0; }
+#globe { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; -webkit-user-select: none; user-select: none; outline: none; cursor: grab; }
+#globe:active { cursor: grabbing; }
+#globe:focus-visible { box-shadow: inset 0 0 0 3px var(--accent-2); }
+
+.topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 10; display: flex; align-items: center; gap: 12px; padding: max(10px, env(safe-area-inset-top)) 16px 8px; pointer-events: none; }
+.topbar > * { pointer-events: auto; }
+.brand { font-size: 15px; letter-spacing: .08em; } .brand strong { font-weight: 800; } .brand span { margin-left: 6px; color: var(--accent); font-weight: 700; }
+.crumbs { display: flex; align-items: center; gap: 8px; flex: 1; }
+.crumb { font: inherit; font-size: 14px; padding: 6px 12px; border-radius: 999px; background: rgba(255, 250, 240, .92); box-shadow: var(--shadow); border: 0; }
+.crumb-earth { cursor: pointer; font-weight: 700; color: var(--ink); }
+.crumb-earth:active { transform: scale(.96); }
+.crumb-region { color: var(--ink); font-weight: 700; }
+.phase { font-size: 12px; color: var(--ink-soft); background: rgba(255, 250, 240, .8); padding: 4px 10px; border-radius: 999px; }
+
+.zoom { position: fixed; right: max(14px, env(safe-area-inset-right)); top: 50%; transform: translateY(-50%); z-index: 10; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.zoom button { width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255, 250, 240, .95); box-shadow: var(--shadow); font-size: 22px; font-weight: 700; color: var(--ink); cursor: pointer; }
+.zoom button:active { transform: scale(.94); }
+.zoom-dots { display: flex; flex-direction: column; gap: 5px; padding: 4px 0; }
+.zoom-dots i { width: 8px; height: 8px; border-radius: 50%; background: rgba(43, 58, 82, .18); }
+.zoom-dots i.on { background: var(--accent); }
+
+.hint { position: fixed; left: 50%; bottom: max(64px, calc(env(safe-area-inset-bottom) + 56px)); transform: translateX(-50%); z-index: 10; margin: 0; padding: 8px 14px; border-radius: 999px; background: rgba(255, 250, 240, .85); font-size: 14px; color: var(--ink-soft); white-space: nowrap; max-width: calc(100vw - 32px); overflow: hidden; text-overflow: ellipsis; transition: opacity .4s; }
+.hint.hide { opacity: 0; }
+
+.foot { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 14px max(8px, env(safe-area-inset-bottom)); font-size: 11px; color: var(--ink-soft); pointer-events: none; }
+.foot > * { pointer-events: auto; }
+.rm-label { display: flex; align-items: center; gap: 6px; }
+.devlink { color: var(--ink-soft); }
+
+.log { position: fixed; left: 12px; top: 56px; z-index: 9; max-width: 44vw; max-height: 26vh; overflow: auto; margin: 0; font: 11px/1.5 ui-monospace, Menlo, Consolas, monospace; color: var(--ink-soft); background: rgba(255, 250, 240, .7); padding: 6px 8px; border-radius: 8px; white-space: pre-wrap; pointer-events: none; }
+@media (max-width: 640px) { .log { max-width: 72vw; max-height: 16vh; font-size: 10px; } .src { display: none; } .phase { display: none; } }
+@media (prefers-reduced-motion: reduce) { .hint { transition: none; } }

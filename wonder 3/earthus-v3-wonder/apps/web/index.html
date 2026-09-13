@@ -2,51 +2,43 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
   <meta name="theme-color" content="#f3ead9">
-  <meta name="description" content="EARTHUS V3 WONDER — NEW BUILD PHASE 0. 배경 한 장, 캐릭터 한 명, 톡·꾹 반응.">
-  <title>EARTHUS WONDER · PHASE 0</title>
-  <!-- 서비스워커 없음. 기존 v1 sw.js 와 캐시 네임스페이스를 공유하지 않는다 (CLEANUP 지시서 §10). -->
-  <link rel="stylesheet" href="./styles.css">
+  <meta name="description" content="EARTHUS V3 WONDER — 아이의 손길로 지구가 살아나는 2.5D Paper Wonder Earth. PHASE 1 Paper Earth.">
+  <title>EARTHUS WONDER · 종이 지구</title>
+  <!-- 서비스워커 없음. 캐릭터·배경은 이 화면에서 받지 않는다(Master Directive §19). -->
+  <link rel="stylesheet" href="./earth.css">
 </head>
 <body>
-  <main id="stage" class="stage" aria-label="EARTHUS WONDER 무대">
-    <div id="bg" class="layer layer-bg" aria-hidden="true"></div>
-    <div id="hits" class="layer layer-hits" aria-hidden="true"></div>
-    <div id="chars" class="layer layer-chars"></div>
-    <div id="fx" class="layer layer-fx" aria-hidden="true"></div>
+  <main id="world" class="world" aria-label="EARTHUS WONDER 종이 지구">
+    <canvas id="globe" tabindex="0" aria-label="종이 지구 — 끌어서 돌리고, 두 손가락으로 당겨 가까이 보고, 톡 누르면 그 지역으로 갑니다"></canvas>
   </main>
 
   <header class="topbar">
     <div class="brand"><strong>EARTHUS</strong><span>WONDER</span></div>
-    <div class="phase" id="phase">PHASE 0 · 기반</div>
+    <nav class="crumbs" aria-label="어디에 있나">
+      <button id="btnEarth" class="crumb crumb-earth" type="button" aria-label="지구로 돌아가기" hidden>🌍 지구</button>
+      <span id="regionChip" class="crumb crumb-region" hidden></span>
+    </nav>
+    <div class="phase" id="phase">PHASE 1 · 종이 지구</div>
   </header>
 
-  <aside id="card" class="card" hidden aria-live="polite">
-    <div class="card-head">
-      <span class="badge" id="cardCat"></span>
-      <strong id="cardName"></strong>
-      <button class="card-close" id="cardClose" aria-label="닫기">×</button>
-    </div>
-    <div class="card-scene" id="cardScene"></div>
-    <p class="card-place" id="cardPlace"></p>
-    <p class="card-note" id="cardNote"></p>
-  </aside>
+  <div class="zoom" role="group" aria-label="가까이 · 멀리">
+    <button id="btnZoomIn" type="button" aria-label="가까이">＋</button>
+    <div id="zoomDots" class="zoom-dots" aria-hidden="true"><i></i><i></i><i></i></div>
+    <button id="btnZoomOut" type="button" aria-label="멀리">－</button>
+  </div>
 
-  <nav class="dock" aria-label="캐릭터 고르기와 시험 조작">
-    <label class="pick-label">캐릭터
-      <select id="pick" aria-label="캐릭터 고르기"></select>
-    </label>
-    <div class="dock-btns">
-      <button id="btnTap" type="button" title="캐릭터를 톡 누른 것과 같다">톡</button>
-      <button id="btnLong" type="button" title="캐릭터를 꾹 누른 것과 같다">꾹</button>
-      <button id="btnFart" type="button" hidden title="이 친구만 할 수 있는 장난">뿡</button>
-    </div>
+  <p id="hint" class="hint" aria-live="polite">지구를 돌려 보고, 궁금한 곳을 톡 눌러 보세요</p>
+
+  <footer class="foot">
     <label class="rm-label"><input type="checkbox" id="rm"> 움직임 줄이기</label>
-  </nav>
+    <span class="src">지도 자료: Made with Natural Earth (public domain)</span>
+    <a class="devlink" href="./stage/">무대 (PHASE 0)</a>
+  </footer>
 
-  <pre id="log" class="log" aria-label="동작 기록"></pre>
+  <pre id="log" class="log" aria-label="상태 기록"></pre>
 
-  <script type="module" src="./src/main.mjs"></script>
+  <script type="module" src="./src/earth-main.mjs"></script>
 </body>
 </html>

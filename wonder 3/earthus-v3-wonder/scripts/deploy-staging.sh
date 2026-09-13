@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 # EARTHUS V3 WONDER — STAGING 배포: build/staging → s3://earthus-cache-kr/app/wonder/next/  (PD 승인 2026-09-13)
 #
-#   bash scripts/deploy-staging.sh --dry-run     # 올릴 것/바뀔 것 목록만 (AWS 쓰기 0)
-#   bash scripts/deploy-staging.sh               # 실제 업로드 (app/wonder/next/** 만)
+#   bash scripts/deploy-staging.sh --dry-run                       # 올릴 것/바뀔 것 목록만 (AWS 쓰기 0)
+#   bash scripts/deploy-staging.sh                                 # 실제 업로드 (app/wonder/next/** 만)
+#   TARGET=wonder-test bash scripts/deploy-staging.sh [--dry-run]  # PD 상시 테스트 URL(2026-09-13): build/wonder-test → app/wonder-test/** (https://earthus.net/wonder-test/)
+# 허용 prefix 는 두 개뿐(next · wonder-test). 그 밖의 어떤 키도 쓰지 않는다.
 #
 # 규칙(DEPLOYMENT_MAP §2·§5, PD STAGING 지시):
 #   · 대상 prefix 는 app/wonder/next/ 하나. 다른 어떤 키도 쓰지 않는다 — 아래 가드가 prefix 를 문자 그대로 검사한다.
@@ -14,15 +16,23 @@ set -euo pipefail
 if [[ -z "${AWS_PROFILE:-}" && -z "${AWS_ACCESS_KEY_ID:-}" ]]; then
   if aws configure list-profiles 2>/dev/null | grep -qx 'earthus-deploy'; then export AWS_PROFILE=earthus-deploy; fi
 fi
-BUCKET="earthus-cache-kr"; REGION="us-east-2"; PREFIX="app/wonder/next"
+BUCKET="earthus-cache-kr"; REGION="us-east-2"
+TARGET="${TARGET:-next}"
+case "$TARGET" in
+  next)        PREFIX="app/wonder/next"; BUILD_DIR="build/staging";     URL="https://earthus.net/wonder/next/apps/web/"; DEVURL="https://earthus.net/wonder/next/apps/web/?qa=1&device=1";;
+  wonder-test) PREFIX="app/wonder-test";  BUILD_DIR="build/wonder-test"; URL="https://earthus.net/wonder-test/";              DEVURL="https://earthus.net/wonder-test/?qa=1&device=1";;
+  *) echo "✗ TARGET 은 next 또는 wonder-test 만: $TARGET" >&2; exit 9;;
+esac
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SRC="$ROOT/build/staging"
+SRC="$ROOT/$BUILD_DIR"
 DRY=0; [[ "${1:-}" == "--dry-run" ]] && DRY=1
 
 # ── 가드 ─────────────────────────────────────────────────────────────────────
-[[ "$PREFIX" == "app/wonder/next" ]] || { echo "✗ prefix 가 app/wonder/next 가 아니다: $PREFIX" >&2; exit 9; }
+[[ "$PREFIX" == "app/wonder/next" || "$PREFIX" == "app/wonder-test" ]] || { echo "✗ 허용되지 않은 prefix: $PREFIX" >&2; exit 9; }
 case "$PREFIX" in *live*|*v3*|*Intelligence*|*v2*) echo "✗ 금지 prefix" >&2; exit 9;; esac
-[[ -f "$SRC/BUILD.json" && -f "$SRC/apps/web/index.html" ]] || { echo "✗ build/staging 이 없다 — node scripts/build-staging.mjs 먼저" >&2; exit 2; }
+[[ -f "$SRC/BUILD.json" && -f "$SRC/apps/web/index.html" ]] || { echo "✗ $BUILD_DIR 이 없다 — node scripts/build-staging.mjs --target $TARGET 먼저" >&2; exit 2; }
+grep -q "\"target\": \"$TARGET\"" "$SRC/BUILD.json" || { echo "✗ $BUILD_DIR/BUILD.json 의 target 이 $TARGET 이 아니다 (다른 prefix 용 빌드)" >&2; exit 2; }
+grep -q "<base href=\"/${PREFIX#app/}/apps/web/\">" "$SRC/_index-base-next.html" || { echo "✗ base href 가 prefix 와 다르다" >&2; exit 2; }
 for bad in docs tests scripts benchmarks package.json README.md; do [[ -e "$SRC/$bad" ]] && { echo "✗ 빌드에 $bad 가 있다" >&2; exit 3; }; done
 find "$SRC" -name '*.ts' | grep -q . && { echo "✗ 빌드에 .ts 가 있다" >&2; exit 3; }
 [[ -e "$SRC/content/pack-1.8/backgrounds" ]] && { echo "✗ 불합격 배경이 빌드에 있다" >&2; exit 3; }
@@ -33,7 +43,7 @@ echo "▸ 대상: s3://$BUCKET/$PREFIX/   (오직 이 prefix. 삭제 없음. pro
 echo "▸ 빌드 커밋: $COMMIT"
 echo "▸ 배포 전 prefix 상태:"
 BEFORE_N=$( (aws s3 ls "s3://$BUCKET/$PREFIX/" --region "$REGION" --recursive 2>/dev/null || true) | wc -l | tr -d ' ')   # 비어 있으면 ls 가 1 을 낸다
-echo "  app/wonder/next/ 객체 수 = $BEFORE_N"
+echo "  $PREFIX/ 객체 수 = $BEFORE_N"
 
 sync_group () {  # <include-glob> <content-type> <cache-control>
   local inc="$1" ct="$2" cc="$3"
@@ -77,5 +87,5 @@ echo "▸ 확인: production 키 미접촉 — app/wonder 별칭 3키:"
 aws s3 ls "s3://$BUCKET/app/wonder" --region "$REGION" | grep -E '^\S+ \S+ +[0-9]+ (wonder|index\.html)?$' | sed 's#^#  #' || true
 aws s3 ls "s3://$BUCKET/app/wonder/" --region "$REGION" | grep -vE 'PRE (next|live)/' | sed 's#^#  #' || true
 echo
-echo "STAGING URL: https://earthus.net/wonder/next/apps/web/"
-echo "DEVICE URL : https://earthus.net/wonder/next/apps/web/?qa=1&device=1"
+echo "URL        : $URL"
+echo "DEVICE URL : $DEVURL"

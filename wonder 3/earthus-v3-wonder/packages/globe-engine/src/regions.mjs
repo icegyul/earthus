@@ -29,19 +29,25 @@ export function regionAt(lat, lon, regions = REGIONS) {
     for (const c of r.centers) {
       const d = haversineKm(lat, lon, c.lat, c.lon);
       const ratio = d / r.radiusKm;
-      if (ratio <= 1 && (!best || ratio < best.ratio)) best = { region: r, distanceKm: Math.round(d), center: c, ratio };
+      if (ratio <= 1 && (!best || ratio < best.ratio)) best = { region: r, distanceKm: Math.round(d), center: c, lat, lon, ratio };
     }
   }
   if (!best && Math.abs(lat) >= 66) {
     const r = regions.find(x => x.id === 'polar');
     const c = lat > 0 ? r.centers[0] : r.centers[1];
-    return { region: r, distanceKm: Math.round(haversineKm(lat, lon, c.lat, c.lon)), center: c };
+    return { region: r, distanceKm: Math.round(haversineKm(lat, lon, c.lat, c.lon)), center: c, lat, lon };
   }
   if (!best) return null;
   const { ratio, ...rest } = best; return rest;
 }
 
 /** 지역 진입 때 카메라가 볼 중심. 극지는 눌린 반구 쪽. */
+/**
+ * 지역 진입 때 카메라·마커가 갈 곳 = **손가락이 닿은 그 자리**(hit.lat/lon). 지역 중심이 아니다.
+ * 2026-09-13 실기기(iOS): 한국을 톡 누르면 동아시아 중심(35°N 115°E, 중국 내륙)으로 날아가 마커가 중국에 찍혔다 — PD 신고.
+ * 라벨은 지역 이름 그대로(나라 이름은 뒤 단계). 좌표가 없는 hit(옛 호출)만 중심으로 간다.
+ */
 export function regionFocus(hit) {
+  if (Number.isFinite(hit.lat) && Number.isFinite(hit.lon)) return { lat: hit.lat, lon: hit.lon };
   return { lat: hit.center.lat, lon: hit.center.lon };
 }

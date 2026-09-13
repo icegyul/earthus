@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { llToVec, vecToLL, wrapLon, clampLat, haversineKm, equirect, shortestLonDelta } from '../packages/globe-engine/src/geo.mjs';
 import { OrbitCamera, targetDiameter, distanceForDiameter, diameterAtDistance, zoomDistances, dragSpeedRad, ZOOM_STEPS, PITCH_LIMIT_DEG, DAMP_FOLLOW, MIN_DIST } from '../packages/globe-engine/src/camera.mjs';
-import { REGIONS, regionAt } from '../packages/globe-engine/src/regions.mjs';
+import { REGIONS, regionAt, regionFocus } from '../packages/globe-engine/src/regions.mjs';
 
 const near = (a, b, eps = 1e-9) => Math.abs(a - b) <= eps;
 
@@ -142,4 +142,14 @@ test('regions: Master Directive §3 지역 9개 + 보완 3, 대표 도시 판정
   assert.equal(regionAt(21.3, -157.8), null, '호놀룰루 — 아직 지역 없음');
   assert.equal(regionAt(84, 120)?.center.lat, 85, '북극은 북쪽 중심');
   assert.equal(regionAt(-70, 60)?.center.lat, -80, '남극은 남쪽 중심');
+});
+
+test('regions: 지역 진입 포커스는 손가락이 닿은 자리 — 한국을 누르면 한국(동아시아 중심 35°N 115°E 가 아니다)', () => {
+  const seoul = regionAt(37.57, 126.98);
+  assert.equal(seoul.region.id, 'east-asia');
+  assert.deepEqual(regionFocus(seoul), { lat: 37.57, lon: 126.98 });
+  assert.deepEqual([seoul.center.lat, seoul.center.lon], [35, 115], '지역 중심은 그대로 남아 있다(라벨·거리용)');
+  const polar = regionAt(84, 120);
+  assert.deepEqual(regionFocus(polar), { lat: 84, lon: 120 }, '극지방도 누른 자리');
+  assert.deepEqual(regionFocus({ center: { lat: 5, lon: 110 } }), { lat: 5, lon: 110 }, '좌표 없는 옛 hit 만 중심');
 });

@@ -383,6 +383,133 @@ class RepositoryFactTests(unittest.TestCase):
         self.assertIn("extractall", script)
 
 
+class ModuleDataFileTests(unittest.TestCase):
+    """모듈이 **자기 옆에서 읽는 자료 파일** 도 들어가야 한다.
+
+    2026-09-13 실측 — `aws/_shared/truth_vocabulary.py` 는 진실 어휘를 코드에 베껴 쓰지 않고
+    `_shared/sql/20260913_earth_event_core.sql` 을 **import 시점에** 읽는다. `.py` 만 넣던
+    동안 staged 패키지를 그대로 import 하면 콜드 스타트에서 죽었다:
+        VocabularyError: 정본 SQL 을 읽지 못했다: [Errno 2] ... 'sql/20260913_earth_event_core.sql'
+    `crossFunctionFiles` 와 달리 **상대 경로를 유지해** 넣어야 한다 — 런타임에 `_HERE` 가 곧 zip 루트다.
+    """
+
+    def test_own_dir_data_file_is_detected(self):
+        with tempfile.TemporaryDirectory() as folder:
+            module = write(os.path.join(folder, "reader.py"), "\n".join([
+                "import os",
+                "_HERE = os.path.dirname(os.path.abspath(__file__))",
+                "TABLE = os.path.join(_HERE, 'data', 'table.csv')",
+            ]))
+            write(os.path.join(folder, "data", "table.csv"), "a,b\n")
+            found = lp.module_data_files([str(module)])
+            self.assertEqual(list(found), ["data/table.csv"])
+
+    def test_missing_file_is_not_claimed(self):
+        """옆에 실제로 없는 경로는 목록에 넣지 않는다 — 없는 파일을 넣으라고 하지 않는다."""
+        with tempfile.TemporaryDirectory() as folder:
+            module = write(os.path.join(folder, "reader.py"), "\n".join([
+                "import os",
+                "_HERE = os.path.dirname(os.path.abspath(__file__))",
+                "TABLE = os.path.join(_HERE, 'data', 'absent.csv')",
+            ]))
+            self.assertEqual(lp.module_data_files([str(module)]), {})
+
+    def test_python_modules_are_left_to_the_import_closure(self):
+        """`.py` 는 여기서 다루지 않는다 — import 닫기와 crossFunctionFiles 의 몫이다."""
+        with tempfile.TemporaryDirectory() as folder:
+            module = write(os.path.join(folder, "reader.py"), "\n".join([
+                "import os",
+                "_HERE = os.path.dirname(os.path.abspath(__file__))",
+                "OTHER = os.path.join(_HERE, 'helper.py')",
+            ]))
+            write(os.path.join(folder, "helper.py"), "")
+            self.assertEqual(lp.module_data_files([str(module)]), {})
+
+    def test_other_variables_are_not_treated_as_own_dir(self):
+        """자기 디렉터리 변수만 본다. 임의의 변수로 만든 경로를 패키지 안이라고 가정하지 않는다."""
+        with tempfile.TemporaryDirectory() as folder:
+            module = write(os.path.join(folder, "reader.py"), "\n".join([
+                "import os",
+                "ELSEWHERE = '/mnt/somewhere'",
+                "TABLE = os.path.join(ELSEWHERE, 'data', 'table.csv')",
+            ]))
+            write(os.path.join(folder, "data", "table.csv"), "a,b\n")
+            self.assertEqual(lp.module_data_files([str(module)]), {})
+
+    def test_earth_events_package_carries_the_vocabulary_sql(self):
+        """실제 저장소 — 3G 함수의 계획과 패키지에 SQL 이 들어간다."""
+        function = str(AWS / "earth-events")
+        planned = lp.plan(function, str(SHARED))
+        self.assertIn("sql/20260913_earth_event_core.sql", planned["dataFiles"])
+        self.assertIn("truth_vocabulary", planned["sharedModules"])
+        with tempfile.TemporaryDirectory() as folder:
+            dest = os.path.join(folder, "task")
+            lp.stage(function, str(SHARED), dest)
+            self.assertTrue(os.path.isfile(
+                os.path.join(dest, "sql", "20260913_earth_event_core.sql")),
+                "상대 경로를 유지해 넣어야 한다 — 평평하게 넣으면 런타임이 못 찾는다")
+            self.assertEqual([], lp.missing_own_modules(dest, function, str(SHARED)))
+
+    def test_earth_events_package_imports_like_lambda(self):
+        """패키지만 sys.path 에 두고 import 가 지나는지 — 이것이 콜드 스타트 조건이다."""
+        function = str(AWS / "earth-events")
+        with tempfile.TemporaryDirectory() as folder:
+            dest = os.path.join(folder, "task")
+            lp.stage(function, str(SHARED), dest)
+            verdict = lp.import_check(dest)
+            self.assertTrue(verdict["ok"], verdict)
+            self.assertEqual(verdict["kind"], "IMPORTED")
+
+    def test_function_name_override_leaves_every_other_function_alone(self):
+        """폴더 이름 ≠ 함수 이름 예외는 **폴더 안의 파일**로만 생긴다.
+
+        `aws/earth-events/` 는 Lambda 함수 `earthus-earth-events` 로 배포된다. 그 예외를
+        스크립트 인자가 아니라 `function-name.txt` 로 적는 이유: 인자로 주면 잊은 사람이
+        폴더 이름으로 배포해 **두 번째 함수가 생긴다.** 파일에 적혀 있으면 스크립트가 항상 읽는다.
+
+        그리고 이 규칙이 다른 함수를 건드리지 않음을 여기서 고정한다 — `function-name.txt` 가
+        있는 폴더가 정확히 몇 개인지 센다.
+        """
+        script = (AWS / "deploy-python.sh").read_text(encoding="utf-8")
+        self.assertIn('DIRNAME="${1:-gmgsi-clouds}"', script)
+        self.assertIn('ROLE="earthus-lambda-${DIRNAME}"', script)
+        self.assertIn('if [ -f "$DIR/function-name.txt" ]; then', script)
+        # 역할은 폴더 이름에서 나온다 — 함수 이름에서 나오면 이름이 두 번 붙는다
+        self.assertNotIn('ROLE="earthus-lambda-${FN}"', script)
+
+        overridden = sorted(p.parent.name for p in AWS.glob("*/function-name.txt"))
+        self.assertEqual(overridden, ["earth-events"],
+                         "예외는 하나여야 한다 — 새 예외가 생기면 여기서 깨진다")
+        self.assertEqual((AWS / "earth-events" / "function-name.txt")
+                         .read_text(encoding="utf-8").strip(), "earthus-earth-events")
+
+    def test_function_name_file_is_not_packaged(self):
+        """배포 힌트 파일은 zip 에 들어가지 않는다 — 런타임 코드가 아니다."""
+        function = str(AWS / "earth-events")
+        planned = lp.plan(function, str(SHARED))
+        self.assertNotIn("function-name.txt", planned["topLevelModules"])
+        self.assertNotIn("function-name.txt", planned["dataFiles"])
+        with tempfile.TemporaryDirectory() as folder:
+            dest = os.path.join(folder, "task")
+            lp.stage(function, str(SHARED), dest)
+            self.assertFalse(os.path.exists(os.path.join(dest, "function-name.txt")))
+
+    def test_raw_archive_module_is_packaged(self):
+        """원자료 보관 모듈도 패키지에 들어간다 — 없으면 콜드 스타트에서 import 가 죽는다."""
+        planned = lp.plan(str(AWS / "earth-events"), str(SHARED))
+        self.assertIn("raw_archive.py", planned["topLevelModules"])
+
+    def test_source_governance_registry_is_now_carried(self):
+        """같은 규칙이 기존 함수의 누락도 메운다.
+
+        `aws/source-governance/handler.py:44-47` 은 `registry.draft.json` 을 **import 시점에**
+        읽고 예외를 삼키지 않는다. 그 파일이 zip 에 없으면 콜드 스타트에서 FileNotFoundError 다.
+        `deploy-python.sh` 는 `contracts/` 외의 비-.py 파일을 따로 복사하지 않는다.
+        """
+        planned = lp.plan(str(AWS / "source-governance"), str(SHARED))
+        self.assertIn("registry.draft.json", planned["dataFiles"])
+
+
 class DeterministicZipTests(unittest.TestCase):
     """같은 나무는 같은 CodeSha256 — 기계·순서·시각과 무관해야 한다."""
 

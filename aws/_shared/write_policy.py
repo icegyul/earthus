@@ -119,6 +119,16 @@ REVIEWED_UNPROVEN = {
     ("aws/source-governance/handler.py", "_put"): (
         1, "archive/governance/v1",
         "handler.py:22  PREFIX = 'archive/governance/v1' · spec['dst'] 가 전부 그 아래"),
+    ("aws/earth-events/handler.py", "write"): (
+        1, "archive/earth-events/canonical/v1/",
+        "staging_writer() 의 로컬 파일 쓰기다 — S3 가 아니라 os.path.join(directory, *key) 로 "
+        "지정한 디렉터리 아래에 같은 키 구조로 쓴다. 목적지 키는 assembler.canonical_key() 가 "
+        "CANONICAL_PREFIX='archive/earth-events/canonical/v1/' 로 만들고, 쓰기 전에 "
+        "assembler.assert_not_public(key) 가 공개·미지 접두사를 전부 거부한다(두 겹: "
+        "write_canonical() 과 writer 안). 같은 파일의 put_object 감싸개도 호출 자리가 "
+        "write_canonical() 하나뿐이고 같은 문을 지난다. "
+        "aws/earth-events/tests/test_boundary_and_write.py 가 공개 접두사 거부와 "
+        "staging 산출물이 events/ 아래에 생기지 않음을 고정한다"),
 }
 
 SCAN_ROOTS = ("aws", "tools", "services")

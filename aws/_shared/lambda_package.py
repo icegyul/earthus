@@ -237,6 +237,73 @@ def cross_function_files(function_dir, shared_dir):
     return dict(sorted(found.items()))
 
 
+def _own_dir_names(tree):
+    """이 파일에서 **자기 디렉터리**를 담은 최상위 변수 이름들.
+
+    `_HERE = os.path.dirname(os.path.abspath(__file__))` 같은 관용구를 구문으로 찾는다.
+    이름을 고정 목록(`_HERE`·`HERE`·…)으로 적지 않는 이유는 파일마다 다르게 부르기 때문이다.
+    """
+    names = set()
+    for node in tree.body:
+        if not isinstance(node, ast.Assign) or len(node.targets) != 1:
+            continue
+        target = node.targets[0]
+        if not isinstance(target, ast.Name):
+            continue
+        text = ast.dump(node.value)
+        if "'dirname'" in text and "'__file__'" in text:
+            names.add(target.id)
+    return names
+
+
+def module_data_files(paths):
+    """`os.path.join(<자기디렉터리>, "…", "<파일>.<확장자>")` 로 읽는 **자료 파일**.
+
+    왜 이 규칙이 필요한가: `aws/_shared/truth_vocabulary.py` 는 진실 어휘를 코드에 베껴 쓰지 않고
+    `_shared/sql/20260913_earth_event_core.sql` 의 `create domain` 정의를 **import 시점에 읽는다.**
+    패키저가 `.py` 만 넣던 동안 그 파일이 빠졌고, staged 패키지를 그대로 import 하면
+    콜드 스타트에서 이렇게 죽는다 (2026-09-13 실측):
+
+        VocabularyError: 정본 SQL 을 읽지 못했다: [Errno 2] ... 'sql/20260913_earth_event_core.sql'
+
+    `cross_function_files()` 와 다른 점: 그쪽은 **다른 함수 폴더**의 `.py` 를 zip 루트에
+    평평하게 넣는다. 여기는 모듈 **자기 옆**의 자료 파일이고, `_HERE` 가 런타임에 zip 루트가
+    되므로 **상대 경로를 그대로 유지해** 넣어야 한다(`sql/…` 는 `sql/…` 로).
+
+    돌려주는 것: {zip 안 상대경로: 원본 절대경로}
+    """
+    found = {}
+    for path in paths:
+        try:
+            with open(path, encoding="utf-8", errors="ignore") as handle:
+                tree = ast.parse(handle.read(), filename=path)
+        except (OSError, SyntaxError):
+            continue
+        own = _own_dir_names(tree)
+        if not own:
+            continue
+        base = os.path.dirname(os.path.abspath(path))
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call) or len(node.args) < 2:
+                continue
+            if not _is_os_path_join(node.func):
+                continue
+            first, rest = node.args[0], node.args[1:]
+            if not (isinstance(first, ast.Name) and first.id in own):
+                continue
+            if not all(isinstance(a, ast.Constant) and isinstance(a.value, str)
+                       for a in rest):
+                continue
+            parts = [a.value for a in rest]
+            # `.py` 는 모듈이다 — import 닫기와 cross_function_files 가 이미 다룬다.
+            if parts[-1].endswith(".py") or "." not in parts[-1]:
+                continue
+            source = os.path.join(base, *parts)
+            if os.path.isfile(source):
+                found["/".join(parts)] = source
+    return dict(sorted(found.items()))
+
+
 def _is_os_path_join(func):
     """`os.path.join` 호출인지 — `join` / `path.join` / `os.path.join` 을 모두 받는다."""
     names = []
@@ -294,14 +361,21 @@ def plan(function_dir, shared_dir):
     """넣을 것의 목록. 복사하지 않는다 — 시험과 배포가 같은 계획을 본다."""
     top = sorted(name for name in os.listdir(function_dir)
                  if name.endswith(".py") and not name.startswith("test_"))
+    shared = shared_closure(function_dir, shared_dir)
+    # 넣는 모듈들이 자기 옆에서 읽는 자료 파일 — 상대 경로를 유지해 넣는다.
+    scanned = [os.path.join(function_dir, name) for name in top] + \
+        [os.path.join(shared_dir, module + ".py") for module in shared]
     return {
         "schema": SCHEMA,
         "function": os.path.basename(os.path.normpath(function_dir)),
         "topLevelModules": top,
-        "sharedModules": shared_closure(function_dir, shared_dir),
+        "sharedModules": shared,
         "subPackages": sub_packages(function_dir),
         # 경로로 읽는 다른 함수 파일 → zip 루트에 평평하게 (파일이름: 저장소 상대경로)
         "crossFunctionFiles": cross_function_files(function_dir, shared_dir),
+        # 모듈 옆의 자료 파일 → 같은 상대 경로로 (zip 안 경로: 원본 경로)
+        "dataFiles": {relative: os.path.abspath(source)
+                      for relative, source in module_data_files(scanned).items()},
     }
 
 
@@ -324,6 +398,13 @@ def stage(function_dir, shared_dir, dest):
             raise FileNotFoundError(f"경로로 읽는 파일이 없다: {source}")
         # 평평하게. 읽는 쪽이 패키지 루트를 먼저 본다.
         shutil.copy2(source, os.path.join(dest, name))
+    for relative, source in staged["dataFiles"].items():
+        if not os.path.isfile(source):
+            raise FileNotFoundError(f"모듈이 읽는 자료 파일이 없다: {source}")
+        # 상대 경로 유지. `_HERE` 가 런타임에 zip 루트이므로 `sql/…` 는 `sql/…` 여야 한다.
+        target = os.path.join(dest, *relative.split("/"))
+        os.makedirs(os.path.dirname(target), exist_ok=True)
+        shutil.copy2(source, target)
     for package in staged["subPackages"]:
         target = os.path.join(dest, package)
         if os.path.isdir(target):
@@ -356,6 +437,9 @@ def missing_own_modules(dest, function_dir, shared_dir):
     for name in planned["crossFunctionFiles"]:
         if not os.path.isfile(os.path.join(dest, name)):
             missing.append(name[:-3])
+    for relative in planned["dataFiles"]:
+        if not os.path.isfile(os.path.join(dest, *relative.split("/"))):
+            missing.append(relative)
     return sorted(set(missing))
 
 

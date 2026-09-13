@@ -14,7 +14,9 @@
 #     실측: 압축 30MB / 해제 103MB   (한도: 직접 업로드 50MB / 해제 250MB)
 set -euo pipefail
 
-FN="${1:-gmgsi-clouds}"
+# 인자는 **함수 폴더 이름**이다. 거의 모든 함수는 폴더 이름 = Lambda 함수 이름이다.
+DIRNAME="${1:-gmgsi-clouds}"
+FN="$DIRNAME"
 # ⚠️ 프로필 기본 리전(us-east-2)을 따라가면 서울(ap-northeast-2)에 있는 원본 함수 옆에 **같은 이름의
 #    복사본이 다른 리전에 생긴다** — 2026-09-05 실측: cyclone-analog·lab-report-index 가 us-east-2 에
 #    새로 만들어지고 스케줄이 걸린 서울 함수는 옛 코드로 계속 돌았다. 리전은 여기서 고정한다.
@@ -32,9 +34,22 @@ export PYTHONUTF8=1
 BUCKET="earthus-cache-kr"
 BUCKET_REGION="us-east-2"
 PYVER="3.12"
-ROLE="earthus-lambda-${FN}"
-DIR="$(cd "$(dirname "$0")" && pwd)/${FN}"
+# ⚠️ 역할 이름은 **폴더 이름**에서 만든다. 함수 이름이 아니다 —
+#    function-name.txt 로 함수 이름을 따로 준 경우에도 저장소 쪽 신원은 폴더이기 때문이다.
+ROLE="earthus-lambda-${DIRNAME}"
+DIR="$(cd "$(dirname "$0")" && pwd)/${DIRNAME}"
 TIMEOUT=300
+
+# ── 함수 이름이 폴더 이름과 다른 경우 ────────────────────────────────────────
+# 폴더 이름 = 함수 이름이 규칙이고 94개가 그렇다. 예외를 **폴더 안에 적는다** —
+# timeout-seconds.txt 와 같은 방식이다. 파일이 없으면 폴더 이름을 그대로 쓰므로
+# 기존 함수의 동작은 한 글자도 바뀌지 않는다.
+if [ -f "$DIR/function-name.txt" ]; then
+  FN="$(tr -d '[:space:]' < "$DIR/function-name.txt")"
+  [[ "$FN" =~ ^[A-Za-z0-9_-]{1,64}$ ]] \
+    || { echo "❌ function-name.txt 는 [A-Za-z0-9_-] 1~64자여야 함"; exit 1; }
+  echo "▸ 함수 이름 재지정: 폴더 ${DIRNAME} → 함수 ${FN}"
+fi
 
 # ⚠️ 기본 300초로 덮어쓰면 대량 API를 끝까지 받는 함수가 배포 직후부터
 #    반복해 죽는다. 함수 폴더의 timeout-seconds.txt만 예외로 읽는다.

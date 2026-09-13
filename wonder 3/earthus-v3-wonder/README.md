@@ -23,9 +23,9 @@ earthus-v3-wonder/
 
 ```bash
 npm run registry      # content/ 를 재서 registry·manifest 생성 (팩 카탈로그 해시 대조, 검수 없는 배경은 오류)
-npm test              # 17 tests
-npm run dev           # http://127.0.0.1:8790/apps/web/   (Claude 데스크톱: launch.json "wonder3-static")
-python scripts/convert-characters-webp.py --only yeti     # 레거시 pack124 PNG → WebP (원본은 읽기만)
+npm test              # 28 tests
+npm run dev           # http://127.0.0.1:8790/apps/web/   (Claude 데스크톱: launch.json "earthus-v3-wonder")
+python scripts/convert-characters-webp.py                 # 레거시 pack124 PNG → runtime WebP (원본은 읽기만, 기준 1024 q85)
 ```
 
 ## 규칙
@@ -42,5 +42,6 @@ python scripts/convert-characters-webp.py --only yeti     # 레거시 pack124 PN
 - PHASE 0 기반: `docs/PHASE0_FOUNDATION_REPORT_2026-09-13.md`
 - **PHASE 0 DECISION LOCK (2026-09-13)**: `docs/DECISION_LOCK_2026-09-13.md` → `ARCHITECTURE_LOCK.md` · `DEPLOYMENT_MAP.md` · `BACKGROUND_ASSET_SPEC_v1.md` · `CHARACTER_WEBP_BENCHMARK.md`
 - **개발 기준 문서: `docs/MASTER_DEVELOPMENT_DIRECTIVE.md`** (2026-09-13 편입, 원본과 SHA-256 `e41a6652…ca95` 동일, 18,656 B). 현재 골격과의 차이는 `docs/MASTER_DIRECTIVE_RECONCILIATION.md`
-- PHASE 1 시작 조건 상태판: `docs/PHASE1_READINESS.md` (6/7 PASS, 남은 것은 WebP 기준안 승인) · 계획 `docs/PHASE1_PAPER_EARTH_PLAN.md`
+- PHASE 1 시작 조건 `docs/PHASE1_READINESS.md` 7/7 PASS → 착수 전 점검 `docs/PHASE1_PRESTART_CHECK.md` 6/6 → **PHASE 1 Paper Earth 보고서 `docs/PHASE1_PAPER_EARTH_REPORT_2026-09-13.md`** (커밋 `71e1b3c4`, Device Verified 0)
+- 화면: `apps/web/` = 종이 지구(PHASE 1) · `apps/web/stage/` = 캐릭터 무대(PHASE 0). 엔진 `packages/globe-engine/`, three.js `packages/shared/vendor/three/`
 - `docs/BUILD_DIRECTIVE_DRAFT_v0.md` 는 **SUPERSEDED** (Master Directive 도착 전 초안, 기록용)

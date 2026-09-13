@@ -8,15 +8,16 @@
 | 2 | architecture lock | PASS | `docs/ARCHITECTURE_LOCK.md` v1 |
 | 3 | deployment collision 없음 | PASS (설계·실측) | `docs/DEPLOYMENT_MAP.md` §2.1 — `app/wonder/next/`·`live/` 미존재 실측, legacy 키 집합과 교집합 없음 |
 | 4 | legacy AWS 보호 확인 | PASS | AWS 쓰기 0건. `app/v3/`·별칭 3키·CloudFront·CI·sw.js 무변경. 프로파일에 DeleteObject 없음(실측) |
-| 5 | character benchmark 완료 | 실행 완료 → **기준안 승인 대기** | `docs/CHARACTER_WEBP_BENCHMARK.md` — 3종 × 45변형 측정, 기준안 캐릭터 1024 q85 / 장면 1024 q85. PD 승인이 있어야 124 일괄 |
+| 5 | character benchmark 완료 | **PASS** (PD DECISION LOCK 2026-09-13 §4 APPROVED → 124종 일괄 적용) | `docs/CHARACTER_WEBP_BENCHMARK.md` 기준안 캐릭터 1024 q85 / 장면 1024 q85 승인. 248 WebP 28.7 MB, 원본 PNG 읽기만, `source-manifest.json`·`runtime-overrides.json` |
 | 6 | background replacement manifest 완료 | PASS (문서) | `content/backgrounds/replacement-manifest.json` 24항목 + `docs/BACKGROUND_ASSET_SPEC_v1.md`. 제작/납품은 별도 |
 | 7 | 기존 17/17 테스트 PASS | PASS (17 유지 + 배경 교체 매니페스트 3 = **20/20**) | 아래 실행 기록 |
 
 ## 판정
 
 ~~PHASE 1 시작 불가 — 조건 1 BLOCKED, 조건 5 승인 대기.~~ (13:44 이전)
-**2026-09-13 13:5x: 조건 1 PASS. PHASE 1 시작 불가 사유는 조건 5(벤치마크 기준안 승인) 하나만 남았다.** 6/7 PASS.
-지시서 §32 의 PHASE 1 범위(Globe·camera·rotation·zoom·touch·earth return)와 PD 지시(+region entry·responsive)는 `PHASE1_PAPER_EARTH_PLAN.md` 에 반영했다. 코드는 아직 없다.
+~~2026-09-13 13:5x: 조건 1 PASS. 조건 5 승인 대기.~~ (14:0x 이전)
+**2026-09-13 14:0x PD DECISION LOCK 으로 조건 5 PASS → 7/7 PASS. 착수 전 점검(`PHASE1_PRESTART_CHECK.md`) 6/6 → PHASE 1 착수.**
+**PHASE 1 결과: `PHASE1_PAPER_EARTH_REPORT_2026-09-13.md` — 8항목 Implemented·Tested·Browser Verified, Device Verified 0. 코드 커밋 `71e1b3c4`.**
 
 ## 실행 기록
 

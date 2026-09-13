@@ -61,6 +61,19 @@ PD 가 PHASE 0 READ-ONLY AUDIT 결과를 확인하고 아래 6개를 **LOCK** �
 
 `docs/PHASE1_READINESS.md` 가 7항목의 PASS/FAIL 을 관리한다. A 는 PASS 로 바뀌었다. **남은 것은 조건 5(벤치마크 기준안 승인) 하나다. 그 승인 전에는 PHASE 1 코드를 쓰지 않는다.**
 
+## PD DECISION LOCK 2차 (2026-09-13 14:0x, 8건)
+
+1. ROOT DEPTH → **OPTION A 유지**, canonical root `wonder 3\earthus-v3-wonder\` (상위 구조 불변)
+2. NAME → **`earthus-v3-wonder`** (코드·폴더·package·문서), 표시명 EARTHUS V3 WONDER
+3. DIRECTORY → **`scripts/`** 로 통일, `tools/` 금지 (이동 완료, 삭제 없음, 이동 뒤 검증 20/20→28/28)
+4. WEBP BASELINE → **APPROVED** 캐릭터 1024 q85 · 장면 1024 q85. 원본 PNG 삭제 금지, source/runtime 분리, q85 는 절대값 아님(자산별 예외 `runtime-overrides.json`)
+5. PHASE 1 START → 착수 전 6항목 점검(`PHASE1_PRESTART_CHECK.md`) 뒤 착수. 기준선 커밋 `b3796259`
+6. AWS → LIVE 변경 금지. staging `app/wonder/next/` · production `app/wonder/live/` · `app/v3/` 수정 금지 · cleanup HOLD
+7. IMPLEMENTATION RULE → 기존 V3 patch 금지, NEW BUILD, 보호 범위 준수
+8. REPORT → 변경/신규/삭제 파일 · 테스트 · browser · asset loading · memory · commit SHA · blockers. "완료"는 구현+검증 항목에만
+
+결과: `PHASE1_PAPER_EARTH_REPORT_2026-09-13.md` (코드 커밋 `71e1b3c4`).
+
 ## 보고 형식
 
 매 단계 IMPLEMENTED / TESTED / BROWSER VERIFIED / DEVICE VERIFIED / NOT DONE / BLOCKERS 를 분리한다.

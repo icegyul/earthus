@@ -29,18 +29,28 @@ export function createEnvironmentView(root, { assets, contentBase, log = () => {
           <div id="fx" class="layer layer-fx" aria-hidden="true"></div>
         </div>
       </div>
-      <div class="env-label" id="envLabel" aria-live="polite"><strong id="envName"></strong><span id="envDesc"></span></div>
+      <div class="env-label" id="envLabel" aria-live="polite"><strong id="envName"></strong><span class="env-desc"><q id="envDesc"></q><em class="story-tag">느낌 말</em></span></div>
       <button class="env-story-btn" id="envStoryBtn" type="button" hidden>📖 이야기</button>
       <div class="env-lod" id="envLod" aria-live="polite"></div>
       <section class="story-card" id="storyCard" hidden aria-label="이야기 카드" aria-live="polite">
         <div class="story-scene" id="storyScene"><span class="story-scene-wait">장면을 가져오는 중…</span></div>
-        <div class="story-head">
-          <span class="story-region" id="storyRegion"></span>
-          <span class="story-char" id="storyChar"></span>
+        <div class="story-sec story-sec-region">
+          <span class="story-k">REGION · 지역</span>
+          <strong id="storyRegionName"></strong>
+          <span class="story-desc"><q id="storyRegionDesc"></q><em class="story-tag">느낌 말</em></span>
+          <span class="story-fact" id="storyRegionBasis"></span>
         </div>
-        <h2 class="story-title" id="storyTitle"></h2>
-        <p class="story-body" id="storyBody"></p>
-        <p class="story-basis" id="storyBasis"></p>
+        <div class="story-sec story-sec-char">
+          <span class="story-k">CHARACTER · 친구</span>
+          <strong id="storyCharName"></strong>
+          <span class="story-fact" id="storyCharMeta"></span>
+        </div>
+        <div class="story-sec story-sec-story">
+          <span class="story-k">STORY · 이야기</span>
+          <h2 class="story-title" id="storyTitle"></h2>
+          <p class="story-body" id="storyBody"></p>
+          <p class="story-basis" id="storyBasis"></p>
+        </div>
         <div class="story-actions">
           <button id="storyClose" type="button" class="story-btn">닫기</button>
           <button id="storyEarth" type="button" class="story-btn story-btn-earth">🌍 지구</button>
@@ -113,11 +123,16 @@ export function createEnvironmentView(root, { assets, contentBase, log = () => {
     const stories = await loadStories();
     const story = stories.find(s => s.characterId === row.slug && s.locationId === env.id) ?? null;
     state.storyId = story?.storyId ?? null;
-    root.querySelector('#storyRegion').textContent = `${env.nameKo} · ${env.descriptorKo}`;
-    root.querySelector('#storyChar').textContent = `${row.name} · ${{ folklore: '설화', prehistoric: '화석', animal: '자연' }[row.category] ?? row.category}`;
+    // REGION / CHARACTER / STORY 구조. descriptor 는 <q> + "느낌 말" 표로 사실 문장과 구분하고, 자료 근거는 따로 적는다.
+    root.querySelector('#storyRegionName').textContent = `${env.nameKo} · ${env.nameEn}`;
+    root.querySelector('#storyRegionDesc').textContent = env.descriptorKo;
+    root.querySelector('#storyRegionBasis').textContent = `자리의 근거(자료): ${env.placeBasis}`;
+    const cat = { folklore: '설화', prehistoric: '화석', animal: '자연' }[row.category] ?? row.category;
+    root.querySelector('#storyCharName').textContent = `${row.name} · ${cat}`;
+    root.querySelector('#storyCharMeta').textContent = `${row.place_basis} · 좌표 ${row.lat.toFixed(2)}, ${row.lon.toFixed(2)}`;
     root.querySelector('#storyTitle').textContent = story?.title ?? row.name;
     root.querySelector('#storyBody').textContent = story?.body ?? row.note;
-    root.querySelector('#storyBasis').textContent = story ? (story.basis === 'folklore' ? '전해 내려오는 이야기예요' : '자연에서 알려진 이야기예요') : '이야기는 준비 중이에요 (지금은 소개 글)';
+    root.querySelector('#storyBasis').textContent = story ? (story.basis === 'folklore' ? '전해 내려오는 이야기예요 (사실이 아닐 수 있어요)' : '자연에서 널리 알려진 이야기예요') : '이야기는 준비 중이에요 (지금은 소개 글)';
     const sceneBox = root.querySelector('#storyScene');
     sceneBox.innerHTML = '<span class="story-scene-wait">장면을 가져오는 중…</span>';
     card.hidden = false;

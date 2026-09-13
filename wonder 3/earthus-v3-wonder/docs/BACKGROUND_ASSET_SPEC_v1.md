@@ -63,8 +63,10 @@ text · watermark · UI 요소(프레임·버튼·라벨·둥근 카드 테두�
 자동(도구 예정 `scripts/check-backgrounds.mjs`): 2048×1152 · WebP · 알파 없음 · ≤ 500 KB · 파일명 = id.
 눈(접촉 시트 `tools` 로 생성): §2 금지 항목 0 · §4 구도 4항목 · 화풍 일치 · id 의 장소가 맞는가. 판정은 `content/pack-1.8/background-review.json` 의 verdict 를 `ok` 로 바꾸는 것으로 기록하고, 레지스트리를 다시 만든다(`load` 가 `region-lazy` 로 돌아온다).
 
-## 7. 제작 경로 (PD 결정 대기)
+## 7. 제작 경로
 
-- (a) ComfyUI Z-Image 로 자체 생성 — 기존 v3 화풍 프롬프트 골격("layered paper cut-out diorama … torn-paper outline … studio product photo … plain background") 을 배경용으로 바꿔 쓴다. 후처리(키 제거) 불필요(배경은 알파 없음).
+- (a) **로컬 ComfyUI Z-Image Turbo 로 후보 생성 — 2026-09-13 PHASE 1-D 에서 실행.** `scripts/gen-backgrounds.py` (2048×1152, 8 steps, cfg 1, RTX 3070 약 25초/장, WebP q85 ≈ 200KB).
+  - ⚠️ 프롬프트 함정: `diorama`·`torn-paper edges` 는 그림 둘레에 찢은 종이 **창(프레임)** 을 만들고 사진처럼 흐른다(프로브 1·2). 되는 문법: "flat layered papercraft landscape illustration, every mountain/hill/cloud/tree/ground band is a cut colored-paper shape stacked in depth …, the landscape fills the whole picture from edge to edge, empty flat ground band across the lower third, horizon around the middle, no vignette, no frame, no border, no paper window, no text, no people, no animals"(프로브 3 통과).
+  - 후보는 `benchmarks/background-candidates/`(content/ 밖)에 두고 `candidates.json` 에 status `candidate`, `production_approved: false` 로 적는다. **자동 승인 없음** — 접촉 시트 눈 검수 → PD 승인 → 그때 `content/pack-1.8/backgrounds/` 교체 + `background-review.json` verdict ok + 레지스트리 재생성.
 - (b) 외부 납품 — 이 문서 §2~§6 을 그대로 납품 조건으로.
-어느 쪽이든 `replacement-manifest.json` 의 `brief_ko` 가 장면 지시다.
+어느 쪽이든 `replacement-manifest.json` 의 `brief_ko` 가 장면 지시다(생성 프롬프트는 그 영어 번역).

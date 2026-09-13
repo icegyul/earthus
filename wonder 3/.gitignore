@@ -6,3 +6,4 @@ earthus-v3-wonder/benchmarks/**/*.webp
 earthus-v3-wonder/node_modules/
 earthus-v3-wonder/.tmp/
 earthus-v3-wonder/.tmp*
+earthus-v3-wonder/benchmarks/background-candidates/png/

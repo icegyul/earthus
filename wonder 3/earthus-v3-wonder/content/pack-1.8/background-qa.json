@@ -1,0 +1,745 @@
+{
+  "_note": "PHASE 1-D 배경 24장 검사. 자동(해상도·비율·형식·크기·알파) + 눈 검수 연결. production_approved 는 PD 승인 전까지 항상 false — 이 스크립트는 승인하지 않는다.",
+  "spec": {
+    "width": 2048,
+    "height": 1152,
+    "ratio": 1.7777777777777777,
+    "format": "WEBP",
+    "max_bytes": 512000,
+    "target_bytes": 358400,
+    "alpha": false
+  },
+  "checked_at": "2026-09-13 15:42",
+  "summary": {
+    "total": 24,
+    "spec_pass": 0,
+    "production_approved": 0,
+    "resolution_fail": 24,
+    "visual_fail": 24,
+    "format_webp": 24,
+    "size_ok": 24,
+    "bytes_total": 549112
+  },
+  "backgrounds": [
+    {
+      "id": "aurora_01",
+      "path": "backgrounds/aurora_01.webp",
+      "width": 1024,
+      "height": 655,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 27268,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "slide-text",
+        "seen": "스펙 글머리(JPG/WebP 배경 이미지 · 해상도 2048×1152 배경 / 2048×2048 캐릭터 · WebP 권장) + 'Small Steps' 필기체"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "australia_01",
+      "path": "backgrounds/australia_01.webp",
+      "width": 1024,
+      "height": 655,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 30968,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "thumbnail-with-chrome",
+        "seen": "해안 풍경 썸네일(둥근 프레임) + 라벨 '해안'. 호주가 아니다"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "cave_01",
+      "path": "backgrounds/cave_01.webp",
+      "width": 1024,
+      "height": 655,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 11326,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "hero-art-crop",
+        "seen": "종이 구름 + 'HUS' 로고 나무 간판 조각"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "coast_01",
+      "path": "backgrounds/coast_01.webp",
+      "width": 1024,
+      "height": 655,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 19434,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "hero-art-crop",
+        "seen": "종이 나무 4그루 조각. 해안 없음"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "desert_01",
+      "path": "backgrounds/desert_01.webp",
+      "width": 1024,
+      "height": 655,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 14286,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "slide-text",
+        "seen": "'웃기 Laugh · 먹기 Eat' + '폴더 구조 예시'"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "forest_01",
+      "path": "backgrounds/forest_01.webp",
+      "width": 1024,
+      "height": 655,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 37390,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "thumbnail-with-chrome",
+        "seen": "경복궁 썸네일 + 라벨 '한국 (경복궁)'. 숲이 아니다"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "grassland_01",
+      "path": "backgrounds/grassland_01.webp",
+      "width": 1024,
+      "height": 655,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 30282,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "character-crop",
+        "seen": "한복 소녀 + 판다 캐릭터"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "ice_01",
+      "path": "backgrounds/ice_01.webp",
+      "width": 1024,
+      "height": 655,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 12740,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "slide-text",
+        "seen": "'손 흔들기 Wave' + 'Folder Structure'"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "island_01",
+      "path": "backgrounds/island_01.webp",
+      "width": 1024,
+      "height": 655,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 17628,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "thumbnail-with-chrome",
+        "seen": "밤하늘 보름달 썸네일(프레임). 섬이 아니다"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "jungle_01",
+      "path": "backgrounds/jungle_01.webp",
+      "width": 1024,
+      "height": 655,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 40812,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "thumbnail-with-chrome",
+        "seen": "벚꽃 마을·탑 썸네일 + 라벨 '벚꽃 마을'. 정글이 아니다"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "korea_busan_01",
+      "path": "backgrounds/korea_busan_01.webp",
+      "width": 1024,
+      "height": 655,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 16960,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "slide-text",
+        "seen": "폴더 트리(explorer/ animals/ dinosaur/)"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "korea_gyeongju_01",
+      "path": "backgrounds/korea_gyeongju_01.webp",
+      "width": 1024,
+      "height": 652,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 23000,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "thumbnail-with-chrome",
+        "seen": "동굴 썸네일(프레임). 경주가 아니다"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "korea_jeju_01",
+      "path": "backgrounds/korea_jeju_01.webp",
+      "width": 1024,
+      "height": 655,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 26428,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "thumbnail-with-chrome",
+        "seen": "하늘 섬 썸네일(프레임). 제주가 아니다"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "korea_seoul_01",
+      "path": "backgrounds/korea_seoul_01.webp",
+      "width": 1024,
+      "height": 655,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 24028,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "thumbnail-with-chrome",
+        "seen": "오로라 썸네일(프레임). 서울이 아니다"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "night_01",
+      "path": "backgrounds/night_01.webp",
+      "width": 1024,
+      "height": 655,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 12648,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "slide-text",
+        "seen": "파일 목록(wave.png point.png tibet/ sahara/ tajm…)"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "ocean_01",
+      "path": "backgrounds/ocean_01.webp",
+      "width": 1024,
+      "height": 655,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 19478,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "slide-text",
+        "seen": "'점프 Jump · 춤추기 Dance' + '파일 형식 (권장)'"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "sahara_01",
+      "path": "backgrounds/sahara_01.webp",
+      "width": 1024,
+      "height": 655,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 29570,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "character-crop",
+        "seen": "티라노사우루스 + 여우 캐릭터"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "savanna_01",
+      "path": "backgrounds/savanna_01.webp",
+      "width": 1024,
+      "height": 652,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 44116,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "thumbnail-with-chrome",
+        "seen": "바닷속 산호 썸네일 + 라벨 '바다 속'. 사바나가 아니다"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "sky_island_01",
+      "path": "backgrounds/sky_island_01.webp",
+      "width": 1024,
+      "height": 652,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 20468,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "slide-text",
+        "seen": "'더 많은 이야기가 지구 위에 기다리고 있어요 / More stories are waiting on our Earth.'"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "sunset_01",
+      "path": "backgrounds/sunset_01.webp",
+      "width": 1024,
+      "height": 655,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 13666,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "slide-text",
+        "seen": "파일 목록(bg_grassland.jpg bg_tibet.jpg bg_sahara.jpg …)"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "tajmahal_01",
+      "path": "backgrounds/tajmahal_01.webp",
+      "width": 1024,
+      "height": 655,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 26660,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "character-crop",
+        "seen": "부엉이 + 새싹 캐릭터"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "tibet_01",
+      "path": "backgrounds/tibet_01.webp",
+      "width": 1024,
+      "height": 655,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 17774,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "character-crop",
+        "seen": "북극곰(손 흔듦) + 판다·공룡 일부"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "underwater_01",
+      "path": "backgrounds/underwater_01.webp",
+      "width": 1024,
+      "height": 655,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 22202,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "hero-art-crop",
+        "seen": "종이 나무 + 'EARTHUS V3 WONDER' 간판 조각"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    },
+    {
+      "id": "volcano_01",
+      "path": "backgrounds/volcano_01.webp",
+      "width": 1024,
+      "height": 655,
+      "format": "WEBP",
+      "mode": "RGB",
+      "bytes": 9980,
+      "checks": {
+        "resolution": false,
+        "ratio_16_9": false,
+        "format_webp": true,
+        "file_size_ok": true,
+        "no_alpha": true,
+        "visual_review_ok": false
+      },
+      "pending_visual_checks": [
+        "paper_cut_consistency",
+        "region_suitability",
+        "mobile_crop_safe_area",
+        "contrast_against_character"
+      ],
+      "review": {
+        "verdict": "invalid",
+        "category": "slide-text",
+        "seen": "'울음/소리 Roar · 가리키기 Point'"
+      },
+      "spec_pass": false,
+      "production_approved": false
+    }
+  ]
+}

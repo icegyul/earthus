@@ -181,11 +181,15 @@ async function boot() {
   mark('gl');
   resize();
   new ResizeObserver(resize).observe(world);
+  state.gestures = { drag: 0, 'pinch-in': 0, 'pinch-out': 0, 'wheel-in': 0, 'wheel-out': 0, tap: 0, touchDrag: 0, touchPinch: 0, touchTap: 0 };
   detach = attachGlobeInput(canvas, {
     camera, onTap,
     onInteract: () => { state.idleSince = performance.now(); $('#hint').classList.add('hide'); },
     onBack: returnToEarth,
+    onGesture: (kind, info) => { state.gestures[kind] = (state.gestures[kind] ?? 0) + 1; if (info?.pointerType === 'touch') { if (kind === 'drag') state.gestures.touchDrag++; else if (kind.startsWith('pinch')) state.gestures.touchPinch++; else if (kind === 'tap') state.gestures.touchTap++; } },
   });
+  // 실기기 QA 하네스: ?qa=1 일 때만 (Device Gate 용). 운영 기능 아님.
+  if (new URLSearchParams(location.search).get('qa') === '1') import('./qa-overlay.mjs').then(m => m.installQaOverlay(window.__wonder, { log })).catch(e => log(`QA 오버레이 실패: ${e.message}`));
   $('#btnEarth').addEventListener('click', returnToEarth);
   $('#btnFart').addEventListener('click', () => envView?.fart());
   $('#btnZoomIn').addEventListener('click', () => { if (envView?.isOpen || flow.state !== 'earth') return; camera.zoomIn(); updateZoomDots(); state.idleSince = performance.now(); });

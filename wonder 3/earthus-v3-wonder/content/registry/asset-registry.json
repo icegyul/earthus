@@ -13,7 +13,7 @@
     }
   },
   "counts": {
-    "assets": 296,
+    "assets": 297,
     "backgrounds": 24,
     "backgrounds_usable": 0,
     "fx": 5,
@@ -2400,6 +2400,15 @@
       "path": "pack-1.8/background-catalog.json",
       "bytes": 3879,
       "sha256": "1e456831f8911b39a8e07a3bc10aea3656a1694a44499684f073103b29613f51",
+      "source": "pack-1.8",
+      "load": "boot"
+    },
+    {
+      "id": "background-qa",
+      "kind": "data",
+      "path": "pack-1.8/background-qa.json",
+      "bytes": 20013,
+      "sha256": "340390118f8ea5585c92d99edb23565a49bc8a41b101a03df3828b20b80a4083",
       "source": "pack-1.8",
       "load": "boot"
     },

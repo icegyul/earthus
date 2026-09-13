@@ -1,0 +1,62 @@
+{
+  "_note": "배경 후보(승인 아님). PD 눈 검수·승인 전까지 production 에 쓰지 않는다. content/ 밖.",
+  "spec": {
+    "width": 2048,
+    "height": 1152,
+    "type": "webp",
+    "quality": 85
+  },
+  "candidates": {
+    "tibet_01": {
+      "class": "region",
+      "status": "candidate",
+      "production_approved": false,
+      "visual_review": "pending",
+      "seed": 7121,
+      "model": "z_image_turbo_int8 (local ComfyUI)",
+      "seconds": 22.7,
+      "png": "png/tibet_01.png",
+      "webp": "tibet_01.webp",
+      "bytes": 131638,
+      "size": [
+        2048,
+        1152
+      ],
+      "prompt": "flat layered papercraft landscape illustration, Tibetan plateau in paper, snow mountain ridge layers, tiny prayer flag lines at the side, wide plateau grass ground, every mountain, hill, cloud, tree and ground band is a cut colored-paper shape stacked in depth with soft shadows between the layers, matte cardboard and colored paper textures, 2.5D paper art, warm natural colors, wide 16:9, the landscape fills the whole picture from edge to edge, empty flat ground band across the lower third (open space for a character), horizon around the middle, gentle clean composition, children's picture book style, no vignette, no frame, no border, no paper window, no card, no text, no letters, no writing, no watermark, no logo, no signature, no people, no animals, no creatures"
+    },
+    "sky_island_01": {
+      "class": "world",
+      "status": "candidate",
+      "production_approved": false,
+      "visual_review": "pending",
+      "seed": 7100,
+      "model": "z_image_turbo_int8 (local ComfyUI)",
+      "seconds": 21.5,
+      "png": "png/sky_island_01.png",
+      "webp": "sky_island_01.webp",
+      "bytes": 82456,
+      "size": [
+        2048,
+        1152
+      ],
+      "prompt": "flat layered papercraft landscape illustration, paper sky stage seen from above the clouds, layered paper cloud banks, a few small floating paper islands far away, pale blue sky, cloud floor as the ground, every mountain, hill, cloud, tree and ground band is a cut colored-paper shape stacked in depth with soft shadows between the layers, matte cardboard and colored paper textures, 2.5D paper art, warm natural colors, wide 16:9, the landscape fills the whole picture from edge to edge, empty flat ground band across the lower third (open space for a character), horizon around the middle, gentle clean composition, children's picture book style, no vignette, no frame, no border, no paper window, no card, no text, no letters, no writing, no watermark, no logo, no signature, no people, no animals, no creatures"
+    },
+    "korea_seoul_01": {
+      "class": "korea",
+      "status": "candidate",
+      "production_approved": false,
+      "visual_review": "pending",
+      "seed": 7101,
+      "model": "z_image_turbo_int8 (local ComfyUI)",
+      "seconds": 24.3,
+      "png": "png/korea_seoul_01.png",
+      "webp": "korea_seoul_01.webp",
+      "bytes": 182440,
+      "size": [
+        2048,
+        1152
+      ],
+      "prompt": "flat layered papercraft landscape illustration, Seoul in paper, Han river with one bridge, Namsan mountain with a tower silhouette behind paper buildings, hanji paper texture, daytime, riverside flat ground, every mountain, hill, cloud, tree and ground band is a cut colored-paper shape stacked in depth with soft shadows between the layers, matte cardboard and colored paper textures, 2.5D paper art, warm natural colors, wide 16:9, the landscape fills the whole picture from edge to edge, empty flat ground band across the lower third (open space for a character), horizon around the middle, gentle clean composition, children's picture book style, no vignette, no frame, no border, no paper window, no card, no text, no letters, no writing, no watermark, no logo, no signature, no people, no animals, no creatures"
+    }
+  }
+}

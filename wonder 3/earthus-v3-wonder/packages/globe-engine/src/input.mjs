@@ -3,7 +3,7 @@
 // 키보드: 화살표 회전, +/- 줌, Escape = 지구로.
 const TAP_MS = 500, TAP_PX = 8, PINCH_RATIO = 1.3, WHEEL_STEP = 60, WHEEL_COOLDOWN_MS = 320;
 
-export function attachGlobeInput(el, { camera, onTap, onInteract = () => {}, onBack = () => {} }) {
+export function attachGlobeInput(el, { camera, onTap, onInteract = () => {}, onBack = () => {}, onGesture = () => {} }) {
   const pointers = new Map();
   let moved = false, downAt = 0, downXY = null, last = null, lastT = 0, pinchBase = null, wheelAcc = 0, wheelAt = 0;
 
@@ -27,13 +27,13 @@ export function attachGlobeInput(el, { camera, onTap, onInteract = () => {}, onB
     if (pointers.size === 1) {
       const t = now(), dt = Math.max(1 / 240, (t - lastT) / 1000);
       const dx = e.clientX - last.x, dy = e.clientY - last.y;
-      if (!moved && Math.hypot(e.clientX - downXY.x, e.clientY - downXY.y) > TAP_PX) moved = true;
+      if (!moved && Math.hypot(e.clientX - downXY.x, e.clientY - downXY.y) > TAP_PX) { moved = true; onGesture('drag', { pointerType: e.pointerType }); }
       if (moved) camera.drag(dx, dy, dt);
       last = { x: e.clientX, y: e.clientY }; lastT = t;
     } else if (pointers.size === 2 && pinchBase) {
       const d = dist2(), ratio = d / pinchBase;
-      if (ratio > PINCH_RATIO) { camera.zoomIn(); pinchBase = d; onInteract(); }
-      else if (ratio < 1 / PINCH_RATIO) { camera.zoomOut(); pinchBase = d; onInteract(); }
+      if (ratio > PINCH_RATIO) { camera.zoomIn(); pinchBase = d; onInteract(); onGesture('pinch-in', { pointerType: e.pointerType }); }
+      else if (ratio < 1 / PINCH_RATIO) { camera.zoomOut(); pinchBase = d; onInteract(); onGesture('pinch-out', { pointerType: e.pointerType }); }
     }
     e.preventDefault();
   };
@@ -46,6 +46,7 @@ export function attachGlobeInput(el, { camera, onTap, onInteract = () => {}, onB
       camera.endDrag();
       if (!moved && now() - downAt < TAP_MS) {
         const r = el.getBoundingClientRect();
+        onGesture('tap', { pointerType: e.pointerType });
         onTap({ x: e.clientX - r.left, y: e.clientY - r.top });
       }
     }
@@ -57,8 +58,8 @@ export function attachGlobeInput(el, { camera, onTap, onInteract = () => {}, onB
     e.preventDefault(); onInteract();
     const t = now(); if (t - wheelAt < WHEEL_COOLDOWN_MS) return;
     wheelAcc += e.deltaY;
-    if (wheelAcc <= -WHEEL_STEP) { camera.zoomIn(); wheelAcc = 0; wheelAt = t; }
-    else if (wheelAcc >= WHEEL_STEP) { camera.zoomOut(); wheelAcc = 0; wheelAt = t; }
+    if (wheelAcc <= -WHEEL_STEP) { camera.zoomIn(); wheelAcc = 0; wheelAt = t; onGesture('wheel-in', {}); }
+    else if (wheelAcc >= WHEEL_STEP) { camera.zoomOut(); wheelAcc = 0; wheelAt = t; onGesture('wheel-out', {}); }
   };
   const key = e => {
     const step = 40;

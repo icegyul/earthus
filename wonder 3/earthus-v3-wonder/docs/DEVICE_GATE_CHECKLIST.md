@@ -13,6 +13,16 @@ node scripts/dev-server.mjs 8790 --lan
 콘솔에 `폰에서: http://<PC IP>:8790/apps/web/?qa=1&device=1` 이 찍힌다(`device=1` 이 있어야 실기기 결과로 저장된다). Windows 방화벽이 물으면 **개인 네트워크** 허용. 폰과 PC 는 같은 Wi-Fi.
 (HTTPS 불필요 — 위치 권한을 쓰지 않는다. 서비스워커 없음.)
 
+## 스테이징(HTTPS) 경로 — 2026-09-13 배포, PD 지시
+
+같은 Wi-Fi 가 아니거나 개발 서버를 띄우기 어려우면 스테이징을 쓴다:
+
+`https://earthus.net/wonder/next/apps/web/?qa=1&device=1`
+
+- 커밋 `91bf2330` 의 정적 빌드(`docs/STAGING_DEPLOY_REPORT_2026-09-13.md`). production(`/wonder/`)·`/v3` 와 무관.
+- 스테이징에는 개발 서버가 없어 QA 패널 **[저장] 은 실패한다**(`/qa-result` 403). 끝나면 **[복사]** → 메모/카톡으로 PC 에 옮겨 `docs/device-gate/device/<android|ios>-<ISO 시각>.json` 으로 저장(예 `android-2026-09-14T09-30-00-000Z.json`) → PC 에서 `npm test`. JSON 의 `device.source` 가 `device` 여야 한다(주소에 `device=1`).
+- LAN 주소(아래 준비 절차)에서는 [저장] 이 파일을 바로 적는다. 둘 중 하나면 된다.
+
 ## 폰에서 (Android Chrome → iPhone Safari, 각각 1회씩)
 
 주소 `http://<PC IP>:8790/apps/web/?qa=1&device=1` 을 연다. 왼쪽 아래 QA 패널이 뜬다. 아래 순서로 **손가락으로** 한다.
@@ -35,7 +45,7 @@ node scripts/dev-server.mjs 8790 --lan
 | 14 | [움직임 줄이기] 체크 후 지역 진입 | plan.mode reduced |
 
 끝나면 패널의 **[저장]** — 개발 서버가 `docs/device-gate/device/<android|ios>-<시각>.json` 으로 바로 적는다(폰에서 클립보드 불필요). 패널 제목 옆에 `device` 라고 떠야 실기기 결과다(`emulated` 면 데스크톱/에뮬레이션으로 분류돼 게이트 근거가 아니다).
-[복사] 는 보조 수단(메모 앱). 저장 뒤 PC 에서 `npm test` 를 돌리면 `device-gate` 시험이 파일을 읽어 14/14 여부를 출력한다.
+[복사] 는 보조 수단(메모 앱) — 스테이징 주소에서는 유일한 수단. 저장 뒤 PC 에서 `npm test` 를 돌리면 `device-gate` 시험이 파일을 읽어 14/14 여부를 출력한다.
 이 PC 의 Wi-Fi 주소 예(2026-09-13): `http://192.168.219.115:8790/apps/web/?qa=1&device=1` (서버 콘솔에 찍히는 주소를 쓴다).
 
 ## 성능 항목 (오버레이가 같이 적는다)

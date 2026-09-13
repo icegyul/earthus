@@ -14,7 +14,7 @@ earthus-v3-wonder/
 │   ├─ backgrounds/     regions.json — 배경 지역 배정(잠정)
 │   ├─ characters/      manifest-124.json(생성) · webp/ (레거시 PNG 의 변환본만, PHASE 0 은 yeti 1종)
 │   └─ registry/        asset-registry.json(생성) — 모든 자산의 sha256·출처·로드 정책
-├─ scripts/             build-registry.mjs · convert-characters-webp.py · dev-server.mjs
+├─ scripts/             build-registry.mjs · convert-characters-webp.py · dev-server.mjs · build-staging.mjs · deploy-staging.sh
 ├─ tests/               node --test
 └─ docs/                팩 문서 사본 · PHASE 보고서 · 빌드 지시서 초안
 ```
@@ -44,6 +44,7 @@ python scripts/convert-characters-webp.py                 # 레거시 pack124 PN
 - **개발 기준 문서: `docs/MASTER_DEVELOPMENT_DIRECTIVE.md`** (2026-09-13 편입, 원본과 SHA-256 `e41a6652…ca95` 동일, 18,656 B). 현재 골격과의 차이는 `docs/MASTER_DIRECTIVE_RECONCILIATION.md`
 - PHASE 1 시작 조건 `docs/PHASE1_READINESS.md` 7/7 PASS → 착수 전 점검 `docs/PHASE1_PRESTART_CHECK.md` 6/6 → **PHASE 1 Paper Earth 보고서 `docs/PHASE1_PAPER_EARTH_REPORT_2026-09-13.md`** (커밋 `71e1b3c4`, Device Verified 0)
 - 화면: `apps/web/` = 종이 지구(PHASE 1) · `apps/web/stage/` = 캐릭터 무대(PHASE 0). 엔진 `packages/globe-engine/`, three.js `packages/shared/vendor/three/`
+- **STAGING 배포 2026-09-13** `https://earthus.net/wonder/next/apps/web/` (S3 `app/wonder/next/`, 커밋 `91bf2330`, 296 put · 삭제 0 · production/app/v3 변경 0) — `docs/STAGING_DEPLOY_REPORT_2026-09-13.md`. 빌드 `node scripts/build-staging.mjs` → 배포 `bash scripts/deploy-staging.sh [--dry-run]`. 실기기 주소 `…/?qa=1&device=1`
 - **PHASE 1 FINAL GATE 상태판 `docs/PHASE1_FINAL_GATE.md`** — 7조건 중 4 PASS · 3 PENDING(배경 승인 · Android · iOS). 실기기 결과는 폰 오버레이(`?qa=1&device=1`) [저장] → `docs/device-gate/device/`, 에뮬레이션은 `emulated/`(게이트 근거 아님). `tests/device-gate.test.mjs` 가 판정을 출력
 - **PHASE 1-D Visual Polish + Device Gate 보고서 `docs/PHASE1D_VISUAL_DEVICE_GATE_REPORT_2026-09-13.md`** — 배경 24 검사(팩 불합격, 후보 24장 제작·승인 대기), 카드 REGION/CHARACTER/STORY, 실기기 QA 하네스(`?qa=1`, `--lan`, `docs/DEVICE_GATE_CHECKLIST.md`), 전기뱀장어 검증. **Device 0, 배경 승인 0.**
 - **PHASE 1-C Interaction · Story Card · Earth Return 보고서 `docs/PHASE1C_INTERACTION_STORY_REPORT_2026-09-13.md`** (커밋 `e1a0e1ff`, 44 tests, 3지역 e2e: 탭·꾹·special·뿡 자격·스토리 카드·복귀, 재방문 네트워크 0, Device 0). 스토리 `content/stories/stories.json`

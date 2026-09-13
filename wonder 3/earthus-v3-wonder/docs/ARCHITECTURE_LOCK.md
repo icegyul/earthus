@@ -123,6 +123,9 @@ z = −cos φ · sin λ
 - **배포에는 런타임이 실제로 받는 것만 올린다**: 대륙 벡터 7장(294KB) + 북극 얼음 마스크 1장. 나머지는 저장소에 보관만 한다.
 - 위치: `assets/earth-v2/`. 레지스트리 kind `earth-v2` · root `project` · 대륙 shape 은 `load: boot-vector`, 나머지는 `on-demand`. 쓸모없는 것은 `usable: false`.
 - 알려진 결함 15건은 `assets/earth_v2_manifest.json` 의 `defects` 에 적혀 있다.
+- **팩 벡터가 놓친 섬은 우리 지리 자료로 메운다.** 팩 폴리곤이 Natural Earth 110m 수준이라 제주·울릉·독도가 **바다로 나온다**(점-내포 실측). `content/geo/country-reference.json` 은 이미 첫 화면에 받고 KOR·PRK·JPN 이 1:10m 다. 거기서 **팩이 땅으로 치지 않는 자리의 3° 이하 폴리곤만** 골라 얹는다(113개). 본토를 두 번 그리면 해안이 겹치므로 상한과 합집합 검사를 둘 다 건다. 고른 목록은 캐시한다 — 다시 구울 때 합집합 8MB 를 또 읽지 않는다.
+- **얼음은 땅보다 먼저 칠한다.** 팩 `ice_mask` 는 해빙 모양이 아니라 **위도 띠**다(행별 경도 표준편차 정확히 0.000, 90~71.25°N). 나중에 칠하면 그린란드 북부·타이미르·캐나다 북극 군도가 흰색에 덮여 71°N 에서 가로로 잘린다.
+- **팩의 흰 테두리 path 를 그대로 긋지 않는다.** 4개 path 의 `d` 가 같아서 그으면 유라시아 내부 국경·뉴기니 141°E 수직선·남극 봉합선이 전부 흰 선으로 나온다. 합집합의 북쪽 띠에서 뽑는 현재 방식을 되돌리지 말 것.
 - 손잡이: `?earth=v2`(기본) · `?earth=assets`(v1.2 기복도 비교) · `?earth=material` · `?earth=paper`.
 
 근거·검증: `docs/WONDER_EARTH_ASSETS_V2_REPORT_2026-09-13.md`.
@@ -175,7 +178,7 @@ z = −cos φ · sin λ
 | 게이트 | 방법 |
 |---|---|
 | Implemented | 파일 존재 + 실행 경로 연결 |
-| Tested | `node --test "tests/*.test.mjs"` 전부 PASS (현재 108) |
+| Tested | `node --test "tests/*.test.mjs"` 전부 PASS (현재 111) |
 | Browser Verified | 인앱 브라우저 데스크톱 + 375×812. 콘솔 오류 0, 네트워크 200, 실제 입력(클릭/합성 포인터) |
 | Device Verified | 실기기(아이폰·안드로이드) 사람 확인 또는 원격 실기기. **자동화로 대체 불가** |
 

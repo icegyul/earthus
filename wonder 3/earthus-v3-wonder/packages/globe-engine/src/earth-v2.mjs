@@ -15,6 +15,39 @@
 
 const CONT_ORDER = ['antarctica', 'oceania', 'africa', 'south_america', 'north_america', 'europe', 'asia'];
 
+/** 팩 벡터가 놓친 섬을 우리 지리 자료로 메울 때 쓸 기본 땅색(어느 대륙 상자에도 안 들어가는 섬). */
+export const ISLAND_FALLBACK = { fill: '#7ea45b', shadow: '#587e35' };
+
+/**
+ * 팩의 대륙 폴리곤은 Natural Earth 110m 수준이라 작은 섬이 통째로 빠져 있다.
+ * 실측: 제주·울릉·독도·괌이 전부 바다로 나온다. 한국이 첫 시장인데 제주가 화면에서 사라진다.
+ * 우리가 이미 첫 화면에 받는 `content/geo/country-reference.json` 에는 KOR·PRK·JPN 이 1:10m 로 들어 있다.
+ * 그 자료에서 **팩이 땅으로 치지 않는 자리의 작은 폴리곤만** 골라 얹는다(본토를 두 번 그리지 않는다).
+ */
+export function pickMissingIslands(geo, isLand, { maxSpanDeg = 3, minPoints = 4 } = {}) {
+  const out = [];
+  for (const f of geo?.features ?? []) {
+    const g = f.geometry;
+    if (!g) continue;
+    const polys = g.type === 'MultiPolygon' ? g.coordinates : [g.coordinates];
+    for (const poly of polys) {
+      const ring = poly?.[0];
+      if (!ring || ring.length < minPoints) continue;
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity, cx = 0, cy = 0;
+      for (const [lon, lat] of ring) {
+        if (lon < x0) x0 = lon; if (lon > x1) x1 = lon;
+        if (lat < y0) y0 = lat; if (lat > y1) y1 = lat;
+        cx += lon; cy += lat;
+      }
+      if (x1 - x0 > maxSpanDeg || y1 - y0 > maxSpanDeg) continue;      // 본토·큰 섬은 팩 몫이다
+      cx /= ring.length; cy /= ring.length;
+      if (isLand(cx, cy)) continue;                                     // 팩이 이미 땅으로 그린 자리
+      out.push({ code: f.code3 ?? f.code ?? '?', name: f.nameKo ?? f.nameEn ?? '', ring, lon: cx, lat: cy, span: Math.max(x1 - x0, y1 - y0) });
+    }
+  }
+  return out;
+}
+
 /** SVG 한 장에서 종이 층을 뜯어낸다. 이 팩의 d 는 M/L/Z 뿐이지만 Path2D 가 나머지도 알아서 읽는다. */
 export function parsePaperShape(svgText) {
   const vb = /viewBox="([-\d.\s]+)"/.exec(svgText);
@@ -93,7 +126,7 @@ export function createPaperGlobeV2({ colorCanvas, manifest }) {
   const W = colorCanvas.width, H = colorCanvas.height;
   const cc = ctx2d(colorCanvas, { alpha: false });
   const byId = new Map(manifest.regions.map(r => [r.id, r]));
-  const stats = { oceanMs: 0, landMs: 0, iceMs: 0, continents: 0, paths: 0, points: 0 };
+  const stats = { oceanMs: 0, landMs: 0, iceMs: 0, continents: 0, islands: 0, paths: 0, points: 0 };
   let unionCanvas = null;                       // 모든 대륙 채우기의 합집합 — 그림자·테두리가 여기서 나온다
 
   /** 바다. 팩의 8장이 전부 같은 색이라 그림을 받지 않고 색 하나로 칠한다(구멍이 생길 수 없다). */
@@ -121,20 +154,42 @@ export function createPaperGlobeV2({ colorCanvas, manifest }) {
    *   4) 북쪽 가장자리에 흰 빛을 얹는다 (합집합에서 뽑아 내부 경계선이 생기지 않는다)
    *
    * @param {Map<string,{d:string}[]>|Record<string,any>} shapes  id → parsePaperShape 결과
-   * @param {{depthPx?:number, dilatePx?:number, rimPx?:number, rimAlpha?:number}} [o]
+   * @param {{depthPx?:number, dilatePx?:number, rimPx?:number, rimAlpha?:number, islands?:object|any[]}} [o]
+   *   islands 에 GeoJSON 계열(`{features:[{geometry}]}`)을 주면 **팩이 놓친 작은 섬만** 골라 얹는다.
    *   depthPx 는 **캔버스 화소**로 고정한다. 팩이 적은 10px 를 그대로 쓰면 지역마다 배율이 달라
    *   유럽은 9.3px, 아프리카는 2.8px 가 되어 종이 두께가 제각각이 된다(실측).
    */
-  function paintLand(shapes, { depthPx = Math.max(2, Math.round(H / 340)), dilatePx = 1.1, rimPx = 1.4, rimAlpha = 0.16 } = {}) {
+  function paintLand(shapes, { depthPx = Math.max(2, Math.round(H / 340)), dilatePx = 1.1, rimPx = 1.4, rimAlpha = 0.16, islands = null } = {}) {
     const t0 = (globalThis.performance ?? Date).now();
     const list = CONT_ORDER.filter(id => shapes.get?.(id) ?? shapes[id]).map(id => ({ id, shape: shapes.get?.(id) ?? shapes[id], region: byId.get(id) }))
       .filter(x => x.region && x.shape?.fill);
     if (!list.length) return { painted: 0, ms: 0 };
 
-    const cache = new Map();
     // Path2D 는 브라우저 전역이다. 여기서 찾아 쓰면 Node 테스트가 가짜를 끼워 넣어 합성 순서를 검사할 수 있다.
     const P2D = globalThis.Path2D;
     if (typeof P2D !== 'function') throw new Error('Path2D 가 없다 — 벡터 대륙을 그릴 수 없다');
+
+    // 위경도 고리 → 캔버스 좌표 Path2D. 섬은 제 viewBox 가 없으니 여기서 바로 만든다.
+    const islandPath = ring => {
+      const q = new P2D();
+      ring.forEach(([lon, lat], i) => {
+        const x = ((lon + 180) / 360) * W, y = ((90 - lat) / 180) * H;
+        i ? q.lineTo?.(x, y) : q.moveTo?.(x, y);
+      });
+      q.closePath?.();
+      return q;
+    };
+    /** 섬이 어느 대륙 상자 안에 드는가 — 그 대륙의 종이색을 물려준다. */
+    const toneFor = (lon, lat) => {
+      for (const { shape, region } of list) {
+        if (lon >= region.lonMin && lon <= region.lonMax && lat >= region.latMin && lat <= region.latMax) {
+          return { fill: shape.fill.fill, shadow: shape.shadows[0]?.fill ?? shape.fill.fill };
+        }
+      }
+      return ISLAND_FALLBACK;
+    };
+
+    const cache = new Map();
     const pathOf = (id, d) => { const k = `${id}|${d.length}`; let p = cache.get(k); if (!p) { p = new P2D(d); cache.set(k, p); } return p; };
 
     // 1) 합집합 알파
@@ -150,6 +205,24 @@ export function createPaperGlobeV2({ colorCanvas, manifest }) {
         // 실틈 메우기: 같은 색 가는 획으로 아주 조금 부풀린다(대륙 경계의 1px 틈 152개, 실측)
         if (dilatePx > 0) { c.lineWidth = dilatePx / Math.max(pl.sx, pl.sy); c.strokeStyle = '#000'; c.lineJoin = 'round'; c.stroke(p); }
       });
+    }
+    // 섬 고르기는 **대륙 합집합이 만들어진 뒤**에 한다 — "팩이 이미 땅으로 그린 자리" 를 알아야 하니까.
+    let picked = Array.isArray(islands) ? islands : [];
+    if (islands && !Array.isArray(islands) && islands.features) {
+      const ud = uc.getImageData(0, 0, W, H).data;
+      const isLand = (lon, lat) => {
+        const x = Math.round(((lon + 180) / 360) * W), y = Math.round(((90 - lat) / 180) * H);
+        if (x < 0 || x >= W || y < 0 || y >= H) return false;
+        return ud[(y * W + x) * 4 + 3] > 8;
+      };
+      picked = pickMissingIslands(islands, isLand);
+    }
+    // 섬은 캔버스 좌표로 바로 만들어 붙인다. 합집합에 넣어야 그림자·테두리를 같이 받는다.
+    const isles = picked.map(o => ({ ...o, path: islandPath(o.ring), tone: toneFor(o.lon, o.lat) }));
+    if (isles.length) {
+      uc.setTransform(1, 0, 0, 1, 0, 0);
+      uc.lineJoin = 'round'; uc.strokeStyle = '#000'; uc.lineWidth = Math.max(1.2, dilatePx);
+      for (const o of isles) { uc.fill(o.path); uc.stroke(o.path); }   // 작은 섬은 한 화소로 사라지니 조금 부풀린다
     }
 
     // 2) 종이 단면(그림자) — 대륙마다 제 어두운 색으로, 합집합 밖에만
@@ -171,6 +244,15 @@ export function createPaperGlobeV2({ colorCanvas, manifest }) {
         }
       }
     }
+    if (isles.length) {
+      s2.setTransform(1, 0, 0, 1, 0, 0);
+      for (const o of isles) {
+        for (const [alpha, off] of [[0.55, depthPx], [0.32, depthPx * 0.5]]) {
+          s2.save(); s2.translate(0, off); s2.globalAlpha = alpha; s2.fillStyle = o.tone.shadow;
+          s2.fill(o.path); s2.lineWidth = Math.max(1.2, dilatePx); s2.strokeStyle = o.tone.shadow; s2.stroke(o.path); s2.restore();
+        }
+      }
+    }
     s2.globalAlpha = 1;
     s2.globalCompositeOperation = 'destination-out';
     s2.drawImage(unionCanvas, 0, 0);                      // 땅 위에 떨어진 그림자를 지운다(유라시아 한복판 선 제거)
@@ -188,6 +270,12 @@ export function createPaperGlobeV2({ colorCanvas, manifest }) {
         if (dilatePx > 0) { c.lineWidth = dilatePx / Math.max(pl.sx, pl.sy); c.strokeStyle = shape.fill.fill; c.lineJoin = 'round'; c.stroke(p); }
       });
       stats.paths += shape.layers.length;
+    }
+    if (isles.length) {
+      cc.setTransform(1, 0, 0, 1, 0, 0);
+      cc.lineJoin = 'round'; cc.lineWidth = Math.max(1.2, dilatePx);
+      for (const o of isles) { cc.fillStyle = o.tone.fill; cc.strokeStyle = o.tone.fill; cc.fill(o.path); cc.stroke(o.path); }
+      stats.islands = isles.length;
     }
 
     // 4) 북쪽 가장자리 흰 빛 — 합집합을 위로 민 뒤 땅 안쪽만 남긴다(내부 경계선이 안 생긴다)
@@ -209,7 +297,8 @@ export function createPaperGlobeV2({ colorCanvas, manifest }) {
     stats.continents = list.length;
     stats.points = list.reduce((n, x) => n + (x.region.shape?.totalPoints ?? 0), 0);
     stats.landMs = Math.round((globalThis.performance ?? Date).now() - t0);
-    return { painted: list.length, depthPx, ms: stats.landMs, ids: list.map(x => x.id) };
+    // 고른 섬 목록을 돌려준다 — 다시 구울 때 합집합을 또 읽지 않게(getImageData 8MB) 호출부가 캐시한다.
+    return { painted: list.length, islands: stats.islands, islandList: picked, depthPx, ms: stats.landMs, ids: list.map(x => x.id) };
   }
 
   /**

@@ -25,7 +25,7 @@ const sleep = ms => (ms > 0 ? new Promise(r => setTimeout(r, ms)) : Promise.reso
 const state = { view: 'world', region: null, envHit: null, idleSince: performance.now(), firstFrameMs: null, textureMs: null, geoBytes: null, frames: 0,
   environments: [], registryIndex: null, manifestBySlug: null, landmarks: null, spriteLoading: new Set(), bgSelector: null, bgManifest: null,
   textureCanvas: null, textureSize: null, material: null, earth: null, earthManifest: null, earthMode: null, small: false,
-  v2: null, v2Manifest: null, v2Base: null, v2Hi: null };
+  v2: null, v2Manifest: null, v2Base: null, v2Hi: null, geo: null };
 const pending = {};                                        // ensure* 의 진행 중 약속 — 동시에 두 번 불려도 한 번만 받는다(스테이징 CDN 에서 JSON 2회 요청 발견, 2026-09-13)
 const prefersReduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const reducedMotion = () => $('#rm').checked || prefersReduced();
@@ -135,7 +135,7 @@ function stylize(rects = null) {
    같은 이름이지만 v1.2 와 전혀 다른 팩이다. 대륙에 **진짜 벡터**(M/L/Z 폴리곤)가 들어 있고
    바다는 단색 하나(#1b6696)다. 그래서 오버뷰 없이도 구멍이 안 생기고, 텍스처를 키우면
    선이 진짜로 또렷해진다 — v1.2 에 없던 LOD2 가 여기서 생긴다. */
-let globeV2 = null, v2Shapes = null, v2Ice = null, v2Sharpening = false;
+let globeV2 = null, v2Shapes = null, v2Ice = null, v2Islands = null, v2Sharpening = false;
 
 async function upgradeToEarthV2(size) {
   if (state.v2 || pending.v2) return !!state.v2;
@@ -162,7 +162,7 @@ async function upgradeToEarthV2(size) {
     const r = bakeV2(size);
     if (ice) assets.unload(man.arctic['ice_mask.png'].path);
     state.v2 = { mode: 'v2', ...r, defects: man.defects.length, totalMs: Math.round(performance.now() - t0) };
-    log(`지구 자산 v2 · 벡터 대륙 ${r.continents}곳 ${r.points.toLocaleString()}점 · 바다 ${man.baseOcean} · ${r.ms}ms`);
+    log(`지구 자산 v2 · 벡터 대륙 ${r.continents}곳 ${r.points.toLocaleString()}점 · 팩이 놓친 섬 ${r.islands}개 보충 · 바다 ${man.baseOcean} · ${r.ms}ms`);
     return true;
   } finally { pending.v2 = false; }
 }
@@ -174,14 +174,17 @@ function bakeV2(size) {
   const t0 = performance.now();
   globeV2 = createPaperGlobeV2({ colorCanvas: tex, manifest: state.v2Manifest });
   globeV2.paintOcean();
-  const land = globeV2.paintLand(v2Shapes);
+  // 얼음을 **땅보다 먼저** 칠한다. 팩의 ice_mask 는 해빙 모양이 아니라 위도 띠(행마다 경도 표준편차 0.000, 실측)라
+  // 나중에 칠하면 그린란드 북부·타이미르·캐나다 북극 군도가 흰색에 덮여 71°N 에서 가로로 잘린다.
   const ice = globeV2.paintIce(v2Ice);
+  const land = globeV2.paintLand(v2Shapes, { islands: v2Islands ?? state.geo });
+  v2Islands ??= land.islandList;                              // 한 번만 고른다 — 팩 육지는 변하지 않는다
   if (state.paper && fiberImg) applyFiber(tex, fiberImg, { alpha: 0.28, tile: size.w >= 2048 ? 1024 : 512 });
   earth.refreshTexture();
   state.textureSize = [size.w, size.h];
   const st = globeV2.stats();
   return { continents: land.painted, points: st.points, depthPx: land.depthPx, icePct: ice?.coverage ?? null,
-           oceanMs: st.oceanMs, landMs: st.landMs, iceMs: st.iceMs, ms: Math.round(performance.now() - t0), size: [size.w, size.h] };
+           islands: land.islands, oceanMs: st.oceanMs, landMs: st.landMs, iceMs: st.iceMs, ms: Math.round(performance.now() - t0), size: [size.w, size.h] };
 }
 
 /** 줌 2단에서 텍스처를 두 배로 다시 굽는다 — 벡터라 선이 실제로 또렷해진다. 폰에서는 하지 않는다. */
@@ -460,6 +463,7 @@ async function boot() {
   const geoP = loadJson('content/geo/country-reference.json');
   const envP = loadJson('content/environments/environments.json').then(c => { state.environments = c.environments; }).catch(e => log(`⚠ 환경 카탈로그: ${e.message}`));
   const geo = await geoP;
+  state.geo = geo;                                            // 팩 벡터가 놓친 섬(제주·울릉·독도…)을 메우는 데 쓴다 — 이미 받은 자료다
   mark('geo');
   const { w, h } = viewSize();
   const small = Math.min(w, h) < 600;

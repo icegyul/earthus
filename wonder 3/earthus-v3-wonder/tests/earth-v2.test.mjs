@@ -282,3 +282,70 @@ test('로딩 정책: 첫 화면은 벡터 7장 + 얼음 마스크뿐이다', () 
   // 굽는 중 손이 지구를 만지고 있으면 미룬다
   assert.ok(/camera\.dragging \|\| camera\.animating/.test(main.slice(main.indexOf('function maybeSharpenV2'))));
 });
+
+// ── 팩 벡터가 놓친 것 (독립 검증에서 나온 두 건) ──
+test('섬: 팩 벡터에 제주·울릉·독도가 없다 — 사실을 못 박아 둔다', () => {
+  // 점-내포 판정. 팩의 채우기 폴리곤만 본다(M/L/Z 뿐이라 직선 고리다).
+  const rings = rid => {
+    const r = conts.find(x => x.id === rid);
+    const svg = fs.readFileSync(path.join(ROOT, r.files['shape.svg'].path), 'utf8');
+    const m = [...svg.matchAll(/<path\b([^>]*?)\/?>/gs)].find(x => x[1].includes('evenodd')) ?? null;
+    const d = /\sd="([^"]*)"/.exec(m ? m[1] : svg)[1];
+    return d.split('M').map(s => s.trim()).filter(Boolean).map(sub => {
+      const n = sub.match(/-?\d+\.?\d*/g)?.map(Number) ?? [];
+      const pts = []; for (let i = 0; i + 1 < n.length; i += 2) pts.push([n[i], n[i + 1]]);
+      return pts;
+    }).filter(p => p.length >= 3);
+  };
+  const inside = (rid, lat, lon) => {
+    const r = conts.find(x => x.id === rid), vb = r.shape.viewBox;
+    const u = ((lon - r.lonMin) / (r.lonMax - r.lonMin)) * vb[2];
+    const v = ((r.latMax - lat) / (r.latMax - r.latMin)) * vb[3];
+    if (!(u >= 0 && u < vb[2] && v >= 0 && v < vb[3])) return false;
+    let c = 0;
+    for (const ring of rings(rid)) for (let i = 0; i < ring.length; i++) {
+      const [x1, y1] = ring[i], [x2, y2] = ring[(i + 1) % ring.length];
+      if ((y1 > v) !== (y2 > v) && x1 + ((v - y1) / (y2 - y1)) * (x2 - x1) > u) c++;
+    }
+    return c % 2 === 1;
+  };
+  assert.ok(inside('asia', 37.57, 126.98), '서울은 팩 벡터에 있다');
+  assert.ok(inside('asia', 35.68, 139.77), '도쿄는 있다');
+  for (const [nm, lat, lon] of [['제주', 33.38, 126.53], ['울릉', 37.50, 130.90]]) {
+    assert.ok(!inside('asia', lat, lon), `${nm} 가 팩 벡터에 생겼다면 섬 보충 규칙을 다시 봐야 한다`);
+  }
+});
+
+test('섬 보충: 우리 지리 자료에서 팩이 놓친 작은 폴리곤만 고른다', async () => {
+  const { pickMissingIslands } = await import('../packages/globe-engine/src/earth-v2.mjs');
+  const geo = JSON.parse(fs.readFileSync(path.join(ROOT, 'content', 'geo', 'country-reference.json'), 'utf8'));
+  // 우리 자료에는 한국이 1:10m 로 들어 있다 — 제주·울릉이 여기 있다
+  assert.equal(geo.resolution.KOR, '1:10m');
+  const kr = geo.features.find(f => f.code3 === 'KOR');
+  assert.ok(kr, '자료에 대한민국이 있다');
+  assert.ok(kr.geometry.coordinates.length > 40, `한국 폴리곤 ${kr.geometry.coordinates.length}개`);
+
+  // 아무것도 땅이 아니라고 하면 작은 폴리곤이 전부 뽑힌다
+  const all = pickMissingIslands(geo, () => false);
+  assert.ok(all.length > 50, `섬 후보 ${all.length}`);
+  assert.ok(all.every(o => o.span <= 3), '큰 땅덩이는 고르지 않는다 — 본토를 두 번 그리면 해안이 겹친다');
+  assert.ok(all.some(o => Math.abs(o.lat - 33.4) < 0.4 && Math.abs(o.lon - 126.5) < 0.5), '제주가 후보에 있다');
+
+  // 이미 땅인 자리는 건너뛴다
+  const none = pickMissingIslands(geo, () => true);
+  assert.equal(none.length, 0, '팩이 이미 그린 자리는 다시 그리지 않는다');
+
+  // 본토는 절대 안 뽑힌다
+  assert.ok(!all.some(o => o.code === 'RUS' && o.span > 3));
+  const big = geo.features.find(f => f.code3 === 'BRA');
+  if (big) assert.ok(!all.some(o => o.code === 'BRA' && o.span > 3), '브라질 본토가 뽑히면 안 된다');
+});
+
+test('북극 얼음: 팩 마스크는 해빙 모양이 아니라 위도 띠다 — 땅보다 먼저 칠해야 한다', () => {
+  const main = fs.readFileSync(path.join(ROOT, 'apps', 'web', 'src', 'earth-main.mjs'), 'utf8');
+  const bake = main.slice(main.indexOf('function bakeV2'), main.indexOf('function maybeSharpenV2'));
+  const iIce = bake.indexOf('paintIce'), iLand = bake.indexOf('paintLand');
+  assert.ok(iIce > 0 && iLand > 0);
+  assert.ok(iIce < iLand, '얼음이 땅보다 뒤에 오면 그린란드·타이미르가 흰색에 덮여 71°N 에서 잘린다');
+  assert.ok(/위도 띠/.test(bake), '왜 순서를 바꿨는지 코드에 적혀 있어야 한다');
+});

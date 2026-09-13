@@ -247,10 +247,23 @@ conflict = {
 | | REANALYSIS | MODEL | INFERRED |
 | | FORECAST | MODEL | FORECAST |
 | | **SYNTHETIC_TEST** | MODEL | **SIMULATION** + 공개 금지 플래그 |
-| gdelt `status` | confirmed | NEWS | **CORROBORATED** (교차검증 점수가 곧 독립 출처 수다) |
+| gdelt `status` | confirmed | NEWS | **REPORTED** (점수는 독립 출처 수가 아니다 — 아래 ⚠️) |
 | | unconfirmed | NEWS | REPORTED |
 | | `placeDoubt: true` | NEWS | REPORTED 로 강제 하향 (이미 코드가 그렇게 한다) |
 | ZIP `VerificationState` | 8종 | — | **1:1 동일**. 그래서 ZIP 값은 그대로 받을 수 있다 |
+
+> ⚠️ **2026-09-13 정정 — gdelt `confirmed` 는 `CORROBORATED` 가 아니다.**
+> 이 표는 전에 "교차검증 점수가 곧 독립 출처 수다"라고 적고 `confirmed → CORROBORATED` 로
+> 옮겼다. 그것은 이 문서 §2.1 자신과 어긋난다. §2.1 은 `CORROBORATED` 의 조건을
+> **`independenceGroup` 고유 수 ≥ 2** 로 적었는데, gdelt 의 `status` 는
+> `aws/gdelt-events/handler.py` 의 `score(NumSources, NumMentions, wire, geoType, ageMin)`
+> 가 `CONFIRM_SCORE`(60) 를 넘는지 하나로 정해지는 값이다. 즉 **점수 문턱이고 출처 수가 아니다** —
+> 한 통신사 기사를 스무 곳이 전재해도 점수는 오른다.
+> PHASE 3G 결정 ① 이 독립 출처 회계를 `aws/_shared/article_dedup.py` 의
+> `independence_units_for()` 한 곳으로 못 박았고, `CORROBORATED` 는 그 값이 2 이상일 때만 붙는다.
+> `aws/_shared/truth_vocabulary.py` 가 이 규칙을 코드로 갖고 있다(`corroborated()` ·
+> `CORROBORATION_MIN = 2`). 두 축은 곱해지지 않으므로, 뉴스 단독 사건은
+> `truthStatus = REPORTED` 이면서 `corroborated = true` 일 수 있다 — 하나로 눌러 담지 않는다(규칙 3).
 
 ### 3.4 `EVIDENCE_LEVELS` (5) 는 진리 축이 아니다 — **관계 강도 축**
 

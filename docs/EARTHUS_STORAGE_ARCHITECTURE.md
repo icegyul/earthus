@@ -40,8 +40,26 @@ Lambda 배치(83종)  →  S3 JSON  →  CloudFront  →  브라우저가 직접
 
 ### 0.3 EarthEvent 원본 결정 (지시서 질문 A)
 
-**원본은 S3 `events/earth-events.json` + `events/earth-events/<event_id>.json` 이고,
-Postgres `earthus_event_cluster` 는 색인이다.**
+**원본은 S3 이고 Postgres 는 색인이다.**
+
+> ⚠️ **2026-09-13 정정 — 경로와 색인 표 이름이 바뀌었다 (PHASE 3G 결정 ①).**
+> 이 절은 전에 정본을 `events/earth-events.json` + `events/earth-events/<event_id>.json`,
+> 색인을 `earthus_event_cluster` 로 적었다. 둘 다 더 이상 맞지 않는다.
+>
+> | | 옛 기술 | **현재 정본** |
+> |---|---|---|
+> | 사건 정본 | `events/earth-events/<event_id>.json` (공개) | `archive/earth-events/canonical/v1/event_id=<event_id>.json` (**PRIVATE**) |
+> | 불변 원자료 | `archive/earth-events/dt=…/hh=…/part.jsonl.gz` | `archive/earth-events/raw/dt=YYYY-MM-DD/hh=HH/part-*.jsonl.gz` |
+> | 색인 표 | `earthus_event_cluster` | `earthus_earth_event` |
+>
+> 바꾼 이유 셋:
+> · `events/` 는 **익명 공개** 접두사다(`aws/_shared/publication_privacy.py` `BUCKET_PUBLIC_PREFIXES`).
+>   조립 직후의 사건은 검토 전 초안이고, 거기 쓰면 검토 전에 공개된다.
+>   배포 엔진에서 같은 구멍이 실제로 있었다 — 2026-09-13 실측, 후보 8건 중 7건이 익명 공개 대상.
+> · 그래서 3G 산출물은 항상 `release_state='SHADOW'` 이고 `archive/`(PRIVATE) 아래에만 쓴다.
+>   공개 승격은 3G 의 일이 아니다(결정 ⑨).
+> · `earthus_event_cluster` 는 `aws/_shared/sql/20260913_earth_event_core.sql` 이 **존재 자체를
+>   거부한다**(SCHEMA_CONFLICT) — 같은 것을 가리키는 두 설계를 함께 두면 사건 정본이 둘이 된다.
 
 | 후보 | 장점 | 단점 | 판정 |
 |---|---|---|---|
@@ -93,9 +111,15 @@ Postgres `earthus_event_cluster` 는 색인이다.**
   목록 밖이면 `DENY_APP`.
 - 자료 피드 접두사에 배포 스크립트가 쓰면 `DENY_FEED`.
 
-→ 사건 조립기(`aws/earth-events/handler.py`)는 `events/` 에 쓰는 **람다**다 →
-`GENERATED` · `ALLOW_FEED` 로 통과한다. 별도 허용 등록이 필요 없다.
+→ 사건 조립기(`aws/earth-events/handler.py`)는 **`events/` 에 쓰지 않는다.**
+정본 목적지는 `archive/earth-events/canonical/v1/` 이고(§0.3 정정), `archive/` 는 PRIVATE 이다.
+조립기 안에 `assembler.assert_not_public(key)` 문이 있어 공개 접두사·모르는 접두사를 전부 거부한다
+(`aws/earth-events/tests/test_boundary_and_write.py` 가 고정한다).
 다만 `write-path-audit.py` 검사기가 새 쓰기 지점을 보고하므로 그 보고를 확인한다.
+
+> ⚠️ **2026-09-13 정정.** 이 자리에는 전에 "조립기는 `events/` 에 쓰는 람다다 →
+> `GENERATED`·`ALLOW_FEED` 로 통과한다"고 적혀 있었다. 그 문장을 그대로 구현하면
+> 검토 전 사건이 익명 공개된다 — 그래서 결정 ①⑨ 이 목적지를 `archive/` 로 옮겼다.
 
 ### 1.3 불변 원자료 — `archive/` (`aws/archiver/handler.py`)
 
@@ -161,9 +185,14 @@ no-cache      13곳     private,no-store 10곳  no-store      3곳
 사건 산출물 권고:
 | 파일 | CacheControl | 이유 |
 |---|---|---|
-| `events/earth-events.json` (색인) | `public, max-age=600` | `events/global.json` 과 같게. 10분이면 뉴스 사건 갱신 주기와 맞다 |
-| `events/earth-events/<id>.json` (상세) | `public, max-age=1800` | 사건 하나는 덜 자주 바뀐다 |
+| `archive/earth-events/canonical/v1/event_id=<id>.json` (정본) | `no-store` | **PRIVATE**. 공개 캐시에 얹을 대상이 아니다 — 엣지가 초안을 들고 있으면 안 된다 |
+| `archive/earth-events/raw/dt=…/hh=…/part-*.jsonl.gz` (원자료) | `no-store` | PRIVATE · 불변. 재계산용이고 앱이 읽지 않는다 |
 | `events/context/<id>/<at>.json` | `public, max-age=86400` | 시각이 키에 있어 **불변**이다 |
+
+> ⚠️ **2026-09-13 정정.** 이 표는 전에 `events/earth-events.json`(600초) ·
+> `events/earth-events/<id>.json`(1800초) 를 권고했다. 두 키 모두 §0.3 정정으로 없어졌다.
+> **공개 사건 파일은 아직 없다** — 공개 승격 경로가 정해지면 그때 이 표에 한 줄이 더해진다.
+> 그전에 공개 캐시 권고를 적어 두면 없는 파일을 있는 것처럼 읽게 된다.
 
 ⚠️ 정적 `data/` 는 `max-age=86400` 으로 서빙된다.
 그래서 셸이 렌더링하는 레지스트리는 전부 `js/` 의 얼린 ES 모듈이다
@@ -243,8 +272,8 @@ v11 19테이블 중 이번에 쓰는 것은 **4개**:
 
 | 도메인 | 원본 | 색인/보조 | 근거 |
 |---|---|---|---|
-| `earth_event` | **S3** `events/earth-events.json` (색인) + `events/earth-events/<id>.json` (상세+타임라인) | Postgres `earthus_event_cluster` | §0.3 |
-| 불변 원자료 | **S3** `archive/earth-events/dt=…/hh=…/part.jsonl.gz` | — | §1.3. 판정 기준이 바뀌면 여기서 재계산 |
+| `earth_event` | **S3** `archive/earth-events/canonical/v1/event_id=<id>.json` (PRIVATE · 상세+타임라인) | Postgres `earthus_earth_event` | §0.3 (2026-09-13 정정) |
+| 불변 원자료 | **S3** `archive/earth-events/raw/dt=YYYY-MM-DD/hh=HH/part-*.jsonl.gz` | — | §1.3. 판정 기준이 바뀌면 여기서 재계산 |
 | `news_article` | **S3** `events/global.json` · `events/regional-news.json` · `events/briefs.json` (기존 파일 그대로) | Postgres `earthus_news_article` (기사↔사건 조인용, 본문 칸 없음) | 기존 수집기 3종을 고치지 않는다 |
 | `source` | **코드 + DB** `provenance.DATASET_PROVENANCE`(S3키→provider·license·collector) + `provider_registry`·`provider_health` | — | `provenance.py` §68: **새 출처 레지스트리 금지** |
 | `evidence` / `evidence_edge` | **Postgres** `earthus_evidence_node` / `earthus_evidence_edge` | — | `trace()` 그래프 순회(BFS, maxDepth 6)가 필요. JSON 파일로는 못 한다 |

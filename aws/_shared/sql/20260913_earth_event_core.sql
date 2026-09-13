@@ -9,7 +9,15 @@
 --   다음 사람이 적용된 줄로 읽는다.
 --
 -- 원칙 (docs/EARTHUS_STORAGE_ARCHITECTURE.md)
---   EarthEvent 의 **정본은 S3** 다: events/earth-events.json + events/earth-events/<event_id>.json
+--   EarthEvent 의 **정본은 S3** 다:
+--     archive/earth-events/canonical/v1/event_id=<event_id>.json        사건 정본 (PRIVATE)
+--     archive/earth-events/raw/dt=YYYY-MM-DD/hh=HH/part-*.jsonl.gz     불변 원자료 (PRIVATE)
+--   ⚠️ 2026-09-13 정정 — 이 머리말은 전에 정본을 events/earth-events.json +
+--      events/earth-events/<event_id>.json 이라고 적었다. events/ 는 **익명 공개** 접두사다
+--      (aws/_shared/publication_privacy.py BUCKET_PUBLIC_PREFIXES). 조립 직후의 사건은
+--      검토 전 초안이므로 거기 두면 검토 전에 공개된다. PHASE 3G 결정 ① 이 정본을
+--      archive/ (PRIVATE) 아래로 옮겼고, 산출물은 항상 release_state='SHADOW' 다.
+--      공개 승격은 조립기의 일이 아니다(결정 ⑨).
 --   이 스키마는 **색인·관계·추적(trace)** 층이다. 여기 있는 행은 S3 레코드를 가리키는 포인터이고,
 --   S3 가 진실이다. 불일치가 생기면 S3 를 옳다고 보고 색인을 다시 만든다.
 --
@@ -142,8 +150,16 @@ create index if not exists earthus_source_kind_idx on public.earthus_source(sour
 
 -- ── earth_event — 사건 색인 (정본은 S3) ─────────────────────────────────────
 create table if not exists public.earthus_earth_event (
-  event_id            text primary key,                 -- {kind}-{sourceId}  ← 잠긴 정본 주소
-                                                        -- tools/test_v2_ui_information_architecture.mjs 2건이 검사한다
+  event_id            text primary key,                 -- evt_<sha256 앞 20 hex>  (PHASE 3G 결정 ②③)
+                                                        -- 생성기: aws/_shared/earth_event_id.py:event_id()
+                                                        -- ⚠️ 2026-09-13 정정 — 여기에는 전에 "{kind}-{sourceId}
+                                                        --    ← 잠긴 정본 주소 / tools/test_v2_ui_information_
+                                                        --    architecture.mjs 2건이 검사한다"고 적혀 있었다. 둘 다 틀렸다.
+                                                        --    그 npm 테스트 2건은 호출 모양만 고정하고 id 문자열을
+                                                        --    파싱하지 않으며, 형식을 검사하는 소비자는 없다(실측).
+                                                        --    {kind}-{sourceId} 는 상류 id 가 회차마다 바뀌면 같은 사건이
+                                                        --    다른 주소를 갖게 되어 결정 ④ 의 안정성 요구를 깬다.
+                                                        --    소비자는 id 를 파싱하지 않는다 — is_event_id() 만 쓴다.
   kind                text not null,                    -- TC EQ FLOOD WILDFIRE … (CAMEO 코드가 아니다)
   phenomenon_id       text,                             -- phenomenon-registry PHENOMENA 의 domain.snake (66종). 없으면 null
   title               text not null,
@@ -174,7 +190,7 @@ create table if not exists public.earthus_earth_event (
   official_safety     boolean not null default false,   -- 공식 특보가 걸린 사건 → 무료 공개 대상
   release_state       earthus_release_state not null default 'SHADOW',
   -- S3 정본 포인터. 이 셋이 없으면 색인 행은 의미가 없다.
-  canonical_s3_key    text not null,                    -- events/earth-events/<event_id>.json
+  canonical_s3_key    text not null,                    -- archive/earth-events/canonical/v1/event_id=<event_id>.json
   canonical_sha256    char(64) not null,                -- 그 객체의 sha256. 불일치 탐지의 기준값
   canonical_schema    text not null,                    -- 예 earthus.earth-event.v1
   canonical_written_at timestamptz not null,
@@ -517,5 +533,6 @@ commit;
 -- commit;
 --
 -- 되돌려도 잃는 것은 **색인**이다. EarthEvent 정본은 S3 에 있고, 색인은
--- events/earth-events.json 에서 다시 만들 수 있다. 그것이 S3 를 정본으로 둔 이유다.
+-- archive/earth-events/canonical/v1/ 의 객체들에서 다시 만들 수 있다.
+-- 그것이 S3 를 정본으로 둔 이유다.
 -- ═══════════════════════════════════════════════════════════════════════════

@@ -32,6 +32,21 @@ DATASET_PROVENANCE = {
         "coverage": "대한민국 ASOS 97지점 · 리드 24·48시간",
         "cadence": "매시간 예보 보존 · 일 1회 채점",
     },
+    # GDELT 2.0 Events 집계. 결정 B6·⑫ — docs/3G_TIME_PROVENANCE.md §5
+    #   truthType 을 UNKNOWN 으로 둔다. 기존 어휘 넷(OFFICIAL_OBSERVATION·OFFICIAL_WARNING·
+    #   OFFICIAL_FORECAST·EARTHUS_ANALYSIS)에 제3자 뉴스 집계가 없고, 억지로 배정하지 않는다.
+    #   다른 축은 그대로다 — SOURCE_KIND=NEWS(TRUTH_VOCABULARY_CANONICAL.md:148),
+    #   TRUTH_STATUS=REPORTED/CORROBORATED(3G_TRUTH_RULES.md). 세 축은 서로 다른 축이다.
+    "events/global.json": {
+        "provider": "GDELT 2.0 Events",
+        "providerEn": "GDELT 2.0 Events",
+        "dataset": "전지구 사건 뉴스",
+        "collector": "aws/gdelt-events/handler.py",
+        "license": "GDELT 오픈 데이터 — 학술·상업·공공 무제한 이용·재배포, GDELT 인용·링크 필수",
+        "truthType": "UNKNOWN",
+        "coverage": "전지구 · 창 3시간 · 사건 150건 상한",
+        "cadence": "30분 (cron(5,35 * * * ? *))",
+    },
     "ocean/lab-reports.json": {
         "provider": "EARTHUS LAB 현상별 계산기",
         "providerEn": "EARTHUS LAB per-phenomenon engines",

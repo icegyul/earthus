@@ -370,6 +370,56 @@ def independence_units(result):
     return len(result["groups"])
 
 
+def independence_units_for(result, article_ids, *, source_of=None, kind_of=None):
+    """**부분집합**의 독립 출처 수. 사건 하나에 붙은 기사들만 세기 위한 것이다.
+
+    `independence_units()` 는 배치 전역(묶음 전체)을 센다. EarthEvent 하나는 그중 일부만
+    갖는다 — 그 간격을 메우는 함수이고, **회계 창구는 여전히 여기 한 곳**이다.
+    사건별로 `deduplicate()` 를 다시 부르지 않는다(그러면 같은 기사 쌍이 배치 전역과
+    사건 단위에서 다른 판정을 받는다).
+
+    판정 우선순위는 결정 ① 그대로다. 위에서 정해지면 아래는 보지 않는다.
+      1순위  lineage root          — 원문·번역본·재전재·요약 재작성이 같은 뿌리를 가리킨다
+      2순위  source publisher/family — `source_of(article_id)` 가 주는 독립성 그룹
+      3순위  source type           — `kind_of(article_id)` 가 주는 SOURCE_KIND
+      4순위  정할 수 없으면 **세지 않는다** (보수적 0 기여)
+
+    돌려주는 것: {count, keys, byPriority, unresolved}
+
+    ⚠️ 4순위가 핵심이다. "모르면 독립으로 본다"가 CORROBORATED 를 부풀리는 경로이고
+       결정 ① 이 그 반대를 택했다.
+    ⚠️ 이 함수는 **기사 id 목록**을 받는다. 사건 id 를 여기 들여보내지 않는다 —
+       `test_article_dedup.py` 가 산출물에 사건 신원이 섞이지 않음을 고정하고 있다.
+    """
+    index = (result or {}).get("articles") or {}
+    keys, by_priority, unresolved = {}, {"root": 0, "publisher": 0, "kind": 0}, []
+    for article_id in article_ids or ():
+        entry = index.get(article_id)
+        if entry:
+            root = entry.get("rootArticleId") or (article_id if entry.get("isRoot") else None)
+            if root:
+                keys.setdefault("root:%s" % root, article_id)
+                by_priority["root"] += 1
+                continue
+        group = source_of(article_id) if callable(source_of) else None
+        if group:
+            keys.setdefault("publisher:%s" % group, article_id)
+            by_priority["publisher"] += 1
+            continue
+        kind = kind_of(article_id) if callable(kind_of) else None
+        if kind:
+            keys.setdefault("kind:%s" % kind, article_id)
+            by_priority["kind"] += 1
+            continue
+        unresolved.append(article_id)          # 4순위 — 더하지 않는다
+    return {
+        "count": len(keys),
+        "keys": sorted(keys),
+        "byPriority": by_priority,
+        "unresolved": unresolved,
+    }
+
+
 def lineage(result, article_id):
     """기사 하나에서 뿌리까지의 계보. 뿌리를 못 찾으면 빈 목록(추측하지 않는다)."""
     entry = result["articles"].get(article_id)

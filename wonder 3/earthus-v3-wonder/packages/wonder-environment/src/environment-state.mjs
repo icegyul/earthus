@@ -16,10 +16,14 @@ export const TIMINGS = Object.freeze({
 export function createEnvironmentFlow({ reducedMotion = () => false, timings = TIMINGS } = {}) {
   const visits = new Map();
   const listeners = new Set();
-  let state = 'earth', current = null, plan = null, seq = 0;
+  let state = 'earth', current = null, plan = null, seq = 0, story = 'closed';
 
-  const emit = () => { for (const l of listeners) l({ state, current, plan }); };
+  const emit = () => { for (const l of listeners) l({ state, current, plan, story }); };
   const set = (s) => { state = s; emit(); };
+
+  /** Story Card 는 환경이 active 일 때만 열린다(Character Tap → Reaction → Story Card, §13). */
+  function openStory() { if (state !== 'active' || story === 'open') return false; story = 'open'; emit(); return true; }
+  function closeStory() { if (story !== 'open') return false; story = 'closed'; emit(); return true; }
 
   /** 방문 횟수·움직임 설정에 따른 타이밍. */
   function planFor(envId) {
@@ -45,18 +49,19 @@ export function createEnvironmentFlow({ reducedMotion = () => false, timings = T
   /** 지구로. active 에서만. */
   function exit() {
     if (state !== 'active') return { ok: false, reason: `not-active:${state}` };
+    story = 'closed';                       // Story → Environment → … → Earth: 카드는 접히면서 닫힌다(§15)
     set('folding'); return { ok: true, plan, seq };
   }
   function folded() { if (state !== 'folding') return false; set('zooming-out'); return true; }
   function zoomedOut() { if (state !== 'zooming-out') return false; current = null; plan = null; set('earth'); return true; }
   /** 비상 복귀(자산 실패 등): 어디서든 earth 로. */
-  function abort() { current = null; plan = null; seq++; set('earth'); }
+  function abort() { current = null; plan = null; story = 'closed'; seq++; set('earth'); }
 
   return {
-    get state() { return state; }, get current() { return current; }, get plan() { return plan; }, get seq() { return seq; },
+    get state() { return state; }, get current() { return current; }, get plan() { return plan; }, get seq() { return seq; }, get story() { return story; },
     get discoveryReady() { return state === 'active'; },
     visitsOf: id => visits.get(id) ?? 0,
-    enter, approached, unfolded, exit, folded, zoomedOut, abort, planFor,
+    enter, approached, unfolded, exit, folded, zoomedOut, abort, planFor, openStory, closeStory,
     subscribe: l => { listeners.add(l); return () => listeners.delete(l); },
   };
 }

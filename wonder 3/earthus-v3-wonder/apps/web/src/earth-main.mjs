@@ -39,7 +39,13 @@ async function ensureRegistry() {
   const reg = await loadJson('content/registry/asset-registry.json');
   state.registryIndex = new Map(reg.assets.map(a => [a.path, a]));
   assets = createAssetRuntime({ lookup: p => state.registryIndex.get(p), load: defaultImageLoader, base: CONTENT.href, budgetBytes: 30 * 1024 * 1024 });
-  envView = createEnvironmentView($('#env'), { assets, contentBase: ROOT, log, reducedMotion });
+  envView = createEnvironmentView($('#env'), {
+    assets, contentBase: ROOT, log, reducedMotion,
+    onEarth: () => returnToEarth(),
+    onStoryOpen: () => flow.openStory(),
+    onStoryClose: () => flow.closeStory(),
+    loadStories: async () => { if (!state.stories) state.stories = (await loadJson('content/stories/stories.json')).stories; return state.stories; },
+  });
   window.__wonder.assets = assets; window.__wonder.env = envView;
   log(`레지스트리 ${reg.assets.length} 자산 (지연 로드)`);
 }
@@ -206,7 +212,7 @@ async function boot() {
 /** 실제로 요청된 자산 수 — content/ 아래 요청을 종류별로 센다(브라우저 검증·보고용). */
 function requests() {
   const rows = performance.getEntriesByType('resource').filter(r => r.name.includes('/content/'));
-  const kind = n => n.includes('/characters/thumb/') ? 'character-thumb' : n.includes('/characters/runtime/') && n.includes('_scene') ? 'character-scene' : n.includes('/characters/runtime/') ? 'character-runtime' : n.includes('/landmarks/') && n.endsWith('.json') ? 'landmarks-json' : n.includes('/landmarks/') ? 'landmark' : n.includes('/pack-1.8/fx/') ? 'fx' : n.includes('/pack-1.8/backgrounds/') ? 'background' : n.includes('/registry/') ? 'registry' : n.includes('manifest-124') ? 'manifest-124' : n.includes('/environments/') ? 'environments' : n.includes('/geo/') ? 'geo' : 'other';
+  const kind = n => n.includes('/characters/thumb/') ? 'character-thumb' : n.includes('/characters/runtime/') && n.includes('_scene') ? 'character-scene' : n.includes('/characters/runtime/') ? 'character-runtime' : n.includes('/landmarks/') && n.endsWith('.json') ? 'landmarks-json' : n.includes('/landmarks/') ? 'landmark' : n.includes('/pack-1.8/fx/') ? 'fx' : n.includes('/pack-1.8/backgrounds/') ? 'background' : n.includes('/registry/') ? 'registry' : n.includes('manifest-124') ? 'manifest-124' : n.includes('/environments/') ? 'environments' : n.includes('/stories/') ? 'stories' : n.includes('/geo/') ? 'geo' : 'other';
   const byKind = {};
   for (const r of rows) { const k = kind(r.name.split('?')[0]); (byKind[k] ??= []).push({ file: r.name.split('/').pop(), kb: Math.round((r.transferSize || r.encodedBodySize) / 1024) }); }
   return { total: rows.length, byKind, characterFiles: rows.filter(r => r.name.includes('/characters/') && !r.name.includes('manifest')).length };

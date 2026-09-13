@@ -93,3 +93,28 @@ body { background: radial-gradient(ellipse at 50% 45%, #f8f2e6 0%, var(--paper) 
 .env-lod:empty { display: none; }
 .crumb-fart { background: #8fb17e; color: #fff; font-weight: 700; cursor: pointer; }
 @media (max-width: 640px) { .env-landmark img { max-width: 70%; } .env-stage .char { height: min(34vh, 300px); } }
+
+/* ── Story Card (PHASE 1-C) — 반응 뒤 열리는 정적 장면 + 읽을 수 있는 글. 열려 있는 동안 ambient 최소 ── */
+.env-sheet.story { --amb-scale: 8; }
+.env-story-btn { position: absolute; left: 50%; top: calc(max(64px, 12%) + 84px); transform: translateX(-50%); font: inherit; font-size: 14px; font-weight: 700; padding: 8px 16px; border-radius: 999px; border: 0; background: rgba(255,250,240,.92); color: var(--ink); box-shadow: var(--shadow); cursor: pointer; }
+.story-card { position: absolute; right: 24px; top: 88px; width: min(440px, calc(100vw - 48px)); max-height: calc(100vh - 120px); overflow: auto; background: #fffaf0; border-radius: 18px; box-shadow: 0 16px 40px rgba(43,58,82,.22); padding: 14px 16px 16px; z-index: 6; color: var(--ink); }
+.story-scene { aspect-ratio: 3 / 2; border-radius: 12px; overflow: hidden; background: #eee3cc; display: grid; place-items: center; color: var(--ink-soft); font-size: 13px; }
+.story-scene img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.story-head { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; font-size: 12px; color: var(--ink-soft); }
+.story-region, .story-char { background: rgba(43,58,82,.07); padding: 3px 9px; border-radius: 999px; }
+.story-title { margin: 10px 0 6px; font-size: 22px; letter-spacing: .02em; }
+.story-body { margin: 0; font-size: 17px; line-height: 1.75; word-break: keep-all; }
+.story-basis { margin: 10px 0 0; font-size: 12px; color: var(--ink-soft); }
+.story-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+.story-btn { font: inherit; font-weight: 700; padding: 9px 16px; border-radius: 999px; border: 0; background: rgba(43,58,82,.08); color: var(--ink); cursor: pointer; }
+.story-btn-earth { background: var(--accent); color: #fff; }
+.story-btn:active { transform: scale(.96); }
+@media (max-width: 640px) {
+  .story-card { right: 10px; left: 10px; top: auto; bottom: max(14px, env(safe-area-inset-bottom)); width: auto; max-height: 64vh; border-radius: 18px 18px 14px 14px; }
+  .story-scene { aspect-ratio: 16 / 9; }
+  .story-body { font-size: 16px; }
+  .env-story-btn { top: auto; bottom: max(70px, calc(env(safe-area-inset-bottom) + 62px)); left: 14px; transform: none; }
+}
+
+/* 이야기 카드가 열려 있으면 바닥 힌트를 숨긴다(폰에서 카드 버튼과 겹침) */
+body:has(#storyCard:not([hidden])) .hint { display: none; }

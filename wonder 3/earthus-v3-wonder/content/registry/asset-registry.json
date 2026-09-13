@@ -13,7 +13,7 @@
     }
   },
   "counts": {
-    "assets": 295,
+    "assets": 296,
     "backgrounds": 24,
     "backgrounds_usable": 0,
     "fx": 5,
@@ -2729,6 +2729,15 @@
       "sha256": "31a350710e776c186f0c386749c2af8fdf722d3b06081b706588c62c92692026",
       "source": "pack-1.8",
       "load": "preload"
+    },
+    {
+      "id": "stories",
+      "kind": "data",
+      "path": "stories/stories.json",
+      "bytes": 3386,
+      "sha256": "612eed1f1cb8433cc3a424399c3f046e667ea345b867e649b6e35fe5b058310f",
+      "source": "earthus-v3-wonder",
+      "load": "boot"
     }
   ]
 }

@@ -621,3 +621,109 @@ ValueError: replay model source differs from the recorded v2 source;
 - `DRAIN_LIMIT`(64 MiB)을 넘는 본문은 여전히 끝까지 읽지 않는다. 그 경우 연결은 거칠게 끊길 수 있다 —
   의도한 선택이다(거부된 요청에 무한정 읽어 주지 않는다). 코드 주석에 적었다.
 - §6 의 R1 · R3 · R4 · R5 · R7 · R8 은 **고치지 않았다.** 승인 범위가 A·B·C 였다.
+
+---
+
+## 11. SOURCE HASH 와 RESULT ARRAY HASH — 왜 하나만 바뀌었나 (STEP 5)
+
+C 수정으로 v2 의 `modelSourceSha256` 이 바뀌었다. 실자료의 `resultArraySha256` 은 바뀌지 않았다.
+**두 해시는 서로 다른 것을 지문으로 찍는다.** 이 절이 그 구분이다.
+
+### 11.1 두 해시의 정의
+
+| | `modelSourceSha256` | `resultArraySha256` |
+|---|---|---|
+| 무엇의 지문인가 | **코드** — 소스 파일 스냅샷 | **수치** — 계산된 궤적 배열 |
+| 입력 | `model_source_snapshot()` 이 읽은 `.py` 파일들의 텍스트 | `result["trajectories"]` 의 canonical JSON |
+| 계산 위치 | `models.py:37-39` / `models_v2.py:37-39` | `models.py:341` / `models_v2.py` provenance |
+| v1 이 덮는 파일 (4) | `__init__.py` · `cli.py` · `datasets.py` · `models.py` | — |
+| v2 가 덮는 파일 (7) | 위 4개 + `models_v2.py` · `registry.py` · `wind.py` | — |
+| 무엇을 보장하나 | "같은 코드로 돌렸다" | "같은 숫자가 나왔다" |
+| 무엇을 보장하지 **않나** | 숫자가 같다는 것을 보장하지 않는다 | 코드가 같다는 것을 보장하지 않는다 |
+
+### 11.2 C 수정이 SOURCE HASH 만 바꾼 이유
+
+C 는 `models_v2.py` 두 곳을 고쳤다:
+
+1. `preflight()` — 경고 문장을 고정 문구에서 **wind manifest 에서 생성**하는 것으로
+2. `run_experiment()` — provenance 에 `windEvidenceKind` · `syntheticInputs` **두 키 추가**
+
+둘 다 **기록·표시**만 바꾼다. 적분 루프·시간 적분 간격·경계 처리·풍압 항(`u + α·U10`)·
+자료 검증 규칙을 한 줄도 건드리지 않았다. 그래서:
+
+- `models_v2.py` 의 **텍스트가 바뀌었다** → `modelSourceSha256` 이 바뀐다 (설계대로 작동한 것이다)
+- **궤적 배열은 그대로다** → `resultArraySha256` 은 바뀌지 않는다
+
+```
+v2 modelSourceSha256   306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3   (수정 전)
+                     → 486e9a58532a9d144faaaedaa8bae10fbf296fff3b7d081b6702be1271393c67   (수정 후)
+
+v1 modelSourceSha256   42e5886b640b616256dafc036bd4bbceff8a17affab1330947f0a9cb8612e444   (불변)
+   ↑ `models_v2.py` 는 v1 스냅샷 4파일에 없다. 그래서 v1 은 영향을 받지 않는다.
+     v1 4파일이 `test_08_v1_immutable` 의 SHA 고정 대상이고, 승인 제약이 금지한 것이 그 4개다.
+```
+
+### 11.3 실자료 `resultArraySha256` 이 동일함을 확인한 명령
+
+보관된 실자료 예제(HYCOM 2015 북대서양, `evidenceKind=REANALYSIS`)를 수정 후 코드로
+다시 계산해 보관값과 대조한다.
+
+```bash
+cd "<저장소>/services/research-runtime"
+export PYTHONPATH="<서비스 디렉터리>;<서비스 디렉터리>/.deps"
+python - <<'PY'
+import json
+from pathlib import Path
+from research_runtime import models as v1
+from research_runtime.datasets import validate_dataset
+
+stored = json.loads(Path('examples/hycom-2015-atlantic.result.json').read_text(encoding='utf-8-sig'))
+spec   = json.loads(Path('examples/hycom-2015-atlantic.experiment.json').read_text(encoding='utf-8-sig'))
+data   = json.loads(Path('examples/hycom-2015-atlantic.dataset.json').read_text(encoding='utf-8-sig'))
+out = v1.run_experiment(spec, validate_dataset(data))
+print('stored     ', stored['provenance']['resultArraySha256'])
+print('recomputed ', out['provenance']['resultArraySha256'])
+print('identical  ', out['provenance']['resultArraySha256'] == stored['provenance']['resultArraySha256'])
+PY
+```
+
+2026-09-13 실행 결과:
+
+```
+stored      50a20011057cc95eaf3c4fcc14f0f1d9e472d9fd473028db9da99cec2f0d6546
+recomputed  50a20011057cc95eaf3c4fcc14f0f1d9e472d9fd473028db9da99cec2f0d6546
+identical   True
+modelSourceSha256  stored == recomputed == 42e5886b…   (v1 이므로 불변)
+```
+
+⚠️ 이 예제는 **v1 모델**이다(`surface-passive-advection.v1`). v1 코드를 건드리지 않았으므로
+`modelSourceSha256` 도 같다. **v2 실행에 대한 같은 대조는 하지 못했다** —
+저장소에 보관된 v2 결과는 `.local-data/v2-bundles/` 의 번들 4개뿐이고, 그 번들은
+`modelSourceSha256` 불일치로 replay 가 거부된다(§10.3.1). 그래서 v2 의 수치 불변은
+**코드 근거**(적분 경로 미변경)와 `test_v2_windage` 통과로만 뒷받침되고,
+비트 단위 재현 대조로는 확인하지 못했다. 그 한계를 여기 적는다.
+
+### 11.4 v2 실행의 수치 불변을 나중에 확인하는 방법
+
+번들 하나를 **동봉된 소스 스냅샷으로** 되돌려 replay 하면 대조가 성립한다.
+번들이 `model/source/research_runtime/` 에 7개 파일 전부와
+`environment/dependencies.lock.txt` 를 담고 있음을 확인했다(§10.3.1).
+
+```
+1. 번들을 임시 폴더에 풀고 model/source/research_runtime/ 을 별도 트리로 꺼낸다
+2. 그 트리를 PYTHONPATH 앞에 두고 cli_v2 replay 를 돌린다 → matched=True 여야 한다
+3. 그 결과의 resultArraySha256 을, 현재 코드로 같은 spec·dataset·wind 를 돌린 값과 비교한다
+4. 같으면 C 수정이 수치를 바꾸지 않았다는 비트 단위 근거가 된다
+```
+
+⚠️ 이것은 **아직 하지 않았다.** 원본 해류·풍자료를 다시 갖춰야 하고(번들의 재배포 정책에 따라
+입력이 빠져 있을 수 있다), 그 확인은 자료를 다시 받을 수 있을 때 한다.
+
+### 11.5 혼동하면 안 되는 것
+
+| 잘못된 읽기 | 옳은 읽기 |
+|---|---|
+| "소스 해시가 바뀌었으니 결과도 달라졌다" | 소스 해시는 코드 지문이다. 주석 한 줄만 고쳐도 바뀐다 |
+| "결과 해시가 같으니 코드도 같다" | 결과 해시는 수치 지문이다. 기록 칸을 더해도 그대로다 |
+| "replay 거부 = 결과가 틀렸다" | replay 거부 = "기록된 코드와 지금 코드가 다르다". 번들 스냅샷으로 되돌리면 대조가 성립한다 |
+| "MODEL_VERSION 을 올려야 한다" | 물리·수치가 바뀌지 않았다. 올리면 `resolve()` 가 기존 `0.1.0` spec 을 거절하고 기존 번들을 해석하지 못한다 |

@@ -6,8 +6,9 @@
 [TRUTH_VOCABULARY_CANONICAL.md](TRUTH_VOCABULARY_CANONICAL.md)
 
 > **이 문서의 상태: PARTIAL.**
-> 승인된 A·B·C 와 PHASE 3F 는 끝났고 실행으로 검증됐다.
-> **PHASE 3G~3P 는 착수하지 않았다.** §4 에 그 이유(외부 자격 차단 2건)를 실측으로 적었다.
+> 승인된 A·B·C, PHASE 3F, 그리고 STEP 1~6(커밋·중복제거·마이그레이션 SQL·일관성 validator·
+> 해시 문서화·전체 재시험)까지 끝났고 실행으로 검증됐다.
+> **PHASE 3G·3I(적용)·3J~3O 는 착수하지 않았다.** §5 에 그 이유(외부 자격 차단 2건)를 실측으로 적었다.
 
 ---
 
@@ -20,16 +21,21 @@
 | B — README PYTHONPATH | **PASS** | §2 · 적은 그대로 실행 확인 |
 | C — R2 합성 바람 구멍 | **PASS** | §3 · 시험 1개 추가 |
 | 3F — Simulation event_id | **PASS** | §4 · 시험 15개 추가 |
-| 3G — Earth Event Assembler | **BLOCKED** | §5 — S3 쓰기 불가 (자격 만료) |
-| 3H — News Dedup | **미착수** | 3G 의 조립기 안에 들어가는 단계다. 단독 구현은 검증할 자리가 없다 |
-| 3I — Storage consistency | **BLOCKED** | §5 — Postgres 적용·조회 불가 |
+| STEP 1 — 안정 커밋 | **PASS** | `c481453f` · 16파일 · 내 경로 clean |
+| STEP 2 — 3H 중복제거 | **PARTIAL** | [PHASE3H_DEDUP_IMPLEMENTATION.md](PHASE3H_DEDUP_IMPLEMENTATION.md) — 구현·시험 PASS, **배선 BLOCKED** |
+| STEP 3 — 마이그레이션 SQL | **PARTIAL** | [DB_MIGRATION_PLAN.md](DB_MIGRATION_PLAN.md) — 작성·구조검증 PASS, **적용 BLOCKED** |
+| STEP 4 — 일관성 validator | **PARTIAL** | [S3_POSTGRES_CONSISTENCY.md](S3_POSTGRES_CONSISTENCY.md) — FIXTURE PASS, **LIVE 미실행** |
+| STEP 5 — 해시 문서화 | **PASS** | [RESEARCH_RUNTIME_BASELINE.md](RESEARCH_RUNTIME_BASELINE.md) §11 |
+| STEP 6 — 전체 재시험 | **PASS** | §7 · 기준선 5종 유지 + 신규 92개 |
+| 3G — Earth Event Assembler | **BLOCKED** | §5 — S3 읽기·쓰기 불가 (자격 만료) |
+| 3I — 적용·LIVE 검사 | **BLOCKED** | §5 — Postgres 적용·조회 불가 |
 | 3J — Context | **미착수** | 입력이 S3 실자료다 |
-| 3K — Impact | **미착수** | 3G 의 사건이 있어야 붙는다 |
+| 3K — Impact | **부분** | 스키마·제약은 STEP 3 에 들어갔다. 계산기는 여전히 없다 |
 | 3L — Intelligence | **미착수** | 3G 이후 |
 | 3M — SNS eligibility | **미착수** | 3G 이후 |
 | 3N — Cesium/UI | **미착수** | "실제 데이터가 연결된 후" 라는 지시 자체가 3G 를 전제한다 |
 | 3O — Full E2E | **BLOCKED** | S3·Postgres 양쪽이 필요하다 |
-| 3P — Final audit | 이 문서 + [EARTH_EVENT_PRODUCTION_READINESS.md](EARTH_EVENT_PRODUCTION_READINESS.md) |
+| 3P — Final audit | 이 문서 + 위 세 문서 |
 
 ---
 
@@ -268,6 +274,20 @@ A services/research-runtime/tests/test_event_link.py        신규   (3F 15개)
 `research_runtime/models.py` · `datasets.py` · `cli.py` · `__init__.py`
 → `test_08_v1_immutable` 의 고정 SHA 4파일. v1 `model_source_sha256` = `42e5886b…` **불변 확인**.
 
+### 6.1a STEP 2~6 에서 추가한 코드 (커밋 `c481453f` 이후)
+
+```
+A aws/_shared/article_dedup.py                    중복제거·계보 (순수 함수)
+A aws/_shared/index_consistency.py                S3↔Postgres 일관성 validator (판독기 주입식)
+A aws/_shared/sql/20260913_earth_event_core.sql   마이그레이션 SQL (표 15 · 도메인 4) — 미적용
+A aws/_shared/tests/test_article_dedup.py         21개
+A aws/_shared/tests/test_index_consistency.py     22개
+A aws/_shared/tests/test_migration_sql.py         31개
+```
+
+기존 `aws/` 코드는 한 줄도 고치지 않았다 — `gdelt-events` · `regional-news` · `news-brief` ·
+`distribution/**` 무변경. 중복제거는 그 앞단에 **더해지는** 모듈이다.
+
 ### 6.2 문서 (신규 8)
 
 ```
@@ -283,14 +303,24 @@ docs/PHASE3_IMPLEMENTATION_REPORT.md           이 문서
 
 ---
 
-## 7. 테스트 결과 (전수, 이번 세션 말 기준)
+## 7. 테스트 결과 (전수, STEP 6 기준)
 
-| 스위트 | 명령 | 결과 |
-|---|---|---|
-| research-runtime | `python -m unittest discover -s tests` (PYTHONPATH 필요) | **80 pass** ×3회 |
-| 저장소 기본 | `npm test` | **143 pass / 0 fail** |
-| SNS Factory | `python -m pytest aws/distribution/tests -q` | **325 pass / 6 skip / 21 subtests** |
-| v11 Intelligence | `node --test tools/earthus2-v11/*.test.mjs` | **65 pass / 0 fail** |
+| 스위트 | 명령 | 세션 초 | 지금 | 차이 |
+|---|---|---|---|---|
+| 저장소 기본 | `npm test` | 143 | **143 pass** | 0 |
+| SNS Factory | `python -m pytest aws/distribution/tests -q` | 325 +6skip | **325 pass +6skip** | 0 |
+| v11 Intelligence | `node --test tools/earthus2-v11/*.test.mjs` | 65 | **65 pass** | 0 |
+| research-runtime | `python -m unittest discover -s tests` (PYTHONPATH 필요) | 62 | **80 pass** | **+18** |
+| `aws/_shared` | `python -m pytest aws/_shared/tests -q` | 37 | **111 pass +40 subtests** | **+74** |
+
+신규 92개 내역:
+
+```
+research-runtime +18   A 회귀 2 · C 회귀 1 · 3F 사건연결 15
+aws/_shared      +74   중복제거 21 · 일관성 validator 22 · 마이그레이션 SQL 검증 31
+```
+
+**기준선을 하나도 줄이지 않았다. 삭제·skip 으로 PASS 를 만든 것 0건.**
 
 ⚠️ `npm test` 가 세션 초 139 → 143 으로 늘었다. **내 변경이 아니다** — 같은 작업 트리에
 다른 세션이 붙어 있고(`tools/test_v2_ui_information_architecture.mjs` 가 세션 시작 시 이미 M 상태),
@@ -298,9 +328,8 @@ docs/PHASE3_IMPLEMENTATION_REPORT.md           이 문서
 
 미실행:
 - 브라우저·E2E 검증 (playwright 는 환경 문제로 항상 실패한다는 기존 기록)
-- 3O 의 새 테스트 그룹 5~10번 (해당 코드가 아직 없다)
-
----
+- 3O 의 실제 E2E (S3·Postgres 자격 필요)
+- 마이그레이션 SQL 의 **문법** 검증 (Postgres 가 필요하다. 지금은 구조 검증만)
 
 ## 8. 다음에 할 일 — 자격이 풀리면
 

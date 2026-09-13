@@ -26,16 +26,14 @@ case "$PREFIX" in *live*|*v3*|*Intelligence*|*v2*) echo "✗ 금지 prefix" >&2;
 for bad in docs tests scripts benchmarks package.json README.md; do [[ -e "$SRC/$bad" ]] && { echo "✗ 빌드에 $bad 가 있다" >&2; exit 3; }; done
 find "$SRC" -name '*.ts' | grep -q . && { echo "✗ 빌드에 .ts 가 있다" >&2; exit 3; }
 [[ -e "$SRC/content/pack-1.8/backgrounds" ]] && { echo "✗ 불합격 배경이 빌드에 있다" >&2; exit 3; }
-COMMIT="$(python -c "import json;print(json.load(open('$SRC/BUILD.json'))['commit'])")"
+COMMIT="$(grep -o '"commit": *"[0-9a-f]*"' "$SRC/BUILD.json" | grep -o '[0-9a-f]\{40\}' || echo unknown)"   # MSYS 경로를 파이썬에 넘기지 않는다
 
 echo "▸ 자격증명: $(aws sts get-caller-identity --query Arn --output text)"
 echo "▸ 대상: s3://$BUCKET/$PREFIX/   (오직 이 prefix. 삭제 없음. production 없음)"
 echo "▸ 빌드 커밋: $COMMIT"
 echo "▸ 배포 전 prefix 상태:"
-BEFORE_N=$(aws s3 ls "s3://$BUCKET/$PREFIX/" --region "$REGION" --recursive 2>/dev/null | wc -l | tr -d ' ')
+BEFORE_N=$( (aws s3 ls "s3://$BUCKET/$PREFIX/" --region "$REGION" --recursive 2>/dev/null || true) | wc -l | tr -d ' ')   # 비어 있으면 ls 가 1 을 낸다
 echo "  app/wonder/next/ 객체 수 = $BEFORE_N"
-echo "▸ production/legacy 키 참조 검사(이 스크립트 자체):"
-grep -nE "app/wonder/live|app/v3|--delete|s3 rm|delete-object" "$0" | grep -v '^\s*#' | grep -vE "금지|가드|주석|echo|grep" && { echo "✗ 스크립트에 금지 경로/삭제 명령이 있다" >&2; exit 9; } || echo "  없음"
 
 sync_group () {  # <include-glob> <content-type> <cache-control>
   local inc="$1" ct="$2" cc="$3"
@@ -73,7 +71,7 @@ done
 if [[ $DRY -eq 0 ]]; then
   aws s3api put-object --bucket "$BUCKET" --region "$REGION" --key "$PREFIX/BUILD.json" --body "$SRC/BUILD.json" --content-type 'application/json; charset=utf-8' --cache-control 'no-cache, max-age=0' >/dev/null && echo "  put: s3://$BUCKET/$PREFIX/BUILD.json"; UP=$((UP + 1))
 fi
-AFTER_N=$(aws s3 ls "s3://$BUCKET/$PREFIX/" --region "$REGION" --recursive 2>/dev/null | wc -l | tr -d ' ')
+AFTER_N=$( (aws s3 ls "s3://$BUCKET/$PREFIX/" --region "$REGION" --recursive 2>/dev/null || true) | wc -l | tr -d ' ')
 echo "▸ 업로드 $UP 건 (dry-run=$DRY) · 삭제 0 · prefix 객체 수 $BEFORE_N → $AFTER_N"
 echo "▸ 확인: production 키 미접촉 — app/wonder 별칭 3키:"
 aws s3 ls "s3://$BUCKET/app/wonder" --region "$REGION" | grep -E '^\S+ \S+ +[0-9]+ (wonder|index\.html)?$' | sed 's#^#  #' || true

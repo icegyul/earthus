@@ -201,7 +201,7 @@ async function boot() {
 
   let last = performance.now(), lastStep = 0;
   function renderOnce(dt, t = performance.now()) {
-    if (state.view === 'world' && !camera.animating && !camera.dragging && !camera.reducedMotion && t - state.idleSince > 6000) camera.lon += 0.45 * dt;
+    if (state.view === 'world' && !camera.tween && !camera.dragging && !camera.reducedMotion && t - state.idleSince > 6000) camera.nudgeLon(0.45 * dt);   // 첫 화면 자동 회전: 현재값·목표를 함께 민다(V2 autoRotate 와 같은 자리)
     camera.tick(dt);
     earth.render(camera.pose());
     state.frames++;

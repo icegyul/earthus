@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { llToVec, vecToLL, wrapLon, clampLat, haversineKm, equirect, shortestLonDelta } from '../packages/globe-engine/src/geo.mjs';
-import { OrbitCamera, targetDiameter, distanceForDiameter, diameterAtDistance, zoomDistances, ZOOM_STEPS, MAX_RATE_DEG_S, MIN_DIST } from '../packages/globe-engine/src/camera.mjs';
+import { OrbitCamera, targetDiameter, distanceForDiameter, diameterAtDistance, zoomDistances, dragSpeedRad, ZOOM_STEPS, PITCH_LIMIT_DEG, DAMP_FOLLOW, MIN_DIST } from '../packages/globe-engine/src/camera.mjs';
 import { REGIONS, regionAt } from '../packages/globe-engine/src/regions.mjs';
 
 const near = (a, b, eps = 1e-9) => Math.abs(a - b) <= eps;
@@ -53,36 +53,77 @@ test('camera: distanceForDiameter ↔ diameterAtDistance 왕복, 최소 거리 �
   assert.ok(zd[0] > zd[1] && zd[1] > zd[2], '가까울수록 거리 감소');
 });
 
-test('camera: 드래그 60°/s 상한, 극 ±85° 잠금, 줌 3단 잠금', () => {
-  const c = new OrbitCamera({ lat: 0, lon: 0, viewW: 1440, viewH: 900 });
-  c.beginDrag(); c.drag(100000, 0, 1 / 60); c.endDrag();
-  assert.ok(Math.abs(c.lon) <= MAX_RATE_DEG_S / 60 + 1e-9, `한 프레임 회전 ${c.lon}°`);
-  const d = new OrbitCamera({ lat: 0, lon: 0, viewW: 1440, viewH: 900 });
-  d.beginDrag(); for (let i = 0; i < 2000; i++) d.drag(0, 300, 1 / 60); d.endDrag();
-  assert.equal(d.lat, 85);
+test('camera(V2 규칙): 드래그 1px = 손가락 아래 지점 1px — dragSpeed = 2·tan(fov/2)·(dist−1)/H, 상한 없음 (1440·1024·390·375)', () => {
+  for (const [w, h] of [[1440, 900], [1024, 768], [390, 844], [375, 812]]) {
+    const c = new OrbitCamera({ lat: 0, lon: 0, viewW: w, viewH: h });
+    const expectDeg = 2 * Math.tan(20 * Math.PI / 180) * (c.dists[0] - 1) / h * 180 / Math.PI;   // V2 dragSpeed (fov 40)
+    assert.ok(near(c.degPerPx(), expectDeg, 1e-12), `${w}×${h} degPerPx ${c.degPerPx()} ≠ ${expectDeg}`);
+    assert.ok(near(dragSpeedRad(c.dists[0], h) * 180 / Math.PI, expectDeg, 1e-12));
+    c.beginDrag(); c.drag(100000, 0); c.endDrag();
+    assert.ok(near(c.targetLon, -100000 * expectDeg, 1e-6), '상한 없음: 목표는 입력 그대로 (60°/s 캡 없음)');
+    for (let i = 0; i < 600; i++) c.tick(1 / 60);
+    assert.ok(near(c.lon, c.targetLon, 1e-3) && !c.animating, '따라가기 수렴, 속도 관성 없음');
+  }
+  // 줌인(3단)일수록 지표가 가까워 느리다 — V2 altR 규칙
+  const z = new OrbitCamera({ viewW: 1440, viewH: 900, reducedMotion: true }); const k0 = z.degPerPx(); z.zoomIn(); z.zoomIn();
+  assert.ok(z.degPerPx() < k0 * 0.5, `줌인 속도 ${z.degPerPx()} < 세계 ${k0}/2`);
+});
+
+test('camera(V2 규칙): 따라가기 k = 1−exp(−dt·8) — 첫 프레임 12.5%, 0.5초 뒤 98%, 넘침 없음, 드래그 중엔 붙이지 않는다', () => {
+  const c = new OrbitCamera({ lat: 0, lon: 0, viewW: 375, viewH: 812 });
+  c.beginDrag(); c.drag(-100, 0); const goal = c.targetLon;
+  c.tick(1 / 60);
+  assert.ok(near(c.lon, goal * (1 - Math.exp(-DAMP_FOLLOW / 60)), 1e-9), '첫 프레임 12.5%');
+  assert.ok(c.animating && c.dragging);
+  for (let i = 0; i < 29; i++) c.tick(1 / 60);
+  assert.ok(c.lon / goal > 0.98 && c.lon / goal <= 1, `0.5초 뒤 ${(c.lon / goal * 100).toFixed(1)}% (넘침 없음)`);
+  c.endDrag(); for (let i = 0; i < 120; i++) c.tick(1 / 60);
+  assert.equal(c.lon, goal, '손을 떼면 1e-3° 안에서 목표에 붙는다'); assert.ok(!c.animating);
+  const r = new OrbitCamera({ lat: 0, lon: 0, viewW: 375, viewH: 812, reducedMotion: true });
+  r.beginDrag(); r.drag(-100, 0); r.tick(1 / 60); assert.equal(r.lon, r.targetLon, '움직임 줄이기: 즉시');
+});
+
+test('camera(V2 규칙): 극 한계 ±87.135° — 극에서 가로 드래그는 경도를 바꾸고, 반대로 끌면 돌아온다(잠김 없음)', () => {
+  assert.ok(near(PITCH_LIMIT_DEG, (Math.PI / 2 - 0.05) * 180 / Math.PI, 1e-12) && near(PITCH_LIMIT_DEG, 87.135, 0.001));
+  for (const sign of [1, -1]) {
+    const c = new OrbitCamera({ lat: 0, lon: 0, viewW: 375, viewH: 812 });
+    c.beginDrag(); for (let i = 0; i < 400; i++) c.drag(0, sign * 30);            // 12,000px 세로로
+    assert.ok(near(c.targetLat, sign * PITCH_LIMIT_DEG, 1e-9), `${sign > 0 ? '북' : '남'}극 한계`);
+    for (let i = 0; i < 120; i++) c.tick(1 / 60);
+    assert.ok(near(c.lat, sign * PITCH_LIMIT_DEG, 1e-2), '한계까지 따라감');
+    const lon0 = c.targetLon; c.drag(50, 0);
+    assert.ok(c.targetLon < lon0, '극에서도 가로 드래그가 경도를 바꾼다');
+    const back = (PITCH_LIMIT_DEG - 30) / c.degPerPx();                                 // 반대로: 위도 30° 까지 돌아올 만큼(px)
+    for (let i = 0; i < 100; i++) c.drag(0, -sign * back / 100);
+    c.endDrag();
+    assert.ok(near(c.targetLat, sign * 30, 1e-6), `반대로 끌면 돌아온다 (${c.targetLat.toFixed(1)}°)`);
+    for (let i = 0; i < 300; i++) c.tick(1 / 60);
+    assert.ok(near(c.lat, c.targetLat, 1e-3) && !c.animating);
+    assert.ok(c.pose().lon >= -180 && c.pose().lon < 180, 'pose 경도는 접힌다');
+  }
+});
+
+test('camera: 줌 3단 잠금 · 트윈 0.9초 도착 · 최단 경도 · 트윈 중 드래그하면 줌은 마저 가고 회전은 손이 가진다', () => {
   const z = new OrbitCamera({ viewW: 1440, viewH: 900, reducedMotion: true });
   z.zoomOut(); assert.equal(z.step, 0);
   z.zoomIn(); z.zoomIn(); z.zoomIn(); assert.equal(z.step, ZOOM_STEPS - 1);
   assert.equal(z.dist, z.dists[ZOOM_STEPS - 1], '움직임 줄이기면 즉시 도착');
-});
-
-test('camera: 트윈은 0.9초 뒤 목표에 닿고, 관성은 감쇠해 멈춘다', () => {
   const c = new OrbitCamera({ lat: 0, lon: 0, viewW: 1440, viewH: 900 });
   c.setZoomStep(2, { lat: 35, lon: 115 });
   assert.ok(c.animating);
   for (let i = 0; i < 70; i++) c.tick(1 / 60);
   assert.ok(!c.tween, '트윈 종료');
   assert.ok(near(c.lat, 35, 1e-9) && near(c.lon, 115, 1e-9) && near(c.dist, c.dists[2], 1e-9));
+  assert.ok(near(c.targetLat, 35, 1e-9) && near(c.targetLon, 115, 1e-9), '트윈이 끝나면 목표 = 현재');
   const t = new OrbitCamera({ lat: 0, lon: 170, viewW: 1440, viewH: 900 });
   t.setZoomStep(0, { lon: -170 });
   for (let i = 0; i < 70; i++) t.tick(1 / 60);
-  assert.ok(near(t.lon, -170, 1e-9), '경도는 최단 방향으로(170 → −170 은 +20°)');
-  const k = new OrbitCamera({ lat: 0, lon: 0, viewW: 1440, viewH: 900 });
-  k.beginDrag(); k.drag(20, 0, 1 / 60); k.endDrag();
-  assert.ok(k.vLon !== 0, '관성 시작');
-  for (let i = 0; i < 600; i++) k.tick(1 / 60);
-  assert.equal(k.vLon, 0); assert.equal(k.vLat, 0);
-  assert.ok(!k.animating);
+  assert.ok(near(t.pose().lon, -170, 1e-9) && near(t.lon, 190, 1e-9), '경도는 최단 방향으로(170 → −170 은 +20°)');
+  const d = new OrbitCamera({ lat: 0, lon: 0, viewW: 1440, viewH: 900 });
+  d.zoomIn(); for (let i = 0; i < 10; i++) d.tick(1 / 60);
+  d.beginDrag(); assert.ok(!d.tween && near(d.targetDist, d.dists[1], 1e-12), '트윈 취소, 줌 목표는 유지');
+  d.drag(-40, 0); d.endDrag(); for (let i = 0; i < 300; i++) d.tick(1 / 60);
+  assert.ok(near(d.dist, d.dists[1], 1e-4) && d.step === 1 && d.lon > 0, '줌은 따라가기로 마저 도착, 회전도 반영');
 });
 
 test('regions: Master Directive §3 지역 9개 + 보완 3, 대표 도시 판정', () => {

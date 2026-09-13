@@ -6,12 +6,13 @@ const STEPS = [
   ['unfold', '종이 펼침 → 활성'], ['tap', '캐릭터 톡'], ['longpress', '캐릭터 꾹'], ['special', '캐릭터 특별 동작'],
   ['story', '이야기 카드 열림'], ['card-close', '카드 닫기'], ['return', '지구로 돌아오기'], ['repeat', '두 번 이상 들어갔다 나오기'],
   ['bottom-sheet', '폰 하단 시트(폭 ≤ 640)'], ['reduced', '움직임 줄이기로 진입'],
+  ['pole', '극까지 끌었다가 돌아오기(입력 불능이면 FAIL)'],   // ROTATION RULE LOCK 2026-09-13: |lat| ≥ 80 도달 뒤 드래그로 |lat| < 60 복귀
 ];
 
 export function installQaOverlay(W, { log = () => {} } = {}) {
   const done = new Map(); const detail = new Map();
   const mark = (id, d) => { if (!done.has(id)) { done.set(id, Date.now()); detail.set(id, d ?? ''); render(); } };
-  const startLon = W.camera.lon; let sawEnv = false, sawActive = false, sawStoryOpen = false, sawReduced = false;
+  const startLon = W.camera.lon; let sawEnv = false, sawActive = false, sawStoryOpen = false, sawReduced = false, sawPole = null;
   const frames = []; let lastT = performance.now();
   (function sample(t) { const dt = t - lastT; lastT = t; frames.push(dt); if (frames.length > 600) frames.shift(); requestAnimationFrame(sample); })(performance.now());
   const baselineRes = performance.getEntriesByType('resource').length;
@@ -61,7 +62,7 @@ export function installQaOverlay(W, { log = () => {} } = {}) {
   function report() {
     return {
       device: { source, touchHint, ua: navigator.userAgent, dpr: devicePixelRatio, viewport: [innerWidth, innerHeight], touchPoints: navigator.maxTouchPoints, reducedMotionMedia: matchMedia('(prefers-reduced-motion: reduce)').matches, time: new Date().toISOString() },
-      harness: 'earthus-v3-wonder qa-overlay v1', requiredSteps: STEPS.map(([id]) => id),
+      harness: 'earthus-v3-wonder qa-overlay v2', requiredSteps: STEPS.map(([id]) => id),
       steps: STEPS.map(([id, label]) => ({ id, label, pass: done.has(id), detail: detail.get(id) ?? '', at: done.get(id) ?? null })),
       passed: STEPS.filter(([id]) => done.has(id)).length, total: STEPS.length,
       gestures: W.state.gestures, visits: W.state.environments.map(e => [e.id, W.flow.visitsOf(e.id)]),
@@ -80,6 +81,10 @@ export function installQaOverlay(W, { log = () => {} } = {}) {
     if (W.state.firstFrameMs != null) mark('initial-load', `${W.state.firstFrameMs}ms`);
     if (g.touchDrag > 0 || (g.drag > 0 && Math.abs(W.camera.lon - startLon) > 20)) mark('rotate', `drag ${g.drag}`);
     if (g.touchPinch > 0 || g['pinch-in'] + g['pinch-out'] > 0) mark('pinch', `pinch ${g['pinch-in'] + g['pinch-out']}`);
+    // 극 시험: 지구 화면에서 드래그로 |lat| ≥ 80 에 닿은 뒤(트윈 아님), 드래그로 |lat| < 60 까지 돌아오면 통과. 지역 접근 트윈으로 내려온 것은 세지 않는다.
+    const la = W.camera.lat;
+    if (W.flow.state === 'earth' && !W.camera.tween && g.drag > 0 && Math.abs(la) >= 80) sawPole = { lat: Math.round(la), drag: g.drag, touchDrag: g.touchDrag };
+    if (sawPole && W.flow.state === 'earth' && !W.camera.tween && Math.abs(la) < 60 && (W.camera.dragging || g.drag > sawPole.drag || g.touchDrag > sawPole.touchDrag || g.drag >= sawPole.drag)) mark('pole', `${sawPole.lat > 0 ? '북' : '남'}극 ${sawPole.lat}° → ${Math.round(la)}°`);
     if (W.flow.state !== 'earth' && !sawEnv) { sawEnv = true; regionBaseline = performance.getEntriesByType('resource').length; mark('region', W.flow.current ?? ''); }
     if (W.flow.state === 'active') { sawActive = true; mark('unfold', `${W.flow.plan?.mode} ${W.flow.plan?.unfoldMs}ms`); if (W.flow.plan?.mode === 'reduced') sawReduced = true; }
     const seq = W.env?.state?.lastSequence;

@@ -5,7 +5,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; background: var(--paper)
 body { background: radial-gradient(ellipse at 50% 45%, #f8f2e6 0%, var(--paper) 55%, var(--paper-2) 100%); }
 
 .world { position: fixed; inset: 0; }
-#globe { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; -webkit-user-select: none; user-select: none; outline: none; cursor: grab; }
+#globe { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; outline: none; cursor: grab; }   /* V2 조작면 규칙: 브라우저에게 제스처를 넘기지 않는다 */
 #globe:active { cursor: grabbing; }
 #globe:focus-visible { box-shadow: inset 0 0 0 3px var(--accent-2); }
 

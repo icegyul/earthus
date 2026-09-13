@@ -58,6 +58,25 @@ z = −cos φ · sin λ
 북극 = +y, 경도 0°(그리니치) = +x, 동경 = −z 방향. 모든 패키지가 이 식 하나를 쓴다(`packages/paper-earth/src/geo.mjs` 에 두고 다른 곳에서 재정의 금지).
 기존 두 판(v3-kids `surfaceNormal`, v3-paper `geo.js`)의 식이 서로 달랐던 것이 이식 사고의 원인이었으므로 **하나로 못 박는다.**
 
+## 4-A. 지구 회전 규칙 (LOCKED — 2026-09-13 PD ROTATION RULE LOCK, 원본 = EARTHUS V2)
+
+원본: `prototype/v2-three/js/main.js` `class OrbitCam` (563~757행, v2-deploy·라이브 번들 동일). V3 는 새 회전 알고리즘을 만들지 않고 이 규칙을 옮긴다. 구조는 **Globe Interaction(`globe-engine/src/input.mjs`) → Rotation State(`camera.mjs`) → Paper Earth Visual(`earth.mjs`, `pose()` 만 읽음)** 으로 분리한다.
+
+| 항목 | V2 규칙(그대로) | V3 위치 |
+|---|---|---|
+| 입력 | Pointer Events 한 벌(마우스·터치·펜), 캔버스 `touch-action:none` + `user-select:none` + `-webkit-touch-callout:none`, 캡처는 상태를 정한 뒤에 | `input.mjs` · `earth.css #globe` |
+| 드래그 속도 | 1px = 손가락 아래 지점 1px: `2·tan(fov/2)·(targetDist−1)/H` rad/px. **상한 없음** | `camera.dragSpeedRad` · `degPerPx()` |
+| 방향 | `targetLon −= dx·speed`, `targetLat += dy·speed` (손가락이 가는 쪽으로 지구가 따라온다) | `camera.drag` |
+| 위도 | ±(π/2 − 0.05) rad = ±87.135°. 경도는 감지 않음(`pose()` 에서만 접음) | `PITCH_LIMIT_DEG` |
+| 관성 | **속도 관성 없음**. 목표를 `k = 1−exp(−dt·8.0)` 로 따라감(프로그램 이동 3.2) | `camera.tick` |
+| 두 손가락 | 회전 아님(`dragging=false`). 핀치 = 줌(V3 는 3단: 비율 1.3 마다 한 단). 하나를 떼면 남은 손가락이 제 자리에서 이어받음 | `input.mjs` `lift` |
+| 취소 | `pointercancel` = `pointerup` 과 같은 lift | `input.mjs` |
+| iOS | `document` 의 `gesturestart/change/end` preventDefault(카드·패널 위 예외) — touch-action 으로는 페이지 핀치 줌이 안 막힘 | `input.mjs` |
+| 줌 | V3 유지: 휠·버튼·핀치 = 3단 잠금, 이동은 트윈 0.9s. 트윈 중 드래그하면 줌은 따라가기로 마저 가고 회전은 손이 가진다 | `camera.setZoomStep` |
+| 없는 것 | V2 의 틸트(가운데 버튼·두 손가락 세로)·자동회전 토글은 V3 범위 밖 | — |
+
+이전 V3 규칙(60°/s 상한 · 속도 관성 · 위도 ±85° · `degPerPx` 임의식 150°/지름)은 **폐기**. `docs/PHASE1_PAPER_EARTH_PLAN.md` 의 "60°/s 상한(키즈 규칙)" 은 역사 기록이다. 근거·검증: `docs/ROTATION_RULE_PORT_2026-09-13.md`.
+
 ## 5. 콘텐츠 규칙 (LOCKED)
 
 1. `content/registry/asset-registry.json` 이 유일한 자산 색인. 레지스트리에 없는 파일은 화면에 싣지 않는다.

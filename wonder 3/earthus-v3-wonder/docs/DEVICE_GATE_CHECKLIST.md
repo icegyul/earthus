@@ -10,12 +10,12 @@ cd "D:\## APP\EARTHUS v2_APP\wonder 3\earthus-v3-wonder"
 node scripts/dev-server.mjs 8790 --lan
 ```
 
-콘솔에 `폰에서: http://<PC IP>:8790/apps/web/?qa=1` 이 찍힌다. Windows 방화벽이 물으면 **개인 네트워크** 허용. 폰과 PC 는 같은 Wi-Fi.
+콘솔에 `폰에서: http://<PC IP>:8790/apps/web/?qa=1&device=1` 이 찍힌다(`device=1` 이 있어야 실기기 결과로 저장된다). Windows 방화벽이 물으면 **개인 네트워크** 허용. 폰과 PC 는 같은 Wi-Fi.
 (HTTPS 불필요 — 위치 권한을 쓰지 않는다. 서비스워커 없음.)
 
 ## 폰에서 (Android Chrome → iPhone Safari, 각각 1회씩)
 
-주소 `http://<PC IP>:8790/apps/web/?qa=1` 을 연다. 왼쪽 아래 QA 패널이 뜬다. 아래 순서로 **손가락으로** 한다.
+주소 `http://<PC IP>:8790/apps/web/?qa=1&device=1` 을 연다. 왼쪽 아래 QA 패널이 뜬다. 아래 순서로 **손가락으로** 한다.
 
 | # | 할 일 | 자동 체크 조건 |
 |---|---|---|
@@ -34,7 +34,9 @@ node scripts/dev-server.mjs 8790 --lan
 | 13 | 폰 세로에서 카드가 하단 시트로 뜬다 | 폭 ≤ 640 & story open |
 | 14 | [움직임 줄이기] 체크 후 지역 진입 | plan.mode reduced |
 
-끝나면 [결과 복사] → 메모 앱에 붙여 두고 이 문서로 옮긴다. 복사가 막히면 패널에 텍스트 상자가 뜬다(길게 눌러 전체 선택).
+끝나면 패널의 **[저장]** — 개발 서버가 `docs/device-gate/device/<android|ios>-<시각>.json` 으로 바로 적는다(폰에서 클립보드 불필요). 패널 제목 옆에 `device` 라고 떠야 실기기 결과다(`emulated` 면 데스크톱/에뮬레이션으로 분류돼 게이트 근거가 아니다).
+[복사] 는 보조 수단(메모 앱). 저장 뒤 PC 에서 `npm test` 를 돌리면 `device-gate` 시험이 파일을 읽어 14/14 여부를 출력한다.
+이 PC 의 Wi-Fi 주소 예(2026-09-13): `http://192.168.219.115:8790/apps/web/?qa=1&device=1` (서버 콘솔에 찍히는 주소를 쓴다).
 
 ## 성능 항목 (오버레이가 같이 적는다)
 

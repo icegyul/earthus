@@ -20,13 +20,26 @@ export function installQaOverlay(W, { log = () => {} } = {}) {
   const panel = document.createElement('div');
   panel.id = 'qa'; panel.setAttribute('aria-label', '실기기 QA');
   panel.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:99;max-width:min(92vw,360px);max-height:46vh;overflow:auto;background:rgba(20,26,40,.92);color:#fff;font:12px/1.5 ui-monospace,Menlo,monospace;border-radius:12px;padding:8px 10px;box-shadow:0 8px 24px rgba(0,0,0,.35)';
-  panel.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><strong>QA ${STEPS.length}단계</strong><span><button id="qaCopy" style="font:inherit;padding:2px 8px;border-radius:6px;border:0;background:#f2a541;color:#222">결과 복사</button> <button id="qaMin" style="font:inherit;padding:2px 8px;border-radius:6px;border:0">−</button></span></div><ol id="qaList" style="margin:6px 0 0;padding-left:18px"></ol><pre id="qaPerf" style="margin:6px 0 0;white-space:pre-wrap;opacity:.85"></pre><textarea id="qaOut" hidden style="width:100%;height:80px;font:10px monospace"></textarea>`;
+  // 실기기 결과는 주소에 `&device=1` 을 붙여서만 인정한다. 데스크톱 에뮬레이션(DevTools·인앱 패널)도 Android UA + 터치 포인트를 흉내 내므로
+  // UA/터치로는 가를 수 없다(2026-09-13 실측). 그래서 명시 플래그 + 참고용 힌트(UA·터치)를 함께 적는다. 결과 폴더가 갈린다.
+  const params = new URLSearchParams(location.search);
+  const source = params.get('device') === '1' ? 'device' : 'emulated';
+  const touchHint = navigator.maxTouchPoints > 0 && /Android|iPhone|iPad|Mobile/.test(navigator.userAgent);
+  panel.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><strong>QA ${STEPS.length}단계 <small style="opacity:.7">${source}</small></strong><span><button id="qaSave" style="font:inherit;padding:2px 8px;border-radius:6px;border:0;background:#5aa9f0;color:#fff">저장</button> <button id="qaCopy" style="font:inherit;padding:2px 8px;border-radius:6px;border:0;background:#f2a541;color:#222">복사</button> <button id="qaMin" style="font:inherit;padding:2px 8px;border-radius:6px;border:0">−</button></span></div><ol id="qaList" style="margin:6px 0 0;padding-left:18px"></ol><pre id="qaPerf" style="margin:6px 0 0;white-space:pre-wrap;opacity:.85"></pre><div id="qaMsg" style="margin-top:4px;color:#ffd27a"></div><textarea id="qaOut" hidden style="width:100%;height:80px;font:10px monospace"></textarea>`;
   document.body.appendChild(panel);
   panel.querySelector('#qaMin').addEventListener('click', () => { const l = panel.querySelector('#qaList'); l.hidden = !l.hidden; panel.querySelector('#qaPerf').hidden = l.hidden; });
   panel.querySelector('#qaCopy').addEventListener('click', async () => {
     const text = JSON.stringify(report(), null, 1);
     try { await navigator.clipboard.writeText(text); panel.querySelector('#qaCopy').textContent = '복사됨'; }
     catch { const ta = panel.querySelector('#qaOut'); ta.hidden = false; ta.value = text; ta.select(); }
+  });
+  // [저장]: 개발 서버(/qa-result)가 docs/device-gate/{device|emulated}/ 에 JSON 으로 적는다 — 폰에서 클립보드를 거치지 않는다.
+  panel.querySelector('#qaSave').addEventListener('click', async () => {
+    const msg = panel.querySelector('#qaMsg');
+    try {
+      const r = await fetch('/qa-result', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(report()) });
+      const j = await r.json(); msg.textContent = j.ok ? `저장됨 → ${j.file}` : '저장 실패'; log(`QA 결과 저장 ${j.file ?? ''}`);
+    } catch (e) { msg.textContent = `저장 실패(개발 서버 필요): ${e.message}`; }
   });
 
   function perf() {
@@ -47,7 +60,8 @@ export function installQaOverlay(W, { log = () => {} } = {}) {
   }
   function report() {
     return {
-      device: { ua: navigator.userAgent, dpr: devicePixelRatio, viewport: [innerWidth, innerHeight], touchPoints: navigator.maxTouchPoints, reducedMotionMedia: matchMedia('(prefers-reduced-motion: reduce)').matches, time: new Date().toISOString() },
+      device: { source, touchHint, ua: navigator.userAgent, dpr: devicePixelRatio, viewport: [innerWidth, innerHeight], touchPoints: navigator.maxTouchPoints, reducedMotionMedia: matchMedia('(prefers-reduced-motion: reduce)').matches, time: new Date().toISOString() },
+      harness: 'earthus-v3-wonder qa-overlay v1', requiredSteps: STEPS.map(([id]) => id),
       steps: STEPS.map(([id, label]) => ({ id, label, pass: done.has(id), detail: detail.get(id) ?? '', at: done.get(id) ?? null })),
       passed: STEPS.filter(([id]) => done.has(id)).length, total: STEPS.length,
       gestures: W.state.gestures, visits: W.state.environments.map(e => [e.id, W.flow.visitsOf(e.id)]),

@@ -22,9 +22,32 @@ const MIME = {
   '.woff2': 'font/woff2', '.ico': 'image/x-icon',
 };
 
+// Device Gate 결과 저장: 폰의 QA 오버레이가 [저장] 을 누르면 JSON 이 docs/device-gate/{device|emulated}/ 에 떨어진다(개발 서버 전용).
+const GATE_DIR = path.join(root, 'docs', 'device-gate');
+function saveGateResult(req, res) {
+  let body = '';
+  req.on('data', c => { body += c; if (body.length > 2_000_000) req.destroy(); });
+  req.on('end', () => {
+    try {
+      const r = JSON.parse(body);
+      const real = r?.device?.source === 'device';
+      const ua = String(r?.device?.ua ?? '');
+      const os = /iPhone|iPad/.test(ua) ? 'ios' : /Android/.test(ua) ? 'android' : 'desktop';
+      const dir = path.join(GATE_DIR, real ? 'device' : 'emulated');
+      fs.mkdirSync(dir, { recursive: true });
+      const name = `${os}-${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
+      fs.writeFileSync(path.join(dir, name), JSON.stringify(r, null, 1) + '\n');
+      console.log(`  gate result saved: docs/device-gate/${real ? 'device' : 'emulated'}/${name} (${r.passed}/${r.total})`);
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+      res.end(JSON.stringify({ ok: true, file: `docs/device-gate/${real ? 'device' : 'emulated'}/${name}` }));
+    } catch (e) { res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' }); res.end('bad json: ' + e.message); }
+  });
+}
+
 http.createServer((req, res) => {
   const url = new URL(req.url, 'http://x');
   if (url.pathname === '/') { res.writeHead(302, { Location: '/apps/web/' }); res.end(); return; }
+  if (url.pathname === '/qa-result' && req.method === 'POST') return saveGateResult(req, res);
   let file = path.normalize(path.join(root, decodeURIComponent(url.pathname)));
   if (!file.startsWith(root)) { res.writeHead(403); res.end(); return; }
   let st = fs.existsSync(file) ? fs.statSync(file) : null;
@@ -41,5 +64,5 @@ http.createServer((req, res) => {
   fs.createReadStream(file).pipe(res);
 }).listen(port, host, () => {
   console.log(`earthus-v3-wonder dev server: http://127.0.0.1:${port}/apps/web/ (root=${root})`);
-  if (lan) for (const ip of lanIps()) console.log(`  폰에서: http://${ip}:${port}/apps/web/?qa=1`);
+  if (lan) for (const ip of lanIps()) console.log(`  폰에서: http://${ip}:${port}/apps/web/?qa=1&device=1   (device=1 이 있어야 실기기 결과로 저장된다)`);
 });

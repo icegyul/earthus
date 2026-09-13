@@ -1,0 +1,207 @@
+{
+ "device": {
+  "source": "emulated",
+  "touchHint": true,
+  "ua": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Mobile Safari/537.36",
+  "dpr": 2,
+  "viewport": [
+   375,
+   812
+  ],
+  "touchPoints": 5,
+  "reducedMotionMedia": false,
+  "time": "2026-09-13T07:18:47.728Z"
+ },
+ "harness": "earthus-v3-wonder qa-overlay v1",
+ "requiredSteps": [
+  "initial-load",
+  "rotate",
+  "pinch",
+  "region",
+  "unfold",
+  "tap",
+  "longpress",
+  "special",
+  "story",
+  "card-close",
+  "return",
+  "repeat",
+  "bottom-sheet",
+  "reduced"
+ ],
+ "steps": [
+  {
+   "id": "initial-load",
+   "label": "처음 열림(첫 그림)",
+   "pass": true,
+   "detail": "2641ms",
+   "at": 1789283918327
+  },
+  {
+   "id": "rotate",
+   "label": "지구 돌리기(터치 드래그)",
+   "pass": true,
+   "detail": "drag 1",
+   "at": 1789283918768
+  },
+  {
+   "id": "pinch",
+   "label": "두 손가락 줌",
+   "pass": true,
+   "detail": "pinch 2",
+   "at": 1789283918776
+  },
+  {
+   "id": "region",
+   "label": "지역 고르기(톡)",
+   "pass": true,
+   "detail": "himalaya",
+   "at": 1789283919267
+  },
+  {
+   "id": "unfold",
+   "label": "종이 펼침 → 활성",
+   "pass": true,
+   "detail": "first 900ms",
+   "at": 1789283921271
+  },
+  {
+   "id": "tap",
+   "label": "캐릭터 톡",
+   "pass": true,
+   "detail": "greet→wave",
+   "at": 1789283921279
+  },
+  {
+   "id": "longpress",
+   "label": "캐릭터 꾹",
+   "pass": true,
+   "detail": "focus→point",
+   "at": 1789283923766
+  },
+  {
+   "id": "special",
+   "label": "캐릭터 특별 동작",
+   "pass": true,
+   "detail": "wave",
+   "at": 1789283921285
+  },
+  {
+   "id": "story",
+   "label": "이야기 카드 열림",
+   "pass": true,
+   "detail": "story-yeti-himalaya",
+   "at": 1789283922766
+  },
+  {
+   "id": "card-close",
+   "label": "카드 닫기",
+   "pass": true,
+   "detail": "",
+   "at": 1789283923262
+  },
+  {
+   "id": "return",
+   "label": "지구로 돌아오기",
+   "pass": true,
+   "detail": "",
+   "at": 1789283927274
+  },
+  {
+   "id": "repeat",
+   "label": "두 번 이상 들어갔다 나오기",
+   "pass": true,
+   "detail": "2회",
+   "at": 1789283926772
+  },
+  {
+   "id": "bottom-sheet",
+   "label": "폰 하단 시트(폭 ≤ 640)",
+   "pass": true,
+   "detail": "375px",
+   "at": 1789283922782
+  },
+  {
+   "id": "reduced",
+   "label": "움직임 줄이기로 진입",
+   "pass": true,
+   "detail": "",
+   "at": 1789283926782
+  }
+ ],
+ "passed": 14,
+ "total": 14,
+ "gestures": {
+  "drag": 1,
+  "pinch-in": 3,
+  "pinch-out": 0,
+  "wheel-in": 0,
+  "wheel-out": 0,
+  "tap": 1,
+  "touchDrag": 1,
+  "touchPinch": 3,
+  "touchTap": 1
+ },
+ "visits": [
+  [
+   "himalaya",
+   1
+  ],
+  [
+   "savanna",
+   1
+  ],
+  [
+   "amazon",
+   0
+  ]
+ ],
+ "perf": {
+  "initialTransferKB": 1284,
+  "initialRequests": 21,
+  "sinceRegionTransferKB": 329,
+  "sinceRegionRequests": 10,
+  "contentRequests": 16,
+  "characterFiles": 5,
+  "byKind": {
+   "geo": 1,
+   "environments": 1,
+   "registry": 1,
+   "manifest-124": 1,
+   "landmarks-json": 1,
+   "character-thumb": 2,
+   "landmark": 2,
+   "character-runtime": 2,
+   "fx": 3,
+   "stories": 1,
+   "character-scene": 1
+  },
+  "heapMB": 5.9,
+  "assets": {
+   "requests": 10,
+   "loads": 7,
+   "hits": 3,
+   "retries": 0,
+   "failures": 0,
+   "timeouts": 0,
+   "evictions": 0,
+   "cancelled": 0,
+   "stale": 0,
+   "resident": 7,
+   "residentBytes": 338462,
+   "inflight": 0,
+   "budgetBytes": 31457280
+  },
+  "fps": null,
+  "frameGapsOver100ms": 0,
+  "frameMaxMs": 0,
+  "firstFrameMs": 2641,
+  "marks": {
+   "boot": 2,
+   "geo": 17,
+   "texture": 31,
+   "gl": 61,
+   "firstFrame": 2641
+  }
+ }
+}

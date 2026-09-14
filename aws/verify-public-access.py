@@ -71,7 +71,6 @@ READ_PROBES = (
     ("archive/",                          "CLOSED", "보관 경로는 비공개다"),
     ("app/supabase/schema.sql",           "CLOSED", "DB 스키마"),
     ("app/README.md",                     "CLOSED", "저장소 안쪽 문서"),
-    ("app/v3-paper/README.md",            "CLOSED", "v3 인계 문서"),
     ("app/devserver.py",                  "CLOSED", "개발 서버"),
     ("app/v2-deploy/engine-v11/postgres/20260826_v11_advanced_intelligence.sql",
                                           "CLOSED", "DB 스키마 (supabase/ 밖)"),

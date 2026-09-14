@@ -1,22 +1,24 @@
 /* EARTHUS — 지구 전환기 (좌상단)
  *
- * 하나의 서비스가 시간축이 다른 세 지구를 갖는다.
+ * 하나의 서비스가 시간축이 다른 두 지구를 갖는다.
  *   EARTHUS       현재   지금 지구에서 무슨 일이
  *   Intelligence  미래   앞으로 무슨 일이 — 예보와 시나리오
- *   WONDER        과거   여기까지 어떻게 왔나 — 대륙과 공룡
  *
- * 통합 이름은 EARTHUS 이고, 세 지구 어디에서나 같은 자리에서 서로 오갈 수 있어야
- * 한다. 그래서 세 파일이 각자 만들지 않고 이 한 곳만 고치면 되게 했다.
+ * (WONDER 종이 지구는 2026-09-14 에 앱에서 떼어냈다 — 별도 프로젝트로 개발한다.
+ *  /v3, /wonder 항목·배포·자산은 저장소와 메뉴에서 모두 뺐다.)
+ *
+ * 통합 이름은 EARTHUS 이고, 두 지구 어디에서나 같은 자리에서 서로 오갈 수 있어야
+ * 한다. 그래서 두 파일이 각자 만들지 않고 이 한 곳만 고치면 되게 했다.
  *
  * AETHERUS(우주)는 여기 넣지 않는다 — 지구가 아니고, 기존처럼 메뉴 안에 둔다.
  *
  * ── 배포 주소 (2026-09-04) ──────────────────────────────────────────────
- * 실제 파일은 /v2/, /v3/ 에 있다(S3 키·deploy 스크립트 기준). 그런데 사람이
- * 보는 메뉴·링크는 어디서도 그 이름을 걸지 않는다 — /Intelligence, /wonder
- * 라는 별칭으로만 건다. /v2, /v3 는 주소창에 직접 쳤을 때만 열리는
+ * 실제 파일은 /v2/ 에 있다(S3 키·deploy 스크립트 기준). 그런데 사람이
+ * 보는 메뉴·링크는 어디서도 그 이름을 걸지 않는다 — /Intelligence
+ * 라는 별칭으로만 건다. /v2 는 주소창에 직접 쳤을 때만 열리는
  * "숨은 직통 주소"로 남겨 둔다(개발·확인용). 별칭은 같은 index.html 바이트를
  * <base href="/v2/"> 를 얹어 /Intelligence, /Intelligence/, /Intelligence/index.html
- * 세 키에 추가로 올려서 만든다 — tools/deploy-v2-three.sh, aws/deploy-v3-kids.sh
+ * 세 키에 추가로 올려서 만든다 — tools/deploy-v2-three.sh
  * 의 "별칭 발행" 단계를 볼 것. 자산 파일을 통째로 복제하지 않는다.
  *
  * 붙이는 법: 각 index.html 의 </body> 앞에
@@ -52,7 +54,7 @@
   if (window.__earthSwitch) return;
   window.__earthSwitch = true;
 
-  // 개발 서버(root=prototype/)와 배포(app/ 아래)에서 v3 경로가 다르다.
+  // 개발 서버(root=prototype/)와 배포(app/ 아래)에서 v2 경로가 다르다.
   var DEV = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
   var NARROW = '(max-width:720px)';
   var HOLD_MS = 10000;   // 연 뒤 강제로 떠 있는 시간
@@ -60,18 +62,17 @@
   // 같은 파일을 가리킨다(이 스크립트 자체도 같은 방식). 새로 그리지 않는다.
   var ICON = '/logo/earthus-appicon.svg';
 
-  /* 주소창에 직접 치면 /v2, /v3 도 여전히 열린다(개발·확인용) — 다만 메뉴는
-     아무 데서도 그 이름을 걸지 않는다. 메뉴가 거는 이름은 항상 /Intelligence,
-     /wonder 다. 개발 서버(prototype/ 를 그대로 서빙)에는 이 별칭이 없으므로
+  /* 주소창에 직접 치면 /v2 도 여전히 열린다(개발·확인용) — 다만 메뉴는
+     아무 데서도 그 이름을 걸지 않는다. 메뉴가 거는 이름은 항상 /Intelligence
+     다. 개발 서버(prototype/ 를 그대로 서빙)에는 이 별칭이 없으므로
      그때는 폴더명을 그대로 쓴다. */
   var EARTHS = [
     { id: 'earthus', label: 'EARTHUS',      href: '/' },
-    { id: 'intel',   label: 'Intelligence', href: DEV ? '/v2-three/' : '/Intelligence' },
-    { id: 'wonder',  label: 'WONDER',       href: DEV ? '/v3-kids/' : '/wonder' }
+    { id: 'intel',   label: 'Intelligence', href: DEV ? '/v2-three/' : '/Intelligence' }
   ];
 
   /* 각 지구가 이미 갖고 있는 단추를 찾는 열쇠. **설정·로그인만** — 요청받은 것만 넣는다.
-     v2 는 id, v1·v3 는 aria-label 로만 구분된다(공용 앱바가 id 를 안 준다).
+     v2 는 id, v1 은 aria-label 로만 구분된다(공용 앱바가 id 를 안 준다).
      영어 화면에서는 라벨이 바뀌므로 두 언어를 다 적는다. */
   var ADOPT = [
     { id: 'settings', ko: '설정', en: 'Settings',
@@ -89,10 +90,9 @@
     + '[aria-label="What is this"],[aria-label="Show the walkthrough again"]';
 
   // 지금 어느 지구인가. 긴 경로부터 본다 — '/' 는 무엇에나 걸리기 때문이다.
-  // /v2, /v3 는 메뉴엔 없지만 주소창으로 직접 오는 방문은 여전히 있으므로 계속 인식한다.
+  // /v2 는 메뉴엔 없지만 주소창으로 직접 오는 방문은 여전히 있으므로 계속 인식한다.
   function currentId() {
     var p = location.pathname;
-    if (/^\/v3(-kids)?(\/|$)/.test(p) || /^\/wonder(\/|$)/i.test(p)) return 'wonder';
     if (/^\/v2(\/|$)/.test(p) || /^\/v2-three(\/|$)/.test(p) || /^\/Intelligence(\/|$)/i.test(p)) return 'intel';
     return 'earthus';
   }
@@ -141,7 +141,7 @@
     '  .es-menu a[aria-current="page"]{color:#fff;font-weight:700;background:rgba(255,255,255,.10)}',
     '  .es-menu .es-div{height:1px;margin:4px 8px;background:rgba(255,255,255,.14)}',
     // 입양한 단추는 원래 자리에서 숨긴다 — 같은 것이 두 군데 있으면 안 된다.
-    // ⚠️ 클래스를 붙여 숨기면 안 된다: v1·v3 의 공용 앱바는 부팅 뒤에 **다시 그려져서**
+    // ⚠️ 클래스를 붙여 숨기면 안 된다: v1 의 공용 앱바는 부팅 뒤에 **다시 그려져서**
     //    붙여 둔 클래스가 통째로 날아간다(실측 — 숨겼는데 ⚙ ○ 가 되살아났다).
     //    그래서 선택자 자체를 CSS 에 박는다. 다시 그려도 계속 숨겨진다.
     '  ' + ADOPT.map(function (a) { return a.sel; }).join(',') + ',' + HELP_SEL + '{display:none!important}',
@@ -223,7 +223,7 @@
     document.body.appendChild(nav);
 
     /* ── 설정·로그인 입양 ─────────────────────────────────────────────────
-       앱바를 늦게 만드는 지구가 있어서(v1·v3 는 부팅이 끝난 뒤에 만든다)
+       앱바를 늦게 만드는 지구가 있어서(v1 은 부팅이 끝난 뒤에 만든다)
        몇 번 더 찾아본다. 이미 입양한 것은 다시 넣지 않는다. */
     var adopted = {};
     var divider = null;

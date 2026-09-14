@@ -58,13 +58,10 @@ PREFIXES = ("app/", "events/", "archive/", "reports/", "wind/", "ocean/",
 # ⚠️ §2 — 이 경로들은 **현재 운영 제품이 쓴다.** 부류로 걸려도 일괄 삭제하지 않는다.
 #    지우려면 그 제품 담당이 개별로 판단해야 한다.
 EXEMPT_PRODUCT_PREFIXES = (
-    ("app/v3/", "종이 지구(v3). aws/deploy-v3-paper.sh 가 소유한다"),
-    ("app/wonder/", "키즈(wonder). aws/deploy-v3-kids.sh 가 소유한다"),
     ("app/orbital/", "AETHERUS ORBITAL 정적 스냅샷. build/orbital 에서 나온다"),
     ("app/aetherus/", "AETHERUS 스냅샷. tools/publish-aetherus-snapshot.sh 가 쓴다"),
     ("app/tourism/", "관광 혼잡도. tourism-flow 람다가 생성한다"),
     ("app/v2/data/current-earth/", "눈·얼음. current-earth-snow-ice 람다가 생성한다"),
-    ("app/v3/characters/", "캐릭터 자산. character-studio 람다가 생성한다"),
 )
 
 
@@ -153,7 +150,7 @@ def write_cleanup(cands, path):
         "# ⚠️ 이 파일은 aws/live-audit.py 가 만든다. 손으로 고치지 않는다.",
         "# ⚠️ 접두사 일괄 삭제 금지. 아래는 키를 하나씩 지정한다.",
         "# ⚠️ deploy-app.sh 의 --delete 를 되살리지 마라 — 그 원본(build/public-app)에는",
-        "#    v3/ · orbital/ · aetherus/ · tourism/ 이 없어서 다른 제품을 지운다.",
+        "#    orbital/ · aetherus/ · tourism/ 이 없어서 다른 제품을 지운다.",
         "#",
         "# 1) 권한 (app/* 와 옛 초안 키에 한정)",
         "aws iam put-user-policy --user-name earthus-deploy --policy-name cleanup-delete \\",

@@ -1,7 +1,0 @@
-# wonder 3 — 줄끝을 LF 로 고정한다. autocrlf 체크아웃이 JSON/SVG 를 CRLF 로 바꾸면 레지스트리 sha256 이 어긋난다.
-* text=auto eol=lf
-*.webp binary
-*.png binary
-*.jpg binary
-*.woff2 binary
-*.zip binary

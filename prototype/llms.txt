@@ -64,9 +64,16 @@
 원본이 응답하지 않으면 보관해 둔 마지막 자료로 그리고 화면에 그렇게 적습니다.
 "관측 종료"(현상이 끝남)와 "원본 응답 없음"(우리가 못 받음)은 다른 말이므로 섞지 않습니다.
 
+## 개발자 API
+
+대한민국 날씨(기상청 관측·동네예보 캐시)를 좌표로 조회하는 공개 API가 있습니다.
+실시간 기상청 프록시가 아니라 시간 단위로 갱신되는 캐시본을 돌려줍니다.
+키 발급은 dalur@kakao.com 문의. 문서: https://earthus.net/developers.html
+
 ## 링크
 
 - [소개](https://earthus.net/intro.html): 무엇을 하는 서비스인지, 기능과 출처 전체
+- [개발자 API](https://earthus.net/developers.html): 날씨 데이터 공개 API 문서
 - [지구본 열기](https://earthus.net/): 앱 본체
 
 ## 인용 안내

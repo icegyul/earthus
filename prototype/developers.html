@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>earthus 개발자 API | Developers</title>
+<meta name="description" content="earthus의 한국 날씨 공개 API 문서입니다. 기상청 관측·동네예보 캐시를 좌표 기준으로 조회할 수 있습니다. API 키는 신청 후 발급됩니다.">
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
+<link rel="canonical" href="https://earthus.net/developers.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="earthus">
+<meta property="og:title" content="earthus 개발자 API">
+<meta property="og:description" content="한국 날씨 관측·예보를 좌표로 조회하는 earthus 공개 API 문서.">
+<meta property="og:url" content="https://earthus.net/developers.html">
+<meta property="og:image" content="https://earthus.net/og-latest.png">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{color-scheme:dark;--bg:#071018;--panel:#0d1822;--text:#edf5fa;--muted:#a8bac6;--line:#263846;--accent:#83d8ff}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.75 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}main{max-width:880px;margin:auto;padding:56px 22px 90px}a{color:var(--accent)}h1{font-size:clamp(28px,5vw,48px);line-height:1.15;margin:.2em 0 .5em}h2{margin-top:2.2em;font-size:24px}h3{font-size:18px;margin-bottom:.2em}.lead{font-size:18px;color:var(--muted)}.box{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin:18px 0}pre{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;overflow-x:auto}.code,code,pre{font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;color:#c9e9f8}.tag{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 9px;font:12px ui-monospace,SFMono-Regular,Menlo,monospace;margin-right:5px}.muted{color:var(--muted)}table{width:100%;border-collapse:collapse;margin:16px 0}th,td{text-align:left;vertical-align:top;border-bottom:1px solid var(--line);padding:10px 8px}th{color:var(--muted);font-size:13px}footer{margin-top:54px;padding-top:20px;border-top:1px solid var(--line);color:var(--muted);font-size:14px}
+</style>
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"TechArticle",
+  "headline":"earthus 개발자 API",
+  "description":"한국 날씨 관측·예보를 좌표로 조회하는 earthus 공개 API 문서",
+  "inLanguage":"ko",
+  "url":"https://earthus.net/developers.html",
+  "isPartOf":{"@type":"WebSite","name":"earthus","url":"https://earthus.net/"},
+  "publisher":{"@type":"Organization","name":"달루어"}
+}
+</script>
+</head>
+<body><main>
+<p><a href="/">← earthus</a></p>
+<h1>개발자 API</h1>
+<p class="lead">좌표(위도·경도)를 주면 가장 가까운 대한민국 기상청 관측지점의 현재값과 동네예보를 돌려줍니다. 기상청 API를 그때그때 대신 호출해주는 프록시가 아니라, earthus가 이미 시간 단위로 받아 캐시해 둔 자료를 내드리는 것입니다 — 그래서 응답이 실시간 관측 그 자체보다 최대 1시간 늦을 수 있습니다.</p>
+
+<div class="box">
+  <strong>현재 범위(v1)</strong>: 대한민국만 지원합니다. 전 세계 확장은 검토 중입니다.<br>
+  <strong>키 발급</strong>: 아직 셀프서비스 가입은 없습니다. <a href="mailto:dalur@kakao.com">dalur@kakao.com</a> 으로 용도를 적어 보내주시면 키를 발급해 드립니다.<br>
+  <strong>엔드포인트</strong>: <code>https://d2cd33drviayl6.cloudfront.net</code> (커스텀 도메인 연결 전까지 이 CloudFront 주소를 그대로 씁니다).
+</div>
+
+<h2>인증</h2>
+<p>모든 요청에 <code>x-api-key</code> 헤더를 포함합니다. 기본 일일 한도는 1,000회입니다.</p>
+
+<h2>GET /v1/health</h2>
+<p>키 없이 호출 가능합니다. 캐시가 언제 갱신됐는지 확인할 때 씁니다.</p>
+<pre>curl https://d2cd33drviayl6.cloudfront.net/v1/health</pre>
+
+<h2>GET /v1/weather</h2>
+<p>파라미터: <code>lat</code>, <code>lon</code> (십진도).</p>
+<pre>curl -H "x-api-key: YOUR_KEY" \
+  "https://d2cd33drviayl6.cloudfront.net/v1/weather?lat=37.5665&lon=126.9780"</pre>
+<pre>{
+  "query": { "lat": 37.5665, "lon": 126.978 },
+  "observed": {
+    "stationId": "108", "stationName": "서울",
+    "distanceKm": 2.1, "observedAt": "202609161200",
+    "tempC": 24.3, "humidityPct": 58, "windMs": 2.1,
+    "windDirDeg": 250, "rainMm": 0
+  },
+  "forecast": {
+    "stationId": "...", "stationName": "서울",
+    "distanceKm": 2.1, "baseKst": "202609161100",
+    "hourly": [ { "tm": "202609161300", "t": 25, "pop": 20, "sky": 1, "pty": 0 } ],
+    "daily": { "20260917": { "tmin": 18, "tmax": 27 } }
+  },
+  "sourceNote": "대한민국 기상청(공공누리 제1유형). 이 응답은 시간 단위로 캐시된 자료이며 실시간 재조회가 아닙니다."
+}</pre>
+
+<h2>오류</h2>
+<table>
+<tr><th>코드</th><th>의미</th></tr>
+<tr><td>400</td><td>lat/lon 누락 또는 범위 오류</td></tr>
+<tr><td>401</td><td>x-api-key 헤더 없음</td></tr>
+<tr><td>403</td><td>유효하지 않은 키</td></tr>
+<tr><td>429</td><td>일일 호출 한도 초과</td></tr>
+<tr><td>503</td><td>캐시 자료 준비 전</td></tr>
+</table>
+
+<h2>이용 조건</h2>
+<p>이 API로 받은 값의 저작권과 출처 표시 의무는 <a href="/legal/data-license.ko.md">데이터 이용약관</a>을 따릅니다. 재배포 시 "기상청" 출처와 관측·발표 시각을 함께 표기해야 합니다. 대량 재판매·경쟁 서비스 구축 목적의 이용은 별도 문의 바랍니다.</p>
+
+<footer>© 달루어 · <a href="/">earthus</a> · <a href="/intro.html">소개</a></footer>
+</main></body>
+</html>

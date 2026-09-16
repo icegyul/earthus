@@ -21,4 +21,10 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <!-- 개발자 API 문서 — 검색·AI 답변엔진이 "earthus에 공개 API가 있다"를 알아야 인용한다 -->
+  <url>
+    <loc>https://earthus.net/developers.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
 </urlset>

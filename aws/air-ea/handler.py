@@ -164,6 +164,10 @@ def fetch_batch(pts, tries=4):
         "current": ",".join(v[0] for v in VARS),
         "timezone": "UTC",
     })
+    # ⚠️ wind-grid 가 2026-09-04 에 겪은 것과 같은 함정(그쪽 주석 참고) — 429 만
+    #    다시 걸고 연결 끊김·시간초과는 그대로 올려보내면 배치(최대 100지점)가
+    #    재시도 없이 통째로 날아간다. 여기(air-ea)와 marine-grid 에는 그 수정이
+    #    안 옮겨져 있었다 — 2026-09-18 에 같이 옮긴다.
     wait = 8
     for attempt in range(tries):
         try:
@@ -171,11 +175,15 @@ def fetch_batch(pts, tries=4):
                 d = json.load(r)
             return d if isinstance(d, list) else [d]
         except urllib.error.HTTPError as e:
-            if e.code != 429 or attempt == tries - 1:
+            if (e.code != 429 and e.code < 500) or attempt == tries - 1:
                 raise
-            print(f"  429 — {wait}초 대기 후 재시도")
-            time.sleep(wait)
-            wait *= 2
+            print(f"  {e.code} — {wait}초 대기 후 재시도")
+        except (urllib.error.URLError, TimeoutError, ConnectionError, ValueError) as e:
+            if attempt == tries - 1:
+                raise
+            print(f"  {type(e).__name__} — {wait}초 대기 후 재시도")
+        time.sleep(wait)
+        wait *= 2
     return []
 
 

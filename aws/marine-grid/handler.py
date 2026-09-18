@@ -89,6 +89,11 @@ def fetch_batch(pts, tries=4):
         "wind_speed_unit": "ms",
         "cell_selection": "sea",
     })
+    # ⚠️ wind-grid 가 2026-09-04 에 겪은 것과 같은 함정. 429 만 다시 걸고 연결
+    #    끊김·시간초과는 그대로 올려보내면, 부르는 쪽이 그 배치(최대 100지점)를
+    #    통째로 None 으로 둔다. 실측(marine-grid 로그, 2026-09-18)으로 정확히
+    #    이 경로에서 "Connection reset by peer"·"handshake timed out"·
+    #    "Cannot assign requested address" 가 재시도 없이 배치를 날리고 있었다.
     wait = 8
     for attempt in range(tries):
         try:
@@ -107,11 +112,15 @@ def fetch_batch(pts, tries=4):
                     raise ValueError(f"해류 단위 불명: {unit!r}")
             return rows
         except urllib.error.HTTPError as e:
-            if e.code != 429 or attempt == tries - 1:
+            if (e.code != 429 and e.code < 500) or attempt == tries - 1:
                 raise
-            print(f"  429 — {wait}초 대기 후 재시도")
-            time.sleep(wait)
-            wait *= 2
+            print(f"  {e.code} — {wait}초 대기 후 재시도")
+        except (urllib.error.URLError, TimeoutError, ConnectionError, ValueError) as e:
+            if attempt == tries - 1:
+                raise
+            print(f"  {type(e).__name__} — {wait}초 대기 후 재시도")
+        time.sleep(wait)
+        wait *= 2
     return []
 
 

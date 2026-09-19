@@ -6299,6 +6299,13 @@ async function main() {
     }
   } catch (_) { /* 주소가 이상해도 앱은 돈다 */ }
 
+  // §14 현장 측정판 — 주소에 ?measure=1 이 있을 때만 불러온다. 평소에는 받지도 않는다(2026-09-20 M1).
+  try {
+    if (new URLSearchParams(location.search).get('measure') === '1') {
+      import('./measure.js?v=1').then((mod) => mod.startMeasure()).catch((e) => console.warn('[measure]', e));
+    }
+  } catch (_) { /* 측정판이 없어도 앱은 돈다 */ }
+
   // 밤면 도시 불빛 — 첫 화면의 기준을 한국으로 옮기면서 필요해졌다.
   // 한국이 밤인 시각(대략 절반)에 열면 첫 화면의 한반도가 통째로 까맸다. 없는 낮을 만들지는
   // 않되, 밤에 실제로 있는 것(도시 불빛)은 보여 준다. 낮면에는 한 톨도 더하지 않는다.

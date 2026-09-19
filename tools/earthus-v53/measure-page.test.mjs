@@ -1,0 +1,48 @@
+// M1 — §14 현장 측정판(?measure=1) 계약 시험. 실제 동작은 2026-09-20 로컬 375×812 에서 과제 5개를 끝까지 걸어 확인했다
+// (5/5 · 기준 통과 · 쓰나미 버튼 4탭 · 예보·예정 2탭 · 60초 오류 0). 여기서는 깨지면 안 되는 약속을 소스로 잠근다.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+const root = (p) => new URL(`../../${p}`, import.meta.url);
+const src = readFileSync(root('prototype/v2-three/js/measure.js'), 'utf8');
+const main = readFileSync(root('prototype/v2-three/js/main.js'), 'utf8');
+
+test('?measure=1 일 때만 불러온다 — 평소 사용자에게는 한 바이트도 안 간다', () => {
+  assert.match(main, /get\('measure'\) === '1'\) \{\n\s+import\('\.\/measure\.js\?v=1'\)/);
+  assert.ok(!/^import .*measure\.js/m.test(main), '정적 import 로 늘 받고 있다');
+});
+
+test('결과는 기기 밖으로 나가지 않는다 — 복사만 한다', () => {
+  assert.ok(!/\bfetch\(|sendBeacon|XMLHttpRequest|WebSocket/.test(src));
+  assert.match(src, /navigator\.clipboard\.writeText/);
+});
+
+test('과제는 §14 의 다섯 개이고, 탭 기준은 NEXT 3·시뮬 4', () => {
+  const ids = [...src.matchAll(/\{ id: '(t\d)', ko: '([^']+)'/g)].map((m) => m[1]);
+  assert.deepEqual(ids, ['t1', 't2', 't3', 't4', 't5']);
+  assert.match(src, /id: 't3'[^}]*maxTaps: 3/);
+  assert.match(src, /id: 't5'[^}]*maxTaps: 4/);
+  assert.match(src, /passCount\(\) >= 4 \? ' · 기준 통과\(80%\)'/);
+});
+
+test('자동 판정은 앱의 실제 동작을 본다', () => {
+  assert.match(src, /tab === 'next' \|\| \(a === 'intel-q' && el\.dataset\.sec === 'NEXT'\) \|\| a === 'forme-when'/);
+  assert.match(src, /a === 'sim-q' && el\.dataset\.sim === 'tsunami-reach'/);
+  assert.match(src, /a === 'sim-why' && \/기온\//);
+});
+
+test('무한 측정 루프가 없다 — FPS 는 네 번·5초씩, 생존 신호는 70초에서 멈춘다(발열 규칙)', () => {
+  assert.match(src, /\[\['10s', 10000\], \['1m', 60000\], \['5m', 300000\], \['10m', 600000\]\]/);
+  assert.match(src, /if \(\+\+aliveTicks >= 14\) \{[^}]*clearInterval\(alive\)/);
+  assert.equal((src.match(/setInterval\(/g) || []).length, 1);
+});
+
+test('모르는 값은 모른다고 적는다 — 메모리·발열', () => {
+  assert.match(src, /측정 불가\(이 브라우저는 값을 주지 않음\)/);
+  assert.match(src, /발열은 브라우저가 알려주지 않는다/);
+});
+
+test('새 1차 메뉴 0 을 스스로 확인한다', () => {
+  assert.match(src, /intelligence\|simulation\|인텔리전스\|시뮬레이션/i);
+});

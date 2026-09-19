@@ -3653,11 +3653,13 @@ async function main() {
         shell.refreshFlyout();
       }
       const sky = sampleSkyAt(p.lat, p.lon);
-      const [warn, air, aws, stn] = await Promise.all([
+      const [warn, air, aws, stn, tsuIdx] = await Promise.all([
         fetchS3('/events/kma-warn.json'),
         fetchS3('/wind/korea-air-obs.json'),
         fetchS3('/wind/kma-aws.json'),
         myEarth.stations ? Promise.resolve(null) : fetchS3('/events/kma-warn-stations.json'),
+        // FOR ME × 시뮬레이션(2026-09-20) — 쓰나미 도달시간 색인(작다, 최근 30일). 실패해도 감시 판정은 그대로 돈다.
+        fetchS3('/ocean/tsunami-eta.json').catch(() => null),
       ]);
       if (stn && Array.isArray(stn.stations)) myEarth.stations = stn.stations;
       if(myEarth.place!==p)return;
@@ -3697,7 +3699,8 @@ async function main() {
         { stale: warnStale }), { onOpen: () => { shell.showTab('my'); shell.openIntel(); }, ko: i18n.ko });
       const verdict = evaluateWatch({
         place: p, zone, warn: !warn ? { state: 'FAILED' } : warnStale ? { state: 'STALE', reason: `특보 자료 STALE (${warnAgeMin}분 전 자료)` } : { state: 'OK', active: warn.active || [] },
-        events: followedEvents, quakes: feed.items.filter((it) => it.kind === 'EQ'), seen, now: Date.now(),
+        events: followedEvents, quakes: feed.items.filter((it) => it.kind === 'EQ'),
+        tsunamiEta: (tsuIdx && Array.isArray(tsuIdx.events)) ? tsuIdx.events : [], seen, now: Date.now(),
       });
       if (verdict.hits.length) saveWatch(log.concat(verdict.hits));
       myEarth.watch = { monitoring: verdict.monitoring, reason: verdict.reason, fresh: verdict.hits, log: log.concat(verdict.hits).slice(-5).reverse() };
@@ -3776,9 +3779,10 @@ async function main() {
     if (wv) {
       html += '<div class="card"><details class="me-fold"><summary><b>감시</b> <span class="badge ' + (wv.monitoring === 'ON' ? 'model' : 'demo') + '">' + (wv.monitoring === 'ON' ? '감시 중' : '감시 중단') + '</span></summary><div class="card-b">';
       html += wv.monitoring === 'ON'
-        ? '조건 3종 — 내 구역 특보 · 팔로우한 사건의 새 회차 · 400 km 안 M5+ 지진. 같은 건은 한 번만 적습니다.<br/><b>앱을 열었을 때와 ⟳ 를 눌렀을 때만 판정</b>합니다 — 닫혀 있는 동안은 감시하지 않고, 푸시 알림도 보내지 않습니다.'
+        ? '조건 4종 — 내 구역 특보 · 팔로우한 사건의 새 회차 · 400 km 안 M5+ 지진 · 쓰나미 도달시간 계산(시뮬레이션 — 공식 경보 아님). 같은 건은 한 번만 적습니다.<br/><b>앱을 열었을 때와 ⟳ 를 눌렀을 때만 판정</b>합니다 — 닫혀 있는 동안은 감시하지 않고, 푸시 알림도 보내지 않습니다.'
         : `<b>감시 중단</b> — ${escUI(wv.reason)}. 안전하다는 뜻이 아닙니다.`;
-      if (wv.log.length) html += '<div style="margin-top:6px">' + wv.log.map((h) => `<div class="stat"><span class="k">${escUI(h.at.slice(5, 16).replace('T', ' '))}Z</span><span class="v">${escUI(h.reasonKo)}</span></div>`).join('') + '</div>';
+      // 시뮬레이션 기록에는 SIMULATION 배지를 단다 — 공식 기록과 같은 모양으로 섞지 않는다(§J).
+      if (wv.log.length) html += '<div style="margin-top:6px">' + wv.log.map((h) => `<div class="stat"><span class="k">${escUI(h.at.slice(5, 16).replace('T', ' '))}Z</span><span class="v">${h.simulation ? dataBadge('SIMULATION_ONLY') + ' ' : ''}${escUI(h.reasonKo)}</span></div>`).join('') + '</div>';
       else if (wv.monitoring === 'ON') html += '<div style="margin-top:6px;color:var(--text-dim)">아직 기록 없음</div>';
       html += '</div></details></div>';
     }

@@ -1,6 +1,9 @@
 // EARTHUS v2 — 내 장소 감시 (지시서 E)
 //
-// 세 조건만 본다: ① 내 특보 구역에 특보 발생 ② 팔로우한 사건에 새 회차 ③ 내 위치 400 km 안 M5+ 지진.
+// 네 조건을 본다: ① 내 특보 구역에 특보 발생 ② 팔로우한 사건에 새 회차 ③ 내 위치 400 km 안 M5+ 지진
+//   ④ (2026-09-20 FOR ME × 시뮬레이션, 계약 §I) 최근 24시간 쓰나미 도달시간 계산이 내 장소 300 km 안의
+//      한국 연안 지점에 첫 도달을 낸 경우. ⚠️ 이것은 SIMULATION 이다 — 공식 경보가 아니고, official:false 로
+//      적고, 문장에도 그렇게 쓴다. 푸시·안전 판단 근거로 올리지 않는다(계약 §D 불변식 4 의 태도).
 // 값을 만들지 않는다 — 특보 소스가 실패하면 "감시 중단"이지 "안전"이 아니다.
 // 중복은 dedupeKey 로 막는다(같은 특보·같은 회차·같은 지진은 한 번만).
 //
@@ -42,7 +45,9 @@ export function myZone(place, stations) {
  * @param {number} p.now
  * @returns {{ hits: Array, monitoring: 'ON'|'SUSPENDED', reason: string }}
  */
-export function evaluateWatch({ place, zone, warn, events = [], quakes = [], seen = new Set(), now = Date.now() }) {
+export const TSUNAMI_SIM_RADIUS_KM = 300;
+
+export function evaluateWatch({ place, zone, warn, events = [], quakes = [], tsunamiEta = [], seen = new Set(), now = Date.now() }) {
   const hits = [];
   if (!place) return { hits, monitoring: 'SUSPENDED', reason: '위치 미등록' };
   let monitoring = 'ON', reason = '';
@@ -78,6 +83,22 @@ export function evaluateWatch({ place, zone, warn, events = [], quakes = [], see
     if (seen.has(key)) continue;
     hits.push({ conditionId: 'nearby-quake', dedupeKey: key, at: new Date(now).toISOString(), eventId: q.id,
       reasonKo: `${km} km 거리 ${q.title} (USGS 관측)`, official: true });
+  }
+  // ④ 쓰나미 도달시간 계산(SIMULATION) — aws/tsunami-eta 색인(ocean/tsunami-eta.json)의 nearestKorea
+  //    (한국 연안에서 가장 먼저 닿는 지점)가 내 장소 300 km 안이면 적는다. 없는 계산을 만들지 않는다 — 색인에
+  //    nearestKorea 가 없으면(한국까지 닿지 않거나 계산 대상이 아님) 아무것도 적지 않는다.
+  for (const e of tsunamiEta) {
+    const nk = e && e.nearestKorea;
+    const at = e && Date.parse(e.computedAt);
+    if (!nk || !Number.isFinite(nk.lat) || !Number.isFinite(nk.lon) || !Number.isFinite(nk.etaMin)) continue;
+    if (!Number.isFinite(at) || now - at > 86400000) continue;
+    const km = Math.round(kmBetween(place, nk));
+    if (km > TSUNAMI_SIM_RADIUS_KM) continue;
+    const key = `tsu:${e.usgsId}`;
+    if (seen.has(key)) continue;
+    hits.push({ conditionId: 'tsunami-eta-sim', dedupeKey: key, at: new Date(now).toISOString(), eventId: e.usgsId,
+      runRef: `tsunami-eta:${e.usgsId}`, simulation: true, official: false,
+      reasonKo: `쓰나미 도달시간 계산 — ${nk.name} 약 ${nk.etaMin}분(발생 기준, 내 장소 ${km} km) · 시뮬레이션, 공식 경보 아님 — 기상청·PTWC 발표를 따르세요` });
   }
   return { hits, monitoring, reason };
 }

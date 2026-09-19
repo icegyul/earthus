@@ -109,6 +109,53 @@ data/research/step27/
 data/research/step28/
 # STEP 29 TEST-06 composite forcing and trajectories are never committed; docs/research/step29-* records are
 data/research/step29/
+data/research/step32/
+data/research/step33/
+data/research/step35/
+data/research/step38/
+data/research/step39/
+
+# 배포 후보 로컬 미리보기 산출물 — 운영은 S3(events/) 가 정본이다. 커밋하지 않는다.
+prototype/events/distribution-content.json
+prototype/events/distribution-content/
 
 # 인수 패키지 원본 zip — 풀어서 쓴 것(prototype/assets/earthus-icons/, docs/icon-system/)이 정본이다
 v3si/*.zip
+
+# ── R0 (2026-09-20) — 미추적 42,709개 분류 결과 C(무시) ─────────────────────────────
+# ⚠️ 무시는 삭제가 아니다. 이 아래에는 유일본(remote-before 롤백 원본, newearthus-3d 도구 2개,
+#    822·825·v5.2 패키지)이 있다 — `git clean -X` 를 절대 돌리지 말 것.
+# 캐시·스크래치·시험 산출물 (재생성 가능). .tmp/ 는 bake_ne2_base_earth.mjs 등의 입력 캐시다
+/.tmp/
+/.worktrees/
+/output/
+/out/
+/.tmp_paint.js
+/cf2.*
+/*.pptx.inspect.ndjson
+# 사업계획서 원본 — 저장소 밖 보관 대상 (v1.0 은 GovTech 출품 재료라 제자리)
+/EARTHUS_모두의창업_사업계획서_*.pptx
+# 외부 패키지 사본 — 원본은 Earthus v2_DOC. 825 의 md·csv 는 docs/earthus-v2/VISUAL_STRATEGY 와 같은 바이트
+/어스어스 822/
+/Earthus v2_5.2/
+/earthus 825/
+/AETHERUS_V2/
+/Aetherus_Orbital_Environment_Codex_Package_v1.2/
+/특허 우주쓰레기/
+# ⚠️⚠️ 비밀키 위치 안내서·실제 자격증명(.env)이 들어 있다 — 절대 커밋 금지
+/v2.5.3/
+/Aetherus 823_Orbital/
+# 외부 공개 저장소 클론(MIT) — clone 으로 재생성
+/reference/abyssal/
+# 풀린 사본과 같은 zip
+/EARTHUS-V2-verification-package.zip
+/EARTHUS_1.0_AUDIT_OUTPUT/*.zip
+/aws/*.zip
+docs/earthus-v2/AUDIT/*.zip
+docs/earthus-v2/FOUNDATION_PACKAGE/*.zip
+# 연구 원자료 — 해시는 docs/research 에 커밋돼 있다(기존 step 관례와 같다)
+data/research/step17/
+data/research/step48/
+data/research/step49/
+data/research/step50/
+data/research/step54/

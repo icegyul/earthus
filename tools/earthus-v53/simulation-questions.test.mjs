@@ -170,6 +170,23 @@ test('가정 장면(Preview)은 능력과 따로 적혀 있고, 시나리오 탭
     '태풍 가정 장면 카드에 SIMULATION 배지가 남아 있다');
 });
 
+test('§L 지역 한 줄은 코드의 사실과 같다 — ✅ 계산됨 / 📋 기관 인용 둘뿐', () => {
+  const tsu = SIM_CAPABILITIES['hazards.tsunami'].regions;
+  const handler = src('aws/tsunami-eta/handler.py');
+  const all = (handler.match(/\("([A-Z]{3})", "[^"]+", -?[\d.]+, -?[\d.]+\)/g) || []);
+  const kor = all.filter((x) => x.startsWith('("KOR"'));
+  assert.match(tsu.ko, new RegExp(`${all.length}곳\\(한국 ${kor.length}곳 포함\\)`), '지점 수가 엔진과 다르다');
+  assert.match(tsu.ko, /^✅ 계산됨/);
+  assert.match(SIM_CAPABILITIES['hazards.typhoon'].regions.ko, /^📋 기관 인용/);
+  const glof = SIM_CAPABILITIES['hazards.glacial_lake_flood'].regions.ko;
+  assert.match(glof, /^📋 기관 인용 — 미국 알래스카 주노/);
+  assert.ok(existsSync(new URL('../../aws/glacial-lake-us/handler.py', import.meta.url)), '인용할 수집기가 없다');
+  for (const e of Object.values(SIM_CAPABILITIES)) {
+    if (e.regions) assert.ok(/^(✅ 계산됨|📋 기관 인용)/.test(e.regions.ko), '배지는 둘뿐이다(§J)');
+  }
+  assert.match(shellSrc, /simEntryFor\(pctx\.phenomenonId\)\?\.regions/);
+});
+
 test('화면 배선 — 궁금한 점·직접 질문하기·sim-why 가 셸에 있다', () => {
   assert.match(shellSrc, /data-action="sim-q" data-sim=/);
   assert.match(shellSrc, /data-action="sim-why"/);

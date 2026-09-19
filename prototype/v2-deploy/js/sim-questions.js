@@ -63,6 +63,13 @@ export const SIM_CAPABILITIES = {
     inputs: 'GEBCO 수심 격자 + USGS M6.5↑ · 진원 100km 이하 · 바다 지진 사건',
     outputs: '39개 해안 관측소 도달시간 · 30~720분 등시선',
     horizons: '사건별 단회 계산 — 계속 미끄러지는 예보가 아니다',
+    // 계약 §L-2 · §G-4 — 지역은 새 스키마가 아니라 문장으로 적는다. 배지는 ✅ 계산됨 / 📋 기관 인용 둘뿐(§J).
+    regions: Object.freeze({
+      // ⚠️ 연안 지점 39곳 = 한국 10 + 일본·대만·필리핀·미국 등 태평양 29 (aws/tsunami-eta/handler.py STATIONS).
+      //    계약 §L-2 표의 '한국 전 해안'은 줄여 쓴 것 — 계산은 39곳 모두 한다. 지역별 검증(§H)은 한국만 끝났다.
+      ko: '✅ 계산됨 — 태평양 연안 39곳(한국 10곳 포함) 도달시간. PTWC 발표가 있는 사건은 대조해 보여 줍니다. 한국 밖 연안은 지역별 검증 전입니다',
+      en: '✅ Computed — arrival times at 39 Pacific coastal points (10 in Korea), cross-checked against PTWC where a bulletin exists. Coasts outside Korea are not yet validated region by region',
+    }),
     questions: [
       { id: 'tsunami-reach', ko: '이 쓰나미는 어디까지 갈까?', en: 'How far will this tsunami reach?', action: 'tsunami-reach', status: SIM_STATUS.AVAILABLE },
       { id: 'tsunami-eta', ko: '우리 해안에 언제 도착할까?', en: 'When will it reach our coast?', action: 'tsunami-reach', status: SIM_STATUS.AVAILABLE },
@@ -76,6 +83,10 @@ export const SIM_CAPABILITIES = {
     inputs: '기관별 공식 예보 회차(개정 이력 포함)',
     outputs: '공식 예보 경로 · 과거 유사 사례 통계(aws/cyclone-analog)',
     horizons: '공식 +24h 전망이 시나리오 기준선이 된다',
+    regions: Object.freeze({
+      ko: '📋 기관 인용 — 한국·일본(기상청·일본 기상청 경로 + ECMWF 앙상블 폭). 계산이 아닙니다',
+      en: '📋 Agency quote — Korea and Japan (KMA and JMA tracks + ECMWF ensemble spread). Not a computation',
+    }),
     preview: PREVIEW_TYPHOON_SEA,
     questions: [
       { id: 'cyclone-track', ko: '이 태풍은 어디로 이동할까?', en: 'Where is this typhoon heading?', action: 'cyclone-track', status: SIM_STATUS.LIMITED,
@@ -214,6 +225,10 @@ export const SIM_CAPABILITIES = {
     inputs: null,
     outputs: null,
     horizons: null,
+    regions: Object.freeze({
+      ko: '📋 기관 인용 — 미국 알래스카 주노 멘덴홀 강 한 곳(USGS 실측·NWS 예보). 다른 지역은 자료가 없고, 물길 계산은 어느 곳도 하지 않습니다',
+      en: '📋 Agency quote — one site, Mendenhall River in Juneau, Alaska (USGS gauge, NWS forecast). No data elsewhere; outburst paths are computed nowhere',
+    }),
     questions: [
       { id: 'glof-reach', ko: '빙하호가 터지면 물이 어디까지 갈까?', en: 'If a glacial lake bursts, how far will the water go?', status: SIM_STATUS.NOT_AVAILABLE,
         reasonKo: '빙하호 붕괴 물길을 계산하는 검증된 엔진이 없습니다 — 호수마다 댐 형식이 달라 한 곳의 공식을 다른 곳에 쓸 수 없습니다. 기관 관측(호수 수위·하천 유량)은 있는 곳만 보여줍니다',

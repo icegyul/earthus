@@ -1243,7 +1243,9 @@ export function initShell(hooks) {
         whyKo: '먼저 바다 지점을 선택하세요 — 바다를 클릭하면 해양 모델 값을 조회합니다',
         whyEn: 'Select a sea area first — its marine model values feed the computation',
       });
-      return questionBlock(qs);
+      // 계약 §L — 기존 현상 메뉴 안에 '어디서 되는지' 한 줄. 독립 지역 목록·지도가 아니다(§L-1·§L-3).
+      const reg = simEntryFor(pctx.phenomenonId)?.regions;
+      return questionBlock(qs) + (reg ? `<div class="sq-why sq-region">${safeText(i18n.ko ? reg.ko : reg.en)}</div>` : '');
     };
     /* Intelligence 띠 (P1) — 선택한 현상의 인텔 패킷 v1 이 이미 받은 사건 패킷 안에 있으면 그린다.
        없으면 아무것도 그리지 않는다(빈 절 금지, 계약 §C-0). 요청·계산 없음. */

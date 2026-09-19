@@ -592,7 +592,7 @@ class DeterministicZipTests(unittest.TestCase):
     def test_real_intel_lambda_zip_carries_the_vocabulary(self):
         """intel_contract 를 쓰는 실제 함수 폴더 — stage → zip 에 어휘 정본이 들어간다."""
         aws = pathlib.Path(__file__).resolve().parents[2]
-        for fn in ("cyclone-analog", "marine-grid", "lab-events", "earthus-llm"):
+        for fn in ("cyclone-analog", "marine-grid", "lab-events", "earthus-llm", "kma-aws"):
             with tempfile.TemporaryDirectory() as folder, self.subTest(fn=fn):
                 dest = os.path.join(folder, "stage")
                 lp.stage(str(aws / fn), str(aws / "_shared"), dest)

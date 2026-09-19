@@ -100,12 +100,38 @@ test('지진 패킷 → 규모·깊이 한 줄, 여진 변화에 이름, 여진 
   assert.ok(!/data-sec="NEXT"/.test(html), '지진 NEXT 는 비워 둔다(PD 결정 전)');
 });
 
+// P2b — aws/kma-aws/intel_temp.py 가 만든 패킷(빠진 3시간을 채운 합성 하루 · tests/test_intel_temp.py full_day).
+const TEMP = JSON.parse(readFileSync(new URL('./fixtures/intel-v1-temp-anomaly-fullday.json', import.meta.url), 'utf8'));
+
+test('평년 대비 기온 — 지금 기온은 한 줄에, 평년차는 어제 하루 평균으로', () => {
+  const html = s.intelStripHtml({ phenomenonId: 'weather.temperature_anomaly', packet: TEMP, i18n: ko });
+  assert.match(html, /서울 기온\(지금\) <b>[\d.]+ °C<\/b>/);
+  const what = s.intelSectionHtml({ packet: TEMP, section: 'WHAT', i18n: ko, badge: (k) => `[${k}]` });
+  assert.match(what, /서울 어제 하루 평균 평년 대비/);
+  assert.match(what, /\+2\.9 °C/);
+  assert.match(what, /24회 정시 관측 평균/, '평균을 어떻게 냈는지 말한다');
+  assert.match(what, /1991-2020/);
+  assert.match(what, /EARTHUS_ANALYSIS/, '뺄셈은 우리 계산 — 관측 배지로 달지 않는다');
+});
+
+test('평년차 레이어는 한국 날짜의 월·일 칸을 읽는다 (UTC 연중 일자−1 금지)', () => {
+  const ll = readFileSync(root('prototype/v2-three/js/live-layers.js'), 'utf8');
+  const body = ll.slice(ll.indexOf('buildTempAnom(d) {'), ll.indexOf('metaTempAnom(d) {'));
+  assert.match(body, /Date\.UTC\(2000, kst\.getUTCMonth\(\), kst\.getUTCDate\(\)\)/);
+  assert.ok(!/getUTCFullYear\(\), 0, 0/.test(body), '옛 계산(평년 아닌 해에 하루 밀림)이 돌아오면 안 된다');
+  assert.match(ll, /평년값은 하루 평균기온입니다/, '한 시각과 하루 평균을 비교한다는 사실을 카드가 말한다');
+});
+
 test('NEXT 의 EARTHUS 통계 모형은 기관 인용(유형 A)이라고 부르지 않는다', () => {
   const p = structuredClone(V1);
   p.next.items = [{ ...p.next.items[0], kind: 'EARTHUS_FORECAST', source: 'EARTHUS' }];
   const next = s.intelSectionHtml({ packet: p, section: 'NEXT', i18n: ko });
   assert.match(next, /유형 B EARTHUS 통계 모형/);
   assert.ok(!/유형 A/.test(next));
+  p.next.items = [{ ...p.next.items[0], kind: 'PROVIDER_FORECAST', source: 'Open-Meteo' }];
+  const prov = s.intelSectionHtml({ packet: p, section: 'NEXT', i18n: ko });
+  assert.match(prov, /예보 제공자 인용/);
+  assert.ok(!/기관 인용/.test(prov), '예보 제공자를 기관이라 부르지 않는다');
 });
 
 test('지진 패킷은 목록과 같이 한 번만 받는다 — 사건을 고를 때 요청하지 않는다(§C-0)', () => {

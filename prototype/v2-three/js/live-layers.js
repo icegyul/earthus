@@ -1437,10 +1437,11 @@ export class LiveLayers {
   // ---------- 평년 대비 기온 (실황 − 1991~2020 평년) ----------
   buildTempAnom(d) {
     const norms = (d.norm && d.norm.normals) || {};
-    // 연중 일자(1~366) — 평년값 배열의 색인
-    const now = new Date();
-    const start = Date.UTC(now.getUTCFullYear(), 0, 0);
-    const doy = Math.floor((Date.now() - start) / 86400000);
+    // 평년값 배열은 366칸(2월 29일 포함, 월·일 순)이다. 칸은 **한국 날짜의 월·일**로 찾는다.
+    // ⚠️ 2026-09-20 전에는 UTC 연중 일자−1 로 찾아서 ① 평년이 아닌 해의 3월 1일부터 하루씩 밀렸고
+    //    (9월 19일에 9월 18일 평년을 읽음 — 서울 0.4°C 차) ② 한국 자정~오전 9시에는 전날 칸을 읽었다.
+    const kst = new Date(Date.now() + 9 * 3600000);
+    const doy = Math.round((Date.UTC(2000, kst.getUTCMonth(), kst.getUTCDate()) - Date.UTC(2000, 0, 1)) / 86400000) + 1;
     const rows = [];
     let missing = 0;
     for (const st of (d.aws && d.aws.stations) || []) {
@@ -1482,6 +1483,9 @@ export class LiveLayers {
       note: `${s.n || 0}지점 · 최고 ${s.hot ? `${s.hot.anom >= 0 ? '+' : ''}${s.hot.anom.toFixed(1)}°C` : '—'} · ${s.at}`,
       cardHtml: `<b>지금 평년보다 몇 도인가</b> — 기상청 실황 기온에서 <b>${s.period} 평년값</b>을 뺀 값입니다.<br/>`
         + `붉을수록 평년보다 덥고 푸를수록 춥습니다 (±6°C를 양 끝으로).<br/>`
+        // ⚠️ 평년 평균기온은 하루 평균이다. 한 시각의 기온과 빼면 하루 온도 변화가 섞인다(2026-09-20 명시).
+        + `<b>⚠️ 평년값은 하루 평균기온입니다</b> — 한 시각의 기온과 비교하므로 오후엔 높게, 새벽엔 낮게 나옵니다. `
+        + `하루 전체를 비교한 값은 INTELLIGENCE 의 '어제 하루 평균'을 보세요.<br/>`
         + `<b>가장 더운 곳</b> ${one(s.hot)}<br/><b>가장 추운 곳</b> ${one(s.cold)}<br/>`
         + `${s.n || 0}지점 · 평년값이 없는 ${s.missing || 0}지점은 그리지 않습니다(값 생성 금지) · 연중 ${s.doy}일째 기준<br/>`
         + `<b>이 편차는 파생값(DERIVED)입니다</b> — 실황과 평년은 각각 원값 그대로이고, 뺄셈만 이 앱이 했습니다.<br/>`

@@ -34,7 +34,8 @@ const NOT_IN_SUMMARY = new Set(['deg']);
 // NEXT 항목의 근거 유형 — 기관 예보(유형 A)와 EARTHUS 통계 모형(유형 B)을 같은 말로 부르지 않는다.
 const NEXT_KIND = Object.freeze({
   OFFICIAL_FORECAST: ['유형 A 기관 인용 — 우리가 만든 예보가 아닙니다', 'Type A agency quote — not our forecast'],
-  PROVIDER_FORECAST: ['유형 A 기관 인용 — 우리가 만든 예보가 아닙니다', 'Type A agency quote — not our forecast'],
+  // 계약 NEXT_TYPE 상 유형 A 이지만 기관이 아니다(Open-Meteo 등 예보 제공자). 화면에서 '기관'이라 부르지 않는다.
+  PROVIDER_FORECAST: ['유형 A 예보 제공자 인용 — 기관 발표도, 우리가 만든 예보도 아닙니다', 'Type A forecast-provider quote — neither an agency forecast nor ours'],
   EARTHUS_FORECAST: ['유형 B EARTHUS 통계 모형 — 기관 예보가 아닙니다', 'Type B EARTHUS statistical model — not an agency forecast'],
 });
 const SEC_TITLE = Object.freeze({
@@ -148,7 +149,7 @@ export const intelSectionHtml = ({ packet, section, i18n, esc = plainEsc, badge 
       for (const a of an.items) {
         out.push(row(`${lab(a.key, ko, a)} ${ko ? '평년 대비' : 'vs normal'}`,
           `${a.delta > 0 ? '+' : ''}${esc(a.delta)}${esc(unitTxt(a.unit, ko))} ${badge(a.kind)}`,
-          `<div class="paysub">${ko ? '관측' : 'observed'} ${esc(a.value)}${esc(unitTxt(a.unit, ko))} · ${ko ? '평년' : 'normal'} ${esc(a.baseline)}${esc(unitTxt(a.unit, ko))} · ${esc(a.source)}</div>`));
+          `<div class="paysub">${ko ? '관측' : 'observed'} ${esc(a.value)}${esc(unitTxt(a.unit, ko))} · ${ko ? '평년' : 'normal'} ${esc(a.baseline)}${esc(unitTxt(a.unit, ko))}${a.method && ko ? ` · ${esc(a.method)}` : ''} · ${esc(a.source)}</div>`));
       }
       if (an.baseline) out.push(`<div class="paysub">${ko ? '평년' : 'Normal'}: ${esc(an.baseline.name || '')} · ${esc(an.baseline.period || '')}</div>`);
       if (ko && an.coverageKo) out.push(`<div class="paysub">${esc(an.coverageKo)}</div>`);

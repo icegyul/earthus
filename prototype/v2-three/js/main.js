@@ -4103,6 +4103,11 @@ async function main() {
       return pk ? { intel: pk } : null;
     }
     if (phenomenonId === 'ocean.sst') return (liveLayers.layers.sstfield && liveLayers.layers.sstfield.data) || null;
+    // 평년 대비 기온(P2b): 평년차 레이어가 받아 둔 기상청 실황 문서(wind/kma-aws.json)의 intel
+    if (phenomenonId === 'weather.temperature_anomaly') {
+      const d = liveLayers.layers.tempanom && liveLayers.layers.tempanom.data;
+      return (d && d.aws) || null;
+    }
     return null;
   }
 

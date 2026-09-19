@@ -45,6 +45,13 @@ from datetime import datetime, timedelta, timezone
 import boto3
 
 import kma_hub   # KMA 허브 호출 회계(PHASE 1) — aws/_shared/kma_hub.py, 배포 스크립트가 같이 담는다
+# 평년 대비 기온 인텔 패킷(P2b) — 같은 폴더. intel_contract·contracts/ 는 lambda_package 가 같이 담는다.
+# ⚠️ 못 불러와도 수집기는 돈다 — 실황 수집이 부속 패킷 때문에 멈추면 안 된다.
+try:
+    import intel_temp
+except Exception as _intel_error:                            # noqa: BLE001
+    intel_temp = None
+    print(f"[kma-aws] 기온 인텔 모듈을 못 불렀다 — 패킷 없이 돈다: {_intel_error!r}"[:300])
 
 BUCKET = os.environ["CACHE_BUCKET"]
 REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
@@ -55,6 +62,7 @@ DST = "wind/kma-aws.json"
 HISTORY_INDEX = "wind/series/stations.json"
 HISTORY_PREFIX = "wind/series/stations/"
 HISTORY_KEEP_DAYS = 760
+NORMAL_KEY = "wind/kma-normal.json"   # 기상청 1991–2020 평년값(aws/kma-normal) — 기온 인텔 패킷이 인용한다
 
 # 공공데이터포털 — 방재기상관측(AWS) 초단기실황
 HUB = "https://apihub.kma.go.kr/api/typ01/url"
@@ -372,6 +380,17 @@ def handler(event, context):
                  if needs_stn else None),
         "stations": out,
     }
+    # 평년 대비 기온 인텔 패킷(P2b) — 기온 레이어가 이 문서를 이미 받으므로 안에 싣는다(새 요청 없음, 계약 §C-0).
+    # ⚠️ 허브를 더 부르지 않는다(키 하나를 Lambda 15개가 나눠 쓴다). 읽는 것은 우리 버킷의 두 문서뿐이다.
+    # ⚠️ 패킷이 실패해도 실황 문서는 그대로 나간다 — 기온 레이어·v1 날씨가 이 문서에 기대고 있다.
+    try:
+        if intel_temp is None:
+            raise RuntimeError("intel_temp 모듈 없음")
+        hkey = intel_temp.history_key(doc, HISTORY_PREFIX)
+        doc["intel"] = intel_temp.build(doc, datetime.now(timezone.utc),
+                                        load_json(hkey, None) if hkey else None, load_json(NORMAL_KEY, None))
+    except Exception as error:                               # noqa: BLE001
+        print(f"[kma-aws] 기온 인텔 v1 생략: {error!r}"[:300])
     body = json.dumps(doc, ensure_ascii=False, separators=(",", ":")).encode()
     s3.put_object(Bucket=BUCKET, Key=DST, Body=body,
                   ContentType="application/json; charset=utf-8",

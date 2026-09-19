@@ -1,0 +1,235 @@
+{
+ "schema": 1,
+ "eventId": "cyclone:1001322",
+ "gdacsId": "1001322",
+ "name": "DUJUAN-26",
+ "status": "ACTIVE",
+ "time": {
+  "detectedAt": "2026-09-15T15:25:00Z",
+  "lastSeen": "2026-09-19T15:05:00Z",
+  "endedAt": null,
+  "lastRevisionAt": "2026-09-19T15:25:00Z",
+  "retrievedAt": "2026-09-19T15:25:00Z"
+ },
+ "intel": {
+  "schema": 1,
+  "phenomenonId": "hazards.typhoon",
+  "eventId": "cyclone:1001322",
+  "time": {
+   "observedAt": "2026-09-19T12:00:00Z",
+   "issuedAt": "2026-09-19T15:25:00Z",
+   "retrievedAt": "2026-09-19T15:25:00Z"
+  },
+  "current": {
+   "values": [
+    {
+     "key": "maxWind",
+     "value": 35.0,
+     "unit": "m/s",
+     "kind": "OFFICIAL_OBSERVATION",
+     "source": "JMA 실황",
+     "at": "2026-09-19T12:00:00Z"
+    },
+    {
+     "key": "centerLat",
+     "value": 27.9,
+     "unit": "deg",
+     "kind": "OFFICIAL_OBSERVATION",
+     "source": "JMA 실황",
+     "at": "2026-09-19T12:00:00Z"
+    },
+    {
+     "key": "centerLon",
+     "value": 138.4,
+     "unit": "deg",
+     "kind": "OFFICIAL_OBSERVATION",
+     "source": "JMA 실황",
+     "at": "2026-09-19T12:00:00Z"
+    },
+    {
+     "key": "moveSpeed",
+     "value": 20.0,
+     "unit": "km/h",
+     "kind": "OFFICIAL_OBSERVATION",
+     "source": "JMA 실황",
+     "at": "2026-09-19T12:00:00Z"
+    },
+    {
+     "key": "grade",
+     "value": "강",
+     "unit": "category",
+     "kind": "OFFICIAL_OBSERVATION",
+     "source": "JMA 실황",
+     "at": "2026-09-19T12:00:00Z"
+    }
+   ]
+  },
+  "change": {
+   "windows": {
+    "since": "2026-09-19T00:00:00Z"
+   },
+   "items": [
+    {
+     "key": "maxWind",
+     "delta": 3.0,
+     "from": 32.0,
+     "to": 35.0,
+     "unit": "m/s",
+     "kind": "OFFICIAL_OBSERVATION",
+     "source": "JMA 실황",
+     "at": "2026-09-19T12:00:00Z",
+     "since": "2026-09-19T00:00:00Z"
+    }
+   ]
+  },
+  "pattern": {
+   "motion": {
+    "courseKo": "북북서",
+    "speedKmh": 20.0
+   },
+   "persistence": {
+    "hoursSinceDetected": 96.6
+   },
+   "spread": {
+    "agencySpreadKm": {
+     "24": 67,
+     "48": 159
+    }
+   }
+  },
+  "conditions": [
+   {
+    "key": "sstAtCenter",
+    "value": 29.29,
+    "unit": "°C",
+    "kind": "OFFICIAL_OBSERVATION",
+    "source": "NOAA OISST v2.1 (1° 축약)",
+    "at": "2026-09-17T00:00:00Z",
+    "noteKo": "태풍 중심이 있는 1° 격자칸의 해수면 온도 — 같은 자리에 함께 나타난 조건",
+    "noteEn": "Sea surface temperature of the 1° cell under the storm centre — a condition observed alongside"
+   }
+  ],
+  "related": [
+   {
+    "phenomenonId": "ocean.sst",
+    "relation": "reference",
+    "evidence": {
+     "citation": "Gray, W. M. (1968). Global view of the origin of tropical disturbances and storms. Monthly Weather Review, 96(10), 669–700.",
+     "noteKo": "교과서 관계 — 이번 사건에서 계산한 연결이 아니다"
+    }
+   }
+  ],
+  "next": {
+   "items": [
+    {
+     "type": "A",
+     "kind": "OFFICIAL_FORECAST",
+     "source": "한국 기상청",
+     "issuedAt": "2026-09-19T06:00:00Z",
+     "horizonH": 96,
+     "headingKo": "북서",
+     "peak": {
+      "at": "2026-09-20T06:00:00Z",
+      "windMs": 35.0,
+      "gradeKo": "강"
+     },
+     "weakenAt": "2026-09-22T06:00:00Z"
+    },
+    {
+     "type": "A",
+     "kind": "OFFICIAL_FORECAST",
+     "source": "일본 기상청",
+     "issuedAt": "2026-09-19T21:45:00+09:00",
+     "horizonH": 72,
+     "headingKo": "북",
+     "peak": {
+      "at": "2026-09-19T12:00:00Z",
+      "windMs": 35.0,
+      "gradeKo": "강"
+     },
+     "weakenAt": "2026-09-22T12:00:00Z"
+    },
+    {
+     "type": "A",
+     "kind": "PROVIDER_FORECAST",
+     "source": "ECMWF 모델",
+     "issuedAt": "2026-09-19T14:40:00Z",
+     "horizonH": 102,
+     "headingKo": "북서"
+    }
+   ]
+  },
+  "importance": {
+   "reasons": [
+    "공식 경보 Green",
+    "최근 12시간 +3 m/s 강화",
+    "기관 2곳 발표 중"
+   ],
+   "inputs": {
+    "alert": "Green",
+    "nearestWarnRegionKm": null,
+    "windTrend12h": 3.0,
+    "sourceN": 2,
+    "lastRevisionAgeMin": 0
+   },
+   "note": "규칙 순서: 공식 경보 등급 → 관련 특보구역 거리 → 최근 강화 → 기관 수. 점수가 아니라 이유 목록이다."
+  },
+  "confidence": {
+   "grade": "HIGH",
+   "inputs": {
+    "formula_id": "cyclone.agency-agreement.v1",
+    "sourceN": 2,
+    "agencyAgreement24hKm": 67,
+    "freshnessMin": 0,
+    "rule": "기관 2곳 이상·24시간 예보 위치 차 100 km 이하·최신 회차 3시간 이내면 high, 기관 1곳 이상·6시간 이내면 medium, 그 밖은 low. 정확도가 아니라 근거의 신선도·일치도다."
+   }
+  },
+  "uncertainty": {
+   "ensembleSpreadKm": null,
+   "agencySpreadKm": {
+    "24": 67,
+    "48": 159
+   },
+   "note": "기관 폭은 KMA/JMA/NHC 예보 위치의 최대 차이(km). 앙상블 멤버 분산은 세션에 없어 null 이다. 확률이 아니다."
+  },
+  "sources": [
+   {
+    "id": "jma-observed",
+    "kind": "OFFICIAL_OBSERVATION",
+    "ageMin": 240,
+    "slaMin": 360,
+    "state": "fresh"
+   },
+   {
+    "id": "kma-forecast",
+    "kind": "OFFICIAL_FORECAST",
+    "ageMin": 600,
+    "slaMin": 720,
+    "state": "fresh"
+   },
+   {
+    "id": "jma-forecast",
+    "kind": "OFFICIAL_FORECAST",
+    "ageMin": 195,
+    "slaMin": 720,
+    "state": "fresh"
+   },
+   {
+    "id": "noaa-oisst-v2.1",
+    "kind": "OFFICIAL_OBSERVATION",
+    "ageMin": 3840,
+    "slaMin": 2880,
+    "state": "aging"
+   }
+  ],
+  "coverage": {
+   "missing": [
+    {
+     "section": "anomaly",
+     "reason": "평년 대비(IBTrACS 백분위)는 기준선 계산이다 — 계약 §I L-4 PD 결정 대기라 만들지 않았다"
+    }
+   ]
+  }
+ },
+ "_note": "시험용 — 2026-09-20 운영 사건 패킷(DUJUAN-26)의 머리 + aws/cyclone-analog/intel_v1.py 로 만든 v1"
+}

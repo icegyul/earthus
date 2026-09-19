@@ -1,0 +1,79 @@
+{
+  "runRef": "research-runtime:hycom-2015-atlantic",
+  "eventId": "evt_fixture0001",
+  "runtime": "research-runtime",
+  "modelId": "surface-passive-advection.v1",
+  "modelVersion": "0.1.0",
+  "status": "SUCCEEDED",
+  "truthStatus": "SIMULATION",
+  "specSha256": "a7a04fa1e6ba286ce836bec12eb146ef3b8d09fed737c22cbb43994cd71047c6",
+  "datasetVersions": [
+    {
+      "datasetId": "hycom-gofs31-53x-atlantic-20150105",
+      "version": "2015-01-05T12_2015-01-08T12.earthus1",
+      "sha256": "c882f855c2731cc5ef19fc593263100496e665c112681c4fa25007709465ed5e",
+      "evidenceKind": "REANALYSIS"
+    }
+  ],
+  "forcing": {
+    "kind": "NONE",
+    "ref": null,
+    "sha256": null,
+    "params": null
+  },
+  "assumptions": [
+    "bilinear space, linear time; no extrapolation",
+    "conservative four-node wet stencil; stop at first invalid RK4 prefix",
+    "OceanParcels Geographic: 111120 meters/degree; zonal cosine latitude",
+    "boundaryPolicy=STOP_AT_FIRST_CROSSING"
+  ],
+  "limits": [
+    "표층 수동 입자 — 확산·Stokes drift·3차원 흐름·유류 풍화는 없다 (research-runtime README)",
+    "강제자료 격자 해상도보다 작은 해안·만은 풀지 못한다"
+  ],
+  "validation": {
+    "planId": null,
+    "performed": false,
+    "method": null,
+    "result": null,
+    "resultRef": null
+  },
+  "reproducibility": {
+    "modelSourceSha256": "42e5886b640b616256dafc036bd4bbceff8a17affab1330947f0a9cb8612e444",
+    "dependencyLockSha256": "da01d4fdec903a57bf1cd55a2679ec26112dbbf759df19528e0ea80d6f96d00f",
+    "resultArraySha256": "50a20011057cc95eaf3c4fcc14f0f1d9e472d9fd473028db9da99cec2f0d6546",
+    "engineVersion": "3.1.4",
+    "python": "3.12.14",
+    "platform": "Windows-11-10.0.26200-SP0",
+    "commit": null
+  },
+  "outputRef": "services/research-runtime/examples/hycom-2015-atlantic.result.json",
+  "lineage": null,
+  "occurredAt": null,
+  "computedAt": "2026-09-10T08:00:00Z",
+  "retrievedAt": null,
+  "createdAt": "2026-09-10T08:00:00Z",
+  "spatialExtent": {
+    "bbox": [
+      -60,
+      28,
+      -58,
+      30
+    ],
+    "crs": "EPSG:4326"
+  },
+  "temporalRange": {
+    "start": "2015-01-05T12:00:00Z",
+    "end": "2015-01-08T12:00:00Z"
+  },
+  "approval": {
+    "by": "fixture-approver",
+    "at": "2026-09-20T02:30:00Z",
+    "method": "PER_RUN"
+  },
+  "consent": {
+    "scope": "OPERATOR_BATCH",
+    "at": "2026-09-20T02:30:00Z",
+    "revocable": true
+  }
+}

@@ -25,6 +25,8 @@ const GDACS_GEOM = (id, ep) => `https://www.gdacs.org/gdacsapi/api/polygons/getg
 const ALERT_RANK = { Red: 0, Orange: 1, Green: 2 };
 // 공개 사건 패킷(지시서 D-1) — cyclone-analog 가 3시간마다 쓴다. Feed 는 GDACS eventid 로 결합한다.
 const EVENTS_INDEX = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/ocean/cyclone-events.json';
+// 지진 인텔 패킷 v1 모음(aws/lab-events → intel_quake.py, 3시간마다). 키 = USGS 사건 id.
+const EQ_INTEL = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/ocean/earthquake-intel.json';
 const EVENT_PACKET = (id) => `https://earthus-cache-kr.s3.us-east-2.amazonaws.com/ocean/cyclone-events/${id}.json`;
 const FOLLOW_KEY = 'earthus.follow';
 const STATUS_KO = { ACTIVE: '활동 중', WATCH: '주시', RESOLVED: '지난 사건', VERIFYING: '종료 확인 중', PRELIMINARY_REPORT: '잠정 보고', FINAL_REPORT: '최종 보고' };
@@ -96,6 +98,13 @@ export class IntelFeed {
   // 패킷 목록을 받아 사건에 붙인다 — 실패해도 Feed 는 그대로(패킷은 덧붙이는 정보다).
   async loadEvents() {
     const fetchJson = this.fetchJson || ((url, opts) => fetch(url, opts).then((r) => { if (!r.ok) throw new Error(`${r.status}`); return r.json(); }));
+    // 지진 인텔 패킷(P3) — 목록과 **같이 한 번** 받는다. 사건을 고를 때 받으면 고르는 순간 새 요청이 생긴다(계약 §C-0).
+    //   실패해도 목록은 그대로 돈다 — 패킷이 없는 사건은 띠가 그려지지 않을 뿐이다.
+    //   태풍 목록을 기다리게 하지 않는다 — 따로 도착하면 스스로 다시 그린다.
+    fetchJson(EQ_INTEL, { cache: 'no-store' })
+      .then((j) => { this.eqIntel = (j && j.packets && typeof j.packets === 'object') ? j.packets : {}; })
+      .catch(() => { this.eqIntel = {}; })
+      .finally(() => { if (this.onUpdate) this.onUpdate(); });
     try {
       const j = await fetchJson(EVENTS_INDEX, { cache: 'no-store' });
       this.events = new Map((j.events || []).map((e) => [String(e.gdacsId), e]));
@@ -106,6 +115,13 @@ export class IntelFeed {
   }
 
   packetOf(it) { return it && it.kind === 'TC' ? this.events.get(String(it.eventid)) || null : null; }
+
+  // 고른 지진의 인텔 패킷 — 키는 USGS 사건 id(sourceEventId). lab-events 가 추적하는 사건(M6+ 전지구·M5+ 한일대만,
+  // 본진 30일 안)만 있다. 목록의 M4.5+ 대부분은 없다 — 없으면 null.
+  eqIntelOf(it) {
+    if (!it || it.kind !== 'EQ' || !this.eqIntel) return null;
+    return this.eqIntel[String(it.sourceEventId)] || null;
+  }
 
   // PAST: 사건 주변의 실제 이력 — 값 생성 없이 공식 아카이브 조회만
   async loadPast(it, gen = this._gen) {

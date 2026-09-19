@@ -63,6 +63,59 @@ test('절 본문에 인과 어휘가 없고, WHY 는 원인이 아니라고 말�
   assert.match(s.intelSectionHtml({ packet: V1, section: 'EVIDENCE', i18n: ko }), /anomaly/, '빠진 절을 숨기지 않는다');
 });
 
+// P3 — 같은 띠가 태풍 밖 현상을 그린다(코드 분기 없이 패킷의 이름표로). 2026-09-20 운영 패킷을 그대로 옮긴 픽스처.
+const SST = JSON.parse(readFileSync(new URL('./fixtures/intel-v1-sst-20260920.json', import.meta.url), 'utf8'));
+const EQ = JSON.parse(readFileSync(new URL('./fixtures/intel-v1-quake-us7000tdvt.json', import.meta.url), 'utf8'));
+
+test('수온 패킷 → 격자칸 이름표와 값, 좌표는 한 줄에 없다', () => {
+  const html = s.intelStripHtml({ phenomenonId: 'ocean.sst', packet: SST, i18n: ko });
+  assert.match(html, /동해 기준 격자칸 <b>25\.29 °C<\/b>/);
+  assert.match(html, /data-phen="ocean\.sst"/);
+  assert.ok(!/deg|°<\/b>/.test(html), '위경도는 띠 한 줄에 올리지 않는다');
+  assert.equal(s.intelStripHtml({ phenomenonId: 'hazards.typhoon', packet: SST, i18n: ko }), '', '다른 현상 패킷은 버린다');
+});
+
+test('수온 평년 대비 — 관측·평년·차를 함께, 평년 출처를 적는다', () => {
+  const p = structuredClone(SST);
+  p.anomaly = { baseline: { name: 'NOAA OISST v2.1 일별 평년', period: '1991-2020' }, coverageKo: '평년 대비 값은 동아시아에만 있다',
+    items: [{ key: 'sstEastSea', value: 25.29, baseline: 23.9, delta: 1.39, unit: '°C', kind: 'OFFICIAL_OBSERVATION', source: 'NOAA', labelKo: '동해 기준 격자칸' }] };
+  const what = s.intelSectionHtml({ packet: p, section: 'WHAT', i18n: ko });
+  assert.match(what, /동해 기준 격자칸 평년 대비/);
+  assert.match(what, /\+1\.39 °C/);
+  assert.match(what, /평년 23\.9 °C/);
+  assert.match(what, /1991-2020/);
+});
+
+test('지진 패킷 → 규모·깊이 한 줄, 여진 변화에 이름, 여진 순서는 관측과 모형을 나란히', () => {
+  const html = s.intelStripHtml({ phenomenonId: 'hazards.earthquake', packet: EQ, i18n: ko });
+  assert.match(html, /규모 <b>6\.3<\/b>/, "규모 뒤에 'M' 을 겹쳐 쓰지 않는다");
+  assert.match(html, /진원 깊이 <b>35 km<\/b>/);
+  assert.match(html, /여진 M3 이상 \(100 km 안\) 변화 <b>\+3건<\/b>/, '패킷이 실은 이름표가 이긴다');
+  const what = s.intelSectionHtml({ packet: EQ, section: 'WHAT', i18n: ko });
+  assert.match(what, /본진 뒤/);
+  assert.match(what, /실제 15건/);
+  assert.match(what, /모형 기대 8\.5/);
+  assert.match(what, /지역 보정 없음/, '모형 한계 문장을 버리지 않는다');
+  for (const w of vocab.FORBIDDEN_CAUSAL) assert.ok(!what.includes(w), `WHAT 에 '${w}'`);
+  assert.ok(!/data-sec="NEXT"/.test(html), '지진 NEXT 는 비워 둔다(PD 결정 전)');
+});
+
+test('NEXT 의 EARTHUS 통계 모형은 기관 인용(유형 A)이라고 부르지 않는다', () => {
+  const p = structuredClone(V1);
+  p.next.items = [{ ...p.next.items[0], kind: 'EARTHUS_FORECAST', source: 'EARTHUS' }];
+  const next = s.intelSectionHtml({ packet: p, section: 'NEXT', i18n: ko });
+  assert.match(next, /유형 B EARTHUS 통계 모형/);
+  assert.ok(!/유형 A/.test(next));
+});
+
+test('지진 패킷은 목록과 같이 한 번만 받는다 — 사건을 고를 때 요청하지 않는다(§C-0)', () => {
+  const feedSrc = readFileSync(root('prototype/v2-three/js/intel-feed.js'), 'utf8');
+  const load = feedSrc.slice(feedSrc.indexOf('async loadEvents()'), feedSrc.indexOf('packetOf(it)'));
+  assert.match(load, /fetchJson\(EQ_INTEL/);
+  const pick = feedSrc.slice(feedSrc.indexOf('eqIntelOf(it)'), feedSrc.indexOf('eqIntelOf(it)') + 300);
+  assert.ok(!/fetch/.test(pick), '고를 때는 받아 둔 것만 본다');
+});
+
 test('띠는 요청·계산을 하지 않는다 (계약 §C-0) — fetch·LLM 호출이 없다', () => {
   const src = readFileSync(root('prototype/v2-three/js/intel-strip.js'), 'utf8');
   assert.ok(!/\bfetch\(|XMLHttpRequest|\/api\/ask/.test(src));
@@ -70,9 +123,10 @@ test('띠는 요청·계산을 하지 않는다 (계약 §C-0) — fetch·LLM �
 
 test('화면 배선 — 셸에 띠, main.js 에 intel-q 분기, limited 한계 문장', () => {
   assert.match(shellSrc, /\$\{simQuestionsHtml\(\)\}\$\{regionLine\(\)\}\$\{intelStripBlock\(\)\}/);   // §L 지역 한 줄이 사이에 온다
-  assert.match(shellSrc, /packet: intelOf\(hooks\.getEventPacket\?\.\(\)\)/);
+  assert.match(shellSrc, /packet: intelOf\(hooks\.getEventPacket\?\.\(pctx\.phenomenonId\)\)/);
   assert.match(mainSrc, /action === 'intel-q'/);
-  assert.match(mainSrc, /getEventPacket: \(\) =>/);
+  assert.match(mainSrc, /getEventPacket: \(phenomenonId\) => intelHostFor\(phenomenonId\)/);
+  assert.match(mainSrc, /intelOf\(intelHostFor\(ds\.phen \|\| null\)\)/, '절 카드도 같은 문으로 — 태풍만 보던 feed.packet 직접 참조 금지');
   // 레지스트리만 정직하고 화면이 한계 문장을 버리면 안 된다(2026-09-20 권고 #1)
   assert.match(shellSrc, /q\.status === 'limited' && q\.reason \? `<div class="sq-why sq-limit">/);
 });

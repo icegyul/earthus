@@ -4090,6 +4090,22 @@ async function main() {
       });
   };
 
+  // Intelligence 띠가 읽을 패킷을 담은 문서 — 이미 받아 둔 것만 돌려준다(계약 §C-0, 새 요청 없음).
+  //   태풍: 고른 사건의 사건 패킷(ocean/cyclone-events/{id}.json 의 intel)
+  //   지진: 고른 USGS 사건의 패킷(ocean/earthquake-intel.json — 피드가 목록과 함께 한 번 받아 둔다)
+  //   수온: 켜 둔 해수면 온도 레이어 문서(ocean/sst-global.json 의 intel) — 레이어를 켠 적이 없으면 없다
+  // 현상 id 가 맞지 않는 패킷은 intelStripHtml 이 스스로 버린다.
+  function intelHostFor(phenomenonId) {
+    const sel = feed.selected;
+    if (sel && sel.kind === 'TC' && (!phenomenonId || phenomenonId === 'hazards.typhoon')) return feed.packet;
+    if (sel && sel.kind === 'EQ' && (!phenomenonId || phenomenonId === 'hazards.earthquake')) {
+      const pk = feed.eqIntelOf(sel);
+      return pk ? { intel: pk } : null;
+    }
+    if (phenomenonId === 'ocean.sst') return (liveLayers.layers.sstfield && liveLayers.layers.sstfield.data) || null;
+    return null;
+  }
+
   // 셸 훅을 변수로 들고 있는다 — 사건 방의 "지구에 켜기"가 메뉴와 같은 경로로 레이어를 켤 수 있게
   const shellHooks = {
     clearLayers: async () => {
@@ -4525,8 +4541,8 @@ async function main() {
     hasSeaPoint: () => !!seaPoint,
     hasCountryContext: () => !!(focus.selected && countryClick),
     getMy: () => getMyHtml(),
-    // Intelligence 띠(P1) — 이미 받은 사건 패킷만 넘긴다. 새로 요청하지 않는다(계약 §C-0).
-    getEventPacket: () => (feed.selected && feed.selected.kind === 'TC' ? feed.packet : null),
+    // Intelligence 띠(P1·P3) — 이미 받은 문서 안의 패킷만 넘긴다. 새로 요청하지 않는다(계약 §C-0).
+    getEventPacket: (phenomenonId) => intelHostFor(phenomenonId),
     // 요금 모드 — 유료 출시 전엔 FREE_OPEN(access-mode.js 기본). 전역 설정이 있으면 그것을 따른다.
     monetizationMode: () => (window.EARTHUS_CONFIG && window.EARTHUS_CONFIG.MONETIZATION_MODE) || 'FREE_OPEN',
     getFeed: () => feed.html(),
@@ -4690,8 +4706,9 @@ async function main() {
       if (action === 'sim-now' && seaPoint && seaPoint.marine) {
         openWaveNow();
       } else if (action === 'intel-q') {
-        // Intelligence 5절 하나 — 이미 받은 사건 패킷의 intel(v1)을 카드로 연다. 계산·요청 없음(계약 §C-0).
-        const pk = intelOf(feed.packet);
+        // Intelligence 5절 하나 — 이미 받은 문서의 intel(v1)을 카드로 연다. 계산·요청 없음(계약 §C-0).
+        // data-phen 이 어느 현상의 패킷인지 말한다(태풍·지진·수온이 같은 버튼 모양을 쓴다).
+        const pk = intelOf(intelHostFor(ds.phen || null));
         const sec = ds.sec;
         showNote(sectionTitle(sec, i18n.ko), intelSectionHtml({
           packet: pk, section: sec, i18n, esc: escUI, badge: (k) => dataBadge(k),

@@ -1258,7 +1258,8 @@ export function initShell(hooks) {
       const pctx = getPhenomenonContext();
       if (!pctx || !pctx.phenomenonId) return '';
       return intelStripHtml({
-        phenomenonId: pctx.phenomenonId, packet: intelOf(hooks.getEventPacket?.()), i18n,
+        // 현상 id 를 넘긴다 — 태풍(사건 패킷)·지진(고른 사건의 패킷)·수온(켜 둔 레이어 문서)이 같은 문으로 온다.
+        phenomenonId: pctx.phenomenonId, packet: intelOf(hooks.getEventPacket?.(pctx.phenomenonId)), i18n,
         esc: safeText, badge: (k) => dataBadge(k), mode: hooks.monetizationMode?.(), tier: currentTier(),
       });
     };

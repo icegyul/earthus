@@ -1,0 +1,220 @@
+{
+ "schema": 1,
+ "phenomenonId": "hazards.earthquake",
+ "eventId": "earthquake:us7000tdvt",
+ "time": {
+  "observedAt": "2026-09-03T11:17:00Z",
+  "issuedAt": "2026-09-19T17:56:00Z",
+  "retrievedAt": "2026-09-19T17:56:04Z"
+ },
+ "current": {
+  "values": [
+   {
+    "key": "magnitude",
+    "value": 6.3,
+    "unit": "M",
+    "kind": "OFFICIAL_OBSERVATION",
+    "source": "USGS ComCat",
+    "at": "2026-09-03T11:17:00Z",
+    "labelKo": "규모",
+    "labelEn": "Magnitude"
+   },
+   {
+    "key": "depthKm",
+    "value": 35,
+    "unit": "km",
+    "kind": "OFFICIAL_OBSERVATION",
+    "source": "USGS ComCat",
+    "at": "2026-09-03T11:17:00Z",
+    "labelKo": "진원 깊이",
+    "labelEn": "Depth"
+   },
+   {
+    "key": "epicenterLat",
+    "value": 52.2579,
+    "unit": "deg",
+    "kind": "OFFICIAL_OBSERVATION",
+    "source": "USGS ComCat",
+    "at": "2026-09-03T11:17:00Z",
+    "labelKo": "진앙 위도",
+    "labelEn": "Epicentre lat"
+   },
+   {
+    "key": "epicenterLon",
+    "value": -169.4088,
+    "unit": "deg",
+    "kind": "OFFICIAL_OBSERVATION",
+    "source": "USGS ComCat",
+    "at": "2026-09-03T11:17:00Z",
+    "labelKo": "진앙 경도",
+    "labelEn": "Epicentre lon"
+   },
+   {
+    "key": "aftershocksM3",
+    "value": 84,
+    "unit": "count",
+    "kind": "OFFICIAL_OBSERVATION",
+    "source": "USGS ComCat — 진앙 100 km 안 여진 수 (lab-events 집계)",
+    "at": "2026-09-19T17:56:00Z",
+    "labelKo": "여진 M3 이상 (100 km 안)",
+    "labelEn": "Aftershocks M3+ (within 100 km)",
+    "noteKo": "본진 뒤 지금까지 누적"
+   },
+   {
+    "key": "aftershocksM4",
+    "value": 19,
+    "unit": "count",
+    "kind": "OFFICIAL_OBSERVATION",
+    "source": "USGS ComCat — 진앙 100 km 안 여진 수 (lab-events 집계)",
+    "at": "2026-09-19T17:56:00Z",
+    "labelKo": "여진 M4 이상 (100 km 안)",
+    "labelEn": "Aftershocks M4+ (within 100 km)",
+    "noteKo": "본진 뒤 지금까지 누적"
+   },
+   {
+    "key": "largestAftershock",
+    "value": 5.4,
+    "unit": "M",
+    "kind": "OFFICIAL_OBSERVATION",
+    "source": "USGS ComCat",
+    "at": "2026-09-03T20:21:00Z",
+    "labelKo": "최대 여진",
+    "labelEn": "Largest aftershock",
+    "place": "105 km SSW of Nikolski, Alaska"
+   }
+  ]
+ },
+ "change": {
+  "windows": {
+   "since": "2026-09-18T15:40:00Z",
+   "to": "2026-09-19T17:56:00Z",
+   "hours": 26.3
+  },
+  "items": [
+   {
+    "key": "aftershocksM3",
+    "delta": 3,
+    "from": 81,
+    "to": 84,
+    "unit": "count",
+    "kind": "OFFICIAL_OBSERVATION",
+    "source": "USGS ComCat — 진앙 100 km 안 여진 수 (lab-events 집계)",
+    "at": "2026-09-19T17:56:00Z",
+    "since": "2026-09-18T15:40:00Z"
+   },
+   {
+    "key": "aftershocksM4",
+    "delta": 2,
+    "from": 17,
+    "to": 19,
+    "unit": "count",
+    "kind": "OFFICIAL_OBSERVATION",
+    "source": "USGS ComCat — 진앙 100 km 안 여진 수 (lab-events 집계)",
+    "at": "2026-09-19T17:56:00Z",
+    "since": "2026-09-18T15:40:00Z"
+   }
+  ]
+ },
+ "pattern": {
+  "persistence": {
+   "daysSinceMainshock": 16.28
+  },
+  "sequence": {
+   "windows": [
+    {
+     "window": "본진 뒤 0~1일",
+     "t1Days": 0,
+     "t2Days": 1,
+     "observedM4": 15,
+     "observedKind": "OFFICIAL_OBSERVATION",
+     "rjExpectedM4": 8.5,
+     "rjKind": "EARTHUS_FORECAST"
+    },
+    {
+     "window": "본진 뒤 1~7일",
+     "t1Days": 1,
+     "t2Days": 7,
+     "observedM4": 2,
+     "observedKind": "OFFICIAL_OBSERVATION",
+     "rjExpectedM4": 4.7,
+     "rjKind": "EARTHUS_FORECAST"
+    }
+   ],
+   "model": {
+    "name": "Reasenberg–Jones (1989) 일반형",
+    "params": {
+     "a": -1.67,
+     "b": 0.91,
+     "p": 1.08,
+     "c": 0.05
+    },
+    "mMin": 4,
+    "radiusKm": 100,
+    "noteKo": "캘리포니아 일반 매개변수 · 지역 보정 없음 — 이 사건에 맞춘 값이 아니다. 기준선 비교이지 예보 검증 합격이 아니다",
+    "noteEn": "Generic California parameters, no regional calibration — a baseline comparison, not a validated forecast"
+   },
+   "scored": {
+    "n": 66,
+    "meanAbsError": 1.13,
+    "unit": "회",
+    "noteKo": "회차마다 USGS 여진 수(100 km·M4+)로 채점한 평균 절대 오차"
+   }
+  }
+ },
+ "importance": {
+  "reasons": [
+   "M6.3 — 전지구 M6 이상 추적 기준"
+  ],
+  "inputs": {
+   "mag": 6.3,
+   "inAsiaBox": false,
+   "tsunamiBulletins": 0,
+   "usgsTsunamiFlag": true
+  },
+  "note": "점수 아님 — lab-events 가 이 사건을 추적하는 기준과 기관 발표를 옮겼다"
+ },
+ "uncertainty": {
+  "usgsReview": "reviewed",
+  "noteKo": "USGS 검토 완료 값"
+ },
+ "sources": [
+  {
+   "id": "usgs-comcat",
+   "kind": "OFFICIAL_OBSERVATION",
+   "ageMin": 0,
+   "slaMin": 240,
+   "state": "fresh"
+  },
+  {
+   "id": "earthus-rj-generic",
+   "kind": "EARTHUS_FORECAST",
+   "ageMin": 0,
+   "slaMin": 240,
+   "state": "fresh"
+  }
+ ],
+ "coverage": {
+  "missing": [
+   {
+    "section": "anomaly",
+    "reason": "평년 대비(지역 지진 활동 기준선)는 EARTHUS 기준선 계산이다 — 계약 §I L-4 PD 결정 대기라 만들지 않았다"
+   },
+   {
+    "section": "conditions",
+    "reason": "지진과 같은 때·같은 자리에 잰 조건(응력·지각 변위) 관측이 이 계산기에 없다 — 기관 발표와 쓰나미 게시문은 같은 사건의 다른 기록이지 조건이 아니다"
+   },
+   {
+    "section": "related",
+    "reason": "쓰나미 도달시간 계산 대상이 아니다(M6.5 이상·진원 100 km 이하·바다·최근 10일) — 연결표에 있는 연결이 없다"
+   },
+   {
+    "section": "next",
+    "reason": "기관 여진 예보를 받는 수집기가 없다. EARTHUS 여진 기대수(RJ 일반형)는 '검증된 통계 모델'(유형 B)의 합격 기준이 정해지지 않아 NEXT 에 싣지 않는다 — 태풍 패킷과 같은 규칙. 채점 66구간 평균 오차 1.13회. 이 사건 본진 뒤 0~1일은 기대 8.5회·실제 15회였다."
+   },
+   {
+    "section": "confidence",
+    "reason": "정의된 산식(formula_id)이 없다 — 등급을 찍지 않는다"
+   }
+  ]
+ }
+}

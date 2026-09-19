@@ -13,9 +13,9 @@
   s3://<CACHE_BUCKET>/wind/kma-aws.json, wind/kma-fcst.json.
 
 인증 — 아주 단순한 1차 버전
-  자동 가입은 없다. 관리자가 s3://<CACHE_BUCKET>/app/public-api/keys.json 에
+  자동 가입은 없다. 관리자가 s3://<CACHE_BUCKET>/archive/public-api/keys.json 에
   키를 손으로 추가한다. 요청은 x-api-key 헤더로 보낸다.
-  사용량 카운트는 app/public-api/usage/<YYYY-MM-DD>.json 에 베스트에포트로 적는다
+  사용량 카운트는 archive/public-api/usage/<YYYY-MM-DD>.json 에 베스트에포트로 적는다
   (동시 요청이 겹치면 카운트가 살짝 씹힐 수 있다 — 이 규모에선 감내한다.
    나중에 트래픽이 늘면 DynamoDB 원자 카운터로 옮긴다).
 
@@ -36,8 +36,11 @@ BUCKET = os.environ.get("CACHE_BUCKET", "earthus-cache-kr")
 REGION = os.environ.get("CACHE_REGION", "us-east-2")
 ALLOW_ORIGIN = os.environ.get("ALLOW_ORIGIN", "*")
 
-KEYS_KEY = "app/public-api/keys.json"
-USAGE_PREFIX = "app/public-api/usage/"
+# ⚠️⚠️ 키 원장·사용량은 **비공개 접두사(archive/)** 에 둔다. app/ 는 earthus.net 으로 그대로
+#    서빙된다 — 2026-09-16~20 동안 https://earthus.net/public-api/keys.json 과 usage/<날짜>.json 이
+#    익명 200 이었다(키 값과 발급 대상이 그대로 읽혔다). R0 감사 2026-09-20.
+KEYS_KEY = "archive/public-api/keys.json"
+USAGE_PREFIX = "archive/public-api/usage/"
 OBS_KEY = "wind/kma-aws.json"
 FCST_KEY = "wind/kma-fcst.json"
 

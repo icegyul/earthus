@@ -69,6 +69,9 @@ READ_PROBES = (
     ("archive/distribution-content/CNT-2026-000001.json",
                                           "DENIED", "배포 후보 본문 — status=DRAFT 다"),
     ("archive/",                          "CLOSED", "보관 경로는 비공개다"),
+    # ⚠️ 2026-09-16~20 공개 날씨 API 키 원장·사용량이 app/ 아래 있어 익명으로 읽혔다.
+    ("app/public-api/keys.json",          "CLOSED", "API 키 원장(옛 공개 자리) — 지워야 할 잔존물"),
+    ("archive/public-api/keys.json",      "DENIED", "API 키 원장 — 비공개여야 한다"),
     ("app/supabase/schema.sql",           "CLOSED", "DB 스키마"),
     ("app/README.md",                     "CLOSED", "저장소 안쪽 문서"),
     ("app/devserver.py",                  "CLOSED", "개발 서버"),

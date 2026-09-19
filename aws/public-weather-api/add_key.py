@@ -7,7 +7,7 @@
 
 동작
   1. 32바이트 랜덤 키를 만든다 (secrets.token_urlsafe)
-  2. s3://<CACHE_BUCKET>/app/public-api/keys.json 을 받아 항목을 추가하고 되돌려 올린다
+  2. s3://<CACHE_BUCKET>/archive/public-api/keys.json 을 받아 항목을 추가하고 되돌려 올린다
   3. 발급한 키를 화면에 한 번만 찍는다 — 저장은 신청자 몫이다
 """
 
@@ -20,7 +20,7 @@ import boto3
 
 BUCKET = "earthus-cache-kr"
 REGION = "us-east-2"
-KEYS_KEY = "app/public-api/keys.json"
+KEYS_KEY = "archive/public-api/keys.json"   # ⚠️ app/ 는 공개로 서빙된다 — handler.py 주석 참고
 
 
 def main():

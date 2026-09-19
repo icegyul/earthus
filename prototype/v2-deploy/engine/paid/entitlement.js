@@ -17,9 +17,11 @@ const MINIMUM_TIER = Object.freeze({
   WHY: ACCESS_TIER.PLUS,
   NEXT: ACCESS_TIER.PLUS,
   FOR_ME: ACCESS_TIER.PLUS,
-  COMPARE: ACCESS_TIER.CONTROL,
+  // 2026-09-20 요금 정합(정본 PRODUCT-STRUCTURE-AND-TIERS-2026-09-14 §5): 고급 Intelligence 전체가
+  // EXPLORER(PLUS)로 내려왔다 — 비교·근거는 PLUS. 조건을 바꾸는 시나리오만 PRO(CONTROL)에 남는다.
+  COMPARE: ACCESS_TIER.PLUS,
   SCENARIO: ACCESS_TIER.CONTROL,
-  EVIDENCE: ACCESS_TIER.CONTROL,
+  EVIDENCE: ACCESS_TIER.PLUS,
 });
 
 export function resolveEntitlement({ tier = ACCESS_TIER.FREE, tab, officialSafety = false, quotaRemaining = Infinity, countryEnabled = true, rightsAllowed = true }) {

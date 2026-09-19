@@ -79,7 +79,10 @@ test('C — 잠긴 기능은 WHAT/WHY/ADDS/UPGRADE 를 말한다', () => {
   assert.ok(ko.what.length > 5 && ko.why.length > 5 && ko.adds.length > 5 && ko.upgrade.length > 5);
   assert.match(ko.why, /무료/);
   const en = lockExplanation({ cap: 'history', requiredTier: 'intelligence', ko: false });
-  assert.match(en.adds, /INTELLIGENCE/);
+  // 2026-09-20 요금 정합: id 'intelligence' 의 화면 이름은 PRO(정본 PRODUCT-STRUCTURE §4). 판정 코드는 id 그대로.
+  assert.match(en.adds, /PRO/);
+  assert.equal(en.reason, 'REQUIRES_INTELLIGENCE');
+  assert.doesNotMatch(ko.adds, /시뮬레이션/, 'EXPLORER 가 시뮬레이션을 약속하면 안 된다 — 시뮬레이션은 PRO');
 });
 
 test('C — FREE_OPEN 은 모두 허용, 서버 판매는 여전히 닫힘', () => {

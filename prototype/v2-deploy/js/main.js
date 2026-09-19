@@ -14,6 +14,7 @@ import { LocalTerrain } from './local-terrain.js?v=1';
 import { IntelFeed } from './intel-feed.js?v=9';
 import { intelOf, intelSectionHtml, sectionTitle } from './intel-strip.js?v=1';
 import { currentTier } from './report-center.js?v=2';
+import { decideCapabilityAccess, lockExplanation, TIER } from './shared/access-mode.js';
 import { evaluateWatch, myZone, loadWatch, saveWatch } from './watch.js?v=1';
 import { LiveLayers } from './live-layers.js?v=39-information';
 import { StationModel } from './station-model.js?v=2';
@@ -4695,6 +4696,17 @@ async function main() {
           if (seaPoint && seaPoint.marine) openWaveNow();
           else showNote('파도 시뮬레이션', `<div class="card"><div class="card-h">파도 시뮬레이션 ${dataBadge('INSUFFICIENT_DATA')}</div><div class="card-b">먼저 바다 지점을 선택하세요 — 바다를 클릭하면 그 지점의 해양 모델 값을 조회해 계산에 넣습니다.</div></div>`, 'INSUFFICIENT_DATA');
         } else if (ds.sim === 'wave-typhoon' || ds.sim === 'tsunami-reach') {
+          // 계약 §I P1 요금 정정 — PRO 는 쓰나미 계산(기록 남는 SIMULATION) 한 칸만 막는다. 태풍·빙하호 등
+          // 기관 인용 카드는 무료다. 유료 출시 전(FREE_OPEN)에는 누구나 열린다 — 판정은 access-mode 하나로.
+          if (ds.sim === 'tsunami-reach') {
+            const acc = decideCapabilityAccess({ mode: shellHooks.monetizationMode(), userTier: currentTier(),
+              requiredTier: TIER.INTELLIGENCE });
+            if (!acc.allowed) {
+              const l = lockExplanation({ cap: '쓰나미 도달시간 계산', requiredTier: TIER.INTELLIGENCE, ko: i18n.ko });
+              showNote('쓰나미 도달시간 — PRO', `<div class="card"><div class="card-b"><b>${escUI(l.what)}</b><br/>${escUI(l.why)}<br/>${escUI(l.adds)}<br/><span class="paysub">${escUI(l.upgrade)}</span><br/><span class="paysub">공식 쓰나미 정보(PTWC·JMA·기상청)는 항상 무료입니다.</span></div></div>`, 'SIMULATION_ONLY');
+              return;
+            }
+          }
           // 시나리오 탭이 정직하게 안내한다: 쓰나미는 사건을, 태풍은 기준선을 요구한다.
           shell.showTab('scenario');
           shell.openIntel();

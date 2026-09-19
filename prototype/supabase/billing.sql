@@ -50,7 +50,9 @@ values
   --
   -- ⚠️⚠️ 2026-09-02 가격 개정 — 3단계 전환. **읽기 전에 반드시 확인할 것:**
   --    · EXPLORER      월 ₩9,900   (예전 Personal Pro 월 ₩5,900 에서 인상)
-  --    · INTELLIGENCE  월 ₩49,000
+  --    · INTELLIGENCE  월 ₩49,000  ← ⚠️ 2026-09-20 주석 정정: 아래 09-02 재검토로 ₩29,000 이 됐다.
+  --                                  금액의 정본은 아래 상품행(29000)이다. 화면 이름은 PRO
+  --                                  (docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md §4) — id 'intelligence' 는 그대로.
   --    ⚠️⚠️ ₩49,000 은 **예전 'Personal Pro 연 요금'과 숫자만 같고 뜻이 완전히 다르다.**
   --       예전: earthus.pro.yearly = 연 ₩49,000 / 지금: earthus.intelligence.monthly = **월** ₩49,000.
   --       (2026-09-02 확인: ₩49,000 은 인텔리전스 등급의 요금이 맞다.)

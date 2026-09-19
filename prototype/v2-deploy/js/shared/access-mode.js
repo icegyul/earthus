@@ -16,11 +16,12 @@ export function isFreeOpenMode(value) {
   return normalizeMonetizationMode(value) === MONETIZATION_MODE.FREE_OPEN;
 }
 
-/* ── 요금제 사다리 — 정본은 v5.3 §1.4 ───────────────────────
+/* ── 요금제 사다리 — 정본은 docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md (v5.3 §1.4 를 대체) ──
    FREE             — SEE THE EARTH        : 지금 지구를 본다
-   EXPLORER         — UNDERSTAND THE EARTH : 왜 그런지 이해한다
-   INTELLIGENCE     — INVESTIGATE THE EARTH : 돌려보고 비교하고 보고서로 남긴다
-   ⚠️ 정본 v5.3 표기는 EXPLORER PRO / INTELLIGENCE PRO 다. 화면에서는 PRO 를 뗐다(2026-09-02).
+   EXPLORER         — UNDERSTAND THE EARTH : 이해하고 분석하고 보고서를 만든다 (고급 Intelligence · REPORT)
+   PRO              — SIMULATE THE EARTH   : 조건을 바꾸어 시뮬레이션한다 (SCENARIO · SIMULATION)
+   ⚠️ 셋째 단의 **id 는 그대로 'intelligence'** 다(과금 id·billing.sql). 화면 이름만 PRO 다.
+   ⚠️ 09-02 에 뗀 'EXPLORER PRO / INTELLIGENCE PRO' 접미사는 다시 쓰지 않는다.
 
    ⚠️⚠️ **레거시 'paid' 를 지우면 안 된다.**
       서버(supabase/billing.sql)가 지금까지 쓴 값이 'paid' 하나뿐이라,
@@ -99,18 +100,22 @@ export function subscriptionUiAllowed({ mode, showSubscribe } = {}) {
    FREE_OPEN 에서는 allowed:true 이므로 이 설명을 부르지 않는다. */
 export function lockExplanation({ cap = '', requiredTier = null, reason = '', ko = true } = {}) {
   const need = String(requiredTier || TIER.EXPLORER).toLowerCase();
-  const tierName = need === TIER.INTELLIGENCE ? 'INTELLIGENCE' : 'EXPLORER';
+  // 화면 이름 — id 'intelligence' 의 이름은 PRO 다(정본 2026-09-14 §4). 판정 코드(reason)는 id 그대로 둔다.
+  const tierName = need === TIER.INTELLIGENCE ? 'PRO' : 'EXPLORER';
   const what = ko ? `‘${cap || '이 기능'}’은 깊이 탐색 기능입니다` : `‘${cap || 'This feature'}’ is a depth feature`;
   const why = ko
     ? '지금 보는 화면(현재값·출처·안전)은 그대로 무료입니다 — 더 깊이 파고드는 분석이라서 막혀 있습니다'
     : 'The current view (present values, sources, safety) stays free — deeper analysis is gated';
-  const adds = ko
-    ? `${tierName}가 열리면 더 긴 시뮬레이션 구간·상세 분석·깊은 리포트·과거 자료를 같은 화면에서 봅니다`
-    : `${tierName} unlocks longer simulation horizons, detailed analysis, deeper reports and history in the same view`;
+  // ⚠️ EXPLORER 문구가 '더 긴 시뮬레이션 구간'을 약속하고 있었다 — 시뮬레이션은 PRO 다(정본 §3).
+  const adds = need === TIER.INTELLIGENCE
+    ? (ko ? `${tierName}가 열리면 조건을 바꾸는 시나리오와 검증된 시뮬레이션 계산을 같은 화면에서 돌립니다`
+          : `${tierName} unlocks what-if scenarios and validated simulation runs in the same view`)
+    : (ko ? `${tierName}가 열리면 평년 대비·함께 나타난 조건·연결·신뢰도 같은 깊은 분석과 리포트를 같은 화면에서 봅니다`
+          : `${tierName} unlocks deeper analysis (anomaly, co-occurring conditions, links, confidence) and reports in the same view`);
   const upgrade = ko
     ? '지금은 사전등록으로 소식을 받으실 수 있습니다 — 판매가 열리면 구독 화면으로 안내합니다'
     : 'Register for launch news now — the subscribe screen opens once sales begin';
   return Object.freeze({
-    allowed: false, reason: reason || `REQUIRES_${tierName}`, requiredTier: need, what, why, adds, upgrade,
+    allowed: false, reason: reason || `REQUIRES_${need.toUpperCase()}`, requiredTier: need, what, why, adds, upgrade,
   });
 }

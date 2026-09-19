@@ -195,6 +195,14 @@ class ModeGuardTests(unittest.TestCase):
         live = ic.check(canonical(), rows(), mode=ic.LIVE)
         self.assertIs(live, ic.require_live(live))
 
+    def test_empty_live_pass_is_refused(self):
+        """빈 표에 돌린 LIVE 는 PASS 가 나오지만 운영 근거로 쓰지 못한다 (R0 2026-09-20)."""
+        live = ic.check({}, [], mode=ic.LIVE)
+        self.assertEqual(ic.PASS, live["status"])
+        with self.assertRaises(ic.ConsistencyError) as error:
+            ic.require_live(live)
+        self.assertIn("대조하지 않았다", str(error.exception))
+
 
 if __name__ == "__main__":
     unittest.main()

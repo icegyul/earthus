@@ -164,6 +164,13 @@ def require_live(result):
     if result.get("status") != PASS:
         raise ConsistencyError(f"운영 일관성 검사가 {result.get('status')} 다: "
                                f"{[f['kind'] for f in result.get('findings', [])]}")
+    # ⚠️⚠️ 빈 대조는 운영 근거가 아니다. check({}, [], LIVE) 는 PASS 를 낸다 — 아무것도
+    #    비교하지 않았으니 틀린 것도 없다. 판독 어댑터가 조용히 0건을 돌려준 날(권한 오류를
+    #    빈 목록으로 삼킨 날)과 구별할 수 없다. 2026-09-20 R0 감사에서 실측.
+    counts = result.get("counts") or {}
+    if not counts.get("canonical") and not counts.get("indexRows"):
+        raise ConsistencyError("아무것도 대조하지 않았다(정본 0 · 색인 0) — 빈 PASS 는 운영 근거가 "
+                               "될 수 없다. 판독기가 실제로 읽었는지부터 확인하라.")
     return result
 
 

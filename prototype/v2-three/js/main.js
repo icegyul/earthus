@@ -13,6 +13,7 @@ import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
 import { IntelFeed } from './intel-feed.js?v=9';
 import { intelOf, intelSectionHtml, sectionTitle } from './intel-strip.js?v=1';
+import { bannerModel, renderWarningBanner } from './warning-banner.js?v=1';
 import { currentTier } from './report-center.js?v=2';
 import { decideCapabilityAccess, lockExplanation, TIER } from '../../js/access-mode.js';
 import { evaluateWatch, myZone, loadWatch, saveWatch } from './watch.js?v=1';
@@ -3690,6 +3691,9 @@ async function main() {
       const warnStale = warnAgeMin != null && warnAgeMin > 60;
       myEarth.data.warnAgeMin = warnAgeMin;
       myEarth.data.warnStale = warnStale;
+      // 공식 특보 배너(M1) — 내 구역 특보가 있으면 그것, 없으면 약 60km 안 특보. 늙은 자료면 띄우지 않는다.
+      renderWarningBanner(bannerModel(myEarth.data.zoneWarns && myEarth.data.zoneWarns.length ? myEarth.data.zoneWarns : warns,
+        { stale: warnStale }), { onOpen: () => { shell.showTab('my'); shell.openIntel(); }, ko: i18n.ko });
       const verdict = evaluateWatch({
         place: p, zone, warn: !warn ? { state: 'FAILED' } : warnStale ? { state: 'STALE', reason: `특보 자료 STALE (${warnAgeMin}분 전 자료)` } : { state: 'OK', active: warn.active || [] },
         events: followedEvents, quakes: feed.items.filter((it) => it.kind === 'EQ'), seen, now: Date.now(),
@@ -6310,6 +6314,20 @@ async function main() {
       if (myEarth.place) refreshMyEarth(); else shell.renderIntel();
     }
   } catch (_) { /* 주소가 이상해도 앱은 돈다 */ }
+
+  // 공식 특보 배너(M1) — 내 장소가 저장돼 있으면 앱을 열 때 한 번만 본다(특보 파일 하나). 계산 없음.
+  //   내 지역 화면을 열 때(refreshMyEarth)도 같은 문으로 다시 그린다.
+  if (myEarth.place) {
+    const p = myEarth.place;
+    fetchS3('/events/kma-warn.json').then((warn) => {
+      if (!warn || !Array.isArray(warn.active)) return;
+      const ageMin = Number.isFinite(Date.parse(warn.generated)) ? (Date.now() - Date.parse(warn.generated)) / 60000 : null;
+      const near = warn.active.filter((w) => w.lat != null
+        && Math.hypot(w.lat - p.lat, (w.lon - p.lon) * Math.cos((p.lat * Math.PI) / 180)) < 0.55);   // ≈60km, 내 하늘과 같은 기준
+      renderWarningBanner(bannerModel(near, { stale: ageMin == null || ageMin > 60 }),
+        { onOpen: () => { shell.showTab('my'); shell.openIntel(); refreshMyEarth(); }, ko: i18n.ko });
+    }).catch(() => { /* 배너가 못 떠도 앱은 돈다 — '없음'이라고 말하지 않는다 */ });
+  }
 
   // §14 현장 측정판 — 주소에 ?measure=1 이 있을 때만 불러온다. 평소에는 받지도 않는다(2026-09-20 M1).
   try {

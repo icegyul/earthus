@@ -43,6 +43,12 @@ SCHEMA = "earthus.lambda-package/1"
 
 # 패키지에 넣지 않는 디렉터리. tests 는 용량이고, contracts 는 셸이 따로 복사한다.
 SKIP_DIRS = ("tests", "test", "__pycache__", "contracts", ".pytest_cache")
+# ⚠️ zip 은 contracts 를 **빼지 않는다.** 위 목록은 '소스를 훑고 복사할 때' 규칙이다 — 셸(deploy-python.sh)이
+#    함수의 contracts/ 를, stage 가 dataFiles(예: contracts/intel-vocab.json)를 이미 stage 에 넣어 둔다.
+#    2026-09-20 까지는 zip 이 같은 목록을 써서 stage 에 있던 contracts/ 를 **zip 에서 떨어뜨렸다** —
+#    intel_contract 는 import 때 어휘표를 읽으므로 cyclone-analog·earthus-llm 배포 검사가 막혔고,
+#    관광 수집기의 Swagger 계약도 09-13 이후 배포본에서는 빠졌을 것이다.
+ZIP_SKIP_DIRS = tuple(name for name in SKIP_DIRS if name != "contracts")
 
 # Lambda 런타임이 이미 갖고 있어 zip 에 넣지 않는 것. 없다고 실패로 보지 않는다.
 RUNTIME_PROVIDED = ("boto3", "botocore", "urllib3", "s3transfer", "jmespath", "dateutil", "six")
@@ -80,7 +86,7 @@ def zip_members(stage_dir):
     """
     members = []
     for root, dirs, files in os.walk(stage_dir):
-        dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
+        dirs[:] = [d for d in dirs if d not in ZIP_SKIP_DIRS]
         for name in files:
             if name.endswith(ZIP_SKIP_SUFFIXES):
                 continue

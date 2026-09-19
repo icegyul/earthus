@@ -554,6 +554,18 @@ class DeterministicZipTests(unittest.TestCase):
                 lp.os.walk = real_walk
             self.assertEqual(straight["codeSha256"], shuffled["codeSha256"])
 
+    def test_contracts_in_the_stage_reach_the_zip(self):
+        """stage 에 들어간 contracts/ 는 zip 에도 있어야 한다 — intel_contract 가 import 때 읽는다.
+        2026-09-20 전에는 zip 이 contracts 를 건너뛰어 cyclone-analog 배포 검사가 막혔다."""
+        with tempfile.TemporaryDirectory() as folder:
+            stage = self.stage(folder)
+            write(pathlib.Path(stage) / "contracts" / "intel-vocab.json", "{}\n")
+            write(pathlib.Path(stage) / "tests" / "test_x.py", "")
+            out = os.path.join(folder, "c.zip")
+            names = lp.build_zip(stage, out)["members"]
+            self.assertIn("contracts/intel-vocab.json", names)
+            self.assertFalse(any(n.startswith("tests/") for n in names), "tests 는 여전히 뺀다")
+
     def test_members_are_sorted_by_utf8_bytes(self):
         with tempfile.TemporaryDirectory() as folder:
             out = os.path.join(folder, "a.zip")

@@ -1,0 +1,125 @@
+{
+  "schema": "earthus.intel-vocab/1",
+  "_note": "Intelligence 어휘 단일 정본 (계약 §C-3). Python(aws/_shared/intel_contract.py)과 JS 시험(tools/earthus-v53/intel-questions.test.mjs)이 이 파일 하나를 읽는다. 값을 다른 파일에 베껴 적지 않는다 — 기존 사본(prototype/js/earthus2/v02/core/constants.js EVIDENCE_KIND, aws/_shared/report_contract.py FORBIDDEN_CAUSAL)은 시험이 이 파일과 같은지 대조한다.",
+  "EVIDENCE_KIND": [
+    "OFFICIAL_OBSERVATION",
+    "OFFICIAL_FORECAST",
+    "OFFICIAL_WARNING",
+    "PROVIDER_FORECAST",
+    "EARTHUS_ANALYSIS",
+    "EARTHUS_FORECAST",
+    "ESTIMATED_DISTRIBUTION",
+    "SIMULATION",
+    "HISTORY",
+    "VISUALIZATION_ONLY"
+  ],
+  "FORBIDDEN_CAUSAL": [
+    "때문에",
+    "때문이다",
+    "탓에",
+    "원인이다",
+    "원인으로",
+    "초래",
+    "야기",
+    "causes",
+    "caused by"
+  ],
+  "CONFIDENCE_GRADE": [
+    "HIGH",
+    "MEDIUM",
+    "LOW",
+    "UNKNOWN"
+  ],
+  "RELATION": [
+    "computed",
+    "co_located",
+    "reference"
+  ],
+  "NEXT_TYPE": {
+    "_note": "계약 부록 B — NEXT 의 근거 유형. 난이도가 아니라 증거 종류다(사다리 §0). 유형마다 쓸 수 있는 EVIDENCE_KIND 가 정해져 있다.",
+    "A": {
+      "ko": "기관 인용",
+      "en": "Agency forecast",
+      "kinds": [
+        "OFFICIAL_FORECAST",
+        "OFFICIAL_WARNING",
+        "PROVIDER_FORECAST"
+      ]
+    },
+    "B": {
+      "ko": "검증된 통계 모델",
+      "en": "Validated statistical model",
+      "kinds": [
+        "EARTHUS_FORECAST",
+        "HISTORY"
+      ]
+    },
+    "C": {
+      "ko": "물리 시뮬레이션",
+      "en": "Physical simulation",
+      "kinds": [
+        "SIMULATION"
+      ]
+    },
+    "D": {
+      "ko": "문헌",
+      "en": "Literature",
+      "kinds": [
+        "HISTORY"
+      ]
+    }
+  },
+  "PACKET_SECTIONS": [
+    "current",
+    "change",
+    "anomaly",
+    "pattern",
+    "conditions",
+    "related",
+    "next",
+    "importance",
+    "confidence",
+    "uncertainty"
+  ],
+  "INTEL_SECTIONS": {
+    "_note": "계약 §C-0 의 INTELLIGENCE 5절. LAYER-PLAN §2.2 의 질문 5종(why·next·impact·related·report)을 재편한 것 — REPORT 는 EXPLORER 발행물(P5)이라 여기 없다.",
+    "WHY": [
+      "conditions"
+    ],
+    "WHAT": [
+      "current",
+      "change",
+      "anomaly",
+      "pattern"
+    ],
+    "NEXT": [
+      "next"
+    ],
+    "IMPACT": [
+      "related"
+    ],
+    "EVIDENCE": [
+      "sources",
+      "confidence",
+      "coverage"
+    ]
+  },
+  "FIXED_TEXT": {
+    "conditionsNotCause": {
+      "ko": "함께 나타난 조건입니다 — 원인이라고 말하지 않습니다.",
+      "en": "Conditions observed together — not a statement of cause."
+    },
+    "sectionMissing": {
+      "ko": "이 절은 지금 만들 재료가 없습니다.",
+      "en": "There is no material to build this section right now."
+    },
+    "referenceRelation": {
+      "ko": "교과서 관계 — 이번 사건에서 계산한 연결이 아닙니다.",
+      "en": "Textbook relation — not a link computed for this event."
+    },
+    "insufficient": {
+      "ko": "지금 가진 자료로는 답할 수 없습니다.",
+      "en": "The data we have cannot answer this."
+    }
+  }
+}

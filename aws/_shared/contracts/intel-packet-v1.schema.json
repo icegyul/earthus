@@ -1,0 +1,353 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://earthus.net/contracts/intel-packet-v1.schema.json",
+  "title": "EARTHUS 인텔 패킷 v1",
+  "description": "생성: python aws/_shared/intel_contract.py --export-schema. 손으로 고치지 않는다.",
+  "type": "object",
+  "required": [
+    "schema",
+    "phenomenonId",
+    "time",
+    "sources"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "const": 1
+    },
+    "phenomenonId": {
+      "type": "string",
+      "pattern": "^[a-z]+\\.[a-z_]+$"
+    },
+    "eventId": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "time": {
+      "type": "object",
+      "required": [
+        "retrievedAt"
+      ],
+      "properties": {
+        "observedAt": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?(Z|[+-]\\d{2}:?\\d{2}))?$"
+        },
+        "issuedAt": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?(Z|[+-]\\d{2}:?\\d{2}))?$"
+        },
+        "retrievedAt": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?(Z|[+-]\\d{2}:?\\d{2}))?$"
+        }
+      }
+    },
+    "current": {
+      "type": "object",
+      "required": [
+        "values"
+      ],
+      "properties": {
+        "values": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "key",
+              "value",
+              "unit",
+              "kind",
+              "source",
+              "at"
+            ],
+            "properties": {
+              "key": {
+                "type": "string",
+                "minLength": 1
+              },
+              "value": {},
+              "unit": {
+                "type": "string",
+                "minLength": 1
+              },
+              "kind": {
+                "enum": [
+                  "OFFICIAL_OBSERVATION",
+                  "OFFICIAL_FORECAST",
+                  "OFFICIAL_WARNING",
+                  "PROVIDER_FORECAST",
+                  "EARTHUS_ANALYSIS",
+                  "EARTHUS_FORECAST",
+                  "ESTIMATED_DISTRIBUTION",
+                  "SIMULATION",
+                  "HISTORY",
+                  "VISUALIZATION_ONLY"
+                ]
+              },
+              "source": {
+                "type": "string",
+                "minLength": 1
+              },
+              "at": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?(Z|[+-]\\d{2}:?\\d{2}))?$"
+              }
+            }
+          }
+        }
+      }
+    },
+    "change": {
+      "type": "object",
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "windows": {
+          "type": "object"
+        },
+        "items": {
+          "type": "array",
+          "minItems": 1
+        }
+      }
+    },
+    "anomaly": {
+      "type": "object",
+      "required": [
+        "baseline",
+        "items"
+      ],
+      "properties": {
+        "baseline": {
+          "type": "object",
+          "required": [
+            "name",
+            "source",
+            "period"
+          ]
+        },
+        "items": {
+          "type": "array",
+          "minItems": 1
+        }
+      }
+    },
+    "pattern": {
+      "type": "object"
+    },
+    "conditions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "key",
+          "value",
+          "kind",
+          "source"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "OFFICIAL_OBSERVATION",
+              "OFFICIAL_FORECAST",
+              "OFFICIAL_WARNING",
+              "PROVIDER_FORECAST",
+              "EARTHUS_ANALYSIS",
+              "EARTHUS_FORECAST",
+              "ESTIMATED_DISTRIBUTION",
+              "SIMULATION",
+              "HISTORY",
+              "VISUALIZATION_ONLY"
+            ]
+          }
+        }
+      }
+    },
+    "related": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "phenomenonId",
+          "relation",
+          "evidence"
+        ],
+        "properties": {
+          "relation": {
+            "enum": [
+              "computed",
+              "co_located",
+              "reference"
+            ]
+          }
+        }
+      }
+    },
+    "next": {
+      "type": "object",
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "type",
+              "kind",
+              "source",
+              "issuedAt"
+            ],
+            "properties": {
+              "type": {
+                "enum": [
+                  "A",
+                  "B",
+                  "C",
+                  "D"
+                ]
+              },
+              "kind": {
+                "enum": [
+                  "OFFICIAL_OBSERVATION",
+                  "OFFICIAL_FORECAST",
+                  "OFFICIAL_WARNING",
+                  "PROVIDER_FORECAST",
+                  "EARTHUS_ANALYSIS",
+                  "EARTHUS_FORECAST",
+                  "ESTIMATED_DISTRIBUTION",
+                  "SIMULATION",
+                  "HISTORY",
+                  "VISUALIZATION_ONLY"
+                ]
+              },
+              "issuedAt": {
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}(:\\d{2}(\\.\\d+)?)?(Z|[+-]\\d{2}:?\\d{2}))?$"
+              },
+              "runRef": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "importance": {
+      "type": "object",
+      "required": [
+        "reasons"
+      ],
+      "not": {
+        "required": [
+          "score"
+        ]
+      }
+    },
+    "confidence": {
+      "type": "object",
+      "required": [
+        "grade",
+        "inputs"
+      ],
+      "properties": {
+        "grade": {
+          "enum": [
+            "HIGH",
+            "MEDIUM",
+            "LOW",
+            "UNKNOWN"
+          ]
+        },
+        "inputs": {
+          "type": "object",
+          "required": [
+            "formula_id"
+          ]
+        }
+      }
+    },
+    "uncertainty": {
+      "type": "object"
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "kind"
+        ],
+        "properties": {
+          "kind": {
+            "enum": [
+              "OFFICIAL_OBSERVATION",
+              "OFFICIAL_FORECAST",
+              "OFFICIAL_WARNING",
+              "PROVIDER_FORECAST",
+              "EARTHUS_ANALYSIS",
+              "EARTHUS_FORECAST",
+              "ESTIMATED_DISTRIBUTION",
+              "SIMULATION",
+              "HISTORY",
+              "VISUALIZATION_ONLY"
+            ]
+          },
+          "ageMin": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "slaMin": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "coverage": {
+      "type": "object",
+      "properties": {
+        "missing": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "section",
+              "reason"
+            ],
+            "properties": {
+              "section": {
+                "enum": [
+                  "current",
+                  "change",
+                  "anomaly",
+                  "pattern",
+                  "conditions",
+                  "related",
+                  "next",
+                  "importance",
+                  "confidence",
+                  "uncertainty"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

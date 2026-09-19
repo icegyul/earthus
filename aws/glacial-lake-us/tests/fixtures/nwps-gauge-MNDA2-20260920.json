@@ -1,0 +1,52 @@
+{
+ "lid": "MNDA2",
+ "usgsId": "15052500",
+ "name": "Mendenhall River near Auke Bay",
+ "state": {
+  "abbreviation": "AK",
+  "name": "Alaska"
+ },
+ "timeZone": "AST9ADT",
+ "latitude": 58.429722222222,
+ "longitude": -134.57277777778,
+ "status": {
+  "observed": {
+   "primary": 4.38,
+   "primaryUnit": "ft",
+   "secondary": 3.19,
+   "secondaryUnit": "kcfs",
+   "floodCategory": "no_flooding",
+   "validTime": "2026-09-19T16:00:00Z"
+  },
+  "forecast": {
+   "primary": 5.71,
+   "primaryUnit": "ft",
+   "secondary": 5.17,
+   "secondaryUnit": "kcfs",
+   "floodCategory": "no_flooding",
+   "validTime": "2026-09-21T06:00:00Z"
+  }
+ },
+ "flood": {
+  "stageUnits": "ft",
+  "flowUnits": "cfs",
+  "categories": {
+   "major": {
+    "stage": 14,
+    "flow": 22100
+   },
+   "moderate": {
+    "stage": 10,
+    "flow": 13400
+   },
+   "minor": {
+    "stage": 9,
+    "flow": 10400
+   },
+   "action": {
+    "stage": 8,
+    "flow": 7860
+   }
+  }
+ }
+}

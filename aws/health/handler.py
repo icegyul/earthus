@@ -144,6 +144,9 @@ WATCH = [
     #    HEALTHY 였고 sourceObservedAt 도 generated 로 채워졌다. 이제 원천 정지도 드러낸다.
     {"key": "events/jma-warn.json", "everyMin": 30, "graceMin": 90,
      "ko": "일본 특보 (JMA r8)", "sourceLive": True},
+    # 2026-09-20 신규 — 알래스카 주노 멘덴홀 강(USGS·NWS 인용). 파일 안 live 가 원본 신선도다.
+    {"key": "events/glof-alaska.json", "everyMin": 30, "graceMin": 90,
+     "ko": "알래스카 빙하호 아래 강 (USGS·NWS)", "sourceLive": True},
     # ⚠️⚠️ **안 가는 알림은 티가 안 난다.** 사용자는 "위험이 없었구나"라고 생각한다.
     #    보낸 건수가 0 인 것은 정상이다(위험이 없을 때).
     #    **파일이 안 갱신되는 것**이 사고다 — 그러면 아무에게도 안 가고 있다.

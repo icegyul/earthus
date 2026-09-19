@@ -1,0 +1,2 @@
+# 제3자 의존이 없다 — 표준 라이브러리와 Lambda 런타임의 boto3 만 쓴다.
+# ⚠️ 비어 있어도 있어야 한다. 없으면 deploy-python.sh 가 h5py·numpy·Pillow 30MB 를 붙인다(aws/distribution/requirements.txt 참고).

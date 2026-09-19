@@ -56,7 +56,9 @@ export const PHENOMENA = Object.freeze({
     availability: 'planned',
     evidenceProfile: 'NONE',
     temporalMode: 'none',
-    scope: null,
+    // 2026-09-20 §L: 알래스카 한정 갱신. 수집기(aws/glacial-lake-us)는 배포 대기 — 운영에 자료가 들어오고
+    //   P1 에서 화면에 이어지기 전까지 능력(current·evidence)은 올리지 않는다.
+    scope: '알래스카 주노 멘덴홀 강(빙하호 Suicide Basin 아래) 한 곳 — USGS 15052500 실측·NWS MNDA2 공식 예보를 인용한다(events/glof-alaska.json). 호수가 아니라 호수 아래 강 수위다. 다른 지역은 자료가 없고, 빙하호 붕괴 물길은 어느 곳도 계산하지 않는다 — 댐 형식마다 물리가 달라 한 곳의 식을 다른 곳에 쓸 수 없다(계약 §H).',
     dataProducts: Object.freeze(['hazards/glof']),
   }),
   'hazards.lightning': Object.freeze({

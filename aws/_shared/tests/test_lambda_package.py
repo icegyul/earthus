@@ -245,7 +245,9 @@ class RepositoryFactTests(unittest.TestCase):
         for name in ("kma-warn", "kma-fcst", "gk2a-clouds", "typhoon-official", "quake-asia"):
             with self.subTest(function=name):
                 planned = lp.plan(str(AWS / name), str(SHARED))
-                self.assertEqual(["kma_hub"], planned["sharedModules"])
+                # 2026-09-20: kma-warn 은 CAP 1.2 정규화(cap_map)를 더 싣는다 — 의도한 변화다.
+                want = ["cap_map", "kma_hub"] if name == "kma-warn" else ["kma_hub"]
+                self.assertEqual(want, sorted(planned["sharedModules"]))
                 self.assertEqual([], planned["subPackages"])
 
     def test_only_distribution_has_python_sub_packages_among_lambdas(self):

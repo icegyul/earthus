@@ -214,10 +214,17 @@ def _assert_write_allowed(key, content):
 
 
 def build_candidates(lab_doc, verify_doc, *, today, limit=MAX_DAILY):
-    """오늘 갱신된 사건 + 지난달 성적표. 없으면 빈 목록이다 — 억지로 채우지 않는다."""
+    """어제·오늘 갱신된 사건 + 지난달 성적표. 없으면 빈 목록이다 — 억지로 채우지 않는다.
+
+    ⚠️ 예전 기준은 `lastSeen[:10] >= today` (오늘만) 였다. 예약 실행은 00:00 UTC 이고,
+       그 순간 '오늘' 갱신된 사건은 거의 없다. 2026-09-14~18 예약 실행 5회가 전부 후보 0건
+       이었다(R0 감사 2026-09-20). 방금 끝난 하루를 보도록 어제부터 센다. 같은 사건이
+       이틀 잡혀도 id 가 정체 지문(content_id_for)이라 같은 키에 한 번만 남는다.
+    """
     cands = []
+    since = (datetime.strptime(today, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
     fresh = [c for c in lab_report.candidates(lab_doc)
-             if (c["raw"].get("lastSeen") or c["raw"].get("detectedAt") or "")[:10] >= today]
+             if (c["raw"].get("lastSeen") or c["raw"].get("detectedAt") or "")[:10] >= since]
 
     def rel(c):
         v = (c.get("signals") or {}).get("public_relevance")

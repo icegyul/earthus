@@ -303,6 +303,20 @@ class ProductRuleTests(unittest.TestCase):
         self.assertEqual(9, len(s3.puts), "본문 8 + 색인 1")
 
 
+class FreshnessWindowTests(unittest.TestCase):
+    """00:00 UTC 예약 실행이 방금 끝난 하루를 본다 — 09-14~18 다섯 번 연속 0건의 재발 방지."""
+
+    def test_midnight_run_sees_yesterday(self):
+        cands = handler.build_candidates(lab(report("lab-y", day="2026-09-13")), VERIFY,
+                                         today="2026-09-14")
+        self.assertEqual(["lab-y"], [c["raw"]["id"] for c in cands])
+
+    def test_two_days_old_is_not_fresh(self):
+        cands = handler.build_candidates(lab(report("lab-old", day="2026-09-12")), VERIFY,
+                                         today="2026-09-14")
+        self.assertEqual([], cands)
+
+
 class OrphanAndPublicTests(unittest.TestCase):
     """요구 9 — 고아 본문이 생겨도 공개로 새지 않는다."""
 

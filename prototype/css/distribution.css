@@ -1,0 +1,116 @@
+/* 배포 관리 화면 — 지시서 §107 · §152 · §154.
+   studio.css 위에 얹는다. 색·버튼·타이포는 그쪽 것을 그대로 쓴다.
+   여기서는 표와 상세만 정의한다 — 두 번째 디자인 언어를 만들지 않는다. */
+
+.dist-notice {
+  margin: 0 0 16px; padding: 10px 14px; border-radius: 10px;
+  border: 1px solid rgba(255, 190, 90, .35); background: rgba(255, 190, 90, .08);
+  color: #e8c98a; font-size: 13px; line-height: 1.6;
+}
+.dist-notice.err { border-color: rgba(255, 110, 90, .4); background: rgba(255, 110, 90, .08); color: #f0a293; }
+
+.dist-summary { margin: 0 0 14px; }
+.dist-counts { display: flex; flex-wrap: wrap; gap: 18px; margin: 0; padding: 0; list-style: none; }
+.dist-counts li { display: flex; align-items: baseline; gap: 7px; font-size: 13px; }
+.dist-counts b { font-size: 19px; font-variant-numeric: tabular-nums; }
+.dist-counts span { color: rgba(255, 255, 255, .55); }
+.dist-counts li.zero b { color: rgba(255, 255, 255, .35); }
+.dist-meta { margin: 8px 0 0; font-size: 12px; color: rgba(255, 255, 255, .45); }
+
+.dist-tabs { display: flex; gap: 4px; margin: 18px 0 12px; flex-wrap: wrap; }
+.dist-tab {
+  border: 1px solid rgba(255, 255, 255, .12); background: transparent; color: inherit;
+  border-radius: 99px; padding: 6px 14px; font-size: 13px; cursor: pointer;
+}
+.dist-tab.active { background: rgba(255, 255, 255, .1); border-color: rgba(255, 255, 255, .28); }
+
+.dist-filters { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 12px; }
+.dist-filters input, .dist-filters select {
+  background: rgba(255, 255, 255, .05); color: inherit; font: inherit; font-size: 13px;
+  border: 1px solid rgba(255, 255, 255, .14); border-radius: 8px; padding: 6px 10px;
+}
+.dist-filters input { min-width: 240px; flex: 1 1 240px; }
+
+.dist-scroll { overflow-x: auto; }
+.dist-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.dist-table th, .dist-table td {
+  text-align: left; padding: 8px 10px; border-bottom: 1px solid rgba(255, 255, 255, .08);
+  vertical-align: top;
+}
+.dist-table th { font-size: 11.5px; color: rgba(255, 255, 255, .5); font-weight: 600; white-space: nowrap; }
+.dist-table tbody tr { cursor: pointer; }
+.dist-table tbody tr:hover { background: rgba(255, 255, 255, .04); }
+.dist-table td.t { max-width: 340px; }
+.dist-sub { display: block; font-size: 11.5px; color: rgba(255, 255, 255, .45); margin-top: 2px; }
+
+.tag {
+  display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 99px;
+  border: 1px solid rgba(255, 255, 255, .16); color: rgba(255, 255, 255, .72);
+  margin: 0 4px 3px 0; white-space: nowrap;
+}
+.tag.ok { border-color: rgba(120, 220, 160, .45); color: #8fe0b4; }
+.tag.warn { border-color: rgba(255, 200, 110, .45); color: #ecc98a; }
+.tag.bad { border-color: rgba(255, 120, 100, .5); color: #f0a293; }
+.tag.mut { color: rgba(255, 255, 255, .42); }
+
+.dist-empty { color: rgba(255, 255, 255, .45); font-size: 13px; padding: 22px 0; }
+
+/* §31 상세 */
+.dist-detail {
+  width: min(880px, 94vw); max-height: 88vh; border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 14px; background: #101216; color: #e9edf3; padding: 0;
+}
+.dist-detail::backdrop { background: rgba(0, 0, 0, .62); }
+.dist-detail-head {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 14px 18px; border-bottom: 1px solid rgba(255, 255, 255, .1); position: sticky; top: 0;
+  background: #101216;
+}
+.dist-detail-body { padding: 16px 18px 24px; overflow-y: auto; max-height: calc(88vh - 56px); }
+.dist-detail h4 {
+  margin: 20px 0 8px; font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+  color: rgba(255, 255, 255, .48);
+}
+.dist-detail h4:first-child { margin-top: 0; }
+.dist-kv { width: 100%; border-collapse: collapse; font-size: 13px; }
+.dist-kv th {
+  text-align: left; width: 34%; padding: 5px 8px 5px 0; color: rgba(255, 255, 255, .5);
+  font-weight: 500; vertical-align: top;
+}
+.dist-kv td { padding: 5px 0; word-break: break-word; }
+.dist-pre {
+  white-space: pre-wrap; font: 12.5px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: rgba(255, 255, 255, .04); border: 1px solid rgba(255, 255, 255, .09);
+  border-radius: 8px; padding: 11px 13px; margin: 6px 0 0;
+}
+.dist-claim { border-left: 2px solid rgba(255, 255, 255, .18); padding: 3px 0 3px 11px; margin: 7px 0; font-size: 13px; }
+.dist-claim.OBSERVED { border-left-color: #6fc9ff; }
+.dist-claim.ANALYZED { border-left-color: #ecc98a; }
+.dist-claim.INTERPRETED { border-left-color: #c9a6ff; }
+.dist-claim em { font-style: normal; font-size: 11px; color: rgba(255, 255, 255, .45); display: block; }
+.dist-problem { color: #f0a293; font-size: 12.5px; margin: 3px 0; }
+.dist-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.dist-plat { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+.dist-plat button {
+  border: 1px solid rgba(255, 255, 255, .14); background: transparent; color: inherit;
+  border-radius: 8px; padding: 5px 11px; font-size: 12.5px; cursor: pointer;
+}
+.dist-plat button.on { background: rgba(255, 255, 255, .1); border-color: rgba(255, 255, 255, .3); }
+
+/* §131 달력 */
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+.cal .h { font-size: 11px; color: rgba(255, 255, 255, .42); padding: 3px 5px; }
+.cal .d {
+  border: 1px solid rgba(255, 255, 255, .08); border-radius: 8px; min-height: 76px;
+  padding: 5px 6px; font-size: 11px;
+}
+.cal .d.today { border-color: rgba(120, 190, 255, .5); }
+.cal .d b { display: block; color: rgba(255, 255, 255, .55); font-weight: 500; margin-bottom: 3px; }
+.cal .d .i { display: block; margin: 2px 0; color: rgba(255, 255, 255, .8); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (max-width: 720px) {
+  .dist-table thead { display: none; }
+  .dist-table tbody tr { display: grid; grid-template-columns: 1fr; padding: 8px 0; }
+  .dist-table td { border: 0; padding: 2px 0; }
+  .cal { grid-template-columns: repeat(2, 1fr); }
+}

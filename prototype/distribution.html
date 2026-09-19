@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>earthus 배포 관리</title>
+<meta name="robots" content="noindex, nofollow, noarchive">
+<meta name="theme-color" content="#0A0A0A">
+<link rel="icon" href="./favicon.ico">
+<link rel="stylesheet" href="./css/studio.css">
+<link rel="stylesheet" href="./css/distribution.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="earthus로 돌아가기">
+      <img src="./logo-lockup.png" alt="earthus">
+    </a>
+    <div class="topbar-title">
+      <strong>배포 관리</strong>
+      <span>후보 · 검토 · 예약 · 발행 기록</span>
+    </div>
+    <div class="account-state">
+      <a class="button button-quiet button-small" href="./studio.html">콘텐츠 스튜디오</a>
+      <a class="button button-quiet button-small" href="./admin.html">관리자</a>
+      <span id="who">권한 확인 중</span>
+      <button class="button button-quiet button-small" id="signOut" type="button" hidden>로그아웃</button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="gate" id="gate" aria-labelledby="gateTitle">
+      <div class="gate-mark" aria-hidden="true">D</div>
+      <p class="kicker">관리자 전용</p>
+      <h1 id="gateTitle">올리는 손은 사람입니다.</h1>
+      <p id="gateMessage">earthus 관리자 계정으로 로그인해야 배포 관리가 열립니다.</p>
+      <div class="gate-actions">
+        <button class="button button-primary" id="signInGoogle" type="button">Google로 로그인</button>
+        <a class="button button-quiet" href="./">earthus로 돌아가기</a>
+      </div>
+    </section>
+
+    <div id="dist" hidden>
+      <!-- §143 · §148 — 이 줄은 지우지 않는다. 후보를 게시물로 착각하지 않게 한다. -->
+      <p class="dist-notice" id="notice">불러오는 중…</p>
+
+      <!-- §30 · §154 — 큰 카드 대신 한 줄 요약 -->
+      <section class="dist-summary" aria-label="상태 요약">
+        <ol class="dist-counts" id="counts"></ol>
+        <p class="dist-meta" id="meta"></p>
+      </section>
+
+      <nav class="dist-tabs" role="tablist" aria-label="배포 화면">
+        <button class="dist-tab active" role="tab" data-view="list" aria-selected="true">콘텐츠</button>
+        <button class="dist-tab" role="tab" data-view="calendar" aria-selected="false">달력</button>
+        <button class="dist-tab" role="tab" data-view="queue" aria-selected="false">발행 큐</button>
+        <button class="dist-tab" role="tab" data-view="analytics" aria-selected="false">성과</button>
+        <button class="dist-tab" role="tab" data-view="channels" aria-selected="false">채널</button>
+      </nav>
+
+      <!-- §86 · §87 필터와 검색 -->
+      <form class="dist-filters" id="filters" autocomplete="off">
+        <input type="search" id="q" placeholder="사건 ID · 현상 · 콘텐츠 ID · 제목" aria-label="검색">
+        <select id="fType" aria-label="유형"><option value="">유형 전체</option></select>
+        <select id="fElig" aria-label="자격"><option value="">자격 전체</option></select>
+        <select id="fPriority" aria-label="우선순위"><option value="">우선순위 전체</option></select>
+        <select id="fPhenomenon" aria-label="현상"><option value="">현상 전체</option></select>
+        <button class="button button-quiet button-small" id="reset" type="reset">초기화</button>
+      </form>
+
+      <section id="view-list" class="dist-view">
+        <div class="dist-scroll">
+          <table class="dist-table">
+            <thead><tr>
+              <th>상태</th><th>유형</th><th>제목</th><th>사건 · 현상</th>
+              <th>플랫폼</th><th>신뢰도</th><th>검증</th><th>발행</th>
+            </tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <p class="dist-empty" id="listEmpty" hidden></p>
+      </section>
+
+      <section id="view-calendar" class="dist-view" hidden></section>
+      <section id="view-queue" class="dist-view" hidden></section>
+      <section id="view-analytics" class="dist-view" hidden></section>
+      <section id="view-channels" class="dist-view" hidden></section>
+    </div>
+  </main>
+
+  <!-- §31 상세 · §32 출처 패널 · §97 미리보기 -->
+  <dialog id="detail" class="dist-detail">
+    <div class="dist-detail-head">
+      <strong id="dTitle">콘텐츠</strong>
+      <button class="button button-quiet button-small" id="dClose" type="button">닫기</button>
+    </div>
+    <div class="dist-detail-body" id="dBody"></div>
+  </dialog>
+
+  <script type="module" src="./js/distribution-admin.js"></script>
+</body>
+</html>

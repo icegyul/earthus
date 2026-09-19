@@ -1,0 +1,375 @@
+EARTHUS V2 유료 사용자 중심 UX 전면개편 보고서
+메뉴별 1:1 비교 + AFTER 시각화 + Claude Code 개발지시서 / 2026-09-20
+목표: 기능 수가 많은 3D 지구본이 아니라, 사용자가 돈을 내고 계속 쓰는 Earth Intelligence Workstation으로 재구축한다.
+이번 보고서는 현재 EARTHUS V2 라이브 셸에서 확인되는 구조와, 같은 문제를 해결해 온 Mapped Earth / Windy의 현재 공개 구조를 메뉴 단위로 대응시켜 작성했다. EARTHUS V2의 현재 /v2 화면에는 검색, 링크 공유, JPG 저장, 설정, 구름 소스, 눈·얼음, 자동 회전, 시뮬레이션·표현 튜닝, 지형 과장, 등심선, 음영, 위성 색 혼합, 태양 조명, 3D 지구/3D 지형 전환 등이 함께 노출되어 있다.
+중요: 아래 AFTER 이미지는 현재 EARTHUS V2의 3D 지구 정체성을 유지하면서, 메뉴/레이어/legend/Inspector 구조를 재설계한 콘셉트 렌더다. 실제 현재 화면의 스크린샷을 변형한 것이 아니라 개발 방향을 확정하기 위한 시각 시안이다.
+  [IMG media/image1.png]
+EARTHUS V2 메뉴별 AFTER 콘셉트 보드 — Temperature / Wind / Rain / Clouds / Ocean / Hazards / Air Quality / Space / Terrain / Compare / Intelligence / Simulation
+# 1. 이번 개편에서 절대 지켜야 하는 8가지 규칙
+항목
+개발 기준
+1. 현상 우선
+Temperature, Wind, Rain, Clouds, Ocean, Hazards, Air Quality, Space, Terrain을 1급 현상 메뉴로 제공한다.
+2. 단일 Global Timeline
+메뉴마다 새로운 시간 막대/슬라이더를 만들지 않는다. 시간축은 화면 전체에서 단 하나만 존재한다.
+3. Data와 View 분리
+데이터 선택과 지형 과장/태양각/위성 색 혼합 같은 렌더링 조작을 같은 패널에 두지 않는다.
+4. Stepped visualization
+온도/강수/대기질/해양 편차/위험도는 연속 그라데이션만으로 표현하지 않는다. 구간형 색 + contour + 숫자 라벨을 조합한다.
+5. Inspector
+선택한 위치/이벤트/관측소의 정확한 값, 단위, 시간, 출처, 모델을 우측에서 읽는다.
+6. Compare first-class
+모델 비교는 설정이 아니라 독립 작업이다. 카메라/시간/고도/legend가 동기화되어야 한다.
+7. Intelligence is evidence-first
+AI 문장보다 원수치·출처·시간·계산근거가 먼저 보인다.
+8. Simulation is a workspace
+시뮬레이션은 일반 레이어 메뉴에 섞지 않고 별도 공간으로 분리한다.
+# 2. 최종 정보구조
+권장 기본 셸은 다음과 같다. 좌측은 현상 선택, 중앙은 3D Earth, 우측은 필요할 때만 열리는 Inspector, 하단은 단일 Global Timeline이다. 현재 /v2 설정에 있는 시각 튜닝값은 View > Appearance로 이동한다.
+항목
+개발 기준
+LEFT RAIL
+Weather / Ocean / Hazards / Air Quality / Space / Terrain
+CENTER
+3D Earth + active data field + optional isolines/particles
+RIGHT INSPECTOR
+Value / Unit / Source / Observation time / Model / Compare / Intelligence
+BOTTOM
+Now ↔ Past/Forecast Global Timeline 하나
+TOP
+Search / Share / View / Compare / Intelligence / Simulation / Account
+VIEW > APPEARANCE
+3D Earth/Terrain, Satellite, Atmosphere, Hillshade, Terrain exaggeration, Sun lighting
+NO
+메뉴마다 독립 slider bar를 추가하는 방식, 긴 환경설정 패널을 데이터 메뉴에 삽입하는 방식
+# 3. 메뉴별 1:1 비교 및 개발 기준
+## 01. Temperature / 기온
+항목
+개발 기준
+CURRENT EARTHUS
+현재 V2는 설정과 표현 튜닝이 한곳에 섞여 있고, 사용자가 느끼는 온도 표현은 연속적인 색 변화에 의존한다. 사용자가 온도의 경계를 빠르게 읽거나 특정 임계구간을 비교하기 어렵다.
+MAPPED.earth
+mapped.earth는 temperature를 핵심 단추로 즉시 전환하고, 지구 자체를 데이터 필드로 바꾸는 단순 진입 구조를 사용한다.
+WINDY
+Windy는 Temperature를 1급 현상으로 두고, map overlay와 isolines를 별도로 조절한다. 현재 메뉴에는 Temperature와 Isolines가 분리되어 있다.
+EARTHUS AFTER
+온도는 기본을 Stepped Bands(구간형)로 바꾸고 2°C/5°C 등온선을 선택적으로 오버레이한다. 우측 Inspector에는 Surface/850hPa, Actual/Anomaly, Model, Time만 남긴다.
+  [IMG media/image2.png]
+AFTER 콘셉트 — Temperature / 기온
+### 개발 Acceptance Criteria
+연속 그라데이션 단독 표현 금지
+온도 경계가 눈에 보이는 구간형 팔레트 지원
+등온선에 숫자 라벨 제공
+관측/예보/평년 대비 편차를 동일 UI에서 전환
+Legend가 항상 데이터 의미와 단위를 표시
+유료 UX 포인트: Explorer: 평년 대비 편차·위치 리딩 / Pro: 모델 비교·threshold 분석
+## 02. Wind / 바람
+항목
+개발 기준
+CURRENT EARTHUS
+바람은 단순 숫자나 한 가지 시각 효과가 아니라 방향성과 속도를 동시에 읽어야 한다. 현재 UI에서 표현 튜닝이 별도 설정으로 분산되면 데이터보다 조작이 먼저 보인다.
+MAPPED.earth
+mapped.earth는 wind를 핵심 레이어로 두고 실제 필드가 움직이는 3D 지구 자체를 데이터 시각화로 사용한다.
+WINDY
+Windy는 Wind를 1급 메뉴로 제공하고 Particles animation, Altitude, Forecast model, Isolines 등을 별도 제어한다.
+EARTHUS AFTER
+지도 자체는 애니메이션 입자와 속도 밴드를 보여주고, 우측에 높이(10m/850hPa 등), 모델, 시간, 입자 강도를 컴팩트하게 둔다. 입자 강도는 슬라이더가 아니라 3단 프리셋으로 바꾼다.
+  [IMG media/image3.png]
+AFTER 콘셉트 — Wind / 바람
+### 개발 Acceptance Criteria
+속도와 방향을 동시에 인지할 수 있어야 함
+Particles ON/OFF와 강도는 1곳에서만 제어
+고도/모델/시간은 동일 Inspector에 배치
+속도 legend는 m/s·kt 단위를 동시 지원
+강풍 핵심영역은 contour/핵 강조 가능
+유료 UX 포인트: Explorer: 시간/고도 확장 / Pro: 모델 비교 및 wind field 분석
+## 03. Rain / 강수
+항목
+개발 기준
+CURRENT EARTHUS
+강수는 비·눈·누적강수·강우강도를 분리해서 보여줘야 한다. 한 색상 면으로만 표현하면 현재 강수와 누적강수의 의미가 섞인다.
+MAPPED.earth
+mapped.earth는 rainfall을 직접 선택하게 하며 데이터 field의 형태를 단순하게 보여준다.
+WINDY
+Windy는 Rain, snow / Rain, thunder / Rain accumulation을 별도 레이어로 구분한다.
+EARTHUS AFTER
+Rain은 ①현재 강우 ②1/3/24시간 누적 ③눈/비 타입 ④레이더/모델을 Context Chip으로 나눈다. 강수량은 단계형 색으로 바꾸고 강한 코어는 숫자 contour로 표시한다.
+  [IMG media/image4.png]
+AFTER 콘셉트 — Rain / 강수
+### 개발 Acceptance Criteria
+현재강수와 누적강수를 시각적으로 확실히 구분
+mm/h와 mm 누적 단위를 명시
+강수 유형 토글
+강한 강수대의 contour 또는 핵 영역 제공
+timeline 이동 시 legend 단위가 자동 변경
+유료 UX 포인트: Explorer: 누적·강수 타입 / Pro: storm-core 분석과 모델 비교
+## 04. Clouds / 구름
+항목
+개발 기준
+CURRENT EARTHUS
+현재 V2 설정에 관측/천리안/모델/정적 구름 선택이 있고 별도의 자동회전/시각 튜닝이 함께 노출된다. 데이터와 표현 설정이 한 화면에 모인다.
+MAPPED.earth
+mapped.earth는 3D globe를 중심으로 데이터가 표면에 드레이프되는 방식이고, 구름은 핵심 weather field로 단순화해 다룰 수 있다.
+WINDY
+Windy는 Clouds와 Satellite를 분리하여 관측 영상과 모델 계열을 구분한다.
+EARTHUS AFTER
+Clouds에서는 Observation / Forecast를 가장 먼저 구분하고, 위성영상은 Satellite 별도 모드로 둔다. 불투명도/입체감은 View > Atmosphere로 보내 데이터 메뉴에서 제거한다.
+  [IMG media/image5.png]
+AFTER 콘셉트 — Clouds / 구름
+### 개발 Acceptance Criteria
+관측과 모델의 의미가 동일 화면에서 혼동되지 않아야 함
+Satellite는 별도 quick mode
+구름량/운정고/저·중·고층을 칩으로 선택
+입체감은 시각 설정으로 이동
+현재시각과 영상의 관측시각을 함께 표기
+유료 UX 포인트: Explorer: 관측/예보 비교 / Pro: cloud-top/멀티소스 분석
+## 05. Ocean / 해양
+항목
+개발 기준
+CURRENT EARTHUS
+EARTHUS의 해양 범위에는 해수면 온도·편차·파고·너울·해류가 있다. 그러나 이를 한꺼번에 보여주기보다 현상별 핵심 표현과 분석을 분리해야 한다.
+MAPPED.earth
+mapped.earth는 Currents, SST, SST HD, SSTA를 명확히 구분하고, 해류는 애니메이션 field로 보여준다.
+WINDY
+Windy는 Waves, sea를 하나의 해양 카테고리로 묶고 파랑/해류/해상 상태를 전문 사용자가 선택한다.
+EARTHUS AFTER
+Ocean은 SST / SSTA / Currents / Waves 4개 핵심 모드로 단순화한다. SST와 SSTA는 색상 밴드가 다르고, Currents는 유선/입자, Waves는 방향+높이 glyph로 표현한다.
+  [IMG media/image6.png]
+AFTER 콘셉트 — Ocean / 해양
+### 개발 Acceptance Criteria
+SST와 anomaly의 색 의미를 명확히 분리
+해류는 입자/streamline 기본 ON
+파고와 너울을 별도 수치로 표현
+해수면 온도는 °C와 threshold legend 제공
+해양 데이터 업데이트 시각과 출처를 Inspector에 고정
+유료 UX 포인트: Explorer: SST/SSTA/Currents / Pro: high-res SST·wave·current 비교
+## 06. Hazards / 재난
+항목
+개발 기준
+CURRENT EARTHUS
+EARTHUS는 태풍·지진·산불·쓰나미·기상특보 등 안전 데이터를 제공한다. 이 영역은 시각적 화려함보다 심각도와 공식성, 최신성이 먼저 보여야 한다.
+MAPPED.earth
+mapped.earth는 현상을 데이터 필드로 보여주는 데 집중하고, 재난 전용 정보층은 비교 대상이 제한적이다.
+WINDY
+Windy는 Hurricane tracker와 Warnings를 별도로 제공하며, 경보를 현상별로 읽을 수 있게 한다.
+EARTHUS AFTER
+Hazards는 Event-first UI로 전환한다. 지도에서 이벤트를 선택하면 Track/Warning Area/Intensity/Official Source/Updated Time이 오른쪽 Inspector에 뜬다. 색은 단계형 Severity로 제한한다.
+  [IMG media/image7.png]
+AFTER 콘셉트 — Hazards / 재난
+### 개발 Acceptance Criteria
+재난 데이터는 연속 그라데이션보다 severity band 우선
+태풍은 경로·예측영역·현재위치 분리
+지진은 진앙/규모/깊이 동시에 표시
+산불은 hot spot와 perimeter를 구분
+공식 발표 시각과 기관명을 항상 노출
+안전 정보는 구독 여부와 관계없이 접근 가능하도록 유지
+유료 UX 포인트: 안전 데이터는 기본 무료. Pro는 event history·scenario context 등 분석층 제공
+## 07. Air Quality / 대기질
+항목
+개발 기준
+CURRENT EARTHUS
+EARTHUS 범위에는 PM2.5·PM10·오존·자외선 등이 있다. 대기질은 색상 자체보다 건강 기준과 관측값을 명확히 읽게 해야 한다.
+MAPPED.earth
+mapped.earth는 NO₂를 직접 핵심 레이어로 제공하고 TROPOMI를 출처로 명시한다.
+WINDY
+Windy는 Air quality를 독립 카테고리로 두고 Air quality stations를 별도 지도 요소로 제공한다.
+EARTHUS AFTER
+PM2.5/PM10/O3/NO2를 pollutant chip으로 전환하고 각 pollutant별 threshold band를 적용한다. 지도는 넓은 field, 우측은 관측소/위성/모델 출처를 분리해 보여준다.
+  [IMG media/image8.png]
+AFTER 콘셉트 — Air Quality / 대기질
+### 개발 Acceptance Criteria
+오염물질 선택이 1탭
+값의 단위와 기준 구간을 legend에 표시
+관측소와 모델 field를 혼동시키지 않음
+최근 업데이트 시각과 데이터 출처 노출
+오염이 높은 영역은 명확한 색 구획으로 보임
+유료 UX 포인트: Explorer: pollutant drill-down / Pro: 모델·관측소·시간 비교
+## 08. Space / 우주
+항목
+개발 기준
+CURRENT EARTHUS
+EARTHUS 범위에는 오로라·일식·인공위성 궤도 등 sky/space가 포함된다. 일반 기상 레이어와 같은 방식으로 처리하면 제품 정체성이 약해진다.
+MAPPED.earth
+mapped.earth는 Aurora와 satellites를 지구 데이터의 일부로 보여주며 live globe의 확장 기능으로 사용한다.
+WINDY
+Windy는 기상 중심 서비스라 Space는 핵심 메뉴가 아니다. 따라서 EARTHUS가 차별화할 영역으로 남긴다.
+EARTHUS AFTER
+Space를 독립 top-level 메뉴로 만들고 Aurora / Satellites / Solar activity를 하위 모드로 둔다. 위성은 선택한 위성의 궤도·고도·속도·다음 통과를 Inspector에 표시한다.
+  [IMG media/image9.png]
+AFTER 콘셉트 — Space / 우주
+### 개발 Acceptance Criteria
+Aurora probability와 Kp index를 동시에 표시
+위성 궤도는 ON/OFF와 개별 선택 지원
+위성 선택 시 orbit/altitude/speed/next pass 정보 제공
+기상 지도와 Space 데이터가 시각적으로 충돌하지 않도록 모드 분리
+유료 UX 포인트: Explorer: Aurora/satellite overview / Pro: orbit analysis·event timeline
+## 09. Terrain / 지형·위성
+항목
+개발 기준
+CURRENT EARTHUS
+현재 V2 /v2 화면에는 지형 과장 50×, 등심선 간격 500m, 음영 강도, 위성 색 혼합, 태양 방위각/고도각 등이 한 설정 화면에 노출된다.
+MAPPED.earth
+mapped.earth는 고도·지형을 데이터 그 자체로 보고 population을 terrain relief로 바꾸는 등 지형을 표현 도구로 활용한다.
+WINDY
+Windy에서는 Altitude와 Display on map이 데이터 해석 보조로 분리되어 있다.
+EARTHUS AFTER
+Data menu와 View menu를 완전히 분리한다. Terrain은 Elevation/Contours/Hillshade/Satellite라는 데이터 모드로 단순화하고, terrain exaggeration·sun angle·satellite blend 같은 렌더러 조작은 View > Appearance로 이동한다.
+  [IMG media/image10.png]
+AFTER 콘셉트 — Terrain / 지형·위성
+### 개발 Acceptance Criteria
+표현 튜닝값이 데이터 메뉴에 노출되지 않음
+terrain exaggeration은 Advanced View에만 존재
+contour 간격은 프리셋 100/250/500/1000m
+Satellite는 imagery source picker로 분리
+현재 3D Earth/3D Terrain 전환은 View의 하나의 control로 통합
+유료 UX 포인트: Explorer: terrain & contours / Pro: high-detail terrain, analysis presets
+## 10. Model Compare / 모델 비교
+항목
+개발 기준
+CURRENT EARTHUS
+현재 V2의 /v2 화면에서는 공유와 지구/지형 전환은 있으나 모델 비교가 사용자의 핵심 작업 흐름으로 전면화되어 있지 않다.
+MAPPED.earth
+mapped.earth는 GFS와 ECMWF의 side-by-side comparison을 live globe와 연결하는 방향을 명시한다.
+WINDY
+Windy는 여러 예보 모델을 제공하고 Forecast model을 독립적인 선택 영역으로 둔다.
+EARTHUS AFTER
+Compare를 별도 1급 기능으로 만든다. Model A / Model B를 선택하고 시간·고도·변수·legend를 동기화한다. 화면은 split globe 또는 draggable wipe로 비교한다.
+  [IMG media/image11.png]
+AFTER 콘셉트 — Model Compare / 모델 비교
+### 개발 Acceptance Criteria
+두 모델의 카메라/시간/고도 동기화
+같은 color scale을 쓸지 모델별 scale을 쓸지 명시적으로 선택
+difference mode 제공
+모델 run 시각과 resolution 표시
+비교 결과를 URL로 공유 가능
+유료 UX 포인트: Pro 핵심 가치: GFS/ECMWF 등 모델을 동일한 조건으로 비교
+## 11. Intelligence / AI 분석
+항목
+개발 기준
+CURRENT EARTHUS
+EARTHUS의 제품 정의상 Intelligence는 관측 데이터에서 분석을 제공하는 중간 단계이며, 출처/근거를 함께 보여주는 것이 중요하다.
+MAPPED.earth
+mapped.earth는 각 layer의 source와 무엇을 보여주는지를 분명히 설명하는 방식이 강점이다.
+WINDY
+Windy는 값과 예보 정보를 풍부하게 제공하지만 EARTHUS처럼 별도의 source-backed intelligence stage를 제품 구조로 내세우지는 않는다.
+EARTHUS AFTER
+위치 선택 → Current → Normal/Anomaly → Why → Next 순의 Inspector를 제공한다. AI 문장은 반드시 원 데이터, 시간, 출처, 계산 기준을 바로 아래에 표시한다.
+  [IMG media/image12.png]
+AFTER 콘셉트 — Intelligence / AI 분석
+### 개발 Acceptance Criteria
+AI 요약보다 원 수치가 먼저 보임
+각 문장에 source/time/provenance 연결
+평년 대비 편차와 confidence를 분리 표시
+왜 그런지 / 다음에 무엇을 봐야 하는지 2개 카드 제공
+Intelligence 결과를 Simulation에 그대로 전달
+유료 UX 포인트: Explorer 핵심 가치: source-backed intelligence report
+## 12. Simulation / 시뮬레이션
+항목
+개발 기준
+CURRENT EARTHUS
+EARTHUS는 Intelligence → Simulation 연결이 제품 차별화 요소다. 다만 일반 사용자 화면에서 시뮬레이션 설정과 표현 튜닝이 섞이면 전문 기능의 가치가 희석된다.
+MAPPED.earth
+mapped.earth의 Time Machine과 데이터 필드 전환은 시간축 탐색에 강점이 있다.
+WINDY
+Windy는 모델과 시간축을 풍부하게 제공하지만 EARTHUS가 추구하는 scenario simulation과는 역할이 다르다.
+EARTHUS AFTER
+Simulation은 별도 작업 공간으로 분리한다. Current → Baseline → Scenario → Result 4단계로 보여주며, parameter는 sliders 대신 명명된 scenario chips와 입력 카드로 관리한다.
+  [IMG media/image13.png]
+AFTER 콘셉트 — Simulation / 시뮬레이션
+### 개발 Acceptance Criteria
+Simulation 진입 전 현재 상태 스냅샷 자동 저장
+Scenario parameter가 무엇을 바꿨는지 명시
+결과는 absolute value와 delta를 동시에 표시
+시간/공간 해상도와 모델 출처 표시
+Explorer는 report, Pro는 simulation 실행으로 권한 구분
+유료 UX 포인트: Pro 핵심 가치: scenario creation, model run, result comparison
+# 4. Temperature를 첫 구현 기준으로 삼는 이유
+  [IMG media/image14.png]
+온도 표현의 핵심 전환: 연속 그라데이션 → 구간형 색 + 등온선 + 숫자 라벨
+Temperature를 공통 시각화 엔진의 기준 구현체로 만든다. 한 번 잘 만들면 같은 renderer contract를 Rain, Air Quality, SST/SSTA, Hazard severity에 재사용할 수 있다.
+항목
+개발 기준
+Color scale
+기본: 5°C/2°C stepped bands, 고급: 사용자 구간 설정
+Contour
+2°C/5°C interval, 숫자 label, 경계 강조
+Legend
+현재 field, unit, range, data timestamp를 한 카드에 표시
+Mode
+Surface / 850 hPa / Anomaly / Normalized 등
+Interaction
+지도 클릭 → 우측 Inspector에서 정확값 + source/time + compare
+Performance
+WebGL shader 또는 texture lookup 기반 banding, contour는 별도 vector/line pass
+# 5. 유료구독자가 느껴야 하는 변화
+유료 사용자에게 보여줘야 하는 차이는 "잠금 아이콘이 많다"가 아니다. 같은 지구를 보더라도 유료 사용자는 더 빨리 정확한 답을 얻고, 비교하고, 근거를 확인하고, 다음 단계로 들어갈 수 있어야 한다.
+항목
+개발 기준
+무료
+현상 선택 → 현재 시각화 → 기본 location value
+EXPLORER
+현상 선택 → 정확값 → source/time → anomaly → short intelligence report
+PRO
+현상 선택 → compare → multi-source/model → intelligence → simulation → export/share
+안전정보
+태풍/지진/쓰나미 등 safety information은 구독 여부와 무관하게 계속 접근 가능하게 유지
+결제 체감
+기능 수가 아니라 분석 깊이와 시간 절약에서 가치가 느껴지게 설계
+# 6. 구현 우선순위
+항목
+개발 기준
+P0
+Global Shell 재배치, Single Timeline, Right Inspector, Data/View 분리
+P0
+Temperature renderer: stepped bands + isolines + labels + legend contract
+P0
+Wind renderer: particle field + speed bands + height/model/time inspector
+P0
+Rain renderer: current / accumulation / type / radar-model distinction
+P1
+Ocean / Hazards / Air Quality / Clouds 공통 renderer contract 적용
+P1
+Compare workspace: split / wipe / diff / synced camera-time-level
+P1
+Intelligence inspector와 provenance contract
+P2
+Simulation workspace와 export/report pipeline
+P2
+Premium presets, saved views, alerts, history/replay 확장
+# 7. 금지사항
+메뉴 하나를 열 때마다 길쭉한 새 slider bar를 생성하지 않는다.
+연속 그라데이션 하나만으로 온도·강수·대기질·위험도를 표현하지 않는다.
+데이터 선택과 렌더링 튜닝을 같은 패널에 넣지 않는다.
+AI 설명을 데이터보다 앞에 배치하지 않는다.
+모델 비교를 settings submenu로 숨기지 않는다.
+유료 기능을 잠금 아이콘만으로 표현하지 않는다. 먼저 사용 가치가 보여야 한다.
+# 8. 현재 참고 사이트에서 확인한 구조
+Mapped Earth는 현재 live globe에서 speed, temperature, wind, borders, rivers, NO₂, rainfall, population을 짧은 버튼 집합으로 제공한다. About 페이지에는 GFS/ECMWF, SST/SST HD/SSTA, currents, aurora, PM2.5/aerosol, ERA5 Time Machine 등 각 field와 데이터 출처가 설명되어 있다.
+Mapped Earth: mapped.earth/earth / About
+Windy의 현재 Menu는 Wind, Temperature, Rain/snow, Clouds/aviation, Waves/sea, Air quality, Drought, Warnings를 1급 카테고리로 제공하고, Weather radar, Satellite, Wind, Rain/thunder, Temperature, Hurricane tracker, Clouds, Waves, Rain accumulation 등 세부 레이어를 제공한다. 또한 Altitude, Display on map, Particles animation, Isolines, Forecast model을 독립 제어로 분리한다.
+Windy: windy.com/menu
+현재 EARTHUS V2 /v2 화면은 Search, Share/Image, Settings, cloud source, snow/ice, auto rotation, simulation/render tuning, terrain exaggeration, contour interval, hillshade, satellite blend, sun position, 3D Earth / 3D Terrain toggle를 노출한다. 이 자체가 현재 화면에서 확인된 구조이며, 본 보고서는 이 중 데이터 탐색과 표현 튜닝을 분리하는 것을 핵심 개선점으로 삼는다.
+EARTHUS V2: earthus.net/v2/
+# 9. Definition of Done
+항목
+개발 기준
+Navigation
+어떤 현상이든 1탭으로 진입하고 1개 Global Timeline만 사용
+Readability
+10초 이내에 "어디가 얼마나 다른가"를 알 수 있어야 함
+Traceability
+모든 수치에 source + timestamp + model/observation distinction
+Compare
+두 모델/두 시간/두 변수 비교가 camera와 time을 유지한 채 가능
+Visual contrast
+Temperature/Rain/AQ/Hazard에서 영역 경계와 severity가 즉시 인지됨
+Inspector
+지도 클릭 한 번으로 정확값/단위/source/time 확보
+Paid value
+Explorer/Pro 단계에서 비교·분석·시뮬레이션의 깊이가 명확히 증가
+Performance
+1440p desktop에서 기본 layer 전환 시 UI reflow나 반복 slider 생성이 없어야 함
+# 10. 최종 결론
+EARTHUS V2가 존재해야 하는 이유는 Windy보다 메뉴가 많아서도, Mapped Earth보다 지구가 더 예뻐서도 아니다. 핵심은 "3D Earth 위에 실제 관측/모델 데이터를 올리고 → 차이를 선명하게 읽고 → 출처를 확인하고 → Intelligence로 해석하고 → Simulation으로 다음 상황을 시험하는" 하나의 작업 흐름이다. 따라서 이번 개편은 메뉴를 더 추가하는 프로젝트가 아니라, 데이터 시각화·탐색·근거·비교·분석·시뮬레이션을 하나의 일관된 interaction model로 통합하는 프로젝트다.
+# 11. 개발 참고 문서용 한 줄 지시
+"EARTHUS V2를 레이어 모음이 아니라 분석 작업 공간으로 재구성한다. 현상 선택은 1탭, 시간축은 1개, Inspector는 1개, 데이터와 View는 분리하며, 온도/강수/대기질/위험도는 stepped band + contour + label을 기본 시각 언어로 사용한다."

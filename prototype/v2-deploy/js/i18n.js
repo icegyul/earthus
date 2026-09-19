@@ -295,7 +295,7 @@ const L_EN = {
   warn: 'Weather warnings (live)',
   marine: 'Marine conditions lookup',
   oceanfocus: 'Ocean focus',
-  typhoonsim: 'Typhoon sea-state simulation',
+  typhoonsim: 'Typhoon sea-state what-if scene',
   buoys: 'Ocean buoys (sea temperature)',
   argo: 'Argo floats — the dive record',
   kmasea: 'Marine observation network (waves · temp, 193 sites)',

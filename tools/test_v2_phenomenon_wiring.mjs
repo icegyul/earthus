@@ -101,9 +101,10 @@ test('리포트 종류는 실제 생성기가 있는 현상에만 붙어 있다'
   }
 });
 
-test('시뮬레이션 능력은 정확히 2개다 — 마케팅으로 늘리지 않는다', () => {
+test('시뮬레이션 능력은 정확히 1개다 — 마케팅으로 늘리지 않는다', () => {
+  // 2026-09-20 §G-2: 파도·위성은 장면 표현(MAPPING §0.1)이라 내렸다. 기록 남는 계산은 쓰나미뿐.
   const sim = Object.entries(reg.PHENOMENA).filter(([, p]) => p.capabilities.simulation).map(([id]) => id);
-  assert.deepEqual(sim.sort(), ['hazards.tsunami', 'ocean.wave']);
+  assert.deepEqual(sim.sort(), ['hazards.tsunami']);
 });
 
 // ── PHASE 2 STEP 2.5~2.8 — 선택 문맥과 능력 게이팅 ────────────────────────────
@@ -142,9 +143,9 @@ test('낙뢰는 시뮬레이션도 예보도 없으므로 두 탭이 모두 숨�
   assert.equal(p.capabilities.forecast, false);
 });
 
-test('파고는 시뮬레이션은 있고 예보는 없다 — 지침서 §45 기대와 다른 실제', () => {
+test('파고는 시뮬레이션도 예보도 없다 — 파도 장면은 능력이 아니라 가정 장면(Preview)이다', () => {
   const p = reg.PHENOMENA['ocean.wave'];
-  assert.equal(p.capabilities.simulation, true);
+  assert.equal(p.capabilities.simulation, false, '2026-09-20 §G-2: Gerstner 장면은 기록 남는 계산이 아니다');
   assert.equal(p.capabilities.forecast, false, 'marine.json 은 current= 만 받는다');
 });
 

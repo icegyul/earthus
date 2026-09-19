@@ -2999,7 +2999,7 @@ async function main() {
 
   const scenarioInfoHtml = (cat, eyeKm, lat, lon) => {
     const p = TY_CAT[cat];
-    return `<div class="card-h">${dataBadge('SIMULATION_ONLY')} 태풍 시뮬레이션</div>
+    return `<div class="card-h">태풍 가정 장면</div>
       <div class="card-b">
         <div class="stat"><span class="k">지점</span><span class="v">${fmtPt(lat, lon)}</span></div>
         <div class="stat"><span class="k">카테고리</span><span class="v">${cat} (최대풍속 ~${p.U} m/s)</span></div>
@@ -3011,13 +3011,13 @@ async function main() {
   const simNowInfoHtml = () => {
     const m = seaPoint.marine;
     const w = seaPoint.wind;
-    return `<div class="card-h">${dataBadge('SIMULATION_ONLY')} 모델 값을 입력한 파도</div>
+    return `<div class="card-h">모델 값을 입력한 파도 장면</div>
       <div class="card-b">
         <div class="stat"><span class="k">지점</span><span class="v">${fmtPt(seaPoint.lat, seaPoint.lon)}</span></div>
         <div class="stat"><span class="k">유의파고</span><span class="v">${m.wave_height} m</span></div>
         <div class="stat"><span class="k">풍속</span><span class="v">${w.wind_speed_10m != null ? `${w.wind_speed_10m} m/s` : '—'}</span></div>
         출처 Open-Meteo Marine · ${seaPoint.time || ''}<br/>
-        해양 모델의 파고·풍속으로 계산한 시뮬레이션
+        해양 모델의 파고·풍속을 입력으로 그린 장면 — 기록 남는 계산이 아닙니다
       </div>`;
   };
 
@@ -4543,13 +4543,13 @@ async function main() {
       const base = scenarioBaseline();
       let head = '';
       if (base) {
-        head = `<div class="card"><div class="card-h">기준선이 있는 가정 실험 ${dataBadge('SIMULATION_ONLY')}</div>
+        head = `<div class="card"><div class="card-h">기준선이 있는 가정 장면</div>
         <div class="card-b">${escUI(base.name)} — ${escUI(base.agencyKo)} ${escUI(base.issued || '')} 발표 +24h 전망을 기준선으로 씁니다.<br/>
         위치 ${fmtPt(base.lat, base.lon)} · 풍속 ${base.windMs != null ? `${base.windMs} m/s` : '미제공'} · 회차 ${escUI(base.revisionId)}<br/>
-        슬라이더는 기준선에서의 <b>편차</b>입니다(풍속 ±, 눈까지 거리). 결과는 파도 물리 시뮬레이션이지 예보가 아닙니다.
+        슬라이더는 기준선에서의 <b>편차</b>입니다(풍속 ±, 눈까지 거리). 결과는 파도 장면이지 예보도, 기록 남는 계산도 아닙니다.
         <div class="paycard" style="border-style:solid;margin-top:6px">
           <button class="simgo" data-action="sim-scenario-event">기준선에서 실험 시작 →</button>
-          <div class="paysub">공식 예보 아님 · SIMULATION_ONLY · 실험 기록은 이 기기에만 남습니다</div>
+          <div class="paysub">공식 예보 아님 · 장면 표현 · 실험 기록은 이 기기에만 남습니다</div>
         </div></div></div>`;
       } else if (feed.selected && feed.selected.kind === 'TC' && !feed.packet) {
         /* PHASE 2 §12: 상태를 가르지 않으면 '받는 중'과 '자료 없음'이 같은 문장으로 보인다.
@@ -4562,13 +4562,13 @@ async function main() {
       } else {
         head = `<div class="card"><div class="card-h">기준선 ${dataBadge('UNAVAILABLE')}</div><div class="card-b">사건 탭에서 태풍을 고르면 그 사건의 최신 공식 +24h 전망이 기준선이 됩니다.</div></div>`;
       }
-      return head + `<div class="card"><div class="card-h">태풍 시나리오 ${dataBadge('SIMULATION_ONLY')} <span class="badge demo">무료 프리뷰</span></div>
-        <div class="card-b">가정한 태풍 조건으로 해상 상태를 물리 시뮬레이션합니다.<br/>
+      return head + `<div class="card"><div class="card-h">태풍 가정 장면 <span class="badge demo">무료 프리뷰</span></div>
+        <div class="card-b">가정한 태풍 조건으로 해상 상태를 장면으로 그립니다.<br/>
         지점: ${fmtPt(loc.lat, loc.lon)} ${hasSea ? '(선택한 해상)' : '(기본: 대한해협)'}<br/>
-        시뮬레이션 안에서 카테고리·눈까지 거리를 실시간 조절할 수 있습니다.</div>
+        장면 안에서 카테고리·눈까지 거리를 실시간 조절할 수 있습니다.</div>
         <div class="paycard" style="border-style:solid;">
           <button class="simgo" data-action="sim-scenario" data-lat="${loc.lat}" data-lon="${loc.lon}">시나리오 시작 →</button>
-          <div class="paysub">공식 예보 아님 · SIMULATION_ONLY · 정식 Scenario Lab은 INTELLIGENCE PRO (실제 태풍 트랙 연동 예정)</div>
+          <div class="paysub">공식 예보 아님 · 장면 표현 · 기록 남는 계산(SIMULATION)은 검증된 엔진이 있는 현상만 — 지금은 쓰나미 도달시간</div>
         </div></div>`;
     },
     onAction: (action, ds, value) => {

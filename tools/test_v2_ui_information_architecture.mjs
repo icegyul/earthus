@@ -61,12 +61,13 @@ test('능력 없는 행동은 렌더하지 않는다 (준비 중 금지)', () =>
   assert.match(shellSrc, /btn\.hidden = hide/);
 });
 
-test('시뮬레이션 능력은 정확히 3개다', () => {
-  // 2026-09-10 MASTER: space.satellite 가 빠지면 질문(sim-questions AVAILABLE·SGP4 실엔진)과
-  // 능력표(registry simulation:false)가 서로 거짓말한다 — sat-layer.js SGP4 실전파가 있으므로 3개가 정직하다.
+test('시뮬레이션 능력은 정확히 1개다 — 기록 남는 검증된 계산은 쓰나미 도달시간뿐', () => {
+  // 2026-09-20 계약 §G-2: 파도(Gerstner)·위성(SGP4)은 MAPPING §0.1 이 같은 줄에서 '장면 표현'으로
+  // 분류한다 — simulation_run 대상이 아니다. 둘은 sim-questions 에서 limited 로 내려갔고 장면은 그대로 열린다.
+  // (예전 단언 3개는 09-10 에 '질문표와 능력표가 서로 거짓말하지 않게' 맞춘 것이었다 — 이번엔 둘 다 함께 내렸다.)
   const sim = Object.entries(reg.PHENOMENA)
     .filter(([, p]) => p.capabilities.simulation).map(([id]) => id).sort();
-  assert.deepEqual(sim, ['hazards.tsunami', 'ocean.wave', 'space.satellite']);
+  assert.deepEqual(sim, ['hazards.tsunami']);
 });
 
 // ── 불변식 9 — 능력이 약속한 것과 내용이 같아야 한다 ─────────────────────────

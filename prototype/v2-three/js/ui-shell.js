@@ -20,7 +20,7 @@ import { reportDocHtml, reportKey, reportIndexKey, reportUrl, reportIdFromUrl, c
 // 지시서 §8·§16 — 궁금한 점(추천 질문)은 시뮬레이션 능력 레지스트리가 정한다.
 // 없는 엔진의 질문 버튼은 여기서도 만들지 않는다. 다만 '왜 없는지'를 말하는 버튼은
 // pop-metric-menu 의 선례처럼 둔다 — 조용히 아무 말도 하지 않는 게 더 큰 거짓말이다.
-import { simEntryFor, questionsForPhenomenon, questionsForCountry } from './sim-questions.js?v=1';
+import { simEntryFor, questionsForPhenomenon, questionsForCountry, previewSceneFor } from './sim-questions.js?v=2';
 const safeText = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 // ---------------------------------------------------------------------------
@@ -90,7 +90,7 @@ export const SCENES = [
     layers: [
       { id: 'marine', name: '해양 모델 · 파고와 바람', state: 'MODEL_SIGNAL', src: 'Open-Meteo Marine · GFS 바람', act: true },
       { id: 'oceanfocus', name: '해양 포커스', state: 'DERIVED', src: '선택 해역 · 연결된 해양 자료', act: true },
-      { id: 'typhoonsim', name: '태풍 해상 시뮬레이션', state: 'SIMULATION_ONLY', src: '자체 물리', act: true },
+      { id: 'typhoonsim', name: '태풍 해상 가정 장면', state: 'DEMO', src: '해양 모델 입력 · 장면 표현(기록 남는 계산 아님)', act: true },
       { id: 'buoys', name: '해양 부이 관측 (수온)', state: 'OBSERVED', src: 'NDBC 등 · 1.0 S3', act: true },
       { id: 'argo', name: 'Argo 플로트 — 잠수 기록', state: 'OBSERVED', src: 'Argo · Ifremer ERDDAP', act: true },
       { id: 'kmasea', name: '해상 관측망 (파고·수온 193지점)', state: 'OBSERVED', src: '기상청 해양관측', act: true },
@@ -201,7 +201,7 @@ export const SCENES = [
       { id: 'fireglobal', name: '전지구 산불 화점 (24시간)', state: 'OBSERVED', src: 'NASA FIRMS VIIRS 375m', act: true },
       { id: 'wildfire', name: '산불 위험지수 (전국)', state: 'OFFICIAL_FORECAST', src: '산림청 · 1.0 S3', act: true },
       { id: 'lightning', name: '낙뢰 (최근 60분)', state: 'OBSERVED', src: 'KMA 낙뢰관측망', act: true },
-      { id: 'glof', name: '빙하호 홍수 (GLOF)', state: 'LOCKED', src: 'DEM+파열모델', plan: '지역 3D 위 시나리오' },
+      { id: 'glof', name: '빙하호 홍수 (GLOF)', state: 'LOCKED', src: '기관 관측(호수 수위·하천 유량)', plan: '물길 계산 엔진 없음 — 호수마다 댐 형식이 달라 검증 전에는 계산하지 않는다' },
     ],
   },
   {
@@ -324,7 +324,10 @@ export function initShell(hooks) {
          이력은 "현상을 고르면 그 현상의 과거 기록을 봅니다", 시뮬은 "사건 탭에서
          태풍을 고르면 …" 이라는 빈 약속만 냈다(라이브 실측). 능력은 현상의 성질이다 —
          현상이 없으면 능력도 없다. 없는 것을 탭으로 만들지 않는다. */
-      const hide = !ctx || !ctx.capabilities[cap];
+      /* 2026-09-20 §G-2 — 시나리오 탭은 계산 능력(simulation) **또는** 등록된 가정 장면(Preview, §K-2)이
+         있을 때 열린다. 파도가 simulation:false 로 정정되며 태풍 해상 가정 장면으로 가는 길이 끊기는 것을 막는다.
+         장면 쪽은 SIMULATION 배지를 달지 않는다(main.js getScenario). */
+      const hide = !ctx || !ctx.capabilities[cap] && !(tab === 'scenario' && previewSceneFor(ctx.phenomenonId));
       btn.hidden = hide;
       // 숨긴 탭이 열려 있었으면 사건 탭으로 되돌린다 — 빈 화면을 남기지 않는다.
       if (hide && curTab === tab) showTab('feed');

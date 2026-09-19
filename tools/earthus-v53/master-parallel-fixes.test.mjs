@@ -67,8 +67,10 @@ test('A2/B — 질문 진입의 우주 이동도 하단 불을 켠다', () => {
 });
 
 test('B — space.satellite 능력은 시뮬레이션 질문과 일치한다', () => {
+  // 2026-09-20 §G-2: 둘을 함께 내렸다 — 질문표 limited(장면 표현) · 능력표 simulation:false.
+  // '서로 거짓말하지 않는다'는 이 시험의 뜻은 그대로다(simulation-questions.test 가 두 표 전체를 대조한다).
   assert.match(regSrc, /'space\.satellite': Object\.freeze\(\{/);
-  assert.match(regSrc, /simulation: true, evidence: true, report: false \}\),\s*\n\s*availability: 'ready',\s*\n\s*evidenceProfile: 'OFFICIAL_OBSERVATION',/);
+  assert.match(regSrc, /simulation: false, evidence: true, report: false \}\),\s*\n\s*availability: 'ready',\s*\n\s*evidenceProfile: 'OFFICIAL_OBSERVATION',/);
 });
 
 test('C — 잠긴 기능은 WHAT/WHY/ADDS/UPGRADE 를 말한다', () => {

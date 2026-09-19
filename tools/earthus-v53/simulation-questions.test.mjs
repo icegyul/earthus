@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, existsSync } from 'node:fs';
 
 const reg = await import('../../prototype/v2-three/js/phenomenon-registry.js');
-const { SIM_STATUS, SIM_CAPABILITIES, simEntryFor, questionsForPhenomenon } =
+const { SIM_STATUS, SIM_CAPABILITIES, simEntryFor, questionsForPhenomenon, previewSceneFor } =
   await import('../../prototype/v2-three/js/sim-questions.js');
 
 const src = (p) => readFileSync(new URL(`../../${p}`, import.meta.url), 'utf8');
@@ -79,7 +79,8 @@ test('화면은 레지스트리가 없는 현상에 질문 블록을 그리지 �
   assert.match(shellSrc, /simEntryFor\(pctx\.phenomenonId\)/);
   assert.ok(!/const SIM_CAPABILITIES/.test(shellSrc), 'ui-shell 이 능력표를 따로 들고 있다');
   assert.equal(simEntryFor('weather.precipitation') !== null, true);
-  assert.equal(simEntryFor('weather.temperature'), null, '없는 현상 조회가 null 이어야 한다');
+  // (weather.temperature 는 2026-09-20 §G-2 로 not_available 등재됐다 — 등재 안 된 현상으로 바꿨다)
+  assert.equal(simEntryFor('weather.uv'), null, '없는 현상 조회가 null 이어야 한다');
   assert.equal(simEntryFor(null), null);
 });
 
@@ -105,6 +106,68 @@ test('질문 문장은 선택 언어를 따르고, 없는 엔진의 이유를 �
   assert.ok(koQ[0].reason.length > 5);
   const enQ = questionsForPhenomenon('weather.precipitation', { ko: false }, null);
   assert.match(enQ[0].text, /rain move/i);
+});
+
+// ── 2026-09-20 계약 §G-2 · §K-2 ──────────────────────────────────────────
+test('available 은 기록 남는 검증된 계산뿐이다 — 쓰나미 하나 (§G-2 정정)', () => {
+  const avail = Object.entries(SIM_CAPABILITIES)
+    .filter(([, e]) => e.status === SIM_STATUS.AVAILABLE).map(([id]) => id);
+  assert.deepEqual(avail, ['hazards.tsunami']);
+  assert.equal(SIM_CAPABILITIES['ocean.wave'].status, SIM_STATUS.LIMITED);
+  assert.equal(SIM_CAPABILITIES['space.satellite'].status, SIM_STATUS.LIMITED);
+  assert.ok(!SIM_CAPABILITIES['ocean.wave'].questions.some((q) => q.id === 'wave-typhoon'),
+    '태풍 파도를 계산하는 엔진이 없다 — 계산처럼 읽히는 질문을 두지 않는다');
+});
+
+test('능력표와 현상표는 같은 말을 한다 — simulation:true 인 현상 = available 인 항목', () => {
+  const sim = Object.entries(reg.PHENOMENA).filter(([, p]) => p.capabilities.simulation).map(([id]) => id).sort();
+  const avail = Object.entries(SIM_CAPABILITIES).filter(([, e]) => e.status === SIM_STATUS.AVAILABLE).map(([id]) => id).sort();
+  assert.deepEqual(sim, avail);
+});
+
+test('limited 는 액션이 있으면 누를 수 있고, 한계 문장을 항상 같이 낸다', () => {
+  const ko = { ko: true };
+  const wave = questionsForPhenomenon('ocean.wave', ko, { hasInput: true }).find((q) => q.id === 'wave-motion');
+  assert.equal(wave.status, 'limited');
+  assert.equal(wave.runnable, true, '파도 장면 버튼이 "왜 없나" 버튼으로 바뀌면 안 된다');
+  assert.match(wave.reason, /기록 남는 계산이 아니/);
+  const sat = questionsForPhenomenon('space.satellite', ko, null)[0];
+  assert.equal(sat.runnable, true);
+  assert.match(sat.reason, /기록 남는 계산이 아닙니다/);
+  // 태풍 경로는 공식 예보 탭으로 간다 — 예전에는 limited 라 sim-why 로만 그려져 main.js 분기가 죽어 있었다.
+  const ty = questionsForPhenomenon('hazards.typhoon', ko, null)[0];
+  assert.equal(ty.runnable, true);
+  assert.match(ty.reason, /기관 공식 예보/);
+});
+
+test('등재 9건(CROSSWALK §4-1)은 없는 이유만 말하고 실행 액션이 없다', () => {
+  const nine = ['hazards.glacial_lake_flood', 'hazards.earthquake', 'land.snow_cover', 'ocean.sea_ice',
+    'ocean.sea_level_rise', 'ocean.subsurface_profile', 'weather.temperature', 'weather.air_quality', 'weather.wind'];
+  for (const id of nine) {
+    const e = SIM_CAPABILITIES[id];
+    assert.ok(e, `${id} 가 등재되지 않았다`);
+    assert.equal(e.status, SIM_STATUS.NOT_AVAILABLE, id);
+    for (const q of e.questions) {
+      assert.ok(!q.action, `${id}/${q.id}`);
+      assert.ok(q.reasonKo.length > 10 && q.reasonEn.length > 10, `${id}/${q.id} 사유가 비었다`);
+    }
+    for (const q of questionsForPhenomenon(id, { ko: true }, null)) assert.equal(q.runnable, false, id);
+  }
+  // 파일럿 사양: 기온은 "왜 없는지" 읽기 — 질문 블록이 생기고, 누르면 이유를 말한다.
+  assert.match(questionsForPhenomenon('weather.temperature', { ko: true }, null)[0].reason, /기관 발표를 인용/);
+});
+
+test('가정 장면(Preview)은 능력과 따로 적혀 있고, 시나리오 탭은 둘 중 하나로 열린다 (§K-2)', () => {
+  assert.ok(previewSceneFor('ocean.wave'), '태풍 해상 가정 장면으로 가는 길이 끊겼다');
+  assert.ok(previewSceneFor('hazards.typhoon'));
+  assert.equal(previewSceneFor('hazards.tsunami'), null, '쓰나미는 장면이 아니라 실제 계산이다');
+  assert.equal(previewSceneFor('weather.temperature'), null);
+  assert.match(shellSrc, /const hide = !ctx \|\| !ctx\.capabilities\[cap\] && !\(tab === 'scenario' && previewSceneFor\(ctx\.phenomenonId\)\)/);
+  // 장면 카드는 SIMULATION 배지를 달지 않는다 — RUN(기록 남는 계산)만 받는다.
+  const scen = mainSrc.slice(mainSrc.indexOf('getScenario: () => {'), mainSrc.indexOf('getScenario: () => {') + 6000);
+  const typhoonPart = scen.slice(scen.indexOf("const hasSea = seaPoint && seaPoint.marine;"));
+  assert.ok(!/SIMULATION_ONLY/.test(typhoonPart.slice(0, typhoonPart.indexOf('</div></div>`;', typhoonPart.indexOf('시나리오 시작')))),
+    '태풍 가정 장면 카드에 SIMULATION 배지가 남아 있다');
 });
 
 test('화면 배선 — 궁금한 점·직접 질문하기·sim-why 가 셸에 있다', () => {

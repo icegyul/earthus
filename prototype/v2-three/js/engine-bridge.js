@@ -176,7 +176,8 @@ export const LAYER_TRUTH = Object.freeze({
 
   'ocean/marine': { kind: K.PROVIDER_FORECAST, slaMin: 180 },
   'ocean/oceanfocus': { kind: K.VISUALIZATION_ONLY, slaMin: null },
-  'ocean/typhoonsim': { kind: K.SIMULATION, slaMin: null },
+  // 2026-09-20 §G-2: SIMULATION → VISUALIZATION_ONLY. Gerstner 가정 장면이다(MAPPING §0.1) — 기록 남는 계산이 아니다.
+  'ocean/typhoonsim': { kind: K.VISUALIZATION_ONLY, slaMin: null },
   'ocean/buoys': { kind: K.OFFICIAL_OBSERVATION, slaMin: 180 },
   // 플로트는 약 열흘에 한 번 떠오른다 — 몇 시간 늙었다고 낡은 자료가 아니다.
   'ocean/argo': { kind: K.OFFICIAL_OBSERVATION, slaMin: 1440 },

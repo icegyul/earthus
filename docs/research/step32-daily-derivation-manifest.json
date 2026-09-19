@@ -1,0 +1,934 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "expanded-holdout-and-temporal-forcing-step32",
+  "phase": "B3",
+  "algorithm": "hycom-3h-to-utc-daily-mean/1",
+  "configuration": {
+    "framesPerUtcDay": 8,
+    "frameHoursUTC": [
+      0,
+      3,
+      6,
+      9,
+      12,
+      15,
+      18,
+      21
+    ],
+    "method": "unweighted arithmetic mean of the eight frames (u and v separately)",
+    "labelTimeUTC": "00:00Z",
+    "weighting": false,
+    "temporalSmoothing": false,
+    "missingFrameReconstruction": false,
+    "missingFramePolicy": "WINDOW_BLOCKED",
+    "deterministic": true,
+    "stored": [
+      "source file SHA",
+      "source frame timestamps",
+      "source u/v SHA",
+      "daily derived SHA",
+      "derivation script SHA"
+    ],
+    "timeInterpolationInModel": "linear between daily labels exactly as the frozen runtime treats any time axis; no change to the runtime"
+  },
+  "configurationSha256": "f074025921f51d64fb0ead1bb832f95379e17a57e118bc3aed2f5a2b73424dfe",
+  "experimentMatrixSha256": "b3d1b6fe985dbe5f86b61ec6e6c5fc9ca83572054c0eadd2799040d94a3e70fb",
+  "acquisitionManifestSha256": "30e55f4e9bef09912815f1a4497301e165995fcccd30abc161da9840fed80fb8",
+  "qualityReportSha256": "3489dece3653ffa8a10ee8a0de0dd9660b981dce030864414163b35ae3169af8",
+  "derivationScript": {
+    "file": "tools/research/build_step32_daily.py",
+    "sha256": "85673c814255157ff7ddd12514a908fbd0d6819c2aa9286b62cc42666e3b0d23"
+  },
+  "windows": [
+    {
+      "windowId": "KE-X1",
+      "status": "DERIVED",
+      "derived": {
+        "file": "data/research/step32/forcing/normalized/KE-X1.hycom15m.daily.dataset.json",
+        "fileSha256": "6774e912fed97c79cbf56b93c84a4772229a4e8fbc3963e87f077a11049afcfb",
+        "gridSha256": "3ba44627b69127d8b24a16094945cf6e69d5822069f91c775933647cf7b60d06",
+        "datasetId": "hycom-gofs31-53x-ke-x1-15m-daily",
+        "version": "step32-daily-1",
+        "valuesCount": 529104
+      },
+      "algorithm": "hycom-3h-to-utc-daily-mean/1",
+      "days": [
+        {
+          "utcDay": "2011-05-07",
+          "sourceFile": "data/research/step32/forcing/KE-X1/hycom-days/day-20110507.nc",
+          "sourceFileSha256": "5d1c6246519964edd8fdb0f670ca3d6b28f133952e670353a6a7787cbc5d3aa2",
+          "sourceBytes": 1417356,
+          "frameTimestamps": [
+            "2011-05-07T00:00:00Z",
+            "2011-05-07T03:00:00Z",
+            "2011-05-07T06:00:00Z",
+            "2011-05-07T09:00:00Z",
+            "2011-05-07T12:00:00Z",
+            "2011-05-07T15:00:00Z",
+            "2011-05-07T18:00:00Z",
+            "2011-05-07T21:00:00Z"
+          ],
+          "frameCount": 8,
+          "sourceUSha256": [
+            "86028f7e0d40aba8b578bc5303d4f1d709df5ffb8aa16a6439aa6978cf8026fc",
+            "dc68f0f7fc7bbf2c6cd7095d263078c71dc9923d7109f84e0b00519c38a5cc0a",
+            "71aa7f5d2abf0e08df6844031b9e30f837a3cb9232b94173129ba9e8bb61f5ca",
+            "53293351f37fbbb9238c1f4ece2400fdffdf03a0f6d7d817c7608979cf4138de",
+            "6041b3a9ba40c46d61542ce09fe60cafdd23cbf8a02bbfb6704320b5d4c3b9df",
+            "6366a71a4364718f3128e1927c486a88cd0a241316e2f4a55d65c54684d3a642",
+            "8849e2b0cda3a9c14bca8b84e38d387704e7c7d7eda49cc78862a356b0b19322",
+            "81ff298a15cf73919fb24ecf0d0a40ad6bebfdf510c9e5ad67c1c29a0a3c5bef"
+          ],
+          "sourceVSha256": [
+            "cb5722de60a0d3a02117e7b452096294636ae99209595024d0b3d3a0d363ce1b",
+            "c62dd9547dff53ce8f157162b4bf86149f4f33c59c8c06a620801e40891b87f7",
+            "cd6aeb87687deea38b90ef1dcca69e62c9bd7562a2917c586095d7b8c7456d01",
+            "5acda752634db706644f96d5db186bb7e695d87218fd1a3c96180c0c693c355b",
+            "896362c668db3b266227e0b2ab3889694d2906f257362a775ebe9a808160ffac",
+            "c9a536132ea58c8c69005944835900d0b5a1f172e4eda14926ad987850cacad5",
+            "44efa87955481603e65bc4dd5b045a2c65e0936c33ea9c4034edf6291c29159b",
+            "06ee345cc3162da6ec4e710f3875d3f08252d15058ec12b599e27a11857ac5a2"
+          ],
+          "dailyUSha256": "8b6005b0aba7f912b0b95ca19ce3b01460c1b25e9280122ef58374829720d12b",
+          "dailyVSha256": "92bfd33fa006cd830a09a4562ae580f36f732a91e4367e5b6915fcecdf246b43",
+          "dailyLabelUTC": "2011-05-07T00:00:00Z",
+          "nodesNotFiniteInAllEightFrames": 2425
+        },
+        {
+          "utcDay": "2011-05-08",
+          "sourceFile": "data/research/step32/forcing/KE-X1/hycom-days/day-20110508.nc",
+          "sourceFileSha256": "f2a0225d77f07112b2d81e4e9bde04187bafde7ee8d7a211a7aebf98fce1adbf",
+          "sourceBytes": 1417356,
+          "frameTimestamps": [
+            "2011-05-08T00:00:00Z",
+            "2011-05-08T03:00:00Z",
+            "2011-05-08T06:00:00Z",
+            "2011-05-08T09:00:00Z",
+            "2011-05-08T12:00:00Z",
+            "2011-05-08T15:00:00Z",
+            "2011-05-08T18:00:00Z",
+            "2011-05-08T21:00:00Z"
+          ],
+          "frameCount": 8,
+          "sourceUSha256": [
+            "d8907544adfefcd173d2d3970851dbe97f39e11676f2e7a558e30e4d049c7020",
+            "2f8f633225cf86405f649a2343abd9942c21f9e4e2859f25d1b3fe68eabf39b2",
+            "8ccfd7386b6d58aa49a19d40853d4dd777bc6ff731855d2dfea181e78ec6d6be",
+            "8ed33baea388db3a20200738f4adca16a81e231f8c80ea90913c2d863c22af26",
+            "24fc1d02e597751bb7557fa71dce0c82ee2b7d2bd230fad209eda972399a86f4",
+            "8a897a4c1cafc12fc2585f1a661cf28d839a8b0a85c116ac66b62dea50488d88",
+            "e4b092603971084d4ca94bd4bdf45322c77c566dfa102e7a23875d8774e9552b",
+            "cf1c1eb5c5df0d86e9e52a3ae12f434a24ff9adafd50459f081cd96f9831cfb1"
+          ],
+          "sourceVSha256": [
+            "04b6c4406c9836953f283fba62baca6f1bdeeb74cfec0085aa864ab6fe1e92d2",
+            "976d0f090148db7499f9b925bb45757342c9a905a4bb37b023efa73598c34852",
+            "9a93f2c64447dea4fbdbde446a6614763fcc3187042af39d2a230a674a055293",
+            "4f0f1df3c2605d8db88d6e0dc758e8a003f58802d476a549d922723e4db73ca5",
+            "ae51973cf53c8905db9d8e1a5fc00eca30456f50ad8c05458bbb2968b967895a",
+            "9387c0efd6dfb3000338499d3bd76c414922ab69824bb85d4619420e43c29727",
+            "65a584daa1c23db6541c4541344437c464f8524bb45cc93514ad97ac5988b597",
+            "eeff7b48e6e185668a6612e2a0e18664b9a1ffd94b3bf8df338e521568a6b02b"
+          ],
+          "dailyUSha256": "3c01d8fb58d08c2eba4920c327c3cd0cceb11f6b5d288089701d107b012ce69b",
+          "dailyVSha256": "43c32e520b86a219ca3064ba65a2dd8f2fb909071bc60045be9c814067140ca0",
+          "dailyLabelUTC": "2011-05-08T00:00:00Z",
+          "nodesNotFiniteInAllEightFrames": 2425
+        },
+        {
+          "utcDay": "2011-05-09",
+          "sourceFile": "data/research/step32/forcing/KE-X1/hycom-days/day-20110509.nc",
+          "sourceFileSha256": "af941687b1bb6d83b330ab666853a674dd8aa6f201f71f13fcd291b32b1ad63a",
+          "sourceBytes": 1417356,
+          "frameTimestamps": [
+            "2011-05-09T00:00:00Z",
+            "2011-05-09T03:00:00Z",
+            "2011-05-09T06:00:00Z",
+            "2011-05-09T09:00:00Z",
+            "2011-05-09T12:00:00Z",
+            "2011-05-09T15:00:00Z",
+            "2011-05-09T18:00:00Z",
+            "2011-05-09T21:00:00Z"
+          ],
+          "frameCount": 8,
+          "sourceUSha256": [
+            "3ef31721e692aea401fd0764ad4c7f666cfee0889a65c74c691c2f7f1d887082",
+            "f287df6ecd3d7af78851c992449d08e02d86ae145a8bac676102a69ac0cfe5a1",
+            "4d568ceac4a35b03ae212c62d180c9a9108db7ce00bf5ec5799d3883153cbf4b",
+            "265b18b7ccd834d4b13aa66bb50a33266d6cc49bf1cd9d391cf453403239092e",
+            "112f7ae4227e73c7d51a2b438b1876f4945e275669c760174d4df4f25789ef9e",
+            "57b2ca44e14b8a37b9386224fb24e282abb8e18cd90c5ed790c69c7879dc7eff",
+            "18313654c0eecddc4831b536058d0717423f3e7f0e0f2e68a577cb569960e914",
+            "1d1a9a7b3d7382d57a9aa57c7fdabab93836fc48f733fdbbc2c3daea250bf955"
+          ],
+          "sourceVSha256": [
+            "56107900b2ccc58f833fb5fa52ae8c5bd00baf0fa860eee5e94a6e32af16f89a",
+            "33e36e958f18a01a9bde7a8694a0aafc0830dd026d47c9af79b4cb8195b61cb9",
+            "5249c4f1806afb567faf3cd1a30b76f73bb995db1c26cca1fd2de0fb2b3887d9",
+            "3a66cb0444b78305d475b06f86733b7f4de67e2e6559a293beda40f052e3ba0d",
+            "c31ab0ae338dbbe440210a84893b6ca7fec178f86c1a1dbf314e2070e76b3de2",
+            "2627156cdee1d8c9d1805eb1225e967602cb4b081b5d81833d9b2bd54df59ae3",
+            "7f45d24ca41aa9ee9fa7b317951045c594d9cd82ed2aca7822f642cc80cc9220",
+            "01635f225c2c6b3973869e911bb5f20f6c803e3a15478c60e91034b15dbdde3f"
+          ],
+          "dailyUSha256": "fee93d8e3ade3b0696f06bcb84f188ee5de7592bb3608d33453a0f9253e6e7d0",
+          "dailyVSha256": "e7276eda69daa49463b7b3c118ebf9b10c9e84adfdcc62a775af2d5afc2f6ba0",
+          "dailyLabelUTC": "2011-05-09T00:00:00Z",
+          "nodesNotFiniteInAllEightFrames": 2425
+        },
+        {
+          "utcDay": "2011-05-10",
+          "sourceFile": "data/research/step32/forcing/KE-X1/hycom-days/day-20110510.nc",
+          "sourceFileSha256": "c82a7dc4655301a6d0ec93d173c1446a3b37d9df1383f26da999b3edc91bc56e",
+          "sourceBytes": 1417356,
+          "frameTimestamps": [
+            "2011-05-10T00:00:00Z",
+            "2011-05-10T03:00:00Z",
+            "2011-05-10T06:00:00Z",
+            "2011-05-10T09:00:00Z",
+            "2011-05-10T12:00:00Z",
+            "2011-05-10T15:00:00Z",
+            "2011-05-10T18:00:00Z",
+            "2011-05-10T21:00:00Z"
+          ],
+          "frameCount": 8,
+          "sourceUSha256": [
+            "927e8d7e57a525c0b4f85a20cc82d8c9fd87e45397a49ad369fd139a04b747c1",
+            "b0f5035ba2b88637d1acf9c01918248cb5c8bd6478147e46af7aa0e88bfbbf9e",
+            "d2f90d2a0703723c2615e780658d5d43c8011546955832e9cf5d817b7c759022",
+            "d5bfd62ab5012394c45eaeb0a28b08a87a3decae3537557272d4b24a1420e933",
+            "0a0db67af8a53b1224251fbd3fff286624caa81e08351fde5b2b0a93dc79ca4e",
+            "f6b900e003a7c1b2426a19da1ed8f965f1b5977489240417d64a3a4af657ae3d",
+            "afb37c0787c18f543780dda1c155baa7dda9d2e9dd847e18f7a5997b6e7ca5d4",
+            "841525f5998c235f0f86dddeb23f79b7a8712a1241c610b56bc6af3ff242ce35"
+          ],
+          "sourceVSha256": [
+            "8f0a80fc86abfd919e8751e973b9c756fcd93104815dfc44066c1463d6782d91",
+            "d25c12f6949e7b2a098eee6ebc2a41add5bd9431b7230ba1057756f7c22a27e1",
+            "9968b5d019b461bbf6fe270226f62c456fb8e1e9878988b394f7ebd82b0a4946",
+            "6d54d2fe6484b3960ad452af04b8efc128b043c2fcfcba928d111ad6e03c0ff1",
+            "2bc0e889adf8e868a19f676a04dbdb2032eaea560386e14496f958d614086160",
+            "1233641c74c58f0eb1fdb5f50bb2bc6fd34285a9736fe147fce7d4cac27663f5",
+            "39a0e6d10fff196c555009a7f1f0b6471b325d4041cc3c6af2e2aff0abc98b8e",
+            "69aa80a0fdbfc0073f4b0af9e4631678fe8a51fa0115d7e38214d5d0e822339d"
+          ],
+          "dailyUSha256": "8ec4dfa7807389369a2b5725bc911d8aec935d3838c8ad52b7e1dc8eaf2955fd",
+          "dailyVSha256": "2cafa6df80133d2db13c19eb150485104368a7503a8fb18b3f9d6d92e5d7ddf0",
+          "dailyLabelUTC": "2011-05-10T00:00:00Z",
+          "nodesNotFiniteInAllEightFrames": 2425
+        },
+        {
+          "utcDay": "2011-05-11",
+          "sourceFile": "data/research/step32/forcing/KE-X1/hycom-days/day-20110511.nc",
+          "sourceFileSha256": "828a97435a0c0f0a1366f37c582cb9db772d583d0e670029d213588cc0a511ee",
+          "sourceBytes": 1417356,
+          "frameTimestamps": [
+            "2011-05-11T00:00:00Z",
+            "2011-05-11T03:00:00Z",
+            "2011-05-11T06:00:00Z",
+            "2011-05-11T09:00:00Z",
+            "2011-05-11T12:00:00Z",
+            "2011-05-11T15:00:00Z",
+            "2011-05-11T18:00:00Z",
+            "2011-05-11T21:00:00Z"
+          ],
+          "frameCount": 8,
+          "sourceUSha256": [
+            "13ae8bbb98e8dafb5d3ad45beeded0fee60f782f10cac2a50df0f18ac99a13e2",
+            "86eb2c1997e883e5f23fa4d49f696273517350ad7dd7ef6edc3e52048791b310",
+            "af2bd30aab9673f40c7dded6398d0d67fb7ec93d89a36358fbb447889908eee3",
+            "ca594703b009f133d3883f193f4e463f5b74ec7695bd6cc50505a6b0ecdfb0e7",
+            "fe1cd1b85879ddee39bb2551d5b827baff93217b25b432672067a1141022e101",
+            "3eacc43344a7a35dffde2b28d973a080067e3356d2498d4f049299c8161c68ee",
+            "a6f6221e4f1182a3a323862485ad40892b3aabc62105102b822e72e5e06e6913",
+            "ee927e895128dbda134ebd373879ddfcf2e6f4c4eb482f5ec189c030bb17f430"
+          ],
+          "sourceVSha256": [
+            "5dc9a82197c0fcf42c5fc8f1c1f7babe5070a7f27a63cf811b1ecdd603108b97",
+            "fecdf5af8726a2a8a712e47b53f3b22ab4c26eea52ef925880d6a46aa6449f00",
+            "1767a0f79bbef2448d659bd0b7f6112b29dfac3294ff225d64d9be7b4f22de24",
+            "50646fed4f2ad3c124f3bff58bd14d6e69d594f2e66145f16c9ea8cb4c342d32",
+            "4b935e7f75d3869662aac320fb2f5604f002409c1efcfa20047d76ab0895b072",
+            "7295c469be181622a65036574e207ba9a18344f51e47accd575265662bc4abb7",
+            "9f8a3795646db58582933d3c0ea3481045c05473bfb1dba109316a484a6b0c92",
+            "a59255a770bf234c5d8f66da7e797aab85dac96326d874b5a5591e96598454d8"
+          ],
+          "dailyUSha256": "286163f51b696adb5458ec4357197acee3868ddcd9bd68acd2dc4c13de90a31b",
+          "dailyVSha256": "c174f38d7b1f19c5f1084c0d0446d9b804b684b82f8dc2aa91299eda4b56fddf",
+          "dailyLabelUTC": "2011-05-11T00:00:00Z",
+          "nodesNotFiniteInAllEightFrames": 2425
+        },
+        {
+          "utcDay": "2011-05-12",
+          "sourceFile": "data/research/step32/forcing/KE-X1/hycom-days/day-20110512.nc",
+          "sourceFileSha256": "ee8890bdedea307940c74502297b3dc3752ee086acb69f89b898e089bf3e4ab3",
+          "sourceBytes": 1417356,
+          "frameTimestamps": [
+            "2011-05-12T00:00:00Z",
+            "2011-05-12T03:00:00Z",
+            "2011-05-12T06:00:00Z",
+            "2011-05-12T09:00:00Z",
+            "2011-05-12T12:00:00Z",
+            "2011-05-12T15:00:00Z",
+            "2011-05-12T18:00:00Z",
+            "2011-05-12T21:00:00Z"
+          ],
+          "frameCount": 8,
+          "sourceUSha256": [
+            "b241f4442e33edc961a6fb07d60c1a5013d24fec17d8010b70c9b4ab5bd45cfb",
+            "06f18cc9e151909abc124f451a6cb5936f7688e6a03ba2a2fba3e0c515be8c36",
+            "fafb507aff1cac5ca2f4de6e226bc57ff40aa0eaca026c164cd1b68f5276eeb9",
+            "c2b03be9140c331327702afef7fdd39a8252c274cfb4fda0b307945e79323024",
+            "35f111bcebdd71afd77c15a1616281eb99cb6f7f9722917e81f16d8af767138b",
+            "5cf04d8d62fbf6bf8e1046080702ced654548ae58b58b00d2eb0799aa55b360f",
+            "bc42bfe9b938e4947c39de9be4d71beb417c852ddaed8fd48c98787e0bcd6084",
+            "3a516b3533c8c45e04a4828849a7fbf885605ba64363d5fa657b1ffb253d15fe"
+          ],
+          "sourceVSha256": [
+            "5752344d70741d5178c48296bb4837f46ffe9076cfcc15b22f11b2bd2736f6c1",
+            "1d847efc4599a675b9767dd59fe44093f1ec4176304d5610129656f57c4727f0",
+            "b2ee77b8a71cb6721ee04fc265d2938acdedf0fb8898452988e35857da27ac15",
+            "08683be45ac73bd2d374e27d426bca61b45c58914d4f0b4f6cdce24379a48337",
+            "5986f960c531d0a20252f53f1f036fd50dc2ed7416904ff438f9881e433d2617",
+            "91809169d77e02b6bec2aa1429c94d77481fe8e70e8dc40244ff8a7f0dbd4cc0",
+            "fa77634faa8792748089706a6caff7f8342a4666b7bf1c09b7ff5bca49fb290b",
+            "9a99f4d08acd86bcbf6d0627e169b7457c32f197708c288d02ef3afe41fc74a5"
+          ],
+          "dailyUSha256": "283dd665ac1d6c004ec15ba4853f4a51f3284d175853bcec1ad03b6bf8b82eb1",
+          "dailyVSha256": "3d7940d9cbc5ccaf05fb80c94716bfceaade5f048fa6c7fd241cee0f6af70af5",
+          "dailyLabelUTC": "2011-05-12T00:00:00Z",
+          "nodesNotFiniteInAllEightFrames": 2425
+        }
+      ],
+      "frameTotal": 48,
+      "dailyFrames": 6,
+      "timeUTC": [
+        "2011-05-07T00:00:00Z",
+        "2011-05-08T00:00:00Z",
+        "2011-05-09T00:00:00Z",
+        "2011-05-10T00:00:00Z",
+        "2011-05-11T00:00:00Z",
+        "2011-05-12T00:00:00Z"
+      ],
+      "shape": [
+        6,
+        151,
+        292
+      ],
+      "landMask": {
+        "sha256": "eb3ba30027b51b95c3052cfdfc0fc7d8cc80b70f538423fce4174f170621ccaf",
+        "masked": 2425,
+        "total": 44092,
+        "identicalToNative3h": true,
+        "native3hLandMaskSha256": "eb3ba30027b51b95c3052cfdfc0fc7d8cc80b70f538423fce4174f170621ccaf"
+      },
+      "derivationScriptSha256": "85673c814255157ff7ddd12514a908fbd0d6819c2aa9286b62cc42666e3b0d23",
+      "derivationConfigurationSha256": "f074025921f51d64fb0ead1bb832f95379e17a57e118bc3aed2f5a2b73424dfe",
+      "nativeGridSha256": {
+        "A": "49fa7d96a403857b2deabe5d4d8dd64e316f4876a23df8809564bba0b756c42d",
+        "B": "0605dcc09a6978bf355dc07eaa0d23280982c14cfba8e2f34b02099a07e2d5a6"
+      }
+    },
+    {
+      "windowId": "KE-X2",
+      "status": "DERIVED",
+      "derived": {
+        "file": "data/research/step32/forcing/normalized/KE-X2.hycom15m.daily.dataset.json",
+        "fileSha256": "fcc34914613156f637775cce388de87d60260c079c1640a7efa90514ed53d1c0",
+        "gridSha256": "32c8ad140a3ee25dadc00a2b7fc34e2d8de672ea41d381a6ba183354fcdcd8dc",
+        "datasetId": "hycom-gofs31-53x-ke-x2-15m-daily",
+        "version": "step32-daily-1",
+        "valuesCount": 26928
+      },
+      "algorithm": "hycom-3h-to-utc-daily-mean/1",
+      "days": [
+        {
+          "utcDay": "2011-05-12",
+          "sourceFile": "data/research/step32/forcing/KE-X2/hycom-days/day-20110512.nc",
+          "sourceFileSha256": "5e4d5c5808a2637ef7a7940e44a4717499977e637489f5d81312853bf4525f3b",
+          "sourceBytes": 75436,
+          "frameTimestamps": [
+            "2011-05-12T00:00:00Z",
+            "2011-05-12T03:00:00Z",
+            "2011-05-12T06:00:00Z",
+            "2011-05-12T09:00:00Z",
+            "2011-05-12T12:00:00Z",
+            "2011-05-12T15:00:00Z",
+            "2011-05-12T18:00:00Z",
+            "2011-05-12T21:00:00Z"
+          ],
+          "frameCount": 8,
+          "sourceUSha256": [
+            "5135e7a071c8aedbc3f6d6da57e0b1859401add222a88ad94a3c71561d545340",
+            "10ab246db14eec5065eba8efdcdcd18cd103f67ac33a9e063829e46fd0326251",
+            "5328bf438c7246438d0a60fe24dbfbc29c412554252faa03cc32e95931884c48",
+            "2c01a70e9d99903450a22d650d85722a74bfd5f68885b7299a791ca1f347b48d",
+            "8b89927277c332eb0c0ca808210c72d7aa864f5cb6c453907ea20160d28e446e",
+            "4371b9a4abd6386bb707844ec41c920cbe75f49563820bb186012132781b3765",
+            "5b2a1e095b8fa9c429963d307da454fc91892ce0f9df3eab381e46e68385b371",
+            "6ba15016585571f920d8da48b739c6e929aa68dd2b571bf7f3a17f1cb4b7af5e"
+          ],
+          "sourceVSha256": [
+            "2935b397b2d5124e7619131afc9aff093a7f3e6b373e18d5aef9eb0304a1615b",
+            "2ae0b086ed8c7e5b3498874b99113723a8c410507d08f9aefd681a7505b471e9",
+            "97b8026ae79061f3d32d4a10ee26d1e26aff2d6afc4cd2654c71d6cc11f9e2b1",
+            "12678f6e5a35080ab26225328706ebf585fa057304cb666710a0124d03002e48",
+            "73e4c6a46a13e8626ba2c015d7e81a967afb40dec6eb54d35ed14ed1851ed9ec",
+            "c0533f0cbab34d5524a487d59414780814cdf0dbcf2cf4949a39c771a18fa54e",
+            "17e2ad901f2b99b9428b4cc8a9ac41589b049a9a6a9a2f19b97ffd6ca87b3e6b",
+            "2c68acd11913979c28c5b4b423484ae7f30bc71d8e5c01e32fffba51dbd8e52a"
+          ],
+          "dailyUSha256": "f923b603636f0c80690d2eb90f3e9f0d6897e99f2bbb881a47137cdcb5164c7d",
+          "dailyVSha256": "2d8f31118f0dca07e5a8b0aea978565c6b2e53ff292bb49f989d7c5ad427f4fe",
+          "dailyLabelUTC": "2011-05-12T00:00:00Z",
+          "nodesNotFiniteInAllEightFrames": 0
+        },
+        {
+          "utcDay": "2011-05-13",
+          "sourceFile": "data/research/step32/forcing/KE-X2/hycom-days/day-20110513.nc",
+          "sourceFileSha256": "d6029cfca06998048ea9522be2ac732a2472942d1649c178ff62b6e13c545a2a",
+          "sourceBytes": 75436,
+          "frameTimestamps": [
+            "2011-05-13T00:00:00Z",
+            "2011-05-13T03:00:00Z",
+            "2011-05-13T06:00:00Z",
+            "2011-05-13T09:00:00Z",
+            "2011-05-13T12:00:00Z",
+            "2011-05-13T15:00:00Z",
+            "2011-05-13T18:00:00Z",
+            "2011-05-13T21:00:00Z"
+          ],
+          "frameCount": 8,
+          "sourceUSha256": [
+            "80b27bd08813c4962eadbaf01fe9eab6ad5a12698f6b1ab69bb811f1359a74b4",
+            "fd028a36cd1322a9e92ec4596635807554ff8af4683a62b0045d0781f2739a9a",
+            "e60ec1c0d79f74427f3a55158e474e8e1c366c99931084e685823af593ebafaa",
+            "5d3f6df240fd40f5f617f951efe211cade281e88c0002f9fd2163292f1ef2fb5",
+            "31479315e5b6a97c5e90e92d3387cece47834f4828cb33a22b973d703f367f54",
+            "cb294d15507bcc6e81b4ed844f4d3168b2ec9e54c2683dd67a602c0271af9d13",
+            "c297ca12678848c8dc1dd32ca20a50d6085a3954bccd8d48af18d88c1ffaed32",
+            "6a79f5a6ec9825c327eb660f928edf0864dbff338868ccfde92f04faa78df010"
+          ],
+          "sourceVSha256": [
+            "ee8c5ebf71a03c818bb466aa870da9e07618877ecf29a80ac7c3e221e6bc4f0e",
+            "53134d315ff74b468346b4e939dab48e94e3692657660cda46aec5e7fab187e5",
+            "6067e90e7a7b1d8b66f4498cb8c338f5ae7a8d3d362f22ea769535b6f31f9edc",
+            "99405a39c186c1b83f5866944c1d9c9d4c3c9bbb4870b0061f159acf59084ab3",
+            "ef1a6e512c919c22c8d67c3e978de35b6288d1a48ed4158856963e7918aa0e2e",
+            "8182470bc9dbb106bf8e9bcd11ad9ffa725f64e88d7a6fcd8db587893051056e",
+            "558f40442c756df6a9ede5accd09061e4d300369349d18809bb0b1d10467e6ec",
+            "e12232b6a5b041d10bc393d1b58bc6782f6a720dbb0d1df0919dabec1155c8c2"
+          ],
+          "dailyUSha256": "b81ab08bee966240dc51374337d56f0f2836f3d618acf7f1bcecd5510e0a8246",
+          "dailyVSha256": "e28c1f556ec76dc328f97f0863b85a63e15c081717779f1fcc5c1c70bb6bb6c8",
+          "dailyLabelUTC": "2011-05-13T00:00:00Z",
+          "nodesNotFiniteInAllEightFrames": 0
+        },
+        {
+          "utcDay": "2011-05-14",
+          "sourceFile": "data/research/step32/forcing/KE-X2/hycom-days/day-20110514.nc",
+          "sourceFileSha256": "ea7f1877982fd1044cc33248e5f163a28557a904140f9c83d4e63e2f07d75c18",
+          "sourceBytes": 75436,
+          "frameTimestamps": [
+            "2011-05-14T00:00:00Z",
+            "2011-05-14T03:00:00Z",
+            "2011-05-14T06:00:00Z",
+            "2011-05-14T09:00:00Z",
+            "2011-05-14T12:00:00Z",
+            "2011-05-14T15:00:00Z",
+            "2011-05-14T18:00:00Z",
+            "2011-05-14T21:00:00Z"
+          ],
+          "frameCount": 8,
+          "sourceUSha256": [
+            "a95ee8bb2063ea5c3744e7e5f49775ba86cf74e5cc102647fb0b78cea7c281f5",
+            "cfe19581bf5597cd2b452bb8be36683fb6eebed547025054c56f40321ad65c82",
+            "178dd351c59ec20a06b873bd1e44c4a36df2bdc04f4824f43e6a7c46c835095b",
+            "fc0e76bd727d0c1b9152a0623daf533e2c44b90bf8cceef21c674633298ab1bf",
+            "296923ab8bb06510f2459b5ce0e4345a74b45b67ebe85844106fb837525808ff",
+            "062590852b3829e4f56582fcd4c1d4e8b9feb4365e4b99b5b3a9e777d7bbe1ff",
+            "beb48233c5f42ed44827d070471b0d811d93340fb5a3dab5f652324ff63b5ebe",
+            "f077b080923baf03cf2638ba11ba1e042ab177a0ab8b5790c4316b616a5b826f"
+          ],
+          "sourceVSha256": [
+            "859e0aa133c34eb6137377e06558336a6796fba8ae640411da7b0535f11f3f67",
+            "ff588885c2170b9445a62d7c7d7f4ed8749519ef314e0580a937cbffb5a4f809",
+            "01110fa852dd35e682457fc989598a632f2de56966130165a983a32cd0540692",
+            "c95ece4830fff476921aeace053934d85c6118c8f6e57499c3491a38612fd7c1",
+            "48af9adfeda6403933987c0e9b3e6a465baf73e1d4073ff306138107fd06899d",
+            "df012fdbc6a6e359d43580a20702ee567ba4acc40cd2093f8a1bcadcdf798c62",
+            "dfedb73b3da070d71fe8972d3b95663c7ec27ba906d81998bc16bbf36bf5967c",
+            "ccf8db4d3991051691c7c91dc13ac83f9e5623b5fa07abbc8280ff5c1ecbef64"
+          ],
+          "dailyUSha256": "77c02dd3fd5976da2248364d3d3c96b1657e41ca5dd467d405039a9132d572dc",
+          "dailyVSha256": "b5b339384265d21e538604b55748dd453e0cf3f0e8f8789425090776edbf1000",
+          "dailyLabelUTC": "2011-05-14T00:00:00Z",
+          "nodesNotFiniteInAllEightFrames": 0
+        },
+        {
+          "utcDay": "2011-05-15",
+          "sourceFile": "data/research/step32/forcing/KE-X2/hycom-days/day-20110515.nc",
+          "sourceFileSha256": "41be1bda48ca52c3af01dbeb44f9484b64ecf3585281d8e24fd3816d06c44d94",
+          "sourceBytes": 75436,
+          "frameTimestamps": [
+            "2011-05-15T00:00:00Z",
+            "2011-05-15T03:00:00Z",
+            "2011-05-15T06:00:00Z",
+            "2011-05-15T09:00:00Z",
+            "2011-05-15T12:00:00Z",
+            "2011-05-15T15:00:00Z",
+            "2011-05-15T18:00:00Z",
+            "2011-05-15T21:00:00Z"
+          ],
+          "frameCount": 8,
+          "sourceUSha256": [
+            "99824313daa7e1a21767760d104b8f61fbba0975b7e936245b86a8b872c5bd0e",
+            "76b3ea42b19dc9faec9106e7865e5c368c25e6060db3ce0224be32e4bb848ba5",
+            "9599125777c1be3933910bc6095435b191f260e4066ae89795bcd94e08e24fc4",
+            "0c3593c208708fbc962c30918db3f7381c91e7abf46c6c241192aa852b9b5f43",
+            "9710c5c6359efdcc67299b1df0295fd33d3ef34bfdab93b1c198aeb25aa7209b",
+            "811cb33e6cf29e10dba301602bddf4c6ee40603f1d2183049a3e7672f6d21e08",
+            "0e656dabf428f301cd1b1dc19271df7a6ae516f9a8fabae3c89aae20009ee79a",
+            "9ffe824fa1d72277a20dfe8baa93c0df99d50b845f21609690b366be3322b786"
+          ],
+          "sourceVSha256": [
+            "22e0d0b987d139717d2a62b353dbb6968a9e924b976a63a5264f25bec580507d",
+            "cdf1e3e2ec1bdad5e58adb5862e6b50688b6ca342dbe53592d3d655270d63a2e",
+            "11a023c5cc2d26898be346e6825bf2de3eed8e866df28e5b37021f111cff6de3",
+            "cf0c9008a186420f3d488f91fd7f8fbf7dc1a471d728609e16fd2d78cfd29bc4",
+            "e4768417468880b4c83bc1e96bbcc836c58506b1c728da04c5e2aec25f87dd3b",
+            "e51f79d9933c73e4a948e2dce85924583765e72fd2e8307e646fe50502958edf",
+            "183aef7dface867e09942653485836a4f7328de0d010db63de7266745e80db87",
+            "93d9b37426a7114e8e788d61adc2ce027e5add77076950fd1fcbec3f4754b009"
+          ],
+          "dailyUSha256": "1a91c57f5810e295ff0cc784c35f71262b8c3f43aac4ae2988321cb21929f8da",
+          "dailyVSha256": "e5886c3d1cb04e3fda18b59ab75e8391c8964a5726b127b96d507b6c1af9c715",
+          "dailyLabelUTC": "2011-05-15T00:00:00Z",
+          "nodesNotFiniteInAllEightFrames": 0
+        },
+        {
+          "utcDay": "2011-05-16",
+          "sourceFile": "data/research/step32/forcing/KE-X2/hycom-days/day-20110516.nc",
+          "sourceFileSha256": "4d5bc4836559fcadea0ef3b5caf8d852058bf1e0479db386605d8badb5abe9b3",
+          "sourceBytes": 75436,
+          "frameTimestamps": [
+            "2011-05-16T00:00:00Z",
+            "2011-05-16T03:00:00Z",
+            "2011-05-16T06:00:00Z",
+            "2011-05-16T09:00:00Z",
+            "2011-05-16T12:00:00Z",
+            "2011-05-16T15:00:00Z",
+            "2011-05-16T18:00:00Z",
+            "2011-05-16T21:00:00Z"
+          ],
+          "frameCount": 8,
+          "sourceUSha256": [
+            "1fe539e66778b3091395f05294aad7e4dff71060e018d1d70561114d3ab991c9",
+            "fb3522fbc90399801eafa18613fc78de6f53e41e1dd591d87d9133980bc15338",
+            "ac4c6d3c470be6da026599f08e5ecb47295098c88e115aa3544688aad251c595",
+            "57b0c9f51b2edba995488a6654a742a418fcb7d5453554a185be4a62ef977bd1",
+            "cd644a70a466ab91539b575b293be318160bfc90b98008a7ee9d771f122c28eb",
+            "ed96824e2b752728afecc56ce1e2660232a14d4d70458c9c3f9b7173476de8d3",
+            "7d54f247c3f08930a45661f332186c33112a3d9397614e67f8676fbddb083c8a",
+            "003c2eb80540cde83b86dd02855ade8beb5c248f25cf322c56f9288d120184fd"
+          ],
+          "sourceVSha256": [
+            "07ff88f92d2088ba7c59681c39b9b5ba66d60ad21c796af4d92f5562204b73ac",
+            "b7e964469f4da05af3a61c8c7f71e1433e1a66a6529244808f79a50811dcb145",
+            "7828716e8eb7dd5748525e742410a9a11d52693b79848a764cf357c6da7063b3",
+            "bdc1dd606008c9dab3142c133c08f34ab6b12703744fff9260aba07109327251",
+            "3ddde3cf75fc02f04bb8eee6a504c8e21a50c6ca73fada712f7ca0d8a13414d9",
+            "e1266d60ecfc7aae714f692072b75fdc9955ddbb9cc2e7565cfdeef0247937b1",
+            "26a2f14eb382db94934ea20d7fa0f824fd021c2b5e759cd9ad6ae7894e4001ec",
+            "15c001ed1e2e5622ce7ca921bcf10e05e33714f3f539baad0b19626a642fe62d"
+          ],
+          "dailyUSha256": "522bb50c90a6c3c3ca5d647dcb96604b1da8b06a92c9b41dc2a8ec4a871bfbcf",
+          "dailyVSha256": "e739c7cb0b2ab744287ace0218c7de8faa88eccba3b716bd4547f3ae0a38fe19",
+          "dailyLabelUTC": "2011-05-16T00:00:00Z",
+          "nodesNotFiniteInAllEightFrames": 0
+        },
+        {
+          "utcDay": "2011-05-17",
+          "sourceFile": "data/research/step32/forcing/KE-X2/hycom-days/day-20110517.nc",
+          "sourceFileSha256": "31facbcf1b70a2574aab6d7f059c2041f7eb892f608389125cfe984ab2a4a40d",
+          "sourceBytes": 75436,
+          "frameTimestamps": [
+            "2011-05-17T00:00:00Z",
+            "2011-05-17T03:00:00Z",
+            "2011-05-17T06:00:00Z",
+            "2011-05-17T09:00:00Z",
+            "2011-05-17T12:00:00Z",
+            "2011-05-17T15:00:00Z",
+            "2011-05-17T18:00:00Z",
+            "2011-05-17T21:00:00Z"
+          ],
+          "frameCount": 8,
+          "sourceUSha256": [
+            "fba81c4b18253ce480a71b192e6a0eae151cf41cc4e043026d7193c495f4bc1c",
+            "520a6207b321c2ca10c24444fb85b24febb02932cdecf4ea8d9f2259e25e036a",
+            "dcd958a6e2189d06d5798eeae9a326a219bcf0dbbe98d51d830d6ebf0d5fb5b4",
+            "db334fd8df9a8d4d7d77aa0a3d3373f8d24faf3b04257040b15e5d6a1361cae6",
+            "21e410180c6248dd60430f8656d7c7bedb7379c4a472a8dcf417717237f37c90",
+            "b0c079ec452d70d47c209ffba51687ca0d768737bcc0bc742fdaae3de5dc4670",
+            "1a313792e8a96c7af6f631549590e67854f9354d16e5ab200570f0bfe37d72a2",
+            "0e2dcba6bb6baaaca6ce66a5a03b3c3ce40c231677f016bdb0547a110dcd3706"
+          ],
+          "sourceVSha256": [
+            "cff96a46d4895362ce903f8da0ce02f7090b5fed8a07bab725d0a4c01c2ffbc4",
+            "024036eb1481f7ad6a116eaa85995832df24110c9d83a299166c799eeded4f38",
+            "d96aa3054834c3a2f1d7ab9004f14e647b772040742f8f62beab673fd231dd71",
+            "772541c5e365ec58ea71c281a61753957ac3e1cf17092d03cec28cdcd5b47ce3",
+            "ee9b8f35743153ef185d849807360d90ab7506dd2d42b14b2bbca26ae4d3d739",
+            "300af348d1f5c30e6c8ce228d036d0e98c109579e6909396584575e4f8c88dfd",
+            "69b872bd7b976dd56a4b48dce21399623db8ac554fc9a9c236d2259f37360db7",
+            "0ec07bd01c5a82051874fd6e3550906fef984f1fad2f02263a4d0314bc4d17ef"
+          ],
+          "dailyUSha256": "d6ed99c827d5435dcef065c6ba7cd0b2274aef2cec7a7c6307e7760e82dede77",
+          "dailyVSha256": "7cc6013fd3e4a006e9c7e3e09c2eb3498ef03f784ef84a09761fb28971a24578",
+          "dailyLabelUTC": "2011-05-17T00:00:00Z",
+          "nodesNotFiniteInAllEightFrames": 0
+        }
+      ],
+      "frameTotal": 48,
+      "dailyFrames": 6,
+      "timeUTC": [
+        "2011-05-12T00:00:00Z",
+        "2011-05-13T00:00:00Z",
+        "2011-05-14T00:00:00Z",
+        "2011-05-15T00:00:00Z",
+        "2011-05-16T00:00:00Z",
+        "2011-05-17T00:00:00Z"
+      ],
+      "shape": [
+        6,
+        44,
+        51
+      ],
+      "landMask": {
+        "sha256": "aff4c17831af2589a0c277dc3026d8794c119fe0378968bd91fd7f32b8694ae3",
+        "masked": 0,
+        "total": 2244,
+        "identicalToNative3h": true,
+        "native3hLandMaskSha256": "aff4c17831af2589a0c277dc3026d8794c119fe0378968bd91fd7f32b8694ae3"
+      },
+      "derivationScriptSha256": "85673c814255157ff7ddd12514a908fbd0d6819c2aa9286b62cc42666e3b0d23",
+      "derivationConfigurationSha256": "f074025921f51d64fb0ead1bb832f95379e17a57e118bc3aed2f5a2b73424dfe",
+      "nativeGridSha256": "50ac4d6ce654a804e025c9604c2dfde50bdafe5d518d8262eef8a480ddafeb23"
+    },
+    {
+      "windowId": "KE-X3",
+      "status": "DERIVED",
+      "derived": {
+        "file": "data/research/step32/forcing/normalized/KE-X3.hycom15m.daily.dataset.json",
+        "fileSha256": "afb7404385e60093850a674555a63f211618b8cb183deddbf84948ca4538a663",
+        "gridSha256": "65a35ddc156ffd76d948e05cad301e3fa4c582e010b26abc375cb5cc73bbc07b",
+        "datasetId": "hycom-gofs31-53x-ke-x3-15m-daily",
+        "version": "step32-daily-1",
+        "valuesCount": 31212
+      },
+      "algorithm": "hycom-3h-to-utc-daily-mean/1",
+      "days": [
+        {
+          "utcDay": "2011-05-27",
+          "sourceFile": "data/research/step32/forcing/KE-X3/hycom-days/day-20110527.nc",
+          "sourceFileSha256": "4e666be7ec825934e0cca9ce4b5456e1bbed5dcaed60a48d5c2c4791daee797c",
+          "sourceBytes": 86916,
+          "frameTimestamps": [
+            "2011-05-27T00:00:00Z",
+            "2011-05-27T03:00:00Z",
+            "2011-05-27T06:00:00Z",
+            "2011-05-27T09:00:00Z",
+            "2011-05-27T12:00:00Z",
+            "2011-05-27T15:00:00Z",
+            "2011-05-27T18:00:00Z",
+            "2011-05-27T21:00:00Z"
+          ],
+          "frameCount": 8,
+          "sourceUSha256": [
+            "59599cf01380861b78bd216bbba617cccd5f815b50ec88b898456dfe5e7b86ae",
+            "e7b7aabd2eb29f063c0f21a21100881bf1cfd9445b5d0c2c7a9925363f3468f8",
+            "34ecb6a2f90ccb6a8e79172eb13117cfb0373d4e564cd3160e55499f45f1f004",
+            "c083b72b5967c25cd658dc5737ed013c72aca8094ce73659f335ede45c51229b",
+            "1b4a3d3da40e375953e53682b25e442f2514243e4d976f71fb1ae66dcf15c742",
+            "5fd7f4e2506507fe06703f7ee5e54da2eb9f80793c348ebce78347cb221cb9f7",
+            "94e3d6c5a47a051a24400a13fe479388e3a943ca49aca635f335bb1fd423efce",
+            "e9d49d0de7e37298a75acc51f21aacebead94af112fcf5fe5c36263a84975f51"
+          ],
+          "sourceVSha256": [
+            "1e16042ec56225cd962600d2b4b05334107af5359e37d5c44622e4be15a9fa6c",
+            "e969ccf28f73317054bbcc94b8dc6dc05d634d51857da9abacf39af2ea5e16f3",
+            "329598fbee79b18f9fe47e6d7bb6661824dd37fe579268819496d13ab0e1c08f",
+            "ad298f7017a7f49964672dde8b9c552c47676d9d4bbe76dc986ef0321b5f7f0a",
+            "deee1753b050c80a6c50af881cb303608d930cb26809c64e5c06ed51a15833bb",
+            "a1bb860e430f8220ea2507acfdeeaffa4b3dcc126bc21b02c48b4af0386b7877",
+            "9d973e795812c19ab9646ece21f48b96e813ba299f97ab876286796d94737177",
+            "cc83060820674fb691f297cfd87be5afdae7ad2ea327829e382be145ae2ecb96"
+          ],
+          "dailyUSha256": "d5859a09bfbf6ac39d4f757ee50357e8ba52dd912ab4b7d981038f9c5d33d900",
+          "dailyVSha256": "d4770a5edf7e3edaf4ec525759fab37e71af3c3e39fef8a9316e261cffc9df89",
+          "dailyLabelUTC": "2011-05-27T00:00:00Z",
+          "nodesNotFiniteInAllEightFrames": 0
+        },
+        {
+          "utcDay": "2011-05-28",
+          "sourceFile": "data/research/step32/forcing/KE-X3/hycom-days/day-20110528.nc",
+          "sourceFileSha256": "36f37bc16d6ad2c1ed87978f6fecf66341678d1212ce3ccb9e96c1bd6cd190c8",
+          "sourceBytes": 86916,
+          "frameTimestamps": [
+            "2011-05-28T00:00:00Z",
+            "2011-05-28T03:00:00Z",
+            "2011-05-28T06:00:00Z",
+            "2011-05-28T09:00:00Z",
+            "2011-05-28T12:00:00Z",
+            "2011-05-28T15:00:00Z",
+            "2011-05-28T18:00:00Z",
+            "2011-05-28T21:00:00Z"
+          ],
+          "frameCount": 8,
+          "sourceUSha256": [
+            "2035a260828c5071544118c834c143eac2e96b5afd2e3352e5610bb2e283441e",
+            "7c4234a48fa2cbc64701734eb53f7cef8b6dff3cf3f8bf2b15bd90b7eb696082",
+            "6636d932bee12ade2fa6a27c9bc89bc2923ba212519f6be1769de12e110b26f9",
+            "8a9d9944467b556f7d7087b3a880911a2bd86a8445db7fa189e34c3c407923f7",
+            "c6452dbf190896911723f46832502ca7bc08d9155bd7e88fe38e3dce1efb2027",
+            "b24e25c4510eb2d357f214e024b6f1710efd5307cdaabefe5063bf1ee264a345",
+            "fcfbba837b9969191c5c2906cdc368d011c703e6ac7cdca70f871da6b9a58df5",
+            "8969971f7fad64e44c32c30deacacd2ccd13685a43f0c4bdd34796887a7c5d9c"
+          ],
+          "sourceVSha256": [
+            "7bebc23386c4324c2fa32d31a507acfa7b789ad5115d82314282f5e80157c41d",
+            "ecb9e0a5e95dae0ce42f21b019b0e2a499c4c705600e95a5e604e7897a685193",
+            "ef2038c1b29b6b2099d4c77d202b95484acf491a319dd8877a1335ca42448960",
+            "5bbbfbb6e0e235e90750a7af18305ef885827d920c2d26d50d5255e86a794f44",
+            "faef1fd23b8a86313ca6467fb925331a19b92575c45d53d430476700337e00e2",
+            "a6a36b088fa161c144102e31c56cdc962b4ed207517045fd7ba638eb2e9904fb",
+            "5be84870561734008908af8f820002f8161c509b50fd05c23b85e53045ac22be",
+            "8c8d9b98aa72250216d8c197c38cc297de1b456c6383323f213aa6e54a66deec"
+          ],
+          "dailyUSha256": "dd4373a64116dc9c609c92b203c4ccdadf35c6c186a2dfb6cd9e595ddc09daf3",
+          "dailyVSha256": "dfef82b8139b87c76b92cf66172d941176f56805aefecef258c63b783b552c2a",
+          "dailyLabelUTC": "2011-05-28T00:00:00Z",
+          "nodesNotFiniteInAllEightFrames": 0
+        },
+        {
+          "utcDay": "2011-05-29",
+          "sourceFile": "data/research/step32/forcing/KE-X3/hycom-days/day-20110529.nc",
+          "sourceFileSha256": "6eae2f9ab7091f12d9068ab89fd276367a1f29baba742653215aa74e51eb7cc5",
+          "sourceBytes": 86916,
+          "frameTimestamps": [
+            "2011-05-29T00:00:00Z",
+            "2011-05-29T03:00:00Z",
+            "2011-05-29T06:00:00Z",
+            "2011-05-29T09:00:00Z",
+            "2011-05-29T12:00:00Z",
+            "2011-05-29T15:00:00Z",
+            "2011-05-29T18:00:00Z",
+            "2011-05-29T21:00:00Z"
+          ],
+          "frameCount": 8,
+          "sourceUSha256": [
+            "2d4ac532b1608771c9a5b93d54587ed534183d44aa70b72b41df83fb2c734739",
+            "eb3b34fb2922c0f3f0b397ebb3a6be366fd8697408fcf01d9f3cbbb140dac58d",
+            "15e766e7816bd08d8e3315447451f1df7d0ddd8e41137886a7d7066c5be88b93",
+            "8924c2170860e94b6aabcaf708f1a870554d0dac7db0d49479d199ea6701bb25",
+            "3a6bcccc605f2c41e749463ab071fe8d83710d45c45b634003b8d3fcbd04a00e",
+            "ee235fb5dbad400a86b6a284bc67e37706ac001ecd064c31faa92a2bbb9804d7",
+            "dd780e0c69abc95dd5ccbfab287bc0c16aea56dc20e799ac90ba4f22e9c6077a",
+            "e8d52904ce19bb56ac6241479afb434d774627bf2741ce31681ea2712af6fcbe"
+          ],
+          "sourceVSha256": [
+            "2d84b7b8ca33b9af072d2cff0da60c8dc715913ed08a61dfc5adafaa4e16931f",
+            "217bd32e23cb55b4e73b2fa689bac43ff04563c5a8984b10430e8add3b68cc88",
+            "0ff1df08e2d44a238cae7e52c8ad37969f2277317b5d68db24d723c6ff216660",
+            "b04e38ffeb8b8712bb33c437e7059ba0ee7197f663e727b91761ce4c4b95cea2",
+            "1353ee2fa0d147b2bde7e7db1d8d12800a475bd8359815c449f5cf995444e745",
+            "28f0706a77a3a5d6a063cb54764f483924da65eb613066e7dbe61e2d80d23c03",
+            "ac054b42976f95218730ba51a4598c8e00d5ccfd1a00cedbbf30bc805d8a9796",
+            "d054584a01d46bf097ba8d67848c56cf8d9c86f0b64c6152b4c7394f7f348392"
+          ],
+          "dailyUSha256": "c36fd56b91b9ecd1da2262c724ea731d7636af478a29cb2867e535d5edf23d1a",
+          "dailyVSha256": "42b8acaab6b32e3d1d3ed80014d6f1b2aa2fa48568500a0f0d0e3a772716aff0",
+          "dailyLabelUTC": "2011-05-29T00:00:00Z",
+          "nodesNotFiniteInAllEightFrames": 0
+        },
+        {
+          "utcDay": "2011-05-30",
+          "sourceFile": "data/research/step32/forcing/KE-X3/hycom-days/day-20110530.nc",
+          "sourceFileSha256": "908b6e11a1355ed1343dca807e70b0545ad5ff6793c06d21ca7d577aaa5b0d35",
+          "sourceBytes": 86916,
+          "frameTimestamps": [
+            "2011-05-30T00:00:00Z",
+            "2011-05-30T03:00:00Z",
+            "2011-05-30T06:00:00Z",
+            "2011-05-30T09:00:00Z",
+            "2011-05-30T12:00:00Z",
+            "2011-05-30T15:00:00Z",
+            "2011-05-30T18:00:00Z",
+            "2011-05-30T21:00:00Z"
+          ],
+          "frameCount": 8,
+          "sourceUSha256": [
+            "0f0859819b5a835ab368bc4ed69c466c183db804d0bfc7568cf4ffaa3375de75",
+            "2079738e81ef82dff04b269504f5e8c6063190facaddfc740a4f93db4d44279d",
+            "0f84c67fcddf3e171b7749e52de35377db50167a8914ccf9b189ee38daeb9fbb",
+            "9b105ec9c8fb1025b41d988a72bb9c9554446423ea328a8e10d6ad282c091cee",
+            "62f876166224a7d398523d50168d8d7459773a27d1e2321833d6e10194cae274",
+            "89f6fa62a175b5fc7d388feb9522845abf94e0fe20b690d9b414ec644529cdbe",
+            "50d1413314b54519b7a50df7ee9701d0c86fc0fac9048f760d4076467a7d6a05",
+            "7876adea8cd86bfae3e94a64d08d5ab84634d2d6057fee7ad6556167782fc441"
+          ],
+          "sourceVSha256": [
+            "be3e85d591f8b84f0c7dc070d8ba1a1bd6737610ac17cdacac7c2a8f7eb4f4cb",
+            "5873f12a33d14bacd6c2dab40d766a946ffb2e8e77ed1501f13fc7dec87fb1ca",
+            "628f607037b89a333fcf9efd29cd564d451e6c8f366fc509a1bac376b66006de",
+            "6f6157606cd0966ddb682a29742a6e0bd2575e126a510d8c62c74adf7769bd37",
+            "91bff943b6e1550b148b365a24c0428c73362c56d9f6ec7ea9de744ebbc8905b",
+            "ad02618f987d69957c078cd7db1760dee4d6cdc82f48084328f845f59060c768",
+            "bffa871111a1aed4c93a7fef8d759f0fa31d2bd24ab39c3146abd651f1667c87",
+            "8071e6e12c11a29f2a234436ee4d512eb7105c32cdbc93c2080a1e986e1ba0b9"
+          ],
+          "dailyUSha256": "c4cfa3993e9fd3f1c1ddc1e2aa6788b8960ec43c8f68af46a2ff23dd7956fd02",
+          "dailyVSha256": "5d14d786835284131606f7ff549c258a7f923a239f9600824fee1cf3702f6014",
+          "dailyLabelUTC": "2011-05-30T00:00:00Z",
+          "nodesNotFiniteInAllEightFrames": 0
+        },
+        {
+          "utcDay": "2011-05-31",
+          "sourceFile": "data/research/step32/forcing/KE-X3/hycom-days/day-20110531.nc",
+          "sourceFileSha256": "81695d55e68899c463c3d70aca035575d28c923e25cbdbe9a2e50dc6d53d24c3",
+          "sourceBytes": 86916,
+          "frameTimestamps": [
+            "2011-05-31T00:00:00Z",
+            "2011-05-31T03:00:00Z",
+            "2011-05-31T06:00:00Z",
+            "2011-05-31T09:00:00Z",
+            "2011-05-31T12:00:00Z",
+            "2011-05-31T15:00:00Z",
+            "2011-05-31T18:00:00Z",
+            "2011-05-31T21:00:00Z"
+          ],
+          "frameCount": 8,
+          "sourceUSha256": [
+            "5c2435b34f45931ceab6f4de07e41d8b7e37251d131aefcc109442261fb15a5f",
+            "f450dd16c17cea7245cc0c4713823b5f8a86487ec8f5edb78e1b4a5c4f7119ac",
+            "71442c522544cc57f6b4526b89ebad7d21d7f0a894b4a5d39c8250d9d0f6580a",
+            "a9aafebdf36202bb063d9f8f93d6472c589f5908b3695d53812a3d6813002620",
+            "24a17bb75f11c8120d47715bfbd9485f06783b417358bdc0402854555f132db4",
+            "ca9e613700c0a3a67064200613507061203e5d95442e0fbfa0565c3bdbfd130e",
+            "b753ed5b79206f447c4626ff9a004f97b7d444c773c1cb7f5635df8a9aa702c3",
+            "ecdbfaa6c64b9f1422f0e66a7198d5a678462701d01de6b4b68013ec84c20021"
+          ],
+          "sourceVSha256": [
+            "4dd4c5d2d2879676ee1af2aa27708e910b6cd8f2f5d82a37ccce152ff115935e",
+            "79702b4ce2b10d37985e48c7a971cb5f6f7ed6c5aee1a16b2af10ef981c07f30",
+            "4f1bd11e80611076e619fdf675c790a029112756274ea96cd5f592ac7ad15aa8",
+            "68c9395c77fe31e48d71d241c7c1eff8aa3a989fb06d04938e7e4876afdbcdde",
+            "21cbefd13cb0ac83e736f4570b1e2159b6a7a3042c4e297d5bd326a21f7e7241",
+            "cb79e6408786ebb2bc7e7a93bdaf66d8ae1367780e828d8cc37b5dc15b12cf89",
+            "07756035f384f2dd84550f953e9afbefd718c0d3ee3d3f5e632a9c77ac7fd2b6",
+            "2a33c8820a4ab48258a7ed71285a94670ddef1287f93c824a708605f2d4d9bf8"
+          ],
+          "dailyUSha256": "e297cdfc052c5e72b0458655616eda57f75727e3262394343d3a64d4be994dab",
+          "dailyVSha256": "d737ec86c1f1f102abf3884a037e427eb14d215cff7faaf9b1b3b85ae04683ba",
+          "dailyLabelUTC": "2011-05-31T00:00:00Z",
+          "nodesNotFiniteInAllEightFrames": 0
+        },
+        {
+          "utcDay": "2011-06-01",
+          "sourceFile": "data/research/step32/forcing/KE-X3/hycom-days/day-20110601.nc",
+          "sourceFileSha256": "2dfea081d8f2401c3d4cc4d97703bacd833ce5102249f499bc7c228ca3e48774",
+          "sourceBytes": 86916,
+          "frameTimestamps": [
+            "2011-06-01T00:00:00Z",
+            "2011-06-01T03:00:00Z",
+            "2011-06-01T06:00:00Z",
+            "2011-06-01T09:00:00Z",
+            "2011-06-01T12:00:00Z",
+            "2011-06-01T15:00:00Z",
+            "2011-06-01T18:00:00Z",
+            "2011-06-01T21:00:00Z"
+          ],
+          "frameCount": 8,
+          "sourceUSha256": [
+            "17c455ffff5a1ab988874bef775c9792df248170ac32d8f60248c5f1d7ff1409",
+            "316b79b31cd4e1a2acfd935c756d849c922cd184a71d4978c85d5fc3a79757fc",
+            "6bd77ced3288a8c2b5632b1c9f91d3d1308ac08c94c47e40482690f08756d5f9",
+            "429ec3bd4870ba43866c294619ff9c054b495a0b335ebe978020cd45ce8257d5",
+            "52005bc5d15cf7cadceb12e494f0aaaf185db0080e674ebc96eb24a82d923992",
+            "c1c386a463ab4c4cf5e1c5de6d93437d322c2f2433b3cd117908aef81539ccfe",
+            "2eae54626f803ec676fbf5dbceccfd901d191e1f0cc89116c2929921d77485d9",
+            "b4934478f6c74fb9129cf1e212ad2f0d5874eecba3b15b612efbe96f39fb6cde"
+          ],
+          "sourceVSha256": [
+            "19cc5a180c99c7bc15d0ac905dee659076ca7b9ec1198a48a235fca53e4a988b",
+            "78ba18759337ebe79cfa9d482fe5df3f46a728d21dabced82c640b010d97f821",
+            "930d2bae4ffc3eadda4eed214e56fd403bc411fd6290c33e958ac8f95a2d8c05",
+            "a808be82369b53790a345b208540b7402ecf009d946ff3fab3823659c3fd6d89",
+            "1320d83a793cee717c20af7172e44c86d9cb0142d945320ed7e759b56adc0fbe",
+            "45101e80d82c3531f68ca6c7b2509e7511e1e9f09e5a96d163657782c350c18f",
+            "f5f03b0f0facb506f832f1d1374446d998d3815cef157c32d29535ad70741ebc",
+            "850c5765f827c9135b47b85b10be9c29c6fd985b5e4310d78fd8693ac875bed2"
+          ],
+          "dailyUSha256": "f6c49d9307b96396653e7fc6012b2077d5da0cbed4bc23b76afa271db14a6ed7",
+          "dailyVSha256": "f34c6c29ae56984173f2991d3729e553cfc3e1c26c2e142067b6dbe67b584bcd",
+          "dailyLabelUTC": "2011-06-01T00:00:00Z",
+          "nodesNotFiniteInAllEightFrames": 0
+        }
+      ],
+      "frameTotal": 48,
+      "dailyFrames": 6,
+      "timeUTC": [
+        "2011-05-27T00:00:00Z",
+        "2011-05-28T00:00:00Z",
+        "2011-05-29T00:00:00Z",
+        "2011-05-30T00:00:00Z",
+        "2011-05-31T00:00:00Z",
+        "2011-06-01T00:00:00Z"
+      ],
+      "shape": [
+        6,
+        51,
+        51
+      ],
+      "landMask": {
+        "sha256": "735f7f0d9f2878abe00b6af7ad6230ce3a968243254fc2d1398109bd41cc701d",
+        "masked": 0,
+        "total": 2601,
+        "identicalToNative3h": true,
+        "native3hLandMaskSha256": "735f7f0d9f2878abe00b6af7ad6230ce3a968243254fc2d1398109bd41cc701d"
+      },
+      "derivationScriptSha256": "85673c814255157ff7ddd12514a908fbd0d6819c2aa9286b62cc42666e3b0d23",
+      "derivationConfigurationSha256": "f074025921f51d64fb0ead1bb832f95379e17a57e118bc3aed2f5a2b73424dfe",
+      "nativeGridSha256": "81b02fca98e7d769b0504e2ecc305b7333adf99408f7222feae36d0333c1dc0c"
+    },
+    {
+      "windowId": "KE-X4",
+      "status": "WINDOW_BLOCKED",
+      "derived": false
+    },
+    {
+      "windowId": "KE-X5",
+      "status": "WINDOW_BLOCKED",
+      "derived": false
+    },
+    {
+      "windowId": "KE-X6",
+      "status": "WINDOW_BLOCKED",
+      "derived": false
+    },
+    {
+      "windowId": "KE-X7",
+      "status": "WINDOW_BLOCKED",
+      "derived": false
+    },
+    {
+      "windowId": "KE-X8",
+      "status": "WINDOW_BLOCKED",
+      "derived": false
+    }
+  ],
+  "derivedCount": 3,
+  "status": "DERIVED",
+  "modelRunCount": 0,
+  "createdAtUTC": "2026-09-06T23:56:19Z"
+}

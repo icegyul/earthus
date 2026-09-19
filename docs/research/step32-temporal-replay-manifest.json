@@ -1,0 +1,160 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "expanded-holdout-and-temporal-forcing-step32",
+  "kind": "temporal",
+  "runManifestSha256": "d8effb5bf73841a401beb4bda076f494ef80700c947075d24c92d4b57aafa4c0",
+  "replayTool": {
+    "file": "tools/research/replay_step32_run_r3.py",
+    "sha256": "865c69be8f45eaace1bdd6defaedb485fd5d570a1c17a731576d0c05b2e9e6f3"
+  },
+  "replays": [
+    {
+      "runId": "step32-A-alpha0.002-KE-X1",
+      "windowId": "KE-X1",
+      "condition": "A",
+      "resultArraySha256": "1f6eddfe71cd22c4941e3feaf781e2ae100bfeed497833a83f940dbd37a0e8ca",
+      "replayResultSha256": "1f6eddfe71cd22c4941e3feaf781e2ae100bfeed497833a83f940dbd37a0e8ca",
+      "trajectoriesSha256": "0317c4598a7fa919caadfc6783bb4c6cd3964158ae1a1287d53276438c58de6f",
+      "matched": true
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X1",
+      "windowId": "KE-X1",
+      "condition": "B",
+      "resultArraySha256": "514d0b6cf548ba933b4a376f25703ee2610aea99204358a96b707303873359a9",
+      "replayResultSha256": "514d0b6cf548ba933b4a376f25703ee2610aea99204358a96b707303873359a9",
+      "trajectoriesSha256": "18fc5dfffa37b239d616acd56a73f8910b84cbff9e0d246bd58f5135ee727c5a",
+      "matched": true
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X2",
+      "windowId": "KE-X2",
+      "condition": "A",
+      "resultArraySha256": "06088e75ee262fb803214bb997fe0b9f12e47a16ef7e5c97555152c709d3f6ac",
+      "replayResultSha256": "06088e75ee262fb803214bb997fe0b9f12e47a16ef7e5c97555152c709d3f6ac",
+      "trajectoriesSha256": "69551f38914502af0257f2b01965cd3c68614b2490a6decd04469a8dfc5a5416",
+      "matched": true
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X2",
+      "windowId": "KE-X2",
+      "condition": "B",
+      "resultArraySha256": "4f2ea0c436c4be0d31c19555a9c55dfea0fc13f943f977bcb1bca94949bd1f9c",
+      "replayResultSha256": "4f2ea0c436c4be0d31c19555a9c55dfea0fc13f943f977bcb1bca94949bd1f9c",
+      "trajectoriesSha256": "bcfd38cecc831f89f0c18820fd454b1404e90380bee6fcf2fa262b55e35db59f",
+      "matched": true
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X3",
+      "windowId": "KE-X3",
+      "condition": "A",
+      "resultArraySha256": "20f864b1576348cb17eb78df138cc4aef4913dbccd03b20422f6256a260f340d",
+      "replayResultSha256": "20f864b1576348cb17eb78df138cc4aef4913dbccd03b20422f6256a260f340d",
+      "trajectoriesSha256": "2125d961084dc08330064e969767a048f531756d26fd109bfda598b5f9ac35d7",
+      "matched": true
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X3",
+      "windowId": "KE-X3",
+      "condition": "B",
+      "resultArraySha256": "76060eb414d753055307d6953aa65cc33cd194cbe8f8b880bcd6e910ed2abed1",
+      "replayResultSha256": "76060eb414d753055307d6953aa65cc33cd194cbe8f8b880bcd6e910ed2abed1",
+      "trajectoriesSha256": "b37852e83a313ad61fca18d49d99410abf9ac7a136e4a224ab6582e676dc95e8",
+      "matched": true
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X4",
+      "windowId": "KE-X4",
+      "condition": "A",
+      "resultArraySha256": null,
+      "replayResultSha256": null,
+      "trajectoriesSha256": null,
+      "matched": false
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X4",
+      "windowId": "KE-X4",
+      "condition": "B",
+      "resultArraySha256": null,
+      "replayResultSha256": null,
+      "trajectoriesSha256": null,
+      "matched": false
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X5",
+      "windowId": "KE-X5",
+      "condition": "A",
+      "resultArraySha256": null,
+      "replayResultSha256": null,
+      "trajectoriesSha256": null,
+      "matched": false
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X5",
+      "windowId": "KE-X5",
+      "condition": "B",
+      "resultArraySha256": null,
+      "replayResultSha256": null,
+      "trajectoriesSha256": null,
+      "matched": false
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X6",
+      "windowId": "KE-X6",
+      "condition": "A",
+      "resultArraySha256": null,
+      "replayResultSha256": null,
+      "trajectoriesSha256": null,
+      "matched": false
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X6",
+      "windowId": "KE-X6",
+      "condition": "B",
+      "resultArraySha256": null,
+      "replayResultSha256": null,
+      "trajectoriesSha256": null,
+      "matched": false
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X7",
+      "windowId": "KE-X7",
+      "condition": "A",
+      "resultArraySha256": null,
+      "replayResultSha256": null,
+      "trajectoriesSha256": null,
+      "matched": false
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X7",
+      "windowId": "KE-X7",
+      "condition": "B",
+      "resultArraySha256": null,
+      "replayResultSha256": null,
+      "trajectoriesSha256": null,
+      "matched": false
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X8",
+      "windowId": "KE-X8",
+      "condition": "A",
+      "resultArraySha256": null,
+      "replayResultSha256": null,
+      "trajectoriesSha256": null,
+      "matched": false
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X8",
+      "windowId": "KE-X8",
+      "condition": "B",
+      "resultArraySha256": null,
+      "replayResultSha256": null,
+      "trajectoriesSha256": null,
+      "matched": false
+    }
+  ],
+  "matchedCount": 6,
+  "total": 16,
+  "allMatched": true,
+  "blockedCount": 10
+}

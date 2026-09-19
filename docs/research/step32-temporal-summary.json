@@ -1,0 +1,872 @@
+{
+  "ruleId": "expanded-holdout-and-temporal-forcing-step32",
+  "phase": "B4/B7",
+  "status": "STEP32_TEMPORAL_EVALUATED",
+  "comparison": "B HYCOM_DAILY vs A HYCOM_NATIVE_3H (same source, grid, depth 15.000 m, wind, alpha 0.002, releases, mechanics; only ocean temporal representation differs)",
+  "deltaDefinition": "error_HYCOM_DAILY - error_HYCOM_NATIVE_3H (km); negative = daily lower error",
+  "alpha": 0.002,
+  "depthMeters": 15.0,
+  "stokes": "NONE",
+  "windows": [
+    "KE-X1",
+    "KE-X2",
+    "KE-X3"
+  ],
+  "registeredWindows": [
+    "KE-X1",
+    "KE-X2",
+    "KE-X3",
+    "KE-X4",
+    "KE-X5",
+    "KE-X6",
+    "KE-X7",
+    "KE-X8"
+  ],
+  "blockedWindows": [
+    "KE-X4",
+    "KE-X5",
+    "KE-X6",
+    "KE-X7",
+    "KE-X8"
+  ],
+  "blockedRuns": [
+    {
+      "runId": "step32-A-alpha0.002-KE-X4",
+      "windowId": "KE-X4",
+      "condition": "A",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X4 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-09T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X4",
+      "windowId": "KE-X4",
+      "condition": "B",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X4 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-09T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X5",
+      "windowId": "KE-X5",
+      "condition": "A",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X5 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z'])"
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X5",
+      "windowId": "KE-X5",
+      "condition": "B",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X5 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z'])"
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X6",
+      "windowId": "KE-X6",
+      "condition": "A",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X6 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z', '2011-06-20T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X6",
+      "windowId": "KE-X6",
+      "condition": "B",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X6 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z', '2011-06-20T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X7",
+      "windowId": "KE-X7",
+      "condition": "A",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X7 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-20T12:00:00Z', '2011-06-22T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X7",
+      "windowId": "KE-X7",
+      "condition": "B",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X7 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-20T12:00:00Z', '2011-06-22T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X8",
+      "windowId": "KE-X8",
+      "condition": "A",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X8 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-22T12:00:00Z', '2011-06-26T18:00:00Z'])"
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X8",
+      "windowId": "KE-X8",
+      "condition": "B",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X8 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-22T12:00:00Z', '2011-06-26T18:00:00Z'])"
+    }
+  ],
+  "blockedReason": "registered data-availability rule: a mandatory HYCOM 3-hourly source frame is absent from expt_53.X (WINDOW_BLOCKED; no interpolation, substitution or replacement)",
+  "n_drifters": 10,
+  "registeredDrifters": 32,
+  "belowPreregisteredMinimum": {
+    "drifters": true,
+    "windows": true,
+    "minimum": "20 drifters / 6 windows (Phase A)"
+  },
+  "tieToleranceKm": 1e-06,
+  "overall": {
+    "n_drifters": 10,
+    "windows": [
+      "KE-X1",
+      "KE-X2",
+      "KE-X3"
+    ],
+    "24h": {
+      "n": 10,
+      "notAvailable": 0,
+      "error_A_3H": {
+        "n": 10,
+        "median": 15.148,
+        "mean": 25.215,
+        "min": 9.397,
+        "max": 66.335
+      },
+      "error_B_DAILY": {
+        "n": 10,
+        "median": 15.316,
+        "mean": 24.28,
+        "min": 1.625,
+        "max": 70.746
+      },
+      "delta": {
+        "n": 10,
+        "median": -0.812,
+        "mean": -0.935,
+        "min": -7.772,
+        "max": 4.878
+      },
+      "wins_daily": 6,
+      "losses_daily": 4,
+      "ties": 0,
+      "winMeaning": "HYCOM_DAILY lower error than HYCOM_NATIVE_3H",
+      "signTest": {
+        "n": 10,
+        "k": 4,
+        "p_nominal": 0.753906,
+        "reported": true,
+        "role": "descriptive context only; drifters within a window are clustered"
+      },
+      "M4_separation_B_A": {
+        "n": 10,
+        "median": 4.411,
+        "mean": 4.492,
+        "min": 0.807,
+        "max": 8.098
+      }
+    },
+    "48h": {
+      "n": 10,
+      "notAvailable": 0,
+      "error_A_3H": {
+        "n": 10,
+        "median": 43.787,
+        "mean": 51.802,
+        "min": 22.376,
+        "max": 95.484
+      },
+      "error_B_DAILY": {
+        "n": 10,
+        "median": 46.034,
+        "mean": 53.51,
+        "min": 19.267,
+        "max": 105.473
+      },
+      "delta": {
+        "n": 10,
+        "median": 1.201,
+        "mean": 1.708,
+        "min": -10.359,
+        "max": 13.677
+      },
+      "wins_daily": 4,
+      "losses_daily": 6,
+      "ties": 0,
+      "winMeaning": "HYCOM_DAILY lower error than HYCOM_NATIVE_3H",
+      "signTest": {
+        "n": 10,
+        "k": 4,
+        "p_nominal": 0.753906,
+        "reported": true,
+        "role": "descriptive context only; drifters within a window are clustered"
+      },
+      "M4_separation_B_A": {
+        "n": 10,
+        "median": 7.174,
+        "mean": 7.531,
+        "min": 0.269,
+        "max": 15.377
+      }
+    },
+    "72h": {
+      "n": 10,
+      "notAvailable": 0,
+      "error_A_3H": {
+        "n": 10,
+        "median": 59.962,
+        "mean": 75.186,
+        "min": 24.061,
+        "max": 153.455
+      },
+      "error_B_DAILY": {
+        "n": 10,
+        "median": 60.94,
+        "mean": 78.154,
+        "min": 28.511,
+        "max": 156.39
+      },
+      "delta": {
+        "n": 10,
+        "median": 4.037,
+        "mean": 2.967,
+        "min": -8.237,
+        "max": 16.412
+      },
+      "wins_daily": 4,
+      "losses_daily": 6,
+      "ties": 0,
+      "winMeaning": "HYCOM_DAILY lower error than HYCOM_NATIVE_3H",
+      "signTest": {
+        "n": 10,
+        "k": 4,
+        "p_nominal": 0.753906,
+        "reported": true,
+        "role": "descriptive context only; drifters within a window are clustered"
+      },
+      "M4_separation_B_A": {
+        "n": 10,
+        "median": 9.003,
+        "mean": 10.94,
+        "min": 2.099,
+        "max": 22.697
+      }
+    },
+    "M1_endpoint72h": {
+      "A_3H": {
+        "n": 10,
+        "median": 60.039,
+        "mean": 80.718,
+        "min": 25.765,
+        "max": 206.961
+      },
+      "B_DAILY": {
+        "n": 10,
+        "median": 65.946,
+        "mean": 82.762,
+        "min": 22.692,
+        "max": 189.129
+      }
+    },
+    "M2_totalPath": {
+      "A_3H": {
+        "n": 10,
+        "median": 80.029,
+        "mean": 101.762,
+        "min": 44.466,
+        "max": 221.784
+      },
+      "B_DAILY": {
+        "n": 10,
+        "median": 67.661,
+        "mean": 89.031,
+        "min": 26.036,
+        "max": 203.274
+      }
+    },
+    "M4_separation72h": {
+      "n": 10,
+      "median": 9.003,
+      "mean": 10.94,
+      "min": 2.099,
+      "max": 22.697
+    },
+    "M5_observed72h": {
+      "n": 10,
+      "median": 53.157,
+      "mean": 55.751,
+      "min": 8.575,
+      "max": 108.109
+    }
+  },
+  "perWindow": {
+    "KE-X1": {
+      "n_drifters": 8,
+      "windows": [
+        "KE-X1"
+      ],
+      "24h": {
+        "n": 8,
+        "notAvailable": 0,
+        "error_A_3H": {
+          "n": 8,
+          "median": 16.325,
+          "mean": 27.828,
+          "min": 9.397,
+          "max": 66.335
+        },
+        "error_B_DAILY": {
+          "n": 8,
+          "median": 15.797,
+          "mean": 26.52,
+          "min": 1.625,
+          "max": 70.746
+        },
+        "delta": {
+          "n": 8,
+          "median": -0.88,
+          "mean": -1.307,
+          "min": -7.772,
+          "max": 4.878
+        },
+        "wins_daily": 5,
+        "losses_daily": 3,
+        "ties": 0,
+        "winMeaning": "HYCOM_DAILY lower error than HYCOM_NATIVE_3H",
+        "signTest": {
+          "n": 8,
+          "reported": false,
+          "reason": "n < 10"
+        },
+        "M4_separation_B_A": {
+          "n": 8,
+          "median": 5.523,
+          "mean": 4.978,
+          "min": 0.807,
+          "max": 8.098
+        }
+      },
+      "48h": {
+        "n": 8,
+        "notAvailable": 0,
+        "error_A_3H": {
+          "n": 8,
+          "median": 47.958,
+          "mean": 56.731,
+          "min": 22.515,
+          "max": 95.484
+        },
+        "error_B_DAILY": {
+          "n": 8,
+          "median": 53.694,
+          "mean": 59.47,
+          "min": 19.267,
+          "max": 105.473
+        },
+        "delta": {
+          "n": 8,
+          "median": 4.121,
+          "mean": 2.739,
+          "min": -10.359,
+          "max": 13.677
+        },
+        "wins_daily": 3,
+        "losses_daily": 5,
+        "ties": 0,
+        "winMeaning": "HYCOM_DAILY lower error than HYCOM_NATIVE_3H",
+        "signTest": {
+          "n": 8,
+          "reported": false,
+          "reason": "n < 10"
+        },
+        "M4_separation_B_A": {
+          "n": 8,
+          "median": 7.682,
+          "mean": 8.47,
+          "min": 2.809,
+          "max": 15.377
+        }
+      },
+      "72h": {
+        "n": 8,
+        "notAvailable": 0,
+        "error_A_3H": {
+          "n": 8,
+          "median": 88.473,
+          "mean": 86.715,
+          "min": 32.177,
+          "max": 153.455
+        },
+        "error_B_DAILY": {
+          "n": 8,
+          "median": 92.551,
+          "mean": 90.49,
+          "min": 28.618,
+          "max": 156.39
+        },
+        "delta": {
+          "n": 8,
+          "median": 4.078,
+          "mean": 3.775,
+          "min": -8.237,
+          "max": 16.412
+        },
+        "wins_daily": 3,
+        "losses_daily": 5,
+        "ties": 0,
+        "winMeaning": "HYCOM_DAILY lower error than HYCOM_NATIVE_3H",
+        "signTest": {
+          "n": 8,
+          "reported": false,
+          "reason": "n < 10"
+        },
+        "M4_separation_B_A": {
+          "n": 8,
+          "median": 11.714,
+          "mean": 12.281,
+          "min": 2.099,
+          "max": 22.697
+        }
+      },
+      "M1_endpoint72h": {
+        "A_3H": {
+          "n": 8,
+          "median": 60.039,
+          "mean": 85.69,
+          "min": 25.765,
+          "max": 206.961
+        },
+        "B_DAILY": {
+          "n": 8,
+          "median": 75.783,
+          "mean": 88.992,
+          "min": 22.692,
+          "max": 189.129
+        }
+      },
+      "M2_totalPath": {
+        "A_3H": {
+          "n": 8,
+          "median": 82.672,
+          "mean": 109.668,
+          "min": 44.466,
+          "max": 221.784
+        },
+        "B_DAILY": {
+          "n": 8,
+          "median": 79.879,
+          "mean": 96.726,
+          "min": 26.036,
+          "max": 203.274
+        }
+      },
+      "M4_separation72h": {
+        "n": 8,
+        "median": 11.714,
+        "mean": 12.281,
+        "min": 2.099,
+        "max": 22.697
+      },
+      "M5_observed72h": {
+        "n": 8,
+        "median": 62.686,
+        "mean": 58.055,
+        "min": 8.575,
+        "max": 108.109
+      }
+    },
+    "KE-X2": {
+      "n_drifters": 1,
+      "windows": [
+        "KE-X2"
+      ],
+      "24h": {
+        "n": 1,
+        "notAvailable": 0,
+        "error_A_3H": {
+          "n": 1,
+          "median": 13.715,
+          "mean": 13.715,
+          "min": 13.715,
+          "max": 13.715
+        },
+        "error_B_DAILY": {
+          "n": 1,
+          "median": 15.945,
+          "mean": 15.945,
+          "min": 15.945,
+          "max": 15.945
+        },
+        "delta": {
+          "n": 1,
+          "median": 2.23,
+          "mean": 2.23,
+          "min": 2.23,
+          "max": 2.23
+        },
+        "wins_daily": 0,
+        "losses_daily": 1,
+        "ties": 0,
+        "winMeaning": "HYCOM_DAILY lower error than HYCOM_NATIVE_3H",
+        "signTest": {
+          "n": 1,
+          "reported": false,
+          "reason": "n < 10"
+        },
+        "M4_separation_B_A": {
+          "n": 1,
+          "median": 3.521,
+          "mean": 3.521,
+          "min": 3.521,
+          "max": 3.521
+        }
+      },
+      "48h": {
+        "n": 1,
+        "notAvailable": 0,
+        "error_A_3H": {
+          "n": 1,
+          "median": 22.376,
+          "mean": 22.376,
+          "min": 22.376,
+          "max": 22.376
+        },
+        "error_B_DAILY": {
+          "n": 1,
+          "median": 22.473,
+          "mean": 22.473,
+          "min": 22.473,
+          "max": 22.473
+        },
+        "delta": {
+          "n": 1,
+          "median": 0.097,
+          "mean": 0.097,
+          "min": 0.097,
+          "max": 0.097
+        },
+        "wins_daily": 0,
+        "losses_daily": 1,
+        "ties": 0,
+        "winMeaning": "HYCOM_DAILY lower error than HYCOM_NATIVE_3H",
+        "signTest": {
+          "n": 1,
+          "reported": false,
+          "reason": "n < 10"
+        },
+        "M4_separation_B_A": {
+          "n": 1,
+          "median": 0.269,
+          "mean": 0.269,
+          "min": 0.269,
+          "max": 0.269
+        }
+      },
+      "72h": {
+        "n": 1,
+        "notAvailable": 0,
+        "error_A_3H": {
+          "n": 1,
+          "median": 24.061,
+          "mean": 24.061,
+          "min": 24.061,
+          "max": 24.061
+        },
+        "error_B_DAILY": {
+          "n": 1,
+          "median": 28.511,
+          "mean": 28.511,
+          "min": 28.511,
+          "max": 28.511
+        },
+        "delta": {
+          "n": 1,
+          "median": 4.45,
+          "mean": 4.45,
+          "min": 4.45,
+          "max": 4.45
+        },
+        "wins_daily": 0,
+        "losses_daily": 1,
+        "ties": 0,
+        "winMeaning": "HYCOM_DAILY lower error than HYCOM_NATIVE_3H",
+        "signTest": {
+          "n": 1,
+          "reported": false,
+          "reason": "n < 10"
+        },
+        "M4_separation_B_A": {
+          "n": 1,
+          "median": 5.741,
+          "mean": 5.741,
+          "min": 5.741,
+          "max": 5.741
+        }
+      },
+      "M1_endpoint72h": {
+        "A_3H": {
+          "n": 1,
+          "median": 46.139,
+          "mean": 46.139,
+          "min": 46.139,
+          "max": 46.139
+        },
+        "B_DAILY": {
+          "n": 1,
+          "median": 45.302,
+          "mean": 45.302,
+          "min": 45.302,
+          "max": 45.302
+        }
+      },
+      "M2_totalPath": {
+        "A_3H": {
+          "n": 1,
+          "median": 60.326,
+          "mean": 60.326,
+          "min": 60.326,
+          "max": 60.326
+        },
+        "B_DAILY": {
+          "n": 1,
+          "median": 45.902,
+          "mean": 45.902,
+          "min": 45.902,
+          "max": 45.902
+        }
+      },
+      "M4_separation72h": {
+        "n": 1,
+        "median": 5.741,
+        "mean": 5.741,
+        "min": 5.741,
+        "max": 5.741
+      },
+      "M5_observed72h": {
+        "n": 1,
+        "median": 39.392,
+        "mean": 39.392,
+        "min": 39.392,
+        "max": 39.392
+      }
+    },
+    "KE-X3": {
+      "n_drifters": 1,
+      "windows": [
+        "KE-X3"
+      ],
+      "24h": {
+        "n": 1,
+        "notAvailable": 0,
+        "error_A_3H": {
+          "n": 1,
+          "median": 15.81,
+          "mean": 15.81,
+          "min": 15.81,
+          "max": 15.81
+        },
+        "error_B_DAILY": {
+          "n": 1,
+          "median": 14.688,
+          "mean": 14.688,
+          "min": 14.688,
+          "max": 14.688
+        },
+        "delta": {
+          "n": 1,
+          "median": -1.122,
+          "mean": -1.122,
+          "min": -1.122,
+          "max": -1.122
+        },
+        "wins_daily": 1,
+        "losses_daily": 0,
+        "ties": 0,
+        "winMeaning": "HYCOM_DAILY lower error than HYCOM_NATIVE_3H",
+        "signTest": {
+          "n": 1,
+          "reported": false,
+          "reason": "n < 10"
+        },
+        "M4_separation_B_A": {
+          "n": 1,
+          "median": 1.575,
+          "mean": 1.575,
+          "min": 1.575,
+          "max": 1.575
+        }
+      },
+      "48h": {
+        "n": 1,
+        "notAvailable": 0,
+        "error_A_3H": {
+          "n": 1,
+          "median": 41.797,
+          "mean": 41.797,
+          "min": 41.797,
+          "max": 41.797
+        },
+        "error_B_DAILY": {
+          "n": 1,
+          "median": 36.869,
+          "mean": 36.869,
+          "min": 36.869,
+          "max": 36.869
+        },
+        "delta": {
+          "n": 1,
+          "median": -4.928,
+          "mean": -4.928,
+          "min": -4.928,
+          "max": -4.928
+        },
+        "wins_daily": 1,
+        "losses_daily": 0,
+        "ties": 0,
+        "winMeaning": "HYCOM_DAILY lower error than HYCOM_NATIVE_3H",
+        "signTest": {
+          "n": 1,
+          "reported": false,
+          "reason": "n < 10"
+        },
+        "M4_separation_B_A": {
+          "n": 1,
+          "median": 7.282,
+          "mean": 7.282,
+          "min": 7.282,
+          "max": 7.282
+        }
+      },
+      "72h": {
+        "n": 1,
+        "notAvailable": 0,
+        "error_A_3H": {
+          "n": 1,
+          "median": 34.081,
+          "mean": 34.081,
+          "min": 34.081,
+          "max": 34.081
+        },
+        "error_B_DAILY": {
+          "n": 1,
+          "median": 29.108,
+          "mean": 29.108,
+          "min": 29.108,
+          "max": 29.108
+        },
+        "delta": {
+          "n": 1,
+          "median": -4.973,
+          "mean": -4.973,
+          "min": -4.973,
+          "max": -4.973
+        },
+        "wins_daily": 1,
+        "losses_daily": 0,
+        "ties": 0,
+        "winMeaning": "HYCOM_DAILY lower error than HYCOM_NATIVE_3H",
+        "signTest": {
+          "n": 1,
+          "reported": false,
+          "reason": "n < 10"
+        },
+        "M4_separation_B_A": {
+          "n": 1,
+          "median": 5.416,
+          "mean": 5.416,
+          "min": 5.416,
+          "max": 5.416
+        }
+      },
+      "M1_endpoint72h": {
+        "A_3H": {
+          "n": 1,
+          "median": 75.515,
+          "mean": 75.515,
+          "min": 75.515,
+          "max": 75.515
+        },
+        "B_DAILY": {
+          "n": 1,
+          "median": 70.379,
+          "mean": 70.379,
+          "min": 70.379,
+          "max": 70.379
+        }
+      },
+      "M2_totalPath": {
+        "A_3H": {
+          "n": 1,
+          "median": 79.953,
+          "mean": 79.953,
+          "min": 79.953,
+          "max": 79.953
+        },
+        "B_DAILY": {
+          "n": 1,
+          "median": 70.599,
+          "mean": 70.599,
+          "min": 70.599,
+          "max": 70.599
+        }
+      },
+      "M4_separation72h": {
+        "n": 1,
+        "median": 5.416,
+        "mean": 5.416,
+        "min": 5.416,
+        "max": 5.416
+      },
+      "M5_observed72h": {
+        "n": 1,
+        "median": 53.678,
+        "mean": 53.678,
+        "min": 53.678,
+        "max": 53.678
+      }
+    }
+  },
+  "descriptiveLabel": {
+    "overall72h": "NO_CLEAR_TEMPORAL_DIFFERENCE",
+    "perWindow72h": {
+      "KE-X1": "NO_CLEAR_TEMPORAL_DIFFERENCE",
+      "KE-X2": "NATIVE_3H_DESCRIPTIVELY_FAVORED",
+      "KE-X3": "DAILY_DESCRIPTIVELY_FAVORED"
+    },
+    "rule": {
+      "scope": "overall stratum, 72 h",
+      "consistencyFraction": 0.6666666666666666,
+      "labels": {
+        "A": "NATIVE_3H_DESCRIPTIVELY_FAVORED if median delta > +tie AND (delta > tie count)/(non-tied) >= 2/3",
+        "B": "DAILY_DESCRIPTIVELY_FAVORED if median delta < -tie AND (delta < -tie count)/(non-tied) >= 2/3",
+        "C": "NO_CLEAR_TEMPORAL_DIFFERENCE otherwise"
+      },
+      "newThreshold": false
+    }
+  },
+  "primary72h": {
+    "n": 10,
+    "notAvailable": 0,
+    "A_3H_median": 59.962,
+    "B_DAILY_median": 60.94,
+    "delta_median": 4.037,
+    "delta_mean": 2.967,
+    "wins_daily": 4,
+    "losses_daily": 6,
+    "ties": 0
+  },
+  "clustering": "Drifters sharing a window, forcing period and release time are clustered; they are not independent samples. Per-window structure is reported; pooled counts are descriptive only.",
+  "outlierPolicyApplied": {
+    "removed": 0,
+    "trimmed": 0,
+    "winsorized": 0,
+    "weighted": 0,
+    "deleted": 0,
+    "postHocExclusions": 0
+  },
+  "operationalWinner": false,
+  "baselineModified": false,
+  "candidateModified": false,
+  "parameterSelection": "NONE",
+  "interpretation": "DESCRIPTIVE ONLY",
+  "statements": [
+    "5 of 8 registered windows are WINDOW_BLOCKED by the registered data-availability rule (missing HYCOM source frames); the evaluable set is 3 windows / 10 drifters, below the Phase A minimum of 6 windows / 20 drifters; no window was replaced.",
+    "The temporal test compares two representations of the same HYCOM source; it declares no operational winner and changes neither the frozen baseline nor the candidate.",
+    "Overall 72 h: A median 59.962 km, B median 60.94 km, paired median delta 4.037 km, W/L/T (daily lower) 4/6/0, label NO_CLEAR_TEMPORAL_DIFFERENCE.",
+    "Drifters within one window are clustered and are not treated as independent samples; no statistical significance, generalization or causal claim is made."
+  ]
+}

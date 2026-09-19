@@ -1,0 +1,114 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "validation-path-decision-step34",
+  "status": "PREREGISTRATION_DESIGN_COMPLETE",
+  "createdAtUTC": "2026-09-07T00:47:35Z",
+  "head": "3ebabfe3",
+  "phaseALock": "ee64354d",
+  "purpose": "validation path decision / extension preregistration design; not a scientific experiment",
+  "frozen": {
+    "step32": {
+      "status": "PARTIAL",
+      "registeredWindows": 8,
+      "evaluableWindows": 3,
+      "blockedWindows": [
+        "KE-X4",
+        "KE-X5",
+        "KE-X6",
+        "KE-X7",
+        "KE-X8"
+      ],
+      "evaluableWindowIds": [
+        "KE-X1",
+        "KE-X2",
+        "KE-X3"
+      ],
+      "registeredDrifters": 32,
+      "evaluableDrifters": 10,
+      "blockedDrifters": 22,
+      "phaseAMinimum": "6 windows / 20 drifters",
+      "phaseAMinimumMet": false,
+      "temporalLabel": "NO_CLEAR_TEMPORAL_DIFFERENCE",
+      "validationLabel": "NO_CLEAR_DESCRIPTIVE_DIFFERENCE",
+      "phaseAPreregistrationSha256": "732ca966b6227fb5447b99bb2a06f59a38fdc7f2d1ffd9a5d4a5097bc175c971",
+      "phaseBPreregistrationSha256": "d7434d28d63e7a1e991fd512a2768fe2b1ee53b60ccffec271e668658d991701",
+      "outputsSnapshot": "docs/research/step33-source-recovery-protocol.json frozen.step32Outputs"
+    },
+    "step33": {
+      "status": "SOURCE_ABSENT",
+      "blockedWindowsInvestigated": 5,
+      "recovered": 0,
+      "sourceAbsentPairs": 8,
+      "distinctMissingTimestamps": 5,
+      "acquisitionErrors": 0
+    },
+    "step33Files": {
+      "docs/research/step33-source-recovery-protocol.json": "9327ea49c6c2319364e7066c495e99c4ad1745b7eeb4aed65b8fda342ff3635c",
+      "docs/research/step33-source-recovery-manifest.json": "24f3efdb5bf86bbe702c4fb7301cb6e7ae15bc12352257d2b834a5fdf672ff35",
+      "docs/research/step33-source-availability-summary.json": "6b40205451458754d26b6e9da87e94a7c5f3519f43394b13479af6ea081ce0c6",
+      "docs/research/step33-source-recovery-report.md": "28fd28c5743871217fdbaad611de19284a5432cf22add3299f1706eed2133805",
+      "docs/research/step33-validator-r2-record.json": "cd7b8d70cde2424a8f264663be6692ec11ab0654c37bac7bad9fc99bd102caf3",
+      "tools/research/recover_step33_source.py": "c0590c7ba461696675bc4c365534daa9bc274cd611fb6c82cc84d1104c6ee94d",
+      "tools/research/check_step33_source_recovery.py": "fd99fddb604b0b42e4c6659b4f94b4578157a5eb82927454399d7d1b3e3099fa",
+      "tools/research/check_step33_source_recovery_r2.py": "263a56a7473de90d15aae7dfe118b19b2bf16f9568337645918799572c0ae50c"
+    },
+    "candidate": {
+      "name": "GLORYS12V1 15.810070 m + WW3 Stokes x 1.0 + NCEP-R2 alpha 0.002",
+      "status": "CANDIDATE_ONLY"
+    },
+    "baseline": {
+      "name": "HYCOM GOFS 3.1 15.000 m 3-hourly + NCEP-R2 alpha 0.002",
+      "status": "FROZEN_REFERENCE_BASELINE"
+    }
+  },
+  "primaryRules": {
+    "modifyOrRemoveStep32Step33Data": false,
+    "discardEvaluableWindows": false,
+    "replaceBlockedWindowsWithOtherSource": false,
+    "addDriftersToExistingHoldout": false,
+    "artificial6of8Substitution": false,
+    "reportThreeWindowResultAsMeetingMinimum": false,
+    "chooseOptionFromPerformance": false
+  },
+  "noExperiment": {
+    "trajectorySimulation": false,
+    "candidateComparison": false,
+    "temporalComparison": false,
+    "parameterSweep": false,
+    "calibration": false,
+    "modelSelection": false,
+    "forcingSelection": false,
+    "scoreOptimization": false
+  },
+  "modelRunCount": 0,
+  "newData": 0,
+  "selectionCriteria": [
+    "scientificObjective",
+    "sourceCompleteness",
+    "temporalCoverage",
+    "independence",
+    "preregistrationFeasibility"
+  ],
+  "inputsRead": [
+    "docs/research/step33-source-recovery-manifest.json",
+    "docs/research/step33-source-recovery-protocol.json",
+    "docs/research/step33-source-availability-summary.json",
+    "docs/research/step32-temporal-summary.json (status/label fields only)",
+    "docs/research/step32-validation-summary.json (status/label fields only)",
+    "docs/research/step32-temporal-experiment-matrix.json",
+    "docs/research/step32-holdout-derivation.json",
+    "docs/research/step16-selection-audit.json (eligible-window counts)",
+    "docs/research/cohort-step16.json (region boxes)"
+  ],
+  "forbiddenInputAccess": 0,
+  "outputs": {
+    "docs/research/step34-source-absence-record.json": "41681ba0d1c48f0fcacb566c4af48235c26a01f8f57082e917d699589dccc101",
+    "docs/research/step34-validation-options.json": "472101b4db126740408af8a633354587ea02ccf4d997810063e3a8d27d80565c",
+    "docs/research/step34-preregistration-draft.md": "469bc4719e3480ee36704f358df8cd1b13cc44a76c198a81766ad77034085bfe"
+  },
+  "validator": {
+    "file": "tools/research/check_step34_validation_path.py",
+    "sha256": "f204985384b72d21fdc78cc4602f6943dad717417d0ed87889c5067ed8371214"
+  },
+  "automaticCommit": false
+}

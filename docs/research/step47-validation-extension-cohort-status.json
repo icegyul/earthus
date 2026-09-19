@@ -1,0 +1,167 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "validation-extension-preregistration-step46",
+  "step": 47,
+  "classification": "VALIDATION_EXTENSION_COHORT_DERIVATION",
+  "status": "VALIDATION_EXTENSION_COHORT_LOCKED",
+  "manifestSha256": "32d3085010185d8c1a5734ef53be227252220b74a2526dbadf5c72de5eee2cca",
+  "derivationHash": "9e03db68d506358e1217db25f50ade8aa314b406063fd8c309cbe6a3092e5e45",
+  "authorization": {
+    "step46ProtocolSha256": "c824b053fdeea20336f1396dc503232492ab77e1f9d5f032586b23c47d66862d",
+    "step46ProtocolIdentityHash": "d7ec8fd5400f2460c2a516b215369eebf4737ec724f779841b4f6e6d480e8f8d",
+    "step45cManifestSha256": "65a9fc5a5efe40f266c94e0db9d93c969f702fde897a9030e1b01fbf264c4856",
+    "step45bAmendmentSha256": "88398dc62fb6a18e1fe5d2d8d83feff17a77f2aa4c9d0c9136008c47d38a2e4b",
+    "step44ProtocolSha256": "6a2e2f04f7948e4ff3ac5dec065fc93a6072ce112bb2e072ce77c2606056de9f",
+    "step35EligibilitySha256": "d01d06a3430def6ea77a814bb4379a9b45ca058713fa0901c9c30b035fbb635b",
+    "cohortStep16Sha256": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474"
+  },
+  "source": {
+    "observationAggregateSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+    "coastlineSha256": "6f75ae0e0de157b14946e2255eb1f5486d9a13819032e26d4610852d296788f6",
+    "regionsRead": [
+      "BM",
+      "KE"
+    ],
+    "filesRead": 88
+  },
+  "domain": [
+    "AG",
+    "BM",
+    "KE"
+  ],
+  "regionCounts": {
+    "recomputed": {
+      "AG": 0,
+      "BM": 3,
+      "KE": 26
+    },
+    "step46AuditExpectation": {
+      "KE": 26,
+      "BM": 3,
+      "AG": 0
+    },
+    "match": true
+  },
+  "period": [
+    "2010-11-18T12:00:00Z",
+    "2015-12-31T21:00:00Z"
+  ],
+  "candidateWindowCount": 29,
+  "cohort": {
+    "windows": 6,
+    "windowIds": [
+      "KE-X1",
+      "KE-X2",
+      "KE-X3",
+      "KE-X4",
+      "BM-X5",
+      "BM-X6"
+    ],
+    "uniqueDrifters": 25,
+    "drifterIds": [
+      "123311",
+      "123329",
+      "123330",
+      "123331",
+      "123332",
+      "123334",
+      "123335",
+      "123336",
+      "123338",
+      "123339",
+      "123341",
+      "37040",
+      "37042",
+      "37090",
+      "37124",
+      "37267",
+      "37644",
+      "37647",
+      "37650",
+      "37657",
+      "38625",
+      "38629",
+      "38630",
+      "39123",
+      "40083"
+    ],
+    "firstPrefixWindowCount": 6,
+    "isCohort": true
+  },
+  "gate": {
+    "minimumWindows": 6,
+    "minimumUniqueDrifters": 20,
+    "maximumWindows": 12,
+    "satisfied": true,
+    "validWindowGateEvaluatedHere": false,
+    "validWindowGateNote": "the >= 4 valid-window QC gate is not evaluated in STEP 47 because no trajectory execution occurs here"
+  },
+  "gateSatisfied": true,
+  "gateRelaxed": false,
+  "domainExpanded": false,
+  "t1Extended": false,
+  "regionsAdded": false,
+  "manualSelection": false,
+  "structuralCeilingWindows": 6,
+  "selectedWindows": 6,
+  "atCeiling": true,
+  "independence": {
+    "overlapWithPrimaryDrifterIds": [],
+    "overlapWithExcludedIds": [],
+    "overlapWithPrimaryWindowStarts": [],
+    "allStartsAtOrAfterT0": true,
+    "gsObservationContentRead": false,
+    "regionsRead": [
+      "BM",
+      "KE"
+    ]
+  },
+  "sourceAccessAudit": {
+    "observationFilesRead": 88,
+    "forbiddenInputAccess": 0,
+    "totalOpens": 88,
+    "observationRecordsRead": 2746819,
+    "driftersLoaded": {
+      "BM": 225,
+      "KE": 584
+    }
+  },
+  "noExperiment": {
+    "modelRun": 0,
+    "trajectoryComputed": false,
+    "forcingDownloaded": false,
+    "velocityRead": false,
+    "bootstrapRun": 0,
+    "performanceInspected": false,
+    "endpointCalculated": false,
+    "sourceCompared": false,
+    "parameterTuned": false,
+    "manualSelection": false
+  },
+  "validationPerformanceAccessed": false,
+  "replay": {
+    "runs": 3,
+    "scientificMembershipIdentical": true,
+    "byteIdenticalExceptCreatedAtUTC": true,
+    "derivationHashStable": true
+  },
+  "originalValidationStatus": "VALIDATION_COHORT_BLOCKED",
+  "originalValidationUnchanged": true,
+  "primaryResultUnchanged": {
+    "Theta_km": -31.331,
+    "CI95_km": [
+      -72.0725,
+      -11.7435
+    ],
+    "H1": "SUPPORTED",
+    "candidateStatus": "CANDIDATE_ONLY",
+    "operationalPromotion": false
+  },
+  "temporallyIndependentOfOriginalValidation": false,
+  "label": "geographically independent validation extension relative to the STEP 36 primary cohort",
+  "deriver": "tools/research/derive_step47_validation_extension_cohort.py",
+  "deriverSha256": "b5fc67ecc7663892287539ac1f3b74268584329796308d8d0916cc3c4c974a44",
+  "validator": "tools/research/check_step47_validation_extension_cohort.py",
+  "automaticCommit": false,
+  "push": false
+}

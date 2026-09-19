@@ -1,0 +1,931 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "expanded-holdout-and-temporal-forcing-step32",
+  "phase": "B4",
+  "kind": "temporal",
+  "conditions": [
+    "A",
+    "B"
+  ],
+  "experimentMatrixSha256": "b3d1b6fe985dbe5f86b61ec6e6c5fc9ca83572054c0eadd2799040d94a3e70fb",
+  "acquisitionManifestSha256": "30e55f4e9bef09912815f1a4497301e165995fcccd30abc161da9840fed80fb8",
+  "dailyManifestSha256": "dcd2d839247df43ed79bd5b4bf908265e9ae1a9a1f7786aab902c22a570e5e4f",
+  "candidateManifestSha256": null,
+  "status": "STEP32_RUNS_PASS",
+  "modelRunCount": 6,
+  "plannedRuns": 16,
+  "alpha": 0.002,
+  "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+  "runnerSha256": "d28cb9d5d49862e81fc0d68e500a379553554ee60abbc15ce046d807de58c868",
+  "runner": "tools/research/run_step32_temporal_r3.py",
+  "sharedModuleSha256": "68772223043d16e57ac43f4e51d7cc90899f563faa4cefdcc59c4476136b6d41",
+  "replayToolSha256": "865c69be8f45eaace1bdd6defaedb485fd5d570a1c17a731576d0c05b2e9e6f3",
+  "segmentationRule": "STEP 20 B-3 (36 h split) only where the 25-frame dataset exceeds the runtime value limit",
+  "blockedRuns": [
+    {
+      "runId": "step32-A-alpha0.002-KE-X4",
+      "windowId": "KE-X4",
+      "condition": "A",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X4 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-09T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X4",
+      "windowId": "KE-X4",
+      "condition": "B",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X4 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-09T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X5",
+      "windowId": "KE-X5",
+      "condition": "A",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X5 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z'])"
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X5",
+      "windowId": "KE-X5",
+      "condition": "B",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X5 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z'])"
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X6",
+      "windowId": "KE-X6",
+      "condition": "A",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X6 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z', '2011-06-20T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X6",
+      "windowId": "KE-X6",
+      "condition": "B",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X6 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z', '2011-06-20T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X7",
+      "windowId": "KE-X7",
+      "condition": "A",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X7 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-20T12:00:00Z', '2011-06-22T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X7",
+      "windowId": "KE-X7",
+      "condition": "B",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X7 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-20T12:00:00Z', '2011-06-22T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X8",
+      "windowId": "KE-X8",
+      "condition": "A",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X8 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-22T12:00:00Z', '2011-06-26T18:00:00Z'])"
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X8",
+      "windowId": "KE-X8",
+      "condition": "B",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X8 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-22T12:00:00Z', '2011-06-26T18:00:00Z'])"
+    }
+  ],
+  "blockedWindows": [
+    "KE-X4",
+    "KE-X5",
+    "KE-X6",
+    "KE-X7",
+    "KE-X8"
+  ],
+  "evaluableWindows": [
+    "KE-X1",
+    "KE-X2",
+    "KE-X3"
+  ],
+  "runs": [
+    {
+      "runId": "step32-A-alpha0.002-KE-X1",
+      "windowId": "KE-X1",
+      "role": "NEW_HOLDOUT",
+      "condition": "A",
+      "conditionName": "HYCOM_NATIVE_3H",
+      "equation": "dX/dt = U_HYCOM_3h + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 8,
+      "released": 8,
+      "drifterIds": [
+        "39974",
+        "39986",
+        "39994",
+        "39995",
+        "39996",
+        "39997",
+        "92958",
+        "98924"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 136.5617,
+        "east": 159.87978,
+        "south": 28.01396,
+        "north": 40.0
+      },
+      "segmented": true,
+      "forcing": {
+        "chunked": true,
+        "files": {
+          "A": "data/research/step32/forcing/normalized/KE-X1.hycom15m.chunkA.dataset.json",
+          "B": "data/research/step32/forcing/normalized/KE-X1.hycom15m.chunkB.dataset.json"
+        },
+        "fileSha256": {
+          "A": "0225aa5db0afa046be81e4c5af9e796e6ec65fc711516c42df05b532195bd584",
+          "B": "1e355b34f03f4cc5739355200c534c2b2d167b5119bd45846731db6e51d15df3"
+        },
+        "gridSha256": {
+          "A": "49fa7d96a403857b2deabe5d4d8dd64e316f4876a23df8809564bba0b756c42d",
+          "B": "0605dcc09a6978bf355dc07eaa0d23280982c14cfba8e2f34b02099a07e2d5a6"
+        }
+      },
+      "wind": {
+        "file": "data/research/step32/forcing/normalized/KE-X1.ncep10m.wind.json",
+        "fileSha256": "f9addab11f6060b5ff988b763477b9077910c36c307a52379e3c4e1c868e2874",
+        "gridSha256": "1101cb70376060d4281dd30bbb10fb2fda6b0d3294975805121f41247be953e1"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "1f6eddfe71cd22c4941e3feaf781e2ae100bfeed497833a83f940dbd37a0e8ca",
+      "specs": {
+        "seg1": {
+          "file": "data/research/step32/trajectories/KE-X1/A-alpha0.002/spec.seg1.json",
+          "sha256": "51f679ad26eec4bf407ba2f33f695a5bdb2fbdb88ce19cb0cb3d3b3081be615f"
+        },
+        "seg2": {
+          "file": "data/research/step32/trajectories/KE-X1/A-alpha0.002/spec.seg2.json",
+          "sha256": "d72d951800284b74db3f5332a38252169bcb8d13977c13962818a61ef39da7da"
+        }
+      },
+      "resultFile": "data/research/step32/trajectories/KE-X1/A-alpha0.002/result.json",
+      "resultSha256": "1a8b4029e19b25f9159462b2bc7147c7bc1341fd7b1cc395a925134228dd7982",
+      "trajectoriesFile": "data/research/step32/trajectories/KE-X1/A-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "0317c4598a7fa919caadfc6783bb4c6cd3964158ae1a1287d53276438c58de6f",
+      "rows": 2312,
+      "finalStatusCounts": {
+        "COMPLETED": 8
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 8
+      },
+      "startedAtUTC": "2026-09-06T23:58:02Z",
+      "completedAtUTC": "2026-09-06T23:58:17Z",
+      "wallSeconds": 15.9,
+      "endpoints72h": [
+        {
+          "drifterId": "39974",
+          "lon": 146.17485122212724,
+          "lat": 32.49588960311369,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "39986",
+          "lon": 150.4575971433241,
+          "lat": 35.73671900308759,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "39994",
+          "lon": 157.6385282106924,
+          "lat": 39.262169641107704,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "39995",
+          "lon": 151.9887714455943,
+          "lat": 37.22495766594946,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "39996",
+          "lon": 153.15663585757227,
+          "lat": 35.233684536296295,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "39997",
+          "lon": 156.0116756195372,
+          "lat": 34.851547931553775,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "92958",
+          "lon": 138.68897766859675,
+          "lat": 29.660313095373496,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "98924",
+          "lon": 154.28875829114395,
+          "lat": 37.91875391635583,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "865c69be8f45eaace1bdd6defaedb485fd5d570a1c17a731576d0c05b2e9e6f3",
+        "returncode": 0,
+        "replayResultSha256": "1f6eddfe71cd22c4941e3feaf781e2ae100bfeed497833a83f940dbd37a0e8ca",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X1",
+      "windowId": "KE-X1",
+      "role": "NEW_HOLDOUT",
+      "condition": "B",
+      "conditionName": "HYCOM_DAILY",
+      "equation": "dX/dt = U_HYCOM_daily + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 8,
+      "released": 8,
+      "drifterIds": [
+        "39974",
+        "39986",
+        "39994",
+        "39995",
+        "39996",
+        "39997",
+        "92958",
+        "98924"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 136.5617,
+        "east": 159.87978,
+        "south": 28.01396,
+        "north": 40.0
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step32/forcing/normalized/KE-X1.hycom15m.daily.dataset.json",
+        "fileSha256": "6774e912fed97c79cbf56b93c84a4772229a4e8fbc3963e87f077a11049afcfb",
+        "gridSha256": "3ba44627b69127d8b24a16094945cf6e69d5822069f91c775933647cf7b60d06"
+      },
+      "wind": {
+        "file": "data/research/step32/forcing/normalized/KE-X1.ncep10m.wind.json",
+        "fileSha256": "f9addab11f6060b5ff988b763477b9077910c36c307a52379e3c4e1c868e2874",
+        "gridSha256": "1101cb70376060d4281dd30bbb10fb2fda6b0d3294975805121f41247be953e1"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "514d0b6cf548ba933b4a376f25703ee2610aea99204358a96b707303873359a9",
+      "specs": {
+        "single": {
+          "file": "data/research/step32/trajectories/KE-X1/B-alpha0.002/spec.json",
+          "sha256": "7bb462510fe0ce11a68d4f0646b1c60309dd97fa8eeb8d3b4921ad2e96aa0637"
+        }
+      },
+      "resultFile": "data/research/step32/trajectories/KE-X1/B-alpha0.002/result.json",
+      "resultSha256": "53ebf26475715b54e06af5c489a303ed4befad3c2446d24c205b820b1a9d8490",
+      "trajectoriesFile": "data/research/step32/trajectories/KE-X1/B-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "18fc5dfffa37b239d616acd56a73f8910b84cbff9e0d246bd58f5135ee727c5a",
+      "rows": 2312,
+      "finalStatusCounts": {
+        "COMPLETED": 8
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 8
+      },
+      "startedAtUTC": "2026-09-06T23:58:34Z",
+      "completedAtUTC": "2026-09-06T23:58:40Z",
+      "wallSeconds": 6.1,
+      "endpoints72h": [
+        {
+          "drifterId": "39974",
+          "lon": 146.09939879413093,
+          "lat": 32.549813925128944,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "39986",
+          "lon": 150.52115294743123,
+          "lat": 35.539246612776736,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "39994",
+          "lon": 157.6271918521469,
+          "lat": 39.34021871235096,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "39995",
+          "lon": 152.11443173865376,
+          "lat": 37.303707840976266,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "39996",
+          "lon": 153.08564021884695,
+          "lat": 35.408768643424594,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "39997",
+          "lon": 155.91574295795192,
+          "lat": 34.74191389287012,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "92958",
+          "lon": 138.668808940129,
+          "lat": 29.667331132296894,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "98924",
+          "lon": 154.30761558908478,
+          "lat": 37.869010516281705,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "865c69be8f45eaace1bdd6defaedb485fd5d570a1c17a731576d0c05b2e9e6f3",
+        "returncode": 0,
+        "replayResultSha256": "514d0b6cf548ba933b4a376f25703ee2610aea99204358a96b707303873359a9",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X2",
+      "windowId": "KE-X2",
+      "role": "NEW_HOLDOUT",
+      "condition": "A",
+      "conditionName": "HYCOM_NATIVE_3H",
+      "equation": "dX/dt = U_HYCOM_3h + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "40006"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 157.9926,
+        "east": 161.9926,
+        "south": 36.5543,
+        "north": 40.0
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step32/forcing/normalized/KE-X2.hycom15m.dataset.json",
+        "fileSha256": "f11aa45362c910c56247ea3331d3ed2b54e33ce83346c84abed23a83b7ddd2b7",
+        "gridSha256": "50ac4d6ce654a804e025c9604c2dfde50bdafe5d518d8262eef8a480ddafeb23"
+      },
+      "wind": {
+        "file": "data/research/step32/forcing/normalized/KE-X2.ncep10m.wind.json",
+        "fileSha256": "c36827f6dd9b12c0e4b716a36ddd743363d312b206093b4fd4568a277801cb82",
+        "gridSha256": "81e52bfe0a02c842344fc4a68ad78e00a9d7edf5ee8c7eaf4f629fca3c338529"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "06088e75ee262fb803214bb997fe0b9f12e47a16ef7e5c97555152c709d3f6ac",
+      "specs": {
+        "single": {
+          "file": "data/research/step32/trajectories/KE-X2/A-alpha0.002/spec.json",
+          "sha256": "90e50caec92a3ad80226ac2dd118ee243fd2a3631c48789083d76df46bf1e07d"
+        }
+      },
+      "resultFile": "data/research/step32/trajectories/KE-X2/A-alpha0.002/result.json",
+      "resultSha256": "78321bee48f95ae53bab68bbc058d3c3004bf9eacf83ba97338e18036fe1307f",
+      "trajectoriesFile": "data/research/step32/trajectories/KE-X2/A-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "69551f38914502af0257f2b01965cd3c68614b2490a6decd04469a8dfc5a5416",
+      "rows": 289,
+      "finalStatusCounts": {
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "startedAtUTC": "2026-09-06T23:58:47Z",
+      "completedAtUTC": "2026-09-06T23:58:48Z",
+      "wallSeconds": 1.1,
+      "endpoints72h": [
+        {
+          "drifterId": "40006",
+          "lon": 160.34686351775304,
+          "lat": 38.245925264317904,
+          "timeUTC": "2011-05-16T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "865c69be8f45eaace1bdd6defaedb485fd5d570a1c17a731576d0c05b2e9e6f3",
+        "returncode": 0,
+        "replayResultSha256": "06088e75ee262fb803214bb997fe0b9f12e47a16ef7e5c97555152c709d3f6ac",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X2",
+      "windowId": "KE-X2",
+      "role": "NEW_HOLDOUT",
+      "condition": "B",
+      "conditionName": "HYCOM_DAILY",
+      "equation": "dX/dt = U_HYCOM_daily + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "40006"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 157.9926,
+        "east": 161.9926,
+        "south": 36.5543,
+        "north": 40.0
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step32/forcing/normalized/KE-X2.hycom15m.daily.dataset.json",
+        "fileSha256": "fcc34914613156f637775cce388de87d60260c079c1640a7efa90514ed53d1c0",
+        "gridSha256": "32c8ad140a3ee25dadc00a2b7fc34e2d8de672ea41d381a6ba183354fcdcd8dc"
+      },
+      "wind": {
+        "file": "data/research/step32/forcing/normalized/KE-X2.ncep10m.wind.json",
+        "fileSha256": "c36827f6dd9b12c0e4b716a36ddd743363d312b206093b4fd4568a277801cb82",
+        "gridSha256": "81e52bfe0a02c842344fc4a68ad78e00a9d7edf5ee8c7eaf4f629fca3c338529"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "4f2ea0c436c4be0d31c19555a9c55dfea0fc13f943f977bcb1bca94949bd1f9c",
+      "specs": {
+        "single": {
+          "file": "data/research/step32/trajectories/KE-X2/B-alpha0.002/spec.json",
+          "sha256": "e1b2f593dae95719335f9260d5e5f3d46b9b57c992ff845ccad50da19585db0b"
+        }
+      },
+      "resultFile": "data/research/step32/trajectories/KE-X2/B-alpha0.002/result.json",
+      "resultSha256": "ab32e1dafdff6e8d287a9a098fd4a956e885c35d1cd92b65fef00ac01e6571fb",
+      "trajectoriesFile": "data/research/step32/trajectories/KE-X2/B-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "bcfd38cecc831f89f0c18820fd454b1404e90380bee6fcf2fa262b55e35db59f",
+      "rows": 289,
+      "finalStatusCounts": {
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "startedAtUTC": "2026-09-06T23:58:51Z",
+      "completedAtUTC": "2026-09-06T23:58:52Z",
+      "wallSeconds": 0.7,
+      "endpoints72h": [
+        {
+          "drifterId": "40006",
+          "lon": 160.38569029593987,
+          "lat": 38.28759047493859,
+          "timeUTC": "2011-05-16T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "865c69be8f45eaace1bdd6defaedb485fd5d570a1c17a731576d0c05b2e9e6f3",
+        "returncode": 0,
+        "replayResultSha256": "4f2ea0c436c4be0d31c19555a9c55dfea0fc13f943f977bcb1bca94949bd1f9c",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X3",
+      "windowId": "KE-X3",
+      "role": "NEW_HOLDOUT",
+      "condition": "A",
+      "conditionName": "HYCOM_NATIVE_3H",
+      "equation": "dX/dt = U_HYCOM_3h + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "47591"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 148.77896,
+        "east": 152.77896,
+        "south": 28.01893,
+        "north": 32.01893
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step32/forcing/normalized/KE-X3.hycom15m.dataset.json",
+        "fileSha256": "0320eaa52235816d09b79b0a2db0b0da12c6482475efdcba56603328d1acedf2",
+        "gridSha256": "81b02fca98e7d769b0504e2ecc305b7333adf99408f7222feae36d0333c1dc0c"
+      },
+      "wind": {
+        "file": "data/research/step32/forcing/normalized/KE-X3.ncep10m.wind.json",
+        "fileSha256": "4aad5b1bfd87dfef069fc04d8fcf5880b152ef09af58343ea46b38d211262834",
+        "gridSha256": "0cc79223b6da9e8146173359d211997d2e39be1a0c6238819a7dfb51a4f4f815"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "20f864b1576348cb17eb78df138cc4aef4913dbccd03b20422f6256a260f340d",
+      "specs": {
+        "single": {
+          "file": "data/research/step32/trajectories/KE-X3/A-alpha0.002/spec.json",
+          "sha256": "cf9f4b3cd6e1e111ded445da74b8048929a3bc809866c2379f23d9bab352c9a6"
+        }
+      },
+      "resultFile": "data/research/step32/trajectories/KE-X3/A-alpha0.002/result.json",
+      "resultSha256": "227c827c75ceffbcae296ac7ae5068021cf8e0ea096bc34cf37abd0f614a7429",
+      "trajectoriesFile": "data/research/step32/trajectories/KE-X3/A-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "2125d961084dc08330064e969767a048f531756d26fd109bfda598b5f9ac35d7",
+      "rows": 289,
+      "finalStatusCounts": {
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "startedAtUTC": "2026-09-06T23:58:54Z",
+      "completedAtUTC": "2026-09-06T23:58:55Z",
+      "wallSeconds": 1.1,
+      "endpoints72h": [
+        {
+          "drifterId": "47591",
+          "lon": 151.53781935496727,
+          "lat": 30.19281210878458,
+          "timeUTC": "2011-05-31T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "865c69be8f45eaace1bdd6defaedb485fd5d570a1c17a731576d0c05b2e9e6f3",
+        "returncode": 0,
+        "replayResultSha256": "20f864b1576348cb17eb78df138cc4aef4913dbccd03b20422f6256a260f340d",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X3",
+      "windowId": "KE-X3",
+      "role": "NEW_HOLDOUT",
+      "condition": "B",
+      "conditionName": "HYCOM_DAILY",
+      "equation": "dX/dt = U_HYCOM_daily + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.0,
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "47591"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 148.77896,
+        "east": 152.77896,
+        "south": 28.01893,
+        "north": 32.01893
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step32/forcing/normalized/KE-X3.hycom15m.daily.dataset.json",
+        "fileSha256": "afb7404385e60093850a674555a63f211618b8cb183deddbf84948ca4538a663",
+        "gridSha256": "65a35ddc156ffd76d948e05cad301e3fa4c582e010b26abc375cb5cc73bbc07b"
+      },
+      "wind": {
+        "file": "data/research/step32/forcing/normalized/KE-X3.ncep10m.wind.json",
+        "fileSha256": "4aad5b1bfd87dfef069fc04d8fcf5880b152ef09af58343ea46b38d211262834",
+        "gridSha256": "0cc79223b6da9e8146173359d211997d2e39be1a0c6238819a7dfb51a4f4f815"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "76060eb414d753055307d6953aa65cc33cd194cbe8f8b880bcd6e910ed2abed1",
+      "specs": {
+        "single": {
+          "file": "data/research/step32/trajectories/KE-X3/B-alpha0.002/spec.json",
+          "sha256": "da07250cf5c0e98d12988099fe4d710f2cfcdf43a05b54d4caea2e3387347cba"
+        }
+      },
+      "resultFile": "data/research/step32/trajectories/KE-X3/B-alpha0.002/result.json",
+      "resultSha256": "8c19e4c8eb23976bde79ad5d6e85accc7454c57b9c1d4d5f470e5a4f07217337",
+      "trajectoriesFile": "data/research/step32/trajectories/KE-X3/B-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "b37852e83a313ad61fca18d49d99410abf9ac7a136e4a224ab6582e676dc95e8",
+      "rows": 289,
+      "finalStatusCounts": {
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "startedAtUTC": "2026-09-06T23:58:58Z",
+      "completedAtUTC": "2026-09-06T23:58:58Z",
+      "wallSeconds": 0.7,
+      "endpoints72h": [
+        {
+          "drifterId": "47591",
+          "lon": 151.49029807061754,
+          "lat": 30.16664544990354,
+          "timeUTC": "2011-05-31T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "865c69be8f45eaace1bdd6defaedb485fd5d570a1c17a731576d0c05b2e9e6f3",
+        "returncode": 0,
+        "replayResultSha256": "76060eb414d753055307d6953aa65cc33cd194cbe8f8b880bcd6e910ed2abed1",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X4",
+      "windowId": "KE-X4",
+      "condition": "A",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X4 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-09T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X4",
+      "windowId": "KE-X4",
+      "condition": "B",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X4 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-09T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X5",
+      "windowId": "KE-X5",
+      "condition": "A",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X5 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z'])"
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X5",
+      "windowId": "KE-X5",
+      "condition": "B",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X5 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z'])"
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X6",
+      "windowId": "KE-X6",
+      "condition": "A",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X6 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z', '2011-06-20T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X6",
+      "windowId": "KE-X6",
+      "condition": "B",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X6 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z', '2011-06-20T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X7",
+      "windowId": "KE-X7",
+      "condition": "A",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X7 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-20T12:00:00Z', '2011-06-22T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X7",
+      "windowId": "KE-X7",
+      "condition": "B",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X7 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-20T12:00:00Z', '2011-06-22T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X8",
+      "windowId": "KE-X8",
+      "condition": "A",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X8 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-22T12:00:00Z', '2011-06-26T18:00:00Z'])"
+    },
+    {
+      "runId": "step32-B-alpha0.002-KE-X8",
+      "windowId": "KE-X8",
+      "condition": "B",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X8 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-22T12:00:00Z', '2011-06-26T18:00:00Z'])"
+    }
+  ],
+  "startedAtUTC": "2026-09-06T23:58:02Z",
+  "completedAtUTC": "2026-09-06T23:59:01Z",
+  "log": [
+    {
+      "utc": "2026-09-06T23:58:34Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step32-A-alpha0.002-KE-X1",
+      "wall": 15.9,
+      "replay": true,
+      "final": {
+        "COMPLETED": 8
+      }
+    },
+    {
+      "utc": "2026-09-06T23:58:47Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step32-B-alpha0.002-KE-X1",
+      "wall": 6.1,
+      "replay": true,
+      "final": {
+        "COMPLETED": 8
+      }
+    },
+    {
+      "utc": "2026-09-06T23:58:51Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step32-A-alpha0.002-KE-X2",
+      "wall": 1.1,
+      "replay": true,
+      "final": {
+        "COMPLETED": 1
+      }
+    },
+    {
+      "utc": "2026-09-06T23:58:54Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step32-B-alpha0.002-KE-X2",
+      "wall": 0.7,
+      "replay": true,
+      "final": {
+        "COMPLETED": 1
+      }
+    },
+    {
+      "utc": "2026-09-06T23:58:58Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step32-A-alpha0.002-KE-X3",
+      "wall": 1.1,
+      "replay": true,
+      "final": {
+        "COMPLETED": 1
+      }
+    },
+    {
+      "utc": "2026-09-06T23:59:00Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step32-B-alpha0.002-KE-X3",
+      "wall": 0.7,
+      "replay": true,
+      "final": {
+        "COMPLETED": 1
+      }
+    },
+    {
+      "utc": "2026-09-06T23:59:01Z",
+      "phase": "run",
+      "status": "BLOCKED",
+      "runId": "KE-X4A",
+      "error": "WINDOW_BLOCKED: KE-X4 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-09T12:00:00Z'])"
+    },
+    {
+      "utc": "2026-09-06T23:59:01Z",
+      "phase": "run",
+      "status": "BLOCKED",
+      "runId": "KE-X4B",
+      "error": "WINDOW_BLOCKED: KE-X4 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-09T12:00:00Z'])"
+    },
+    {
+      "utc": "2026-09-06T23:59:01Z",
+      "phase": "run",
+      "status": "BLOCKED",
+      "runId": "KE-X5A",
+      "error": "WINDOW_BLOCKED: KE-X5 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z'])"
+    },
+    {
+      "utc": "2026-09-06T23:59:01Z",
+      "phase": "run",
+      "status": "BLOCKED",
+      "runId": "KE-X5B",
+      "error": "WINDOW_BLOCKED: KE-X5 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z'])"
+    },
+    {
+      "utc": "2026-09-06T23:59:01Z",
+      "phase": "run",
+      "status": "BLOCKED",
+      "runId": "KE-X6A",
+      "error": "WINDOW_BLOCKED: KE-X6 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z', '2011-06-20T12:00:00Z'])"
+    },
+    {
+      "utc": "2026-09-06T23:59:01Z",
+      "phase": "run",
+      "status": "BLOCKED",
+      "runId": "KE-X6B",
+      "error": "WINDOW_BLOCKED: KE-X6 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z', '2011-06-20T12:00:00Z'])"
+    },
+    {
+      "utc": "2026-09-06T23:59:01Z",
+      "phase": "run",
+      "status": "BLOCKED",
+      "runId": "KE-X7A",
+      "error": "WINDOW_BLOCKED: KE-X7 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-20T12:00:00Z', '2011-06-22T12:00:00Z'])"
+    },
+    {
+      "utc": "2026-09-06T23:59:01Z",
+      "phase": "run",
+      "status": "BLOCKED",
+      "runId": "KE-X7B",
+      "error": "WINDOW_BLOCKED: KE-X7 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-20T12:00:00Z', '2011-06-22T12:00:00Z'])"
+    },
+    {
+      "utc": "2026-09-06T23:59:01Z",
+      "phase": "run",
+      "status": "BLOCKED",
+      "runId": "KE-X8A",
+      "error": "WINDOW_BLOCKED: KE-X8 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-22T12:00:00Z', '2011-06-26T18:00:00Z'])"
+    },
+    {
+      "utc": "2026-09-06T23:59:01Z",
+      "phase": "run",
+      "status": "BLOCKED",
+      "runId": "KE-X8B",
+      "error": "WINDOW_BLOCKED: KE-X8 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-22T12:00:00Z', '2011-06-26T18:00:00Z'])"
+    }
+  ]
+}

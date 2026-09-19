@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "source-availability-recovery-step33",
+  "status": "VALIDATOR REVISION RECORDED (uncommitted)",
+  "createdAtUTC": "2026-09-07T00:30:53Z",
+  "protocolSha256": "9327ea49c6c2319364e7066c495e99c4ad1745b7eeb4aed65b8fda342ff3635c",
+  "reason": "r1 asserted 7 missing frames (a hand count); STEP 32 recorded 8 window-frame pairs over 5 distinct timestamps (2011-06-15T00Z, 2011-06-20T12Z and 2011-06-22T12Z each block two windows). r1 is kept on disk; r2 changes only that count check. No manifest, classification or STEP 32 file changed.",
+  "r1": {
+    "path": "tools/research/check_step33_source_recovery.py",
+    "sha256": "fd99fddb604b0b42e4c6659b4f94b4578157a5eb82927454399d7d1b3e3099fa"
+  },
+  "r2": {
+    "path": "tools/research/check_step33_source_recovery_r2.py",
+    "sha256": "263a56a7473de90d15aae7dfe118b19b2bf16f9568337645918799572c0ae50c"
+  }
+}

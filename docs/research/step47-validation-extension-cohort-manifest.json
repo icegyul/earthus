@@ -1,0 +1,1758 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "validation-extension-preregistration-step46",
+  "step": 47,
+  "status": "VALIDATION_EXTENSION_COHORT_LOCKED",
+  "classification": "VALIDATION_EXTENSION_COHORT_DERIVATION",
+  "authorization": {
+    "step46ProtocolSha256": "c824b053fdeea20336f1396dc503232492ab77e1f9d5f032586b23c47d66862d",
+    "step46ProtocolIdentityHash": "d7ec8fd5400f2460c2a516b215369eebf4737ec724f779841b4f6e6d480e8f8d",
+    "step45cManifestSha256": "65a9fc5a5efe40f266c94e0db9d93c969f702fde897a9030e1b01fbf264c4856",
+    "step45bAmendmentSha256": "88398dc62fb6a18e1fe5d2d8d83feff17a77f2aa4c9d0c9136008c47d38a2e4b",
+    "step44ProtocolSha256": "6a2e2f04f7948e4ff3ac5dec065fc93a6072ce112bb2e072ce77c2606056de9f",
+    "step35EligibilitySha256": "d01d06a3430def6ea77a814bb4379a9b45ca058713fa0901c9c30b035fbb635b",
+    "cohortStep16Sha256": "8581d2345fff4b792ad9a0e70d8fae9e7fca23e4ed0ce920e555233e85e38474"
+  },
+  "source": {
+    "path": "data/research/step15/noaa-gdp-hourly-qc/",
+    "observationAggregateSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+    "filesInAggregate": 176,
+    "coastlineSha256": "6f75ae0e0de157b14946e2255eb1f5486d9a13819032e26d4610852d296788f6",
+    "coastlineUsed": true,
+    "regionFilesRead": {
+      "BM": [
+        "BM-2010-q1.csv",
+        "BM-2010-q2.csv",
+        "BM-2010-q3.csv",
+        "BM-2010-q4.csv",
+        "BM-2011-q1.csv",
+        "BM-2011-q2.csv",
+        "BM-2011-q3.csv",
+        "BM-2011-q4.csv",
+        "BM-2012-q1.csv",
+        "BM-2012-q2.csv",
+        "BM-2012-q3.csv",
+        "BM-2012-q4.csv",
+        "BM-2013-q1.csv",
+        "BM-2013-q2.csv",
+        "BM-2013-q3.csv",
+        "BM-2013-q4.csv",
+        "BM-2014-q1.csv",
+        "BM-2014-q2.csv",
+        "BM-2014-q3.csv",
+        "BM-2014-q4.csv",
+        "BM-2015-q1.csv",
+        "BM-2015-q2.csv",
+        "BM-2015-q3.csv",
+        "BM-2015-q4.csv",
+        "BM-2016-q1.csv",
+        "BM-2016-q2.csv",
+        "BM-2016-q3.csv",
+        "BM-2016-q4.csv",
+        "BM-2017-q1.csv",
+        "BM-2017-q2.csv",
+        "BM-2017-q3.csv",
+        "BM-2017-q4.csv",
+        "BM-2018-q1.csv",
+        "BM-2018-q2.csv",
+        "BM-2018-q3.csv",
+        "BM-2018-q4.csv",
+        "BM-2019-q1.csv",
+        "BM-2019-q2.csv",
+        "BM-2019-q3.csv",
+        "BM-2019-q4.csv",
+        "BM-2020-q1.csv",
+        "BM-2020-q2.csv",
+        "BM-2020-q3.csv",
+        "BM-2020-q4.csv"
+      ],
+      "KE": [
+        "KE-2010-q1.csv",
+        "KE-2010-q2.csv",
+        "KE-2010-q3.csv",
+        "KE-2010-q4.csv",
+        "KE-2011-q1.csv",
+        "KE-2011-q2.csv",
+        "KE-2011-q3.csv",
+        "KE-2011-q4.csv",
+        "KE-2012-q1.csv",
+        "KE-2012-q2.csv",
+        "KE-2012-q3.csv",
+        "KE-2012-q4.csv",
+        "KE-2013-q1.csv",
+        "KE-2013-q2.csv",
+        "KE-2013-q3.csv",
+        "KE-2013-q4.csv",
+        "KE-2014-q1.csv",
+        "KE-2014-q2.csv",
+        "KE-2014-q3.csv",
+        "KE-2014-q4.csv",
+        "KE-2015-q1.csv",
+        "KE-2015-q2.csv",
+        "KE-2015-q3.csv",
+        "KE-2015-q4.csv",
+        "KE-2016-q1.csv",
+        "KE-2016-q2.csv",
+        "KE-2016-q3.csv",
+        "KE-2016-q4.csv",
+        "KE-2017-q1.csv",
+        "KE-2017-q2.csv",
+        "KE-2017-q3.csv",
+        "KE-2017-q4.csv",
+        "KE-2018-q1.csv",
+        "KE-2018-q2.csv",
+        "KE-2018-q3.csv",
+        "KE-2018-q4.csv",
+        "KE-2019-q1.csv",
+        "KE-2019-q2.csv",
+        "KE-2019-q3.csv",
+        "KE-2019-q4.csv",
+        "KE-2020-q1.csv",
+        "KE-2020-q2.csv",
+        "KE-2020-q3.csv",
+        "KE-2020-q4.csv"
+      ]
+    },
+    "regionsRead": [
+      "BM",
+      "KE"
+    ],
+    "duplicateConflictDrifters": {
+      "BM": 0,
+      "KE": 0
+    }
+  },
+  "authorizedFields": [
+    "ID",
+    "time",
+    "latitude",
+    "longitude",
+    "gap",
+    "drogue_lost_date",
+    "typebuoy"
+  ],
+  "temporalScope": {
+    "t0": "2010-11-18T12:00:00Z",
+    "t1": "2015-12-31T21:00:00Z",
+    "perWindow": "[start, start + 72 h]",
+    "extraIntervalRead": "no observation before t0 is required: window membership, separation and frame coverage are evaluated from already-frozen metadata (STEP 35 eligibility, prior window starts), not from observations; the only extension is the 72 h of each candidate window itself",
+    "regionFileScopeNote": "for each region that has candidate windows the frozen STEP 16 loader reads that region's complete quarterly CSV set, because the duplicate-conflict exclusion is a frozen per-drifter eligibility component determined over the region's full file set exactly as STEP 15/16/35/36/45C did; regions without candidate windows are not read at all",
+    "temporallyIndependentOfOriginalValidation": false,
+    "temporalDisclosure": "the extension period coincides with the original STEP 44 validation coverage; the extension is geographically independent of the STEP 36 primary cohort, not temporally independent of the original validation design"
+  },
+  "geographicDomain": {
+    "regions": [
+      "AG",
+      "BM",
+      "KE"
+    ],
+    "allMandatory": true,
+    "excludedRegions": [
+      "GS (primary experiment region)"
+    ],
+    "boxes": {
+      "AG": {
+        "south": -40,
+        "north": -30,
+        "west": 15,
+        "east": 35
+      },
+      "BM": {
+        "south": -40,
+        "north": -30,
+        "west": -60,
+        "east": -45
+      },
+      "KE": {
+        "south": 30,
+        "north": 40,
+        "west": 135,
+        "east": 160
+      }
+    },
+    "ranking": false,
+    "subsetting": false,
+    "quotas": false,
+    "balancing": false,
+    "regionDiscardedForSmallContribution": false
+  },
+  "regionCounts": {
+    "recomputed": {
+      "AG": 0,
+      "BM": 3,
+      "KE": 26
+    },
+    "step46AuditExpectation": {
+      "KE": 26,
+      "BM": 3,
+      "AG": 0
+    },
+    "match": true
+  },
+  "candidateWindows": [
+    {
+      "region": "KE",
+      "start": "2010-11-22T12:00:00Z",
+      "end": "2010-11-25T12:00:00Z",
+      "date": "2010-11-22",
+      "auditEligibleCount": 8,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2010-11-23T12:00:00Z",
+      "end": "2010-11-26T12:00:00Z",
+      "date": "2010-11-23",
+      "auditEligibleCount": 8,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-07-05T12:00:00Z",
+      "end": "2011-07-08T12:00:00Z",
+      "date": "2011-07-05",
+      "auditEligibleCount": 20,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-07-06T12:00:00Z",
+      "end": "2011-07-09T12:00:00Z",
+      "date": "2011-07-06",
+      "auditEligibleCount": 19,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-07-07T12:00:00Z",
+      "end": "2011-07-10T12:00:00Z",
+      "date": "2011-07-07",
+      "auditEligibleCount": 19,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-07-10T12:00:00Z",
+      "end": "2011-07-13T12:00:00Z",
+      "date": "2011-07-10",
+      "auditEligibleCount": 18,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-07-14T12:00:00Z",
+      "end": "2011-07-17T12:00:00Z",
+      "date": "2011-07-14",
+      "auditEligibleCount": 16,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-07-27T12:00:00Z",
+      "end": "2011-07-30T12:00:00Z",
+      "date": "2011-07-27",
+      "auditEligibleCount": 15,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-07-28T12:00:00Z",
+      "end": "2011-07-31T12:00:00Z",
+      "date": "2011-07-28",
+      "auditEligibleCount": 15,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-07-31T12:00:00Z",
+      "end": "2011-08-03T12:00:00Z",
+      "date": "2011-07-31",
+      "auditEligibleCount": 16,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-08-08T12:00:00Z",
+      "end": "2011-08-11T12:00:00Z",
+      "date": "2011-08-08",
+      "auditEligibleCount": 12,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-08-09T12:00:00Z",
+      "end": "2011-08-12T12:00:00Z",
+      "date": "2011-08-09",
+      "auditEligibleCount": 12,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-08-13T12:00:00Z",
+      "end": "2011-08-16T12:00:00Z",
+      "date": "2011-08-13",
+      "auditEligibleCount": 12,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-08-14T12:00:00Z",
+      "end": "2011-08-17T12:00:00Z",
+      "date": "2011-08-14",
+      "auditEligibleCount": 11,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-08-15T12:00:00Z",
+      "end": "2011-08-18T12:00:00Z",
+      "date": "2011-08-15",
+      "auditEligibleCount": 9,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-08-16T12:00:00Z",
+      "end": "2011-08-19T12:00:00Z",
+      "date": "2011-08-16",
+      "auditEligibleCount": 19,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-08-18T12:00:00Z",
+      "end": "2011-08-21T12:00:00Z",
+      "date": "2011-08-18",
+      "auditEligibleCount": 22,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-09-22T12:00:00Z",
+      "end": "2011-09-25T12:00:00Z",
+      "date": "2011-09-22",
+      "auditEligibleCount": 11,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-09-25T12:00:00Z",
+      "end": "2011-09-28T12:00:00Z",
+      "date": "2011-09-25",
+      "auditEligibleCount": 11,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-09-26T12:00:00Z",
+      "end": "2011-09-29T12:00:00Z",
+      "date": "2011-09-26",
+      "auditEligibleCount": 12,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-10-09T12:00:00Z",
+      "end": "2011-10-12T12:00:00Z",
+      "date": "2011-10-09",
+      "auditEligibleCount": 15,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-11-06T12:00:00Z",
+      "end": "2011-11-09T12:00:00Z",
+      "date": "2011-11-06",
+      "auditEligibleCount": 10,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-11-09T12:00:00Z",
+      "end": "2011-11-12T12:00:00Z",
+      "date": "2011-11-09",
+      "auditEligibleCount": 8,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-11-10T12:00:00Z",
+      "end": "2011-11-13T12:00:00Z",
+      "date": "2011-11-10",
+      "auditEligibleCount": 8,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-11-11T12:00:00Z",
+      "end": "2011-11-14T12:00:00Z",
+      "date": "2011-11-11",
+      "auditEligibleCount": 8,
+      "windowEligible": true
+    },
+    {
+      "region": "KE",
+      "start": "2011-11-12T12:00:00Z",
+      "end": "2011-11-15T12:00:00Z",
+      "date": "2011-11-12",
+      "auditEligibleCount": 9,
+      "windowEligible": true
+    },
+    {
+      "region": "BM",
+      "start": "2013-12-19T12:00:00Z",
+      "end": "2013-12-22T12:00:00Z",
+      "date": "2013-12-19",
+      "auditEligibleCount": 9,
+      "windowEligible": true
+    },
+    {
+      "region": "BM",
+      "start": "2013-12-20T12:00:00Z",
+      "end": "2013-12-23T12:00:00Z",
+      "date": "2013-12-20",
+      "auditEligibleCount": 9,
+      "windowEligible": true
+    },
+    {
+      "region": "BM",
+      "start": "2014-01-06T12:00:00Z",
+      "end": "2014-01-09T12:00:00Z",
+      "date": "2014-01-06",
+      "auditEligibleCount": 10,
+      "windowEligible": true
+    }
+  ],
+  "candidateWindowCount": 29,
+  "accumulationLog": [
+    {
+      "start": "2010-11-22T12:00:00Z",
+      "region": "KE",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 8,
+      "eligibleDrifterIds": [
+        "81806",
+        "89898",
+        "90146",
+        "92981",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "excludedDuplicates": [
+        "81806",
+        "89898",
+        "90146",
+        "92981",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2010-11-23T12:00:00Z",
+      "region": "KE",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 8,
+      "eligibleDrifterIds": [
+        "81806",
+        "89898",
+        "90146",
+        "92981",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "excludedDuplicates": [
+        "81806",
+        "89898",
+        "90146",
+        "92981",
+        "98996",
+        "98997",
+        "98998",
+        "99006"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-07-05T12:00:00Z",
+      "region": "KE",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 20,
+      "eligibleDrifterIds": [
+        "34469",
+        "34471",
+        "34702",
+        "34711",
+        "34741",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "36476",
+        "39153",
+        "39160",
+        "39974",
+        "39996",
+        "40006"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34471",
+        "34702",
+        "34711",
+        "34741",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "36476",
+        "39153",
+        "39160",
+        "39974",
+        "39996",
+        "40006"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-07-06T12:00:00Z",
+      "region": "KE",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 19,
+      "eligibleDrifterIds": [
+        "34469",
+        "34471",
+        "34702",
+        "34711",
+        "34741",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39974",
+        "39996",
+        "40006"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34471",
+        "34702",
+        "34711",
+        "34741",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39974",
+        "39996",
+        "40006"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-07-07T12:00:00Z",
+      "region": "KE",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 19,
+      "eligibleDrifterIds": [
+        "34469",
+        "34471",
+        "34702",
+        "34711",
+        "34741",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39974",
+        "39996",
+        "40006"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34471",
+        "34702",
+        "34711",
+        "34741",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39974",
+        "39996",
+        "40006"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-07-10T12:00:00Z",
+      "region": "KE",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 18,
+      "eligibleDrifterIds": [
+        "34469",
+        "34471",
+        "34702",
+        "34711",
+        "34741",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34471",
+        "34702",
+        "34711",
+        "34741",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-07-14T12:00:00Z",
+      "region": "KE",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 16,
+      "eligibleDrifterIds": [
+        "34469",
+        "34471",
+        "34702",
+        "34741",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39996"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34471",
+        "34702",
+        "34741",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36037",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39996"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-07-27T12:00:00Z",
+      "region": "KE",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 15,
+      "eligibleDrifterIds": [
+        "34469",
+        "34471",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34471",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-07-28T12:00:00Z",
+      "region": "KE",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 15,
+      "eligibleDrifterIds": [
+        "34469",
+        "34471",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34471",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-07-31T12:00:00Z",
+      "region": "KE",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 16,
+      "eligibleDrifterIds": [
+        "34469",
+        "34471",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39996",
+        "40006",
+        "47591"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34471",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "35490",
+        "36473",
+        "36474",
+        "39153",
+        "39160",
+        "39996",
+        "40006",
+        "47591"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-08-08T12:00:00Z",
+      "region": "KE",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 12,
+      "eligibleDrifterIds": [
+        "34469",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "36473",
+        "39160",
+        "39996",
+        "40006",
+        "47591"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "36473",
+        "39160",
+        "39996",
+        "40006",
+        "47591"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-08-09T12:00:00Z",
+      "region": "KE",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 12,
+      "eligibleDrifterIds": [
+        "34469",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "36473",
+        "39160",
+        "39996",
+        "40006",
+        "47591"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35263",
+        "35266",
+        "36473",
+        "39160",
+        "39996",
+        "40006",
+        "47591"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-08-13T12:00:00Z",
+      "region": "KE",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 12,
+      "eligibleDrifterIds": [
+        "34469",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35266",
+        "35490",
+        "36473",
+        "39160",
+        "39996",
+        "40006",
+        "47591"
+      ],
+      "excludedDuplicates": [
+        "34469",
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35266",
+        "35490",
+        "36473",
+        "39160",
+        "39996",
+        "40006",
+        "47591"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-08-14T12:00:00Z",
+      "region": "KE",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 11,
+      "eligibleDrifterIds": [
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35266",
+        "35490",
+        "36473",
+        "39160",
+        "39996",
+        "40006",
+        "47591"
+      ],
+      "excludedDuplicates": [
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35266",
+        "35490",
+        "36473",
+        "39160",
+        "39996",
+        "40006",
+        "47591"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-08-15T12:00:00Z",
+      "region": "KE",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 9,
+      "eligibleDrifterIds": [
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35490",
+        "36473",
+        "39160",
+        "40006",
+        "47591"
+      ],
+      "excludedDuplicates": [
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35490",
+        "36473",
+        "39160",
+        "40006",
+        "47591"
+      ],
+      "accumulatedDuplicates": []
+    },
+    {
+      "start": "2011-08-16T12:00:00Z",
+      "region": "KE",
+      "status": "SELECTED",
+      "auditEligibleCount": 19,
+      "new": 10,
+      "cumulative": 10
+    },
+    {
+      "start": "2011-08-18T12:00:00Z",
+      "region": "KE",
+      "status": "SKIPPED_OVERLAP",
+      "auditEligibleCount": 22
+    },
+    {
+      "start": "2011-09-22T12:00:00Z",
+      "region": "KE",
+      "status": "SELECTED",
+      "auditEligibleCount": 11,
+      "new": 2,
+      "cumulative": 12
+    },
+    {
+      "start": "2011-09-25T12:00:00Z",
+      "region": "KE",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 11,
+      "eligibleDrifterIds": [
+        "36473",
+        "37040",
+        "37042",
+        "37090",
+        "37124",
+        "37267",
+        "37650",
+        "38630",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "excludedDuplicates": [
+        "36473",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "accumulatedDuplicates": [
+        "37040",
+        "37042",
+        "37090",
+        "37124",
+        "37267",
+        "37650",
+        "38630"
+      ]
+    },
+    {
+      "start": "2011-09-26T12:00:00Z",
+      "region": "KE",
+      "status": "SELECTED",
+      "auditEligibleCount": 12,
+      "new": 1,
+      "cumulative": 13
+    },
+    {
+      "start": "2011-10-09T12:00:00Z",
+      "region": "KE",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 15,
+      "eligibleDrifterIds": [
+        "35228",
+        "35266",
+        "36037",
+        "36473",
+        "37040",
+        "37042",
+        "37090",
+        "37124",
+        "37644",
+        "38629",
+        "38630",
+        "39153",
+        "39160",
+        "40006",
+        "40083"
+      ],
+      "excludedDuplicates": [
+        "35228",
+        "35266",
+        "36037",
+        "36473",
+        "39153",
+        "39160",
+        "40006"
+      ],
+      "accumulatedDuplicates": [
+        "37040",
+        "37042",
+        "37090",
+        "37124",
+        "37644",
+        "38629",
+        "38630",
+        "40083"
+      ]
+    },
+    {
+      "start": "2011-11-06T12:00:00Z",
+      "region": "KE",
+      "status": "SELECTED",
+      "auditEligibleCount": 10,
+      "new": 1,
+      "cumulative": 14
+    },
+    {
+      "start": "2011-11-09T12:00:00Z",
+      "region": "KE",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 8,
+      "eligibleDrifterIds": [
+        "35228",
+        "36473",
+        "37040",
+        "37644",
+        "38630",
+        "39123",
+        "39153",
+        "40083"
+      ],
+      "excludedDuplicates": [
+        "35228",
+        "36473",
+        "39153"
+      ],
+      "accumulatedDuplicates": [
+        "37040",
+        "37644",
+        "38630",
+        "39123",
+        "40083"
+      ]
+    },
+    {
+      "start": "2011-11-10T12:00:00Z",
+      "region": "KE",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 8,
+      "eligibleDrifterIds": [
+        "35228",
+        "36473",
+        "37040",
+        "37644",
+        "38630",
+        "39123",
+        "39153",
+        "40083"
+      ],
+      "excludedDuplicates": [
+        "35228",
+        "36473",
+        "39153"
+      ],
+      "accumulatedDuplicates": [
+        "37040",
+        "37644",
+        "38630",
+        "39123",
+        "40083"
+      ]
+    },
+    {
+      "start": "2011-11-11T12:00:00Z",
+      "region": "KE",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 8,
+      "eligibleDrifterIds": [
+        "35228",
+        "36473",
+        "37040",
+        "37644",
+        "38630",
+        "39123",
+        "39153",
+        "40083"
+      ],
+      "excludedDuplicates": [
+        "35228",
+        "36473",
+        "39153"
+      ],
+      "accumulatedDuplicates": [
+        "37040",
+        "37644",
+        "38630",
+        "39123",
+        "40083"
+      ]
+    },
+    {
+      "start": "2011-11-12T12:00:00Z",
+      "region": "KE",
+      "status": "NO_NEW_IDS",
+      "auditEligibleCount": 9,
+      "eligibleDrifterIds": [
+        "35228",
+        "36473",
+        "37040",
+        "37090",
+        "37644",
+        "38630",
+        "39123",
+        "39153",
+        "40083"
+      ],
+      "excludedDuplicates": [
+        "35228",
+        "36473",
+        "39153"
+      ],
+      "accumulatedDuplicates": [
+        "37040",
+        "37090",
+        "37644",
+        "38630",
+        "39123",
+        "40083"
+      ]
+    },
+    {
+      "start": "2013-12-19T12:00:00Z",
+      "region": "BM",
+      "status": "SELECTED",
+      "auditEligibleCount": 9,
+      "new": 9,
+      "cumulative": 23
+    },
+    {
+      "start": "2013-12-20T12:00:00Z",
+      "region": "BM",
+      "status": "SKIPPED_OVERLAP",
+      "auditEligibleCount": 9
+    },
+    {
+      "start": "2014-01-06T12:00:00Z",
+      "region": "BM",
+      "status": "SELECTED",
+      "auditEligibleCount": 10,
+      "new": 2,
+      "cumulative": 25
+    }
+  ],
+  "selectedWindows": [
+    {
+      "chronologicalRank": 1,
+      "windowId": "KE-X1",
+      "region": "KE",
+      "date": "2011-08-16",
+      "start": "2011-08-16T12:00:00Z",
+      "end": "2011-08-19T12:00:00Z",
+      "eligibleCount": 19,
+      "eligibleDrifterIds": [
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35490",
+        "36473",
+        "37040",
+        "37090",
+        "37124",
+        "37267",
+        "37644",
+        "37647",
+        "37657",
+        "38625",
+        "38629",
+        "38630",
+        "39160",
+        "40006",
+        "47591"
+      ],
+      "newUniqueDrifterIds": [
+        "37040",
+        "37090",
+        "37124",
+        "37267",
+        "37644",
+        "37647",
+        "37657",
+        "38625",
+        "38629",
+        "38630"
+      ],
+      "newUniqueCount": 10,
+      "excludedDuplicateIds": [
+        "34702",
+        "35221",
+        "35228",
+        "35262",
+        "35490",
+        "36473",
+        "39160",
+        "40006",
+        "47591"
+      ],
+      "accumulatedDuplicateIds": [],
+      "cumulativeUniqueDrifters": 10,
+      "requiredUtcDays": [
+        "2011-08-15",
+        "2011-08-16",
+        "2011-08-17",
+        "2011-08-18",
+        "2011-08-19",
+        "2011-08-20"
+      ],
+      "requiredFrameCount": 48,
+      "step35WindowEligible": true,
+      "inheritedEligibilityTests": {
+        "insidePeriod": true,
+        "afterCalibrationCutoff": true,
+        "notNearPriorWindow": true,
+        "frameCoverageComplete": true
+      },
+      "sourceObservationReference": {
+        "region": "KE",
+        "datasetSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+        "regionFiles": 44
+      }
+    },
+    {
+      "chronologicalRank": 2,
+      "windowId": "KE-X2",
+      "region": "KE",
+      "date": "2011-09-22",
+      "start": "2011-09-22T12:00:00Z",
+      "end": "2011-09-25T12:00:00Z",
+      "eligibleCount": 11,
+      "eligibleDrifterIds": [
+        "36473",
+        "37040",
+        "37042",
+        "37090",
+        "37124",
+        "37267",
+        "37650",
+        "38630",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "newUniqueDrifterIds": [
+        "37042",
+        "37650"
+      ],
+      "newUniqueCount": 2,
+      "excludedDuplicateIds": [
+        "36473",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "accumulatedDuplicateIds": [
+        "37040",
+        "37090",
+        "37124",
+        "37267",
+        "38630"
+      ],
+      "cumulativeUniqueDrifters": 12,
+      "requiredUtcDays": [
+        "2011-09-21",
+        "2011-09-22",
+        "2011-09-23",
+        "2011-09-24",
+        "2011-09-25",
+        "2011-09-26"
+      ],
+      "requiredFrameCount": 48,
+      "step35WindowEligible": true,
+      "inheritedEligibilityTests": {
+        "insidePeriod": true,
+        "afterCalibrationCutoff": true,
+        "notNearPriorWindow": true,
+        "frameCoverageComplete": true
+      },
+      "sourceObservationReference": {
+        "region": "KE",
+        "datasetSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+        "regionFiles": 44
+      }
+    },
+    {
+      "chronologicalRank": 3,
+      "windowId": "KE-X3",
+      "region": "KE",
+      "date": "2011-09-26",
+      "start": "2011-09-26T12:00:00Z",
+      "end": "2011-09-29T12:00:00Z",
+      "eligibleCount": 12,
+      "eligibleDrifterIds": [
+        "36473",
+        "37040",
+        "37042",
+        "37090",
+        "37124",
+        "37267",
+        "37650",
+        "38630",
+        "39160",
+        "39996",
+        "40006",
+        "40083"
+      ],
+      "newUniqueDrifterIds": [
+        "40083"
+      ],
+      "newUniqueCount": 1,
+      "excludedDuplicateIds": [
+        "36473",
+        "39160",
+        "39996",
+        "40006"
+      ],
+      "accumulatedDuplicateIds": [
+        "37040",
+        "37042",
+        "37090",
+        "37124",
+        "37267",
+        "37650",
+        "38630"
+      ],
+      "cumulativeUniqueDrifters": 13,
+      "requiredUtcDays": [
+        "2011-09-25",
+        "2011-09-26",
+        "2011-09-27",
+        "2011-09-28",
+        "2011-09-29",
+        "2011-09-30"
+      ],
+      "requiredFrameCount": 48,
+      "step35WindowEligible": true,
+      "inheritedEligibilityTests": {
+        "insidePeriod": true,
+        "afterCalibrationCutoff": true,
+        "notNearPriorWindow": true,
+        "frameCoverageComplete": true
+      },
+      "sourceObservationReference": {
+        "region": "KE",
+        "datasetSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+        "regionFiles": 44
+      }
+    },
+    {
+      "chronologicalRank": 4,
+      "windowId": "KE-X4",
+      "region": "KE",
+      "date": "2011-11-06",
+      "start": "2011-11-06T12:00:00Z",
+      "end": "2011-11-09T12:00:00Z",
+      "eligibleCount": 10,
+      "eligibleDrifterIds": [
+        "35228",
+        "36473",
+        "37040",
+        "37042",
+        "37090",
+        "37644",
+        "38630",
+        "39123",
+        "39153",
+        "40083"
+      ],
+      "newUniqueDrifterIds": [
+        "39123"
+      ],
+      "newUniqueCount": 1,
+      "excludedDuplicateIds": [
+        "35228",
+        "36473",
+        "39153"
+      ],
+      "accumulatedDuplicateIds": [
+        "37040",
+        "37042",
+        "37090",
+        "37644",
+        "38630",
+        "40083"
+      ],
+      "cumulativeUniqueDrifters": 14,
+      "requiredUtcDays": [
+        "2011-11-05",
+        "2011-11-06",
+        "2011-11-07",
+        "2011-11-08",
+        "2011-11-09",
+        "2011-11-10"
+      ],
+      "requiredFrameCount": 48,
+      "step35WindowEligible": true,
+      "inheritedEligibilityTests": {
+        "insidePeriod": true,
+        "afterCalibrationCutoff": true,
+        "notNearPriorWindow": true,
+        "frameCoverageComplete": true
+      },
+      "sourceObservationReference": {
+        "region": "KE",
+        "datasetSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+        "regionFiles": 44
+      }
+    },
+    {
+      "chronologicalRank": 5,
+      "windowId": "BM-X5",
+      "region": "BM",
+      "date": "2013-12-19",
+      "start": "2013-12-19T12:00:00Z",
+      "end": "2013-12-22T12:00:00Z",
+      "eligibleCount": 9,
+      "eligibleDrifterIds": [
+        "123311",
+        "123329",
+        "123330",
+        "123331",
+        "123332",
+        "123334",
+        "123335",
+        "123336",
+        "123338"
+      ],
+      "newUniqueDrifterIds": [
+        "123311",
+        "123329",
+        "123330",
+        "123331",
+        "123332",
+        "123334",
+        "123335",
+        "123336",
+        "123338"
+      ],
+      "newUniqueCount": 9,
+      "excludedDuplicateIds": [],
+      "accumulatedDuplicateIds": [],
+      "cumulativeUniqueDrifters": 23,
+      "requiredUtcDays": [
+        "2013-12-18",
+        "2013-12-19",
+        "2013-12-20",
+        "2013-12-21",
+        "2013-12-22",
+        "2013-12-23"
+      ],
+      "requiredFrameCount": 48,
+      "step35WindowEligible": true,
+      "inheritedEligibilityTests": {
+        "insidePeriod": true,
+        "afterCalibrationCutoff": true,
+        "notNearPriorWindow": true,
+        "frameCoverageComplete": true
+      },
+      "sourceObservationReference": {
+        "region": "BM",
+        "datasetSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+        "regionFiles": 44
+      }
+    },
+    {
+      "chronologicalRank": 6,
+      "windowId": "BM-X6",
+      "region": "BM",
+      "date": "2014-01-06",
+      "start": "2014-01-06T12:00:00Z",
+      "end": "2014-01-09T12:00:00Z",
+      "eligibleCount": 10,
+      "eligibleDrifterIds": [
+        "123329",
+        "123330",
+        "123331",
+        "123332",
+        "123334",
+        "123335",
+        "123336",
+        "123338",
+        "123339",
+        "123341"
+      ],
+      "newUniqueDrifterIds": [
+        "123339",
+        "123341"
+      ],
+      "newUniqueCount": 2,
+      "excludedDuplicateIds": [],
+      "accumulatedDuplicateIds": [
+        "123329",
+        "123330",
+        "123331",
+        "123332",
+        "123334",
+        "123335",
+        "123336",
+        "123338"
+      ],
+      "cumulativeUniqueDrifters": 25,
+      "requiredUtcDays": [
+        "2014-01-05",
+        "2014-01-06",
+        "2014-01-07",
+        "2014-01-08",
+        "2014-01-09",
+        "2014-01-10"
+      ],
+      "requiredFrameCount": 48,
+      "step35WindowEligible": true,
+      "inheritedEligibilityTests": {
+        "insidePeriod": true,
+        "afterCalibrationCutoff": true,
+        "notNearPriorWindow": true,
+        "frameCoverageComplete": true
+      },
+      "sourceObservationReference": {
+        "region": "BM",
+        "datasetSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841",
+        "regionFiles": 44
+      }
+    }
+  ],
+  "cohort": {
+    "windows": 6,
+    "windowIds": [
+      "KE-X1",
+      "KE-X2",
+      "KE-X3",
+      "KE-X4",
+      "BM-X5",
+      "BM-X6"
+    ],
+    "uniqueDrifters": 25,
+    "drifterIds": [
+      "123311",
+      "123329",
+      "123330",
+      "123331",
+      "123332",
+      "123334",
+      "123335",
+      "123336",
+      "123338",
+      "123339",
+      "123341",
+      "37040",
+      "37042",
+      "37090",
+      "37124",
+      "37267",
+      "37644",
+      "37647",
+      "37650",
+      "37657",
+      "38625",
+      "38629",
+      "38630",
+      "39123",
+      "40083"
+    ],
+    "firstPrefixWindowCount": 6,
+    "isCohort": true,
+    "label": "VALIDATION EXTENSION COHORT"
+  },
+  "gate": {
+    "minimumWindows": 6,
+    "minimumUniqueDrifters": 20,
+    "maximumWindows": 12,
+    "satisfied": true,
+    "validWindowGateEvaluatedHere": false,
+    "validWindowGateNote": "the >= 4 valid-window QC gate is not evaluated in STEP 47 because no trajectory execution occurs here"
+  },
+  "exclusionIdentity": {
+    "excludedDrifterIdCount": 88,
+    "sha256OfSortedIdList": "9e9415f57fb8682a25d347628627e5a5c2069f21779dddbe4725f7ea891d6b69",
+    "priorWindowStartsByRegion": {
+      "KE": [
+        "2010-05-11T12:00:00Z",
+        "2010-06-30T12:00:00Z",
+        "2010-08-10T12:00:00Z",
+        "2010-08-16T12:00:00Z",
+        "2010-11-15T12:00:00Z",
+        "2011-05-08T12:00:00Z",
+        "2011-05-13T12:00:00Z",
+        "2011-05-28T12:00:00Z",
+        "2011-06-10T12:00:00Z",
+        "2011-06-13T12:00:00Z",
+        "2011-06-16T12:00:00Z",
+        "2011-06-19T12:00:00Z",
+        "2011-06-22T12:00:00Z"
+      ],
+      "GS": [],
+      "BM": [],
+      "AG": [
+        "2015-04-23T12:00:00Z",
+        "2015-04-26T12:00:00Z"
+      ]
+    }
+  },
+  "independence": {
+    "overlapWithPrimaryDrifterIds": [],
+    "overlapWithExcludedIds": [],
+    "overlapWithPrimaryWindowStarts": [],
+    "allStartsAtOrAfterT0": true,
+    "gsObservationContentRead": false,
+    "regionsRead": [
+      "BM",
+      "KE"
+    ]
+  },
+  "derivationHash": "9e03db68d506358e1217db25f50ade8aa314b406063fd8c309cbe6a3092e5e45",
+  "sourceAccessAudit": {
+    "observationFilesRead": 88,
+    "forbiddenInputAccess": 0,
+    "totalOpens": 88,
+    "observationRecordsRead": 2746819,
+    "driftersLoaded": {
+      "BM": 225,
+      "KE": 584
+    }
+  },
+  "validationPerformanceAccessed": false,
+  "noExperiment": {
+    "modelRun": 0,
+    "trajectoryComputed": false,
+    "forcingDownloaded": false,
+    "velocityRead": false,
+    "bootstrapRun": 0,
+    "performanceInspected": false,
+    "endpointCalculated": false,
+    "sourceCompared": false,
+    "parameterTuned": false,
+    "manualSelection": false
+  },
+  "createdAtUTC": "2026-09-07T07:26:07Z",
+  "automaticCommit": false
+}

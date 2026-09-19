@@ -1,0 +1,175 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "validation-path-decision-step34",
+  "createdAtUTC": "2026-09-07T00:47:35Z",
+  "purpose": "future expanded-validation paths defined without any experiment; assessed on the five registered criteria only",
+  "frozenContext": {
+    "step32": "PARTIAL (3 of 8 windows evaluable; 10 of 32 drifters; Phase A minimum 6 windows / 20 drifters NOT MET)",
+    "step33": "SOURCE_ABSENT (0 of 5 blocked windows recoverable from the registered source)",
+    "hycomCoverage": "expt_53.X 1994-01..2015-12 with documented gaps (2010-08-18T12Z; 2011-06-09T12Z, 06-15T00Z, 06-20T12Z, 06-22T12Z, 06-26T18Z); no gap inventory exists for other periods yet",
+    "step16EligibleWindowsByRegionYear": {
+      "AG-2015": 17,
+      "BM-2013": 14,
+      "BM-2014": 17,
+      "GS-2010": 77,
+      "GS-2011": 153,
+      "GS-2012": 22,
+      "GS-2013": 22,
+      "GS-2014": 1,
+      "KE-2010": 19,
+      "KE-2011": 96
+    },
+    "step16Regions": [
+      "GS",
+      "KE",
+      "AG",
+      "BM"
+    ],
+    "excludedDrifterIdsForAnyNewCohort": "STEP 20 calibration (23) + STEP 20 holdout (13, incl. KE-H2) + all 32 STEP 32 registered IDs (evaluable and blocked)",
+    "excludedWindowStarts": "STEP 20 calibration/holdout starts and all 8 STEP 32 window starts (+-72 h)"
+  },
+  "options": {
+    "A": {
+      "name": "Same HYCOM source, different preregistered observation period",
+      "conditions": [
+        "observation period fixed and locked before any availability check",
+        "HYCOM frame inventory (NCSS time-axis metadata) checked for the fixed period before cohort selection",
+        "cohort selected only after availability is established (STEP 16 eligibility + STEP 32 disjointness rules)",
+        "period never chosen from performance"
+      ],
+      "criteria": {
+        "scientificObjective": {
+          "assessment": "addresses the same registered questions (temporal representation; candidate vs baseline) on new windows",
+          "basis": "design/data-availability only; no performance value"
+        },
+        "sourceCompleteness": {
+          "assessment": "depends on a period-specific frame inventory; the 2011 gaps show that completeness must be verified frame by frame before the period is locked",
+          "basis": "design/data-availability only; no performance value"
+        },
+        "temporalCoverage": {
+          "assessment": "complete only where every UTC day of every window has 8 frames; verified per candidate day",
+          "basis": "design/data-availability only; no performance value"
+        },
+        "independence": {
+          "assessment": "new period, new drifters, disjoint from all prior cohorts; same product family as the baseline",
+          "basis": "design/data-availability only; no performance value"
+        },
+        "preregistrationFeasibility": {
+          "assessment": "feasible: period lock -> inventory -> cohort derivation -> lock, all calendar/data based",
+          "basis": "design/data-availability only; no performance value"
+        }
+      }
+    },
+    "B": {
+      "name": "Same source family, separate preregistered cohort with complete temporal coverage",
+      "conditions": [
+        "cohort selection rule preregistered (STEP 16 eligibility verbatim + disjointness from every prior cohort + frame-inventory gate as an eligibility criterion)",
+        "source availability established before selection",
+        "cohort never changed after results are seen"
+      ],
+      "criteria": {
+        "scientificObjective": {
+          "assessment": "same registered questions; the frame-inventory gate becomes part of eligibility so that no selected window can be source-blocked",
+          "basis": "design/data-availability only; no performance value"
+        },
+        "sourceCompleteness": {
+          "assessment": "highest: completeness is a preregistered selection criterion, not a post-hoc discovery",
+          "basis": "design/data-availability only; no performance value"
+        },
+        "temporalCoverage": {
+          "assessment": "48-frame requirement satisfied by construction for every selected window",
+          "basis": "design/data-availability only; no performance value"
+        },
+        "independence": {
+          "assessment": "disjoint IDs and windows; regions may extend to the other STEP 16 boxes (GS, BM) subject to the same rules",
+          "basis": "design/data-availability only; no performance value"
+        },
+        "preregistrationFeasibility": {
+          "assessment": "feasible: reuses derive_step32_holdout.py logic plus an availability inventory input (calendar/data only)",
+          "basis": "design/data-availability only; no performance value"
+        }
+      }
+    },
+    "C": {
+      "name": "Keep the 2011 cohort; preserve the 3-window / 10-drifter result as descriptive evidence only",
+      "conditions": [
+        "Phase A minimum not met",
+        "no final model selection",
+        "no candidate promotion"
+      ],
+      "criteria": {
+        "scientificObjective": {
+          "assessment": "does not answer the expanded-validation question at the registered minimum",
+          "basis": "design/data-availability only; no performance value"
+        },
+        "sourceCompleteness": {
+          "assessment": "unchanged: 5 of 8 windows source-absent",
+          "basis": "design/data-availability only; no performance value"
+        },
+        "temporalCoverage": {
+          "assessment": "unchanged: incomplete for 5 windows",
+          "basis": "design/data-availability only; no performance value"
+        },
+        "independence": {
+          "assessment": "already independent of calibration and historical holdout",
+          "basis": "design/data-availability only; no performance value"
+        },
+        "preregistrationFeasibility": {
+          "assessment": "already preregistered and executed; nothing further to register",
+          "basis": "design/data-availability only; no performance value"
+        }
+      }
+    },
+    "D": {
+      "name": "Separate independent validation dataset",
+      "conditions": [
+        "no mixing with the STEP 32 holdout",
+        "no mixing with calibration",
+        "source identity stated",
+        "acquisition rule preregistered",
+        "evaluation rule preregistered"
+      ],
+      "criteria": {
+        "scientificObjective": {
+          "assessment": "answers generalization beyond the current observation family only if the dataset carries comparable drifter-type / drogue information",
+          "basis": "design/data-availability only; no performance value"
+        },
+        "sourceCompleteness": {
+          "assessment": "unknown until the source and its frame inventory are registered",
+          "basis": "design/data-availability only; no performance value"
+        },
+        "temporalCoverage": {
+          "assessment": "unknown until registered",
+          "basis": "design/data-availability only; no performance value"
+        },
+        "independence": {
+          "assessment": "highest nominal independence; comparability of observation type must be established first",
+          "basis": "design/data-availability only; no performance value"
+        },
+        "preregistrationFeasibility": {
+          "assessment": "feasible only after a new data-source preregistration (identity, licence, acquisition, quality gate)",
+          "basis": "design/data-availability only; no performance value"
+        }
+      }
+    }
+  },
+  "selectionRule": {
+    "performanceBased": false,
+    "criteria": [
+      "scientificObjective",
+      "sourceCompleteness",
+      "temporalCoverage",
+      "independence",
+      "preregistrationFeasibility"
+    ],
+    "rule": "no option is chosen on any STEP 32 performance result; the criteria-based assessment above is the only basis",
+    "criteriaBasedRecommendation": "B (preregistered new cohort within the same source family with a frame-inventory gate inside the eligibility rule; Option A is its period-locking mechanism), with C retained as the permanent descriptive record of the 2011 cohort; D only if B cannot reach the minimum within HYCOM expt_53.X coverage",
+    "prohibited": [
+      "replacing any of the 5 blocked windows with another source",
+      "meeting 6/8 by substitution",
+      "adding drifters to the existing holdout",
+      "reporting the 3-window result as meeting the minimum",
+      "choosing period, cohort or option from performance"
+    ]
+  }
+}

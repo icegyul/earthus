@@ -1,0 +1,295 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "expanded-holdout-and-temporal-forcing-step32",
+  "phase": "B2",
+  "acquisitionManifestSha256": "30e55f4e9bef09912815f1a4497301e165995fcccd30abc161da9840fed80fb8",
+  "experimentMatrixSha256": "b3d1b6fe985dbe5f86b61ec6e6c5fc9ca83572054c0eadd2799040d94a3e70fb",
+  "tool": {
+    "file": "tools/research/check_step32_forcing.py",
+    "sha256": "f955e452ad5d11576c92b58488e10e27b6ad7cc79e1352e20796f2f5ea19cd2c"
+  },
+  "windows": [
+    {
+      "windowId": "KE-X1",
+      "status": "PASS",
+      "checks": {
+        "sourceIdentity": true,
+        "fileIntegrity": true,
+        "coordinates": true,
+        "timeAxis": true,
+        "variables": true,
+        "spatialCoverage": true,
+        "temporalCoverage": true,
+        "missingFrames": true,
+        "units": true,
+        "releaseStencil": true,
+        "reproducibility": true
+      },
+      "missingRegisteredFrames": [],
+      "registeredFrames": 48,
+      "acquiredDayFrames": 48,
+      "windowFrames": 25,
+      "reproducibility": {
+        "overlapFrames": 25,
+        "overlapEqual": 25,
+        "readerRerun": {
+          "A": true,
+          "B": true
+        },
+        "readerReproduced": true
+      },
+      "notes": [],
+      "acquisitionStatus": "ACQUIRED",
+      "chunked": true
+    },
+    {
+      "windowId": "KE-X2",
+      "status": "PASS",
+      "checks": {
+        "sourceIdentity": true,
+        "fileIntegrity": true,
+        "coordinates": true,
+        "timeAxis": true,
+        "variables": true,
+        "spatialCoverage": true,
+        "temporalCoverage": true,
+        "missingFrames": true,
+        "units": true,
+        "releaseStencil": true,
+        "reproducibility": true
+      },
+      "missingRegisteredFrames": [],
+      "registeredFrames": 48,
+      "acquiredDayFrames": 48,
+      "windowFrames": 25,
+      "reproducibility": {
+        "overlapFrames": 25,
+        "overlapEqual": 25,
+        "readerReproduced": true,
+        "normalizedFileSha": true,
+        "gridShaRecorded": true
+      },
+      "notes": [],
+      "acquisitionStatus": "ACQUIRED",
+      "chunked": false
+    },
+    {
+      "windowId": "KE-X3",
+      "status": "PASS",
+      "checks": {
+        "sourceIdentity": true,
+        "fileIntegrity": true,
+        "coordinates": true,
+        "timeAxis": true,
+        "variables": true,
+        "spatialCoverage": true,
+        "temporalCoverage": true,
+        "missingFrames": true,
+        "units": true,
+        "releaseStencil": true,
+        "reproducibility": true
+      },
+      "missingRegisteredFrames": [],
+      "registeredFrames": 48,
+      "acquiredDayFrames": 48,
+      "windowFrames": 25,
+      "reproducibility": {
+        "overlapFrames": 25,
+        "overlapEqual": 25,
+        "readerReproduced": true,
+        "normalizedFileSha": true,
+        "gridShaRecorded": true
+      },
+      "notes": [],
+      "acquisitionStatus": "ACQUIRED",
+      "chunked": false
+    },
+    {
+      "windowId": "KE-X4",
+      "status": "WINDOW_BLOCKED",
+      "checks": {
+        "sourceIdentity": true,
+        "fileIntegrity": true,
+        "coordinates": true,
+        "timeAxis": false,
+        "variables": true,
+        "spatialCoverage": true,
+        "temporalCoverage": false,
+        "missingFrames": false,
+        "units": true,
+        "releaseStencil": true,
+        "reproducibility": true
+      },
+      "missingRegisteredFrames": [
+        "2011-06-09T12:00:00Z"
+      ],
+      "registeredFrames": 48,
+      "acquiredDayFrames": 47,
+      "windowFrames": 25,
+      "reproducibility": {
+        "overlapFrames": 25,
+        "overlapEqual": 25,
+        "readerReproduced": true,
+        "normalizedFileSha": true,
+        "gridShaRecorded": true
+      },
+      "notes": [
+        "day file time axis day-20110609.nc: 7 frames"
+      ],
+      "acquisitionStatus": "FORCING_BLOCKED",
+      "chunked": false
+    },
+    {
+      "windowId": "KE-X5",
+      "status": "WINDOW_BLOCKED",
+      "checks": {
+        "sourceIdentity": true,
+        "fileIntegrity": true,
+        "coordinates": true,
+        "timeAxis": false,
+        "variables": true,
+        "spatialCoverage": true,
+        "temporalCoverage": false,
+        "missingFrames": false,
+        "units": true,
+        "releaseStencil": false,
+        "reproducibility": false
+      },
+      "missingRegisteredFrames": [
+        "2011-06-15T00:00:00Z"
+      ],
+      "registeredFrames": 48,
+      "acquiredDayFrames": 47,
+      "windowFrames": 24,
+      "reproducibility": {
+        "overlapFrames": 24,
+        "overlapEqual": 24,
+        "readerReproduced": false
+      },
+      "notes": [
+        "day file time axis day-20110615.nc: 7 frames",
+        "window parts are not 25 contiguous 3 h frames",
+        "reader re-run: ValueError: missing or irregular frames: [('2011-06-14T21:00:00Z', '2011-06-15T03:00:00Z')]; gaps are never interpolated"
+      ],
+      "acquisitionStatus": "FORCING_BLOCKED",
+      "chunked": null
+    },
+    {
+      "windowId": "KE-X6",
+      "status": "WINDOW_BLOCKED",
+      "checks": {
+        "sourceIdentity": true,
+        "fileIntegrity": true,
+        "coordinates": true,
+        "timeAxis": false,
+        "variables": true,
+        "spatialCoverage": true,
+        "temporalCoverage": false,
+        "missingFrames": false,
+        "units": true,
+        "releaseStencil": true,
+        "reproducibility": true
+      },
+      "missingRegisteredFrames": [
+        "2011-06-15T00:00:00Z",
+        "2011-06-20T12:00:00Z"
+      ],
+      "registeredFrames": 48,
+      "acquiredDayFrames": 46,
+      "windowFrames": 25,
+      "reproducibility": {
+        "overlapFrames": 25,
+        "overlapEqual": 25,
+        "readerReproduced": true,
+        "normalizedFileSha": true,
+        "gridShaRecorded": true
+      },
+      "notes": [
+        "day file time axis day-20110615.nc: 7 frames",
+        "day file time axis day-20110620.nc: 7 frames"
+      ],
+      "acquisitionStatus": "FORCING_BLOCKED",
+      "chunked": false
+    },
+    {
+      "windowId": "KE-X7",
+      "status": "WINDOW_BLOCKED",
+      "checks": {
+        "sourceIdentity": true,
+        "fileIntegrity": true,
+        "coordinates": true,
+        "timeAxis": false,
+        "variables": true,
+        "spatialCoverage": true,
+        "temporalCoverage": false,
+        "missingFrames": false,
+        "units": true,
+        "releaseStencil": false,
+        "reproducibility": false
+      },
+      "missingRegisteredFrames": [
+        "2011-06-20T12:00:00Z",
+        "2011-06-22T12:00:00Z"
+      ],
+      "registeredFrames": 48,
+      "acquiredDayFrames": 46,
+      "windowFrames": 23,
+      "reproducibility": {
+        "overlapFrames": 23,
+        "overlapEqual": 23,
+        "readerReproduced": false
+      },
+      "notes": [
+        "day file time axis day-20110620.nc: 7 frames",
+        "day file time axis day-20110622.nc: 7 frames",
+        "window parts are not 25 contiguous 3 h frames",
+        "reader re-run: ValueError: duplicate frames across parts"
+      ],
+      "acquisitionStatus": "FORCING_BLOCKED",
+      "chunked": null
+    },
+    {
+      "windowId": "KE-X8",
+      "status": "WINDOW_BLOCKED",
+      "checks": {
+        "sourceIdentity": true,
+        "fileIntegrity": true,
+        "coordinates": true,
+        "timeAxis": false,
+        "variables": true,
+        "spatialCoverage": true,
+        "temporalCoverage": false,
+        "missingFrames": false,
+        "units": true,
+        "releaseStencil": false,
+        "reproducibility": false
+      },
+      "missingRegisteredFrames": [
+        "2011-06-22T12:00:00Z",
+        "2011-06-26T18:00:00Z"
+      ],
+      "registeredFrames": 48,
+      "acquiredDayFrames": 46,
+      "windowFrames": 24,
+      "reproducibility": {
+        "overlapFrames": 24,
+        "overlapEqual": 24,
+        "readerReproduced": false
+      },
+      "notes": [
+        "day file time axis day-20110622.nc: 7 frames",
+        "day file time axis day-20110626.nc: 7 frames",
+        "window parts are not 25 contiguous 3 h frames",
+        "reader re-run: KeyError: 'file'"
+      ],
+      "acquisitionStatus": "FORCING_BLOCKED",
+      "chunked": null
+    }
+  ],
+  "summary": {
+    "PASS": 3,
+    "WINDOW_BLOCKED": 5,
+    "FAIL": 0
+  },
+  "status": "PARTIAL"
+}

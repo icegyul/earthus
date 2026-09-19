@@ -1,0 +1,13 @@
+{
+  "ruleId": "expanded-validation-preregistration-step35",
+  "protocolSha256": "7c3cc487568c1a063790e17fdae11ffe712047d78ea4761719bf6df7e7142f2f",
+  "status": "PREREGISTRATION_BLOCKED",
+  "outputs": {
+    "docs/research/step35-period-lock.json": "c2f6e862704a52e39685c4c4e61931e276d4934492e6d2e8c49ad0642f6f2b92",
+    "docs/research/step35-frame-inventory.json": "5bdb5c779ab4b7bc0607dab907452263f4306c7d0d77681ead7d058e3090add8",
+    "docs/research/step35-window-eligibility.json": "d01d06a3430def6ea77a814bb4379a9b45ca058713fa0901c9c30b035fbb635b",
+    "docs/research/step35-cohort-manifest.json": "07ebc185099e7f2e81377b3b186719814b4625eeea9688aa73887f4aa5c97d29",
+    "docs/research/step35-preregistration-report.md": "b529b91790e860c4a272f8074e770f65c8a7653475cb06c9929d26465918665a"
+  },
+  "finalizedAtUTC": "2026-09-07T01:03:36Z"
+}

@@ -1,0 +1,1276 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "source-availability-recovery-step33",
+  "protocolSha256": "9327ea49c6c2319364e7066c495e99c4ad1745b7eeb4aed65b8fda342ff3635c",
+  "tool": {
+    "file": "tools/research/recover_step33_source.py",
+    "sha256": "c0590c7ba461696675bc4c365534daa9bc274cd611fb6c82cc84d1104c6ee94d"
+  },
+  "source": {
+    "product": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+    "dataset": "GLBv0.08/expt_53.X",
+    "year": "2011",
+    "service": "NCSS https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011 (STEP 17 mechanism)",
+    "variables": [
+      "water_u",
+      "water_v"
+    ],
+    "vertCoord": 15,
+    "horizStride": 1,
+    "timeStride": 1,
+    "bbox": "registered window ocean box (t0 bbox +-2 deg, lat clipped), identical to STEP 32",
+    "timeFrameRule": "exact-frame query time_start = time_end = missing timestamp; plus one bracketing query (-3 h .. +3 h) as neighbour evidence",
+    "reader": "research_runtime.netcdf_reader.read_hycom_parts (unchanged)"
+  },
+  "startedAtUTC": "2026-09-07T00:29:47Z",
+  "windows": [
+    {
+      "windowId": "KE-X4",
+      "t0": "2011-06-10T12:00:00Z",
+      "missingRegisteredFrames": [
+        "2011-06-09T12:00:00Z"
+      ],
+      "step32Status": "WINDOW_BLOCKED",
+      "frames": [
+        {
+          "windowId": "KE-X4",
+          "timestamp": "2011-06-09T12:00:00Z",
+          "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+          "experiment": "expt_53.X",
+          "year": "2011",
+          "requestParameters": {
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 35.99809,
+              "north": 39.99809,
+              "west": 141.88063,
+              "east": 145.88063
+            }
+          },
+          "exactQuery": {
+            "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=39.998&south=35.998&west=141.881&east=145.881&horizStride=1&time_start=2011-06-09T12%3A00%3A00Z&time_end=2011-06-09T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "requestedAtUTC": "2026-09-07T00:29:47Z",
+            "httpStatus": 200,
+            "bodyKind": "netcdf",
+            "bytes": 14036,
+            "sha256": "dd4727614b0a0fb6fd9b6a426f9efebbce8a0b295e3d9fb7eb78c2bda995ceac",
+            "contentType": "application/x-netcdf",
+            "retrievedAtUTC": "2026-09-07T00:29:49Z",
+            "file": "data/research/step33/KE-X4/exact-20110609T12.nc"
+          },
+          "bracketQuery": {
+            "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=39.998&south=35.998&west=141.881&east=145.881&horizStride=1&time_start=2011-06-09T09%3A00%3A00Z&time_end=2011-06-09T15%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "requestedAtUTC": "2026-09-07T00:29:49Z",
+            "httpStatus": 200,
+            "bodyKind": "netcdf",
+            "bytes": 24444,
+            "sha256": "c01d6bf7e4824ae29355eaa95cfbb4bdcce7620a37b22c67665a55e56d14023a",
+            "contentType": "application/x-netcdf",
+            "retrievedAtUTC": "2026-09-07T00:29:50Z",
+            "file": "data/research/step33/KE-X4/bracket-20110609T12.nc"
+          },
+          "step32Record": {
+            "acquisitionStatus": "FORCING_BLOCKED",
+            "missingInStep32": true,
+            "dayFileFrames": 7
+          },
+          "returnedTimeAxis": {
+            "exact": [
+              "2011-06-09T09:00:00Z"
+            ],
+            "bracket": [
+              "2011-06-09T09:00:00Z",
+              "2011-06-09T15:00:00Z"
+            ]
+          },
+          "classification": "SOURCE_ABSENT",
+          "evidence": {
+            "exactStatus": 200,
+            "exactBody": "netcdf",
+            "exactMessage": "",
+            "bracketStatus": 200,
+            "bracketBody": "netcdf",
+            "bracketNeighbours": [
+              "2011-06-09T09:00:00Z",
+              "2011-06-09T15:00:00Z"
+            ]
+          }
+        }
+      ],
+      "oceanBox": {
+        "south": 35.99809,
+        "north": 39.99809,
+        "west": 141.88063,
+        "east": 145.88063
+      },
+      "windowStatus": "WINDOW_BLOCKED",
+      "classificationCounts": {
+        "AVAILABLE": 0,
+        "SOURCE_ABSENT": 1,
+        "ACQUISITION_ERROR": 0
+      }
+    },
+    {
+      "windowId": "KE-X5",
+      "t0": "2011-06-13T12:00:00Z",
+      "missingRegisteredFrames": [
+        "2011-06-15T00:00:00Z"
+      ],
+      "step32Status": "WINDOW_BLOCKED",
+      "frames": [
+        {
+          "windowId": "KE-X5",
+          "timestamp": "2011-06-15T00:00:00Z",
+          "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+          "experiment": "expt_53.X",
+          "year": "2011",
+          "requestParameters": {
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 32.71712,
+              "north": 40.0,
+              "west": 140.61664,
+              "east": 157.1892
+            }
+          },
+          "exactQuery": {
+            "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=32.717&west=140.617&east=157.189&horizStride=1&time_start=2011-06-15T00%3A00%3A00Z&time_end=2011-06-15T00%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "requestedAtUTC": "2026-09-07T00:29:50Z",
+            "httpStatus": 200,
+            "bodyKind": "netcdf",
+            "bytes": 81756,
+            "sha256": "30c7a55a39dcbb0d7c7f0d2fd3e0a04d14eec147ff43daca9c655e25303b2a24",
+            "contentType": "application/x-netcdf",
+            "retrievedAtUTC": "2026-09-07T00:29:52Z",
+            "file": "data/research/step33/KE-X5/exact-20110615T00.nc"
+          },
+          "bracketQuery": {
+            "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=32.717&west=140.617&east=157.189&horizStride=1&time_start=2011-06-14T21%3A00%3A00Z&time_end=2011-06-15T03%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "requestedAtUTC": "2026-09-07T00:29:52Z",
+            "httpStatus": 200,
+            "bodyKind": "netcdf",
+            "bytes": 158308,
+            "sha256": "304ab9642546b698c6ec4d1a7da6d96a53327b2a67abbdda131467c02877eec5",
+            "contentType": "application/x-netcdf",
+            "retrievedAtUTC": "2026-09-07T00:29:53Z",
+            "file": "data/research/step33/KE-X5/bracket-20110615T00.nc"
+          },
+          "step32Record": {
+            "acquisitionStatus": "FORCING_BLOCKED",
+            "missingInStep32": true,
+            "dayFileFrames": 7
+          },
+          "returnedTimeAxis": {
+            "exact": [
+              "2011-06-14T21:00:00Z"
+            ],
+            "bracket": [
+              "2011-06-14T21:00:00Z",
+              "2011-06-15T03:00:00Z"
+            ]
+          },
+          "classification": "SOURCE_ABSENT",
+          "evidence": {
+            "exactStatus": 200,
+            "exactBody": "netcdf",
+            "exactMessage": "",
+            "bracketStatus": 200,
+            "bracketBody": "netcdf",
+            "bracketNeighbours": [
+              "2011-06-14T21:00:00Z",
+              "2011-06-15T03:00:00Z"
+            ]
+          }
+        }
+      ],
+      "oceanBox": {
+        "south": 32.71712,
+        "north": 40.0,
+        "west": 140.61664,
+        "east": 157.1892
+      },
+      "windowStatus": "WINDOW_BLOCKED",
+      "classificationCounts": {
+        "AVAILABLE": 0,
+        "SOURCE_ABSENT": 1,
+        "ACQUISITION_ERROR": 0
+      }
+    },
+    {
+      "windowId": "KE-X6",
+      "t0": "2011-06-16T12:00:00Z",
+      "missingRegisteredFrames": [
+        "2011-06-15T00:00:00Z",
+        "2011-06-20T12:00:00Z"
+      ],
+      "step32Status": "WINDOW_BLOCKED",
+      "frames": [
+        {
+          "windowId": "KE-X6",
+          "timestamp": "2011-06-15T00:00:00Z",
+          "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+          "experiment": "expt_53.X",
+          "year": "2011",
+          "requestParameters": {
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 33.23586,
+              "north": 38.83588,
+              "west": 140.15073,
+              "east": 150.38908
+            }
+          },
+          "exactQuery": {
+            "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=38.836&south=33.236&west=140.151&east=150.389&horizStride=1&time_start=2011-06-15T00%3A00%3A00Z&time_end=2011-06-15T00%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "requestedAtUTC": "2026-09-07T00:29:53Z",
+            "httpStatus": 200,
+            "bodyKind": "netcdf",
+            "bytes": 41052,
+            "sha256": "43f0604d72d02ddf1401277c97cb624e45bb9639937a132982a5f842d7605000",
+            "contentType": "application/x-netcdf",
+            "retrievedAtUTC": "2026-09-07T00:29:54Z",
+            "file": "data/research/step33/KE-X6/exact-20110615T00.nc"
+          },
+          "bracketQuery": {
+            "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=38.836&south=33.236&west=140.151&east=150.389&horizStride=1&time_start=2011-06-14T21%3A00%3A00Z&time_end=2011-06-15T03%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "requestedAtUTC": "2026-09-07T00:29:54Z",
+            "httpStatus": 200,
+            "bodyKind": "netcdf",
+            "bytes": 77692,
+            "sha256": "da8e7e701536c6f70a44b28c4dee82f7dd3d98662cc725c54210888ce4c1fbe5",
+            "contentType": "application/x-netcdf",
+            "retrievedAtUTC": "2026-09-07T00:29:56Z",
+            "file": "data/research/step33/KE-X6/bracket-20110615T00.nc"
+          },
+          "step32Record": {
+            "acquisitionStatus": "FORCING_BLOCKED",
+            "missingInStep32": true,
+            "dayFileFrames": 7
+          },
+          "returnedTimeAxis": {
+            "exact": [
+              "2011-06-14T21:00:00Z"
+            ],
+            "bracket": [
+              "2011-06-14T21:00:00Z",
+              "2011-06-15T03:00:00Z"
+            ]
+          },
+          "classification": "SOURCE_ABSENT",
+          "evidence": {
+            "exactStatus": 200,
+            "exactBody": "netcdf",
+            "exactMessage": "",
+            "bracketStatus": 200,
+            "bracketBody": "netcdf",
+            "bracketNeighbours": [
+              "2011-06-14T21:00:00Z",
+              "2011-06-15T03:00:00Z"
+            ]
+          }
+        },
+        {
+          "windowId": "KE-X6",
+          "timestamp": "2011-06-20T12:00:00Z",
+          "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+          "experiment": "expt_53.X",
+          "year": "2011",
+          "requestParameters": {
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 33.23586,
+              "north": 38.83588,
+              "west": 140.15073,
+              "east": 150.38908
+            }
+          },
+          "exactQuery": {
+            "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=38.836&south=33.236&west=140.151&east=150.389&horizStride=1&time_start=2011-06-20T12%3A00%3A00Z&time_end=2011-06-20T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "requestedAtUTC": "2026-09-07T00:29:56Z",
+            "httpStatus": 200,
+            "bodyKind": "netcdf",
+            "bytes": 41052,
+            "sha256": "e180301f3893c23b7b728c9ce28cdb3d06b10d39426956b031d0f02c8f95b56f",
+            "contentType": "application/x-netcdf",
+            "retrievedAtUTC": "2026-09-07T00:29:57Z",
+            "file": "data/research/step33/KE-X6/exact-20110620T12.nc"
+          },
+          "bracketQuery": {
+            "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=38.836&south=33.236&west=140.151&east=150.389&horizStride=1&time_start=2011-06-20T09%3A00%3A00Z&time_end=2011-06-20T15%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "requestedAtUTC": "2026-09-07T00:29:57Z",
+            "httpStatus": 200,
+            "bodyKind": "netcdf",
+            "bytes": 77692,
+            "sha256": "112f8860a544f8dababf61d43cf4b0f0b58cecd900537de58d1dbd4d1303e938",
+            "contentType": "application/x-netcdf",
+            "retrievedAtUTC": "2026-09-07T00:29:59Z",
+            "file": "data/research/step33/KE-X6/bracket-20110620T12.nc"
+          },
+          "step32Record": {
+            "acquisitionStatus": "FORCING_BLOCKED",
+            "missingInStep32": true,
+            "dayFileFrames": 7
+          },
+          "returnedTimeAxis": {
+            "exact": [
+              "2011-06-20T09:00:00Z"
+            ],
+            "bracket": [
+              "2011-06-20T09:00:00Z",
+              "2011-06-20T15:00:00Z"
+            ]
+          },
+          "classification": "SOURCE_ABSENT",
+          "evidence": {
+            "exactStatus": 200,
+            "exactBody": "netcdf",
+            "exactMessage": "",
+            "bracketStatus": 200,
+            "bracketBody": "netcdf",
+            "bracketNeighbours": [
+              "2011-06-20T09:00:00Z",
+              "2011-06-20T15:00:00Z"
+            ]
+          }
+        }
+      ],
+      "oceanBox": {
+        "south": 33.23586,
+        "north": 38.83588,
+        "west": 140.15073,
+        "east": 150.38908
+      },
+      "windowStatus": "WINDOW_BLOCKED",
+      "classificationCounts": {
+        "AVAILABLE": 0,
+        "SOURCE_ABSENT": 2,
+        "ACQUISITION_ERROR": 0
+      }
+    },
+    {
+      "windowId": "KE-X7",
+      "t0": "2011-06-19T12:00:00Z",
+      "missingRegisteredFrames": [
+        "2011-06-20T12:00:00Z",
+        "2011-06-22T12:00:00Z"
+      ],
+      "step32Status": "WINDOW_BLOCKED",
+      "frames": [
+        {
+          "windowId": "KE-X7",
+          "timestamp": "2011-06-20T12:00:00Z",
+          "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+          "experiment": "expt_53.X",
+          "year": "2011",
+          "requestParameters": {
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 34.47743,
+              "north": 40.0,
+              "west": 135.65227,
+              "east": 145.46751
+            }
+          },
+          "exactQuery": {
+            "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=34.477&west=135.652&east=145.468&horizStride=1&time_start=2011-06-20T12%3A00%3A00Z&time_end=2011-06-20T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "requestedAtUTC": "2026-09-07T00:29:59Z",
+            "httpStatus": 200,
+            "bodyKind": "netcdf",
+            "bytes": 38796,
+            "sha256": "bfca22a489612e79cd858b0dbd7d379d589c530555bd20ee7f014d12a3ee7719",
+            "contentType": "application/x-netcdf",
+            "retrievedAtUTC": "2026-09-07T00:29:59Z",
+            "file": "data/research/step33/KE-X7/exact-20110620T12.nc"
+          },
+          "bracketQuery": {
+            "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=34.477&west=135.652&east=145.468&horizStride=1&time_start=2011-06-20T09%3A00%3A00Z&time_end=2011-06-20T15%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "requestedAtUTC": "2026-09-07T00:29:59Z",
+            "httpStatus": 200,
+            "bodyKind": "netcdf",
+            "bytes": 73244,
+            "sha256": "1627fef9fea33d0acd5e632cfbb910679fa368d0973dd5b725e748a8cdcec202",
+            "contentType": "application/x-netcdf",
+            "retrievedAtUTC": "2026-09-07T00:30:01Z",
+            "file": "data/research/step33/KE-X7/bracket-20110620T12.nc"
+          },
+          "step32Record": {
+            "acquisitionStatus": "FORCING_BLOCKED",
+            "missingInStep32": true,
+            "dayFileFrames": 7
+          },
+          "returnedTimeAxis": {
+            "exact": [
+              "2011-06-20T09:00:00Z"
+            ],
+            "bracket": [
+              "2011-06-20T09:00:00Z",
+              "2011-06-20T15:00:00Z"
+            ]
+          },
+          "classification": "SOURCE_ABSENT",
+          "evidence": {
+            "exactStatus": 200,
+            "exactBody": "netcdf",
+            "exactMessage": "",
+            "bracketStatus": 200,
+            "bracketBody": "netcdf",
+            "bracketNeighbours": [
+              "2011-06-20T09:00:00Z",
+              "2011-06-20T15:00:00Z"
+            ]
+          }
+        },
+        {
+          "windowId": "KE-X7",
+          "timestamp": "2011-06-22T12:00:00Z",
+          "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+          "experiment": "expt_53.X",
+          "year": "2011",
+          "requestParameters": {
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 34.47743,
+              "north": 40.0,
+              "west": 135.65227,
+              "east": 145.46751
+            }
+          },
+          "exactQuery": {
+            "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=34.477&west=135.652&east=145.468&horizStride=1&time_start=2011-06-22T12%3A00%3A00Z&time_end=2011-06-22T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "requestedAtUTC": "2026-09-07T00:30:01Z",
+            "httpStatus": 200,
+            "bodyKind": "netcdf",
+            "bytes": 38796,
+            "sha256": "b0cb86362faad118463fdc48e566d8a2025801823ed9b277605c29b07406c278",
+            "contentType": "application/x-netcdf",
+            "retrievedAtUTC": "2026-09-07T00:30:05Z",
+            "file": "data/research/step33/KE-X7/exact-20110622T12.nc"
+          },
+          "bracketQuery": {
+            "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=34.477&west=135.652&east=145.468&horizStride=1&time_start=2011-06-22T09%3A00%3A00Z&time_end=2011-06-22T15%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "requestedAtUTC": "2026-09-07T00:30:05Z",
+            "httpStatus": 200,
+            "bodyKind": "netcdf",
+            "bytes": 73244,
+            "sha256": "0d3bded56b5897e0028dcdb082bd9b09a6b6f688a8623a3cbf066fa386740e21",
+            "contentType": "application/x-netcdf",
+            "retrievedAtUTC": "2026-09-07T00:30:06Z",
+            "file": "data/research/step33/KE-X7/bracket-20110622T12.nc"
+          },
+          "step32Record": {
+            "acquisitionStatus": "FORCING_BLOCKED",
+            "missingInStep32": true,
+            "dayFileFrames": 7
+          },
+          "returnedTimeAxis": {
+            "exact": [
+              "2011-06-22T09:00:00Z"
+            ],
+            "bracket": [
+              "2011-06-22T09:00:00Z",
+              "2011-06-22T15:00:00Z"
+            ]
+          },
+          "classification": "SOURCE_ABSENT",
+          "evidence": {
+            "exactStatus": 200,
+            "exactBody": "netcdf",
+            "exactMessage": "",
+            "bracketStatus": 200,
+            "bracketBody": "netcdf",
+            "bracketNeighbours": [
+              "2011-06-22T09:00:00Z",
+              "2011-06-22T15:00:00Z"
+            ]
+          }
+        }
+      ],
+      "oceanBox": {
+        "south": 34.47743,
+        "north": 40.0,
+        "west": 135.65227,
+        "east": 145.46751
+      },
+      "windowStatus": "WINDOW_BLOCKED",
+      "classificationCounts": {
+        "AVAILABLE": 0,
+        "SOURCE_ABSENT": 2,
+        "ACQUISITION_ERROR": 0
+      }
+    },
+    {
+      "windowId": "KE-X8",
+      "t0": "2011-06-22T12:00:00Z",
+      "missingRegisteredFrames": [
+        "2011-06-22T12:00:00Z",
+        "2011-06-26T18:00:00Z"
+      ],
+      "step32Status": "WINDOW_BLOCKED",
+      "frames": [
+        {
+          "windowId": "KE-X8",
+          "timestamp": "2011-06-22T12:00:00Z",
+          "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+          "experiment": "expt_53.X",
+          "year": "2011",
+          "requestParameters": {
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 33.66267,
+              "north": 37.66267,
+              "west": 143.49815,
+              "east": 147.49815
+            }
+          },
+          "exactQuery": {
+            "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=37.663&south=33.663&west=143.498&east=147.498&horizStride=1&time_start=2011-06-22T12%3A00%3A00Z&time_end=2011-06-22T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "requestedAtUTC": "2026-09-07T00:30:06Z",
+            "httpStatus": 200,
+            "bodyKind": "netcdf",
+            "bytes": 14036,
+            "sha256": "016040ee7064351a5de5e5ecc40e479b26b3ef91db3cdc07a0af40cd9e709895",
+            "contentType": "application/x-netcdf",
+            "retrievedAtUTC": "2026-09-07T00:30:07Z",
+            "file": "data/research/step33/KE-X8/exact-20110622T12.nc"
+          },
+          "bracketQuery": {
+            "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=37.663&south=33.663&west=143.498&east=147.498&horizStride=1&time_start=2011-06-22T09%3A00%3A00Z&time_end=2011-06-22T15%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "requestedAtUTC": "2026-09-07T00:30:07Z",
+            "httpStatus": 200,
+            "bodyKind": "netcdf",
+            "bytes": 24444,
+            "sha256": "305b328d0b7135093fe448a99de7a375ccbc1046d2a53be476bd7f083abe6963",
+            "contentType": "application/x-netcdf",
+            "retrievedAtUTC": "2026-09-07T00:30:08Z",
+            "file": "data/research/step33/KE-X8/bracket-20110622T12.nc"
+          },
+          "step32Record": {
+            "acquisitionStatus": "FORCING_BLOCKED",
+            "missingInStep32": true,
+            "dayFileFrames": 7
+          },
+          "returnedTimeAxis": {
+            "exact": [
+              "2011-06-22T09:00:00Z"
+            ],
+            "bracket": [
+              "2011-06-22T09:00:00Z",
+              "2011-06-22T15:00:00Z"
+            ]
+          },
+          "classification": "SOURCE_ABSENT",
+          "evidence": {
+            "exactStatus": 200,
+            "exactBody": "netcdf",
+            "exactMessage": "",
+            "bracketStatus": 200,
+            "bracketBody": "netcdf",
+            "bracketNeighbours": [
+              "2011-06-22T09:00:00Z",
+              "2011-06-22T15:00:00Z"
+            ]
+          }
+        },
+        {
+          "windowId": "KE-X8",
+          "timestamp": "2011-06-26T18:00:00Z",
+          "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+          "experiment": "expt_53.X",
+          "year": "2011",
+          "requestParameters": {
+            "var": [
+              "water_u",
+              "water_v"
+            ],
+            "vertCoord": 15,
+            "horizStride": 1,
+            "timeStride": 1,
+            "box": {
+              "south": 33.66267,
+              "north": 37.66267,
+              "west": 143.49815,
+              "east": 147.49815
+            }
+          },
+          "exactQuery": {
+            "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=37.663&south=33.663&west=143.498&east=147.498&horizStride=1&time_start=2011-06-26T18%3A00%3A00Z&time_end=2011-06-26T18%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "requestedAtUTC": "2026-09-07T00:30:08Z",
+            "httpStatus": 200,
+            "bodyKind": "netcdf",
+            "bytes": 14036,
+            "sha256": "023e367be20678305a4a3d01e29f0675df9ecb96fd2c6f729f3855da2f638306",
+            "contentType": "application/x-netcdf",
+            "retrievedAtUTC": "2026-09-07T00:30:10Z",
+            "file": "data/research/step33/KE-X8/exact-20110626T18.nc"
+          },
+          "bracketQuery": {
+            "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=37.663&south=33.663&west=143.498&east=147.498&horizStride=1&time_start=2011-06-26T15%3A00%3A00Z&time_end=2011-06-26T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+            "requestedAtUTC": "2026-09-07T00:30:10Z",
+            "httpStatus": 200,
+            "bodyKind": "netcdf",
+            "bytes": 24444,
+            "sha256": "1277a0ee54b9211c7511d45064986afc510db6fb8cd161ecfecd305858f9f037",
+            "contentType": "application/x-netcdf",
+            "retrievedAtUTC": "2026-09-07T00:30:12Z",
+            "file": "data/research/step33/KE-X8/bracket-20110626T18.nc"
+          },
+          "step32Record": {
+            "acquisitionStatus": "FORCING_BLOCKED",
+            "missingInStep32": true,
+            "dayFileFrames": 7
+          },
+          "returnedTimeAxis": {
+            "exact": [
+              "2011-06-26T15:00:00Z"
+            ],
+            "bracket": [
+              "2011-06-26T15:00:00Z",
+              "2011-06-26T21:00:00Z"
+            ]
+          },
+          "classification": "SOURCE_ABSENT",
+          "evidence": {
+            "exactStatus": 200,
+            "exactBody": "netcdf",
+            "exactMessage": "",
+            "bracketStatus": 200,
+            "bracketBody": "netcdf",
+            "bracketNeighbours": [
+              "2011-06-26T15:00:00Z",
+              "2011-06-26T21:00:00Z"
+            ]
+          }
+        }
+      ],
+      "oceanBox": {
+        "south": 33.66267,
+        "north": 37.66267,
+        "west": 143.49815,
+        "east": 147.49815
+      },
+      "windowStatus": "WINDOW_BLOCKED",
+      "classificationCounts": {
+        "AVAILABLE": 0,
+        "SOURCE_ABSENT": 2,
+        "ACQUISITION_ERROR": 0
+      }
+    }
+  ],
+  "frames": [
+    {
+      "windowId": "KE-X4",
+      "timestamp": "2011-06-09T12:00:00Z",
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "experiment": "expt_53.X",
+      "year": "2011",
+      "requestParameters": {
+        "var": [
+          "water_u",
+          "water_v"
+        ],
+        "vertCoord": 15,
+        "horizStride": 1,
+        "timeStride": 1,
+        "box": {
+          "south": 35.99809,
+          "north": 39.99809,
+          "west": 141.88063,
+          "east": 145.88063
+        }
+      },
+      "exactQuery": {
+        "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=39.998&south=35.998&west=141.881&east=145.881&horizStride=1&time_start=2011-06-09T12%3A00%3A00Z&time_end=2011-06-09T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "requestedAtUTC": "2026-09-07T00:29:47Z",
+        "httpStatus": 200,
+        "bodyKind": "netcdf",
+        "bytes": 14036,
+        "sha256": "dd4727614b0a0fb6fd9b6a426f9efebbce8a0b295e3d9fb7eb78c2bda995ceac",
+        "contentType": "application/x-netcdf",
+        "retrievedAtUTC": "2026-09-07T00:29:49Z",
+        "file": "data/research/step33/KE-X4/exact-20110609T12.nc"
+      },
+      "bracketQuery": {
+        "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=39.998&south=35.998&west=141.881&east=145.881&horizStride=1&time_start=2011-06-09T09%3A00%3A00Z&time_end=2011-06-09T15%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "requestedAtUTC": "2026-09-07T00:29:49Z",
+        "httpStatus": 200,
+        "bodyKind": "netcdf",
+        "bytes": 24444,
+        "sha256": "c01d6bf7e4824ae29355eaa95cfbb4bdcce7620a37b22c67665a55e56d14023a",
+        "contentType": "application/x-netcdf",
+        "retrievedAtUTC": "2026-09-07T00:29:50Z",
+        "file": "data/research/step33/KE-X4/bracket-20110609T12.nc"
+      },
+      "step32Record": {
+        "acquisitionStatus": "FORCING_BLOCKED",
+        "missingInStep32": true,
+        "dayFileFrames": 7
+      },
+      "returnedTimeAxis": {
+        "exact": [
+          "2011-06-09T09:00:00Z"
+        ],
+        "bracket": [
+          "2011-06-09T09:00:00Z",
+          "2011-06-09T15:00:00Z"
+        ]
+      },
+      "classification": "SOURCE_ABSENT",
+      "evidence": {
+        "exactStatus": 200,
+        "exactBody": "netcdf",
+        "exactMessage": "",
+        "bracketStatus": 200,
+        "bracketBody": "netcdf",
+        "bracketNeighbours": [
+          "2011-06-09T09:00:00Z",
+          "2011-06-09T15:00:00Z"
+        ]
+      }
+    },
+    {
+      "windowId": "KE-X5",
+      "timestamp": "2011-06-15T00:00:00Z",
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "experiment": "expt_53.X",
+      "year": "2011",
+      "requestParameters": {
+        "var": [
+          "water_u",
+          "water_v"
+        ],
+        "vertCoord": 15,
+        "horizStride": 1,
+        "timeStride": 1,
+        "box": {
+          "south": 32.71712,
+          "north": 40.0,
+          "west": 140.61664,
+          "east": 157.1892
+        }
+      },
+      "exactQuery": {
+        "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=32.717&west=140.617&east=157.189&horizStride=1&time_start=2011-06-15T00%3A00%3A00Z&time_end=2011-06-15T00%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "requestedAtUTC": "2026-09-07T00:29:50Z",
+        "httpStatus": 200,
+        "bodyKind": "netcdf",
+        "bytes": 81756,
+        "sha256": "30c7a55a39dcbb0d7c7f0d2fd3e0a04d14eec147ff43daca9c655e25303b2a24",
+        "contentType": "application/x-netcdf",
+        "retrievedAtUTC": "2026-09-07T00:29:52Z",
+        "file": "data/research/step33/KE-X5/exact-20110615T00.nc"
+      },
+      "bracketQuery": {
+        "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=32.717&west=140.617&east=157.189&horizStride=1&time_start=2011-06-14T21%3A00%3A00Z&time_end=2011-06-15T03%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "requestedAtUTC": "2026-09-07T00:29:52Z",
+        "httpStatus": 200,
+        "bodyKind": "netcdf",
+        "bytes": 158308,
+        "sha256": "304ab9642546b698c6ec4d1a7da6d96a53327b2a67abbdda131467c02877eec5",
+        "contentType": "application/x-netcdf",
+        "retrievedAtUTC": "2026-09-07T00:29:53Z",
+        "file": "data/research/step33/KE-X5/bracket-20110615T00.nc"
+      },
+      "step32Record": {
+        "acquisitionStatus": "FORCING_BLOCKED",
+        "missingInStep32": true,
+        "dayFileFrames": 7
+      },
+      "returnedTimeAxis": {
+        "exact": [
+          "2011-06-14T21:00:00Z"
+        ],
+        "bracket": [
+          "2011-06-14T21:00:00Z",
+          "2011-06-15T03:00:00Z"
+        ]
+      },
+      "classification": "SOURCE_ABSENT",
+      "evidence": {
+        "exactStatus": 200,
+        "exactBody": "netcdf",
+        "exactMessage": "",
+        "bracketStatus": 200,
+        "bracketBody": "netcdf",
+        "bracketNeighbours": [
+          "2011-06-14T21:00:00Z",
+          "2011-06-15T03:00:00Z"
+        ]
+      }
+    },
+    {
+      "windowId": "KE-X6",
+      "timestamp": "2011-06-15T00:00:00Z",
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "experiment": "expt_53.X",
+      "year": "2011",
+      "requestParameters": {
+        "var": [
+          "water_u",
+          "water_v"
+        ],
+        "vertCoord": 15,
+        "horizStride": 1,
+        "timeStride": 1,
+        "box": {
+          "south": 33.23586,
+          "north": 38.83588,
+          "west": 140.15073,
+          "east": 150.38908
+        }
+      },
+      "exactQuery": {
+        "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=38.836&south=33.236&west=140.151&east=150.389&horizStride=1&time_start=2011-06-15T00%3A00%3A00Z&time_end=2011-06-15T00%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "requestedAtUTC": "2026-09-07T00:29:53Z",
+        "httpStatus": 200,
+        "bodyKind": "netcdf",
+        "bytes": 41052,
+        "sha256": "43f0604d72d02ddf1401277c97cb624e45bb9639937a132982a5f842d7605000",
+        "contentType": "application/x-netcdf",
+        "retrievedAtUTC": "2026-09-07T00:29:54Z",
+        "file": "data/research/step33/KE-X6/exact-20110615T00.nc"
+      },
+      "bracketQuery": {
+        "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=38.836&south=33.236&west=140.151&east=150.389&horizStride=1&time_start=2011-06-14T21%3A00%3A00Z&time_end=2011-06-15T03%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "requestedAtUTC": "2026-09-07T00:29:54Z",
+        "httpStatus": 200,
+        "bodyKind": "netcdf",
+        "bytes": 77692,
+        "sha256": "da8e7e701536c6f70a44b28c4dee82f7dd3d98662cc725c54210888ce4c1fbe5",
+        "contentType": "application/x-netcdf",
+        "retrievedAtUTC": "2026-09-07T00:29:56Z",
+        "file": "data/research/step33/KE-X6/bracket-20110615T00.nc"
+      },
+      "step32Record": {
+        "acquisitionStatus": "FORCING_BLOCKED",
+        "missingInStep32": true,
+        "dayFileFrames": 7
+      },
+      "returnedTimeAxis": {
+        "exact": [
+          "2011-06-14T21:00:00Z"
+        ],
+        "bracket": [
+          "2011-06-14T21:00:00Z",
+          "2011-06-15T03:00:00Z"
+        ]
+      },
+      "classification": "SOURCE_ABSENT",
+      "evidence": {
+        "exactStatus": 200,
+        "exactBody": "netcdf",
+        "exactMessage": "",
+        "bracketStatus": 200,
+        "bracketBody": "netcdf",
+        "bracketNeighbours": [
+          "2011-06-14T21:00:00Z",
+          "2011-06-15T03:00:00Z"
+        ]
+      }
+    },
+    {
+      "windowId": "KE-X6",
+      "timestamp": "2011-06-20T12:00:00Z",
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "experiment": "expt_53.X",
+      "year": "2011",
+      "requestParameters": {
+        "var": [
+          "water_u",
+          "water_v"
+        ],
+        "vertCoord": 15,
+        "horizStride": 1,
+        "timeStride": 1,
+        "box": {
+          "south": 33.23586,
+          "north": 38.83588,
+          "west": 140.15073,
+          "east": 150.38908
+        }
+      },
+      "exactQuery": {
+        "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=38.836&south=33.236&west=140.151&east=150.389&horizStride=1&time_start=2011-06-20T12%3A00%3A00Z&time_end=2011-06-20T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "requestedAtUTC": "2026-09-07T00:29:56Z",
+        "httpStatus": 200,
+        "bodyKind": "netcdf",
+        "bytes": 41052,
+        "sha256": "e180301f3893c23b7b728c9ce28cdb3d06b10d39426956b031d0f02c8f95b56f",
+        "contentType": "application/x-netcdf",
+        "retrievedAtUTC": "2026-09-07T00:29:57Z",
+        "file": "data/research/step33/KE-X6/exact-20110620T12.nc"
+      },
+      "bracketQuery": {
+        "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=38.836&south=33.236&west=140.151&east=150.389&horizStride=1&time_start=2011-06-20T09%3A00%3A00Z&time_end=2011-06-20T15%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "requestedAtUTC": "2026-09-07T00:29:57Z",
+        "httpStatus": 200,
+        "bodyKind": "netcdf",
+        "bytes": 77692,
+        "sha256": "112f8860a544f8dababf61d43cf4b0f0b58cecd900537de58d1dbd4d1303e938",
+        "contentType": "application/x-netcdf",
+        "retrievedAtUTC": "2026-09-07T00:29:59Z",
+        "file": "data/research/step33/KE-X6/bracket-20110620T12.nc"
+      },
+      "step32Record": {
+        "acquisitionStatus": "FORCING_BLOCKED",
+        "missingInStep32": true,
+        "dayFileFrames": 7
+      },
+      "returnedTimeAxis": {
+        "exact": [
+          "2011-06-20T09:00:00Z"
+        ],
+        "bracket": [
+          "2011-06-20T09:00:00Z",
+          "2011-06-20T15:00:00Z"
+        ]
+      },
+      "classification": "SOURCE_ABSENT",
+      "evidence": {
+        "exactStatus": 200,
+        "exactBody": "netcdf",
+        "exactMessage": "",
+        "bracketStatus": 200,
+        "bracketBody": "netcdf",
+        "bracketNeighbours": [
+          "2011-06-20T09:00:00Z",
+          "2011-06-20T15:00:00Z"
+        ]
+      }
+    },
+    {
+      "windowId": "KE-X7",
+      "timestamp": "2011-06-20T12:00:00Z",
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "experiment": "expt_53.X",
+      "year": "2011",
+      "requestParameters": {
+        "var": [
+          "water_u",
+          "water_v"
+        ],
+        "vertCoord": 15,
+        "horizStride": 1,
+        "timeStride": 1,
+        "box": {
+          "south": 34.47743,
+          "north": 40.0,
+          "west": 135.65227,
+          "east": 145.46751
+        }
+      },
+      "exactQuery": {
+        "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=34.477&west=135.652&east=145.468&horizStride=1&time_start=2011-06-20T12%3A00%3A00Z&time_end=2011-06-20T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "requestedAtUTC": "2026-09-07T00:29:59Z",
+        "httpStatus": 200,
+        "bodyKind": "netcdf",
+        "bytes": 38796,
+        "sha256": "bfca22a489612e79cd858b0dbd7d379d589c530555bd20ee7f014d12a3ee7719",
+        "contentType": "application/x-netcdf",
+        "retrievedAtUTC": "2026-09-07T00:29:59Z",
+        "file": "data/research/step33/KE-X7/exact-20110620T12.nc"
+      },
+      "bracketQuery": {
+        "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=34.477&west=135.652&east=145.468&horizStride=1&time_start=2011-06-20T09%3A00%3A00Z&time_end=2011-06-20T15%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "requestedAtUTC": "2026-09-07T00:29:59Z",
+        "httpStatus": 200,
+        "bodyKind": "netcdf",
+        "bytes": 73244,
+        "sha256": "1627fef9fea33d0acd5e632cfbb910679fa368d0973dd5b725e748a8cdcec202",
+        "contentType": "application/x-netcdf",
+        "retrievedAtUTC": "2026-09-07T00:30:01Z",
+        "file": "data/research/step33/KE-X7/bracket-20110620T12.nc"
+      },
+      "step32Record": {
+        "acquisitionStatus": "FORCING_BLOCKED",
+        "missingInStep32": true,
+        "dayFileFrames": 7
+      },
+      "returnedTimeAxis": {
+        "exact": [
+          "2011-06-20T09:00:00Z"
+        ],
+        "bracket": [
+          "2011-06-20T09:00:00Z",
+          "2011-06-20T15:00:00Z"
+        ]
+      },
+      "classification": "SOURCE_ABSENT",
+      "evidence": {
+        "exactStatus": 200,
+        "exactBody": "netcdf",
+        "exactMessage": "",
+        "bracketStatus": 200,
+        "bracketBody": "netcdf",
+        "bracketNeighbours": [
+          "2011-06-20T09:00:00Z",
+          "2011-06-20T15:00:00Z"
+        ]
+      }
+    },
+    {
+      "windowId": "KE-X7",
+      "timestamp": "2011-06-22T12:00:00Z",
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "experiment": "expt_53.X",
+      "year": "2011",
+      "requestParameters": {
+        "var": [
+          "water_u",
+          "water_v"
+        ],
+        "vertCoord": 15,
+        "horizStride": 1,
+        "timeStride": 1,
+        "box": {
+          "south": 34.47743,
+          "north": 40.0,
+          "west": 135.65227,
+          "east": 145.46751
+        }
+      },
+      "exactQuery": {
+        "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=34.477&west=135.652&east=145.468&horizStride=1&time_start=2011-06-22T12%3A00%3A00Z&time_end=2011-06-22T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "requestedAtUTC": "2026-09-07T00:30:01Z",
+        "httpStatus": 200,
+        "bodyKind": "netcdf",
+        "bytes": 38796,
+        "sha256": "b0cb86362faad118463fdc48e566d8a2025801823ed9b277605c29b07406c278",
+        "contentType": "application/x-netcdf",
+        "retrievedAtUTC": "2026-09-07T00:30:05Z",
+        "file": "data/research/step33/KE-X7/exact-20110622T12.nc"
+      },
+      "bracketQuery": {
+        "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=40.000&south=34.477&west=135.652&east=145.468&horizStride=1&time_start=2011-06-22T09%3A00%3A00Z&time_end=2011-06-22T15%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "requestedAtUTC": "2026-09-07T00:30:05Z",
+        "httpStatus": 200,
+        "bodyKind": "netcdf",
+        "bytes": 73244,
+        "sha256": "0d3bded56b5897e0028dcdb082bd9b09a6b6f688a8623a3cbf066fa386740e21",
+        "contentType": "application/x-netcdf",
+        "retrievedAtUTC": "2026-09-07T00:30:06Z",
+        "file": "data/research/step33/KE-X7/bracket-20110622T12.nc"
+      },
+      "step32Record": {
+        "acquisitionStatus": "FORCING_BLOCKED",
+        "missingInStep32": true,
+        "dayFileFrames": 7
+      },
+      "returnedTimeAxis": {
+        "exact": [
+          "2011-06-22T09:00:00Z"
+        ],
+        "bracket": [
+          "2011-06-22T09:00:00Z",
+          "2011-06-22T15:00:00Z"
+        ]
+      },
+      "classification": "SOURCE_ABSENT",
+      "evidence": {
+        "exactStatus": 200,
+        "exactBody": "netcdf",
+        "exactMessage": "",
+        "bracketStatus": 200,
+        "bracketBody": "netcdf",
+        "bracketNeighbours": [
+          "2011-06-22T09:00:00Z",
+          "2011-06-22T15:00:00Z"
+        ]
+      }
+    },
+    {
+      "windowId": "KE-X8",
+      "timestamp": "2011-06-22T12:00:00Z",
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "experiment": "expt_53.X",
+      "year": "2011",
+      "requestParameters": {
+        "var": [
+          "water_u",
+          "water_v"
+        ],
+        "vertCoord": 15,
+        "horizStride": 1,
+        "timeStride": 1,
+        "box": {
+          "south": 33.66267,
+          "north": 37.66267,
+          "west": 143.49815,
+          "east": 147.49815
+        }
+      },
+      "exactQuery": {
+        "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=37.663&south=33.663&west=143.498&east=147.498&horizStride=1&time_start=2011-06-22T12%3A00%3A00Z&time_end=2011-06-22T12%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "requestedAtUTC": "2026-09-07T00:30:06Z",
+        "httpStatus": 200,
+        "bodyKind": "netcdf",
+        "bytes": 14036,
+        "sha256": "016040ee7064351a5de5e5ecc40e479b26b3ef91db3cdc07a0af40cd9e709895",
+        "contentType": "application/x-netcdf",
+        "retrievedAtUTC": "2026-09-07T00:30:07Z",
+        "file": "data/research/step33/KE-X8/exact-20110622T12.nc"
+      },
+      "bracketQuery": {
+        "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=37.663&south=33.663&west=143.498&east=147.498&horizStride=1&time_start=2011-06-22T09%3A00%3A00Z&time_end=2011-06-22T15%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "requestedAtUTC": "2026-09-07T00:30:07Z",
+        "httpStatus": 200,
+        "bodyKind": "netcdf",
+        "bytes": 24444,
+        "sha256": "305b328d0b7135093fe448a99de7a375ccbc1046d2a53be476bd7f083abe6963",
+        "contentType": "application/x-netcdf",
+        "retrievedAtUTC": "2026-09-07T00:30:08Z",
+        "file": "data/research/step33/KE-X8/bracket-20110622T12.nc"
+      },
+      "step32Record": {
+        "acquisitionStatus": "FORCING_BLOCKED",
+        "missingInStep32": true,
+        "dayFileFrames": 7
+      },
+      "returnedTimeAxis": {
+        "exact": [
+          "2011-06-22T09:00:00Z"
+        ],
+        "bracket": [
+          "2011-06-22T09:00:00Z",
+          "2011-06-22T15:00:00Z"
+        ]
+      },
+      "classification": "SOURCE_ABSENT",
+      "evidence": {
+        "exactStatus": 200,
+        "exactBody": "netcdf",
+        "exactMessage": "",
+        "bracketStatus": 200,
+        "bracketBody": "netcdf",
+        "bracketNeighbours": [
+          "2011-06-22T09:00:00Z",
+          "2011-06-22T15:00:00Z"
+        ]
+      }
+    },
+    {
+      "windowId": "KE-X8",
+      "timestamp": "2011-06-26T18:00:00Z",
+      "source": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+      "experiment": "expt_53.X",
+      "year": "2011",
+      "requestParameters": {
+        "var": [
+          "water_u",
+          "water_v"
+        ],
+        "vertCoord": 15,
+        "horizStride": 1,
+        "timeStride": 1,
+        "box": {
+          "south": 33.66267,
+          "north": 37.66267,
+          "west": 143.49815,
+          "east": 147.49815
+        }
+      },
+      "exactQuery": {
+        "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=37.663&south=33.663&west=143.498&east=147.498&horizStride=1&time_start=2011-06-26T18%3A00%3A00Z&time_end=2011-06-26T18%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "requestedAtUTC": "2026-09-07T00:30:08Z",
+        "httpStatus": 200,
+        "bodyKind": "netcdf",
+        "bytes": 14036,
+        "sha256": "023e367be20678305a4a3d01e29f0675df9ecb96fd2c6f729f3855da2f638306",
+        "contentType": "application/x-netcdf",
+        "retrievedAtUTC": "2026-09-07T00:30:10Z",
+        "file": "data/research/step33/KE-X8/exact-20110626T18.nc"
+      },
+      "bracketQuery": {
+        "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011?var=water_u&var=water_v&north=37.663&south=33.663&west=143.498&east=147.498&horizStride=1&time_start=2011-06-26T15%3A00%3A00Z&time_end=2011-06-26T21%3A00%3A00Z&timeStride=1&vertCoord=15&addLatLon=true&accept=netcdf",
+        "requestedAtUTC": "2026-09-07T00:30:10Z",
+        "httpStatus": 200,
+        "bodyKind": "netcdf",
+        "bytes": 24444,
+        "sha256": "1277a0ee54b9211c7511d45064986afc510db6fb8cd161ecfecd305858f9f037",
+        "contentType": "application/x-netcdf",
+        "retrievedAtUTC": "2026-09-07T00:30:12Z",
+        "file": "data/research/step33/KE-X8/bracket-20110626T18.nc"
+      },
+      "step32Record": {
+        "acquisitionStatus": "FORCING_BLOCKED",
+        "missingInStep32": true,
+        "dayFileFrames": 7
+      },
+      "returnedTimeAxis": {
+        "exact": [
+          "2011-06-26T15:00:00Z"
+        ],
+        "bracket": [
+          "2011-06-26T15:00:00Z",
+          "2011-06-26T21:00:00Z"
+        ]
+      },
+      "classification": "SOURCE_ABSENT",
+      "evidence": {
+        "exactStatus": 200,
+        "exactBody": "netcdf",
+        "exactMessage": "",
+        "bracketStatus": 200,
+        "bracketBody": "netcdf",
+        "bracketNeighbours": [
+          "2011-06-26T15:00:00Z",
+          "2011-06-26T21:00:00Z"
+        ]
+      }
+    }
+  ],
+  "scientificRun": false,
+  "modelRunCount": 0,
+  "performanceDataRead": false,
+  "frameClassificationCounts": {
+    "AVAILABLE": 0,
+    "SOURCE_ABSENT": 8,
+    "ACQUISITION_ERROR": 0
+  },
+  "recoveredWindows": 0,
+  "remainingBlockedWindows": 5,
+  "status": "SOURCE_ABSENT",
+  "forbiddenInputAccess": 0,
+  "completedAtUTC": "2026-09-07T00:30:12Z"
+}

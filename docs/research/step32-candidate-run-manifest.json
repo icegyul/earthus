@@ -1,0 +1,493 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "expanded-holdout-and-temporal-forcing-step32",
+  "phase": "B6",
+  "kind": "candidate",
+  "conditions": [
+    "C"
+  ],
+  "experimentMatrixSha256": "b3d1b6fe985dbe5f86b61ec6e6c5fc9ca83572054c0eadd2799040d94a3e70fb",
+  "acquisitionManifestSha256": "30e55f4e9bef09912815f1a4497301e165995fcccd30abc161da9840fed80fb8",
+  "dailyManifestSha256": "dcd2d839247df43ed79bd5b4bf908265e9ae1a9a1f7786aab902c22a570e5e4f",
+  "candidateManifestSha256": "97019f0a56beb822c0f319c4fcd8ed97fc067fda3940f5879cbefe6198f46093",
+  "status": "STEP32_RUNS_PASS",
+  "modelRunCount": 3,
+  "plannedRuns": 8,
+  "alpha": 0.002,
+  "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+  "runnerSha256": "d28cb9d5d49862e81fc0d68e500a379553554ee60abbc15ce046d807de58c868",
+  "runner": "tools/research/run_step32_temporal_r3.py",
+  "sharedModuleSha256": "68772223043d16e57ac43f4e51d7cc90899f563faa4cefdcc59c4476136b6d41",
+  "replayToolSha256": "865c69be8f45eaace1bdd6defaedb485fd5d570a1c17a731576d0c05b2e9e6f3",
+  "segmentationRule": "STEP 20 B-3 (36 h split) only where the 25-frame dataset exceeds the runtime value limit",
+  "blockedRuns": [
+    {
+      "runId": "step32-C-alpha0.002-KE-X4",
+      "windowId": "KE-X4",
+      "condition": "C",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X4 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-09T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X5",
+      "windowId": "KE-X5",
+      "condition": "C",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X5 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z'])"
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X6",
+      "windowId": "KE-X6",
+      "condition": "C",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X6 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z', '2011-06-20T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X7",
+      "windowId": "KE-X7",
+      "condition": "C",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X7 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-20T12:00:00Z', '2011-06-22T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X8",
+      "windowId": "KE-X8",
+      "condition": "C",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X8 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-22T12:00:00Z', '2011-06-26T18:00:00Z'])"
+    }
+  ],
+  "blockedWindows": [
+    "KE-X4",
+    "KE-X5",
+    "KE-X6",
+    "KE-X7",
+    "KE-X8"
+  ],
+  "evaluableWindows": [
+    "KE-X1",
+    "KE-X2",
+    "KE-X3"
+  ],
+  "runs": [
+    {
+      "runId": "step32-C-alpha0.002-KE-X1",
+      "windowId": "KE-X1",
+      "role": "NEW_HOLDOUT",
+      "condition": "C",
+      "conditionName": "GLORYS_STOKES_CANDIDATE",
+      "equation": "dX/dt = U_GLORYS + U_Stokes + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.81007,
+      "drifterCount": 8,
+      "released": 8,
+      "drifterIds": [
+        "39974",
+        "39986",
+        "39994",
+        "39995",
+        "39996",
+        "39997",
+        "92958",
+        "98924"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 136.5617,
+        "east": 159.87978,
+        "south": 28.01396,
+        "north": 40.0
+      },
+      "segmented": true,
+      "forcing": {
+        "chunked": true,
+        "files": {
+          "A": "data/research/step32/forcing/candidate/KE-X1.treatment.chunkA.dataset.json",
+          "B": "data/research/step32/forcing/candidate/KE-X1.treatment.chunkB.dataset.json"
+        },
+        "fileSha256": {
+          "A": "ba9dcfa427ea1e45b24ea2dcc1e669118769b218dd940e4a8d170c86cdb5c0be",
+          "B": "d20376b942a7389a2984d81ad7d4284b775b706ce905c5011c7e0cb6954ccb26"
+        },
+        "gridSha256": {
+          "A": "ab7b029e23062144a2ef468f7321fa27cb26f459c40e434ca620ba0eb3a404ec",
+          "B": "8a81290b97d937c039f5428c27ff5f347ffbeb1f3de9b48d77db1f80ca3e595f"
+        }
+      },
+      "wind": {
+        "file": "data/research/step32/forcing/normalized/KE-X1.ncep10m.wind.json",
+        "fileSha256": "f9addab11f6060b5ff988b763477b9077910c36c307a52379e3c4e1c868e2874",
+        "gridSha256": "1101cb70376060d4281dd30bbb10fb2fda6b0d3294975805121f41247be953e1"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "e0f62218ab5e5f849138de4fad2802b097e547c0f1eaa58cb29566926ac29616",
+      "specs": {
+        "seg1": {
+          "file": "data/research/step32/trajectories/KE-X1/C-alpha0.002/spec.seg1.json",
+          "sha256": "2c86e95995c843f2c3cb7dc1d8faa4b67f496a2b4a190e7e8410120c7053c9a7"
+        },
+        "seg2": {
+          "file": "data/research/step32/trajectories/KE-X1/C-alpha0.002/spec.seg2.json",
+          "sha256": "d8e3ad112f0d5097f4876fcad403887bd6033446937f01f0348d3e2d6097abd9"
+        }
+      },
+      "resultFile": "data/research/step32/trajectories/KE-X1/C-alpha0.002/result.json",
+      "resultSha256": "00f63b163d6f67ea1463ba71d4844f6dcedd77f16453ceda0dd6e04bff464fd5",
+      "trajectoriesFile": "data/research/step32/trajectories/KE-X1/C-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "41f03dba73777334be071fd3306ec29fb2d5c42edfab6f010a598a8bb7da5625",
+      "rows": 2312,
+      "finalStatusCounts": {
+        "COMPLETED": 8
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 8
+      },
+      "startedAtUTC": "2026-09-07T00:03:27Z",
+      "completedAtUTC": "2026-09-07T00:03:43Z",
+      "wallSeconds": 15.8,
+      "endpoints72h": [
+        {
+          "drifterId": "39974",
+          "lon": 146.65038541380488,
+          "lat": 32.87081702656763,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "39986",
+          "lon": 149.5192022856276,
+          "lat": 34.78244342875991,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "39994",
+          "lon": 158.62284476740547,
+          "lat": 39.49839100048457,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "39995",
+          "lon": 153.5842634124112,
+          "lat": 36.86170275875838,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "39996",
+          "lon": 153.19092175525606,
+          "lat": 34.20374864916425,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "39997",
+          "lon": 156.5471589002476,
+          "lat": 34.901599621185184,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "92958",
+          "lon": 138.20106626662243,
+          "lat": 30.07811646232942,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        },
+        {
+          "drifterId": "98924",
+          "lon": 154.4799187929284,
+          "lat": 38.46359001169418,
+          "timeUTC": "2011-05-11T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "865c69be8f45eaace1bdd6defaedb485fd5d570a1c17a731576d0c05b2e9e6f3",
+        "returncode": 0,
+        "replayResultSha256": "e0f62218ab5e5f849138de4fad2802b097e547c0f1eaa58cb29566926ac29616",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X2",
+      "windowId": "KE-X2",
+      "role": "NEW_HOLDOUT",
+      "condition": "C",
+      "conditionName": "GLORYS_STOKES_CANDIDATE",
+      "equation": "dX/dt = U_GLORYS + U_Stokes + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.81007,
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "40006"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 157.9926,
+        "east": 161.9926,
+        "south": 36.5543,
+        "north": 40.0
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step32/forcing/candidate/KE-X2.treatment.dataset.json",
+        "fileSha256": "90f80bd978dd81195e13317825944886e859fe829248b7ca95e0cd206f1a3093",
+        "gridSha256": "b4a26390c553eda5a177e334d6b288ac70743fa5961f21559fd5ed9453150a45"
+      },
+      "wind": {
+        "file": "data/research/step32/forcing/normalized/KE-X2.ncep10m.wind.json",
+        "fileSha256": "c36827f6dd9b12c0e4b716a36ddd743363d312b206093b4fd4568a277801cb82",
+        "gridSha256": "81e52bfe0a02c842344fc4a68ad78e00a9d7edf5ee8c7eaf4f629fca3c338529"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "52e9395a7df27d8dd6f981d22f5b6da845c64b2ea89808d0427153f8c8ae6d1d",
+      "specs": {
+        "single": {
+          "file": "data/research/step32/trajectories/KE-X2/C-alpha0.002/spec.json",
+          "sha256": "550a0034dbf668b43c00534fc65ee6a305050871391bc9f0f4cce76cc91d3f96"
+        }
+      },
+      "resultFile": "data/research/step32/trajectories/KE-X2/C-alpha0.002/result.json",
+      "resultSha256": "28b74030778fa4b002542fe0a6a771bf63308d969b1dab26937fd9974bdd8c68",
+      "trajectoriesFile": "data/research/step32/trajectories/KE-X2/C-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "eda1c2256b9f34130e17f37e5fcef6fa0a77f2c22d7ba823db02697fbf9766eb",
+      "rows": 289,
+      "finalStatusCounts": {
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "startedAtUTC": "2026-09-07T00:03:58Z",
+      "completedAtUTC": "2026-09-07T00:03:59Z",
+      "wallSeconds": 1.0,
+      "endpoints72h": [
+        {
+          "drifterId": "40006",
+          "lon": 160.34528742838341,
+          "lat": 37.93609610321625,
+          "timeUTC": "2011-05-16T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "865c69be8f45eaace1bdd6defaedb485fd5d570a1c17a731576d0c05b2e9e6f3",
+        "returncode": 0,
+        "replayResultSha256": "52e9395a7df27d8dd6f981d22f5b6da845c64b2ea89808d0427153f8c8ae6d1d",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X3",
+      "windowId": "KE-X3",
+      "role": "NEW_HOLDOUT",
+      "condition": "C",
+      "conditionName": "GLORYS_STOKES_CANDIDATE",
+      "equation": "dX/dt = U_GLORYS + U_Stokes + 0.002 * U_wind",
+      "alpha": 0.002,
+      "alphaText": "0.002",
+      "depthMeters": 15.81007,
+      "drifterCount": 1,
+      "released": 1,
+      "drifterIds": [
+        "47591"
+      ],
+      "integrationStepSeconds": 300,
+      "outputStepSeconds": 900,
+      "durationSeconds": 259200,
+      "area": {
+        "west": 148.77896,
+        "east": 152.77896,
+        "south": 28.01893,
+        "north": 32.01893
+      },
+      "segmented": false,
+      "forcing": {
+        "chunked": false,
+        "file": "data/research/step32/forcing/candidate/KE-X3.treatment.dataset.json",
+        "fileSha256": "d3e08f8eb8f879d9c305c376b5f111c58da7694f0153b99a603fd07c8e983896",
+        "gridSha256": "da9da61a8fbec55effdaa653bcfc5a8ad61a708fe4251bc0c848a26fa57b180b"
+      },
+      "wind": {
+        "file": "data/research/step32/forcing/normalized/KE-X3.ncep10m.wind.json",
+        "fileSha256": "4aad5b1bfd87dfef069fc04d8fcf5880b152ef09af58343ea46b38d211262834",
+        "gridSha256": "0cc79223b6da9e8146173359d211997d2e39be1a0c6238819a7dfb51a4f4f815"
+      },
+      "modelSourceSha256": "306a597613f625e09d0788405b7b7e3b3a944627d4217b8da77e66a74859dee3",
+      "resultArraySha256": "5d4eeb144f3299b130f1badfe96c5035954657734e65d010bc1cc06494746f12",
+      "specs": {
+        "single": {
+          "file": "data/research/step32/trajectories/KE-X3/C-alpha0.002/spec.json",
+          "sha256": "c7d122079c77b93d8bcf40b60cce940dc08582ebe283d3e28e572ffaf36758ea"
+        }
+      },
+      "resultFile": "data/research/step32/trajectories/KE-X3/C-alpha0.002/result.json",
+      "resultSha256": "f5bff8edf3d66bff68e1d8164ed50edab6f48ee83eddd95ee2a961d2a0f94310",
+      "trajectoriesFile": "data/research/step32/trajectories/KE-X3/C-alpha0.002/trajectories.csv",
+      "trajectoriesSha256": "05d70152191a6c3359bd07eae86b6c5222c321437cadef7e68f6eb0487fb1d22",
+      "rows": 289,
+      "finalStatusCounts": {
+        "COMPLETED": 1
+      },
+      "runtimeStatusCounts": {
+        "ACTIVE": 0,
+        "STRANDED": 0,
+        "OUT_OF_DOMAIN": 0,
+        "MISSING_FORCING": 0,
+        "COMPLETED": 1
+      },
+      "startedAtUTC": "2026-09-07T00:04:02Z",
+      "completedAtUTC": "2026-09-07T00:04:03Z",
+      "wallSeconds": 1.1,
+      "endpoints72h": [
+        {
+          "drifterId": "47591",
+          "lon": 151.19976324262927,
+          "lat": 30.225876001859493,
+          "timeUTC": "2011-05-31T12:00:00Z",
+          "finalStatus": "COMPLETED"
+        }
+      ],
+      "replay": {
+        "process": "separate python tools/research/replay_step32_run.py (same construction, on-disk inputs)",
+        "replayToolSha256": "865c69be8f45eaace1bdd6defaedb485fd5d570a1c17a731576d0c05b2e9e6f3",
+        "returncode": 0,
+        "replayResultSha256": "5d4eeb144f3299b130f1badfe96c5035954657734e65d010bc1cc06494746f12",
+        "stderrTail": ""
+      },
+      "replayMatched": true,
+      "status": "COMPLETED"
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X4",
+      "windowId": "KE-X4",
+      "condition": "C",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X4 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-09T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X5",
+      "windowId": "KE-X5",
+      "condition": "C",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X5 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z'])"
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X6",
+      "windowId": "KE-X6",
+      "condition": "C",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X6 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z', '2011-06-20T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X7",
+      "windowId": "KE-X7",
+      "condition": "C",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X7 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-20T12:00:00Z', '2011-06-22T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X8",
+      "windowId": "KE-X8",
+      "condition": "C",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X8 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-22T12:00:00Z', '2011-06-26T18:00:00Z'])"
+    }
+  ],
+  "startedAtUTC": "2026-09-07T00:03:27Z",
+  "completedAtUTC": "2026-09-07T00:04:05Z",
+  "log": [
+    {
+      "utc": "2026-09-07T00:03:58Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step32-C-alpha0.002-KE-X1",
+      "wall": 15.8,
+      "replay": true,
+      "final": {
+        "COMPLETED": 8
+      }
+    },
+    {
+      "utc": "2026-09-07T00:04:02Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step32-C-alpha0.002-KE-X2",
+      "wall": 1.0,
+      "replay": true,
+      "final": {
+        "COMPLETED": 1
+      }
+    },
+    {
+      "utc": "2026-09-07T00:04:05Z",
+      "phase": "run",
+      "status": "COMPLETED",
+      "runId": "step32-C-alpha0.002-KE-X3",
+      "wall": 1.1,
+      "replay": true,
+      "final": {
+        "COMPLETED": 1
+      }
+    },
+    {
+      "utc": "2026-09-07T00:04:05Z",
+      "phase": "run",
+      "status": "BLOCKED",
+      "runId": "KE-X4C",
+      "error": "WINDOW_BLOCKED: KE-X4 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-09T12:00:00Z'])"
+    },
+    {
+      "utc": "2026-09-07T00:04:05Z",
+      "phase": "run",
+      "status": "BLOCKED",
+      "runId": "KE-X5C",
+      "error": "WINDOW_BLOCKED: KE-X5 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z'])"
+    },
+    {
+      "utc": "2026-09-07T00:04:05Z",
+      "phase": "run",
+      "status": "BLOCKED",
+      "runId": "KE-X6C",
+      "error": "WINDOW_BLOCKED: KE-X6 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z', '2011-06-20T12:00:00Z'])"
+    },
+    {
+      "utc": "2026-09-07T00:04:05Z",
+      "phase": "run",
+      "status": "BLOCKED",
+      "runId": "KE-X7C",
+      "error": "WINDOW_BLOCKED: KE-X7 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-20T12:00:00Z', '2011-06-22T12:00:00Z'])"
+    },
+    {
+      "utc": "2026-09-07T00:04:05Z",
+      "phase": "run",
+      "status": "BLOCKED",
+      "runId": "KE-X8C",
+      "error": "WINDOW_BLOCKED: KE-X8 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-22T12:00:00Z', '2011-06-26T18:00:00Z'])"
+    }
+  ]
+}

@@ -1,0 +1,1471 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "expanded-holdout-and-temporal-forcing-step32",
+  "phase": "B6/B7",
+  "status": "EVALUATION_COMPLETE",
+  "experimentMatrixSha256": "b3d1b6fe985dbe5f86b61ec6e6c5fc9ca83572054c0eadd2799040d94a3e70fb",
+  "temporalRunManifestSha256": "d8effb5bf73841a401beb4bda076f494ef80700c947075d24c92d4b57aafa4c0",
+  "candidateRunManifestSha256": "e96c4dbdb2b4901e7d766d87729bded031112ca009cd2f8ce6a6a65fcc399ddf",
+  "step30aSummarySha256": "faaf891fa7c5308db70f97add419d370efa7346ee560c30e307ac33d0a01c504",
+  "observationFiles": {
+    "data/research/step15/noaa-gdp-hourly-qc/KE-2011-q1.csv": "284e1d0e40ce024d7fecfb28abcba5dd7e0a3fb1c983916376ee45e07454baba",
+    "data/research/step15/noaa-gdp-hourly-qc/KE-2011-q2.csv": "f11944754569525f5fa19e9b1f60d0fd2afae4981b2d261a4a2ae21e02f399fd",
+    "data/research/step15/noaa-gdp-hourly-qc/KE-2011-q3.csv": "218f2390283079c5cb643fbbe17ccd8b2578d1de06d5955d47f9eb75dd3d01a0",
+    "data/research/step15/noaa-gdp-hourly-qc/KE-2011-q4.csv": "0251feb40a621174bd09ca0147654a9b41fe90c8d9b3817b24bf2dc7d3911937"
+  },
+  "inputTrajectories": [
+    {
+      "runId": "step32-A-alpha0.002-KE-X1",
+      "window": "KE-X1",
+      "condition": "A",
+      "file": "data/research/step32/trajectories/KE-X1/A-alpha0.002/trajectories.csv",
+      "expected": "0317c4598a7fa919caadfc6783bb4c6cd3964158ae1a1287d53276438c58de6f",
+      "actual": "0317c4598a7fa919caadfc6783bb4c6cd3964158ae1a1287d53276438c58de6f",
+      "verified": true
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X2",
+      "window": "KE-X2",
+      "condition": "A",
+      "file": "data/research/step32/trajectories/KE-X2/A-alpha0.002/trajectories.csv",
+      "expected": "69551f38914502af0257f2b01965cd3c68614b2490a6decd04469a8dfc5a5416",
+      "actual": "69551f38914502af0257f2b01965cd3c68614b2490a6decd04469a8dfc5a5416",
+      "verified": true
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X3",
+      "window": "KE-X3",
+      "condition": "A",
+      "file": "data/research/step32/trajectories/KE-X3/A-alpha0.002/trajectories.csv",
+      "expected": "2125d961084dc08330064e969767a048f531756d26fd109bfda598b5f9ac35d7",
+      "actual": "2125d961084dc08330064e969767a048f531756d26fd109bfda598b5f9ac35d7",
+      "verified": true
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X1",
+      "window": "KE-X1",
+      "condition": "C",
+      "file": "data/research/step32/trajectories/KE-X1/C-alpha0.002/trajectories.csv",
+      "expected": "41f03dba73777334be071fd3306ec29fb2d5c42edfab6f010a598a8bb7da5625",
+      "actual": "41f03dba73777334be071fd3306ec29fb2d5c42edfab6f010a598a8bb7da5625",
+      "verified": true
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X2",
+      "window": "KE-X2",
+      "condition": "C",
+      "file": "data/research/step32/trajectories/KE-X2/C-alpha0.002/trajectories.csv",
+      "expected": "eda1c2256b9f34130e17f37e5fcef6fa0a77f2c22d7ba823db02697fbf9766eb",
+      "actual": "eda1c2256b9f34130e17f37e5fcef6fa0a77f2c22d7ba823db02697fbf9766eb",
+      "verified": true
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X3",
+      "window": "KE-X3",
+      "condition": "C",
+      "file": "data/research/step32/trajectories/KE-X3/C-alpha0.002/trajectories.csv",
+      "expected": "05d70152191a6c3359bd07eae86b6c5222c321437cadef7e68f6eb0487fb1d22",
+      "actual": "05d70152191a6c3359bd07eae86b6c5222c321437cadef7e68f6eb0487fb1d22",
+      "verified": true
+    }
+  ],
+  "blockedRuns": [
+    {
+      "runId": "step32-A-alpha0.002-KE-X4",
+      "window": "KE-X4",
+      "condition": "A",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X4 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-09T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X5",
+      "window": "KE-X5",
+      "condition": "A",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X5 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z'])"
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X6",
+      "window": "KE-X6",
+      "condition": "A",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X6 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z', '2011-06-20T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X7",
+      "window": "KE-X7",
+      "condition": "A",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X7 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-20T12:00:00Z', '2011-06-22T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-A-alpha0.002-KE-X8",
+      "window": "KE-X8",
+      "condition": "A",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X8 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-22T12:00:00Z', '2011-06-26T18:00:00Z'])"
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X4",
+      "window": "KE-X4",
+      "condition": "C",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X4 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-09T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X5",
+      "window": "KE-X5",
+      "condition": "C",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X5 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z'])"
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X6",
+      "window": "KE-X6",
+      "condition": "C",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X6 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z', '2011-06-20T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X7",
+      "window": "KE-X7",
+      "condition": "C",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X7 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-20T12:00:00Z', '2011-06-22T12:00:00Z'])"
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X8",
+      "window": "KE-X8",
+      "condition": "C",
+      "status": "WINDOW_BLOCKED",
+      "error": "WINDOW_BLOCKED: KE-X8 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-22T12:00:00Z', '2011-06-26T18:00:00Z'])"
+    }
+  ],
+  "pairing": "exact drifter_id and exact UTC timestamp; candidate, baseline and observation valid",
+  "perDrifter": [
+    {
+      "drifter_id": "39974",
+      "unit": "KE-X1",
+      "role": "NEW_HOLDOUT",
+      "error_CAND_24h": 23.273,
+      "error_HYCOM_24h": 42.782,
+      "delta_24h": -19.509,
+      "sep_CAND_HYCOM_24h": 22.071,
+      "error_CAND_48h": 49.218,
+      "error_HYCOM_48h": 82.876,
+      "delta_48h": -33.658,
+      "sep_CAND_HYCOM_48h": 40.187,
+      "error_CAND_72h": 68.237,
+      "error_HYCOM_72h": 109.889,
+      "delta_72h": -41.652,
+      "sep_CAND_HYCOM_72h": 60.981,
+      "endpoint_CAND_72h": 95.469,
+      "path_CAND": 100.22,
+      "endpoint_HYCOM_72h": 155.578,
+      "path_HYCOM": 165.207,
+      "observed_72h": 74.861
+    },
+    {
+      "drifter_id": "39986",
+      "unit": "KE-X1",
+      "role": "NEW_HOLDOUT",
+      "error_CAND_24h": 6.117,
+      "error_HYCOM_24h": 45.487,
+      "delta_24h": -39.371,
+      "sep_CAND_HYCOM_24h": 42.482,
+      "error_CAND_48h": 25.674,
+      "error_HYCOM_48h": 95.484,
+      "delta_48h": -69.81,
+      "sep_CAND_HYCOM_48h": 104.108,
+      "error_CAND_72h": 32.702,
+      "error_HYCOM_72h": 153.455,
+      "delta_72h": -120.753,
+      "sep_CAND_HYCOM_72h": 136.083,
+      "endpoint_CAND_72h": 87.315,
+      "path_CAND": 88.157,
+      "endpoint_HYCOM_72h": 206.961,
+      "path_HYCOM": 221.784,
+      "observed_72h": 102.707
+    },
+    {
+      "drifter_id": "39994",
+      "unit": "KE-X1",
+      "role": "NEW_HOLDOUT",
+      "error_CAND_24h": 16.701,
+      "error_HYCOM_24h": 12.279,
+      "delta_24h": 4.422,
+      "sep_CAND_HYCOM_24h": 26.276,
+      "error_CAND_48h": 37.941,
+      "error_HYCOM_48h": 22.515,
+      "delta_48h": 15.426,
+      "sep_CAND_HYCOM_48h": 60.3,
+      "error_CAND_72h": 60.975,
+      "error_HYCOM_72h": 33.208,
+      "delta_72h": 27.767,
+      "sep_CAND_HYCOM_72h": 88.584,
+      "endpoint_CAND_72h": 64.742,
+      "path_CAND": 68.244,
+      "endpoint_HYCOM_72h": 25.765,
+      "path_HYCOM": 69.994,
+      "observed_72h": 8.575
+    },
+    {
+      "drifter_id": "39995",
+      "unit": "KE-X1",
+      "role": "NEW_HOLDOUT",
+      "error_CAND_24h": 47.034,
+      "error_HYCOM_24h": 9.397,
+      "delta_24h": 37.637,
+      "sep_CAND_HYCOM_24h": 51.704,
+      "error_CAND_48h": 87.795,
+      "error_HYCOM_48h": 45.776,
+      "delta_48h": 42.018,
+      "sep_CAND_HYCOM_48h": 94.315,
+      "error_CAND_72h": 115.763,
+      "error_HYCOM_72h": 105.09,
+      "delta_72h": 10.674,
+      "sep_CAND_HYCOM_72h": 147.252,
+      "endpoint_CAND_72h": 213.871,
+      "path_CAND": 218.44,
+      "endpoint_HYCOM_72h": 110.014,
+      "path_HYCOM": 136.591,
+      "observed_72h": 108.109
+    },
+    {
+      "drifter_id": "39996",
+      "unit": "KE-X1",
+      "role": "NEW_HOLDOUT",
+      "error_CAND_24h": 25.872,
+      "error_HYCOM_24h": 66.335,
+      "delta_24h": -40.463,
+      "sep_CAND_HYCOM_24h": 82.222,
+      "error_CAND_48h": 51.47,
+      "error_HYCOM_48h": 91.796,
+      "delta_48h": -40.326,
+      "sep_CAND_HYCOM_48h": 138.124,
+      "error_CAND_72h": 55.705,
+      "error_HYCOM_72h": 139.978,
+      "delta_72h": -84.272,
+      "sep_CAND_HYCOM_72h": 114.567,
+      "endpoint_CAND_72h": 45.702,
+      "path_CAND": 173.569,
+      "endpoint_HYCOM_72h": 71.143,
+      "path_HYCOM": 80.106,
+      "observed_72h": 72.735
+    },
+    {
+      "drifter_id": "39997",
+      "unit": "KE-X1",
+      "role": "NEW_HOLDOUT",
+      "error_CAND_24h": 18.647,
+      "error_HYCOM_24h": 14.486,
+      "delta_24h": 4.161,
+      "sep_CAND_HYCOM_24h": 5.016,
+      "error_CAND_48h": 46.265,
+      "error_HYCOM_48h": 33.593,
+      "delta_48h": 12.672,
+      "sep_CAND_HYCOM_48h": 27.592,
+      "error_CAND_72h": 48.765,
+      "error_HYCOM_72h": 32.177,
+      "delta_72h": 16.588,
+      "sep_CAND_HYCOM_72h": 49.164,
+      "endpoint_CAND_72h": 66.424,
+      "path_CAND": 70.105,
+      "endpoint_HYCOM_72h": 48.935,
+      "path_HYCOM": 85.238,
+      "observed_72h": 19.733
+    },
+    {
+      "drifter_id": "92958",
+      "unit": "KE-X1",
+      "role": "NEW_HOLDOUT",
+      "error_CAND_24h": 4.607,
+      "error_HYCOM_24h": 13.692,
+      "delta_24h": -9.085,
+      "sep_CAND_HYCOM_24h": 17.961,
+      "error_CAND_48h": 10.813,
+      "error_HYCOM_48h": 31.669,
+      "delta_48h": -20.855,
+      "sep_CAND_HYCOM_48h": 42.25,
+      "error_CAND_72h": 18.379,
+      "error_HYCOM_72h": 48.068,
+      "delta_72h": -29.688,
+      "sep_CAND_HYCOM_72h": 66.119,
+      "endpoint_CAND_72h": 35.438,
+      "path_CAND": 36.856,
+      "endpoint_HYCOM_72h": 41.196,
+      "path_HYCOM": 44.466,
+      "observed_72h": 25.081
+    },
+    {
+      "drifter_id": "98924",
+      "unit": "KE-X1",
+      "role": "NEW_HOLDOUT",
+      "error_CAND_24h": 18.623,
+      "error_HYCOM_24h": 18.163,
+      "delta_24h": 0.46,
+      "sep_CAND_HYCOM_24h": 26.978,
+      "error_CAND_48h": 15.357,
+      "error_HYCOM_48h": 50.14,
+      "delta_48h": -34.782,
+      "sep_CAND_HYCOM_48h": 47.826,
+      "error_CAND_72h": 25.959,
+      "error_HYCOM_72h": 71.856,
+      "delta_72h": -45.897,
+      "sep_CAND_HYCOM_72h": 62.844,
+      "endpoint_CAND_72h": 52.702,
+      "path_CAND": 53.297,
+      "endpoint_HYCOM_72h": 25.93,
+      "path_HYCOM": 73.956,
+      "observed_72h": 52.637
+    },
+    {
+      "drifter_id": "40006",
+      "unit": "KE-X2",
+      "role": "NEW_HOLDOUT",
+      "error_CAND_24h": 9.869,
+      "error_HYCOM_24h": 13.715,
+      "delta_24h": -3.845,
+      "sep_CAND_HYCOM_24h": 14.372,
+      "error_CAND_48h": 23.619,
+      "error_HYCOM_48h": 22.376,
+      "delta_48h": 1.243,
+      "sep_CAND_HYCOM_48h": 34.112,
+      "error_CAND_72h": 38.169,
+      "error_HYCOM_72h": 24.061,
+      "delta_72h": 14.108,
+      "sep_CAND_HYCOM_72h": 34.452,
+      "endpoint_CAND_72h": 75.326,
+      "path_CAND": 77.891,
+      "endpoint_HYCOM_72h": 46.139,
+      "path_HYCOM": 60.326,
+      "observed_72h": 39.392
+    },
+    {
+      "drifter_id": "47591",
+      "unit": "KE-X3",
+      "role": "NEW_HOLDOUT",
+      "error_CAND_24h": 8.523,
+      "error_HYCOM_24h": 15.81,
+      "delta_24h": -7.287,
+      "sep_CAND_HYCOM_24h": 18.661,
+      "error_CAND_48h": 32.237,
+      "error_HYCOM_48h": 41.797,
+      "delta_48h": -9.56,
+      "sep_CAND_HYCOM_48h": 29.193,
+      "error_CAND_72h": 33.657,
+      "error_HYCOM_72h": 34.081,
+      "delta_72h": -0.424,
+      "sep_CAND_HYCOM_72h": 32.693,
+      "endpoint_CAND_72h": 46.557,
+      "path_CAND": 47.994,
+      "endpoint_HYCOM_72h": 75.515,
+      "path_HYCOM": 79.953,
+      "observed_72h": 53.678
+    }
+  ],
+  "summary": {
+    "ruleId": "expanded-holdout-and-temporal-forcing-step32",
+    "phase": "B6/B7",
+    "status": "STEP32_VALIDATION_EVALUATED",
+    "comparison": "CANDIDATE (GLORYS12V1 15.810070 m + WW3 Stokes x 1.0 + NCEP-R2, alpha 0.002) vs BASELINE (HYCOM GOFS 3.1 15.000 m 3-hourly + NCEP-R2, alpha 0.002) on the expanded independent holdout",
+    "deltaDefinition": "error_candidate - error_HYCOM (km); negative = candidate lower error",
+    "alpha": 0.002,
+    "candidateDepthMeters": 15.81007,
+    "baselineDepthMeters": 15.0,
+    "stokesCoefficient": 1.0,
+    "tieToleranceKm": 1e-06,
+    "labelRule": {
+      "scope": "overall stratum",
+      "primaryHorizonHours": 72,
+      "consistencyFraction": 0.6666666666666666,
+      "A": "CANDIDATE_DESCRIPTIVELY_FAVORED if median delta < -tie AND wins/(wins+losses) >= 2/3",
+      "B": "HYCOM_DESCRIPTIVELY_FAVORED if median delta > +tie AND losses/(wins+losses) >= 2/3",
+      "C": "NO_CLEAR_DESCRIPTIVE_DIFFERENCE otherwise",
+      "labels": [
+        "CANDIDATE_DESCRIPTIVELY_FAVORED",
+        "HYCOM_DESCRIPTIVELY_FAVORED",
+        "NO_CLEAR_DESCRIPTIVE_DIFFERENCE"
+      ],
+      "newThreshold": false,
+      "operationalSuperiorityClaim": false
+    },
+    "strata": {
+      "CALIBRATION": {
+        "source": "docs/research/step30a-final-candidate-summary.json (frozen; copied, not recomputed)",
+        "sha256": "faaf891fa7c5308db70f97add419d370efa7346ee560c30e307ac33d0a01c504",
+        "n_drifters": 23,
+        "windows": [
+          "KE-1",
+          "KE-2",
+          "AG-1",
+          "AG-2"
+        ],
+        "24h": {
+          "n": 23,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 23,
+            "median": 25.469,
+            "mean": 35.566,
+            "min": 2.639,
+            "max": 129.183
+          },
+          "error_HYCOM": {
+            "n": 23,
+            "median": 25.126,
+            "mean": 37.624,
+            "min": 1.487,
+            "max": 144.38
+          },
+          "delta": {
+            "n": 23,
+            "median": 3.587,
+            "mean": -2.058,
+            "min": -91.396,
+            "max": 65.633
+          },
+          "wins_candidate": 10,
+          "losses_candidate": 13,
+          "ties": 0
+        },
+        "48h": {
+          "n": 22,
+          "notAvailable": 1,
+          "error_candidate": {
+            "n": 22,
+            "median": 47.669,
+            "mean": 70.722,
+            "min": 5.273,
+            "max": 281.682
+          },
+          "error_HYCOM": {
+            "n": 22,
+            "median": 38.031,
+            "mean": 61.121,
+            "min": 5.112,
+            "max": 238.223
+          },
+          "delta": {
+            "n": 22,
+            "median": 3.761,
+            "mean": 9.601,
+            "min": -110.597,
+            "max": 142.413
+          },
+          "wins_candidate": 9,
+          "losses_candidate": 13,
+          "ties": 0
+        },
+        "72h": {
+          "n": 21,
+          "notAvailable": 2,
+          "error_candidate": {
+            "n": 21,
+            "median": 57.069,
+            "mean": 97.139,
+            "min": 12.056,
+            "max": 408.388
+          },
+          "error_HYCOM": {
+            "n": 21,
+            "median": 59.055,
+            "mean": 98.434,
+            "min": 16.207,
+            "max": 323.38
+          },
+          "delta": {
+            "n": 21,
+            "median": -4.244,
+            "mean": -1.296,
+            "min": -171.894,
+            "max": 232.861
+          },
+          "wins_candidate": 13,
+          "losses_candidate": 8,
+          "ties": 0
+        },
+        "label72h": "NO_CLEAR_DESCRIPTIVE_DIFFERENCE"
+      },
+      "NEW_HOLDOUT": {
+        "n_drifters": 10,
+        "windows": [
+          "KE-X1",
+          "KE-X2",
+          "KE-X3"
+        ],
+        "24h": {
+          "n": 10,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 10,
+            "median": 17.662,
+            "mean": 17.927,
+            "min": 4.607,
+            "max": 47.034
+          },
+          "error_HYCOM": {
+            "n": 10,
+            "median": 15.148,
+            "mean": 25.215,
+            "min": 9.397,
+            "max": 66.335
+          },
+          "delta": {
+            "n": 10,
+            "median": -5.566,
+            "mean": -7.288,
+            "min": -40.463,
+            "max": 37.637
+          },
+          "wins_candidate": 6,
+          "losses_candidate": 4,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 10,
+            "k": 4,
+            "p_nominal": 0.753906,
+            "reported": true,
+            "role": "descriptive context only; drifters within a window are clustered; not the decision rule"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 10,
+            "median": 24.174,
+            "mean": 30.774,
+            "min": 5.016,
+            "max": 82.222
+          },
+          "unpairedAvailability": {
+            "candidate": 10,
+            "HYCOM": 10
+          }
+        },
+        "48h": {
+          "n": 10,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 10,
+            "median": 35.089,
+            "mean": 38.039,
+            "min": 10.813,
+            "max": 87.795
+          },
+          "error_HYCOM": {
+            "n": 10,
+            "median": 43.787,
+            "mean": 51.802,
+            "min": 22.376,
+            "max": 95.484
+          },
+          "delta": {
+            "n": 10,
+            "median": -15.208,
+            "mean": -13.763,
+            "min": -69.81,
+            "max": 42.018
+          },
+          "wins_candidate": 6,
+          "losses_candidate": 4,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 10,
+            "k": 4,
+            "p_nominal": 0.753906,
+            "reported": true,
+            "role": "descriptive context only; drifters within a window are clustered; not the decision rule"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 10,
+            "median": 45.038,
+            "mean": 61.801,
+            "min": 27.592,
+            "max": 138.124
+          },
+          "unpairedAvailability": {
+            "candidate": 10,
+            "HYCOM": 10
+          }
+        },
+        "72h": {
+          "n": 10,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 10,
+            "median": 43.467,
+            "mean": 49.831,
+            "min": 18.379,
+            "max": 115.763
+          },
+          "error_HYCOM": {
+            "n": 10,
+            "median": 59.962,
+            "mean": 75.186,
+            "min": 24.061,
+            "max": 153.455
+          },
+          "delta": {
+            "n": 10,
+            "median": -15.056,
+            "mean": -25.355,
+            "min": -120.753,
+            "max": 27.767
+          },
+          "wins_candidate": 6,
+          "losses_candidate": 4,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 10,
+            "k": 4,
+            "p_nominal": 0.753906,
+            "reported": true,
+            "role": "descriptive context only; drifters within a window are clustered; not the decision rule"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 10,
+            "median": 64.481,
+            "mean": 79.274,
+            "min": 32.693,
+            "max": 147.252
+          },
+          "unpairedAvailability": {
+            "candidate": 10,
+            "HYCOM": 10
+          }
+        },
+        "M1_endpoint72h": {
+          "candidate": {
+            "n": 10,
+            "median": 65.583,
+            "mean": 78.354,
+            "min": 35.438,
+            "max": 213.871
+          },
+          "HYCOM": {
+            "n": 10,
+            "median": 60.039,
+            "mean": 80.718,
+            "min": 25.765,
+            "max": 206.961
+          }
+        },
+        "M2_totalPath": {
+          "candidate": {
+            "n": 10,
+            "median": 73.998,
+            "mean": 93.477,
+            "min": 36.856,
+            "max": 218.44
+          },
+          "HYCOM": {
+            "n": 10,
+            "median": 80.029,
+            "mean": 101.762,
+            "min": 44.466,
+            "max": 221.784
+          }
+        },
+        "M4_separation72h": {
+          "n": 10,
+          "median": 64.481,
+          "mean": 79.274,
+          "min": 32.693,
+          "max": 147.252
+        },
+        "M5_observed72h": {
+          "n": 10,
+          "median": 53.157,
+          "mean": 55.751,
+          "min": 8.575,
+          "max": 108.109
+        }
+      }
+    },
+    "perWindow": {
+      "KE-X1": {
+        "n_drifters": 8,
+        "windows": [
+          "KE-X1"
+        ],
+        "24h": {
+          "n": 8,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 8,
+            "median": 18.635,
+            "mean": 20.109,
+            "min": 4.607,
+            "max": 47.034
+          },
+          "error_HYCOM": {
+            "n": 8,
+            "median": 16.325,
+            "mean": 27.828,
+            "min": 9.397,
+            "max": 66.335
+          },
+          "delta": {
+            "n": 8,
+            "median": -4.313,
+            "mean": -7.719,
+            "min": -40.463,
+            "max": 37.637
+          },
+          "wins_candidate": 4,
+          "losses_candidate": 4,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 8,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 8,
+            "median": 26.627,
+            "mean": 34.339,
+            "min": 5.016,
+            "max": 82.222
+          },
+          "unpairedAvailability": {
+            "candidate": 8,
+            "HYCOM": 8
+          }
+        },
+        "48h": {
+          "n": 8,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 8,
+            "median": 42.103,
+            "mean": 40.567,
+            "min": 10.813,
+            "max": 87.795
+          },
+          "error_HYCOM": {
+            "n": 8,
+            "median": 47.958,
+            "mean": 56.731,
+            "min": 22.515,
+            "max": 95.484
+          },
+          "delta": {
+            "n": 8,
+            "median": -27.257,
+            "mean": -16.164,
+            "min": -69.81,
+            "max": 42.018
+          },
+          "wins_candidate": 5,
+          "losses_candidate": 3,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 8,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 8,
+            "median": 54.063,
+            "mean": 69.338,
+            "min": 27.592,
+            "max": 138.124
+          },
+          "unpairedAvailability": {
+            "candidate": 8,
+            "HYCOM": 8
+          }
+        },
+        "72h": {
+          "n": 8,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 8,
+            "median": 52.235,
+            "mean": 53.311,
+            "min": 18.379,
+            "max": 115.763
+          },
+          "error_HYCOM": {
+            "n": 8,
+            "median": 88.473,
+            "mean": 86.715,
+            "min": 32.177,
+            "max": 153.455
+          },
+          "delta": {
+            "n": 8,
+            "median": -35.67,
+            "mean": -33.404,
+            "min": -120.753,
+            "max": 27.767
+          },
+          "wins_candidate": 5,
+          "losses_candidate": 3,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 8,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 8,
+            "median": 77.351,
+            "mean": 90.699,
+            "min": 49.164,
+            "max": 147.252
+          },
+          "unpairedAvailability": {
+            "candidate": 8,
+            "HYCOM": 8
+          }
+        },
+        "M1_endpoint72h": {
+          "candidate": {
+            "n": 8,
+            "median": 65.583,
+            "mean": 82.708,
+            "min": 35.438,
+            "max": 213.871
+          },
+          "HYCOM": {
+            "n": 8,
+            "median": 60.039,
+            "mean": 85.69,
+            "min": 25.765,
+            "max": 206.961
+          }
+        },
+        "M2_totalPath": {
+          "candidate": {
+            "n": 8,
+            "median": 79.131,
+            "mean": 101.111,
+            "min": 36.856,
+            "max": 218.44
+          },
+          "HYCOM": {
+            "n": 8,
+            "median": 82.672,
+            "mean": 109.668,
+            "min": 44.466,
+            "max": 221.784
+          }
+        },
+        "M4_separation72h": {
+          "n": 8,
+          "median": 77.351,
+          "mean": 90.699,
+          "min": 49.164,
+          "max": 147.252
+        },
+        "M5_observed72h": {
+          "n": 8,
+          "median": 62.686,
+          "mean": 58.055,
+          "min": 8.575,
+          "max": 108.109
+        }
+      },
+      "KE-X2": {
+        "n_drifters": 1,
+        "windows": [
+          "KE-X2"
+        ],
+        "24h": {
+          "n": 1,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 1,
+            "median": 9.869,
+            "mean": 9.869,
+            "min": 9.869,
+            "max": 9.869
+          },
+          "error_HYCOM": {
+            "n": 1,
+            "median": 13.715,
+            "mean": 13.715,
+            "min": 13.715,
+            "max": 13.715
+          },
+          "delta": {
+            "n": 1,
+            "median": -3.845,
+            "mean": -3.845,
+            "min": -3.845,
+            "max": -3.845
+          },
+          "wins_candidate": 1,
+          "losses_candidate": 0,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 1,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 1,
+            "median": 14.372,
+            "mean": 14.372,
+            "min": 14.372,
+            "max": 14.372
+          },
+          "unpairedAvailability": {
+            "candidate": 1,
+            "HYCOM": 1
+          }
+        },
+        "48h": {
+          "n": 1,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 1,
+            "median": 23.619,
+            "mean": 23.619,
+            "min": 23.619,
+            "max": 23.619
+          },
+          "error_HYCOM": {
+            "n": 1,
+            "median": 22.376,
+            "mean": 22.376,
+            "min": 22.376,
+            "max": 22.376
+          },
+          "delta": {
+            "n": 1,
+            "median": 1.243,
+            "mean": 1.243,
+            "min": 1.243,
+            "max": 1.243
+          },
+          "wins_candidate": 0,
+          "losses_candidate": 1,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 1,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 1,
+            "median": 34.112,
+            "mean": 34.112,
+            "min": 34.112,
+            "max": 34.112
+          },
+          "unpairedAvailability": {
+            "candidate": 1,
+            "HYCOM": 1
+          }
+        },
+        "72h": {
+          "n": 1,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 1,
+            "median": 38.169,
+            "mean": 38.169,
+            "min": 38.169,
+            "max": 38.169
+          },
+          "error_HYCOM": {
+            "n": 1,
+            "median": 24.061,
+            "mean": 24.061,
+            "min": 24.061,
+            "max": 24.061
+          },
+          "delta": {
+            "n": 1,
+            "median": 14.108,
+            "mean": 14.108,
+            "min": 14.108,
+            "max": 14.108
+          },
+          "wins_candidate": 0,
+          "losses_candidate": 1,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 1,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 1,
+            "median": 34.452,
+            "mean": 34.452,
+            "min": 34.452,
+            "max": 34.452
+          },
+          "unpairedAvailability": {
+            "candidate": 1,
+            "HYCOM": 1
+          }
+        },
+        "M1_endpoint72h": {
+          "candidate": {
+            "n": 1,
+            "median": 75.326,
+            "mean": 75.326,
+            "min": 75.326,
+            "max": 75.326
+          },
+          "HYCOM": {
+            "n": 1,
+            "median": 46.139,
+            "mean": 46.139,
+            "min": 46.139,
+            "max": 46.139
+          }
+        },
+        "M2_totalPath": {
+          "candidate": {
+            "n": 1,
+            "median": 77.891,
+            "mean": 77.891,
+            "min": 77.891,
+            "max": 77.891
+          },
+          "HYCOM": {
+            "n": 1,
+            "median": 60.326,
+            "mean": 60.326,
+            "min": 60.326,
+            "max": 60.326
+          }
+        },
+        "M4_separation72h": {
+          "n": 1,
+          "median": 34.452,
+          "mean": 34.452,
+          "min": 34.452,
+          "max": 34.452
+        },
+        "M5_observed72h": {
+          "n": 1,
+          "median": 39.392,
+          "mean": 39.392,
+          "min": 39.392,
+          "max": 39.392
+        }
+      },
+      "KE-X3": {
+        "n_drifters": 1,
+        "windows": [
+          "KE-X3"
+        ],
+        "24h": {
+          "n": 1,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 1,
+            "median": 8.523,
+            "mean": 8.523,
+            "min": 8.523,
+            "max": 8.523
+          },
+          "error_HYCOM": {
+            "n": 1,
+            "median": 15.81,
+            "mean": 15.81,
+            "min": 15.81,
+            "max": 15.81
+          },
+          "delta": {
+            "n": 1,
+            "median": -7.287,
+            "mean": -7.287,
+            "min": -7.287,
+            "max": -7.287
+          },
+          "wins_candidate": 1,
+          "losses_candidate": 0,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 1,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 1,
+            "median": 18.661,
+            "mean": 18.661,
+            "min": 18.661,
+            "max": 18.661
+          },
+          "unpairedAvailability": {
+            "candidate": 1,
+            "HYCOM": 1
+          }
+        },
+        "48h": {
+          "n": 1,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 1,
+            "median": 32.237,
+            "mean": 32.237,
+            "min": 32.237,
+            "max": 32.237
+          },
+          "error_HYCOM": {
+            "n": 1,
+            "median": 41.797,
+            "mean": 41.797,
+            "min": 41.797,
+            "max": 41.797
+          },
+          "delta": {
+            "n": 1,
+            "median": -9.56,
+            "mean": -9.56,
+            "min": -9.56,
+            "max": -9.56
+          },
+          "wins_candidate": 1,
+          "losses_candidate": 0,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 1,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 1,
+            "median": 29.193,
+            "mean": 29.193,
+            "min": 29.193,
+            "max": 29.193
+          },
+          "unpairedAvailability": {
+            "candidate": 1,
+            "HYCOM": 1
+          }
+        },
+        "72h": {
+          "n": 1,
+          "notAvailable": 0,
+          "error_candidate": {
+            "n": 1,
+            "median": 33.657,
+            "mean": 33.657,
+            "min": 33.657,
+            "max": 33.657
+          },
+          "error_HYCOM": {
+            "n": 1,
+            "median": 34.081,
+            "mean": 34.081,
+            "min": 34.081,
+            "max": 34.081
+          },
+          "delta": {
+            "n": 1,
+            "median": -0.424,
+            "mean": -0.424,
+            "min": -0.424,
+            "max": -0.424
+          },
+          "wins_candidate": 1,
+          "losses_candidate": 0,
+          "ties": 0,
+          "winMeaning": "candidate (GLORYS + Stokes) lower error than HYCOM",
+          "signTest": {
+            "n": 1,
+            "reported": false,
+            "reason": "n < 10"
+          },
+          "M4_separation_candidate_HYCOM": {
+            "n": 1,
+            "median": 32.693,
+            "mean": 32.693,
+            "min": 32.693,
+            "max": 32.693
+          },
+          "unpairedAvailability": {
+            "candidate": 1,
+            "HYCOM": 1
+          }
+        },
+        "M1_endpoint72h": {
+          "candidate": {
+            "n": 1,
+            "median": 46.557,
+            "mean": 46.557,
+            "min": 46.557,
+            "max": 46.557
+          },
+          "HYCOM": {
+            "n": 1,
+            "median": 75.515,
+            "mean": 75.515,
+            "min": 75.515,
+            "max": 75.515
+          }
+        },
+        "M2_totalPath": {
+          "candidate": {
+            "n": 1,
+            "median": 47.994,
+            "mean": 47.994,
+            "min": 47.994,
+            "max": 47.994
+          },
+          "HYCOM": {
+            "n": 1,
+            "median": 79.953,
+            "mean": 79.953,
+            "min": 79.953,
+            "max": 79.953
+          }
+        },
+        "M4_separation72h": {
+          "n": 1,
+          "median": 32.693,
+          "mean": 32.693,
+          "min": 32.693,
+          "max": 32.693
+        },
+        "M5_observed72h": {
+          "n": 1,
+          "median": 53.678,
+          "mean": 53.678,
+          "min": 53.678,
+          "max": 53.678
+        }
+      }
+    },
+    "topCandidateErrors": {
+      "24h": [
+        {
+          "unit": "KE-X1",
+          "drifter_id": "39995",
+          "error_candidate": 47.034,
+          "error_HYCOM": 9.397,
+          "delta": 37.637
+        },
+        {
+          "unit": "KE-X1",
+          "drifter_id": "39996",
+          "error_candidate": 25.872,
+          "error_HYCOM": 66.335,
+          "delta": -40.463
+        },
+        {
+          "unit": "KE-X1",
+          "drifter_id": "39974",
+          "error_candidate": 23.273,
+          "error_HYCOM": 42.782,
+          "delta": -19.509
+        }
+      ],
+      "48h": [
+        {
+          "unit": "KE-X1",
+          "drifter_id": "39995",
+          "error_candidate": 87.795,
+          "error_HYCOM": 45.776,
+          "delta": 42.018
+        },
+        {
+          "unit": "KE-X1",
+          "drifter_id": "39996",
+          "error_candidate": 51.47,
+          "error_HYCOM": 91.796,
+          "delta": -40.326
+        },
+        {
+          "unit": "KE-X1",
+          "drifter_id": "39974",
+          "error_candidate": 49.218,
+          "error_HYCOM": 82.876,
+          "delta": -33.658
+        }
+      ],
+      "72h": [
+        {
+          "unit": "KE-X1",
+          "drifter_id": "39995",
+          "error_candidate": 115.763,
+          "error_HYCOM": 105.09,
+          "delta": 10.674
+        },
+        {
+          "unit": "KE-X1",
+          "drifter_id": "39974",
+          "error_candidate": 68.237,
+          "error_HYCOM": 109.889,
+          "delta": -41.652
+        },
+        {
+          "unit": "KE-X1",
+          "drifter_id": "39994",
+          "error_candidate": 60.975,
+          "error_HYCOM": 33.208,
+          "delta": 27.767
+        }
+      ]
+    },
+    "primaryNewHoldout72h": {
+      "n": 10,
+      "notAvailable": 0,
+      "candidate_median": 43.467,
+      "HYCOM_median": 59.962,
+      "delta_median": -15.056,
+      "delta_mean": -25.355,
+      "wins_candidate": 6,
+      "losses_candidate": 4,
+      "ties": 0,
+      "consistency_candidate": 0.6
+    },
+    "descriptiveLabel": {
+      "NEW_HOLDOUT_72h": "NO_CLEAR_DESCRIPTIVE_DIFFERENCE",
+      "CALIBRATION_72h_frozenStep30A": "NO_CLEAR_DESCRIPTIVE_DIFFERENCE",
+      "perWindow72h": {
+        "KE-X1": "NO_CLEAR_DESCRIPTIVE_DIFFERENCE",
+        "KE-X2": "HYCOM_DESCRIPTIVELY_FAVORED",
+        "KE-X3": "CANDIDATE_DESCRIPTIVELY_FAVORED"
+      }
+    },
+    "oldHoldoutIncluded": false,
+    "excludedHistoricalHoldout": [
+      "KE-H1",
+      "KE-H2",
+      "KE-H3"
+    ],
+    "blockedRuns": [
+      {
+        "runId": "step32-A-alpha0.002-KE-X4",
+        "window": "KE-X4",
+        "condition": "A",
+        "status": "WINDOW_BLOCKED",
+        "error": "WINDOW_BLOCKED: KE-X4 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-09T12:00:00Z'])"
+      },
+      {
+        "runId": "step32-A-alpha0.002-KE-X5",
+        "window": "KE-X5",
+        "condition": "A",
+        "status": "WINDOW_BLOCKED",
+        "error": "WINDOW_BLOCKED: KE-X5 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z'])"
+      },
+      {
+        "runId": "step32-A-alpha0.002-KE-X6",
+        "window": "KE-X6",
+        "condition": "A",
+        "status": "WINDOW_BLOCKED",
+        "error": "WINDOW_BLOCKED: KE-X6 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z', '2011-06-20T12:00:00Z'])"
+      },
+      {
+        "runId": "step32-A-alpha0.002-KE-X7",
+        "window": "KE-X7",
+        "condition": "A",
+        "status": "WINDOW_BLOCKED",
+        "error": "WINDOW_BLOCKED: KE-X7 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-20T12:00:00Z', '2011-06-22T12:00:00Z'])"
+      },
+      {
+        "runId": "step32-A-alpha0.002-KE-X8",
+        "window": "KE-X8",
+        "condition": "A",
+        "status": "WINDOW_BLOCKED",
+        "error": "WINDOW_BLOCKED: KE-X8 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-22T12:00:00Z', '2011-06-26T18:00:00Z'])"
+      },
+      {
+        "runId": "step32-C-alpha0.002-KE-X4",
+        "window": "KE-X4",
+        "condition": "C",
+        "status": "WINDOW_BLOCKED",
+        "error": "WINDOW_BLOCKED: KE-X4 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-09T12:00:00Z'])"
+      },
+      {
+        "runId": "step32-C-alpha0.002-KE-X5",
+        "window": "KE-X5",
+        "condition": "C",
+        "status": "WINDOW_BLOCKED",
+        "error": "WINDOW_BLOCKED: KE-X5 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z'])"
+      },
+      {
+        "runId": "step32-C-alpha0.002-KE-X6",
+        "window": "KE-X6",
+        "condition": "C",
+        "status": "WINDOW_BLOCKED",
+        "error": "WINDOW_BLOCKED: KE-X6 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-15T00:00:00Z', '2011-06-20T12:00:00Z'])"
+      },
+      {
+        "runId": "step32-C-alpha0.002-KE-X7",
+        "window": "KE-X7",
+        "condition": "C",
+        "status": "WINDOW_BLOCKED",
+        "error": "WINDOW_BLOCKED: KE-X7 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-20T12:00:00Z', '2011-06-22T12:00:00Z'])"
+      },
+      {
+        "runId": "step32-C-alpha0.002-KE-X8",
+        "window": "KE-X8",
+        "condition": "C",
+        "status": "WINDOW_BLOCKED",
+        "error": "WINDOW_BLOCKED: KE-X8 HYCOM source WINDOW_BLOCKED (missing registered frames: ['2011-06-22T12:00:00Z', '2011-06-26T18:00:00Z'])"
+      }
+    ],
+    "blockedWindows": [
+      "KE-X4",
+      "KE-X5",
+      "KE-X6",
+      "KE-X7",
+      "KE-X8"
+    ],
+    "evaluableWindows": [
+      "KE-X1",
+      "KE-X2",
+      "KE-X3"
+    ],
+    "registeredWindows": [
+      "KE-X1",
+      "KE-X2",
+      "KE-X3",
+      "KE-X4",
+      "KE-X5",
+      "KE-X6",
+      "KE-X7",
+      "KE-X8"
+    ],
+    "blockedReason": "registered data-availability rule: mandatory HYCOM 3-hourly source frame absent from expt_53.X (WINDOW_BLOCKED); no replacement",
+    "belowPreregisteredMinimum": {
+      "drifters": true,
+      "windows": true,
+      "minimum": "20 drifters / 6 windows (Phase A)"
+    },
+    "clustering": "Drifters sharing a window, forcing period and release time are clustered; they are not independent samples. Per-window structure is reported; pooled counts are descriptive only. Calibration and new holdout are reported separately and are never merged into one unqualified claim.",
+    "outlierPolicyApplied": {
+      "removed": 0,
+      "trimmed": 0,
+      "winsorized": 0,
+      "weighted": 0,
+      "deleted": 0,
+      "postHocExclusions": 0
+    },
+    "parameterSelection": "NONE",
+    "modelSelection": "NONE",
+    "candidateStatus": "CANDIDATE_ONLY",
+    "baselineStatus": "FROZEN_REFERENCE_BASELINE",
+    "interpretation": "DESCRIPTIVE ONLY",
+    "statements": [
+      "5 of 8 registered windows are WINDOW_BLOCKED (missing HYCOM source frames); NEW_HOLDOUT evaluated on 3 windows / 10 drifters, below the Phase A minimum of 6 windows / 20 drifters; no window was replaced.",
+      "NEW_HOLDOUT 72 h: candidate median 43.467 km, HYCOM median 59.962 km, paired median delta -15.056 km, W/L/T 6/4/0, label NO_CLEAR_DESCRIPTIVE_DIFFERENCE under the locked STEP 30A rule.",
+      "CALIBRATION (frozen STEP 30A, 23 drifters) 72 h: median delta -4.244 km, W/L/T 13/8/0, label NO_CLEAR_DESCRIPTIVE_DIFFERENCE; not recomputed.",
+      "STEP 32 selects no model; the candidate remains CANDIDATE_ONLY and HYCOM the FROZEN_REFERENCE_BASELINE regardless of this result.",
+      "Drifters within one window are clustered; no statistical significance, generalization, operational or causal claim is made."
+    ]
+  },
+  "tableSha256": "3943ec171b7d709a5fc925c0078f1804e85552066f5aa61f258e5ac72bd95107",
+  "summarySha256": "9a1828dd305ee11fade0ae20fd0daaaec3f0ff1279440b1af60b830dc1c01244"
+}

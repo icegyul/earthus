@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "expanded-validation-preregistration-step35",
+  "t0": "2010-01-01T00:00:00Z",
+  "t1": "2015-12-31T21:00:00Z",
+  "timezone": "UTC",
+  "lockedAtUTC": "2026-09-07T01:01:18Z",
+  "chosenBeforeAvailabilityCheck": true,
+  "chosenFromPerformance": false,
+  "selectionRationale": "The least selective admissible period: the union of every calendar year in which the STEP 16 selection audit contains eligible windows in any registered region (KE 2010-2011, GS 2010-2014, BM 2013-2014, AG 2015), clipped to HYCOM expt_53.X coverage (ends 2015-12). No sub-period is preferred; availability is examined only after this lock and the period is never changed afterwards.",
+  "source": {
+    "identifier": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X",
+    "product": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+    "experiment": "expt_53.X",
+    "endpoint": "https://ncss.hycom.org/thredds (NCSS dataset.xml + OPeNDAP time axis for the inventory; NCSS grid subset for Phase B)",
+    "version": "GOFS 3.1 GLBv0.08 expt_53.X, STEP 17 identity",
+    "variablesForPhaseB": [
+      "water_u",
+      "water_v"
+    ],
+    "vertCoord": 15
+  },
+  "protocolSha256": "7c3cc487568c1a063790e17fdae11ffe712047d78ea4761719bf6df7e7142f2f"
+}

@@ -1,0 +1,88 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "expanded-holdout-and-temporal-forcing-step32",
+  "kind": "candidate",
+  "runManifestSha256": "e96c4dbdb2b4901e7d766d87729bded031112ca009cd2f8ce6a6a65fcc399ddf",
+  "replayTool": {
+    "file": "tools/research/replay_step32_run_r3.py",
+    "sha256": "865c69be8f45eaace1bdd6defaedb485fd5d570a1c17a731576d0c05b2e9e6f3"
+  },
+  "replays": [
+    {
+      "runId": "step32-C-alpha0.002-KE-X1",
+      "windowId": "KE-X1",
+      "condition": "C",
+      "resultArraySha256": "e0f62218ab5e5f849138de4fad2802b097e547c0f1eaa58cb29566926ac29616",
+      "replayResultSha256": "e0f62218ab5e5f849138de4fad2802b097e547c0f1eaa58cb29566926ac29616",
+      "trajectoriesSha256": "41f03dba73777334be071fd3306ec29fb2d5c42edfab6f010a598a8bb7da5625",
+      "matched": true
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X2",
+      "windowId": "KE-X2",
+      "condition": "C",
+      "resultArraySha256": "52e9395a7df27d8dd6f981d22f5b6da845c64b2ea89808d0427153f8c8ae6d1d",
+      "replayResultSha256": "52e9395a7df27d8dd6f981d22f5b6da845c64b2ea89808d0427153f8c8ae6d1d",
+      "trajectoriesSha256": "eda1c2256b9f34130e17f37e5fcef6fa0a77f2c22d7ba823db02697fbf9766eb",
+      "matched": true
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X3",
+      "windowId": "KE-X3",
+      "condition": "C",
+      "resultArraySha256": "5d4eeb144f3299b130f1badfe96c5035954657734e65d010bc1cc06494746f12",
+      "replayResultSha256": "5d4eeb144f3299b130f1badfe96c5035954657734e65d010bc1cc06494746f12",
+      "trajectoriesSha256": "05d70152191a6c3359bd07eae86b6c5222c321437cadef7e68f6eb0487fb1d22",
+      "matched": true
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X4",
+      "windowId": "KE-X4",
+      "condition": "C",
+      "resultArraySha256": null,
+      "replayResultSha256": null,
+      "trajectoriesSha256": null,
+      "matched": false
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X5",
+      "windowId": "KE-X5",
+      "condition": "C",
+      "resultArraySha256": null,
+      "replayResultSha256": null,
+      "trajectoriesSha256": null,
+      "matched": false
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X6",
+      "windowId": "KE-X6",
+      "condition": "C",
+      "resultArraySha256": null,
+      "replayResultSha256": null,
+      "trajectoriesSha256": null,
+      "matched": false
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X7",
+      "windowId": "KE-X7",
+      "condition": "C",
+      "resultArraySha256": null,
+      "replayResultSha256": null,
+      "trajectoriesSha256": null,
+      "matched": false
+    },
+    {
+      "runId": "step32-C-alpha0.002-KE-X8",
+      "windowId": "KE-X8",
+      "condition": "C",
+      "resultArraySha256": null,
+      "replayResultSha256": null,
+      "trajectoriesSha256": null,
+      "matched": false
+    }
+  ],
+  "matchedCount": 3,
+  "total": 8,
+  "allMatched": true,
+  "blockedCount": 5
+}

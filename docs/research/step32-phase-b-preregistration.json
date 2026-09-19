@@ -1,0 +1,160 @@
+{
+  "schemaVersion": "1.0",
+  "status": "PREREGISTRATION LOCKED",
+  "ruleId": "expanded-holdout-and-temporal-forcing-step32",
+  "phase": "B",
+  "createdAtUTC": "2026-09-06T23:42:57Z",
+  "phaseALock": "ee64354d",
+  "gitCommitAtDesign": "ee64354d",
+  "phaseAPreregistrationSha256": "732ca966b6227fb5447b99bb2a06f59a38fdc7f2d1ffd9a5d4a5097bc175c971",
+  "experimentMatrixSha256": "b3d1b6fe985dbe5f86b61ec6e6c5fc9ca83572054c0eadd2799040d94a3e70fb",
+  "holdoutDerivationSha256": "ab3d06de6582802462637b5e307e4bee9d39bbdfdb9d2b461b232335ab357e95",
+  "holdoutRuleSha256": "39baa85f1481db446841af0beef22f11aca9e53a33ffc693e1d0393b9f4738a8",
+  "lockNote": "The execution directive forbids automatic commits; this Phase B preregistration is a file-level lock (tool SHA-256 recorded before any acquisition or run). Every manifest records the tool SHA it was produced with; the end-of-phase validator checks every tool against this file.",
+  "order": [
+    "B1 acquire HYCOM source (tools/research/acquire_step32_forcing.py)",
+    "B2 quality gate (check_step32_forcing.py)",
+    "B3 build HYCOM daily fields (build_step32_daily.py)",
+    "B4 run A vs B (run_step32_temporal.py; step32_runs.py; replay_step32_run.py) and evaluate (evaluate_step32_temporal.py)",
+    "B5 independent re-execution into a separate directory; byte comparison",
+    "B6 candidate: acquire GLORYS/WW3 (acquire_step32_candidate_forcing.py), build composite (build_step32_candidate_forcing.py), run C (run_step32_temporal.py --conditions C)",
+    "B7 evaluate validation (evaluate_step32_validation.py); validator (check_step32_execution.py)"
+  ],
+  "frozen": {
+    "alpha": 0.002,
+    "temporalDepthMeters": 15.0,
+    "candidateDepthMeters": 15.81007,
+    "stokesCoefficient": 1.0,
+    "baseline": "HYCOM GOFS 3.1 expt_53.X 0.08 deg 15.000 m 3-hourly + NCEP-R2 alpha 0.002 (= condition A)",
+    "candidate": "GLORYS12V1 15.810070 m + WW3 Stokes x 1.0 + NCEP-R2 alpha 0.002",
+    "conditionA": "HYCOM_NATIVE_3H",
+    "conditionB": "HYCOM_DAILY (8 x 3 h frames per UTC day, unweighted mean, label 00Z, missing frame = WINDOW_BLOCKED)",
+    "windowsAndDrifters": "locked step32-holdout-derivation.json (8 windows, 32 drifters); no change",
+    "segmentation": "STEP 20 B-3 (36 h split, union mask) only where a 25-frame dataset exceeds the runtime value limit; values untouched"
+  },
+  "hycomAcquisition": {
+    "service": "NCSS https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011",
+    "layouts": {
+      "window": "STEP 17 four-part layout t0..t0+72h (25 frames) = condition A source",
+      "days": "six UTC-day files 00..21Z (48 registered frames) = daily-mean source"
+    },
+    "crossCheck": "overlapping frames of both layouts must be bitwise equal (B2)",
+    "alternativeProduct": "NONE"
+  },
+  "candidateAcquisition": {
+    "glorys": "official Copernicus Marine toolbox in the STEP 25B isolated venv; login --check-credentials-valid exit code only; subset box = ocean box +-0.5 deg; t0-1d 00:00 .. end+1d 00:00; level 15.81 m",
+    "ww3": "WW3 GLOB-30M CFSR uss monthly files 2011-05, 2011-06 via IFREMER anonymous FTP (STEP 23 identity)",
+    "normalization": "glorys_reader_step25c.build_dataset (locked reader)",
+    "composite": "STEP 29 TEST-06 treatment construction applied unchanged"
+  },
+  "metrics": {
+    "temporal": {
+      "delta": "E_HYCOM_DAILY - E_HYCOM_NATIVE_3H",
+      "labels": [
+        "NATIVE_3H_DESCRIPTIVELY_FAVORED",
+        "DAILY_DESCRIPTIVELY_FAVORED",
+        "NO_CLEAR_TEMPORAL_DIFFERENCE"
+      ],
+      "rule": "STEP 30A-form: overall 72 h median sign + 2/3 consistency"
+    },
+    "validation": {
+      "delta": "E_candidate - E_HYCOM",
+      "labels": [
+        "CANDIDATE_DESCRIPTIVELY_FAVORED",
+        "HYCOM_DESCRIPTIVELY_FAVORED",
+        "NO_CLEAR_DESCRIPTIVE_DIFFERENCE"
+      ],
+      "rule": "locked STEP 30A interpretationRule",
+      "strata": [
+        "CALIBRATION (frozen STEP 30A, copied)",
+        "NEW_HOLDOUT (computed)"
+      ],
+      "oldHoldoutIncluded": false
+    }
+  },
+  "tools": {
+    "tools/research/acquire_step32_forcing_r2.py": "ee2c2d32dd7ebba6dbedd0a37e1d3426fa0ec2a29a763ce173841ff318c15bc0",
+    "tools/research/check_step32_forcing.py": "f955e452ad5d11576c92b58488e10e27b6ad7cc79e1352e20796f2f5ea19cd2c",
+    "tools/research/build_step32_daily.py": "85673c814255157ff7ddd12514a908fbd0d6819c2aa9286b62cc42666e3b0d23",
+    "tools/research/step32_runs_r3.py": "68772223043d16e57ac43f4e51d7cc90899f563faa4cefdcc59c4476136b6d41",
+    "tools/research/run_step32_temporal_r3.py": "d28cb9d5d49862e81fc0d68e500a379553554ee60abbc15ce046d807de58c868",
+    "tools/research/replay_step32_run_r3.py": "865c69be8f45eaace1bdd6defaedb485fd5d570a1c17a731576d0c05b2e9e6f3",
+    "tools/research/evaluate_step32_temporal_r2.py": "0f3230ea0e1466badc7f7a3ded740d260c4a0450793e6de1020a8e3c30f73a09",
+    "tools/research/acquire_step32_candidate_forcing_r2.py": "7fcd9df8fdcb66304dae5d66bcb880e9b685da5ad9439b6b3e5e02a2cd2bf113",
+    "tools/research/build_step32_candidate_forcing.py": "2917101dff6986ff65f34826e8caadf8a26d72ffbe2f2da8c44e4638ac7ab4e4",
+    "tools/research/evaluate_step32_validation_r2.py": "16a8d410b6e556bade21709e7b19ed883eeb04fb4e40f6550fc50090e60f3b37",
+    "tools/research/check_step32_execution_r4.py": "5577def46894b44021dc69725d462e5e054fc8e47b375a3238ed326eedadf93b"
+  },
+  "reusedTools": {
+    "tools/research/acquire_step17_forcing.py": "040da01c4ed53af6944a8c18485900d9fad1ef273523446d10d118425daca975",
+    "tools/research/build_step20_chunked_forcing.py": "973d8527dd1c2dfb2b2aecde4061ceb8a0be8befd73551d5a5d00b1e753be9e1",
+    "tools/research/step20_segmented.py": "8f451b420ef2618552ca588836d97d9f1a893e71eea16a5d3d6041c206341d0c",
+    "tools/research/run_step18b_model.py": "8fb69ffa5b4e2056d5153aaeeba47682ab1326037bb01e809cfb866d12a9633b",
+    "tools/research/glorys_reader_step25c.py": "11b7d987434a55a9e42a9776e851fad49b8ec65d2df0f23130c7a7e6234ab63e",
+    "tools/research/acquire_step23.py": "e302c5d2fabb2674442a6f02efd5858e74604696583dbcce2cb1523c1d2b9809",
+    "tools/research/build_step29_forcing.py": "2ba5bbb46caf6f4439da871fbaec0ca186a6268125aff172494a854f2fd97298",
+    "tools/research/check_step32_preregistration.py": "9b141c083611a9a78695ab78e758d4e0953aa82b48125cdcf9ab7ce977e61cad",
+    "tools/research/derive_step32_holdout.py": "6c1e1aac44e3cb0489131329b26afd5c84f32d01dc5969a844a3906f1a9a023e"
+  },
+  "inputs": {
+    "step18bPreregistrationSha256": "02935e81e9c93690078ff96231c74ad51c86dfaffa89bfa17a2e2ba082306316",
+    "step29LicenseStatusSha256": "8a8640ac534c1fb9b8551a4a1e777f8a96d6f6c271d896246ed13b8cf93cb24b",
+    "step30aSummarySha256": "faaf891fa7c5308db70f97add419d370efa7346ee560c30e307ac33d0a01c504",
+    "step30aRuleSha256": "9251be51fc3fc8cc3a3b9570a0b3902c01e653754389da55852bdd4e83ab803d",
+    "observationSha256": "22c0ecffc926d04f02ff2ed57be1bd2cc76c1c9048ac2d77a30a63c3bb2c0841"
+  },
+  "outputs": [
+    "docs/research/step32-forcing-acquisition-manifest.json",
+    "docs/research/step32-forcing-quality.json",
+    "docs/research/step32-daily-derivation-manifest.json",
+    "docs/research/step32-temporal-run-manifest.json",
+    "docs/research/step32-temporal-replay-manifest.json",
+    "docs/research/step32-temporal-paired-table.csv",
+    "docs/research/step32-temporal-evaluation.json",
+    "docs/research/step32-temporal-summary.json",
+    "docs/research/step32-candidate-acquisition-manifest.json",
+    "docs/research/step32-candidate-forcing-manifest.json",
+    "docs/research/step32-candidate-run-manifest.json",
+    "docs/research/step32-candidate-replay-manifest.json",
+    "docs/research/step32-validation-paired-table.csv",
+    "docs/research/step32-validation-evaluation.json",
+    "docs/research/step32-validation-summary.json"
+  ],
+  "forbidden": [
+    "preregistration change",
+    "holdout re-selection",
+    "drifter add/remove",
+    "window replacement",
+    "old holdout reuse",
+    "alpha/depth/timestep/RK4/interpolation/release/grid change",
+    "forcing or candidate or baseline change",
+    "performance-based parameter or model selection",
+    "missing-frame interpolation or reconstruction",
+    "alternative ocean product",
+    "performance files in derivation/acquisition",
+    "locked-file modification"
+  ],
+  "modelSelectionInPhaseB": false,
+  "expectedOutcome": "NONE DECLARED",
+  "supersededTools": {
+    "tools/research/acquire_step32_forcing.py": "bedb6d9628ee8f0cdb8b79333b1783cc611fd19e40845a39510c063417fb938a",
+    "tools/research/check_step32_forcing.py": "f955e452ad5d11576c92b58488e10e27b6ad7cc79e1352e20796f2f5ea19cd2c",
+    "tools/research/build_step32_daily.py": "85673c814255157ff7ddd12514a908fbd0d6819c2aa9286b62cc42666e3b0d23",
+    "tools/research/step32_runs.py": "241a8a41a12fb41a4f23f57c14f0a9c886d2d80899a0dbedbbfdca4ca7916e6f",
+    "tools/research/run_step32_temporal.py": "d64ea4dc64616cd2d101413d080c06c06a6c5804d10f70562d8e38fb0a3088d4",
+    "tools/research/replay_step32_run.py": "9ddcdbb38e6da1ae4827d02134289010ed15a823705c1f77f9dfb1d92d521c92",
+    "tools/research/evaluate_step32_temporal.py": "4b044acde0a154ce3393b6a69e1065d4d240f71a24ae4acdd0b7e1b8b28489e2",
+    "tools/research/acquire_step32_candidate_forcing.py": "dee6f80aca336bd842aa5d674a8b4ff14c1d1af87de1d95a51fa5223abf55276",
+    "tools/research/build_step32_candidate_forcing.py": "2917101dff6986ff65f34826e8caadf8a26d72ffbe2f2da8c44e4638ac7ab4e4",
+    "tools/research/evaluate_step32_validation.py": "156aad4877eeb516233805ff33e27368bdee33f18ee9b0ab868805fabd934c7d",
+    "tools/research/check_step32_execution.py": "736475b449b2067f110d2437d205aa51a11eb67422a87e107ede27ca904a302c",
+    "tools/research/step32_runs_r2.py": "91cd1fdbb0a2404dc2a0bbe660c1f5c1fc37dbfb58d158d712a4d480eadbb70b",
+    "tools/research/run_step32_temporal_r2.py": "812e04023ab621259209844e0331b3a646aff2e874e3858d2ba8ec97ce78835a",
+    "tools/research/replay_step32_run_r2.py": "3bf3dedb1067344876a2028860432b1037261511cba0e011cd35a27a9fbd6be2",
+    "tools/research/check_step32_execution_r2.py": "af80a978efb9dc39da826cfd4207b7170bd3dc90c8e82ea355b1b318d8c071d3",
+    "tools/research/check_step32_execution_r3.py": "1999b7be772b82060091f9e924193d00f33c3208415fc5b2bbe39431cb2199e7"
+  },
+  "revision": "r4",
+  "revisedAtUTC": "2026-09-07T00:05:44Z",
+  "revisionRecord": "docs/research/step32-phase-b-revisions.json"
+}

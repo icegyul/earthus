@@ -1,0 +1,159 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "expanded-holdout-and-temporal-forcing-step32",
+  "phase": "B",
+  "status": "REVISIONS r2, r3, r4 RECORDED (uncommitted; execution directive forbids automatic commits)",
+  "createdAtUTC": "2026-09-06T23:55:48Z",
+  "trigger": {
+    "event": "B1 r1 run (acquire_step32_forcing.py, SHA bedb6d9628ee8f0cdb8b79333b1783cc611fd19e40845a39510c063417fb938a)",
+    "observed": "HYCOM GOFS 3.1 expt_53.X 2011 is missing 3-hourly frames at 2011-06-09T12Z, 2011-06-15T00Z, 2011-06-20T12Z, 2011-06-22T12Z and 2011-06-26T18Z (absent from the NCSS response; source gap, not a transfer failure). KE-X4..KE-X8 therefore lack at least one registered frame. The locked STEP 20 B-3 chunker raised SystemExit for KE-X8 (t0 frame absent); r1 caught only Exception, so the process aborted before writing the acquisition manifest.",
+    "dataDownloaded": "all 96 requests completed; files kept and reused with SHA-256 (r2 stamps reused files with their download mtime)"
+  },
+  "decisions": {
+    "missingFrames": "registered rule applied: WINDOW_BLOCKED for every window with a missing registered frame (no interpolation, duplication, substitution, reconstruction, alternative product or window replacement); the block applies to the whole window (all conditions) because the Phase A window requirement is defined per window",
+    "evaluableSet": "KE-X1, KE-X2, KE-X3 (10 drifters) - below the Phase A minimum of 20 drifters / 6 windows; reported as such, not repaired",
+    "noParameterChange": true,
+    "noHoldoutChange": true
+  },
+  "revisions": [
+    {
+      "r1": "tools/research/acquire_step32_forcing.py",
+      "r2": "tools/research/acquire_step32_forcing_r2.py",
+      "change": "catch BaseException from the B-3 chunker -> FORCING_BLOCKED reason; reused-file retrieval timestamp = file mtime; r2 name in manifest"
+    },
+    {
+      "r1": "tools/research/step32_runs.py",
+      "r2": "tools/research/step32_runs_r2.py",
+      "change": "every condition of a window whose B2 status is not PASS raises WINDOW_BLOCKED"
+    },
+    {
+      "r1": "tools/research/run_step32_temporal.py",
+      "r2": "tools/research/run_step32_temporal_r2.py",
+      "change": "WINDOW_BLOCKED runs recorded (blockedRuns/blockedWindows/evaluableWindows) without failing the manifest; r2 module/replay names"
+    },
+    {
+      "r1": "tools/research/replay_step32_run.py",
+      "r2": "tools/research/replay_step32_run_r2.py",
+      "change": "imports step32_runs_r2"
+    },
+    {
+      "r1": "tools/research/evaluate_step32_temporal.py",
+      "r2": "tools/research/evaluate_step32_temporal_r2.py",
+      "change": "blocked windows excluded by the registered rule and listed; belowPreregisteredMinimum flags"
+    },
+    {
+      "r1": "tools/research/evaluate_step32_validation.py",
+      "r2": "tools/research/evaluate_step32_validation_r2.py",
+      "change": "same as temporal evaluator"
+    },
+    {
+      "r1": "tools/research/acquire_step32_candidate_forcing.py",
+      "r2": "tools/research/acquire_step32_candidate_forcing_r2.py",
+      "change": "windows blocked at B2 recorded WINDOW_BLOCKED and not acquired"
+    },
+    {
+      "r1": "tools/research/check_step32_execution.py",
+      "r2": "tools/research/check_step32_execution_r2.py",
+      "change": "blocked windows verified as blocked at every stage; counts over the evaluable set; r2 tool names; r1 tools verified unchanged"
+    }
+  ],
+  "unchanged": [
+    "tools/research/check_step32_forcing.py",
+    "tools/research/build_step32_daily.py",
+    "tools/research/build_step32_candidate_forcing.py"
+  ],
+  "r1Sha256": {
+    "tools/research/acquire_step32_forcing.py": "bedb6d9628ee8f0cdb8b79333b1783cc611fd19e40845a39510c063417fb938a",
+    "tools/research/check_step32_forcing.py": "f955e452ad5d11576c92b58488e10e27b6ad7cc79e1352e20796f2f5ea19cd2c",
+    "tools/research/build_step32_daily.py": "85673c814255157ff7ddd12514a908fbd0d6819c2aa9286b62cc42666e3b0d23",
+    "tools/research/step32_runs.py": "241a8a41a12fb41a4f23f57c14f0a9c886d2d80899a0dbedbbfdca4ca7916e6f",
+    "tools/research/run_step32_temporal.py": "d64ea4dc64616cd2d101413d080c06c06a6c5804d10f70562d8e38fb0a3088d4",
+    "tools/research/replay_step32_run.py": "9ddcdbb38e6da1ae4827d02134289010ed15a823705c1f77f9dfb1d92d521c92",
+    "tools/research/evaluate_step32_temporal.py": "4b044acde0a154ce3393b6a69e1065d4d240f71a24ae4acdd0b7e1b8b28489e2",
+    "tools/research/acquire_step32_candidate_forcing.py": "dee6f80aca336bd842aa5d674a8b4ff14c1d1af87de1d95a51fa5223abf55276",
+    "tools/research/build_step32_candidate_forcing.py": "2917101dff6986ff65f34826e8caadf8a26d72ffbe2f2da8c44e4638ac7ab4e4",
+    "tools/research/evaluate_step32_validation.py": "156aad4877eeb516233805ff33e27368bdee33f18ee9b0ab868805fabd934c7d",
+    "tools/research/check_step32_execution.py": "736475b449b2067f110d2437d205aa51a11eb67422a87e107ede27ca904a302c"
+  },
+  "r2Sha256": {
+    "tools/research/acquire_step32_forcing_r2.py": "ee2c2d32dd7ebba6dbedd0a37e1d3426fa0ec2a29a763ce173841ff318c15bc0",
+    "tools/research/check_step32_forcing.py": "f955e452ad5d11576c92b58488e10e27b6ad7cc79e1352e20796f2f5ea19cd2c",
+    "tools/research/build_step32_daily.py": "85673c814255157ff7ddd12514a908fbd0d6819c2aa9286b62cc42666e3b0d23",
+    "tools/research/step32_runs_r2.py": "91cd1fdbb0a2404dc2a0bbe660c1f5c1fc37dbfb58d158d712a4d480eadbb70b",
+    "tools/research/run_step32_temporal_r2.py": "812e04023ab621259209844e0331b3a646aff2e874e3858d2ba8ec97ce78835a",
+    "tools/research/replay_step32_run_r2.py": "3bf3dedb1067344876a2028860432b1037261511cba0e011cd35a27a9fbd6be2",
+    "tools/research/evaluate_step32_temporal_r2.py": "0f3230ea0e1466badc7f7a3ded740d260c4a0450793e6de1020a8e3c30f73a09",
+    "tools/research/acquire_step32_candidate_forcing_r2.py": "7fcd9df8fdcb66304dae5d66bcb880e9b685da5ad9439b6b3e5e02a2cd2bf113",
+    "tools/research/build_step32_candidate_forcing.py": "2917101dff6986ff65f34826e8caadf8a26d72ffbe2f2da8c44e4638ac7ab4e4",
+    "tools/research/evaluate_step32_validation_r2.py": "16a8d410b6e556bade21709e7b19ed883eeb04fb4e40f6550fc50090e60f3b37",
+    "tools/research/check_step32_execution_r2.py": "af80a978efb9dc39da826cfd4207b7170bd3dc90c8e82ea355b1b318d8c071d3"
+  },
+  "metricOrRuleChange": false,
+  "labelRuleChange": false,
+  "windowOrDrifterChange": false,
+  "r3": {
+    "createdAtUTC": "2026-09-06T23:58:01Z",
+    "trigger": "B4 r2 run: step32_runs_r2.inputs/run distinguished chunked datasets by isinstance(dict); a single validated dataset is itself a dict, so KE-X1 condition A (chunked) ran and replay-matched but the first non-chunked dataset raised KeyError('manifest') before any further run; the partial trajectories directory was deleted and B4 restarted from scratch with r3",
+    "revisions": [
+      {
+        "r2": "tools/research/step32_runs_r2.py",
+        "r3": "tools/research/step32_runs_r3.py",
+        "change": "chunked/single distinguished by the recorded chunked flag"
+      },
+      {
+        "r2": "tools/research/run_step32_temporal_r2.py",
+        "r3": "tools/research/run_step32_temporal_r3.py",
+        "change": "r3 module/replay names"
+      },
+      {
+        "r2": "tools/research/replay_step32_run_r2.py",
+        "r3": "tools/research/replay_step32_run_r3.py",
+        "change": "imports step32_runs_r3"
+      },
+      {
+        "r2": "tools/research/check_step32_execution_r2.py",
+        "r3": "tools/research/check_step32_execution_r3.py",
+        "change": "r3 names; r2 superseded tools verified unchanged"
+      }
+    ],
+    "r3Sha256": {
+      "tools/research/acquire_step32_forcing_r2.py": "ee2c2d32dd7ebba6dbedd0a37e1d3426fa0ec2a29a763ce173841ff318c15bc0",
+      "tools/research/check_step32_forcing.py": "f955e452ad5d11576c92b58488e10e27b6ad7cc79e1352e20796f2f5ea19cd2c",
+      "tools/research/build_step32_daily.py": "85673c814255157ff7ddd12514a908fbd0d6819c2aa9286b62cc42666e3b0d23",
+      "tools/research/step32_runs_r3.py": "68772223043d16e57ac43f4e51d7cc90899f563faa4cefdcc59c4476136b6d41",
+      "tools/research/run_step32_temporal_r3.py": "d28cb9d5d49862e81fc0d68e500a379553554ee60abbc15ce046d807de58c868",
+      "tools/research/replay_step32_run_r3.py": "865c69be8f45eaace1bdd6defaedb485fd5d570a1c17a731576d0c05b2e9e6f3",
+      "tools/research/evaluate_step32_temporal_r2.py": "0f3230ea0e1466badc7f7a3ded740d260c4a0450793e6de1020a8e3c30f73a09",
+      "tools/research/acquire_step32_candidate_forcing_r2.py": "7fcd9df8fdcb66304dae5d66bcb880e9b685da5ad9439b6b3e5e02a2cd2bf113",
+      "tools/research/build_step32_candidate_forcing.py": "2917101dff6986ff65f34826e8caadf8a26d72ffbe2f2da8c44e4638ac7ab4e4",
+      "tools/research/evaluate_step32_validation_r2.py": "16a8d410b6e556bade21709e7b19ed883eeb04fb4e40f6550fc50090e60f3b37",
+      "tools/research/check_step32_execution_r3.py": "1999b7be772b82060091f9e924193d00f33c3208415fc5b2bbe39431cb2199e7"
+    },
+    "metricOrRuleChange": false,
+    "windowOrDrifterChange": false
+  },
+  "phaseBPreregistrationHistory": {
+    "r1": "f1ab2039e762b31403992a36ce34fcc59fc89d023bf8f8f2f6257a7b6acad0de",
+    "r2": "ddd4badf5669d2ec7133f2e0ddce856aa75bb249522573852c8a04b594c33b18",
+    "r3": "a2883738a37cbe6d4a98ebd54f3f39e57e9736f6f6f6ca1f75357aa1ef5474e5",
+    "r4": "d7434d28d63e7a1e991fd512a2768fe2b1ee53b60ccffec271e668658d991701"
+  },
+  "r4": {
+    "createdAtUTC": "2026-09-07T00:05:44Z",
+    "trigger": "validator r3 FAIL: (1) the B1 acquisition manifest is bound to the r2-era Phase B preregistration SHA (correct provenance; the preregistration was revised to r3 afterwards) and r3 compared against the current SHA only; (2) r3 compared run drifter-ID lists in order, but runs release in sorted-ID order while the matrix lists derivation order (same set). Validator-side only; no output changed.",
+    "revisions": [
+      {
+        "r3": "tools/research/check_step32_execution_r3.py",
+        "r4": "tools/research/check_step32_execution_r4.py",
+        "change": "accept any recorded Phase B preregistration version; drifter IDs compared as sorted lists"
+      }
+    ],
+    "r4Sha256": "5577def46894b44021dc69725d462e5e054fc8e47b375a3238ed326eedadf93b"
+  },
+  "sideEffectDisclosed": {
+    "file": "docs/research/step23-acquisition/acquisition-log.jsonl",
+    "event": "the reused STEP 23 fetch helper appended one line (2011-05 WW3 download record) to the tracked STEP 23 acquisition log during B6 acquisition",
+    "action": "reverted to the committed content with git checkout (no history change); the download record lives in docs/research/step32-candidate-acquisition-manifest.json",
+    "revertedAtUTC": "2026-09-07T00:05:44Z"
+  }
+}

@@ -1,0 +1,9821 @@
+{
+  "schemaVersion": "1.0",
+  "ruleId": "expanded-validation-preregistration-step35",
+  "protocolSha256": "7c3cc487568c1a063790e17fdae11ffe712047d78ea4761719bf6df7e7142f2f",
+  "periodLockSha256": "c2f6e862704a52e39685c4c4e61931e276d4934492e6d2e8c49ad0642f6f2b92",
+  "periodLockedAtUTC": "2026-09-07T01:01:18Z",
+  "inventoryStartedAtUTC": "2026-09-07T01:01:19Z",
+  "tool": {
+    "file": "tools/research/inventory_step35_frames.py",
+    "sha256": "360712db55eb5a536fa4d0dfadd692bdadb3ff4a9832b50a5ff61ce492c0934e"
+  },
+  "source": {
+    "identifier": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X",
+    "product": "HYCOM GOFS 3.1 GLBv0.08 expt_53.X reanalysis",
+    "experiment": "expt_53.X",
+    "endpoint": "https://ncss.hycom.org/thredds (NCSS dataset.xml + OPeNDAP time axis for the inventory; NCSS grid subset for Phase B)",
+    "version": "GOFS 3.1 GLBv0.08 expt_53.X, STEP 17 identity",
+    "variablesForPhaseB": [
+      "water_u",
+      "water_v"
+    ],
+    "vertCoord": 15
+  },
+  "method": "time-axis metadata only: NCSS dataset.xml time <values> (primary) and OPeNDAP .ascii?time (cross-check); no velocity variable requested",
+  "velocityDownloaded": false,
+  "forcingDownloaded": false,
+  "years": {
+    "2010": {
+      "status": "OK",
+      "timeUnits": "hours since 2000-01-01 00:00:00",
+      "ncssValuesListed": true,
+      "frameCount": 2888,
+      "expectedFrames": 2920,
+      "first": "2010-01-01T00:00:00Z",
+      "last": "2010-12-31T21:00:00Z",
+      "crossCheckIdentical": true,
+      "ncssSha256": "4e297b92aa70de3789ca2f2d7ec15e99248ba845347f20cede69b4839540cdaa",
+      "opendapSha256": "b7c653b6039897b3697aa2edc3cdfd2198a99f1743bb48ffcb33ed2eb6248655"
+    },
+    "2011": {
+      "status": "OK",
+      "timeUnits": "hours since 2000-01-01 00:00:00",
+      "ncssValuesListed": true,
+      "frameCount": 2875,
+      "expectedFrames": 2920,
+      "first": "2011-01-01T03:00:00Z",
+      "last": "2011-12-31T21:00:00Z",
+      "crossCheckIdentical": true,
+      "ncssSha256": "1f5f4bf3d9edb882fcc8768b96a8a422100ef8482a41bc3090a7b850d1d2c82a",
+      "opendapSha256": "3e2ccae1b2e2e804ee2db8f70732193c1a3f4c4ccabc34fe2ce781978e8b085e"
+    },
+    "2012": {
+      "status": "OK",
+      "timeUnits": "hours since 2000-01-01 00:00:00",
+      "ncssValuesListed": true,
+      "frameCount": 2883,
+      "expectedFrames": 2928,
+      "first": "2012-01-01T00:00:00Z",
+      "last": "2012-12-31T21:00:00Z",
+      "crossCheckIdentical": true,
+      "ncssSha256": "82c135e2021c35941f448d5910fcf8fa7bdccbbfbfa5f75d12e1207b7808cce9",
+      "opendapSha256": "7e49d64c7925152727f06dc3f8dca79bd7b0a07fee1889c9c02b861dd3a53e4c"
+    },
+    "2013": {
+      "status": "OK",
+      "timeUnits": "hours since 2000-01-01 00:00:00",
+      "ncssValuesListed": true,
+      "frameCount": 2884,
+      "expectedFrames": 2920,
+      "first": "2013-01-01T00:00:00Z",
+      "last": "2013-12-31T21:00:00Z",
+      "crossCheckIdentical": true,
+      "ncssSha256": "844bbebe14ec34b78d4e76c3f7fe34132f96f08d4c8e8e991b2f6b8f97e70084",
+      "opendapSha256": "88e96185e7fcceb3e392dd4dfb97e6dd7c2bdf19c3f7b27345190ded9be9d3a6"
+    },
+    "2014": {
+      "status": "OK",
+      "timeUnits": "hours since 2000-01-01 00:00:00",
+      "ncssValuesListed": true,
+      "frameCount": 2857,
+      "expectedFrames": 2920,
+      "first": "2014-01-01T00:00:00Z",
+      "last": "2014-12-31T09:00:00Z",
+      "crossCheckIdentical": true,
+      "ncssSha256": "a887b07224617a2f211e2a6d7e35cb2ce581cf7b8880a3b6de82b3bb00790fcc",
+      "opendapSha256": "41e08872079fcb5f3feb9984d99d1fe44ddbf0ebdb63d6375310274124b7f1de"
+    },
+    "2015": {
+      "status": "OK",
+      "timeUnits": "hours since 2000-01-01 00:00:00",
+      "ncssValuesListed": true,
+      "frameCount": 2861,
+      "expectedFrames": 2920,
+      "first": "2015-01-01T12:00:00Z",
+      "last": "2015-12-31T09:00:00Z",
+      "crossCheckIdentical": true,
+      "ncssSha256": "678eae695116148c28fdf6856c4f1b0a0575ed44f36670df7f2a71a298fa2fe0",
+      "opendapSha256": "ce11abd49a261719da1a143d0a14117f87a1f34a1e0c0a87211cd0f5be708838"
+    }
+  },
+  "days": {
+    "2010-01-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-19": {
+      "complete": false,
+      "missing": [
+        "2010-01-19T18:00:00Z"
+      ]
+    },
+    "2010-01-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-01-30": {
+      "complete": false,
+      "missing": [
+        "2010-01-30T12:00:00Z"
+      ]
+    },
+    "2010-01-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-10": {
+      "complete": false,
+      "missing": [
+        "2010-02-10T12:00:00Z"
+      ]
+    },
+    "2010-02-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-19": {
+      "complete": false,
+      "missing": [
+        "2010-02-19T12:00:00Z"
+      ]
+    },
+    "2010-02-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-02-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-05": {
+      "complete": false,
+      "missing": [
+        "2010-03-05T00:00:00Z"
+      ]
+    },
+    "2010-03-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-17": {
+      "complete": false,
+      "missing": [
+        "2010-03-17T12:00:00Z"
+      ]
+    },
+    "2010-03-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-28": {
+      "complete": false,
+      "missing": [
+        "2010-03-28T12:00:00Z"
+      ]
+    },
+    "2010-03-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-03-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-05": {
+      "complete": false,
+      "missing": [
+        "2010-04-05T12:00:00Z"
+      ]
+    },
+    "2010-04-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-07": {
+      "complete": false,
+      "missing": [
+        "2010-04-07T12:00:00Z"
+      ]
+    },
+    "2010-04-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-04-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-11": {
+      "complete": false,
+      "missing": [
+        "2010-05-11T09:00:00Z"
+      ]
+    },
+    "2010-05-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-16": {
+      "complete": false,
+      "missing": [
+        "2010-05-16T12:00:00Z"
+      ]
+    },
+    "2010-05-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-18": {
+      "complete": false,
+      "missing": [
+        "2010-05-18T12:00:00Z"
+      ]
+    },
+    "2010-05-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-27": {
+      "complete": false,
+      "missing": [
+        "2010-05-27T12:00:00Z"
+      ]
+    },
+    "2010-05-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-05-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-20": {
+      "complete": false,
+      "missing": [
+        "2010-06-20T12:00:00Z"
+      ]
+    },
+    "2010-06-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-06-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-04": {
+      "complete": false,
+      "missing": [
+        "2010-07-04T12:00:00Z"
+      ]
+    },
+    "2010-07-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-06": {
+      "complete": false,
+      "missing": [
+        "2010-07-06T12:00:00Z"
+      ]
+    },
+    "2010-07-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-11": {
+      "complete": false,
+      "missing": [
+        "2010-07-11T12:00:00Z"
+      ]
+    },
+    "2010-07-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-13": {
+      "complete": false,
+      "missing": [
+        "2010-07-13T12:00:00Z"
+      ]
+    },
+    "2010-07-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-19": {
+      "complete": false,
+      "missing": [
+        "2010-07-19T12:00:00Z"
+      ]
+    },
+    "2010-07-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-23": {
+      "complete": false,
+      "missing": [
+        "2010-07-23T12:00:00Z"
+      ]
+    },
+    "2010-07-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-07-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-18": {
+      "complete": false,
+      "missing": [
+        "2010-08-18T12:00:00Z"
+      ]
+    },
+    "2010-08-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-20": {
+      "complete": false,
+      "missing": [
+        "2010-08-20T12:00:00Z"
+      ]
+    },
+    "2010-08-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-08-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-21": {
+      "complete": false,
+      "missing": [
+        "2010-09-21T09:00:00Z"
+      ]
+    },
+    "2010-09-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-09-29": {
+      "complete": false,
+      "missing": [
+        "2010-09-29T12:00:00Z"
+      ]
+    },
+    "2010-09-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-06": {
+      "complete": false,
+      "missing": [
+        "2010-10-06T12:00:00Z"
+      ]
+    },
+    "2010-10-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-08": {
+      "complete": false,
+      "missing": [
+        "2010-10-08T12:00:00Z"
+      ]
+    },
+    "2010-10-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-12": {
+      "complete": false,
+      "missing": [
+        "2010-10-12T12:00:00Z"
+      ]
+    },
+    "2010-10-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-14": {
+      "complete": false,
+      "missing": [
+        "2010-10-14T12:00:00Z"
+      ]
+    },
+    "2010-10-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-10-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-11-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-01": {
+      "complete": false,
+      "missing": [
+        "2010-12-01T12:00:00Z"
+      ]
+    },
+    "2010-12-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-15": {
+      "complete": false,
+      "missing": [
+        "2010-12-15T12:00:00Z"
+      ]
+    },
+    "2010-12-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-18": {
+      "complete": false,
+      "missing": [
+        "2010-12-18T12:00:00Z"
+      ]
+    },
+    "2010-12-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-22": {
+      "complete": false,
+      "missing": [
+        "2010-12-22T12:00:00Z"
+      ]
+    },
+    "2010-12-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2010-12-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-01": {
+      "complete": false,
+      "missing": [
+        "2011-01-01T00:00:00Z"
+      ]
+    },
+    "2011-01-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-01-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-12": {
+      "complete": false,
+      "missing": [
+        "2011-02-12T12:00:00Z"
+      ]
+    },
+    "2011-02-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-02-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-09": {
+      "complete": false,
+      "missing": [
+        "2011-03-09T12:00:00Z"
+      ]
+    },
+    "2011-03-10": {
+      "complete": false,
+      "missing": [
+        "2011-03-10T12:00:00Z"
+      ]
+    },
+    "2011-03-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-13": {
+      "complete": false,
+      "missing": [
+        "2011-03-13T12:00:00Z"
+      ]
+    },
+    "2011-03-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-15": {
+      "complete": false,
+      "missing": [
+        "2011-03-15T12:00:00Z"
+      ]
+    },
+    "2011-03-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-23": {
+      "complete": false,
+      "missing": [
+        "2011-03-23T12:00:00Z"
+      ]
+    },
+    "2011-03-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-03-30": {
+      "complete": false,
+      "missing": [
+        "2011-03-30T12:00:00Z"
+      ]
+    },
+    "2011-03-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-08": {
+      "complete": false,
+      "missing": [
+        "2011-04-08T12:00:00Z"
+      ]
+    },
+    "2011-04-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-04-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-19": {
+      "complete": false,
+      "missing": [
+        "2011-05-19T12:00:00Z"
+      ]
+    },
+    "2011-05-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-24": {
+      "complete": false,
+      "missing": [
+        "2011-05-24T12:00:00Z"
+      ]
+    },
+    "2011-05-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-26": {
+      "complete": false,
+      "missing": [
+        "2011-05-26T12:00:00Z"
+      ]
+    },
+    "2011-05-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-05-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-06-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-06-02": {
+      "complete": false,
+      "missing": [
+        "2011-06-02T12:00:00Z"
+      ]
+    },
+    "2011-06-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-06-04": {
+      "complete": false,
+      "missing": [
+        "2011-06-04T12:00:00Z"
+      ]
+    },
+    "2011-06-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-06-06": {
+      "complete": false,
+      "missing": [
+        "2011-06-06T12:00:00Z"
+      ]
+    },
+    "2011-06-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-06-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-06-09": {
+      "complete": false,
+      "missing": [
+        "2011-06-09T12:00:00Z"
+      ]
+    },
+    "2011-06-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-06-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-06-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-06-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-06-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-06-15": {
+      "complete": false,
+      "missing": [
+        "2011-06-15T00:00:00Z"
+      ]
+    },
+    "2011-06-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-06-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-06-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-06-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-06-20": {
+      "complete": false,
+      "missing": [
+        "2011-06-20T12:00:00Z"
+      ]
+    },
+    "2011-06-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-06-22": {
+      "complete": false,
+      "missing": [
+        "2011-06-22T12:00:00Z"
+      ]
+    },
+    "2011-06-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-06-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-06-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-06-26": {
+      "complete": false,
+      "missing": [
+        "2011-06-26T18:00:00Z"
+      ]
+    },
+    "2011-06-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-06-28": {
+      "complete": false,
+      "missing": [
+        "2011-06-28T12:00:00Z"
+      ]
+    },
+    "2011-06-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-06-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-03": {
+      "complete": false,
+      "missing": [
+        "2011-07-03T09:00:00Z"
+      ]
+    },
+    "2011-07-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-19": {
+      "complete": false,
+      "missing": [
+        "2011-07-19T03:00:00Z"
+      ]
+    },
+    "2011-07-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-21": {
+      "complete": false,
+      "missing": [
+        "2011-07-21T09:00:00Z"
+      ]
+    },
+    "2011-07-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-25": {
+      "complete": false,
+      "missing": [
+        "2011-07-25T03:00:00Z"
+      ]
+    },
+    "2011-07-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-07-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-23": {
+      "complete": false,
+      "missing": [
+        "2011-08-23T12:00:00Z"
+      ]
+    },
+    "2011-08-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-28": {
+      "complete": false,
+      "missing": [
+        "2011-08-28T06:00:00Z"
+      ]
+    },
+    "2011-08-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-08-30": {
+      "complete": false,
+      "missing": [
+        "2011-08-30T12:00:00Z"
+      ]
+    },
+    "2011-08-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-04": {
+      "complete": false,
+      "missing": [
+        "2011-09-04T12:00:00Z"
+      ]
+    },
+    "2011-09-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-09": {
+      "complete": false,
+      "missing": [
+        "2011-09-09T12:00:00Z"
+      ]
+    },
+    "2011-09-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-13": {
+      "complete": false,
+      "missing": [
+        "2011-09-13T15:00:00Z"
+      ]
+    },
+    "2011-09-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-20": {
+      "complete": false,
+      "missing": [
+        "2011-09-20T06:00:00Z"
+      ]
+    },
+    "2011-09-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-09-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-05": {
+      "complete": false,
+      "missing": [
+        "2011-10-05T15:00:00Z"
+      ]
+    },
+    "2011-10-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-07": {
+      "complete": false,
+      "missing": [
+        "2011-10-07T03:00:00Z",
+        "2011-10-07T06:00:00Z",
+        "2011-10-07T09:00:00Z"
+      ]
+    },
+    "2011-10-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-19": {
+      "complete": false,
+      "missing": [
+        "2011-10-19T12:00:00Z"
+      ]
+    },
+    "2011-10-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-29": {
+      "complete": false,
+      "missing": [
+        "2011-10-29T12:00:00Z"
+      ]
+    },
+    "2011-10-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-10-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-02": {
+      "complete": false,
+      "missing": [
+        "2011-11-02T12:00:00Z"
+      ]
+    },
+    "2011-11-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-19": {
+      "complete": false,
+      "missing": [
+        "2011-11-19T09:00:00Z"
+      ]
+    },
+    "2011-11-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-26": {
+      "complete": false,
+      "missing": [
+        "2011-11-26T06:00:00Z"
+      ]
+    },
+    "2011-11-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-11-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-17": {
+      "complete": false,
+      "missing": [
+        "2011-12-17T06:00:00Z"
+      ]
+    },
+    "2011-12-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-24": {
+      "complete": false,
+      "missing": [
+        "2011-12-24T18:00:00Z"
+      ]
+    },
+    "2011-12-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2011-12-30": {
+      "complete": false,
+      "missing": [
+        "2011-12-30T12:00:00Z"
+      ]
+    },
+    "2011-12-31": {
+      "complete": false,
+      "missing": [
+        "2011-12-31T12:00:00Z"
+      ]
+    },
+    "2012-01-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-15": {
+      "complete": false,
+      "missing": [
+        "2012-01-15T03:00:00Z"
+      ]
+    },
+    "2012-01-16": {
+      "complete": false,
+      "missing": [
+        "2012-01-16T00:00:00Z"
+      ]
+    },
+    "2012-01-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-22": {
+      "complete": false,
+      "missing": [
+        "2012-01-22T15:00:00Z"
+      ]
+    },
+    "2012-01-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-01-30": {
+      "complete": false,
+      "missing": [
+        "2012-01-30T06:00:00Z"
+      ]
+    },
+    "2012-01-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-17": {
+      "complete": false,
+      "missing": [
+        "2012-02-17T21:00:00Z"
+      ]
+    },
+    "2012-02-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-02-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-03": {
+      "complete": false,
+      "missing": [
+        "2012-03-03T12:00:00Z"
+      ]
+    },
+    "2012-03-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-27": {
+      "complete": false,
+      "missing": [
+        "2012-03-27T21:00:00Z"
+      ]
+    },
+    "2012-03-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-03-31": {
+      "complete": false,
+      "missing": [
+        "2012-03-31T12:00:00Z",
+        "2012-03-31T15:00:00Z",
+        "2012-03-31T18:00:00Z"
+      ]
+    },
+    "2012-04-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-22": {
+      "complete": false,
+      "missing": [
+        "2012-04-22T00:00:00Z",
+        "2012-04-22T03:00:00Z"
+      ]
+    },
+    "2012-04-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-04-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-21": {
+      "complete": false,
+      "missing": [
+        "2012-05-21T06:00:00Z"
+      ]
+    },
+    "2012-05-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-05-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-04": {
+      "complete": false,
+      "missing": [
+        "2012-06-04T15:00:00Z"
+      ]
+    },
+    "2012-06-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-10": {
+      "complete": false,
+      "missing": [
+        "2012-06-10T12:00:00Z"
+      ]
+    },
+    "2012-06-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-17": {
+      "complete": false,
+      "missing": [
+        "2012-06-17T03:00:00Z"
+      ]
+    },
+    "2012-06-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-06-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-17": {
+      "complete": false,
+      "missing": [
+        "2012-07-17T12:00:00Z"
+      ]
+    },
+    "2012-07-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-21": {
+      "complete": false,
+      "missing": [
+        "2012-07-21T12:00:00Z"
+      ]
+    },
+    "2012-07-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-28": {
+      "complete": false,
+      "missing": [
+        "2012-07-28T03:00:00Z"
+      ]
+    },
+    "2012-07-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-07-30": {
+      "complete": false,
+      "missing": [
+        "2012-07-30T12:00:00Z"
+      ]
+    },
+    "2012-07-31": {
+      "complete": false,
+      "missing": [
+        "2012-07-31T12:00:00Z"
+      ]
+    },
+    "2012-08-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-03": {
+      "complete": false,
+      "missing": [
+        "2012-08-03T12:00:00Z"
+      ]
+    },
+    "2012-08-04": {
+      "complete": false,
+      "missing": [
+        "2012-08-04T12:00:00Z"
+      ]
+    },
+    "2012-08-05": {
+      "complete": false,
+      "missing": [
+        "2012-08-05T12:00:00Z"
+      ]
+    },
+    "2012-08-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-11": {
+      "complete": false,
+      "missing": [
+        "2012-08-11T12:00:00Z"
+      ]
+    },
+    "2012-08-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-26": {
+      "complete": false,
+      "missing": [
+        "2012-08-26T12:00:00Z"
+      ]
+    },
+    "2012-08-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-08-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-04": {
+      "complete": false,
+      "missing": [
+        "2012-09-04T12:00:00Z"
+      ]
+    },
+    "2012-09-05": {
+      "complete": false,
+      "missing": [
+        "2012-09-05T12:00:00Z"
+      ]
+    },
+    "2012-09-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-14": {
+      "complete": false,
+      "missing": [
+        "2012-09-14T12:00:00Z"
+      ]
+    },
+    "2012-09-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-22": {
+      "complete": false,
+      "missing": [
+        "2012-09-22T12:00:00Z"
+      ]
+    },
+    "2012-09-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-24": {
+      "complete": false,
+      "missing": [
+        "2012-09-24T09:00:00Z"
+      ]
+    },
+    "2012-09-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-09-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-08": {
+      "complete": false,
+      "missing": [
+        "2012-10-08T12:00:00Z"
+      ]
+    },
+    "2012-10-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-14": {
+      "complete": false,
+      "missing": [
+        "2012-10-14T12:00:00Z"
+      ]
+    },
+    "2012-10-15": {
+      "complete": false,
+      "missing": [
+        "2012-10-15T12:00:00Z"
+      ]
+    },
+    "2012-10-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-24": {
+      "complete": false,
+      "missing": [
+        "2012-10-24T12:00:00Z"
+      ]
+    },
+    "2012-10-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-10-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-19": {
+      "complete": false,
+      "missing": [
+        "2012-11-19T12:00:00Z"
+      ]
+    },
+    "2012-11-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-22": {
+      "complete": false,
+      "missing": [
+        "2012-11-22T12:00:00Z"
+      ]
+    },
+    "2012-11-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-28": {
+      "complete": false,
+      "missing": [
+        "2012-11-28T12:00:00Z"
+      ]
+    },
+    "2012-11-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-11-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-01": {
+      "complete": false,
+      "missing": [
+        "2012-12-01T12:00:00Z"
+      ]
+    },
+    "2012-12-02": {
+      "complete": false,
+      "missing": [
+        "2012-12-02T00:00:00Z"
+      ]
+    },
+    "2012-12-03": {
+      "complete": false,
+      "missing": [
+        "2012-12-03T12:00:00Z"
+      ]
+    },
+    "2012-12-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-07": {
+      "complete": false,
+      "missing": [
+        "2012-12-07T06:00:00Z"
+      ]
+    },
+    "2012-12-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-09": {
+      "complete": false,
+      "missing": [
+        "2012-12-09T12:00:00Z"
+      ]
+    },
+    "2012-12-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-11": {
+      "complete": false,
+      "missing": [
+        "2012-12-11T12:00:00Z"
+      ]
+    },
+    "2012-12-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-24": {
+      "complete": false,
+      "missing": [
+        "2012-12-24T12:00:00Z"
+      ]
+    },
+    "2012-12-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2012-12-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-06": {
+      "complete": false,
+      "missing": [
+        "2013-01-06T12:00:00Z"
+      ]
+    },
+    "2013-01-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-01-30": {
+      "complete": false,
+      "missing": [
+        "2013-01-30T09:00:00Z"
+      ]
+    },
+    "2013-01-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-09": {
+      "complete": false,
+      "missing": [
+        "2013-02-09T12:00:00Z"
+      ]
+    },
+    "2013-02-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-14": {
+      "complete": false,
+      "missing": [
+        "2013-02-14T12:00:00Z"
+      ]
+    },
+    "2013-02-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-02-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-07": {
+      "complete": false,
+      "missing": [
+        "2013-03-07T09:00:00Z"
+      ]
+    },
+    "2013-03-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-15": {
+      "complete": false,
+      "missing": [
+        "2013-03-15T12:00:00Z"
+      ]
+    },
+    "2013-03-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-03-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-06": {
+      "complete": false,
+      "missing": [
+        "2013-04-06T12:00:00Z"
+      ]
+    },
+    "2013-04-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-04-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-05-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-08": {
+      "complete": false,
+      "missing": [
+        "2013-06-08T12:00:00Z"
+      ]
+    },
+    "2013-06-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-16": {
+      "complete": false,
+      "missing": [
+        "2013-06-16T21:00:00Z"
+      ]
+    },
+    "2013-06-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-06-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-14": {
+      "complete": false,
+      "missing": [
+        "2013-07-14T12:00:00Z"
+      ]
+    },
+    "2013-07-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-17": {
+      "complete": false,
+      "missing": [
+        "2013-07-17T12:00:00Z"
+      ]
+    },
+    "2013-07-18": {
+      "complete": false,
+      "missing": [
+        "2013-07-18T12:00:00Z"
+      ]
+    },
+    "2013-07-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-27": {
+      "complete": false,
+      "missing": [
+        "2013-07-27T12:00:00Z"
+      ]
+    },
+    "2013-07-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-07-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-13": {
+      "complete": false,
+      "missing": [
+        "2013-08-13T21:00:00Z"
+      ]
+    },
+    "2013-08-14": {
+      "complete": false,
+      "missing": [
+        "2013-08-14T00:00:00Z",
+        "2013-08-14T03:00:00Z"
+      ]
+    },
+    "2013-08-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-18": {
+      "complete": false,
+      "missing": [
+        "2013-08-18T12:00:00Z"
+      ]
+    },
+    "2013-08-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-20": {
+      "complete": false,
+      "missing": [
+        "2013-08-20T12:00:00Z"
+      ]
+    },
+    "2013-08-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-08-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-02": {
+      "complete": false,
+      "missing": [
+        "2013-09-02T12:00:00Z"
+      ]
+    },
+    "2013-09-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-06": {
+      "complete": false,
+      "missing": [
+        "2013-09-06T06:00:00Z"
+      ]
+    },
+    "2013-09-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-09-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-18": {
+      "complete": false,
+      "missing": [
+        "2013-10-18T12:00:00Z"
+      ]
+    },
+    "2013-10-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-10-31": {
+      "complete": false,
+      "missing": [
+        "2013-10-31T12:00:00Z"
+      ]
+    },
+    "2013-11-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-02": {
+      "complete": false,
+      "missing": [
+        "2013-11-02T12:00:00Z"
+      ]
+    },
+    "2013-11-03": {
+      "complete": false,
+      "missing": [
+        "2013-11-03T12:00:00Z"
+      ]
+    },
+    "2013-11-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-12": {
+      "complete": false,
+      "missing": [
+        "2013-11-12T12:00:00Z"
+      ]
+    },
+    "2013-11-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-21": {
+      "complete": false,
+      "missing": [
+        "2013-11-21T18:00:00Z"
+      ]
+    },
+    "2013-11-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-26": {
+      "complete": false,
+      "missing": [
+        "2013-11-26T12:00:00Z"
+      ]
+    },
+    "2013-11-27": {
+      "complete": false,
+      "missing": [
+        "2013-11-27T12:00:00Z"
+      ]
+    },
+    "2013-11-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-11-30": {
+      "complete": false,
+      "missing": [
+        "2013-11-30T12:00:00Z"
+      ]
+    },
+    "2013-12-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-02": {
+      "complete": false,
+      "missing": [
+        "2013-12-02T09:00:00Z"
+      ]
+    },
+    "2013-12-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-10": {
+      "complete": false,
+      "missing": [
+        "2013-12-10T12:00:00Z"
+      ]
+    },
+    "2013-12-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-16": {
+      "complete": false,
+      "missing": [
+        "2013-12-16T03:00:00Z"
+      ]
+    },
+    "2013-12-17": {
+      "complete": false,
+      "missing": [
+        "2013-12-17T12:00:00Z"
+      ]
+    },
+    "2013-12-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-25": {
+      "complete": false,
+      "missing": [
+        "2013-12-25T00:00:00Z"
+      ]
+    },
+    "2013-12-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-27": {
+      "complete": false,
+      "missing": [
+        "2013-12-27T12:00:00Z"
+      ]
+    },
+    "2013-12-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-29": {
+      "complete": false,
+      "missing": [
+        "2013-12-29T15:00:00Z"
+      ]
+    },
+    "2013-12-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2013-12-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-02": {
+      "complete": false,
+      "missing": [
+        "2014-01-02T12:00:00Z"
+      ]
+    },
+    "2014-01-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-04": {
+      "complete": false,
+      "missing": [
+        "2014-01-04T12:00:00Z"
+      ]
+    },
+    "2014-01-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-12": {
+      "complete": false,
+      "missing": [
+        "2014-01-12T12:00:00Z"
+      ]
+    },
+    "2014-01-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-16": {
+      "complete": false,
+      "missing": [
+        "2014-01-16T12:00:00Z"
+      ]
+    },
+    "2014-01-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-26": {
+      "complete": false,
+      "missing": [
+        "2014-01-26T12:00:00Z"
+      ]
+    },
+    "2014-01-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-28": {
+      "complete": false,
+      "missing": [
+        "2014-01-28T12:00:00Z"
+      ]
+    },
+    "2014-01-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-01-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-15": {
+      "complete": false,
+      "missing": [
+        "2014-02-15T12:00:00Z"
+      ]
+    },
+    "2014-02-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-02-28": {
+      "complete": false,
+      "missing": [
+        "2014-02-28T06:00:00Z",
+        "2014-02-28T09:00:00Z"
+      ]
+    },
+    "2014-03-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-10": {
+      "complete": false,
+      "missing": [
+        "2014-03-10T12:00:00Z"
+      ]
+    },
+    "2014-03-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-16": {
+      "complete": false,
+      "missing": [
+        "2014-03-16T09:00:00Z"
+      ]
+    },
+    "2014-03-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-23": {
+      "complete": false,
+      "missing": [
+        "2014-03-23T12:00:00Z"
+      ]
+    },
+    "2014-03-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-03-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-04": {
+      "complete": false,
+      "missing": [
+        "2014-04-04T12:00:00Z"
+      ]
+    },
+    "2014-04-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-12": {
+      "complete": false,
+      "missing": [
+        "2014-04-12T12:00:00Z"
+      ]
+    },
+    "2014-04-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-04-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-01": {
+      "complete": false,
+      "missing": [
+        "2014-05-01T12:00:00Z"
+      ]
+    },
+    "2014-05-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-11": {
+      "complete": false,
+      "missing": [
+        "2014-05-11T12:00:00Z"
+      ]
+    },
+    "2014-05-12": {
+      "complete": false,
+      "missing": [
+        "2014-05-12T12:00:00Z",
+        "2014-05-12T21:00:00Z"
+      ]
+    },
+    "2014-05-13": {
+      "complete": false,
+      "missing": [
+        "2014-05-13T12:00:00Z"
+      ]
+    },
+    "2014-05-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-21": {
+      "complete": false,
+      "missing": [
+        "2014-05-21T12:00:00Z"
+      ]
+    },
+    "2014-05-22": {
+      "complete": false,
+      "missing": [
+        "2014-05-22T12:00:00Z"
+      ]
+    },
+    "2014-05-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-26": {
+      "complete": false,
+      "missing": [
+        "2014-05-26T03:00:00Z",
+        "2014-05-26T12:00:00Z"
+      ]
+    },
+    "2014-05-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-05-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-16": {
+      "complete": false,
+      "missing": [
+        "2014-06-16T00:00:00Z"
+      ]
+    },
+    "2014-06-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-23": {
+      "complete": false,
+      "missing": [
+        "2014-06-23T03:00:00Z"
+      ]
+    },
+    "2014-06-24": {
+      "complete": false,
+      "missing": [
+        "2014-06-24T12:00:00Z"
+      ]
+    },
+    "2014-06-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-06-26": {
+      "complete": false,
+      "missing": [
+        "2014-06-26T12:00:00Z"
+      ]
+    },
+    "2014-06-27": {
+      "complete": false,
+      "missing": [
+        "2014-06-27T12:00:00Z"
+      ]
+    },
+    "2014-06-28": {
+      "complete": false,
+      "missing": [
+        "2014-06-28T12:00:00Z",
+        "2014-06-28T15:00:00Z",
+        "2014-06-28T18:00:00Z",
+        "2014-06-28T21:00:00Z"
+      ]
+    },
+    "2014-06-29": {
+      "complete": false,
+      "missing": [
+        "2014-06-29T00:00:00Z",
+        "2014-06-29T03:00:00Z",
+        "2014-06-29T06:00:00Z",
+        "2014-06-29T09:00:00Z"
+      ]
+    },
+    "2014-06-30": {
+      "complete": false,
+      "missing": [
+        "2014-06-30T12:00:00Z"
+      ]
+    },
+    "2014-07-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-05": {
+      "complete": false,
+      "missing": [
+        "2014-07-05T12:00:00Z"
+      ]
+    },
+    "2014-07-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-07-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-06": {
+      "complete": false,
+      "missing": [
+        "2014-08-06T12:00:00Z"
+      ]
+    },
+    "2014-08-07": {
+      "complete": false,
+      "missing": [
+        "2014-08-07T18:00:00Z"
+      ]
+    },
+    "2014-08-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-18": {
+      "complete": false,
+      "missing": [
+        "2014-08-18T00:00:00Z"
+      ]
+    },
+    "2014-08-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-20": {
+      "complete": false,
+      "missing": [
+        "2014-08-20T00:00:00Z",
+        "2014-08-20T12:00:00Z"
+      ]
+    },
+    "2014-08-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-23": {
+      "complete": false,
+      "missing": [
+        "2014-08-23T00:00:00Z"
+      ]
+    },
+    "2014-08-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-29": {
+      "complete": false,
+      "missing": [
+        "2014-08-29T12:00:00Z"
+      ]
+    },
+    "2014-08-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-08-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-04": {
+      "complete": false,
+      "missing": [
+        "2014-09-04T00:00:00Z"
+      ]
+    },
+    "2014-09-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-12": {
+      "complete": false,
+      "missing": [
+        "2014-09-12T06:00:00Z"
+      ]
+    },
+    "2014-09-13": {
+      "complete": false,
+      "missing": [
+        "2014-09-13T12:00:00Z"
+      ]
+    },
+    "2014-09-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-15": {
+      "complete": false,
+      "missing": [
+        "2014-09-15T21:00:00Z"
+      ]
+    },
+    "2014-09-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-19": {
+      "complete": false,
+      "missing": [
+        "2014-09-19T06:00:00Z"
+      ]
+    },
+    "2014-09-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-25": {
+      "complete": false,
+      "missing": [
+        "2014-09-25T09:00:00Z"
+      ]
+    },
+    "2014-09-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-09-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-08": {
+      "complete": false,
+      "missing": [
+        "2014-10-08T12:00:00Z"
+      ]
+    },
+    "2014-10-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-28": {
+      "complete": false,
+      "missing": [
+        "2014-10-28T21:00:00Z"
+      ]
+    },
+    "2014-10-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-10-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-23": {
+      "complete": false,
+      "missing": [
+        "2014-11-23T12:00:00Z"
+      ]
+    },
+    "2014-11-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-26": {
+      "complete": false,
+      "missing": [
+        "2014-11-26T12:00:00Z"
+      ]
+    },
+    "2014-11-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-11-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-04": {
+      "complete": false,
+      "missing": [
+        "2014-12-04T12:00:00Z"
+      ]
+    },
+    "2014-12-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-06": {
+      "complete": false,
+      "missing": [
+        "2014-12-06T12:00:00Z"
+      ]
+    },
+    "2014-12-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-08": {
+      "complete": false,
+      "missing": [
+        "2014-12-08T12:00:00Z"
+      ]
+    },
+    "2014-12-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-11": {
+      "complete": false,
+      "missing": [
+        "2014-12-11T12:00:00Z"
+      ]
+    },
+    "2014-12-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2014-12-31": {
+      "complete": false,
+      "missing": [
+        "2014-12-31T12:00:00Z",
+        "2014-12-31T15:00:00Z",
+        "2014-12-31T18:00:00Z",
+        "2014-12-31T21:00:00Z"
+      ]
+    },
+    "2015-01-01": {
+      "complete": false,
+      "missing": [
+        "2015-01-01T00:00:00Z",
+        "2015-01-01T03:00:00Z",
+        "2015-01-01T06:00:00Z",
+        "2015-01-01T09:00:00Z"
+      ]
+    },
+    "2015-01-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-03": {
+      "complete": false,
+      "missing": [
+        "2015-01-03T03:00:00Z",
+        "2015-01-03T12:00:00Z"
+      ]
+    },
+    "2015-01-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-05": {
+      "complete": false,
+      "missing": [
+        "2015-01-05T06:00:00Z",
+        "2015-01-05T09:00:00Z"
+      ]
+    },
+    "2015-01-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-09": {
+      "complete": false,
+      "missing": [
+        "2015-01-09T12:00:00Z"
+      ]
+    },
+    "2015-01-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-12": {
+      "complete": false,
+      "missing": [
+        "2015-01-12T12:00:00Z"
+      ]
+    },
+    "2015-01-13": {
+      "complete": false,
+      "missing": [
+        "2015-01-13T12:00:00Z"
+      ]
+    },
+    "2015-01-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-01-31": {
+      "complete": false,
+      "missing": [
+        "2015-01-31T03:00:00Z",
+        "2015-01-31T12:00:00Z"
+      ]
+    },
+    "2015-02-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-04": {
+      "complete": false,
+      "missing": [
+        "2015-02-04T12:00:00Z"
+      ]
+    },
+    "2015-02-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-12": {
+      "complete": false,
+      "missing": [
+        "2015-02-12T09:00:00Z"
+      ]
+    },
+    "2015-02-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-15": {
+      "complete": false,
+      "missing": [
+        "2015-02-15T12:00:00Z"
+      ]
+    },
+    "2015-02-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-18": {
+      "complete": false,
+      "missing": [
+        "2015-02-18T06:00:00Z"
+      ]
+    },
+    "2015-02-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-23": {
+      "complete": false,
+      "missing": [
+        "2015-02-23T21:00:00Z"
+      ]
+    },
+    "2015-02-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-02-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-01": {
+      "complete": false,
+      "missing": [
+        "2015-03-01T12:00:00Z"
+      ]
+    },
+    "2015-03-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-05": {
+      "complete": false,
+      "missing": [
+        "2015-03-05T12:00:00Z"
+      ]
+    },
+    "2015-03-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-08": {
+      "complete": false,
+      "missing": [
+        "2015-03-08T12:00:00Z"
+      ]
+    },
+    "2015-03-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-10": {
+      "complete": false,
+      "missing": [
+        "2015-03-10T12:00:00Z"
+      ]
+    },
+    "2015-03-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-24": {
+      "complete": false,
+      "missing": [
+        "2015-03-24T12:00:00Z"
+      ]
+    },
+    "2015-03-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-28": {
+      "complete": false,
+      "missing": [
+        "2015-03-28T12:00:00Z"
+      ]
+    },
+    "2015-03-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-03-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-11": {
+      "complete": false,
+      "missing": [
+        "2015-04-11T12:00:00Z"
+      ]
+    },
+    "2015-04-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-13": {
+      "complete": false,
+      "missing": [
+        "2015-04-13T12:00:00Z"
+      ]
+    },
+    "2015-04-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-15": {
+      "complete": false,
+      "missing": [
+        "2015-04-15T03:00:00Z"
+      ]
+    },
+    "2015-04-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-04-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-08": {
+      "complete": false,
+      "missing": [
+        "2015-05-08T09:00:00Z"
+      ]
+    },
+    "2015-05-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-11": {
+      "complete": false,
+      "missing": [
+        "2015-05-11T12:00:00Z"
+      ]
+    },
+    "2015-05-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-17": {
+      "complete": false,
+      "missing": [
+        "2015-05-17T12:00:00Z"
+      ]
+    },
+    "2015-05-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-24": {
+      "complete": false,
+      "missing": [
+        "2015-05-24T12:00:00Z"
+      ]
+    },
+    "2015-05-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-05-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-09": {
+      "complete": false,
+      "missing": [
+        "2015-06-09T12:00:00Z"
+      ]
+    },
+    "2015-06-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-13": {
+      "complete": false,
+      "missing": [
+        "2015-06-13T00:00:00Z"
+      ]
+    },
+    "2015-06-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-20": {
+      "complete": false,
+      "missing": [
+        "2015-06-20T12:00:00Z"
+      ]
+    },
+    "2015-06-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-06-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-15": {
+      "complete": false,
+      "missing": [
+        "2015-07-15T12:00:00Z"
+      ]
+    },
+    "2015-07-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-23": {
+      "complete": false,
+      "missing": [
+        "2015-07-23T12:00:00Z"
+      ]
+    },
+    "2015-07-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-07-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-07": {
+      "complete": false,
+      "missing": [
+        "2015-08-07T12:00:00Z"
+      ]
+    },
+    "2015-08-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-10": {
+      "complete": false,
+      "missing": [
+        "2015-08-10T12:00:00Z"
+      ]
+    },
+    "2015-08-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-12": {
+      "complete": false,
+      "missing": [
+        "2015-08-12T12:00:00Z"
+      ]
+    },
+    "2015-08-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-08-30": {
+      "complete": false,
+      "missing": [
+        "2015-08-30T12:00:00Z"
+      ]
+    },
+    "2015-08-31": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-01": {
+      "complete": false,
+      "missing": [
+        "2015-09-01T18:00:00Z"
+      ]
+    },
+    "2015-09-02": {
+      "complete": false,
+      "missing": [
+        "2015-09-02T21:00:00Z"
+      ]
+    },
+    "2015-09-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-18": {
+      "complete": false,
+      "missing": [
+        "2015-09-18T12:00:00Z"
+      ]
+    },
+    "2015-09-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-09-30": {
+      "complete": false,
+      "missing": [
+        "2015-09-30T12:00:00Z"
+      ]
+    },
+    "2015-10-01": {
+      "complete": false,
+      "missing": [
+        "2015-10-01T12:00:00Z"
+      ]
+    },
+    "2015-10-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-08": {
+      "complete": false,
+      "missing": [
+        "2015-10-08T12:00:00Z"
+      ]
+    },
+    "2015-10-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-14": {
+      "complete": false,
+      "missing": [
+        "2015-10-14T12:00:00Z"
+      ]
+    },
+    "2015-10-15": {
+      "complete": false,
+      "missing": [
+        "2015-10-15T12:00:00Z"
+      ]
+    },
+    "2015-10-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-22": {
+      "complete": false,
+      "missing": [
+        "2015-10-22T12:00:00Z"
+      ]
+    },
+    "2015-10-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-10-31": {
+      "complete": false,
+      "missing": [
+        "2015-10-31T12:00:00Z"
+      ]
+    },
+    "2015-11-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-03": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-07": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-08": {
+      "complete": false,
+      "missing": [
+        "2015-11-08T12:00:00Z"
+      ]
+    },
+    "2015-11-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-10": {
+      "complete": false,
+      "missing": [
+        "2015-11-10T12:00:00Z"
+      ]
+    },
+    "2015-11-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-16": {
+      "complete": false,
+      "missing": [
+        "2015-11-16T12:00:00Z"
+      ]
+    },
+    "2015-11-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-11-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-01": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-02": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-03": {
+      "complete": false,
+      "missing": [
+        "2015-12-03T12:00:00Z"
+      ]
+    },
+    "2015-12-04": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-05": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-06": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-07": {
+      "complete": false,
+      "missing": [
+        "2015-12-07T12:00:00Z"
+      ]
+    },
+    "2015-12-08": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-09": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-10": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-11": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-12": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-13": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-14": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-15": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-16": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-17": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-18": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-19": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-20": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-21": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-22": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-23": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-24": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-25": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-26": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-27": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-28": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-29": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-30": {
+      "complete": true,
+      "missing": []
+    },
+    "2015-12-31": {
+      "complete": false,
+      "missing": [
+        "2015-12-31T12:00:00Z",
+        "2015-12-31T15:00:00Z",
+        "2015-12-31T18:00:00Z",
+        "2015-12-31T21:00:00Z"
+      ]
+    }
+  },
+  "requests": [
+    {
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2010/dataset.xml",
+      "requestedAtUTC": "2026-09-07T01:01:19Z",
+      "variablesRequested": "none (time axis metadata only)",
+      "httpStatus": 200,
+      "retrievedAtUTC": "2026-09-07T01:01:20Z",
+      "bytes": 168409,
+      "sha256": "4e297b92aa70de3789ca2f2d7ec15e99248ba845347f20cede69b4839540cdaa",
+      "file": "data/research/step35/inventory/2010.dataset.xml"
+    },
+    {
+      "url": "https://ncss.hycom.org/thredds/dodsC/GLBv0.08/expt_53.X/data/2010.ascii?time",
+      "requestedAtUTC": "2026-09-07T01:01:20Z",
+      "variablesRequested": "none (time axis metadata only)",
+      "httpStatus": 200,
+      "retrievedAtUTC": "2026-09-07T01:01:22Z",
+      "bytes": 26122,
+      "sha256": "b7c653b6039897b3697aa2edc3cdfd2198a99f1743bb48ffcb33ed2eb6248655",
+      "file": "data/research/step35/inventory/2010.time.ascii"
+    },
+    {
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2011/dataset.xml",
+      "requestedAtUTC": "2026-09-07T01:01:22Z",
+      "variablesRequested": "none (time axis metadata only)",
+      "httpStatus": 200,
+      "retrievedAtUTC": "2026-09-07T01:01:23Z",
+      "bytes": 170002,
+      "sha256": "1f5f4bf3d9edb882fcc8768b96a8a422100ef8482a41bc3090a7b850d1d2c82a",
+      "file": "data/research/step35/inventory/2011.dataset.xml"
+    },
+    {
+      "url": "https://ncss.hycom.org/thredds/dodsC/GLBv0.08/expt_53.X/data/2011.ascii?time",
+      "requestedAtUTC": "2026-09-07T01:01:23Z",
+      "variablesRequested": "none (time axis metadata only)",
+      "httpStatus": 200,
+      "retrievedAtUTC": "2026-09-07T01:01:24Z",
+      "bytes": 27702,
+      "sha256": "3e2ccae1b2e2e804ee2db8f70732193c1a3f4c4ccabc34fe2ce781978e8b085e",
+      "file": "data/research/step35/inventory/2011.time.ascii"
+    },
+    {
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2012/dataset.xml",
+      "requestedAtUTC": "2026-09-07T01:01:24Z",
+      "variablesRequested": "none (time axis metadata only)",
+      "httpStatus": 200,
+      "retrievedAtUTC": "2026-09-07T01:01:25Z",
+      "bytes": 171292,
+      "sha256": "82c135e2021c35941f448d5910fcf8fa7bdccbbfbfa5f75d12e1207b7808cce9",
+      "file": "data/research/step35/inventory/2012.dataset.xml"
+    },
+    {
+      "url": "https://ncss.hycom.org/thredds/dodsC/GLBv0.08/expt_53.X/data/2012.ascii?time",
+      "requestedAtUTC": "2026-09-07T01:01:25Z",
+      "variablesRequested": "none (time axis metadata only)",
+      "httpStatus": 200,
+      "retrievedAtUTC": "2026-09-07T01:01:26Z",
+      "bytes": 28960,
+      "sha256": "7e49d64c7925152727f06dc3f8dca79bd7b0a07fee1889c9c02b861dd3a53e4c",
+      "file": "data/research/step35/inventory/2012.time.ascii"
+    },
+    {
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2013/dataset.xml",
+      "requestedAtUTC": "2026-09-07T01:01:26Z",
+      "variablesRequested": "none (time axis metadata only)",
+      "httpStatus": 200,
+      "retrievedAtUTC": "2026-09-07T01:02:57Z",
+      "bytes": 171301,
+      "sha256": "844bbebe14ec34b78d4e76c3f7fe34132f96f08d4c8e8e991b2f6b8f97e70084",
+      "file": "data/research/step35/inventory/2013.dataset.xml"
+    },
+    {
+      "url": "https://ncss.hycom.org/thredds/dodsC/GLBv0.08/expt_53.X/data/2013.ascii?time",
+      "requestedAtUTC": "2026-09-07T01:02:57Z",
+      "variablesRequested": "none (time axis metadata only)",
+      "httpStatus": 200,
+      "retrievedAtUTC": "2026-09-07T01:02:57Z",
+      "bytes": 28970,
+      "sha256": "88e96185e7fcceb3e392dd4dfb97e6dd7c2bdf19c3f7b27345190ded9be9d3a6",
+      "file": "data/research/step35/inventory/2013.time.ascii"
+    },
+    {
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2014/dataset.xml",
+      "requestedAtUTC": "2026-09-07T01:02:57Z",
+      "variablesRequested": "none (time axis metadata only)",
+      "httpStatus": 200,
+      "retrievedAtUTC": "2026-09-07T01:02:59Z",
+      "bytes": 171058,
+      "sha256": "a887b07224617a2f211e2a6d7e35cb2ce581cf7b8880a3b6de82b3bb00790fcc",
+      "file": "data/research/step35/inventory/2014.dataset.xml"
+    },
+    {
+      "url": "https://ncss.hycom.org/thredds/dodsC/GLBv0.08/expt_53.X/data/2014.ascii?time",
+      "requestedAtUTC": "2026-09-07T01:02:59Z",
+      "variablesRequested": "none (time axis metadata only)",
+      "httpStatus": 200,
+      "retrievedAtUTC": "2026-09-07T01:03:00Z",
+      "bytes": 28700,
+      "sha256": "41e08872079fcb5f3feb9984d99d1fe44ddbf0ebdb63d6375310274124b7f1de",
+      "file": "data/research/step35/inventory/2014.time.ascii"
+    },
+    {
+      "url": "https://ncss.hycom.org/thredds/ncss/GLBv0.08/expt_53.X/data/2015/dataset.xml",
+      "requestedAtUTC": "2026-09-07T01:03:00Z",
+      "variablesRequested": "none (time axis metadata only)",
+      "httpStatus": 200,
+      "retrievedAtUTC": "2026-09-07T01:03:01Z",
+      "bytes": 171094,
+      "sha256": "678eae695116148c28fdf6856c4f1b0a0575ed44f36670df7f2a71a298fa2fe0",
+      "file": "data/research/step35/inventory/2015.dataset.xml"
+    },
+    {
+      "url": "https://ncss.hycom.org/thredds/dodsC/GLBv0.08/expt_53.X/data/2015.ascii?time",
+      "requestedAtUTC": "2026-09-07T01:03:01Z",
+      "variablesRequested": "none (time axis metadata only)",
+      "httpStatus": 200,
+      "retrievedAtUTC": "2026-09-07T01:03:02Z",
+      "bytes": 28740,
+      "sha256": "ce11abd49a261719da1a143d0a14117f87a1f34a1e0c0a87211cd0f5be708838",
+      "file": "data/research/step35/inventory/2015.time.ascii"
+    }
+  ],
+  "periodUTC": [
+    "2010-01-01T00:00:00Z",
+    "2015-12-31T21:00:00Z"
+  ],
+  "daysTotal": 2191,
+  "daysComplete": 1939,
+  "daysIncomplete": 252,
+  "missingFrames": [
+    "2010-01-19T18:00:00Z",
+    "2010-01-30T12:00:00Z",
+    "2010-02-10T12:00:00Z",
+    "2010-02-19T12:00:00Z",
+    "2010-03-05T00:00:00Z",
+    "2010-03-17T12:00:00Z",
+    "2010-03-28T12:00:00Z",
+    "2010-04-05T12:00:00Z",
+    "2010-04-07T12:00:00Z",
+    "2010-05-11T09:00:00Z",
+    "2010-05-16T12:00:00Z",
+    "2010-05-18T12:00:00Z",
+    "2010-05-27T12:00:00Z",
+    "2010-06-20T12:00:00Z",
+    "2010-07-04T12:00:00Z",
+    "2010-07-06T12:00:00Z",
+    "2010-07-11T12:00:00Z",
+    "2010-07-13T12:00:00Z",
+    "2010-07-19T12:00:00Z",
+    "2010-07-23T12:00:00Z",
+    "2010-08-18T12:00:00Z",
+    "2010-08-20T12:00:00Z",
+    "2010-09-21T09:00:00Z",
+    "2010-09-29T12:00:00Z",
+    "2010-10-06T12:00:00Z",
+    "2010-10-08T12:00:00Z",
+    "2010-10-12T12:00:00Z",
+    "2010-10-14T12:00:00Z",
+    "2010-12-01T12:00:00Z",
+    "2010-12-15T12:00:00Z",
+    "2010-12-18T12:00:00Z",
+    "2010-12-22T12:00:00Z",
+    "2011-01-01T00:00:00Z",
+    "2011-02-12T12:00:00Z",
+    "2011-03-09T12:00:00Z",
+    "2011-03-10T12:00:00Z",
+    "2011-03-13T12:00:00Z",
+    "2011-03-15T12:00:00Z",
+    "2011-03-23T12:00:00Z",
+    "2011-03-30T12:00:00Z",
+    "2011-04-08T12:00:00Z",
+    "2011-05-19T12:00:00Z",
+    "2011-05-24T12:00:00Z",
+    "2011-05-26T12:00:00Z",
+    "2011-06-02T12:00:00Z",
+    "2011-06-04T12:00:00Z",
+    "2011-06-06T12:00:00Z",
+    "2011-06-09T12:00:00Z",
+    "2011-06-15T00:00:00Z",
+    "2011-06-20T12:00:00Z",
+    "2011-06-22T12:00:00Z",
+    "2011-06-26T18:00:00Z",
+    "2011-06-28T12:00:00Z",
+    "2011-07-03T09:00:00Z",
+    "2011-07-19T03:00:00Z",
+    "2011-07-21T09:00:00Z",
+    "2011-07-25T03:00:00Z",
+    "2011-08-23T12:00:00Z",
+    "2011-08-28T06:00:00Z",
+    "2011-08-30T12:00:00Z",
+    "2011-09-04T12:00:00Z",
+    "2011-09-09T12:00:00Z",
+    "2011-09-13T15:00:00Z",
+    "2011-09-20T06:00:00Z",
+    "2011-10-05T15:00:00Z",
+    "2011-10-07T03:00:00Z",
+    "2011-10-07T06:00:00Z",
+    "2011-10-07T09:00:00Z",
+    "2011-10-19T12:00:00Z",
+    "2011-10-29T12:00:00Z",
+    "2011-11-02T12:00:00Z",
+    "2011-11-19T09:00:00Z",
+    "2011-11-26T06:00:00Z",
+    "2011-12-17T06:00:00Z",
+    "2011-12-24T18:00:00Z",
+    "2011-12-30T12:00:00Z",
+    "2011-12-31T12:00:00Z",
+    "2012-01-15T03:00:00Z",
+    "2012-01-16T00:00:00Z",
+    "2012-01-22T15:00:00Z",
+    "2012-01-30T06:00:00Z",
+    "2012-02-17T21:00:00Z",
+    "2012-03-03T12:00:00Z",
+    "2012-03-27T21:00:00Z",
+    "2012-03-31T12:00:00Z",
+    "2012-03-31T15:00:00Z",
+    "2012-03-31T18:00:00Z",
+    "2012-04-22T00:00:00Z",
+    "2012-04-22T03:00:00Z",
+    "2012-05-21T06:00:00Z",
+    "2012-06-04T15:00:00Z",
+    "2012-06-10T12:00:00Z",
+    "2012-06-17T03:00:00Z",
+    "2012-07-17T12:00:00Z",
+    "2012-07-21T12:00:00Z",
+    "2012-07-28T03:00:00Z",
+    "2012-07-30T12:00:00Z",
+    "2012-07-31T12:00:00Z",
+    "2012-08-03T12:00:00Z",
+    "2012-08-04T12:00:00Z",
+    "2012-08-05T12:00:00Z",
+    "2012-08-11T12:00:00Z",
+    "2012-08-26T12:00:00Z",
+    "2012-09-04T12:00:00Z",
+    "2012-09-05T12:00:00Z",
+    "2012-09-14T12:00:00Z",
+    "2012-09-22T12:00:00Z",
+    "2012-09-24T09:00:00Z",
+    "2012-10-08T12:00:00Z",
+    "2012-10-14T12:00:00Z",
+    "2012-10-15T12:00:00Z",
+    "2012-10-24T12:00:00Z",
+    "2012-11-19T12:00:00Z",
+    "2012-11-22T12:00:00Z",
+    "2012-11-28T12:00:00Z",
+    "2012-12-01T12:00:00Z",
+    "2012-12-02T00:00:00Z",
+    "2012-12-03T12:00:00Z",
+    "2012-12-07T06:00:00Z",
+    "2012-12-09T12:00:00Z",
+    "2012-12-11T12:00:00Z",
+    "2012-12-24T12:00:00Z",
+    "2013-01-06T12:00:00Z",
+    "2013-01-30T09:00:00Z",
+    "2013-02-09T12:00:00Z",
+    "2013-02-14T12:00:00Z",
+    "2013-03-07T09:00:00Z",
+    "2013-03-15T12:00:00Z",
+    "2013-04-06T12:00:00Z",
+    "2013-06-08T12:00:00Z",
+    "2013-06-16T21:00:00Z",
+    "2013-07-14T12:00:00Z",
+    "2013-07-17T12:00:00Z",
+    "2013-07-18T12:00:00Z",
+    "2013-07-27T12:00:00Z",
+    "2013-08-13T21:00:00Z",
+    "2013-08-14T00:00:00Z",
+    "2013-08-14T03:00:00Z",
+    "2013-08-18T12:00:00Z",
+    "2013-08-20T12:00:00Z",
+    "2013-09-02T12:00:00Z",
+    "2013-09-06T06:00:00Z",
+    "2013-10-18T12:00:00Z",
+    "2013-10-31T12:00:00Z",
+    "2013-11-02T12:00:00Z",
+    "2013-11-03T12:00:00Z",
+    "2013-11-12T12:00:00Z",
+    "2013-11-21T18:00:00Z",
+    "2013-11-26T12:00:00Z",
+    "2013-11-27T12:00:00Z",
+    "2013-11-30T12:00:00Z",
+    "2013-12-02T09:00:00Z",
+    "2013-12-10T12:00:00Z",
+    "2013-12-16T03:00:00Z",
+    "2013-12-17T12:00:00Z",
+    "2013-12-25T00:00:00Z",
+    "2013-12-27T12:00:00Z",
+    "2013-12-29T15:00:00Z",
+    "2014-01-02T12:00:00Z",
+    "2014-01-04T12:00:00Z",
+    "2014-01-12T12:00:00Z",
+    "2014-01-16T12:00:00Z",
+    "2014-01-26T12:00:00Z",
+    "2014-01-28T12:00:00Z",
+    "2014-02-15T12:00:00Z",
+    "2014-02-28T06:00:00Z",
+    "2014-02-28T09:00:00Z",
+    "2014-03-10T12:00:00Z",
+    "2014-03-16T09:00:00Z",
+    "2014-03-23T12:00:00Z",
+    "2014-04-04T12:00:00Z",
+    "2014-04-12T12:00:00Z",
+    "2014-05-01T12:00:00Z",
+    "2014-05-11T12:00:00Z",
+    "2014-05-12T12:00:00Z",
+    "2014-05-12T21:00:00Z",
+    "2014-05-13T12:00:00Z",
+    "2014-05-21T12:00:00Z",
+    "2014-05-22T12:00:00Z",
+    "2014-05-26T03:00:00Z",
+    "2014-05-26T12:00:00Z",
+    "2014-06-16T00:00:00Z",
+    "2014-06-23T03:00:00Z",
+    "2014-06-24T12:00:00Z",
+    "2014-06-26T12:00:00Z",
+    "2014-06-27T12:00:00Z",
+    "2014-06-28T12:00:00Z",
+    "2014-06-28T15:00:00Z",
+    "2014-06-28T18:00:00Z",
+    "2014-06-28T21:00:00Z",
+    "2014-06-29T00:00:00Z",
+    "2014-06-29T03:00:00Z",
+    "2014-06-29T06:00:00Z",
+    "2014-06-29T09:00:00Z",
+    "2014-06-30T12:00:00Z",
+    "2014-07-05T12:00:00Z",
+    "2014-08-06T12:00:00Z",
+    "2014-08-07T18:00:00Z",
+    "2014-08-18T00:00:00Z",
+    "2014-08-20T00:00:00Z",
+    "2014-08-20T12:00:00Z",
+    "2014-08-23T00:00:00Z",
+    "2014-08-29T12:00:00Z",
+    "2014-09-04T00:00:00Z",
+    "2014-09-12T06:00:00Z",
+    "2014-09-13T12:00:00Z",
+    "2014-09-15T21:00:00Z",
+    "2014-09-19T06:00:00Z",
+    "2014-09-25T09:00:00Z",
+    "2014-10-08T12:00:00Z",
+    "2014-10-28T21:00:00Z",
+    "2014-11-23T12:00:00Z",
+    "2014-11-26T12:00:00Z",
+    "2014-12-04T12:00:00Z",
+    "2014-12-06T12:00:00Z",
+    "2014-12-08T12:00:00Z",
+    "2014-12-11T12:00:00Z",
+    "2014-12-31T12:00:00Z",
+    "2014-12-31T15:00:00Z",
+    "2014-12-31T18:00:00Z",
+    "2014-12-31T21:00:00Z",
+    "2015-01-01T00:00:00Z",
+    "2015-01-01T03:00:00Z",
+    "2015-01-01T06:00:00Z",
+    "2015-01-01T09:00:00Z",
+    "2015-01-03T03:00:00Z",
+    "2015-01-03T12:00:00Z",
+    "2015-01-05T06:00:00Z",
+    "2015-01-05T09:00:00Z",
+    "2015-01-09T12:00:00Z",
+    "2015-01-12T12:00:00Z",
+    "2015-01-13T12:00:00Z",
+    "2015-01-31T03:00:00Z",
+    "2015-01-31T12:00:00Z",
+    "2015-02-04T12:00:00Z",
+    "2015-02-12T09:00:00Z",
+    "2015-02-15T12:00:00Z",
+    "2015-02-18T06:00:00Z",
+    "2015-02-23T21:00:00Z",
+    "2015-03-01T12:00:00Z",
+    "2015-03-05T12:00:00Z",
+    "2015-03-08T12:00:00Z",
+    "2015-03-10T12:00:00Z",
+    "2015-03-24T12:00:00Z",
+    "2015-03-28T12:00:00Z",
+    "2015-04-11T12:00:00Z",
+    "2015-04-13T12:00:00Z",
+    "2015-04-15T03:00:00Z",
+    "2015-05-08T09:00:00Z",
+    "2015-05-11T12:00:00Z",
+    "2015-05-17T12:00:00Z",
+    "2015-05-24T12:00:00Z",
+    "2015-06-09T12:00:00Z",
+    "2015-06-13T00:00:00Z",
+    "2015-06-20T12:00:00Z",
+    "2015-07-15T12:00:00Z",
+    "2015-07-23T12:00:00Z",
+    "2015-08-07T12:00:00Z",
+    "2015-08-10T12:00:00Z",
+    "2015-08-12T12:00:00Z",
+    "2015-08-30T12:00:00Z",
+    "2015-09-01T18:00:00Z",
+    "2015-09-02T21:00:00Z",
+    "2015-09-18T12:00:00Z",
+    "2015-09-30T12:00:00Z",
+    "2015-10-01T12:00:00Z",
+    "2015-10-08T12:00:00Z",
+    "2015-10-14T12:00:00Z",
+    "2015-10-15T12:00:00Z",
+    "2015-10-22T12:00:00Z",
+    "2015-10-31T12:00:00Z",
+    "2015-11-08T12:00:00Z",
+    "2015-11-10T12:00:00Z",
+    "2015-11-16T12:00:00Z",
+    "2015-12-03T12:00:00Z",
+    "2015-12-07T12:00:00Z",
+    "2015-12-31T12:00:00Z",
+    "2015-12-31T15:00:00Z",
+    "2015-12-31T18:00:00Z",
+    "2015-12-31T21:00:00Z"
+  ],
+  "status": "COMPLETE",
+  "forbiddenInputAccess": 0,
+  "completedAtUTC": "2026-09-07T01:03:02Z",
+  "knownGapsConfirmed": {
+    "2010-08-18T12:00:00Z": true,
+    "2011-06-09T12:00:00Z": true,
+    "2011-06-15T00:00:00Z": true,
+    "2011-06-20T12:00:00Z": true,
+    "2011-06-22T12:00:00Z": true,
+    "2011-06-26T18:00:00Z": true
+  }
+}

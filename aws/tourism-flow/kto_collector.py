@@ -9,6 +9,7 @@ import time
 from datetime import datetime, timedelta, timezone
 
 from kto_pipeline import normalize_kto_snapshot
+from kto_details import DETAIL_OPERATIONS, collect_details
 from kto_provider import (
     KTO_SERVICES,
     KtoSchemaDriftError,
@@ -273,6 +274,10 @@ def sync_operation(
     page_size=None,
 ):
     """한 Operation을 호출해 원문을 먼저 쓰고 정규화 결과를 공개한다."""
+    # ⚠️ 상세는 콘텐츠 ID별 자료다. operation/latest 하나에 쓰면 다른 장소를 덮어쓴다.
+    # 명시적인 KTO_DETAILS 경로의 ID별 캐시·공용 lease·호출 간격을 사용한다.
+    if operation in DETAIL_OPERATIONS.get(service, ()):
+        raise ValueError("KTO_DETAIL_REQUIRES_CONTENT_ID_CACHE_TASK")
     if call is None:
         env = environ or {}
         page_size = int(page_size or env.get("KTO_DEFAULT_PAGE_SIZE") or 100)
@@ -599,6 +604,10 @@ def handle_event(
             payload, s3_client=s3_client, bucket=bucket, fetched_at=acquired_at,
             call=call, environ=environ, _lease=lease, sleep=sleep, monotonic=monotonic,
         )
+    if payload.get("task") == "KTO_DETAILS":
+        return collect_details(payload, s3_client=s3_client, bucket=bucket,
+                               fetched_at=fetched_at or _utc_now(), lease=_lease,
+                               call=call, environ=environ, sleep=sleep, monotonic=monotonic)
     if payload.get("task") == "KTO_VISITORS_DAILY":
         raw_as_of = payload.get("asOf") or fetched_at or _utc_now()
         try:

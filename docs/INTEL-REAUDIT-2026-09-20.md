@@ -52,6 +52,8 @@ P0는 "재료 없는 true를 내리는" 감사다. 올리는 것은 **패킷 생
 | `ocean.sst` | false | **true** | `aws/marine-grid/intel_sst.py` → `ocean/sst-global.json` 의 `intel` 칸 |
 
 `intelligence:true` 33 → **34**. 위 "false 인데 재료가 있는 현상"은 14개가 남는다(`ocean.sst` 제외).
+`hazards.earthquake` 는 원래 true 였고, P3 에서 생산자가 생겼다 — `aws/lab-events/intel_quake.py` → `ocean/earthquake-intel.json`
+(`packets[<USGS 사건 id>]`, 본진 30일 안·lab-events 추적 사건만).
 
 ## 같은 변경 단위에서 함께 고친 것 (계약 §G-2)
 

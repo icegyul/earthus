@@ -6,7 +6,9 @@
 #   bash aws/deploy-lab-events.sh          # 배포 + 즉시 1회 실행 + 스케줄
 #   INVOKE=0 bash aws/deploy-lab-events.sh
 #
-# 순수 파이썬 + boto3 뿐이라 파일 하나만 zip 한다 (deploy-climatology.sh 와 같은 방식).
+# 순수 파이썬 + boto3 뿐이지만 파일 하나로는 모자란다 — 2026-09-20(P3)부터 handler 가 같은 폴더의
+# intel_quake.py 와 _shared/intel_contract.py + contracts/intel-vocab.json 을 부른다. 묶는 규칙은
+# aws/_shared/lambda_package.py 한 곳이다(deploy-python.sh 와 같은 stage → zip → verify).
 # 실행 뒤 lab-report-index 도 한 번 불러 ocean/lab-reports.json 을 갱신한다.
 set -euo pipefail
 export PYTHONUTF8=1 PYTHONIOENCODING=utf-8
@@ -25,13 +27,21 @@ TMP="$(mktemp -d)"; trap 'rm -rf "$TMP"' EXIT
 w() { cygpath -w "$1" 2>/dev/null || echo "$1"; }
 
 echo "== 1/4 패키징 =="
-python - "$(w "$SRC")" "$(w "$TMP/fn.zip")" <<'PY'
-import sys, zipfile, os
-src, out = sys.argv[1], sys.argv[2]
-with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:
-    z.write(os.path.join(src, 'handler.py'), 'handler.py')
-print('    handler.py →', os.path.getsize(out), 'bytes')
-PY
+# ⚠️ 여기는 handler.py 한 장만 zip 하던 자리다. 그대로 두면 `import intel_quake` 가 콜드 스타트에서
+#    Runtime.ImportModuleError 로 죽는다(docs/DISTRIBUTION_DEPLOYMENT_GAP.md 의 distribution 사고와 같다).
+#    함수가 실제로 import 하는 것을 lambda_package 가 읽어서 넣고, 푼 zip 으로 import 를 다시 확인한다.
+PYBIN="$(command -v python || command -v python3)"
+PKGTOOL="$ROOT/aws/_shared/lambda_package.py"
+SHARED="$ROOT/aws/_shared"
+mkdir -p "$TMP/stage" "$TMP/verify"
+"$PYBIN" "$(w "$PKGTOOL")" stage "$(w "$SRC")" "$(w "$SHARED")" "$(w "$TMP/stage")"
+"$PYBIN" "$(w "$PKGTOOL")" zip "$(w "$TMP/stage")" "$(w "$TMP/fn.zip")" --manifest "$(w "$TMP/fn.zip.manifest.json")"
+"$PYBIN" -c "import sys, zipfile; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])" "$(w "$TMP/fn.zip")" "$(w "$TMP/verify")"
+echo "   artifact import 검사"
+if ! "$PYBIN" "$(w "$PKGTOOL")" verify "$(w "$SRC")" "$(w "$SHARED")" "$(w "$TMP/verify")"; then
+  echo "❌ 배포 artifact 에서 handler 를 import 할 수 없다 — 배포하지 않는다"
+  exit 1
+fi
 ZIPW="$(w "$TMP/fn.zip")"
 
 echo "== 2/4 함수 =="

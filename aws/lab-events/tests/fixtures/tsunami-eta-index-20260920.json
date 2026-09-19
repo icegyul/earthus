@@ -1,0 +1,27 @@
+{
+ "schema": "earthus.tsunami-eta-index.v1",
+ "generated": "2026-09-19T17:06:00Z",
+ "badge": "SIMULATION_ONLY",
+ "rule": "USGS M6.5+ · 진원 깊이 100 km 이하 · 바다(0.1° 격자 기준) · 최근 10일 · 사건당 한 번 계산",
+ "count": 1,
+ "events": [
+  {
+   "usgsId": "us7000ti1p",
+   "mag": 6.5,
+   "place": "169 km W of Nikolski, Alaska",
+   "originUtc": "2026-09-17T14:19:52Z",
+   "lat": 52.8594,
+   "lon": -171.3756,
+   "key": "ocean/tsunami-eta/us7000ti1p.json",
+   "nearestKorea": null,
+   "officialMatched": true,
+   "compareN": 0,
+   "computedAt": "2026-09-18T13:06:30Z"
+  }
+ ],
+ "_fixture": {
+  "from": "https://earthus.net/ocean/tsunami-eta.json",
+  "downloadedAt": "2026-09-20",
+  "trim": "없음(원문 그대로)"
+ }
+}

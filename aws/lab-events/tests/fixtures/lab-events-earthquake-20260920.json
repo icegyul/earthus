@@ -1,0 +1,1134 @@
+{
+ "_fixture": {
+  "from": "https://earthus.net/ocean/lab-reports.json (generatedAt 2026-09-19T15:50:08Z)",
+  "downloadedAt": "2026-09-20",
+  "trim": "지진 보고서 4건만 남겼다: earthquake:us7000ti1p, earthquake:us7000thv6, earthquake:us6000tkt2, earthquake:us6000tm81",
+  "sessions": "lab-events 세션 원본(archive/)은 비공개라 받을 수 없다. publicReports 의 detail 에서 facts·마지막 회차·scores 를 거꾸로 적어 냈다. 회차는 마지막 하나뿐이고 이전 회차는 없다. 적어 낸 세션을 lab-events eq_detail 에 넣으면 publicReports 의 detail 과 같다 — tests/test_intel_quake.py 가 확인한다. 공개 detail 에 없는 값: facts.tsunami(USGS 플래그 — 게시문이 있는 사건은 null), agencies.placeEn, recent 는 타임라인에 보이는 것(최대 5건)만."
+ },
+ "publicReports": [
+  {
+   "id": "earthquake:us7000ti1p",
+   "kind": "earthquake",
+   "title": "M6.5 169 km W of Nikolski, Alaska",
+   "status": "ACTIVE",
+   "access": "pro",
+   "detectedAt": "2026-09-17T15:40:00Z",
+   "lastSeen": "2026-09-19T15:40:00Z",
+   "snapshotCount": 15,
+   "sourceCount": 1,
+   "summary": "본진·여진·기관 발표·쓰나미 게시문을 보존하고, 여진 기대수를 실제 여진으로 채점합니다.",
+   "sourcePath": "analysis/earthquake-reports.json",
+   "detail": {
+    "headline": "M6.5 · 깊이 98 km · 169 km W of Nikolski, Alaska",
+    "position": {
+     "lat": 52.8594,
+     "lon": -171.3756
+    },
+    "facts": [
+     {
+      "label": "발생(UTC)",
+      "value": "2026-09-17T14:19:00Z"
+     },
+     {
+      "label": "규모",
+      "value": "M6.5"
+     },
+     {
+      "label": "여진 M3+ / M4+",
+      "value": "4 / 1건 (100 km 안)"
+     },
+     {
+      "label": "최대 여진",
+      "value": "M4.1 · 2026-09-17T14:39:00Z"
+     },
+     {
+      "label": "USGS 검토",
+      "value": "검토 완료"
+     },
+     {
+      "label": "쓰나미 발표",
+      "value": "1건"
+     }
+    ],
+    "timeline": [
+     {
+      "at": "2026-09-17T14:19:00Z",
+      "text": "본진 M6.5 · 깊이 98 km · 169 km W of Nikolski, Alaska",
+      "agency": "USGS"
+     },
+     {
+      "at": "2026-09-17T14:23:45Z",
+      "text": "쓰나미 Information 발표 (NTWC)",
+      "agency": "NTWC"
+     },
+     {
+      "at": "2026-09-17T14:34:00Z",
+      "text": "여진 M3.5 · 163 km W of Nikolski, Alaska",
+      "agency": "USGS"
+     },
+     {
+      "at": "2026-09-17T14:39:00Z",
+      "text": "여진 M4.1 · 173 km W of Nikolski, Alaska",
+      "agency": "USGS"
+     },
+     {
+      "at": "2026-09-17T14:46:00Z",
+      "text": "여진 M3.8 · 166 km W of Nikolski, Alaska",
+      "agency": "USGS"
+     },
+     {
+      "at": "2026-09-18T05:43:00Z",
+      "text": "여진 M3.8 · 169 km WSW of Nikolski, Alaska",
+      "agency": "USGS"
+     }
+    ],
+    "agencies": [],
+    "engine": {
+     "name": "여진 기대수 (Reasenberg-Jones 일반형)",
+     "method": "본진 규모와 경과일로 앞으로 7일 M4+ 여진 기대수를 셉니다. 캘리포니아 일반 매개변수라 지역 보정이 없는 거친 추정이며, 회차마다 실제 USGS 여진 수로 채점합니다.",
+     "current": "앞으로 7일 M4+ 여진 기대 5.2회",
+     "rows": [
+      {
+       "label": "본진 뒤 0~1일",
+       "forecast": 12.9,
+       "actual": 1
+      }
+     ],
+     "unit": "회",
+     "verdict": "채점 1구간 · 평균 오차 11.9회"
+    },
+    "verification": {
+     "rows": [
+      {
+       "source": "EARTHUS 여진 기대수",
+       "n": 1,
+       "score": 11.9,
+       "unit": "회 평균오차"
+      }
+     ],
+     "note": "채점 기준은 USGS 여진 목록(100 km, M4+)입니다. 규모·깊이는 USGS 최신값이며 기관마다 다를 수 있습니다."
+    },
+    "notes": [
+     "JMA·기상청 발표는 quake-asia 수집분 중 120 km·3일 안의 것만 붙입니다.",
+     "본진 30일 뒤 USGS 검토가 끝나면 최종 보고서가 됩니다."
+    ],
+    "sourceLinks": [
+     {
+      "label": "USGS 사건 페이지",
+      "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000ti1p"
+     },
+     {
+      "label": "PTWC 게시문 1",
+      "url": "https://www.tsunami.gov/events/PAAQ/2026/09/17/tliih5/1/WEAK53/WEAK53.txt"
+     }
+    ]
+   },
+   "scores": [
+    {
+     "agency": "EARTHUS_RJ",
+     "n": 1,
+     "meanAbsError": 11.9,
+     "rows": [
+      {
+       "label": "본진 뒤 0~1일",
+       "forecast": 12.9,
+       "actual": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "earthquake:us7000thv6",
+   "kind": "earthquake",
+   "title": "M5.0 5 km NE of Mitsukaidō, Japan",
+   "status": "ACTIVE",
+   "access": "pro",
+   "detectedAt": "2026-09-16T15:40:00Z",
+   "lastSeen": "2026-09-19T15:40:00Z",
+   "snapshotCount": 23,
+   "sourceCount": 1,
+   "summary": "본진·여진·기관 발표·쓰나미 게시문을 보존하고, 여진 기대수를 실제 여진으로 채점합니다.",
+   "sourcePath": "analysis/earthquake-reports.json",
+   "detail": {
+    "headline": "M5.0 · 깊이 77.348 km · 5 km NE of Mitsukaidō, Japan",
+    "position": {
+     "lat": 36.0556,
+     "lon": 140.0207
+    },
+    "facts": [
+     {
+      "label": "발생(UTC)",
+      "value": "2026-09-16T15:07:00Z"
+     },
+     {
+      "label": "규모",
+      "value": "M5.0"
+     },
+     {
+      "label": "여진 M3+ / M4+",
+      "value": "0 / 0건 (100 km 안)"
+     },
+     {
+      "label": "최대 여진",
+      "value": "없음"
+     },
+     {
+      "label": "USGS 검토",
+      "value": "검토 완료"
+     },
+     {
+      "label": "쓰나미 발표",
+      "value": "없음"
+     }
+    ],
+    "timeline": [
+     {
+      "at": "2026-09-16T15:07:00Z",
+      "text": "본진 M5.0 · 깊이 77.348 km · 5 km NE of Mitsukaidō, Japan",
+      "agency": "USGS"
+     }
+    ],
+    "agencies": [
+     {
+      "agency": "JMA",
+      "agencyKo": "일본 기상청",
+      "summary": "震源・震度情報 · M3.9 · 진도 1 · 茨城県沖 (2026-09-19T06:15:00+09:00)"
+     },
+     {
+      "agency": "JMA",
+      "agencyKo": "일본 기상청",
+      "summary": "震源・震度情報 · M3.1 · 진도 1 · 茨城県南部 (2026-09-17T06:11:00+09:00)"
+     },
+     {
+      "agency": "JMA",
+      "agencyKo": "일본 기상청",
+      "summary": "震源・震度情報 · M3.5 · 진도 1 · 茨城県沖 (2026-09-17T03:40:00+09:00)"
+     },
+     {
+      "agency": "JMA",
+      "agencyKo": "일본 기상청",
+      "summary": "震源・震度情報 · M4.8 · 진도 3 · 茨城県南部 (2026-09-17T00:07:00+09:00)"
+     },
+     {
+      "agency": "JMA",
+      "agencyKo": "일본 기상청",
+      "summary": "震源・震度情報 · M4.8 · 진도 3 · 茨城県南部 (2026-09-17T00:07:00+09:00)"
+     },
+     {
+      "agency": "JMA",
+      "agencyKo": "일본 기상청",
+      "summary": "震源に関する情報 · M4.8 · 진도 — · 茨城県南部 (2026-09-17T00:07:00+09:00)"
+     }
+    ],
+    "engine": {
+     "name": "여진 기대수 (Reasenberg-Jones 일반형)",
+     "method": "본진 규모와 경과일로 앞으로 7일 M4+ 여진 기대수를 셉니다. 캘리포니아 일반 매개변수라 지역 보정이 없는 거친 추정이며, 회차마다 실제 USGS 여진 수로 채점합니다.",
+     "current": "앞으로 7일 M4+ 여진 기대 0.2회",
+     "rows": [
+      {
+       "label": "본진 뒤 0~1일",
+       "forecast": 0.6,
+       "actual": 0
+      }
+     ],
+     "unit": "회",
+     "verdict": "채점 1구간 · 평균 오차 0.6회"
+    },
+    "verification": {
+     "rows": [
+      {
+       "source": "EARTHUS 여진 기대수",
+       "n": 1,
+       "score": 0.6,
+       "unit": "회 평균오차"
+      }
+     ],
+     "note": "채점 기준은 USGS 여진 목록(100 km, M4+)입니다. 규모·깊이는 USGS 최신값이며 기관마다 다를 수 있습니다."
+    },
+    "notes": [
+     "JMA·기상청 발표는 quake-asia 수집분 중 120 km·3일 안의 것만 붙입니다.",
+     "본진 30일 뒤 USGS 검토가 끝나면 최종 보고서가 됩니다."
+    ],
+    "sourceLinks": [
+     {
+      "label": "USGS 사건 페이지",
+      "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thv6"
+     }
+    ]
+   },
+   "scores": [
+    {
+     "agency": "EARTHUS_RJ",
+     "n": 1,
+     "meanAbsError": 0.6,
+     "rows": [
+      {
+       "label": "본진 뒤 0~1일",
+       "forecast": 0.6,
+       "actual": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "earthquake:us6000tkt2",
+   "kind": "earthquake",
+   "title": "M7.8 64 km NNW of Ende, Indonesia",
+   "status": "FINAL_REPORT",
+   "access": "pro",
+   "detectedAt": "2026-09-05T02:23:00Z",
+   "lastSeen": "2026-09-19T15:40:00Z",
+   "snapshotCount": 118,
+   "sourceCount": 1,
+   "summary": "본진·여진·기관 발표·쓰나미 게시문을 보존하고, 여진 기대수를 실제 여진으로 채점합니다.",
+   "sourcePath": "analysis/earthquake-reports.json",
+   "detail": {
+    "headline": "M7.8 · 깊이 10 km · 64 km NNW of Ende, Indonesia",
+    "position": {
+     "lat": -8.3514,
+     "lon": 121.3478
+    },
+    "facts": [
+     {
+      "label": "발생(UTC)",
+      "value": "2026-08-14T21:58:00Z"
+     },
+     {
+      "label": "규모",
+      "value": "M7.8"
+     },
+     {
+      "label": "여진 M3+ / M4+",
+      "value": "220 / 220건 (100 km 안)"
+     },
+     {
+      "label": "최대 여진",
+      "value": "M6.1 · 2026-08-14T22:28:00Z"
+     },
+     {
+      "label": "USGS 검토",
+      "value": "검토 완료"
+     },
+     {
+      "label": "쓰나미 발표",
+      "value": "없음"
+     }
+    ],
+    "timeline": [
+     {
+      "at": "2026-08-14T21:58:00Z",
+      "text": "본진 M7.8 · 깊이 10 km · 64 km NNW of Ende, Indonesia",
+      "agency": "USGS"
+     },
+     {
+      "at": "2026-09-08T15:36:00Z",
+      "text": "여진 M5.2 · 125 km NE of Ruteng, Indonesia",
+      "agency": "USGS"
+     },
+     {
+      "at": "2026-09-08T21:42:00Z",
+      "text": "여진 M4.6 · 47 km N of Ruteng, Indonesia",
+      "agency": "USGS"
+     },
+     {
+      "at": "2026-09-12T03:34:00Z",
+      "text": "여진 M4.6 · 45 km NNE of Ruteng, Indonesia",
+      "agency": "USGS"
+     },
+     {
+      "at": "2026-09-17T08:28:00Z",
+      "text": "여진 M4.5 · 78 km NW of Maumere, Indonesia",
+      "agency": "USGS"
+     },
+     {
+      "at": "2026-09-18T12:20:00Z",
+      "text": "여진 M4.7 · 34 km NNE of Ruteng, Indonesia",
+      "agency": "USGS"
+     }
+    ],
+    "agencies": [],
+    "engine": {
+     "name": "여진 기대수 (Reasenberg-Jones 일반형)",
+     "method": "본진 규모와 경과일로 앞으로 7일 M4+ 여진 기대수를 셉니다. 캘리포니아 일반 매개변수라 지역 보정이 없는 거친 추정이며, 회차마다 실제 USGS 여진 수로 채점합니다.",
+     "current": "본진 30일 경과 — 추정 종료",
+     "rows": [
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 10.3,
+       "actual": 15
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 10.3,
+       "actual": 15
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 10.2,
+       "actual": 15
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 10.2,
+       "actual": 15
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 10.1,
+       "actual": 15
+      },
+      {
+       "label": "본진 뒤 0~1일",
+       "forecast": 196.6,
+       "actual": 70
+      },
+      {
+       "label": "본진 뒤 1~7일",
+       "forecast": 108.0,
+       "actual": 109
+      },
+      {
+       "label": "본진 뒤 7~30일",
+       "forecast": 71.9,
+       "actual": 39
+      }
+     ],
+     "unit": "회",
+     "verdict": "채점 67구간 · 평균 오차 12.99회"
+    },
+    "verification": {
+     "rows": [
+      {
+       "source": "EARTHUS 여진 기대수",
+       "n": 67,
+       "score": 12.99,
+       "unit": "회 평균오차"
+      }
+     ],
+     "note": "채점 기준은 USGS 여진 목록(100 km, M4+)입니다. 규모·깊이는 USGS 최신값이며 기관마다 다를 수 있습니다."
+    },
+    "notes": [
+     "JMA·기상청 발표는 quake-asia 수집분 중 120 km·3일 안의 것만 붙입니다.",
+     "본진 30일 뒤 USGS 검토가 끝나면 최종 보고서가 됩니다."
+    ],
+    "sourceLinks": [
+     {
+      "label": "USGS 사건 페이지",
+      "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000tkt2"
+     }
+    ]
+   },
+   "scores": [
+    {
+     "agency": "EARTHUS_RJ",
+     "n": 67,
+     "meanAbsError": 12.99,
+     "rows": [
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 10.3,
+       "actual": 15
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 10.3,
+       "actual": 15
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 10.2,
+       "actual": 15
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 10.2,
+       "actual": 15
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 10.1,
+       "actual": 15
+      },
+      {
+       "label": "본진 뒤 0~1일",
+       "forecast": 196.6,
+       "actual": 70
+      },
+      {
+       "label": "본진 뒤 1~7일",
+       "forecast": 108.0,
+       "actual": 109
+      },
+      {
+       "label": "본진 뒤 7~30일",
+       "forecast": 71.9,
+       "actual": 39
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "earthquake:us6000tm81",
+   "kind": "earthquake",
+   "title": "M6.7 38 km NE of Tambo, Peru",
+   "status": "PRELIMINARY_REPORT",
+   "access": "pro",
+   "detectedAt": "2026-09-05T02:23:00Z",
+   "lastSeen": "2026-09-19T15:40:00Z",
+   "snapshotCount": 118,
+   "sourceCount": 1,
+   "summary": "본진·여진·기관 발표·쓰나미 게시문을 보존하고, 여진 기대수를 실제 여진으로 채점합니다.",
+   "sourcePath": "analysis/earthquake-reports.json",
+   "detail": {
+    "headline": "M6.7 · 깊이 99 km · 38 km NE of Tambo, Peru",
+    "position": {
+     "lat": -14.5704,
+     "lon": -73.6538
+    },
+    "facts": [
+     {
+      "label": "발생(UTC)",
+      "value": "2026-08-20T18:00:00Z"
+     },
+     {
+      "label": "규모",
+      "value": "M6.7"
+     },
+     {
+      "label": "여진 M3+ / M4+",
+      "value": "1 / 1건 (100 km 안)"
+     },
+     {
+      "label": "최대 여진",
+      "value": "M4.3 · 2026-08-20T21:30:00Z"
+     },
+     {
+      "label": "USGS 검토",
+      "value": "검토 완료"
+     },
+     {
+      "label": "쓰나미 발표",
+      "value": "없음"
+     }
+    ],
+    "timeline": [
+     {
+      "at": "2026-08-20T18:00:00Z",
+      "text": "본진 M6.7 · 깊이 99 km · 38 km NE of Tambo, Peru",
+      "agency": "USGS"
+     },
+     {
+      "at": "2026-08-20T21:30:00Z",
+      "text": "여진 M4.3 · 23 km SSW of Tambo, Peru",
+      "agency": "USGS"
+     }
+    ],
+    "agencies": [],
+    "engine": {
+     "name": "여진 기대수 (Reasenberg-Jones 일반형)",
+     "method": "본진 규모와 경과일로 앞으로 7일 M4+ 여진 기대수를 셉니다. 캘리포니아 일반 매개변수라 지역 보정이 없는 거친 추정이며, 회차마다 실제 USGS 여진 수로 채점합니다.",
+     "current": "앞으로 7일 M4+ 여진 기대 1.0회",
+     "rows": [
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 1.3,
+       "actual": 0
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 1.3,
+       "actual": 0
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 1.3,
+       "actual": 0
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 1.3,
+       "actual": 0
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 1.3,
+       "actual": 0
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 1.3,
+       "actual": 0
+      },
+      {
+       "label": "본진 뒤 0~1일",
+       "forecast": 19.6,
+       "actual": 1
+      },
+      {
+       "label": "본진 뒤 1~7일",
+       "forecast": 10.8,
+       "actual": 0
+      }
+     ],
+     "unit": "회",
+     "verdict": "채점 66구간 · 평균 오차 1.92회"
+    },
+    "verification": {
+     "rows": [
+      {
+       "source": "EARTHUS 여진 기대수",
+       "n": 66,
+       "score": 1.92,
+       "unit": "회 평균오차"
+      }
+     ],
+     "note": "채점 기준은 USGS 여진 목록(100 km, M4+)입니다. 규모·깊이는 USGS 최신값이며 기관마다 다를 수 있습니다."
+    },
+    "notes": [
+     "JMA·기상청 발표는 quake-asia 수집분 중 120 km·3일 안의 것만 붙입니다.",
+     "본진 30일 뒤 USGS 검토가 끝나면 최종 보고서가 됩니다."
+    ],
+    "sourceLinks": [
+     {
+      "label": "USGS 사건 페이지",
+      "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000tm81"
+     }
+    ]
+   },
+   "scores": [
+    {
+     "agency": "EARTHUS_RJ",
+     "n": 66,
+     "meanAbsError": 1.92,
+     "rows": [
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 1.3,
+       "actual": 0
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 1.3,
+       "actual": 0
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 1.3,
+       "actual": 0
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 1.3,
+       "actual": 0
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 1.3,
+       "actual": 0
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 1.3,
+       "actual": 0
+      },
+      {
+       "label": "본진 뒤 0~1일",
+       "forecast": 19.6,
+       "actual": 1
+      },
+      {
+       "label": "본진 뒤 1~7일",
+       "forecast": 10.8,
+       "actual": 0
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "sessions": [
+  {
+   "id": "earthquake:us7000ti1p",
+   "kind": "earthquake",
+   "title": "M6.5 169 km W of Nikolski, Alaska",
+   "status": "ACTIVE",
+   "detectedAt": "2026-09-17T15:40:00Z",
+   "lastSeen": "2026-09-19T15:40:00Z",
+   "endedAt": null,
+   "snapshots": [
+    {
+     "mag": 6.5,
+     "depthKm": 98,
+     "usgsStatus": "reviewed",
+     "aftershockN": 4,
+     "aftershockM4": 1,
+     "largest": {
+      "mag": 4.1,
+      "time": "2026-09-17T14:39:00Z",
+      "place": "173 km W of Nikolski, Alaska"
+     },
+     "recent": [
+      {
+       "mag": 3.8,
+       "time": "2026-09-18T05:43:00Z",
+       "place": "169 km WSW of Nikolski, Alaska"
+      },
+      {
+       "mag": 3.8,
+       "time": "2026-09-17T14:46:00Z",
+       "place": "166 km W of Nikolski, Alaska"
+      },
+      {
+       "mag": 4.1,
+       "time": "2026-09-17T14:39:00Z",
+       "place": "173 km W of Nikolski, Alaska"
+      },
+      {
+       "mag": 3.5,
+       "time": "2026-09-17T14:34:00Z",
+       "place": "163 km W of Nikolski, Alaska"
+      }
+     ],
+     "forecast": {
+      "from": "2026-09-19T15:40:00Z",
+      "to": "2026-09-26T15:40:00Z",
+      "mMin": 4,
+      "expected": 5.2
+     },
+     "windows": [
+      {
+       "t1": 0,
+       "t2": 1,
+       "actual": 1,
+       "expected": 12.9
+      }
+     ],
+     "tsunami": [
+      {
+       "center": "NTWC",
+       "category": "Information",
+       "updated": "2026-09-17T14:23:45Z",
+       "url": "https://www.tsunami.gov/events/PAAQ/2026/09/17/tliih5/1/WEAK53/WEAK53.txt"
+      }
+     ],
+     "agencies": [],
+     "daysSince": 2.06,
+     "at": "2026-09-19T15:40:00Z"
+    }
+   ],
+   "events": [],
+   "facts": {
+    "id": "us7000ti1p",
+    "mag": 6.5,
+    "place": "169 km W of Nikolski, Alaska",
+    "time": "2026-09-17T14:19:00Z",
+    "lat": 52.8594,
+    "lon": -171.3756,
+    "depthKm": 98,
+    "tsunami": null,
+    "usgsStatus": "reviewed",
+    "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000ti1p",
+    "title": "M6.5 169 km W of Nikolski, Alaska"
+   },
+   "scores": [
+    {
+     "agency": "EARTHUS_RJ",
+     "n": 1,
+     "meanAbsError": 11.9,
+     "rows": [
+      {
+       "label": "본진 뒤 0~1일",
+       "forecast": 12.9,
+       "actual": 1
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "earthquake:us7000thv6",
+   "kind": "earthquake",
+   "title": "M5.0 5 km NE of Mitsukaidō, Japan",
+   "status": "ACTIVE",
+   "detectedAt": "2026-09-16T15:40:00Z",
+   "lastSeen": "2026-09-19T15:40:00Z",
+   "endedAt": null,
+   "snapshots": [
+    {
+     "mag": 5.0,
+     "depthKm": 77.348,
+     "usgsStatus": "reviewed",
+     "aftershockN": 0,
+     "aftershockM4": 0,
+     "largest": null,
+     "recent": [],
+     "forecast": {
+      "from": "2026-09-19T15:40:00Z",
+      "to": "2026-09-26T15:40:00Z",
+      "mMin": 4,
+      "expected": 0.2
+     },
+     "windows": [
+      {
+       "t1": 0,
+       "t2": 1,
+       "actual": 0,
+       "expected": 0.6
+      }
+     ],
+     "tsunami": [],
+     "agencies": [
+      {
+       "src": "JMA",
+       "srcKo": "일본 기상청",
+       "kind": "震源・震度情報",
+       "at": "2026-09-19T06:15:00+09:00",
+       "mag": 3.9,
+       "intensity": "1",
+       "place": "茨城県沖",
+       "placeEn": null
+      },
+      {
+       "src": "JMA",
+       "srcKo": "일본 기상청",
+       "kind": "震源・震度情報",
+       "at": "2026-09-17T06:11:00+09:00",
+       "mag": 3.1,
+       "intensity": "1",
+       "place": "茨城県南部",
+       "placeEn": null
+      },
+      {
+       "src": "JMA",
+       "srcKo": "일본 기상청",
+       "kind": "震源・震度情報",
+       "at": "2026-09-17T03:40:00+09:00",
+       "mag": 3.5,
+       "intensity": "1",
+       "place": "茨城県沖",
+       "placeEn": null
+      },
+      {
+       "src": "JMA",
+       "srcKo": "일본 기상청",
+       "kind": "震源・震度情報",
+       "at": "2026-09-17T00:07:00+09:00",
+       "mag": 4.8,
+       "intensity": "3",
+       "place": "茨城県南部",
+       "placeEn": null
+      },
+      {
+       "src": "JMA",
+       "srcKo": "일본 기상청",
+       "kind": "震源・震度情報",
+       "at": "2026-09-17T00:07:00+09:00",
+       "mag": 4.8,
+       "intensity": "3",
+       "place": "茨城県南部",
+       "placeEn": null
+      },
+      {
+       "src": "JMA",
+       "srcKo": "일본 기상청",
+       "kind": "震源に関する情報",
+       "at": "2026-09-17T00:07:00+09:00",
+       "mag": 4.8,
+       "intensity": null,
+       "place": "茨城県南部",
+       "placeEn": null
+      }
+     ],
+     "daysSince": 3.02,
+     "at": "2026-09-19T15:40:00Z"
+    }
+   ],
+   "events": [],
+   "facts": {
+    "id": "us7000thv6",
+    "mag": 5.0,
+    "place": "5 km NE of Mitsukaidō, Japan",
+    "time": "2026-09-16T15:07:00Z",
+    "lat": 36.0556,
+    "lon": 140.0207,
+    "depthKm": 77.348,
+    "tsunami": false,
+    "usgsStatus": "reviewed",
+    "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us7000thv6",
+    "title": "M5.0 5 km NE of Mitsukaidō, Japan"
+   },
+   "scores": [
+    {
+     "agency": "EARTHUS_RJ",
+     "n": 1,
+     "meanAbsError": 0.6,
+     "rows": [
+      {
+       "label": "본진 뒤 0~1일",
+       "forecast": 0.6,
+       "actual": 0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "earthquake:us6000tkt2",
+   "kind": "earthquake",
+   "title": "M7.8 64 km NNW of Ende, Indonesia",
+   "status": "FINAL_REPORT",
+   "detectedAt": "2026-09-05T02:23:00Z",
+   "lastSeen": "2026-09-19T15:40:00Z",
+   "endedAt": null,
+   "snapshots": [
+    {
+     "mag": 7.8,
+     "depthKm": 10,
+     "usgsStatus": "reviewed",
+     "aftershockN": 220,
+     "aftershockM4": 220,
+     "largest": {
+      "mag": 6.1,
+      "time": "2026-08-14T22:28:00Z",
+      "place": null
+     },
+     "recent": [
+      {
+       "mag": 4.7,
+       "time": "2026-09-18T12:20:00Z",
+       "place": "34 km NNE of Ruteng, Indonesia"
+      },
+      {
+       "mag": 4.5,
+       "time": "2026-09-17T08:28:00Z",
+       "place": "78 km NW of Maumere, Indonesia"
+      },
+      {
+       "mag": 4.6,
+       "time": "2026-09-12T03:34:00Z",
+       "place": "45 km NNE of Ruteng, Indonesia"
+      },
+      {
+       "mag": 4.6,
+       "time": "2026-09-08T21:42:00Z",
+       "place": "47 km N of Ruteng, Indonesia"
+      },
+      {
+       "mag": 5.2,
+       "time": "2026-09-08T15:36:00Z",
+       "place": "125 km NE of Ruteng, Indonesia"
+      }
+     ],
+     "forecast": null,
+     "windows": [
+      {
+       "t1": 0,
+       "t2": 1,
+       "actual": 70,
+       "expected": 196.6
+      },
+      {
+       "t1": 1,
+       "t2": 7,
+       "actual": 109,
+       "expected": 108.0
+      },
+      {
+       "t1": 7,
+       "t2": 30,
+       "actual": 39,
+       "expected": 71.9
+      }
+     ],
+     "tsunami": [],
+     "agencies": [],
+     "daysSince": 35.74,
+     "at": "2026-09-19T15:40:00Z"
+    }
+   ],
+   "events": [],
+   "facts": {
+    "id": "us6000tkt2",
+    "mag": 7.8,
+    "place": "64 km NNW of Ende, Indonesia",
+    "time": "2026-08-14T21:58:00Z",
+    "lat": -8.3514,
+    "lon": 121.3478,
+    "depthKm": 10,
+    "tsunami": false,
+    "usgsStatus": "reviewed",
+    "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000tkt2",
+    "title": "M7.8 64 km NNW of Ende, Indonesia"
+   },
+   "scores": [
+    {
+     "agency": "EARTHUS_RJ",
+     "n": 67,
+     "meanAbsError": 12.99,
+     "rows": [
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 10.3,
+       "actual": 15
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 10.3,
+       "actual": 15
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 10.2,
+       "actual": 15
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 10.2,
+       "actual": 15
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 10.1,
+       "actual": 15
+      },
+      {
+       "label": "본진 뒤 0~1일",
+       "forecast": 196.6,
+       "actual": 70
+      },
+      {
+       "label": "본진 뒤 1~7일",
+       "forecast": 108.0,
+       "actual": 109
+      },
+      {
+       "label": "본진 뒤 7~30일",
+       "forecast": 71.9,
+       "actual": 39
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "earthquake:us6000tm81",
+   "kind": "earthquake",
+   "title": "M6.7 38 km NE of Tambo, Peru",
+   "status": "PRELIMINARY_REPORT",
+   "detectedAt": "2026-09-05T02:23:00Z",
+   "lastSeen": "2026-09-19T15:40:00Z",
+   "endedAt": null,
+   "snapshots": [
+    {
+     "mag": 6.7,
+     "depthKm": 99,
+     "usgsStatus": "reviewed",
+     "aftershockN": 1,
+     "aftershockM4": 1,
+     "largest": {
+      "mag": 4.3,
+      "time": "2026-08-20T21:30:00Z",
+      "place": "23 km SSW of Tambo, Peru"
+     },
+     "recent": [
+      {
+       "mag": 4.3,
+       "time": "2026-08-20T21:30:00Z",
+       "place": "23 km SSW of Tambo, Peru"
+      }
+     ],
+     "forecast": {
+      "from": "2026-09-19T15:40:00Z",
+      "to": "2026-09-26T15:40:00Z",
+      "mMin": 4,
+      "expected": 1.0
+     },
+     "windows": [
+      {
+       "t1": 0,
+       "t2": 1,
+       "actual": 1,
+       "expected": 19.6
+      },
+      {
+       "t1": 1,
+       "t2": 7,
+       "actual": 0,
+       "expected": 10.8
+      }
+     ],
+     "tsunami": [],
+     "agencies": [],
+     "daysSince": 29.9,
+     "at": "2026-09-19T15:40:00Z"
+    }
+   ],
+   "events": [],
+   "facts": {
+    "id": "us6000tm81",
+    "mag": 6.7,
+    "place": "38 km NE of Tambo, Peru",
+    "time": "2026-08-20T18:00:00Z",
+    "lat": -14.5704,
+    "lon": -73.6538,
+    "depthKm": 99,
+    "tsunami": false,
+    "usgsStatus": "reviewed",
+    "url": "https://earthquake.usgs.gov/earthquakes/eventpage/us6000tm81",
+    "title": "M6.7 38 km NE of Tambo, Peru"
+   },
+   "scores": [
+    {
+     "agency": "EARTHUS_RJ",
+     "n": 66,
+     "meanAbsError": 1.92,
+     "rows": [
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 1.3,
+       "actual": 0
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 1.3,
+       "actual": 0
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 1.3,
+       "actual": 0
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 1.3,
+       "actual": 0
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 1.3,
+       "actual": 0
+      },
+      {
+       "label": "2026-09-12~2026-09-19",
+       "forecast": 1.3,
+       "actual": 0
+      },
+      {
+       "label": "본진 뒤 0~1일",
+       "forecast": 19.6,
+       "actual": 1
+      },
+      {
+       "label": "본진 뒤 1~7일",
+       "forecast": 10.8,
+       "actual": 0
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

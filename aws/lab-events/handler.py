@@ -15,6 +15,7 @@
 현상별 자료원 · 우리 계산 · 검증
   earthquake   USGS FDSN(M6+ 전지구, M5+ 한·일·대만) + JMA/KMA(quake-asia) + PTWC(tsunami-intl)
                계산: Reasenberg-Jones 일반형 여진 기대수(M4+, 7일) → 실제 USGS 여진 수와 대조
+               + 인텔 패킷 v1(P3): ocean/earthquake-intel.json — intel_quake.py (본진 30일 안 사건만)
   aurora       NOAA SWPC Kp 관측·예보 · 계산: 지속성 추정 → 관측 Kp 로 SWPC 예보와 함께 채점
   smoke-ash    VAAC 도쿄 화산재 권고(events/volcanic-ash-vaac) + FIRMS 대형 산불 군집(events/wildfire)
                계산: 산불 화점 수 지속성 추정(24h) → 실제 화점 수와 대조
@@ -36,10 +37,22 @@ from datetime import datetime, timedelta, timezone
 
 import boto3
 
+import sys as _sys
+# 인텔 패킷 v1 변환(P3) — 같은 폴더의 intel_quake.py. Lambda 에서는 zip 루트라 그냥 잡히지만, 시험은 이 파일을
+# 경로로 불러와(spec_from_file_location) 폴더가 sys.path 에 없다 — 그래서 자기 폴더를 넣는다.
+# ⚠️ 이 import 때문에 handler.py 한 장만 zip 하면 콜드 스타트에서 죽는다 — deploy-lab-events.sh 는
+#    aws/_shared/lambda_package.py 로 intel_quake·intel_contract·contracts/ 를 함께 넣는다.
+_sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import intel_quake  # noqa: E402
+
 BUCKET = os.environ.get("CACHE_BUCKET", "earthus-cache-kr")
 REGION = os.environ.get("CACHE_REGION", "us-east-2")
 UA = {"User-Agent": "earthus-lab-events/0.1 (+https://earthus.net)"}
 STATE_KEY = "archive/lab-events-sessions.json"
+# 지진 인텔 패킷 v1(P3) — USGS 사건 id → 패킷. analysis/ 는 비공개라 공개 접두사 ocean/ 에 따로 둔다
+# (ocean/lab-reports.json·ocean/tsunami-eta.json 과 같은 자리). 화면이 사건 방을 열 때 이것 하나만 읽으면 된다.
+EQ_INTEL_KEY = "ocean/earthquake-intel.json"
+TSUNAMI_ETA_INDEX_KEY = "ocean/tsunami-eta.json"
 s3 = boto3.client("s3", region_name=REGION)
 
 KINDS = ("earthquake", "aurora", "smoke-ash", "air-pollution", "ocean-drift", "bird-migration", "marine-bloom", "space-reentry")
@@ -1077,7 +1090,26 @@ def run_kind(kind, state, now, ctx):
                         "sourceCount": len(s.get("scores") or []) or None, "summary": SUMMARY[kind], "scores": s.get("scores") or [], "detail": d,
                         "sourcePath": f"analysis/{kind}-reports.json"})
     put_json(f"analysis/{kind}-reports.json", {"schemaVersion": 1, "generated": stamp(now), "kind": kind, "count": len(reports), "reports": reports})
+    if kind == "earthquake":
+        # ⚠️ 보고서를 쓴 **뒤에** 따로 쓴다. 패킷이 실패해도 보고서는 이미 나갔다.
+        try:
+            write_earthquake_intel(kept, now, ctx)
+        except Exception as error:  # noqa: BLE001
+            print(f"  지진 인텔 v1 쓰기 실패: {error!r}"[:200])
     return kept
+
+
+def write_earthquake_intel(sessions, now, ctx):
+    """지진 세션들 → ocean/earthquake-intel.json (인텔 패킷 v1, INTELLIGENCE-LAYER-PLAN P3).
+
+    새 외부 호출은 없다. 쓰나미 도달시간 색인은 우리 버킷의 공개 문서(aws/tsunami-eta 가 씀)를 읽는다.
+    계약을 못 맞춘 사건은 빠지고 failed 에 이름이 남는다 — intel_quake.build_doc.
+    """
+    eta = ctx.get("tsunami_eta", lambda: s3_json(TSUNAMI_ETA_INDEX_KEY, {})) or {}
+    doc = intel_quake.build_doc(sessions, now, eta)
+    put_json(EQ_INTEL_KEY, doc)
+    print(f"  지진 인텔 v1 {doc['count']}건 · 실패 {len(doc['failed'])}")
+    return doc
 
 
 def handler(event, _context=None):

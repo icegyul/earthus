@@ -526,6 +526,14 @@ class 발행_사슬(unittest.TestCase):
 
 
 class 명령줄(unittest.TestCase):
+    def test_운영_경로의_기본_출처로는_운영_검증을_통과한다(self):
+        """기본 출처 키·스냅샷 id·근거 참조에 시험 표식(fixture·sample·test:)이 섞이면
+        운영 발행이 조용히 스스로 막힌다. 입력 경로를 안 남기는 운영 경로는 통과해야 한다."""
+        rep, quality = build()
+        out = gen.run_publication_pipeline(rep, quality=quality, published_at=NOW, mode="PRODUCTION")
+        self.assertEqual(out["lifecycle"], "PUBLISHED", out.get("validationProblems"))
+        self.assertIsNone(gen._test_data_leak(out))
+
     def test_시험_자료로_운영을_돌리면_막힌다(self):
         """cli.py intel 은 입력 경로를 provenance 에 남긴다. fixtures/… 로 PRODUCTION 이면 FAILED."""
         rep, quality = build(provenance_extra={"input": FIXTURE})

@@ -250,6 +250,29 @@ class RepositoryFactTests(unittest.TestCase):
                 self.assertEqual(want, sorted(planned["sharedModules"]))
                 self.assertEqual([], planned["subPackages"])
 
+    def test_earthus_llm_ships_the_guard_the_contract_and_its_vocabulary(self):
+        """2026-09-20 P4 — 서술자 Lambda 가 서술 후처리(narration_guard)를 싣는다.
+
+        narration_guard 가 intel_contract(어휘 정본을 import 시점에 읽는다)와 cap_map(특보 종료 상태)을
+        부른다. 계획에 어휘 파일이 빠지면 콜드 스타트가 IntelContractError 로 죽는다.
+        ⚠️ `tools/deploy-llm.sh` 는 아직 handler.py 하나만 zip 한다 — 이 계획을 쓰지 않는다.
+        """
+        function = str(AWS / "earthus-llm")
+        planned = lp.plan(function, str(SHARED))
+        self.assertEqual(["handler.py", "narration_guard.py"], planned["topLevelModules"])
+        self.assertEqual(["cap_map", "intel_contract"], planned["sharedModules"])
+        self.assertIn("contracts/intel-vocab.json", planned["dataFiles"])
+        self.assertEqual([], planned["subPackages"], "tests/ 는 패키지가 아니다")
+        with tempfile.TemporaryDirectory() as folder:
+            dest = os.path.join(folder, "task")
+            lp.stage(function, str(SHARED), dest)
+            self.assertTrue(os.path.isfile(os.path.join(dest, "contracts", "intel-vocab.json")),
+                            "상대 경로를 유지해 넣어야 한다 — intel_contract 가 자기 옆에서 읽는다")
+            self.assertEqual([], lp.missing_own_modules(dest, function, str(SHARED)))
+            verdict = lp.import_check(dest)
+            self.assertTrue(verdict["ok"], verdict)
+            self.assertEqual("IMPORTED", verdict["kind"])
+
     def test_only_distribution_has_python_sub_packages_among_lambdas(self):
         """하위 패키지 재귀 복사가 영향을 주는 함수를 고정해 둔다."""
         withpkgs = []

@@ -10,11 +10,26 @@
 #   - 3D는 **승인된 Scene Tool** 로만 움직인다. 도구 밖의 행동은 무시된다.
 #
 # 이 파일이 하지 않는 것: 웹 검색, 기사 요약, 예보 생성. 그건 다른 계층의 일이다.
+#
+# 인텔 패킷 동봉 (INTELLIGENCE-LAYER-PLAN P4 · 계약 §C-1·§C-2) — 2026-09-20
+#   요청에 intelPacket 이 있으면 intel_contract.narrator_view() 를 거친 모양만 스냅샷에 싣는다.
+#   원본 패킷은 모델에게 가지 않는다(confidence 내부 수치·coverage 는 빠진다).
+#   모델 답은 narration_guard 가 스냅샷·패킷과 글자로 대조하고, 하나라도 걸리면 답 전체를
+#   고정 문장으로 바꾼다. 응답의 guard 칸이 그 판정이다.
 import json
 import os
+import sys
 import time
 import urllib.error
 import urllib.request
+
+# 같은 폴더의 narration_guard 와 _shared 의 intel_contract. Lambda 에서는 둘 다 zip 루트에 평평하게
+# 들어가 그냥 잡힌다. 저장소·시험에서는 자기 폴더와 ../_shared 를 경로에 넣는다(cyclone-analog 와 같은 관용구).
+_HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(_HERE), "_shared"))
+sys.path.insert(0, _HERE)
+import intel_contract  # noqa: E402
+import narration_guard  # noqa: E402
 
 # 모델 하나를 박아두면 그 모델이 폐지되는 날 조용히 죽는다 (2.5 계열이 실제로 그렇게 됐다).
 # 게다가 가용성이 모델마다 흔들린다 — 같은 순간에 3.8은 답하고 3.6은 503이었다.
@@ -58,6 +73,18 @@ SYSTEM = """당신은 EARTHUS의 지구 해설자입니다. {LANG_LINE}
 6. 스냅샷에 답할 자료가 없지만 <snapshot>의 "켤수있는레이어" 중에 답에 필요한 것이 있으면,
    그 레이어의 showLayer 를 actions 에 넣고 answer 에 "이 자료를 켜면 답할 수 있습니다: (이름)" 을
    덧붙입니다. insufficient 는 그대로 true 입니다. 켜지 않은 자료의 값을 미리 말하지 않습니다.
+7. <snapshot>의 "인텔패킷" 에서 "missingSections" 에 있는 절은 없다고 말합니다.
+   절 이름을 부르지 않고 {SECTION_MISSING} 라고만 씁니다. 그 절을 다른 값·상식으로 메우지 않습니다.
+8. 인텔패킷의 confidence 는 등급({GRADES}) 하나뿐입니다. 등급을 숫자·백분율·확률로
+   바꾸지 않고, 등급을 말하는 문장에 숫자를 붙이지 않습니다.
+
+인텔패킷을 읽는 법 (스냅샷에 있을 때만):
+  - 왜(WHY)를 물으면 conditions 만 인용합니다. conditions 는 함께 나타난 조건이지 원인이 아닙니다.
+  - 앞으로(NEXT)를 물으면 next 항목 중 kind 가 {FORECAST_KINDS} 인 것만 인용하고,
+    기관(source)과 발표 시각(issuedAt)을 함께 적습니다.
+  - % 와 확률은 quotedOfficial 문장을 한 글자도 바꾸지 않고 옮길 때만 씁니다.
+  - 대피·피난·피해액은 말하지 않습니다. 유효한 특보를 해제·종료됐다고 말하지 않습니다.
+  - 숫자는 적힌 그대로 씁니다(소수 자리 반올림만). 단위를 바꾸거나 새로 계산하지 않습니다.
 
 답변 형식: 3~5문장. 숫자를 말할 때는 출처 레이어 이름을 함께 적습니다.
 
@@ -203,13 +230,58 @@ CORR = {
     "ko": '"이건 상관관계이지 확정된 원인이 아닙니다"',
     "en": '"this is a correlation, not an established cause"',
 }
+# 규칙 7 의 고정 문장·규칙 8 의 등급·NEXT 의 예보 종류는 어휘 정본(intel-vocab.json)에서 읽는다.
+# 지시문에 베껴 적으면 정본이 바뀌는 날 지시문만 옛말을 한다.
+SECTION_MISSING = {lang: '"%s"' % text for lang, text in intel_contract.FIXED_TEXT["sectionMissing"].items()}
+GRADES = "/".join(intel_contract.CONFIDENCE_GRADE)
+FORECAST_KINDS = "·".join(k for k in intel_contract.EVIDENCE_KIND if k.endswith("_FORECAST"))
+
+
+def system_prompt(lang="ko"):
+    """언어에 맞춘 지시문. 규칙 본문은 하나이고 정형구만 갈아 끼운다."""
+    return (SYSTEM
+            .replace("{LANG_LINE}", LANG_LINE.get(lang, LANG_LINE["ko"]))
+            .replace("{NO_DATA}", NO_DATA.get(lang, NO_DATA["ko"]))
+            .replace("{CORR}", CORR.get(lang, CORR["ko"]))
+            .replace("{SECTION_MISSING}", SECTION_MISSING.get(lang, SECTION_MISSING["ko"]))
+            .replace("{GRADES}", GRADES)
+            .replace("{FORECAST_KINDS}", FORECAST_KINDS))
+
+
+# ── 인텔 패킷 동봉 (계약 §C-1) ─────────────────────────────────────────────
+# 한 사건 패킷의 서술자 뷰는 수천 자다(태풍 픽스처 실측 3,493자). 넉넉히 두되 끝은 둔다 —
+# 토큰 예산(MAX_OUT)과 별개로 입력이 무한히 커지지 않게.
+MAX_PACKET = 40000
+# 특보는 메타만 넘긴다(§C-1). 본문(headline·instruction 따위)은 화면이 원문 카드로 결정적으로 넣는다.
+WARNING_META = ("id", "kind", "status", "issuedAt", "officialUrl", "ageMin", "slaMin")
+PACKET_ERRORS = (intel_contract.IntelContractError, TypeError, AttributeError, ValueError, KeyError)
+
+
+def enclose_packet(raw):
+    """브라우저가 보낸 인텔 패킷 → 서술자 뷰. 원본은 모델에게 가지 않는다.
+
+    narrator_view() 가 계약 검사(require_valid)·수리(normalize)를 하고 missing 절·confidence 내부
+    수치를 뺀다. 여기서는 특보 출처를 메타 다섯 칸(+나이)만 남긴다. 계약 위반·크기 초과면 던진다 —
+    부른 쪽이 모델을 부르지 않고 insufficient 로 닫는다.
+    """
+    view = intel_contract.narrator_view(raw)
+    for src in view.get("sources") or []:
+        if isinstance(src, dict) and src.get("kind") == "OFFICIAL_WARNING":
+            for field in [f for f in src if f not in WARNING_META]:
+                src.pop(field)
+    if len(json.dumps(view, ensure_ascii=False)) > MAX_PACKET:
+        raise intel_contract.IntelContractError("패킷 뷰가 %d자를 넘는다" % MAX_PACKET)
+    return view
+
+
+def closed(lang, reason):
+    """모델을 부르지 않고 닫는 답 — 고정 문장과 사유 코드."""
+    return {"answer": narration_guard.insufficient_text(lang), "insufficient": True,
+            "used": [], "actions": [], "guard": {"passed": False, "reasons": [reason]}}
 
 
 def call_gemini(key, snapshot, question, lang="ko"):
-    system = (SYSTEM
-              .replace("{LANG_LINE}", LANG_LINE.get(lang, LANG_LINE["ko"]))
-              .replace("{NO_DATA}", NO_DATA.get(lang, NO_DATA["ko"]))
-              .replace("{CORR}", CORR.get(lang, CORR["ko"])))
+    system = system_prompt(lang)
     body = {
         "systemInstruction": {"parts": [{"text": system}]},
         "contents": [{
@@ -315,7 +387,28 @@ def handler(event, context):
         return reply(400, {"error": f"질문이 너무 깁니다 ({MAX_Q}자까지)"})
 
     snapshot = compact_snapshot(payload)
-    if not snapshot["레이어"]:
+
+    # 인텔 패킷 — 계약을 어긴 패킷은 서술자에게 가지 않는다. 패킷 없이 조용히 답하면 Intelligence
+    # 질문이 패킷 밖 자료로 답해지므로, 모델을 부르지 않고 닫는다.
+    intel_view = None
+    if payload.get("intelPacket") is not None:
+        try:
+            intel_view = enclose_packet(payload["intelPacket"])
+        except PACKET_ERRORS as e:
+            print(f"[intel] 패킷 계약 위반 — 모델을 부르지 않는다: {type(e).__name__}: {str(e)[:300]}")
+            return reply(200, closed(lang, "PACKET_INVALID"))
+        snapshot["인텔패킷"] = intel_view
+
+    # 5절 중 무엇을 묻는가(WHY/WHAT/NEXT/IMPACT/EVIDENCE). 그 절의 재료가 패킷에 없으면 모델을
+    # 부르지 않는다 — 재료 없는 WHY 를 서술자가 상식으로 채우는 것이 가장 흔한 실패다(P4 게이트).
+    section = payload.get("intelSection")
+    if section is not None:
+        if not isinstance(section, str) or section not in intel_contract.INTEL_SECTIONS:
+            return reply(400, {"error": "모르는 절입니다: %s" % str(section)[:20]})
+        if intel_contract.section_status(intel_view, section)["status"] != "available":
+            return reply(200, closed(lang, "SECTION_NOT_AVAILABLE"))
+
+    if not snapshot["레이어"] and intel_view is None:
         # 켜진 레이어가 없으면 근거가 없다. 모델을 부르지 않는다 —
         # 부르면 반드시 일반 상식으로 답하려 든다.
         return reply(200, {
@@ -350,12 +443,20 @@ def handler(event, context):
         print(f"[gemini] 응답 해석 실패: {type(e).__name__}: {e} · {str(raw)[:300]}")
         return reply(502, {"error": "모델 응답을 해석하지 못했습니다", "insufficient": True})
 
+    # 서술 후처리(계약 §C-2) — 모델이 본 스냅샷·패킷과 글자로 대조한다. 걸리면 답 전체를 바꾼다.
+    # 바뀐 답에는 모델이 고른 근거·3D 조작도 붙이지 않는다 — 같은 생성에서 나온 것이다.
+    verdict = narration_guard.check(str(parsed.get("answer", ""))[:4000], intel_view,
+                                    snapshot=snapshot, lang=lang)
+    if not verdict["passed"]:
+        print(f"[guard] 답 전체 교체 · {verdict['reasons']} · {verdict['details'][:8]}")
+    passed = verdict["passed"]
     usage = raw.get("usageMetadata") or {}
     return reply(200, {
-        "answer": str(parsed.get("answer", ""))[:4000],
-        "insufficient": bool(parsed.get("insufficient")),
-        "used": [str(u)[:60] for u in (parsed.get("used") or [])][:12],
-        "actions": clean_actions(parsed.get("actions")),
+        "answer": verdict["answer"],
+        "insufficient": bool(parsed.get("insufficient")) or not passed,
+        "used": [str(u)[:60] for u in (parsed.get("used") or [])][:12] if passed else [],
+        "actions": clean_actions(parsed.get("actions")) if passed else [],
         "model": used_model,
         "tokens": usage.get("totalTokenCount"),
+        "guard": {"passed": passed, "reasons": verdict["reasons"]},
     })

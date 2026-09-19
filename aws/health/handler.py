@@ -139,8 +139,11 @@ WATCH = [
     #    원본(JMA 특보)이 살아 있는지는 파일 안의 live 값이 말한다 — 다른 것이다.
     #    2026-08-04 현재 원본은 68일째 멈춰 있고, 우리 수집기는 정상이다.
     #    되살아나면 live 가 true 로 바뀌고 화면이 저절로 특보를 보여준다.
+    # ⚠️⚠️ sourceLive: 파일 안의 live=false 를 '수집기 정상'에 묻지 않는다.
+    #    2026-05-28~09-20 동안 원천이 멈췄는데(실은 JMA 가 경로를 r8 로 옮겼다) health 는
+    #    HEALTHY 였고 sourceObservedAt 도 generated 로 채워졌다. 이제 원천 정지도 드러낸다.
     {"key": "events/jma-warn.json", "everyMin": 30, "graceMin": 90,
-     "ko": "일본 특보 감시 (되살아나면 자동 재개)"},
+     "ko": "일본 특보 (JMA r8)", "sourceLive": True},
     # ⚠️⚠️ **안 가는 알림은 티가 안 난다.** 사용자는 "위험이 없었구나"라고 생각한다.
     #    보낸 건수가 0 인 것은 정상이다(위험이 없을 때).
     #    **파일이 안 갱신되는 것**이 사고다 — 그러면 아무에게도 안 가고 있다.
@@ -384,6 +387,13 @@ def output_metadata_of(key):
                 observed = parsed.strftime("%Y-%m-%dT%H:%M:%SZ")
             break
     return {
+        # sourceLive 항목용 — 첫 등장만 본다. 키가 없으면 None(판정하지 않음).
+        "live": (None if not re.search(r'"live"\s*:', text) else
+                 bool(re.search(r'"live"\s*:\s*true', text))),
+        "feedLatestJst": string_field("feedLatestJst"),
+        "feedAgeHours": (lambda m: float(m.group(1)) if m else None)(
+            re.search(r'"feedAgeHours"\s*:\s*(-?[\d.]+)', text)),
+        "sourceReason": string_field("reason"),
         "sampleCount": sample_count,
         "missing": missing,
         "rejected": number_field("rejected"),
@@ -479,6 +489,22 @@ def handler(event=None, context=None):
         # NO_COVERAGE와 IDLE은 장애가 아니라 관측 결측/대기 상태라 freshness만 판정한다.
         if w.get("collectorStatus"):
             state = collector_verdict(state, status)
+        if w.get("sourceLive") and status and status.get("live") is False and state == "ok":
+            # 수집기는 돌지만 **원천이 멈췄다.** 72시간 넘으면 사람이 봐야 한다.
+            age_h = status.get("feedAgeHours")
+            state = "dead" if (age_h is None or age_h > 72) else "late"
+            status["state"] = "SOURCE_STALE"
+            status["reason"] = status.get("sourceReason") or "source_not_live"
+            fl = status.get("feedLatestJst")
+            status["sourceObservedAt"] = None
+            if fl:
+                try:
+                    status["sourceObservedAt"] = (
+                        datetime.strptime(fl, "%Y-%m-%d %H:%M")
+                        .replace(tzinfo=timezone(timedelta(hours=9))).astimezone(timezone.utc)
+                        .strftime("%Y-%m-%dT%H:%M:%SZ"))
+                except ValueError:
+                    pass
         item = {
             "key": w["key"], "ko": w["ko"],
             "state": state, "legacyState": state,

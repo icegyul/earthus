@@ -1,0 +1,6 @@
+# 제3자 의존이 없다. 표준 라이브러리와 Lambda 런타임의 boto3 만 쓴다.
+#   rollup.py 는 gzip·json·decimal·datetime 뿐이고, handler.py 의 `import boto3` 는 런타임이 이미 갖고 있다.
+#   _shared 에서는 intel_contract(+ contracts/intel-vocab.json)를 싣는다 — lambda_package.plan 이 알아서 넣는다.
+#
+# ⚠️ 이 파일이 없으면 deploy-python.sh 가 NetCDF 기본 의존성(h5py·numpy·Pillow) 30MB 를 붙인다.
+#    비어 있어도 **있어야 한다** (aws/distribution/requirements.txt 와 같은 사정).

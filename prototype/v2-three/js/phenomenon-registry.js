@@ -318,7 +318,9 @@ export const PHENOMENA = Object.freeze({
     label: Object.freeze({ ko: '해수면 온도', en: 'Sea surface temperature' }),
     short: Object.freeze({ ko: '수온', en: 'SST' }),
     question: Object.freeze({ ko: '바다 표면 온도는', en: 'What is the sea surface temperature?' }),
-    capabilities: Object.freeze({ current: true, history: false, intelligence: false, forecast: false, simulation: false, evidence: true, report: false }),
+    // 2026-09-20 P3: 패킷 생산자가 생겼다 — aws/marine-grid/intel_sst.py 가 ocean/sst-global.json 의 intel 칸에
+    //   인텔 패킷 v1 을 싣는다(한국 세 바다 기준 격자칸 관측 + NOAA 1991–2020 평년 대비). 그래서 intelligence 를 올린다.
+    capabilities: Object.freeze({ current: true, history: false, intelligence: true, forecast: false, simulation: false, evidence: true, report: false }),
     availability: 'ready',
     evidenceProfile: 'OFFICIAL_OBSERVATION (engine-bridge.js:184, slaMin 1440)',
     temporalMode: 'Daily observation, freshness bar 1440 min.',

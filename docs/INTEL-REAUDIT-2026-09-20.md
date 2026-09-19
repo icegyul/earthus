@@ -45,6 +45,14 @@ INTELLIGENCE-LAYER-PLAN §3 P0 완료 기준: "`phenomenon-registry`의 `intelli
 
 P0는 "재료 없는 true를 내리는" 감사다. 올리는 것은 **패킷 생산자가 생길 때** 한다 — `ocean.sst`는 P3, 나머지는 P6 순서표. 재료가 있다는 것과 띠가 있다는 것은 다르다.
 
+### P3 뒤 갱신 (2026-09-20)
+
+| 현상 | 전 | 후 | 패킷 생산자 |
+|---|---|---|---|
+| `ocean.sst` | false | **true** | `aws/marine-grid/intel_sst.py` → `ocean/sst-global.json` 의 `intel` 칸 |
+
+`intelligence:true` 33 → **34**. 위 "false 인데 재료가 있는 현상"은 14개가 남는다(`ocean.sst` 제외).
+
 ## 같은 변경 단위에서 함께 고친 것 (계약 §G-2)
 
 | 대상 | 전 | 후 | 근거 |

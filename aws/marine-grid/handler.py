@@ -24,6 +24,7 @@
 결과
   s3://<CACHE_BUCKET>/ocean/marine.json
   s3://<CACHE_BUCKET>/ocean/sst-global.json  (NOAA OISST 일별 관측, 1° 축약판)
+      └ intel  인텔 패킷 v1(ocean.sst, P3) — intel_sst.py. 계약을 못 맞추면 null 이고 격자는 그대로다.
 """
 
 import json
@@ -36,6 +37,12 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 
 import boto3
+
+import sys as _sys
+# 인텔 패킷 v1 변환(P3) — 같은 폴더의 intel_sst.py. Lambda 에서는 zip 루트라 그냥 잡히지만, 시험은 이 파일을
+# 경로로 불러와(spec_from_file_location) 폴더가 sys.path 에 없다 — 그래서 자기 폴더를 넣는다.
+_sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import intel_sst  # noqa: E402
 
 DST_BUCKET = os.environ["CACHE_BUCKET"]
 DST_REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
@@ -58,6 +65,9 @@ SST_NX, SST_NY = 360, 161
 SST_LAT0, SST_LON0 = -79.875, -179.875
 SST_LAT_SEL = "[40:4:680]"       # -79.875 .. 80.125N, 원본 0.25°의 4칸 간격
 SST_LON_SEL = "[0:4:1436]"       #   0.125 .. 359.125E, 원본 0.25°의 4칸 간격
+# marine-ea 가 쓰는 동아시아 평년 대비 격자(NOAA OISST − NOAA 1991–2020 일별 평년). 인텔 패킷의
+# anomaly 절이 여기서 칸 값을 옮긴다 — 우리 버킷 읽기일 뿐 새 외부 호출이 아니다.
+SST_ANOM_KEY = "ocean/sst-anom-ea.json"
 
 dst = boto3.client("s3", region_name=DST_REGION)
 
@@ -209,6 +219,29 @@ def oisst_sst_global(now):
     raise RuntimeError("최근 OISST를 받지 못함: " + "; ".join(errors[-4:]))
 
 
+def _read_json(key):
+    """우리 버킷의 공개 문서 하나. 없거나 못 읽으면 None — 없는 평년을 지어내지 않는다."""
+    try:
+        return json.loads(dst.get_object(Bucket=DST_BUCKET, Key=key)["Body"].read())
+    except Exception as exc:  # noqa: BLE001
+        print(f"[intel] {key} 읽기 실패: {exc!r}"[:200])
+        return None
+
+
+def attach_intel(sst, now):
+    """sst-global 문서에 인텔 패킷 v1(ocean.sst)을 싣는다.
+
+    ⚠️ v1 은 **옆에 싣는다.** 계약을 못 맞추면 intel 만 None 으로 두고 격자는 그대로 나간다 —
+       띠가 없어도 수온 레이어는 살아 있어야 한다(cyclone-analog 사건 패킷과 같은 규칙).
+    """
+    try:
+        sst["intel"] = intel_sst.build(sst, now, _read_json(SST_ANOM_KEY))
+    except Exception as error:  # noqa: BLE001
+        sst["intel"] = None
+        print(f"[intel] ocean.sst v1 실패: {error!r}"[:200])
+    return sst
+
+
 def handler(event, context):
     lats, lons = grid_points()
     ny, nx = len(lats), len(lons)
@@ -269,12 +302,14 @@ def handler(event, context):
     sst_result = {"ok": False}
     try:
         sst = oisst_sst_global(datetime.now(timezone.utc))
+        # 인텔 패킷 v1(P3) — 기준 칸 관측값 + marine-ea 의 평년 대비. 화면이 이 문서를 이미 받으므로 안에 싣는다.
+        attach_intel(sst, datetime.now(timezone.utc))
         sst_body = json.dumps(sst, separators=(",", ":")).encode()
         dst.put_object(Bucket=DST_BUCKET, Key="ocean/sst-global.json", Body=sst_body,
                        ContentType="application/json",
                        CacheControl="public, max-age=1800")
         sst_result = {"ok": True, "observed": sst["observed"],
-                      "sea": sst["sea"], "bytes": len(sst_body)}
+                      "sea": sst["sea"], "bytes": len(sst_body), "intel": bool(sst.get("intel"))}
         print(f"[oisst] {sst['observed']} 1° 바다 {sst['sea']} {len(sst_body)/1024:.0f}KB")
     except Exception as exc:  # noqa: BLE001
         sst_result["error"] = repr(exc)

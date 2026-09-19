@@ -36,6 +36,12 @@ from datetime import datetime, timedelta, timezone
 
 import boto3
 
+import sys as _sys
+# 인텔 패킷 v1 변환(P1) — 같은 폴더의 intel_v1.py. Lambda 에서는 zip 루트라 그냥 잡히지만, 시험은 이 파일을
+# 경로로 불러와(spec_from_file_location) 폴더가 sys.path 에 없다 — 그래서 자기 폴더를 넣는다.
+_sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import intel_v1  # noqa: E402
+
 BUCKET = os.environ["CACHE_BUCKET"]
 REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 
@@ -1558,6 +1564,7 @@ def public_detail(session, now):
 WARN_KEY = "events/kma-warn.json"
 WARN_REGIONS_KEY = "events/kma-warn-regions.json"
 EVENTS_INDEX_KEY = "ocean/cyclone-events.json"
+SST_GLOBAL_KEY = "ocean/sst-global.json"      # marine-grid 이 쓰는 NOAA OISST 1° (인텔 v1 조건)
 EVENT_KEY = "ocean/cyclone-events/{id}.json"
 PACKET_REVISIONS = 24   # 사건당 패킷 ≤ 60 KB 목표(실측 30회차 106 KB)
 PRIMARY_ORDER = ("KMA", "JMA", "NHC")
@@ -1938,10 +1945,20 @@ def update_lifecycle(now, tracks, analyses, history):
     # 공개 사건 패킷(지시서 D-1): 사건마다 한 파일 + 목록. Feed 가 이 목록을 GDACS id 로 결합한다.
     warn_doc = _safe_s3(WARN_KEY, {})
     regions_doc = _safe_s3(WARN_REGIONS_KEY, {})
+    # 인텔 패킷 v1(P1) — 중심 격자칸 해수온을 WHY 조건으로 싣는다. 이미 공개된 marine-grid 산출물을 읽을 뿐
+    # 새 외부 호출은 없다(이 함수는 Open-Meteo 13개 중 하나다 — 더 늘리지 않는다).
+    sst_doc = _safe_s3(SST_GLOBAL_KEY, {})
     index = []
     for x in kept:
         try:
             packet = event_packet(x, now, details[x["id"]], warn_doc, regions_doc)
+            # ⚠️ v1 은 **옆에 싣는다.** 계약을 못 맞추면 intel 만 비우고 옛 패킷은 그대로 나간다 —
+            #    띠가 없어도 사건 화면은 살아 있어야 한다.
+            try:
+                packet["intel"] = intel_v1.build(packet, now, sst_doc)
+            except Exception as error:  # noqa: BLE001
+                packet["intel"] = None
+                print(f"    인텔 v1 실패 {x.get('name')}: {error!r}"[:200])
             put(EVENT_KEY.format(id=x["id"]), packet, 900)
             index.append(event_index_entry(packet))
         except Exception as error:  # noqa: BLE001 - 패킷 하나가 죽어도 목록·보고서는 낸다

@@ -196,7 +196,6 @@ class LambdaWritePath(unittest.TestCase):
     LAMBDA_APP_WRITERS = {
         "tourism-flow": "관광 혼잡도 생성 자료 (app/tourism/*)",
         "current-earth-snow-ice": "눈·얼음 생성 자료 (app/v2/data/current-earth/*)",
-        "character-studio": "캐릭터 생성 자산 (app/v3/characters/*)",
     }
 
     def _lambda_app_writers(self):

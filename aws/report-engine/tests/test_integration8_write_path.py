@@ -249,14 +249,15 @@ class 탐지기가_공허하지_않다(unittest.TestCase):
         found = {r["path"] for r in self.rows
                  if (r["key"] or "").startswith("app/") and "/handler." in r["path"]
                  or (r["key"] or "").startswith("app/") and r["path"].endswith(".mjs")}
-        for want in ("aws/character-studio/handler.py",
-                     "aws/tourism-flow/handler.py",
+        # (aws/character-studio 는 2026-09-14 WONDER 제거로 지웠다)
+        for want in ("aws/tourism-flow/handler.py",
                      "aws/current-earth-snow-ice/index.mjs"):
             self.assertIn(want, found, "%s 를 놓쳤다" % want)
 
     def test_셸_배포기를_전부_본다(self):
         sh = {r["path"] for r in self.rows if r["path"].endswith(".sh")}
-        self.assertGreaterEqual(len(sh), 15, "셸 업로더가 이렇게 적을 리 없다")
+        # 15 → 14: 2026-09-14 WONDER 제거로 deploy-v3-kids.sh 가 사라졌다
+        self.assertGreaterEqual(len(sh), 14, "셸 업로더가 이렇게 적을 리 없다")
         self.assertIn("aws/deploy-app.sh", sh)
 
 
@@ -290,10 +291,10 @@ class 정책이_실제로_거부한다(unittest.TestCase):
 
     def test_허용된_접두사_밖은_막는다(self):
         """목록에 있는 배포기라도 제 구역 밖에 쓰면 거부다."""
-        v = verdicts("aws/deploy-v3-kids.sh", '''
+        v = verdicts("tools/deploy-real-living-earth-v2.sh", '''
             #!/usr/bin/env bash
             BUCKET=earthus-cache-kr
-            aws s3 cp ./x.html s3://$BUCKET/app/v2/index.html
+            aws s3 cp ./x.html s3://$BUCKET/app/v3/index.html
         ''')
         self.assertEqual(v, [wpol.DENY_APP])
 

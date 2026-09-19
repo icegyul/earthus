@@ -52,9 +52,7 @@ DENIALS = (DENY_APP, DENY_FEED, DENY_UNKNOWN_PREFIX, DENY_UNPROVEN)
 APP_WRITERS = {
     # 거름망을 지난 원본만 올린다 — aws/_shared/public-source.sh 를 읽는다
     "aws/deploy-v2-preview.sh": (FILTERED, ("app/",)),
-    # app/wonder 는 /v3 의 별칭이다 (같은 index.html · base href 만 다르다)
-    "aws/deploy-v3-kids.sh": (FILTERED, ("app/v3/", "app/wonder")),
-    "aws/deploy-v3-paper.sh": (FILTERED, ("app/v3/", "app/wonder")),
+    # (aws/deploy-v3-kids.sh · deploy-v3-paper.sh 는 2026-09-14 09f1514c WONDER 제거로 지웠다)
     "tools/deploy-real-living-earth-v2.sh": (FILTERED, ("app/v2/",)),
     "tools/deploy-station-model.sh": (FILTERED, ("app/",)),
     "tools/deploy-v1.sh": (FILTERED, ("app/",)),
@@ -80,8 +78,6 @@ APP_WRITERS = {
     "aws/tourism-flow/kto_details.py": (GENERATED, ("app/tourism/kto/details/",)),
     "aws/current-earth-snow-ice/index.mjs":
         (GENERATED, ("app/v2/data/current-earth/",)),
-    # 사람이 발행을 눌러야만 공개로 나간다. 나머지 쓰기는 전부 비공개 작업 공간
-    "aws/character-studio/handler.py": (GENERATED, ("app/v3/characters/",)),
     # API 호출 결과를 만들어 올린다. 작업 트리 파일이 아니다
     "tools/publish-aetherus-snapshot.sh": (GENERATED, ("app/",)),
 }
@@ -105,10 +101,6 @@ FEED_WRITERS = {
 # **사람이 코드를 읽고 목적지를 확인한 것만** 여기 적는다. 근거 줄을 함께 남긴다.
 # 여기 없는 미증명 쓰기는 거부된다. 새 미증명 자리가 생기면 시험이 깨진다.
 REVIEWED_UNPROVEN = {
-    ("aws/character-studio/handler.py", "put"): (
-        2, "character-studio/",
-        "handler.py:346  job_key = f'{PRIVATE}jobs/{cid}/{request_id}.json' "
-        "— PRIVATE='character-studio/'. 공개 접두사가 아니다"),
     ("aws/gk2a-clouds/handler.py", "put_object"): (
         1, "clouds/",
         "handler.py:257  prefix = f'clouds/gk2a/tiles/{ch}/{slot}' 를 "

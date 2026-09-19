@@ -680,6 +680,8 @@
     border-radius: 12px; padding: 12px 14px; backdrop-filter: blur(8px);
   }
   .intel-tabs { display: flex; gap: 4px; margin-bottom: 10px; }
+  /* M1 바텀시트 손잡이 — 넓은 화면에서는 숨는다 */
+  .sheet-grip { display: none; }
   .intel-tabs button {
     flex: 1; padding: 6px 0; font-size: 10.5px; letter-spacing: 1px; font-family: inherit;
     background: rgba(74,144,217,0.08); border: 1px solid var(--panel-line);
@@ -1353,6 +1355,21 @@
        그 위 6px 에 패널 바닥을 둔다. 손잡이(39px)가 있던 시절엔 그 두께가 완충이었다. */
     #intel { right: 8px; bottom: calc(220px + env(safe-area-inset-bottom)); }
     #intel.open #intel-body { width: calc(100vw - 16px); max-height: 52vh; }
+    /* M1 (2026-09-20) 3단 바텀시트. 바닥은 위 규칙 그대로(하단 메뉴 위 6px) 두고 높이만 단계로 바꾼다.
+         peek  고른 것 한 줄(SELECT) — 탭 줄과 첫 카드 머리만
+         half  INFORMATION — 지구 위쪽 40% 이상이 보이게 31vh(812 높이 실측: 34vh 는 39%)
+         full  위 크롬(검색 줄) 아래까지
+       선택자 우선순위가 위 #intel.open #intel-body 보다 높아서 순서와 무관하게 이긴다. */
+    .sheet-grip { display: block; width: 100%; height: 22px; margin: -8px 0 4px; padding: 8px 0 6px;
+      border: 0; background: none; cursor: grab; touch-action: none; }
+    .sheet-grip span { display: block; width: 42px; height: 4px; margin: 0 auto; border-radius: 2px;
+      background: rgba(255,255,255,0.38); }
+    #intel[data-sheet="peek"].open #intel-body { max-height: 118px; overflow: hidden; }
+    #intel[data-sheet="half"].open #intel-body { max-height: 31vh; }
+    #intel[data-sheet="full"].open #intel-body {
+      max-height: calc(100vh - 220px - 96px - env(safe-area-inset-bottom) - env(safe-area-inset-top)); }
+    #intel.open #intel-body { transition: max-height .18s ease; }
+    @media (prefers-reduced-motion: reduce) { #intel.open #intel-body { transition: none; } }
     /* AETHERUS 전체화면 뷰(태양계·사진관·은하) — 좁은 화면에서 윗줄이 통째로 겹쳤다.
        '◀ 지구로'·경로·가운데 제목이 한 줄에 몰려 서로의 글자를 지웠고, 사진관은 카드가
        망원경 거르개를 덮어 허블·제임스 웹을 누를 수조차 없었다. 경로는 접고(제목이 같은

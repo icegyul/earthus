@@ -903,8 +903,14 @@ export function initShell(hooks) {
   intel.id = 'intel';
   // 손잡이(#intel-tab)는 없앴다 — 진입점은 하단 메뉴의 Intelligence 한 곳뿐이다.
   // 375 폭에서 이 손잡이가 출처 상자(#hud, z=7)에 덮여 글자가 잘리던 문제도 같이 사라진다.
+  /* M1 (2026-09-20) — 폰에서는 3단 바텀시트다: peek(고른 것 한 줄 · SELECT) → half(지구가 위에 보이는
+     INFORMATION) → full. 계약 §C-0: Context Action 은 새 부품이 아니라 이 시트에 흡수한다. 손잡이를
+     누르면 한 단씩 돌고, 끌면 방향으로 한 단 옮긴다. 넓은 화면에서는 손잡이가 숨고 예전과 같다.
+     ⚠️ 롱프레스는 쓰지 않는다 — 레이어 피커의 '길게 눌러 핀'과 겹친다(§C-0). */
+  intel.dataset.sheet = 'half';
   intel.innerHTML = `
     <div id="intel-body">
+      <button type="button" class="sheet-grip" aria-label="${i18n.ko ? '패널 높이 바꾸기' : 'Resize panel'}"><span></span></button>
       <div class="intel-tabs">
         <button data-tab="feed" class="on">${i18n.ko?'사건':'Feed'}</button>
         <!-- STEP 55: 3열 그리드에서 '내 장소 · FOR ME' 가 칸을 넘어 옆 탭 글자를 덮었다(실측 375폭).
@@ -923,6 +929,37 @@ export function initShell(hooks) {
       <div id="intel-content"></div>
     </div>`;
   root.appendChild(intel);
+
+  // ⚠️ 시트 함수는 패널을 만든 바로 뒤에 둔다 — setIntelOpen 이 부르므로 그보다 먼저 선언돼 있어야 한다
+  //    (const 는 선언 전에 부르면 죽는다). closeIntel 은 누를 때에야 부르므로 뒤에 있어도 된다.
+  // ── 바텀시트 단계 (M1) ─────────────────────────────────────────────
+  const SHEET_STEPS = ['peek', 'half', 'full'];
+  const setSheet = (step) => {
+    if (!SHEET_STEPS.includes(step)) return;
+    intel.dataset.sheet = step;
+  };
+  const moveSheet = (dir) => {
+    const i = SHEET_STEPS.indexOf(intel.dataset.sheet || 'half');
+    if (dir < 0 && i === 0) { closeIntel(); return; }            // peek 에서 더 내리면 닫는다
+    setSheet(SHEET_STEPS[Math.max(0, Math.min(SHEET_STEPS.length - 1, i + dir))]);
+  };
+  {
+    const grip = intel.querySelector('.sheet-grip');
+    let y0 = null;
+    grip.addEventListener('pointerdown', (e) => { y0 = e.clientY; grip.setPointerCapture?.(e.pointerId); });
+    grip.addEventListener('pointerup', (e) => {
+      if (y0 == null) return;
+      const dy = e.clientY - y0;
+      y0 = null;
+      if (Math.abs(dy) < 24) {                                   // 누름 — 한 단씩 돈다(full 다음은 peek)
+        const i = SHEET_STEPS.indexOf(intel.dataset.sheet || 'half');
+        setSheet(SHEET_STEPS[(i + 1) % SHEET_STEPS.length]);
+      } else {
+        moveSheet(dy < 0 ? 1 : -1);                               // 위로 끌면 크게, 아래로 끌면 작게
+      }
+    });
+    grip.addEventListener('pointercancel', () => { y0 = null; });
+  }
   // ⚠️ 이름표는 이제 하단 메뉴 버튼이 단다. 그 버튼은 아래에서 만들어지므로
   //    여기서 applyPanelIdentity 를 부르면 bottomNav 가 아직 없어 죽는다(TDZ).
   //    renderNav() 뒤로 옮겼다.
@@ -1295,6 +1332,8 @@ export function initShell(hooks) {
     if (open) applyCapabilityGating();
     if (intelOpen === open) { if (open) renderIntel(); syncIntelNav(); return; }
     intelOpen = open;
+    // 새로 열 때는 half — 지구가 위에 보이는 INFORMATION 단계에서 시작한다(M1 · §C-0).
+    if (intelOpen) setSheet('half');
     intel.classList.toggle('open', intelOpen);
     if (intelOpen) renderIntel();
     syncIntelNav();
@@ -1309,6 +1348,7 @@ export function initShell(hooks) {
 
   const closeIntel = () => setIntelOpen(false);
   intel.querySelector('#intel-close').addEventListener('click', closeIntel);
+
 
   // --- 하단 타임 스트립 (§19.7): 태양 위치는 진짜 재계산(LIVE), 관측 구름은 STALE ---
   const strip = document.createElement('div');
@@ -1463,6 +1503,7 @@ export function initShell(hooks) {
     // PHASE 2 STEP 2.8 — 지금까지 selectedMenu 는 클로저 사적 변수였고 읽는 함수가 없었다.
     // 문맥 패널은 "지금 무엇이 선택돼 있나" 를 모르면 문맥이 될 수 없다.
     getSelection,
+    setSheet,
     getPhenomenonContext,
     // 언어를 바꾸면 손잡이 이름도 그 언어로 다시 쓴다.
     refreshPanelIdentity: () => { applyPanelIdentity(getPhenomenonContext()); renderNav(); },

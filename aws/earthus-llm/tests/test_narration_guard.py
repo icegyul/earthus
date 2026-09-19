@@ -197,6 +197,30 @@ class GuardUnitTests(unittest.TestCase):
         self.assertEqual(["CAUSAL"], ng.check("바다가 따뜻해서 강해졌다 — caused by warm water.", None,
                                               snapshot=snapshot)["reasons"])
 
+    def test_chat_without_a_packet_may_echo_on_screen_text_verbatim(self):
+        """패킷 없는 대화 — 레이어 이름·값과 그 안의 'N%' 조각을 그대로 옮기면 % 검사를 지난다."""
+        snapshot = {"레이어": [{"id": "pop", "이름": "강수확률", "값": "60%"},
+                               {"id": "cover", "이름": "수관", "값": "육지 평균 수관 12.3% · 1,234칸"}],
+                    "켤수있는레이어": [{"id": "rh", "이름": "상대습도(%)"}]}
+        for text in ("강수확률 레이어는 60%입니다.", "육지 평균 수관은 12.3%입니다.",
+                     "이 자료를 켜면 답할 수 있습니다: 상대습도(%)"):
+            with self.subTest(text=text):
+                self.assertTrue(ng.check(text, None, snapshot=snapshot)["passed"])
+        self.assertEqual(["PERCENT"], ng.check("육지 평균 수관은 약 12%입니다.", None,
+                                               snapshot=snapshot)["reasons"])
+        self.assertEqual(["PERCENT"], ng.check("비 올 확률이 높습니다.", None, snapshot=snapshot)["reasons"])
+
+    def test_a_short_percent_quote_does_not_cover_a_longer_number(self):
+        """'1%' 가 화면에 있다고 '81%' 의 꼬리를 지워 주지 않는다."""
+        snapshot = {"레이어": [{"id": "a", "이름": "가", "값": "1%"}, {"id": "b", "이름": "나", "값": "81"}]}
+        self.assertEqual(["PERCENT"], ng.check("81%입니다.", None, snapshot=snapshot)["reasons"])
+
+    def test_with_a_packet_only_quoted_official_passes_percent(self):
+        """패킷이 있으면 계약 문언 그대로 — 화면 값의 % 도 quotedOfficial 이 아니면 걸린다."""
+        snapshot = {"레이어": [{"id": "cover", "이름": "수관", "값": "12.3%"}], "인텔패킷": self.view}
+        self.assertTrue(ng.check("수관은 12.3%입니다.", None, snapshot=snapshot)["passed"])
+        self.assertEqual(["PERCENT"], ng.check("수관은 12.3%입니다.", self.view, snapshot=snapshot)["reasons"])
+
     def test_quoted_official_may_be_a_list(self):
         view = copy.deepcopy(self.view)
         view["next"]["items"][0]["quotedOfficial"] = ["확률 60%", "chance 60%"]

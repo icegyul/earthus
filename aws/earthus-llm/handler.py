@@ -418,6 +418,8 @@ def handler(event, context):
             ("지금 켜진 레이어가 없어서 근거로 삼을 자료가 없습니다. "
              "왼쪽 메뉴에서 보고 싶은 레이어를 켜고 다시 물어봐 주세요."),
             "insufficient": True, "used": [], "actions": [],
+            # 모델 답이 아니라 고정 안내라 걸릴 것이 없다. 200 답의 모양을 맞추려고 단다.
+            "guard": {"passed": True, "reasons": []},
         })
 
     try:

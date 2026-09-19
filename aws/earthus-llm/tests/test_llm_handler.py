@@ -143,6 +143,7 @@ class HandlerTests(unittest.TestCase):
         self.assertEqual([], self.calls)
         self.assertTrue(body["insufficient"])
         self.assertIn("켜진 레이어가 없어서", body["answer"])
+        self.assertEqual({"passed": True, "reasons": []}, body["guard"], "200 답은 모두 guard 칸을 갖는다")
 
     # ── P4 게이트: 재료 없는 WHY → insufficient ───────────────────────────
     def test_why_without_conditions_is_insufficient_without_a_model_call(self):
@@ -217,6 +218,18 @@ class HandlerTests(unittest.TestCase):
         self.answer = "It is warm because the sea caused by the sun."
         code, body = self.ask(lang="en")
         self.assertEqual(["CAUSAL"], body["guard"]["reasons"])
+
+    def test_layer_notes_that_already_carry_percent_survive_in_chat(self):
+        """live-layers.js 의 레이어 note 는 '육지 평균 수관 12.3%' 처럼 %를 달고 온다(main.js askSnapshot
+        value: st.note). 화면 글자를 그대로 옮긴 답까지 막으면 지구와 대화가 멀쩡한 답을 잃는다."""
+        layers = [{"id": "tree-cover", "label": "수관 피복", "badge": "OBSERVED",
+                   "value": "캐나다 · 육지 평균 수관 12.3% · 1,234칸"}]
+        self.answer = "수관 피복 레이어에서 육지 평균 수관은 12.3%입니다."
+        code, body = self.ask(layers=layers)
+        self.assertTrue(body["guard"]["passed"], body)
+        self.answer = "수관 피복 레이어에서 육지 평균 수관은 약 12%입니다."
+        code, body = self.ask(layers=layers)
+        self.assertEqual(["PERCENT"], body["guard"]["reasons"], "화면에 없는 % 표기는 새 값이다")
 
 
 if __name__ == "__main__":

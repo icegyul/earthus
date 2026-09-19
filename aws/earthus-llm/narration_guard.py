@@ -27,9 +27,17 @@
     되받는 것도 막는다(§C-2 "스냅샷에 없는 수치").
   · 부호는 보지 않는다. 하이픈이 날짜·범위와 구별되지 않아서다(−3 과 3 을 같은 수로 본다).
   · % · 확률 어휘는 부정문이어도 걸린다("확률이 아닙니다"). 낱말을 쓰지 않는 것이 규칙이다.
+  · 패킷 없는 대화(지구와 대화)에서는 화면 글자 — 켜진·켤 수 있는 레이어의 이름·값, 보는 곳의 값 —
+    를 그대로 옮긴 자리도 % 검사에서 뺀다. 레이어 값은 '육지 평균 수관 12.3%' 처럼 이미 %를 달고
+    온다(main.js askSnapshot 의 value = 레이어 note). 값 안의 'N%' 조각도 그대로 옮기면 통과한다
+    ('약 12%' 는 걸린다).
+    패킷이 있으면 계약 문언 그대로 quotedOfficial 만 통과시킨다.
   · 빠진 절 이름은 부정문이어도 걸린다. 규칙 7 이 이름 대신 고정 문장을 쓰라고 한다.
     영문 절 키가 흔한 낱말(next·current)이라 헛걸림이 있을 수 있다 — 막는 쪽으로 틀린다.
   · 특보가 뷰에 없으면 해제 어휘를 보지 않는다(§C-2 는 "유효한데" 만 막는다).
+
+handler 는 모델을 부르기 전 문(門)에서 사유 코드 두 개를 더 쓴다 — PACKET_INVALID(계약 위반 패킷) ·
+SECTION_NOT_AVAILABLE(물은 절의 재료가 없다). 둘 다 이 모듈의 REASONS 밖이다.
 
 ⚠️ 아래 낱말 표(확률·대피·해제·신뢰·절 이름)는 intel-vocab.json 에 아직 없다. 서버에서만 쓰므로
    여기 두었다. JS 가 같은 표를 쓰게 되면 어휘 정본으로 옮긴다(§C-3 "두 언어에 중복해 박지 않는다").
@@ -56,6 +64,8 @@ INSUFFICIENT = intel_contract.FIXED_TEXT["insufficient"]
 PERCENT_WORDS = re.compile(
     r"[%％]|확률|퍼센트|가능성"
     r"|\bper\s?cent(?:age)?s?\b|\bprobabilit(?:y|ies)\b|\bchances?\b|\blikelihood\b", re.I)
+# 화면 값 안의 'N%' 조각 — 앞이 숫자·점이면 다른 수의 꼬리다('81%' 안의 '1%' 가 아니다).
+PERCENT_TOKEN = re.compile(r"(?<![\d.])\d+(?:\.\d+)?\s?[%％]")
 
 CONFIDENCE_WORDS = re.compile(r"신뢰|확신|\bconfiden(?:ce|t)\b", re.I)
 CONFIDENCE_WINDOW = 20      # 낱말 앞뒤 글자 수. 같은 문장 안에서만 본다
@@ -132,6 +142,33 @@ def quoted_official(*nodes):
     return sorted(found, key=lambda s: (-len(s), s))
 
 
+def screen_quotes(snapshot):
+    """패킷 없는 대화에서 그대로 옮겨도 되는 화면 글자 — 레이어 이름·값과 그 안의 'N%' 조각, 보는 곳의 값."""
+    found = set()
+    if not isinstance(snapshot, dict):
+        return []
+    rows = list(snapshot.get("레이어") or []) + list(snapshot.get("켤수있는레이어") or [])
+    texts = [row.get(key) for row in rows if isinstance(row, dict) for key in ("이름", "값")]
+    point = snapshot.get("보는곳의값")
+    if isinstance(point, dict):
+        texts.extend(point.values())
+    for value in texts:
+        if isinstance(value, str) and value.strip():
+            found.add(value.strip())
+            found.update(match.group(0) for match in PERCENT_TOKEN.finditer(value))
+    return sorted(found, key=lambda s: (-len(s), s))
+
+
+def _strip_quote(text, quote):
+    """인용 자리를 지운다. 숫자로 시작·끝나는 인용은 다른 수의 일부를 지우지 않게 경계를 건다."""
+    pattern = re.escape(quote)
+    if quote[:1].isdigit():
+        pattern = r"(?<![\d.])" + pattern
+    if quote[-1:].isdigit():
+        pattern += r"(?!\d)"
+    return re.sub(pattern, " ", text)
+
+
 def active_warnings(view):
     """뷰 안의 유효한 특보 메타 id. kind=OFFICIAL_WARNING 이고 status 가 비지 않았으며 종료 상태가 아닌 것.
 
@@ -195,9 +232,12 @@ def check(answer, view=None, *, snapshot=None, lang="ko"):
     for word in intel_contract.causal_hits(text):
         hits.append(("CAUSAL", word))
 
+    quotes = set(quoted_official(view, snapshot))
+    if view is None:
+        quotes.update(screen_quotes(snapshot))          # 패킷 없는 대화에서만 (머리말)
     unquoted = text
-    for quote in quoted_official(view, snapshot):
-        unquoted = unquoted.replace(quote, " ")
+    for quote in sorted(quotes, key=lambda s: (-len(s), s)):
+        unquoted = _strip_quote(unquoted, quote)
     for match in PERCENT_WORDS.finditer(unquoted):
         hits.append(("PERCENT", match.group(0)))
 

@@ -160,6 +160,8 @@ def build(sst_doc, now, anom_doc=None):
                          "period": str(anom_doc["period"])},
             "items": anom_items,
             "coverageKo": "평년 대비 값은 %s에만 있다 — 전지구 편차가 아니다" % ANOM_BOX_KO,
+            # marine-ea 는 평년값 자체를 공개하지 않고 관측(sst)과 편차(sstAnom)만 싣는다 — 평년은 둘에서 되돌려 적는다
+            "baselineNoteKo": "평년값은 marine-ea 가 공개한 관측과 편차에서 되돌려 적은 NOAA 평년이다(0.01 °C 반올림 차이 있음)",
             "noteKo": "백분위·해역 평균은 싣지 않는다 — EARTHUS 기준선 계산은 계약 §I L-4 PD 결정 대기다",
         }
     else:

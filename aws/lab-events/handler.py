@@ -50,7 +50,8 @@ REGION = os.environ.get("CACHE_REGION", "us-east-2")
 UA = {"User-Agent": "earthus-lab-events/0.1 (+https://earthus.net)"}
 STATE_KEY = "archive/lab-events-sessions.json"
 # 지진 인텔 패킷 v1(P3) — USGS 사건 id → 패킷. analysis/ 는 비공개라 공개 접두사 ocean/ 에 따로 둔다
-# (ocean/lab-reports.json·ocean/tsunami-eta.json 과 같은 자리). 화면이 사건 방을 열 때 이것 하나만 읽으면 된다.
+# (ocean/lab-reports.json·ocean/tsunami-eta.json 과 같은 자리). 화면은 피드를 받을 때 이 문서를 한 번 받아 두면
+# 사건을 고를 때(SELECT) 새 요청 없이 packets[USGS id] 를 읽는다 — 계약 §C-0.
 EQ_INTEL_KEY = "ocean/earthquake-intel.json"
 TSUNAMI_ETA_INDEX_KEY = "ocean/tsunami-eta.json"
 s3 = boto3.client("s3", region_name=REGION)

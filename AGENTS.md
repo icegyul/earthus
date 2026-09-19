@@ -18,7 +18,24 @@ Luna를 읽었다는 이유만으로 GitHub Actions를 사용하지 마세요. �
 문법 검사: `cp 파일.js /tmp/x.mjs && node --check /tmp/x.mjs`
 커밋 제목은 "무엇이 잘못돼 있었나"를 한국어로.
 
+## 정본 우선순위 (2026-09-14 확정)
+
+문서끼리 말이 다르면 위쪽이 이긴다.
+
+1. [`docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md`](docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md) — 요금제 FREE / EXPLORER / PRO (+ RESEARCH·ENTERPRISE 계약)
+2. [`docs/INTELLIGENCE-LAYER-PLAN-2026-09-14.md`](docs/INTELLIGENCE-LAYER-PLAN-2026-09-14.md) — Intelligence P0~P6
+3. [`docs/EARTHUS-MASTER-DECISION-2026-09-14.md`](docs/EARTHUS-MASTER-DECISION-2026-09-14.md) — 무엇을 소유하고 무엇을 연결하는가 (PD 확정 14건)
+4. [`docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md`](docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md) — **구현 계약. 개발자가 볼 문서는 이것 하나.** 빌드 순서는 §I
+5. [`docs/INTELLIGENCE-DEV-DIRECTIVE-2026-09-05.md`](docs/INTELLIGENCE-DEV-DIRECTIVE-2026-09-05.md) — §J 하지 않을 일 · §M 기준선 · §N Physics 5기준
+6. 전략 문서(REFERENCE MASTER, Simulation Vision) — 런타임 근거로 쓰지 않는다
+
+보조: [`SIMULATION-VISION-LADDER`](docs/SIMULATION-VISION-LADDER-2026-09-14.md)(무엇을 만들 수 있나) · [`SIMULATION-CAPABILITY-CROSSWALK`](docs/SIMULATION-CAPABILITY-CROSSWALK-2026-09-14.md)(지금 무엇이 있나) · [`PILOT-SCREEN-SPEC-TEMPERATURE-TSUNAMI`](docs/PILOT-SCREEN-SPEC-TEMPERATURE-TSUNAMI-2026-09-18.md)(파일럿 화면 명세).
+
 ## 지금 열려 있는 작업
+
+**Intelligence · Simulation — R0(재현 가능 상태) 진행 중 (2026-09-20~)**.
+순서는 계약 §I: R0 → P0 → P1+M1+T → §14 1차 → S-A → … ⚠️ 같은 브랜치에서 미추적 파일을
+대량 분류·커밋 중이다. 이 기간에 루트·`docs/`·`aws/`·`tools/` 미추적 파일을 옮기거나 지우지 말 것.
 
 **창립 멤버 500 — 반값 결제** (코드 작성 완료 · **적용 대기**, ⚠️ `SALES_OPEN=true` 전 필수).
 오늘 작업 경위는 [`docs/WORK-2026-08-06.md`](docs/WORK-2026-08-06.md) 에 있습니다.

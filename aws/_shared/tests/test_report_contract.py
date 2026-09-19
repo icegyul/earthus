@@ -42,8 +42,11 @@ class ReportEnvelope(unittest.TestCase):
         self.assertEqual(r["phenomenonIds"], ["hazards.typhoon"])
 
     def test_여섯_발행물과_검증_리포트를_모두_담는다(self):
-        self.assertEqual(len(rc.REPORT_TYPES), 7)
-        for t in ("RETROSPECTIVE_MONTHLY", "OUTLOOK_NEXT_YEAR", "FORECAST_VERIFICATION"):
+        # 7 → 8: INTELLIGENCE-LAYER-PLAN P5 가 현상 인텔 보고서(PHENOMENON_INTEL)를 더했다.
+        # 기간 보고서 여섯과 검증 리포트는 그대로다.
+        self.assertEqual(len(rc.REPORT_TYPES), 8)
+        for t in ("RETROSPECTIVE_MONTHLY", "OUTLOOK_NEXT_YEAR", "FORECAST_VERIFICATION",
+                  "PHENOMENON_INTEL"):
             self.assertIn(t, rc.REPORT_TYPES)
 
 

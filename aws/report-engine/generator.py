@@ -124,6 +124,44 @@ def generate_outlook(target_period, *, snapshot, facts, generated_at, algorithm_
     return report
 
 
+# ── INTELLIGENCE-LAYER-PLAN P5 — 현상 인텔 보고서 ───────────────────────────────
+def generate_phenomenon_intel(packet, *, report_id, snapshot, facts, sections, narrative,
+                              generated_at, algorithm_version, period, packet_ref,
+                              status="DRAFT", provenance_extra=None):
+    """인텔 패킷 한 개의 보고서 봉투. 값은 어댑터가, 절은 sections, 문장은 narrative 가 만들었다.
+
+    여기서 계산하지 않는다 — 봉투에 담고, 잠금 화면용 목록(무엇이 들어 있나)을 붙일 뿐이다.
+    """
+    import compose as cp          # 지연 import — 자료 라벨·정본 주소 규칙을 한 곳에서 쓴다
+    import sections as sx
+    report = rc.make_report(
+        report_id=report_id,
+        report_type=sx.INTEL_REPORT_TYPE,
+        period=period,
+        generated_at=generated_at,
+        algorithm_version=algorithm_version,
+        data_snapshot_id=snapshot["snapshotId"],
+        status="PENDING",
+        facts=list(facts),
+        phenomenon_ids=[packet["phenomenonId"]],
+        provenance=[dict({"generator": GENERATOR_VERSION, "snapshot": snapshot["snapshotId"],
+                          "packetRef": packet_ref, "packetSchema": packet.get("schema")},
+                         **(provenance_extra or {}))],
+    )
+    report["lifecycle"] = status
+    report["dataSnapshot"] = snapshot
+    report["subject"] = {"phenomenonId": packet["phenomenonId"], "eventId": packet.get("eventId"),
+                         "issuedAt": (packet.get("time") or {}).get("issuedAt"),
+                         "observedAt": (packet.get("time") or {}).get("observedAt"),
+                         "retrievedAt": (packet.get("time") or {}).get("retrievedAt")}
+    report["narrative"] = narrative
+    report = cp.attach(report, sections=sections)
+    # 잠금 화면은 안에 무엇이 있는지 **목록으로 먼저** 보여 준다(PRODUCT-STRUCTURE §3).
+    report["access"] = {"requiredTier": sx.INTEL_REQUIRED_TIER,
+                        "contents": sx.intel_contents(sections)}
+    return report
+
+
 # ── §15 검증 ─────────────────────────────────────────────────────────────────
 def verify_forecast(prediction, observation, *, evaluator):
     """예보 스냅샷과 실측을 짝지어 채점한다.
@@ -249,6 +287,9 @@ def validate_report(report):
             problems.append("예보 스냅샷 없이 만들어진 검증이 있다")
         if e.get("status") != rc.NOT_VERIFIABLE and not (e.get("scores") or {}):
             problems.append("검증됐다면서 점수가 없다")
+    if report.get("type") == "PHENOMENON_INTEL":
+        import sections as sx     # 지연 import — 절 규칙은 절 파일 한 곳에서 본다
+        problems.extend(sx.validate_intel(report))
     return (not problems), problems
 
 
@@ -338,12 +379,21 @@ def _fail(report, problems):
 
 
 def _find_duplicate(report, published_index):
-    """같은 (종류, 기간, version) 이 이미 PUBLISHED 인가."""
-    key = (report.get("type"), (report.get("period") or {}).get("from"), report.get("version"))
+    """같은 (종류, 기간, version) 이 이미 PUBLISHED 인가.
+
+    ⚠️ 현상 인텔 보고서는 기간이 아니라 **사건·발표 회차**가 정체성이다. 기간 시작(관측 시각)만
+       보면 같은 시각에 관측된 서로 다른 두 태풍이 '중복' 으로 막힌다. 그 종류만 reportId 로 본다.
+    """
+    def key_of(r):
+        if r.get("type") == "PHENOMENON_INTEL":
+            return (r.get("type"), r.get("reportId"), r.get("version"))
+        return (r.get("type"), (r.get("period") or {}).get("from"), r.get("version"))
+
+    key = key_of(report)
     for r in published_index:
         if r.get("lifecycle") != "PUBLISHED":
             continue
-        if (r.get("type"), (r.get("period") or {}).get("from"), r.get("version")) == key:
+        if key_of(r) == key:
             return r.get("reportId")
     return None
 

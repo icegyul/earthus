@@ -118,6 +118,68 @@ def check_verify_daily(doc, *, period=None, now=None, stale_days=3):
     }
 
 
+def check_intel_packet(packet, *, dataset_id=None, now=None):
+    """P5 — 인텔 패킷 v1 검사. check_verify_daily 와 **같은 모양**으로 돌려준다.
+
+      contract    계약(intel_contract) 위반 — FAIL. 계약 밖 패킷으로 보고서를 만들지 않는다
+      not_empty   WHAT·WHY·NEXT·IMPACT 가 전부 비었다 — FAIL. 출처 목록만으로 보고서를 내지 않는다
+      causal      패킷 문장 어디에든 인과 어휘 — FAIL (계약은 conditions·related·next 만 본다)
+      issued_at   발표 시각이 없다 — WARN. 받은 시각으로 대신하고 그 사실을 남긴다
+      freshness   출처가 자기 SLA 보다 늙었다(ageMin > slaMin) — WARN. 패킷 생산자와 같은 규칙
+                  (aws/cyclone-analog/intel_v1.py). 막지 않고 보고서의 한계로 싣는다
+    """
+    import intel_contract as ic
+    import phenomenon_registry as reg
+    now = now or datetime.now(timezone.utc)
+    checks = []
+    fixed, errors = ic.check(packet, known_phenomena=set(reg.phenomenon_ids()))
+    checks.append(_chk("contract", not errors, FAIL,
+                       "계약 위반 %d건: %s" % (len(errors), "; ".join(errors[:3]))))
+    body = [s for s in ("WHAT", "WHY", "NEXT", "IMPACT")
+            if isinstance(fixed, dict) and ic.section_status(fixed, s)["status"] == "available"]
+    checks.append(_chk("not_empty", bool(body), FAIL,
+                       "WHAT·WHY·NEXT·IMPACT 가 전부 비었다 — 출처 목록만으로 보고서를 내지 않는다"))
+
+    hits = []
+
+    def walk(node):
+        if isinstance(node, str):
+            hits.extend(ic.causal_hits(node))
+        elif isinstance(node, dict):
+            for v in node.values():
+                walk(v)
+        elif isinstance(node, (list, tuple)):
+            for v in node:
+                walk(v)
+    walk(packet)
+    checks.append(_chk("causal", not hits, FAIL, "인과 어휘: %s" % sorted(set(hits))))
+
+    pkt = packet if isinstance(packet, dict) else {}
+    checks.append(_chk("issued_at", bool((pkt.get("time") or {}).get("issuedAt")), WARN,
+                       "발표 시각(time.issuedAt)이 없어 받은 시각으로 대신했다"))
+
+    old = []
+    for s in pkt.get("sources") or []:
+        if not isinstance(s, dict):
+            continue                  # 모양이 틀린 출처는 contract 가 이미 FAIL 로 잡았다
+        age, sla = s.get("ageMin"), s.get("slaMin")
+        if isinstance(age, (int, float)) and isinstance(sla, (int, float)) and age > sla:
+            old.append("%s(%s분 > SLA %s분)" % (s.get("id"), age, sla))
+    checks.append(_chk("freshness", not old, WARN,
+                       "출처 %d곳이 자기 SLA 보다 늙었다: %s" % (len(old), ", ".join(old))))
+
+    failures = [c for c in checks if c["status"] == FAIL]
+    warnings = [c for c in checks if c["status"] == WARN]
+    return {
+        "datasetId": dataset_id or "intel-packet-v1",
+        "checkedAt": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "status": FAIL if failures else (WARN if warnings else PASS),
+        "checks": checks,
+        "warnings": warnings,
+        "failures": failures,
+    }
+
+
 def blocks_publication(quality):
     """FAIL 이면 발행하지 않는다. WARN 은 막지 않되 보고서에 한계를 남긴다."""
     return bool(quality) and quality.get("status") == FAIL

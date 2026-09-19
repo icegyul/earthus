@@ -301,6 +301,180 @@ def table_of_contents(sections):
              "empty": bool(s.get("empty"))} for s in sections]
 
 
+# ═══ INTELLIGENCE-LAYER-PLAN P5 — 현상 인텔 보고서(PHENOMENON_INTEL) 절 구성 ═══════
+# 절은 INTELLIGENCE 5절(어휘 정본 contracts/intel-vocab.json 의 INTEL_SECTIONS)이다.
+# 제목은 셸 띠(prototype/v2-three/js/intel-strip.js SEC_TITLE)와 같은 말을 쓴다 —
+# 같은 절을 화면과 보고서가 다른 이름으로 부르지 않는다.
+#
+# ⚠️ 절 목록은 고정이다(이 파일 머리말과 같은 규칙). 재료가 없는 절도 지우지 않고
+#    notAvailable + 패킷이 적은 이유로 남긴다. **채우지 않는다.**
+# ⚠️ importance · uncertainty 는 패킷 절이지만 INTEL_SECTIONS 어디에도 없다. 조용히 버리지 않고
+#    EVIDENCE 의 곁 재료로 싣는다(무엇으로 아나 — 중요 이유 목록과 불확실성 폭).
+INTEL_REPORT_TYPE = "PHENOMENON_INTEL"
+INTEL_REQUIRED_TIER = "explorer"   # PRODUCT-STRUCTURE-AND-TIERS §3 — REPORT = EXPLORER (access-mode.js TIER.EXPLORER)
+INTEL_LAYOUT = (
+    ("what", "WHAT", "지금 무슨 일이", "What is happening"),
+    ("why", "WHY", "함께 나타난 조건", "Conditions observed alongside"),
+    ("next", "NEXT", "앞으로 — 기관 예보", "Next — agency forecasts"),
+    ("impact", "IMPACT", "이어져 있는 것", "Connected to"),
+    ("evidence", "EVIDENCE", "무엇으로 아나", "How we know"),
+)
+INTEL_EXTRA_PARTS = {"EVIDENCE": ("uncertainty", "importance")}
+# 셸 띠의 NEXT 문구(intel-strip.js) — 유형 A 는 우리가 만든 예보가 아니다.
+INTEL_NEXT_A_NOTE = ("유형 A 기관 인용 — 우리가 만든 예보가 아닙니다.",
+                     "Type A agency quote — not our forecast.")
+
+
+def _intel():
+    import intel_contract as ic      # 지연 import — 기간 보고서 경로가 인텔 어휘에 기대지 않게
+    return ic
+
+
+def intel_parts(intel_section):
+    """INTEL 절 하나가 담는 패킷 절. 핵심(어휘 정본) + 곁 재료."""
+    ic = _intel()
+    return tuple(ic.INTEL_SECTIONS[intel_section]) + INTEL_EXTRA_PARTS.get(intel_section, ())
+
+
+def _part_present(packet, part):
+    if part == "coverage":
+        return True                   # '빠진 것이 없다' 도 적힌 사실이다
+    return part in packet and packet[part] not in (None, [], {})
+
+
+def build_intel(packet, *, by_part, rows):
+    """패킷(계약 통과본) → 5절. 각 절은 채워지거나, 패킷이 적은 이유와 함께 비어 있다.
+
+    by_part  패킷 절 → factId 목록 (어댑터가 만든 것)
+    rows     팩트가 아닌 패킷 내용 (part 가 붙은 줄)
+    """
+    ic = _intel()
+    fixed = ic.FIXED_TEXT
+    reasons = {}
+    for m in (packet.get("coverage") or {}).get("missing") or []:
+        if isinstance(m, dict) and m.get("section"):
+            reasons.setdefault(m["section"], []).append(m.get("reason") or "")
+
+    out = []
+    for sid, sec, ko, en in INTEL_LAYOUT:
+        st = ic.section_status(packet, sec)
+        parts, refs, missing = [], [], []
+        for part in intel_parts(sec):
+            if _part_present(packet, part):
+                fr = list(by_part.get(part) or [])
+                parts.append({"part": part, "present": True, "factRefs": fr})
+                refs.extend(fr)
+            elif part in reasons:
+                why = "; ".join(r for r in reasons[part] if r)
+                parts.append({"part": part, "present": False, "reasonKo": why,
+                              "reasonEn": fixed["sectionMissing"]["en"]})
+                missing.append({"part": part, "reasonKo": why,
+                                "reasonEn": fixed["sectionMissing"]["en"]})
+            # 패킷에도 missing 에도 없는 절은 계약이 이미 거절했다(intel_contract.validate).
+        mine = [r for r in rows if r.get("part") in {p["part"] for p in parts if p["present"]}]
+        row = {"id": sid, "intelSection": sec, "titleKo": ko, "titleEn": en,
+               "status": st["status"], "parts": parts, "factRefs": refs, "rows": mine,
+               "missingParts": missing, "requiredTier": INTEL_REQUIRED_TIER}
+        present = sum(1 for p in parts if p["present"])
+        if st["status"] != "available":
+            why = st.get("reason") or fixed["sectionMissing"]["ko"]
+            row.update({"notAvailable": True, "empty": True, "dataLabel": "INSUFFICIENT_DATA",
+                        "reasonKey": "PACKET_COVERAGE_MISSING", "reasonKo": why,
+                        "reasonEn": fixed["sectionMissing"]["en"],
+                        "factRefs": [], "rows": []})
+        else:
+            row.update({"notAvailable": False, "empty": False,
+                        "dataLabel": "DATA_COMPLETE" if present == len(parts) else "DATA_PARTIAL"})
+        if sec == "WHY" and not row["empty"]:
+            row["noteKo"], row["noteEn"] = (fixed["conditionsNotCause"]["ko"],
+                                            fixed["conditionsNotCause"]["en"])
+        if sec == "NEXT" and not row["empty"]:
+            types = {r.get("type") for r in mine if r.get("part") == "next"}
+            if types == {"A"}:
+                row["noteKo"], row["noteEn"] = INTEL_NEXT_A_NOTE
+            else:
+                # 유형이 섞이면 제목이 '기관 예보' 라고 단정하지 않는다. 항목마다 유형이 붙어 있다.
+                row["titleKo"], row["titleEn"] = "앞으로", "Next"
+        out.append(row)
+    return out
+
+
+def intel_contents(sections):
+    """잠금 화면용 목록 — 값 없이 '무엇이 들어 있나' 만(PRODUCT-STRUCTURE §3 · LAYER-PLAN §3.1).
+
+    잠금 화면은 안에 무엇이 있는지를 **먼저** 보여 준다. 그래서 값은 빼고 절 이름 · 상태 ·
+    항목 수 · 빠진 부분과 그 이유만 싣는다.
+    """
+    out = []
+    for toc, s in zip(table_of_contents(sections), sections):
+        toc.update({"status": s.get("status"),
+                    "items": len(s.get("factRefs") or []) + len(s.get("rows") or []),
+                    "missingParts": [m["part"] for m in s.get("missingParts") or []],
+                    "reasonKo": s.get("reasonKo") if s.get("notAvailable") else None})
+        out.append(toc)
+    return out
+
+
+def validate_intel(report):
+    """PHENOMENON_INTEL 보고서만의 검사. 돌려주는 것: 문제 목록(비면 통과).
+
+      · 5절이 고정 id 로 전부 있다 (절을 지우지 않는다)
+      · 빈 절에는 이유가 있고, 값이 없다 (채우지 않는다)
+      · 빠진 패킷 절에서 나온 팩트가 없다
+      · 절이 가리키는 팩트가 전부 있다
+      · 어디에도 인과 어휘(FORBIDDEN_CAUSAL)가 없다 — 패킷에서 옮긴 문장까지 본다
+      · 등급이 EXPLORER 다
+    """
+    ic = _intel()
+    problems = []
+    secs = report.get("sections") or []
+    ids = [s.get("id") for s in secs]
+    want = [sid for sid, *_ in INTEL_LAYOUT]
+    if ids != want:
+        problems.append("인텔 보고서의 절이 %s 가 아니다: %s" % (want, ids))
+    facts = {f.get("factId") for f in report.get("facts") or []}
+    missing_parts = set()
+    for s in secs:
+        if s.get("requiredTier") != INTEL_REQUIRED_TIER:
+            problems.append("절 %s 의 등급이 %s 가 아니다" % (s.get("id"), INTEL_REQUIRED_TIER))
+        if s.get("notAvailable"):
+            if not s.get("reasonKo"):
+                problems.append("빈 절 %s 에 이유가 없다" % s.get("id"))
+            if s.get("factRefs") or s.get("rows"):
+                problems.append("빈 절 %s 에 값이 들어 있다" % s.get("id"))
+        for m in s.get("missingParts") or []:
+            missing_parts.add(m.get("part"))
+            if not m.get("reasonKo"):
+                problems.append("빠진 부분 %s/%s 에 이유가 없다" % (s.get("id"), m.get("part")))
+        for fid in s.get("factRefs") or []:
+            if fid not in facts:
+                problems.append("절 %s 가 없는 팩트를 가리킨다: %s" % (s.get("id"), fid))
+    for fid in facts:
+        seg = str(fid).split(":")
+        if len(seg) > 2 and seg[2] in missing_parts:
+            problems.append("빠졌다고 적힌 절(%s)에서 팩트가 나왔다: %s" % (seg[2], fid))
+    if (report.get("access") or {}).get("requiredTier") != INTEL_REQUIRED_TIER:
+        problems.append("보고서 등급이 %s 가 아니다" % INTEL_REQUIRED_TIER)
+    for where, node in (("sections", secs), ("narrative", report.get("narrative")),
+                        ("facts", report.get("facts"))):
+        for text in _strings(node):
+            hits = ic.causal_hits(text)
+            if hits:
+                problems.append("%s 에 인과 어휘 %s: %s" % (where, hits, text[:60]))
+    return problems
+
+
+def _strings(node):
+    if isinstance(node, str):
+        yield node
+    elif isinstance(node, dict):
+        for v in node.values():
+            yield from _strings(v)
+    elif isinstance(node, (list, tuple)):
+        for v in node:
+            yield from _strings(v)
+
+
 def methodology_text(period, *, adapters_used, ranking, baseline_note):
     """§121 — 방법 절. 무엇을 어떻게 셌는지 사람 말로 적는다."""
     return {

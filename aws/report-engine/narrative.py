@@ -153,14 +153,21 @@ def validate_report_narrative(report):
     truth_types = {f.get("truthType") for f in facts if f.get("truthType")}
     problems = []
     narr = report.get("narrative") or {}
-    texts = [narr.get("summary")] + [ln.get("text") for ln in (narr.get("lines") or [])]
+    lines = narr.get("lines") or []
+    # P5 — `factIds` 를 든 줄은 아래에서 **그 줄이 가리키는 팩트만으로** 따로 본다.
+    #      전체 팩트로 느슨하게 한 번 더 보지 않는다(느슨한 쪽이 통과시키면 의미가 없다).
+    loose = [ln for ln in lines if "factIds" not in ln]
+    texts = [narr.get("summary")] + [ln.get("text") for ln in loose]
     allowed = list(narr.get("factNumbers") or [])
-    for ln in (narr.get("lines") or []):
+    for ln in loose:
         allowed.extend(ln.get("factNumbers") or [])
     for t in texts:
         ok, probs = validate_narrative(t, facts, allowed_numbers=allowed, truth_types=truth_types)
         if not ok:
             problems.extend(probs)
+    ok_l, probs_l = validate_fact_lines([ln for ln in lines if "factIds" in ln], facts)
+    if not ok_l:
+        problems.extend(probs_l)
     # PHASE 8 — 스토리 문장도 같은 잣대로 본다. 스토리만 검사를 피해 가면 안 된다.
     ok_s, probs_s = validate_stories(report.get("stories"), facts)
     if not ok_s:
@@ -202,6 +209,196 @@ def allowed_numbers_for(facts):
         walk(f.get("sampleCount"))
         walk(f.get("comparison"))
     return sorted(out)
+
+
+def _shared(name):
+    """aws/_shared 모듈 지연 import — 이 파일은 계약 계층 없이도 읽혀야 한다(generator 가 지연 import)."""
+    import importlib
+    import os
+    import sys
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "_shared")
+    if path not in sys.path:
+        sys.path.insert(0, path)
+    return importlib.import_module(name)
+
+
+def _full_causal():
+    """report_contract.FORBIDDEN_CAUSAL — 위 CAUSAL 보다 넓다('원인으로' · 'causes' · 'caused by').
+
+    ⚠️ CAUSAL 자체를 넓히지 않았다. 기존 기간 보고서 문장이 새 잣대에 걸리는지 확인하지
+       않은 채 바꾸면 이미 돌던 발행이 멈출 수 있다. 새 줄(factIds 를 든 줄)부터 넓은 잣대를 쓴다.
+    """
+    return _shared("report_contract").FORBIDDEN_CAUSAL
+
+
+def validate_fact_lines(lines, facts):
+    """P5 — 팩트를 가리키는 서술 줄. 한국어·영어 둘 다, **그 줄이 가리키는 팩트**로만 본다.
+
+    스토리 검사(validate_stories)와 같은 원칙이다: 허용 숫자를 줄이 스스로 신고하지 않는다.
+    factIds 가 빈 목록이면 숫자를 하나도 가리키지 않는 줄이다 — 한 자리 정수만 통과한다.
+    """
+    by_id = {f.get("factId"): f for f in (facts or [])}
+    banned = _full_causal()
+    problems = []
+    for i, ln in enumerate(lines or []):
+        ids = ln.get("factIds") or []
+        lost = [x for x in ids if x not in by_id]
+        if lost:
+            problems.append("서술 줄 %d 가 없는 팩트를 가리킨다: %s" % (i, lost[:3]))
+        mine = [by_id[x] for x in ids if x in by_id]
+        allowed = allowed_numbers_for(mine)
+        truth = {f.get("truthType") for f in mine if f.get("truthType")}
+        # 출처 **이름**에 숫자가 있을 수 있다("NOAA OISST v2.1 (1° 축약)"). 값이 아니라 이름이다.
+        # 가릴 문자열은 팩트가 들고 있는 출처에서만 온다(마음대로 못 가린다).
+        masks = {f.get("source") for f in mine}
+        masks = {m for m in masks if isinstance(m, str) and any(c.isdigit() for c in m)}
+        for text in (ln.get("text"), ln.get("textEn")):
+            ok, probs = validate_narrative(text, mine, allowed_numbers=allowed,
+                                           truth_types=truth, mask_texts=masks)
+            if not ok:
+                problems.extend("서술 줄 %d(%s): %s" % (i, ln.get("sectionId"), p) for p in probs)
+            low = (text or "").lower()
+            for w in banned:
+                if w.lower() in low:
+                    problems.append("서술 줄 %d(%s): 근거 없는 인과 표현 '%s'" % (i, ln.get("sectionId"), w))
+    return (not problems), problems
+
+
+# ═══ P5 — 현상 인텔 보고서 서술 ═════════════════════════════════════════════════
+# 팩트에서 **결정적으로** 만든다(LLM 없음). 숫자는 팩트 값·비교값에서만 온다.
+# ⚠️ 시각은 문장에 넣지 않는다. '2026-09-19T12:00' 의 조각(-19 · 12 · 00)이 숫자 검사에 걸리고,
+#    시각은 표(팩트의 period)에 이미 있다. 출처 이름도 넣지 않는다 — 표의 출처 칸이 있다.
+# 이름표는 셸 띠(prototype/v2-three/js/intel-strip.js LABEL · 본문 문구)와 같은 말이다.
+INTEL_LABEL = {
+    "maxWind": ("최대풍속", "Max wind"),
+    "centerLat": ("중심 위도", "Centre lat"),
+    "centerLon": ("중심 경도", "Centre lon"),
+    "moveSpeed": ("이동 속도", "Moving speed"),
+    "grade": ("강도 등급", "Intensity class"),
+    "sstAtCenter": ("중심 아래 해수면 온도", "Sea surface temperature under the centre"),
+    "motion.courseKo": ("진행", "Heading"),
+    "motion.speedKmh": ("이동 속도", "Moving speed"),
+    "persistence.hoursSinceDetected": ("탐지 뒤 지속", "Tracked for"),
+}
+# 셸 띠가 값 뒤에 붙이는 단위 — 패킷 pattern 은 단위 칸이 없고 키 이름이 단위를 말한다.
+_PATTERN_UNIT = {"motion.speedKmh": "km/h", "persistence.hoursSinceDetected": "h"}
+
+
+def _fmt(v):
+    if isinstance(v, bool):
+        return str(v)
+    if isinstance(v, float) and v.is_integer():
+        return str(int(v))
+    return str(v)
+
+
+def _unit(u):
+    return "" if not u or u == "category" else " " + u
+
+
+def _val(f):
+    return "%s%s" % (_fmt(f.get("value")), _unit(f.get("unit") or _PATTERN_UNIT.get(f.get("metric"))))
+
+
+def _label(f, lang):
+    metric = str(f.get("metric") or "")
+    key = metric[:-len(".delta")] if metric.endswith(".delta") else metric   # 변화 팩트 `{key}.delta`
+    hit = INTEL_LABEL.get(key)
+    return hit[0 if lang == "ko" else 1] if hit else key
+
+
+def build_intel_narrative(packet, facts, sections):
+    """절마다 한두 줄. 각 줄은 쓰는 팩트를 factIds 로 든다 — 검사가 그 팩트로만 대조한다.
+
+    빈 절은 채우지 않는다 — 어휘 정본의 고정 문구('재료가 없다')만 적는다.
+    """
+    by_id = {f["factId"]: f for f in facts or []}
+    fixed_missing = _shared("intel_contract").FIXED_TEXT["sectionMissing"]
+    lines = []
+
+    def line(sid, ko, en, ids):
+        lines.append({"sectionId": sid, "text": ko, "textEn": en, "factIds": list(ids)})
+
+    def part_facts(sec, part):
+        for p in sec.get("parts") or []:
+            if p.get("part") == part and p.get("present"):
+                return [by_id[x] for x in p.get("factRefs") or [] if x in by_id]
+        return []
+
+    for sec in sections or []:
+        sid = sec["id"]
+        if sec.get("notAvailable"):
+            line(sid, "%s — %s" % (sec["titleKo"], fixed_missing["ko"]),
+                 "%s — %s" % (sec["titleEn"], fixed_missing["en"]), [])
+            continue
+
+        if sid == "what":
+            cur = part_facts(sec, "current")
+            if cur:
+                line(sid, " · ".join("%s %s" % (_label(f, "ko"), _val(f)) for f in cur),
+                     " · ".join("%s %s" % (_label(f, "en"), _val(f)) for f in cur),
+                     [f["factId"] for f in cur])
+            for f in part_facts(sec, "change"):
+                c = f.get("comparison") or {}
+                sign = "+" if isinstance(f.get("value"), (int, float)) and f["value"] > 0 else ""
+                line(sid,
+                     "%s 변화 %s → %s%s (%s%s)" % (_label(f, "ko"), _fmt(c.get("from")), _fmt(c.get("to")),
+                                                   _unit(f.get("unit")), sign, _fmt(f.get("value"))),
+                     "%s change %s → %s%s (%s%s)" % (_label(f, "en"), _fmt(c.get("from")), _fmt(c.get("to")),
+                                                     _unit(f.get("unit")), sign, _fmt(f.get("value"))),
+                     [f["factId"]])
+            pat = [f for f in part_facts(sec, "pattern") if f.get("metric") in INTEL_LABEL]
+            if pat:
+                line(sid, " · ".join("%s %s" % (_label(f, "ko"), _val(f)) for f in pat),
+                     " · ".join("%s %s" % (_label(f, "en"), _val(f)) for f in pat),
+                     [f["factId"] for f in pat])
+            for m in sec.get("missingParts") or []:
+                line(sid, "%s 절은 이 패킷에서 비어 있습니다 — 이유는 이 절의 '빠진 부분'에 적었습니다." % m["part"],
+                     "The %s part is empty in this packet — the reason is listed under missing parts." % m["part"],
+                     [])
+        elif sid == "why":
+            cond = part_facts(sec, "conditions")
+            if cond:
+                line(sid, " · ".join("%s %s" % (_label(f, "ko"), _val(f)) for f in cond),
+                     " · ".join("%s %s" % (_label(f, "en"), _val(f)) for f in cond),
+                     [f["factId"] for f in cond])
+            # '함께 나타난 조건 — 원인이 아니다' 는 절의 noteKo 가 싣는다. 줄로 한 번 더 쓰지 않는다.
+        elif sid == "next":
+            items = {}
+            for f in part_facts(sec, "next"):
+                idx = f["factId"].split(":")[3] if f["factId"].count(":") >= 4 else "0"
+                items.setdefault(idx, []).append(f)
+            for idx in sorted(items, key=lambda x: int(x) if x.isdigit() else 0):
+                fs = {f["metric"]: f for f in items[idx]}
+                src = items[idx][0].get("source") or ""
+                bits_ko, bits_en = [], []
+                if "headingKo" in fs:
+                    bits_ko.append(_fmt(fs["headingKo"]["value"]))
+                    bits_en.append(_fmt(fs["headingKo"]["value"]))
+                if "horizonH" in fs:
+                    bits_ko.append("+%sh" % _fmt(fs["horizonH"]["value"]))
+                    bits_en.append("+%sh" % _fmt(fs["horizonH"]["value"]))
+                if "peak.windMs" in fs:
+                    g = _fmt(fs["peak.gradeKo"]["value"]) if "peak.gradeKo" in fs else ""
+                    bits_ko.append(("최대 %s m/s %s" % (_fmt(fs["peak.windMs"]["value"]), g)).strip())
+                    bits_en.append(("peak %s m/s %s" % (_fmt(fs["peak.windMs"]["value"]), g)).strip())
+                used = [fs[k]["factId"] for k in ("headingKo", "horizonH", "peak.windMs", "peak.gradeKo")
+                        if k in fs]
+                line(sid, "%s: %s" % (src, " · ".join(bits_ko) or "—"),
+                     "%s: %s" % (src, " · ".join(bits_en) or "—"), used)
+            # '유형 A 기관 인용 — 우리 예보가 아니다' 는 절의 noteKo 가 싣는다.
+        elif sid == "impact":
+            for r in (row for row in sec.get("rows") or [] if row.get("part") == "related"):
+                line(sid, "%s — %s" % (r.get("title"), r.get("relationKo")),
+                     "%s — %s" % (r.get("title"), r.get("relationEn")), [])
+        elif sid == "evidence":
+            for r in (row for row in sec.get("rows") or [] if row.get("part") == "confidence"):
+                line(sid, "신뢰 등급 %s — 산식 %s 의 출력입니다." % (r.get("grade"), r.get("formulaId")),
+                     "Confidence %s — output of formula %s." % (r.get("grade"), r.get("formulaId")), [])
+            gone = [r.get("title") for r in sec.get("rows") or [] if r.get("part") == "coverage"]
+            if gone:
+                line(sid, "빠진 절: %s." % ", ".join(gone), "Missing sections: %s." % ", ".join(gone), [])
+    return {"summary": None, "lines": lines, "empty": not lines, "engine": "deterministic"}
 
 
 def validate_stories(stories, facts):

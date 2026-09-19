@@ -153,6 +153,55 @@ def cmd_full(args):
     return pl.main(argv)
 
 
+def cmd_intel(args):
+    """INTELLIGENCE-LAYER-PLAN P5 — 인텔 패킷 한 개 → 현상 보고서(PHENOMENON_INTEL).
+
+    패킷 → QC → 팩트 → 절 → 서술 → 검증(run_publication_pipeline) → 발행 사슬(publish_pipeline).
+
+    ⚠️ 이 명령에는 승인 인자가 **없다.** --publish 는 사람 승인 문(publisher.publish_pipeline)
+       앞에서 멈추고 READY_FOR_REVIEW 로 남는다. 승인은 사람이 publisher.approve(…,
+       approval_method="CLI_CONFIRM") 로 따로 한다 — 자동화가 스스로를 승인하는 길을 만들지 않는다.
+    ⚠️ 입력 파일 경로를 provenance 에 남긴다. 시험 자료(fixtures/…)로 PRODUCTION 을 돌리면
+       generator 의 시험자료 검사가 막는다 — 그건 의도다. 시험은 --mode TEST 로 돌린다.
+    """
+    import pipeline as pl
+    import publisher as pub
+    import export as ex
+    import phenomenon_intel_adapter as pia
+    with open(args.packet, encoding="utf-8") as fh:
+        doc = json.load(fh)
+    packet = pia.unwrap(doc)
+    if packet is None:
+        raise SystemExit("인텔 패킷 v1 도, intel 을 품은 사건 패킷도 아니다: %s" % args.packet)
+    now = _now()
+    rep, quality = pl.build_intel(packet, packet_ref=args.packet_ref, generated_at=now,
+                                  provenance_extra={"input": os.path.abspath(args.packet)})
+    rep = gen.run_publication_pipeline(rep, quality=quality, published_at=now, mode=args.mode)
+    labels = " · ".join("%s=%s" % (s["id"], s.get("dataLabel")) for s in rep.get("sections") or [])
+    print(f"[{rep['type']}] {rep['reportId']} · {rep.get('lifecycle')} · QC {quality['status']} · "
+          f"팩트 {len(rep.get('facts') or [])} · {labels}")
+    for p in rep.get("validationProblems") or []:
+        print("  검증 실패: " + str(p))
+    for w in rep.get("limitations") or []:
+        print("  한계: " + str(w))
+    if args.verbose:
+        print(json.dumps(rep, ensure_ascii=False, indent=1)[:2500])
+    if args.out:
+        # JSON 도 여기서 같이 낸다 — 세 형식을 같은 객체에서(export.write_all).
+        for path in ex.write_all(rep, args.out).values():
+            print(f"  → {path}")
+    if args.publish:
+        adapter = (pub.S3PublishAdapter() if args.publish_target == "s3"
+                   else pub.LocalPublishAdapter(args.publish_root))
+        res = pub.publish_pipeline(rep, adapter, published_at=_now())
+        print("  발행 사슬: stage=%s ok=%s reason=%s approvalState=%s key=%s" % (
+            res.get("stage"), res.get("ok"), res.get("reason"), res.get("approvalState"),
+            res.get("key") or pub.report_key(rep)))
+        if res.get("detail"):
+            print("   " + str(res["detail"])[:200])
+    return rep
+
+
 def _emit(rep, args, ok, problems, extra=""):
     print(f"[{rep['type']}] {rep['reportId']} · {rep.get('lifecycle')} · {extra}")
     if not ok:
@@ -203,13 +252,26 @@ def main(argv=None):
     s.add_argument("--period", required=True)
     s.set_defaults(fn=cmd_scorecard)
 
+    ip = sub.add_parser("intel", help="현상 보고서 (P5 phenomenon-intel) — 인텔 패킷 한 개")
+    ip.add_argument("--packet", required=True,
+                    help="인텔 패킷 v1 JSON 또는 intel 을 품은 사건 패킷(ocean/cyclone-events/{id}.json)")
+    ip.add_argument("--packet-ref", help="운영에서 그 패킷이 사는 키 (태풍은 eventId 로 정해진다)")
+    ip.add_argument("--out", help="HTML·MD·JSON 을 쓸 디렉터리")
+    ip.add_argument("--publish", action="store_true",
+                    help="발행 사슬까지 간다 — 사람 승인 문 앞에서 멈춘다")
+    ip.add_argument("--publish-target", default="local", choices=["s3", "local"])
+    ip.add_argument("--publish-root", default="./build/publish")
+    ip.add_argument("--mode", default="PRODUCTION", choices=["TEST", "DEMO", "PRODUCTION"])
+    ip.add_argument("--verbose", action="store_true")
+    ip.set_defaults(fn=cmd_intel)
+
     for p in (r, o, s):
         p.add_argument("--input", help="verify-daily.json 경로 (없으면 공개 주소에서 받는다)")
         p.add_argument("--out", help="결과 JSON 을 쓸 디렉터리")
         p.add_argument("--verbose", action="store_true")
 
     args = ap.parse_args(argv)
-    args.fn(args)
+    return args.fn(args)
 
 
 if __name__ == "__main__":

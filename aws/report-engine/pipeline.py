@@ -37,6 +37,8 @@ import publisher as pub                         # noqa: E402
 import climate_series_adapter as cs             # noqa: E402
 import typhoon_adapter as ty                    # noqa: E402
 import air_quality_adapter as aq                # noqa: E402
+import phenomenon_intel_adapter as pia          # noqa: E402
+import sections as sx                           # noqa: E402
 from adapters import kma_verify_adapter as kma  # noqa: E402
 
 PUBLIC = "https://earthus-cache-kr.s3.us-east-2.amazonaws.com"
@@ -205,6 +207,41 @@ def build(period, *, docs, generated_at=None, top_limit=5):
         report["narrative"] = nr.build_scorecard_narrative(
             gen.build_forecast_scorecard(prev, evals))
     return report
+
+
+# ═══ INTELLIGENCE-LAYER-PLAN P5 — 현상 인텔 보고서 ═══════════════════════════════
+#   패킷 → QC → 팩트 → 절 구성 → 서술 → (검증은 generator.run_publication_pipeline,
+#   발행은 publisher.publish_pipeline — 사람 승인 문을 지나야 올라간다)
+INTEL_PIPELINE_VERSION = "earthus.report-pipeline/0.2.0+phenomenon-intel.1"
+
+
+def build_intel(packet, *, packet_ref=None, generated_at=None, provenance_extra=None):
+    """인텔 패킷 v1 한 개 → (보고서 초안, 자료 품질). 발행은 하지 않는다.
+
+    ⚠️ 계약을 어긴 패킷이면 intel_contract.IntelContractError 를 그대로 던진다 — 보고서를
+       만들지 않는다. 출처 키를 모르면 IntelReportError — 재현할 수 없는 보고서를 만들지 않는다.
+    """
+    generated_at = generated_at or _now()
+    quality = qcmod.check_intel_packet(packet, dataset_id=packet_ref)
+    fixed = pia.load(packet)
+    packet_ref = packet_ref or pia.default_packet_ref(fixed)
+    if not packet_ref:
+        raise pia.IntelReportError(
+            "패킷이 운영의 어디에 있는지 모른다(%s) — --packet-ref 로 적어라. "
+            "출처 없는 보고서는 재현할 수 없다." % fixed.get("phenomenonId"))
+    quality["datasetId"] = packet_ref
+    sid = pia.source_id(fixed)
+    facts, by_part = pia.build_facts(fixed, source_id_=sid, packet_ref=packet_ref)
+    rows = pia.build_rows(fixed)
+    sections = sx.build_intel(fixed, by_part=by_part, rows=rows)
+    report = gen.generate_phenomenon_intel(
+        fixed, report_id=pia.report_id(fixed),
+        snapshot=pia.snapshot(fixed, source_id_=sid, packet_ref=packet_ref, created_at=generated_at),
+        facts=facts, sections=sections,
+        narrative=nr.build_intel_narrative(fixed, facts, sections),
+        generated_at=generated_at, algorithm_version=INTEL_PIPELINE_VERSION,
+        period=pia.period(fixed), packet_ref=packet_ref, provenance_extra=provenance_extra)
+    return report, quality
 
 
 def validate(report):

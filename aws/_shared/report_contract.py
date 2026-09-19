@@ -29,6 +29,11 @@ REPORT_TYPES = (
     "OUTLOOK_NEXT_QUARTER",
     "OUTLOOK_NEXT_YEAR",
     "FORECAST_VERIFICATION",
+    # INTELLIGENCE-LAYER-PLAN P5 — 인텔 패킷 v1 한 개(현상·사건·발표 회차)를 보고서로 낸 것.
+    # 기간 보고서가 아니다. reportId 는 `phenomenon-intel:{현상}.{사건}.{발표시각}` —
+    # 콜론이 **하나**여야 한다(publisher.report_key 는 전부, report-center.js reportKey 는
+    # 첫 콜론만 '/' 로 바꾼다. 둘이면 앱이 발행 키와 다른 키를 연다).
+    "PHENOMENON_INTEL",
 )
 
 # 지침서 §23. 미완성 리포트를 조용히 발행하지 않는다 — BLOCKED 로 남긴다.

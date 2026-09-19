@@ -33,6 +33,7 @@ TYPE_SLUG = {
     "OUTLOOK_NEXT_MONTH": "OUTLOOK_MONTHLY",
     "OUTLOOK_NEXT_QUARTER": "OUTLOOK_Q",
     "OUTLOOK_NEXT_YEAR": "OUTLOOK_ANNUAL",
+    "PHENOMENON_INTEL": "INTEL",
 }
 
 
@@ -40,6 +41,11 @@ def filename(report, ext):
     """EARTHUS_MONTHLY_2026_08.html · EARTHUS_Q3_2026.html · EARTHUS_STATE_OF_EARTH_2026.html"""
     rtype = report.get("type")
     slug = TYPE_SLUG.get(rtype, "REPORT")
+    if rtype == "PHENOMENON_INTEL":
+        # 기간이 아니라 사건·발표 회차가 정체성이다. 기간으로 이름을 지으면 같은 달의
+        # 서로 다른 사건이 한 파일 이름을 다툰다. reportId 의 원천 id 를 그대로 쓴다.
+        src = str(report.get("reportId") or "").partition(":")[2] or "unknown"
+        return "EARTHUS_%s_%s.%s" % (slug, src.replace(".", "_"), ext)
     per = report.get("period") or {}
     a = (per.get("from") or "")[:10]
     year = a[:4] or "0000"
@@ -75,6 +81,7 @@ def to_markdown(report, *, lang="ko"):
         L.append(f"- [{t['titleKo']}](#{t['id']}){mark}")
     L.append("")
     by_id = {f["factId"]: f for f in report.get("facts") or []}
+    said = _lines_by_section(report)
     for s in report.get("sections") or []:
         L.append(f"## {s.get('titleKo')}")
         L.append("")
@@ -82,13 +89,21 @@ def to_markdown(report, *, lang="ko"):
             L.append(f"> **자료 없음** — {s.get('reasonKo') or '사유가 적히지 않았다'}")
             L.append("")
             continue
+        for ln in said.get(s.get("id"), []):
+            L.append(f"{ln.get('text')}  ")
+        for m in s.get("missingParts") or []:
+            L.append(f"> **빠진 부분 {m.get('part')}** — {m.get('reasonKo') or '사유가 적히지 않았다'}")
+        if s.get("noteKo"):
+            L.append(f"_{s['noteKo']}_")
+        L.append("")
         for fid in s.get("factRefs") or []:
             f = by_id.get(fid)
             if not f:
                 L.append(f"- ⚠️ 없는 팩트 참조: `{fid}`")
                 continue
             L.append(f"- **{f.get('metric')}**: {_fmt_value(f)}"
-                     + (f" _(표본 {f['sampleCount']})_" if f.get("sampleCount") else ""))
+                     + (f" _(표본 {f['sampleCount']})_" if f.get("sampleCount") else "")
+                     + (f" · {f['source']}" if s.get("intelSection") and f.get("source") else ""))
         for c in s.get("cards") or []:
             L.append(f"- **{c.get('title')}** · {c.get('kindKo')} · "
                      f"{c.get('occurredAt') or '시각 미확인'}"
@@ -109,11 +124,22 @@ def to_markdown(report, *, lang="ko"):
     return "\n".join(L)
 
 
+def _lines_by_section(report):
+    """서술 줄 중 절을 가리키는 것(현상 인텔 보고서). 문장은 엔진이 만든 것을 그대로 쓴다."""
+    out = {}
+    for ln in ((report.get("narrative") or {}).get("lines") or []):
+        if ln.get("sectionId"):
+            out.setdefault(ln["sectionId"], []).append(ln)
+    return out
+
+
 def _fmt_value(f):
     v = f.get("value")
     u = f.get("unit")
     if isinstance(v, float):
         v = f"{v:g}"
+    if u == "category":       # 등급 이름 같은 범주값 — 단위가 아니다(셸 띠 intel-strip.js 와 같은 처리)
+        u = None
     return f"{v}{u or ''}"
 
 
@@ -128,6 +154,11 @@ def _title(report, lang="ko"):
         return f"EARTHUS 분기 지구 리포트 · {a[:4]} Q{q}"
     if rtype == "RETROSPECTIVE_MONTHLY":
         return f"EARTHUS 월간 지구 리포트 · {a[:7]}"
+    if rtype == "PHENOMENON_INTEL":
+        # 사건 이름은 패킷에 없다 — 이름을 지어 넣지 않고 현상 id · 사건 id · 발표 시각만 쓴다.
+        sub = report.get("subject") or {}
+        bits = [sub.get("phenomenonId"), sub.get("eventId"), sub.get("issuedAt")]
+        return "EARTHUS 현상 보고서 · " + " · ".join(str(b) for b in bits if b)
     return f"EARTHUS {rtype} · {a[:7]}"
 
 
@@ -225,6 +256,10 @@ def to_html(report, *, lang="ko", app_base="https://earthus.net"):
     if report.get("internalTest"):
         P.append("<div class=\"na-box\"><b>INTERNAL TEST</b> — 이 리포트는 시험용입니다. "
                  "승인 전까지 외부에 배포하지 않습니다.</div>")
+    tier = (report.get("access") or {}).get("requiredTier")
+    if tier:
+        P.append(f"<p class=\"period\"><span class=\"pill\">{E(str(tier).upper())}</span>"
+                 f"아래 목차가 이 보고서에 들어 있는 전부입니다. 자료가 없는 절은 표시해 두었습니다.</p>")
     P.append("<div class=\"meta\">")
     P.append(f"리포트 <code>{E(str(report.get('reportId')))}</code> · "
              f"생성 {E(str(report.get('generatedAt')))} · 스냅샷 <code>"
@@ -245,10 +280,14 @@ def to_html(report, *, lang="ko", app_base="https://earthus.net"):
         P.append(f"<li{cls}><a href=\"#{E(t['id'])}\">{E(t['titleKo'] or t['id'])}{na}</a></li>")
     P.append("</ol></nav>")
 
+    said = _lines_by_section(report)
     for s in secs:
         P.append(f"<section id=\"{E(s['id'])}\">")
         P.append(f"<h2>{E(s.get('titleKo') or s['id'])}"
                  f"<span class=\"en\">{E(s.get('titleEn') or '')}</span></h2>")
+        if not (s.get("notAvailable") or s.get("empty")):
+            for ln in said.get(s["id"], []):
+                P.append(f"<p>{E(str(ln.get('text') or ''))}</p>")
         P.append(_section_html(s, by_id, app_base))
         P.append("</section>")
 
@@ -295,6 +334,10 @@ def _section_html(s, by_id, app_base):
                 f"{E(s.get('reasonKo') or '사유가 적히지 않았습니다.')}</div>")
 
     P = []
+    # 현상 인텔 보고서 — 절은 있는데 그 안의 한 부분만 빠진 경우. 채우지 않고 이유를 적는다.
+    for m in s.get("missingParts") or []:
+        P.append(f"<div class=\"na-box\"><b>빠진 부분 {E(str(m.get('part')))}</b> — "
+                 f"{E(m.get('reasonKo') or '사유가 적히지 않았습니다.')}</div>")
     refs = s.get("factRefs") or []
     if refs:
         P.append("<div class=\"scroll\"><table><thead><tr><th>항목</th><th>값</th>"
@@ -306,6 +349,9 @@ def _section_html(s, by_id, app_base):
                 P.append(f"<tr><td colspan=\"4\">⚠️ 없는 팩트 참조: <code>{E(fid)}</code></td></tr>")
                 continue
             src = " · ".join(f.get("evidenceRefs") or []) or "—"
+            if s.get("intelSection") and f.get("source"):
+                # 인텔 보고서는 근거 참조가 전부 같은 패킷 하나다 — 값마다 다른 것은 출처(기관)다.
+                src = f"{f['source']} · {src}"
             P.append(f"<tr><td>{E(str(f.get('metric')))}</td>"
                      f"<td class=\"num\">{E(_fmt_value(f))}</td>"
                      f"<td class=\"num smp\">{E(str(f.get('sampleCount') or '—'))}</td>"
@@ -383,8 +429,10 @@ def _section_html(s, by_id, app_base):
         for r in rows:
             if isinstance(r, dict):
                 head = r.get("provider") or r.get("ref") or r.get("title") or "—"
+                if r.get("part"):
+                    head = f"{r['part']} · {head}"
                 rest = " · ".join(f"{k}: {v}" for k, v in r.items()
-                                  if k not in ("provider", "ref", "title") and v is not None)
+                                  if k not in ("provider", "ref", "title", "part") and v is not None)
                 P.append(f"<tr><th>{E(str(head))}</th><td>{E(rest)}</td></tr>")
             else:
                 P.append(f"<tr><td colspan=\"2\">{E(str(r))}</td></tr>")
@@ -396,6 +444,8 @@ def _section_html(s, by_id, app_base):
             P.append(f"<tr><td><code>{E(str(e))}</code></td></tr>")
         P.append("</tbody></table></div>")
 
+    if s.get("noteKo"):
+        P.append(f"<p class=\"why\">{E(str(s['noteKo']))}</p>")
     if s.get("comparisonNote"):
         P.append(f"<p class=\"why\">{E(s['comparisonNote'])}</p>")
     if s.get("rankingNote"):

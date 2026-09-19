@@ -1,0 +1,174 @@
+# .github/workflows/r0-tests.yml — 새 클론에서 시험 3세트를 돌리고, 실패를 숨기지 않고 표로 남긴다.
+#
+# 기존 워크플로 7개(real-living-earth-*.yml)와 별개로 더하는 것이다. 기존 것은 건드리지 않는다.
+# 버전은 저장소 실측에 맞춘다:
+#   node 24   — 로컬 v24.18.0. (Lambda 런타임은 nodejs20.x 지만 시험 도구는 로컬 24 에서 검증됐다)
+#   python 3.12 — 저장소 Lambda 런타임 python3.12 전부, research-runtime .deps 는 cp312 전용(3.14 불가)
+#
+# 기대값(2026-09-20 로컬 실측, 추적 파일 기준):
+#   node   npm test          : 146건 전부 통과 (d54fc6eb 에서 v53 시험 3파일·v2 화면 변경이 함께 올라왔다)
+#   aws    pytest 디렉터리별  : 전부 통과 기대. report-engine write_policy 8건은 69e714da·bf63e274 에서 고쳤다.
+#                              int4 '빌드된 트리' 는 build/public-app 이 없는 새 클론에서 skipTest
+#   rr     unittest 80건     : .deps 복원 뒤 80 통과 기대 (.deps 없으면 parcels 계열 12건 실패)
+name: R0 tests (node + aws python + research-runtime)
+
+on:
+  push:
+    branches:
+      - earthus-v2/real-living-earth-render
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: r0-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  r0:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      PYTHONUTF8: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+      # botocore 가 실제 자격증명 공급자를 고르지 않게 한다 — 로컬에서는 이것 없이
+      # "botocore[crt]" MissingDependency 로 수집 오류 3·실패 5 가 가짜로 났다.
+      AWS_ACCESS_KEY_ID: testing
+      AWS_SECRET_ACCESS_KEY: testing
+      AWS_DEFAULT_REGION: ap-northeast-2
+      AWS_EC2_METADATA_DISABLED: "true"
+      AWS_CONFIG_FILE: /dev/null
+      AWS_SHARED_CREDENTIALS_FILE: /dev/null
+    steps:
+      - uses: actions/checkout@v4
+        # research-runtime test_08_v1_immutable 은 models.py 등의 LF sha256 을 고정한다.
+        # ubuntu 체크아웃은 LF 라 통과한다. (윈도 autocrlf=true 클론에서는 CRLF 로 깨진다 — 별건)
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # ── 1. node ─────────────────────────────────────────────
+      - name: node — npm test (package.json 의 test 글롭 그대로)
+        id: node
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee node.log
+          # 요약용 숫자
+          grep -E '^ℹ (tests|pass|fail|skipped) ' node.log | sed 's/^ℹ //' > node.counts || true
+
+      # ── 2. aws python ───────────────────────────────────────
+      - name: aws — install test deps
+        run: python -m pip install --disable-pip-version-check pytest boto3 numpy
+
+      - name: aws — pytest per directory (repo root cwd)
+        id: aws
+        continue-on-error: true
+        shell: bash
+        run: |
+          # 디렉터리마다 따로 돈다: handler.py 같은 모듈 이름이 겹쳐 한 프로세스로 모으면 섞인다.
+          # cwd 는 저장소 루트여야 한다: test_integration8 의 rogue 판정은 상대경로를 cwd 기준으로 푼다
+          # (테스트 디렉터리에서 돌리면 ALLOW_FEED 로 잘못 나온다 — 2026-09-20 실측).
+          set -u
+          fail=0
+          echo "| 디렉터리 | 결과 | 요약 |" > aws.table
+          echo "|---|---|---|" >> aws.table
+          for d in $(git ls-files 'aws/**test_*.py' | xargs -n1 dirname | sort -u); do
+            files=$(git ls-files "$d/test_*.py")
+            log="aws-$(echo "$d" | tr '/' '_').log"
+            if python -m pytest -q -p no:cacheprovider $files > "$log" 2>&1; then
+              st="PASS"
+            else
+              st="FAIL"; fail=1
+            fi
+            echo "| \`$d\` | $st | $(tail -1 "$log" | tr '|' '/') |" >> aws.table
+            if [ "$st" = "FAIL" ]; then
+              grep -E '^(FAILED|ERROR) ' "$log" | sed "s#^#    #" >> aws.failed || true
+            fi
+          done
+          cat aws.table
+          exit $fail
+
+      # ── 3. research-runtime ─────────────────────────────────
+      - name: research-runtime — restore .deps from dependencies.lock.txt
+        id: rrdeps
+        continue-on-error: true
+        shell: bash
+        run: bash tools/rr-deps-restore.sh
+
+      - name: research-runtime — unittest
+        id: rr
+        continue-on-error: true
+        shell: bash
+        working-directory: services/research-runtime
+        run: |
+          set -o pipefail
+          # 리눅스 구분자는 ':' 다 (README 의 ';' 는 윈도 파이썬 전용)
+          PYTHONPATH=".:.deps" python -m unittest discover -s tests 2>&1 | tee ../../rr.log
+
+      # ── 요약: 실패를 표로 남긴다 ──────────────────────────────
+      - name: summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## R0 시험 결과"
+            echo
+            echo "| 세트 | 결과 |"
+            echo "|---|---|"
+            echo "| node npm test | ${{ steps.node.outcome }} |"
+            echo "| aws pytest | ${{ steps.aws.outcome }} |"
+            echo "| research-runtime .deps 복원 | ${{ steps.rrdeps.outcome }} |"
+            echo "| research-runtime unittest | ${{ steps.rr.outcome }} |"
+            echo
+            echo "### node"
+            [ -f node.counts ] && sed 's/^/- /' node.counts
+            echo
+            echo "### aws (디렉터리별)"
+            [ -f aws.table ] && cat aws.table
+            if [ -f aws.failed ]; then
+              echo
+              echo "<details><summary>aws 실패 항목</summary>"
+              echo
+              echo '```'
+              cat aws.failed
+              echo '```'
+              echo "</details>"
+            fi
+            echo
+            echo "### research-runtime"
+            [ -f rr.log ] && { echo '```'; grep -E '^(Ran |OK|FAILED|FAIL:|ERROR:)' rr.log; echo '```'; }
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: r0-test-logs
+          path: |
+            node.log
+            aws-*.log
+            rr.log
+          if-no-files-found: ignore
+
+      # ── 판정: 하나라도 실패면 잡을 빨갛게 — 표만 남기고 초록으로 끝나면 숨기는 것이다 ──
+      - name: gate
+        if: always()
+        shell: bash
+        run: |
+          bad=0
+          for s in "${{ steps.node.outcome }}" "${{ steps.aws.outcome }}" "${{ steps.rrdeps.outcome }}" "${{ steps.rr.outcome }}"; do
+            [ "$s" = "success" ] || bad=1
+          done
+          if [ $bad -ne 0 ]; then
+            echo "R0: 실패한 세트가 있다 — 위 summary 표 참조"
+            exit 1
+          fi

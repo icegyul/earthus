@@ -1,5 +1,6 @@
 .local-data/
-.deps/
+# .deps.new / .deps.bak-<시각> 도 무시한다 — tools/rr-deps-restore.* 가 만든다
+.deps*/
 .venv/
 __pycache__/
 *.pyc

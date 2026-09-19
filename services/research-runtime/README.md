@@ -65,7 +65,7 @@ HYCOM NCSS NetCDF는 `research_runtime/netcdf_reader.py`(`earthus-hycom-netcdf/1
 ## 검증
 
 서비스 디렉터리에서 실행한다. `.deps`를 `PYTHONPATH`에 넣지 않으면 고정 OceanParcels가 잡히지 않아
-`OceanParcels 3.1.4 unavailable (ModuleNotFoundError)`로 5건이 실패한다 — 코드 오류가 아니라 경로 누락이다.
+`OceanParcels 3.1.4 unavailable (ModuleNotFoundError)`로 12건이 실패한다(2026-09-20 실측, 예전 기록은 5건) — 코드 오류가 아니라 경로 누락이다. `.deps` 가 없는 새 클론은 `bash tools/rr-deps-restore.sh`(윈도는 `tools/rr-deps-restore.ps1`)로 `dependencies.lock.txt` 에서 다시 만든다.
 
 ```powershell
 $env:PYTHONPATH = ".;.deps"

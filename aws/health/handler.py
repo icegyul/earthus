@@ -382,12 +382,19 @@ def output_metadata_of(key):
             digits = re.sub(r"\D", "", observed)
             if len(digits) in (10, 12, 14) and name in ("observedKst", "requestedKst", "observedUtc"):
                 fmt = {10: "%Y%m%d%H", 12: "%Y%m%d%H%M", 14: "%Y%m%d%H%M%S"}[len(digits)]
-                parsed = datetime.strptime(digits, fmt)
-                if name in ("observedKst", "requestedKst"):
-                    parsed = parsed.replace(tzinfo=timezone(timedelta(hours=9))).astimezone(timezone.utc)
-                else:
-                    parsed = parsed.replace(tzinfo=timezone.utc)
-                observed = parsed.strftime("%Y-%m-%dT%H:%M:%SZ")
+                # 0 을 채우지 않은 달·날("2026.9.20 15:00" → 숫자 10자리)은 strptime 이 잘못 자르다
+                # "unconverted data remains" 로 죽는다. 2026-09-20 운영에서 이 한 줄이 감시 전체를 멈췄다 —
+                # 시각 하나를 못 읽었다고 감시가 죽으면 안 된다. 못 읽으면 원문 문자열을 그대로 둔다.
+                try:
+                    parsed = datetime.strptime(digits, fmt)
+                except ValueError:
+                    parsed = None
+                if parsed is not None:
+                    if name in ("observedKst", "requestedKst"):
+                        parsed = parsed.replace(tzinfo=timezone(timedelta(hours=9))).astimezone(timezone.utc)
+                    else:
+                        parsed = parsed.replace(tzinfo=timezone.utc)
+                    observed = parsed.strftime("%Y-%m-%dT%H:%M:%SZ")
             break
     return {
         # sourceLive 항목용 — 첫 등장만 본다. 키가 없으면 None(판정하지 않음).

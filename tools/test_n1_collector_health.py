@@ -139,6 +139,19 @@ def health_common_states():
     assert metadata["revision"] == "earthus.fixture.v1"
 
 
+def health_survives_unparseable_observed_time():
+    # 2026-09-20 운영: 0 을 채우지 않은 달("2026.9.20 15:00")이 숫자 10자리가 돼 strptime 이
+    # "unconverted data remains: 0" 로 죽었고, 감시 전체(wind/health.json)가 멈췄다.
+    module = load("earthus_health_bad_time", "aws/health/handler.py")
+    module.s3 = FakeS3()
+    module.s3.objects["events/fixture.json"] = json.dumps({
+        "generated": "2026-09-20T06:00:00Z", "observedKst": "2026.9.20 15:00", "count": 4,
+    }).encode()
+    metadata = module.output_metadata_of("events/fixture.json")
+    assert metadata["sourceObservedAt"] == "2026.9.20 15:00", "못 읽은 시각은 원문 그대로 둔다"
+    assert metadata["sampleCount"] == 4
+
+
 def tourism_heartbeat_is_visible_in_aggregate_health():
     module = load("earthus_tourism_health", "aws/health/handler.py")
     key = "app/tourism/health.json"
@@ -167,5 +180,6 @@ def tourism_heartbeat_is_visible_in_aggregate_health():
 if __name__ == "__main__":
     marine_deadline_and_success()
     health_common_states()
+    health_survives_unparseable_observed_time()
     tourism_heartbeat_is_visible_in_aggregate_health()
-    print("N1 collector health tests: 39 passed")
+    print("N1 collector health tests: 41 passed")

@@ -1296,6 +1296,13 @@
     color: rgba(236,122,166,0.9); font-size: 11.5px; cursor: pointer; font: inherit;
     text-decoration: underline; text-underline-offset: 3px;
   }
+  /* 근거 배지 설명 (M1) — 배지를 누르면 정의·하지 말 것 */
+  .badge[data-kind] { cursor: help; }
+  #ev-pop { position: fixed; z-index: 60; padding: 10px 12px; border-radius: 10px; font-size: 12px; line-height: 1.5;
+    background: rgba(14,18,26,0.97); color: #fff; border: 1px solid rgba(127,183,245,0.45); box-shadow: 0 6px 20px rgba(0,0,0,.4); }
+  #ev-pop b { display: block; margin-bottom: 3px; }
+  #ev-pop .ev-dont { margin-top: 5px; color: #f5c67a; }
+  #ev-pop .ev-src { margin-top: 5px; color: rgba(255,255,255,.55); font-size: 11px; }
   /* 공식 특보 배너 (M1) — 모든 요금제 같음. 색은 cap.severity 만(모르면 중립색) */
   #warn-banner { position: fixed; left: 50%; transform: translateX(-50%); top: calc(10px + env(safe-area-inset-top));
     z-index: 30; max-width: min(560px, calc(100vw - 96px)); display: flex; align-items: center; gap: 7px;

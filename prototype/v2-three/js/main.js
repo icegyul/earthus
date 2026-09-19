@@ -14,6 +14,7 @@ import { LocalTerrain } from './local-terrain.js?v=1';
 import { IntelFeed } from './intel-feed.js?v=9';
 import { intelOf, intelSectionHtml, sectionTitle } from './intel-strip.js?v=1';
 import { bannerModel, renderWarningBanner } from './warning-banner.js?v=1';
+import { attachEvidencePopover } from './evidence-popover.js?v=1';
 import { currentTier } from './report-center.js?v=2';
 import { decideCapabilityAccess, lockExplanation, TIER } from '../../js/access-mode.js';
 import { evaluateWatch, myZone, loadWatch, saveWatch } from './watch.js?v=1';
@@ -6314,6 +6315,9 @@ async function main() {
       if (myEarth.place) refreshMyEarth(); else shell.renderIntel();
     }
   } catch (_) { /* 주소가 이상해도 앱은 돈다 */ }
+
+  // 근거 배지 설명(M1) — 배지를 누르면 정의와 '하지 말 것'. 요청·계산 없음.
+  attachEvidencePopover(i18n);
 
   // 공식 특보 배너(M1) — 내 장소가 저장돼 있으면 앱을 열 때 한 번만 본다(특보 파일 하나). 계산 없음.
   //   내 지역 화면을 열 때(refreshMyEarth)도 같은 문으로 다시 그린다.

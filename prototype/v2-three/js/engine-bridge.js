@@ -98,7 +98,8 @@ export function renderBadge(state, extra) {
   const kind = LEGACY_TO_KIND[state] || (KIND_BADGE[state] ? state : null);
   if (!kind) return '';
   const b = KIND_BADGE[kind];
-  return `<span class="badge ${b[0]}" title="${b[1]}">${i18n.ko ? b[2] : b[1]}${extra ? ` · ${esc(extra)}` : ''}</span>`;
+  // data-kind — 누르면 배지 설명(evidence-popover.js, M1)이 뜬다. 버튼 안의 배지는 가로채지 않는다.
+  return `<span class="badge ${b[0]}" title="${b[1]}" data-kind="${kind}" tabindex="0">${i18n.ko ? b[2] : b[1]}${extra ? ` · ${esc(extra)}` : ''}</span>`;
 }
 
 // ---------------------------------------------------------------------------

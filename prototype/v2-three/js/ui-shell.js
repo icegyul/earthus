@@ -21,6 +21,7 @@ import { reportDocHtml, reportKey, reportIndexKey, reportUrl, reportIdFromUrl, c
 // 없는 엔진의 질문 버튼은 여기서도 만들지 않는다. 다만 '왜 없는지'를 말하는 버튼은
 // pop-metric-menu 의 선례처럼 둔다 — 조용히 아무 말도 하지 않는 게 더 큰 거짓말이다.
 import { simEntryFor, questionsForPhenomenon, questionsForCountry, previewSceneFor } from './sim-questions.js?v=2';
+import { intelStripHtml, intelOf } from './intel-strip.js?v=1';
 const safeText = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 // ---------------------------------------------------------------------------
@@ -1192,6 +1193,8 @@ export function initShell(hooks) {
       ? `<div class="sim-questions"><div class="sq-h">${i18n.ko?'궁금한 점':'Questions'}</div>`
         + qs.map((q) => (q.runnable
           ? `<button class="sq-q" data-action="sim-q" data-sim="${q.action}">${safeText(q.text)}</button>`
+            // limited(장면·기관 인용)는 누를 수 있어도 한계 문장을 버튼 아래에 붙인다 — 2026-09-20 §G-2
+            + (q.status === 'limited' && q.reason ? `<div class="sq-why sq-limit">${safeText(q.reason)}</div>` : '')
           : `<button class="sq-q sq-na" data-action="sim-why" data-why="${safeText(q.reason)}">${safeText(q.text)}</button>`)).join('')
         + `<button class="sq-ask" data-action="shell-open-ask">${i18n.ko?'직접 질문하기':'Ask directly'}</button></div>`
       : '');
@@ -1204,6 +1207,16 @@ export function initShell(hooks) {
         whyEn: 'Select a sea area first — its marine model values feed the computation',
       });
       return questionBlock(qs);
+    };
+    /* Intelligence 띠 (P1) — 선택한 현상의 인텔 패킷 v1 이 이미 받은 사건 패킷 안에 있으면 그린다.
+       없으면 아무것도 그리지 않는다(빈 절 금지, 계약 §C-0). 요청·계산 없음. */
+    const intelStripBlock = () => {
+      const pctx = getPhenomenonContext();
+      if (!pctx || !pctx.phenomenonId) return '';
+      return intelStripHtml({
+        phenomenonId: pctx.phenomenonId, packet: intelOf(hooks.getEventPacket?.()), i18n,
+        esc: safeText, badge: (k) => dataBadge(k), mode: hooks.monetizationMode?.(), tier: currentTier(),
+      });
     };
     /* 지도 직접 클릭 경로의 궁금한 점 — 현상을 고르지 않아도 바다·국가 문맥이 있으면
        질문이 붙는다. 발견→이해→질문이 클릭 한 번에 이어지게 하는 문(수정 지시서 §4~7). */
@@ -1218,7 +1231,7 @@ export function initShell(hooks) {
       return '';
     };
     const header=document.createElement('div');header.className='information-context';
-    header.innerHTML=`${selectedMenu ? `<strong>${safeText(i18n.ko ? questionForLayer(selectedMenu.s.id, selectedMenu.l.id) || selectedMenu.l.name : selectedMenu.l.name)}</strong><div>${safeText(selectedMenu.l.src)} · ${dataBadge(selectedMenu.l.state)}</div>${phenomenonLine()}${simQuestionsHtml()}`:''}${mapContextQuestions()}<div>${safeText(i18n.ko?'선택 장소':'Selected place')}: ${safeText(picked?.nameKo || picked?.name || (i18n.ko?'지도에서 선택':'Select on the globe'))}</div>${timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}</p>`:''}
+    header.innerHTML=`${selectedMenu ? `<strong>${safeText(i18n.ko ? questionForLayer(selectedMenu.s.id, selectedMenu.l.id) || selectedMenu.l.name : selectedMenu.l.name)}</strong><div>${safeText(selectedMenu.l.src)} · ${dataBadge(selectedMenu.l.state)}</div>${phenomenonLine()}${simQuestionsHtml()}${intelStripBlock()}`:''}${mapContextQuestions()}<div>${safeText(i18n.ko?'선택 장소':'Selected place')}: ${safeText(picked?.nameKo || picked?.name || (i18n.ko?'지도에서 선택':'Select on the globe'))}</div>${timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}</p>`:''}
       ${active.length ? `<details><summary>${i18n.ko?'현재 켜진 자료':'Active data'} ${active.length}</summary>${active.map(({s,l})=>`<div class="active-data-row"><span>${safeText(i18n.layer(l.id,l.name,s.id))}<small>${safeText(menuTime(l.id,i18n.ko))}</small></span>${canClearLayer(l.id)?`<button data-action="shell-layer-off" data-scene="${s.id}" data-layer="${l.id}" aria-label="${safeText(l.name)} 끄기">${i18n.ko?'끄기':'Off'}</button>`:''}</div>`).join('')}<button data-action="shell-clear-layers">${i18n.ko?'추가 자료 모두 끄기':'Clear overlays'}</button></details>`:''}`;
     intelContent.prepend(header);
     intelContent.scrollTop=scrollTop;

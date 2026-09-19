@@ -40,6 +40,9 @@ cp "$ROOT/prototype/data/country-reference.json" "$OUT/data/country-reference.js
 # 번들 안으로 복사하고(js/shared/) 아래 3/4 에서 경로를 ./shared/ 로 바꾼다. (지시서 v2.0 STEP 2, 2026-09-07)
 mkdir -p "$OUT/js/shared"
 cp "$ROOT/prototype/js/for-me-row.js" "$ROOT/prototype/js/usage.js" "$OUT/js/shared/"
+# 요금 판정 정본(access-mode.js) — Intelligence 띠(intel-strip.js, 2026-09-20 P1)가 잠금 판정을 여기서 한다.
+# 사본을 만들지 않고 v1 과 같은 파일을 싣는다(import 없음 · 순수 함수).
+cp "$ROOT/prototype/js/access-mode.js" "$OUT/js/shared/"
 # EARTHUS 아이콘 시스템 — v1·v2 공용. 표(earthus-icons.js)도 그림(assets/earthus-icons/)도 한 벌뿐이다.
 # ⚠️ shared/ 가 아니라 js/ 바로 아래에 둔다. 모듈이 그림 위치를 import.meta.url 기준
 #    '../assets/earthus-icons/' 로 풀기 때문이다 — js/ 에 있어야 그게 번들 루트의 assets/ 를
@@ -58,6 +61,7 @@ while IFS= read -r -d '' f; do
     -e 's#\.\./\.\./js/aetherus/#./aetherus/#g' \
     -e 's#\.\./\.\./js/for-me-row\.js#./shared/for-me-row.js#g' \
     -e 's#\.\./\.\./js/usage\.js#./shared/usage.js#g' \
+    -e 's#\.\./\.\./js/access-mode\.js#./shared/access-mode.js#g' \
     -e 's#\.\./\.\./js/earthus-icons\.js#./earthus-icons.js#g' \
     -e 's#\.\./v2/assets/#./assets/#g' \
     -e "s#'\.\./data/#'./data/#g" \

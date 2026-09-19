@@ -12,6 +12,8 @@ const escUI = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<'
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
 import { IntelFeed } from './intel-feed.js?v=9';
+import { intelOf, intelSectionHtml, sectionTitle } from './intel-strip.js?v=1';
+import { currentTier } from './report-center.js?v=2';
 import { evaluateWatch, myZone, loadWatch, saveWatch } from './watch.js?v=1';
 import { LiveLayers } from './live-layers.js?v=39-information';
 import { StationModel } from './station-model.js?v=2';
@@ -4513,6 +4515,10 @@ async function main() {
     hasSeaPoint: () => !!seaPoint,
     hasCountryContext: () => !!(focus.selected && countryClick),
     getMy: () => getMyHtml(),
+    // Intelligence 띠(P1) — 이미 받은 사건 패킷만 넘긴다. 새로 요청하지 않는다(계약 §C-0).
+    getEventPacket: () => (feed.selected && feed.selected.kind === 'TC' ? feed.packet : null),
+    // 요금 모드 — 유료 출시 전엔 FREE_OPEN(access-mode.js 기본). 전역 설정이 있으면 그것을 따른다.
+    monetizationMode: () => (window.EARTHUS_CONFIG && window.EARTHUS_CONFIG.MONETIZATION_MODE) || 'FREE_OPEN',
     getFeed: () => feed.html(),
     // WHY 탭이 "고른 사건"을 가리킬 수 있게 — 피드가 무엇을 열어 두었는지만 알려준다
     feedSelected: () => (feed.selected ? { title: feed.selected.title, kind: feed.selected.kind } : null),
@@ -4673,6 +4679,14 @@ async function main() {
       }
       if (action === 'sim-now' && seaPoint && seaPoint.marine) {
         openWaveNow();
+      } else if (action === 'intel-q') {
+        // Intelligence 5절 하나 — 이미 받은 사건 패킷의 intel(v1)을 카드로 연다. 계산·요청 없음(계약 §C-0).
+        const pk = intelOf(feed.packet);
+        const sec = ds.sec;
+        showNote(sectionTitle(sec, i18n.ko), intelSectionHtml({
+          packet: pk, section: sec, i18n, esc: escUI, badge: (k) => dataBadge(k),
+          mode: shellHooks.monetizationMode(), tier: currentTier(),
+        }), 'OFFICIAL_OBSERVATION');
       } else if (action === 'sim-q') {
         // 추천 질문 → 시뮬레이션 능력 레지스트리(js/sim-questions.js)가 정한 경로.
         // 여기 오는 질문은 레지스트리가 available 로 표시한 것뿐이다 — 없는 엔진을

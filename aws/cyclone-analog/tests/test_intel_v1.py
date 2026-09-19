@@ -66,6 +66,9 @@ class LivePacketTests(unittest.TestCase):
         kinds = {(i["type"], i["kind"]) for i in v1["next"]["items"]}
         self.assertTrue(kinds <= {("A", "OFFICIAL_FORECAST"), ("A", "PROVIDER_FORECAST")}, kinds)
         self.assertIn(("A", "OFFICIAL_FORECAST"), kinds)
+        # 우리 다중소스 계산은 기관 인용이 아니다 — 제공자 예보(A)로 둔갑하면 안 된다
+        self.assertFalse([i for i in v1["next"]["items"] if "EARTHUS" in str(i.get("source"))],
+                         "EARTHUS 자체 계산이 유형 A 로 실렸다")
 
     def test_anomaly_waits_for_pd_decision(self):
         v1 = intel_v1.build(PACKET, NOW, SST)

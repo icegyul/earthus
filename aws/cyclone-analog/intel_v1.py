@@ -167,6 +167,11 @@ def build(packet, now, sst_doc=None):
                           "issuedAt": f["issued"], "horizonH": f.get("horizonH"),
                           "headingKo": f.get("headingKo"), "peak": f.get("peak"), "weakenAt": f.get("weakenAt")})
     for m in det.get("models") or []:
+        # ⚠️ models[] 에는 우리 계산(EARTHUS_MULTI_SOURCE)도 섞여 있다. 그것은 기관·제공자 인용(유형 A)이
+        #    아니다 — 제공자 예보로 달면 우리 예보를 남의 것처럼 내보내는 셈이다. 유형 B(검증된 통계)로
+        #    올릴 근거(채점 이력의 공개 기준)가 정해지기 전까지 NEXT 에 싣지 않는다.
+        if str(m.get("agency") or "").upper().startswith("EARTHUS"):
+            continue
         if m.get("issued"):
             items.append({"type": "A", "kind": "PROVIDER_FORECAST", "source": m.get("agencyKo") or m.get("agency"),
                           "issuedAt": m["issued"], "horizonH": m.get("horizonH"), "headingKo": m.get("headingKo")})

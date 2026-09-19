@@ -35,12 +35,13 @@ test('현상이 없으면 능력 탭을 만들지 않는다 — 빈 약속 금�
 });
 
 test('제품 이름 Intelligence 는 건드리지 않는다 — 그것은 배포된 주소다', () => {
-  // earth-switch.js 의 세 지구 알약은 v1/v2/v3 제품 전환기다. v2 의 공개 이름이 Intelligence 이고
-  // /Intelligence 로 배포된다. 이것을 지우면 세 제품 사이 이동이 끊긴다.
+  // earth-switch.js 의 지구 알약은 v1/v2 제품 전환기다. v2 의 공개 이름이 Intelligence 이고
+  // /Intelligence 로 배포된다. 이것을 지우면 두 제품 사이 이동이 끊긴다.
+  // (WONDER 는 2026-09-14 09f1514c 에서 앱에서 떼어냈다 — 되살아나면 안 된다)
   assert.match(switchSrc, /label:\s*'Intelligence'/);
   assert.match(switchSrc, /'\/Intelligence'/);
   assert.match(switchSrc, /label:\s*'EARTHUS'/);
-  assert.match(switchSrc, /label:\s*'WONDER'/);
+  assert.doesNotMatch(switchSrc, /label:\s*'WONDER'/);
 });
 
 // ── 불변식 2 — 현상은 정본 레지스트리에서만 온다 ─────────────────────────────
@@ -60,10 +61,12 @@ test('능력 없는 행동은 렌더하지 않는다 (준비 중 금지)', () =>
   assert.match(shellSrc, /btn\.hidden = hide/);
 });
 
-test('시뮬레이션 능력은 정확히 2개다', () => {
+test('시뮬레이션 능력은 정확히 3개다', () => {
+  // 2026-09-10 MASTER: space.satellite 가 빠지면 질문(sim-questions AVAILABLE·SGP4 실엔진)과
+  // 능력표(registry simulation:false)가 서로 거짓말한다 — sat-layer.js SGP4 실전파가 있으므로 3개가 정직하다.
   const sim = Object.entries(reg.PHENOMENA)
     .filter(([, p]) => p.capabilities.simulation).map(([id]) => id).sort();
-  assert.deepEqual(sim, ['hazards.tsunami', 'ocean.wave']);
+  assert.deepEqual(sim, ['hazards.tsunami', 'ocean.wave', 'space.satellite']);
 });
 
 // ── 불변식 9 — 능력이 약속한 것과 내용이 같아야 한다 ─────────────────────────

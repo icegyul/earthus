@@ -60,6 +60,8 @@
     -webkit-touch-callout: none;
   }
   #scene { position: fixed; inset: 0; display: block; }
+  #scene:focus-visible { outline: 2px solid var(--accent, #4da3ff); outline-offset: -2px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
   /* 상단바는 좌상단 '지구 전환기'(js/earth-switch.js) 오른쪽에 붙는다.
      그 전에는 오른쪽 끝에 워드마크와 함께 떠 있었는데, 전환기가 이미 EARTHUS 라고
@@ -336,7 +338,8 @@
     /* 좌하단 #hud(고도·과장+출처, 2줄 이상 되면 79px까지 자란다) 위로 확실히 띄운다 —
        100px 로 뒀더니 실측(iPhone 폭 375) 에서 하단 바가 출처 글줄을 가렸다(2026-09-07). */
     #bottom-nav { bottom: calc(158px + env(safe-area-inset-bottom)); padding: 4px; gap: 2px; }
-    #bottom-nav button { min-width: 50px; padding: 6px 3px 5px; font-size: 9.5px; }
+    /* 터치 최소 44px(iOS HIG) — 42px는 바를 깨지 않게 padding 으로만 올린다(2026-09-10 감사). */
+    #bottom-nav button { min-width: 50px; min-height: 44px; padding: 6px 3px 5px; font-size: 9.5px; }
     #bottom-nav button svg { width: 16px; height: 16px; }
   }
 
@@ -407,15 +410,30 @@
   .mp-body::-webkit-scrollbar { display: none; }
   .mp-sec { padding: 4px 0 7px; border-bottom: 1px solid rgba(255,255,255,0.06); }
   .mp-sec:last-of-type { border-bottom: 0; }
+  /* 2026-09-14 PD: "V1 디자인처럼" — V1 오른쪽 레이어 판(.ly-icon 52px + .ly-name 13px 500)과
+     같은 규격. 9px 모노 대문자 제목이던 것을 아이콘 옆에 읽히는 이름 크기로 올렸다. */
   .mp-title {
-    margin: 0; padding: 9px 18px 5px; display: flex; align-items: center; gap: 8px;
-    font: 650 9px/1.2 ui-monospace, Consolas, monospace; letter-spacing: 0.16em;
-    color: rgba(242,245,248,0.48);
+    margin: 0; padding: 6px 18px 4px; display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 15px; line-height: 1.25; letter-spacing: 0.04em;
+    color: rgba(242,245,248,0.86);
   }
   .mp-title i {
     width: 7px; height: 7px; border-radius: 50%; flex: none;
     background: var(--sc, var(--accent)); box-shadow: 0 0 9px var(--sc, var(--accent));
   }
+  /* 묶음 아이콘(2026-09-14 EARTHUS_MENU_ICONS_V2) — 원형 그림, 점(i) 앞. 이름은 그대로 남는다.
+     크기·그림자·hover 는 V1 .ly-icon 과 같다(52px, ≤390px 46px). 96px 파일이 1x, 192px 이 2x.
+     ⚠️ 원을 덧그리지 않는다 — 그림이 자기 원·테두리 빛을 갖고 있다. */
+  .mp-title .mp-gico {
+    flex: none; width: 52px; height: 52px; margin-left: -6px; object-fit: contain;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+    transition: transform 0.18s ease, filter 0.18s ease;
+  }
+  .mp-title button:hover .mp-gico { transform: translateY(-1px); filter: drop-shadow(0 3px 10px rgba(0,0,0,0.5)) brightness(1.08); }
+  .mp-title button:active .mp-gico { transform: scale(0.92); }
+  .mp-title button[aria-expanded="true"] .mp-gico { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--sc, var(--accent)) 55%, transparent)) drop-shadow(0 2px 8px rgba(0,0,0,0.5)); }
+  @media (max-width: 390px) { .mp-title .mp-gico { width: 46px; height: 46px; } }
+  @media (prefers-reduced-motion: reduce) { .mp-title .mp-gico { transition: none; } }
   .mp-title em {
     margin-left: auto; font-style: normal; font-size: 8.5px; opacity: 0.55;
     font-variant-numeric: tabular-nums; letter-spacing: 0.05em;
@@ -631,6 +649,19 @@
   .mp-item.on .mp-lbl { color: var(--sc, var(--accent)); }
   .mp-item .mp-lbl { flex: 1; min-width: 0; }
   .mp-item .badge { flex: none; }
+  /* EARTHUS 아이콘 시스템 (docs/icon-system/ §3 데스크톱 28–32px, §7 상태 규칙).
+     ⚠️ 이름을 밀어내지 않는다 — flex:none 이라 줄바꿈이 생겨도 이름 칸이 먼저 줄어든다.
+     ⚠️ 원을 덧그리지 않는다. 아이콘이 자기 원과 테두리 빛을 이미 갖고 있다. */
+  .mp-item .mp-ico {
+    flex: none; width: 28px; height: 28px; margin-left: -4px; object-fit: contain;
+    transition: transform 0.15s ease, filter 0.15s ease;
+  }
+  .mp-item:hover .mp-ico { transform: translateY(-1px); filter: brightness(1.08); }
+  .mp-item.on .mp-ico { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--sc, var(--accent)) 60%, transparent)); }
+  .mp-item.locked .mp-ico { filter: grayscale(0.7) brightness(0.75); }
+  /* 모바일 서랍은 24–28px (§8). 글자는 그대로 남는다 — 아이콘만 남기지 않는다. */
+  @media (max-width: 640px) { .mp-item .mp-ico { width: 24px; height: 24px; } }
+  @media (prefers-reduced-motion: reduce) { .mp-item .mp-ico { transition: none; } }
   .mp-note { flex-basis: 100%; font-size: 9.5px; color: var(--text-dim); line-height: 1.45; }
   .mp-foot { padding: 9px 18px 10px; font-size: 9px; color: rgba(150,175,195,0.5); line-height: 1.5; }
 
@@ -1104,6 +1135,15 @@
     opacity: 0; transform: translateY(-6px); transition: opacity .35s, transform .35s;
   }
   #sculpt-cap.show { opacity: 1; transform: none; }
+  #sculpt-cap .sc-x {
+    position: absolute; right: 8px; top: 8px; width: 26px; height: 26px;
+    border-radius: 50%; border: 1px solid rgba(255,255,255,0.16);
+    background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7);
+    font-size: 12px; line-height: 1; cursor: pointer;
+  }
+  #sculpt-cap .sc-x:hover { background: rgba(255,255,255,0.14); color: #fff; }
+  /* 순위 펼침 버튼 — 데스크톱은 순위가 항상 보이므로 모바일에서만 쓴다 */
+  #sculpt-cap .sc-more { display: none; }
   #sculpt-cap b {
     display: block; font: 600 26px/1.15 Georgia, "Iowan Old Style", "Noto Serif KR", serif;
     letter-spacing: .01em; color: #fbeef0;
@@ -1262,6 +1302,17 @@
   /* ---------- 좁은 화면 정리 (기본 규칙보다 뒤에 와야 이긴다) ---------- */
   @media (max-width: 720px) {
     #sculpt-cap { left: 12px; top: 72px; width: min(260px, 72vw); padding: 13px 15px 11px; }
+    /* 모바일 캡션 압축 — 327px 통짜 카드가 지구의 40%를 가리지 않게 한다(2026-09-10 실측).
+       순위는 접어 두고, 요약(나라·총인구·범례)만 먼저 보인다. */
+    #sculpt-cap { max-height: 42vh; overflow-y: auto; scrollbar-width: none; }
+    #sculpt-cap .sc-rank { display: none; }
+    #sculpt-cap .sc-h { display: none; }
+    #sculpt-cap.expanded .sc-rank { display: block; }
+    #sculpt-cap.expanded .sc-h { display: block; }
+    #sculpt-cap .sc-more {
+      display: block; margin: 8px 0 2px; padding: 4px 0; border: 0; background: none;
+      color: rgba(255,255,255,0.55); font-size: 11px; cursor: pointer; text-align: left;
+    }
     #sculpt-cap b { font-size: 21px; }
     /* 메뉴가 286px 고정이라 360px 폰에서 지구가 74px만 남았다. 화면에 맞춰 줄이고
        뒤를 눌러 닫을 수 있게 스크림을 깐다. */
@@ -1328,18 +1379,19 @@
 </style>
 </head>
 <body>
-<canvas id="scene"></canvas>
+<canvas id="scene" role="img" aria-label="3D 지구 — 드래그로 회전 (키보드는 하단 탐색 메뉴 사용)" tabindex="0"></canvas>
 
-<div id="panel">
-  <div id="chrome">
-    <button id="btn-search" data-i18n-title="search" title="검색 (나라·시군구·도시·공항)">⌕</button>
-    <button id="btn-ask" data-i18n-title="ask" title="지구에 묻기 — 지금 켜 놓은 자료만 근거로 답합니다">✦</button>
-    <button id="btn-share" data-i18n-title="share" title="이 화면 공유 (링크 복사 · 그림 저장)">⤴</button>
-    <button id="btn-help" data-i18n-title="help" title="사용법 다시 보기">?</button>
-    <button id="btn-settings" data-i18n-title="settings" title="설정">⚙</button>
-    <button id="btn-login" data-i18n-title="login" title="로그인 / 계정">○</button>
+<div id="panel" role="main">
+  <h1 class="sr-only">EARTHUS 지구 탐색</h1>
+  <div id="chrome" role="toolbar" aria-label="주요 기능">
+    <button id="btn-search" data-i18n-title="search" title="검색 (나라·시군구·도시·공항)" aria-label="검색 (나라·시군구·도시·공항)">⌕</button>
+    <button id="btn-ask" data-i18n-title="ask" title="지구에 묻기 — 지금 켜 놓은 자료만 근거로 답합니다" aria-label="지구에 묻기 — 지금 켜 놓은 자료만 근거로 답합니다">✦</button>
+    <button id="btn-share" data-i18n-title="share" title="이 화면 공유 (링크 복사 · 그림 저장)" aria-label="이 화면 공유 (링크 복사 · 그림 저장)">⤴</button>
+    <button id="btn-help" data-i18n-title="help" title="사용법 다시 보기" aria-label="사용법 다시 보기">?</button>
+    <button id="btn-settings" data-i18n-title="settings" title="설정" aria-label="설정">⚙</button>
+    <button id="btn-login" data-i18n-title="login" title="로그인 / 계정" aria-label="로그인 / 계정">○</button>
     <!-- 연구 작업 공간 진입 — 별도 페이지다. 메뉴 파일(ui-shell/main)은 건드리지 않고 도구줄에 문 하나만 낸다. -->
-    <a id="btn-research" href="./research.html" data-i18n-title="research" title="연구 작업 공간 — 자료·조건을 고정해 실험을 실행하고 재현합니다">⚗</a>
+    <a id="btn-research" href="./research.html" data-i18n-title="research" title="연구 작업 공간 — 자료·조건을 고정해 실험을 실행하고 재현합니다" aria-label="연구 작업 공간 — 자료·조건을 고정해 실험을 실행하고 재현합니다">⚗</a>
   </div>
 
   <div id="menu-scrim"></div>
@@ -1353,11 +1405,13 @@
   <div id="ask-drawer" class="drawer"></div>
 
   <div id="search-drawer" class="drawer">
+    <h2 class="sr-only">검색</h2>
     <input type="text" id="c-search" data-i18n-ph="searchPh" placeholder="검색 — 나라·시군구·도시·공항" autocomplete="off" />
     <div id="search-results"></div>
   </div>
 
   <div id="settings-drawer" class="drawer">
+  <h2 class="sr-only">설정</h2>
   <div class="row info" id="sun-info" data-i18n="sunCalc">태양 위치 계산 중…</div>
 
   <div class="row">
@@ -1431,7 +1485,7 @@
 </div>
 
 <div id="hud">
-  <div id="hud-row"><span id="hud-line" data-i18n="hudAlt">고도 —</span><button id="hud-more" data-i18n-title="hudMore" title="진단 정보 (상태를 텍스트로 복사)">▾</button></div>
+  <div id="hud-row"><span id="hud-line" data-i18n="hudAlt">고도 —</span><button id="hud-more" data-i18n-title="hudMore" title="진단 정보 (상태를 텍스트로 복사)" aria-label="진단 정보 (상태를 텍스트로 복사)">▾</button></div>
   <div id="srcNote" aria-live="polite"></div>
   <div id="hud-detail"><pre id="hud-text"></pre><button id="hud-copy" data-i18n="hudCopy">📋 복사</button></div></div>
 
@@ -1442,7 +1496,7 @@
   <div class="err" id="load-err"></div>
 </div>
 
-<script type="module" src="./js/main.js?v=192-p7report"></script>
+<script type="module" src="./js/main.js?v=193-groupicons"></script>
 <script src="/js/earth-switch.js" defer></script>
 </body>
 </html>

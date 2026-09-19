@@ -4,7 +4,7 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=66-p7report';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=67-groupicons';
 import { createSelectionGate } from './information-contract.js';
 // PHASE 4 §9 — 지도에서 고른 사건을 어느 현상으로 읽을지는 레지스트리가 정한다.
 import { layerForEventKind } from './phenomenon-registry.js?v=4';
@@ -2137,6 +2137,7 @@ class CountryFocus {
     this.chip = chipEl;
     this.data = null;
     this.selected = null;
+    this.onData = null; // 국가 데이터 도착을 알리는 문 — 링크 복원이 기다리는 곳과 같다
     this.canvas = document.createElement('canvas');
     this.canvas.width = 2048;
     this.canvas.height = 1024;
@@ -2153,7 +2154,7 @@ class CountryFocus {
     });
     fetch('./data/country-reference.json')
       .then((r) => r.json())
-      .then((j) => { this.data = j; })
+      .then((j) => { this.data = j; if (this.onData) this.onData(j); })
       .catch((e) => console.warn('[earthus-three] country data load failed:', e));
   }
 
@@ -2634,6 +2635,30 @@ async function main() {
   const focus = new CountryFocus(uniforms, orbit, document.getElementById('focus-chip'));
   const rayc = new THREE.Raycaster();
   let downAt = null;
+  // 마지막 국가 클릭 좌표 — 지도 직접 클릭 경로의 '궁금한 점'(지점 실황 등)이 쓴다.
+  // 검색·URL(?c=)로 국가를 고른 경로도 같은 좌표를 남긴다 — 안 그러면 검색 진입의
+  // 궁금한 점이 hasCountryContext=false 로 조용히 사라진다(A1 회귀).
+  let countryClick = null;
+  // 링크(?c=)가 국가 데이터보다 먼저 온 경우 맡겨 두는 자리.
+  // 폴링·슬립으로 기다리지 않고 data 도착 콜백(onData)이 한 번만 꺼내 쓴다.
+  let pendingLinkCountry = null;
+  // 국가 피처의 bbox 중심 — 검색·URL 진입이 클릭 좌표 대신 쓰는 정직한 대체값.
+  // bbox 밖(반자오선 근사) 오차를 줄이려 하지 않고 중심 그대로 쓴다.
+  const centroidOfCountry = (f) => {
+    try {
+      let minLo = 180; let maxLo = -180; let minLa = 90; let maxLa = -90;
+      for (const poly of polysOf(f)) {
+        for (const [lo, la] of poly[0]) {
+          if (lo < minLo) minLo = lo;
+          if (lo > maxLo) maxLo = lo;
+          if (la < minLa) minLa = la;
+          if (la > maxLa) maxLa = la;
+        }
+      }
+      if (minLo > maxLo || minLa > maxLa) return null;
+      return { lat: (minLa + maxLa) / 2, lon: (minLo + maxLo) / 2 };
+    } catch (_) { return null; }
+  };
 
   // 화면 좌표 → 지구 표면 (lat, lon) | null. 좌클릭 픽킹과 우클릭 퀵메뉴가 같은
   // 교산을 쓴다 — 두 경로가 다른 교산을 쓰면 우클릭 메뉴가 엉뚱한 나라를 잡는다.
@@ -2710,15 +2735,52 @@ async function main() {
   };
   // 제스처가 취소되면(앱 전환·OS 제스처) 탭 판정 기준점을 버린다.
   // 남겨 두면 다음 손가락이 옛 좌표·시각과 비교돼 엉뚱한 곳이 선택된다.
-  canvas.addEventListener('pointercancel', () => { downAt = null; });
+  let pressTimer = null;
+  let longPressFired = false;
+  canvas.addEventListener('pointercancel', () => {
+    downAt = null;
+    clearTimeout(pressTimer);
+    pressTimer = null;
+  });
+  canvas.addEventListener('pointermove', (e) => {
+    // 길게 누르기는 '그 자리에 머문 손'이다 — 10px 넘게 움직이면 회전 조작이고 타이머는 버린다.
+    if (pressTimer && downAt && Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y) > 10) {
+      clearTimeout(pressTimer);
+      pressTimer = null;
+    }
+  });
   canvas.addEventListener('pointerdown', (e) => {
     downAt = { x: e.clientX, y: e.clientY, t: performance.now() };
     shell.closeFlyout(); // 지구를 만지면 메뉴·서랍은 닫힌다
     closeDrawers();
+    // 모바일 길게 누르기(450ms · 이동 ≤10px) → 그 자리의 radial 퀵메뉴. 데스크톱
+    // 우클릭과 같은 문(quickMenu)이다 — 터치와 마우스가 다른 메뉴를 주면 혼란이다.
+    // pen(스타일러스)도 터치와 같은 손으로 본다 — 태블릿에서 메뉴가 안 열리던 문제.
+    longPressFired = false;
+    if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+      const x = e.clientX;
+      const y = e.clientY;
+      clearTimeout(pressTimer);
+      pressTimer = setTimeout(() => {
+        longPressFired = true;
+        quickMenu.open(x, y, raycastGlobe(x, y));
+      }, 450);
+    }
   });
   canvas.addEventListener('pointerup', (e) => {
     if (!downAt) return;
     if (e.button === 2) return; // 오른쪽 버튼은 퀵메뉴의 것 — 선택(픽)은 왼쪽 클릭의 일이다
+    // 길게 누르기가 메뉴를 열었다면 이어지는 pointerup 을 선택으로 읽지 않는다 —
+    // 메뉴를 연 손가락이 떼는 것까지 선택의 일이 되면 엉뚱한 나라가 골라진다.
+    if (longPressFired) {
+      longPressFired = false;
+      downAt = null;
+      clearTimeout(pressTimer);
+      pressTimer = null;
+      return;
+    }
+    clearTimeout(pressTimer);
+    pressTimer = null;
     const moved = Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y);
     const held = performance.now() - downAt.t;
     downAt = null;
@@ -2763,6 +2825,7 @@ async function main() {
     }
     const f = focus.pick(lat, lon);
     if (f) {
+      countryClick = { lat, lon };
       focus.select(f);
       // 인구 자동 표시는 focus.onChange 가 한다 — 탭이든 검색이든 국가를 고르는
       // 경로가 늘어도 한 곳에서만 켠다. 여기서는 누른 화면 자리에 지표 메뉴만 띄운다.
@@ -2770,20 +2833,29 @@ async function main() {
     } else {
       // 바다 클릭: 국가 선택 중이면 해제만, 아니면 해상 실황 조회 (①)
       const hadSelection = !!focus.selected;
-      focus.clear();
+      clearFocusContext();
       if (!hadSelection) marineSelect(lat, lon);
     }
   });
-  // ESC: 열린 것부터 차례로 닫기 (플라이아웃 → 포커스 → 인텔 패널)
+  // ESC: 열린 것부터 차례로 닫기 (시뮬레이션 → 플라이아웃 → 포커스 → 인텔 패널)
+  // 시뮬레이션이 전화면을 덮으므로 사슬의 맨 앞이다 — 버튼("◀ 지구로")만이 유일한
+  // 출구면 §31(브라우저 back만이 유일한 exit 금지)과 같은 문제다.
   window.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
+    if (sim.active) { sim.close(); return; }
     if (shell.isFlyoutOpen()) { shell.closeFlyout(); return; }
-    if (focus.selected) { focus.clear(); return; }
+    if (focus.selected) { clearFocusContext(); return; }
     if (shell.isIntelOpen()) shell.closeIntel();
   });
 
   // ---------- 해양 실측 + 시뮬레이션 (인텔리전스 시뮬레이션) ----------
   const sim = new OceanSim();
+  // 시뮬레이션을 닫으면 인텔리전스를 다시 그린다 — 닫힌 뒤에도 계산 중 표시가 남지 않게.
+  // sim-ocean 의 close() 가 onClose 를 부른다(없으면 조용히 넘어간다).
+  sim.onClose = () => { try { shell.renderIntel(); } catch (_) { /* 무시 */ } };
+  // 질문 A → 질문 B 로 갈아타면 A 의 늦은 open 이 B 를 덮지 않게 한다(B10 stale 방지).
+  // sim-ocean.open() 은 동기라 runId 는 openWaveNow 진입 경쟁에만 쓴다.
+  let simRunId = 0;
   let seaPoint = null; // { lat, lon, loading|error|marine+wind, time }
 
   // 그 지점의 실제 태양 고도·방위 (시뮬레이션 하늘에 사용)
@@ -2952,9 +3024,13 @@ async function main() {
   // sim-now(해상 카드 버튼)와 추천 질문(sim-q · wave-now)이 같은 문으로 진입한다 —
   // 두 경로가 다른 파라미터를 넣으면 어느 쪽이 거짓말인지 알 수 없다.
   const openWaveNow = () => {
+    const myRun = ++simRunId;
+    if (!seaPoint || !seaPoint.marine) return;
     const m = seaPoint.marine;
     const w = seaPoint.wind;
     const sun = sunAtPoint(seaPoint.lat, seaPoint.lon);
+    // 진입 사이에 다른 질문이 들어오면(연타) 오래된 open 은 버린다.
+    if (myRun !== simRunId) return;
     sim.open({
       Hs: m.wave_height != null ? m.wave_height : 1,
       swellH: m.swell_wave_height != null ? m.swell_wave_height : 0,
@@ -3023,11 +3099,30 @@ async function main() {
   });
   canvas.addEventListener('contextmenu', (e) => {
     e.preventDefault();
+    // Android 길게 누르기는 타이머 open 뒤 contextmenu 도 쏜다 — 이미 열려 있으면
+    // 두 번 열지 않는다(두 번 열면 _hit 이 다시 계산돼 엉뚱한 나라를 잡는다).
+    if (quickMenu.visible) return;
     // 오른쪽 버튼을 끌어 이동한 손(궤도 보조)은 메뉴가 아니라 조작으로 본다.
     if (rightDownAt && Math.hypot(e.clientX - rightDownAt.x, e.clientY - rightDownAt.y) > 6) return;
     quickMenu.open(e.clientX, e.clientY, raycastGlobe(e.clientX, e.clientY));
   });
   window.__earthusSculpt = popSculpt;
+  // 캡션 ✕ — 사용자가 끄는 손. 자동 문맥 추적(sculptAutoFor)도 함께 끊는다.
+  let sculptAutoFor = null; // 국가 선택 문맥이 자동으로 켠 조각 — 문맥이 끝나면 같이 끝난다(§15)
+  popSculpt.onClose = () => {
+    sculptAutoFor = null;
+    if (popSculpt.on) popSculpt.toggle();
+  };
+  // 문맥 종료 공용 문 — focus 해제 시 자동으로 켠 조각만 정리한다. 사용자가 직접 켠
+  // 것(메뉴·레이어)은 손대지 않는다. clear() 가 onChange 를 부르지 않는 경로(ESC)까지
+  // 함께 닫히게 여기서 한 번 더 확인한다.
+  // countryClick 도 여기서 함께 버린다 — 안 그러면 해제 뒤에도 국가 질문이 남는다.
+  const clearFocusContext = () => {
+    focus.clear();
+    countryClick = null;
+    if (sculptAutoFor && popSculpt.on) popSculpt.toggle();
+    sculptAutoFor = null;
+  };
 
   const liveLayers = new LiveLayers(scene, heightAtJs, () => uniforms.uExagger.value, dataBadge);
   // 항로 — 항공편 추적이 아니라 '구간을 잇는 표현'이다 (js/route.js 머리말 참조)
@@ -3873,6 +3968,11 @@ async function main() {
     if (map.active) map.exit();
     if (local.active) local.close(true);
     focus.clear();
+    // 권역 이동은 국가·바다 문맥을 모두 끝낸다 — 안 그러면 이전 바다 질문이 권역 카드에 남는다.
+    countryClick = null;
+    seaPoint = null;
+    if (sculptAutoFor && popSculpt.on) popSculpt.toggle();
+    sculptAutoFor = null;
     // 전 지구는 포커스 없이 물러나기만 한다
     if (id !== 'globe') {
       const members = countriesInRegion(id);
@@ -3946,11 +4046,13 @@ async function main() {
   };
 
   // 인구 조각 국가 칩 — 격자를 켜고 그 나라가 화면을 채우는 거리로 날아간다.
+  // 칩 진입도 국가 문맥 선택이다 — 자동 조각 소유권을 남겨 문맥 종료에 같이 꺼지게 한다.
   const goPopCountry = (iso3, nameKo) => {
     const current = selectionGate.next();
     marineRequest?.abort();
     seaPoint = null;
     shell.clearSelection();
+    sculptAutoFor = iso3;
     showNote(`${nameKo} · 인구 분포`, '인구 추정 자료를 불러오는 중…', 'MODEL_SIGNAL');
     if (map.active) map.exit();
     if (local.active) local.close(true);
@@ -3986,6 +4088,9 @@ async function main() {
       setSnow(false);
       uniforms.uIsobath.value=0;
       focus.clear();seaPoint=null;lockedNote=null;
+      // 전체 끄기는 모든 문맥을 끝낸다 — 오래된 countryClick·sculptAutoFor 가
+      // 다음 수동 조각을 죽이지 않게 함께 버린다.
+      countryClick=null;sculptAutoFor=null;
       shell.clearSelection();shell.refreshFlyout();shell.renderIntel();
       if(travel.mode)await travel.setMode(travel.mode);
       if(!current())return;
@@ -4404,6 +4509,9 @@ async function main() {
     getNow: getNowHtml,
     // 추천 질문의 입력 상태 — 파도 계산은 선택한 바다 지점값을 먹는다(없으면 not_evaluable).
     hasSeaInput: () => !!(seaPoint && seaPoint.marine),
+    // 지도 직접 클릭 경로의 질문 블록 조건 — 현상 선택 없이도 문맥이 있으면 질문이 붙는다.
+    hasSeaPoint: () => !!seaPoint,
+    hasCountryContext: () => !!(focus.selected && countryClick),
     getMy: () => getMyHtml(),
     getFeed: () => feed.html(),
     // WHY 탭이 "고른 사건"을 가리킬 수 있게 — 피드가 무엇을 열어 두었는지만 알려준다
@@ -4583,6 +4691,13 @@ async function main() {
           shell.renderIntel();
         } else if (ds.sim === 'satellite-track') {
           shell.gotoScene('aetherus', 'space');
+        } else if (ds.sim === 'country-weather') {
+          // 국가 클릭 경로의 질문 — 클릭한 그 좌표의 실제 지점 실황으로 답한다.
+          if (countryClick) pointWeather(countryClick.lat, countryClick.lon, 'temperature');
+        } else if (ds.sim === 'country-news') {
+          shell.showTab('feed');
+          shell.openIntel();
+          shell.renderIntel();
         }
       } else if (action === 'point-weather-retry' && pointWeatherLast) {
         pointWeather(pointWeatherLast.lat, pointWeatherLast.lon, pointWeatherLast.metric);
@@ -4887,7 +5002,7 @@ async function main() {
   const applyI18n = () => {
     document.documentElement.lang = i18n.lang;
     document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = i18n.t(el.dataset.i18n); });
-    document.querySelectorAll('[data-i18n-title]').forEach((el) => { el.title = i18n.t(el.dataset.i18nTitle); });
+    document.querySelectorAll('[data-i18n-title]').forEach((el) => { el.title = i18n.t(el.dataset.i18nTitle); el.setAttribute('aria-label', i18n.t(el.dataset.i18nTitle)); });
     document.querySelectorAll('[data-i18n-ph]').forEach((el) => { el.placeholder = i18n.t(el.dataset.i18nPh); });
     const sm = document.getElementById('share-menu');
     if (sm) {
@@ -5182,6 +5297,9 @@ async function main() {
   focus.onChange = (f) => {
     if (!f || f.ocean) {
       focusStatsRows = '';
+      // 문맥 종료(바다 클릭·재클릭 해제) — 자동으로 켠 조각만 같이 끝난다(§15).
+      if (sculptAutoFor && popSculpt.on) popSculpt.toggle();
+      sculptAutoFor = null;
       if (f) shell.openIntel();
       shell.renderIntel();
       return;
@@ -5212,6 +5330,8 @@ async function main() {
     // 국가를 고르면 그 나라의 인구 격자가 국경 안쪽에서 솟아오른다 (R-03 문법) — 항상 자동으로.
     // 메뉴에서 미리 켜 둔 적이 없어도 클릭 자체가 인구 조각을 켠다.
     const popIso = (f.properties || f).code3;
+    // 이 클릭이 조각을 '자동으로' 켜는지 기록한다 — 이미 켜져 있었다면 사용자의 것(§15).
+    if (!popSculpt.on) sculptAutoFor = popIso; else sculptAutoFor = null;
     (popSculpt.on ? Promise.resolve() : popSculpt.toggle().then(() => {}))
       .then(() => popSculpt.show(popIso, f.nameKo))
       .then(() => { shell.renderIntel(); shell.refreshFlyout(); });
@@ -5236,12 +5356,13 @@ async function main() {
     }
     const area = sphericalAreaKm2(polysOf(f));
     // '중심 좌표' 행은 뺐다 (지시서 §5) — 나라를 부르는 건 이름이지 좌표가 아니고,
-    // 좌표값은 사용자가 묻거나 근거를 열 때 필요한 것이다. 면적·최고 고도는 근사임을
-    // 행 이름에 그대로 적는다(값을 지어내지 않는 원칙의 표면).
+    // 좌표값은 사용자가 묻거나 근거를 열 때 필요한 것이다. 인구를 첫 줄로 올렸다(§13) —
+    // "대한민국 인구 5,170만"이 핵심이고 면적·고도는 그 다음이다. 면적·최고 고도는
+    // 근사임을 행 이름에 그대로 적는다(값을 지어내지 않는 원칙의 표면).
     focusStatsRows =
-      statRow('면적 (근사)', `${Math.round(area).toLocaleString()} km²`)
+      statRow('인구', '불러오는 중…', true)
+      + statRow('면적 (근사)', `${Math.round(area).toLocaleString()} km²`)
       + statRow('최고 고도 (근사)', `${Math.round(maxH).toLocaleString()} m`)
-      + statRow('인구', '불러오는 중…', true)
       + statRow('GDP', 'UNAVAILABLE', true)
       + statRow('실시간 데이터', focusLiveRow(f));
     shell.openIntel();
@@ -5523,7 +5644,7 @@ async function main() {
         searchResults.innerHTML = '';
         searchInput.value = '';
         closeDrawers();
-        if (h.kind === 'country') { focus.clear(); focus.select(h.f); return; }
+        if (h.kind === 'country') { focus.clear(); const cc = centroidOfCountry(h.f); if (cc) countryClick = cc; focus.select(h.f); return; }
         // 공항·시군구는 그 지점 상공으로 — 국가 포커스는 건드리지 않는다
         let ty = THREE.MathUtils.degToRad(h.lon);
         ty += Math.round((orbit.yaw - ty) / (2 * Math.PI)) * 2 * Math.PI;
@@ -5841,6 +5962,25 @@ async function main() {
     return o.v ? o : null;
   };
 
+  // 링크(?c=·#v=2&c=)의 국가 적용 — 클릭·검색과 같은 문(centroidOfCountry→focus.select).
+  // data가 늦으면 false를 돌려주고, 부팅·해시 분기가 맡긴 뒤 onData가 다시 부른다.
+  // 같은 코드 재적용으로 선택이 꺼지는 일(select 토글) 없게 이미 골라져 있으면 손대지 않는다.
+  const applyLinkCountry = (code) => {
+    if (!focus.data) return false;
+    const f = (focus.data.features || []).find((x) => (x.properties || x).code3 === code);
+    if (!f) return false; // 없는 코드 — 기존처럼 조용히 둔다
+    if (focus.selected) return true; // 사용자가 이미 골랐으면 그 손이 이긴다
+    const cc = centroidOfCountry(f);
+    if (cc) countryClick = cc;
+    focus.select(f);
+    return true;
+  };
+  // 링크 국가의 늦은 적용 — data 도착 한 번만 본다. 폴링·슬립 없음.
+  focus.onData = () => {
+    if (pendingLinkCountry) applyLinkCountry(pendingLinkCountry);
+    pendingLinkCountry = null;
+  };
+
   const applyLink = async (o) => {
     if (!o) return;
     if (o.base && o.base !== 'ne2') { try { await setBaseStyle(o.base); } catch (e) { /* 실패해도 나머지는 복원 */ } }
@@ -5858,9 +5998,11 @@ async function main() {
       } catch (e) { /* 위와 같음 */ }
     }
     if (o.pop) { try { await popSculpt.toggle(o.pop); } catch (e) { /* 위와 같음 */ } }
-    if (o.c && focus.data) {
-      const f = (focus.data.features || []).find((x) => (x.properties || x).code3 === o.c);
-      if (f) focus.select(f);
+    if (o.c) {
+      // 국가 데이터가 늦으면 건너뛰지 않고 맡긴다 — data 도착 시 onData가 같은 문으로 적용한다.
+      // (부팅 링크가 country-reference보다 먼저 오는 경우 — #v=2&c=KOR 실측)
+      if (!applyLinkCountry(o.c) && !focus.data) pendingLinkCountry = o.c;
+      else if (focus.data) pendingLinkCountry = null;
     }
     // 카메라는 맨 마지막에 — 국가 선택·깊이 모드가 저마다 카메라를 옮기기 때문에
     // 먼저 적용하면 링크에 적힌 시점이 덮어써진다.
@@ -6012,6 +6154,10 @@ async function main() {
     // 어려웠다. 18km로 올려 그 구간 자체에 못 들어가게 한다 — 인구 기둥을 보기엔
     // 기본값(127km)보다 여전히 훨씬 가깝다.
     orbit.minDist = closeUp ? 1 + 18 / 6371 : 1.02;
+    // 조각·침수를 끄면 하한이 올라가는데 목표·현재 거리는 그대로라 18km 아래에 갇힌다 —
+    // 올려진 하한으로 함께 끌어올린다(하한을 올려 버그를 숨기는 게 아니라 갇힘을 푼다).
+    if (orbit.targetDist < orbit.minDist) orbit.targetDist = orbit.minDist;
+    if (orbit.dist < orbit.minDist) orbit.dist = orbit.minDist;
     // ⚠️ 2026-09-10 실측: 18km까지 내려가면 지구가 통째로 검어지는 버그 — 원인은 near 평면이
     // 고정 0.005(≈31.9km)여서 closeUp 하한(18km)보다 컸던 것. 그 거리에서는 시야의 모든
     // 광선이 지표면에 닿기 전에 near에서 잘려 지구 몸통이 통째로 프러스텀 밖으로 나가고
@@ -6035,6 +6181,9 @@ async function main() {
       const e = heightAtJs(Math.min(85, Math.max(-85, latCam + dLat)), lonCam + dLon);
       if (e > elevMax) elevMax = e;
     }
+    // 극 셰이더의 poleFade(2800m)는 heightAtJs 에 없다 — 고위도에서 과장을 과소평가해
+    // 카메라가 지형 껍질 안으로 들어간다. 극 근처에서는 2800m 를 바닥으로 본다.
+    if (Math.abs(latCam) > 82 && elevMax < 2800) elevMax = 2800;
     const exagCeil = Math.max(0.65 * surfDist * EARTH_RADIUS_M / Math.max(elevMax, 50), 1);
     uniforms.uExagger.value = Math.min(exagUser, exagCeil);
 
@@ -6118,7 +6267,8 @@ async function main() {
   loading.classList.add('done');
   requestAnimationFrame(tick);
 
-  // 링크로 들어왔다면 그 화면을 되살린다 (국가 데이터가 준비된 뒤라 선택도 복원된다)
+  // 링크로 들어왔다면 그 화면을 되살린다. 국가 데이터가 늦으면 o.c만 맡겨 두고
+  // data 도착 시 onData가 같은 문으로 적용한다 — 늦었다고 조용히 버리지 않는다.
   const incoming = parseLink();
   if (incoming) applyLink(incoming).catch((e) => console.warn('[earthus-three] 링크 복원 실패', e));
 

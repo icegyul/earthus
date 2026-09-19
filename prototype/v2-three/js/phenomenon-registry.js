@@ -520,7 +520,7 @@ export const PHENOMENA = Object.freeze({
     label: Object.freeze({ ko: '위성', en: 'Satellites' }),
     short: Object.freeze({ ko: '위성', en: 'Satellites' }),
     question: Object.freeze({ ko: '위성은 지금 어디에 있는가', en: 'Where are the satellites right now?' }),
-    capabilities: Object.freeze({ current: true, history: false, intelligence: true, forecast: false, simulation: false, evidence: true, report: false }),
+    capabilities: Object.freeze({ current: true, history: false, intelligence: true, forecast: false, simulation: true, evidence: true, report: false }),
     availability: 'ready',
     evidenceProfile: 'OFFICIAL_OBSERVATION',
     temporalMode: 'now — positions are SGP4-propagated to the current instant every 250 ms from a catalogue refreshed once a day',

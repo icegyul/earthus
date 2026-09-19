@@ -91,3 +91,26 @@ export function salesAllowed({ mode, salesOpen } = {}) {
 export function subscriptionUiAllowed({ mode, showSubscribe } = {}) {
   return normalizeMonetizationMode(mode) === MONETIZATION_MODE.PAID && showSubscribe === true;
 }
+
+/* 잠긴 기능 안내 — C3. "LOCKED" 한 마디로 끝내지 않는다.
+   WHAT(무엇이 막혔나) · WHY(왜 막혔나 — 깊이 기능이라서) · WHAT EXPLORER ADDS(풀면 뭐가 깊어지나) ·
+   UPGRADE(다음 손 — 지금은 사전등록, 판매가 열리면 구독 화면)를 한 묶음으로 준다.
+   값은 만들지 않고 문구만 만든다 — 권한 판정은 decideCapabilityAccess·서버가 한다.
+   FREE_OPEN 에서는 allowed:true 이므로 이 설명을 부르지 않는다. */
+export function lockExplanation({ cap = '', requiredTier = null, reason = '', ko = true } = {}) {
+  const need = String(requiredTier || TIER.EXPLORER).toLowerCase();
+  const tierName = need === TIER.INTELLIGENCE ? 'INTELLIGENCE' : 'EXPLORER';
+  const what = ko ? `‘${cap || '이 기능'}’은 깊이 탐색 기능입니다` : `‘${cap || 'This feature'}’ is a depth feature`;
+  const why = ko
+    ? '지금 보는 화면(현재값·출처·안전)은 그대로 무료입니다 — 더 깊이 파고드는 분석이라서 막혀 있습니다'
+    : 'The current view (present values, sources, safety) stays free — deeper analysis is gated';
+  const adds = ko
+    ? `${tierName}가 열리면 더 긴 시뮬레이션 구간·상세 분석·깊은 리포트·과거 자료를 같은 화면에서 봅니다`
+    : `${tierName} unlocks longer simulation horizons, detailed analysis, deeper reports and history in the same view`;
+  const upgrade = ko
+    ? '지금은 사전등록으로 소식을 받으실 수 있습니다 — 판매가 열리면 구독 화면으로 안내합니다'
+    : 'Register for launch news now — the subscribe screen opens once sales begin';
+  return Object.freeze({
+    allowed: false, reason: reason || `REQUIRES_${tierName}`, requiredTier: need, what, why, adds, upgrade,
+  });
+}

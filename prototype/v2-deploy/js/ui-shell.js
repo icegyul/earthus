@@ -9,14 +9,18 @@ import { renderBadge, layerBadge } from './engine-bridge.js?v=15';
 // menu-guide.js 의 MENU_QUESTIONS 는 지우지 않았다 — tools/build_information_inventory.mjs 가
 // 아직 읽고, 레지스트리의 질문이 거기서 왔다. 다만 화면은 이제 레지스트리만 본다.
 // (bare id 조회였기 때문에 hobby/surf 가 ocean/surf 의 질문을 그대로 표시하고 있었다.)
-import { questionForLayer, phenomenonForLayer, LAYER_PHENOMENON, reportKindsForPhenomenon, PHENOMENA, representativeLayerFor } from './phenomenon-registry.js?v=4';
+import { questionForLayer, phenomenonForLayer, LAYER_PHENOMENON, reportKindsForPhenomenon, PHENOMENA, representativeLayerFor, MENU_GROUPS, EARTHUS_MENU_GROUPS } from './phenomenon-registry.js?v=5';
+// 2026-09-13 아이콘 시스템 — 표는 v1·v2 공용 모듈 하나뿐이다(지시서 §13).
+// ⚠️ 번들에서는 tools/build-v2-bundle.sh 가 이 경로를 ./earthus-icons.js 로 고쳐 쓰고
+//    모듈을 번들의 js/ 바로 아래에 둔다(그래야 모듈이 그림을 번들 안에서 찾는다).
+import { iconForPhenomenon, iconSrc, iconSrcSet, groupIconSrc, groupIconSrcSet } from './earthus-icons.js?v=2';
 import { menuCoverage, menuTime, canClearLayer, matchesMenu } from './information-contract.js';
 // PHASE 8 §13 — 리포트 센터. 보고서 렌더링은 그쪽 모듈이 한다. 여기서 문장을 만들지 않는다.
 import { reportDocHtml, reportKey, reportIndexKey, reportUrl, reportIdFromUrl, currentTier, DATA_LABEL_TEXT } from './report-center.js?v=2';
 // 지시서 §8·§16 — 궁금한 점(추천 질문)은 시뮬레이션 능력 레지스트리가 정한다.
 // 없는 엔진의 질문 버튼은 여기서도 만들지 않는다. 다만 '왜 없는지'를 말하는 버튼은
 // pop-metric-menu 의 선례처럼 둔다 — 조용히 아무 말도 하지 않는 게 더 큰 거짓말이다.
-import { simEntryFor, questionsForPhenomenon } from './sim-questions.js?v=1';
+import { simEntryFor, questionsForPhenomenon, questionsForCountry } from './sim-questions.js?v=1';
 const safeText = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 // ---------------------------------------------------------------------------
@@ -264,6 +268,9 @@ export function initShell(hooks) {
   panel.id = 'menu-panel';
   root.appendChild(panel);
   let openBrand = null; // 'earthus' | 'aetherus' | null
+  // 하단바 '우주' 칸으로 서랍을 열었을 때만 켜는 표시 — 같은 AETHERUS 서랍이라도
+  // 왼쪽 가장자리 탭으로 열었으면 우주 불을 켜지 않는다(들어온 문이 다르다).
+  let spaceDoor = false;
   let menuQuery = '';
   let activeOnly = false;
   let selectedMenu = null;
@@ -344,9 +351,10 @@ export function initShell(hooks) {
     intel.setAttribute('aria-label', label);
   }
   let timelineMinutes = 0;
-  // PHASE 4 §2 — 1차 메뉴는 도메인만 보인다. 도메인을 열어야 현상 목록이 나온다.
+  // PHASE 4 §2 — 1차 메뉴는 묶음만 보인다. 묶음을 열어야 현상 목록이 나온다.
   // 처음부터 58줄을 펼쳐 두면 '메뉴를 줄였다'가 화면에서 사실이 아니게 된다.
-  const collapsedSections = new Set(['land','weather','ocean','people','travel','hazards','space','__loose']);
+  // 2026-09-13: 도메인 id 여덟에서 §3.2 묶음 id 로 바뀌었다. 여는 손(gotoScene·data-collapse)은 그대로다.
+  const collapsedSections = new Set([...MENU_GROUPS.map((g) => g.id), '__loose']);
 
   // 권역 이동 (v5.3 스케일 사다리: GLOBAL → CONTINENT → REGION → COUNTRY).
   // 3D 지구를 벗어나지 않고 카메라만 그 권역 구도로 옮긴다 — 평면 전환이 아니다.
@@ -387,15 +395,17 @@ export function initShell(hooks) {
      레이어를 지우지 않는다(§0). 한 현상이 여러 레이어를 흡수하면 그 레이어들은
      현상 줄의 펼치기 안에 그대로 남는다 — 109개 전부 계속 도달 가능하다.
      목록은 레지스트리에서 만든다. 손으로 쓴 두 번째 목록을 만들지 않는다(§2). */
-  const DOMAIN_KO = { land: '땅', weather: '날씨', ocean: '바다', people: '사람', travel: '여행', hazards: '재해', space: '우주' };
-  const DOMAIN_EN = { land: 'Land', weather: 'Weather', ocean: 'Ocean', people: 'People', travel: 'Travel', hazards: 'Hazards', space: 'Space' };
   const expandedPhenomena = new Set();
 
   const LAYER_BY_KEY = new Map();
   for (const sc of SCENES) for (const l of sc.layers) LAYER_BY_KEY.set(sc.id + '/' + l.id, { s: sc, l });
 
-  // 도메인 → 현상 → 레이어. 대표 레이어는 primary 역할을 먼저 고른다.
-  const DOMAIN_INDEX = (() => {
+  /* 묶음 → 현상 → 레이어. 대표 레이어는 primary 역할을 먼저 고른다.
+     2026-09-13: 도메인별 자동 분류 + 가나다 정렬이었던 것을 레지스트리의 MENU_GROUPS
+     **적힌 순서 그대로**로 바꿨다(지시서 §3.2). 정렬을 코드가 다시 하지 않는다 —
+     "기온 강수 바람 기압" 은 가나다도 준비도 순도 아니고 사람이 찾는 순서다. */
+  const PHEN_ENTRY = new Map();   // 현상 id → {id,p,members,rep}
+  const GROUP_INDEX = (() => {
     const byPhen = new Map();
     for (const [key, hit] of Object.entries(LAYER_PHENOMENON)) {
       if (!hit.phenomenon) continue;
@@ -405,21 +415,22 @@ export function initShell(hooks) {
       byPhen.get(hit.phenomenon).push({ key, role: hit.role, s: rec.s, l: rec.l });
     }
     const out = new Map();
-    for (const [pid, members] of byPhen) {
-      const p = PHENOMENA[pid];
-      if (!p) continue;
-      const rep = members.find((x) => x.role === 'primary') || members[0];
-      if (!out.has(p.domain)) out.set(p.domain, []);
-      out.get(p.domain).push({ id: pid, p, members, rep });
-    }
-    // 준비된 것부터 — planned 를 위에 두면 첫 화면이 빈 약속으로 시작한다.
-    const rank = { ready: 0, partial: 1, planned: 2 };
-    for (const list of out.values()) {
-      list.sort((a, b) => (rank[a.p.availability] - rank[b.p.availability])
-        || a.p.label.ko.localeCompare(b.p.label.ko, 'ko'));
+    for (const g of MENU_GROUPS) {
+      const list = [];
+      for (const pid of g.members) {
+        const p = PHENOMENA[pid];
+        const members = byPhen.get(pid);
+        // 레이어가 하나도 없는 현상은 그리지 않는다 — 눌러도 켤 것이 없는 줄이 된다.
+        if (!p || !members || !members.length) continue;
+        const entry = { id: pid, p, members, rep: members.find((x) => x.role === 'primary') || members[0] };
+        PHEN_ENTRY.set(pid, entry);
+        list.push(entry);
+      }
+      out.set(g.id, list);
     }
     return out;
   })();
+  const GROUP_BY_ID = new Map(MENU_GROUPS.map((g) => [g.id, g]));
 
   // 현상이 아닌 것(배경·조작·진입점). 지우지 않고 한 곳에 모은다.
   const LOOSE_LAYERS = Object.entries(LAYER_PHENOMENON)
@@ -429,9 +440,18 @@ export function initShell(hooks) {
     .map((x) => ({ key: x.key, role: x.role, s: x.rec.s, l: x.rec.l }));
 
   const layerOnState = (rec) => (hooks.getLayerState && hooks.getLayerState(rec.s.id, rec.l)) || {};
-  const domainAccent = (dom) => {
-    const list = DOMAIN_INDEX.get(dom) || [];
-    return (list[0] && list[0].rep.s.accent) || '#7FB7F5';
+  // 묶음 색은 레지스트리가 정한다 — 전에는 '첫 항목이 속한 씬의 색'이라 목록 순서를
+  // 한 줄만 바꿔도 절 제목 색이 따라 바뀌었다.
+  const groupAccent = (gid) => (GROUP_BY_ID.get(gid) || {}).accent || '#7FB7F5';
+
+  /* 묶음(절 제목) 아이콘 — 2026-09-14 인수 EARTHUS_MENU_ICONS_V2. 점(i) 앞에 서고 이름을
+     대신하지 않는다(§3). 표는 earthus-icons.js 하나뿐이다 — 여기서 파일 이름을 만들지 않는다.
+     그림 없는 묶음(우주)은 빈 문자열 → 점과 이름만 남는다. alt 는 비운다(이름이 바로 옆에 있다). */
+  const groupIconHtml = (gid) => {
+    const src = groupIconSrc(gid, 96);
+    return src
+      ? '<img class="mp-gico" src="' + src + '" srcset="' + groupIconSrcSet(gid) + '" alt="" loading="lazy" decoding="async">'
+      : '';
   };
 
   // 현상 한 줄이 검색어에 걸리는가 — 이름·질문뿐 아니라 속한 레이어 이름·출처까지 본다.
@@ -462,23 +482,37 @@ export function initShell(hooks) {
       ? '<button class="mp-expand" data-expand="' + entry.id + '" aria-expanded="' + (open ? 'true' : 'false')
         + '" aria-label="' + safeText(name) + ' ' + (i18n.ko ? '자료 목록' : 'data list') + '">' + entry.members.length + '</button>'
       : '';
+    /* 아이콘 (2026-09-12 인수 §3). 이름 앞에 서고, 이름을 대신하지 않는다 —
+       지시서 §3 "never replace the whole menu with unlabeled icon-only navigation",
+       매니페스트 accessibility "icon never carries meaning alone".
+       ⚠️ alt 를 비워 둔다: 바로 옆에 같은 이름이 글자로 있어 스크린리더가 두 번 읽는다. */
+    const slug = iconForPhenomenon(entry.id);
+    const ss = slug ? iconSrcSet(slug, 64) : null;
+    const ico = slug
+      ? '<img class="mp-ico" src="' + iconSrc(slug, 64) + '"' + (ss ? ' srcset="' + ss + '"' : '')
+        + ' alt="" loading="lazy" decoding="async">'
+      : '';
     return '<div class="mp-phen' + (anyOn ? ' has-on' : '') + (sel ? ' sel' : '') + '">'
       + '<button class="mp-item mp-phen-main' + (entry.rep.l.state === 'LOCKED' ? ' locked' : '') + (anyOn ? ' on' : '') + '"'
       + ' data-fscene="' + entry.rep.s.id + '" data-flayer="' + entry.rep.l.id + '"'
       + ' title="' + safeText(i18n.ko ? entry.p.question.ko : entry.p.question.en) + '" aria-pressed="' + anyOn + '">'
-      + '<span class="mp-lbl">' + safeText(name) + '</span>' + dataBadge(entry.rep.l.state)
+      + ico + '<span class="mp-lbl">' + safeText(name) + '</span>' + dataBadge(entry.rep.l.state)
       + '</button>' + expander
       + (open && more ? '<div class="mp-subs">' + entry.members.map(layerRowHtml).join('') + '</div>' : '')
       + '</div>';
   };
 
-  const chipsFor = (dom) => {
-    if (dom === 'land') {
+  /* 칩은 절 안에 붙는 보조 조작이다. 전에는 land·people 도메인 절에 붙어 있었는데
+     그 두 절이 없어졌다(§3.2 묶음으로 바뀌었다). 옮긴 곳:
+       지역 이동 칩 → '지구 표현 · 이동' 절. 자료가 아니라 카메라 조작이라 원래 거기가 맞다.
+       인구 국가 칩 → '생태 · 사람 · 여행' 절. people.population 이 사는 묶음이다. */
+  const chipsFor = (gid) => {
+    if (gid === '__loose') {
       return '<div class="mp-chips" role="group" aria-label="' + i18n.t('regionMove') + '">'
         + REGION_CHIPS.map((r) => '<button class="mp-chip" data-region="' + r.id + '">' + i18n.region(r.id, r.ko) + '</button>').join('')
         + '</div><div class="mp-chip-note">' + i18n.t('regionNote') + '</div>';
     }
-    if (dom === 'people' && POP_COUNTRIES.length) {
+    if (gid === 'society' && POP_COUNTRIES.length) {
       const cname = (c) => (hooks.countryName ? hooks.countryName(c.iso3, c.nameKo) : c.nameKo);
       const loc = i18n.ko ? 'ko-KR' : 'en-US';
       return '<div class="mp-chips" role="group" aria-label="' + i18n.t('popChips') + '">'
@@ -489,20 +523,21 @@ export function initShell(hooks) {
     return '';
   };
 
-  const domainSectionHtml = (dom) => {
-    const all = DOMAIN_INDEX.get(dom) || [];
+  const groupSectionHtml = (gid) => {
+    const all = GROUP_INDEX.get(gid) || [];
     const shown = all.filter((e) => {
       if (activeOnly && !e.members.some((m) => layerOnState(m).on)) return false;
       return phenMatches(e);
     });
     if (!shown.length) return '';
-    const label = i18n.ko ? DOMAIN_KO[dom] : DOMAIN_EN[dom];
-    const hidden = !menuQuery && collapsedSections.has(dom);
-    return '<section class="mp-sec" data-section="' + dom + '" style="--sc:' + domainAccent(dom) + '">'
-      + '<h3 class="mp-title"><button data-collapse="' + dom + '" aria-expanded="' + (hidden ? 'false' : 'true') + '">'
-      + '<i></i>' + safeText(label) + '<em>' + shown.length + '</em></button></h3>'
+    const g = GROUP_BY_ID.get(gid);
+    const label = i18n.ko ? g.label.ko : g.label.en;
+    const hidden = !menuQuery && collapsedSections.has(gid);
+    return '<section class="mp-sec" data-section="' + gid + '" style="--sc:' + groupAccent(gid) + '">'
+      + '<h3 class="mp-title"><button data-collapse="' + gid + '" aria-expanded="' + (hidden ? 'false' : 'true') + '">'
+      + groupIconHtml(gid) + '<i></i>' + safeText(label) + '<em>' + shown.length + '</em></button></h3>'
       + '<div ' + (hidden ? 'hidden' : '') + '>'
-      + (menuQuery || activeOnly ? '' : chipsFor(dom))
+      + (menuQuery || activeOnly ? '' : chipsFor(gid))
       + shown.map(phenomenonRowHtml).join('')
       + '</div></section>';
   };
@@ -517,56 +552,15 @@ export function initShell(hooks) {
     const hidden = !menuQuery && collapsedSections.has('__loose');
     return '<section class="mp-sec" data-section="__loose" style="--sc:#8aa0b4">'
       + '<h3 class="mp-title"><button data-collapse="__loose" aria-expanded="' + (hidden ? 'false' : 'true') + '">'
-      + '<i></i>' + (i18n.ko ? '지구 표현 · 이동' : 'Globe view & controls') + '<em>' + shown.length + '</em></button></h3>'
-      + '<div ' + (hidden ? 'hidden' : '') + '>' + shown.map((r) => layerRowHtml(r, false)).join('') + '</div></section>';
+      + groupIconHtml('__loose') + '<i></i>' + (i18n.ko ? '지구 표현 · 이동' : 'Globe view & controls') + '<em>' + shown.length + '</em></button></h3>'
+      + '<div ' + (hidden ? 'hidden' : '') + '>'
+      + (menuQuery || activeOnly ? '' : chipsFor('__loose'))
+      + shown.map((r) => layerRowHtml(r, false)).join('') + '</div></section>';
   };
 
-  const sectionHtml = (s) => {
-    const shown = s.layers.filter(l => {
-      const st = hooks.getLayerState?.(s.id, l) || {};
-      return (!activeOnly || st.on) && matchesMenu(menuQuery, [s.label,l.name,l.src,questionForLayer(s.id,l.id),menuCoverage(l.id)]);
-    });
-    if (!shown.length) return '';
-    let chips = '';
-    if (s.id === 'land') {
-      chips = `<div class="mp-chips" role="group" aria-label="${i18n.t('regionMove')}">
-          ${REGION_CHIPS.map((r) => `<button class="mp-chip" data-region="${r.id}">${i18n.region(r.id, r.ko)}</button>`).join('')}
-        </div>
-        <div class="mp-chip-note">${i18n.t('regionNote')}</div>`;
-    } else if (s.id === 'people' && POP_COUNTRIES.length) {
-      // 격자 목록(popgrid/index.json)에는 우리말 이름만 있다. 영어 이름은 나라 정본이 갖고 있어서
-      // 셸이 직접 들고 있지 않고 hooks.countryName 으로 물어본다 — 손으로 표를 만들면 격자를
-      // 늘릴 때마다 메뉴가 실제와 어긋난다.
-      const cname = (c) => (hooks.countryName ? hooks.countryName(c.iso3, c.nameKo) : c.nameKo);
-      const loc = i18n.ko ? 'ko-KR' : 'en-US';
-      chips = `<div class="mp-chips" role="group" aria-label="${i18n.t('popChips')}">
-          ${POP_COUNTRIES.map((c) => `<button class="mp-chip" data-pop="${c.iso3}" data-popname="${c.nameKo}" title="${i18n.t('popTitle').replace('{n}', c.total.toLocaleString(loc)).replace('{y}', c.year)}">${cname(c)}</button>`).join('')}
-        </div>
-        <div class="mp-chip-note">${i18n.t('popNote').replace('{n}', POP_COUNTRIES.length)}</div>`;
-    }
-    return `<section class="mp-sec" data-section="${s.id}" style="--sc:${s.accent}">
-      <h3 class="mp-title"><button data-collapse="${s.id}" aria-expanded="${menuQuery || !collapsedSections.has(s.id) ? 'true':'false'}"><i></i>${i18n.scene(s.id, s.label)}<em>${shown.length} ${i18n.ko ? '항목':'items'}</em></button></h3>
-      <div ${!menuQuery && collapsedSections.has(s.id) ? 'hidden':''}>
-      ${menuQuery || activeOnly ? '' : chips}
-      ${(() => {
-        let sawLongterm = false;
-        return shown.map((l) => {
-          // §13: 첫 장기 시나리오 항목 앞에 소제목을 한 번만 끼운다 — "지금 예보"와 섞이지 않게.
-          const divider = (!menuQuery && l.longterm && !sawLongterm)
-            ? (sawLongterm = true, `<div class="mp-subdiv">${i18n.ko ? '장기 기후 시나리오 — 예보 아님, 2100년까지 전망' : 'Long-term climate scenarios — not a forecast, out to 2100'}</div>`)
-            : '';
-          const st = (hooks.getLayerState && hooks.getLayerState(s.id, l)) || {};
-          return divider + `<button class="mp-item${l.state === 'LOCKED' ? ' locked' : ''}${st.on ? ' on' : ''}"
-            data-fscene="${s.id}" data-flayer="${l.id}" title="${safeText(l.src)}" aria-pressed="${!!st.on}">
-            <span class="mp-lbl">${i18n.layer(l.id, l.name, s.id)}</span>${dataBadge(l.state)}
-            <span class="mp-question">${safeText(i18n.ko ? questionForLayer(s.id,l.id) || l.name : l.name)}</span>
-            <span class="mp-support">${safeText(menuCoverage(l.id,i18n.ko))} · ${safeText(menuTime(l.id,i18n.ko))}</span>
-            ${st.on && st.note ? `<span class="mp-note">${st.note}</span>` : ''}
-          </button>`;
-        }).join('');
-      })()}
-      </div></section>`;
-  };
+  /* 씬 기반 메뉴 렌더러(sectionHtml)는 2026-09-13 에 지웠다.
+     openPanel 이 현상 묶음으로 그리는데 이것만 씬으로 그려서 검색할 때마다 다른 메뉴가 나왔다.
+     기능은 하나도 줄지 않는다 — 같은 레이어를 현상 줄의 펼치기(mp-subs)가 전부 켠다. */
 
   const scrim = document.getElementById('menu-scrim');
   if (scrim) scrim.addEventListener('click', () => closeFlyout());
@@ -732,11 +726,15 @@ export function initShell(hooks) {
 
   const openPanel = (brand) => {
     openBrand = brand;
+    // 우주 문 표시는 AETHERUS 서랍이 열려 있는 동안만 유효하다 — 다른 서랍을 열면 끊는다.
+    if (brand !== 'aetherus') spaceDoor = false;
     const aeth = brand === 'aetherus';
     const isReport = brand === 'report';
     if (isReport) loadReportIndex();
     // PHASE 4 — 브랜드로 도메인을 고른다. AETHERUS 는 우주 하나(기존 계약 유지, §1).
-    const domains = isReport ? [] : aeth ? ['space'] : ['land', 'weather', 'ocean', 'people', 'travel', 'hazards'];
+    // PHASE 4 — 브랜드로 묶음을 고른다. AETHERUS 는 우주 하나(기존 계약 유지, §1).
+    // 목록은 레지스트리가 준다 — 여기에 묶음 이름을 손으로 적으면 표가 둘이 된다.
+    const groups = isReport ? [] : aeth ? ['space'] : [...EARTHUS_MENU_GROUPS];
     panel.classList.toggle('aeth', aeth);
     panel.innerHTML = `
       <div class="mp-head">
@@ -746,7 +744,7 @@ export function initShell(hooks) {
       ${isReport ? '' : `<div class="mp-search"><label>${i18n.ko ? '메뉴·질문 검색':'Find a topic'}<input type="search" data-menu-search value="${safeText(menuQuery)}" placeholder="${i18n.ko ? '예: 파고, 무장애, 한국':'Search topics'}"></label>
       <label class="mp-active-only"><input type="checkbox" data-active-only ${activeOnly ? 'checked':''}>${i18n.ko ? '켜진 자료만':'Active only'}</label></div>`}
       <div class="mp-body">
-        ${isReport ? reportPanelHtml() : (domains.map(domainSectionHtml).join('') + (aeth ? '' : looseSectionHtml())) || `<p role="status">${i18n.ko ? '조건에 맞는 메뉴가 없습니다. 검색어 또는 필터를 바꿔 주세요.':'No matching topics. Change the search or filter.'}</p>`}
+        ${isReport ? reportPanelHtml() : (groups.map(groupSectionHtml).join('') + (aeth ? '' : looseSectionHtml())) || `<p role="status">${i18n.ko ? '조건에 맞는 메뉴가 없습니다. 검색어 또는 필터를 바꿔 주세요.':'No matching topics. Change the search or filter.'}</p>`}
         ${isReport ? '' : `<div class="mp-foot">${i18n.t('mpFoot')}</div>`}
       </div>`;
     panel.classList.add('open');
@@ -755,17 +753,20 @@ export function initShell(hooks) {
     tabE.classList.toggle('beside', aeth || isReport);
     tabA.classList.toggle('open', aeth);
     tabA.classList.toggle('beside', !aeth);
+    syncIntelNav();
     if (hooks.onFlyoutOpened) hooks.onFlyoutOpened();
   };
 
   const closeFlyout = () => {
     openBrand = null;
+    spaceDoor = false;
     panel.classList.remove('open');
     if (scrim) scrim.classList.remove('on');
     tabE.classList.remove('open');
     tabE.classList.remove('beside');
     tabA.classList.remove('open');
     tabA.classList.remove('beside');
+    syncIntelNav();
   };
 
   // 레이어를 켤 때마다 패널을 통째로 다시 그리는데, 그러면 목록이 맨 위로 튀고
@@ -788,12 +789,30 @@ export function initShell(hooks) {
       if (c) c.classList.add('on');
     }
   };
+  /* ⚠️ 여기는 오래 틀려 있었다. 패널은 현상 묶음으로 그리는데 이 핸들러만 **옛 씬 목록**을
+     다시 그려서, 검색창에 글자를 넣는 순간 메뉴가 통째로 다른 화면으로 바뀌었다.
+     (땅·날씨·바다 묶음 → 지형·날씨·해양·사람·여행·LAB·취미·재해 씬 90줄)
+     그리는 곳을 둘로 두면 반드시 갈라진다. 이제 refreshFlyout 하나만 그린다 —
+     그쪽이 검색어·커서 위치·스크롤·켜진 칩까지 되살린다. */
+  /* 목록만 다시 그린다 — 패널 전체가 아니다.
+     ⚠️⚠️ 여기서 refreshFlyout() 을 부르면 안 된다. 그쪽은 openPanel() 로 panel.innerHTML 을
+        통째로 새로 쓰는데, 검색창(.mp-search)은 .mp-body **밖**에 있어서 같이 지워진다.
+        그러면 **지금 글자를 치고 있는 input 이 글자마다 파괴된다** — 한글은 자모가 조합되는
+        도중에 입력 요소가 사라지므로 "ㅎㅏㄴ" 처럼 풀려 버리고, '켜진 자료만' 체크박스는
+        누르는 순간 포커스를 잃는다. 값과 커서를 되살려도 조합 중인 IME 는 되살릴 수 없다.
+     그리는 함수는 openPanel 과 같은 것을 쓴다 — 그리는 곳이 둘이면 또 갈라진다. */
   panel.addEventListener('input',e=>{
     if(e.target.matches('[data-menu-search]')) menuQuery=e.target.value;
     else if(e.target.matches('[data-active-only]')) activeOnly=e.target.checked;
     else return;
-    const scenes=SCENES.filter(s=>(s.group||'earthus')===openBrand);
-    panel.querySelector('.mp-body').innerHTML=scenes.map(sectionHtml).join('') || `<p role="status">${i18n.ko?'조건에 맞는 메뉴가 없습니다. 검색어 또는 필터를 바꿔 주세요.':'No matching topics. Change the search or filter.'}</p>`;
+    const body = panel.querySelector('.mp-body');
+    if (!body) return;
+    const aeth = openBrand === 'aetherus';
+    const groups = aeth ? ['space'] : [...EARTHUS_MENU_GROUPS];
+    // 꼬리말(.mp-foot)도 .mp-body 안에 있다 — 같이 그리지 않으면 검색하는 동안만 사라진다.
+    body.innerHTML = ((groups.map(groupSectionHtml).join('') + (aeth ? '' : looseSectionHtml()))
+      || `<p role="status">${i18n.ko?'조건에 맞는 메뉴가 없습니다. 검색어 또는 필터를 바꿔 주세요.':'No matching topics. Change the search or filter.'}</p>`)
+      + `<div class="mp-foot">${i18n.t('mpFoot')}</div>`;
   });
   panel.addEventListener('keydown',e=>{if(e.key==='Escape'){const brand=openBrand;closeFlyout();(brand==='aetherus'?tabA:tabE).focus();}});
 
@@ -912,6 +931,8 @@ export function initShell(hooks) {
      좌측 세로 손잡이·우측 패널은 지우지 않는다. "더보기"가 정확히 그 기존 화면을 연다. */
   const bottomNav = document.createElement('div');
   bottomNav.id = 'bottom-nav';
+  bottomNav.setAttribute('role', 'navigation');
+  bottomNav.setAttribute('aria-label', '하단 탐색 메뉴');
   navRoot = bottomNav;
   const NAV_ICON = {
     myplace: '<path d="M3 11 12 4l9 7"/><path d="M5 10v9h14v-9"/><path d="M10 19v-5h4v5"/>',
@@ -965,9 +986,13 @@ export function initShell(hooks) {
   const renderNav = () => {
     const cur = bottomNav.querySelector('button.on');
     const curId = cur ? cur.dataset.nav : null;
-    bottomNav.innerHTML = NAV_ITEMS.map((n) => `<button type="button" data-nav="${n.id}"${n.id === curId ? ' class="on"' : ''}>
-      <svg viewBox="0 0 24 24">${NAV_ICON[n.id]}</svg><span>${i18n.ko ? n.ko : n.en}</span>
-    </button>`).join('');
+    bottomNav.innerHTML = NAV_ITEMS.map((n) => {
+      const lbl = i18n.ko ? n.ko : n.en;
+      // P0 AX: 하단 '지금'과 타임스트립 '지금'이 리더에 겹쳐 들린다 — 내비는 사건 문맥임을 밝힌다.
+      const al = n.id === 'feed' ? (i18n.ko ? '지금 일어나는 일' : 'Happening now') : lbl;
+      return `<button type="button" data-nav="${n.id}" aria-label="${al}"${n.id === curId ? ' class="on"' : ''}>
+      <svg viewBox="0 0 24 24" aria-hidden="true">${NAV_ICON[n.id]}</svg><span>${lbl}</span>
+    </button>`; }).join('');
     /* innerHTML 을 다시 쓰면 방금 단 이름표(title·aria-label)가 버튼과 함께 사라진다.
        그래서 부르는 쪽 순서에 맡기지 않고 **그리는 쪽**이 다시 단다.
        (refreshPanelIdentity 가 이름표→renderNav 순서라 이름표가 지워지고 있었다.) */
@@ -978,6 +1003,9 @@ export function initShell(hooks) {
 
   // 씬 목록 패널에서 특정 그룹(날씨·바다)까지 열어 스크롤해 보여준다 — 접혀 있었다면 편다.
   const gotoScene = (brand, sceneId) => {
+    // 질문(sim-q · satellite-track)이 직접 우주 문을 열 때도 하단 불이 따라오게 한다 —
+    // 전에는 하단 클릭 경로만 spaceDoor 를 켜서 질문 진입의 우주는 불이 꺼져 있었다.
+    if (brand === 'aetherus' && sceneId === 'space') spaceDoor = true;
     // 펼침을 먼저 정하고 그린다. 순서가 뒤바뀌면 접힌 채로 그려 놓고 상태만 바꿔
     // 하단 바로 들어온 사용자는 빈 제목만 보게 된다(도메인 기본 접힘 이후 생긴 문제).
     collapsedSections.delete(sceneId);
@@ -989,7 +1017,8 @@ export function initShell(hooks) {
   bottomNav.addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-nav]');
     if (!btn) return;
-    bottomNav.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === btn));
+    // .on 은 여기서 쓰지 않는다 — syncIntelNav 가 상태에서 계산하는 유일한 화가다.
+    // 여기서 같이 쓰면 두 화가가 싸워 두 칸이 동시에 켜졌다(2026-09-10 live 실측).
     switch (btn.dataset.nav) {
       /* 두 칸 다 '문맥'이다. 같은 칸을 다시 누르면 닫힌다(없앤 손잡이와 같은 몸짓).
          맥락 없이 열리는 문은 이제 없다 — 여는 순간 applyCapabilityGating 이
@@ -998,10 +1027,8 @@ export function initShell(hooks) {
       case 'myplace': if (intelOpen && curTab === 'my') closeIntel(); else openIntel('my'); break;
       case 'explore': openPanel('earthus'); break;
       case 'report': openPanel('report'); break;
-      case 'space': gotoScene('aetherus', 'space'); break;
+      case 'space': spaceDoor = true; gotoScene('aetherus', 'space'); break;
     }
-    // 위 forEach 가 하이라이트를 누른 칸으로 옮긴다. 패널이 그대로 열려 있으면
-    // Intelligence 칸도 켠 채로 둔다 — 열려 있는데 꺼져 보이면 상태가 거짓말이 된다.
     syncIntelNav();
   });
 
@@ -1038,7 +1065,7 @@ export function initShell(hooks) {
       return `<div class="card"><div class="card-b">${ko ? '현상을 고르면 그 현상의 과거 기록을 봅니다.' : 'Pick a phenomenon to see its past record.'}</div></div>`;
     }
     const name = ko ? ctx.label.ko : ctx.label.en;
-    const members = (DOMAIN_INDEX.get(ctx.domain) || []).find((e) => e.id === ctx.phenomenonId);
+    const members = PHEN_ENTRY.get(ctx.phenomenonId);
     const rows = members ? members.members : [];
     // 사료와 지금을 갈라 놓는다. 판단 기준은 우리가 정한 진리등급표다.
     const past = rows.filter((m) => layerBadge(m.key) && /HISTORY|기록/.test(layerBadge(m.key)));
@@ -1156,6 +1183,15 @@ export function initShell(hooks) {
        실행 버튼이 되고, 엔진이 없는 질문은 눌렀을 때 이유를 말한다(sim-why).
        기본 노출은 3개까지 — 레지스트리가 잘라 준다. 입력이 없어 못 부르는 것은
        not_evaluable 로 내려가 실행 대신 입력 방법을 안내한다(§19 validate input). */
+    /* 질문 블록 공용 마크업 — 현상 문맥(simQuestionsHtml)과 지도 문맥(mapContextQuestions)이
+       같은 문으로 그린다. 두 경로가 다른 마크업이면 어느 쪽이 진짜 능력인지 알 수 없다. */
+    const questionBlock = (qs) => (qs.length
+      ? `<div class="sim-questions"><div class="sq-h">${i18n.ko?'궁금한 점':'Questions'}</div>`
+        + qs.map((q) => (q.runnable
+          ? `<button class="sq-q" data-action="sim-q" data-sim="${q.action}">${safeText(q.text)}</button>`
+          : `<button class="sq-q sq-na" data-action="sim-why" data-why="${safeText(q.reason)}">${safeText(q.text)}</button>`)).join('')
+        + `<button class="sq-ask" data-action="shell-open-ask">${i18n.ko?'직접 질문하기':'Ask directly'}</button></div>`
+      : '');
     const simQuestionsHtml = () => {
       const pctx = getPhenomenonContext();
       if (!pctx || !pctx.phenomenonId || !simEntryFor(pctx.phenomenonId)) return '';
@@ -1164,15 +1200,22 @@ export function initShell(hooks) {
         whyKo: '먼저 바다 지점을 선택하세요 — 바다를 클릭하면 해양 모델 값을 조회합니다',
         whyEn: 'Select a sea area first — its marine model values feed the computation',
       });
-      if (!qs.length) return '';
-      return `<div class="sim-questions"><div class="sq-h">${i18n.ko?'궁금한 점':'Questions'}</div>`
-        + qs.map((q) => (q.runnable
-          ? `<button class="sq-q" data-action="sim-q" data-sim="${q.action}">${safeText(q.text)}</button>`
-          : `<button class="sq-q sq-na" data-action="sim-why" data-why="${safeText(q.reason)}">${safeText(q.text)}</button>`)).join('')
-        + `<button class="sq-ask" data-action="shell-open-ask">${i18n.ko?'직접 질문하기':'Ask directly'}</button></div>`;
+      return questionBlock(qs);
+    };
+    /* 지도 직접 클릭 경로의 궁금한 점 — 현상을 고르지 않아도 바다·국가 문맥이 있으면
+       질문이 붙는다. 발견→이해→질문이 클릭 한 번에 이어지게 하는 문(수정 지시서 §4~7). */
+    const mapContextQuestions = () => {
+      if (selectedMenu) return '';
+      if (hooks.hasSeaPoint?.()) {
+        return questionBlock(questionsForPhenomenon('ocean.wave', i18n, { hasInput: !!hooks.hasSeaInput?.() }));
+      }
+      if (hooks.hasCountryContext?.()) {
+        return questionBlock(questionsForCountry(i18n, { hasInput: true }));
+      }
+      return '';
     };
     const header=document.createElement('div');header.className='information-context';
-    header.innerHTML=`${selectedMenu ? `<strong>${safeText(i18n.ko ? questionForLayer(selectedMenu.s.id, selectedMenu.l.id) || selectedMenu.l.name : selectedMenu.l.name)}</strong><div>${safeText(selectedMenu.l.src)} · ${dataBadge(selectedMenu.l.state)}</div>${phenomenonLine()}${simQuestionsHtml()}`:''}<div>${safeText(i18n.ko?'선택 장소':'Selected place')}: ${safeText(picked?.nameKo || picked?.name || (i18n.ko?'지도에서 선택':'Select on the globe'))}</div>${timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}</p>`:''}
+    header.innerHTML=`${selectedMenu ? `<strong>${safeText(i18n.ko ? questionForLayer(selectedMenu.s.id, selectedMenu.l.id) || selectedMenu.l.name : selectedMenu.l.name)}</strong><div>${safeText(selectedMenu.l.src)} · ${dataBadge(selectedMenu.l.state)}</div>${phenomenonLine()}${simQuestionsHtml()}`:''}${mapContextQuestions()}<div>${safeText(i18n.ko?'선택 장소':'Selected place')}: ${safeText(picked?.nameKo || picked?.name || (i18n.ko?'지도에서 선택':'Select on the globe'))}</div>${timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}</p>`:''}
       ${active.length ? `<details><summary>${i18n.ko?'현재 켜진 자료':'Active data'} ${active.length}</summary>${active.map(({s,l})=>`<div class="active-data-row"><span>${safeText(i18n.layer(l.id,l.name,s.id))}<small>${safeText(menuTime(l.id,i18n.ko))}</small></span>${canClearLayer(l.id)?`<button data-action="shell-layer-off" data-scene="${s.id}" data-layer="${l.id}" aria-label="${safeText(l.name)} 끄기">${i18n.ko?'끄기':'Off'}</button>`:''}</div>`).join('')}<button data-action="shell-clear-layers">${i18n.ko?'추가 자료 모두 끄기':'Clear overlays'}</button></details>`:''}`;
     intelContent.prepend(header);
     intelContent.scrollTop=scrollTop;
@@ -1215,9 +1258,17 @@ export function initShell(hooks) {
      대응하는 칸이 없다(그게 요점이다 — 현상은 탐색 안에 있다). */
   const NAV_FOR_TAB = { feed: 'feed', my: 'myplace' };
   const syncIntelNav = () => {
+    /* 하단바 .on 의 유일한 쓰기 지점 (2026-09-10 live 실측 수정). 전에는 클릭 토글이
+       '누른 칸만' 켜고 이 함수가 '지금/내 지역'을 다시 켜서 두 칸이 동시에 켜졌다.
+       상태 하나 = 불 하나: 열려 있는 문이 주다. 문은 탭이 아니라 문이라 아무 것도
+       열려 있지 않으면 모두 끈다. */
     if (!navRoot) return;
-    const want = intelOpen ? NAV_FOR_TAB[curTab] : null;
-    navRoot.querySelectorAll('button[data-nav="feed"], button[data-nav="myplace"]')
+    let want = null;
+    if (openBrand === 'report') want = 'report';
+    else if (openBrand === 'aetherus') want = spaceDoor ? 'space' : null;
+    else if (openBrand === 'earthus') want = 'explore';
+    else if (intelOpen) want = NAV_FOR_TAB[curTab] || null;
+    navRoot.querySelectorAll('button[data-nav]')
       .forEach((b) => b.classList.toggle('on', b.dataset.nav === want));
   };
   const setIntelOpen = (open) => {
@@ -1246,9 +1297,11 @@ export function initShell(hooks) {
   // --- 하단 타임 스트립 (§19.7): 태양 위치는 진짜 재계산(LIVE), 관측 구름은 STALE ---
   const strip = document.createElement('div');
   strip.id = 'timestrip';
+  strip.setAttribute('role', 'navigation');
+  strip.setAttribute('aria-label', '시간 탐색');
   strip.innerHTML = `
-    <button id="ts-now">${i18n.t('now')}</button>
-    <button id="ts-play" title="${i18n.t('play5d')}">▶</button>
+    <button id="ts-now" aria-label="${i18n.ko?'시간을 현재로 되돌리기':'Back to the present time'}">${i18n.t('now')}</button>
+    <button id="ts-play" title="${i18n.t('play5d')}" aria-label="${i18n.t('play5d')}">▶</button>
     <input type="range" id="ts-range" aria-label="${i18n.ko?'자료 시간 이동':'Data timeline'}" min="-1440" max="7200" step="30" value="0" />
     <span id="ts-label">NOW</span>`;
   root.appendChild(strip);

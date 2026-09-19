@@ -52,7 +52,9 @@ test('오른쪽 버튼은 메뉴의 것 — 지구 선택(픽) 경로에서 제�
   assert.match(mainSrc, /if \(e\.button === 2\) return; \/\/ 오른쪽 버튼은 퀵메뉴의 것/,
     '우클릭이 왼쪽 클릭 선택 경로에 새어 든다');
   assert.match(mainSrc, /canvas\.addEventListener\('contextmenu'/, 'contextmenu 배선이 없다');
-  assert.match(mainSrc, /e\.preventDefault\(\);\s*\n\s*\/\/ 오른쪽 버튼을 끌어/,
+  // 2026-09-10 MASTER: Android 길게 누르기 이중 open 방지 가드가 preventDefault 뒤에 들어갔다 —
+  // 기본 메뉴 차단은 그대로 있어야 한다. 사이 400자까지 허용한다.
+  assert.match(mainSrc, /e\.preventDefault\(\);[\s\S]{0,400}\/\/ 오른쪽 버튼을 끌어/,
     '브라우저 기본 메뉴를 막지 않는다');
   // 끌면(6px 초과 이동) 메뉴를 열지 않는다 — 조작과 메뉴를 가른다.
   assert.match(mainSrc, /rightDownAt\.y\) > 6\) return;/);

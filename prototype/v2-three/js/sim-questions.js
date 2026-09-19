@@ -189,6 +189,50 @@ export const SIM_CAPABILITIES = {
 // 레지스트리에 없는 현상은 질문 블록을 만들지 않는다 — 진입점이 능력보다 앞서면 거짓말이 된다.
 export const simEntryFor = (phenomenonId) => (phenomenonId && SIM_CAPABILITIES[phenomenonId]) || null;
 
+// ── 국가 문맥 질문 (지시서 §5) ──────────────────────────────
+// 탐색 메뉴를 거치지 않고 국가를 직접 클릭한 경로의 궁금한 점. 실제로 답할 수 있는
+// 것(지점 실황 · 사건 피드)이 위로, 아직 계산이 없는 것(비 이동)은 이유와 함께 아래로.
+// ctx.hasInput === false (클릭 좌표를 못 받았을 때)는 not_evaluable 로 내려간다.
+export const COUNTRY_QUESTIONS = Object.freeze([
+  {
+    id: 'country-weather', ko: '이 나라의 지금 날씨는?', en: 'Weather here right now?',
+    action: 'country-weather', status: SIM_STATUS.AVAILABLE,
+  },
+  {
+    id: 'country-news', ko: '이 나라에서 무슨 일이 생겼나?', en: 'What just happened here?',
+    action: 'country-news', status: SIM_STATUS.AVAILABLE,
+  },
+  {
+    id: 'country-rain-move', ko: '비가 어디로 이동할까?', en: 'Where will the rain move?',
+    status: SIM_STATUS.NOT_AVAILABLE,
+    reasonKo: '이동 계산 엔진이 화면 자료와 아직 연결되지 않았습니다',
+    reasonEn: 'The advection engine is not wired to screen data yet',
+  },
+]);
+
+export const questionsForCountry = (i18n, ctx = null) => {
+  const ko = !!(i18n && i18n.ko);
+  return COUNTRY_QUESTIONS.map((q) => {
+    let status = q.status;
+    let reasonKo = q.reasonKo || null;
+    let reasonEn = q.reasonEn || null;
+    if (status === SIM_STATUS.AVAILABLE && ctx && ctx.hasInput === false) {
+      status = SIM_STATUS.NOT_EVALUABLE;
+      reasonKo = '먼저 지도에서 나라를 고르면 그 자리의 실제 값으로 답합니다';
+      reasonEn = 'Pick a country on the globe first — its real values answer this';
+    }
+    return {
+      id: q.id,
+      action: q.action || null,
+      text: ko ? q.ko : q.en,
+      status,
+      runnable: status === SIM_STATUS.AVAILABLE,
+      reason: status === SIM_STATUS.AVAILABLE ? null
+        : (ko ? (reasonKo || '아직 계산 엔진이 없습니다') : (reasonEn || 'No computation engine yet')),
+    };
+  });
+};
+
 // 컨텍스트가 주는 입력 상태(예: 바다 지점 선택 여부)에 따라 available 이
 // not_evaluable 로 내려갈 수 있다. ctx: { hasInput: boolean } | null
 export const questionsForPhenomenon = (phenomenonId, i18n, ctx = null) => {

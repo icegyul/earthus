@@ -88,6 +88,16 @@ export class PopSculpture {
     this.dom.innerHTML = '<div id="sculpt-cap"></div><div id="sculpt-peaks"></div>';
     document.body.appendChild(this.dom);
     this.capEl = this.dom.querySelector('#sculpt-cap');
+    // 캡션 닫기 — 문맥이 아니라 사용자가 끈다. 끄는 손은 main.js 가 onClose 로 넣는다.
+    this.onClose = null;
+    this.capEl.addEventListener('click', (e) => {
+      if (e.target.closest('.sc-x') && this.onClose) this.onClose();
+      if (e.target.closest('.sc-more')) {
+        const more = e.target.closest('.sc-more');
+        const open = this.capEl.classList.toggle('expanded');
+        more.textContent = open ? '순위 접기 ▴' : '순위 보기 ▾';
+      }
+    });
     this.peakWrap = this.dom.querySelector('#sculpt-peaks');
     this.labelPool = [];
     this._v = new THREE.Vector3();
@@ -195,10 +205,12 @@ export class PopSculpture {
     const ranks = rankRows
       ? `<b class="sc-h">가장 밀집한 곳</b><ol class="sc-rank">${rankRows}</ol>${noName}` : '';
     this.capEl.innerHTML = `<b>${(nameKo || this.nameFor(d.iso3) || d.iso3)}</b>
+      <button class="sc-x" aria-label="인구 조각 끄기">✕</button>
       <span class="sc-sub">POPULATION DENSITY · ${d.source || 'WorldPop 1km'}</span>
       <span class="sc-num">${(d.total / 1e6).toFixed(1)}<i>백만 명</i> · 격자 ${d.nonzero.toLocaleString()}칸</span>
       ${legend}
       ${ranks}
+      ${rankRows ? '<button class="sc-more">순위 보기 ▾</button>' : ''}
       <span class="sc-src">CC BY 4.0 WorldPop</span>`;
     this.capEl.classList.add('show');
   }

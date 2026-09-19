@@ -1,0 +1,102 @@
+{
+  "package": "wonder 3/EARTHUS_MENU_ICONS_V2.zip",
+  "imported": "2026-09-14",
+  "sizes": [
+    48,
+    96,
+    192
+  ],
+  "groups": {
+    "atmosphere": {
+      "source": "01_atmosphere",
+      "files": {
+        "192": "menu-group-atmosphere-192.png",
+        "96": "menu-group-atmosphere-96.png",
+        "48": "menu-group-atmosphere-48.png"
+      },
+      "sha256": {
+        "192": "185346eb13584bc7",
+        "96": "211982b308179402",
+        "48": "d193720c9ac2d60a"
+      }
+    },
+    "sea": {
+      "source": "02_ocean",
+      "files": {
+        "192": "menu-group-sea-192.png",
+        "96": "menu-group-sea-96.png",
+        "48": "menu-group-sea-48.png"
+      },
+      "sha256": {
+        "192": "4d64d351ae075172",
+        "96": "8ef57a6ae2ed9f2e",
+        "48": "cfe493b7322c0af1"
+      }
+    },
+    "hazard": {
+      "source": "06_deep_events_prediction",
+      "files": {
+        "192": "menu-group-hazard-192.png",
+        "96": "menu-group-hazard-96.png",
+        "48": "menu-group-hazard-48.png"
+      },
+      "sha256": {
+        "192": "69e5ededd5caec81",
+        "96": "1ba24db92bd69285",
+        "48": "efdbf0ea5e55b154"
+      }
+    },
+    "cryosphere": {
+      "source": "04_snow_ice",
+      "files": {
+        "192": "menu-group-cryosphere-192.png",
+        "96": "menu-group-cryosphere-96.png",
+        "48": "menu-group-cryosphere-48.png"
+      },
+      "sha256": {
+        "192": "8d23672a9ba160ee",
+        "96": "c19273779d1fa225",
+        "48": "427436495fd1e9b9"
+      }
+    },
+    "observation": {
+      "source": "05_air_quality_observation",
+      "files": {
+        "192": "menu-group-observation-192.png",
+        "96": "menu-group-observation-96.png",
+        "48": "menu-group-observation-48.png"
+      },
+      "sha256": {
+        "192": "acf512c4da428fe2",
+        "96": "3744271c7538583b",
+        "48": "ec4d434c6913dea0"
+      }
+    },
+    "society": {
+      "source": "07_surface_night",
+      "files": {
+        "192": "menu-group-society-192.png",
+        "96": "menu-group-society-96.png",
+        "48": "menu-group-society-48.png"
+      },
+      "sha256": {
+        "192": "ac2af8d75ba411f2",
+        "96": "1190e3ce31c82b58",
+        "48": "290519420ad37081"
+      }
+    },
+    "globe": {
+      "source": "03_terrain",
+      "files": {
+        "192": "menu-group-globe-192.png",
+        "96": "menu-group-globe-96.png",
+        "48": "menu-group-globe-48.png"
+      },
+      "sha256": {
+        "192": "6aa18957838445ec",
+        "96": "cca60d752203ac1d",
+        "48": "3fe115349be3e6c3"
+      }
+    }
+  }
+}

@@ -20,7 +20,7 @@ import { reportDocHtml, reportKey, reportIndexKey, reportUrl, reportIdFromUrl, c
 // 지시서 §8·§16 — 궁금한 점(추천 질문)은 시뮬레이션 능력 레지스트리가 정한다.
 // 없는 엔진의 질문 버튼은 여기서도 만들지 않는다. 다만 '왜 없는지'를 말하는 버튼은
 // pop-metric-menu 의 선례처럼 둔다 — 조용히 아무 말도 하지 않는 게 더 큰 거짓말이다.
-import { simEntryFor, questionsForPhenomenon } from './sim-questions.js?v=1';
+import { simEntryFor, questionsForPhenomenon, questionsForCountry } from './sim-questions.js?v=1';
 const safeText = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 // ---------------------------------------------------------------------------
@@ -268,6 +268,9 @@ export function initShell(hooks) {
   panel.id = 'menu-panel';
   root.appendChild(panel);
   let openBrand = null; // 'earthus' | 'aetherus' | null
+  // 하단바 '우주' 칸으로 서랍을 열었을 때만 켜는 표시 — 같은 AETHERUS 서랍이라도
+  // 왼쪽 가장자리 탭으로 열었으면 우주 불을 켜지 않는다(들어온 문이 다르다).
+  let spaceDoor = false;
   let menuQuery = '';
   let activeOnly = false;
   let selectedMenu = null;
@@ -723,6 +726,8 @@ export function initShell(hooks) {
 
   const openPanel = (brand) => {
     openBrand = brand;
+    // 우주 문 표시는 AETHERUS 서랍이 열려 있는 동안만 유효하다 — 다른 서랍을 열면 끊는다.
+    if (brand !== 'aetherus') spaceDoor = false;
     const aeth = brand === 'aetherus';
     const isReport = brand === 'report';
     if (isReport) loadReportIndex();
@@ -748,17 +753,20 @@ export function initShell(hooks) {
     tabE.classList.toggle('beside', aeth || isReport);
     tabA.classList.toggle('open', aeth);
     tabA.classList.toggle('beside', !aeth);
+    syncIntelNav();
     if (hooks.onFlyoutOpened) hooks.onFlyoutOpened();
   };
 
   const closeFlyout = () => {
     openBrand = null;
+    spaceDoor = false;
     panel.classList.remove('open');
     if (scrim) scrim.classList.remove('on');
     tabE.classList.remove('open');
     tabE.classList.remove('beside');
     tabA.classList.remove('open');
     tabA.classList.remove('beside');
+    syncIntelNav();
   };
 
   // 레이어를 켤 때마다 패널을 통째로 다시 그리는데, 그러면 목록이 맨 위로 튀고
@@ -923,6 +931,8 @@ export function initShell(hooks) {
      좌측 세로 손잡이·우측 패널은 지우지 않는다. "더보기"가 정확히 그 기존 화면을 연다. */
   const bottomNav = document.createElement('div');
   bottomNav.id = 'bottom-nav';
+  bottomNav.setAttribute('role', 'navigation');
+  bottomNav.setAttribute('aria-label', '하단 탐색 메뉴');
   navRoot = bottomNav;
   const NAV_ICON = {
     myplace: '<path d="M3 11 12 4l9 7"/><path d="M5 10v9h14v-9"/><path d="M10 19v-5h4v5"/>',
@@ -976,9 +986,13 @@ export function initShell(hooks) {
   const renderNav = () => {
     const cur = bottomNav.querySelector('button.on');
     const curId = cur ? cur.dataset.nav : null;
-    bottomNav.innerHTML = NAV_ITEMS.map((n) => `<button type="button" data-nav="${n.id}"${n.id === curId ? ' class="on"' : ''}>
-      <svg viewBox="0 0 24 24">${NAV_ICON[n.id]}</svg><span>${i18n.ko ? n.ko : n.en}</span>
-    </button>`).join('');
+    bottomNav.innerHTML = NAV_ITEMS.map((n) => {
+      const lbl = i18n.ko ? n.ko : n.en;
+      // P0 AX: 하단 '지금'과 타임스트립 '지금'이 리더에 겹쳐 들린다 — 내비는 사건 문맥임을 밝힌다.
+      const al = n.id === 'feed' ? (i18n.ko ? '지금 일어나는 일' : 'Happening now') : lbl;
+      return `<button type="button" data-nav="${n.id}" aria-label="${al}"${n.id === curId ? ' class="on"' : ''}>
+      <svg viewBox="0 0 24 24" aria-hidden="true">${NAV_ICON[n.id]}</svg><span>${lbl}</span>
+    </button>`; }).join('');
     /* innerHTML 을 다시 쓰면 방금 단 이름표(title·aria-label)가 버튼과 함께 사라진다.
        그래서 부르는 쪽 순서에 맡기지 않고 **그리는 쪽**이 다시 단다.
        (refreshPanelIdentity 가 이름표→renderNav 순서라 이름표가 지워지고 있었다.) */
@@ -989,6 +1003,9 @@ export function initShell(hooks) {
 
   // 씬 목록 패널에서 특정 그룹(날씨·바다)까지 열어 스크롤해 보여준다 — 접혀 있었다면 편다.
   const gotoScene = (brand, sceneId) => {
+    // 질문(sim-q · satellite-track)이 직접 우주 문을 열 때도 하단 불이 따라오게 한다 —
+    // 전에는 하단 클릭 경로만 spaceDoor 를 켜서 질문 진입의 우주는 불이 꺼져 있었다.
+    if (brand === 'aetherus' && sceneId === 'space') spaceDoor = true;
     // 펼침을 먼저 정하고 그린다. 순서가 뒤바뀌면 접힌 채로 그려 놓고 상태만 바꿔
     // 하단 바로 들어온 사용자는 빈 제목만 보게 된다(도메인 기본 접힘 이후 생긴 문제).
     collapsedSections.delete(sceneId);
@@ -1000,7 +1017,8 @@ export function initShell(hooks) {
   bottomNav.addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-nav]');
     if (!btn) return;
-    bottomNav.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b === btn));
+    // .on 은 여기서 쓰지 않는다 — syncIntelNav 가 상태에서 계산하는 유일한 화가다.
+    // 여기서 같이 쓰면 두 화가가 싸워 두 칸이 동시에 켜졌다(2026-09-10 live 실측).
     switch (btn.dataset.nav) {
       /* 두 칸 다 '문맥'이다. 같은 칸을 다시 누르면 닫힌다(없앤 손잡이와 같은 몸짓).
          맥락 없이 열리는 문은 이제 없다 — 여는 순간 applyCapabilityGating 이
@@ -1009,10 +1027,8 @@ export function initShell(hooks) {
       case 'myplace': if (intelOpen && curTab === 'my') closeIntel(); else openIntel('my'); break;
       case 'explore': openPanel('earthus'); break;
       case 'report': openPanel('report'); break;
-      case 'space': gotoScene('aetherus', 'space'); break;
+      case 'space': spaceDoor = true; gotoScene('aetherus', 'space'); break;
     }
-    // 위 forEach 가 하이라이트를 누른 칸으로 옮긴다. 패널이 그대로 열려 있으면
-    // Intelligence 칸도 켠 채로 둔다 — 열려 있는데 꺼져 보이면 상태가 거짓말이 된다.
     syncIntelNav();
   });
 
@@ -1167,6 +1183,15 @@ export function initShell(hooks) {
        실행 버튼이 되고, 엔진이 없는 질문은 눌렀을 때 이유를 말한다(sim-why).
        기본 노출은 3개까지 — 레지스트리가 잘라 준다. 입력이 없어 못 부르는 것은
        not_evaluable 로 내려가 실행 대신 입력 방법을 안내한다(§19 validate input). */
+    /* 질문 블록 공용 마크업 — 현상 문맥(simQuestionsHtml)과 지도 문맥(mapContextQuestions)이
+       같은 문으로 그린다. 두 경로가 다른 마크업이면 어느 쪽이 진짜 능력인지 알 수 없다. */
+    const questionBlock = (qs) => (qs.length
+      ? `<div class="sim-questions"><div class="sq-h">${i18n.ko?'궁금한 점':'Questions'}</div>`
+        + qs.map((q) => (q.runnable
+          ? `<button class="sq-q" data-action="sim-q" data-sim="${q.action}">${safeText(q.text)}</button>`
+          : `<button class="sq-q sq-na" data-action="sim-why" data-why="${safeText(q.reason)}">${safeText(q.text)}</button>`)).join('')
+        + `<button class="sq-ask" data-action="shell-open-ask">${i18n.ko?'직접 질문하기':'Ask directly'}</button></div>`
+      : '');
     const simQuestionsHtml = () => {
       const pctx = getPhenomenonContext();
       if (!pctx || !pctx.phenomenonId || !simEntryFor(pctx.phenomenonId)) return '';
@@ -1175,15 +1200,22 @@ export function initShell(hooks) {
         whyKo: '먼저 바다 지점을 선택하세요 — 바다를 클릭하면 해양 모델 값을 조회합니다',
         whyEn: 'Select a sea area first — its marine model values feed the computation',
       });
-      if (!qs.length) return '';
-      return `<div class="sim-questions"><div class="sq-h">${i18n.ko?'궁금한 점':'Questions'}</div>`
-        + qs.map((q) => (q.runnable
-          ? `<button class="sq-q" data-action="sim-q" data-sim="${q.action}">${safeText(q.text)}</button>`
-          : `<button class="sq-q sq-na" data-action="sim-why" data-why="${safeText(q.reason)}">${safeText(q.text)}</button>`)).join('')
-        + `<button class="sq-ask" data-action="shell-open-ask">${i18n.ko?'직접 질문하기':'Ask directly'}</button></div>`;
+      return questionBlock(qs);
+    };
+    /* 지도 직접 클릭 경로의 궁금한 점 — 현상을 고르지 않아도 바다·국가 문맥이 있으면
+       질문이 붙는다. 발견→이해→질문이 클릭 한 번에 이어지게 하는 문(수정 지시서 §4~7). */
+    const mapContextQuestions = () => {
+      if (selectedMenu) return '';
+      if (hooks.hasSeaPoint?.()) {
+        return questionBlock(questionsForPhenomenon('ocean.wave', i18n, { hasInput: !!hooks.hasSeaInput?.() }));
+      }
+      if (hooks.hasCountryContext?.()) {
+        return questionBlock(questionsForCountry(i18n, { hasInput: true }));
+      }
+      return '';
     };
     const header=document.createElement('div');header.className='information-context';
-    header.innerHTML=`${selectedMenu ? `<strong>${safeText(i18n.ko ? questionForLayer(selectedMenu.s.id, selectedMenu.l.id) || selectedMenu.l.name : selectedMenu.l.name)}</strong><div>${safeText(selectedMenu.l.src)} · ${dataBadge(selectedMenu.l.state)}</div>${phenomenonLine()}${simQuestionsHtml()}`:''}<div>${safeText(i18n.ko?'선택 장소':'Selected place')}: ${safeText(picked?.nameKo || picked?.name || (i18n.ko?'지도에서 선택':'Select on the globe'))}</div>${timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}</p>`:''}
+    header.innerHTML=`${selectedMenu ? `<strong>${safeText(i18n.ko ? questionForLayer(selectedMenu.s.id, selectedMenu.l.id) || selectedMenu.l.name : selectedMenu.l.name)}</strong><div>${safeText(selectedMenu.l.src)} · ${dataBadge(selectedMenu.l.state)}</div>${phenomenonLine()}${simQuestionsHtml()}`:''}${mapContextQuestions()}<div>${safeText(i18n.ko?'선택 장소':'Selected place')}: ${safeText(picked?.nameKo || picked?.name || (i18n.ko?'지도에서 선택':'Select on the globe'))}</div>${timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}</p>`:''}
       ${active.length ? `<details><summary>${i18n.ko?'현재 켜진 자료':'Active data'} ${active.length}</summary>${active.map(({s,l})=>`<div class="active-data-row"><span>${safeText(i18n.layer(l.id,l.name,s.id))}<small>${safeText(menuTime(l.id,i18n.ko))}</small></span>${canClearLayer(l.id)?`<button data-action="shell-layer-off" data-scene="${s.id}" data-layer="${l.id}" aria-label="${safeText(l.name)} 끄기">${i18n.ko?'끄기':'Off'}</button>`:''}</div>`).join('')}<button data-action="shell-clear-layers">${i18n.ko?'추가 자료 모두 끄기':'Clear overlays'}</button></details>`:''}`;
     intelContent.prepend(header);
     intelContent.scrollTop=scrollTop;
@@ -1226,9 +1258,17 @@ export function initShell(hooks) {
      대응하는 칸이 없다(그게 요점이다 — 현상은 탐색 안에 있다). */
   const NAV_FOR_TAB = { feed: 'feed', my: 'myplace' };
   const syncIntelNav = () => {
+    /* 하단바 .on 의 유일한 쓰기 지점 (2026-09-10 live 실측 수정). 전에는 클릭 토글이
+       '누른 칸만' 켜고 이 함수가 '지금/내 지역'을 다시 켜서 두 칸이 동시에 켜졌다.
+       상태 하나 = 불 하나: 열려 있는 문이 주다. 문은 탭이 아니라 문이라 아무 것도
+       열려 있지 않으면 모두 끈다. */
     if (!navRoot) return;
-    const want = intelOpen ? NAV_FOR_TAB[curTab] : null;
-    navRoot.querySelectorAll('button[data-nav="feed"], button[data-nav="myplace"]')
+    let want = null;
+    if (openBrand === 'report') want = 'report';
+    else if (openBrand === 'aetherus') want = spaceDoor ? 'space' : null;
+    else if (openBrand === 'earthus') want = 'explore';
+    else if (intelOpen) want = NAV_FOR_TAB[curTab] || null;
+    navRoot.querySelectorAll('button[data-nav]')
       .forEach((b) => b.classList.toggle('on', b.dataset.nav === want));
   };
   const setIntelOpen = (open) => {
@@ -1257,9 +1297,11 @@ export function initShell(hooks) {
   // --- 하단 타임 스트립 (§19.7): 태양 위치는 진짜 재계산(LIVE), 관측 구름은 STALE ---
   const strip = document.createElement('div');
   strip.id = 'timestrip';
+  strip.setAttribute('role', 'navigation');
+  strip.setAttribute('aria-label', '시간 탐색');
   strip.innerHTML = `
-    <button id="ts-now">${i18n.t('now')}</button>
-    <button id="ts-play" title="${i18n.t('play5d')}">▶</button>
+    <button id="ts-now" aria-label="${i18n.ko?'시간을 현재로 되돌리기':'Back to the present time'}">${i18n.t('now')}</button>
+    <button id="ts-play" title="${i18n.t('play5d')}" aria-label="${i18n.t('play5d')}">▶</button>
     <input type="range" id="ts-range" aria-label="${i18n.ko?'자료 시간 이동':'Data timeline'}" min="-1440" max="7200" step="30" value="0" />
     <span id="ts-label">NOW</span>`;
   root.appendChild(strip);

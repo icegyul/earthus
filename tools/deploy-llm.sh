@@ -8,6 +8,7 @@
 set -euo pipefail
 export MSYS_NO_PATHCONV=1
 # --verify-only: 배포 없이 배포 가드(함수 URL 인증·/api/ask)만 실행한다 — PHASE 2 PENDING 1 검증용
+# --package-only: zip 을 만들고 풀어서 import 검사까지만 한다. AWS 를 부르지 않는다.
 VERIFY_ONLY=0; [ "${1:-}" = "--verify-only" ] && VERIFY_ONLY=1
 # Windows 콘솔 기본 코드페이지(cp949)가 한글·기호 출력에서 죽는다 — UTF-8로 고정한다
 export PYTHONUTF8=1 PYTHONIOENCODING=utf-8
@@ -29,16 +30,27 @@ if [ "$VERIFY_ONLY" = "1" ]; then
   echo "== verify-only: 배포 생략, 가드만 실행 =="
 else
 echo "== 1/4 패키징 =="
-# Windows 파이썬은 Git Bash 의 /tmp/... 경로를 못 연다. 먼저 Windows 경로로 바꿔 넘긴다.
-ZIPW="$(cygpath -w "$ZIP" 2>/dev/null || echo "$ZIP")"
-SRCW="$(cygpath -w "$SRC/handler.py" 2>/dev/null || echo "$SRC/handler.py")"
-python - "$SRCW" "$ZIPW" <<'PY'
-import sys, zipfile
-src, out = sys.argv[1], sys.argv[2]
-with zipfile.ZipFile(out, 'w', zipfile.ZIP_DEFLATED) as z:
-    z.write(src, 'handler.py')
-print('   handler.py 패키징 완료')
-PY
+# Windows 파이썬은 Git Bash 의 /tmp/... 경로를 못 연다(MSYS_NO_PATHCONV=1 이라 자동 변환도 없다).
+# 먼저 Windows 경로로 바꿔 넘긴다.
+win() { cygpath -w "$1" 2>/dev/null || echo "$1"; }
+ZIPW="$(win "$ZIP")"
+# ⚠️ 2026-09-20 부터 handler.py 하나로는 못 돈다 — narration_guard.py(같은 폴더)·intel_contract·cap_map(_shared)·
+#    contracts/intel-vocab.json 을 import 때 읽는다. 예전처럼 handler.py 만 zip 하면 콜드 스타트에서
+#    ImportModuleError 로 /api/ask 가 죽는다. 그래서 deploy-python.sh 와 같은 규칙(lambda_package)으로
+#    stage → 결정적 zip → **zip 을 풀어서** import 검사까지 하고, 검사가 틀리면 올리지 않는다.
+PKG="$(win "$ROOT/aws/_shared/lambda_package.py")"
+SHAREDW="$(win "$ROOT/aws/_shared")"
+SRCW="$(win "$SRC")"
+STAGEW="$(win "$TMP/stage")"
+VERIFYW="$(win "$TMP/verify")"
+python "$PKG" stage "$SRCW" "$SHAREDW" "$STAGEW" >/dev/null
+python "$PKG" zip "$STAGEW" "$ZIPW" --manifest "$(win "$TMP/manifest.json")" >/dev/null
+python -c "import sys, zipfile; zipfile.ZipFile(sys.argv[1]).extractall(sys.argv[2])" "$ZIPW" "$VERIFYW"
+if ! python "$PKG" verify "$SRCW" "$SHAREDW" "$VERIFYW"; then
+  echo "❌ 배포 zip 에서 handler 를 import 할 수 없다 — 배포하지 않는다"; exit 1
+fi
+python -c "import json, sys; m = json.load(open(sys.argv[1], encoding='utf-8')); print('   패키징 완료 ·', m['count'], '개 ·', ', '.join(m['members']))" "$(win "$TMP/manifest.json")"
+[ "${1:-}" = "--package-only" ] && { echo "== --package-only: 여기서 멈춘다(배포 안 함) =="; exit 0; }
 
 exists=1
 aws lambda get-function --function-name "$FN" --region "$REGION" >/dev/null 2>&1 || exists=0

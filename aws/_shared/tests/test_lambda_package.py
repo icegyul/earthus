@@ -589,6 +589,17 @@ class DeterministicZipTests(unittest.TestCase):
             self.assertIn("contracts/intel-vocab.json", names)
             self.assertFalse(any(n.startswith("tests/") for n in names), "tests 는 여전히 뺀다")
 
+    def test_real_intel_lambda_zip_carries_the_vocabulary(self):
+        """intel_contract 를 쓰는 실제 함수 폴더 — stage → zip 에 어휘 정본이 들어간다."""
+        aws = pathlib.Path(__file__).resolve().parents[2]
+        for fn in ("cyclone-analog", "marine-grid", "earthus-llm"):
+            with tempfile.TemporaryDirectory() as folder, self.subTest(fn=fn):
+                dest = os.path.join(folder, "stage")
+                lp.stage(str(aws / fn), str(aws / "_shared"), dest)
+                names = lp.build_zip(dest, os.path.join(folder, "fn.zip"))["members"]
+                self.assertIn("intel_contract.py", names)
+                self.assertIn("contracts/intel-vocab.json", names)
+
     def test_members_are_sorted_by_utf8_bytes(self):
         with tempfile.TemporaryDirectory() as folder:
             out = os.path.join(folder, "a.zip")

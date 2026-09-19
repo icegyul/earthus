@@ -394,8 +394,10 @@ def output_metadata_of(key):
         "live": (None if not re.search(r'"live"\s*:', text) else
                  bool(re.search(r'"live"\s*:\s*true', text))),
         "feedLatestJst": string_field("feedLatestJst"),
+        # jma-warn 은 feedAgeHours·feedLatestJst(JST 문자열), glof-alaska 는 ageHours·lastObservedAt(ISO)를 쓴다.
         "feedAgeHours": (lambda m: float(m.group(1)) if m else None)(
-            re.search(r'"feedAgeHours"\s*:\s*(-?[\d.]+)', text)),
+            re.search(r'"(?:feedAgeHours|ageHours)"\s*:\s*(-?[\d.]+)', text)),
+        "lastObservedAt": string_field("lastObservedAt"),
         "sourceReason": string_field("reason"),
         "sampleCount": sample_count,
         "missing": missing,
@@ -499,7 +501,7 @@ def handler(event=None, context=None):
             status["state"] = "SOURCE_STALE"
             status["reason"] = status.get("sourceReason") or "source_not_live"
             fl = status.get("feedLatestJst")
-            status["sourceObservedAt"] = None
+            status["sourceObservedAt"] = status.get("lastObservedAt")
             if fl:
                 try:
                     status["sourceObservedAt"] = (

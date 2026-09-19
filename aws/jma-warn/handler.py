@@ -45,6 +45,12 @@ from datetime import datetime, timedelta, timezone
 
 import boto3
 
+# aws/_shared — Lambda 에서는 패키저가 zip 루트에 평평하게 넣는다. 로컬·시험은 이 경로로 찾는다.
+import sys
+_HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(_HERE), "_shared"))
+import cap_map  # noqa: E402  CAP 1.2 정규화 — 원문 필드는 그대로 둔다
+
 BUCKET = os.environ["CACHE_BUCKET"]
 REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 s3 = boto3.client("s3", region_name=REGION)
@@ -52,7 +58,7 @@ s3 = boto3.client("s3", region_name=REGION)
 DST = "events/jma-warn.json"
 BASE = "https://www.jma.go.jp/bosai"
 WARN_MAP = f"{BASE}/warning/data/r8/map.json"   # ⚠️ 옛 warning/data/warning/map.json 은 2026-05-28 정지
-UA ={"User-Agent": "earthus/1.0 (dalur@kakao.com)"}
+UA = {"User-Agent": "earthus/1.0 (dalur@kakao.com)"}
 JST = timezone(timedelta(hours=9))
 
 # ⚠️ 발표 시각이 이보다 오래되면 "살아 있다"고 보지 않는다.
@@ -177,9 +183,9 @@ def handler(event=None, context=None):
                     continue
                 key = (it.get("areaCode"), k.get("code"))
                 if key not in latest or latest[key][0] < rd:
-                    latest[key] = (rd, k.get("status"))
-    by = {}
-    for (code, kind), (rd, status) in sorted(latest.items()):
+                    latest[key] = (rd, k.get("status"), x.get("publishingOffice"), x.get("headlineText"))
+    by, head = {}, {}
+    for (code, kind), (rd, status, office, headline) in sorted(latest.items()):
         if status in INACTIVE:
             continue
         nm = A.get(code) or {}
@@ -190,6 +196,12 @@ def handler(event=None, context=None):
         e["status"].append(status)
         if (e["at"] or "") < rd:
             e["at"] = rd
+            head[code] = (office, headline)
+    for code, e in by.items():
+        office, headline = head.get(code, (None, None))
+        # CAP 1.2 정규화 — 관서가 쓴 headlineText 원문(일본어)을 그대로 싣는다. 번역하지 않는다.
+        e["cap"] = cap_map.from_jma(statuses=e["status"], office=office, headline=headline,
+                                    report_datetime=e["at"])
     items, errs = list(by.values()), {}
 
     base["count"] = len(items)

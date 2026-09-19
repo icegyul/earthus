@@ -31,6 +31,7 @@ from datetime import datetime, timedelta, timezone
 import boto3
 
 import kma_hub   # KMA 허브 호출 회계(PHASE 1) — aws/_shared/kma_hub.py, 배포 스크립트가 같이 담는다
+import cap_map   # CAP 1.2 정규화 필드(2026-09-20 P0) — aws/_shared/cap_map.py. 원문 필드는 그대로 둔다
 
 from safety_contract import command_state, latest_by_region_kind
 
@@ -456,6 +457,8 @@ def handler(event, context):
         }
         if m:
             rec["lat"], rec["lon"] = m["lat"], m["lon"]
+        # CAP 1.2 정규화 — 원본이 말한 것(수준·명령·발효 시각)만 옮기고 나머지는 Unknown/null.
+        rec["cap"] = cap_map.from_kma(rec, upcoming=v["tm_ef"] > now)
         # 발효시각이 아직 안 왔으면 '예비'다 — 지금 위험한 것과 섞지 않는다.
         (upcoming if v["tm_ef"] > now else active).append(rec)
 

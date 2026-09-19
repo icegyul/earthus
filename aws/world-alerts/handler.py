@@ -37,6 +37,12 @@ from datetime import datetime, timezone
 
 import boto3
 
+# aws/_shared — Lambda 에서는 패키저가 zip 루트에 평평하게 넣는다. 로컬·시험은 이 경로로 찾는다.
+import sys
+_HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(os.path.dirname(_HERE), "_shared"))
+import cap_map  # noqa: E402  CAP 1.2 — NWS 는 원본이 CAP 이라 그대로 옮긴다
+
 BUCKET = os.environ["CACHE_BUCKET"]
 REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 
@@ -156,9 +162,14 @@ def handler(event, context):
             failed += 1
         time.sleep(0.4)                                  # NWS 는 초당 1회를 권한다
 
-    out, unplaced = [], 0
+    out, unplaced, not_actual = [], 0, 0
     for f in feats:
         p = f.get("properties") or {}
+        cap = cap_map.from_nws(p)
+        # ⚠️ 시험·연습·초안·시스템 메시지는 화면·푸시에 내보내지 않는다(CAP status != Actual).
+        if not cap_map.displayable(cap):
+            not_actual += 1
+            continue
         ev = p.get("event") or ""
         c = centroid(f.get("geometry"))
         if not c:
@@ -180,6 +191,7 @@ def handler(event, context):
             "headline": (p.get("headline") or "")[:160],
             "effective": p.get("effective"), "expires": p.get("expires"),
             "area_wide": True,
+            "cap": cap,
             "_src": "미국 국립기상청 (NWS)",
             "_lic": "미국 정부 저작물 — 퍼블릭 도메인",
         })
@@ -198,6 +210,7 @@ def handler(event, context):
         "source": "미국 국립기상청 NWS (api.weather.gov)",
         "sourceEn": "US National Weather Service (api.weather.gov)",
         "license": "미국 정부 저작물 — 퍼블릭 도메인",
+        "notActualSkipped": not_actual,   # CAP status 가 Actual 이 아니어서 뺀 건수
         "note": {
             "ko": "미국에서 지금 발효 중인 심각(Severe) 이상 특보입니다. "
                   "표시 위치는 경보 구역의 대표 지점이며 구역 전체가 대상입니다. "

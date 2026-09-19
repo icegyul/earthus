@@ -1243,9 +1243,14 @@ export function initShell(hooks) {
         whyKo: '먼저 바다 지점을 선택하세요 — 바다를 클릭하면 해양 모델 값을 조회합니다',
         whyEn: 'Select a sea area first — its marine model values feed the computation',
       });
-      // 계약 §L — 기존 현상 메뉴 안에 '어디서 되는지' 한 줄. 독립 지역 목록·지도가 아니다(§L-1·§L-3).
-      const reg = simEntryFor(pctx.phenomenonId)?.regions;
-      return questionBlock(qs) + (reg ? `<div class="sq-why sq-region">${safeText(i18n.ko ? reg.ko : reg.en)}</div>` : '');
+      return questionBlock(qs);
+    };
+    /* 계약 §L — 기존 현상 메뉴 안에 '어디서 되는지' 한 줄(✅ 계산됨 / 📋 기관 인용). 독립 지역 목록·지도가
+       아니다(§L-1·§L-3). 질문 블록 마크업(questionBlock)은 지도 문맥과 같아야 해서 따로 붙인다. */
+    const regionLine = () => {
+      const pctx = getPhenomenonContext();
+      const reg = pctx && pctx.phenomenonId ? simEntryFor(pctx.phenomenonId)?.regions : null;
+      return reg ? `<div class="sim-questions"><div class="sq-why sq-region">${safeText(i18n.ko ? reg.ko : reg.en)}</div></div>` : '';
     };
     /* Intelligence 띠 (P1) — 선택한 현상의 인텔 패킷 v1 이 이미 받은 사건 패킷 안에 있으면 그린다.
        없으면 아무것도 그리지 않는다(빈 절 금지, 계약 §C-0). 요청·계산 없음. */
@@ -1270,7 +1275,7 @@ export function initShell(hooks) {
       return '';
     };
     const header=document.createElement('div');header.className='information-context';
-    header.innerHTML=`${selectedMenu ? `<strong>${safeText(i18n.ko ? questionForLayer(selectedMenu.s.id, selectedMenu.l.id) || selectedMenu.l.name : selectedMenu.l.name)}</strong><div>${safeText(selectedMenu.l.src)} · ${dataBadge(selectedMenu.l.state)}</div>${phenomenonLine()}${simQuestionsHtml()}${intelStripBlock()}`:''}${mapContextQuestions()}<div>${safeText(i18n.ko?'선택 장소':'Selected place')}: ${safeText(picked?.nameKo || picked?.name || (i18n.ko?'지도에서 선택':'Select on the globe'))}</div>${timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}</p>`:''}
+    header.innerHTML=`${selectedMenu ? `<strong>${safeText(i18n.ko ? questionForLayer(selectedMenu.s.id, selectedMenu.l.id) || selectedMenu.l.name : selectedMenu.l.name)}</strong><div>${safeText(selectedMenu.l.src)} · ${dataBadge(selectedMenu.l.state)}</div>${phenomenonLine()}${simQuestionsHtml()}${regionLine()}${intelStripBlock()}`:''}${mapContextQuestions()}<div>${safeText(i18n.ko?'선택 장소':'Selected place')}: ${safeText(picked?.nameKo || picked?.name || (i18n.ko?'지도에서 선택':'Select on the globe'))}</div>${timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}</p>`:''}
       ${active.length ? `<details><summary>${i18n.ko?'현재 켜진 자료':'Active data'} ${active.length}</summary>${active.map(({s,l})=>`<div class="active-data-row"><span>${safeText(i18n.layer(l.id,l.name,s.id))}<small>${safeText(menuTime(l.id,i18n.ko))}</small></span>${canClearLayer(l.id)?`<button data-action="shell-layer-off" data-scene="${s.id}" data-layer="${l.id}" aria-label="${safeText(l.name)} 끄기">${i18n.ko?'끄기':'Off'}</button>`:''}</div>`).join('')}<button data-action="shell-clear-layers">${i18n.ko?'추가 자료 모두 끄기':'Clear overlays'}</button></details>`:''}`;
     intelContent.prepend(header);
     intelContent.scrollTop=scrollTop;

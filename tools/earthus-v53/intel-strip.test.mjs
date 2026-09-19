@@ -69,7 +69,7 @@ test('띠는 요청·계산을 하지 않는다 (계약 §C-0) — fetch·LLM �
 });
 
 test('화면 배선 — 셸에 띠, main.js 에 intel-q 분기, limited 한계 문장', () => {
-  assert.match(shellSrc, /\$\{simQuestionsHtml\(\)\}\$\{intelStripBlock\(\)\}/);
+  assert.match(shellSrc, /\$\{simQuestionsHtml\(\)\}\$\{regionLine\(\)\}\$\{intelStripBlock\(\)\}/);   // §L 지역 한 줄이 사이에 온다
   assert.match(shellSrc, /packet: intelOf\(hooks\.getEventPacket\?\.\(\)\)/);
   assert.match(mainSrc, /action === 'intel-q'/);
   assert.match(mainSrc, /getEventPacket: \(\) =>/);

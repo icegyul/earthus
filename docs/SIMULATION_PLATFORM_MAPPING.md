@@ -124,7 +124,7 @@ note: "Copy the whole directory; every claim in verdict.json resolves to a hashe
 | **model name** | `MODEL_VERSION = "eta-v1"` · 출력 스키마 `earthus.tsunami-eta.v1` · 배지 `SIMULATION_ONLY` 고정 |
 | **input** | `events/tsunami-intl.json` 의 USGS 사건. 조건 `MIN_MAG = 6.5`, `MAX_DEPTH_KM = 100.0`, 바다 지진 |
 | **forcing** | `ocean/depth-grid.bin` (GEBCO 0.1° 최심 → 0.2° 축약) + `ocean/depth-grid.manifest.json` |
-| **output** | `ocean/tsunami-eta/{usgsId}.json` — `event{}`, `time{occurredAt, computedAt, retrievedAt}`, `method{ko, limits[5], gridSha256}`, `stations[]`(39 연안), `reachedCount`, `nearestKorea`, `isochronesMin`(30·60분 등시선), `official{matched, …}`. 색인 `ocean/tsunami-eta.json` (`earthus.tsunami-eta-index.v1`, 최근 30일) |
+| **output** | `ocean/tsunami-eta/{usgsId}.json` — `event{}`, `time{occurredAt, computedAt, retrievedAt}`, `method{ko, limits[5], gridSha256}`, `stations[]`(38 연안 — 한국 10·태평양 28. 2026-09-20 정정: 예전 '39' 는 틀렸다), `reachedCount`, `nearestKorea`, `isochronesMin`(30·60분 등시선), `official{matched, …}`. 색인 `ocean/tsunami-eta.json` (`earthus.tsunami-eta-index.v1`, 최근 30일) |
 | **manifest** | `method.gridSha256` = 수심 격자 manifest 의 `output.sha256` 하나 |
 | **validation** | PTWC 게시문 ETA 표와 대조 → `official.matched`. **게시문에 ETA 표가 없으면 `null`** (0 으로 채우지 않는다) |
 | **runtime entrypoint** | `handler(event=None, context=None)` (`handler.py:384`) |

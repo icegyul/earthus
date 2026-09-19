@@ -173,7 +173,8 @@ test('가정 장면(Preview)은 능력과 따로 적혀 있고, 시나리오 탭
 test('§L 지역 한 줄은 코드의 사실과 같다 — ✅ 계산됨 / 📋 기관 인용 둘뿐', () => {
   const tsu = SIM_CAPABILITIES['hazards.tsunami'].regions;
   const handler = src('aws/tsunami-eta/handler.py');
-  const all = (handler.match(/\("([A-Z]{3})", "[^"]+", -?[\d.]+, -?[\d.]+\)/g) || []);
+  const blk = handler.slice(handler.indexOf('STATIONS = ['), handler.indexOf(']', handler.indexOf('STATIONS = [')));
+  const all = (blk.match(/\("([A-Z]{3})", "[^"]+", -?[\d.]+, -?[\d.]+\)/g) || []);
   const kor = all.filter((x) => x.startsWith('("KOR"'));
   assert.match(tsu.ko, new RegExp(`${all.length}곳\\(한국 ${kor.length}곳 포함\\)`), '지점 수가 엔진과 다르다');
   assert.match(tsu.ko, /^✅ 계산됨/);
@@ -185,6 +186,8 @@ test('§L 지역 한 줄은 코드의 사실과 같다 — ✅ 계산됨 / 📋 
     if (e.regions) assert.ok(/^(✅ 계산됨|📋 기관 인용)/.test(e.regions.ko), '배지는 둘뿐이다(§J)');
   }
   assert.match(shellSrc, /simEntryFor\(pctx\.phenomenonId\)\?\.regions/);
+  assert.match(shellSrc, /\$\{simQuestionsHtml\(\)\}\$\{regionLine\(\)\}/);
+  assert.match(SIM_CAPABILITIES['hazards.tsunami'].outputs, new RegExp(`^${all.length}개`), 'outputs 문장의 지점 수'); 
 });
 
 test('화면 배선 — 궁금한 점·직접 질문하기·sim-why 가 셸에 있다', () => {

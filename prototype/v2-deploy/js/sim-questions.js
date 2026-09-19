@@ -61,14 +61,15 @@ export const SIM_CAPABILITIES = {
     engineRef: 'aws/tsunami-eta/handler.py',
     status: SIM_STATUS.AVAILABLE,
     inputs: 'GEBCO 수심 격자 + USGS M6.5↑ · 진원 100km 이하 · 바다 지진 사건',
-    outputs: '39개 해안 관측소 도달시간 · 30~720분 등시선',
+    outputs: '38개 해안 지점 도달시간 · 30~720분 등시선',   // 2026-09-20: 예전 '39개'는 틀렸다 — STATIONS 는 38곳
     horizons: '사건별 단회 계산 — 계속 미끄러지는 예보가 아니다',
     // 계약 §L-2 · §G-4 — 지역은 새 스키마가 아니라 문장으로 적는다. 배지는 ✅ 계산됨 / 📋 기관 인용 둘뿐(§J).
     regions: Object.freeze({
-      // ⚠️ 연안 지점 39곳 = 한국 10 + 일본·대만·필리핀·미국 등 태평양 29 (aws/tsunami-eta/handler.py STATIONS).
-      //    계약 §L-2 표의 '한국 전 해안'은 줄여 쓴 것 — 계산은 39곳 모두 한다. 지역별 검증(§H)은 한국만 끝났다.
-      ko: '✅ 계산됨 — 태평양 연안 39곳(한국 10곳 포함) 도달시간. PTWC 발표가 있는 사건은 대조해 보여 줍니다. 한국 밖 연안은 지역별 검증 전입니다',
-      en: '✅ Computed — arrival times at 39 Pacific coastal points (10 in Korea), cross-checked against PTWC where a bulletin exists. Coasts outside Korea are not yet validated region by region',
+      // ⚠️ 연안 지점 38곳 = 한국 10 + 일본·대만·필리핀·미국 등 태평양 28 (aws/tsunami-eta/handler.py STATIONS).
+      //    문서들(계약 §H·MAPPING)의 '39'는 틀린 수였다. 계약 §L-2 표의 '한국 전 해안'은 줄여 쓴 것 —
+      //    계산은 38곳 모두 한다. 지역별 검증(§H)은 한국만 끝났다. 시험이 이 수를 STATIONS 와 대조한다.
+      ko: '✅ 계산됨 — 태평양 연안 38곳(한국 10곳 포함) 도달시간. PTWC 발표가 있는 사건은 대조해 보여 줍니다. 한국 밖 연안은 지역별 검증 전입니다',
+      en: '✅ Computed — arrival times at 38 Pacific coastal points (10 in Korea), cross-checked against PTWC where a bulletin exists. Coasts outside Korea are not yet validated region by region',
     }),
     questions: [
       { id: 'tsunami-reach', ko: '이 쓰나미는 어디까지 갈까?', en: 'How far will this tsunami reach?', action: 'tsunami-reach', status: SIM_STATUS.AVAILABLE },

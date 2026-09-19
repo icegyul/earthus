@@ -1,0 +1,903 @@
+TAP version 13
+# Subtest: clamp bounds values
+ok 1 - clamp bounds values
+  ---
+  duration_ms: 0.841539
+  type: 'test'
+  ...
+# Subtest: median handles even samples
+ok 2 - median handles even samples
+  ---
+  duration_ms: 0.436538
+  type: 'test'
+  ...
+# Subtest: percentile interpolates
+ok 3 - percentile interpolates
+  ---
+  duration_ms: 0.208083
+  type: 'test'
+  ...
+# Subtest: mad is robust
+ok 4 - mad is robust
+  ---
+  duration_ms: 0.128784
+  type: 'test'
+  ...
+# Subtest: robustZ returns finite for dispersed history
+ok 5 - robustZ returns finite for dispersed history
+  ---
+  duration_ms: 0.384694
+  type: 'test'
+  ...
+# Subtest: ewma preserves sample count
+ok 6 - ewma preserves sample count
+  ---
+  duration_ms: 0.144467
+  type: 'test'
+  ...
+# Subtest: Theil-Sen rejects one outlier influence
+ok 7 - Theil-Sen rejects one outlier influence
+  ---
+  duration_ms: 0.221143
+  type: 'test'
+  ...
+# Subtest: weighted mean ignores zero weight
+ok 8 - weighted mean ignores zero weight
+  ---
+  duration_ms: 0.128113
+  type: 'test'
+  ...
+# Subtest: bounded log scale stays bounded
+ok 9 - bounded log scale stays bounded
+  ---
+  duration_ms: 0.273793
+  type: 'test'
+  ...
+# Subtest: stable fingerprint is deterministic
+ok 10 - stable fingerprint is deterministic
+  ---
+  duration_ms: 0.446563
+  type: 'test'
+  ...
+# Subtest: canonical observation requires observedAt
+ok 11 - canonical observation requires observedAt
+  ---
+  duration_ms: 0.737042
+  type: 'test'
+  ...
+# Subtest: canonical signal separates official forecast from live observation
+ok 12 - canonical signal separates official forecast from live observation
+  ---
+  duration_ms: 0.36494
+  type: 'test'
+  ...
+# Subtest: freshness state distinguishes live/stale/unavailable
+ok 13 - freshness state distinguishes live/stale/unavailable
+  ---
+  duration_ms: 0.142585
+  type: 'test'
+  ...
+# Subtest: confidence caps missing mandatory components
+ok 14 - confidence caps missing mandatory components
+  ---
+  duration_ms: 0.341515
+  type: 'test'
+  ...
+# Subtest: confidence bands are ordered
+ok 15 - confidence bands are ordered
+  ---
+  duration_ms: 0.075213
+  type: 'test'
+  ...
+# Subtest: resource scope aborts and disposes owned resources
+ok 16 - resource scope aborts and disposes owned resources
+  ---
+  duration_ms: 0.235915
+  type: 'test'
+  ...
+# Subtest: governor enforces one primary dynamic owner
+ok 17 - governor enforces one primary dynamic owner
+  ---
+  duration_ms: 0.39783
+  type: 'test'
+  ...
+# Subtest: thermal budget disables heavy engines in ECO
+ok 18 - thermal budget disables heavy engines in ECO
+  ---
+  duration_ms: 0.10616
+  type: 'test'
+  ...
+# Subtest: engine runtime mounts and activates adapter
+ok 19 - engine runtime mounts and activates adapter
+  ---
+  duration_ms: 0.633034
+  type: 'test'
+  ...
+# Subtest: truth budget blocks unavailable data
+ok 20 - truth budget blocks unavailable data
+  ---
+  duration_ms: 0.198129
+  type: 'test'
+  ...
+# Subtest: fine population tower requires actual grid
+ok 21 - fine population tower requires actual grid
+  ---
+  duration_ms: 0.130477
+  type: 'test'
+  ...
+# Subtest: domain hard gate excludes official hazard
+ok 22 - domain hard gate excludes official hazard
+  ---
+  duration_ms: 0.270567
+  type: 'test'
+  ...
+# Subtest: regional weather formatting converts US units
+ok 23 - regional weather formatting converts US units
+  ---
+  duration_ms: 0.164638
+  type: 'test'
+  ...
+# Subtest: platform capability reveals geofence blocker for PWA-only
+ok 24 - platform capability reveals geofence blocker for PWA-only
+  ---
+  duration_ms: 0.121113
+  type: 'test'
+  ...
+# Subtest: longitude normalizes
+ok 25 - longitude normalizes
+  ---
+  duration_ms: 1.39245
+  type: 'test'
+  ...
+# Subtest: longitude unwrap follows short path
+ok 26 - longitude unwrap follows short path
+  ---
+  duration_ms: 0.78282
+  type: 'test'
+  ...
+# Subtest: antimeridian bounds choose small span
+ok 27 - antimeridian bounds choose small span
+  ---
+  duration_ms: 0.436317
+  type: 'test'
+  ...
+# Subtest: geometry centroid remains near dateline
+ok 28 - geometry centroid remains near dateline
+  ---
+  duration_ms: 0.355015
+  type: 'test'
+  ...
+# Subtest: point in antimeridian polygon works
+ok 29 - point in antimeridian polygon works
+  ---
+  duration_ms: 0.357749
+  type: 'test'
+  ...
+# Subtest: geometry diameter is positive
+ok 30 - geometry diameter is positive
+  ---
+  duration_ms: 0.27876
+  type: 'test'
+  ...
+# Subtest: country focus creates finite camera and dimming
+ok 31 - country focus creates finite camera and dimming
+  ---
+  duration_ms: 0.495547
+  type: 'test'
+  ...
+# Subtest: country readiness exposes blockers
+ok 32 - country readiness exposes blockers
+  ---
+  duration_ms: 0.254203
+  type: 'test'
+  ...
+# Subtest: terrain broker prefers best eligible source
+ok 33 - terrain broker prefers best eligible source
+  ---
+  duration_ms: 0.692875
+  type: 'test'
+  ...
+# Subtest: terrain SSE decreases with distance
+ok 34 - terrain SSE decreases with distance
+  ---
+  duration_ms: 0.550169
+  type: 'test'
+  ...
+# Subtest: terrain LOD respects tile budget
+ok 35 - terrain LOD respects tile budget
+  ---
+  duration_ms: 0.32497
+  type: 'test'
+  ...
+# Subtest: real terrain exaggeration is one
+ok 36 - real terrain exaggeration is one
+  ---
+  duration_ms: 0.167803
+  type: 'test'
+  ...
+# Subtest: mobile SAFE terrain budget is bounded
+ok 37 - mobile SAFE terrain budget is bounded
+  ---
+  duration_ms: 0.145709
+  type: 'test'
+  ...
+# Subtest: bathymetry level 3 is blocked on mobile
+ok 38 - bathymetry level 3 is blocked on mobile
+  ---
+  duration_ms: 0.168013
+  type: 'test'
+  ...
+# Subtest: depth visual scale is monotonic
+ok 39 - depth visual scale is monotonic
+  ---
+  duration_ms: 0.144828
+  type: 'test'
+  ...
+# Subtest: terrain-data morph is bounded
+ok 40 - terrain-data morph is bounded
+  ---
+  duration_ms: 0.174703
+  type: 'test'
+  ...
+# Subtest: reduced motion collapses duration
+ok 41 - reduced motion collapses duration
+  ---
+  duration_ms: 0.165519
+  type: 'test'
+  ...
+# Subtest: valid visual manifest passes
+ok 42 - valid visual manifest passes
+  ---
+  duration_ms: 0.247814
+  type: 'test'
+  ...
+# Subtest: create visual manifest adds schema
+ok 43 - create visual manifest adds schema
+  ---
+  duration_ms: 0.236877
+  type: 'test'
+  ...
+# Subtest: one data hero rejects two primaries
+ok 44 - one data hero rejects two primaries
+  ---
+  duration_ms: 0.151739
+  type: 'test'
+  ...
+# Subtest: semantic linter reserves red for official risk
+ok 45 - semantic linter reserves red for official risk
+  ---
+  duration_ms: 0.299852
+  type: 'test'
+  ...
+# Subtest: semantic linter blocks fabricated fine tower grid
+ok 46 - semantic linter blocks fabricated fine tower grid
+  ---
+  duration_ms: 0.13237
+  type: 'test'
+  ...
+# Subtest: tower visual uses bounded log mapping
+ok 47 - tower visual uses bounded log mapping
+  ---
+  duration_ms: 0.292971
+  type: 'test'
+  ...
+# Subtest: mass allocation preserves rounded total
+ok 48 - mass allocation preserves rounded total
+  ---
+  duration_ms: 0.328005
+  type: 'test'
+  ...
+# Subtest: tower pool uses mobile budget
+ok 49 - tower pool uses mobile budget
+  ---
+  duration_ms: 0.163016
+  type: 'test'
+  ...
+# Subtest: flow sampling interpolates vector
+ok 50 - flow sampling interpolates vector
+  ---
+  duration_ms: 0.277759
+  type: 'test'
+  ...
+# Subtest: flow advection remains normalized
+ok 51 - flow advection remains normalized
+  ---
+  duration_ms: 0.186571
+  type: 'test'
+  ...
+# Subtest: flow SAFE budget is zero
+ok 52 - flow SAFE budget is zero
+  ---
+  duration_ms: 0.169025
+  type: 'test'
+  ...
+# Subtest: mobile volume uses three shells
+ok 53 - mobile volume uses three shells
+  ---
+  duration_ms: 0.1986
+  type: 'test'
+  ...
+# Subtest: shell opacity combines layers
+ok 54 - shell opacity combines layers
+  ---
+  duration_ms: 0.259732
+  type: 'test'
+  ...
+# Subtest: scene plan blocks mobile flow plus volume context
+ok 55 - scene plan blocks mobile flow plus volume context
+  ---
+  duration_ms: 0.521265
+  type: 'test'
+  ...
+# Subtest: density requires known area
+ok 56 - density requires known area
+  ---
+  duration_ms: 1.399199
+  type: 'test'
+  ...
+# Subtest: density calculates people per square metre
+ok 57 - density calculates people per square metre
+  ---
+  duration_ms: 0.159871
+  type: 'test'
+  ...
+# Subtest: crowd index uses official level when available
+ok 58 - crowd index uses official level when available
+  ---
+  duration_ms: 0.648628
+  type: 'test'
+  ...
+# Subtest: trend sees persistent increase
+ok 59 - trend sees persistent increase
+  ---
+  duration_ms: 0.977044
+  type: 'test'
+  ...
+# Subtest: trend suppresses inconsistent recent movement
+ok 60 - trend suppresses inconsistent recent movement
+  ---
+  duration_ms: 0.323338
+  type: 'test'
+  ...
+# Subtest: scalar flow has no direction vector
+ok 61 - scalar flow has no direction vector
+  ---
+  duration_ms: 0.221794
+  type: 'test'
+  ...
+# Subtest: graph flow requires vector evidence
+ok 62 - graph flow requires vector evidence
+  ---
+  duration_ms: 0.310388
+  type: 'test'
+  ...
+# Subtest: graph flow combines vectors
+ok 63 - graph flow combines vectors
+  ---
+  duration_ms: 0.232931
+  type: 'test'
+  ...
+# Subtest: crowd forecast preserves contributions
+ok 64 - crowd forecast preserves contributions
+  ---
+  duration_ms: 0.500525
+  type: 'test'
+  ...
+# Subtest: anomaly distinguishes correlated event
+ok 65 - anomaly distinguishes correlated event
+  ---
+  duration_ms: 0.673525
+  type: 'test'
+  ...
+# Subtest: capacity is unknown without validated capacity
+ok 66 - capacity is unknown without validated capacity
+  ---
+  duration_ms: 0.226111
+  type: 'test'
+  ...
+# Subtest: risk official emergency becomes critical
+ok 67 - risk official emergency becomes critical
+  ---
+  duration_ms: 0.216536
+  type: 'test'
+  ...
+# Subtest: historical baseline supports quantile
+ok 68 - historical baseline supports quantile
+  ---
+  duration_ms: 0.21899
+  type: 'test'
+  ...
+# Subtest: distribution summary returns p90
+ok 69 - distribution summary returns p90
+  ---
+  duration_ms: 0.208855
+  type: 'test'
+  ...
+# Subtest: spatial graph finds shortest path
+ok 70 - spatial graph finds shortest path
+  ---
+  duration_ms: 1.778621
+  type: 'test'
+  ...
+# Subtest: spatial graph blocks closed edge
+ok 71 - spatial graph blocks closed edge
+  ---
+  duration_ms: 0.210047
+  type: 'test'
+  ...
+# Subtest: forecast verification calculates MAE and RMSE
+ok 72 - forecast verification calculates MAE and RMSE
+  ---
+  duration_ms: 0.505202
+  type: 'test'
+  ...
+# Subtest: model lifecycle requires gates for canary
+ok 73 - model lifecycle requires gates for canary
+  ---
+  duration_ms: 0.57035
+  type: 'test'
+  ...
+# Subtest: champion challenger requires calibration improvement
+ok 74 - champion challenger requires calibration improvement
+  ---
+  duration_ms: 0.205971
+  type: 'test'
+  ...
+# Subtest: v8 EVENT descriptor becomes PULSE in Event scene
+ok 75 - v8 EVENT descriptor becomes PULSE in Event scene
+  ---
+  duration_ms: 0.921559
+  type: 'test'
+  ...
+# Subtest: reuse guard rejects reimplementation of existing v8 modules
+ok 76 - reuse guard rejects reimplementation of existing v8 modules
+  ---
+  duration_ms: 0.523629
+  type: 'test'
+  ...
+# Subtest: Seoul aggregate remains aggregate and cannot become actual grid
+ok 77 - Seoul aggregate remains aggregate and cannot become actual grid
+  ---
+  duration_ms: 0.488387
+  type: 'test'
+  ...
+# Subtest: official warning remains free inside panel
+ok 78 - official warning remains free inside panel
+  ---
+  duration_ms: 0.467054
+  type: 'test'
+  ...
+# Subtest: mini crowd pipeline preserves source, forecast and confidence separation
+ok 79 - mini crowd pipeline preserves source, forecast and confidence separation
+  ---
+  duration_ms: 2.416513
+  type: 'test'
+  ...
+# Subtest: country focus and scene plan form Neo-Minimal country scene
+ok 80 - country focus and scene plan form Neo-Minimal country scene
+  ---
+  duration_ms: 1.455785
+  type: 'test'
+  ...
+# Subtest: canonical object key is deterministic and partitioned
+ok 81 - canonical object key is deterministic and partitioned
+  ---
+  duration_ms: 1.46576
+  type: 'test'
+  ...
+# Subtest: revision manifest creates stable id
+ok 82 - revision manifest creates stable id
+  ---
+  duration_ms: 0.365561
+  type: 'test'
+  ...
+# Subtest: watermark cannot move backward
+ok 83 - watermark cannot move backward
+  ---
+  duration_ms: 0.388636
+  type: 'test'
+  ...
+# Subtest: backfill windows overlap
+ok 84 - backfill windows overlap
+  ---
+  duration_ms: 0.327383
+  type: 'test'
+  ...
+# Subtest: archive state machine follows safe path
+ok 85 - archive state machine follows safe path
+  ---
+  duration_ms: 0.460675
+  type: 'test'
+  ...
+# Subtest: archive state machine rejects unsafe jump
+ok 86 - archive state machine rejects unsafe jump
+  ---
+  duration_ms: 0.19885
+  type: 'test'
+  ...
+# Subtest: archive verification requires 14-day shadow proof
+ok 87 - archive verification requires 14-day shadow proof
+  ---
+  duration_ms: 0.197959
+  type: 'test'
+  ...
+# Subtest: storage pressure 95 enters safe mode
+ok 88 - storage pressure 95 enters safe mode
+  ---
+  duration_ms: 0.121523
+  type: 'test'
+  ...
+# Subtest: restore never serves directly from NAS
+ok 89 - restore never serves directly from NAS
+  ---
+  duration_ms: 0.639304
+  type: 'test'
+  ...
+# Subtest: delta packing estimates saving
+ok 90 - delta packing estimates saving
+  ---
+  duration_ms: 0.498301
+  type: 'test'
+  ...
+# Subtest: event capsule is replay ready
+ok 91 - event capsule is replay ready
+  ---
+  duration_ms: 0.222265
+  type: 'test'
+  ...
+# Subtest: official safety bypasses paywall
+ok 92 - official safety bypasses paywall
+  ---
+  duration_ms: 0.140993
+  type: 'test'
+  ...
+# Subtest: free user sees preview for WHY
+ok 93 - free user sees preview for WHY
+  ---
+  duration_ms: 0.07941
+  type: 'test'
+  ...
+# Subtest: usage meter enforces quota
+ok 94 - usage meter enforces quota
+  ---
+  duration_ms: 0.186411
+  type: 'test'
+  ...
+# Subtest: intelligence panel does not hide locked tabs
+ok 95 - intelligence panel does not hide locked tabs
+  ---
+  duration_ms: 0.215765
+  type: 'test'
+  ...
+# Subtest: country readiness exposes incomplete visual gate
+ok 96 - country readiness exposes incomplete visual gate
+  ---
+  duration_ms: 0.191178
+  type: 'test'
+  ...
+# Subtest: country unlock ledger counts unique supporters
+ok 97 - country unlock ledger counts unique supporters
+  ---
+  duration_ms: 0.204428
+  type: 'test'
+  ...
+# Subtest: country gate requires readiness
+ok 98 - country gate requires readiness
+  ---
+  duration_ms: 0.110487
+  type: 'test'
+  ...
+# Subtest: rights gate blocks one blocked source
+ok 99 - rights gate blocks one blocked source
+  ---
+  duration_ms: 0.184829
+  type: 'test'
+  ...
+# Subtest: circuit breaker opens after threshold
+ok 100 - circuit breaker opens after threshold
+  ---
+  duration_ms: 0.143606
+  type: 'test'
+  ...
+# Subtest: provider health detects stale
+ok 101 - provider health detects stale
+  ---
+  duration_ms: 0.113952
+  type: 'test'
+  ...
+# Subtest: exponential backoff doubles
+ok 102 - exponential backoff doubles
+  ---
+  duration_ms: 0.106881
+  type: 'test'
+  ...
+# Subtest: model promotion gate requires enough metrics
+ok 103 - model promotion gate requires enough metrics
+  ---
+  duration_ms: 0.216867
+  type: 'test'
+  ...
+# Subtest: champion selection compares MAE and calibration
+ok 104 - champion selection compares MAE and calibration
+  ---
+  duration_ms: 0.213132
+  type: 'test'
+  ...
+# Subtest: country passport compiles provider/layer readiness
+ok 105 - country passport compiles provider/layer readiness
+  ---
+  duration_ms: 0.319081
+  type: 'test'
+  ...
+# Subtest: daily cost sums components
+ok 106 - daily cost sums components
+  ---
+  duration_ms: 0.185179
+  type: 'test'
+  ...
+# Subtest: safety-critical job runs over budget
+ok 107 - safety-critical job runs over budget
+  ---
+  duration_ms: 0.128835
+  type: 'test'
+  ...
+# Subtest: observation gap lens can show model dependence
+ok 108 - observation gap lens can show model dependence
+  ---
+  duration_ms: 0.136936
+  type: 'test'
+  ...
+# Subtest: fail-soft flow never invents direction
+ok 109 - fail-soft flow never invents direction
+  ---
+  duration_ms: 0.821979
+  type: 'test'
+  ...
+# Subtest: fail-soft tower becomes aggregate cluster without actual grid
+ok 110 - fail-soft tower becomes aggregate cluster without actual grid
+  ---
+  duration_ms: 0.130697
+  type: 'test'
+  ...
+# Subtest: official safety remains visible when domain data is unavailable
+ok 111 - official safety remains visible when domain data is unavailable
+  ---
+  duration_ms: 0.137397
+  type: 'test'
+  ...
+# Subtest: trust ledger marks counter-balanced output contested
+ok 112 - trust ledger marks counter-balanced output contested
+  ---
+  duration_ms: 0.252581
+  type: 'test'
+  ...
+# Subtest: procedural cloud detail is deterministic and visual-only
+ok 113 - procedural cloud detail is deterministic and visual-only
+  ---
+  duration_ms: 0.384941
+  type: 'test'
+  ...
+# Subtest: long-range procedural cloud detail is reduced
+ok 114 - long-range procedural cloud detail is reduced
+  ---
+  duration_ms: 0.191929
+  type: 'test'
+  ...
+# Subtest: replay rehydration never serves NAS directly
+ok 115 - replay rehydration never serves NAS directly
+  ---
+  duration_ms: 0.319241
+  type: 'test'
+  ...
+# Subtest: replay rehydration blocks incompatible processor
+ok 116 - replay rehydration blocks incompatible processor
+  ---
+  duration_ms: 0.114933
+  type: 'test'
+  ...
+# Subtest: offline trip pack always prioritizes safety
+ok 117 - offline trip pack always prioritizes safety
+  ---
+  duration_ms: 0.64341
+  type: 'test'
+  ...
+# Subtest: free offline trip pack excludes premium intelligence
+ok 118 - free offline trip pack excludes premium intelligence
+  ---
+  duration_ms: 0.76274
+  type: 'test'
+  ...
+# Subtest: model normalization falls back to raw value
+ok 119 - model normalization falls back to raw value
+  ---
+  duration_ms: 7.456611
+  type: 'test'
+  ...
+# Subtest: ensemble requires minimum members
+ok 120 - ensemble requires minimum members
+  ---
+  duration_ms: 0.219841
+  type: 'test'
+  ...
+# Subtest: ensemble computes agreement
+ok 121 - ensemble computes agreement
+  ---
+  duration_ms: 0.417169
+  type: 'test'
+  ...
+# Subtest: bias correction subtracts bias
+ok 122 - bias correction subtracts bias
+  ---
+  duration_ms: 0.141724
+  type: 'test'
+  ...
+# Subtest: scalar grid bilinear sampling works
+ok 123 - scalar grid bilinear sampling works
+  ---
+  duration_ms: 0.182586
+  type: 'test'
+  ...
+# Subtest: scalar advection preserves dimensions
+ok 124 - scalar advection preserves dimensions
+  ---
+  duration_ms: 0.280063
+  type: 'test'
+  ...
+# Subtest: nowcast blend increases NWP weight by horizon
+ok 125 - nowcast blend increases NWP weight by horizon
+  ---
+  duration_ms: 0.176336
+  type: 'test'
+  ...
+# Subtest: evidence graph allows supported claim
+ok 126 - evidence graph allows supported claim
+  ---
+  duration_ms: 0.390049
+  type: 'test'
+  ...
+# Subtest: evidence graph blocks missing rule
+ok 127 - evidence graph blocks missing rule
+  ---
+  duration_ms: 0.314715
+  type: 'test'
+  ...
+# Subtest: weather brief includes only allowed claims
+ok 128 - weather brief includes only allowed claims
+  ---
+  duration_ms: 0.501066
+  type: 'test'
+  ...
+# Subtest: uncalibrated probability never prints a percentage
+ok 129 - uncalibrated probability never prints a percentage
+  ---
+  duration_ms: 0.231429
+  type: 'test'
+  ...
+# Subtest: claim text supports SST contribution wording
+ok 130 - claim text supports SST contribution wording
+  ---
+  duration_ms: 0.114723
+  type: 'test'
+  ...
+# Subtest: precipitation phase identifies snow
+ok 131 - precipitation phase identifies snow
+  ---
+  duration_ms: 0.113881
+  type: 'test'
+  ...
+# Subtest: precipitation state prefers observed blend label
+ok 132 - precipitation state prefers observed blend label
+  ---
+  duration_ms: 0.181854
+  type: 'test'
+  ...
+# Subtest: rain curtain uses lightweight mode far from surface
+ok 133 - rain curtain uses lightweight mode far from surface
+  ---
+  duration_ms: 0.11971
+  type: 'test'
+  ...
+# Subtest: forecast gap becomes early signal only when persistent and qualified
+ok 134 - forecast gap becomes early signal only when persistent and qualified
+  ---
+  duration_ms: 0.147212
+  type: 'test'
+  ...
+# Subtest: official warning overrides gap signal
+ok 135 - official warning overrides gap signal
+  ---
+  duration_ms: 0.078248
+  type: 'test'
+  ...
+# Subtest: moisture attribution forbids SST-only causal claim
+ok 136 - moisture attribution forbids SST-only causal claim
+  ---
+  duration_ms: 0.168084
+  type: 'test'
+  ...
+# Subtest: moisture attribution allows multi-signal contribution
+ok 137 - moisture attribution allows multi-signal contribution
+  ---
+  duration_ms: 0.113061
+  type: 'test'
+  ...
+# Subtest: satellite broker chooses GK2A for Korean IR tile
+ok 138 - satellite broker chooses GK2A for Korean IR tile
+  ---
+  duration_ms: 0.461155
+  type: 'test'
+  ...
+# Subtest: day-only source is rejected at night
+ok 139 - day-only source is rejected at night
+  ---
+  duration_ms: 0.137808
+  type: 'test'
+  ...
+# Subtest: cloud top retrieval returns metadata and uncertainty
+ok 140 - cloud top retrieval returns metadata and uncertainty
+  ---
+  duration_ms: 0.218289
+  type: 'test'
+  ...
+# Subtest: ceilometer cloud base is observation
+ok 141 - ceilometer cloud base is observation
+  ---
+  duration_ms: 0.154613
+  type: 'test'
+  ...
+# Subtest: cloud layer detector flags multilayer
+ok 142 - cloud layer detector flags multilayer
+  ---
+  duration_ms: 0.18624
+  type: 'test'
+  ...
+# Subtest: cloud density stays bounded
+ok 143 - cloud density stays bounded
+  ---
+  duration_ms: 0.162014
+  type: 'test'
+  ...
+# Subtest: canonical cloud state preserves retrieval metadata
+ok 144 - canonical cloud state preserves retrieval metadata
+  ---
+  duration_ms: 0.212721
+  type: 'test'
+  ...
+# Subtest: cloud blend weights sum to one
+ok 145 - cloud blend weights sum to one
+  ---
+  duration_ms: 0.199961
+  type: 'test'
+  ...
+# Subtest: cloud horizon 8 days is long-range outlook
+ok 146 - cloud horizon 8 days is long-range outlook
+  ---
+  duration_ms: 0.081884
+  type: 'test'
+  ...
+# Subtest: cloud state blend shifts toward ensemble long range
+ok 147 - cloud state blend shifts toward ensemble long range
+  ---
+  duration_ms: 0.248354
+  type: 'test'
+  ...
+# Subtest: long-range render is probabilistic
+ok 148 - long-range render is probabilistic
+  ---
+  duration_ms: 0.195815
+  type: 'test'
+  ...
+1..148
+# tests 148
+# suites 0
+# pass 148
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 300.76706
+{
+  "pass": true,
+  "checked": 98,
+  "failures": []
+}

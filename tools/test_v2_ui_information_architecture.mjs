@@ -182,7 +182,10 @@ test('메뉴가 레이어가 아니라 묶음 → 현상으로 그려진다', ()
   assert.match(shellSrc, /Object\.entries\(LAYER_PHENOMENON\)/);
   assert.match(shellSrc, /\[\.\.\.EARTHUS_MENU_GROUPS\]/, 'ui-shell 이 묶음 이름을 손으로 적고 있다');
   // 1차는 접혀 있어야 한다. 58줄을 펼쳐 두면 '줄였다'가 화면에서 사실이 아니다.
-  assert.match(shellSrc, /collapsedSections = new Set\(\[\.\.\.MENU_GROUPS\.map\(\(g\) => g\.id\), '__loose'\]\)/);
+  assert.match(shellSrc, /collapsedSections = new Set\(MENU_GROUPS\.map\(\(g\) => g\.id\)\)/);
+  // 2026-09-20: '지구 표현 · 이동'(__loose) 절을 없앴다 — 바탕 지도는 설정으로 갔고 나머지는 탭·상단에 같은 문이 있다.
+  assert.ok(!/looseSectionHtml|__loose/.test(shellSrc), "'지구 표현 · 이동' 절이 되살아났다");
+  assert.ok(!/const REGION_CHIPS =/.test(shellSrc), '그리지 않는 권역 칩 목록이 남아 있다');
   // 2026-09-13: 옛 도메인 렌더러가 남아 있으면 안 된다 — 그리는 곳이 둘이면 갈라진다.
   assert.ok(!/const DOMAIN_INDEX =/.test(shellSrc), '옛 도메인 색인이 남아 있다');
   assert.ok(!/const sectionHtml = /.test(shellSrc), '옛 씬 렌더러가 남아 있다 — 검색하면 다른 메뉴가 나온다');
@@ -225,12 +228,13 @@ test('아이콘 표는 v1·v2 공용 모듈 하나뿐이다', async () => {
   assert.deepEqual(v1bad, [], 'V1 이 그릴 수 없는 아이콘을 가리킨다');
 });
 
-test('묶음(절 제목) 아이콘 — EARTHUS 묶음 전부 + 지구 표현 절에 그림이 실제로 있다', async () => {
+test('묶음(절 제목) 아이콘 — EARTHUS 묶음 전부에 그림이 실제로 있다', async () => {
   // 2026-09-14 인수 EARTHUS_MENU_ICONS_V2 (7종). 우주 묶음은 팩에 없으므로 null 이어야 한다(빈 약속 금지).
+  // 2026-09-20: '__loose'(지구 표현 · 이동) 절을 없애 그 아이콘은 더 이상 화면에 쓰이지 않는다(표에는 남아 있다).
   const icons = await import('../prototype/js/earthus-icons.js');
   const fs = await import('node:fs');
   const { fileURLToPath } = await import('node:url');
-  const need = [...reg.EARTHUS_MENU_GROUPS, '__loose'];
+  const need = [...reg.EARTHUS_MENU_GROUPS];
   for (const gid of need) {
     for (const size of icons.MENU_GROUP_ICON_SIZES) {
       const src = icons.groupIconSrc(gid, size);
@@ -242,7 +246,6 @@ test('묶음(절 제목) 아이콘 — EARTHUS 묶음 전부 + 지구 표현 절
   assert.equal(icons.groupIconSrc('space'), null, '우주 묶음은 그림이 없는데 있다고 한다');
   // 절 제목에서 아이콘은 점(i)·이름 앞에 서고 alt 는 비어야 한다. 표를 ui-shell 이 따로 만들면 안 된다.
   assert.match(shellSrc, /groupIconHtml\(gid\) \+ '<i><\/i>'/);
-  assert.match(shellSrc, /groupIconHtml\('__loose'\) \+ '<i><\/i>'/);
   assert.match(shellSrc, /class="mp-gico"[^>]*alt=""/);
   assert.ok(!/menu-group-/.test(shellSrc), 'ui-shell 이 묶음 아이콘 파일 이름을 직접 만든다');
 });
@@ -261,9 +264,25 @@ test('아이콘은 이름을 대신하지 않는다 — 아이콘만 남긴 메�
 test('현상이 여러 자료를 가지면 펼쳐서 전부 켤 수 있다 — 기능이 사라지지 않는다', () => {
   assert.match(shellSrc, /data-expand="/, '펼치기 버튼이 없다 — 흡수된 레이어에 도달할 수 없다');
   assert.match(shellSrc, /expandedPhenomena/);
-  // 배경·조작 9개도 자리가 있어야 한다.
-  assert.match(shellSrc, /const looseSectionHtml = \(\) =>/);
-  assert.match(shellSrc, /LOOSE_LAYERS/);
+});
+
+// 2026-09-20 — '지구 표현 · 이동'(__loose) 절을 메뉴에서 없앴다(PD: "이건 뭔지 모르겠어").
+// 절이 사라졌다고 **기능까지 사라지면 안 된다.** 그 절에 있던 9개가 갈 곳이 있는지를 여기서 못 박는다.
+test('없앤 절의 배경·조작은 다른 자리에 살아 있다 — 바탕 지도는 설정(⚙)으로 갔다', () => {
+  const indexHtml = readFileSync(new URL('../prototype/v2-three/index.html', import.meta.url), 'utf8');
+  const settings = indexHtml.slice(indexHtml.indexOf('id="settings-drawer"'), indexHtml.indexOf('/settings-drawer'));
+  assert.match(settings, /id="base-seg"/, '바탕 지도 선택이 설정에 없다 — 지구 표면을 바꿀 길이 사라졌다');
+  for (const id of ['ne2', 'bluemarble', 'truecolor']) {
+    assert.match(settings, new RegExp(`data-base="${id}"`), `${id} 바탕 지도 버튼이 없다`);
+  }
+  // 손잡이만 옮겼고 켜는 함수는 그대로다 — 새 경로를 만들지 않는다.
+  // ⚠️ 여기서 넘기는 안내 함수는 showNote 다. 메뉴 경로의 `note` 는 그 핸들러 안에서만 사는 지역 함수라
+  //    설정에서 부르면 ReferenceError 가 난다(2026-09-20 실측, 로컬에서 잡음).
+  assert.match(mainSrc, /setBaseStyle\(btn\.dataset\.base, showNote\)/, '설정 버튼이 setBaseStyle(…, showNote) 로 가지 않는다');
+  assert.match(mainSrc, /async function setBaseStyle/);
+  // 나머지(사건 피드·보고서·내 위치·전체 지구)는 하단 탭과 상단 버튼에 같은 문이 있다.
+  assert.match(shellSrc, /NAV_ITEMS/);
+  assert.match(indexHtml, /id="btn-search"/);
 });
 
 test('하단 바로 들어와도 그 도메인이 펼쳐진다', () => {

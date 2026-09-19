@@ -358,27 +358,12 @@ export function initShell(hooks) {
   // PHASE 4 §2 — 1차 메뉴는 묶음만 보인다. 묶음을 열어야 현상 목록이 나온다.
   // 처음부터 58줄을 펼쳐 두면 '메뉴를 줄였다'가 화면에서 사실이 아니게 된다.
   // 2026-09-13: 도메인 id 여덟에서 §3.2 묶음 id 로 바뀌었다. 여는 손(gotoScene·data-collapse)은 그대로다.
-  const collapsedSections = new Set([...MENU_GROUPS.map((g) => g.id), '__loose']);
+  const collapsedSections = new Set(MENU_GROUPS.map((g) => g.id));
 
-  // 권역 이동 (v5.3 스케일 사다리: GLOBAL → CONTINENT → REGION → COUNTRY).
-  // 3D 지구를 벗어나지 않고 카메라만 그 권역 구도로 옮긴다 — 평면 전환이 아니다.
-  // ⚠️ 순서는 시장 우선순위를 따른다 — 한반도가 맨 앞이다(PD 지시).
-  const REGION_CHIPS = [
-    { id: 'korea', ko: '한반도' },
-    { id: 'globe', ko: '전 지구' },
-    { id: 'eastasia', ko: '동북아시아' },
-    { id: 'seasia', ko: '동남아시아' },
-    { id: 'southasia', ko: '남아시아' },
-    { id: 'oceania', ko: '오세아니아' },
-    { id: 'europe', ko: '유럽' },
-    { id: 'mideast', ko: '중동' },
-    { id: 'africa', ko: '아프리카' },
-    { id: 'namerica', ko: '북미' },
-    { id: 'samerica', ko: '남미' },
-    { id: 'arctic', ko: '북극' },
-    { id: 'antarctic', ko: '남극' },
-  ];
-
+  /* 권역 이동 칩 목록(한반도·전 지구·동북아시아 …)은 2026-09-20 에 지웠다 — '지구 표현 · 이동' 절과 함께 나갔고
+     남겨 두면 아무도 그리지 않는 죽은 목록이 된다. 카메라를 그 권역으로 옮기는 손(hooks.onRegion)은
+     그대로 살아 있다 — 상단 검색(⌕)이 나라·시군구·도시를 찾아 같은 이동을 하고, 칩 클릭 처리도 남아 있어
+     나중에 다른 자리(설정·상단)에 다시 붙이면 바로 돈다. */
   // 인구 격자가 준비된 나라 — 목록을 파일에서 읽어 칩으로 깐다.
   // 손으로 적으면 격자를 늘릴 때마다 메뉴가 실제와 어긋난다.
   let POP_COUNTRIES = [];
@@ -435,13 +420,6 @@ export function initShell(hooks) {
     return out;
   })();
   const GROUP_BY_ID = new Map(MENU_GROUPS.map((g) => [g.id, g]));
-
-  // 현상이 아닌 것(배경·조작·진입점). 지우지 않고 한 곳에 모은다.
-  const LOOSE_LAYERS = Object.entries(LAYER_PHENOMENON)
-    .filter((e) => !e[1].phenomenon)
-    .map((e) => ({ key: e[0], role: e[1].role, rec: LAYER_BY_KEY.get(e[0]) }))
-    .filter((x) => x.rec)
-    .map((x) => ({ key: x.key, role: x.role, s: x.rec.s, l: x.rec.l }));
 
   const layerOnState = (rec) => (hooks.getLayerState && hooks.getLayerState(rec.s.id, rec.l)) || {};
   // 묶음 색은 레지스트리가 정한다 — 전에는 '첫 항목이 속한 씬의 색'이라 목록 순서를
@@ -506,16 +484,10 @@ export function initShell(hooks) {
       + '</div>';
   };
 
-  /* 칩은 절 안에 붙는 보조 조작이다. 전에는 land·people 도메인 절에 붙어 있었는데
-     그 두 절이 없어졌다(§3.2 묶음으로 바뀌었다). 옮긴 곳:
-       지역 이동 칩 → '지구 표현 · 이동' 절. 자료가 아니라 카메라 조작이라 원래 거기가 맞다.
-       인구 국가 칩 → '생태 · 사람 · 여행' 절. people.population 이 사는 묶음이다. */
+  /* 칩은 절 안에 붙는 보조 조작이다. 남은 것은 인구 국가 칩 하나다 — '생태 · 사람 · 여행' 절.
+     지역 이동 칩은 '지구 표현 · 이동' 절과 함께 2026-09-20 에 뺐다(상단 검색이 같은 이동을 한다).
+     칩 클릭 처리(hooks.onRegion)는 남겨 두었다 — 다른 자리에 다시 붙일 때 바로 쓰인다. */
   const chipsFor = (gid) => {
-    if (gid === '__loose') {
-      return '<div class="mp-chips" role="group" aria-label="' + i18n.t('regionMove') + '">'
-        + REGION_CHIPS.map((r) => '<button class="mp-chip" data-region="' + r.id + '">' + i18n.region(r.id, r.ko) + '</button>').join('')
-        + '</div><div class="mp-chip-note">' + i18n.t('regionNote') + '</div>';
-    }
     if (gid === 'society' && POP_COUNTRIES.length) {
       const cname = (c) => (hooks.countryName ? hooks.countryName(c.iso3, c.nameKo) : c.nameKo);
       const loc = i18n.ko ? 'ko-KR' : 'en-US';
@@ -546,21 +518,14 @@ export function initShell(hooks) {
       + '</div></section>';
   };
 
-  // 배경·조작 — 현상이 아니다. 맨 아래 한 곳에 모아 둔다.
-  const looseSectionHtml = () => {
-    const shown = LOOSE_LAYERS.filter((rec) => {
-      const st = layerOnState(rec);
-      return (!activeOnly || st.on) && matchesMenu(menuQuery, [rec.l.name, rec.l.src, questionForLayer(rec.s.id, rec.l.id)]);
-    });
-    if (!shown.length) return '';
-    const hidden = !menuQuery && collapsedSections.has('__loose');
-    return '<section class="mp-sec" data-section="__loose" style="--sc:#8aa0b4">'
-      + '<h3 class="mp-title"><button data-collapse="__loose" aria-expanded="' + (hidden ? 'false' : 'true') + '">'
-      + groupIconHtml('__loose') + '<i></i>' + (i18n.ko ? '지구 표현 · 이동' : 'Globe view & controls') + '<em>' + shown.length + '</em></button></h3>'
-      + '<div ' + (hidden ? 'hidden' : '') + '>'
-      + (menuQuery || activeOnly ? '' : chipsFor('__loose'))
-      + shown.map((r) => layerRowHtml(r, false)).join('') + '</div></section>';
-  };
+  /* '지구 표현 · 이동' 절은 2026-09-20 에 없앴다 (PD: "이건 뭔지 모르겠어 메뉴에서 삭제").
+     그 절에 있던 9개의 행선지:
+       바탕 지도 3종(자연 지형·블루마블·오늘의 지구) → **설정(⚙)의 '지구 바탕 그림'** 으로 옮겼다.
+         자료 레이어가 아니라 지구 표면 재질이라 자료 메뉴에 있을 것이 아니었다(index.html #base-seg, main.js).
+       사건 피드·LAB 보고서·요청·내 위치 → 하단 탭(지금·리포트·내 지역)에 같은 문이 이미 있다.
+       전체 지구로·해역 초점 → 상단 '◀ 3D 지구로' 와 지도 클릭으로 같은 일을 한다.
+       지역 이동 칩(한반도·전 지구·…) → 상단 검색(⌕)이 나라·시군구·도시·공항을 찾아 같은 카메라 이동을 한다.
+     켜는 함수(setBaseStyle 등)는 하나도 지우지 않았다 — 손잡이만 옮겼다. */
 
   /* 씬 기반 메뉴 렌더러(sectionHtml)는 2026-09-13 에 지웠다.
      openPanel 이 현상 묶음으로 그리는데 이것만 씬으로 그려서 검색할 때마다 다른 메뉴가 나왔다.
@@ -748,7 +713,7 @@ export function initShell(hooks) {
       ${isReport ? '' : `<div class="mp-search"><label>${i18n.ko ? '메뉴·질문 검색':'Find a topic'}<input type="search" data-menu-search value="${safeText(menuQuery)}" placeholder="${i18n.ko ? '예: 파고, 무장애, 한국':'Search topics'}"></label>
       <label class="mp-active-only"><input type="checkbox" data-active-only ${activeOnly ? 'checked':''}>${i18n.ko ? '켜진 자료만':'Active only'}</label></div>`}
       <div class="mp-body">
-        ${isReport ? reportPanelHtml() : (groups.map(groupSectionHtml).join('') + (aeth ? '' : looseSectionHtml())) || `<p role="status">${i18n.ko ? '조건에 맞는 메뉴가 없습니다. 검색어 또는 필터를 바꿔 주세요.':'No matching topics. Change the search or filter.'}</p>`}
+        ${isReport ? reportPanelHtml() : groups.map(groupSectionHtml).join('') || `<p role="status">${i18n.ko ? '조건에 맞는 메뉴가 없습니다. 검색어 또는 필터를 바꿔 주세요.':'No matching topics. Change the search or filter.'}</p>`}
         ${isReport ? '' : `<div class="mp-foot">${i18n.t('mpFoot')}</div>`}
       </div>`;
     panel.classList.add('open');
@@ -814,7 +779,7 @@ export function initShell(hooks) {
     const aeth = openBrand === 'aetherus';
     const groups = aeth ? ['space'] : [...EARTHUS_MENU_GROUPS];
     // 꼬리말(.mp-foot)도 .mp-body 안에 있다 — 같이 그리지 않으면 검색하는 동안만 사라진다.
-    body.innerHTML = ((groups.map(groupSectionHtml).join('') + (aeth ? '' : looseSectionHtml()))
+    body.innerHTML = (groups.map(groupSectionHtml).join('')
       || `<p role="status">${i18n.ko?'조건에 맞는 메뉴가 없습니다. 검색어 또는 필터를 바꿔 주세요.':'No matching topics. Change the search or filter.'}</p>`)
       + `<div class="mp-foot">${i18n.t('mpFoot')}</div>`;
   });

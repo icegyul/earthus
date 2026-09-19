@@ -5906,6 +5906,30 @@ async function main() {
     });
   });
 
+  /* 지구 바탕 그림 — 2026-09-20. 전에는 메뉴 '지구 표현 · 이동' 절이 유일한 통로였는데
+     그 절을 없앴다(자료가 아니라 지구 표면 재질이다). 켜는 함수는 그대로 setBaseStyle 하나다 —
+     여기서 새로 그리지 않는다. 지금 무엇이 걸려 있는지는 window.__earthusBase.get() 이 안다. */
+  const baseSeg = document.getElementById('base-seg');
+  if (baseSeg) {
+    const markBaseBtn = (id) => {
+      baseSeg.querySelectorAll('button').forEach((b) => b.classList.toggle('on', b.dataset.base === id));
+    };
+    markBaseBtn(window.__earthusBase ? window.__earthusBase.get() : 'ne2');
+    baseSeg.querySelectorAll('button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        markBaseBtn(btn.dataset.base);
+        // 무엇이 바뀌었는지·출처가 어디인지 그대로 말한다(메뉴에서 누를 때와 같은 안내).
+        // ⚠️ 여기서 쓰는 것은 showNote 다. 메뉴 경로의 `note` 는 그 핸들러 안에서만 사는 지역 함수다.
+        setBaseStyle(btn.dataset.base, showNote).then(() => {
+          markBaseBtn(window.__earthusBase ? window.__earthusBase.get() : btn.dataset.base);
+        }).catch((e) => {
+          console.warn('[base-seg]', e);
+          markBaseBtn(window.__earthusBase ? window.__earthusBase.get() : 'ne2');
+        });
+      });
+    });
+  }
+
   // 시뮬레이션 패널 접기/펴기
   const simPanel = document.getElementById('sim');
   const simToggle = document.getElementById('sim-toggle');

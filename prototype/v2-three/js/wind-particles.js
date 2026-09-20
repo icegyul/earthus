@@ -717,12 +717,15 @@ export class WindParticles {
     this.geometry.instanceCount = sim.slots * n;
     this.buffer.clearUpdateRanges();
     this.slotAttr.clearUpdateRanges();
+    // ⚠️ 입자가 0 이면 올릴 것이 없다 — needsUpdate 만 켜고 범위를 안 주면 three 는 배열 **전체**를 올린다
+    //    (WebGLAttributes: updateRanges 가 비면 bufferSubData(0, 전체)). 입자 0 은 발열 SAFE 가 오는 순간이고,
+    //    그때 1.92 MB 를 올리는 것은 이 엔진이 가장 아무것도 하지 말아야 할 때 하는 일이다.
     if (used > 0) {
       this.buffer.addUpdateRange(0, used);
       this.slotAttr.addUpdateRange(0, sim.slots * n);
+      this.buffer.needsUpdate = true;
+      this.slotAttr.needsUpdate = true;
     }
-    this.buffer.needsUpdate = true;
-    this.slotAttr.needsUpdate = true;
     this._relayouts += 1;
     return used;
   }

@@ -562,8 +562,14 @@ test('그리기 — 물체 하나(드로우콜 1), 예산을 줄이면 그리는
   wind.setIntensity(2);
   assert.equal(drawn().drawnVertices, 600 * WIND_TRAIL_SEGMENTS * 4);
   wind.setBudget(0);                                    // 발열 SAFE — 입자 0
+  wind.buffer.clearUpdateRanges();
+  const versionBefore = wind.buffer.version;
   assert.equal(drawn().drawnVertices, 0);
   assert.equal(wind.object.visible, false);
+  // 입자 0 이 되는 프레임에 아무것도 올리지 않는다 — 범위 없이 needsUpdate 만 켜면 three 는 버퍼 전체를 올린다.
+  assert.equal(wind.buffer.version, versionBefore);
+  assert.equal(wind.buffer.updateRanges.length, 0);
+  assert.equal(wind.stats().uploadBytes, 0);
   wind.setBudget(3000); wind.setIntensity(3);
   assert.equal(drawn().particles, 2817);
   assert.equal(wind.gpu, gpu);

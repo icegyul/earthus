@@ -261,6 +261,13 @@ test('카드가 판을 말한다 — 구운 뒤와 못 구운 때의 문장이 �
   const waiting = floodCardInner({ ...base, reach: 'pending' });
   assert.match(waiting, /바다와의 연결은 아직 가리지 않았습니다/);
   assert.match(waiting, /함께 칠해집니다/, '아직 가리지 않는다는 사실을 숨기지 않는다');
+  // '아직' 은 기다리면 된다는 뜻이다 — 영영 못 굽는 세션에 그 말을 쓰면 거짓이 된다.
+  for (const st of ['failed', 'noTerrain', 'noSampler']) {
+    const dead = floodCardInner({ ...base, reach: st });
+    assert.match(dead, /바다와의 연결을 가리지 못했습니다/, st);
+    assert.doesNotMatch(dead, /아직 가리지 않았습니다/, `${st} 는 기다려도 오지 않는다`);
+    assert.match(dead, /함께 칠해져 있습니다/, st);
+  }
   // 카드는 판이 든 숫자를 적는다 — 상수를 두 번 적지 않는다.
   assert.match(floodCardInner({ ...base, reach: 'ready', reachInfo: { cellKm: 222, grow: 1 } }), /약 222 km 격자/);
 });

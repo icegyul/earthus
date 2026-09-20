@@ -105,7 +105,8 @@ import { FLOOD_REACH_GROW, FLOOD_REACH_RES, buildOceanReachAsync, reachAt, reach
 // 숫자 원판 — 나라/관측소 두 단계, 메도이드 자리, 솎기. 근거는 저 파일 머리말에 있다.
 import {
   SLR_LOD, SLR_MIN_OPACITY, SLR_PLATE_PX, SLR_PLATE_RIM, SLR_PLATE_SCALE, SLR_PLATE_SLOP_PX,
-  SLR_SEP_FRAC, SlrPlates, clipName, countryGroups, countrySummary, plateBoxPx, plateCapOf, plateInkFor, plateOnScreen,
+  SLR_LONG_MAXCHARS, SLR_SEP_FRAC, SlrPlates, clipName, countryGroups, countrySummary, isCollidedName,
+  plateBoxPx, plateCapOf, plateInkFor, plateInsetOf, plateOnScreen,
   plateOpacity, plateRank, plateText, shortCountryNames, spreadPx, splitDecision, thinPlates,
 } from './slr-plates.js?v=1';
 
@@ -1198,12 +1199,18 @@ export function createFloodOverlay(doc = {}, deps = {}) {
     //       후보로 들어가 차례를 앞지르고 상한을 먹었다 — 폰은 화면이 좁아 투영된 반구의 아주 일부만 담는다.
     //       그래서 **이번 화면에 그릴 수 없는 것은 후보가 아니다**(솎은 것으로도 세지 않는다 — 겹친 적이 없다).
     let offScreen = 0;
+    /* ⚠️ 화면 밖만 빼는 것으로는 모자랐다(2026-09-21 폰 실측, 위 고침 **뒤에** 드러난 것).
+       원판이 서로 안 겹치게 되자 이번에는 **화면 부품 뒤**로 들어갔다: 375×812 에서 상단 막대(56~102) ·
+       범례(108~197) · 하단 알약(600~654) · 출처 독(667~746) · 타임라인(762~802)이 화면의 절반을 덮는데
+       솎기는 그것을 몰랐다. 값을 읽으라고 그린 숫자가 UI 뒤에 숨거나 가장자리에서 잘렸다.
+       부품의 **실제 상자**를 재서 여백으로 넘긴다 — 수를 박으면 부품이 바뀌는 날 어긋난다. */
+    const inset = plateInsetOf(chromeBoxes(), view.w, view.h);
     for (let i = 0; i < stations.length; i += 1) {
       const wx = stationPos[i * 3]; const wy = stationPos[i * 3 + 1]; const wz = stationPos[i * 3 + 2];
       visible[i] = 0;
       if (plateOpacity(wx, wy, wz, cx, cy, cz) < SLR_MIN_OPACITY) continue;
       if (!projectPx(e, wx, wy, wz, view.w, view.h, px2)) continue;
-      if (!plateOnScreen(px2[0], px2[1], view.w, view.h, platePx)) { offScreen += 1; continue; }
+      if (!plateOnScreen(px2[0], px2[1], view.w, view.h, platePx, inset)) { offScreen += 1; continue; }
       projected[i * 2] = px2[0];
       projected[i * 2 + 1] = px2[1];
       visible[i] = 1;
@@ -1220,7 +1227,9 @@ export function createFloodOverlay(doc = {}, deps = {}) {
     const stationName = (i) => clipName(stations[i].name || String(stations[i].id));
     const countryName = (g) => (g.n === 1
       ? `${clipName(stations[g.idx[0]].name || g.country)} · 1곳`
-      : `${clipName(shortName.get(g.country) || g.country)} · ${g.n}곳`);
+      // 줄였더니 부딪혀 원래 이름을 쓰는 나라(남·북한)는 더 길게 — 16자로 자르면 'Korea, Republic…' 이 된다.
+      : `${clipName(shortName.get(g.country) || g.country,
+        isCollidedName(g.country, shortName.get(g.country)) ? SLR_LONG_MAXCHARS : undefined)} · ${g.n}곳`);
     const push = (c) => { const b = plateBoxPx(c.name, platePx); c.w = b.w; c.h = b.h; cands.push(c); };
     for (const g of groups) {
       let seen = 0;
@@ -1450,6 +1459,22 @@ export function createFloodOverlay(doc = {}, deps = {}) {
   let shown = false;
   recompute();
   waitForTerrain();     // 운영에서는 지구가 이미 서 있어 첫 판에서 바로 굽기 시작한다
+
+  /** 화면에 떠 있는 부품들의 상자 — 원판을 그 뒤에 세우지 않으려고 잰다(slr-plates.plateInsetOf).
+   *  ⚠️ 자리를 **읽기만** 한다. 부품을 옮기거나 숨기지 않는다 — 이 레이어가 남의 화면을 건드리면 안 된다.
+   *  id·클래스를 여기 적는 대신 부품이 스스로 표시하게 하는 편이 낫지만, 그러려면 남의 파일을 고쳐야 한다. */
+  function chromeBoxes() {
+    const d = deps.getDocument ? deps.getDocument() : (typeof document !== 'undefined' ? document : null);
+    if (!d || !d.querySelector) return [];
+    const out = [];
+    for (const sel of ['#chrome', '#field-legend', '#hud', '#timestrip', '#bottom-nav']) {
+      const el = d.querySelector(sel);
+      if (!el || !el.getBoundingClientRect) continue;
+      const r = el.getBoundingClientRect();
+      if (r.width > 0 && r.height > 0) out.push({ x: r.left, y: r.top, w: r.width, h: r.height });
+    }
+    return out;
+  }
 
   let lastInner = null;
   /** 떠 있는 카드를 제자리에서 고치고, 그 **원본 문자열**도 같이 바꾼다(패널이 다시 그려질 때 옛 글이 되살아나지 않게). */

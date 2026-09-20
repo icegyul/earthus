@@ -145,3 +145,54 @@ test('⑤ 수집기가 색인에 bytes 를 싣고, 그 수는 **받는 양**(압
   assert.match(put, /return len\(body\)/, '_put 이 압축 전 크기를 돌려주면 고지가 6배 부풀려진다');
   assert.doesNotMatch(put, /\n    return raw\b/, '옛 반환(raw)이 남아 있다');
 });
+
+/* ── ⑥ 원판이 화면 부품 뒤로 숨지 않는다 · 제 나라 이름이 잘리지 않는다 ─────────
+   원판끼리 안 겹치게 고치고 나니 이번에는 **UI 뒤**로 들어갔다(폰 실측 375×812:
+   상단 막대 56~102 · 범례 108~197 · 하단 알약 600~654 · 출처 독 667~746 · 타임라인 762~802
+   — 화면의 절반이다). 값을 읽으라고 그린 숫자가 가려지면 그 레이어는 제 일을 못 한다. */
+test('⑥ 화면 부품이 먹는 띠에는 원판을 세우지 않는다', async () => {
+  const { plateInsetOf, plateOnScreen, SLR_PLATE_PX } = await import('../../prototype/v2-three/js/slr-plates.js');
+  const W = 375; const H = 812;
+  const boxes = [
+    { x: 8, y: 56, w: 300, h: 46 },     // 상단 막대(좁다 → 좌/우로 친다)
+    { x: 8, y: 108, w: 359, h: 89 },    // 범례(넓다 → 위 띠)
+    { x: 8, y: 762, w: 351, h: 40 },    // 타임라인(넓다 → 아래 띠)
+  ];
+  const ins = plateInsetOf(boxes, W, H);
+  assert.ok(ins.top >= 197, `위 띠가 ${ins.top} — 범례(197)를 안 피한다`);
+  assert.ok(ins.bottom >= H - 762, `아래 띠가 ${ins.bottom} — 타임라인을 안 피한다`);
+
+  assert.equal(plateOnScreen(180, 150, W, H, SLR_PLATE_PX, ins), false, '범례 뒤에 세웠다');
+  assert.equal(plateOnScreen(180, 790, W, H, SLR_PLATE_PX, ins), false, '타임라인 뒤에 세웠다');
+  assert.equal(plateOnScreen(180, 400, W, H, SLR_PLATE_PX, ins), true, '멀쩡한 자리를 막았다');
+  // 여백을 안 주면 예전과 똑같이 움직인다 — 다른 화면을 깨지 않는다.
+  assert.equal(plateOnScreen(180, 150, W, H, SLR_PLATE_PX), true);
+});
+
+test('⑥ 부품이 화면을 다 먹으면 여백을 포기한다 — 아무것도 못 세우느니 겹치는 편이 낫다', async () => {
+  const { plateInsetOf } = await import('../../prototype/v2-three/js/slr-plates.js');
+  const ins = plateInsetOf([{ x: 0, y: 0, w: 375, h: 300 }, { x: 0, y: 500, w: 375, h: 312 }], 375, 812);
+  assert.equal(ins.top, 0, '위아래가 화면의 60% 를 넘는데도 띠를 그대로 뒀다');
+  assert.equal(ins.bottom, 0);
+});
+
+test('⑥ 줄였더니 부딪히는 나라 이름은 더 길게 — 제 나라가 잘린 채 보이지 않는다', async () => {
+  const { shortCountryNames, isCollidedName, clipName, SLR_LONG_MAXCHARS, SLR_PLATE_NAME } =
+    await import('../../prototype/v2-three/js/slr-plates.js');
+  const ar6 = JSON.parse(readFileSync(here('../../prototype/v2-three/sealevel/ar6.json'), 'utf8'));
+  const names = [...new Set(ar6.items.map((i) => i.country || ''))];
+  const short = shortCountryNames(names);
+
+  const collided = names.filter((n) => isCollidedName(n, short.get(n)));
+  assert.ok(collided.length >= 2, '부딪히는 나라를 못 찾았다 — 시험의 전제가 깨졌다');
+  const rok = collided.find((n) => /Republic Of$/.test(n) && n.startsWith('Korea'));
+  assert.ok(rok, '운영 자료에 대한민국이 없다');
+
+  // 기본 글자 수로는 잘린다(그래서 고쳤다) · 늘린 글자 수로는 온전하다
+  assert.ok(clipName(rok).endsWith('…'), '전제가 깨졌다 — 기본 글자 수로도 안 잘린다');
+  assert.equal(clipName(rok, SLR_LONG_MAXCHARS), rok, '늘려도 제 나라 이름이 잘린다');
+  assert.ok(SLR_LONG_MAXCHARS > SLR_PLATE_NAME.maxChars);
+  // 두 나라가 **같은 이름이 되지는 않는다** — 그러느니 긴 이름이 낫다는 원래 규칙은 그대로다.
+  const shown = collided.map((n) => clipName(n, SLR_LONG_MAXCHARS));
+  assert.equal(new Set(shown).size, shown.length, '늘렸더니 두 나라가 같은 이름이 됐다');
+});

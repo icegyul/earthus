@@ -133,6 +133,17 @@ export function shortCountryNames(names) {
   return out;
 }
 
+/** 줄였더니 부딪혀 **원래 이름을 그대로 쓰는** 나라인가. 그런 이름은 더 길게 허락한다(SLR_LONG_MAXCHARS). */
+export const isCollidedName = (full, short) => String(full) === String(short);
+
+/**
+ * 부딪힌 이름에 주는 글자 수. 기본 16 자로 자르면 `Korea, Republic Of`(18자)가
+ * **`Korea, Republic…`** 이 돼 한국 사용자가 제 나라 이름을 잘린 채로 본다(2026-09-21 폰 실측).
+ * 부딪히는 나라는 운영 자료 113곳 가운데 **둘뿐**이다(남·북한) — 그 둘만 넉넉히 준다.
+ * 이름표가 넓어지는 만큼은 `plateBoxPx` 가 재서 솎기에 반영하므로 겹치지 않는다.
+ */
+export const SLR_LONG_MAXCHARS = 24;
+
 /** 글자가 길면 잘라 말줄임 — 원판의 이름줄 폭을 묶어 둔다(텍스처가 끝없이 넓어지지 않게). */
 export const clipName = (s, max = SLR_PLATE_NAME.maxChars) => {
   const t = String(s ?? '');
@@ -230,12 +241,44 @@ export const plateDiscOffsetPx = (platePx = SLR_PLATE_PX) => -(platePx * SLR_PLA
  * ⚠️ 2026-09-21 폰 실측 ②: 예전에는 지평선만 봤다. 그래서 375×812 화면에서 x=1785 · y=2011 처럼
  *    **화면 밖으로 투영된 후보**가 차례를 앞질러 상한을 다 먹고, 정작 화면 한가운데 한국 연안이 솎여 나갔다.
  */
-export const plateOnScreen = (x, y, viewW, viewH, platePx = SLR_PLATE_PX) => {
+export const plateOnScreen = (x, y, viewW, viewH, platePx = SLR_PLATE_PX, inset = null) => {
   if (!Number.isFinite(x) || !Number.isFinite(y) || !(viewW > 0) || !(viewH > 0)) return false;
   const r = platePx / 2;
   const dy = y + plateDiscOffsetPx(platePx);
-  return x >= r && x <= viewW - r && dy >= r && dy <= viewH - r;
+  const i = inset || SLR_NO_INSET;
+  return x >= r + i.left && x <= viewW - r - i.right
+    && dy >= r + i.top && dy <= viewH - r - i.bottom;
 };
+
+/** 여백 없음 — 인수를 안 주면 이것이다(예전과 같은 동작). */
+export const SLR_NO_INSET = Object.freeze({ top: 0, right: 0, bottom: 0, left: 0 });
+
+/**
+ * 화면 네 변에서 **원판을 세우면 안 되는 띠**. 그 위에 화면 부품이 떠 있기 때문이다.
+ * ⚠️ 2026-09-21 폰 실측 — 원판을 서로 안 겹치게 고치고 나니 이번에는 **화면 부품 뒤**로 들어갔다.
+ *    375×812 에서 부품이 먹는 자리: 상단 막대 y 56~102 · 범례 108~197 · 하단 알약 600~654 ·
+ *    출처 독 667~746 · 타임라인 762~802. 남는 띠는 y 202~596 뿐인데 솎기는 그것을 몰랐다.
+ *    그래서 값이 UI 뒤에 숨거나 가장자리에서 잘렸다 — 읽으라고 그린 숫자를 읽을 수 없었다.
+ * 부품의 실제 상자를 재서 넘긴다(수를 여기 박지 않는다 — 부품이 바뀌면 같이 움직여야 한다).
+ */
+export function plateInsetOf(boxes, viewW, viewH) {
+  const out = { top: 0, right: 0, bottom: 0, left: 0 };
+  if (!(viewW > 0) || !(viewH > 0)) return out;
+  for (const b of boxes || []) {
+    if (!b || !(b.w > 0) || !(b.h > 0)) continue;
+    // 화면을 가로로 가로지르는 부품(범례·타임라인)은 위/아래 띠로, 세로로 긴 것은 좌/우 띠로 친다.
+    const wide = b.w >= viewW * 0.5;
+    if (wide) {
+      if (b.y + b.h / 2 < viewH / 2) out.top = Math.max(out.top, b.y + b.h);
+      else out.bottom = Math.max(out.bottom, viewH - b.y);
+    } else if (b.x + b.w / 2 < viewW / 2) out.left = Math.max(out.left, b.x + b.w);
+    else out.right = Math.max(out.right, viewW - b.x);
+  }
+  // 화면의 절반을 넘게 먹으면 아무것도 못 세운다 — 그때는 여백을 포기하고 겹침을 받아들인다.
+  if (out.top + out.bottom > viewH * 0.6) { out.top = 0; out.bottom = 0; }
+  if (out.left + out.right > viewW * 0.6) { out.left = 0; out.right = 0; }
+  return out;
+}
 
 /**
  * 관측소 목록 → 나라 묶음.  → [{ country, idx: [관측소 차례], medoid: 관측소 차례, lat, lon }]

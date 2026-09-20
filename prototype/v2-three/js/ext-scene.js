@@ -83,13 +83,16 @@ export const WITHDRAWN = Object.freeze({
       title: '서핑 — 내린 화면',
       cant: '너울 방향 · 풍파 높이·주기 · 만조·간조 시각',
       why: '우리 해양 격자(ocean/marine*.json)에 그 칸이 없습니다.',
-      instead: '지구의 바다를 누르면 우리 해양 격자와 120km 안 부이 실측을 함께 읽어 줍니다 — 파고·너울·주기·수온·해류.',
+      /* ⚠️ 여기에 "몇 km 안 부이" 라고 적지 않는다. 그 거리는 point-readout.js 의 BUOY_KM 이고
+         이 파일과 따로 움직인다 — 한쪽만 바뀌면 카드가 거짓말을 한다(실제로 120 이라 적었다가
+         잡았다: 그건 내린 hobby-sea-common.js 쪽 값이고 지금 길은 100 이다). */
+      instead: '지구의 바다를 누르면 우리 해양 격자와 가까운 부이 실측을 함께 읽어 줍니다 — 파고·너울·주기·수온·해류.',
     }),
     en: Object.freeze({
       title: 'Surf — withdrawn',
       cant: 'swell direction, wind-wave height/period, high/low tide times',
       why: 'Our ocean grid (ocean/marine*.json) does not carry those columns.',
-      instead: 'Tap the sea on the globe: we read our ocean grid together with the nearest buoy within 120 km.',
+      instead: 'Tap the sea on the globe: we read our ocean grid together with the nearest buoy observation.',
     }),
   }),
   'hobby/fishing': Object.freeze({

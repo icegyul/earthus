@@ -22,6 +22,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 
 import { ExtScene, MODULES, V1_DENY, WITHDRAWN } from '../../prototype/v2-three/js/ext-scene.js';
+import { BUOY_KM } from '../../prototype/v2-three/js/point-readout.js';
 
 const EXT_DIR = new URL('../../prototype/v2-three/js/ext/', import.meta.url);
 const V1_DIR = new URL('../../prototype/js/', import.meta.url);
@@ -114,6 +115,19 @@ test('내린 키는 모듈 표에 있는 키다 — 오타로 잠그면 아무�
   }
 });
 
+test('내린 화면의 문장이 다른 파일의 상수를 글자로 베껴 쓰지 않는다', () => {
+  // 처음엔 서핑 카드에 '120km 안 부이' 라고 적었다. 그 120 은 **내린** hobby-sea-common.js 의 값이고,
+  // 지금 실제로 도는 길(point-readout.js)은 다른 수다. 한쪽만 바뀌면 카드가 거짓말을 한다.
+  assert.equal(typeof BUOY_KM, 'number', '살아 있는 길의 부이 반경 상수를 못 읽었다');
+  for (const [key, w] of Object.entries(WITHDRAWN)) {
+    for (const lang of ['ko', 'en']) {
+      const copy = Object.values(w[lang]).join(' ');
+      const hits = [...copy.matchAll(/\d+\s*(?:km|킬로)/gi)].map((m) => m[0]);
+      assert.deepEqual(hits, [], `${key}.${lang} 이 거리를 글자로 적었다(${hits.join(', ')}) — 상수가 사는 파일에서 따로 움직인다`);
+    }
+  }
+});
+
 test('내린 화면의 문장이 한국어·영어 둘 다 있고 빈 칸이 없다', () => {
   for (const [key, w] of Object.entries(WITHDRAWN)) {
     for (const lang of ['ko', 'en']) {
@@ -192,6 +206,19 @@ test('같은 항목을 다시 누르면 꺼진다 — 다른 화면과 같은 �
   assert.deepEqual(await ext.open(key), { on: false });
   assert.equal(ext.active, null);
   assert.equal(ext.card(), '');
+});
+
+test('내린 화면끼리 갈아타도 모듈은 하나도 안 받는다', async () => {
+  const keys = Object.keys(WITHDRAWN);
+  const ext = scene();
+  for (const key of keys) {
+    const st = await ext.open(key);
+    assert.deepEqual(st, { on: true }, `${key} 로 갈아탈 때 다른 답이 왔다`);
+    assert.equal(ext.active, key);
+    assert.equal(ext.card().includes(WITHDRAWN[key].host), true, `${key} 카드가 앞 화면 것으로 남아 있다`);
+  }
+  assert.equal(ext.modules.size, 0, '갈아타는 사이에 1.0 모듈이 하나라도 들어왔다');
+  assert.equal(ext.group.children.length, 0);
 });
 
 test('내린 화면에서는 카드 단추도 지구 클릭도 조용히 아무 일 없다', async () => {

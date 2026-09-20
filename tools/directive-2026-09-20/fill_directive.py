@@ -78,21 +78,21 @@ PLACEMENT = {
     "travel.today_pick": ("T Travel", "오늘 갈 곳", "PD"), "travel.place_catalog": ("T Travel", "목적별 장소", "PD"),
     "travel.place_sequence": ("T Travel", "장소 Inspector 의 '다음에 간 곳 Top 5'", "PD"),
     "travel.visitor_pressure": ("T Travel", "방문자", "PD"),
-    "weather.daily_extremes": ("11 Intelligence", "Now 탭 맨 위 '오늘의 극값' 카드", "REC"),
-    "land.snow_cover": ("03 강수", "'쌓인 눈(관측)' 칩 — IMS 수집기 복구가 선행", "REC"),
-    "weather.station_obs": ("01·02·03·07", "공통 'Show Stations' 토글 — 독립 메뉴 폐지", "REC"),
-    "ocean.coastal_inundation": ("05 해양", "해수면 상승 · 침수 보조 모드('재해'에서 옮김)", "REC"),
-    "hazards.crustal_motion": ("09 지형", "'Plates & Motion' 으로 합침", "REC"),
-    "land.crustal_motion": ("09 지형", "'Plates & Motion'", "REC"),
-    "space.orbital_debris": ("08 우주", "Satellites 의 'Debris' 칩 + 근접사건(거짓 문구 핫픽스는 P0)", "REC"),
-    "travel.flight": ("→ v1", "사실(FACT) 질문이고 v1 에 구현이 있다", "REC"),
-    "space.solar_system": ("→ v1", "지구를 대체하는 전체 화면 · 전용 슬라이더 — v2 셸에 안 맞는다", "REC"),
-    "space.photo": ("→ v1", "v1 cosmic3d 에 사진 아틀라스 진입점이 이미 있다", "REC"),
-    "space.galaxy": ("→ v1", "교육 콘텐츠 — v1", "REC"),
-    "people.news": ("상단 · 재해 Inspector", "'관련 보도' — 좌측 메뉴 밖. 분홍 막대 5개는 즉시 삭제(S)", "REC"),
-    "ocean.vessel_traffic": ("뺌", "그릴 자료가 없다(AIS 미연결) — 자료가 생기면 다시 연다", "REC"),
-    "travel.poi": ("뺌", "자료 없음 — 한국은 '목적별 장소'가 같은 질문에 답한다", "REC"),
-    "hazards.glacial_lake_flood": ("뺌(보류)", "수집기(glacial-lake-us) 배포 전 — 자료가 들어오면 06 재해로", "REC"),
+    "weather.daily_extremes": ("11 Intelligence", "Now 탭 맨 위 '오늘의 극값' 카드", "PD2"),
+    "land.snow_cover": ("03 강수", "'쌓인 눈(관측)' 칩 — IMS 수집기 복구가 선행", "PD2"),
+    "weather.station_obs": ("01·02·03·07", "공통 'Show Stations' 토글 — 독립 메뉴 폐지", "PD2"),
+    "ocean.coastal_inundation": ("05 해양", "해수면 상승 · 침수 보조 모드('재해'에서 옮김)", "PD2"),
+    "hazards.crustal_motion": ("09 지형", "'Plates & Motion' 으로 합침", "PD2"),
+    "land.crustal_motion": ("09 지형", "'Plates & Motion'", "PD2"),
+    "space.orbital_debris": ("08 우주", "Satellites 의 'Debris' 칩 + 근접사건(거짓 문구 핫픽스는 P0)", "PD2"),
+    "travel.flight": ("→ v1", "사실(FACT) 질문이고 v1 에 구현이 있다", "PD2"),
+    "space.solar_system": ("→ v1", "지구를 대체하는 전체 화면 · 전용 슬라이더 — v2 셸에 안 맞는다", "PD2"),
+    "space.photo": ("→ v1", "v1 cosmic3d 에 사진 아틀라스 진입점이 이미 있다", "PD2"),
+    "space.galaxy": ("→ v1", "교육 콘텐츠 — v1", "PD2"),
+    "people.news": ("상단 · 재해 Inspector", "'관련 보도' — 좌측 메뉴 밖. 분홍 막대 5개는 즉시 삭제(S)", "PD2"),
+    "ocean.vessel_traffic": ("뺌", "그릴 자료가 없다(AIS 미연결) — 자료가 생기면 다시 연다", "PD2"),
+    "travel.poi": ("뺌", "자료 없음 — 한국은 '목적별 장소'가 같은 질문에 답한다", "PD2"),
+    "hazards.glacial_lake_flood": ("뺌(보류)", "수집기(glacial-lake-us) 배포 전 — 자료가 들어오면 06 재해로", "PD2"),
 }
 
 
@@ -183,16 +183,17 @@ placed = [(i, PLACEMENT[i["phenomenonId"]]) for i in items if i["phenomenonId"] 
 noslot = [x for x in placed]                      # 아래 출력 문구용
 decide = [i for i in items if i["phenomenonId"] not in PLACEMENT and "PD 결정" in (i.get("after") or "")]
 cnt_pd = sum(1 for _, pl in placed if pl[2] == "PD")
+cnt_pd2 = sum(1 for _, pl in placed if pl[2] == "PD2")
 D.append("### 5-1. PD 정본의 9개 메뉴에 자리가 없던 %d현상 — 어디로 갔나" % len(placed))
 D.append("")
-D.append("**Life · Travel 은 PD 확정(2026-09-20 \"라이프 트래블은 메뉴에 넣어줘\") — %d개.** 나머지 %d개는 **제 추천이고 PD 판단 대기**다. 정해 주시면 그대로 간다." % (cnt_pd, len(placed) - cnt_pd))
+D.append("**전부 PD 확정이다.** Life · Travel %d개는 2026-09-20 \"라이프 트래블은 메뉴에 넣어줘\", 나머지 %d개는 같은 날 \"모두 진행해\"(추천안 전부 승인)." % (cnt_pd, cnt_pd2))
 D.append("")
 D.append("| 상태 | 메뉴 줄 | 새 자리 | 어떻게 |")
 D.append("|---|---|---|---|")
 for i, pl in sorted(placed, key=lambda x: (x[1][2] != "PD", x[1][0])):
-    D.append("| %s | %s | **%s** | %s |" % ("✅ PD 확정" if pl[2] == "PD" else "🟡 제 추천", cell(i["menuName"], 40), cell(pl[0]), cell(pl[1])))
+    D.append("| %s | %s | **%s** | %s |" % ("✅ PD 확정" if pl[2] == "PD" else "✅ PD 승인(추천안)", cell(i["menuName"], 40), cell(pl[0]), cell(pl[1])))
 D.append("")
-D.append("⚠️ 취미·야외 활동 5줄(해변과 낚시터 · 서핑 · 낚시 · 패러글라이딩 · 산 정상 날씨)은 분석에서 물리 메뉴(해양 · 바람 · 기온)의 활동 오버레이로 들어갔다. Travel 이 메뉴가 된 지금, **Travel 에 '야외 활동' 칩을 두고 누르면 해당 물리 메뉴의 오버레이를 여는** 입구를 하나 더 둘 수 있다(자료와 그림은 한 곳에만 둔다). PD 판단.")
+D.append("⚠️ 취미·야외 활동 5줄(해변과 낚시터 · 서핑 · 낚시 · 패러글라이딩 · 산 정상 날씨)은 분석에서 물리 메뉴(해양 · 바람 · 기온)의 활동 오버레이로 들어갔다. Travel 이 메뉴가 된 지금, **Travel 에 '야외 활동' 칩을 두고 누르면 해당 물리 메뉴의 오버레이를 여는** 입구를 하나 더 둔다(자료와 그림은 한 곳에만 둔다) — 2026-09-20 \"모두 진행해\"로 승인.")
 D.append("")
 D.append("### 5-1b. 자리는 있지만 **세부를 정해 주셔야 하는** 현상 (%d)" % len(decide))
 D.append("")

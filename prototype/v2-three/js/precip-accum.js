@@ -66,8 +66,17 @@ export const ACCUM_CHANNEL = Object.freeze({
 });
 const ACCUM_CHANNELS = Object.freeze([ACCUM_CHANNEL]);
 
-/** 파생 장을 쥐고 있는 상한(바이트). 한 장은 GPU RGBA 1.04 MB + CPU 사본 0.26 MB — 여덟 장이면 재생 중 되굽지 않는다. */
+/**
+ * 파생 장을 쥐고 있는 상한(바이트). 한 장은 GPU RGBA 1.04 MB + CPU 사본 0.26 MB — 데스크톱은 여덟 장이면
+ * 재생 중 되굽지 않는다.
+ * ⚠️ 기기를 가려야 한다. 원 프레임 저장소는 폰 32 MB · 데스크톱 128 MB 로 가르는데(gfs-frames.js budgetFor),
+ *    파생 캐시가 기기와 무관하게 12 MB 를 쓰면 폰이 파생 장만 아홉 장(GPU 9.4 MB)을 더 쥔다 — 폰 상한을
+ *    따로 정해 둔 까닭과 어긋난다. 여기서는 세 장치(약 3.9 MB)까지만 쥔다: 재생 중 한 걸음 앞뒤를 덮는 수다.
+ */
 export const ACCUM_CACHE_BYTES = 12 * 1024 * 1024;
+export const ACCUM_CACHE_BYTES_PHONE = 4 * 1024 * 1024;
+/** 기기별 파생 캐시 상한(순수) — 저장소를 만드는 자리와 시험이 같은 수를 본다. */
+export const accumCacheBytes = (isPhone) => (isPhone ? ACCUM_CACHE_BYTES_PHONE : ACCUM_CACHE_BYTES);
 
 const HOUR_MS = 3.6e6;
 
@@ -610,6 +619,7 @@ function storeFor(layer, hours) {
     store = createAccumFrames(layer.baseFrames, {
       hours, fieldId: layer.baseDesc.fieldId, sourceId: ACCUM_SOURCE,
       THREE: layer.deps.THREE || null,                        // 안 주면 저장소가 제 THREE 를 쓴다
+      maxBytes: accumCacheBytes(!!layer.deps.isPhone),        // 원 프레임 저장소가 기기를 가르는 것과 같은 규칙
     });
     layer._accumStores.set(hours, store);
   }

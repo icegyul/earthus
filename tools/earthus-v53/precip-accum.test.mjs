@@ -11,7 +11,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  ACCUM_CHANNEL, ACCUM_KEYS, accumAvailability, accumCardState, accumDescriptorOf, accumStatusText,
+  ACCUM_CACHE_BYTES, ACCUM_CACHE_BYTES_PHONE, ACCUM_CHANNEL, ACCUM_KEYS,
+  accumAvailability, accumCacheBytes, accumCardState, accumDescriptorOf, accumStatusText,
   coverageOf, createAccumFrames, encodeAccumBytes, planAccumulation, sumAccumulation,
 } from '../../prototype/v2-three/js/precip-accum.js';
 import { FIELD_DESCRIPTORS, FieldLayer } from '../../prototype/v2-three/js/field-layer.js';
@@ -422,6 +423,27 @@ test('파생 장 — 셰이더가 읽는 값 텍스처 한 장이고 flipY 가 �
   assert.throws(() => store.framesFor('apcp'), /모르는 필드/, '이 저장소는 제 필드 하나만 대답한다');
   assert.equal(store.framesFor('precip')[0].h, 3, 'f000 에는 누적이 없다 — 목록에도 없다');
   store.dispose();
+});
+
+test('파생 캐시는 기기를 가른다 — 폰이 파생 장만 아홉 장을 쥐지 않는다', async () => {
+  // 원 프레임 저장소가 폰 32 MB · 데스크톱 128 MB 로 가르는데(gfs-frames budgetFor) 파생 캐시만 기기와
+  // 무관하면 폰 상한을 따로 정해 둔 까닭이 없어진다. 수는 상수에서 셈한다.
+  assert.ok(ACCUM_CACHE_BYTES_PHONE < ACCUM_CACHE_BYTES, '폰 상한이 데스크톱 상한보다 작다');
+  assert.equal(accumCacheBytes(true), ACCUM_CACHE_BYTES_PHONE);
+  assert.equal(accumCacheBytes(false), ACCUM_CACHE_BYTES);
+  // 한 장의 무게(GPU RGBA + CPU 사본)로 세어 폰이 쥐는 장 수가 데스크톱보다 적어야 한다.
+  const perFrame = NI * NJ * 4 + NI * NJ;
+  assert.ok(Math.floor(ACCUM_CACHE_BYTES_PHONE / perFrame) < Math.floor(ACCUM_CACHE_BYTES / perFrame));
+
+  for (const isPhone of [true, false]) {
+    const { layer } = rig();
+    layer.deps.isPhone = isPhone;
+    await layer.on();
+    await chip(layer, '24');
+    const store = layer._accumStores.get(24);
+    assert.equal(store.stats().maxBytes, accumCacheBytes(isPhone), `isPhone=${isPhone} 저장소 상한`);
+    layer.off();
+  }
 });
 
 test('누적 descriptor — 레이어 id 와 필드 id 는 그대로고 눈금표·제목·닫는 줄만 바뀐다', () => {

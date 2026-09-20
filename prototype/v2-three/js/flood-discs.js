@@ -55,8 +55,14 @@ export const FLOOD_DISC_PX = 26;
 /** 한 화면에 놓을 원반의 최대 개수. 폰은 좁아 더 적게. */
 export const FLOOD_DISC_MAX_DESKTOP = 18;
 export const FLOOD_DISC_MAX_PHONE = 9;
-/** 원반을 누른 것으로 볼 여유(화면 px). */
-export const FLOOD_PICK_SLOP_PX = 18;
+/** 원반 바깥으로 얼마까지 눌러도 그 원반으로 볼까(화면 px). 판 자체의 크기에 **더하는** 여유다 —
+ *  판은 원반 + 이름이라 가로로 길다. 원 하나로 판정하면 이름 쪽을 눌렀을 때 빗나간다. */
+export const FLOOD_PICK_SLOP_PX = 6;
+/** 다시 솎기 전에 원반이 화면에서 이만큼은 움직여야 한다(화면 px).
+ *  ⚠️ 버킷 격자는 화면에 고정돼 있다 — 지구가 돌면 겹치지도 않는 두 원반이 같은 버킷에 들어가는 순간
+ *  하나가 떨어진다. obs-labels.js(OBS_RECULL_PX)가 같은 이유로 같은 가드를 둔다:
+ *  자동 회전만으로 라벨이 깜빡이는 것을 실측했다(120초에 등장 67 · 퇴장 80회). */
+export const FLOOD_RECULL_PX = 20;
 /** 이 크기를 넘는 시군구는 누르기 전에 용량을 알려 준다(실측: 고흥군 33 MB · S3 는 gzip 을 주지 않는다). */
 export const FLOOD_HEAVY_BYTES = 8 * 1024 * 1024;
 /** 시군구 하나를 받는 데 주는 시간. 33 MB 를 이동통신망에서 받는 데 30초는 모자란다(실측 근거는 live-layers.js). */
@@ -139,11 +145,22 @@ export function floodLegendHtml(specs, ramp) {
 }
 
 /** 숨긴 곳이 있으면 그 사실을 말하는 한 줄. 없으면 빈 글자.
- *  숫자를 박지 않는다 — 지금 화면에 몇 개가 떠 있는지를 받아서 적는다. */
+ *  숫자를 박지 않는다 — 지금 화면에 몇 개가 떠 있는지를 받아서 적는다.
+ *  ⚠️ **그림이 한 번이라도 돈 뒤에만** 부른다. 레이어를 세우는 순간에는 아직 0 이라
+ *     "0곳만 붙어 있습니다"라는 거짓말이 카드에 굳는다(그 자리에는 floodThinRuleNote 를 쓴다). */
 export function floodHiddenNote(shown, total) {
   const n = Math.max(0, (total || 0) - (shown || 0));
   if (!n) return '';
   return `지금 화면에는 ${shown}곳만 이름이 붙어 있습니다 — 겹치는 ${n}곳은 가렸습니다. 한국 쪽으로 확대하면 나머지가 나타납니다.`;
+}
+
+/** 솎는 **규칙**. 아직 한 번도 안 그린 카드(레이어 카드)는 지금 개수를 모른다 — 규칙을 적는다.
+ *  상한은 상수에서 읽는다(여기에 숫자를 적지 않는다). */
+export function floodThinRuleNote(total) {
+  const n = Number.isFinite(total) ? total : 0;
+  return `연안 시군구 ${n}곳 가운데, 겹치는 원반은 가립니다`
+    + `(한 화면에 폰 ${FLOOD_DISC_MAX_PHONE}곳 · 큰 화면 ${FLOOD_DISC_MAX_DESKTOP}곳까지). `
+    + `깊은 곳이 먼저 남고, 한국 쪽으로 확대하면 나머지가 나타납니다.`;
 }
 
 /** 내려받을 용량을 미리 말한다(실측 크기가 있을 때만). */
@@ -193,6 +210,12 @@ export function createFloodDiscs({
   const px = new Float32Array(list.length);
   const py = new Float32Array(list.length);
   const onScreen = new Uint8Array(list.length);
+  // 지난번에 솎을 때의 화면 자리 — 이만큼도 안 움직였으면 다시 솎지 않는다(깜빡임 가드).
+  const lastX = new Float32Array(list.length);
+  const lastY = new Float32Array(list.length);
+  let haveLast = false;
+  let lastW = 0;
+  let lastH = 0;
   let shownCount = 0;
   // 지금 면이 떠 있는 시군구. 화면은 그 면이 **어디 것인지** 계속 말해야 한다 —
   // 카드는 다음 클릭에 덮이지만 지구 위 이름표는 안 덮인다. 그래서 이것만은 솎아 내지 않는다.
@@ -225,17 +248,29 @@ export function createFloodDiscs({
     getViewport(view);
     if (!(view.w > 0) || !(view.h > 0)) return;
     camera.updateMatrixWorld();
+    // ⚠️ 판의 자리는 matrixWorld 에서 읽는다. 그런데 이 tick 은 **그리기 전에** 불린다 —
+    //    렌더러가 장면의 행렬을 갱신하기 전이라, 갓 세운 원반의 matrixWorld 는 아직 단위행렬이다.
+    //    그대로 읽으면 전부 (0,0,0) 이 되고 지평선 판정에서 모조리 떨어져 **하나도 안 뜬다**(시험이 잡았다).
+    //    뉴스 네모칸은 onBeforeRender(그리는 중)라서 이 문제가 없었다.
+    group.updateMatrixWorld(true);
     const e = camera.projectionMatrix.clone().multiply(camera.matrixWorldInverse).elements;
     _cp.setFromMatrixPosition(camera.matrixWorld);
     const cand = [];
+    const facing = new Uint8Array(sprites.length);
+    let moved = view.w !== lastW || view.h !== lastH;   // 화면 크기가 바뀌면 버킷 격자가 통째로 달라진다
     for (let i = 0; i < sprites.length; i += 1) {
       const spr = sprites[i];
       _wp.setFromMatrixPosition(spr.matrixWorld);
       const alpha = horizonOpacity(_wp, _cp);
-      onScreen[i] = 0;
-      if (alpha <= 0.02) { spr.visible = false; continue; }   // 지구 뒤편 — 솎기 후보도 아니다
-      if (!projectPx(e, _wp.x, _wp.y, _wp.z, view.w, view.h, _p)) { spr.visible = false; continue; }
+      if (alpha <= 0.02 || !projectPx(e, _wp.x, _wp.y, _wp.z, view.w, view.h, _p)) {
+        // 지구 뒤편 — 솎기 후보도 아니다. 이번에 사라진 것이 있으면 다시 솎아야 한다.
+        if (onScreen[i]) moved = true;
+        onScreen[i] = 0;
+        spr.visible = false;
+        continue;
+      }
       px[i] = _p[0]; py[i] = _p[1];
+      facing[i] = 1;
       spr.material.opacity = alpha;
       // 자리 다툼의 순서: 깊은 곳이 먼저(specs 가 이미 그 순서다). 같은 깊이면 앞에 온 쪽.
       // 면이 떠 있는 시군구는 −1 — 무엇보다 먼저 자리를 갖는다.
@@ -243,8 +278,17 @@ export function createFloodDiscs({
       cand.push({ x: _p[0], y: _p[1], key: sel ? -1 : i, _i: i });
       spr.scale.setX((spr.userData.baseAspect) * FLOOD_DISC_SCALE * (sel ? 1.12 : 1));
       spr.scale.setY(FLOOD_DISC_SCALE * (sel ? 1.12 : 1));
-      spr.visible = false;                                    // 일단 끄고, 뽑힌 것만 켠다
+      if (!moved && (Math.abs(_p[0] - lastX[i]) > FLOOD_RECULL_PX || Math.abs(_p[1] - lastY[i]) > FLOOD_RECULL_PX)) {
+        moved = true;
+      }
     }
+    // 아무 원반도 문턱만큼 안 움직였으면 지난번에 뽑은 것을 그대로 쓴다 —
+    // 버킷 격자는 화면에 고정돼 있어, 다시 솎을 때마다 겹치지도 않는 이름표가 깜빡인다(obs-labels 의 교훈).
+    if (!moved && haveLast) {
+      for (let i = 0; i < sprites.length; i += 1) sprites[i].visible = onScreen[i] === 1;
+      return;
+    }
+    for (const c of cand) sprites[c._i].visible = false;       // 일단 끄고, 뽑힌 것만 켠다
     const max = isPhone() ? FLOOD_DISC_MAX_PHONE : FLOOD_DISC_MAX_DESKTOP;
     const cellW = FLOOD_DISC_PX * 3.4;      // 원반 + 이름의 실제 폭에 맞춘 버킷(글자가 길어 가로로 넓다)
     const cellH = FLOOD_DISC_PX * 1.5;
@@ -253,6 +297,7 @@ export function createFloodDiscs({
       cell: { w: cellW, h: cellH },
       box: { w: cellW * 0.92, h: cellH * 0.9 },
     });
+    onScreen.fill(0);
     shownCount = 0;
     for (const k of got.picked) {
       const i = cand[k]._i;
@@ -269,19 +314,30 @@ export function createFloodDiscs({
         shownCount += 1;
       }
     }
+    for (let i = 0; i < sprites.length; i += 1) { lastX[i] = facing[i] ? px[i] : NaN; lastY[i] = facing[i] ? py[i] : NaN; }
+    lastW = view.w; lastH = view.h; haveLast = true;
   }
 
-  /** 화면 좌표로 원반 하나를 잡는다. 지금 **떠 있는** 것만 잡힌다 — 안 보이는 것을 누를 수는 없다. */
+  /** 화면 좌표로 원반 하나를 잡는다. 지금 **떠 있는** 것만 잡힌다 — 안 보이는 것을 누를 수는 없다.
+   *  ⚠️ 원 하나로 판정하지 않는다. 판은 '원반 + 시군구 이름'이라 가로로 길다(고흥군이면 100px 넘는다) —
+   *     원으로 재면 이름 쪽을 누른 사람이 빗나간다. 판 자체의 네모에 여유를 더해 잰다. */
   function pick({ x, y } = {}) {
     if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+    if (!(lastH > 0)) return null;                    // 아직 한 번도 안 그렸다 — 판의 크기를 모른다
+    const halfH = (FLOOD_DISC_SCALE * lastH) / 2;     // sizeAttenuation:false → 화면 높이 대비 비율이 곧 CSS px
     let best = null;
-    let bestD = FLOOD_PICK_SLOP_PX * FLOOD_PICK_SLOP_PX;
+    let bestD = Infinity;
     for (let i = 0; i < sprites.length; i += 1) {
       if (!onScreen[i] || !sprites[i].visible) continue;
-      const dx = px[i] - x;
-      const dy = py[i] - y;
-      const d = dx * dx + dy * dy;
-      if (d <= bestD) { bestD = d; best = list[i]; }
+      const sel = selectedCode != null && list[i].sggCd === selectedCode;
+      const hh = halfH * (sel ? 1.12 : 1);
+      const hw = hh * sprites[i].userData.baseAspect;
+      const dx = Math.abs(px[i] - x);
+      const dy = Math.abs(py[i] - y);
+      if (dx > hw + FLOOD_PICK_SLOP_PX || dy > hh + FLOOD_PICK_SLOP_PX) continue;
+      // 여러 판이 겹치면 가운데에 가까운 쪽 — 화면 폭이 다른 판끼리도 견줄 수 있게 반폭으로 나눈다
+      const d = (dx / hw) ** 2 + (dy / hh) ** 2;
+      if (d < bestD) { bestD = d; best = list[i]; }
     }
     return best;
   }
@@ -290,8 +346,14 @@ export function createFloodDiscs({
     object: group,
     tick,
     pick,
-    /** 지금 면이 떠 있는 시군구를 표시해 둔다(null 이면 해제). */
-    setSelected(code) { selectedCode = code == null ? null : String(code); },
+    /** 지금 면이 떠 있는 시군구를 표시해 둔다(null 이면 해제).
+     *  ⚠️ 깜빡임 가드(haveLast)를 함께 푼다 — 안 그러면 카메라가 멈춰 있는 동안 고른 시군구의
+     *  이름표가 영영 안 뜬다. 누르면 카메라가 날아가지만, 이미 그 자리에 있으면 안 움직인다(시험이 잡았다). */
+    setSelected(code) {
+      const next = code == null ? null : String(code);
+      if (next !== selectedCode) haveLast = false;
+      selectedCode = next;
+    },
     selected: () => selectedCode,
     shown: () => shownCount,
     total: () => list.length,

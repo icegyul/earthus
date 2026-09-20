@@ -12,8 +12,8 @@ import { activeField, clearFieldLayers, isFieldLayerId, toggleFieldLayer } from 
 import { createFloodOverlay, FLOOD_QUANTITY } from './flood-overlay.js?v=1';
 // 연안 침수 예상도의 전국 색인(레이어 'khoaflood' · 2026-09-20 W6) — 지표를 고른 근거·원반 그리기·솎기·집기는 저 파일에 있다.
 import {
-  createFloodDiscs, floodClassLabel, floodDiscSpecs, floodHiddenNote, floodLegendHtml, floodSizeNote,
-  FLOOD_DISTRICT_TIMEOUT_MS, FLOOD_METRIC_KO,
+  createFloodDiscs, floodClassLabel, floodDiscSpecs, floodHiddenNote, floodLegendHtml, floodSizeNote, floodThinRuleNote,
+  FLOOD_DISTRICT_TIMEOUT_MS, FLOOD_HEAVY_BYTES, FLOOD_METRIC_KO,
 } from './flood-discs.js?v=1';
 // 지상관측 두 파일(기상청 · GTS)은 공용 저장소에서 받는다 — 바람·평년차·기입 모형·지구 위 관측 숫자가 같은 문서를 나눠 쓴다(surface-obs.js).
 import { surfaceObs } from './surface-obs.js?v=1';
@@ -1614,17 +1614,21 @@ export class LiveLayers {
     const byCode = new Map(specs.map((s) => [s.sggCd, s]));
     const buttons = rows.map((r) => {
       const s = byCode.get(r.sggCd);
-      const size = s ? floodSizeNote(s.bytes) : '';
+      // 용량은 **보이는 글자**로 적는다. title= 는 폰에서 안 뜨는데, 경고가 필요한 쪽이 바로 폰이다.
+      // 무거운 곳만 적는다 — 69개 단추에 전부 붙이면 정작 33 MB 가 묻힌다.
+      const heavy = s && Number.isFinite(s.bytes) && s.bytes >= FLOOD_HEAVY_BYTES ? floodSizeNote(s.bytes) : '';
       return `<button class="simgo" style="margin:2px 3px 2px 0;padding:8px 12px;min-height:44px;font-size:14px" `
-        + `data-action="flood-district" data-sgg="${escapeHtml(r.sggCd)}"`
-        + `${size ? ` title="${escapeHtml(size)}"` : ''}>${escapeHtml(r.name)}`
-        + `${s ? ` <i style="opacity:.6">최대 ${escapeHtml(floodClassLabel(s.depthKey))}</i>` : ''}</button>`;
+        + `data-action="flood-district" data-sgg="${escapeHtml(r.sggCd)}">${escapeHtml(r.name)}`
+        + `${s ? ` <i style="opacity:.6">최대 ${escapeHtml(floodClassLabel(s.depthKey))}</i>` : ''}`
+        + `${heavy ? ` <i style="opacity:.75">· ${escapeHtml(heavy)}</i>` : ''}</button>`;
     }).join('');
     const empty = (d.districts || []).filter((r) => !r.count).map((r) => r.name);
     // 원반의 색이 무엇인지 — 자료에 실제로 있는 구간만. 색은 면을 칠할 때와 같은 FLOOD_RAMP 다.
     const legend = floodLegendHtml(specs, FLOOD_RAMP);
-    const hidden = this._floodDiscs
-      ? floodHiddenNote(this._floodDiscs.shown(), this._floodDiscs.total()) : '';
+    // ⚠️ 이 카드는 레이어를 세우는 **그 순간** 굳는다 — 아직 한 프레임도 안 그렸으므로 shown() 은 0 이다.
+    //    여기에 지금 개수를 적으면 "0곳만 붙어 있습니다"가 영영 남는다. 여기는 규칙만 적고,
+    //    지금 개수는 그림이 돈 뒤에 만들어지는 시군구 카드(floodDistrictCardHtml)가 말한다.
+    const hidden = floodThinRuleNote(specs.length);
     return {
       badge: 'PROVIDER_FORECAST',
       note: `${rows.length}곳 자료 · 침수면 ${Number(d.totalPolygons || 0).toLocaleString()}개`,
@@ -1735,8 +1739,12 @@ export class LiveLayers {
     if (!s) return '';
     const cls = Object.entries(s.classes || {}).sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]))
       .map(([k, v]) => `${k}m ${v}면`).join(' · ');
+    // 이 카드는 **누른 뒤에** 만들어진다 — 그림이 이미 여러 번 돌았으므로 지금 개수가 진짜다.
+    const hidden = this._floodDiscs
+      ? floodHiddenNote(this._floodDiscs.shown(), this._floodDiscs.total()) : '';
     return `<b>${escapeHtml(s.name)} 침수 예상 범위</b> — 구역 ${s.count.toLocaleString()}개<br/>`
       + `깊이 구간별: ${cls}<br/>`
+      + `${hidden ? `${escapeHtml(hidden)}<br/>` : ''}`
       + `국립해양조사원이 산출한 <b>사전 침수 예상도</b>입니다. 현재 관측된 침수 범위는 아닙니다.<br/>`
       + `출처 ${escapeHtml(s.source || '국립해양조사원')} · 지역 자료 수집 ${escapeHtml(sourceTimeLabel(s.generated))}<br/>`
       + `<details style="margin-top:12px"><summary>지도 표현 방식</summary>지형 높이는 과장된 표현입니다. 각 예상 구역은 수평면으로 표시하며 원자료 경위도를 보존합니다. 깊이는 지도 높이 대신 위 깊이 구간으로 읽으세요.</details>`;

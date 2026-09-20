@@ -65,6 +65,45 @@ for line in open(journal_path, encoding="utf-8"):
                 grade[it["phenomenonId"]] = it["grade"]
                 view[it["phenomenonId"]] = it.get("subscriberView", "")
 
+# 66현상의 자리 — 한 곳에서 정한다. 9개 메뉴에 들어간 39개는 After 머리말("[→ 02 Wind …]")에서 읽고,
+# 자리가 없던 27개는 아래 표가 정한다. status: PD = 2026-09-20 PD 확정("라이프 트래블은 메뉴에 넣어줘") · REC = 제 추천(PD 판단 대기)
+MENU_NAME = {"01": "01 기온", "02": "02 바람", "03": "03 강수", "04": "04 구름", "05": "05 해양", "06": "06 재해",
+             "07": "07 대기질", "08": "08 우주", "09": "09 지형", "10": "10 Compare", "11": "11 Intelligence", "12": "12 Simulation"}
+PLACEMENT = {
+    "land.forest": ("L Life", "숲", "PD"), "land.bird_migration": ("L Life", "새 › 철새 이동", "PD"),
+    "land.bird_survey": ("L Life", "새 › 육상 조사", "PD"), "ocean.seabird": ("L Life", "새 › 바닷새", "PD"),
+    "ocean.sea_turtle": ("L Life", "바다거북 — 기관 서면 확인 전 동결", "PD"),
+    "people.population": ("L Life", "사람 › 인구", "PD"), "people.crowding": ("L Life", "사람 › 서울 실시간 혼잡", "PD"),
+    "ocean.deep_sea": ("L Life", "심해 체험(수심 읽기는 09 지형 Inspector 로)", "PD"),
+    "travel.today_pick": ("T Travel", "오늘 갈 곳", "PD"), "travel.place_catalog": ("T Travel", "목적별 장소", "PD"),
+    "travel.place_sequence": ("T Travel", "장소 Inspector 의 '다음에 간 곳 Top 5'", "PD"),
+    "travel.visitor_pressure": ("T Travel", "방문자", "PD"),
+    "weather.daily_extremes": ("11 Intelligence", "Now 탭 맨 위 '오늘의 극값' 카드", "REC"),
+    "land.snow_cover": ("03 강수", "'쌓인 눈(관측)' 칩 — IMS 수집기 복구가 선행", "REC"),
+    "weather.station_obs": ("01·02·03·07", "공통 'Show Stations' 토글 — 독립 메뉴 폐지", "REC"),
+    "ocean.coastal_inundation": ("05 해양", "해수면 상승 · 침수 보조 모드('재해'에서 옮김)", "REC"),
+    "hazards.crustal_motion": ("09 지형", "'Plates & Motion' 으로 합침", "REC"),
+    "land.crustal_motion": ("09 지형", "'Plates & Motion'", "REC"),
+    "space.orbital_debris": ("08 우주", "Satellites 의 'Debris' 칩 + 근접사건(거짓 문구 핫픽스는 P0)", "REC"),
+    "travel.flight": ("→ v1", "사실(FACT) 질문이고 v1 에 구현이 있다", "REC"),
+    "space.solar_system": ("→ v1", "지구를 대체하는 전체 화면 · 전용 슬라이더 — v2 셸에 안 맞는다", "REC"),
+    "space.photo": ("→ v1", "v1 cosmic3d 에 사진 아틀라스 진입점이 이미 있다", "REC"),
+    "space.galaxy": ("→ v1", "교육 콘텐츠 — v1", "REC"),
+    "people.news": ("상단 · 재해 Inspector", "'관련 보도' — 좌측 메뉴 밖. 분홍 막대 5개는 즉시 삭제(S)", "REC"),
+    "ocean.vessel_traffic": ("뺌", "그릴 자료가 없다(AIS 미연결) — 자료가 생기면 다시 연다", "REC"),
+    "travel.poi": ("뺌", "자료 없음 — 한국은 '목적별 장소'가 같은 질문에 답한다", "REC"),
+    "hazards.glacial_lake_flood": ("뺌(보류)", "수집기(glacial-lake-us) 배포 전 — 자료가 들어오면 06 재해로", "REC"),
+}
+
+
+def place_of(it):
+    pid = it["phenomenonId"]
+    if pid in PLACEMENT:
+        return PLACEMENT[pid]
+    m = re.search(r"→\s*(0[1-9]|1[0-2])", (it.get("after") or "")[:170])
+    return (MENU_NAME.get(m.group(1), m.group(1)) if m else "?", "", "AUTO")
+
+
 GRADE_KO = {"A_GOOD": "A 팔 수 있다", "B_OK": "B 손보면 된다", "C_WEAK": "C 빈약하다", "D_BROKEN": "D 망가져 보인다"}
 ACTION_KO = {"REBUILD": "다시 만든다", "IMPROVE": "고친다", "KEEP": "둔다", "MERGE": "합친다", "MOVE": "옮긴다", "REMOVE": "뺀다"}
 
@@ -87,11 +126,11 @@ L.append("처분 — %s. 우선순위 — %s." % (
 L.append("")
 L.append("### 4-0. 한눈에")
 L.append("")
-L.append("| 묶음 | 메뉴 | 지금 | 처분 | 우선 | 크기 | 바꾼 뒤(한 줄) |")
-L.append("|---|---|---|---|---|---|---|")
+L.append("| 옛 묶음 | 메뉴 줄 | **새 자리** | 지금 | 처분 | 우선 | 크기 | 바꾼 뒤(한 줄) |")
+L.append("|---|---|---|---|---|---|---|---|")
 for i in items:
-    L.append("| %s | %s | %s | %s | %s | %s | %s |" % (
-        cell(i["group"]), cell(i["menuName"]), GRADE_KO.get(grade.get(i["phenomenonId"]), "—").split(" ")[0],
+    L.append("| %s | %s | **%s** | %s | %s | %s | %s | %s |" % (
+        cell(i["group"]), cell(i["menuName"], 40), cell(place_of(i)[0]), GRADE_KO.get(grade.get(i["phenomenonId"]), "—").split(" ")[0],
         ACTION_KO.get(i["action"], i["action"]), i["priority"], i["size"], cell(i["after"], 120)))
 L.append("")
 
@@ -140,16 +179,20 @@ D = []
 def first_line(t):
     return (t or "").strip().splitlines()[0] if (t or "").strip() else ""
 
-noslot = [i for i in items if "자리 없음" in first_line(i.get("after"))]
-decide = [i for i in items if i not in noslot and "PD 결정" in (i.get("after") or "")]
-D.append("### 5-1. PD 정본의 좌측 레일 9개에 **자리가 없는** 현상 (%d)" % len(noslot))
+placed = [(i, PLACEMENT[i["phenomenonId"]]) for i in items if i["phenomenonId"] in PLACEMENT]
+noslot = [x for x in placed]                      # 아래 출력 문구용
+decide = [i for i in items if i["phenomenonId"] not in PLACEMENT and "PD 결정" in (i.get("after") or "")]
+cnt_pd = sum(1 for _, pl in placed if pl[2] == "PD")
+D.append("### 5-1. PD 정본의 9개 메뉴에 자리가 없던 %d현상 — 어디로 갔나" % len(placed))
 D.append("")
-D.append("억지로 끼우지 않았다. 항목마다 제안을 달았다 — **정해 주시면 그대로 간다.**")
+D.append("**Life · Travel 은 PD 확정(2026-09-20 \"라이프 트래블은 메뉴에 넣어줘\") — %d개.** 나머지 %d개는 **제 추천이고 PD 판단 대기**다. 정해 주시면 그대로 간다." % (cnt_pd, len(placed) - cnt_pd))
 D.append("")
-D.append("| 묶음 | 메뉴 | 제안 | 이유(요약) |")
+D.append("| 상태 | 메뉴 줄 | 새 자리 | 어떻게 |")
 D.append("|---|---|---|---|")
-for i in noslot:
-    D.append("| %s | %s | %s | %s |" % (cell(i["group"]), cell(i["menuName"]), ACTION_KO.get(i["action"], i["action"]), cell(i["after"], 220)))
+for i, pl in sorted(placed, key=lambda x: (x[1][2] != "PD", x[1][0])):
+    D.append("| %s | %s | **%s** | %s |" % ("✅ PD 확정" if pl[2] == "PD" else "🟡 제 추천", cell(i["menuName"], 40), cell(pl[0]), cell(pl[1])))
+D.append("")
+D.append("⚠️ 취미·야외 활동 5줄(해변과 낚시터 · 서핑 · 낚시 · 패러글라이딩 · 산 정상 날씨)은 분석에서 물리 메뉴(해양 · 바람 · 기온)의 활동 오버레이로 들어갔다. Travel 이 메뉴가 된 지금, **Travel 에 '야외 활동' 칩을 두고 누르면 해당 물리 메뉴의 오버레이를 여는** 입구를 하나 더 둘 수 있다(자료와 그림은 한 곳에만 둔다). PD 판단.")
 D.append("")
 D.append("### 5-1b. 자리는 있지만 **세부를 정해 주셔야 하는** 현상 (%d)" % len(decide))
 D.append("")

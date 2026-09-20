@@ -41,9 +41,11 @@ W0~W4 가 끝나면 **화면 인상이 바뀐다.** 거기까지가 첫 게이�
 
 ---
 
-## 1. Premium UX 문법 — 9개 메뉴 × 7단계
+## 1. Premium UX 문법 — 메뉴 11개(9 + Life · Travel) × 7단계
 
 > PD(2026-09-20): "현재 9개 메뉴 각각을 눌렀을 때 **반드시** ① 극적으로 보인다 → ② 정확한 값을 읽는다 → ③ 출처를 확인한다 → ④ 시간축을 움직인다 → ⑤ 모델을 비교한다 → ⑥ Intelligence 를 본다 → ⑦ Simulation 으로 들어간다 라는 **동일한 Premium UX 문법**을 만들어야 한다. 그렇게 되면 EARTHUS 의 진짜 상품이 '3D 지구 지도'가 아니라 **'지구를 이해하고 미래를 시험해보는 시스템'** 으로 바뀐다."
+
+> **PD 추가 결정(2026-09-20): "라이프 · 트래블은 메뉴에 넣어줘."** 좌측 메뉴는 **11개**다 — 현상 9개(기온·바람·강수·구름·해양·재해·대기질·우주·지형) + **L Life** + **T Travel**. PD 정본의 작업 공간 번호(10 Compare · 11 Intelligence · 12 Simulation)는 그대로 둔다. 두 메뉴도 **같은 7단계**를 받는다 — 다만 물리 격자장이 아니라 기록·집계·장소 자료라, ① 은 단계색 면·숫자 원판·리본으로, ④ 는 자료가 가진 시간만, ⑤·⑦ 은 재료가 없으면 입구 + 사유로 채운다.
 
 **이 절이 지시서의 등뼈다.** §3 의 작업(W0~W10)은 아래 공용 부품을 만드는 일이고, §4 의 메뉴별 표는 각 메뉴가 그 부품에 무엇을 공급하는가다.
 
@@ -65,9 +67,9 @@ W0~W4 가 끝나면 **화면 인상이 바뀐다.** 거기까지가 첫 게이�
 1. **⑤ 의 '모델 비교'는 메뉴마다 정직하게 성립하는 짝으로 읽는다.** 모델 ↔ 모델(GFS\|ECMWF) · 런 ↔ 런(최신\|이전) · 기관 ↔ 기관(JTWC\|JMA\|KMA) · 관측 ↔ 모델 · 시각 ↔ 시각 · 시나리오 ↔ 기준선. 부품은 하나(Compare workspace), 짝은 메뉴가 공급한다. 없는 짝을 지어내지 않는다.
 2. **문법은 같고 가용성은 정직하다.** 어떤 메뉴에 ⑤·⑥·⑦ 의 재료가 아직 없으면 **입구는 같은 자리에 두고** 없는 이유를 말한다(`sim-questions.js` 가 이미 그렇게 한다). 빈 단계를 억지로 채워 거짓을 만들지 않는다. 잠금 아이콘으로 때우지도 않는다 — 먼저 결과의 일부가 보이고, 그다음에 깊이가 유료다.
 
-### 1-1. 지금 상태 — 63칸 중 몇 칸이 채워져 있나
+### 1-1. 지금 상태 — 77칸 중 몇 칸이 채워져 있나
 
-코드를 열어 확인한 결과다. ✅ 된다 **0** · 🟡 있긴 한데 목표에 못 미친다 **40** · ❌ 없다 **23** (총 63칸).
+코드를 열어 확인한 결과다. ✅ 된다 **0** · 🟡 있긴 한데 목표에 못 미친다 **48** · ❌ 없다 **29** (총 77칸).
 
 | 메뉴 | ① 극적으로 보인다 | ② 정확한 값 | ③ 출처 | ④ 시간축 | ⑤ 비교 | ⑥ Intelligence | ⑦ Simulation |
 |---|---|---|---|---|---|---|---|
@@ -80,7 +82,9 @@ W0~W4 가 끝나면 **화면 인상이 바뀐다.** 거기까지가 첫 게이�
 | **07 Air Quality 대기질** | 🟡 | ❌ | 🟡 | ❌ | ❌ | ❌ | 🟡 |
 | **08 Space 우주** | 🟡 | ❌ | 🟡 | ❌ | ❌ | 🟡 | 🟡 |
 | **09 Terrain 지형** | 🟡 | 🟡 | 🟡 | 🟡 | ❌ | ❌ | 🟡 |
-| **단계별 ✅** | 0/9 | 0/9 | 0/9 | 0/9 | 0/9 | 0/9 | 0/9 |
+| **L Life 생명·사람** | 🟡 | 🟡 | 🟡 | 🟡 | ❌ | ❌ | 🟡 |
+| **T Travel 여행(한국)** | 🟡 | 🟡 | 🟡 | ❌ | ❌ | ❌ | ❌ |
+| **단계별 ✅** | 0/11 | 0/11 | 0/11 | 0/11 | 0/11 | 0/11 | 0/11 |
 
 ### 1-2. `PhenomenonDescriptor` — 메뉴가 공용 부품에 공급하는 설정 하나
 
@@ -1079,7 +1083,209 @@ export const WIND_DESCRIPTOR = {
 
 </details>
 
+#### L Life 생명·사람
+
+| 단계 | 지금 | 끝났을 때 사용자가 보고 하는 것 | 이 메뉴가 공급할 것 | 선행 | 요금 |
+|---|---|---|---|---|---|
+| **① 극적으로 보인다** | 🟡 공용 범례가 없다(ui-shell.js 에서 'legend\|범례' grep 0건). 숲: 릴리프 메시는 있으나 색이 FOREST_RAMP(v) 정점색 선형 보간(live-layers.js:2495, vertexColors :2513-2515), STEP 칸마다 한 화소만 집고(:2467-2478) '… | Life 를 누르면 3초 안에 한국 위에 숲이 4단 단계색 릴리프(수관 20~40 · 40~60 · 60~80 · 80~100%, 셰이더가 aCover 를 끊어 등급 경계가 곧 선)로 서고, 우하단 공용 Legend 에 4칸 + '수관비율 % · ESA WorldCover 2021 스냅샷 · 관측 · 화면 격자 약 1.7km 평균(원자료 550m) · 20% 미만은 그리지 않음'이 상시 보인다. 칩 [숲 \| 산림 감소 \| 인구 \| 지금 붐빔 \| 새 \| 바다거북]으로 1탭 전환: 산림 감소 = 3단색 네모(2001~2010 적갈 · 2011~2018 주황 · 2019~2023 밝은 노랑), 인구 = 명/㎢ 절대 8단 릴리프 면(1px 세로선 0개, 봉우리 상위 5곳 숫자 라벨, 첫 클릭에 한국 자동), 지금 붐빔 = 서울시 공식 4단계 색 원판 + 범위 라벨('강남역 5.2만~5.4만'), 새 = 5km 칸 면 5단 / 숫자 원판 37개 / 3단 굵기 파선 호. 어느 칩에도 막대기·단색 점 구름·선형 그라데이션이 없다.<br>⚠️ *말하면 안 되는 것:* 화면 격자를 원자료 해상도처럼 말하지 않는다(숲 한국 ≈1.7km · 일본 ≈5km, 인구 한국 ≈1.9×1.5km · 일본 0.058°). 소실 PNG 의 R 은 '그 해'가 아니라 250m 칸의 '평균 소실 연도'이고 '모든 수관 소실 · 순감소 아님'이다(forest/loss-index.json encoding · note). 조류 조사 색은 '새가 많은 곳'이 아니라 '조사 기록이… | 눈금 5벌: 수관 % 4단[20,40,60,80,100] · 소실 연도 3단[2001,2011,2019,2024) · 명/㎢ 8단[100,500,1000,2500,5000,10000,20000](<100 거의 투명) · 서울시 공식 4단계(색은 seoul-flow.json official.color 그대로) · 기록 수/개체 수 로그 5단(경계는 실제 분포를 보고 확정 — 지금은 TBD). 등치선 금지 플래그(수관은 양봉 분포, 인구는 뾰족한 장 — 1.7km… | W1(공통 렌더러 · Legend) · W7(나머지 현상) · 공용 리본 메시 헬퍼 신규(철새 · 거북 · 항로 공용). W0(GFS 프레임)에는 의존하지 않는다 — Life 는 자기 정적 자료로 돈다(병행 가능). PD 결정: 혼잡 R-01 수직 막대 보존(live-layers.js… | FREE |
+| **② 정확한 값** | 🟡 LiveLayers 에 pick 메서드가 없다(live-layers.js 에서 '^\s+pick\w*\(' grep 0건). 그래서 숲 · 혼잡 · 인구를 눌러도 그 현상의 값이 나오지 않는다 — 클릭은 extScene.pick → travel.pick → seafloor.pick → focus.pic… | 지도 클릭 1회 → 우측 Inspector.ValueCard, 네트워크 0건. 숲: 원본 PNG 의 그 화소 1개(550m) → '수관 78% · 550m 칸 평균 · 기준 2021'(산림 감소 모드면 '평균 소실 연도 2013 · 사라진 비율 34%'). 인구: '약 8,400명/㎢ · 칸 1.9×1.5km · 8bit 양자화로 ±4% 안팎'. 혼잡: 원판 클릭 → '강남역 · 5.2만~5.4만 명(서울시 발표 범위) · 붐빔' + 12스텝 예측 표. 새 · 거북은 기존 ext pick 을 ValueCard 어댑터로 감싼다(정점 EB-07: 누적 3,412마리 · 조사 58회 · 1회당 59마리). 값이 없는 곳은 '자료 범위 밖(한 · 일 · 대만만)' 또는 '수관 20% 미만 — 그리지 않는 구간'이라고 말한다.<br>⚠️ *말하면 안 되는 것:* 지시서 표는 '기본값 무료 · 정확값 · 실측 대조 EXPLORER'다 — Life 에서 EXPLORER 몫은 표(정점 9년 표 · 반경 5km 연도별 소실 면적 합)이지 값 자체의 잠금이 아니다. 조류 조사(제3자 권리) · 바다거북(4유형) · 철새는 값을 유료로 가르지 않는다. 혼잡의 '가운데값'은 지금 코드가 높이 계산용으로만 쓰는 파생값(live-layers.js:792-793)이… | value.read 4종: 'pngPixel'(숲 · 소실 — 클릭 때 1×1 만 읽는다. 일본 PNG 3400×3040 화소 배열 상주 금지 — 재료: 41MB) · 'arrayCell'(인구 — v = max·(u8/255)^3 을 행별 cos(위도) 칸 면적으로 나눠 명/㎢) · 'eventPick'(혼잡 121곳 최근접 — 반경은 121곳 간격을 보고 확정, 지금 UNKNOWN) · 'extPick'(hobby-*.pick 어댑터). 정밀도 문구 표:… | W1 · W5(Inspector) + LiveLayers.pick 신규(클릭 → 위경도 사슬은 main.js:2793-2831 에 이미 있다). ext pick 5건은 어댑터만. | FREE |
+| **③ 출처** | 🟡 출처 · 시각은 있으나 전부 카드 본문 끝 문장에 묻혀 있다: 숲 '출처 ${d.index.source} · ${d.index.license}'(live-layers.js:2571) — 기준년 2021 이 '지금 아님'으로 따로 표시되지 않는다, 배지 OBSERVED(:2552). 산림 감소 '출처 ·… | 같은 Inspector 의 ProvenanceCard 에 5줄 고정: 기관 / 종류 배지(OBSERVED · MODEL · HISTORY · FORECAST) / 시각 / 해상도(원자료 ↔ 화면) / 라이선스. 숲: 'ESA WorldCover 10m v200 · 관측 · 기준 2021(지금 아님) · 원자료 550m ↔ 화면 1.7km 평균 · CC BY 4.0'. 인구: 'WorldPop R2025A constrained UN-adjusted · 모델 추정 · 2025 · 0.0167° · CC BY 4.0'. 혼잡: '서울특별시 실시간 도시데이터 · 관측 14:05 / 예측 구간은 FORECAST · 서울시 · STALE 이면 범례가 회색 + ○시간 전 자료'. 조류 조사: '국립생태원 에코뱅크 · 공공누리 1유형 · 제3자 권리 포함 — 유료 가공물은 서면 확인 뒤' + 미수신(truncated) 건수. 바다거북: '국립해양생물자원관 · 추적 종료 개체 · 실시간 아님 · 공공누리 4유형'.<br>⚠️ *말하면 안 되는 것:* 출처는 유료로 가릴 수 없다 — EARTHUS 규칙(시각 · 출처 상시)이자 CC BY 4.0 · 공공누리의 출처표시 의무다. 서울 혼잡의 실제 EventBridge 주기와 서울시 키 3개 상태는 UNKNOWN(재료: schedules.sh 기준 5분이나 배포값 미확인) — SLA 를 숫자로 적지 않는다. WorldPop 을 '관측'이라 부르지 않는다. 철새 도착지 좌표는 손으로 정한 대표… | 출처표 8행(기관 · kind · time{refYear \| generatedAt \| period} · grid{source, screen} · license · rightsLock). 새 필드 둘: rightsLock(paidDerivatives:false — 조류 조사 · 바다거북) · screenGrid(블록 평균 뒤 실제 화면 격자 km — 숲 · 인구). 시각 불일치 배지 규칙: 과거 경로(거북)와 지금 수온을 같이 켜면 '경로는 과거 · 수온은… | W5(Inspector). 지시서 표의 W0 매니페스트는 GFS 용이라 무관 — Life 는 forest/index.json · loss-index.json · popgrid/index.json 과 각 S3 문서의 source · license · updated 가 매니페스트다(이미… | FREE |
+| **④ 시간축** | 🟡 공용 시간축은 하나 있다: ts-range min −1440 · max 7200분 · step 30(ui-shell.js:1334) → hooks.onTimeOffset(:1351) → main.js:4891-4898. Life 에서 여기에 반응하는 레이어는 혼잡 하나뿐이다: liveLayers.set… | 시간 조작부는 하단 Global Timeline 하나, 칩에 따라 눈금 모드만 바뀐다. 지금 붐빔: 분 눈금 — +3h 로 밀면 원판이 속 빈 고리로 바뀌고 'FORECAST · 서울시' 배지, 예측 끝 시각 뒤는 감춘다. 산림 감소 · 바닷새 · 철새: 연 눈금 모드(2001~2023 / 조사 연도 / 2021~2025) — 그때 loss-year · loss-play 를 지운다. 숲 · 인구 · 조류 조사 · 거북: 시간축이 비활성으로 보이되 '2021 스냅샷 — 움직일 시간이 없습니다' 사유를 말한다. 스트립 문구에 '서울 혼잡: 서울시 공식 예측'을 추가한다.<br>⚠️ *말하면 안 되는 것:* 지시서 ④ 는 '+24h 무료 · +120h EXPLORER(제안)'이다. Life 에서 미래가 있는 자료는 서울시 공식 예측(약 +24h 안, live-layers.js:785)뿐이라 단계 자체는 FREE — 재료의 paidHook(예측 타임라인 전체 · 지난주 대비 · 숲 연도 재생 = EXPLORER)은 이 표와 어긋나므로 PD 가 고른다. v2 의 '5일 예보'는 이 메뉴에 해당 없… | frames 선언 3종: {kind:'minutes', future: forecast[] 끝 시각, past: history-index.json 48h} · {kind:'years', range:[2001,2023] \| seabird years[] \| [2021,2025]} · {kind:'none', reasonKo}. 연 눈금 모드 요구(신규 — 지금 슬라이더는 분 단위뿐). 혼잡 과거 방향 자료: aws/tourism-flow 의 history-ind… | W5(Global Timeline) + 연 눈금 모드 신규 + tourism-flow 스냅샷 집계(S). W0 무관. 연 눈금 모드가 생길 때까지 산림 감소 슬라이더는 그대로 둔다 — 세 번째 조작부를 만들지 않는다(규칙 2 부채로 명시). | FREE |
+| **⑤ 비교** | ❌ v2 의 비교 코드는 scenario-compare.js 하나이고 SimulationRunRecord 둘(truthStatus 'SIMULATION' · 같은 runtime · 같은 입력 해시 · 같은 공간/시간 범위)만 받는다(:17-27, :37-59) — Life 자료는 어느 것도 해당하지 않는다… | TOP 의 Compare → split 또는 wipe, 카메라 · 범례 동기화. 1순위 '지금 붐빔': 왼쪽 관측(지금) \| 오른쪽 서울시 공식 예측(+3h) — 같은 121곳 · 같은 4단계 색, diff 는 '단계 차(−3…+3)' 색만. 2순위 숲(한국): 2001~2011 소실 \| 2012~2023 소실 wipe, 또는 한국 \| 일본 수관을 같은 4단 눈금으로(양쪽에 화면 격자 1.7km / 5km 표기). 3순위 바닷새: 2016 \| 2024 조사 1회당. 철새 · 조류 조사 · 거북은 Compare 입구는 같은 자리에 있되 '비교할 둘째 자료가 없습니다(179건 정적 / 칸별 연도 없음 / 라이선스)'를 말한다.<br>⚠️ *말하면 안 되는 것:* 모델 ↔ 모델은 성립하지 않는다 — 저장소에 둘째 인구 모델 · 둘째 산림 자료가 없다(GHS-POP 등은 후보일 뿐, 수집 · 라이선스 미확인). 서울시 '지금 있는 사람'과 WorldPop '사는 사람'은 정의와 넓이가 달라 diff · 비율을 색으로 쓰지 않는다 — 나란히 놓더라도 배지를 분리한다. 혼잡 인구는 밴드라 범위끼리 뺄셈하지 않는다. 소실 R 은 '평균 소실 연도'라 기간… | 비교 짝 선언: crowding{pair:'time↔time', a:'now(OBSERVED)', b:'+Nh(FORECAST · 서울시)', diff:'level-delta'} · forestloss{pair:'period↔period', 같은 kor-loss.png R 채널에서 두 기간 마스크 — uYear 유니폼 방식 확장} · forest{pair:'country↔country', sharedScale:true, screenGrid 양쪽 표기} · se… | W8(Compare workspace) · ① 의 단계색 · Legend · ④ 의 연 눈금. 인구 나라↔나라는 인구 릴리프(재료 1단계) 뒤. | PRO |
+| **⑥ Intelligence** | ❌ intelHostFor 가 패킷을 돌려주는 현상은 hazards.typhoon · hazards.earthquake · ocean.sst · weather.temperature_anomaly 넷뿐(main.js:4098-4112) — Life 8현상은 전부 null. 띠는 패킷이 없으면 아무것도 그리지… | Inspector 의 Intelligence 는 수치 → 출처 → 문장 순서. 혼잡 예: '강남역 5.2만~5.4만 명 · 붐빔' → '서울특별시 실시간 도시데이터 · 14:05 관측' → '서울시 공식 예측은 17시에 「약간 붐빔」입니다(기관 예보 인용). 서울시 예측이 +3시간 「붐빔」을 냈을 때 실제로 「붐빔」이었던 비율은 지난 30일 ○○%(n=○○, 121곳)입니다 — EARTHUS 가 불변 스냅샷으로 채점한 값이며 서울시가 발표한 확률이 아닙니다.' 이 확률 문장은 채점 생산자가 생긴 뒤에만 뜨고, 그 전에는 probability:[] + 사유. 숲 예: '이 지점 수관 78% · 한국 육지 평균 64.1% 대비 +14%p' → 출처 → '반경 5km 에서 2001~2023 소실로 기록된 칸 ○○개, 가장 많았던 해 2013' — 원인 문장 없음. 인구 예: 06 Hazards 패킷과 이어 '태풍 ○○ 51멤버 중 N멤버(○○%)가 지나는 반경 안 거주 인구 합 약 ○○만 명(WorldPop 2025 추정 · 산술 합)' — IMPACT 절, 인과 아님.<br>⚠️ *말하면 안 되는 것:* 지금 Life 어느 현상에도 원인을 말할 근거(측정된 조건 + 문헌 기작)가 패킷에 없다. 숲 소실: Hansen 자료는 원인을 나누지 않는다('벌채 · 산불 · 병해충 · 수확 포함' — loss-index.json note) → 원인 문장 금지. 소실 원인 분류 자료(1km 원인 분류류)는 저장소 밖 후보이고 존재 · 라이선스 · 해독을 확인하지 못했다(UNKNOWN) — 확인 전에는… | 신규 생산자 후보 2건. ① crowding-verify: 입력 = app/tourism/history/ 불변 스냅샷(각 스냅샷에 그 시점 forecast[] 가 같이 저장된다 — handler.py:378-381), 틀 = prototype/js/earthus2/v02/human-flow/forecast-lifecycle.js 의 ForecastVerificationStore(addForecast · attachGroundTruth · metrics — v2… | W9(Intelligence Inspector · 패킷 v1 확장) · 신규 생산자 crowding-verify(스냅샷 보관 기간 확인 선행) · 06 Hazards Inspector(P1 — exposure-link). PD 결정: intelligence:true 깃발 3개를 생산자… | EXPLORER |
+| **⑦ Simulation** | 🟡 SIM_CAPABILITIES 에 Life 현상은 people.population 하나뿐이다 — status NOT_AVAILABLE · engine null · 질문 'pop-move'('인구 이동 계산 엔진이 아직 없습니다 — 인구 기둥은 …', sim-questions.js:181-193). 나머… | TOP 의 Simulation(모든 메뉴 같은 자리)을 누르면 지금 상태 스냅샷{카메라 · 칩 · 나라 · timeOffset · 선택 지점}을 저장하고 별도 작업 공간으로: Current → Baseline → Scenario 칩 → Result. Life 의 칩은 셋이 보이되 지금은 전부 비활성이고 각자 사유를 말한다 — '노출 인구 셈(기관 침수 예상도 · 쓰나미 도달 T분 안): 산술 합은 가능하지만 칸 부분 겹침 규칙과 행정 인구 대조 검증 전입니다(ocean.sea_level_rise slr-exposure 와 같은 상태)' · '혼잡 가정(이 장소 방문 +20%면?): 계산 틀(forecastCrowd)은 있으나 계수가 없고 채점 기록이 비어 있습니다 — 지금은 서울시 공식 예측만 인용합니다' · '인구 이동 · 숲 변화: 계산 엔진이 없습니다'. Result 자리에는 available 인 쓰나미 도달시간 계산으로 가는 링크 한 줄. 슬라이더 없음, 나오면 스냅샷으로 복귀.<br>⚠️ *말하면 안 되는 것:* Life 에는 기록 남는 계산이 하나도 없다 — 그렇게 말한다. 노출 인구 셈은 '시뮬레이션'이 아니라 산술 합이다: 1.9×1.5km 인구 칸과 수백 m 침수 폴리곤이 부분 겹칠 때 '칸 안 균등 분포'를 가정해야 하고 그 가정을 Result 에 적어야 한다. forecastCrowd 는 계수를 넣어 주는 덧셈 틀일 뿐 — 계수를 채점 이력으로 맞추기 전에 돌리면 값을 지어내는 것이다.… | SIM_CAPABILITIES 항목 7건 추가(engine:null · engineRef:null · NOT_AVAILABLE + reasonKo/En — 기존 9건 등재와 같은 틀, sim-questions.js:220-350): land.forest '숲은 앞으로 얼마나 더 사라질까?' · people.crowding '사람이 더 몰리면 단계가 어떻게 될까?'(사유는 강수 선례 문장형 — '틀은 있으나 화면 자료와 연결되지 않았고 채점 기록이 없습니다',… | W10(Simulation workspace) · 06 Hazards Inspector(P1) · 노출 셈 검증(행안부 주민등록 인구 대조 — 자료 확보 UNKNOWN) · crowding-verify 채점 기록(⑥). tools/earthus-v53 시험이 SIM_CAPABILITI… | PRO |
+
+- **⑤ 비교 짝:** 1순위(지금 자료로 바로 됨) — 지금 붐빔: 시각↔시각, '관측(지금) \| 서울시 공식 예측(+Nh)'. 같은 파일(seoul-flow.json 의 official + forecast[]) · 같은 121곳 · 같은 기관 4단계 색이라 Compare 작업공간이 카메라 · 범례만 동기화하면 성립한다. 공용 시간축에 이미 묶여 있어(live-layers.js:2857-2863) 한쪽 시각만 밀면 된다. diff 는 '단계 차(−3…+3)'만 — 인구는 기관이 밴드로 발표하므로 범위끼리 뺄셈하지 않는다. 한쪽은 OBSERVED, 한쪽은 FORECAST · 서울시 배지.<br>2순위 — 숲(한국): 기간↔기간 '2001~2011 소실 \| 2012~2023 소실' wipe. 같은 kor-loss.png 의 R 채널에서 두 기간 마스크를 만든다(지금의 uYear 유니폼 방식 확장, live-layers.js:2406-2414). 한계: R 은 250m 칸의 '평균 소실 연도'라 경계 부근 칸이 모호 — 범례 고지. 나라↔나라(한국 \| 일본 \| 대만 수관, 같은 4단)도 가능하되 화면 격자(1.7km / 5km)를 양쪽에 적는다.<br>3순위 — 바닷새: 연도↔연도(같은 37정점, 지표는 조사 1회당 yc/yn, 그 해 조사 없는 정점은 빈 고리). 자료는 이미 파일에 있다(hobby-seabird.js:128-145 가 같은 값을 카드 막대로 그린다).<br>4순위 — 인구: 나라↔나라(같은 절대 8단 명/㎢, 21개국 popgrid/index.json). 격자 해상도가 나라마다 달라(한국 0.0167° · 일본 0.058° · 미국 0.275°) 양쪽에 표기해야 하고, 인구 릴리프 재구축 뒤에만.<br>안 되는 것: 모델↔모델(둘째 인구 · 산림 모델이 저장소에 없다 — GHS-POP 등은 미확인 후보) · 서울시 관측 ↔ WorldPop 을 diff/비율 색으로(정의 · 넓이가 다르다 — 나란히 두더라도 배지 분리, 지금의 livemix 배율은 참고값) · '지난주 같은 시각 \| 지금'(tourism-flow 스냅샷 집계 S 선행) · 일본 · 대만 소실(자료 없음) · 철새 · 조류 조사 · 바다거북(둘째 자료 없음 / 칸별 연도 없음 / 라이선스) — 이들은 Compare 입구 + 사유. 기존 scenario-compare.js 는 SimulationRunRecord 전용이라(:17-27) 이 짝들에 재사용되지 않는다.
+- **⑦ 시나리오:** 저장소의 기존 엔진 중 Life 입력을 받는 것은 없다. SIM_CAPABILITIES 의 Life 항목은 people.population 하나(NOT_AVAILABLE · 'pop-move', sim-questions.js:181-193)이고 나머지 7현상은 항목이 없어 셸이 질문 블록을 그리지 않는다(ui-shell.js:1205) — 첫 작업은 7건을 NOT_AVAILABLE + 사유로 등재해 입구를 같은 자리에 세우는 것이다. aws/tsunami-eta(available)는 hazards 소속, research-runtime models_v2.py 는 OceanParcels 해양 표류, engine-v11/environment/transport-simulator.js 의 advectPoint 는 바람 · 해류 · 유출 벡터장 이류(지시서 DEV-DIRECTIVE.md:174 가 바람 · 구름 · 대기질에 배정)라 Life 와 무관하다.<br>부품으로 있는 것: prototype/js/earthus2/v02/human-flow/ — algorithms.js(calculateCrowdIndex · calculateTrend · estimateScalarFlow(vector:null — 방향 없음) · forecastCrowd(계수 없는 덧셈 틀) · detectAnomaly · capacityPressure · calculateRisk) + forecast-lifecycle.js(ForecastVerificationStore · 모델 상태 사다리). v2-three 소비자 0건. 강수 선례(sim-questions.js:123-124 '엔진이 있지만 화면 자료와 연결되지 않았다')와 같은 문장형으로 사유를 적는다.<br>정직한 시나리오 후보(모두 지금은 not_available): ① 노출 인구 셈 — Scenario = 기관 발자국(국립해양조사원 침수 예상도 khoaflood, 쓰나미 도달 T분 등시선) · Result = 그 안 WorldPop 거주 인구 산술 합(absolute + Current 대비 delta). 필요한 것: 06 Hazards Inspector(P1), 칸 부분 겹침 규칙(균등 분포 가정의 고지), 행정 인구 대조 검증 — sim-questions.js:290-292 의 slr-exposure('침수 범위 노출 셈은 검증 뒤 공개')와 같은 길이다. 계산이 아니라 산술이라고 부른다. ② 혼잡 가정('이 장소 방문 +20%면 단계는?') — forecastCrowd 틀은 있으나 계수가 없다. crowding-verify 로 서울시 예측을 채점한 기록이 쌓이고 계수를 맞춘 뒤에야 의미가 있고, 그 전에는 서울시 공식 예측 인용(limited)이 전부다. calculateRisk · capacityPressure 는 수집기 규칙(handler.py:12 — 집계 인구에서 법적 수용력 · 안전 판정을 만들지 않는다) 때문에 범위 밖. ③ 숲 · 인구 이동 · 새 · 거북: 엔진도 근거도 없다 — 외삽하지 않고 '계산 대상이 아닙니다'를 말한다. SSP 격자 인구 같은 문헌 시나리오는 저장소 밖(미확인)이며 들여와도 인용이지 계산이 아니다.
+- **첫 단면(7단계를 전부 관통하는 가장 얇은 출시):** 기준 구현체는 '숲(한국)' 하나 + 이미 공용 시간축에 묶여 있는 '지금 붐빔' 하나로 7단계를 끝까지 뚫는다. 숲을 고른 이유: 정적이고 CC BY 4.0 이라 권리 문제가 없고, 그림을 고치는 데 PD 결정이 걸려 있지 않으며, 여기서 만든 'relief + 셰이더 단계색'이 곧 인구 릴리프의 부품이 된다.<br>① 숲 — buildForest 를 STEP×STEP 블록 평균 + aCover 셰이더 4단으로 바꾸고 공용 Legend(4칸 · ESA WorldCover 2021 · 관측 · 화면 격자 km)를 붙인다. Life 첫 탭 = 한국 숲 자동.<br>② LiveLayers.pick 최소형 — 숲 클릭 → 원본 PNG 1화소 → ValueCard(수관 % · 550m 칸 평균). ext pick 5건은 어댑터로 같은 카드에.<br>③ ProvenanceCard 5줄 — forest/index.json 의 source · license + 기준년 2021 을 '지금 아님'으로.<br>④ 지금 붐빔 칩 — 새 조작부 없이 기존 공용 시간축 그대로(live-layers.js:2857-2863). 예측 구간에 'FORECAST · 서울시' 배지를 달고 시간 스트립 문구(main.js:4911-4918)에 혼잡을 추가한다. 숲은 '2021 스냅샷 — 움직일 시간이 없습니다' 사유. 산림 감소 슬라이더는 연 눈금 모드가 생길 때까지 그대로 둔다(규칙 2 부채로 기록).<br>⑤ Compare 입구 + 사유 — W8 전. 첫 짝은 '관측(지금) \| 서울시 공식 예측(+3h)'으로 예약해 두고 '비교 작업공간 준비 전'을 말한다.<br>⑥ Intelligence 입구 — 수치 → 출처까지만(이 지점 수관 vs 나라 평균 64.1%, 단계별 장소 수). 문장 자리는 'probability: [] · 채점 기록 전' 사유. 패킷 생산자 없음을 숨기지 않는다.<br>⑦ SIM_CAPABILITIES 에 Life 7현상을 NOT_AVAILABLE + 사유로 등재 → 입구가 다른 메뉴와 같은 자리에 선다(tools/earthus-v53 시험 동반).<br>미루는 것: 인구 릴리프(L · 절대 8단은 PD 확인) — 바로 다음 조각, 혼잡 원판(R-01 결정 뒤), 새 3종 MERGE와 리본 헬퍼, 산림 감소 3단 네모, Global Timeline 연 눈금 모드, crowding-verify 생산자, 노출 인구 셈. 바다거북은 동결(기관 서면 문의만), 심해는 PD A/B/C 결정 뒤.
+- 비고: [PD 결정 목록 — 이 표는 정하지 않았다]<br>1. 혼잡: 지시서 R-01 '수직 막대 보존 · 평면 heatmap 대체 금지'(live-layers.js:776-778) ↔ PD '막대기 금지'. 원판은 heatmap 이 아니라 지점 마커라는 점을 같이 제시.<br>2. 인구: 기존 분위 로그 10등급(이전 PD 지시 — 재료) → 절대 8단 명/㎢ 변경 여부.<br>3. 바다거북: 공공누리 4유형 — 국립해양생물자원관 서면 문의, 불가면 REMOVE. 결정 전 신규 개발 금지(동결). v1 이관으로는 풀리지 않는다.<br>4. 심해: A(Life 서랍) / B(v1) / C(Bathymetry Inspector 의 '여기로 잠수' 액션만 — 재료 권고).<br>5. 새 3종을 '새' 칩 하나로 MERGE 할지.<br>6. ④ 요금: 지시서 표(+24h 무료)에 따르면 서울시 공식 예측은 FREE — 재료의 paidHook('예측 타임라인 전체 = EXPLORER')와 어긋난다.<br>7. capabilities.intelligence:true 깃발 3개(숲 :153 · 혼잡 :419 · 인구 :455)를 생산자가 생길 때까지 유지할지 내릴지 — 지금은 깃발만 있고 띠가 뜨지 않는다.<br>8. Life 첫 탭 기본 칩: 숲(권고 — 결정 의존 없음) vs 인구(PD 가 가장 싫어하는 막대기가 가장 많은 화면).<br>[자리] 사용자 지시("라이프 트래블은 메뉴에 넣어줘")로 8현상의 '자리 없음'은 해소 — 자리는 이 메뉴다. 지금 레지스트리는 society 한 묶음에 생태 · 사람 · 여행 20현상을 같이 담는다(phenomenon-registry.js:1099-1111) → Life / Travel 둘로 가른다. people.night_lights 는 기존 매트릭스에서 09 Terrain 으로 MOVE 됐고, people.news 는 어느 메뉴에도 배정되지 않았으며 재료를 받지 못해 칸을 채우지 않았다(PD 결정 필요). tools/directive-2026-09-20/by-menu.json 은 '10 Compare · 11 Intelligence · 12 Simulation'으로 번호를 쓰고 있다 — PD 정본에서 그 셋은 TOP 바이므로 좌측 레일 10 = Life 와 충돌하지 않지만 파일 번호는 맞춰야 한다(이 작업은 읽기 전용이라 손대지 않음).<br>[Travel 동결과의 경계] 혼잡 자료는 aws/tourism-flow 가 만들지만 v2 레이어는 people/seoul(live-layers.js · main.js)이라 Life 로 옮겨도 Travel 씬 구조를 건드리지 않는다. 재료의 대안 'Travel 공간의 지금 붐빔'은 10-23 까지 동결 대상.<br>[코드에서 새로 확인한 어긋남] (a) live-layers.js:782-783 머리말 '예측 구간은 막대를 비우고 테두리만' ↔ 구현 :866 색×0.55. (b) 시간 스트립 안내문이 혼잡의 시간 반응을 말하지 않는다(main.js:4911-4918). (c) intelligence:true 깃발 3 · 생산자 0. (d) prototype/js/earthus2/v02/human-flow/(혼잡 지수 · 추세 · 이상 탐지 · 예측 채점 저장소)가 있는데 v2-three 소비자 0건 — ⑥ 의 채점 확률과 ⑦ 의 사유 문장에 쓸 재료. (e) sim-questions.js:191 사유 문장의 '인구 기둥'은 릴리프 재구축 뒤 고쳐야 한다.<br>[UNKNOWN] app/tourism/history/ 스냅샷 보관 기간과 STALE 공백 · 배포된 EventBridge 주기 · 혼잡 eventPick 반경 · ext 확장 화면(hobby/*)에서 셸의 현상 문맥(getPhenomenonContext)이 잡혀 sim/intel 블록이 그려지는지 · 소실 원인 분류 자료와 SSP 격자 인구의 존재 · 라이선스 · hobby-turtle.js · hobby-dive.js 의 build 본문(열지 않음 — pick 줄 번호만 grep 으로 확인). aws/*/handler.py 중 직접 연 것은 tourism-flow 뿐이고 migbird · ecobird · seabird · sea-turtle 수집기 줄 번호는 재료 인용이다.<br>[유료 가치의 정직한 평가] Life 는 정적 기관 기록이 대부분이라 유료 동기가 약하다. EXPLORER 에 설 수 있는 것은 표(정점 9년 · 반경 5km 소실 면적 · 지난주 대비)와 채점된 혼잡 확률, PRO 는 Compare 첫 짝과 노출 인구 셈(Hazards 와 묶일 때)뿐이다. 철새 · 조류 조사 · 바다거북은 끝까지 무료 고정. 이 메뉴는 W0(GFS)에 의존하지 않아 W1 · W5 와 병행할 수 있다.<br>읽은 파일(절대경로): D:\## APP\EARTHUS v2_APP\prototype\v2-three\js\phenomenon-registry.js · sim-questions.js · main.js · live-layers.js · pop-sculpture.js · ui-shell.js · intel-strip.js · intel-questions.js · scenario-compare.js · information-contract.js · ext\hobby-seabird.js · ext\hobby-ecobird.js · ext\hobby-migbird.js · D:\## APP\EARTHUS v2_APP\prototype\v2-three\forest\loss-index.json · popgrid\index.json · D:\## APP\EARTHUS v2_APP\aws\tourism-flow\handler.py · D:\## APP\EARTHUS v2_APP\prototype\js\earthus2\v02\human-flow\algorithms.js · forecast-lifecycle.js · D:\## APP\EARTHUS v2_APP\docs\earthus-v2\PAID-UX-REDESIGN-2026-09-20\DEV-DIRECTIVE.md(:28, :56-62, :174) · D:\## APP\EARTHUS v2_APP\tools\directive-2026-09-20\grammar-matrix.json · by-menu.json.
+
+<details><summary>descriptor 초안</summary>
+
+```js
+{
+  id: '10-life',
+  rail: { no: '10', ko: '생명·사람', en: 'Life', icon: 'life' },   // 2026-09-20 PD 결정. 지금의 society 묶음(phenomenon-registry.js:1099-1111)에서 travel.* 등을 뺀 것. 레이어 id 는 개명하지 않는다
+  phenomena: ['land.forest', 'people.population', 'people.crowding', 'land.bird_migration', 'land.bird_survey', 'ocean.seabird', 'ocean.sea_turtle'],
+  actionOnly: ['ocean.deep_sea'],        // 메뉴 줄 0 — 09 Terrain Bathymetry Inspector 의 '여기로 잠수'(PD 가 C 안을 고를 때)
+  unplaced: ['people.news'],             // 재료 없음 · PD 결정 필요 (people.night_lights 는 09 Terrain 이 이미 가져갔다)
+  defaultMode: 'forest', defaultRegion: 'KOR',      // 1탭 뒤 빈 화면 금지 · 메뉴는 항상 한국 먼저
+  modes: [                                          // 칩. range 입력 0개
+    { id: 'forest', ko: '숲' }, { id: 'forestloss', ko: '산림 감소', region: 'KOR' },
+    { id: 'population', ko: '인구' }, { id: 'crowding', ko: '지금 붐빔', region: 'SEOUL' },
+    { id: 'birds', ko: '새', sub: ['migration', 'survey', 'seabird'] },            // MERGE — PD 확인
+    { id: 'turtle', ko: '바다거북', frozen: 'KOGL-4 — 기관 서면 확인 전 신규 개발 금지' },
+  ],
+  members: [
+    { key: 'forest.cover', layer: 'land/forest', badge: 'OBSERVED',
+      view: { kind: 'relief', attr: 'aCover', scale: 'forestCover', isolines: null, blockMean: 'STEP×STEP 산술 평균', heightFollows: 'View>Appearance.terrainExaggeration' },
+      scale: { type: 'stepped', unit: '%', breaks: [20, 40, 60, 80, 100], below: 'not-drawn(<20%)' },
+      value: { read: 'pngPixel', file: 'forest/{iso}-cover.png', residentArray: false, precision: '550 m 칸 평균 · 1/255 눈금' },
+      source: { agency: 'ESA WorldCover 10m v200', kind: 'observation', refYear: 2021, license: 'CC BY 4.0',
+                grid: { source: '0.005° ≈ 550 m', screen: { KOR: '≈1.7 km 평균', JPN: '≈5 km 평균' } } },
+      frames: { kind: 'none', reasonKo: '2021 스냅샷 — 움직일 시간이 없습니다' },
+      labels: ['forest/index.json regions[].meanCover', 'clicked-point'] },
+    { key: 'forest.loss', layer: 'land/forestloss', badge: 'OBSERVED',
+      view: { kind: 'cells', shape: 'square@cellDeg', mobileMax: 60000 },
+      scale: { type: 'stepped', unit: '평균 소실 연도', breaks: [2001, 2011, 2019, 2024] },
+      value: { read: 'pngPixel', file: 'forest/kor-loss.png', decode: 'R→2000+R(평균 소실 연도) · A→사라진 비율' },
+      source: { agency: 'Hansen GFC-2023 v1.11 (UMD)', license: 'CC BY 4.0', grid: '0.0025° ≈ 250 m', caveatKo: '모든 수관 소실 · 순감소 아님' },
+      frames: { kind: 'years', range: [2001, 2023], via: 'GlobalTimeline.yearTicks', interim: '연 눈금 모드 전에는 기존 loss-year 슬라이더 유지(규칙 2 부채)' } },
+    { key: 'population.density', layer: 'people/sculpt', absorbs: ['people/pop', 'people/poptower'], badge: 'MODEL',
+      view: { kind: 'relief', attr: 'aDensity', scale: 'popDensity', isolines: null, faceRule: 'any-corner-has-value', autoRegion: 'KOR' },
+      scale: { type: 'stepped', unit: '명/㎢', breaks: [100, 500, 1000, 2500, 5000, 10000, 20000], below100: 'near-transparent',
+               status: 'PROPOSED — 지금은 분위 로그 10등급(PD 지시) · 변경은 PD 확인' },
+      value: { read: 'arrayCell', decode: 'max·(u8/255)^3 ÷ 칸 면적(행별 cos φ)', precision: "'약' — 8bit 세제곱근 양자화" },
+      source: { agency: 'WorldPop R2025A constrained UN-adjusted', kind: 'model', refYear: 2025, license: 'CC BY 4.0', grid: { KOR: '0.0167°', JPN: '0.058°', USA: '0.275°' } },
+      frames: { kind: 'none', reasonKo: '2025년 추정 한 장' }, labels: ['findPeaks top5'] },
+    { key: 'crowding.level', layer: 'people/seoul', badge: { now: 'OBSERVED', future: 'FORECAST · 서울시' },
+      view: { kind: 'discs', size: 'fixed', forecast: 'hollow-ring', labelsAlways: 12, decision: 'R-01 수직 막대 보존 ↔ 막대기 금지 — PD 결정 필요' },
+      scale: { type: 'agency-categorical', levels: ['여유', '보통', '약간 붐빔', '붐빔'], colors: 'official.color 그대로' },
+      value: { read: 'eventPick', card: ['populationRange(밴드 그대로)', 'level', 'forecast[] 표'] },
+      source: { agency: '서울특별시 실시간 도시데이터', time: 'generatedAt', stale: "state==='STALE' → 범례 회색 + '○시간 전 자료'" },
+      frames: { kind: 'minutes', future: 'forecast[] 끝 시각까지 · 그 뒤 감춤', past: 'history-index.json 48h — 집계 S 선행' } },
+    { key: 'birds.migration', layer: 'hobby/migbird', badge: 'HISTORY',
+      view: { kind: 'arcs', dash: true, pulse: 'direction-only', endAt: 'dest-circle-edge', needs: 'ribbon helper' },
+      scale: { type: 'stepped-width', unit: '건', breaks: [1, 2, 5], color: 'top6 + 기타 회색' },
+      value: { read: 'extPick' }, source: { agency: '농림축산검역본부 위치추적 요약', period: '2021~2025', license: '제한 없음' },
+      frames: { kind: 'years', range: [2021, 2025] }, legendNoteKo: '파선 = 실제 경로 아님 · 흐름 = 방향(속도·시기 아님)' },
+    { key: 'birds.survey', layer: 'hobby/ecobird', badge: 'HISTORY',
+      view: { kind: 'cells', cellDeg: 0.05, lift: 'max(corner heights)+margin' },
+      scale: { type: 'stepped-log', classes: 5, breaks: 'TBD — 실제 분포로 확정', units: ['기록 수', '종 수'] },
+      value: { read: 'extPick' }, source: { agency: '국립생태원 에코뱅크', license: '공공누리 1유형 + 제3자 권리 포함', rightsLock: { paidDerivatives: false } },
+      frames: { kind: 'none' }, legendNoteKo: "색 = 조사 기록이 쌓인 양(새가 많은 곳 아님) · truncated>0 이면 '미수신 ○건'" },
+    { key: 'birds.seabird', layer: 'hobby/seabird', badge: 'HISTORY',
+      view: { kind: 'discs', size: 'fixed', numberInside: true, noSurveyYear: 'hollow-ring' },
+      scale: { type: 'stepped', classes: 5, breaks: 'TBD', unit: { all: '마리(누적)', year: '마리/조사 1회' } },
+      value: { read: 'extPick', table: 'stations[].by → [연도, 조사 횟수, 개체수, 1회당]' },
+      source: { agency: '국가해양생태계종합조사', license: '제한 없음' }, frames: { kind: 'years', from: 'years[]' } },
+    { key: 'turtle.track', layer: 'hobby/turtle', badge: 'HISTORY',
+      view: { kind: 'paths', decimate: false, merged: 'one LineSegments' }, value: { read: 'extPick' },
+      source: { agency: '국립해양생물자원관', license: '공공누리 4유형(상업 이용·변경 금지)', rightsLock: { paidDerivatives: false, frozen: true } },
+      frames: { kind: 'none', reasonKo: '추적 종료 개체 — 공용 시간축에 묶지 않음' } },
+  ],
+  compare: {
+    first: { member: 'crowding.level', pair: 'time↔time', a: 'now(OBSERVED)', b: '+Nh(FORECAST · 서울시)', sync: ['camera', 'legend'], diff: 'level-delta(−3…+3)' },
+    next: [ { member: 'forest.loss', pair: 'period↔period', a: [2001, 2011], b: [2012, 2023] },
+            { member: 'forest.cover', pair: 'country↔country', sharedScale: true },
+            { member: 'birds.seabird', pair: 'year↔year', metric: 'per-survey' },
+            { member: 'population.density', pair: 'country↔country', sharedScale: true, after: 'relief rebuild' } ],
+    unavailable: { 'model↔model': '둘째 인구·산림 모델이 저장소에 없음', 'birds.migration': '179건 정적', 'birds.survey': '칸별 연도 없음 + 권리', 'turtle.track': '라이선스' },
+  },
+  intel: {
+    producers: [],                        // 기존 4개 중 Life 0 — intelHostFor(main.js:4098-4112) 에 가지 없음
+    planned: [
+      { id: 'crowding-verify', member: 'crowding.level', input: 'app/tourism/history/YYYY/MM/DD/*.json', harness: 'earthus2/v02/human-flow/forecast-lifecycle.js ForecastVerificationStore',
+        yields: "probability[]{ kind:'scored_forecast', horizonMin, level, hitRate, n, window }" },
+      { id: 'exposure-link', member: 'population.density', input: 'Hazards 패킷(기관 확률·51멤버 비율) × popgrid 산술 합', yields: 'IMPACT 절 — 인과 아님' } ],
+    attribution: [], attributionReasonKo: '측정된 조건+문헌 기작 쌍이 Life 어느 현상에도 없다 — 숲 소실 자료는 원인을 나누지 않는다',
+    probability: [], probabilityReasonKo: '서울시 예측은 기관 예보 인용이며 확률이 아니다 · 채점 기록 전',
+    noSentences: ['turtle.track', 'birds.survey'],
+  },
+  simulation: {
+    registry: { 'people.population': 'not_available (sim-questions.js:181-193)', add: ['land.forest', 'people.crowding', 'land.bird_migration', 'land.bird_survey', 'ocean.seabird', 'ocean.sea_turtle', 'ocean.deep_sea'] },
+    scenarios: [
+      { id: 'exposure-count', chips: ['Current', '기관 침수 예상도', '쓰나미 도달 T분'], status: 'not_available', kind: 'arithmetic-sum', needs: ['Hazards Inspector(P1)', '칸 부분 겹침 규칙', '행정 인구 대조 검증'] },
+      { id: 'crowd-whatif', chips: ['Current', '+20%'], status: 'not_available', partsExist: 'human-flow forecastCrowd(계수 없음)', needs: ['crowding-verify 채점 기록', '계수 보정'], forbidden: ['calculateRisk', 'capacityPressure'] } ],
+    snapshot: ['camera', 'mode', 'region', 'timeOffsetMs', 'selected'],
+  },
+  tiers: { FREE: ['① 그림', '② 기본값', '③ 출처', '④ 서울시 공식 예측(+24h 안)'], EXPLORER: ['정점 9년 표 · 반경 5km 소실 면적 표 · 지난주 대비 · 짧은 인텔'], PRO: ['Compare', 'Simulation', 'export'],
+           alwaysFree: ['birds.migration', 'birds.survey', 'turtle.track'] },
+}
+```
+
+</details>
+
+#### T Travel 여행(한국)
+
+| 단계 | 지금 | 끝났을 때 사용자가 보고 하는 것 | 이 메뉴가 공급할 것 | 선행 | 요금 |
+|---|---|---|---|---|---|
+| **① 극적으로 보인다** | 🟡 prototype/v2-three/js/travel.js:253-296 build() — 시군구 228곳을 7px THREE.Points 로 찍는다(:275-278). 밝기 = 점수 선형(discover) / 제곱근(:266 — 실제로는 visitors 전용), 게이트 걸린 곳은 어두운 색(:268),… | Travel 을 1탭 하면 3초 안에 한국으로 글라이드하고 칩 [오늘 갈 곳 \| 목적별 장소 \| 방문자] 가 뜬다. 공용 EventLayer 의 숫자 원판으로 시군구 228곳이 5단 단계색으로 보인다 — 오늘 갈 곳은 점수 0~100 고정 5단 + 상위 10곳에 '순위 이름 점수' 라벨(형식 예: '1 속초 78'), 게이트에 걸린 곳은 회색 빗금 원판. 방문자는 외지인 일평균 5분위(경계 27,226 · 52,506 · 89,860 · 153,408명 — 2026-07 자료의 분위값이며 고정 등급 아님) + 자료 없는 30곳은 빈 고리. 목적별 장소는 멀리서 시군구 건수 원판(무장애 5분위 17 · 28 · 39 · 68), 300km 아래에서는 현재 쪽 24건이 번호 핀(목록 n번 = 지도 n번)으로 바뀐다. Legend 상시: 5칸 + 단위 + 'EARTHUS DISCOVERY(KTO 공식 추천 아님)' + 자료 시각 2종. 면 채색·기둥·점 구름 없음.<br>⚠️ *말하면 안 되는 것:* 시군구 폴리곤이 없어 '지역을 칠한' 그림은 만들 수 없다 — 원판까지만. 5분위 경계는 자료가 바뀌면 바뀐다(고정 등급처럼 말하지 않는다). 점수는 EARTHUS 가 유도한 후보 점수이지 KTO 추천·인기 순위가 아니다. 연관 관광지는 좌표 없는 명칭 그래프라 호를 그리지 않는다(이름 대조율 UNKNOWN). | 눈금 3벌(score 고정 5단 / visitors.domestic 5분위 / count 5분위 — 분위 경계는 자료에서 계산해 범례에 수치로) · 상태 3종(normal / blocked=회색 빗금 / nodata=빈 고리) · 라벨 포맷 '{rank} {nameKo} {value}' 상위 10 · 줌 전환 임계(시군구 원판 ↔ 번호 핀 300km) · 핀 번호 = pageResult 인덱스(24/page) · 범례 고정 문구('이동통신 기반 방문자 — 관광… | 공용 EventLayer · Legend(P1 공통 renderer contract). 그 전에도 travel.js 안에서 Sprite 원판으로 선행 가능 — 대회 동결(접수 09-30 · 발표 10-23) 범위인 '그림·문구만'에 해당. 목적별 건수 원판은 지금 죽어 있는 :256-… | FREE |
+| **② 정확한 값** | 🟡 prototype/v2-three/js/main.js:2807-2819 — 지도 클릭 → travel.pick(lat,lon)(travel.js:310-328, 반경 35km 최근접; 목록 모드는 현재 쪽 항목만 :314) → regionCard 를 lockedNote 로 → shell.openInte… | 원판 클릭 1회 → 우측 Inspector.ValueCard 에 큰 수 하나 + 단위 + '정밀도의 한계' 한 줄. 예(속초, 자료 실측값): '외지인 방문자 83,474명/일 · 2026-07-06~07-19 14일 평균' / '무장애 여행지 124곳' / '오늘 점수 nn/100'. 한계 줄: '시군구 중심점(경계 bbox 중점) 기준 · 장소는 최근접 배정 근사 · 이동통신 기반 방문자(관광객 수 아님)'. 그 아래 성분 표: 목적 밀도 × 0.6 + 덜 붐빔 × 0.4, 게이트(특보·대기질) 상태, KTO 집중률 예측 평균 47.6 · 최대 99.8(이미 받은 자료 — 새 요청 0건). 장소 핀 클릭은 기존 placeCard 를 같은 틀에 담고 '이곳 다음에 간 곳 Top 5'(related — 공식 명칭이 일치할 때만)를 한 절로 붙인다.<br>⚠️ *말하면 안 되는 것:* 기본값(점수·건수·방문자·게이트 사유)은 무료 — 게이트 사유는 안전 정보다. 성분 전체 분해 · 집중률 · 외지인/현지인/외국인 구분은 EXPLORER 깊이. 시군구값을 '그 장소의 값'처럼 말하지 않는다. 방문자수는 관광객 수도 현재 혼잡도 아니다. 집중률 187곳 중 81곳은 rowCount=1000(수집 상한)에 정확히 걸려 있어 평균·최대가 잘린 행에서 계산됐을 수 있다(실측 —… | fields: score(/100, 정수, EARTHUS_ANALYSIS) · visitors.domestic\|local\|foreign(명/일 14일 평균, HISTORY) · count.bf\|wl\|en(곳·건, OFFICIAL_INFORMATION) · concentration.mean\|max(상대지수, PROVIDER_FORECAST) · limitNote 문구 3종 · pick 규칙(35km 최근접 / 목록 모드는 현재 쪽 24건) · 성분 분해… | 공용 Right Inspector(P0 셸). travel.pick · regionCard · placeCard 재사용. 집중률 행 추가는 자료가 이미 번들에 있어 선행 없음(동결 기간에도 가능한 '문구·그림' 범위). related Top5 는 장소명 ↔ related 키 일치 실측… | FREE |
+| **③ 출처** | 🟡 travel.js:336-340 provLine(기관명 · 건수 · 수집일), :369-380 근거 줄마다 renderBadge + 출처, :397-404 sourceFooter(출처 · 수집 시각 KST · 원자료 링크 · 사진 미사용), :429 장소별 공식 콘텐츠 ID · 원문 수정시각 · 공공누… | 같은 Inspector 의 ProvenanceCard 한 장에 줄마다 기관 · 구분 배지 · 시각 · 해상도 · 라이선스. 예: '목적 밀도 — 한국관광공사 무장애 여행 정보 · OFFICIAL · 수집 2026-09-02 · 시군구 중심점 최근접 배정(60km 초과 미배정 19건)' / '방문자 — 한국관광공사 빅데이터 지역별 방문자수 · HISTORY · 2026-07-06~07-19 14일 평균' / '집중률 — KTO 관광지 집중률 예측 · PROVIDER_FORECAST · 대상 09-02~10-01' / '특보 — 기상청 · OFFICIAL_WARNING · 발표 HH:MM' / '대기질 — 에어코리아 ○○측정소 3km · 측정 HH:MM'. '매일 다시 점수' 문장은 지우고 '특보·대기질은 지금 값 · 목적 밀도·방문자는 09-02 집계'로 바꾼다.<br>⚠️ *말하면 안 되는 것:* 출처 기관·시각 한 줄은 잠그지 않는다(공공데이터 출처표시 의무 + DoD '모든 수치에 source+timestamp'). 데이터셋 단위의 상업 이용 조건은 열어 보지 않았다 — UNKNOWN, 유료 전환 전 확인 필요. 방문자 원천(통신사·표본)은 자료에 없으므로 말하지 않는다. '오늘'이라는 말은 게이트에만 쓴다. | 출처표 8행(barrierFree · wellness · english · visitors · concentration · related + 게이트 2) — kto-discovery.json provenance(sourceName · sourceUrl · fetchedAt · sourceType · itemCount)를 그대로 매핑 · 시각 3종 매핑(observed=게이트 측정/발표 시각, collected=fetchedAt, valid=집계 기간 dateF… | 공용 ProvenanceCard(P0 Right Inspector). 문구 수정(:353)과 게이트 시각 출력(:379-380)은 즉시 가능 — 동결 범위 안. events/kma-warn.json 의 발표 시각 필드명은 이번 조사에서 열어 보지 않음(UNKNOWN). | FREE |
+| **④ 시간축** | ❌ main.js:4891-4899 onTimeOffset → clouds.setForecastOffset · liveLayers.setTimeOffset · syncCloudToTime 뿐, travel 호출 없음. live-layers.js:2857-2867 setTimeOffset 은 seoul ·… | 슬라이더를 새로 만들지 않는다. Travel 이 켜지면 하나뿐인 Global Timeline 이 '날짜 모드'로 눈금을 바꾼다(같은 부품의 모드): 오늘 → +30일, 1일 스텝, 'FORECAST · KTO 집중률 예측' 배지. 날짜를 옮기면 방문자 칩의 원판이 그날 집중률 지수(시군구 평균) 5단색으로 바뀌고 Inspector 에 30일 곡선과 그날 위치가 찍힌다. 과거 쪽은 방문자 집계 창(07-06~07-19) 하나만 눈금으로 서고 나머지는 '자료 없음'으로 비활성. 날짜를 옮기면 게이트(특보·대기질) 줄은 '현재값 — 이 날짜의 것이 아님'으로 회색 처리된다.<br>⚠️ *말하면 안 되는 것:* 집중률은 상대지수(100=가장 붐비는 시기)이지 인원 수도 확률도 아니다. 무엇을 100 으로 잡는지(관광지별인지 공통인지)는 자료 설명에서 확인하지 못했다 — UNKNOWN, 확인 전에는 지역 간 절대 비교 문장을 쓰지 않는다. 시군구 평균은 관광지별 지수를 우리가 평균한 값이다. 방문자 과거는 창이 하나라 '추세'를 말할 수 없다. 81/187곳은 수집 상한(1,000행)에 걸려 30일… | frames 선언: { mode:'date', step:'1d', range:[today, today+30d], kind:'PROVIDER_FORECAST', product:'tourism/kto/concentration-daily.json(신규 — 시군구×날짜 mean · max · spotCount, 187×30)' } + 과거 단일 창 { from:'2026-07-06', to:'2026-07-19', kind:'HISTORY' } · 시간 무관 필드 목… | ① 집계 단계(build_kto_discovery.py 또는 일일 Lambda)가 날짜별 행을 버리지 않고 시군구×날짜로 남길 것(M) ② GlobalTimeline 날짜 모드(P0 Single Timeline 의 모드 확장) ③ 스윕 pageSize 1000 · pageLimit 1… | EXPLORER |
+| **⑤ 비교** | ❌ prototype/v2-three/js 전체에 splitGlobe\|split-globe\|wipe\|compareWorkspace 0건(Grep). ui-shell.js 의 compare 매치는 localeCompare 정렬과 예보 채점 설명문뿐(:590, :608, :692). travel.js 는… | TOP 의 Compare 를 누르면 Travel 은 기본 짝 '지역 ↔ 지역'으로 열린다: 원판 두 개를 차례로 눌러 A · B 를 고정하면 Inspector 가 두 열(예: 속초 \| 강릉)로 같은 행 — 점수 · 성분 · 무장애/웰니스/영문 건수 · 외지인/현지인/외국인 일평균 · 집중률 평균/최대 · 게이트 — 을 같은 단위 · 같은 집계 기간으로 나란히 놓고 차이 열을 붙인다. split globe 짝은 '방문자 구분 ↔ 구분'(외지인 \| 외국인 — 같은 출처 · 같은 14일 · 같은 단위, 면별 5분위 범례 + diff 는 '외국인 비중 %'). 카메라 · 칩 · 범례 동기화와 URL 공유는 공용 Compare 가 한다.<br>⚠️ *말하면 안 되는 것:* 모델↔모델 짝은 이 메뉴에 없다 — 관광 예측 제공자가 KTO 하나다. 방문자 실적(명)과 집중률(상대지수)은 수치 diff 금지 — 순위 비교만, 배지 HISTORY vs PROVIDER_FORECAST 를 양쪽에. 방문자 시각↔시각은 창이 하나라 지금 불가. KTO 가 예측을 매일 갱신하는지는 UNKNOWN — 런↔런은 보관본 이틀치를 실측한 뒤 착수 여부를 정한다. 지금 Travel… | comparePairs: [ region↔region(entity pin, 지금 됨) · visitors.domestic↔visitors.foreign(split, scale per-side, diff='share%', 지금 됨) · count.bf↔count.en(split, 지금 됨) · date↔date(needs concentration-daily) · run↔run(needs archive/tourism/kto/raw 집계) · history↔fore… | 공용 Compare workspace(P1). TravelScene 이 두 필드를 동시에 그릴 수 있게(지금 mode 단일). 날짜↔날짜는 (4)의 daily 산출물. 런↔런은 aws/tourism-flow/kto_collector.py:319 의 raw 보관본(archive/ — 공… | PRO |
+| **⑥ Intelligence** | ❌ main.js:4098-4112 intelHostFor 는 hazards.typhoon · hazards.earthquake · ocean.sst · weather.temperature_anomaly 만 돌려주고 travel.* 는 null. 패킷 생산자 4개에 여행 없음. 그런데 registry 는… | Inspector 의 Intelligence 절이 수치 → 출처 → 문장 순서로 선다. 수치: '오늘 점수 nn/100 = 목적 밀도 dd × 0.6 + 덜 붐빔 qq × 0.4'. 출처: '한국관광공사 5종(수집 09-02) · 기상청 특보(발표 HH:MM) · 에어코리아 ○○측정소 3km(측정 HH:MM)'. 문장: '[원인 — 게이트 규칙] ○○군이 오늘 후보에서 빠진 원인은 호우주의보 발효(기상청)입니다 — 규칙이 결정적이라 기여 100%.' / '[원인 — 점수 분해] 속초가 상위인 것은 목적 밀도 기여 dd점, 덜 붐빔 기여 qq점.' / '[앞으로 — 제공자 예측 인용] KTO 집중률 예측 09-02~10-01 평균 47.6 · 최대 99.8(상대지수, 인원 수 아님).' attribution[] 은 '우리 점수·게이트의 원인'에 한해 결정적으로 실리고, probability[] 는 비운다.<br>⚠️ *말하면 안 되는 것:* '왜 붐비는가'(축제 · 연휴 · 날씨)의 원인은 측정된 조건도 문헌 기작도 패킷에 없다 → 말하지 않는다. '붐빌 확률 %'는 말할 수 없다 — KTO 지수는 확률이 아니고, 예측 대 실제 방문자 채점은 단위가 달라 설계조차 없다. 기관 확률로 실을 수 있는 후보는 기상청 동네예보 강수확률(aws/kma-fcst → wind/kma-fcst.json, POP)뿐인데 97지점 최근접이라 시… | 다섯 번째 패킷 생산자 '여행 패킷' — 일일 집계 단계가 kto-discovery 옆에 intel 을 실어 보낸다(띠는 계산·요청하지 않는다, intel-strip.js:5-7 계약 §C-0): WHAT=점수 · 성분 · 게이트 / WHY(attribution)=게이트 사유(결정적) · 성분 기여 / NEXT=KTO 집중률 인용(PROVIDER_FORECAST — intel-strip.js:38 에 이미 있는 '예보 제공자 인용' 분류) / EVIDENCE=… | 인텔 패킷 v1 의 attribution[] · probability[] 확장(공용) · 일일 집계 Lambda 단계(today_pick 의 '매일 바뀌는 오늘' M 항목과 같은 작업) · registry capabilities 정정(지금의 true 는 빈 약속) · 대회 동결 뒤. | EXPLORER |
+| **⑦ Simulation** | ❌ prototype/v2-three/js/sim-questions.js:194-206 — travel.visitor_pressure 하나만 등재, engine:null, status NOT_AVAILABLE, 질문 '여행객이 늘면 어디가 달라질까?' + 사유 문장. today_pick · place_ca… | Simulation 입구는 다른 메뉴와 같은 자리(TOP · Inspector 하단). 누르면 지금 상태(선택 시군구 · 칩 · 게이트 시각 · 자료 집계일)를 스냅샷으로 들고 작업 공간으로 간다: Current(지금 순위) → Baseline(같은 것, 고정) → Scenario 칩 [한산 우선 0.3/0.7 \| 목적 우선 0.8/0.2 \| 특보 해제 가정] → Result(순위표 + 순위 변화 Δ 원판, 절대 점수와 Δ 동시). 배지 'SCENARIO · 재점수 — 예측 아님 · 기록 남는 계산 아님'. 등재된 질문 '여행객이 늘면…'은 같은 공간 첫 줄에 NOT_AVAILABLE 과 사유 그대로 선다.<br>⚠️ *말하면 안 되는 것:* 수요 · 이동 모형이 없다 — '여행객이 늘면/줄면', '축제가 열리면', '비가 오면 방문자가 몇 % 준다'는 말할 수 없다(채점된 모형 없음). 재점수는 우리 공식의 민감도이지 세계의 예측이 아니다. '특보 해제 가정'은 실제 발효 중인 특보를 화면에서 지우지 않는다(안전 정보 상시 · 무료). LIMITED 는 기존 선례(main.js:4730-4731 — PRO 잠금은 기록 남는 S… | SIM_CAPABILITIES 신규 항목 'travel.today_pick'(status LIMITED · engineRef 'prototype/v2-three/js/travel.js' computeScores · inputs '이미 받은 kto-discovery + 게이트' · outputs '순위 · Δ' · horizons '현재 자료 기준 — 예보 아님') · 시나리오 칩 3개 정의(가중치 쌍 2 + 게이트 가정 1) · 스냅샷 필드 목록 · visit… | 공용 Simulation workspace(P2). computeScores 를 가중치 · 게이트 인자를 받는 순수 함수로(지금은 this.data 를 제자리에서 바꾼다 :182-190). sim-q 분기 추가. 대회 동결 뒤. | PRO |
+
+- **⑤ 비교 짝:** 1순위(지금 자료로 바로 됨) = 지역 ↔ 지역: 시군구 A · B 를 고정해 Inspector 2열로 같은 변수 · 같은 집계 기간 · 같은 출처를 나란히(점수 · 성분 · 목적 건수 · 외지인/현지인/외국인 · 집중률 평균/최대 · 게이트). 새 자료 0, 새 렌더러 0. 2순위(지금 됨, split globe) = 방문자 구분 ↔ 구분(외지인 \| 외국인): 같은 출처 · 같은 14일(2026-07-06~07-19) · 같은 단위라 diff(외국인 비중 %)가 정직하다. 3순위(지금 됨) = 목적 ↔ 목적(무장애 \| 영문 건수). 지금 안 되는 짝: 날짜 ↔ 날짜(이번 토요일 \| 다음 토요일 집중률) — 날짜별 행이 번들에서 버려져 있어(build_kto_discovery.py:217-226) daily 산출물이 선행. 런 ↔ 런(어제 발표 \| 오늘 발표) — raw 보관본(kto_collector.py:319)은 있으나 집계가 없고 KTO 의 일일 갱신 여부 UNKNOWN. 방문자 시각 ↔ 시각 — 창이 하나라 불가. 실적 ↔ 예측은 단위가 달라(명 vs 상대지수) 순위 비교만 허용. 모델 ↔ 모델은 이 메뉴에 성립하지 않는다(제공자 KTO 하나) — 지어내지 않는다.
+- **⑦ 시나리오:** 저장소에 Travel 용 시뮬레이션 엔진은 없다. sim-questions.js:194-206 의 travel.visitor_pressure 는 engine:null · NOT_AVAILABLE('방문객 증가 계산 엔진이 아직 없습니다'). prototype/js/earthus2/v11/tourism/ 의 best-window.js · discovery-ranker.js 는 가중합 채점기(SHADOW)이지 시뮬레이션이 아니고 v2-three 가 쓰지 않는다. aws/tsunami-eta · research-runtime · transport-simulator 는 이 메뉴와 무관. 정직한 후보는 하나: travel.js:174-191 computeScores 를 인자화한 '재점수 시나리오' — 칩 [한산 우선 0.3/0.7 \| 목적 우선 0.8/0.2 \| 특보 해제 가정], 결과는 순위와 Δ. 브라우저 안의 결정적 재계산이라 상태는 LIMITED(기록 남는 simulation_run 아님), 등재 위치는 visitor_pressure 가 아니라 신규 'travel.today_pick'. 날짜 시나리오(이번 토요일 기준 재점수)는 (4)의 daily 집중률 산출물이 생긴 뒤. 수요 예측 · 방문자 증감 시나리오는 모형도 채점 자료도 없어 NOT_AVAILABLE 유지 — 입구는 같은 자리에 두고 사유를 말한다.
+- **첫 단면(7단계를 전부 관통하는 가장 얇은 출시):** 대회 동결(접수 09-30 · 발표 10-23) 안에서 '그림·문구만'으로 7단계를 전부 관통한다 — 새 자료 의존성 0, 메뉴 이동 0. (1) travel.js build() 의 7px 점을 5단 단계색 숫자 원판 + 상위 10 순위 라벨 + 게이트 회색 빗금 + 자료 없음 빈 고리로, 목록 모드의 24점에 번호를 붙이고, 범례를 상시 띄운다. (2) 같은 클릭 경로(main.js:2807-2819)를 유지한 채 카드 맨 위를 '큰 수 + 단위 + 한계 한 줄'로 재배열하고, 이미 받아 둔 KTO 집중률 평균·최대 행을 추가한다(새 요청 0건). (3) sceneCard :353 의 '매일 다시 점수 매깁니다'를 사실 문장으로 바꾸고, 담아 두고도 안 찍던 대기질 측정 시각(:160)과 특보 발표 시각을 출력하며, 방문자=HISTORY / 집중률=PROVIDER_FORECAST 배지를 가른다. (4) 타임라인은 건드리지 않고 Inspector 에 '이 메뉴의 자료 시간표'(방문자 07-06~07-19 · 집중률 대상 09-02~10-01 · 연관 2026-06 · 게이트=지금) 한 표 — 입구 + 사유 '날짜 눈금은 날짜별 집중률 산출물이 생기면 열립니다'. (5) Compare 입구를 같은 자리에 두고 누르면 '지역 ↔ 지역' 2열 Inspector 만(기존 pick 두 번) — split 은 사유와 함께 뒤로. (6) Intelligence 절은 수치 → 출처 → 문장 배치만 먼저: 게이트 사유와 점수 분해를 '우리 규칙의 원인'으로 말하고 KTO 집중률은 제공자 예측 인용으로, 확률 칸은 '확률을 말할 근거가 없습니다(지수는 확률 아님)'. (7) Simulation 입구 + 사유: sim-questions.js 의 visitor_pressure NOT_AVAILABLE 문장을 그대로 보여 준다. 미루는 것(10-23 뒤): MENU_GROUPS 에서 Travel 분리 · 일일 집계 Lambda('매일 바뀌는 오늘') · 시군구×날짜 집중률 산출물과 타임라인 날짜 모드 · 목적별 건수 원판(죽은 경로 복구) · split 비교 · 여행 패킷 생산자 · 재점수 시나리오 등재 · 연관 관광지 호(이름 대조율 실측 뒤).
+- 비고: 1) 메뉴 자리에 정본이 둘이다: ui-shell.js:134-149 에는 이미 별도 'travel' 장면(레이어 6개)이 있는데, 정본이라는 phenomenon-registry.js MENU_GROUPS(:1099-1111)는 여행 6현상을 'society(생태·사람·여행)' 묶음에 넣어 두었다. PD 의 09-20 결정(Travel 독립 메뉴)은 셸 쪽과 일치한다 — registry 분리는 대회 동결이 끝나는 10-23 뒤로 잡는다. 2) 재료의 place_catalog 'before' 는 v2 에서 틀렸다: bf·wl·en 에서 시군구 건수 비콘은 도달 불가 코드이고(travel.js:255 조기 반환), 지구에는 현재 쪽 24건만 찍힌다. wl 의 실제 지점 203개 분기(:280-286)도 죽어 있다. 3) registry 의 빈 약속: 여행 4현상 intelligence=true 인데 패킷 생산자 · intelHostFor 분기가 없다. visitor_pressure 는 forecast=false 인데 scope 문장은 30일 예측 창을 말한다(:623, :627). 4) 집중률 수집 절단: 187곳 중 81곳이 rowCount=1000 에 정확히 걸린다(스윕 pageSize 1000 · pageLimit 1, configure-kto-sweep-schedules.sh:23; 34곳×30일=1,020). 5) v2 는 받아 둔 집중률 예측을 화면에 한 번도 쓰지 않는다(v1 은 쓴다). 6) 요금: 재료는 네 현상 모두 'PRO: 없음'이었다 — 이 매트릭스도 같은 결론이다. (5)(7)의 tier 는 PD 문법대로 PRO 로 적었지만 지금 Travel 에 PRO 값을 하는 내용은 없고, 파는 것은 EXPLORER 의 (2) 성분 분해 · (4) 30일 곡선 · 한산한 날 알림이다. 7) 열어 보지 않아 UNKNOWN 으로 둔 것: kma-warn.json 발표 시각 필드명, KTO 데이터셋 단위 상업 이용 조건, 집중률 지수의 100 기준 단위, KTO 예측의 일일 갱신 여부, related 장소명 ↔ 카탈로그 이름 일치율. 관련 파일: D:/## APP/EARTHUS v2_APP/prototype/v2-three/js/travel.js · travel-catalog.js · main.js · sim-questions.js · phenomenon-registry.js · ui-shell.js · engine-bridge.js · intel-strip.js, D:/## APP/EARTHUS v2_APP/prototype/v2-three/data/tourism/kto-discovery.json, D:/## APP/EARTHUS v2_APP/tools/build_kto_discovery.py, D:/## APP/EARTHUS v2_APP/aws/tourism-flow/kto_collector.py, D:/## APP/EARTHUS v2_APP/aws/configure-kto-sweep-schedules.sh, D:/## APP/EARTHUS v2_APP/prototype/js/ui-travel-discovery.js, D:/## APP/EARTHUS v2_APP/prototype/js/earthus2/v11/tourism/.
+
+<details><summary>descriptor 초안</summary>
+
+```js
+{
+  id: 'travel',
+  label: { ko: '여행(한국)', en: 'Travel (Korea)' }, accent: '#F2A2C4',
+  scope: 'KR 시군구 228 — 중심점(bbox 중점), 폴리곤 없음',
+  rendererKind: 'EventLayer',            // FieldRenderer · ParticleField 미사용
+  frozenUntil: '2026-10-23',             // 데이터랩 대회: 구조 이동 동결, 그림·문구만
+  phenomena: ['travel.today_pick', 'travel.place_catalog', 'travel.place_sequence', 'travel.visitor_pressure'],
+  // travel.poi · travel.flight 는 availability 'planned' — 칩을 만들지 않는다
+  chips: [
+    { id: 'discover', phen: 'travel.today_pick',       layers: ['travel/discover'], default: true },
+    { id: 'places',   phen: 'travel.place_catalog',    layers: ['travel/bf', 'travel/wl', 'travel/en'], sub: ['무장애', '웰니스', 'English'], pageSize: 24 },
+    { id: 'visitors', phen: 'travel.visitor_pressure', layers: ['travel/visitors'] },
+  ],
+  // travel/related(place_sequence)는 칩이 아니라 Inspector 절 'Top 5'
+  fields: {
+    score:      { unit: '/100', precision: 0, kind: 'EARTHUS_ANALYSIS', formula: '목적 밀도 0.6 + 덜 붐빔 0.4 · 게이트 걸리면 0' },
+    visitors:   { keys: ['domestic', 'local', 'foreign'], unit: '명/일(14일 평균)', kind: 'HISTORY', coverage: '198/228', nodata: 'ring' },
+    count:      { keys: ['barrierFree', 'wellness', 'english'], unit: '곳·건', kind: 'OFFICIAL_INFORMATION' },
+    concentration: { keys: ['mean', 'max'], unit: '상대지수(100=가장 붐비는 시기)', kind: 'PROVIDER_FORECAST', coverage: '187/228', caveat: '81곳 rowCount=1000 상한' },
+    gate:       { keys: ['warn', 'air'], kind: 'OFFICIAL_WARNING|OFFICIAL_OBSERVATION', nowOnly: true, free: true },
+  },
+  scale: {
+    score:    { type: 'stepped', bins: [0, 20, 40, 60, 80, 100] },
+    visitors: { type: 'quantile5', cutsFromData: [27226, 52506, 89860, 153408], note: '2026-07 자료의 분위값 — 고정 등급 아님' },
+    count:    { type: 'quantile5', cutsFromData: { barrierFree: [17, 28, 39, 68] } },
+    concentration: { type: 'quantile5', cutsFromData: [38.7, 41.9, 47.4, 53.5] },
+    states:   { blocked: 'grey-hatch', nodata: 'empty-ring' },
+  },
+  marks: { far: 'numberDisc', near: { belowKm: 300, mark: 'numberedPin', index: 'pageResult' }, labels: { top: 10, format: '{rank} {nameKo} {value}' } },
+  legend: { always: true, lines: ['EARTHUS DISCOVERY — KTO 공식 추천 아님', '이동통신 기반 방문자 — 관광객 수 아님', '자료 시각 2종(집계일 / 게이트 현재 시각)'] },
+  inspector: {
+    pick: { fn: 'travel.pick', maxKm: 35, network: 0, exception: '장소 상세 summary.json 1건' },
+    limitNote: ['시군구 중심점 기준', '장소는 최근접 배정 근사(60km 초과 미배정)', '방문자 ≠ 관광객'],
+    sections: ['value', 'components', 'gate', 'concentration', 'relatedTop5'],
+  },
+  sources: 'data/tourism/kto-discovery.json#provenance (6행) + events/kma-warn.json + wind/korea-air-obs.json',
+  times: { observed: 'gate.at / 특보 발표 시각', collected: 'provenance.*.fetchedAt', valid: 'visitors.dateFrom~dateTo · concentration.dateFrom~dateTo · related.month' },
+  frames: {
+    mode: 'date', step: '1d',
+    forecast: { range: ['today', 'today+30d'], product: 'tourism/kto/concentration-daily.json', status: 'NOT_BUILT', kind: 'PROVIDER_FORECAST' },
+    history:  { windows: [{ from: '2026-07-06', to: '2026-07-19' }], kind: 'HISTORY' },
+    timeless: ['count.*', 'related'],
+  },
+  compare: {
+    pairs: [
+      { id: 'region-region', ui: 'inspector-2col', now: true },
+      { id: 'visitor-segment', a: 'visitors.domestic', b: 'visitors.foreign', ui: 'split', scale: 'per-side', diff: 'share%', now: true },
+      { id: 'purpose-purpose', a: 'count.barrierFree', b: 'count.english', ui: 'split', now: true },
+      { id: 'date-date', needs: 'concentration-daily' },
+      { id: 'run-run', needs: 'archive/tourism/kto/raw 집계', unknown: 'KTO 일일 갱신 여부' },
+      { id: 'history-forecast', diff: 'rank-only' },
+    ],
+    forbidden: ['model-model(제공자 1곳)', '명 ↔ 상대지수 수치 diff'],
+  },
+  intel: { producer: null, planned: '여행 패킷(일일 집계 단계)', attribution: 'own-score-and-gate-only', probability: [], hostFor: ['travel.today_pick', 'travel.visitor_pressure'] },
+  simulation: {
+    entries: [
+      { phen: 'travel.today_pick', status: 'limited', engineRef: 'prototype/v2-three/js/travel.js#computeScores', chips: ['한산 우선 0.3/0.7', '목적 우선 0.8/0.2', '특보 해제 가정'], register: 'NOT_YET' },
+      { phen: 'travel.visitor_pressure', status: 'not_available', question: '여행객이 늘면 어디가 달라질까?' },
+    ],
+  },
+  tiers: { 1: 'FREE', 2: 'FREE', 3: 'FREE', 4: 'EXPLORER', 5: 'PRO', 6: 'EXPLORER', 7: 'PRO' },
+}
+```
+
+</details>
+
 ### 1-5. 비평 — 같은 문법이 깨지는 곳과 위험
+
+> 이 비평은 현상 9개 메뉴의 63칸을 읽고 쓴 것이다. Life · Travel(14칸)은 그 뒤에 추가됐고 같은 규칙을 적용한다 — 두 메뉴의 ②·③ 은 무료, ④ 는 자료가 가진 시간만, ⑤·⑦ 은 입구 + 사유.
 
 **메뉴마다 다르게 적힌 곳(같은 문법이 깨지는 곳).**
 
@@ -1102,7 +1308,7 @@ export const WIND_DESCRIPTOR = {
 | 전 메뉴 | ⑤ 비교 | `compare.pairs[].type` 을 8종으로 고정하고, `available:false` 인 짝도 **칩으로 보이게** 한다(사유 포함). 'GFS \| ECMWF' 는 9개 메뉴 어디서도 아직 안 된다 — 숨기지 말고 '격자 수집기 없음'. |
 | 전 메뉴 | ① 극적으로 보인다 | 'EXISTS' 의 정의를 고정한다: **그 칸의 완료 기준(§4 의 acceptance)을 운영 화면에서 통과**했을 때만 ✅. 지금 63칸에 ✅ 가 0 인 것은 이 정의 때문이고, 그게 맞다. |
 
-**이 문법을 9개 메뉴에 강제할 때의 위험.**
+**이 문법을 모든 메뉴에 강제할 때의 위험.**
 
 - **빈 단계를 억지로 채워 거짓이 되는 것.** ⑤·⑦ 의 재료가 없는 메뉴에 그럴듯한 화면을 만들면 이 제품의 가장 큰 자산(정직성)을 판다. 방어: descriptor 의 `available:false + reason` 을 부품이 그대로 말한다. 입구는 있고, 거짓은 없다.
 - **좌클릭 충돌.** 값 판독 · 국가 선택 · 사건 pick · 관측소 pick 이 한 클릭을 두고 다툰다. 메뉴마다 규칙이 다르면 ② 가 메뉴마다 다르게 느껴진다. 셸에서 한 번 정한다: 현상 켜짐 → 값 / 사건 위 → 사건 / 아무것도 없음 → 국가.
@@ -1254,14 +1460,14 @@ export const WIND_DESCRIPTOR = {
 **Before.** 하단 탭 5개(지금·탐색·내 지역·리포트·우주) + 탐색 서랍 안 묶음 6개 66현상 + 우측 패널(탭 5개) + 상단 버튼 7개 + 설정 서랍에 **데이터(구름 소스·눈얼음)와 렌더 튜닝(지형 과장·음영·위성 혼합·태양각)이 섞여 있음.** 모바일에서 메뉴를 골라도 서랍이 안 닫혀 지구가 가려진다(UX 수리 지시서 §7.2 미이행).
 
 **After (PD 정본 §2).**
-- **LEFT RAIL** 9개: 기온 · 바람 · 강수 · 구름 · 해양 · 재해 · 대기질 · 우주 · 지형. 1탭 진입.
+- **LEFT RAIL** 11개: 기온 · 바람 · 강수 · 구름 · 해양 · 재해 · 대기질 · 우주 · 지형 + **Life · Travel**(2026-09-20 PD 추가 결정). 1탭 진입. 9개 현상 메뉴와 두 메뉴 사이에 가는 구분선 하나 — 성격이 다르다는 것을 레일이 말한다.
 - **RIGHT INSPECTOR** 하나: 현상 컨트롤(칩·토글) + 범례 + 클릭한 곳의 `값 · 단위 · 출처 · 관측/모델 시각 · 모델` + `Compare` · `Intelligence` 진입.
 - **BOTTOM** Global Timeline **하나**. 메뉴마다 슬라이더를 새로 만들지 않는다. 모델·run 시각("GFS 18Z · 5 h ago")이 항상 옆에.
 - **TOP** Search(돋보기 하나가 검색+물어보기 — 2026-09-20 PD 결정) · Share · View · Compare · Intelligence · Simulation · Account.
 - **VIEW > Appearance** 로 이동: 3D Earth/Terrain 전환 · 위성 혼합 · 대기 · 음영 · 지형 과장 · 태양 조명 · 자동 회전 · 지구 바탕 그림(09-20 에 설정으로 옮긴 것).
 - 모바일: 메뉴를 고르면 **서랍이 닫히고 지구가 최대 영역을 되찾는다.** Inspector 는 바텀시트(이미 3단으로 만들어 둠).
 
-**66현상의 행선지 — §4 표.** PD 정본의 9개 레일에 **자리가 없는 현상이 있다**(생태·사람·여행 20개 등). 억지로 끼우지 않았다 — §5 에 PD 결정으로 올렸다.
+**66현상의 행선지 — §4-0 표의 '자리' 칸과 §5-1.** PD 정본의 9개 레일에 자리가 없던 27현상은 이렇게 갔다: **Life 8 · Travel 4 (PD 확정)** · 9개 메뉴로 흡수 7 · v1 로 보냄 4 · 상단/Inspector 1 · 뺌 3 (뒤 넷은 제 추천 — PD 판단 대기).
 
 **완료 기준.** 어떤 현상이든 1탭 · 타임라인 1개 · Inspector 1개 · 데이터 패널에 렌더 튜닝값 0개 · 1440p 에서 레이어 전환 시 reflow 없음.
 
@@ -1288,6 +1494,8 @@ export const WIND_DESCRIPTOR = {
 - **구름(시안 04)**: `Observation | Forecast` 를 **먼저** 구분 · Satellite 는 별도 quick mode · 칩(구름량·운정고·저중고층) · 불투명도·입체감은 View 로. 관측 시각과 현재 시각을 함께.
 - **우주(시안 08)**: Aurora 확률 구간(NOAA OVATION 공식 확률 — **기관 발표라 %가 정당하다**) + Kp · 위성 선택 시 궤도·고도·속도·다음 통과.
 - **지형(시안 09)**: Elevation · Contours(100/250/500/1000 m 프리셋) · Hillshade · Satellite 만. 과장·태양각은 View 로.
+- **Life(신설 메뉴)**: 숲 · 새(철새 \| 육상 조사 \| 바닷새) · 사람(인구 \| 서울 실시간 혼잡) · 심해 체험 · 바다거북. **막대기·점 구름을 여기서도 없앤다** — 철새 꺾은선 → 대권 호 리본, 조류 조사 점 → 0.05° 칸 면 단계색, 바닷새 점 → 숫자 원판, 인구 1px 기둥 숲 → 밀도 릴리프 면 단계색(명/㎢), 서울 혼잡 상자 → 지표 원판 + 공식 4단계 색 + 범위 라벨. ⚠️ 바다거북은 공공누리 4유형(상업적 이용금지·변경금지) — 기관 서면 확인 전 **동결**. 조류 조사는 '제3자 권리 포함' — 권리 확인 전 FREE 고정.
+- **Travel(신설 메뉴 · 한국)**: 칩 `오늘 갈 곳 | 목적별 장소 | 방문자`, 연관 관광지는 장소 Inspector 의 '이곳 다음에 간 곳 Top 5'로. 7px 밝기 점 → 점수·건수 5단 단계색 숫자 원판 + 상위 10곳 순위 라벨. ⚠️ **관광 데이터랩 대회(접수 2026-09-30 · 발표심사 10-23) 출품 모듈이다 — 그때까지 구조 이동은 동결하고 그림·문구만 고친다.** "매일 다시 점수 매깁니다"는 사실이 아니다(점수 몸통은 09-02 정적 파일) → 사실대로 고친다(S, 즉시).
 
 ### W8 — Compare (L) · **PRO 핵심 가치**
 
@@ -1330,75 +1538,75 @@ export const WIND_DESCRIPTOR = {
 
 ### 4-0. 한눈에
 
-| 묶음 | 메뉴 | 지금 | 처분 | 우선 | 크기 | 바꾼 뒤(한 줄) |
-|---|---|---|---|---|---|---|
-| 대기 | 기온 | D | 다시 만든다 | P0 | XL | [→ 01 Temperature · 기준 구현체] PD 목표 화면(5°C 11칸 단색 · 흰 등온선+지구 위 숫자 라벨 · 범례 · Inspector 칩 · Actual/Anomaly)은 그대로 둔다. 도달 경로만… |
-| 대기 | 평년 대비 기온 | B | 합친다 | P1 | M | [→ 01 Temperature 의 'Actual \| Anomaly' 탭] 독립 메뉴 줄을 없애고 PD 정본의 전환 자리에 넣는다. 1단계 범위는 한국 관측이고 탭 라벨에 'Anomaly · 한국 관측'이라 밝힌… |
-| 대기 | 오늘의 극값 | C | 옮긴다 | P2 | M | [→ 자리 없음 · **PD 결정 필요**] 현상이 아니라 도구다. 권고 = MOVE: 좌측 레일에서 빼고 11 Intelligence 'Now' 탭 맨 위 '오늘의 극값' 카드 묶음으로.<br>① 카드 본체(DO… |
-| 대기 | 강수 | D | 다시 만든다 | P0 | L | [→ 03 Rain] PD 목표(mm/h 8칸 단계색 · 강한 코어 contour · 칩: 현재/누적/타입/레이더·모델 · 누적 시 범례 단위 자동 변경)는 그대로. **P0 는 코어만**, 나머지는 P1 로 내린… |
-| 대기 | 구름 | A | 고친다 | P1 | M | [→ 04 Clouds] 그림은 유지하고 셸만 PD 정본에 맞춘다.<br>① 메뉴 1탭 = 켜짐/꺼짐 토글. 'cloud-off' 줄 삭제, 기본 켜짐 유지.<br>② Inspector 첫 줄 세그먼트 [Obser… |
-| 대기 | 안개·낮은구름 | C | 합친다 | P3 | S | [→ 04 Clouds › Satellite quick mode 의 '밤 안개 후보' 칩] 독립 메뉴 줄을 없앤다. 04 Clouds(P1)가 먼저 나가야 자리가 생긴다.<br>① 구름을 대체하지 않고 겹친다: C… |
-| 대기 | 바람 | D | 다시 만든다 | P0 | L | [→ 02 Wind] P0 범위를 'GFS 0.5° · 10m 한 고도'로 자른다. 상층·0.25° 창·ECMWF 는 후속으로 뗀다.<br>① 입자장(토글, 기본 ON)<br>- 자료는 GFS 10m u/v 프레임… |
-| 대기 | 기압 | D | 합친다 | P1 | M | [→ 02 Wind Inspector 의 'Pressure (hPa)' 토글 · 10 Compare 의 대표 변수] 독립 색면 메뉴는 GFS 등압선이 동작하는 날 같이 내린다(대체물 없이 먼저 없애지 않는다). 현… |
-| 대기 | 상층 수증기 | B | 합친다 | P2 | M | [→ 04 Clouds › Satellite quick mode 의 채널 칩 '수증기 6.3µm'] 독립 메뉴 줄을 없앤다. 현상 id 와 레이어 id 'weather/cloud-wv' 는 그대로 둔다.<br>①… |
-| 바다 | 바다 색면 3종 공통 — 육지 덮임 핫픽스 (수온·평년 대비 수온·파고) | — | 고친다 | P0 | S | 렌더러 재작성을 기다리지 않고 먼저 고친다. 선택지 셋(판정은 구현자): (가) CPU 마스크 — buildField 캔버스를 0.25°급(1440×720)으로 키워 기존 색 캔버스를 확대해 그린 뒤, 픽셀마다 h… |
-| 바다 | 해수면 온도 | D | 다시 만든다 | P1 | M | [→ 05 Ocean · SST 탭 = 바다 기본 화면] 목표 화면은 PD 정본 그대로(10단 <0·0~4·4~8·8~12·12~16·16~20·20~24·24~28·28~32·≥32°C, 흰 등온선 + 지구 위… |
-| 바다 | 평년 대비 수온 | D | 합친다 | P1 | M | [→ 05 Ocean · SSTA 탭(PD 'SST \| SSTA'), 독립 메뉴 줄 폐지] ① SST 렌더러에 구간표만 교체: ≤−3 · −3~−2 · −2~−1 · −1~−0.5 · [−0.5~+0.5 칠하지… |
-| 바다 | 파고와 너울 | D | 다시 만든다 | P1 | XL | [→ 05 Ocean · Waves 칩] 목표 화면 유지(구간색 + 기준선 + 방향·높이 glyph + 파고·너울 별도 수치). 도달 경로를 둘로 쪼갠다. 【A 자료 확보 — 선행】 A-1 ECMWF 오픈데이터 파… |
-| 바다 | 표층 해류 | C | 다시 만든다 | P1 | L | [→ 05 Ocean · Currents 입자 토글(PD: 기본 ON)] ① 막대 전부 삭제. P0 Wind 입자 렌더러를 그대로 공유(u/v 격자 이류·혜성 꼬리, 데스크톱 18,000/모바일 5,000). 색=… |
-| 바다 | 바다 실측 | C | 고친다 | P1 | M | [→ 05 Ocean · 'Show Stations' 토글(07 Air Quality 관측소 토글 문법) + 10 Compare 의 Model\|Observation] ① 독립 메뉴 줄 → Ocean 패널 관측 토… |
-| 바다 | 수심별 수온 | B | 합친다 | P2 | M | [→ 05 Ocean 관측 토글의 'Argo 플로트' 칩 — PD 정본에 자리 없음 · PD 결정 필요(안: 바다 실측과 한 토글 묶음)] ① 지구 위 문법 유지(부상점=실선 점, 사이=점선 추정). 마지막 부상점… |
-| 바다 | 해수면 상승 전망 | C | 옮긴다 | P2 | M | [→ 12 Simulation · Variable='Sea level' — PD 결정 필요 2건: (a) 12 는 PRO 인데 '기본 그림은 무료 완성' 원칙과 부딪힘 → 05 Ocean 에 무료 1장(SSP5-8… |
-| 바다 | 바다 깊이 | B | 고친다 | P2 | M | [→ 09 Terrain · Contours 의 바다 쪽 + Elevation 모드 수심 구간색] (제안서의 이 항목은 dataNeed 중간에서 잘려 도착했다 — 보이는 부분만 검증) ① 등심선 셰이더는 그대로 둔… |
-| 바다 | 해구 | C | 합친다 | P3 | S | [→ 09 Terrain · 등심선의 지형 이름표로 MERGE] 렌더는 유지 — 선·라벨·pick 이 이미 PD 문법(선 + 지구 위 라벨 + 클릭)에 맞다. 독립 메뉴 줄을 없애고 Bathymetry 를 켜면 '… |
-| 바다 | 심해 | B | 옮긴다 | P3 | S | [자리 없음 — PD 결정 필요] 둘로 가른다. ① '이 지점 수심' 읽기는 Bathymetry Inspector 로 흡수(ocean-depth 조회 재사용). ② 잠수 연출 + OBIS 생물 요약은 데이터 현상이… |
-| 바다 | 선박 | C | 뺀다 | P2 | S | [REMOVE — PD 결정 필요] 유료 레일·Ocean 패널에서 줄을 뺀다. 그릴 자료가 없는 줄은 PD 금지 항목 '유료를 잠금 아이콘만으로 표현'과 같은 인상을 준다. 항로 질문은 지금처럼 검색창 구간 입력으… |
-| 재해 | 태풍 | B | 고친다 | P1 | L | [→ 06 Hazards · Event-first] 목표 화면은 PD 06 그대로, 도달 방법만 고친다. ① Track: 3~4px 리본(과거=실선·예보=점선), 구간색 = 기관 발표 최대풍속 m/s 단계색(경계… |
-| 재해 | 기상 특보 | C | 다시 만든다 | P1 | L | [→ 06 Hazards · severity band 우선] 점 → **구역 면**. ① 면 색 = 종류별 표시색. '기상청 공식색'이라 부르지 않는다 — 기상청 특보 지도 범례와 대조해 맞춘 뒤에만 '공식색' 표… |
-| 재해 | 낙뢰 | C | 고친다 | P2 | M | [→ 06 Hazards, 03 Rain 화면에도 같은 토글] ① 나이 단계색 5단: 0~10분 흰색 · 10~20 노랑 · 20~30 주황 · 30~45 빨강 · 45~60 암적색. 첫 구간을 0~5분으로 잡지… |
-| 재해 | 산불 | B | 고친다 | P2 | M | [→ 06 Hazards · hot spot 과 perimeter 구분] 이 M 은 **지금 자료로 되는 것만** 덮는다. ① Hot spot: 크기+색 모두 FRP 5단 — **30~100 · 100~300 ·… |
-| 재해 | 지진 | C | 다시 만든다 | P1 | L | [→ 06 Hazards · 진앙·규모·깊이 동시] ① DOM 비컨 폐기 → WebGL 실황 지진 점(정점별 크기 셰이더). 크기=규모 4단(M4.5~5 · 5~6 · 6~7 · ≥7), 색=깊이 **단계색 7단*… |
-| 재해 | 지각 이동 속도 | C | 합친다 | P2 | S | [→ 자리 없음 · PD 결정 필요] 메뉴 행을 없애고 land.crustal_motion 하나로 **MERGE**. 카드 내용(한국·일본 중앙값 속도·방위, '판 전체가 함께 간다' 설명, 자료 한계)은 합쳐진… |
-| 재해 | 지각 이동 | C | 옮긴다 | P2 | M | [→ 자리 없음 · PD 결정 필요] 1안 09 Terrain 의 'Plates & Motion', 2안 06 Hazards > Earthquake 컨텍스트 토글, 3안 v1. 어느 안이든 hazards.crust… |
-| 재해 | 쓰나미 | C | 고친다 | P1 | M | [→ 06 Hazards · Event-first] ① 공식 발표가 먼저: 발표 기관·분류(Warning/Advisory/Information)·발표시각·유효기간을 Inspector 맨 위에(OFFICIAL_WAR… |
-| 재해 | 연안 침수 범위 | B | 옮긴다 | P2 | S | [→ 자리 PD 결정 필요] Event-first 인 06 Hazards 에 사건이 아닌 시나리오 지도가 있는 것이 어색하다 — 1안 05 Ocean 의 'Sea level & Inundation' 보조 모드, 2… |
-| 재해 | 빙하호 홍수 | D | 뺀다 | P3 | S | [→ REMOVE · PD 결정 필요] 자료가 운영에 들어오기 전에는 좌측 레일·메뉴에 자리를 만들지 않는다('자료 없는 칸은 안 만듦' 규칙). 레지스트리 항목은 지우지 않고 planned 로 둔다. 복귀 조건:… |
-| 눈·얼음 + 대기질·관측 | 눈 덮임 | C | 합친다 | P2 | L | [→ 자리 없음 · PD 결정 필요] 목표 화면은 원안 유지 = MERGE: 03 Rain 칩 줄 끝 '쌓인 눈(관측)'. 도달 경로를 3단계로 고친다.<br>[0단계 · 선행 · 자료 확보] IMS 수집기 복구(… |
-| 눈·얼음 + 대기질·관측 | 해빙 | C | 옮긴다 | P1 | L | [→ 05 Ocean · 다섯째 칩 'Ice' · PD 결정 필요] 목표 화면은 원안 유지: 얼음으로 읽히는 5단 구간색(15~30 #1F4E79 · 30~50 #2F7FB5 · 50~70 #6CB8E0 · 70~… |
-| 눈·얼음 + 대기질·관측 | 대기질 | C | 다시 만든다 | P1 | XL | [→ 07 Air Quality] 목표 화면은 정본·원안 유지: 물질 칩 1탭 전환 · PM2.5 6단 threshold band(0~15 #2FBF71 · 15~25 #F2E14B · 25~50 #F7B733 ·… |
-| 눈·얼음 + 대기질·관측 | 자외선 | C | 합친다 | P2 | M | [→ 07 Air Quality · 'UV' 칩 · PD 결정 필요] 독립 메뉴를 없애고 MERGE — 원안 유지. WHO/기상청 공통 5단 구간색(0~2 #289500 · 3~5 #F7E400 · 6~7 #F85… |
-| 눈·얼음 + 대기질·관측 | 지상 관측 | C | 합친다 | P1 | L | [→ 자리 없음 · PD 결정 필요] 목표는 원안 유지 = MERGE: 독립 메뉴를 없애고 01 Temperature · 02 Wind · 03 Rain · 07 Air Quality 의 Inspector 에 공통… |
-| 눈·얼음 + 대기질·관측 | 기후 시계열 | B | 옮긴다 | P1 | M | [→ 11 Intelligence · Climatology 탭] 제안 = MOVE. **PD 결정 필요**: 정본의 좌측 레일 9개에 이 현상의 자리가 없다. 좌측 메뉴 항목을 없애고 Inspector 의 Now… |
-| 눈·얼음 + 대기질·관측 | 지표온도 | D | 합친다 | P1 | L | 제안 = MERGE [→ 01 Temperature · 'Land surface(위성 관측)' 칩]. 정본에 없는 칩이라 **PD 확인 필요**. MERGE 는 메뉴 자리만 바꾼다. 레이어 id 'land/lst'… |
-| 눈·얼음 + 대기질·관측 | 지형 | B | 고친다 | P1 | M | [→ 09 Terrain] + 렌더 조작은 View > Appearance 로 옮긴다. 우선순위를 둘로 나눈다.<br>■ P0 조각 (S) — PD 정본 P0 의 'Data/View 분리' 산출물. Global S… |
-| 생태·사람·여행 | 숲 | B | 옮긴다 | P2 | M | [자리 없음 · PD 결정 필요] PD 정본 09 Terrain AFTER 는 데이터 모드를 Elevation/Contours/Hillshade/Satellite 넷으로 '단순화'한다고 적는다 — 다섯 번째 칩 추… |
-| 생태·사람·여행 | 철새 | B | 합친다 | P3 | M | [자리 없음 · PD 결정 필요] 철새·조류 조사·바닷새를 'Life' 보조 서랍의 '새' 메뉴 하나(칩 [철새 이동 \| 육상 조사 \| 바닷새])로 MERGE. 대안: v1 이관 또는 삭제. 화면: 꺾은선 17… |
-| 생태·사람·여행 | 조류 조사 기록 | C | 합친다 | P3 | S | [자리 없음 · PD 결정 필요] 'Life > 새' 의 '육상 조사' 칩으로 MERGE. 권리 확인 전에는 FREE 고정. 화면: 단색 점 구름 → 0.05° 칸을 한 BufferGeometry 에 합친 칸 면… |
-| 생태·사람·여행 | 바다거북 | B | 옮긴다 | P3 | S | [자리 없음 · PD·법무 결정 필요] 새 투자 없이 동결하고 결정만 받는다. v1(무료)로 옮겨도 위험은 그대로다 — v1 은 유료 v2 로 이끄는 입구라 '상업적 이용' 해당 여부가 똑같이 걸린다. 선택지: ①… |
-| 생태·사람·여행 | 바닷새 | C | 합친다 | P3 | S | [자리 없음 · PD 결정 필요] 'Life > 새' 의 '바닷새' 칩으로 MERGE(지구 위 정보량이 정점 37개라 단독 메뉴 가치 없음). 화면: 단색 점 → 정점마다 숫자 든 원판 마커(크기 고정, 값은 색+… |
-| 생태·사람·여행 | 인구 | B | 다시 만든다 | P2 | L | [자리 없음 · PD 결정 필요] 1안 Terrain 의 다섯 번째 칩 'Population'(정본의 '단순화' 문장과 어긋나므로 PD 승인 필요), 2안 'Life/People' 보조 서랍. 어느 쪽이든 그림은… |
-| 생태·사람·여행 | 실시간 혼잡 | B | 합친다 | P2 | M | [자리 없음 · PD 결정 필요] 인구가 Terrain/People 어디로 가든 그 서울 확대 단계의 'Live' 칩으로 MERGE(대안: Travel 공간의 '지금 붐빔'). 이 묶음에서 유일하게 시간이 살아 있… |
-| 생태·사람·여행 | 밤의 불빛 | C | 옮긴다 | P2 | M | [→ 09 Terrain > Satellite imagery source picker] 값 없는 바탕 교체이므로 규칙 3(Data/View 분리)상 View 성격 — 자료 메뉴 줄에서 빼고 picker(라디오: N… |
-| 생태·사람·여행 | 지역 뉴스 | C | 옮긴다 | P2 | M | [자리 없음 · PD 결정 필요] 좌측 레일 밖으로 MOVE — TOP 바 진입 또는 이벤트룸 + 06 Hazards Inspector 의 '관련 보도'. 0단계(S, 오류 고치기 — 바로 가능): 분홍 막대 5개… |
-| 생태·사람·여행 | 오늘 갈 곳 | C | 옮긴다 | P3 | M | [원 개선안 After 미수신(입력 절단) — 코드 근거로 최소안 작성] [자리 없음 · PD 결정 필요] 여행 6현상은 'Travel(한국)' 보조 작업공간 하나로 묶고 칩 [오늘 갈 곳 \| 목적별 장소 \|… |
-| 생태·사람·여행 | 목적별 관광지 | C | 합친다 | P3 | M | [원 개선안 미수신 — 최소안] [자리 없음 · PD 결정 필요] 'Travel(한국)' 작업공간의 '목적별 장소' 칩 하나로 MERGE(무장애 \| 웰니스 \| English 하위 칩). 멀리서는 시군구별 건수… |
-| 생태·사람·여행 | 연관 관광지 | D | 합친다 | P3 | S | [원 개선안 미수신 — 최소안] 독립 메뉴를 없애고 '목적별 장소' Inspector 의 '이곳 다음에 간 곳 Top 5' 목록으로 MERGE(S). 지구 위 호는 장소명을 KTO 카탈로그의 공식 좌표와 이름으로… |
-| 생태·사람·여행 | 지역 방문자 | C | 합친다 | P3 | S | [원 개선안 미수신 — 최소안] 'Travel(한국)' 의 '방문자' 칩으로 MERGE. 숫자 원판 5단 단계색(하루 평균 방문자, 분위 경계를 범례에 수치로) + 상위 10곳 숫자 라벨. 자료 없는 30곳은 빈… |
-| 생태·사람·여행 | 여행지 | D | 뺀다 | P3 | S | [원 개선안 미수신 — 최소안] 메뉴에서 REMOVE(PD 결정 필요). '자료 없는 칸은 만들지 않는다'는 기존 메뉴 규칙과 맞추고, 한국은 '목적별 장소'가 같은 질문에 공식 자료로 답한다. 전세계 OSM 장소… |
-| 생태·사람·여행 | 항공편 | D | 옮긴다 | P3 | S | [원 개선안 미수신 — 최소안] [자리 없음 · PD 결정 필요] '비행기가 실제 어디에 있나'는 FACT 질문이고 v1 에 이미 구현이 있다 → v2 메뉴에서는 빼고 v1 로 MOVE(권고). v2 에 남긴다면:… |
-| 생태·사람·여행 | 해변과 낚시터 | C | 합친다 | P2 | S | [→ 05 Ocean · Waves 탭, PD 결정 필요] 이 현상은 '생태·사람·여행' 묶음(phenomenon-registry.js:1108)이라 PD 정본 레일에 자리가 없다 — (a) Ocean 토글로 흡수… |
-| 생태·사람·여행 | 서핑 | B | 합친다 | P2 | L | [→ 05 Ocean · Waves 탭 토글 'Surf spots', PD 결정 필요(레일에 자리 없음)] 부모 그림(파고 단계색+방향 glyph)은 05 담당. 핵심 정정 = **자료를 따로 받지 않는다**: 마… |
-| 생태·사람·여행 | 낚시 | B | 합친다 | P2 | L | [→ 05 Ocean · Waves 탭 토글 'Fishing spots', PD 결정 필요(레일에 자리 없음)] 서핑과 같은 'Show spots' 부품의 다른 칩. 파랑 숫자는 서핑과 같이 05 Ocean 파랑… |
-| 생태·사람·여행 | 패러글라이딩 | C | 합친다 | P3 | S | [→ 02 Wind 토글 'Flying sites', PD 결정 필요(레일에 자리 없음)] 부모 그림(입자+풍속 구간색)은 02 Wind(P0) 담당. 1차 값을 **모델에서 실측으로 뒤집는다**: kma-aws-… |
-| 생태·사람·여행 | 산 정상 날씨 | B | 합친다 | P1 | M | [→ 01 Temperature 토글 'Summits', PD 결정 필요(레일에 자리 없음)] 부모 그림(5°C 10단+흰 등온선+숫자 라벨)은 01 담당. 정직성 정정 ①: mountain.js 가 내는 두 번째… |
-| 우주 | 오로라 예보 (지금 보이는 곳) → Space › Aurora (08 의 기본 진입 모드) | B | 다시 만든다 | P1 | M | [→ 08 Space · Aurora 모드. P1 핵심(M)과 P2 후속(M)으로 나눈다]<br>── P1 핵심 ──<br>1) 점 구름을 구간색 면(띠)으로: OVATION 360×181 값 텍스처(R=확률)를… |
-| 우주 | 위성 추적 + 스타링크 → Space › Satellites (군 칩: 한국·정거장·기상·과학·항법·통신·지구관측·스타링크·전체) | B | 고친다 | P2 | L | [→ 08 Space · Satellites 모드]<br>1) 실척 고도 점 구름은 유지한다(LEO 띠와 GPS 껍질이 한눈에 갈리는 지금의 장점). 그 위에 아이콘 층: 정거장·한국 위성·선택한 위성만 아이콘 +… |
-| 우주 | 궤도 인텔리전스 (우주쓰레기·근접사건) → [확정 범위: 0단계 거짓 문구 핫픽스] · 최종 자리는 Space › Satellites 의 'Debris' 칩 + 'Events: 근접사건' | D | 합친다 | P0 | S | [확정 범위 = 0단계 핫픽스(S·P0)뿐이다. 최종 자리는 Space › Satellites 로 MERGE — PD 하위 모드에 이름이 없으므로 PD 결정 필요]<br>0단계(즉시, 재설계와 무관):<br>- p… |
-| 우주 | 오늘의 태양 (실황 관측) → Space › Solar activity (우주기상: X선·Kp·SDO) | C | 고친다 | P2 | M | [→ 08 Space · Solar activity 모드. 기존 카드의 결측 규율과 자료 배관은 유지, Inspector 만 새로 짠다]<br>1) 지구 위: 값을 만들지 않는 범위에서만 — 태양 직하점 마커와 낮… |
-| 우주 | 발사 일정 (세계 로켓) → Space › Satellites 안의 'Events: 발사' 목록 (PD 결정 필요) | C | 합친다 | P2 | M | [→ 08 Space · Satellites 모드의 'Events' 목록(발사 · 근접사건)으로 MERGE — PD 하위 모드 3개에 이름이 없음 · PD 결정 필요(대안: v1 무료로 보냄)]<br>0) 선행(S… |
-| 우주 | 오늘의 태양계 → PD 레일에 자리 없음 · v1(무료)로 보냄 제안 (PD 결정 필요) | B | 옮긴다 | P3 | S | [PD 좌측 레일·Space 하위 모드에 자리 없음 · PD 결정 필요] 지구를 대체하는 전체 화면 장면은 PD 셸(CENTER = 3D Earth + data field)에 맞지 않고, 전용 슬라이더는 규칙 2(… |
-| 우주 | 우주 사진관 59점 → PD 레일에 자리 없음 · v1(무료)로 보냄 제안 (PD 결정 필요) | B | 옮긴다 | P3 | S | [PD 레일·Space 하위 모드에 자리 없음 · PD 결정 필요] 제안: v1(무료)로 보낸다 — v1 cosmic3d 에 사진 아틀라스 진입점이 이미 있다(prototype/js/main.js:298-300 o… |
-| 우주 | 우리은하 — 우리는 어디 있나 → PD 레일에 자리 없음 · v1(무료)로 보냄 제안 (PD 결정 필요) | B | 옮긴다 | P3 | S | [PD 레일·Space 하위 모드에 자리 없음 · PD 결정 필요] 제안: v1(무료·교육)로 보낸다(같은 계열 원본 cosmic3d, prototype/js/main.js:92). 대안: 'More' 보조 서랍… |
+| 옛 묶음 | 메뉴 줄 | **새 자리** | 지금 | 처분 | 우선 | 크기 | 바꾼 뒤(한 줄) |
+|---|---|---|---|---|---|---|---|
+| 대기 | 기온 | **?** | D | 다시 만든다 | P0 | XL | [→ 01 Temperature · 기준 구현체] PD 목표 화면(5°C 11칸 단색 · 흰 등온선+지구 위 숫자 라벨 · 범례 · Inspector 칩 · Actual/Anomaly)은 그대로 둔다. 도달 경로만… |
+| 대기 | 평년 대비 기온 | **?** | B | 합친다 | P1 | M | [→ 01 Temperature 의 'Actual \| Anomaly' 탭] 독립 메뉴 줄을 없애고 PD 정본의 전환 자리에 넣는다. 1단계 범위는 한국 관측이고 탭 라벨에 'Anomaly · 한국 관측'이라 밝힌… |
+| 대기 | 오늘의 극값 | **11 Intelligence** | C | 옮긴다 | P2 | M | [→ 자리 없음 · **PD 결정 필요**] 현상이 아니라 도구다. 권고 = MOVE: 좌측 레일에서 빼고 11 Intelligence 'Now' 탭 맨 위 '오늘의 극값' 카드 묶음으로.<br>① 카드 본체(DO… |
+| 대기 | 강수 | **?** | D | 다시 만든다 | P0 | L | [→ 03 Rain] PD 목표(mm/h 8칸 단계색 · 강한 코어 contour · 칩: 현재/누적/타입/레이더·모델 · 누적 시 범례 단위 자동 변경)는 그대로. **P0 는 코어만**, 나머지는 P1 로 내린… |
+| 대기 | 구름 | **?** | A | 고친다 | P1 | M | [→ 04 Clouds] 그림은 유지하고 셸만 PD 정본에 맞춘다.<br>① 메뉴 1탭 = 켜짐/꺼짐 토글. 'cloud-off' 줄 삭제, 기본 켜짐 유지.<br>② Inspector 첫 줄 세그먼트 [Obser… |
+| 대기 | 안개·낮은구름 | **?** | C | 합친다 | P3 | S | [→ 04 Clouds › Satellite quick mode 의 '밤 안개 후보' 칩] 독립 메뉴 줄을 없앤다. 04 Clouds(P1)가 먼저 나가야 자리가 생긴다.<br>① 구름을 대체하지 않고 겹친다: C… |
+| 대기 | 바람 | **?** | D | 다시 만든다 | P0 | L | [→ 02 Wind] P0 범위를 'GFS 0.5° · 10m 한 고도'로 자른다. 상층·0.25° 창·ECMWF 는 후속으로 뗀다.<br>① 입자장(토글, 기본 ON)<br>- 자료는 GFS 10m u/v 프레임… |
+| 대기 | 기압 | **?** | D | 합친다 | P1 | M | [→ 02 Wind Inspector 의 'Pressure (hPa)' 토글 · 10 Compare 의 대표 변수] 독립 색면 메뉴는 GFS 등압선이 동작하는 날 같이 내린다(대체물 없이 먼저 없애지 않는다). 현… |
+| 대기 | 상층 수증기 | **?** | B | 합친다 | P2 | M | [→ 04 Clouds › Satellite quick mode 의 채널 칩 '수증기 6.3µm'] 독립 메뉴 줄을 없앤다. 현상 id 와 레이어 id 'weather/cloud-wv' 는 그대로 둔다.<br>①… |
+| 바다 | 바다 색면 3종 공통 — 육지 덮임 핫픽스 (수온·평년 대비 수온·파고) | **?** | — | 고친다 | P0 | S | 렌더러 재작성을 기다리지 않고 먼저 고친다. 선택지 셋(판정은 구현자): (가) CPU 마스크 — buildField 캔버스를 0.25°급(1440×720)으로 키워 기존 색 캔버스를 확대해 그린 뒤, 픽셀마다 h… |
+| 바다 | 해수면 온도 | **?** | D | 다시 만든다 | P1 | M | [→ 05 Ocean · SST 탭 = 바다 기본 화면] 목표 화면은 PD 정본 그대로(10단 <0·0~4·4~8·8~12·12~16·16~20·20~24·24~28·28~32·≥32°C, 흰 등온선 + 지구 위… |
+| 바다 | 평년 대비 수온 | **?** | D | 합친다 | P1 | M | [→ 05 Ocean · SSTA 탭(PD 'SST \| SSTA'), 독립 메뉴 줄 폐지] ① SST 렌더러에 구간표만 교체: ≤−3 · −3~−2 · −2~−1 · −1~−0.5 · [−0.5~+0.5 칠하지… |
+| 바다 | 파고와 너울 | **?** | D | 다시 만든다 | P1 | XL | [→ 05 Ocean · Waves 칩] 목표 화면 유지(구간색 + 기준선 + 방향·높이 glyph + 파고·너울 별도 수치). 도달 경로를 둘로 쪼갠다. 【A 자료 확보 — 선행】 A-1 ECMWF 오픈데이터 파… |
+| 바다 | 표층 해류 | **?** | C | 다시 만든다 | P1 | L | [→ 05 Ocean · Currents 입자 토글(PD: 기본 ON)] ① 막대 전부 삭제. P0 Wind 입자 렌더러를 그대로 공유(u/v 격자 이류·혜성 꼬리, 데스크톱 18,000/모바일 5,000). 색=… |
+| 바다 | 바다 실측 | **?** | C | 고친다 | P1 | M | [→ 05 Ocean · 'Show Stations' 토글(07 Air Quality 관측소 토글 문법) + 10 Compare 의 Model\|Observation] ① 독립 메뉴 줄 → Ocean 패널 관측 토… |
+| 바다 | 수심별 수온 | **?** | B | 합친다 | P2 | M | [→ 05 Ocean 관측 토글의 'Argo 플로트' 칩 — PD 정본에 자리 없음 · PD 결정 필요(안: 바다 실측과 한 토글 묶음)] ① 지구 위 문법 유지(부상점=실선 점, 사이=점선 추정). 마지막 부상점… |
+| 바다 | 해수면 상승 전망 | **?** | C | 옮긴다 | P2 | M | [→ 12 Simulation · Variable='Sea level' — PD 결정 필요 2건: (a) 12 는 PRO 인데 '기본 그림은 무료 완성' 원칙과 부딪힘 → 05 Ocean 에 무료 1장(SSP5-8… |
+| 바다 | 바다 깊이 | **?** | B | 고친다 | P2 | M | [→ 09 Terrain · Contours 의 바다 쪽 + Elevation 모드 수심 구간색] (제안서의 이 항목은 dataNeed 중간에서 잘려 도착했다 — 보이는 부분만 검증) ① 등심선 셰이더는 그대로 둔… |
+| 바다 | 해구 | **?** | C | 합친다 | P3 | S | [→ 09 Terrain · 등심선의 지형 이름표로 MERGE] 렌더는 유지 — 선·라벨·pick 이 이미 PD 문법(선 + 지구 위 라벨 + 클릭)에 맞다. 독립 메뉴 줄을 없애고 Bathymetry 를 켜면 '… |
+| 바다 | 심해 | **L Life** | B | 옮긴다 | P3 | S | [자리 없음 — PD 결정 필요] 둘로 가른다. ① '이 지점 수심' 읽기는 Bathymetry Inspector 로 흡수(ocean-depth 조회 재사용). ② 잠수 연출 + OBIS 생물 요약은 데이터 현상이… |
+| 바다 | 선박 | **뺌** | C | 뺀다 | P2 | S | [REMOVE — PD 결정 필요] 유료 레일·Ocean 패널에서 줄을 뺀다. 그릴 자료가 없는 줄은 PD 금지 항목 '유료를 잠금 아이콘만으로 표현'과 같은 인상을 준다. 항로 질문은 지금처럼 검색창 구간 입력으… |
+| 재해 | 태풍 | **?** | B | 고친다 | P1 | L | [→ 06 Hazards · Event-first] 목표 화면은 PD 06 그대로, 도달 방법만 고친다. ① Track: 3~4px 리본(과거=실선·예보=점선), 구간색 = 기관 발표 최대풍속 m/s 단계색(경계… |
+| 재해 | 기상 특보 | **?** | C | 다시 만든다 | P1 | L | [→ 06 Hazards · severity band 우선] 점 → **구역 면**. ① 면 색 = 종류별 표시색. '기상청 공식색'이라 부르지 않는다 — 기상청 특보 지도 범례와 대조해 맞춘 뒤에만 '공식색' 표… |
+| 재해 | 낙뢰 | **?** | C | 고친다 | P2 | M | [→ 06 Hazards, 03 Rain 화면에도 같은 토글] ① 나이 단계색 5단: 0~10분 흰색 · 10~20 노랑 · 20~30 주황 · 30~45 빨강 · 45~60 암적색. 첫 구간을 0~5분으로 잡지… |
+| 재해 | 산불 | **?** | B | 고친다 | P2 | M | [→ 06 Hazards · hot spot 과 perimeter 구분] 이 M 은 **지금 자료로 되는 것만** 덮는다. ① Hot spot: 크기+색 모두 FRP 5단 — **30~100 · 100~300 ·… |
+| 재해 | 지진 | **?** | C | 다시 만든다 | P1 | L | [→ 06 Hazards · 진앙·규모·깊이 동시] ① DOM 비컨 폐기 → WebGL 실황 지진 점(정점별 크기 셰이더). 크기=규모 4단(M4.5~5 · 5~6 · 6~7 · ≥7), 색=깊이 **단계색 7단*… |
+| 재해 | 지각 이동 속도 | **09 지형** | C | 합친다 | P2 | S | [→ 자리 없음 · PD 결정 필요] 메뉴 행을 없애고 land.crustal_motion 하나로 **MERGE**. 카드 내용(한국·일본 중앙값 속도·방위, '판 전체가 함께 간다' 설명, 자료 한계)은 합쳐진… |
+| 재해 | 지각 이동 | **09 지형** | C | 옮긴다 | P2 | M | [→ 자리 없음 · PD 결정 필요] 1안 09 Terrain 의 'Plates & Motion', 2안 06 Hazards > Earthquake 컨텍스트 토글, 3안 v1. 어느 안이든 hazards.crust… |
+| 재해 | 쓰나미 | **?** | C | 고친다 | P1 | M | [→ 06 Hazards · Event-first] ① 공식 발표가 먼저: 발표 기관·분류(Warning/Advisory/Information)·발표시각·유효기간을 Inspector 맨 위에(OFFICIAL_WAR… |
+| 재해 | 연안 침수 범위 | **05 해양** | B | 옮긴다 | P2 | S | [→ 자리 PD 결정 필요] Event-first 인 06 Hazards 에 사건이 아닌 시나리오 지도가 있는 것이 어색하다 — 1안 05 Ocean 의 'Sea level & Inundation' 보조 모드, 2… |
+| 재해 | 빙하호 홍수 | **뺌(보류)** | D | 뺀다 | P3 | S | [→ REMOVE · PD 결정 필요] 자료가 운영에 들어오기 전에는 좌측 레일·메뉴에 자리를 만들지 않는다('자료 없는 칸은 안 만듦' 규칙). 레지스트리 항목은 지우지 않고 planned 로 둔다. 복귀 조건:… |
+| 눈·얼음 + 대기질·관측 | 눈 덮임 | **03 강수** | C | 합친다 | P2 | L | [→ 자리 없음 · PD 결정 필요] 목표 화면은 원안 유지 = MERGE: 03 Rain 칩 줄 끝 '쌓인 눈(관측)'. 도달 경로를 3단계로 고친다.<br>[0단계 · 선행 · 자료 확보] IMS 수집기 복구(… |
+| 눈·얼음 + 대기질·관측 | 해빙 | **?** | C | 옮긴다 | P1 | L | [→ 05 Ocean · 다섯째 칩 'Ice' · PD 결정 필요] 목표 화면은 원안 유지: 얼음으로 읽히는 5단 구간색(15~30 #1F4E79 · 30~50 #2F7FB5 · 50~70 #6CB8E0 · 70~… |
+| 눈·얼음 + 대기질·관측 | 대기질 | **?** | C | 다시 만든다 | P1 | XL | [→ 07 Air Quality] 목표 화면은 정본·원안 유지: 물질 칩 1탭 전환 · PM2.5 6단 threshold band(0~15 #2FBF71 · 15~25 #F2E14B · 25~50 #F7B733 ·… |
+| 눈·얼음 + 대기질·관측 | 자외선 | **?** | C | 합친다 | P2 | M | [→ 07 Air Quality · 'UV' 칩 · PD 결정 필요] 독립 메뉴를 없애고 MERGE — 원안 유지. WHO/기상청 공통 5단 구간색(0~2 #289500 · 3~5 #F7E400 · 6~7 #F85… |
+| 눈·얼음 + 대기질·관측 | 지상 관측 | **01·02·03·07** | C | 합친다 | P1 | L | [→ 자리 없음 · PD 결정 필요] 목표는 원안 유지 = MERGE: 독립 메뉴를 없애고 01 Temperature · 02 Wind · 03 Rain · 07 Air Quality 의 Inspector 에 공통… |
+| 눈·얼음 + 대기질·관측 | 기후 시계열 | **?** | B | 옮긴다 | P1 | M | [→ 11 Intelligence · Climatology 탭] 제안 = MOVE. **PD 결정 필요**: 정본의 좌측 레일 9개에 이 현상의 자리가 없다. 좌측 메뉴 항목을 없애고 Inspector 의 Now… |
+| 눈·얼음 + 대기질·관측 | 지표온도 | **?** | D | 합친다 | P1 | L | 제안 = MERGE [→ 01 Temperature · 'Land surface(위성 관측)' 칩]. 정본에 없는 칩이라 **PD 확인 필요**. MERGE 는 메뉴 자리만 바꾼다. 레이어 id 'land/lst'… |
+| 눈·얼음 + 대기질·관측 | 지형 | **?** | B | 고친다 | P1 | M | [→ 09 Terrain] + 렌더 조작은 View > Appearance 로 옮긴다. 우선순위를 둘로 나눈다.<br>■ P0 조각 (S) — PD 정본 P0 의 'Data/View 분리' 산출물. Global S… |
+| 생태·사람·여행 | 숲 | **L Life** | B | 옮긴다 | P2 | M | [자리 없음 · PD 결정 필요] PD 정본 09 Terrain AFTER 는 데이터 모드를 Elevation/Contours/Hillshade/Satellite 넷으로 '단순화'한다고 적는다 — 다섯 번째 칩 추… |
+| 생태·사람·여행 | 철새 | **L Life** | B | 합친다 | P3 | M | [자리 없음 · PD 결정 필요] 철새·조류 조사·바닷새를 'Life' 보조 서랍의 '새' 메뉴 하나(칩 [철새 이동 \| 육상 조사 \| 바닷새])로 MERGE. 대안: v1 이관 또는 삭제. 화면: 꺾은선 17… |
+| 생태·사람·여행 | 조류 조사 기록 | **L Life** | C | 합친다 | P3 | S | [자리 없음 · PD 결정 필요] 'Life > 새' 의 '육상 조사' 칩으로 MERGE. 권리 확인 전에는 FREE 고정. 화면: 단색 점 구름 → 0.05° 칸을 한 BufferGeometry 에 합친 칸 면… |
+| 생태·사람·여행 | 바다거북 | **L Life** | B | 옮긴다 | P3 | S | [자리 없음 · PD·법무 결정 필요] 새 투자 없이 동결하고 결정만 받는다. v1(무료)로 옮겨도 위험은 그대로다 — v1 은 유료 v2 로 이끄는 입구라 '상업적 이용' 해당 여부가 똑같이 걸린다. 선택지: ①… |
+| 생태·사람·여행 | 바닷새 | **L Life** | C | 합친다 | P3 | S | [자리 없음 · PD 결정 필요] 'Life > 새' 의 '바닷새' 칩으로 MERGE(지구 위 정보량이 정점 37개라 단독 메뉴 가치 없음). 화면: 단색 점 → 정점마다 숫자 든 원판 마커(크기 고정, 값은 색+… |
+| 생태·사람·여행 | 인구 | **L Life** | B | 다시 만든다 | P2 | L | [자리 없음 · PD 결정 필요] 1안 Terrain 의 다섯 번째 칩 'Population'(정본의 '단순화' 문장과 어긋나므로 PD 승인 필요), 2안 'Life/People' 보조 서랍. 어느 쪽이든 그림은… |
+| 생태·사람·여행 | 실시간 혼잡 | **L Life** | B | 합친다 | P2 | M | [자리 없음 · PD 결정 필요] 인구가 Terrain/People 어디로 가든 그 서울 확대 단계의 'Live' 칩으로 MERGE(대안: Travel 공간의 '지금 붐빔'). 이 묶음에서 유일하게 시간이 살아 있… |
+| 생태·사람·여행 | 밤의 불빛 | **?** | C | 옮긴다 | P2 | M | [→ 09 Terrain > Satellite imagery source picker] 값 없는 바탕 교체이므로 규칙 3(Data/View 분리)상 View 성격 — 자료 메뉴 줄에서 빼고 picker(라디오: N… |
+| 생태·사람·여행 | 지역 뉴스 | **상단 · 재해 Inspector** | C | 옮긴다 | P2 | M | [자리 없음 · PD 결정 필요] 좌측 레일 밖으로 MOVE — TOP 바 진입 또는 이벤트룸 + 06 Hazards Inspector 의 '관련 보도'. 0단계(S, 오류 고치기 — 바로 가능): 분홍 막대 5개… |
+| 생태·사람·여행 | 오늘 갈 곳 | **T Travel** | C | 옮긴다 | P3 | M | [원 개선안 After 미수신(입력 절단) — 코드 근거로 최소안 작성] [자리 없음 · PD 결정 필요] 여행 6현상은 'Travel(한국)' 보조 작업공간 하나로 묶고 칩 [오늘 갈 곳 \| 목적별 장소 \|… |
+| 생태·사람·여행 | 목적별 관광지 | **T Travel** | C | 합친다 | P3 | M | [원 개선안 미수신 — 최소안] [자리 없음 · PD 결정 필요] 'Travel(한국)' 작업공간의 '목적별 장소' 칩 하나로 MERGE(무장애 \| 웰니스 \| English 하위 칩). 멀리서는 시군구별 건수… |
+| 생태·사람·여행 | 연관 관광지 | **T Travel** | D | 합친다 | P3 | S | [원 개선안 미수신 — 최소안] 독립 메뉴를 없애고 '목적별 장소' Inspector 의 '이곳 다음에 간 곳 Top 5' 목록으로 MERGE(S). 지구 위 호는 장소명을 KTO 카탈로그의 공식 좌표와 이름으로… |
+| 생태·사람·여행 | 지역 방문자 | **T Travel** | C | 합친다 | P3 | S | [원 개선안 미수신 — 최소안] 'Travel(한국)' 의 '방문자' 칩으로 MERGE. 숫자 원판 5단 단계색(하루 평균 방문자, 분위 경계를 범례에 수치로) + 상위 10곳 숫자 라벨. 자료 없는 30곳은 빈… |
+| 생태·사람·여행 | 여행지 | **뺌** | D | 뺀다 | P3 | S | [원 개선안 미수신 — 최소안] 메뉴에서 REMOVE(PD 결정 필요). '자료 없는 칸은 만들지 않는다'는 기존 메뉴 규칙과 맞추고, 한국은 '목적별 장소'가 같은 질문에 공식 자료로 답한다. 전세계 OSM 장소… |
+| 생태·사람·여행 | 항공편 | **→ v1** | D | 옮긴다 | P3 | S | [원 개선안 미수신 — 최소안] [자리 없음 · PD 결정 필요] '비행기가 실제 어디에 있나'는 FACT 질문이고 v1 에 이미 구현이 있다 → v2 메뉴에서는 빼고 v1 로 MOVE(권고). v2 에 남긴다면:… |
+| 생태·사람·여행 | 해변과 낚시터 | **?** | C | 합친다 | P2 | S | [→ 05 Ocean · Waves 탭, PD 결정 필요] 이 현상은 '생태·사람·여행' 묶음(phenomenon-registry.js:1108)이라 PD 정본 레일에 자리가 없다 — (a) Ocean 토글로 흡수… |
+| 생태·사람·여행 | 서핑 | **?** | B | 합친다 | P2 | L | [→ 05 Ocean · Waves 탭 토글 'Surf spots', PD 결정 필요(레일에 자리 없음)] 부모 그림(파고 단계색+방향 glyph)은 05 담당. 핵심 정정 = **자료를 따로 받지 않는다**: 마… |
+| 생태·사람·여행 | 낚시 | **?** | B | 합친다 | P2 | L | [→ 05 Ocean · Waves 탭 토글 'Fishing spots', PD 결정 필요(레일에 자리 없음)] 서핑과 같은 'Show spots' 부품의 다른 칩. 파랑 숫자는 서핑과 같이 05 Ocean 파랑… |
+| 생태·사람·여행 | 패러글라이딩 | **?** | C | 합친다 | P3 | S | [→ 02 Wind 토글 'Flying sites', PD 결정 필요(레일에 자리 없음)] 부모 그림(입자+풍속 구간색)은 02 Wind(P0) 담당. 1차 값을 **모델에서 실측으로 뒤집는다**: kma-aws-… |
+| 생태·사람·여행 | 산 정상 날씨 | **?** | B | 합친다 | P1 | M | [→ 01 Temperature 토글 'Summits', PD 결정 필요(레일에 자리 없음)] 부모 그림(5°C 10단+흰 등온선+숫자 라벨)은 01 담당. 정직성 정정 ①: mountain.js 가 내는 두 번째… |
+| 우주 | 오로라 예보 (지금 보이는 곳) → Space › Aurora (08… | **?** | B | 다시 만든다 | P1 | M | [→ 08 Space · Aurora 모드. P1 핵심(M)과 P2 후속(M)으로 나눈다]<br>── P1 핵심 ──<br>1) 점 구름을 구간색 면(띠)으로: OVATION 360×181 값 텍스처(R=확률)를… |
+| 우주 | 위성 추적 + 스타링크 → Space › Satellites (군 칩:… | **?** | B | 고친다 | P2 | L | [→ 08 Space · Satellites 모드]<br>1) 실척 고도 점 구름은 유지한다(LEO 띠와 GPS 껍질이 한눈에 갈리는 지금의 장점). 그 위에 아이콘 층: 정거장·한국 위성·선택한 위성만 아이콘 +… |
+| 우주 | 궤도 인텔리전스 (우주쓰레기·근접사건) → [확정 범위: 0단계 거짓… | **08 우주** | D | 합친다 | P0 | S | [확정 범위 = 0단계 핫픽스(S·P0)뿐이다. 최종 자리는 Space › Satellites 로 MERGE — PD 하위 모드에 이름이 없으므로 PD 결정 필요]<br>0단계(즉시, 재설계와 무관):<br>- p… |
+| 우주 | 오늘의 태양 (실황 관측) → Space › Solar activity… | **?** | C | 고친다 | P2 | M | [→ 08 Space · Solar activity 모드. 기존 카드의 결측 규율과 자료 배관은 유지, Inspector 만 새로 짠다]<br>1) 지구 위: 값을 만들지 않는 범위에서만 — 태양 직하점 마커와 낮… |
+| 우주 | 발사 일정 (세계 로켓) → Space › Satellites 안의 '… | **?** | C | 합친다 | P2 | M | [→ 08 Space · Satellites 모드의 'Events' 목록(발사 · 근접사건)으로 MERGE — PD 하위 모드 3개에 이름이 없음 · PD 결정 필요(대안: v1 무료로 보냄)]<br>0) 선행(S… |
+| 우주 | 오늘의 태양계 → PD 레일에 자리 없음 · v1(무료)로 보냄 제안… | **→ v1** | B | 옮긴다 | P3 | S | [PD 좌측 레일·Space 하위 모드에 자리 없음 · PD 결정 필요] 지구를 대체하는 전체 화면 장면은 PD 셸(CENTER = 3D Earth + data field)에 맞지 않고, 전용 슬라이더는 규칙 2(… |
+| 우주 | 우주 사진관 59점 → PD 레일에 자리 없음 · v1(무료)로 보냄… | **→ v1** | B | 옮긴다 | P3 | S | [PD 레일·Space 하위 모드에 자리 없음 · PD 결정 필요] 제안: v1(무료)로 보낸다 — v1 cosmic3d 에 사진 아틀라스 진입점이 이미 있다(prototype/js/main.js:298-300 o… |
+| 우주 | 우리은하 — 우리는 어디 있나 → PD 레일에 자리 없음 · v1(무료… | **→ v1** | B | 옮긴다 | P3 | S | [PD 레일·Space 하위 모드에 자리 없음 · PD 결정 필요] 제안: v1(무료·교육)로 보낸다(같은 계열 원본 cosmic3d, prototype/js/main.js:92). 대안: 'More' 보조 서랍… |
 
 ### 4-1. 대기
 
@@ -2642,37 +2850,41 @@ export const WIND_DESCRIPTOR = {
 
 ## 5. PD 결정이 필요한 것
 
-### 5-1. PD 정본의 좌측 레일 9개에 **자리가 없는** 현상 (25)
+### 5-1. PD 정본의 9개 메뉴에 자리가 없던 27현상 — 어디로 갔나
 
-억지로 끼우지 않았다. 항목마다 제안을 달았다 — **정해 주시면 그대로 간다.**
+**Life · Travel 은 PD 확정(2026-09-20 "라이프 트래블은 메뉴에 넣어줘") — 12개.** 나머지 15개는 **제 추천이고 PD 판단 대기**다. 정해 주시면 그대로 간다.
 
-| 묶음 | 메뉴 | 제안 | 이유(요약) |
+| 상태 | 메뉴 줄 | 새 자리 | 어떻게 |
 |---|---|---|---|
-| 대기 | 오늘의 극값 | 옮긴다 | [→ 자리 없음 · **PD 결정 필요**] 현상이 아니라 도구다. 권고 = MOVE: 좌측 레일에서 빼고 11 Intelligence 'Now' 탭 맨 위 '오늘의 극값' 카드 묶음으로.<br>① 카드 본체(DOM)는 유지(썸네일·값·장소·좌표, 탭하면 비행).<br>② 값의 근거 — 원안에서 고친 것<br>- 최고/최저 기온은 '현재 기온 스냅샷의 최댓값'이 아니라 **관측소가 보고한… |
-| 바다 | 수심별 수온 | 합친다 | [→ 05 Ocean 관측 토글의 'Argo 플로트' 칩 — PD 정본에 자리 없음 · PD 결정 필요(안: 바다 실측과 한 토글 묶음)] ① 지구 위 문법 유지(부상점=실선 점, 사이=점선 추정). 마지막 부상점은 표층 수온을 SST 10단 구간색 원으로 + 확대 시 숫자. 파일은 시간 역순 정렬이므로(argo-floats/handler.py:81) '한국 주변 먼저'는 클라이언트 정렬.… |
-| 바다 | 심해 | 옮긴다 | [자리 없음 — PD 결정 필요] 둘로 가른다. ① '이 지점 수심' 읽기는 Bathymetry Inspector 로 흡수(ocean-depth 조회 재사용). ② 잠수 연출 + OBIS 생물 요약은 데이터 현상이 아니라 체험 콘텐츠 → 안 A 'Life' 보조 서랍 / 안 B v1(무료 FACT)로 보냄 / 안 C Bathymetry Inspector 의 '여기로 잠수' 액션 버튼으로만… |
-| 재해 | 지각 이동 속도 | 합친다 | [→ 자리 없음 · PD 결정 필요] 메뉴 행을 없애고 land.crustal_motion 하나로 **MERGE**. 카드 내용(한국·일본 중앙값 속도·방위, '판 전체가 함께 간다' 설명, 자료 한계)은 합쳐진 레이어의 Inspector > Analysis 탭으로 — 수치→출처→설명 순서(절대 규칙 7). 2011 사례 수치는 **출처를 달 수 있을 때만** 옮기고, 못 달면 뺀다(없는… |
-| 재해 | 지각 이동 | 옮긴다 | [→ 자리 없음 · PD 결정 필요] 1안 09 Terrain 의 'Plates & Motion', 2안 06 Hazards > Earthquake 컨텍스트 토글, 3안 v1. 어느 안이든 hazards.crustal_motion 을 흡수한 하나의 현상. **재작업 전까지는 레일에서 내려 둔다**(막대기 밭을 유료 화면에 노출하지 않기). 그림(지금 자료로): ① 막대기 폐기 → 화살촉 있… |
-| 눈·얼음 + 대기질·관측 | 눈 덮임 | 합친다 | [→ 자리 없음 · PD 결정 필요] 목표 화면은 원안 유지 = MERGE: 03 Rain 칩 줄 끝 '쌓인 눈(관측)'. 도달 경로를 3단계로 고친다.<br>[0단계 · 선행 · 자료 확보] IMS 수집기 복구(blockers 1~3). 이것 없이는 1단계 그림이 0픽셀이다.<br>[1단계 · 무료 기본 그림] 북반구 눈 범위 면(채움 #F4FBFF) + 설선(청록 #39C5FF 1.5p… |
-| 눈·얼음 + 대기질·관측 | 지상 관측 | 합친다 | [→ 자리 없음 · PD 결정 필요] 목표는 원안 유지 = MERGE: 독립 메뉴를 없애고 01 Temperature · 02 Wind · 03 Rain · 07 Air Quality 의 Inspector 에 공통 'Show Stations' 토글로 흡수. 값 칩(둥근 라벨+숫자, 채움색 = 켜진 현상의 구간 LUT, 흰 테두리 = 관측), 바람은 숫자+풍향 쐐기, WMO 기입모형은 Vie… |
-| 생태·사람·여행 | 숲 | 옮긴다 | [자리 없음 · PD 결정 필요] PD 정본 09 Terrain AFTER 는 데이터 모드를 Elevation/Contours/Hillshade/Satellite 넷으로 '단순화'한다고 적는다 — 다섯 번째 칩 추가는 그 문장과 어긋난다. 1안 'Life/Land' 보조 서랍, 2안 Terrain 칩(PD 가 허용할 때만). 화면: 릴리프 메시 유지. ① 색 = 단계색 4단(수관 20~40… |
-| 생태·사람·여행 | 철새 | 합친다 | [자리 없음 · PD 결정 필요] 철새·조류 조사·바닷새를 'Life' 보조 서랍의 '새' 메뉴 하나(칩 [철새 이동 \| 육상 조사 \| 바닷새])로 MERGE. 대안: v1 이관 또는 삭제. 화면: 꺾은선 179개 → 대권 호(32분절) 리본 메시 2~5px, 폭 3단 = 같은 출발-도착 쌍의 건수(1 · 2~4 · ≥5, 단순 셈). 호는 도착 원의 '가운데'가 아니라 출발지 쪽 원… |
-| 생태·사람·여행 | 조류 조사 기록 | 합친다 | [자리 없음 · PD 결정 필요] 'Life > 새' 의 '육상 조사' 칩으로 MERGE. 권리 확인 전에는 FREE 고정. 화면: 단색 점 구름 → 0.05° 칸을 한 BufferGeometry 에 합친 칸 면 4,521개(삼각형 약 9천), 기록 수 로그 5단 단계색(경계는 실제 분포를 보고 확정). 5km 평면 칸은 지형 과장 50× 에서 산에 묻히므로 네 귀퉁이 지표 높이의 최댓값… |
-| 생태·사람·여행 | 바다거북 | 옮긴다 | [자리 없음 · PD·법무 결정 필요] 새 투자 없이 동결하고 결정만 받는다. v1(무료)로 옮겨도 위험은 그대로다 — v1 은 유료 v2 로 이끄는 입구라 '상업적 이용' 해당 여부가 똑같이 걸린다. 선택지: ① 국립해양생물자원관에 이용 범위 서면 문의 → 허락되면 무료 'Life' 서랍에 유지 ② 답이 없거나 불가면 REMOVE. 허락된 경우의 화면(그때만): 원자료 점을 그대로 잇는… |
-| 생태·사람·여행 | 바닷새 | 합친다 | [자리 없음 · PD 결정 필요] 'Life > 새' 의 '바닷새' 칩으로 MERGE(지구 위 정보량이 정점 37개라 단독 메뉴 가치 없음). 화면: 단색 점 → 정점마다 숫자 든 원판 마커(크기 고정, 값은 색+숫자로만). 전체 보기: 색 = 누적 센 개체수 5단(경계는 실제 분포로 확정), 라벨 'EB-07 · 3,412 · 조사 58회'. 연도를 고르면 색 = 조사 1회당 개체수(yc… |
-| 생태·사람·여행 | 인구 | 다시 만든다 | [자리 없음 · PD 결정 필요] 1안 Terrain 의 다섯 번째 칩 'Population'(정본의 '단순화' 문장과 어긋나므로 PD 승인 필요), 2안 'Life/People' 보조 서랍. 어느 쪽이든 그림은 같다. 1단계(M, 한국): 1px 기둥 숲 폐기 → 격자 정점을 밀도만큼 들어 올린 릴리프 면(숲 메시와 같은 기술). 면은 '네 귀퉁이 중 하나라도 값이 있으면' 만들고 값 0… |
-| 생태·사람·여행 | 실시간 혼잡 | 합친다 | [자리 없음 · PD 결정 필요] 인구가 Terrain/People 어디로 가든 그 서울 확대 단계의 'Live' 칩으로 MERGE(대안: Travel 공간의 '지금 붐빔'). 이 묶음에서 유일하게 시간이 살아 있는 레이어이고 공용 시간축에 이미 묶여 있다 — 새 조작부를 만들지 않는다. 화면: 수직 상자 121개 → 장소마다 지표 밀착 원판(크기 고정) + 서울시 공식 4단계 색 그대로… |
-| 생태·사람·여행 | 지역 뉴스 | 옮긴다 | [자리 없음 · PD 결정 필요] 좌측 레일 밖으로 MOVE — TOP 바 진입 또는 이벤트룸 + 06 Hazards Inspector 의 '관련 보도'. 0단계(S, 오류 고치기 — 바로 가능): 분홍 막대 5개·점 5개 삭제, 지역 묶음은 지도 위 DOM 칩('동남아 24건 ▸') → 누르면 Inspector 목록(제목 전문 · 매체 · ○시간 전 · 원문 링크). 1단계(M, PD 지… |
-| 생태·사람·여행 | 오늘 갈 곳 | 옮긴다 | [원 개선안 After 미수신(입력 절단) — 코드 근거로 최소안 작성] [자리 없음 · PD 결정 필요] 여행 6현상은 'Travel(한국)' 보조 작업공간 하나로 묶고 칩 [오늘 갈 곳 \| 목적별 장소 \| 방문자]로 — 대안은 v1 이관. 단 대회 접수 09-30·발표심사 10-23 까지 구조 이동은 동결하고 그림·문구만 고친다. 즉시(S): ① '매일 다시 점수 매깁니다' 문장을… |
-| 생태·사람·여행 | 목적별 관광지 | 합친다 | [원 개선안 미수신 — 최소안] [자리 없음 · PD 결정 필요] 'Travel(한국)' 작업공간의 '목적별 장소' 칩 하나로 MERGE(무장애 \| 웰니스 \| English 하위 칩). 멀리서는 시군구별 건수 숫자 원판 5단 단계색, 300km 아래에서는 검색·현재 쪽 결과를 번호 핀으로(목록 번호와 1:1). Inspector = 기존 placeCard(주소·좌표·공식 상세·수집 시각… |
-| 생태·사람·여행 | 항공편 | 옮긴다 | [원 개선안 미수신 — 최소안] [자리 없음 · PD 결정 필요] '비행기가 실제 어디에 있나'는 FACT 질문이고 v1 에 이미 구현이 있다 → v2 메뉴에서는 빼고 v1 로 MOVE(권고). v2 에 남긴다면: 막힌 것은 인프라가 아니라 배선이다 — flight-track 의 배포 여부만 확인하고 v2 에 연결(S~M), 실제 항적은 실선·관측 배지, 대권 추정은 파선·DERIVED 로… |
-| 생태·사람·여행 | 서핑 | 합친다 | [→ 05 Ocean · Waves 탭 토글 'Surf spots', PD 결정 필요(레일에 자리 없음)] 부모 그림(파고 단계색+방향 glyph)은 05 담당. 핵심 정정 = **자료를 따로 받지 않는다**: 마커 숫자는 05 Ocean 이 그리는 파랑 프레임(8bit 1ch 선형, 공용 프레임 저장소)을 해변의 앞바다 점(beaches.js offshore())에서 CPU 로 읽은 값이… |
-| 생태·사람·여행 | 낚시 | 합친다 | [→ 05 Ocean · Waves 탭 토글 'Fishing spots', PD 결정 필요(레일에 자리 없음)] 서핑과 같은 'Show spots' 부품의 다른 칩. 파랑 숫자는 서핑과 같이 05 Ocean 파랑 프레임을 지점에서 읽는다(육지 텍셀이면 가장 가까운 유효 바다 텍셀, 없으면 비움 — '조위만 있는 지점'은 물때만 보여주는 기존 규칙 유지). 마커: 종류 아이콘 5종(색은 '무… |
-| 생태·사람·여행 | 패러글라이딩 | 합친다 | [→ 02 Wind 토글 'Flying sites', PD 결정 필요(레일에 자리 없음)] 부모 그림(입자+풍속 구간색)은 02 Wind(P0) 담당. 1차 값을 **모델에서 실측으로 뒤집는다**: kma-aws-min(736지점 매분)에 ws10·wd10·wss(최대 순간풍속)·ta·td 가 다 있다 → 활공장과 '같은 산' 조건(mountain.js 의 8km 이내 · 고도가 활공장의… |
-| 생태·사람·여행 | 산 정상 날씨 | 합친다 | [→ 01 Temperature 토글 'Summits', PD 결정 필요(레일에 자리 없음)] 부모 그림(5°C 10단+흰 등온선+숫자 라벨)은 01 담당. 정직성 정정 ①: mountain.js 가 내는 두 번째 숫자는 '실측'이 아니라 **고지대 관측소 실측을 정상 고도로 감률 환산한 값(est)** 이다(mountain.js lapseTo, 5.5°C/km, 600m 이내만) — OB… |
-| 우주 | 오늘의 태양계 → PD 레일에 자리 없음 · v1(무료)로 보냄 제안 (PD 결정 필요) | 옮긴다 | [PD 좌측 레일·Space 하위 모드에 자리 없음 · PD 결정 필요] 지구를 대체하는 전체 화면 장면은 PD 셸(CENTER = 3D Earth + data field)에 맞지 않고, 전용 슬라이더는 규칙 2(메뉴별 슬라이더 금지)에 어긋난다. 제안: v2 현상 메뉴에서 빼고 v1(무료·교육)로 보낸다 — v1 에 같은 계열 원본(cosmic3d)이 lazy 로 이미 있다(prototy… |
-| 우주 | 우주 사진관 59점 → PD 레일에 자리 없음 · v1(무료)로 보냄 제안 (PD 결정 필요) | 옮긴다 | [PD 레일·Space 하위 모드에 자리 없음 · PD 결정 필요] 제안: v1(무료)로 보낸다 — v1 cosmic3d 에 사진 아틀라스 진입점이 이미 있다(prototype/js/main.js:298-300 openPhotoAtlas). 대안: 'More' 보조 서랍 링크. Space 레일에는 세 모드만 남긴다. 과금 포인트 없음. |
-| 우주 | 우리은하 — 우리는 어디 있나 → PD 레일에 자리 없음 · v1(무료)로 보냄 제안 (PD 결정 필요) | 옮긴다 | [PD 레일·Space 하위 모드에 자리 없음 · PD 결정 필요] 제안: v1(무료·교육)로 보낸다(같은 계열 원본 cosmic3d, prototype/js/main.js:92). 대안: 'More' 보조 서랍 링크. '재구성 도식' 고지는 그대로 유지. 과금 포인트 없음. |
+| ✅ PD 확정 | 심해 | **L Life** | 심해 체험(수심 읽기는 09 지형 Inspector 로) |
+| ✅ PD 확정 | 숲 | **L Life** | 숲 |
+| ✅ PD 확정 | 철새 | **L Life** | 새 › 철새 이동 |
+| ✅ PD 확정 | 조류 조사 기록 | **L Life** | 새 › 육상 조사 |
+| ✅ PD 확정 | 바다거북 | **L Life** | 바다거북 — 기관 서면 확인 전 동결 |
+| ✅ PD 확정 | 바닷새 | **L Life** | 새 › 바닷새 |
+| ✅ PD 확정 | 인구 | **L Life** | 사람 › 인구 |
+| ✅ PD 확정 | 실시간 혼잡 | **L Life** | 사람 › 서울 실시간 혼잡 |
+| ✅ PD 확정 | 오늘 갈 곳 | **T Travel** | 오늘 갈 곳 |
+| ✅ PD 확정 | 목적별 관광지 | **T Travel** | 목적별 장소 |
+| ✅ PD 확정 | 연관 관광지 | **T Travel** | 장소 Inspector 의 '다음에 간 곳 Top 5' |
+| ✅ PD 확정 | 지역 방문자 | **T Travel** | 방문자 |
+| 🟡 제 추천 | 지상 관측 | **01·02·03·07** | 공통 'Show Stations' 토글 — 독립 메뉴 폐지 |
+| 🟡 제 추천 | 눈 덮임 | **03 강수** | '쌓인 눈(관측)' 칩 — IMS 수집기 복구가 선행 |
+| 🟡 제 추천 | 연안 침수 범위 | **05 해양** | 해수면 상승 · 침수 보조 모드('재해'에서 옮김) |
+| 🟡 제 추천 | 궤도 인텔리전스 (우주쓰레기·근접사건) → [확정 범위: 0단계 거짓… | **08 우주** | Satellites 의 'Debris' 칩 + 근접사건(거짓 문구 핫픽스는 P0) |
+| 🟡 제 추천 | 지각 이동 속도 | **09 지형** | 'Plates & Motion' 으로 합침 |
+| 🟡 제 추천 | 지각 이동 | **09 지형** | 'Plates & Motion' |
+| 🟡 제 추천 | 오늘의 극값 | **11 Intelligence** | Now 탭 맨 위 '오늘의 극값' 카드 |
+| 🟡 제 추천 | 항공편 | **→ v1** | 사실(FACT) 질문이고 v1 에 구현이 있다 |
+| 🟡 제 추천 | 오늘의 태양계 → PD 레일에 자리 없음 · v1(무료)로 보냄 제안… | **→ v1** | 지구를 대체하는 전체 화면 · 전용 슬라이더 — v2 셸에 안 맞는다 |
+| 🟡 제 추천 | 우주 사진관 59점 → PD 레일에 자리 없음 · v1(무료)로 보냄… | **→ v1** | v1 cosmic3d 에 사진 아틀라스 진입점이 이미 있다 |
+| 🟡 제 추천 | 우리은하 — 우리는 어디 있나 → PD 레일에 자리 없음 · v1(무료… | **→ v1** | 교육 콘텐츠 — v1 |
+| 🟡 제 추천 | 선박 | **뺌** | 그릴 자료가 없다(AIS 미연결) — 자료가 생기면 다시 연다 |
+| 🟡 제 추천 | 여행지 | **뺌** | 자료 없음 — 한국은 '목적별 장소'가 같은 질문에 답한다 |
+| 🟡 제 추천 | 빙하호 홍수 | **뺌(보류)** | 수집기(glacial-lake-us) 배포 전 — 자료가 들어오면 06 재해로 |
+| 🟡 제 추천 | 지역 뉴스 | **상단 · 재해 Inspector** | '관련 보도' — 좌측 메뉴 밖. 분홍 막대 5개는 즉시 삭제(S) |
+
+⚠️ 취미·야외 활동 5줄(해변과 낚시터 · 서핑 · 낚시 · 패러글라이딩 · 산 정상 날씨)은 분석에서 물리 메뉴(해양 · 바람 · 기온)의 활동 오버레이로 들어갔다. Travel 이 메뉴가 된 지금, **Travel 에 '야외 활동' 칩을 두고 누르면 해당 물리 메뉴의 오버레이를 여는** 입구를 하나 더 둘 수 있다(자료와 그림은 한 곳에만 둔다). PD 판단.
 
 ### 5-1b. 자리는 있지만 **세부를 정해 주셔야 하는** 현상 (15)
 
@@ -2681,17 +2893,17 @@ export const WIND_DESCRIPTOR = {
 | 대기 | 기온 | [→ 01 Temperature · 기준 구현체] PD 목표 화면(5°C 11칸 단색 · 흰 등온선+지구 위 숫자 라벨 · 범례 · Inspector 칩 · Actual/Anomaly)은 그대로…<br>… KST'. '현재 기온'이라 부르지 않고 '지금 시각의 모델 기온'이라 한다.<br>- °C/°F 는 범례 전환만. 불투명도·음영은 View>Appearance.<br>- '<-10' 한 칸에 극지 -60~-10°C 가 다 들어가는 문제는 범례 변경이므로 **PD 결정 필요**(View 옵션 '극지 확장 칸').<br>이 항목에서 뺀 것<br>- 바람 입자 오버레이: 02 Wind 완료 뒤 독립 토글로 붙인다(이 항목 DoD 아님).<br>- Anomaly 탭 내용: weather.temperature_anomaly 항목.<br>- GFS\|ECMWF Compa … |
 | 대기 | 상층 수증기 | [→ 04 Clouds › Satellite quick mode 의 채널 칩 '수증기 6.3µm'] 독립 메뉴 줄을 없앤다. 현상 id 와 레이어 id 'weather/cloud-wv' 는 그대로…<br>… 기존 syncCloudToTime(main.js:5454-5474)이 gk2a* 모드를 GFS 예보 구름으로 바꾼다 — 이 동작이 '지금만'의 집행이다. 그때 칩은 비활성 + 사유('관측은 미래에 없다').<br>⑥ 가강수량(TPW) = [자리 없음 · PD 결정 필요]<br>- 권고: 03 Rain Inspector 의 보조 칩 '수증기량(TPW)'. 10mm 구간 단계색 + 등치선 10·20·30·40·50·60·70mm(v1 continuous-contours.js:35 와 동일 레벨). 'MODEL · GFS' 배지. 높은 TPW 만 … |
 | 바다 | 파고와 너울 | [→ 05 Ocean · Waves 칩] 목표 화면 유지(구간색 + 기준선 + 방향·높이 glyph + 파고·너울 별도 수치). 도달 경로를 둘로 쪼갠다. 【A 자료 확보 — 선행】 A-1 ECM…<br>… 으로(VISUALIZATION_ONLY 배지 유지). 【그 사이】 새 격자가 뜰 때까지 5° Open-Meteo 파고 색면은 유료 레일에 올리지 않는다 — 핫픽스로 육지 덮임만 막고 무료·'모델' 배지로 두거나 내린다(R0 감사 D-OM1/D-OM2 PD 결정). … |
+| 바다 | 수심별 수온 | [→ 05 Ocean 관측 토글의 'Argo 플로트' 칩 — PD 정본에 자리 없음 · PD 결정 필요(안: 바다 실측과 한 토글 묶음)] ① 지구 위 문법 유지(부상점=실선 점, 사이=점선 추정…<br>… [→ 05 Ocean 관측 토글의 'Argo 플로트' 칩 — PD 정본에 자리 없음 · PD 결정 필요(안: 바다 실측과 한 토글 묶음)] ① 지구 위 문법 유지(부상점=실선 점, 사이=점선 추정). 마지막 부상점은 표층 수온을 SST 10단 구간색 원으로 + 확대 시 숫자. 파일은 시간 역순 정렬이므로(argo-floats/handler.py:81) '한국 주변 먼저'는 … |
 | 바다 | 해수면 상승 전망 | [→ 12 Simulation · Variable='Sea level' — PD 결정 필요 2건: (a) 12 는 PRO 인데 '기본 그림은 무료 완성' 원칙과 부딪힘 → 05 Ocean 에 무료…<br>… [→ 12 Simulation · Variable='Sea level' — PD 결정 필요 2건: (a) 12 는 PRO 인데 '기본 그림은 무료 완성' 원칙과 부딪힘 → 05 Ocean 에 무료 1장(SSP5-8.5·2100), 시나리오×연도·delta 는 12. (b) 이 현상은 EARTHUS 계산이 아니라 기관 시나리오 전망(registry capabil … |
 | 바다 | 해구 | [→ 09 Terrain · 등심선의 지형 이름표로 MERGE] 렌더는 유지 — 선·라벨·pick 이 이미 PD 문법(선 + 지구 위 라벨 + 클릭)에 맞다. 독립 메뉴 줄을 없애고 Bathyme…<br>… 하나로 줄이지 않는다 — registry:387) · 출처 GEBCO 2026·SCUFN · 배지. 해구 옆 수심 숫자는 EARTHUS_ANALYSIS 라는 기존 구분(registry:203) 유지. hobby/trench 상세 카드 10곳의 자리는 PD 결정 필요('Life/취미' 보조 서랍 또는 v1). … |
-| 바다 | 선박 | [REMOVE — PD 결정 필요] 유료 레일·Ocean 패널에서 줄을 뺀다. 그릴 자료가 없는 줄은 PD 금지 항목 '유료를 잠금 아이콘만으로 표현'과 같은 인상을 준다. 항로 질문은 지금처럼…<br>… [REMOVE — PD 결정 필요] 유료 레일·Ocean 패널에서 줄을 뺀다. 그릴 자료가 없는 줄은 PD 금지 항목 '유료를 잠금 아이콘만으로 표현'과 같은 인상을 준다. 항로 질문은 지금처럼 검색창 구간 입력으로, 실시간 위치·여객선 운항은 해양교통안전정보시스템(MTIS) 안내를 Search 결과에서 … |
-| 재해 | 연안 침수 범위 | [→ 자리 PD 결정 필요] Event-first 인 06 Hazards 에 사건이 아닌 시나리오 지도가 있는 것이 어색하다 — 1안 05 Ocean 의 'Sea level & Inundation…<br>… [→ 자리 PD 결정 필요] Event-first 인 06 Hazards 에 사건이 아닌 시나리오 지도가 있는 것이 어색하다 — 1안 05 Ocean 의 'Sea level & Inundation' 보조 모드, 2안 12 Simulation 의 '기관 시나리오' 입구, 3안 현 위치 유지. 그림: … |
-| 재해 | 빙하호 홍수 | [→ REMOVE · PD 결정 필요] 자료가 운영에 들어오기 전에는 좌측 레일·메뉴에 자리를 만들지 않는다('자료 없는 칸은 안 만듦' 규칙). 레지스트리 항목은 지우지 않고 planned 로…<br>… [→ REMOVE · PD 결정 필요] 자료가 운영에 들어오기 전에는 좌측 레일·메뉴에 자리를 만들지 않는다('자료 없는 칸은 안 만듦' 규칙). 레지스트리 항목은 지우지 않고 planned 로 둔다. 복귀 조건: events/glof-alaska.json 이 운영에 들어오고 USGS 실측·NWS 공식 예보 … |
 | 눈·얼음 + 대기질·관측 | 해빙 | [→ 05 Ocean · 다섯째 칩 'Ice' · PD 결정 필요] 목표 화면은 원안 유지: 얼음으로 읽히는 5단 구간색(15~30 #1F4E79 · 30~50 #2F7FB5 · 50~70 #6C…<br>… [→ 05 Ocean · 다섯째 칩 'Ice' · PD 결정 필요] 목표 화면은 원안 유지: 얼음으로 읽히는 5단 구간색(15~30 #1F4E79 · 30~50 #2F7FB5 · 50~70 #6CB8E0 · 70~90 #BFE6F5 · 90~100 #FFFFFF, 15% 미만 비움) + 오늘 가장자리(흰 실선) vs 1981–2010 … |
 | 눈·얼음 + 대기질·관측 | 자외선 | [→ 07 Air Quality · 'UV' 칩 · PD 결정 필요] 독립 메뉴를 없애고 MERGE — 원안 유지. WHO/기상청 공통 5단 구간색(0~2 #289500 · 3~5 #F7E400…<br>… [→ 07 Air Quality · 'UV' 칩 · PD 결정 필요] 독립 메뉴를 없애고 MERGE — 원안 유지. WHO/기상청 공통 5단 구간색(0~2 #289500 · 3~5 #F7E400 · 6~7 #F85900 · 8~10 #D8001D · 11+ #6B49C8), 등급 경계 3·6·8·11 흰 선+'UV 8' 라벨(0.5° 이 … |
 | 눈·얼음 + 대기질·관측 | 기후 시계열 | [→ 11 Intelligence · Climatology 탭] 제안 = MOVE. **PD 결정 필요**: 정본의 좌측 레일 9개에 이 현상의 자리가 없다. 좌측 메뉴 항목을 없애고 Inspec…<br>… [→ 11 Intelligence · Climatology 탭] 제안 = MOVE. **PD 결정 필요**: 정본의 좌측 레일 9개에 이 현상의 자리가 없다. 좌측 메뉴 항목을 없애고 Inspector 의 Now / Forecast / Climatology / Analysis 중 Climatology 로 옮긴다. 두 단계로 나누고, 1단계만 이 항목의 크기(M)에 넣는다. … |
-| 생태·사람·여행 | 여행지 | [원 개선안 미수신 — 최소안] 메뉴에서 REMOVE(PD 결정 필요). '자료 없는 칸은 만들지 않는다'는 기존 메뉴 규칙과 맞추고, 한국은 '목적별 장소'가 같은 질문에 공식 자료로 답한다.…<br>… [원 개선안 미수신 — 최소안] 메뉴에서 REMOVE(PD 결정 필요). '자료 없는 칸은 만들지 않는다'는 기존 메뉴 규칙과 맞추고, 한국은 '목적별 장소'가 같은 질문에 공식 자료로 답한다. 전세계 OSM 장소는 자체 추출·캐시가 생기는 날 새 항목으로 다시 연다(OSM 은 ODbL — 출처표기·파생DB 공개 조건, 착수 전 조건 재확 … |
 | 생태·사람·여행 | 해변과 낚시터 | [→ 05 Ocean · Waves 탭, PD 결정 필요] 이 현상은 '생태·사람·여행' 묶음(phenomenon-registry.js:1108)이라 PD 정본 레일에 자리가 없다 — (a) Oc…<br>… [→ 05 Ocean · Waves 탭, PD 결정 필요] 이 현상은 '생태·사람·여행' 묶음(phenomenon-registry.js:1108)이라 PD 정본 레일에 자리가 없다 — (a) Ocean 토글로 흡수 (b) v1 로 보냄 (c) 삭제 중 PD 가 고른다. 권고는 (a) MERGE: 현상 ocean.coastal_ … |
-| 우주 | 궤도 인텔리전스 (우주쓰레기·근접사건) → [확정 범위: 0단계 거짓 문구 핫픽스] · 최종 자리는 Space › Satellites 의 'Debris' 칩 + 'Events: 근접사건' | [확정 범위 = 0단계 핫픽스(S·P0)뿐이다. 최종 자리는 Space › Satellites 로 MERGE — PD 하위 모드에 이름이 없으므로 PD 결정 필요]<br>… [확정 범위 = 0단계 핫픽스(S·P0)뿐이다. 최종 자리는 Space › Satellites 로 MERGE — PD 하위 모드에 이름이 없으므로 PD 결정 필요]<br>0단계(즉시, 재설계와 무관):<br>- positionsUsable() 이 false 면 카드 첫 줄을 '위치 표시 안 함 — 스냅샷 N일 전(상한 7일)'로 바꾼다(core.js:558-564 가 state():428 과 같은 값을 쓰게).<br>- 배지 LIVE → STAL … |
+| 생태·사람·여행 | 서핑 | [→ 05 Ocean · Waves 탭 토글 'Surf spots', PD 결정 필요(레일에 자리 없음)] 부모 그림(파고 단계색+방향 glyph)은 05 담당. 핵심 정정 = **자료를 따로 받…<br>… [→ 05 Ocean · Waves 탭 토글 'Surf spots', PD 결정 필요(레일에 자리 없음)] 부모 그림(파고 단계색+방향 glyph)은 05 담당. 핵심 정정 = **자료를 따로 받지 않는다**: 마커 숫자는 05 Ocean 이 그리는 파랑 프레임(8bit 1ch 선형, 공용 프레임 저장소)을 해변의 앞바다 점(beaches.js offsh … |
+| 생태·사람·여행 | 낚시 | [→ 05 Ocean · Waves 탭 토글 'Fishing spots', PD 결정 필요(레일에 자리 없음)] 서핑과 같은 'Show spots' 부품의 다른 칩. 파랑 숫자는 서핑과 같이 05…<br>… [→ 05 Ocean · Waves 탭 토글 'Fishing spots', PD 결정 필요(레일에 자리 없음)] 서핑과 같은 'Show spots' 부품의 다른 칩. 파랑 숫자는 서핑과 같이 05 Ocean 파랑 프레임을 지점에서 읽는다(육지 텍셀이면 가장 가까운 유효 바다 텍셀, 없으면 비움 — '조위만 있는 지점'은 물때만 보여주는 기존 규칙 유지). 마커 … |
+| 생태·사람·여행 | 패러글라이딩 | [→ 02 Wind 토글 'Flying sites', PD 결정 필요(레일에 자리 없음)] 부모 그림(입자+풍속 구간색)은 02 Wind(P0) 담당. 1차 값을 **모델에서 실측으로 뒤집는다**…<br>… [→ 02 Wind 토글 'Flying sites', PD 결정 필요(레일에 자리 없음)] 부모 그림(입자+풍속 구간색)은 02 Wind(P0) 담당. 1차 값을 **모델에서 실측으로 뒤집는다**: kma-aws-min(736지점 매분)에 ws10·wd10·wss(최대 순간풍속)·ta·td 가 다 있다 → 활공장과 '같은 산' 조건(mou … |
+| 생태·사람·여행 | 산 정상 날씨 | [→ 01 Temperature 토글 'Summits', PD 결정 필요(레일에 자리 없음)] 부모 그림(5°C 10단+흰 등온선+숫자 라벨)은 01 담당. 정직성 정정 ①: mountain.js…<br>… [→ 01 Temperature 토글 'Summits', PD 결정 필요(레일에 자리 없음)] 부모 그림(5°C 10단+흰 등온선+숫자 라벨)은 01 담당. 정직성 정정 ①: mountain.js 가 내는 두 번째 숫자는 '실측'이 아니라 **고지대 관측소 실측을 정상 고도로 감률 환산한 값(est)** 이다(mountain.js lapseT … |
 | 우주 | 발사 일정 (세계 로켓) → Space › Satellites 안의 'Events: 발사' 목록 (PD 결정 필요) | [→ 08 Space · Satellites 모드의 'Events' 목록(발사 · 근접사건)으로 MERGE — PD 하위 모드 3개에 이름이 없음 · PD 결정 필요(대안: v1 무료로 보냄)]<br>… [→ 08 Space · Satellites 모드의 'Events' 목록(발사 · 근접사건)으로 MERGE — PD 하위 모드 3개에 이름이 없음 · PD 결정 필요(대안: v1 무료로 보냄)]<br>0) 선행(S, 재설계와 무관하게 먼저): LL2 직접 호출을 events/launches.json(aws/launch-feed, 15분, 진행 중·중계 포함)과 events/launches-recent.json 으로 교체. URL 만 바꾸는 … |
 
 ### 5-2. 그 밖에 정해야 하는 것
@@ -2717,7 +2929,7 @@ export const WIND_DESCRIPTOR = {
 | 게이트 | 7단계에서 채워지는 칸 | 끝나면 화면에서 보이는 것 | 포함 |
 |---|---|---|---|
 | **G1 — 그림이 바뀐다** | **①** (기온·바람·강수·해양) + **④** (그 넷이 타임라인을 따른다) | 구간색 + 등온선 + 라벨, 흐르는 바람, 강수 구간색, 5일 타임라인, 바다가 육지를 안 덮는다 | W0 · W1 · W2 · W3 · W4 · W6 의 껍질 버그 |
-| **G2 — 읽을 수 있다** | **② ③** 9개 메뉴 전부 · **①** 나머지 메뉴 | 좌레일 9 · Inspector(값 · 출처) · 타임라인 하나 · View 분리 · 범례 상시 | W5 · W6 나머지 · W7 |
+| **G2 — 읽을 수 있다** | **② ③** 11개 메뉴 전부 · **①** 나머지 메뉴(Life · Travel 포함) | 좌레일 11 · Inspector(값 · 출처) · 타임라인 하나 · View 분리 · 범례 상시 | W5 · W6 나머지 · W7 |
 | **G3 — 돈 받을 이유가 생긴다** | **⑤ ⑥** | 분할 비교 · 원인과 확률을 말하는 Intelligence | W8 · W9 |
 | **G4 — 미래를 시험한다** | **⑦** | Simulation 작업 공간 | W10 |
 

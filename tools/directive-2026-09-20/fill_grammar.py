@@ -11,6 +11,7 @@ import re
 import sys
 
 src, doc_path = sys.argv[1:3]
+extra_src = sys.argv[3] if len(sys.argv) > 3 else None   # Life · Travel 매트릭스(따로 돌린 결과)
 STEP = {1: "① 극적으로 보인다", 2: "② 정확한 값", 3: "③ 출처", 4: "④ 시간축", 5: "⑤ 비교", 6: "⑥ Intelligence", 7: "⑦ Simulation"}
 MARK = {"EXISTS": "✅", "PARTIAL": "🟡", "MISSING": "❌"}
 
@@ -27,11 +28,17 @@ def cell(s, limit=None):
 d = json.load(open(src, encoding="utf-8"))
 d = d.get("result", d)
 rows = sorted(d["rows"], key=lambda r: r["no"])
+if extra_src:
+    e = json.load(open(extra_src, encoding="utf-8")); e = e.get("result", e)
+    RENAME = {"10": ("L", "Life 생명·사람"), "11": ("T", "Travel 여행(한국)")}   # PD 정본의 작업 공간 번호(10~12)와 겹치지 않게
+    for r in sorted(e["rows"], key=lambda r: r["no"]):
+        r["no"], r["name"] = RENAME.get(r["no"], (r["no"], r["name"]))
+        rows.append(r)
 critic = d.get("critic") or {}
 L = []
 
 # ── 1-1 지금 상태 한눈에 ────────────────────────────────────────────
-L.append("### 1-1. 지금 상태 — 63칸 중 몇 칸이 채워져 있나")
+L.append("### 1-1. 지금 상태 — %d칸 중 몇 칸이 채워져 있나" % (len(rows) * 7))
 L.append("")
 cnt = collections.Counter(c["now"] for r in rows for c in r["cells"])
 total = sum(cnt.values())
@@ -44,7 +51,7 @@ for r in rows:
     L.append("| **%s %s** | %s |" % (r["no"], cell(r["name"]), " | ".join(MARK.get(by[i]["now"], "?") if i in by else "?" for i in range(1, 8))))
 col = ["**단계별 ✅**"]
 for i in range(1, 8):
-    col.append("%d/9" % sum(1 for r in rows for c in r["cells"] if c["step"] == i and c["now"] == "EXISTS"))
+    col.append("%d/%d" % (sum(1 for r in rows for c in r["cells"] if c["step"] == i and c["now"] == "EXISTS"), len(rows)))
 L.append("| " + " | ".join(col) + " |")
 L.append("")
 
@@ -107,6 +114,8 @@ for r in rows:
 # ── 1-5 비평 ────────────────────────────────────────────────────────
 L.append("### 1-5. 비평 — 같은 문법이 깨지는 곳과 위험")
 L.append("")
+L.append("> 이 비평은 현상 9개 메뉴의 63칸을 읽고 쓴 것이다. Life · Travel(14칸)은 그 뒤에 추가됐고 같은 규칙을 적용한다 — 두 메뉴의 ②·③ 은 무료, ④ 는 자료가 가진 시간만, ⑤·⑦ 은 입구 + 사유.")
+L.append("")
 if critic.get("inconsistencies"):
     L.append("**메뉴마다 다르게 적힌 곳(같은 문법이 깨지는 곳).**")
     L.append("")
@@ -122,7 +131,7 @@ if critic.get("cellFixes"):
         L.append("| %s | %s | %s |" % (cell(f.get("menu")), STEP.get(f.get("step"), f.get("step")), cell(f.get("fix"))))
     L.append("")
 if critic.get("risks"):
-    L.append("**이 문법을 9개 메뉴에 강제할 때의 위험.**")
+    L.append("**이 문법을 모든 메뉴에 강제할 때의 위험.**")
     L.append("")
     for x in critic["risks"]:
         L.append("- " + cell(x))

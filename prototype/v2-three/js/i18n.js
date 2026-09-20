@@ -318,7 +318,7 @@ const L_EN = {
   khoasl245: 'Korean seas sea-level outlook · SSP2-4.5 middle',
   khoasl370: 'Korean seas sea-level outlook · SSP3-7.0 high',
   khoasl585: 'Korean seas sea-level outlook · SSP5-8.5 highest',
-  khoaflood: 'Coastal flood extent — by district',
+  khoaflood: 'Coastal inundation scenario map — by district (not live, not a forecast)',
   wavefield: 'Significant wave height (global)',
   current: 'Surface currents',
   surf: '271 beaches · 946 fishing spots',

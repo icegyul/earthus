@@ -112,7 +112,9 @@ export const SCENES = [
       { id: 'khoasl245', name: '우리 바다 해수면 전망 · SSP2-4.5 중간', state: 'MODEL_SIGNAL', src: '국립해양조사원 지역 해양기후 모델 · 0.05°', act: true, longterm: true },
       { id: 'khoasl370', name: '우리 바다 해수면 전망 · SSP3-7.0 고배출', state: 'MODEL_SIGNAL', src: '국립해양조사원 지역 해양기후 모델 · 0.05°', act: true, longterm: true },
       { id: 'khoasl585', name: '우리 바다 해수면 전망 · SSP5-8.5 최고', state: 'MODEL_SIGNAL', src: '국립해양조사원 지역 해양기후 모델 · 0.05°', act: true, longterm: true },
-      { id: 'khoaflood', name: '연안 침수 범위 — 시군구별 침수 예상도', state: 'MODEL_SIGNAL', src: '국립해양조사원 · 침수 예상도', act: true },
+      /* '연안 침수 범위'는 **언제의** 침수인지 안 적었다 — 지금 침수도, 이번 태풍 예보도 아니고
+         기관이 미리 계산해 둔 가정 상황의 예상도다. 이름이 그 사실을 담는다(2026-09-20 W6). */
+      { id: 'khoaflood', name: '연안 침수 예상도 — 가정 상황 (시군구별)', state: 'MODEL_SIGNAL', src: '국립해양조사원 · 사전 산출 침수 예상도(실시간·예보 아님)', act: true, longterm: true },
       { id: 'wavefield', name: '유의파고 (전지구)', state: 'MODEL_SIGNAL', src: 'Open-Meteo Marine 경유 · 5° 격자(약 555 km) · 현재 시각', act: true },
       { id: 'current', name: '표층 해류', state: 'MODEL_SIGNAL', src: 'Open-Meteo Marine', act: true },
       { id: 'surf', name: '해변 271곳·낚시 946곳', state: 'OBSERVED', src: 'OpenStreetMap ODbL', act: true },

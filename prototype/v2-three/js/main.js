@@ -2663,8 +2663,16 @@ async function main() {
       shell.refreshFlyout();
       return;
     }
-    // 해수면 상승 전망의 관측소 원반을 눌렀으면 그 지점 카드가 먼저다 — 원반은 구름 위(renderOrder 7)에 서므로
-    // 누른 사람이 본 것도 그것이다. 꺼져 있거나 빗나갔으면 null 이라 아래 선택 흐름으로 그대로 흐른다.
+    // 두 종류의 원반이 무엇보다 위에 그려진다(둘 다 라벨과 같은 자리) — 그래서 누른 사람이 본 것도 그것이다.
+    // ⚠️ 둘 다 켜져 있을 수 있다(한국 해안). 그때는 **좁은 쪽이 이긴다**: 연안 침수 원반은 이름이 붙은
+    //    시군구 69곳뿐이라 그것을 눌렀다면 그 지역을 보려는 것이고, 조위관측소 원반은 전 세계 1,016곳이다.
+    const fdisc = liveLayers.pickFloodDisc(e.clientX, e.clientY);
+    if (fdisc) {
+      focus.clear();
+      shellHooks.onAction('flood-district', { sgg: fdisc.sggCd });
+      return;
+    }
+    // 해수면 상승 전망의 관측소 원반. 꺼져 있거나 빗나갔으면 null 이라 아래 선택 흐름으로 그대로 흐른다.
     const slrHit = liveLayers.slrPick({ x: e.clientX, y: e.clientY });
     if (slrHit) {
       focus.clear();
@@ -6342,7 +6350,7 @@ async function main() {
     if (detail) detail.update(orbit.pitch, orbit.yaw, altKm, camera);
     satLayer.update(now);
     aethLink.update(now);
-    liveLayers.tick(now, altKm);
+    liveLayers.tick(now, altKm, camera);   // camera: 연안 침수 원반의 화면 솎기·집기(js/flood-discs.js)
     windLayer.tick(dt, camera);   // 바람 입자(W3) — 'wind' 레이어가 꺼져 있으면 첫 줄에서 돌아간다(아무것도 하지 않는다)
     starLayers.tick(dt);          // 색면·바람이 주인공인 동안: 구름이 물러나고 · 바람 밑에 풍속 색면이 깔리고 · 입자는 흰색
     flightRoute.tick(now, camera);

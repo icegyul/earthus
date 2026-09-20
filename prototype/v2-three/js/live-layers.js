@@ -10,6 +10,11 @@ import { buildOceanMaskAsync, oceanMaskAlphaRGBA, oceanMaskCardLine, erodedGridN
 import { activeField, clearFieldLayers, isFieldLayerId, toggleFieldLayer } from './field-layer.js?v=1';
 // 잠기는 땅(레이어 'slr' · 2026-09-20 E1) — 상승폭 IDW 격자·셰이더·카드는 저 파일에 있다. 여기에도 거는 자리만 둔다.
 import { createFloodOverlay, FLOOD_QUANTITY } from './flood-overlay.js?v=1';
+// 연안 침수 예상도의 전국 색인(레이어 'khoaflood' · 2026-09-20 W6) — 지표를 고른 근거·원반 그리기·솎기·집기는 저 파일에 있다.
+import {
+  createFloodDiscs, floodClassLabel, floodDiscSpecs, floodHiddenNote, floodLegendHtml, floodSizeNote,
+  FLOOD_DISTRICT_TIMEOUT_MS, FLOOD_METRIC_KO,
+} from './flood-discs.js?v=1';
 // 지상관측 두 파일(기상청 · GTS)은 공용 저장소에서 받는다 — 바람·평년차·기입 모형·지구 위 관측 숫자가 같은 문서를 나눠 쓴다(surface-obs.js).
 import { surfaceObs } from './surface-obs.js?v=1';
 
@@ -374,7 +379,8 @@ export class LiveLayers {
     if (l && l.on) {
       l.obj.visible = false;
       l.on = false;
-      if (id === 'khoaflood') { this._floodSel = null; }   // 끄면 근접 허용도 함께 해제
+      // 끄면 근접 허용도, 지구 위 이름표의 선택 표시도 함께 해제한다
+      if (id === 'khoaflood') { this._floodSel = null; if (this._floodDiscs) this._floodDiscs.setSelected(null); }
       return { on: false };
     }
     if (l && l.obj) {
@@ -633,8 +639,12 @@ export class LiveLayers {
             .catch((e) => { this._khoaSl = null; throw e; });
         }
         return this._khoaSl;
-      // 연안 침수 범위 색인 — Lambda khoa-coast({"khoaFlood":true})가 S3 ocean/khoa/ 에 올린다
-      case 'khoaflood': return fetchJson('/ocean/khoa/flood-index.json', 20000);
+      // 연안 침수 범위 색인 — Lambda khoa-coast({"khoaFlood":true})가 S3 ocean/khoa/ 에 올린다.
+      // 원반을 놓을 자리(면적가중 중심점)는 번들 안에 있다 — 없어도 색인만으로 그린다(bbox 중점으로 물러난다).
+      case 'khoaflood': return Promise.all([
+        fetchJson('/ocean/khoa/flood-index.json', 20000),
+        fetch('./data/khoa-flood-anchors.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+      ]).then(([idx, anch]) => ({ ...idx, _anchors: (anch && anch.districts) || null }));
       // 평년 대비 기온 — 실황과 평년을 같은 지점 id로 맞춰 뺀다
       case 'tempanom': return Promise.all([
         surfaceObs.doc('aws'),
@@ -1574,46 +1584,91 @@ export class LiveLayers {
   }
 
   // ---------- 연안 침수 범위 (국립해양조사원 침수 예상도, 시군구별 온디맨드) ----------
+  // 전국 색인은 **누르기 전에 읽혀야 한다**. 2026-09-20 W6 이전에는 시군구마다 점 하나였고,
+  // 그 점의 색은 `count`(침수면 **개수**)의 로그였다 — 개수는 면적도 위험도도 아니다(js/flood-discs.js 머리말).
+  // 지금은 구간색 원반 + 이름이다. 지표·색·자리를 고른 근거는 전부 저 파일에 적혀 있다.
   buildFloodIndex(d) {
     const rows = (d.districts || []).filter((r) => r.count > 0 && r.bbox);
-    const items = rows.map((r) => {
-      const t = Math.min(1, Math.log10(1 + r.count) / 3);
-      return {
-        lat: (r.bbox[1] + r.bbox[3]) / 2,
-        lon: (r.bbox[0] + r.bbox[2]) / 2,
-        c: { r: 0.35 + t * 0.55, g: 0.7 - t * 0.3, b: 1.0 },
-      };
-    });
+    const specs = floodDiscSpecs(rows, d._anchors || null);
     const g = new THREE.Group();
-    g.add(this.makePoints(items, { size: 9, lift: 0.006, opacity: 0.95 }));
+    if (this._floodDiscs) { this._floodDiscs.dispose(); this._floodDiscs = null; }
+    const discs = createFloodDiscs({
+      THREE,
+      specs,
+      surfR: (lat, lon, lift) => this.surfR(lat, lon, lift),
+      ramp: FLOOD_RAMP,               // ⚠️ 면을 칠할 때와 **같은 함수**다(loadFloodDistrict) — 색이 갈라질 자리를 두지 않는다
+      horizonOpacity: newsChipOpacity,
+      llToV3,
+    });
+    g.add(discs.object);
+    this._floodDiscs = discs;
     this._floodDistricts = rows;
+    this._floodAnchorCount = specs.filter((s) => s.anchored).length;
     this._floodSel = null;
     return g;
   }
 
   metaFloodIndex(d) {
     const rows = (this._floodDistricts || []).slice().sort((a, b) => b.count - a.count);
-    const buttons = rows.map((r) =>
-      `<button class="simgo" style="margin:2px 3px 2px 0;padding:8px 12px;min-height:44px;font-size:14px" `
-      + `data-action="flood-district" data-sgg="${escapeHtml(r.sggCd)}">${escapeHtml(r.name)} <i style="opacity:.6">${r.count}</i></button>`).join('');
+    const specs = this._floodDiscs ? this._floodDiscs.specs() : [];
+    const byCode = new Map(specs.map((s) => [s.sggCd, s]));
+    const buttons = rows.map((r) => {
+      const s = byCode.get(r.sggCd);
+      const size = s ? floodSizeNote(s.bytes) : '';
+      return `<button class="simgo" style="margin:2px 3px 2px 0;padding:8px 12px;min-height:44px;font-size:14px" `
+        + `data-action="flood-district" data-sgg="${escapeHtml(r.sggCd)}"`
+        + `${size ? ` title="${escapeHtml(size)}"` : ''}>${escapeHtml(r.name)}`
+        + `${s ? ` <i style="opacity:.6">최대 ${escapeHtml(floodClassLabel(s.depthKey))}</i>` : ''}</button>`;
+    }).join('');
     const empty = (d.districts || []).filter((r) => !r.count).map((r) => r.name);
+    // 원반의 색이 무엇인지 — 자료에 실제로 있는 구간만. 색은 면을 칠할 때와 같은 FLOOD_RAMP 다.
+    const legend = floodLegendHtml(specs, FLOOD_RAMP);
+    const hidden = this._floodDiscs
+      ? floodHiddenNote(this._floodDiscs.shown(), this._floodDiscs.total()) : '';
     return {
       badge: 'PROVIDER_FORECAST',
       note: `${rows.length}곳 자료 · 침수면 ${Number(d.totalPolygons || 0).toLocaleString()}개`,
       cardHtml: `<b>연안 침수 예상도 — 기관 산출 시나리오 자료</b><br/>`
-        + `시군구를 누르면 그 지역의 <b>침수 예상 범위</b>를 볼 수 있습니다. 색은 예상 침수 깊이 구간(m)입니다.<br/>현재 침수 관측이나 이번 태풍의 예보가 아닙니다.<br/>`
+        + `<b>지금 침수도, 이번 태풍의 예보도 아닙니다.</b> 기관이 미리 계산해 둔 <b>가정 상황의 침수 예상 범위</b>입니다.<br/>`
+        + `<b>원반의 색 = ${escapeHtml(FLOOD_METRIC_KO)}</b>입니다 — 그 시군구가 통째로 그만큼 잠긴다는 뜻이 아니고, `
+        + `얼마나 넓게 잠기는지도 아닙니다. <b>원반을 누르면</b> 그 시군구의 침수 예상 면이 뜹니다(면의 색은 원반과 같은 깊이 눈금입니다).<br/>`
+        + `${legend}`
+        + `${hidden ? `${escapeHtml(hidden)}<br/>` : ''}`
         + `<div style="margin:8px 0 6px">${buttons}</div>`
         + `${escapeHtml(d.note || '')}<br/>`
         + `${empty.length ? `자료가 비어 있는 곳: ${empty.join(' · ')} — 없는 것을 그리지 않습니다.<br/>` : ''}`
+        // ⚠️ 이 자료는 **가정을 적어 주지 않는다**. 색인에도 시군구 문서에도 해수면 상승폭·재현주기 칸이 없다
+        //    (실측 2026-09-20: generated·sggCd·name·unit·count·classes·bbox·source·license 뿐).
+        //    그러니 '몇 m 오르면'이라고 말할 수 없다 — 모른다고 적는다.
+        + `<b>어떤 가정의 침수인지는 이 자료에 적혀 있지 않습니다</b> — 상승폭도 재현주기도 함께 오지 않습니다. `
+        + `기관이 공표한 예상 범위와 깊이 구간만 그대로 옮깁니다.<br/>`
+        + `<details style="margin-top:10px"><summary>왜 '개수'나 '비율'로 칠하지 않나</summary>`
+        + `색인이 주는 것은 깊이 구간별 <b>폴리곤 개수</b>뿐입니다. 개수는 기관이 면을 어떻게 잘랐나의 부산물이라 `
+        + `면적과 다릅니다 — 69곳을 전부 내려받아 재 보니 <b>61곳에서 개수 비율이 면적 비율을 부풀렸고</b>(평균 +13.9%p), `
+        + `부산 부산진구는 개수로 60.0%가 1.5 m 이상인데 면적으로는 2.7%였습니다. `
+        + `그래서 비율 대신, 면을 어떻게 잘라도 변하지 않는 <b>가장 깊은 구간</b>을 씁니다.<br/>`
+        + `원반의 자리는 침수면의 <b>면적가중 중심점</b>입니다(${this._floodAnchorCount || 0}/${specs.length}곳). `
+        + `시군구 bbox 중점에 찍으면 신안군·여수시처럼 섬이 흩어진 곳에서 바다 한가운데에 놓입니다.`
+        + `</details>`
         + `출처 ${escapeHtml(d.source || '국립해양조사원')} · ${escapeHtml(d.license || '')}<br/>자료 수집 ${escapeHtml(sourceTimeLabel(d.generated))} · 산출 기준시각 ${escapeHtml(sourceTimeLabel(d.referenceAt || d.issuedAt))}`,
     };
+  }
+
+  // 지금 화면의 원반을 화면 좌표로 집는다. main.js 의 선택 사슬이 부른다.
+  pickFloodDisc(x, y) {
+    const l = this.layers.khoaflood;
+    if (!l || !l.on || !this._floodDiscs) return null;
+    return this._floodDiscs.pick({ x, y });
   }
 
   // 시군구 하나의 침수 폴리곤을 받아 채운다. 반환: { name, count, bbox, classes } 또는 null
   async loadFloodDistrict(code) {
     const l = this.layers.khoaflood;
     if (!l || !l.on) return null;
-    const d = await fetchJson(`/ocean/khoa/flood/${code}.json`, 30000);
+    // ⚠️ 30초로는 큰 시군구가 못 들어온다. S3 는 이 파일들에 **gzip 을 주지 않는다** —
+    //    실측(2026-09-20, 69곳 전부): 고흥군 33.0 MB · 해남군 24 MB · 여수시 21 MB, 10 MB 넘는 곳이 9곳,
+    //    중앙값 1.95 MB, 69곳 합계 306.6 MB. 이동통신망에서 33 MB 는 30초 안에 안 온다.
+    const d = await fetchJson(`/ocean/khoa/flood/${code}.json`, FLOOD_DISTRICT_TIMEOUT_MS);
     if (!d || !d.features) return null;
     if (this._floodMesh) { l.obj.remove(this._floodMesh); this.disposeObj(this._floodMesh); this._floodMesh = null; }
     const toV2 = (flat) => {
@@ -1665,6 +1720,8 @@ export class LiveLayers {
     l.obj.add(mesh);
     this._floodMesh = mesh;
     this._floodSel = { code, name: d.name, count: d.count, bbox: d.bbox, classes: d.classes, unit: d.unit, source: d.source, generated: d.generated };
+    // 지구 위 이름표를 이 시군구에 고정한다 — 카드는 다음 클릭에 덮이지만 이름표는 면이 떠 있는 내내 남는다.
+    if (this._floodDiscs) this._floodDiscs.setSelected(code);
     return this._floodSel;
   }
 
@@ -2368,7 +2425,10 @@ export class LiveLayers {
   }
 
   // 매 프레임 호출 (main.js tick): 흐름 입자 시간 갱신 + 축척에 안 맞는 격자 페이드
-  tick(nowMs, altKm) {
+  //   camera 는 연안 침수 원반이 쓴다 — 화면에서 겹치는 것을 솎고(줌에 따라 개수가 는다) 집을 자리를 적는다.
+  tick(nowMs, altKm, camera) {
+    const fd = this.layers.khoaflood;
+    if (camera && this._floodDiscs && fd && fd.on) this._floodDiscs.tick(camera);
     for (const l of Object.values(this.layers)) {
       if (l.on && l.obj && l.obj.userData && l.obj.userData.animMats) {
         for (const m of l.obj.userData.animMats) m.uniforms.uTime.value = nowMs * 0.001;

@@ -48,7 +48,10 @@ export const MENU_QUESTIONS = Object.freeze({
   "khoasl245": "중간 배출이면 우리 바다는",
   "khoasl370": "고배출이면 우리 바다는",
   "khoasl585": "매우 높은 배출이면 우리 바다는",
-  "khoaflood": "어떤 가정에서 연안이 잠길 수 있나",
+  /* '어떤 가정에서' 는 이 자료가 못 지키는 약속이다 — 색인에도 시군구 파일에도 **가정(해수면 상승폭·재현주기)이 적혀 있지 않다**.
+     실측(2026-09-20): 시군구 문서의 칸은 generated·sggCd·name·unit·count·classes·bbox·source·license 뿐이다.
+     자료가 답하는 것은 '어디가 · 얼마나 깊이' 까지다. */
+  "khoaflood": "우리 연안에서 잠길 수 있는 곳은 어디인가",
   "wavefield": "큰 파도 평균 높이는",
   "current": "표층 물은 어디로 흐르나",
   "surf": "갈 해변이나 낚시 장소는",

@@ -63,8 +63,14 @@ export const FLOOD_PICK_SLOP_PX = 6;
  *  하나가 떨어진다. obs-labels.js(OBS_RECULL_PX)가 같은 이유로 같은 가드를 둔다:
  *  자동 회전만으로 라벨이 깜빡이는 것을 실측했다(120초에 등장 67 · 퇴장 80회). */
 export const FLOOD_RECULL_PX = 20;
-/** 이 크기를 넘는 시군구는 누르기 전에 용량을 알려 준다(실측: 고흥군 33 MB · S3 는 gzip 을 주지 않는다). */
-export const FLOOD_HEAVY_BYTES = 8 * 1024 * 1024;
+/**
+ * 이 크기를 넘는 시군구는 **누르기 전에** 용량을 알려 준다.
+ * ⚠️ 2026-09-21 자료가 바뀌어 문턱도 다시 잡았다: 수집기가 gzip 으로 올리기 시작하면서 가장 큰 곳이
+ *    고흥군 34.6 MB → **4.82 MB** 가 됐다. 옛 문턱 8 MB 를 그대로 두면 **경고가 한 곳도 안 뜬다** —
+ *    자료를 고쳤더니 고지가 조용해지는 자리다. 지금 분포(중앙값 0.28 MB · 상위 4.82 · 3.48 · 2.85 · 2.51)에서
+ *    2 MB 를 넘는 4곳만 경고한다. 느린 이동통신망에서 2 MB 는 눈에 띄게 걸린다.
+ */
+export const FLOOD_HEAVY_BYTES = 2 * 1024 * 1024;
 /** 시군구 하나를 받는 데 주는 시간. 33 MB 를 이동통신망에서 받는 데 30초는 모자란다(실측 근거는 live-layers.js). */
 export const FLOOD_DISTRICT_TIMEOUT_MS = 120000;
 
@@ -106,7 +112,11 @@ export function floodDiscSpecs(districts, anchors = null) {
       lon: anchored ? a[0] : (r.bbox[0] + r.bbox[2]) / 2,
       lat: anchored ? a[1] : (r.bbox[1] + r.bbox[3]) / 2,
       anchored,
-      bytes: anchored && Number.isFinite(a[2]) ? a[2] : null,
+      /* 누르기 전에 고지하는 **내려받는 양**. 색인(r.bytes)이 있으면 그것이 먼저다 — 수집기가 다시 돌 때마다
+         저절로 맞는다. 앵커 파일의 수는 앱에 박힌 **스냅샷**이라 압축·정밀도를 바꾼 날 거짓이 된다
+         (2026-09-21 실측: gzip 전환으로 고흥군 34.6 MB → 5.06 MB 인데 카드는 한동안 '약 33 MB'라 적었다). */
+      bytes: Number.isFinite(r.bytes) ? r.bytes
+        : (anchored && Number.isFinite(a[2]) ? a[2] : null),
       depthLow: deep.low,                   // 색은 이 값으로 — 면을 칠할 때와 같은 하한이다
       depthKey: deep.key,
       count: r.count,

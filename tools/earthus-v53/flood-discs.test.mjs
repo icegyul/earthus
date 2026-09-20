@@ -31,7 +31,7 @@ const GUIDE_SRC = read('../../prototype/v2-three/js/menu-guide.js');
 const I18N_SRC = read('../../prototype/v2-three/js/i18n.js');
 const ANCHORS = JSON.parse(read('../../prototype/v2-three/data/khoa-flood-anchors.json'));
 // 기관이 낸 색인 그대로(12.8 KB). 앵커가 **제 시군구 bbox 안에** 있는지는 진짜 bbox 로만 잴 수 있다.
-const REAL = JSON.parse(read('fixtures/khoa-flood-index-20260902.json'));
+const REAL = JSON.parse(read('fixtures/khoa-flood-index-20260920.json'));
 
 /** 색인 문서의 모양 그대로인 픽스처. 기관 자료가 실제로 내는 구간 키를 전부 쓴다
  *  (2.0-2.5 · 2.5-3.0 은 69곳 중 6곳에만 나오는 변종이다 — 실측). */
@@ -275,10 +275,16 @@ test('무거운 시군구는 누르기 전에 용량을 말한다 — 보이는 
   assert.ok(light.includes('1.5 MB') && !light.includes('오래'));
   const heavy = floodSizeNote(FLOOD_HEAVY_BYTES + 1);
   assert.ok(heavy.includes('오래 걸립니다'), '무거운데 그냥 넘어간다');
-  // 실측 파일 중 가장 큰 것은 경고 문턱을 넘는다 — 문턱이 자료와 어긋나면 여기서 걸린다
-  const biggest = Math.max(...Object.values(ANCHORS.districts).map((a) => a[2]));
-  assert.ok(biggest > FLOOD_HEAVY_BYTES, '실측 최대 파일이 경고 문턱 아래다 — 문턱이 헐겁다');
-  assert.ok(floodSizeNote(biggest).includes('오래'));
+  /* 문턱이 **자료와 함께 움직이는지** 본다. 2026-09-21 수집기를 gzip 으로 바꾸자 최대 파일이
+     34.6 MB → 4.82 MB 가 됐고, 옛 문턱 8 MB 에서는 경고가 한 곳도 안 떴다 — 자료를 고쳤더니
+     고지가 조용해진 것이다. 그래서 '최대가 문턱을 넘는다'만 보지 않고 **몇 곳이 걸리는지**까지 잰다:
+     하나도 안 걸리면 죽은 고지이고, 절반이 걸리면 아무 말도 아닌 고지가 된다. */
+  const sizes = Object.values(ANCHORS.districts).map((a) => a[2]).sort((x, y) => y - x);
+  const warned = sizes.filter((n) => n >= FLOOD_HEAVY_BYTES).length;
+  assert.ok(sizes[0] >= FLOOD_HEAVY_BYTES, `실측 최대 ${(sizes[0] / 1048576).toFixed(2)} MB 가 문턱 아래다 — 경고가 한 곳도 안 뜬다`);
+  assert.ok(warned >= 1 && warned <= sizes.length / 4,
+    `69곳 중 ${warned}곳이 걸린다 — 문턱이 너무 헐겁거나(0곳) 너무 흔하다(늘 뜨는 경고는 안 읽힌다)`);
+  assert.ok(floodSizeNote(sizes[0]).includes('오래'));
   // title= 로만 적으면 폰에서 안 뜬다 — 경고가 필요한 쪽이 바로 폰이다
   const body = LIVE_SRC.slice(LIVE_SRC.indexOf('metaFloodIndex(d) {'), LIVE_SRC.indexOf('pickFloodDisc('));
   assert.ok(!/title="\$\{escapeHtml\(size\)\}"/.test(body), '용량을 title= 로만 적고 있다(폰에서 안 보인다)');

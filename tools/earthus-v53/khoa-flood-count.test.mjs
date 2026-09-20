@@ -2,7 +2,7 @@
 //
 // 무엇이 잘못돼 있었나
 //   aws/khoa-coast/handler.py 의 머리말과 색인 note 가 '70곳' 이라고 적었는데 같은 파일의
-//   FLOOD_SGG 에는 69개뿐이었다. 운영 색인(tools/earthus-v53/fixtures/khoa-flood-index-20260902.json)
+//   FLOOD_SGG 에는 69개뿐이었다. 운영 색인(tools/earthus-v53/fixtures/khoa-flood-index-20260920.json)
 //   도 districts 69 · coveredCount 69 다. 화면은 69곳짜리 자료와 단추 69개를 그리면서
 //   그 옆에 "70곳" 을 같이 적고 있었다.
 //   ⚠️ 한 곳이 빠진 것인지 70 이 오타인지는 **확인하지 못했다** — 기관 미리보기 화면이
@@ -16,7 +16,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const SRC = readFileSync(new URL('../../aws/khoa-coast/handler.py', import.meta.url), 'utf8');
-const INDEX = JSON.parse(readFileSync(new URL('./fixtures/khoa-flood-index-20260902.json', import.meta.url), 'utf8'));
+const INDEX = JSON.parse(readFileSync(new URL('./fixtures/khoa-flood-index-20260920.json', import.meta.url), 'utf8'));
 
 /** 파이썬 소스에서 한 덩어리를 떼어 온다 (들여쓰기 없는 시작줄 ~ 들여쓰기 없는 닫는줄) */
 function block(startRe, endLine) {

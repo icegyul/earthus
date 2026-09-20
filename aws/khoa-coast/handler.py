@@ -385,7 +385,10 @@ def _put(key, doc, cache="public, max-age=86400"):
         extra["ContentEncoding"] = "gzip"
     s3.put_object(Bucket=BUCKET, Key=key, Body=body,
                   ContentType="application/json; charset=utf-8", CacheControl=cache, **extra)
-    return raw
+    # ⚠️ 돌려주는 것은 **내려받는 바이트**(압축 뒤)다. 색인에 적어 화면이 "약 N MB" 라고 고지하는 수이므로
+    #    자료의 양(raw)이 아니라 **사용자가 실제로 받는 양**이어야 한다 — 둘을 섞으면 6배 부풀려 말한다
+    #    (2026-09-21 실측: 고흥군 raw 34.6 MB · 받는 양 5.06 MB).
+    return len(body)
 
 
 FLOOD_PAGE = 60
@@ -462,8 +465,10 @@ def collect_flood(codes=None):
             "license": "공공누리 (출처표시)",
             "features": feats,
         })
-        print(f"[flood] {code} {FLOOD_SGG[code]}: {len(feats)}면 · {size//1024}KB")
-        return {"sggCd": code, "name": FLOOD_SGG[code], "count": len(feats),
+        print(f"[flood] {code} {FLOOD_SGG[code]}: {len(feats)}면 · 받는 양 {size//1024}KB")
+        # bytes = 그 시군구를 누를 때 **내려받는 양**. 화면이 누르기 전에 고지한다(flood-discs.floodSizeNote).
+        # 색인에 실어야 수집기가 다시 돌 때마다 저절로 맞는다 — 앱에 박아 두면 압축·정밀도를 바꾼 날 거짓이 된다.
+        return {"sggCd": code, "name": FLOOD_SGG[code], "count": len(feats), "bytes": size,
                 "classes": classes, "bbox": [round(x, 5) for x in b]}
 
     with ThreadPoolExecutor(max_workers=4) as ex:

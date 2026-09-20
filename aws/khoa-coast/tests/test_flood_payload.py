@@ -74,14 +74,28 @@ def test_gzip_은_자료를_바꾸지_않는다():
     fake = _swap_s3()
     doc = {"features": [{"v": "0.5-1.0", "g": [[[126.12345, 34.54321] * 500]]}] * 60,
            "name": "거제시", "license": "공공누리 (출처표시)"}
-    raw = handler._put("ocean/khoa/flood/x.json", doc)
+    got = handler._put("ocean/khoa/flood/x.json", doc)
     put = fake.puts[0]
     assert put["ContentEncoding"] == "gzip"
     assert json.loads(gzip.decompress(put["Body"]).decode()) == doc, "푼 것이 원본과 다르다"
-    # 돌려주는 수는 압축 전 크기다 — 색인·로그가 '받는 양'이 아니라 '자료의 양'을 말해야 한다
-    assert raw == len(json.dumps(doc, ensure_ascii=False, separators=(",", ":")).encode())
-    assert raw > len(put["Body"])
+    # ⚠️ 2026-09-21 정정 — 돌려주는 수는 **내려받는 양**(압축 뒤)이다.
+    #    처음엔 압축 전 크기를 돌려줬는데, 그 수가 색인을 거쳐 화면의 "약 N MB" 고지가 된다.
+    #    자료를 압축하고도 고지가 그대로면 **6배 부풀려 말하는 것**이다(실측: 고흥군 34.6 → 5.06 MB).
+    raw = len(json.dumps(doc, ensure_ascii=False, separators=(",", ":")).encode())
+    assert got == len(put["Body"]), "받는 양이 아니라 다른 수를 돌려준다"
+    assert got < raw, "압축했는데 돌려주는 수가 줄지 않았다"
     assert put["ContentType"].startswith("application/json"), "브라우저가 JSON 으로 읽어야 한다"
+
+
+def test_색인에_받는_양이_실린다():
+    """화면이 누르기 전에 '약 N MB' 를 말하려면 그 수가 색인에 있어야 한다.
+    앱에 박아 두면(앵커 파일) 압축·정밀도를 바꾼 날 그 고지가 거짓이 된다."""
+    src = open(
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "handler.py"),
+        encoding="utf-8").read()
+    assert '"bytes": size' in src, "시군구 색인 기록에 bytes 가 없다"
+    put = src[src.index("def _put("):src.index("FLOOD_PAGE")]
+    assert "return len(body)" in put, "압축 전 크기를 돌려주면 고지가 부풀려진다"
 
 
 def test_좌표는_약_1m_자리까지만():

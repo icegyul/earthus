@@ -119,3 +119,29 @@ test('④ 내린 화면도 눌리기는 한다 — 조용히 사라지지 않고
     assert.match(row, /act: true/, `${id} 를 누를 수 없게 만들면 왜 없는지 말할 자리도 사라진다`);
   }
 });
+
+/* ── ⑤ 용량 고지는 '지금 내려받는 양'이어야 한다 ────────────────────────────
+   2026-09-21 수집기를 gzip 으로 바꾸자 고흥군이 34.6 MB → 5.06 MB 가 됐는데, 카드는 앱에 박힌
+   앵커 파일의 옛 수를 읽어 한동안 "약 33 MB"라고 적었다 — 자료를 고쳤더니 화면이 거짓이 된 자리다.
+   그래서 **색인이 주는 수가 먼저**이고 앵커는 물러설 자리로만 둔다. */
+test('⑤ 용량은 색인의 bytes 를 먼저 쓴다 — 앱에 박힌 수가 색인을 이기지 않는다', async () => {
+  const { floodDiscSpecs, floodSizeNote } = await import('../../prototype/v2-three/js/flood-discs.js');
+  const district = { sggCd: '46770', name: '고흥군', count: 4326, bbox: [127, 34, 127.5, 34.7], classes: { '3.0': 4326 } };
+  const anchors = { '46770': [127.2, 34.5, 34_600_000] };      // 앵커에 남아 있는 옛 수(압축 전)
+
+  const stale = floodDiscSpecs([district], anchors)[0];
+  assert.equal(stale.bytes, 34_600_000, '색인이 수를 안 주면 앵커로 물러선다');
+
+  const fresh = floodDiscSpecs([{ ...district, bytes: 5_056_711 }], anchors)[0];
+  assert.equal(fresh.bytes, 5_056_711, '색인이 주는 지금 수를 두고 앱에 박힌 옛 수를 적는다');
+  assert.match(floodSizeNote(fresh.bytes), /4\.8 MB|약 [\d.]+ MB/, '고지 문장이 그 수로 지어지지 않는다');
+  assert.doesNotMatch(floodSizeNote(fresh.bytes), /33 MB/);
+});
+
+test('⑤ 수집기가 색인에 bytes 를 싣고, 그 수는 **받는 양**(압축 뒤)이다', () => {
+  const py = lf(readFileSync(here('../../aws/khoa-coast/handler.py'), 'utf8'));
+  assert.match(py, /"bytes": size/, '색인 기록에 bytes 가 없다 — 화면이 앱에 박힌 스냅샷을 계속 읽는다');
+  const put = py.slice(py.indexOf('def _put('), py.indexOf('FLOOD_PAGE'));
+  assert.match(put, /return len\(body\)/, '_put 이 압축 전 크기를 돌려주면 고지가 6배 부풀려진다');
+  assert.doesNotMatch(put, /\n    return raw\b/, '옛 반환(raw)이 남아 있다');
+});

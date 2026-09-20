@@ -30,7 +30,7 @@ const LIVE_SRC = read('../../prototype/v2-three/js/live-layers.js');
 const MAIN_SRC = read('../../prototype/v2-three/js/main.js');
 const OVERLAY_SRC = read('../../prototype/v2-three/js/flood-overlay.js');
 const AR6 = JSON.parse(read('../../prototype/v2-three/sealevel/ar6.json'));
-const INDEX = JSON.parse(read('fixtures/khoa-flood-index-20260902.json'));
+const INDEX = JSON.parse(read('fixtures/khoa-flood-index-20260920.json'));
 
 /* ════════════════════════════════════════════════════════════════════════════
    ① 범례 하나를 색면과 원판이 다툰다
@@ -375,13 +375,27 @@ test("⑦ '한국'은 대한민국이다 — startsWith('Korea') 는 북한까�
    덧붙여 — 카드가 같은 자리에서 시군구 수를 두 가지로 적는다
    ════════════════════════════════════════════════════════════════════════════ */
 
-test('색인의 설명문과 제 표가 다른 수를 말하면 그 사실을 밝힌다', () => {
+/* ⚠️ 2026-09-21 — **원인이 사라졌다.** 이 시험은 원래 "설명문은 70곳, 표는 69곳" 이라는
+   어긋남을 전제로 두고 화면이 그 사실을 밝히는지 보았다. 그날 수집기(aws/khoa-coast/handler.py)를
+   고쳐 설명문의 수를 FLOOD_SGG 에서 세게 했고, 색인을 다시 구워 **둘이 같아졌다**(69 · 69).
+   그래서 전제를 못 박아 두면 시험이 '고쳐졌다'는 이유로 떨어진다.
+   지킬 것은 어긋남 자체가 아니라 **어긋나면 화면이 밝힌다**는 규칙이다 — 기관이 설명문을 또 바꾸는 날
+   같은 일이 되풀이되므로, 견주는 코드가 살아 있는지와 지금 자료에서의 결과를 함께 본다. */
+test('카드는 남의 설명문에 적힌 수를 제 표와 견준다 — 어긋나면 밝히고, 같으면 조용하다', () => {
   const rows = INDEX.districts.filter((r) => r.count > 0);
   const said = Number((String(INDEX.note).match(/(\d+)\s*곳/) || [])[1]);
-  assert.ok(Number.isFinite(said) && said !== rows.length,
-    '전제가 깨졌다 — 색인 설명문과 표의 수가 같아졌다');
+  assert.ok(Number.isFinite(said), '색인 설명문에서 수를 읽지 못했다 — 견줄 것이 없다');
+
   const body = LIVE_SRC.slice(LIVE_SRC.indexOf('metaFloodIndex(d) {'), LIVE_SRC.indexOf('pickFloodDisc('));
-  assert.ok(/\\d\+\)\\s\*곳|\(\\d\+\)/.test(body) || /match\(/.test(body),
-    '남의 문장에 적힌 수를 제 표와 견주지 않는다 — 69곳/70곳이 한 카드에 같이 남는다');
-  assert.ok(/어긋|다릅|빠진/.test(body), '두 수가 왜 다른지 한 줄도 밝히지 않는다');
+  assert.ok(/match\(/.test(body),
+    '남의 문장에 적힌 수를 제 표와 견주지 않는다 — 69곳/70곳이 한 카드에 같이 남을 수 있다');
+  assert.ok(/어긋|다릅|빠진/.test(body), '두 수가 다를 때 그 사실을 밝히는 문장이 없다');
+  // 수를 코드에 박지 않았는지 — 박아 두면 기관이 설명문을 고친 날 또 거짓이 된다.
+  // 주석은 빼고 본다(주석에는 '설명문 70 · 표 69 였다' 같은 **내력**을 적어 두는 것이 옳다).
+  const codeOnly = body.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  assert.doesNotMatch(codeOnly, /70/, '어긋난 수를 코드에 박았다 — 자료에서 읽어야 한다');
+
+  // 지금 자료에서는 같다. 같아진 것이 정상이고, 다시 갈리면 위 배선이 받아 낸다.
+  assert.equal(said, rows.length,
+    `색인 설명문은 ${said}곳, 표에는 ${rows.length}곳 — 다시 갈렸다면 카드가 그 사실을 적는지 화면에서 확인하라`);
 });

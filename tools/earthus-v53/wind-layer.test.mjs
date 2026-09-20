@@ -245,6 +245,89 @@ test('늦게 온 옛 장이 이미 들어간 새 장을 덮지 않는다 — 순
   assert.match(hz.layer.state().key, /\|9\|12$/);
 });
 
+// 2026-09-20 F1 정정 — 위 두 시험은 **성한** 장이 늦게 오는 자리다. 지나친 구간의 장이 **탈나서** 오면 이야기가 달랐다:
+//   거리 판정('지금 든 것보다 가깝다')이 그 실패를 통과시켜 fail() 을 불렀고, fail() 의 'no-data' 가 blocked() 를 참으로 만들어
+//   **바로 뒤에 도착하는 지금 구간의 멀쩡한 두 장까지** stale 로 떨어뜨렸다. 화면은 자료가 멀쩡한데 '자료 없음'이 됐다.
+//   여기서는 금지가 아니라 결과를 잰다: 그 뒤에도 지금 구간이 실제로 엔진에 들어가나.
+
+/** [0,3] 을 물고 있다가 [3,6] 을 지나쳐 [9,12] 로 민다. 지나친 구간의 뒷장(f006)만 빨리 탈나고, 지금 구간은 늦게 성하게 온다. */
+async function passedSpanFails({ failPixels = false } = {}) {
+  const cache = new Map([0, 3, 6, 9, 12].map((h) => [h, windImage(() => UNIFORM[h])]));
+  const hz = harness({
+    storeOpts: {
+      loadImage: async (url) => {
+        const h = hourOf(url);
+        // f006 = 지나친 구간의 뒷장 — 먼저 탈난다. 나머지는 늦게 성하게 온다(지금 구간이 뒤에 도착하는 순서).
+        if (h === 6 && !failPixels) { await delay(5); throw new Error('404'); }
+        await delay(60);
+        if (letterOf(url) !== 'u') throw new Error('404');
+        return cache.get(h);
+      },
+    },
+  });
+  if (failPixels) {
+    // 저장소가 **거부**로 답하는 갈래(.catch). 위 404 는 저장소가 null 로 풀어 .then 으로 온다 — 두 갈래가 다르다.
+    const inner = hz.frames.pixels;
+    hz.frames.pixels = (id, h) => (h === 6 ? delay(5).then(() => { throw new Error('자료 없음 — 거부'); }) : inner(id, h));
+  }
+  await hz.layer.load();
+  hz.sw.on = true;
+  hz.layer.tick(1 / 30, CAM);
+  await hz.layer.settled();
+  await delay(200);
+  assert.equal(hz.layer.state().status, 'ready', '먼저 [0,3] 을 물어야 이 시험이 뜻이 있다');
+  hz.bus.set(3.5 * H);                                    // [3,6] 을 청한다 — f006 이 탈난다
+  hz.bus.set(9.5 * H);                                    // 곧바로 [9,12] 로 (지나친 구간이 생긴다)
+  await delay(400);
+  return hz;
+}
+
+test('지나친 구간의 장이 탈나도 지금 구간의 멀쩡한 두 장은 들어간다 — 실패가 남의 구간을 막지 않는다(.then · null)', async () => {
+  const hz = await passedSpanFails();
+  const st = hz.layer.state();
+  assert.equal(st.status, 'ready', `지나친 구간의 실패가 지금 구간을 막았다: ${st.status} · ${st.reason}`);
+  assert.match(String(st.key), /\|9\|12$/);
+  assert.equal(fieldOf(hz.layer).dataA, hz.store.pixelsNow('wind10', 9).data);
+  assert.equal(fieldOf(hz.layer).dataB, hz.store.pixelsNow('wind10', 12).data);
+  assert.ok(st.staleFails >= 1, '지나친 구간의 실패를 조용히 버린 것이 세어지지 않았다');
+});
+
+test('같은 일이 저장소의 **거부**로 와도 마찬가지다(.catch 갈래)', async () => {
+  const hz = await passedSpanFails({ failPixels: true });
+  const st = hz.layer.state();
+  assert.equal(st.status, 'ready', `지나친 구간의 거부가 지금 구간을 막았다: ${st.status} · ${st.reason}`);
+  assert.match(String(st.key), /\|9\|12$/);
+  assert.ok(st.staleFails >= 1);
+});
+
+// ⚠️ 위 두 시험만으로는 '실패를 아예 말하지 않는' 고침도 통과한다. 지금 **구간의** 실패는 그대로 말해야 한다.
+test('지금 구간의 장이 탈나면 그때는 화면을 비우고 말한다 — 물고 있던 옛 구간을 남기지 않는다', async () => {
+  const cache = new Map([0, 3].map((h) => [h, windImage(() => UNIFORM[h])]));
+  const hz = harness({
+    storeOpts: {
+      loadImage: async (url) => {
+        await delay(5);
+        const h = hourOf(url);
+        if (letterOf(url) !== 'u' || !cache.has(h)) throw new Error('404');   // f006 이후는 없다
+        return cache.get(h);
+      },
+    },
+  });
+  await hz.layer.load();
+  hz.sw.on = true;
+  hz.layer.tick(1 / 30, CAM);
+  await hz.layer.settled();
+  await delay(100);
+  assert.equal(hz.layer.state().status, 'ready');
+  hz.bus.set(3.5 * H);                                    // [3,6] — f006 이 없다. 이번엔 **지금** 구간이다.
+  await delay(200);
+  const st = hz.layer.state();
+  assert.equal(st.status, 'no-data', '지금 구간의 실패를 말하지 않았다');
+  assert.match(st.reason, /받지 못했습니다/);
+  assert.equal(st.key, null);
+  assert.equal(fieldOf(hz.layer), null, '자료 없음인데 입자가 옛 장으로 남았다');
+});
+
 // 2026-09-20 작업 E3 ① — 재생 중에 늦게 온 장을 버리던 자리. 옛 규칙(청한 순서 seq)에서는 **한 장도** 안 들어갔다.
 //   여기서는 금지가 아니라 결과를 잰다: 지연 800 ms · 220 ms 재생에서 **구간 수의 절반 이상**이 실제로 엔진에 들어가나.
 //   시계는 진짜다(setTimeout) — 이 결함은 '응답이 오는 사이에 시각이 움직인다'는 경합 그 자체라 가짜 시계로는 재현되지 않는다.

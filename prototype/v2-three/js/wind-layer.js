@@ -21,6 +21,8 @@
 //      걸린다 — 옛 규칙(청한 순서 seq 가 다르면 버린다)은 재생 중 들어오는 장을 전부 떨어뜨려 입자가 첫 두 장에
 //      얼어붙었다. 이제 **시간 거리**로 가른다(frame-arrival.js): 지금 엔진에 든 구간보다 지금 시각에 가까우면 넣는다.
 //      넣은 뒤에는 다음 한 장을 미리 청한다(prefetchAfter) — 저장소가 중복과 캐시를 맡는다.
+//      ⚠️ 거리로 가르는 것은 **넣을까 말까**뿐이다. **화면을 비울까 말까**는 거리가 아니라 '지금 구간인가'로 가른다
+//         (syncTime 의 isCurrentSpan) — 지나친 구간의 실패가 잘 흐르던 입자를 '자료 없음'으로 지우면 안 된다.
 //
 // 켜고 끄는 주인은 LiveLayers 다(레이어 id 'wind' — 개명하지 않는다). 이 층은 deps.isOn() 을 tick 에서 물어 따라간다 —
 //   LiveLayers.toggle · clearAll 에 줄을 끼우지 않으려고(그 두 곳은 같은 묶음의 다른 작업도 고친다).
@@ -36,7 +38,7 @@
 
 import { timeBus as sharedTimeBus } from './time-bus.js?v=1';
 import { sharedGfsFrames } from './gfs-frames.js?v=1';
-import { acceptsArrival, forecastHourAt } from './frame-arrival.js?v=1';
+import { acceptsArrival, forecastHourAt, sameSpan } from './frame-arrival.js?v=1';
 import { scaleOf, legendModel, bandIndex, KT_PER_MS } from './field-scales.js?v=1';
 import { fieldLegend as sharedLegend, legendMetaLine } from './field-legend.js?v=1';
 import { WindParticles, particleBudgetFor, particleCountFor, sampleWind, WIND_CALM_MS, WIND_SPEED_BOUNDS_MS } from './wind-particles.js?v=1';
@@ -302,7 +304,9 @@ export function createWindLayer(deps = {}) {
   const fwd = { x: 0, y: 0, z: -1 };
   const readTmp = { u: 0, v: 0 };
   const legendArgs = { scale, title: TITLE, source: SOURCE, run: null, valid: null, note: undefined };
-  const counters = { pixelRequests: 0, fieldSets: 0, mixSets: 0, updates: 0, prefetches: 0, lateDrops: 0 };
+  // staleFails — 지나친 구간의 장이 탈났지만 화면을 비우지 않고 조용히 버린 횟수(2026-09-20 F1 정정). lateDrops 와 뜻이 다르다:
+  //   lateDrops = 성한데 더 먼 장 · staleFails = 탈났는데 지금 구간이 아닌 장.
+  const counters = { pixelRequests: 0, fieldSets: 0, mixSets: 0, updates: 0, prefetches: 0, lateDrops: 0, staleFails: 0 };
 
   let intensity = 3;
   try {
@@ -343,16 +347,26 @@ export function createWindLayer(deps = {}) {
   // 지금 이 시각에는 그릴 것이 없다 — 늦게 온 장이 그 화면을 되살리면 안 된다(frame-arrival.js 의 stale).
   const blocked = () => status === 'out-of-range' || status === 'no-data';
 
+  /** 지금 시각과 그 시각이 끼고 있는 구간을 한 번에 묻는다. 저장소가 탈이 나면 br = null — 거리를 못 잰다. */
+  function nowBracket() {
+    const tMs = bus.validMs();
+    let br = null;
+    try { br = frames.bracket(WIND_FIELD_ID, tMs); } catch (e) { br = null; }
+    return { tMs, br };
+  }
+
+  /** 도착한 장이 **지금 시각의 구간**인가. 범위 밖이면 거짓이다 — 그 시각에는 그릴 구간이 아예 없다.
+   *  탈난 장이 화면을 비울 수 있는 것은 이때뿐이다(syncTime 의 fail 문지기). */
+  const isCurrentSpan = (ha, hb, br) => !!br && !br.outOfRange && sameSpan({ ha, hb }, { ha: br.a.h, hb: br.b.h });
+
   /** 도착한 장 { ha, hb } 을 지금 엔진에 든 것과 **시간 거리**로 견준다. 저장소가 탈이 나면 거리를 못 재고 → 넣지 않는다. */
-  function takesArrival(ha, hb) {
-    const tNow = bus.validMs();
-    let cur = null;
-    try { cur = frames.bracket(WIND_FIELD_ID, tNow); } catch (e) { cur = null; }
+  function takesArrival(ha, hb, at = nowBracket()) {
+    const cur = at.br;
     const ok = acceptsArrival({
       arriving: { ha, hb },
       held: heldSpan,
       current: cur && !cur.outOfRange ? { ha: cur.a.h, hb: cur.b.h } : null,
-      hourNow: forecastHourAt(cur, tNow),
+      hourNow: forecastHourAt(cur, at.tMs),
       stale: blocked(),
     });
     if (!ok) counters.lateDrops += 1;
@@ -413,16 +427,26 @@ export function createWindLayer(deps = {}) {
       // 내 자리표만 지운다. 두 장이 한꺼번에 오는 중일 수 있어서(빠른 스크럽), 남의 자리표를 지우면
       // 그쪽을 '안 청한 것'으로 여겨 같은 두 장을 다시 청한다.
       if (pendingKey === k) { pendingKey = null; pending = null; }
-      // 늦게 왔다고 버리지 않는다 — **지금 시각에 더 가까운 장**이면 지금 든 것보다 낫다(frame-arrival.js 머리말).
-      // 이 판정을 아래 검사들보다 **먼저** 한다: 스크럽으로 지나친 구간의 장이 탈나 있어도 잘 흐르던 화면을 지우지 않게.
-      const { ok: take, cur } = takesArrival(ha, hb);
-      if (!take) return false;
-      if (!a || !b) { fail('바람 프레임 그림을 받지 못했습니다'); return false; }
-      if (!spec) spec = windFieldSpecOf(frames.fieldSpec(WIND_FIELD_ID));
-      if (a.w !== spec.w || a.h !== spec.h || b.w !== spec.w || b.h !== spec.h
-        || !a.names || a.names[0] !== 'R' || a.names[1] !== 'G') {
-        fail('받은 바람 프레임의 크기·채널이 목록과 다릅니다'); return false;
+      const at = nowBracket();
+      // 받은 것이 **성한지 먼저** 본다. 그리고 탈난 장이 화면을 비울 수 있는 것은 그것이 **지금 시각의 구간**일 때뿐이다.
+      //   ⚠️ 2026-09-20 정정 — 여기에 '거리 판정을 아래 검사들보다 먼저 한다'고 적고 그렇게 두었더니 거꾸로였다:
+      //   스크럽으로 **지나친** 구간의 장이 탈나도 거리 판정은 '지금 든 것보다 가깝다'며 통과시켰고, 그 실패가 fail() 을 불렀다.
+      //   fail() 이 status 를 'no-data' 로 만들면 blocked() 가 참이 되어 **바로 뒤에 도착하는 지금 구간의 멀쩡한 두 장까지**
+      //   stale 로 떨어졌다(재생 중에는 늘 서너 구간이 떠 있어 한 장만 실패해도 입자가 통째로 사라졌다).
+      //   그래서 순서는 성한가 → (탈났으면) 지금 구간인가 → 거리 다. 지금 구간의 진짜 실패는 그대로 말한다.
+      let bad = !a || !b ? '바람 프레임 그림을 받지 못했습니다' : '';
+      if (!bad) {
+        if (!spec) spec = windFieldSpecOf(frames.fieldSpec(WIND_FIELD_ID));
+        if (a.w !== spec.w || a.h !== spec.h || b.w !== spec.w || b.h !== spec.h
+          || !a.names || a.names[0] !== 'R' || a.names[1] !== 'G') bad = '받은 바람 프레임의 크기·채널이 목록과 다릅니다';
       }
+      if (bad) {
+        if (!isCurrentSpan(ha, hb, at.br)) { counters.staleFails += 1; return false; }
+        fail(bad); return false;
+      }
+      // 늦게 왔다고 버리지 않는다 — **지금 시각에 더 가까운 장**이면 지금 든 것보다 낫다(frame-arrival.js 머리말).
+      const { ok: take, cur } = takesArrival(ha, hb, at);
+      if (!take) return false;
       // 받는 사이 같은 두 프레임 안에서 시각이 움직였을 수 있다 — 비율은 지금 것으로.
       const mix = cur && !cur.outOfRange && cur.a.h === ha && cur.b.h === hb ? cur.mix : br.mix;
       ensureParticles().setField({
@@ -436,9 +460,11 @@ export function createWindLayer(deps = {}) {
     }).catch((e) => {
       if (myGen !== gen) return false;
       if (pendingKey === k) { pendingKey = null; pending = null; }
-      // 못 받은 장이 **지금 시각의 장이 아니면** 화면을 비우지 않는다 — 스크럽으로 지나친 구간 하나가 실패했다고
-      // 잘 흐르던 입자를 '자료 없음'으로 지우면 안 된다. 지금 시각의 장이면 그때 다시 청해 그때 실패를 말한다.
-      if (!takesArrival(ha, hb).ok) return false;
+      // 못 받은 장이 **지금 시각의 구간이 아니면** 화면을 비우지 않는다 — 스크럽으로 지나친 구간 하나가 실패했다고
+      // 잘 흐르던 입자를 '자료 없음'으로 지우면 안 된다. 지금 시각의 구간이면 그때 실패를 말한다.
+      //   ⚠️ 2026-09-20 정정 — 여기서도 거리 판정(takesArrival)으로 갈랐는데, 그것은 '지나친 구간'을 통과시킨다(위 .then 의 정정).
+      //   비울까 말까는 거리가 아니라 **같은 구간인가**로 가른다.
+      if (!isCurrentSpan(ha, hb, nowBracket().br)) { counters.staleFails += 1; return false; }
       fail(String((e && e.message) || e).replace(/^자료 없음 — /, ''));
       return false;
     });

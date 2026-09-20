@@ -814,9 +814,12 @@ export const PHENOMENA = Object.freeze({
     question: Object.freeze({ ko: '어느 방향으로 얼마나 세게 부나', en: 'Which way and how hard is the wind blowing?' }),
     capabilities: Object.freeze({ current: true, history: false, intelligence: true, forecast: true, simulation: false, evidence: true, report: false }),
     availability: 'partial',
-    evidenceProfile: 'OFFICIAL_OBSERVATION 1 · PROVIDER_FORECAST 1 — 동수이며 대표는 관측(weather/wind)',
-    temporalMode: '지금(관측 10분~1시간, 격자 1시간). 예보 바람은 받아는 오지만 구름을 흘리는 데만 쓴다.',
-    scope: '관측 약 3,000개소(한국 기상청 AWS + 전지구 GTS SYNOP — 중국·몽골·러시아에 관측 공백) + 전지구 5° 모델 격자',
+    // 2026-09-20 W3: 대표 레이어(weather/wind)가 관측소 막대기에서 GFS 10 m 바람 입자로 바뀌었다 — 세 줄을 사실대로 고친다.
+    //   예전: 'OFFICIAL_OBSERVATION 1 · PROVIDER_FORECAST 1 — 대표는 관측' · '지금(관측 10분~1시간, 격자 1시간) — 예보 바람은 구름을
+    //   흘리는 데만 쓴다' · '관측 약 3,000개소 + 전지구 5° 모델 격자'. 지상 관측은 일기도 기입 모형(weather/synop)에 그대로 있다.
+    evidenceProfile: 'PROVIDER_FORECAST 2 — 대표(weather/wind)는 NOAA GFS 0.5° 지상 10 m 바람을 입자로 흘린다. 관측이 아니다',
+    temporalMode: '타임라인이 가리키는 시각(GFS 3시간 프레임 사이를 보간 · 런 시각부터 5일). 5° 격자 색면(weather/windgrid)은 지금 값 하나뿐이다.',
+    scope: '전지구 GFS 0.5°(약 55 km) 지상 10 m 바람 — 태풍 중심의 최대풍속은 무디게 담긴다 + 전지구 5° 모델 격자 색면',
     dataProducts: Object.freeze(['weather/wind', 'weather/windgrid']),
   }),
 });

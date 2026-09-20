@@ -171,7 +171,9 @@ export const LAYER_TRUTH = Object.freeze({
   'weather/mysky': { kind: K.OFFICIAL_OBSERVATION, slaMin: 30 },
   'weather/cloud-gfs': { kind: K.PROVIDER_FORECAST, slaMin: 360 },
   'weather/cloud-vol': { kind: K.PROVIDER_FORECAST, slaMin: 360 },
-  'weather/wind': { kind: K.OFFICIAL_OBSERVATION, slaMin: 90 },
+  // 2026-09-20 W3: OFFICIAL_OBSERVATION · 90분이었다(관측소 막대기). 같은 id 가 이제 GFS 10 m 바람 입자다 — 모델 예보다.
+  // 신선도는 예보 목록(clouds/gfs-fc/manifest.json)의 갱신 시각으로 잰다(아래 PATH_MAP). 목록은 3시간마다 다시 구워진다.
+  'weather/wind': { kind: K.PROVIDER_FORECAST, slaMin: 360 },
   'weather/airq': { kind: K.OFFICIAL_OBSERVATION, slaMin: 120 },
   'weather/warn': { kind: K.OFFICIAL_WARNING, slaMin: 60 },
 
@@ -468,7 +470,10 @@ const PATH_MAP = Object.freeze({
   '/ocean/khoa/flood-index.json': { layer: 'ocean/khoaflood', provider: null },
   '/tourism/seoul-flow.json': { layer: 'people/seoul', provider: null },
   '/wind/korea-air-obs.json': { layer: 'weather/airq', provider: 'airq' },
-  '/wind/kma-aws.json': { layer: 'weather/wind', provider: 'kma-aws' },
+  // 2026-09-20 W3: 기상청 AWS 파일의 시각이 'weather/wind' 의 신선도로 적혔다. 바람 레이어는 이제 GFS 모델이라 그 시각은
+  // 남의 것이다 — 같은 관측점을 쓰는 일기도 기입 모형(weather/synop · 위 LAYER_TRUTH 주석)으로 옮긴다. 제공자 건강(kma-aws)은 그대로.
+  '/wind/kma-aws.json': { layer: 'weather/synop', provider: 'kma-aws' },
+  '/clouds/gfs-fc/manifest.json': { layer: 'weather/wind', provider: null },
   '/celestrak/catalog.json.gz': { layer: 'space/sats', provider: 'celestrak' },
   '/clouds/meta.json': { layer: 'weather/cloud-obs', provider: 'gmgsi' },
   '/clouds/gk2a/meta.json': { layer: 'weather/cloud-gk2a', provider: 'gk2a' },

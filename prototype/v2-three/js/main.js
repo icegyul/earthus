@@ -27,6 +27,8 @@ import { i18n } from './i18n.js?v=11';
 window.__earthusT = (k) => i18n.t(k);
 import { SatLayer } from './sat-layer.js?v=1';
 import { CloudVolume } from './cloud-volume.js?v=4';
+// 바람 층(js/wind-layer.js · 2026-09-20 W3) — GFS 10 m 바람 프레임·시간 버스·입자 엔진·범례를 잇는 접착제. 관측소 막대기를 대신한다.
+import { createWindLayer } from './wind-layer.js?v=1';
 // 공용 GFS 프레임 저장소 — 매니페스트 하나 · 프레임 캐시 하나 · 시간 하나(js/gfs-frames.js · 2026-09-20 A1).
 // 구름(CloudManager.loadGfs)과 앞으로 올 기온·바람·기압·강수 렌더러(W1~W4)가 이 하나를 나눠 쓴다.
 // 구름이 위성 모드여도 필드 프레임은 떠야 하므로 CloudManager 안이 아니라 모듈 맨 위에 둔다.
@@ -2841,6 +2843,14 @@ async function main() {
       shell.refreshFlyout();
       return;
     }
+    // 바람 층이 켜져 있으면 누른 자리의 모델 바람을 읽는다(js/wind-layer.js readoutAt — 프레임의 CPU 사본에서 · 네트워크 0건).
+    // 꺼져 있으면 null 이라 아래 국가·바다 선택으로 그대로 흐른다.
+    const windPick = windLayer.readoutAt(lat, lon);
+    if (windPick) {
+      clearFocusContext();
+      showNote(windPick.title, windPick.html, windPick.badge);
+      return;
+    }
     const f = focus.pick(lat, lon);
     if (f) {
       countryClick = { lat, lon };
@@ -3166,6 +3176,24 @@ async function main() {
   // 켜 둔 레이어를 원본 갱신 주기에 맞춰 실제로 다시 받는다 (배지만 갱신되던 문제)
   liveLayers.startAutoRefresh(() => { shell.refreshFlyout(); shell.renderIntel(); });
   window.__earthusLive = liveLayers;
+  // 바람 층(W3) — 레이어 id 'wind' 의 실체. 켜고 끄는 주인은 LiveLayers 다(fetchFor·buildWind·metaWind 가 이 층을 부른다).
+  // 입자는 tick 의 windLayer.tick 이 흘린다. 반지름은 풍속 색면과 같은 껍질(airShell) — 시차 방지. 과장이 바뀔 때만 다시 묻는다.
+  const windLayer = createWindLayer({
+    frames: gfsFrames, timeBus, parent: liveLayers.group,
+    isOn: () => { const l = liveLayers.layers.wind; return !!(l && l.on); },
+    particleScale: () => thermal.budget.particleScale,
+    exagger: () => uniforms.uExagger.value,
+    shellRadius: () => liveLayers.airShell().radius,
+    lang: () => i18n.lang,
+    // 타임라인·키프레임이 바뀌면 열려 있는 바람 카드(글자 사본)를 지금 상태로 갈아 끼운다 — 안 그러면 카드의 유효 시각이 옛 글로 남는다.
+    onChange: () => {
+      if (!lockedNote || !String(lockedNote.body).includes('data-wind-card')) return;
+      lockedNote.body = windLayer.recard(lockedNote.body);
+      shell.renderIntel();
+    },
+  });
+  liveLayers.windLayer = windLayer;
+  window.__earthusWind = windLayer;   // 콘솔 확인용: __earthusWind.state()
   seafloor = new SeaFloor(scene, heightAtJs, dataBadge);
   travel = new TravelScene(scene, heightAtJs, () => uniforms.uExagger.value);
   // 확장 화면(LAB·취미)이 쓰는 카메라 이동 — askTools.flyTo 와 같은 식 (경도는 가까운 쪽으로)
@@ -3309,7 +3337,8 @@ async function main() {
     'people/seoul': ['seoul', '서울 실시간 인구'],
     'hazards/tyoff': ['tyoff', '태풍 공식 트랙'],
     'weather/airq': ['airq', '대기질 (에어코리아)'],
-    'weather/wind': ['wind', '바람 관측'],
+    // 2026-09-20 W3: '바람 관측'(관측소 막대기)이었다. 같은 id 가 이제 GFS 10 m 바람 입자다 — id 는 그대로, 이름만 사실대로.
+    'weather/wind': ['wind', '바람 흐름 · GFS 10 m'],
     'space/launch': ['launch', '발사 일정'],
     'ocean/kmasea': ['kmasea', '해상 관측망'],
     'ocean/slr': ['slr', '해수면 상승 전망 2100'],
@@ -4731,6 +4760,14 @@ async function main() {
         const loaded=liveLayers.state('buoys').on?Promise.resolve(liveLayers.state('buoys')):liveLayers.toggle('buoys');
         showNote('해양 모델과 부이 관측',sea+'<p>부이 관측을 불러오는 중…</p>','LOADING');
         loaded.then(st=>{if(current())showNote('해양 모델과 부이 관측',sea+liveLayers.card('buoys'),st.on?'DERIVED':'UNAVAILABLE');shell.refreshFlyout();});return;
+      }
+      // 바람 입자 강도 3단(약 ⅓ · 중 ⅔ · 전부) — 실제 입자 수가 바뀐다. lockedNote.body 는 글자 사본이라
+      // 그대로 두면 다시 그릴 때 옛 칩이 켜진 채 돌아온다 — 카드의 바람 부분만 지금 상태로 갈아 끼운다(wind-layer.js recard).
+      if (action === 'wind-intensity') {
+        windLayer.setIntensity(Number(ds.k));
+        if (lockedNote) { lockedNote.body = windLayer.recard(lockedNote.body); shell.renderIntel(); }
+        shell.refreshFlyout();
+        return;
       }
       if (action === 'loss-year') {
         // 슬라이더는 기하를 다시 만들지 않는다 — 셰이더 유니폼만 바뀐다.
@@ -6363,6 +6400,7 @@ async function main() {
     satLayer.update(now);
     aethLink.update(now);
     liveLayers.tick(now, altKm);
+    windLayer.tick(dt, camera);   // 바람 입자(W3) — 'wind' 레이어가 꺼져 있으면 첫 줄에서 돌아간다(아무것도 하지 않는다)
     flightRoute.tick(now, camera);
     popSculpt.updateLabels(camera);
     popSculpt.updateScale(altKm);

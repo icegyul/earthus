@@ -300,7 +300,8 @@ const L_EN = {
   'cloud-gfs': 'Rain · snow · typhoon 5-day forecast ▶',
   'cloud-vol': 'Cloud 3D volume (East Asia)',
   tempanom: 'How far from normal, right now (Korea)',
-  wind: 'Wind observations (3,000 surface sites)',
+  // 2026-09-20 W3: 'Wind observations (3,000 surface sites)' 였다. 같은 id 가 이제 GFS 10 m 바람 입자다(ui-shell.js SCENES 의 그 줄과 짝).
+  wind: 'Wind flow (global particles · 5-day forecast)',
   synop: 'Station model (standard chart symbols)',
   airq: 'Air quality (AirKorea)',
   warn: 'Weather warnings (live)',

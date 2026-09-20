@@ -195,7 +195,8 @@ export function spawnInCap(random, ax, ay, az, cosCap, out) {
 
 /** 바람 격자 하나를 만든다(검증 포함). 프레임 저장소와 묶이지 않는다 — 바이트 배열과 디코드 상수만 받는다.
  *    { w, h, dataA, dataB?, mix?, decode:{ scale, offset }, grid?:{ lon0, dLon, lat0, dLat } }
- *  dataA·dataB 는 Uint8Array | Uint8ClampedArray, RGB(3) 또는 RGBA(4) — 길이로 가린다. u = R · v = G.
+ *  dataA·dataB 는 Uint8Array | Uint8ClampedArray, RG(2) · RGB(3) · RGBA(4) — 길이로 가린다. u = R · v = G.
+ *    (RG(2) 는 2026-09-20 W3 배선 때 더했다 — 프레임 저장소의 CPU 사본이 쓰는 채널만 남긴 2채널이라 3·4 만 받으면 던진다.)
  *  grid 를 안 주면 GFS 필드 프레임의 모양이다: 행 0 = 북위 90 · 열 0 = 서경 180 (매니페스트 grid 와 같은 키).
  *  ⚠️ 경도로 한 바퀴 도는 전지구 격자만 받는다. 지역 격자는 랩 보간이 틀린 값을 만든다. */
 export function createWindField(spec) {
@@ -205,8 +206,11 @@ export function createWindField(spec) {
     throw new TypeError('wind field needs integer w,h >= 2');
   }
   const px = w * h;
-  const stride = dataA && dataA.length === px * 4 ? 4 : dataA && dataA.length === px * 3 ? 3 : 0;
-  if (!stride) throw new TypeError('dataA length must be w*h*3 (RGB) or w*h*4 (RGBA)');
+  // 2 = 프레임 저장소의 CPU 사본(gfs-frames.js compactPixels — 매니페스트가 말한 채널 R·G 만 남긴다). 사본을 3채널로
+  // 다시 부풀리면 키프레임마다 780 KB 를 복사한다. sampleWind 는 어느 stride 든 [i]=u · [i+1]=v 로 읽는다.
+  const n = dataA ? dataA.length : 0;
+  const stride = n === px * 4 ? 4 : n === px * 3 ? 3 : n === px * 2 ? 2 : 0;
+  if (!stride) throw new TypeError('dataA length must be w*h*2 (RG), w*h*3 (RGB) or w*h*4 (RGBA)');
   if (dataB && dataB.length !== dataA.length) throw new TypeError('dataB must match dataA length');
   const decode = spec.decode || {};
   if (typeof decode.scale !== 'number' || typeof decode.offset !== 'number') {

@@ -77,7 +77,9 @@ export const SCENES = [
       { id: 'cloud-gfs', name: '비·눈·태풍 5일 예보 ▶', state: 'MODEL_SIGNAL', src: 'GFS·Open-Meteo', act: true },
       { id: 'cloud-vol', name: '구름 3D 볼륨 (동아시아)', state: 'MODEL_SIGNAL', src: 'GFS 복셀 95×69×32', act: true },
       { id: 'tempanom', name: '지금 평년보다 몇 도 (전국)', state: 'DERIVED', src: 'KMA 실황 − 1991~2020 평년', act: true },
-      { id: 'wind', name: '바람 관측 (지상 3천 개소)', state: 'OBSERVED', src: 'KMA AWS·GTS', act: true },
+      // 2026-09-20 W3: '바람 관측 (지상 3천 개소)' · OBSERVED · KMA AWS·GTS 였다(관측소 막대기). 같은 id 가 이제 전지구 입자 흐름이고
+      // 자료는 모델이다 — 이름·상태·출처를 사실대로 고친다. 지상 관측은 바로 아래 '일기도 기입 모형'에 그대로 있다.
+      { id: 'wind', name: '바람 흐름 (전지구 입자 · 5일 예보)', state: 'MODEL', src: 'NOAA GFS 0.5° · 10 m · 5일 예보', act: true },
       { id: 'synop', name: '일기도 기입 모형 (표준 기호)', state: 'OBSERVED', src: 'KMA AWS · GTS SYNOP', act: true },
       { id: 'airq', name: '대기질 (에어코리아)', state: 'OBSERVED', src: '한국환경공단', act: true },
       { id: 'warn', name: '기상 특보 (실황)', state: 'OFFICIAL_FORECAST', src: 'KMA 특보 · 1.0 S3', act: true },

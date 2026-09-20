@@ -243,6 +243,8 @@ export class LiveLayers {
     // id → { on, obj, data, meta:{note, badge, cardHtml}, loading }
     this.layers = {};
     this.lastExagger = getExagger();
+    // 바람 입자 층(js/wind-layer.js · 2026-09-20 W3) — main.js 가 만들어 꽂는다. 없으면 'wind' 는 켜지지 않고 이유를 말한다(fetchFor).
+    this.windLayer = null;
   }
 
   // 지표 반경: 실지형 고도 × 현재 과장 + 살짝 띄움 (마커가 산에 묻히지 않게)
@@ -531,14 +533,11 @@ export class LiveLayers {
         });
       case 'tyanalog': return fetchJson('/ocean/cyclone-analog.json', 20000);
       case 'airq': return fetchJson('/wind/korea-air-obs.json', 20000);
+      // 바람(2026-09-20 W3): 관측소 JSON 을 받지 않는다 — GFS 10 m 바람 프레임을 입자로 흘린다(js/wind-layer.js).
+      // 목록·프레임이 없으면 load() 가 이유를 던지고, toggle 이 그것을 '자료 없음' 카드로 낸다. 막대기로 물러나지 않는다.
+      // 관측소 자료(wind/kma-aws.json · wind/gts-global.json)는 일기도 기입 모형·평년 대비 기온·내 지역이 저마다 받는다 — 여기서 끊어도 죽지 않는다.
       case 'wind':
-        return Promise.all([
-          fetchJson('/wind/kma-aws.json', 20000).catch(() => null),
-          fetchJson('/wind/gts-global.json', 25000).catch(() => null),
-        ]).then(([aws, gts]) => {
-          if (!aws && !gts) throw new Error('바람 관측 없음');
-          return { aws, gts };
-        });
+        return this.windLayer ? this.windLayer.load() : Promise.reject(new Error('자료 없음 — 바람 입자 층이 연결되지 않았습니다'));
       // ---- 전지구 확장 레이어 (1.0 캐시에 이미 매시간 올라오는 것들) ----
       case 'fireglobal': return fetchJson('/events/wildfire.json', 30000);
       case 'raingrid':
@@ -1365,7 +1364,7 @@ export class LiveLayers {
       rain: ['강수', 'mm', '시간당 강수량 — <b>0.1mm 미만은 칠하지 않습니다</b>(안 오는 곳을 비로 그리지 않기 위해)', 'Open-Meteo (GFS/ECMWF)'],
       t: ['기온', '°C', '지상 2m 기온', 'Open-Meteo (GFS/ECMWF)'],
       mslp: ['해면기압', 'hPa', '해면 환산 기압 — 저기압(붉은색)이 폭풍의 자리입니다', 'Open-Meteo (GFS/ECMWF)'],
-      spd: ['풍속', 'm/s', '지상 10m 바람의 세기(방향은 바람 관측 레이어)', 'Open-Meteo (GFS/ECMWF)'],
+      spd: ['풍속', 'm/s', '지상 10m 바람의 세기(방향과 흐름은 바람 흐름 레이어)', 'Open-Meteo (GFS/ECMWF)'],
       pm25: ['초미세먼지 PM2.5', '㎍/㎥', '한국 환경부 4등급 색(좋음·보통·나쁨·매우나쁨) 기준', 'Open-Meteo Air Quality (CAMS)'],
       uv: ['자외선 지수', '', '밤(0)은 칠하지 않습니다', 'Open-Meteo Air Quality (CAMS)'],
     };
@@ -2318,123 +2317,19 @@ export class LiveLayers {
     };
   }
 
-  // ---------- 바람 관측 (KMA AWS + 전 세계 GTS · OBSERVED) ----------
-  // 관측소마다 바람이 불어가는 방향으로 선분 — 길이·색 = 풍속. 값 보간·생성 없음.
-  buildWind(d) {
+  // ---------- 바람 (NOAA GFS 0.5° · 지상 10 m · 5일 예보 · MODEL) ----------
+  // 2026-09-20 W3: 여기는 '관측소마다 바람이 불어가는 쪽으로 선분 하나 + 그 선분 위를 왕복하는 점 2개'였다(막대기).
+  //   이류·유선 0건 — PD: "바람은 왜 윈드 애니메이션이 없어? 지역마다 막대기가 나오면 되겠어?" 선분·왕복 점·그 셰이더를 걷었다.
+  //   예전 주석은 "값 보간·생성 없음 · 격자 보간·유선 생성 없음"을 적었다 — 그 말은 관측소 3,000곳에만 맞는다. 바다와 관측 공백
+  //   (중국·몽골·러시아)에는 바람이 아예 없었다. 이제 전지구 모델 격자(GFS)를 입자로 흘리고, **모델값이라고** 카드·범례·배지가 말한다.
+  //   관측소 값을 지구에 찍는 일은 같은 묶음의 다른 작업(관측 숫자)이 한다 — 여기서는 관측소를 그리지 않는다.
+  // 돌려주는 것은 **빈 자리표**다. 입자 물체는 js/wind-layer.js 가 this.group 에 따로 건다: refresh()·onExaggerChanged() 가
+  //   레이어 물체를 dispose 하고 새로 짓는데, 입자 버퍼(폰 3.8 MB · 데스크톱 13.8 MB)를 그 길에 태우면 20분마다·과장 슬라이더
+  //   한 칸마다 GPU 에 다시 올린다. 켜짐/꺼짐은 wind-layer 가 this.layers.wind.on 을 읽어 따라온다(main.js tick 의 windLayer.tick).
+  //   20분 갱신(REFRESH_MIN.wind)은 그대로 둔다 — fetchFor 가 목록을 다시 읽어 새 GFS 런을 알아챈다.
+  buildWind() {
     const g = new THREE.Group();
-    const rows = [];
-    (d.aws && d.aws.stations || []).forEach((s) => {
-      if (s.lat != null && s.wind_ms != null && s.wind_dir != null) {
-        rows.push({ lat: s.lat, lon: s.lon, ws: s.wind_ms, wd: s.wind_dir });
-      }
-    });
-    (d.gts && d.gts.stations || []).forEach((s) => {
-      if (s.lat != null && s.ws != null && s.wd != null) {
-        rows.push({ lat: s.lat, lon: s.lon, ws: s.ws, wd: s.wd });
-      }
-    });
-    this._windN = rows.length;
-    let maxWs = 0;
-    const pos = new Float32Array(rows.length * 6);
-    const col = new Float32Array(rows.length * 6);
-    const up = new THREE.Vector3(0, 1, 0);
-    const east = new THREE.Vector3();
-    const north = new THREE.Vector3();
-    const dir = new THREE.Vector3();
-    rows.forEach((s, i) => {
-      if (s.ws > maxWs) maxWs = s.ws;
-      const r = this.surfR(s.lat, s.lon, 0.0035);
-      const p = llToV3(s.lat, s.lon, r);
-      const n = p.clone().normalize();
-      east.crossVectors(up, n).normalize();
-      north.crossVectors(n, east);
-      // wd = 불어오는 방위 → 화살은 불어가는 쪽(wd+180°)
-      const brg = ((s.wd + 180) * Math.PI) / 180;
-      dir.copy(east).multiplyScalar(Math.sin(brg)).addScaledVector(north, Math.cos(brg));
-      const len = 0.003 + Math.min(s.ws / 25, 1) * 0.011;
-      const c = windColor(s.ws);
-      pos[i * 6] = p.x; pos[i * 6 + 1] = p.y; pos[i * 6 + 2] = p.z;
-      pos[i * 6 + 3] = p.x + dir.x * len;
-      pos[i * 6 + 4] = p.y + dir.y * len;
-      pos[i * 6 + 5] = p.z + dir.z * len;
-      col[i * 6] = c.r * 0.55; col[i * 6 + 1] = c.g * 0.55; col[i * 6 + 2] = c.b * 0.55;
-      col[i * 6 + 3] = c.r; col[i * 6 + 4] = c.g; col[i * 6 + 5] = c.b;
-    });
-    this._windMax = maxWs;
-    const lg = new THREE.BufferGeometry();
-    lg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    lg.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    g.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({
-      vertexColors: true, transparent: true, opacity: 0.85, depthWrite: false,
-    })));
-    const items = rows.map((s) => ({ lat: s.lat, lon: s.lon, c: windColor(s.ws) }));
-    g.add(this.makePoints(items, { size: 3, lift: 0.0035, opacity: 0.75 }));
-
-    // 흐름 애니메이션: 관측 선분 위를 입자가 풍속 비례 속도로 흐른다.
-    // 관측 지점의 실측 벡터 위에서만 움직임 — 격자 보간·유선 생성 없음.
-    const P_PER = 2;
-    const nP = rows.length * P_PER;
-    const aStart = new Float32Array(nP * 3);
-    const aDir = new Float32Array(nP * 3);
-    const aPhase = new Float32Array(nP);
-    const aSpeed = new Float32Array(nP);
-    const aColor = new Float32Array(nP * 3);
-    for (let i = 0; i < rows.length; i += 1) {
-      for (let k = 0; k < P_PER; k += 1) {
-        const j = i * P_PER + k;
-        aStart[j * 3] = pos[i * 6];
-        aStart[j * 3 + 1] = pos[i * 6 + 1];
-        aStart[j * 3 + 2] = pos[i * 6 + 2];
-        aDir[j * 3] = pos[i * 6 + 3] - pos[i * 6];
-        aDir[j * 3 + 1] = pos[i * 6 + 4] - pos[i * 6 + 1];
-        aDir[j * 3 + 2] = pos[i * 6 + 5] - pos[i * 6 + 2];
-        aPhase[j] = (i * 0.618 + k / P_PER) % 1;
-        aSpeed[j] = Math.min(rows[i].ws / 25, 1);
-        aColor[j * 3] = col[i * 6 + 3];
-        aColor[j * 3 + 1] = col[i * 6 + 4];
-        aColor[j * 3 + 2] = col[i * 6 + 5];
-      }
-    }
-    const fg = new THREE.BufferGeometry();
-    fg.setAttribute('position', new THREE.BufferAttribute(aStart, 3)); // 기준점 (셰이더에서 이동)
-    fg.setAttribute('aDir', new THREE.BufferAttribute(aDir, 3));
-    fg.setAttribute('aPhase', new THREE.BufferAttribute(aPhase, 1));
-    fg.setAttribute('aSpeed', new THREE.BufferAttribute(aSpeed, 1));
-    fg.setAttribute('aColor', new THREE.BufferAttribute(aColor, 3));
-    const flowMat = new THREE.ShaderMaterial({
-      uniforms: { uTime: { value: 0 } },
-      transparent: true,
-      depthWrite: false,
-      vertexShader: /* glsl */ `
-        attribute vec3 aDir;
-        attribute float aPhase;
-        attribute float aSpeed;
-        attribute vec3 aColor;
-        uniform float uTime;
-        varying vec3 vC;
-        varying float vA;
-        void main() {
-          float t = fract(uTime * (0.10 + aSpeed * 0.45) + aPhase);
-          vec3 p = position + aDir * t;
-          vC = aColor;
-          vA = sin(t * 3.14159) * (0.35 + aSpeed * 0.65);
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
-          gl_PointSize = 3.2;
-        }`,
-      fragmentShader: /* glsl */ `
-        varying vec3 vC;
-        varying float vA;
-        void main() {
-          vec2 d = gl_PointCoord - 0.5;
-          if (dot(d, d) > 0.25) discard;
-          gl_FragColor = vec4(vC, vA);
-          #include <colorspace_fragment>
-        }`,
-    });
-    const flow = new THREE.Points(fg, flowMat);
-    flow.frustumCulled = false;
-    g.add(flow);
-    g.userData.animMats = [flowMat];
+    g.name = 'wind-particles-anchor';
     return g;
   }
 
@@ -2482,16 +2377,11 @@ export class LiveLayers {
     }
   }
 
-  metaWind(d) {
-    const nA = (d.aws && d.aws.stations || []).length;
-    const nG = (d.gts && d.gts.count) || (d.gts && d.gts.stations || []).length;
-    const note = `${(this._windN || 0).toLocaleString()}개소 · 입자가 실측 풍속으로 흐름 · 최강 ${this._windMax != null ? this._windMax.toFixed(1) : '—'}m/s`;
-    return {
-      badge: 'OBSERVED', note,
-      cardHtml: `지상 바람 관측 — 관측소 ${(this._windN || 0).toLocaleString()}개소의 실측 풍향·풍속을 선분(불어가는 방향, 색·길이=풍속)으로 표시.<br/>`
-        + `한국 AWS ${nA}개소 (기상청) + 전 세계 지상관측 ${Number(nG).toLocaleString()}개소 (GTS)<br/>`
-        + `입자는 각 관측소의 실측 벡터 위에서만 흐릅니다 — 격자 보간·가상 유선 없음 (관측 없는 곳은 비어 있음)`,
-    };
+  // 바람 카드·배지·메뉴 줄 글(2026-09-20 W3). 예전 카드는 '관측소 N개소의 실측 풍향·풍속을 선분으로'(OBSERVED)였다 —
+  // 이제 GFS 모델 바람이라 그 글은 거짓이 된다. 글은 js/wind-layer.js 가 **읽는 순간의 상태**로 만든다(getter):
+  // 다시 켤 때 toggle 은 처음 받은 meta 를 그대로 쓰므로, 굳은 글자였다면 타임라인·입자 강도·런이 바뀌어도 옛 글이 남는다.
+  metaWind() {
+    return this.windLayer.meta();
   }
 
   // ---------- 산림 감소 2001~2023 (한국 · OBSERVED) ----------
@@ -3244,13 +3134,8 @@ const WAVE_RAMP = rampFrom([
 // 에어코리아 공식 4등급 색 (좋음/보통/나쁨/매우나쁨)
 const AIR_GRADE_COLOR = { 1: '#3fa7ff', 2: '#4fd06a', 3: '#ffab3d', 4: '#ff4d4d' };
 
-// 풍속(m/s) → 색 (잔잔 연청 → 강풍 빨강)
-const windColor = (ws) => {
-  const x = Math.min(Math.max(ws / 25, 0), 1);
-  const c = new THREE.Color();
-  c.setHSL(0.55 - 0.55 * x, 0.85, 0.44 + 0.14 * x);
-  return c;
-};
+// 풍속(m/s) → 색 은 여기 없다(2026-09-20 W3). 관측소 막대기만 쓰던 HSL 연속 램프(windColor)였고 막대기와 함께 걷었다 —
+// 바람 입자의 색은 색 눈금표(js/field-scales.js 의 wind 8칸)에서 온다. 색을 두 곳에 적지 않는다.
 
 function disposeDeep(obj) {
   obj.traverse((o) => {

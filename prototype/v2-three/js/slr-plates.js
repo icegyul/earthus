@@ -51,11 +51,17 @@ export const SLR_PLATE_PX = 34;
  * 화면의 원판과 카드의 점이 다른 테를 갖지 않도록 한 곳에서만 정한다.
  */
 export const SLR_PLATE_RIM = Object.freeze({ color: Object.freeze([0.031, 0.047, 0.071]), alpha: 0.92, frac: 0.1 });
-/** 이름줄 높이(원판 지름에 대한 비율)와 글자 크기. */
-export const SLR_PLATE_NAME = Object.freeze({ heightFrac: 0.44, fontPx: 11, maxChars: 16 });
 /**
- * 솎는 간격 — 원판 지름의 1.18배. 지름과 같게 두면 두 원판이 가장자리에서 맞닿아 이름줄이 겹친다.
- * 이름줄은 원판보다 넓을 수 있으므로 여유가 필요하다.
+ * 이름줄 높이(원판 지름에 대한 비율)와 글자 크기. `padPx` 는 이름 글자 좌우에 남기는 빈 자리(원판 34 px 기준) —
+ * 굽는 캔버스의 폭과 솎기 상자의 폭이 **이 한 수를 같이 쓴다**. 이웃한 두 이름표 사이에 늘 이만큼이 빈다.
+ */
+export const SLR_PLATE_NAME = Object.freeze({ heightFrac: 0.44, fontPx: 11, maxChars: 16, padPx: 8 });
+/**
+ * 원판만 놓고 볼 때의 최소 간격 — 지름의 1.18배. 지름과 같게 두면 두 원판이 가장자리에서 맞닿는다.
+ * ⚠️ 2026-09-21 — 예전에는 이 하나가 **이름표 몫까지** 맡았다("이름줄은 원판보다 넓을 수 있으므로 여유가 필요하다").
+ *    폰 폭에서 실측하니 그 여유가 턱없이 모자랐다: 원판 30.7 px 에 간격 36 px 인데 `HANASAKI II` 이름표는 75 px 이라,
+ *    36 px 떨어진 두 원판이 시험을 통과하고도 화면에서는 이름을 서로 덮었다(PD 실측 ①). 이제 이름표 폭은
+ *    `plateBoxPx` 가 **재서** 쓰고, 이 값은 이름이 원판보다 좁을 때의 바닥으로만 남는다.
  */
 export const SLR_SEP_FRAC = 1.18;
 /** 갈라짐·뭉침 문턱 — 원판 몇 개 폭인가(머리말 '갈라지는 기준'). 두 값이 달라야 경계에서 깜빡이지 않는다. */
@@ -64,10 +70,30 @@ export const SLR_LOD = Object.freeze({ splitPlates: 3.5, mergePlates: 2.3 });
  * 한 화면에 세우는 원판 수의 상한. 데스크톱 40 · 폰 16.
  * 1440×900 에서 지구 원반은 약 800 px 이고 40 px 칸이 약 310칸인데, 그 1/8 을 넘으면 지구가 숫자로 덮여
  * **색이 말하는 큰 그림**(어디가 붉고 어디가 흰가)이 안 읽힌다. 폰(375 폭)은 칸이 1/2.5 이라 16 이다.
+ * ⚠️ 2026-09-21 — 이 두 수는 이제 `plateCapOf` 의 **바닥과 천장**이다. 아래 주석을 읽어라.
  */
 export const SLR_PLATE_CAP = Object.freeze({ desktop: 40, phone: 16 });
-/** 폰으로 치는 화면 폭(CSS px) — obs-labels.js 와 같은 경계. */
-export const SLR_PHONE_W = 640;
+/**
+ * 원판이 화면에서 차지해도 되는 몫 — 화면을 원판 상자로 나눈 칸의 **1/8**.
+ * 데스크톱 상한 40 이 나온 계산과 같은 몫이다(머리말) — 이제 지구 원반이 아니라 **화면**을 나눈다.
+ * 지구 원반으로 나누는 셈은 바짝 다가가 지구가 화면을 가득 채울 때 틀린다(원반이 화면보다 커진다).
+ */
+export const SLR_CAP_FRAC = 1 / 8;
+
+/**
+ * 이 화면이 견디는 원판 수 — 화면(viewW×viewH)을 원판 상자(platePx × SLR_SEP_FRAC 사방)로 나눈 칸의 SLR_CAP_FRAC.
+ * 데스크톱 상한을 천장으로, 폰 상한을 바닥으로 삼는다: 어떤 화면에서도 16 장은 세우고 40 장을 넘지 않는다.
+ * ⚠️ 2026-09-21 폰 실측 ②: 예전에는 화면 폭만 보고 16 · 40 둘 중 하나를 썼다. 폰에서 훑어 본 판 10,200개 가운데
+ *    9,360개(91.8%)가 상한에 걸려 **늘 정확히 16장**이었다 — 솎기가 센 것이 아니라 상한이 늘 먼저 닿았다.
+ *    375×812 에서 원판은 30.7 px 이고 상자는 36.2 px 이라 칸이 10×22 = 220개, 그 1/8 은 27 이다.
+ *    폭만 보면 이 세로 812 를 못 본다 — 폰은 세로로 길다.
+ */
+export const plateCapOf = (viewW, viewH, platePx = SLR_PLATE_PX) => {
+  const box = Math.max(1, platePx * SLR_SEP_FRAC);
+  const cells = Math.floor(Math.max(0, viewW) / box) * Math.floor(Math.max(0, viewH) / box);
+  const n = Math.floor(cells * SLR_CAP_FRAC);
+  return Math.max(SLR_PLATE_CAP.phone, Math.min(SLR_PLATE_CAP.desktop, n));
+};
 /** 누를 때 원판 가장자리에서 더 봐주는 여유(CSS px) — 손가락. */
 export const SLR_PLATE_SLOP_PX = 8;
 /** 지평선 흐림이 이보다 옅으면 새로 세우지 않는다(이미 선 것은 0 까지 흐려지며 넘어간다). */
@@ -111,6 +137,104 @@ export function shortCountryNames(names) {
 export const clipName = (s, max = SLR_PLATE_NAME.maxChars) => {
   const t = String(s ?? '');
   return t.length <= max ? t : `${t.slice(0, max - 1)}…`;
+};
+
+/** 이름줄에 쓰는 글꼴 — 굽는 쪽(plateTexture)과 재는 쪽(plateNameWidth)이 **한 글자열**을 나눠 쓴다. */
+export const SLR_NAME_FONT = (px) => `700 ${px}px "Noto Sans KR", -apple-system, "Apple SD Gothic Neo", system-ui, sans-serif`;
+
+/**
+ * 글꼴이 없을 때의 글자 폭 어림(em 단위) — node 시험처럼 캔버스가 없는 곳에서 쓴다.
+ * 한글·한자는 전각 1.0, 라틴 대문자·숫자는 0.62… 로 나눈다. 재 본 값보다 **넓게** 잡는 쪽으로 기울여 두었다:
+ * 좁게 잡으면 겹치지 않는다고 믿고 겹치게 세운다(그것이 ① 의 결함이었다).
+ */
+const emOf = (ch) => {
+  const c = ch.codePointAt(0);
+  if (c >= 0x1100 && c <= 0x11ff) return 1;                       // 한글 자모
+  if (c >= 0x2e80 && c <= 0xa4cf) return 1;                       // 한중일 한자 · 가나
+  if (c >= 0xac00 && c <= 0xd7a3) return 1;                       // 한글 음절
+  if (c >= 0xff01 && c <= 0xff60) return 1;                       // 전각 기호
+  if (ch === ' ') return 0.28;
+  if (ch === '.' || ch === ',' || ch === "'" || ch === ':') return 0.3;
+  if (ch === '·' || ch === '-' || ch === '(' || ch === ')') return 0.42;
+  if (ch === '…' || ch === '—') return 1;
+  if (c >= 0x61 && c <= 0x7a) return 0.58;                        // 라틴 소문자
+  return 0.62;                                                    // 라틴 대문자 · 숫자 · 나머지
+};
+const estimateNameWidth = (s, px) => { let w = 0; for (const ch of s) w += emOf(ch); return w * px; };
+
+/**
+ * 재 본 폭을 이름마다 한 번만 — 원판은 1초에 여러 번 다시 솎이고 이름은 1,016개뿐이다.
+ * ⚠️ 글꼴이 늦게 서면 처음 잰 폭이 틀린 채로 굳는다(그러면 솎기 상자가 틀려 ① 이 되돌아온다).
+ *    이 앱에 @font-face 는 없고 글꼴은 기기에 있는 것을 쓰지만, 그래도 글꼴이 다 선 뒤 한 번 비운다 — 값싼 보험이다.
+ */
+const nameWidths = new Map();
+let nameProbe;
+const nameProbeCtx = () => {
+  if (nameProbe !== undefined) return nameProbe;
+  nameProbe = null;
+  try {
+    if (typeof document !== 'undefined' && document.createElement) {
+      const ctx = document.createElement('canvas').getContext('2d');
+      if (ctx) { ctx.font = SLR_NAME_FONT(SLR_PLATE_NAME.fontPx); nameProbe = ctx; }
+      if (nameProbe && document.fonts && document.fonts.ready && document.fonts.ready.then) {
+        document.fonts.ready.then(() => nameWidths.clear()).catch(() => {});
+      }
+    }
+  } catch { nameProbe = null; }
+  return nameProbe;
+};
+
+/**
+ * 이름줄 글자의 폭(원판 지름 34 px 기준의 CSS px). 캔버스가 있으면 **실제로 재고**, 없으면 위의 어림을 쓴다.
+ * ⚠️ 이 한 함수를 **굽는 쪽과 솎는 쪽이 같이 부른다.** 두 벌이 되면 화면은 이만큼 넓게 그리고 솎기는 저만큼으로 재서,
+ *    "안 겹친다"고 셈해 놓고 겹치게 세운다 — 그것이 2026-09-21 폰 실측 ① 의 뿌리였다.
+ */
+export function plateNameWidth(name) {
+  const s = String(name ?? '');
+  if (!s) return 0;
+  const hit = nameWidths.get(s);
+  if (hit !== undefined) return hit;
+  const ctx = nameProbeCtx();
+  let w;
+  try { w = ctx ? ctx.measureText(s).width : estimateNameWidth(s, SLR_PLATE_NAME.fontPx); }
+  catch { w = estimateNameWidth(s, SLR_PLATE_NAME.fontPx); }
+  if (!Number.isFinite(w) || w <= 0) w = estimateNameWidth(s, SLR_PLATE_NAME.fontPx);
+  nameWidths.set(s, w);
+  return w;
+}
+
+/**
+ * 화면에 그려지는 원판 한 장의 **상자**(CSS px) — 원판 + 이름줄. platePx 는 지금 화면의 원판 지름이다.
+ * 폭은 원판과 이름표 가운데 넓은 쪽이고, 높이는 원판 + 이름줄이다. 솎기는 이 상자로 한다(원이 아니라).
+ * 이름이 없으면 이름줄 몫이 빠진다 — 굽는 쪽(plateTexture)의 nameH 와 같은 가름이다.
+ */
+export function plateBoxPx(name, platePx = SLR_PLATE_PX) {
+  const k = platePx / SLR_PLATE_PX;
+  const s = String(name ?? '');
+  const label = s ? plateNameWidth(s) + SLR_PLATE_NAME.padPx : 0;
+  return {
+    w: Math.max(SLR_PLATE_PX * SLR_SEP_FRAC, label) * k,
+    h: SLR_PLATE_PX * (1 + (s ? SLR_PLATE_NAME.heightFrac : 0)) * k,
+  };
+}
+
+/**
+ * 원판의 자리(스프라이트 한가운데)에서 **동그라미 한가운데까지의 세로 어긋남**(CSS px · 화면 y 가 커지는 쪽이 +).
+ * 텍스처는 위가 동그라미 · 아래가 이름줄인데 스프라이트는 그 전체를 가운데로 잡는다 — 동그라미는 이름줄 몫의 절반만큼 위에 있다.
+ */
+export const plateDiscOffsetPx = (platePx = SLR_PLATE_PX) => -(platePx * SLR_PLATE_NAME.heightFrac) / 2;
+
+/**
+ * 이 자리에 선 원판의 **숫자가 화면 안에 온전히 들어오나.** 이름표는 가장자리에서 잘려도 되지만
+ * 값은 잘리면 안 된다 — 이 레이어에서 읽어야 하는 것은 값이다.
+ * ⚠️ 2026-09-21 폰 실측 ②: 예전에는 지평선만 봤다. 그래서 375×812 화면에서 x=1785 · y=2011 처럼
+ *    **화면 밖으로 투영된 후보**가 차례를 앞질러 상한을 다 먹고, 정작 화면 한가운데 한국 연안이 솎여 나갔다.
+ */
+export const plateOnScreen = (x, y, viewW, viewH, platePx = SLR_PLATE_PX) => {
+  if (!Number.isFinite(x) || !Number.isFinite(y) || !(viewW > 0) || !(viewH > 0)) return false;
+  const r = platePx / 2;
+  const dy = y + plateDiscOffsetPx(platePx);
+  return x >= r && x <= viewW - r && dy >= r && dy <= viewH - r;
 };
 
 /**
@@ -187,25 +311,32 @@ export function spreadPx(pts) {
 }
 
 /**
- * 겹치는 원판 솎기 — 앞의 것부터 받고, 이미 받은 것과 sepPx 안이면 버린다.
- *   cands  [{ x, y, … }] **우선순위 순**(부른 쪽이 정렬해서 준다) · → { shown, hidden }
- * hidden 은 '자리가 없어 못 세운 수'다 — 화면이 이 수를 말해야 한다(지시서: "솎은 것이 있으면 화면이 그 사실을 말해야 한다").
+ * 겹치는 원판 솎기 — 앞의 것부터 받고, 이미 받은 것과 **그려질 상자가 겹치면** 버린다.
+ *   cands  [{ x, y, w?, h?, … }] **우선순위 순**(부른 쪽이 정렬해서 준다)
+ *   → { shown, clashed, capped, hidden }   hidden = clashed + capped
+ * 상자(w·h)를 들고 오면 네모끼리 겹침을 보고, 없으면 예전처럼 sepPx 원으로 본다(순수 시험이 그 길을 쓴다).
+ * ⚠️ **겹친 것과 상한에 걸린 것을 따로 센다.** 화면은 "겹쳐 N곳 솎음"이라 적는데, 예전에는 상한에 잘린 수까지
+ *    그 N 에 넣었다 — 폰에서는 그 둘 중 상한 쪽이 거의 전부였으므로(실측 ②) 화면이 하던 말이 사실이 아니었다.
  */
 export function thinPlates(cands = [], { sepPx = SLR_PLATE_PX * SLR_SEP_FRAC, cap = SLR_PLATE_CAP.desktop } = {}) {
   const shown = [];
-  let hidden = 0;
+  let clashed = 0;
+  let capped = 0;
   const s2 = sepPx * sepPx;
   for (const c of cands) {
-    if (shown.length >= cap) { hidden += 1; continue; }
     let clash = false;
     for (const p of shown) {
-      const dx = p.x - c.x; const dy = p.y - c.y;
-      if (dx * dx + dy * dy < s2) { clash = true; break; }
+      const dx = Math.abs(p.x - c.x); const dy = Math.abs(p.y - c.y);
+      if (p.w > 0 && c.w > 0) {
+        if (dx < (p.w + c.w) / 2 && dy < (p.h + c.h) / 2) { clash = true; break; }
+      } else if (dx * dx + dy * dy < s2) { clash = true; break; }
     }
-    if (clash) { hidden += 1; continue; }
+    // 겹침을 먼저 본다 — 상한을 먼저 보면 뒤쪽 후보가 전부 '상한'으로 세어져, 겹쳐서 못 선 수를 알 수 없다.
+    if (clash) { clashed += 1; continue; }
+    if (shown.length >= cap) { capped += 1; continue; }
     shown.push(c);
   }
-  return { shown, hidden };
+  return { shown, clashed, capped, hidden: clashed + capped };
 }
 
 /**
@@ -259,10 +390,9 @@ export const plateTexture = ({ text, name, color, ink }) => {
   const D = SLR_PLATE_PX * S;
   const nameH = name ? Math.round(SLR_PLATE_PX * SLR_PLATE_NAME.heightFrac) * S : 0;
   const font = `800 ${13 * S}px "Noto Sans KR", -apple-system, "Apple SD Gothic Neo", system-ui, sans-serif`;
-  const nameFont = `700 ${SLR_PLATE_NAME.fontPx * S}px "Noto Sans KR", -apple-system, "Apple SD Gothic Neo", system-ui, sans-serif`;
-  const probe = document.createElement('canvas').getContext('2d');
-  probe.font = nameFont;
-  const nameW = name ? probe.measureText(name).width + 8 * S : 0;
+  const nameFont = SLR_NAME_FONT(SLR_PLATE_NAME.fontPx * S);
+  // ⚠️ 폭은 **솎기가 쓰는 그 함수**로 잰다(plateNameWidth). 여기서 따로 재면 그리는 폭과 솎는 폭이 갈라진다.
+  const nameW = name ? (plateNameWidth(name) + SLR_PLATE_NAME.padPx) * S : 0;
   const c = document.createElement('canvas');
   c.width = Math.max(D, Math.ceil(nameW)) + 2 * S;
   c.height = D + nameH + 2 * S;

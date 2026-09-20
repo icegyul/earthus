@@ -104,9 +104,9 @@ import { projectPx } from './obs-labels.js?v=1';
 import { FLOOD_REACH_GROW, FLOOD_REACH_RES, buildOceanReachAsync, reachAt, reachInfo, reachRGBA } from './flood-reach.js?v=1';
 // 숫자 원판 — 나라/관측소 두 단계, 메도이드 자리, 솎기. 근거는 저 파일 머리말에 있다.
 import {
-  SLR_LOD, SLR_MIN_OPACITY, SLR_PHONE_W, SLR_PLATE_CAP, SLR_PLATE_PX, SLR_PLATE_RIM, SLR_PLATE_SCALE, SLR_PLATE_SLOP_PX,
-  SLR_SEP_FRAC, SlrPlates, clipName, countryGroups, countrySummary, plateInkFor, plateOpacity, plateRank, plateText,
-  shortCountryNames, spreadPx, splitDecision, thinPlates,
+  SLR_LOD, SLR_MIN_OPACITY, SLR_PLATE_PX, SLR_PLATE_RIM, SLR_PLATE_SCALE, SLR_PLATE_SLOP_PX,
+  SLR_SEP_FRAC, SlrPlates, clipName, countryGroups, countrySummary, plateBoxPx, plateCapOf, plateInkFor, plateOnScreen,
+  plateOpacity, plateRank, plateText, shortCountryNames, spreadPx, splitDecision, thinPlates,
 } from './slr-plates.js?v=1';
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -728,6 +728,30 @@ export const slrDiscLegendHtml = () => {
 };
 
 /**
+ * 못 세운 까닭을 **가른 두 수** — 겹쳐서 · 자리(상한)가 모자라서.
+ * ⚠️ 2026-09-21 폰 실측 ②: 예전에는 둘을 한 수로 합쳐 놓고 화면에는 전부 '겹쳐'라 적었다. 폰에서 훑은 판
+ *    10,200개 가운데 9,360개가 상한에 걸려 있었으므로, 그 문장이 말하던 수는 거의 전부 **겹친 적 없는 것**이었다.
+ *    화면 밖으로 투영된 것은 어느 쪽에도 넣지 않는다 — 겹친 적이 없고, 이번 화면에 그릴 수도 없다.
+ * 옛 model 처럼 hidden 하나만 오면 전부 겹침으로 읽는다(카드·범례의 순수 시험이 그 꼴을 쓴다).
+ */
+export const plateThinCounts = (m = {}) => {
+  const capped = Number.isFinite(m.capped) && m.capped > 0 ? m.capped : 0;
+  const clashed = Number.isFinite(m.clashed)
+    ? Math.max(0, m.clashed)
+    : Math.max(0, (Number.isFinite(m.hidden) ? m.hidden : 0) - capped);
+  return { clashed, capped };
+};
+
+/** 그 두 수를 '겹쳐 N곳 · 자리가 모자라 M곳' 꼴로 — 0 인 쪽은 적지 않는다. 뒤에 붙는 말은 부르는 쪽이 정한다. */
+export const plateThinBody = (m, lead = '겹쳐') => {
+  const { clashed, capped } = plateThinCounts(m);
+  const p = [];
+  if (clashed > 0) p.push(`${lead} ${clashed.toLocaleString()}곳`);
+  if (capped > 0) p.push(`자리가 모자라 ${capped.toLocaleString()}곳`);
+  return p.join(' · ');
+};
+
+/**
  * 늘 떠 있는 범례에 넘길 것(순수). run · valid 를 넘기지 않는다 — 이 레이어는 타임라인을 구독하지 않고(머리말),
  * '유효 시각'을 적으면 2100년 전망이 5일 예보처럼 읽힌다. 시나리오·연도는 출처 줄에 글자로 적는다.
  * 풀이 줄(note)은 넘기지 않는다 — 넘기면 눈금표의 legendNote(음수 칸 설명)를 통째로 잃는다(field-legend.js legendView).
@@ -736,7 +760,8 @@ export const slrLegendArgs = (m) => {
   const sc = FLOOD_SCENARIOS.find((s) => s.id === m.scenario) || FLOOD_SCENARIOS[3];
   // ⚠️ 솎은 수는 **늘 떠 있는 범례**에도 적는다(2026-09-20 작업 E5 · 지시서 "솎은 것이 있으면 화면이 그 사실을 말해야 한다").
   //    카드는 닫혀 있을 수 있고 메뉴 줄도 그렇다 — 범례는 이 레이어가 켜져 있는 동안 늘 화면에 있다.
-  const hid = Number.isFinite(m.hidden) && m.hidden > 0 ? ` · 겹쳐 ${m.hidden.toLocaleString()}곳 솎음` : '';
+  const body = plateThinBody(m);
+  const hid = body ? ` · ${body} 솎음` : '';
   return { scale: SLR_RISE_SCALE, source: `${SLR_LEGEND_SOURCE} · ${sc.label} · ${m.year}${hid}` };
 };
 
@@ -878,8 +903,9 @@ export const floodCardInner = (m) => {
     + `그런 곳의 원판은 나라 이름 대신 <b>그 관측소 이름</b>을 답니다.`);
   if (m.plateMode) {
     const mode = m.plateMode === 'station' ? '관측소 하나하나' : m.plateMode === 'mixed' ? '일부는 나라 · 일부는 관측소' : '나라 단위';
+    const thin = plateThinBody(m, '겹쳐서');
     L.push(`지금 화면: <b>${esc(mode)}</b> · 원판 ${esc(String(m.plateShown ?? 0))}개`
-      + (m.hidden > 0 ? ` · <b>겹쳐서 ${m.hidden.toLocaleString()}곳을 솎았습니다</b>(확대하면 나옵니다)` : ' · 솎은 것 없음'));
+      + (thin ? ` · <b>${esc(thin)}을 솎았습니다</b>(확대하면 나옵니다)` : ' · 솎은 것 없음'));
   }
   L.push(`전지구 중앙값 <b>${esc(fmtM(m.globalMedian))}</b> · 관측소 범위 ${esc(fmtM(m.min))} ~ ${esc(fmtM(m.max))}`
     + `<span style="opacity:.75"> (음수 = 땅이 솟아 상대 해수면이 내려가는 곳)</span>`);
@@ -982,8 +1008,9 @@ export const floodLandLine = (info) => {
 /** 메뉴에 적히는 한 줄 — 무엇이 켜졌는지 값으로 말한다. 솎은 수는 여기에도 적는다(카드가 닫혀 있어도 읽히게). */
 export const floodNote = (m) => {
   const sc = FLOOD_SCENARIOS.find((s) => s.id === m.scenario) || FLOOD_SCENARIOS[3];
+  const body = plateThinBody(m);
   return `${sc.label} · ${m.year}년 · 전지구 중앙값 ${fmtM(m.globalMedian)} · 관측소 ${m.stations.toLocaleString()}곳`
-    + (m.hidden > 0 ? ` · 겹쳐 ${m.hidden.toLocaleString()}곳 솎음` : '')
+    + (body ? ` · ${body} 솎음` : '')
     + (m.depth ? ' · 잠기는 땅 켜짐' : '');
 };
 
@@ -1105,6 +1132,11 @@ export function createFloodOverlay(doc = {}, deps = {}) {
   // 솎기의 결과 — 누를 때 이 목록만 본다. **그린 것만 눌린다**(화면에 없는 관측소의 카드가 뜨지 않는다).
   let shownPlates = [];
   let hiddenCount = 0;
+  // 못 선 까닭을 **가른다**: 겹쳐서 · 자리(상한)가 없어서 · 이번 화면 밖이라서. 화면이 '겹쳐 N곳 솎음'이라 적으므로
+  // 그 N 에 겹치지 않은 것을 넣으면 거짓말이 된다(2026-09-21 폰 실측 ②의 곁가지).
+  let clashedCount = 0;
+  let cappedCount = 0;
+  let offScreenCount = 0;
   let plateMode = null;                            // 'country' | 'station' | 'mixed'
   const splitState = new Map();                    // 나라 → 지난번에 갈라져 있었나(되새김)
   // 관측소의 지구 위 자리 — 움직이지 않으므로 한 번만 센다(매 프레임 sin/cos 를 1,016번 부르지 않는다).
@@ -1160,12 +1192,18 @@ export function createFloodOverlay(doc = {}, deps = {}) {
     const cx = cm[12]; const cy = cm[13]; const cz = cm[14];
     vpM.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     const e = vpM.elements;
-    // ① 화면 좌표 + 지평선 흐림
+    const platePx = platePxOf();
+    // ① 화면 좌표 + 지평선 흐림 + **화면 안인가**
+    //    ⚠️ 2026-09-21 폰 실측 ②: 화면 밖을 안 걸렀다. 375×812 화면에서 후보의 자리가 x=1785 · y=2011 이어도
+    //       후보로 들어가 차례를 앞지르고 상한을 먹었다 — 폰은 화면이 좁아 투영된 반구의 아주 일부만 담는다.
+    //       그래서 **이번 화면에 그릴 수 없는 것은 후보가 아니다**(솎은 것으로도 세지 않는다 — 겹친 적이 없다).
+    let offScreen = 0;
     for (let i = 0; i < stations.length; i += 1) {
       const wx = stationPos[i * 3]; const wy = stationPos[i * 3 + 1]; const wz = stationPos[i * 3 + 2];
       visible[i] = 0;
       if (plateOpacity(wx, wy, wz, cx, cy, cz) < SLR_MIN_OPACITY) continue;
       if (!projectPx(e, wx, wy, wz, view.w, view.h, px2)) continue;
+      if (!plateOnScreen(px2[0], px2[1], view.w, view.h, platePx)) { offScreen += 1; continue; }
       projected[i * 2] = px2[0];
       projected[i * 2 + 1] = px2[1];
       visible[i] = 1;
@@ -1174,11 +1212,16 @@ export function createFloodOverlay(doc = {}, deps = {}) {
     //    ⚠️ 보이는 관측소만으로 재면 안 된다: 바짝 다가가 그 나라의 한 곳만 화면에 남았을 때 폭이 0 이 되어
     //       '나라 원판'이 그대로 선다 — 화면 밖 관측소 115곳까지 대표한다고 말하는 꼴이다(실측으로 잡은 결함).
     //    그래서 폭은 **자료에 매인 각반경**(radiusDeg · 나라마다 고정)에 지금 화면의 눈금(px/°)을 곱해서 낸다.
-    const platePx = platePxOf();
     const pxPerDeg = screenScale(e, cx, cy, cz);
     const cands = [];
     let anyCountry = false;
     let anyStation = false;
+    // 이름은 **솎기 전에** 짓는다 — 솎기의 상자가 이름표 폭을 재야 하기 때문이다(slr-plates.js plateBoxPx).
+    const stationName = (i) => clipName(stations[i].name || String(stations[i].id));
+    const countryName = (g) => (g.n === 1
+      ? `${clipName(stations[g.idx[0]].name || g.country)} · 1곳`
+      : `${clipName(shortName.get(g.country) || g.country)} · ${g.n}곳`);
+    const push = (c) => { const b = plateBoxPx(c.name, platePx); c.w = b.w; c.h = b.h; cands.push(c); };
     for (const g of groups) {
       let seen = 0;
       for (const i of g.idx) if (visible[i]) seen += 1;
@@ -1189,8 +1232,8 @@ export function createFloodOverlay(doc = {}, deps = {}) {
         anyStation = true;
         for (const i of g.idx) {
           if (!visible[i]) continue;
-          cands.push({
-            kind: 'station', key: `s${i}`, station: i, value: lastValues[i],
+          push({
+            kind: 'station', key: `s${i}`, station: i, value: lastValues[i], name: stationName(i),
             // 솎을 때 '한국 먼저'(plateRank)가 뜻하는 한국도 **카드가 세는 그 한국**이다 — 한 파일 안에서
             // 두 가지 '한국'을 쓰면 화면의 차례와 카드의 셈이 다시 갈라진다(KOREA_COUNTRY 주석).
             korea: stations[i].country === KOREA_COUNTRY,
@@ -1200,9 +1243,11 @@ export function createFloodOverlay(doc = {}, deps = {}) {
       } else {
         anyCountry = true;
         const m = g.medoid;
-        if (!visible[m]) continue;                 // 메도이드가 뒤편이면 그 나라는 이번 판에 없다
-        cands.push({
-          kind: 'country', key: `c${g.country}`, group: g, value: (g.summary && g.summary.median),
+        // 메도이드가 뒤편이거나 화면 밖이면 그 나라는 이번 판에 없다. ⚠️ 원판은 **늘 메도이드 관측소 위**에 서고
+        // 카드가 "가장 가까운 관측소"라고 적는다(countryCardHtml) — 자리를 화면 안으로 옮기면 그 줄이 거짓이 된다.
+        if (!visible[m]) continue;
+        push({
+          kind: 'country', key: `c${g.country}`, group: g, value: (g.summary && g.summary.median), name: countryName(g),
           korea: g.country === KOREA_COUNTRY,
           x: projected[m * 2], y: projected[m * 2 + 1], lat: g.lat, lon: g.lon,
         });
@@ -1210,10 +1255,13 @@ export function createFloodOverlay(doc = {}, deps = {}) {
     }
     // ③ 차례 — 한국 먼저, 그다음 |값| 이 큰 것부터(plateRank). 그리고 겹치는 것을 솎는다.
     cands.sort((a, b) => plateRank(a) - plateRank(b));
-    const cap = view.w > 0 && view.w < SLR_PHONE_W ? SLR_PLATE_CAP.phone : SLR_PLATE_CAP.desktop;
+    const cap = plateCapOf(view.w, view.h, platePx);
     const out = thinPlates(cands, { sepPx: platePx * SLR_SEP_FRAC, cap });
     shownPlates = out.shown;
     hiddenCount = out.hidden;
+    clashedCount = out.clashed;
+    cappedCount = out.capped;
+    offScreenCount = offScreen;
     plateMode = anyCountry && anyStation ? 'mixed' : anyStation ? 'station' : 'country';
     // ④ 그리기 — 모양이 그대로면 스프라이트를 다시 쓰지 않는다(폰 발열).
     const list = shownPlates.map((c) => {
@@ -1222,12 +1270,7 @@ export function createFloodOverlay(doc = {}, deps = {}) {
       // ⚠️ 눈금표의 **#rrggbb 그대로**다. legendModel 의 color 는 'rgb(…)' 문자열이라 여기서 쓰면
       //    숫자 색을 고르는 plateInkFor 가 그것을 못 읽고 늘 흰 글자를 준다(밝은 칸에서 숫자가 사라진다).
       const color = SLR_RISE_SCALE.colors[bi < 0 ? 0 : bi];
-      const name = c.kind === 'country'
-        ? (c.group.n === 1
-          ? `${clipName(stations[c.group.idx[0]].name || c.group.country)} · 1곳`
-          : `${clipName(shortName.get(c.group.country) || c.group.country)} · ${c.group.n}곳`)
-        : clipName(stations[c.station].name || String(stations[c.station].id));
-      return { key: c.key, lat: c.lat, lon: c.lon, text: plateText(v), name, color, ink: plateInkFor(color) };
+      return { key: c.key, lat: c.lat, lon: c.lon, text: plateText(v), name: c.name, color, ink: plateInkFor(color) };
     });
     const sig = list.map((p) => `${p.key}~${p.text}~${p.color}`).join('|');
     if (sig !== plateSig) { plateSig = sig; plates.setPlates(list); }
@@ -1445,7 +1488,8 @@ export function createFloodOverlay(doc = {}, deps = {}) {
     model() {
       return {
         ...stats, hasHeight: !!(uniforms.uHasHeight.value > 0.5), reach: reachState, depth: state.depth,
-        hidden: hiddenCount, plateMode, plateShown: shownPlates.length,
+        hidden: hiddenCount, clashed: clashedCount, capped: cappedCount, offScreen: offScreenCount,
+        plateMode, plateShown: shownPlates.length,
       };
     },
     /**

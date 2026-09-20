@@ -238,6 +238,13 @@ test('카드는 네 가지를 다 말한다 — 욕조식 근사 · 모르는 �
   assert.match(card, /바다와의 연결/);
   assert.match(card, /약 10 km/);
   assert.match(card, /약 300 m/);
+  // 2026-09-20 반박 검증: 카드가 화면과 반대로 말하던 두 자리. ② 는 '네덜란드 간척지가 칠해진다'고 했고
+  // ③ 은 '확대하면 제자리를 찾는다'고 했는데, 실측은 둘 다 아니었다(송도 −3.1 m·판 0 → sea · 도쿄 고토구 z9 11.0 m → dry).
+  assert.match(card, /간척지 · 매립지\(송도 · 새만금\)는 지형 자료가 아직 바다로 담고 있어 칠하지 않습니다/);
+  assert.doesNotMatch(card, /제방 뒤의 낮은 땅도 칠해지고/, '칠해지지 않는 것을 칠해진다고 약속하지 않는다');
+  assert.match(card, /건물 · 제방이 섞인 표면 고도/);
+  assert.match(card, /확대해도 칠해지지 않을 수 있습니다/);
+  assert.doesNotMatch(card, /확대할수록 물가의 선이 제자리를 찾습니다/, '지켜지지 않는 약속을 지운다');
   assert.match(card, /IPCC AR6/);
   assert.match(card, /1,016곳/);
   assert.match(card, /중앙값/);
@@ -525,6 +532,12 @@ test('live-layers 와 main.js 의 배선 — 옛 막대기 코드가 없고 다�
     'disposeDeep 에 가드가 없으면 onExaggerChanged 의 한 줄만 지구를 지키고 있다');
   // 카드의 단추가 실제로 이어져 있다.
   assert.match(MAIN_SRC, /action\.startsWith\('slr-'\)\) \{ liveLayers\.slrAction\(action, ds\);/);
+  // 메뉴 이름에 '2100' 이 남아 있지 않다 — 카드에 2050 · 2100 · 2150 단추가 있고 2100 은 기본값일 뿐이다(세 자리).
+  const SHELL_SRC = read('../../prototype/v2-three/js/ui-shell.js');
+  const I18N_SRC = read('../../prototype/v2-three/js/i18n.js');
+  assert.match(SHELL_SRC, /\{ id: 'slr', name: '해수면 상승 — 잠기는 땅 \(전 세계\)'/);
+  assert.match(MAIN_SRC, /'ocean\/slr': \['slr', '해수면 상승 — 잠기는 땅'\]/);
+  assert.match(I18N_SRC, /slr: 'Sea level rise — land below the line \(worldwide\)'/);
   // 타임라인(시간 버스)을 구독하지 않는다 — 2100년 전망은 5일 예보가 아니다.
   const flood = read('../../prototype/v2-three/js/flood-overlay.js');
   assert.ok(!/time-bus/.test(flood), '시간 버스를 구독하면 전망이 예보로 읽힌다');

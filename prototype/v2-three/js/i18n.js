@@ -313,7 +313,7 @@ const L_EN = {
   kmasea: 'Marine observation network (waves · temp, 193 sites)',
   sstfield: 'Sea surface temperature (global)',
   sstanom: 'Sea temperature anomaly (vs normal)',
-  slr: 'Sea level rise outlook 2100 (worldwide)',
+  slr: 'Sea level rise — land below the line (worldwide)',
   khoasl126: 'Korean seas sea-level outlook · SSP1-2.6 low',
   khoasl245: 'Korean seas sea-level outlook · SSP2-4.5 middle',
   khoasl370: 'Korean seas sea-level outlook · SSP3-7.0 high',

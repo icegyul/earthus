@@ -106,7 +106,7 @@ export const SCENES = [
       /* 2026-09-07 지시 §13: 장기 기후 시나리오는 지금 예보와 섞어 보여주지 않는다.
          longterm 플래그만 얹는다 — LiveLayers 렌더 경로(main.js LIVE_LAYER_KEYS)는 그대로
          'ocean/…' 로 남으므로 데이터·계산은 안 건드리고 화면에만 소제목을 가른다. */
-      { id: 'slr', name: '해수면 상승 전망 2100 (전 세계)', state: 'MODEL_SIGNAL', src: 'IPCC AR6 · NASA', act: true, longterm: true },
+      { id: 'slr', name: '해수면 상승 — 잠기는 땅 (전 세계)', state: 'MODEL_SIGNAL', src: 'IPCC AR6 · NASA', act: true, longterm: true },
       { id: 'khoasl126', name: '우리 바다 해수면 전망 · SSP1-2.6 저배출', state: 'MODEL_SIGNAL', src: '국립해양조사원 지역 해양기후 모델 · 0.05°', act: true, longterm: true },
       { id: 'khoasl245', name: '우리 바다 해수면 전망 · SSP2-4.5 중간', state: 'MODEL_SIGNAL', src: '국립해양조사원 지역 해양기후 모델 · 0.05°', act: true, longterm: true },
       { id: 'khoasl370', name: '우리 바다 해수면 전망 · SSP3-7.0 고배출', state: 'MODEL_SIGNAL', src: '국립해양조사원 지역 해양기후 모델 · 0.05°', act: true, longterm: true },

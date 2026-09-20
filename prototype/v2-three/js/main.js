@@ -3461,7 +3461,7 @@ async function main() {
     'weather/wind': ['wind', '바람 흐름 · GFS 10 m'],
     'space/launch': ['launch', '발사 일정'],
     'ocean/kmasea': ['kmasea', '해상 관측망'],
-    'ocean/slr': ['slr', '해수면 상승 전망 2100'],
+    'ocean/slr': ['slr', '해수면 상승 — 잠기는 땅'],
     'people/news': ['news', '지역 뉴스'],
     'people/pop': ['pop', '국가 인구'],
     'ocean/sstfield': ['sstfield', '해수면 온도'],

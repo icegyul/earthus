@@ -172,6 +172,34 @@ export function visibleCapAngle(camDist, radius, fovDeg, aspect, tilted = false)
   return Math.min(horizon, (Math.asin(s) - a) * 1.08);   // 8% 여유 — 화면 모서리에 빈 띠가 생기지 않게
 }
 
+/** 카메라가 **보고 있는** 구면 점(단위 벡터). 틸트 화면에서 '보이는 곳'의 한가운데다.
+ *  시선이 구에 닿으면 가까운 교점, 빗나가면 최근접점을 쓴다(지평선 너머를 볼 때).
+ *  ⚠️ 2026-09-20 반박 검증: 천저를 축으로 삼고 있어서, 카메라를 2° 만 기울여도 캡이 지평선 전체로 넓어져
+ *     화면 안 입자가 데스크톱 2,701 → 90개, 폰 512 → 7개로 떨어졌다(바람이 꺼진 것처럼 보인다).
+ *     축을 '보는 곳'으로 옮기면 기울여도 같은 자리에 같은 밀도로 뿌린다. */
+export function viewCapAxis(cam, forward, radius = 1, out = {}) {
+  const b = cam.x * forward.x + cam.y * forward.y + cam.z * forward.z;
+  const c = cam.x * cam.x + cam.y * cam.y + cam.z * cam.z - radius * radius;
+  const disc = b * b - c;
+  const t = disc >= 0 ? -b - Math.sqrt(disc) : -b;
+  const px = cam.x + t * forward.x;
+  const py = cam.y + t * forward.y;
+  const pz = cam.z + t * forward.z;
+  const n = Math.hypot(px, py, pz) || 1;
+  out.x = px / n; out.y = py / n; out.z = pz / n;
+  return out;
+}
+
+/** 캡(화면 대각을 품는 원) 가운데 화면 직사각형이 차지하는 넓이 비율.
+ *  캡에 고르게 뿌리면 그중 이 비율만 화면에 들어온다 — 나머지는 화면 밖이다. 예산을 이 비율로 나눠 채운다.
+ *  ⚠️ 2026-09-20 반박 검증: 전지구에서 정한 밀도로 확대하면 1개/166px² → 1개/661px² 로 4배 성겨졌다(시안 02 는 유선이 덮는다).
+ *  가로:세로 = aspect 이고 대각이 캡 지름이면  비율 = 4·aspect / (π(1+aspect²)) — 1.6 에서 0.57 · 폰 0.46 이다.
+ *  캡에 준 8% 여유(visibleCapAngle)까지 빼면 그만큼 더 낮다. */
+export function capScreenFill(aspect, margin = 1.08) {
+  const a = Math.max(0.2, Math.min(5, aspect || 1.6));
+  return (4 * a) / (Math.PI * (1 + a * a) * margin * margin);
+}
+
 /** 구면 캡 위의 면적 균일 점. axis 는 단위 벡터, cosCap 은 캡 반각의 코사인(−1 이면 구 전체).
  *  ⚠️ 위도·경도를 각각 균일하게 뽑으면 극에 몰린다(위도대 면적은 cos 위도에 비례한다).
  *     cos(중심각)을 [cosCap, 1] 에서 균일하게 뽑는 것이 면적 균일이다(아르키메데스의 모자 상자 정리).
@@ -359,6 +387,8 @@ export class WindParticleSim {
     this._since = 0;
     this.frames = 0;
     this.respawnsLast = 0;
+    this._look = { x: 0, y: 0, z: 1 };   // 보는 곳의 구면 점(매 프레임 다시 씀 — 할당하지 않는다)
+    this.capFill = 1;                   // 캡 가운데 화면이 차지하는 비율(step 이 셈한다)
     this.floatsLast = 0;
     this.degPerPx = 0;
     this.capAngle = 0;
@@ -378,10 +408,13 @@ export class WindParticleSim {
       ? { fovDeg: view.fovDeg, widthCss: view.widthCss, heightCss: view.heightCss } : null;
   }
 
-  /** 지금 그려야 할 입자 수 = min(기기 예산, CSS 픽셀 밀도 예산, 버퍼) × 단계/3. 자료가 없으면 0. */
+  /** 지금 그려야 할 입자 수 = min(기기 예산, CSS 픽셀 밀도 예산 ÷ 화면에 들어오는 비율, 버퍼) × 단계/3. 자료가 없으면 0.
+   *  밀도 예산은 '화면 픽셀당 입자'인데 뿌리는 곳은 '보이는 구면 캡'이다 — 시야가 캡을 정할 때는 캡의 절반쯤만 화면에 들어오므로
+   *  그 비율로 나눠 채운다(this.capFill 은 step 이 매 프레임 셈한다). 전지구 뷰에서는 지평선이 캡을 정해 보정하지 않는다(1). */
   targetCount() {
     if (!this.field) return 0;
-    const density = this.view ? particleBudgetFor(this.view.widthCss, this.view.heightCss) : Infinity;
+    const fill = this.capFill > 0 ? this.capFill : 1;
+    const density = this.view ? particleBudgetFor(this.view.widthCss, this.view.heightCss) / fill : Infinity;
     return particleCountFor(Math.min(this.budget, density), this.intensity, this.max);
   }
 
@@ -427,13 +460,22 @@ export class WindParticleSim {
     const fov = v ? v.fovDeg : 48;               // main.js 의 카메라 화각. 뷰를 모르면 밀도 예산은 걸지 않는다.
     const hCss = v ? v.heightCss : 900;
     const aspect = v ? v.widthCss / v.heightCss : 1.6;
-    const tilted = !!forward && -(forward.x * ax + forward.y * ay + forward.z * az) < 0.99939;   // cos 2°
-    const cap = visibleCapAngle(dist, this.radius, fov, aspect, tilted);
+    // 뿌리는 캡의 축 — 카메라가 **보고 있는** 구면 점(틸트에서도 화면 한가운데). forward 를 안 주면 천저(예전 동작).
+    let sx = ax; let sy = ay; let sz = az;
+    if (forward) {
+      const look = viewCapAxis(cam, forward, this.radius, this._look);
+      sx = look.x; sy = look.y; sz = look.z;
+    }
+    const horizon = Math.acos(1 / Math.max(dist / this.radius, 1.0001));
+    const cap = visibleCapAngle(dist, this.radius, fov, aspect, false);
+    // 시야가 캡을 정했으면(확대한 상태) 캡의 일부만 화면에 들어온다 — 그만큼 더 뿌린다. 지평선이 정했으면 보정하지 않는다.
+    this.capFill = cap < horizon - 1e-6 ? capScreenFill(aspect) : 1;
     const cosCap = Math.cos(cap);
     // 캡 밖으로 나간 입자(자동 회전으로 뒤로 넘어간 것 포함)는 앞에 다시 뿌린다. 15% 는 경계에서 깜빡이지 않게 하는 여유.
     const cosOut = Math.cos(Math.min(Math.PI, cap * 1.15 + 0.01));
     this.degPerPx = degPerCssPx(dist, this.radius, fov, hCss);
     this.capAngle = cap;
+    this.capAxis = this._look;
     const k = WIND_SCREEN_PX_PER_S_PER_MS * this.degPerPx * dtc;   // m/s 당 이번 프레임에 움직일 도
 
     // 입자 수가 바뀌었나 — 새로 켜지는 입자는 자리와 이력을 처음부터 만든다(오래된 선분이 되살아나지 않게).
@@ -441,7 +483,7 @@ export class WindParticleSim {
     res.relayout = want !== this.count;
     if (want > this.count) {
       for (let p = this.count; p < want; p += 1) {
-        this._place(p, ax, ay, az, cosCap, true);
+        this._place(p, sx, sy, sz, cosCap, true);
         for (let s = 0; s < this.slots; s += 1) this._degenerate(s, p);
       }
     }
@@ -479,12 +521,12 @@ export class WindParticleSim {
         const la = moved.lat * D2R; const lo = moved.lon * D2R;
         const cl = Math.cos(la);
         x = cl * Math.sin(lo); y = Math.sin(la); z = cl * Math.cos(lo);
-        alive = x * ax + y * ay + z * az >= cosOut;
+        alive = x * sx + y * sy + z * sz >= cosOut;
       }
       if (!alive) {
         // 수명·결측·무풍·극·캡 밖 — 어느 쪽이든 앞쪽 캡에 다시 뿌린다. 옛 자리와 새 자리를 잇지 않는다:
         // 머리 선분을 새 자리의 점으로 만든다. 옛 꼬리는 자기 슬롯에 남아 제 나이대로 사라진다.
-        this._place(p, ax, ay, az, cosCap, false);
+        this._place(p, sx, sy, sz, cosCap, false);
         this._degenerate(this.head, p);
         respawns += 1;
         continue;

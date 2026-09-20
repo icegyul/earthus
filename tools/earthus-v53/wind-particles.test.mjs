@@ -17,6 +17,8 @@ import {
   WIND_CALM_MS,
   WIND_DEG_PER_PX_MAX,
   WIND_DENSITY_CSS_PX,
+  capScreenFill,
+  viewCapAxis as windSpawnAxis,
   WIND_MAX_CHORD,
   WIND_SCREEN_PX_PER_S_PER_MS,
   WIND_SPEED_BOUNDS_MS,
@@ -700,4 +702,40 @@ test('성능 — 입자 5,000 의 update() 와 계측(stats)', (t) => {
   assert.ok(s.capDeg > 60 && s.capDeg < 72 && s.viewKnown === true && s.frames === 210);
   // 30fps 프레임(33ms)의 1/4 을 넘으면 발열 예산을 혼자 먹는다. CI 가 느려도 떨어지지 않게 넉넉히 잡은 상한이다.
   assert.ok(sum / N < 8, `update() 평균 ${(sum / N).toFixed(2)} ms`);
+});
+
+// 2026-09-20 반박 검증 — 뿌리는 캡이 '천저' 둘레였다. 카메라를 2° 만 기울여도(폰 두 손가락·휠 클릭 드래그) 캡이 지평선 전체로
+// 넓어져 화면 안 입자가 데스크톱 2,701 → 90, 폰 512 → 7 로 떨어졌다. 바람이 꺼진 것처럼 보인다.
+test('틸트 — 뿌리는 캡이 카메라가 보는 곳을 따라간다(천저가 아니라)', () => {
+  const cam = { x: 0, y: 0, z: 1.08 };
+  const tilt = (deg) => { const r = (deg * Math.PI) / 180; return { x: 0, y: Math.sin(r), z: -Math.cos(r) }; };
+  // 저고도에서 25° 기울이면 시선이 닿는 지표점은 약 tan(25°)×0.08 rad ≈ 2.1° 움직인다 — 캡의 축이 그만큼 따라가야 한다.
+  const look = windSpawnAxis(cam, tilt(25), 1);
+  assert.ok(look.y > 0.02 && look.y < 0.06, `보는 곳의 위도가 ${(Math.asin(look.y) * 180) / Math.PI}° — 기울여도 천저에 머문다`);
+  const flat = windSpawnAxis(cam, tilt(0), 1);
+  assert.ok(Math.abs(flat.y) < 1e-9, '기울이지 않으면 천저와 같아야 한다(예전 동작 그대로)');
+  // 시선이 지구를 빗나가도(지평선 너머) 최근접점으로 — NaN 이 되면 입자가 통째로 사라진다
+  const miss = windSpawnAxis({ x: 0, y: 0, z: 3 }, { x: 0, y: 0.9, z: -0.436 }, 1);
+  assert.ok(Number.isFinite(miss.x + miss.y + miss.z) && Math.abs(Math.hypot(miss.x, miss.y, miss.z) - 1) < 1e-6);
+});
+
+test('확대 — 캡의 일부만 화면에 들어오므로 그만큼 더 뿌린다(전지구에서는 보정하지 않는다)', () => {
+  // 화면 대각을 품는 원 안의 직사각형 비율: 4·a/(π(1+a²)) ÷ 여유². 1.6 에서 0.49 · 폰 세로에서 0.42.
+  const wide = capScreenFill(1440 / 900);
+  const tall = capScreenFill(375 / 812);
+  assert.ok(wide > 0.45 && wide < 0.55, `${wide}`);
+  assert.ok(tall > 0.38 && tall < 0.48, `${tall}`);
+  assert.equal(capScreenFill(1), capScreenFill(1), '정사각형에서도 유한하다');
+  assert.ok(capScreenFill(0) > 0 && Number.isFinite(capScreenFill(NaN)), '이상한 비율에도 0 이나 NaN 을 내지 않는다');
+
+  const sim = new WindParticleSim({ maxParticles: 20000, random: lcg(5) });
+  sim.setField({ w: W, h: H, dataA: EAST10, decode: DECODE });
+  sim.setView({ fovDeg: 48, widthCss: 1440, heightCss: 900 });
+  sim.setBudget(20000);
+  const at = (dist) => { const cam = { x: 0, y: 0, z: dist }; sim.step(1 / 60, cam, { x: 0, y: 0, z: -1 }); return { n: sim.targetCount(), fill: sim.capFill }; };
+  const global = at(3.0);
+  assert.equal(global.fill, 1, '전지구 뷰는 지평선이 캡을 정한다 — 보정하지 않는다');
+  const zoom = at(1.05);
+  assert.ok(zoom.fill < 0.6, `확대했는데 보정이 없다(fill ${zoom.fill})`);
+  assert.ok(zoom.n > global.n * 1.5, `확대해도 입자 수가 그대로다(${global.n} → ${zoom.n}) — 화면이 성겨진다`);
 });

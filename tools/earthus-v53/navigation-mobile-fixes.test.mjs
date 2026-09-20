@@ -83,6 +83,20 @@ test('국가 카드는 인구가 첫 줄이다 — "대한민국 인구 5,170만
 });
 
 test('모바일 하단 버튼 터치 영역은 44px 이상이다', () => {
-  assert.match(htmlSrc, /#bottom-nav button \{ min-width: 50px; min-height: 44px;/,
-    '42px 미만 터치 영역 회귀');
+  // 2026-09-21: 44 를 글자로 찾던 시험이었다. 그 수는 :root 의 --tap 으로 옮겼다 —
+  // 메뉴 패널이 알약을 피하는 높이(--nav-reserve)가 같은 토큰에서 나오기 때문이다.
+  // 그래서 이제 **값을 꺼내 견준다**: 글자가 아니라 수가 44 이상인지를 본다.
+  const rule = htmlSrc.match(/#bottom-nav button \{([^}]*)\}/g)?.pop();
+  assert.ok(rule, '하단 바 버튼 규칙을 못 찾았다');
+  const minH = rule.match(/min-height:\s*([^;]+);/)?.[1].trim();
+  assert.ok(minH, 'min-height 선언이 없다 — 터치 영역이 글자 높이에 끌려간다');
+
+  const token = minH.match(/var\((--[a-z-]+)\)/)?.[1];
+  const value = token
+    ? htmlSrc.match(new RegExp(`${token}\\s*:\\s*([\\d.]+)px`))?.[1]
+    : minH.match(/([\d.]+)px/)?.[1];
+  assert.ok(value !== undefined, `min-height ${minH} 에서 수를 못 꺼냈다`);
+  assert.ok(Number(value) >= 44,
+    `하단 바 버튼이 ${value}px — 42px 미만 터치 영역 회귀 (iOS HIG 최소 44)`);
+  assert.match(rule, /min-width:\s*\d+px/, '가로 최소치가 사라졌다');
 });

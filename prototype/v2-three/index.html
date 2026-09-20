@@ -37,6 +37,22 @@
     --text: #cfe0ee;
     --text-dim: #7f95a8;
     --accent: #7FB7F5; /* 브랜드 다크 모드 액센트 (lockup-white 호라이즌 컬러) */
+
+    /* ---------- 폰 조작 치수의 주인 (2026-09-21 실기기 감사) ----------
+       여기 적힌 수 말고 다른 곳에 같은 수를 또 적지 않는다. 아래 두 사고가 그래서 났다:
+       ㉠ 하단 알약은 bottom:158 에 서고 메뉴 패널은 화면 한가운데에 섰다 — 둘 다 제 계산만
+          했고 서로를 몰랐다. 375×812 실측에서 알약이 y600 에 뜨는데 메뉴 마지막 줄
+          '생태 · 사람 · 여행' 은 bottom 641 이라 통째로 알약 밑에 깔렸고, 본문이
+          스크롤되지도 않아(scrollHeight === clientHeight) 밀어서 꺼낼 수조차 없었다.
+       ㉡ 44px 을 '터치 최소'라 적어 두고 상단 버튼은 30×28 로 뒀다.
+       --tap 은 iOS HIG 최소 표적. --nav-h 는 알약의 실제 높이를 조립한 값이고
+       --nav-reserve 는 '화면 아래쪽에서 알약이 먹는 전체 높이'다 — 알약을 옮기거나
+       키우면 이 하나만 따라 움직이고 메뉴 패널은 저절로 비켜선다. */
+    --tap: 44px;                                   /* 터치 최소 표적 (iOS HIG) */
+    --nav-lift: 158px;                             /* 알약을 바닥에서 띄운 거리 — 좌하단 #hud 위 */
+    --nav-pad: 4px;                                /* 알약 안쪽 여백 */
+    --nav-h: calc(var(--tap) + var(--nav-pad) * 2 + 2px);        /* 버튼 + 여백 + 테두리 1px 둘 */
+    --nav-reserve: calc(var(--nav-lift) + var(--nav-h) + 8px + env(safe-area-inset-bottom));
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   /* 모바일: 창이 밀리지 않게. overscroll-behavior가 당겨서 새로고침·고무줄 튕김을 막는다 */
@@ -339,9 +355,11 @@
   @media (max-width: 720px) {
     /* 좌하단 #hud(고도·과장+출처, 2줄 이상 되면 79px까지 자란다) 위로 확실히 띄운다 —
        100px 로 뒀더니 실측(iPhone 폭 375) 에서 하단 바가 출처 글줄을 가렸다(2026-09-07). */
-    #bottom-nav { bottom: calc(158px + env(safe-area-inset-bottom)); padding: 4px; gap: 2px; }
+    /* 수는 :root 의 --nav-* 가 갖는다. 여기에 158·44·4 를 다시 적으면 메뉴 패널이
+       비켜서는 높이(--nav-reserve)와 어긋나 ㉠ 이 그대로 되돌아온다. */
+    #bottom-nav { bottom: calc(var(--nav-lift) + env(safe-area-inset-bottom)); padding: var(--nav-pad); gap: 2px; }
     /* 터치 최소 44px(iOS HIG) — 42px는 바를 깨지 않게 padding 으로만 올린다(2026-09-10 감사). */
-    #bottom-nav button { min-width: 50px; min-height: 44px; padding: 6px 3px 5px; font-size: 9.5px; }
+    #bottom-nav button { min-width: 50px; min-height: var(--tap); padding: 6px 3px 5px; font-size: 9.5px; }
     #bottom-nav button svg { width: 16px; height: 16px; }
   }
 
@@ -408,6 +426,11 @@
   .mp-body {
     overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
     padding-bottom: 6px; scrollbar-width: none;
+    /* flex 아이템의 min-height 기본값은 auto(=min-content) 라 max-height 가 걸려도
+       본문이 **줄어들지 못하고** 패널 밖으로 흘러나간다 — overflow-y:auto 를 적어 둬도
+       스크롤 막대가 생기지 않는 이유가 이것이었다(scrollHeight === clientHeight).
+       min-height:0 이 있어야 비로소 줄어들고, 줄어들어야 비로소 스크롤한다. */
+    flex: 1 1 auto; min-height: 0;
   }
   .mp-body::-webkit-scrollbar { display: none; }
   .mp-sec { padding: 4px 0 7px; border-bottom: 1px solid rgba(255,255,255,0.06); }
@@ -1376,13 +1399,46 @@
     #sculpt-cap b { font-size: 21px; }
     /* 메뉴가 286px 고정이라 360px 폰에서 지구가 74px만 남았다. 화면에 맞춰 줄이고
        뒤를 눌러 닫을 수 있게 스크림을 깐다. */
-    #menu-panel { width: min(470px, calc(100vw - 46px)); }
+    /* ㉠ 메뉴 패널이 하단 알약을 피한다 (2026-09-21 실기기 감사).
+       전에는 화면 **전체**의 한가운데(top:50%)에 섰다. 알약은 화면 아래쪽 --nav-reserve
+       만큼을 이미 먹고 있으므로, 남은 영역의 한가운데로 옮기고 높이도 그 영역으로 자른다.
+       그러면 패널 바닥 = 중심 + 높이/2 ≤ 중심 + 최대높이/2 = 100vh − --nav-reserve 가
+       **셈으로** 보장된다 — 묶음이 여섯이든 열이든 마지막 줄이 알약 밑에 깔리지 않는다.
+       가운데 정렬을 버리지 않는 이유: 우주 서랍·리포트처럼 짧은 메뉴가 갑자기 알약 위에
+       내려앉지 않게 — 오늘 보이는 자리를 그대로 지킨다.
+       높이가 잘리면 .mp-body 가 (min-height:0 덕분에) 비로소 스크롤된다. */
+    #menu-panel {
+      width: min(470px, calc(100vw - 46px));
+      top: calc(48px + (100vh - var(--nav-reserve) - 48px) / 2);
+      max-height: calc(100vh - var(--nav-reserve) - 48px);
+    }
     .edge-tab.open, .edge-tab.beside { transform: translateX(min(470px, calc(100vw - 46px))); }
     /* ⚠️ 여기서 그냥 display:block 을 주면 메뉴가 닫혀 있어도 투명한 전면 요소가 남아
        모바일에서 지구 터치가 통째로 죽는다(실측 2026-09-02). 열렸을 때만 깐다. */
     #menu-scrim.on { display: block; }
-    /* 오른쪽 설정·검색 패널도 화면을 넘지 않게 */
-    #panel { width: min(252px, 74vw); }
+    /* 오른쪽 설정·검색 패널도 화면을 넘지 않게.
+       ㉡ 252px 이던 것을 300px 로 넓힌다 (2026-09-21). 상단 버튼 여섯을 44px 표적으로
+       키우려면 자리가 그만큼 필요하다 — 아래 #chrome 의 셈을 보라. 300 을 넘지 않으니
+       좌우 14px 여백은 그대로 남는다(375 폭에서 오른쪽 끝 314). */
+    #panel { width: min(300px, calc(100vw - 28px)); }
+    /* ㉡ 상단 여섯 단추(⌕ ⤴ ? ⚙ ○ ⚗)를 폰에서 실제로 누를 수 있게 한다.
+       실측(375×812): 모두 30 × 28 — iOS 최소 44 의 절반도 안 됐다. 설정·로그인·기능설명이
+       여기 말고는 어디에도 없으므로(하단 바·메뉴에 대체 입구 0개) 이건 유료 서비스에서
+       '계정에 못 들어간다'와 같은 말이다.
+         보이는 그림은 30 × 28 그대로 두고 **표적만** 가상요소로 넓힌다 — 화면이 덜 흔들린다.
+         겹침 셈: 표적 44, 그림 30 → 좌우로 7 씩 번진다. 이웃과의 간격을 6 → 16 으로 벌리면
+                  표적 사이에 16 − 7 − 7 = 2px 이 남는다(겹치지 않는다).
+         폭 셈:   6칸 × 30 + 5틈 × 16 = 260. #chrome 안쪽 = 패널폭 − 좌우 여백 24 − 테두리 2.
+                  375폭 → 300 − 26 = 274 ≥ 260 ✓ · 320폭 → 292 − 26 = 266 ≥ 260 ✓
+         높이 셈: 표적 44, 그림 28 → 위아래로 8 씩. #chrome 의 세로 여백이 마침 8 이라
+                  표적이 막대 상자 **안**에 그대로 들어간다 — 밖으로 번져 아래쪽 색면
+                  범례(top 108)나 지구를 건드리지 않는다. */
+    #chrome { gap: 16px; }
+    #chrome button, #chrome a#btn-research { position: relative; }
+    #chrome button::after, #chrome a#btn-research::after {
+      content: ''; position: absolute; top: 50%; left: 50%;
+      width: var(--tap); height: var(--tap); transform: translate(-50%, -50%);
+    }
     #intel.open #intel-body { width: calc(100vw - 16px); max-height: 52vh; }
     /* 좁은 화면에서 인텔 패널은 화면 폭을 다 쓴다. 그 위에 좌측 브랜드 손잡이가 그대로
        떠 있어서 첫 탭(FEED)의 글자와 사건 줄의 왼쪽 끝을 덮고 있었다 — 열려 있는 것을
@@ -1397,7 +1453,33 @@
     #hud { bottom: calc(66px + env(safe-area-inset-bottom)); }
     #quake-cap { bottom: calc(148px + env(safe-area-inset-bottom)); }
     #chrome { padding-top: calc(8px + env(safe-area-inset-top)); }
-    #timestrip input[type="range"] { width: auto; flex: 1 1 auto; min-width: 0; }
+    /* ㉡ 타임라인 — 폰에서 주 조작인데 실측 '지금' 43×24 · 재생 33×24 · 슬라이더 184×16 이었다.
+       막대 자체는 높이를 그대로 둔다(키우면 좌하단 #hud 66 → 하단 알약 158 까지 줄줄이 밀린다).
+         가로는 min-width 로 — flex 가 슬라이더에서 그만큼 가져가므로 두 단추 사이 8px 틈은 그대로다.
+              (표적을 가로로 번지게 하면 8px 틈을 먹어 서로 겹친다 — 그래서 가로는 가상요소로 안 한다.)
+         세로는 가상요소로 — left/right 0 이라 가로로는 한 치도 안 번진다. 위아래로만 10 씩. */
+    #ts-now, #ts-play { position: relative; min-width: var(--tap); }
+    #ts-now::after, #ts-play::after {
+      content: ''; position: absolute; left: 0; right: 0; top: 50%;
+      height: var(--tap); transform: translateY(-50%);
+    }
+    /* 슬라이더는 상자를 44 로 키우고 음수 바깥여백으로 **줄 높이만** 되돌린다 —
+       잡히는 곳은 44, 막대가 차지하는 자리는 16 그대로. 트랙 그림은 상자 한가운데 남는다.
+       (-webkit-appearance:none 으로 갈아엎지 않는다 — 그러면 accent-color 가 죽고
+        ::-moz-range-* 까지 손으로 다시 그려야 하는데 여기서 눈으로 확인할 수가 없다.) */
+    #timestrip input[type="range"] {
+      width: auto; flex: 1 1 auto; min-width: 0;
+      height: var(--tap); margin: calc((16px - var(--tap)) / 2) 0;
+    }
+    /* ㉡ 출처 독 펼치기 ▾ — 실측 12×10, 화면에서 가장 작은 표적이었다.
+       가로로 16 씩 번지지만 왼쪽 이웃은 #hud-line(글자 span, 누를 수 없다)이라
+       엉뚱한 것이 눌릴 곳이 없다. 세로로 17 씩 번져 위쪽 끝이 바닥에서 156 —
+       하단 알약 아랫변 158 아래라 닿지 않는다(닿더라도 #hud z7 > 알약 z6 로 이쪽이 이긴다). */
+    #hud-more { position: relative; }
+    #hud-more::after {
+      content: ''; position: absolute; top: 50%; left: 50%;
+      width: var(--tap); height: var(--tap); transform: translate(-50%, -50%);
+    }
     /* 좁은 화면에서 패널은 폭을 거의 다 쓰므로 좌하단 출처 상자(#hud)와 하단 메뉴를
        **가로로는 피할 수 없다.** 그래서 #bottom-nav 가 hud 를 피한 방법(158px 로 띄우기)
        을 그대로 따라 세로로 비킨다 — 겹치면 z-index 가 높은 hud·메뉴가 위에 그려져

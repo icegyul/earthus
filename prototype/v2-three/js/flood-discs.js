@@ -167,14 +167,37 @@ export function floodDiscClear(p, cam) {
   return cx * cx + cy * cy + cz * cz >= 1;      // 단위구를 파고들지 않으면 보인다
 }
 
-/** 숨긴 곳이 있으면 그 사실을 말하는 한 줄. 없으면 빈 글자.
- *  숫자를 박지 않는다 — 지금 화면에 몇 개가 떠 있는지를 받아서 적는다.
- *  ⚠️ **그림이 한 번이라도 돈 뒤에만** 부른다. 레이어를 세우는 순간에는 아직 0 이라
- *     "0곳만 붙어 있습니다"라는 거짓말이 카드에 굳는다(그 자리에는 floodThinRuleNote 를 쓴다). */
-export function floodHiddenNote(shown, total) {
-  const n = Math.max(0, (total || 0) - (shown || 0));
-  if (!n) return '';
-  return `지금 화면에는 ${shown}곳만 이름이 붙어 있습니다 — 겹치는 ${n}곳은 가렸습니다. 한국 쪽으로 확대하면 나머지가 나타납니다.`;
+/**
+ * 숨긴 곳이 있으면 그 사실을 말하는 한 줄. 없으면 빈 글자.
+ * 숫자를 박지 않는다 — 지금 화면에 몇 개가 떠 있는지를 받아서 적는다.
+ *
+ * ⚠️ 2026-09-21 반박 검증으로 고친 것: 옛 글은 `total − shown` 을 **전부** '겹치는 N곳은 가렸습니다'로 적었다.
+ *    그런데 total 은 색인 69곳 전부이고, 그 차이의 대부분은 겹침이 아니라 **화면 밖·지구 뒤편**이다
+ *    (전지구 줌에서는 한국이 화면 구석의 점이라 대부분이 아예 후보도 못 된다 — tick 의 지평선 판정에서 걸러진다).
+ *    '겹쳐서 가렸다'는 화면이 **제가 한 일**을 말하는 자리인데, 하지도 않은 일을 적고 있었다.
+ *    그래서 이제 세 수를 받는다:
+ *      shown     솎기에서 뽑혀 지금 떠 있는 수
+ *      onScreen  이번 tick 의 **화면 안 후보** 수(지평선 너머·투영 밖을 뺀 것)
+ *      total     색인이 들고 온 전부
+ *    겹쳐서 가린 것 = onScreen − shown · 화면 밖·지구 뒤편 = total − onScreen. 둘을 갈라 적는다.
+ * ⚠️ **그림이 한 번이라도 돈 뒤에만** 부른다. 레이어를 세우는 순간에는 아직 0 이라
+ *    "0곳만 붙어 있습니다"라는 거짓말이 카드에 굳는다(그 자리에는 floodThinRuleNote 를 쓴다).
+ */
+export function floodHiddenNote(shown, onScreen, total) {
+  const s = Math.max(0, Number(shown) || 0);
+  const c = Math.max(s, Number(onScreen) || 0);        // 후보가 뽑힌 것보다 적을 수는 없다
+  const t = Math.max(c, Number(total) || 0);
+  const overlapped = c - s;
+  const away = t - c;
+  if (!overlapped && !away) return '';
+  const why = [];
+  if (overlapped) why.push(`겹쳐서 가린 ${overlapped}곳`);
+  if (away) why.push(`화면 밖·지구 뒤편 ${away}곳`);
+  // 권유는 **할 수 있는 일**만 적는다: 화면 밖은 그쪽으로 가야 들어오고, 겹친 것은 확대해야 갈라진다.
+  const how = away
+    ? ' 한국 쪽으로 확대하면 나머지가 나타납니다.'
+    : ' 확대하면 겹친 이름표가 갈라집니다.';
+  return `지금 화면에는 ${s}곳만 이름이 붙어 있습니다 — ${why.join(' · ')}입니다.${how}`;
 }
 
 /** 솎는 **규칙**. 아직 한 번도 안 그린 카드(레이어 카드)는 지금 개수를 모른다 — 규칙을 적는다.
@@ -185,6 +208,23 @@ export function floodThinRuleNote(total) {
     + `(한 화면에 폰 ${FLOOD_DISC_MAX_PHONE}곳 · 큰 화면 ${FLOOD_DISC_MAX_DESKTOP}곳까지). `
     + `깊은 곳이 먼저 남고, 한국 쪽으로 확대하면 나머지가 나타납니다.`;
 }
+
+/**
+ * 시군구 하나를 받기 시작할 때 카드에 적는 한 줄. **민글자**를 돌려준다 — 넣는 쪽이 이스케이프한다
+ * (이름은 기관 자료에서 온다).
+ *
+ * ⚠️ 2026-09-21 반박 검증: 이 글이 없어서, **지구에서 원반을 누르는 주 경로**가 시군구 코드('46770')를
+ *    그대로 찍고 용량도 말하지 않았다. 카드 안 단추로 들어가는 길에는 단추 글자에 '· 약 33 MB' 고지가
+ *    붙어 있었으니, 이번 개편의 주 경로가 오히려 더 불친절했다. 두 길이 **이 함수 하나**를 쓴다.
+ */
+export function floodDistrictLoadingNote({ name, bytes } = {}) {
+  const who = name == null || name === '' ? '' : `${String(name)} `;
+  const size = floodSizeNote(bytes);
+  return `${who}침수 예상도를 불러오는 중…${size ? ` · ${size}` : ''}`;
+}
+
+/** 못 받았을 때의 한 줄. '자료가 없다'와 '못 받았다' 두 갈래가 **같은 말**을 쓰게 한 자리에 둔다. */
+export const FLOOD_DISTRICT_FAIL_NOTE = '침수 자료를 불러오지 못했습니다 — 그리지 않습니다.';
 
 /** 내려받을 용량을 미리 말한다(실측 크기가 있을 때만). */
 export function floodSizeNote(bytes) {
@@ -240,6 +280,9 @@ export function createFloodDiscs({
   let lastW = 0;
   let lastH = 0;
   let shownCount = 0;
+  // 이번 tick 의 **화면 안 후보** 수 — 지평선 너머·투영 밖을 걸러낸 뒤 솎기에 들어간 수다.
+  // 카드가 '겹쳐서 가렸다'와 '화면 밖이다'를 가르려면 이 수가 있어야 한다(floodHiddenNote).
+  let onScreenCount = 0;
   // 지금 면이 떠 있는 시군구. 화면은 그 면이 **어디 것인지** 계속 말해야 한다 —
   // 카드는 다음 클릭에 덮이지만 지구 위 이름표는 안 덮인다. 그래서 이것만은 솎아 내지 않는다.
   let selectedCode = null;
@@ -312,6 +355,8 @@ export function createFloodDiscs({
         moved = true;
       }
     }
+    // 화면 안 후보 수는 **솎기 전에** 정해진다. 아래의 깜빡임 가드로 일찍 돌아가더라도 이 수는 이번 tick 의 것이다.
+    onScreenCount = cand.length;
     // 아무 원반도 문턱만큼 안 움직였으면 지난번에 뽑은 것을 그대로 쓴다 —
     // 버킷 격자는 화면에 고정돼 있어, 다시 솎을 때마다 겹치지도 않는 이름표가 깜빡인다(obs-labels 의 교훈).
     if (!moved && haveLast) {
@@ -386,6 +431,8 @@ export function createFloodDiscs({
     },
     selected: () => selectedCode,
     shown: () => shownCount,
+    /** 이번 tick 의 화면 안 후보 수 — 카드가 '겹쳐서 가린 것'과 '화면 밖'을 가르는 데 쓴다. */
+    onScreen: () => onScreenCount,
     total: () => list.length,
     specs: () => list,
     dispose() {

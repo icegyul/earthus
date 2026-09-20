@@ -216,18 +216,20 @@ test('범례는 자료에 실제로 있는 구간만 싣는다', () => {
 /* ── 숨긴 것을 말하나 ─────────────────────────────────────────────────────── */
 
 test('겹쳐서 가린 곳이 있으면 그 사실과 개수를 말한다 — 세어서', () => {
-  const note = floodHiddenNote(9, 69);
+  // 인수 셋이다: 뜬 수 · 이번 tick 의 화면 안 후보 수 · 색인 전부.
+  // 겹쳐서 가린 것과 화면 밖을 가르는 근거는 tools/earthus-v53/flood-slr-contract.test.mjs 에 있다.
+  const note = floodHiddenNote(9, 20, 69);
   assert.ok(note.includes('9'));
-  assert.ok(note.includes(String(69 - 9)), '가린 개수를 세지 않고 있다');
+  assert.ok(note.includes(String(20 - 9)), '가린 개수를 세지 않고 있다');
   assert.ok(note.includes('확대'), '어떻게 하면 나머지가 보이는지 말하지 않는다');
-  assert.equal(floodHiddenNote(69, 69), '', '가린 것이 없는데 가렸다고 말한다');
+  assert.equal(floodHiddenNote(69, 69, 69), '', '가린 것이 없는데 가렸다고 말한다');
 });
 
 // 레이어 카드는 buildFloodIndex 바로 뒤에 굳는다(live-layers.js 의 build 경로) — 그때 화면은 아직 한 번도
 // 안 돌았으므로 shown() 은 0 이다. 거기에 지금 개수를 적으면 "0곳만 붙어 있습니다 — 69곳을 가렸습니다"가
 // 영영 남는다. 실제로 그렇게 짰다가 여기서 잡았다.
 test('레이어 카드는 그리기 전에 굳는다 — 지금 개수가 아니라 규칙을 적는다', () => {
-  const lie = floodHiddenNote(0, 69);
+  const lie = floodHiddenNote(0, 69, 69);
   assert.ok(lie.includes('0곳만'), '전제가 바뀌었다 — 이 시험을 다시 봐야 한다');
   const body = LIVE_SRC.slice(LIVE_SRC.indexOf('metaFloodIndex(d) {'), LIVE_SRC.indexOf('pickFloodDisc('));
   assert.ok(!body.includes('.shown()'),
@@ -364,8 +366,14 @@ test('가까이 갈수록 이름표가 늘어난다 — 그리고 상한을 넘�
   assert.ok(far > 0, '전지구 줌에서 이름표가 하나도 없다');
   assert.ok(near > far, `가까이 가도 안 는다 (먼 곳 ${far} → 가까운 곳 ${near})`);
   assert.ok(near <= FLOOD_DISC_MAX_DESKTOP, `상한(${FLOOD_DISC_MAX_DESKTOP})을 넘었다: ${near}`);
-  // 가린 곳이 있으면 그 사실을 말할 수 있어야 한다
-  assert.ok(floodHiddenNote(far, discs.total()).includes(String(discs.total() - far)));
+  // 가린 곳이 있으면 그 사실을 말할 수 있어야 한다 — 겹침과 화면 밖을 갈라서.
+  // 한국을 가운데 놓고 지구 전체를 보면 69곳이 **전부 화면 안**이고, 안 보이는 것은 순전히 겹침이다.
+  discs.tick(koreaCamera(THREE, 3.0, 1280, 800));
+  assert.ok(discs.onScreen() >= discs.shown(), '후보가 뜬 것보다 적다');
+  assert.equal(discs.onScreen(), discs.total(), '한국이 화면 한가운데인데 후보에서 빠진 곳이 있다');
+  const note = floodHiddenNote(discs.shown(), discs.onScreen(), discs.total());
+  assert.ok(note.includes(String(discs.onScreen() - discs.shown())), '겹쳐서 가린 수를 세지 않는다');
+  assert.ok(!/화면 밖/.test(note), '전부 화면 안인데 화면 밖이 있다고 적는다');
   discs.dispose();
 });
 
@@ -496,8 +504,8 @@ test('원반이 매 프레임 카메라를 받는다 — 줌에 따라 개수가
 test('면이 떠 있는 동안 지구가 어느 시군구인지 말한다', () => {
   // 카드는 다음 클릭에 덮인다 — 지구 위 이름표를 그 시군구에 고정한다
   assert.match(LIVE_SRC, /_floodDiscs\.setSelected\(code\)/);
-  // 끄면 표시도 함께 풀린다
-  assert.match(LIVE_SRC, /khoaflood'\) \{ this\._floodSel = null; if \(this\._floodDiscs\) this\._floodDiscs\.setSelected\(null\); \}/);
+  // 끄면 표시도 함께 풀린다 (2026-09-21: 같은 자리에서 세대 번호도 올린다 — 늦게 온 응답이 꺼진 레이어에 안 내려앉게)
+  assert.match(LIVE_SRC, /khoaflood'\) \{\n\s+this\._floodSel = null; if \(this\._floodDiscs\) this\._floodDiscs\.setSelected\(null\);/);
 });
 
 test('이름이 언제의 침수인지 말한다 — 지금도 예보도 아니다', () => {

@@ -1,0 +1,309 @@
+{
+ "source": "NOAA NCEP GFS 0.50° (NOMADS filter_gfs_0p50)",
+ "truthClass": "MODEL_SIGNAL",
+ "run": "2026-09-20T00:00:00Z",
+ "generatedAt": "2026-09-20T04:56:36Z",
+ "grid": {
+  "ni": 720,
+  "nj": 361,
+  "lon0": -180,
+  "dLon": 0.5,
+  "lat0": 90,
+  "dLat": -0.5,
+  "note": "row 0 = 90N, col 0 = 180W; 0.50° ≈ 56km at equator"
+ },
+ "windGrid": {
+  "ni": 90,
+  "nj": 46,
+  "dLon": 4,
+  "dLat": 4,
+  "note": "separate low-res file; wind is smooth so 4° suffices (cuts per-user transfer by 43%)"
+ },
+ "encoding": {
+  "A": "CWAT column cloud water kg/m², log: cwat = 10^(A/255*2.6021 + -2.3010); 0 below 0.005, 255 at 2.0",
+  "quantization": "cloud PNG is grayscale+alpha; top height in 64 steps (~251 m), cloud water in 64 levels — values are not invented, only the grid of representable values is coarser (cuts frame size 330->229KB)",
+  "B": "DERIVED cloud top height, metres: B/255*16000 (topmost of LCDC/MCDC/HCDC at 2200/6200/11000 m; not a GFS output field)",
+  "precip.R": "PRATE mm/h, log: 0 below 0.05, 255 at 30",
+  "precip.G": "type: 0 rain, 128 freezing/sleet, 255 snow (GFS CRAIN/CFRZR/CICEP/CSNOW)",
+  "precip.B": "DERIVED thunder likelihood = ramp(CPRAT mm/h, 0.15..2.0) × ramp(CAPE, 500..2000); not a GFS output field",
+  "wind.R": "UGRD 700 hPa, m/s: R/255*128-64 (0.5 m/s quantized, 4° mean)",
+  "wind.G": "VGRD 700 hPa, m/s: G/255*128-64 (0.5 m/s quantized, 4° mean)",
+  "temp": "TMP 2 m above ground, grayscale 8bit linear: degC = byte*0.5-80 (-80.0..47.5, clamped)",
+  "wind10.R": "UGRD 10 m above ground, m/s: R/255*128-64 (same decode as wind.R; full grid, no 4° mean, no 0.5 m/s pre-quantization)",
+  "wind10.G": "VGRD 10 m above ground, m/s: G/255*128-64 (same decode as wind.G; full grid, no 4° mean, no 0.5 m/s pre-quantization)",
+  "mslp": "PRMSL mean sea level, grayscale 8bit linear: hPa = byte*0.5+940 (940.0..1067.5, clamped)",
+  "apcp": "APCP surface accumulated precipitation mm, log: 0 if byte==0 else 10^(byte/255*3.3979-1.0000); 0 at or below 0.1, 255 at 250. Window per step = steps[].apcpWindow (GFS 6-hour bucket: 3 h at h%6==3, 6 h at h%6==0; none at h=0)"
+ },
+ "stepHours": 3,
+ "steps": [
+  {
+   "h": 0,
+   "valid": "2026-09-20T00:00:00Z",
+   "file": "2026092000/c000.png",
+   "wind": "2026092000/w000.png",
+   "precip": "2026092000/p000.png",
+   "bytes": 212143,
+   "windBytes": 8483,
+   "precipBytes": 91329,
+   "wetGt01": 0.1486,
+   "cwatGt005": 0.2632,
+   "cwatGt03": 0.0739,
+   "temp": "2026092000/t000.png",
+   "tempBytes": 82109,
+   "tempClipped": 0,
+   "wind10": "2026092000/u000.png",
+   "wind10Bytes": 226705,
+   "mslp": "2026092000/m000.png",
+   "mslpBytes": 61959,
+   "mslpClipped": 1
+  },
+  {
+   "h": 3,
+   "valid": "2026-09-20T03:00:00Z",
+   "file": "2026092000/c003.png",
+   "wind": "2026092000/w003.png",
+   "precip": "2026092000/p003.png",
+   "bytes": 231366,
+   "windBytes": 8504,
+   "precipBytes": 105275,
+   "wetGt01": 0.1526,
+   "cwatGt005": 0.2805,
+   "cwatGt03": 0.0763,
+   "temp": "2026092000/t003.png",
+   "tempBytes": 81889,
+   "tempClipped": 0,
+   "wind10": "2026092000/u003.png",
+   "wind10Bytes": 226406,
+   "mslp": "2026092000/m003.png",
+   "mslpBytes": 61537,
+   "mslpClipped": 0,
+   "apcp": "2026092000/a003.png",
+   "apcpBytes": 62107,
+   "apcpWindow": {
+    "fromH": 0,
+    "toH": 3
+   }
+  },
+  {
+   "h": 6,
+   "valid": "2026-09-20T06:00:00Z",
+   "file": "2026092000/c006.png",
+   "wind": "2026092000/w006.png",
+   "precip": "2026092000/p006.png",
+   "bytes": 233036,
+   "windBytes": 8471,
+   "precipBytes": 106943,
+   "wetGt01": 0.1562,
+   "cwatGt005": 0.2831,
+   "cwatGt03": 0.0758,
+   "temp": "2026092000/t006.png",
+   "tempBytes": 82024,
+   "tempClipped": 0,
+   "wind10": "2026092000/u006.png",
+   "wind10Bytes": 227061,
+   "mslp": "2026092000/m006.png",
+   "mslpBytes": 61134,
+   "mslpClipped": 2,
+   "apcp": "2026092000/a006.png",
+   "apcpBytes": 82748,
+   "apcpWindow": {
+    "fromH": 0,
+    "toH": 6
+   }
+  },
+  {
+   "h": 9,
+   "valid": "2026-09-20T09:00:00Z",
+   "file": "2026092000/c009.png",
+   "wind": "2026092000/w009.png",
+   "precip": "2026092000/p009.png",
+   "bytes": 234747,
+   "windBytes": 8471,
+   "precipBytes": 106593,
+   "wetGt01": 0.1574,
+   "cwatGt005": 0.2807,
+   "cwatGt03": 0.0733,
+   "temp": "2026092000/t009.png",
+   "tempBytes": 82644,
+   "tempClipped": 0,
+   "wind10": "2026092000/u009.png",
+   "wind10Bytes": 228054,
+   "mslp": "2026092000/m009.png",
+   "mslpBytes": 61663,
+   "mslpClipped": 0,
+   "apcp": "2026092000/a009.png",
+   "apcpBytes": 63374,
+   "apcpWindow": {
+    "fromH": 6,
+    "toH": 9
+   }
+  },
+  {
+   "h": 12,
+   "valid": "2026-09-20T12:00:00Z",
+   "file": "2026092000/c012.png",
+   "wind": "2026092000/w012.png",
+   "precip": "2026092000/p012.png",
+   "bytes": 235100,
+   "windBytes": 8443,
+   "precipBytes": 105632,
+   "wetGt01": 0.1575,
+   "cwatGt005": 0.2829,
+   "cwatGt03": 0.0733,
+   "temp": "2026092000/t012.png",
+   "tempBytes": 82680,
+   "tempClipped": 0,
+   "wind10": "2026092000/u012.png",
+   "wind10Bytes": 228330,
+   "mslp": "2026092000/m012.png",
+   "mslpBytes": 62123,
+   "mslpClipped": 21,
+   "apcp": "2026092000/a012.png",
+   "apcpBytes": 83211,
+   "apcpWindow": {
+    "fromH": 6,
+    "toH": 12
+   }
+  }
+ ],
+ "missingSteps": [],
+ "note": "불투명도는 두께(CWAT), 높이는 층별 비율에서 유도(B=DERIVED). 구름 비율로 불투명도를 만들면 지구 절반이 90%라 베일이 된다(실측). 프레임 사이 값은 바람으로 이류한 보간이며 모델 출력이 아니다. 없는 스텝은 만들지 않았다.",
+ "decoder": "grib2lite (pure python, validated against eccodes 2.48)",
+ "elapsedS": 381.2,
+ "schema": 2,
+ "model": "GFS",
+ "resolutionDeg": 0.5,
+ "runTag": "2026092000",
+ "fields": {
+  "temp": {
+   "file": "t{h:03d}.png",
+   "stepKey": "temp",
+   "png": "gray8",
+   "grid": {
+    "ni": 720,
+    "nj": 361,
+    "sameAs": "grid"
+   },
+   "variable": "TMP",
+   "level": "2 m above ground",
+   "unit": "degC",
+   "channels": {
+    "R": {
+     "transfer": "linear",
+     "scale": 0.5,
+     "offset": -80,
+     "min": -80,
+     "max": 47.5,
+     "clamped": true
+    }
+   },
+   "note": "model 2 m temperature on a 0.50° cell (~56 km), not a station value"
+  },
+  "wind10": {
+   "file": "u{h:03d}.png",
+   "stepKey": "wind10",
+   "png": "rgb8 (B unused = 0)",
+   "grid": {
+    "ni": 720,
+    "nj": 361,
+    "sameAs": "grid"
+   },
+   "variable": "UGRD,VGRD",
+   "level": "10 m above ground",
+   "unit": "m/s",
+   "channels": {
+    "R": {
+     "transfer": "linear",
+     "scale": 0.5019607843137255,
+     "offset": -64,
+     "min": -64,
+     "max": 64,
+     "clamped": true,
+     "component": "u (eastward)"
+    },
+    "G": {
+     "transfer": "linear",
+     "scale": 0.5019607843137255,
+     "offset": -64,
+     "min": -64,
+     "max": 64,
+     "clamped": true,
+     "component": "v (northward)"
+    }
+   },
+   "note": "same decode formula as the 700 hPa wind frame (wind.R/G) but on the full grid and without the 0.5 m/s pre-quantization (max error 0.251 m/s instead of 0.5)"
+  },
+  "mslp": {
+   "file": "m{h:03d}.png",
+   "stepKey": "mslp",
+   "png": "gray8",
+   "grid": {
+    "ni": 720,
+    "nj": 361,
+    "sameAs": "grid"
+   },
+   "variable": "PRMSL",
+   "level": "mean sea level",
+   "unit": "hPa",
+   "channels": {
+    "R": {
+     "transfer": "linear",
+     "scale": 0.5,
+     "offset": 940,
+     "min": 940,
+     "max": 1067.5,
+     "clamped": true
+    }
+   },
+   "note": "values outside the range are clamped to the end value; steps[].mslpClipped counts such cells"
+  },
+  "apcp": {
+   "file": "a{h:03d}.png",
+   "stepKey": "apcp",
+   "png": "gray8",
+   "grid": {
+    "ni": 720,
+    "nj": 361,
+    "sameAs": "grid"
+   },
+   "variable": "APCP",
+   "level": "surface",
+   "unit": "mm",
+   "channels": {
+    "R": {
+     "transfer": "log10",
+     "logLo": -1,
+     "logSpan": 3.3979400086720375,
+     "zeroByte": 0,
+     "min": 0.1,
+     "max": 250
+    }
+   },
+   "window": "steps[].apcpWindow {fromH,toH} hours from run, read from GRIB PDT 4.8",
+   "note": "GFS 6-hour bucket as delivered (resets every 6 h): 3 h at h%6==3, 6 h at h%6==0; no frame at h=0 (analysis has no accumulation). 3-hour amount at h%6==0 is a[h] - a[h-3]. The run-total APCP record is not published."
+  }
+ },
+ "fieldMissing": {
+  "temp": [],
+  "wind10": [],
+  "mslp": [],
+  "apcp": []
+ },
+ "decodeStats": {
+  "messagesPerStep": 30,
+  "decodedPerStep": 17,
+  "note": "describe first, decode only what is used (NOMADS returns var × level cross product)"
+ },
+ "runs": [
+  {
+   "tag": "2026092000",
+   "run": "2026-09-20T00:00:00Z",
+   "manifest": "2026092000/manifest.json",
+   "generatedAt": "2026-09-20T04:56:36Z",
+   "frames": 41
+  }
+ ],
+ "runsNote": "newest first, up to 4 runs; manifest paths are relative to this file (like steps[].file). Runs made before schema 2 have no per-run copy and are not listed.",
+ "previousManifest": "ok",
+ "_fixture": "Trimmed copy of the production manifest (clouds/gfs-fc/manifest.json, run 2026-09-20T00Z, read 2026-09-20). Only steps h<=12 are kept; every other key is as published. runs[] gets one older entry appended by the test, not here."
+}

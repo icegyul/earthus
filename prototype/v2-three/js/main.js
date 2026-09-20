@@ -27,6 +27,11 @@ import { i18n } from './i18n.js?v=11';
 window.__earthusT = (k) => i18n.t(k);
 import { SatLayer } from './sat-layer.js?v=1';
 import { CloudVolume } from './cloud-volume.js?v=4';
+// 공용 GFS 프레임 저장소 — 매니페스트 하나 · 프레임 캐시 하나 · 시간 하나(js/gfs-frames.js · 2026-09-20 A1).
+// 구름(CloudManager.loadGfs)과 앞으로 올 기온·바람·기압·강수 렌더러(W1~W4)가 이 하나를 나눠 쓴다.
+// 구름이 위성 모드여도 필드 프레임은 떠야 하므로 CloudManager 안이 아니라 모듈 맨 위에 둔다.
+import { sharedGfsFrames } from './gfs-frames.js?v=1';
+const gfsFrames = sharedGfsFrames({ THREE });
 import { PopSculpture } from './pop-sculpture.js?v=13';
 import { PopMetricMenu } from './pop-metric-menu.js?v=1';
 import { QuickMenu } from './quick-menu.js?v=1';
@@ -1812,12 +1817,14 @@ class CloudManager {
   // 예전 방식은 Open-Meteo 지점 450개(12°, 적도 1,300km)를 질의해 5일치를 통째로 받았다.
   // 그건 뭉개져 보였고 그건 표현이 아니라 자료의 성김이었다. 이제 원자료 격자를 그대로 쓴다.
   async loadGfs() {
-    const S3B = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
-    let mf = null;
-    try {
-      const r = await fetch(`${S3B}/clouds/gfs-fc/manifest.json`, { cache: 'no-cache' });
-      if (r.ok) mf = await r.json();
-    } catch (e) { mf = null; }
+    // 매니페스트는 공용 저장소(js/gfs-frames.js)가 읽는다 — 2026-09-20 A1. 예전에는 여기서 직접 fetch 했고,
+    // 그래서 구름이 GFS 모드일 때만 프레임 목록이 생겼다: 기온·바람·기압 렌더러가 같은 매니페스트를 읽을
+    // 길이 없었고 타임라인이 구름에 묶여 있었다. 주소(clouds/gfs-fc/manifest.json)·no-cache 는 저장소가 그대로 쓴다.
+    // load() 는 던지지 않고, 못 읽으면 null 이다 — 아래 폴백이 예전과 똑같이 돈다.
+    // ⚠️ 구름 텍스처(frameTexAt · texCache · prefetchFrames)는 저장소의 LRU 로 옮기지 **않았다**. 프리페치는
+    //    스크럽이 끊기지 않게 41장을 다 쥐고 있어야 하는데(아래 prefetchFrames 주석), 상한이 있는 캐시에 넣으면
+    //    쥐고 있던 장이 쫓겨나 '프레임 받는 중…'이 되돌아온다. 옮기려면 화면에서 확인하며 따로 한다.
+    const mf = await gfsFrames.load();
     if (!mf || !Array.isArray(mf.steps) || mf.steps.length < 2) {
       console.warn('[earthus-cloud] GFS 프레임 매니페스트 없음 → 지점 방식으로 물러남');
       return this.loadGfsPoints();
@@ -1836,12 +1843,12 @@ class CloudManager {
     // 같은 런은 같은 폴더에 덮어쓴다. 파일 이름이 그대로라 브라우저가 옛 프레임을 계속 썼다 —
     // 해상도를 0.5° 로 올렸는데도 화면에는 1° 이미지가 남아 있었고, 텍셀만 바뀌어
     // 보간이 어긋났다(실측: 격자 720 인데 이미지 360). 생성시각을 붙여 세대를 가른다.
-    const gen = encodeURIComponent(mf.generatedAt || mf.run || '');
-    const q = gen ? `?g=${gen}` : '';
+    // 그 규칙(?g=생성시각, 없으면 런 시각)은 이제 저장소의 frameUrl 이 가진다 — 구름과 필드 프레임이 같은 식으로
+    // 주소를 만들어야 세대가 어긋나지 않는다. 글자는 예전 식과 똑같다(gfs-frames.test.mjs 가 옛 식과 대조한다).
     const frames = mf.steps.map((st) => ({
-      h: st.h, t: Date.parse(st.valid), url: `${S3B}/clouds/gfs-fc/${st.file}${q}`,
-      wind: st.wind ? `${S3B}/clouds/gfs-fc/${st.wind}${q}` : null,
-      precip: st.precip ? `${S3B}/clouds/gfs-fc/${st.precip}${q}` : null,
+      h: st.h, t: Date.parse(st.valid), url: gfsFrames.frameUrl(st.file),
+      wind: st.wind ? gfsFrames.frameUrl(st.wind) : null,
+      precip: st.precip ? gfsFrames.frameUrl(st.precip) : null,
     })).filter((f) => Number.isFinite(f.t) && f.wind).sort((a, b) => a.t - b.t);
     if (!frames.length) return this.loadGfsPoints();
     const stepMs = (mf.stepHours || 3) * 3.6e6;
@@ -6227,6 +6234,9 @@ async function main() {
       if (dist) orbit.targetDist = dist;
     },
   };
+  // 공용 GFS 프레임 저장소(js/gfs-frames.js). 콘솔에서: await __earthus.frames.load() → __earthus.frames.info()
+  // 위 객체 안이 아니라 따로 거는 이유: 같은 묶음의 다른 작업이 그 객체에 줄을 더하면 합칠 때 부딪힌다.
+  window.__earthus.frames = gfsFrames;
 
   let last = performance.now();
   const tickBody = (now) => {

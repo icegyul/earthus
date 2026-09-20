@@ -738,7 +738,10 @@ class Manifest(TinyGrid):
         self.assertEqual((self.NI, self.NJ), (mf['grid']['ni'], mf['grid']['nj']))
         self.assertIsInstance(mf['grid']['dLon'], float)
         self.assertEqual(3, mf['stepHours'])
-        src = (REPO / 'prototype' / 'v2-three' / 'js' / 'main.js').read_text(encoding='utf-8')
+        # 2026-09-20 A1: 매니페스트 주소와 ?g= 세대 규칙(mf.generatedAt)은 공용 저장소 gfs-frames.js 로 옮겨 갔다.
+        # 브라우저가 읽는 키는 그대로다 — 읽는 곳이 두 파일이 됐을 뿐이라 둘을 함께 본다.
+        js = REPO / 'prototype' / 'v2-three' / 'js'
+        src = (js / 'main.js').read_text(encoding='utf-8') + (js / 'gfs-frames.js').read_text(encoding='utf-8')
         for token in ('clouds/gfs-fc/manifest.json', 'mf.steps', 'st.file', 'st.wind', 'st.precip', 'st.valid',
                       'mf.grid.ni', 'mf.generatedAt', 'mf.stepHours'):
             self.assertIn(token, src, '브라우저가 읽는 키가 바뀌었다 — 이 시험의 목록도 같이 고쳐라: ' + token)

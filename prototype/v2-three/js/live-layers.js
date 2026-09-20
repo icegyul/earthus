@@ -418,6 +418,29 @@ export class LiveLayers {
    * 치르는 값도 적어 둔다: 색면을 켜면 숫자 원판도 같이 내려온다. 원판은 색면 위(renderOrder 7)에 서므로
    * 원판만 남길 수도 있었지만, 그러면 '잠기는 땅 켜짐'이라는 메뉴 글과 안 보이는 겹면이 또 갈라진다.
    */
+  /**
+   * 잠기는 땅이 섰으니 색면은 내려온다 — 반대 방향(_slrOff)과 짝이다.
+   *
+   * ⚠️ 2026-09-21 재검이 찾은 구멍: 이 일은 원래 toggle() 안에서 **build('slr') 을 시도하기 전에**
+   *    벌어졌다. 색면을 켜는 갈래는 `if (r && r.on)` 으로 막아 두었는데("켜기에 실패했는데 남의 층을
+   *    내리지 않는다") 이쪽만 무방비였다 — ar6.json 은 485 KB 라 이동통신망에서 실패할 수 있고,
+   *    그러면 기온 색면을 보고 있던 사용자에게 **둘 다 꺼진 빈 지구**가 남았다(main.js 는 UNAVAILABLE
+   *    카드를 띄우지만, 그 카드는 잠기는 땅이 안 왔다고만 말한다 — 기온이 왜 사라졌는지는 아무도 말하지 않는다).
+   *    이제 부르는 쪽이 **선 뒤에** 부른다. 되살리는 길을 고르지 않은 이유: 색면을 되살리려면 field.on()
+   *    이 자료를 다시 받아야 하고, 그 받기가 또 실패할 수 있다 — 실패를 되돌리려다 실패를 하나 더 만든다.
+   *
+   * ⚠️ 내릴 것이 없으면 **약속을 만들지 않는다**(null 을 돌려준다). 부르는 쪽이 그때 await 하면 build() 가
+   *    다음 마이크로태스크로 밀려 '켜는 중에 껐다 다시 켜기'를 재는 시험의 차례가 어긋난다(flood-overlay.test.mjs).
+   */
+  _slrFieldsOff() {
+    const on = Object.keys(this._fields || {}).filter((o) => {
+      const c = this.layers[o];
+      return c && (c.on || c.loading);
+    });
+    if (!on.length) return null;
+    return (async () => { for (const o of on) await toggleFieldLayer(this, o); })();
+  }
+
   /** 색면이 켜졌으니 잠기는 땅은 내려온다 — 끄는 갈래와 **같은 세 줄**을 쓴다(두 곳에 적으면 갈라진다). */
   _slrOff() {
     const l = this.layers.slr;
@@ -453,17 +476,13 @@ export class LiveLayers {
       return { on: false };
     }
     if (l && l.loading) { l.cancelled = true; delete this.layers[id]; return { on: false }; }
-    // 여기서부터는 전부 **켜는** 갈래다 — 잠기는 땅을 켜기 전에 색면을 먼저 내린다(위 _slrOff 머리말의 울타리).
-    // (위의 두 갈래는 끄는 길이라 이 줄이 그 앞에 있으면 '끄려다 남의 색면을 껐다'가 된다.)
-    // 내릴 것이 없으면 await 하지 않는다 — 여기서 한 틱을 쉬면 build() 가 다음 마이크로태스크로 밀려,
-    // '켜는 중에 껐다 다시 켜기'를 재는 시험의 차례가 어긋난다(flood-overlay.test.mjs).
-    if (id === 'slr') {
-      for (const other of Object.keys(this._fields || {})) {
-        const oc = this.layers[other];
-        if (oc && (oc.on || oc.loading)) await toggleFieldLayer(this, other);
-      }
-    }
+    // 여기서부터는 전부 **켜는** 갈래다. 잠기는 땅은 색면과 같이 설 수 없으므로 색면을 내리는데(위 _slrOff
+    // 머리말의 울타리), 그 일은 잠기는 땅이 **실제로 선 뒤에** 한다 — 받다가 실패하면 기온 색면을 보고
+    // 있던 사용자에게 둘 다 꺼진 빈 지구가 남는다(_slrFieldsOff 머리말).
     if (l && l.obj) {
+      // 되살리는 길 — 받을 것이 없어 실패할 자리가 없다. 여기서는 세우기 전에 내려도 같다.
+      const off = id === 'slr' ? this._slrFieldsOff() : null;
+      if (off) await off;
       l.obj.visible = true;
       l.on = true;
       return { on: true, badge: l.meta.badge };
@@ -481,6 +500,9 @@ export class LiveLayers {
       this.group.add(l.obj);
       l.on = true;
       l.loading = false;
+      // 섰다 — 이제서야 색면을 내린다. 취소된 잠기는 땅은 위에서 이미 돌아갔으므로 여기 닿지 않는다.
+      const off = id === 'slr' ? this._slrFieldsOff() : null;
+      if (off) await off;
       return { on: true, badge: l.meta.badge };
     } catch (e) {
       console.warn('[live-layers]', id, e);

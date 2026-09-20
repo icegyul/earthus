@@ -2,6 +2,7 @@
 //
 //   ① 대기질  — 그린 점 수와 카드가 적는 수가 같은가. 그릴 것이 0이면 배지가 내려가나.
 //   ② 연안 침수 — '어긋난다'는 줄이 **같은 뜻의 두 수**를 견주는가(간 곳 vs 자료가 있던 곳).
+//   ③ 잠기는 땅 — 켜기에 실패했을 때 남의 색면을 내리고 가지 않는가.
 //
 // 숫자는 하나도 박지 않는다. 운영 자료 사본(fixtures/)과 다른 파일의 상수에서 셈한다.
 import test from 'node:test';
@@ -9,6 +10,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import { LiveLayers, airqDrawable } from '../../prototype/v2-three/js/live-layers.js';
+import { FIELD_DESCRIPTORS } from '../../prototype/v2-three/js/field-layer.js';
 
 const here = (rel) => new URL(rel, import.meta.url);
 const lf = (s) => s.replace(/\r\n/g, '\n');   // 이 워크트리는 CRLF 로 체크아웃될 수 있다
@@ -122,4 +124,76 @@ test('② 목록 자체가 설명문과 다르면 그때는 밝힌다 — 울타
   assert.match(card, /어긋납니다/, '설명문과 목록이 실제로 다른데 카드가 조용하다');
   assert.ok(card.includes(String(said)), '설명문이 적은 수를 카드가 말하지 않는다');
   assert.ok(card.includes(`${said - dropped.districts.length}곳이 어긋`), '어긋난 수를 세지 않는다');
+});
+
+/* ════════════════════════════════════════════════════════════════════════════
+   ③ 잠기는 땅 — 켜기에 실패했는데 남의 색면을 내리고 갔다
+   ════════════════════════════════════════════════════════════════════════════
+   색면을 켜는 갈래는 `if (r && r.on)` 로 막아 두었다("켜기에 실패했는데 남의 층을 내리지 않는다").
+   그런데 slr 을 켜는 갈래는 build('slr') 을 **시도하기 전에** 색면을 무조건 내렸다.
+   ar6.json 은 485 KB 라 이동통신망에서 실패할 수 있고, 그러면 기온을 보고 있던 사용자에게
+   **둘 다 꺼진 빈 지구**가 남았다. */
+
+const fakeField = () => {
+  const f = {
+    object: { visible: false }, active: false,
+    async on() { f.active = true; return { on: true }; },
+    off() { f.active = false; },
+    isDrawing() { return f.active; },
+    note() { return ''; }, cardHtml() { return ''; },
+  };
+  return f;
+};
+const fakeHost = (build) => Object.assign(Object.create(LiveLayers.prototype), {
+  layers: {}, _fields: {}, group: { add() {} }, disposeObj() {}, build,
+});
+const okBuild = async (id) => ({ obj: { visible: false, userData: {} }, data: { id }, meta: { badge: 'MODEL_SIGNAL' } });
+
+test('③ 잠기는 땅을 받다가 실패하면 보고 있던 색면이 그대로 남는다', async () => {
+  const fid = Object.keys(FIELD_DESCRIPTORS)[0];
+  const h = fakeHost(async () => { throw new Error('ar6.json timeout'); });
+  h._fields[fid] = fakeField();
+  await LiveLayers.prototype.toggle.call(h, fid);
+  assert.equal(h.layers[fid].on, true, '전제가 깨졌다 — 색면이 안 켜졌다');
+
+  const r = await LiveLayers.prototype.toggle.call(h, 'slr');
+  assert.equal(r.on, false);
+  assert.ok(r.error, '실패했는데 화면에 줄 이유가 없다');
+  assert.ok(!h.layers.slr, '실패한 잠기는 땅이 표에 남았다');
+  assert.equal(h.layers[fid].on, true,
+    '켜기에 실패한 잠기는 땅이 남의 색면을 내리고 갔다 — 둘 다 꺼진 빈 지구가 남는다');
+  assert.equal(h._fields[fid].active, true, '색면 자신은 꺼져 있다 — 메뉴만 켜진 척한다');
+});
+
+test('③ 성공하면 울타리는 그대로다 — 처음 켜는 길과 다시 켜는 길 둘 다', async () => {
+  const fid = Object.keys(FIELD_DESCRIPTORS)[0];
+  // 처음 켜는 길
+  const a = fakeHost(okBuild);
+  a._fields[fid] = fakeField();
+  await LiveLayers.prototype.toggle.call(a, fid);
+  await LiveLayers.prototype.toggle.call(a, 'slr');
+  assert.equal(a.layers.slr.on, true);
+  assert.ok(!a.layers[fid] || !a.layers[fid].on, '색면과 잠기는 땅이 같이 켜져 있다');
+
+  // 껐다 **다시 켜는** 길 — 여기는 build 를 안 거치고 obj 를 되살린다
+  const b = fakeHost(okBuild);
+  b._fields[fid] = fakeField();
+  await LiveLayers.prototype.toggle.call(b, 'slr');        // 짓는다
+  await LiveLayers.prototype.toggle.call(b, 'slr');        // 끈다 (obj 는 남는다)
+  await LiveLayers.prototype.toggle.call(b, fid);          // 색면을 켠다
+  assert.equal(b.layers[fid].on, true);
+  await LiveLayers.prototype.toggle.call(b, 'slr');        // 다시 켠다 — 되살리는 길
+  assert.equal(b.layers.slr.on, true);
+  assert.ok(!b.layers[fid] || !b.layers[fid].on,
+    '되살리는 길에 울타리가 없다 — 색면과 잠기는 땅이 같이 선다');
+});
+
+test('③ 내릴 색면이 없으면 한 틱도 쉬지 않는다 — build 를 다음 마이크로태스크로 밀지 않는다', async () => {
+  // 옛 주석이 지키려던 것이다(flood-overlay.test.mjs 의 '켜는 중에 껐다 다시 켜기' 차례).
+  const h = fakeHost(okBuild);
+  let buildStarted = false;
+  h.build = async (id) => { buildStarted = true; return okBuild(id); };
+  const p = LiveLayers.prototype.toggle.call(h, 'slr');
+  assert.equal(buildStarted, true, 'build 가 곧바로 시작되지 않았다 — 내릴 것도 없는데 한 틱을 쉬었다');
+  await p;
 });

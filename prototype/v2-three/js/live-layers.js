@@ -925,26 +925,103 @@ export class LiveLayers {
       (by[it.region] = by[it.region] || []).push(it);
     }
     this._newsBy = by;
-    const keys = Object.keys(by);
-    if (!keys.length) return g;
-    const maxN = Math.max(...keys.map((k) => by[k].length));
-    keys.forEach((k) => {
-      const [lat, lon] = NEWS_REGION[k];
-      const n = by[k].length;
-      const c = new THREE.Color(0xec7aa6);
-      const p = llToV3(lat, lon, this.surfR(lat, lon, 0.004));
-      const up = p.clone().normalize();
-      const h = 0.006 + (n / maxN) * 0.03;
-      const pos = new Float32Array([p.x, p.y, p.z, p.x + up.x * h, p.y + up.y * h, p.z + up.z * h]);
-      const lg = new THREE.BufferGeometry();
-      lg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-      g.add(new THREE.Line(lg, new THREE.LineBasicMaterial({
-        color: c, transparent: true, opacity: 0.8, depthWrite: false,
-      })));
-    });
-    g.add(this.makePoints(keys.map((k) => ({ lat: NEWS_REGION[k][0], lon: NEWS_REGION[k][1], c: new THREE.Color(0xec7aa6) })),
-      { size: 9, lift: 0.004, additive: true }));
+    // ⚠️ 2026-09-20 PD: v2 에서 막대기 기호 전면 금지(AGENTS.md 'v2 제품 의도', 지시서 people.news 0단계).
+    //   여기는 지역마다 1px 분홍 수직선(높이 = 기사 수)과 분홍 점 하나를 세우고 있었다 —
+    //   지구 위에 분홍 막대기 5개가 서 있을 뿐 '뉴스가 지도에 있다'로 읽히지 않았다. 둘 다 없앴다.
+    //   · 막대가 말하던 것(기사 수)은 높이가 아니라 **숫자**로 말한다 — 네모칸 '동남아 24건'.
+    //   · 점·꼬리·지시선도 달지 않는다. 대표점은 사건이 난 자리가 아니라 우리가 고른 지역의 한가운데다.
+    //     거기에 점을 찍으면 '여기서 났다'로 읽힌다. 네모칸 한가운데를 대표점에 고정하는 것으로 자리를 말한다.
+    //   · 뉴스는 지구 위 네모칸을 유지한다(PD 이전 결정). 좌표 있는 확정 사건의 기사 네모칸(v1 newsbubble.js 이식)과
+    //     누르면 Inspector 목록이 뜨는 것은 지시서 1단계 · W5 의 몫이다 — 여기서는 만들지 않는다.
+    const specs = newsChipSpecs(by);
+    specs.forEach((spec) => g.add(this.makeNewsChip(spec)));
+    // 이번에 쓰지 않은 글자의 텍스처는 푼다 — 건수가 바뀔 때마다 옛 글자가 쌓이지 않게.
+    const live = new Set(specs.map((s) => s.text));
+    for (const [text, entry] of this._newsChipTex || []) {
+      if (live.has(text)) continue;
+      entry.tex.dispose();
+      this._newsChipTex.delete(text);
+    }
     return g;
+  }
+
+  // 지역 뉴스 네모칸 하나. v1 네모칸(prototype/js/newsbubble.js)과 같은 몸통 — 어두운 판 + 색 테두리.
+  // 꼬리는 없다(위 buildNews 주석: 대표점은 사건 위치가 아니다).
+  makeNewsChip(spec) {
+    const { tex, w, h } = this._newsChipTexture(spec.text);
+    const spr = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: tex, transparent: true, depthWrite: false, sizeAttenuation: false,
+      // 깊이 검사를 끈다. 스프라이트는 화면과 나란한 판이고 판 전체가 대표점의 깊이에 놓인다.
+      // 지구 전체를 보는 축척에서는 그 판의 화면 가운데 쪽 절반이 구면 안쪽으로 들어가 잘린다 —
+      // 띄움 0.004 · 화면 가운데서 30° 떨어진 대표점이면 0.008 반경(약 50km)만 안쪽으로 가도 구면 속인데,
+      // 그 축척에서 네모칸 폭은 0.2 반경쯤 된다. 뉴스는 지구 전체를 보며 켜는 레이어라 늘 그 축척이다.
+      // (travel.js·ext-scene.js 의 라벨은 깊이 검사를 켠 채 쓴다 — 가까이서 보는 화면이라 판이 작다.)
+      // ⚠️ 위 셈은 기하로 따진 것이다. 이 작업 세션은 브라우저를 쓸 수 없어 화면으로 확인하지 못했다.
+      // 대신 지평선 너머를 직접 감춘다 — 아래 onBeforeRender.
+      depthTest: false,
+    }));
+    // 화면 높이에 대한 비율이다(sizeAttenuation:false · 시야각 48°) — 900px 화면에서 약 30px.
+    spr.scale.set((w / h) * NEWS_CHIP_SCALE, NEWS_CHIP_SCALE, 1);
+    spr.position.copy(llToV3(spec.lat, spec.lon, this.surfR(spec.lat, spec.lon, 0.004)));
+    spr.renderOrder = 8;          // 색면(2)·구름 위에서 읽혀야 한다
+    spr.frustumCulled = false;    // 절단 판정은 판 크기를 모른다(고정 화면 크기) — 많아야 NEWS_CHIP_MAX 개라 그냥 그린다
+    spr.userData.newsChip = { region: spec.region, count: spec.count, text: spec.text };
+    // tick() 은 카메라를 받지 않는다. 그리기 직전에 카메라를 받아 지구 뒤편·지평선 근처를 흐린다.
+    // visible 을 끄면 이 콜백이 다시 불리지 않아 영영 안 켜진다 — 그래서 불투명도로 한다.
+    spr.onBeforeRender = (_renderer, _scene, camera) => {
+      _chipP.setFromMatrixPosition(spr.matrixWorld);
+      _chipC.setFromMatrixPosition(camera.matrixWorld);
+      spr.material.opacity = newsChipOpacity(_chipP, _chipC);
+    };
+    return spr;
+  }
+
+  // 글자가 같으면 텍스처를 다시 그리지 않는다.
+  // 지형 과장 슬라이더를 끌면 onExaggerChanged 가 켜진 레이어를 통째로 다시 세우는데, 그 길의
+  // disposeDeep 은 텍스처(map)를 풀지 않는다 — 매번 새로 그리면 끄는 동안 텍스처가 쌓인다.
+  // (갱신 길의 disposeObj 는 map 을 푼다. 풀린 텍스처는 다음 그리기 때 다시 올라간다 — dotTex 와 같다.)
+  _newsChipTexture(text) {
+    this._newsChipTex = this._newsChipTex || new Map();
+    const hit = this._newsChipTex.get(text);
+    if (hit) return hit;
+    const S = 2;                  // 레티나에서 또렷하게 — 2배로 그리고 절반 크기로 보인다 (newsbubble.js 와 같다)
+    // ⚠️ 한글 폰트를 반드시 지정한다 — 안 하면 안드로이드·윈도우에서 대체 폰트로 떨어진다 (newsbubble.js 의 교훈)
+    const font = `600 ${13 * S}px "Noto Sans KR", -apple-system, "Apple SD Gothic Neo", system-ui, sans-serif`;
+    const probe = document.createElement('canvas').getContext('2d');
+    probe.font = font;
+    const padX = 11 * S;
+    const lw = 1.6 * S;
+    const c = document.createElement('canvas');
+    c.width = Math.ceil(probe.measureText(text).width + padX * 2);
+    c.height = NEWS_CHIP_PX * S;
+    const x = c.getContext('2d');
+    // 몸통 — 단색 판 + 분홍 테두리(이 레이어의 색 0xec7aa6). 그라데이션을 쓰지 않는다.
+    const r = 9 * S;
+    const bw = c.width - lw;
+    const bh = c.height - lw;
+    x.beginPath();
+    x.moveTo(lw / 2 + r, lw / 2);
+    x.arcTo(lw / 2 + bw, lw / 2, lw / 2 + bw, lw / 2 + bh, r);
+    x.arcTo(lw / 2 + bw, lw / 2 + bh, lw / 2, lw / 2 + bh, r);
+    x.arcTo(lw / 2, lw / 2 + bh, lw / 2, lw / 2, r);
+    x.arcTo(lw / 2, lw / 2, lw / 2 + bw, lw / 2, r);
+    x.closePath();
+    x.fillStyle = 'rgba(10,14,20,0.86)';
+    x.fill();
+    x.lineWidth = lw;
+    x.strokeStyle = 'rgba(236,122,166,0.95)';
+    x.stroke();
+    x.font = font;               // 캔버스 크기를 바꾸면 컨텍스트가 초기화된다 — 폰트를 다시 준다
+    x.textBaseline = 'middle';
+    x.fillStyle = '#eef3f8';
+    x.fillText(text, padX, c.height / 2 + S);
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.minFilter = THREE.LinearFilter;
+    tex.generateMipmaps = false;
+    const entry = { tex, w: c.width, h: c.height };
+    this._newsChipTex.set(text, entry);
+    return entry;
   }
 
   metaNews(d) {
@@ -959,9 +1036,11 @@ export class LiveLayers {
       return `<b>${k}</b> ${by[k].length}건<br/>${list}`;
     }).join('<br/>');
     const note = `${(d.items || []).length}건 · ${keys.map((k) => `${k} ${by[k].length}`).join(' · ')}`;
+    // 2026-09-20: 이 문장은 '…묶어 세웠습니다(막대 높이 = 기사 수)'였다. 막대를 없앴으므로(buildNews 주석)
+    // 화면에 실제로 있는 것 — 지역마다 네모칸 하나, 그 안의 숫자가 기사 수 — 으로 고쳐 적는다.
     return {
       badge: 'LIVE', note,
-      cardHtml: `세계 각 지역 매체가 지금 내보내는 헤드라인입니다 — 기사에 좌표가 없어 <b>지역 대표점</b>에 묶어 세웠습니다(막대 높이 = 기사 수). 특정 지점의 사건 위치가 아닙니다.<br/>${rows}<br/>`
+      cardHtml: `세계 각 지역 매체가 지금 내보내는 헤드라인입니다 — 기사에 좌표가 없어 <b>지역 대표점</b>에 지역마다 네모칸 하나로 묶었습니다(네모칸의 숫자 = 기사 수). 특정 지점의 사건 위치가 아닙니다.<br/>${rows}<br/>`
         + `출처 ${(d.source || '').slice(0, 120)}<br/>헤드라인·링크만 표시하며 본문은 각 매체에서 확인하세요 · ${(d.generated || '').replace('T', ' ').slice(0, 16)}Z`,
     };
   }
@@ -2926,6 +3005,42 @@ const NEWS_REGION = {
   아프리카: [2.0, 22.0],
   남미: [-12.0, -58.0],
 };
+
+// ---- 지역 뉴스 네모칸 (2026-09-20 — 분홍 막대·점을 대신한다. buildNews 주석 참조) ----
+// ⚠️ 개수 상한. 네모칸 하나가 텍스처 한 장이다 — v1 에서 라벨 2,843개가 한 번에 켜져 발열이 났다
+//   (prototype/js/newsbubble.js 머리말). 지금은 지역이 5곳이라 닿지 않지만, NEWS_REGION 을 늘리는
+//   사람이 이 줄을 보지 않고도 안전하도록 모바일 상한(지시서: 데스크톱 12 · 모바일 6)에 맞춰 둔다.
+export const NEWS_CHIP_MAX = 6;
+const NEWS_CHIP_PX = 30;          // 네모칸 높이(CSS px 기준으로 그린다)
+const NEWS_CHIP_SCALE = 0.030;    // 화면 높이 대비 — travel.js 라벨(0.026 · 42px)과 같은 셈법
+
+// 어느 지역에 몇 건인지 → 네모칸 목록. 그리기와 떼어 둔 것은 시험이 캔버스 없이 결과를 볼 수 있게 하려는 것이다.
+// 글자는 '지역 이름 + 건수'뿐이다 — 누를 수 없는 동안에는 '▸' 같은 누름 표시를 달지 않는다(없는 기능을 약속하지 않는다).
+export const newsChipSpecs = (by, regions = NEWS_REGION) => Object.keys(by || {})
+  .filter((k) => regions[k] && Array.isArray(by[k]) && by[k].length)
+  .map((k) => ({
+    region: k, count: by[k].length, lat: regions[k][0], lon: regions[k][1], text: `${k} ${by[k].length}건`,
+  }))
+  .sort((a, b) => b.count - a.count)
+  .slice(0, NEWS_CHIP_MAX);
+
+// 네모칸의 불투명도 — 지평선 위에서 1, 지평선에서 0, 지구 뒤편에서 0.
+// 깊이 검사를 껐으므로(makeNewsChip 주석) 지구에 가려져야 할 네모칸을 여기서 직접 감춘다.
+//   보인다 ⇔ 카메라가 그 점의 접평면 위에 있다 ⇔ cosθ > |P| / |C|   (θ = 지구 중심에서 본 두 점 사이 각)
+// 0.3 같은 고정 문턱(travel.js)을 쓰지 않는 이유: 지평선의 cosθ 는 고도에 따라 달라진다
+// (1.2만 km 에서 0.35, 3천 km 에서 0.67) — 고정 문턱이면 낮은 고도에서 지평선 너머 네모칸이 지구를 뚫고 보인다.
+export const newsChipOpacity = (p, cam) => {
+  const pl = Math.hypot(p.x, p.y, p.z);
+  const cl = Math.hypot(cam.x, cam.y, cam.z);
+  if (!pl || !cl) return 0;
+  const horizon = pl / cl;
+  if (horizon >= 1) return 0;     // 카메라가 네모칸보다 낮다 — 그 축척에서 지역 단위 묶음은 읽을 것이 아니다
+  const facing = (p.x * cam.x + p.y * cam.y + p.z * cam.z) / (pl * cl);
+  const t = (facing - horizon) / (1 - horizon);
+  return Math.max(0, Math.min(1, t / 0.18));
+};
+const _chipP = new THREE.Vector3();
+const _chipC = new THREE.Vector3();
 
 // 필드 색 램프 — 정지점 사이 선형 보간 (RGB 0~255 배열 반환)
 const rampFrom = (stops) => (v) => {

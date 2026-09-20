@@ -68,6 +68,8 @@ export const OBS_FUTURE_SLACK_MS = 3600 * 1000;
 export const OBS_CELL_CSS = Object.freeze({ w: 72, h: 34 });
 // 이웃 버킷의 라벨과 이 폭·높이 안으로 겹치면 찍지 않는다(버킷 경계 양쪽에 붙은 두 지점).
 export const OBS_BOX_CSS = Object.freeze({ w: 56, h: 27 });
+/** 새로 뜨는 숫자가 다 밝아지는 데 걸리는 시간(ms). 퇴장은 다음 솎기에서 사라지므로 이 값이 등장에만 걸린다. */
+export const OBS_FADE_MS = 260;
 // 상한을 넘으면 버킷을 이 사다리로 키운다 — 연속값이면 자동 회전 중 버킷 경계가 매번 움직여 라벨이 깜빡인다.
 export const OBS_CELL_LADDER = Object.freeze([1, 1.25, 1.6, 2, 2.5, 3.2, 4, 5, 6.4, 8]);
 // 다시 솎는 문턱: 기준점이 화면에서 이만큼(CSS px) 움직였거나, 고도가 이 비율만큼 바뀌었을 때. 그리고 아무리 빨라도 이 간격(ms).
@@ -282,7 +284,7 @@ export function projectPx(e, x, y, z, w, h, out) {
 // 버킷 한 바퀴. order 의 앞에서부터 자리를 준다 — 먼저 온 쪽이 버킷을 갖는다(우선순위는 order 가 정한다).
 //   · 버킷 하나에 하나.  · 이웃 버킷의 라벨과 상자(boxW×boxH)가 겹치면 찍지 않는다.
 // grid 는 되쓴다(Int32Array) — 다시 솎을 때마다 Map 을 새로 만들지 않는다. 뽑힌 후보 번호를 out 에 적고 개수를 돌려준다.
-export function thinPass(n, order, xs, ys, cellW, cellH, boxW, boxH, w, h, grid, out) {
+export function thinPass(n, order, xs, ys, cellW, cellH, boxW, boxH, w, h, grid, out, stickyArr = null) {
   const cols = Math.max(1, Math.ceil(w / cellW)), rows = Math.max(1, Math.ceil(h / cellH));
   if (grid.cells.length < cols * rows) grid.cells = new Int32Array(cols * rows);
   const cells = grid.cells;
@@ -292,7 +294,12 @@ export function thinPass(n, order, xs, ys, cellW, cellH, boxW, boxH, w, h, grid,
     const i = order[k];
     const c = Math.min(cols - 1, Math.max(0, Math.floor(xs[i] / cellW)));
     const r = Math.min(rows - 1, Math.max(0, Math.floor(ys[i] / cellH)));
-    if (cells[r * cols + c] >= 0) continue;
+    // ⚠️ 버킷 격자는 **화면에 고정**돼 있다. 지구가 돌면 겹치지도 않는 두 붙박이 라벨이 같은 버킷에 들어가는 순간
+    //    하나가 떨어지고, 빈 버킷에는 새 라벨이 들어온다 — 자동 회전만 해도 초당 한 번쯤 숫자가 깜빡였다
+    //    (2026-09-20 반박 검증: 120초에 등장 67 · 퇴장 80회). 이미 찍혀 있던 라벨은 버킷 규칙을 건너뛰고
+    //    **상자 겹침만** 본다: 겹치지 않는 한 제자리에 남는다.
+    const stuck = !!(stickyArr && stickyArr[i] === 1);
+    if (!stuck && cells[r * cols + c] >= 0) continue;
     let clash = false;
     for (let dr = -1; dr <= 1 && !clash; dr += 1) {
       const rr = r + dr;
@@ -305,7 +312,7 @@ export function thinPass(n, order, xs, ys, cellW, cellH, boxW, boxH, w, h, grid,
       }
     }
     if (clash) continue;
-    cells[r * cols + c] = i;
+    if (cells[r * cols + c] < 0) cells[r * cols + c] = i;
     if (count < out.length) out[count] = i;
     count += 1;
   }
@@ -316,15 +323,15 @@ export function thinPass(n, order, xs, ys, cellW, cellH, boxW, boxH, w, h, grid,
 // 돌려주는 것: { count, scale }. 사다리 끝에서도 넘치면(거의 없다) order 앞쪽 max 개만 남긴다.
 // startScale: 지난번에 쓴 배율. 그 배율이 아직 맞으면(상한 안 · 상한의 절반 이상) 그대로 쓴다 — 개수가 상한 언저리일 때
 //   배율이 2.5 ↔ 3.2 를 오가면 버킷 경계가 통째로 옮겨져 라벨이 한꺼번에 깜빡인다(자동 회전 중). 보통은 이 한 바퀴로 끝난다.
-export function thinAdaptive(n, order, xs, ys, w, h, max, grid, out, cell = OBS_CELL_CSS, box = OBS_BOX_CSS, startScale = 0) {
+export function thinAdaptive(n, order, xs, ys, w, h, max, grid, out, cell = OBS_CELL_CSS, box = OBS_BOX_CSS, startScale = 0, stickyArr = null) {
   if (startScale > 0) {
-    const c0 = thinPass(n, order, xs, ys, cell.w * startScale, cell.h * startScale, box.w, box.h, w, h, grid, out);
+    const c0 = thinPass(n, order, xs, ys, cell.w * startScale, cell.h * startScale, box.w, box.h, w, h, grid, out, stickyArr);
     if (c0 <= max && (c0 >= max * 0.5 || startScale <= OBS_CELL_LADDER[0])) return { count: c0, scale: startScale };
   }
   let scale = 1, count = 0;
   for (let s = 0; s < OBS_CELL_LADDER.length; s += 1) {
     scale = OBS_CELL_LADDER[s];
-    count = thinPass(n, order, xs, ys, cell.w * scale, cell.h * scale, box.w, box.h, w, h, grid, out);
+    count = thinPass(n, order, xs, ys, cell.w * scale, cell.h * scale, box.w, box.h, w, h, grid, out, stickyArr);
     if (count <= max) return { count, scale };
     // 한 번에 건너뛴다: 버킷 수는 scale² 에 반비례한다. 필요한 배율의 0.9배에 못 미치는 칸은 돌려 보지 않는다.
     const need = scale * Math.sqrt(count / max) * 0.9;
@@ -495,17 +502,20 @@ export function createObsLabels({
   let sites = null, docs = { KMA: null, GTS: null }, dropped = null;
   let lastAws, lastGts, loading = false, loadError = null, lastLoadMs = -Infinity, nextAskMs = -Infinity;
   let dirty = true, pending = false, culls = 0, loads = 0, alphaWrites = 0;
+  let fadingUntil = 0;                   // 이 시각까지는 등장 페이드가 돈다 — 카메라가 멈춰도 흐림을 다시 먹인다
   let placed = 0, freshCount = 0, cellScale = 1, lastCullMs = -Infinity;
   let mesh = null, geo = null, mat = null, atlas = null, noCanvas = false;
   let lastCamera = null;
 
   // 후보 버퍼 — 지점 수에 맞춰 한 번 잡고 되쓴다.
   let candIdx = new Uint32Array(0), candX = new Float32Array(0), candY = new Float32Array(0), candKey = new Float64Array(0);
-  let order = new Uint32Array(0), outBuf = new Int32Array(0), sticky = new Uint8Array(0);
+  let order = new Uint32Array(0), outBuf = new Int32Array(0), sticky = new Uint8Array(0), candSticky = new Uint8Array(0);
   const grid = { cells: new Int32Array(0) };
   // 찍힌 라벨(≤ CAP)
   const pSite = new Int32Array(CAP), pFirst = new Int32Array(CAP), pCount = new Int32Array(CAP);
   const pAlpha = new Float32Array(CAP), pTextW = new Float32Array(CAP), pAnchor = new Float32Array(CAP * 3);
+  const pBorn = new Float64Array(CAP);   // 라벨이 새로 뜬 시각(0 = 이미 있던 것) — 등장 페이드에 쓴다
+  const pAim = new Float32Array(CAP);    // 페이드를 빼고 '지평선 흐림'만 — 누를 수 있나를 이것으로 본다
   // 인스턴스 속성
   const aAnchor = new Float32Array(INST * 3), aOffset = new Float32Array(INST * 2), aUv = new Float32Array(INST * 4);
   const aAlpha = new Float32Array(INST), aDir = new Float32Array(INST * 3);
@@ -569,7 +579,7 @@ export function createObsLabels({
     sites = n.sites; docs = n.docs; dropped = n.dropped;
     const len = sites.length;
     candIdx = new Uint32Array(len); candX = new Float32Array(len); candY = new Float32Array(len); candKey = new Float64Array(len);
-    order = new Uint32Array(len); outBuf = new Int32Array(len); sticky = new Uint8Array(len);
+    order = new Uint32Array(len); outBuf = new Int32Array(len); sticky = new Uint8Array(len); candSticky = new Uint8Array(len);
     placed = 0;
     dirty = true;
   };
@@ -614,11 +624,12 @@ export function createObsLabels({
       candX[n] = px[0]; candY[n] = px[1];
       candIdx[n] = i;
       candKey[n] = obsOrderKey(s.tier, sticky[i] === 1, facing);
+      candSticky[n] = sticky[i];
       order[n] = n;
       n += 1;
     }
     order.subarray(0, n).sort(byKey);
-    const got = thinAdaptive(n, order, candX, candY, w, h, max, grid, outBuf, OBS_CELL_CSS, OBS_BOX_CSS, placed > 0 ? cellScale : 0);
+    const got = thinAdaptive(n, order, candX, candY, w, h, max, grid, outBuf, OBS_CELL_CSS, OBS_BOX_CSS, placed > 0 ? cellScale : 0, candSticky);
     cellScale = got.scale;
     sticky.fill(0);
     placed = 0;
@@ -636,6 +647,9 @@ export function createObsLabels({
       pSite[placed] = si; pFirst[placed] = inst; pCount[placed] = gN; pTextW[placed] = obsTextWidth(text) + (arrow ? 14 : 0);
       pAnchor[placed * 3] = ax; pAnchor[placed * 3 + 1] = ay; pAnchor[placed * 3 + 2] = az;
       pAlpha[placed] = -1;                           // 아래 refreshAlpha 가 반드시 한 번 적게
+      // 새로 뜨는 숫자는 서서히 나타난다 — 툭 튀어나오면 눈이 그것만 쫓는다. 이미 있던 라벨은 0(그대로 밝게).
+      pBorn[placed] = candSticky[outBuf[k]] === 1 ? 0 : t;
+      if (pBorn[placed]) fadingUntil = Math.max(fadingUntil, t + OBS_FADE_MS);
       if (arrow) windTangent(s.lat, s.lon, s.windDir, tmpDir);
       for (let g = 0; g < gN; g += 1) {
         const c = gCells[g];
@@ -661,19 +675,27 @@ export function createObsLabels({
   };
 
   // 찍힌 라벨(≤ 60)의 지평선 흐림만 고친다. 값이 안 바뀌었으면 GPU 로 아무것도 올리지 않는다.
-  const refreshAlpha = (camera) => {
+  const refreshAlpha = (camera, t = now()) => {
     const cp = camera.position;
     tmpC.x = cp.x; tmpC.y = cp.y; tmpC.z = cp.z;
     let changed = false;
+    let stillFading = false;
     for (let k = 0; k < placed; k += 1) {
       tmpP.x = pAnchor[k * 3]; tmpP.y = pAnchor[k * 3 + 1]; tmpP.z = pAnchor[k * 3 + 2];
-      const a = horizonOpacity(tmpP, tmpC);
+      // 지평선 흐림 × 등장 페이드. pBorn 이 0 이면(이미 있던 라벨) 곱하는 값이 1 이라 예전과 같다.
+      const born = pBorn[k];
+      const fade = born > 0 ? Math.min(1, (t - born) / OBS_FADE_MS) : 1;
+      if (born > 0) { if (fade >= 1) pBorn[k] = 0; else stillFading = true; }   // 다 밝아지면 페이드를 끝낸다
+      const aim = horizonOpacity(tmpP, tmpC);
+      pAim[k] = aim;
+      const a = aim * fade;
       if (Math.abs(a - pAlpha[k]) < 0.004) continue;
       pAlpha[k] = a;
       for (let g = pFirst[k], e = pFirst[k] + pCount[k]; g < e; g += 1) aAlpha[g] = a;
       changed = true;
     }
     if (changed) { geo.attributes.aAlpha.needsUpdate = true; alphaWrites += 1; }
+    if (!stillFading) fadingUntil = 0;      // 더 밝아질 것이 없다 — 가만히 있으면 이제 정말 할 일이 없다
   };
 
   const tick = (camera) => {
@@ -698,7 +720,13 @@ export function createObsLabels({
     if (uv.x !== view.w || uv.y !== view.h) uv.set(view.w, view.h);
     let same = !dirty && !pending && ref.w === view.w && ref.h === view.h;
     if (same) for (let i = 0; i < 16; i += 1) if (vp[i] !== vpLast[i]) { same = false; break; }
-    if (same && t - lastCullMs < OBS_AGE_RECHECK_MS) { mesh.visible = placed > 0; return; }   // 카메라가 가만히 있다 — 할 일이 없다
+    if (same && t - lastCullMs < OBS_AGE_RECHECK_MS) {                                       // 카메라가 가만히 있다 — 할 일이 없다
+      // ⚠️ 등장 페이드가 도는 동안은 '할 일 없음'이 아니다. 여기서 그냥 돌아가면 막 뜬 라벨이 옅은 채로 굳는다
+      //    (카메라를 멈춘 순간 새로 뜬 숫자가 영영 안 보인다). 페이드가 끝날 때까지는 흐림만 다시 먹인다.
+      if (fadingUntil) refreshAlpha(camera, t);
+      mesh.visible = placed > 0;
+      return;
+    }
     vpLast.set(vp);
 
     let need = dirty || ref.w !== view.w || ref.h !== view.h || t - lastCullMs >= OBS_AGE_RECHECK_MS;
@@ -715,7 +743,7 @@ export function createObsLabels({
       if (dirty || t - lastCullMs >= OBS_RECULL_MIN_MS) recull(camera, t);
       else pending = true;
     }
-    refreshAlpha(camera);
+    refreshAlpha(camera, t);
     mesh.visible = placed > 0;
   };
 
@@ -750,7 +778,9 @@ export function createObsLabels({
     }
     let best = -1, bestD = Infinity;
     for (let k = 0; k < placed; k += 1) {
-      if (pAlpha[k] < OBS_MIN_OPACITY) continue;
+      // ⚠️ pAlpha 는 등장 페이드가 곱해진 값이다 — 막 뜬 라벨(0 에 가깝다)을 누를 수 없게 하면 안 된다.
+      //    누를 수 있나는 '지평선 흐림'(pAim)으로 본다. 화면에 보이는 것은 누를 수 있다.
+      if ((pAim[k] || pAlpha[k]) < OBS_MIN_OPACITY) continue;
       if (!projectPx(vp, pAnchor[k * 3], pAnchor[k * 3 + 1], pAnchor[k * 3 + 2], view.w, view.h, px)) continue;
       // 라벨 상자(화면 y 는 아래쪽): 점 왼쪽 6 ~ 글자 끝 + 2 · 위 10 ~ 아래 16(OBS 꼬리표)
       const dx = Math.max(px[0] - 6 - x, 0, x - (px[0] + TEXT_X0 + pTextW[k] + 2));
@@ -804,6 +834,8 @@ export function createObsLabels({
         sites: sites ? sites.length : 0, fresh: freshCount, placed, max: isPhone() ? OBS_MAX_PHONE : OBS_MAX_DESKTOP, cellScale,
         docs: { KMA: docState(docs.KMA, 'KMA', t), GTS: docState(docs.GTS, 'GTS', t) },
         dropped, culls, loads, alphaWrites, loadError,
+        // 지금 찍힌 라벨의 불투명도(등장 페이드가 도는지 · 지평선 흐림이 먹는지) — 시험과 콘솔이 본다
+        alpha: Array.from(pAlpha.subarray(0, placed)),
         // 지점 수와 무관하게 일정해야 하는 것 — 시험이 본다
         gpu: { textures: atlas ? 1 : 0, geometries: geo ? 1 : 0, materials: mat ? 1 : 0, drawCalls: mesh ? 1 : 0, instanceCapacity: INST, instances: geo ? geo.instanceCount : 0 },
       };

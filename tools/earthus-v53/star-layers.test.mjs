@@ -45,11 +45,13 @@ test("LiveLayers.starLayer — 색면이 있으면 'field', 입자만이면 'win
   // 바다 3종은 2026-09-20 작업 D3 에서 새 렌더러로 옮겨졌다 — 이제 색면이라 구름을 물린다
   host.layers.sstfield = { on: true };
   assert.equal(host.starLayer(), 'field', '새 렌더러로 옮긴 색면(수온)도 구름을 끄는 주인공이다');
-  // 강수도 같은 날 옮겨졌다(작업 D2) — 옛 5° 그라데이션이 아니라 GFS 강수율 구간색이다
+  // 강수(raingrid)는 작업 D2 에서 옮겨 갔다 — descriptor 가 있으니 이제 주인공이다.
   host.layers.sstfield.on = false; host.layers.raingrid = { on: true };
-  assert.equal(host.starLayer(), 'field');
-  host.layers.raingrid.on = false;
-  assert.equal(host.starLayer(), null, '켜진 색면이 없으면 구름이 돌아온다');
+  assert.equal(host.starLayer(), 'field', '새 렌더러로 옮긴 색면(강수)도 구름을 끄는 주인공이다');
+  // 아직 옮기지 않은 옛 색면은 주인공으로 치지 않는다(구름을 끄지 않는다). 자외선은 PD 표에 색 눈금이 없어
+  // descriptor 를 만들 수 없다(field-layer.js 의 '자외선(uvgrid)은 없다') — 옛 캔버스 램프 그대로다.
+  host.layers.raingrid.on = false; host.layers.uvgrid = { on: true };
+  assert.equal(host.starLayer(), null, '옛 색면(자외선 5° 그라데이션)은 주인공이 아니다');
 });
 
 test('main.js 가 매 프레임 무대를 정리한다 — 구름 불투명도 · 바람 밑 풍속 색면 · 입자 색', () => {

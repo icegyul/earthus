@@ -28,6 +28,7 @@ import { createTimeBus } from '../../prototype/v2-three/js/time-bus.js';
 
 const here = (rel) => new URL(rel, import.meta.url);
 const lf = (s) => s.replace(/\r\n/g, '\n');   // 이 워크트리는 CRLF 로 체크아웃된다 — 글자 대조는 LF 로 한다
+const src = (rel) => lf(readFileSync(new URL(`../../prototype/v2-three/js/${rel}`, import.meta.url), 'utf8'));
 const clone = (x) => JSON.parse(JSON.stringify(x));
 const C1 = JSON.parse(readFileSync(here('./fixtures/gfs-fc-manifest-c1-legacy.json'), 'utf8'));   // 스텝 0·3·6 h
 const SCHEMA2 = JSON.parse(readFileSync(here('./fixtures/gfs-fc-manifest-schema2.json'), 'utf8')); // 강수가 fields{} 에 없던 매니페스트
@@ -234,8 +235,19 @@ test('카드 — 누적 단추가 없고, 고를 것 없는 등치선은 글자�
   assert.match(html, /data-action="field-iso"/, '켬/끔은 실제로 동작한다');
   assert.equal(layer.handleAction('field-iso', { layer: 'raingrid', set: 'off' }), true);
   assert.equal(layer.renderer.uniforms.uIsoOn.value, 0);
-  // 범례의 풀이 줄이 포화를 말한다(누른 곳도 못 그릴 사정도 없을 때).
-  assert.equal(legend.last.note, topBandNote(SCALE, CH, true));
+  // 범례의 풀이 줄은 **둘 다** 말한다(누른 곳도 못 그릴 사정도 없을 때): 눈금표가 늘 하는 말 + 포화 고지.
+  // 전에는 note 를 하나만 넘겨, 뒤엣것이 앞엣것을 덮었다(field-legend.js legendView 는 note 가 차 있으면 scale.legendNote 를 안 본다).
+  assert.ok(legend.last.note.includes(SCALE.legendNote.ko), '눈금표의 풀이(0.1 미만은 칠하지 않습니다)가 남아 있다');
+  assert.ok(legend.last.note.includes(topBandNote(SCALE, CH, true)), '포화 고지도 같이 선다');
+  assert.equal(legend.last.note, `${SCALE.legendNote.ko} · ${topBandNote(SCALE, CH, true)}`);
+  // 풀이 줄은 **12px 두 줄(24px)** 이고 그 칸은 overflow:hidden 이다(index.html #field-legend · .fl-note) —
+  // 넘치면 조용히 잘린다. 둘을 이어도 들어가는지 글자 폭으로 재 둔다: 한글은 글씨 크기만큼(9.5px), 나머지는 그 절반,
+  // 빈칸은 4분의 1. 가장 좁은 화면은 320px 폰이다(@media 720px 에서 좌우 8px + 안쪽 여백 12px×2).
+  const FS = 9.5;
+  const wide = (s) => [...s].reduce((w, c) => w + (/[가-힣]/.test(c) ? FS : c === ' ' ? FS / 4 : FS / 2), 0);
+  const lineW = 320 - 8 * 2 - 12 * 2;
+  assert.ok(wide(legend.last.note) <= 2 * lineW,
+    `범례 풀이 줄이 두 줄(${2 * lineW}px)을 넘는다 — ${wide(legend.last.note).toFixed(0)}px`);
   // id 로 견준다 — 시험은 field-scales.js 를 질의문자열 없이 들이므로 앱('…?v=1')과 다른 모듈 사본이다(ES 모듈은 URL 전체로 구분된다).
   assert.equal(legend.last.scale.id, SCALE.id);
   assert.deepEqual([...legend.last.scale.breaks], [...SCALE.breaks]);
@@ -278,6 +290,19 @@ test('클릭 값 — 유효숫자 2자리 · 0 은 비 없음 · 색 점은 칠�
 });
 
 // ---------------------------------------------------------------- ⑦ 배선
+
+// ── 2026-09-20 반박 검증 — 색면은 바뀌었는데 그 위에 뜨는 지점 시트는 옛 자료를 불렀다 ──────────────────────
+test('범례의 note 는 열쇠 하나다 — 같은 열쇠를 두 번 적으면 JS 가 앞엣것을 조용히 버린다', () => {
+  const layer = src('field-layer.js');
+  const at = layer.indexOf('this.legend.show({');
+  assert.ok(at > 0);
+  const lit = layer.slice(at, layer.indexOf('LEGEND_PRIORITY_FIELD', at));
+  // 2026-09-20 에 실제로 그랬다: D3 가 'single' 줄을 더하면서 run·valid·note 를 통째로 다시 적어 포화 고지가 사라졌다.
+  // ES 모듈은 중복 열쇠를 막지 않는다(strict 모드에서도) — 아무도 안 던진다. 그래서 글자로 잠근다.
+  for (const key of ['note:', 'run:', 'valid:']) {
+    assert.equal(lit.split(key).length - 1, 1, `legend.show 의 '${key}' 가 ${lit.split(key).length - 1}번 적혀 있다`);
+  }
+});
 
 test('descriptor 한 장으로 켠다 — 디코드 식이 매니페스트와 다르면 그리지 않고 이유를 말한다', async () => {
   const d = FIELD_DESCRIPTORS.raingrid;

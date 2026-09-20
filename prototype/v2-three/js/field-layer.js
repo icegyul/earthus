@@ -859,6 +859,23 @@ export class FieldLayer {
     return `${sourceLabel(info).replace(/^[A-Z_]+ · /, '')}${t.length ? ` · ${t[0]}` : ''}`;
   }
 
+  /**
+   * 누른 곳도 못 그릴 사정도 없을 때 범례의 풀이 줄이 하는 말 — 이 눈금표·이 자료에 **늘 해당하는** 두 가지를 잇는다.
+   *   ① 눈금표가 늘 하는 말(scale.legendNote — 강수 '0.1 미만은 칠하지 않습니다' · 바람 입자 과장 고지)
+   *   ② 자료가 눈금표의 **맨 위 칸을 못 채운다**는 말(field-log.js topBandNote — 강수율은 30 mm/h 에서 포화하므로
+   *      '≥ 50 mm/h' 칸은 이 자료로 나오지 않는다). 천장은 매니페스트에서 온다.
+   * 둘 중 하나만 넘기면 나머지를 잃는다 — field-legend.js legendView 는 note 가 차 있으면 scale.legendNote 를 아예 안 본다.
+   * 풀이 줄은 12px 두 줄(24px)이라 둘을 '·' 로 이어도 들어간다(강수의 합이 340px 폭에서 두 줄 안이다).
+   */
+  scaleNote() {
+    const ko = this.ko;
+    const ln = this.scale.legendNote;
+    return [
+      ln ? (ln[ko ? 'ko' : 'en'] || ln.ko || '') : '',
+      topBandNote(this.scale, this.spec && this.spec.channels && this.spec.channels[0], ko),
+    ].filter(Boolean).join(' · ');
+  }
+
   publish() {
     if (!this.active) return;
     const ko = this.ko;
@@ -870,11 +887,12 @@ export class FieldLayer {
     const probeLine = probe ? `${ko ? '누른 곳' : 'Picked'} ${fmtPoint(probe.lat, probe.lon)} ${probe.text}${probe.note ? ` · ${probe.note}` : ''}` : '';
     this.legend.show({
       scale: this.scale, title: this.desc.title, source: sourceLabel(info),
-      // 아무 일도 없을 때 비는 한 줄: 자료가 눈금표의 **맨 위 칸을 못 채우면** 그 사실을 말한다(강수율은 30 mm/h 에서 포화 —
-      // '≥ 50 mm/h' 칸은 이 자료로 나오지 않는다). 천장은 매니페스트에서 온다(field-log.js topBandNote).
-      note: blocked ? short : (probeLine || short || topBandNote(this.scale, this.spec && this.spec.channels && this.spec.channels[0], ko)),
       // 한 시각짜리 자료에는 '런'이 없고 '유효'는 타임라인이 아니라 자료의 기준 시각이다.
       run: info ? info.run : null, valid: (info && info.single) ? info.validMs : this.timeBus.validMs(),
+      // 아무 일도 없을 때 비는 한 줄 — 눈금표가 늘 하는 말과 포화 고지를 **둘 다** 적는다(scaleNote).
+      // ⚠️ 이 객체에 같은 열쇠를 두 번 적지 마라: JS 는 뒤엣것만 남기고 조용히 앞엣것을 버린다(2026-09-20 에 실제로 한 번 그랬다 —
+      //    D3 가 'single' 줄을 더하면서 run·valid·note 를 통째로 다시 적어, D2 가 세워 둔 포화 고지가 화면에서 사라졌다).
+      note: blocked ? short : (probeLine || short || this.scaleNote()),
     }, `field:${this.id}`, LEGEND_PRIORITY_FIELD);
     const model = this.cardModel(probe);
     const inner = fieldCardInner(model);

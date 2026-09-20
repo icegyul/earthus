@@ -347,6 +347,16 @@ test('누적 descriptor — 레이어 id 와 필드 id 는 그대로고 눈금�
   }
 });
 
+test('3시간이 뺄셈으로 나오는 시각에는 그 한계를 카드가 말한다 — 없는 시각에는 그 줄도 없다', async () => {
+  const { accumCardRow } = await import('../../prototype/v2-three/js/precip-accum.js');
+  const btn = (action, data, on, text) => `<b data-action="${action}" ${data} aria-pressed="${on}">${text}</b>`;
+  const row = (endH, key = '3') => accumCardRow({ ko: true, accum: { key, keys: ACCUM_KEYS, plan: endH == null ? null : planAccumulation(FRAMES, endH, 3) } }, btn);
+  assert.match(row(6), /뺀<\/b> 것입니다/, 'h%6==0 은 6시간 버킷에서 앞 3시간을 뺀 값이다');
+  assert.match(row(6), /약 3 %/, '거칠어진 눈금을 수로 말한다');
+  assert.ok(!/뺀/.test(row(9)), '3시간 버킷이 그대로 있는 시각에는 그 줄이 없다');
+  assert.ok(!/뺀/.test(row(null, 'rate')), '현재 강우에는 그 줄이 없다');
+});
+
 test('칩은 셋뿐이다 — 1시간은 자료가 못 내놓으므로 단추를 달지 않는다', () => {
   assert.deepEqual([...ACCUM_KEYS], ['rate', '3', '24']);
   assert.ok(!ACCUM_KEYS.includes('1'), 'GFS 누적 버킷은 3시간이 가장 짧다 — 1시간 양은 지어내야 나온다');

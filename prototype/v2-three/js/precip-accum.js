@@ -280,6 +280,9 @@ export function createAccumFrames(base, opts = {}) {
     const last = list[list.length - 1];
     if (tMs < first.t) return { a: first, b: first, mix: 0, exact: false, outOfRange: 'before', gapH: 0 };
     if (tMs > last.t) return { a: last, b: last, mix: 0, exact: false, outOfRange: 'after', gapH: 0 };
+    // ⚠️ gfs-frames.js 의 sampler 는 구간 자료에서 **b** 를 고른다("시각 t 를 덮는 구간은 b 의 것이다"). 여기서는
+    //    일부러 **a**(t 이하의 마지막 장)를 고른다 — 되돌아보는 누적이라서다. b 를 고르면 커서가 25:30 일 때 27시
+    //    까지의 양을 칠하게 되고, 화면이 아직 오지 않은 1시간 30분의 비를 이미 온 것처럼 말한다. 맞추러 고치지 말 것.
     let lo = 0;
     let hi = list.length - 1;
     while (lo < hi) {
@@ -466,11 +469,19 @@ export const accumCardRow = (m, btn) => {
     : (ko
       ? `그 시각까지 ${a.key}시간 동안의 양(mm)입니다 — 모델 강수율의 합산입니다. 겹치지 않는 GFS 누적 버킷만 더합니다(브라우저에서 · 새 수집 없음).`
       : `The amount over the ${a.key} h ending at that time (mm) — a sum of the model precipitation buckets, taken from non-overlapping GFS buckets in the browser.`);
+  // 뺄셈으로 얻은 구간은 눈금이 거칠다 — 6시간 버킷 두 장이 각각 값의 ×1.031 로 눌려 있어, 그 차의 분해능은
+  // **앞 구간 양의 약 3 %** 다(앞 3시간에 100 mm 가 왔으면 이 3시간은 3 mm 눈금이다). 한계를 결과 옆에 둔다.
+  const cut = a.plan && a.plan.terms.some((t) => t.sign < 0)
+    ? (ko
+      ? '이 시각의 값은 6시간 버킷에서 앞 3시간 버킷을 <b>뺀</b> 것입니다 — 앞 구간의 양이 클수록 눈금이 거칠어집니다(그 양의 약 3 %).'
+      : 'At this step the amount is a 6 h bucket <b>minus</b> the preceding 3 h bucket — the larger the earlier amount, the coarser this one (about 3 % of it).')
+    : '';
   const why = ko
     ? '1시간 누적은 없습니다 — GFS 가 내놓는 누적 버킷은 3시간이 가장 짧아 1시간 양은 지어내야 합니다. 그 자리는 현재 강우가 맡습니다.'
     : 'There is no 1 h total — GFS publishes 3 h buckets at the finest, so a 1 h amount would have to be invented. Rate now stands in for it.';
   return `<span style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 2px">${ko ? '기간' : 'Period'} `
     + `${chips}</span><span style="opacity:.8">${what}</span>`
+    + (cut ? `<br/><span style="opacity:.8">${cut}</span>` : '')
     + `<br/><span style="opacity:.7">${why}</span>`;
 };
 

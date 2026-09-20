@@ -1,6 +1,7 @@
 // 2026-09-21 반박 검증 — 전부 같은 것을 묻는다: **화면이 제가 한 일을 말하나.**
 //
 //   ① 대기질  — 그린 점 수와 카드가 적는 수가 같은가. 그릴 것이 0이면 배지가 내려가나.
+//   ② 연안 침수 — '어긋난다'는 줄이 **같은 뜻의 두 수**를 견주는가(간 곳 vs 자료가 있던 곳).
 //
 // 숫자는 하나도 박지 않는다. 운영 자료 사본(fixtures/)과 다른 파일의 상수에서 셈한다.
 import test from 'node:test';
@@ -14,6 +15,7 @@ const lf = (s) => s.replace(/\r\n/g, '\n');   // 이 워크트리는 CRLF 로 �
 const read = (rel) => lf(readFileSync(here(rel), 'utf8'));
 const LIVE_SRC = read('../../prototype/v2-three/js/live-layers.js');
 const AIR = JSON.parse(read('fixtures/korea-air-obs-20260921.json'));
+const FLOOD = JSON.parse(read('fixtures/khoa-flood-index-20260920.json'));
 
 const metaAirq = (d) => LiveLayers.prototype.metaAirq.call(null, d);
 /** 카드·메뉴 줄에서 '…개소' 꼴로 적힌 수를 전부 긁는다 — 한 카드가 두 수를 말하는지 보기 위한 것이다. */
@@ -83,4 +85,41 @@ test("① '대기질은 안 된다'를 코드에 박지 않았다 — 좌표가 
   const build = LIVE_SRC.slice(LIVE_SRC.indexOf('buildAirq(d) {'), LIVE_SRC.indexOf('metaAirq(d) {'));
   assert.ok(build.includes('airqDrawable('), '그리는 쪽이 제 거르개를 따로 갖고 있다');
   assert.ok(body.includes('airqDrawable('), '말하는 쪽이 제 거르개를 따로 갖고 있다');
+});
+
+/* ════════════════════════════════════════════════════════════════════════════
+   ② 연안 침수 — 어긋남을 밝히는 줄이 서로 다른 두 수를 견줬다
+   ════════════════════════════════════════════════════════════════════════════
+   기관 설명문의 수는 **받으러 간** 시군구 수다(설명문 스스로 "이번에 실제로 자료가 있는 곳은
+   coveredCount 에 적습니다" 라고 밝힌다). 그런데 카드는 그것을 `count>0 && bbox` 로 거른
+   **자료가 있던 곳**과 견줬다 — 시도한 수와 성공한 수를 견주는 셈이다.
+   한 곳이 빈 날, 실제로는 아무것도 어긋나지 않았는데 카드는 '1곳이 어긋납니다'라고 적는다.
+   게다가 빈 곳은 바로 아래 '자료가 비어 있는 곳' 줄이 이미 이름까지 적는다 — 두 번 말한다. */
+
+const floodMeta = (d) => LiveLayers.prototype.metaFloodIndex.call(
+  { _floodDistricts: (d.districts || []).filter((r) => r.count > 0 && r.bbox), _floodDiscs: null, _floodAnchorCount: 0 },
+  d,
+);
+
+test('② 자료가 빈 시군구가 생겨도 어긋났다고 말하지 않는다 — 설명문은 간 곳을 세고 있다', () => {
+  const said = Number((String(FLOOD.note).match(/(\d+)\s*곳/) || [])[1]);
+  assert.ok(Number.isFinite(said), '설명문에서 수를 못 읽었다 — 견줄 것이 없다');
+  assert.equal(said, FLOOD.districts.length, '전제가 깨졌다 — 설명문의 수가 담겨 온 시군구 수가 아니다');
+
+  // 한 곳이 비어 온 판을 자료에서 만든다(목록에는 그대로 있다 — 갔는데 자료가 없던 것이다)
+  const emptied = { ...FLOOD, districts: FLOOD.districts.map((r, i) => (i === 0 ? { ...r, count: 0 } : r)) };
+  const card = floodMeta(emptied).cardHtml;
+  assert.ok(!/어긋납니다/.test(card),
+    '한 곳이 비었을 뿐인데 기관 설명문과 어긋났다고 적는다 — 간 곳(시도)과 자료가 있던 곳(성공)을 견줬다');
+  // 빈 곳은 이미 제 줄이 이름까지 말한다
+  assert.ok(card.includes(FLOOD.districts[0].name), '빈 시군구를 이름으로 밝히는 줄이 사라졌다');
+});
+
+test('② 목록 자체가 설명문과 다르면 그때는 밝힌다 — 울타리를 없앤 것이 아니다', () => {
+  const dropped = { ...FLOOD, districts: FLOOD.districts.slice(1) };
+  const said = Number((String(FLOOD.note).match(/(\d+)\s*곳/) || [])[1]);
+  const card = floodMeta(dropped).cardHtml;
+  assert.match(card, /어긋납니다/, '설명문과 목록이 실제로 다른데 카드가 조용하다');
+  assert.ok(card.includes(String(said)), '설명문이 적은 수를 카드가 말하지 않는다');
+  assert.ok(card.includes(`${said - dropped.districts.length}곳이 어긋`), '어긋난 수를 세지 않는다');
 });

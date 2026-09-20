@@ -61,7 +61,8 @@ export const SCENES = [
     layers: [
       { id: 'cloud-off', name: '구름 끄기', state: 'LIVE', src: '—', act: true },
       { id: 'radar', name: '레이더 강수 (지금 내리는 비)', state: 'OBSERVED', src: 'KMA HSR 합성영상 · 5분', act: true },
-      { id: 'raingrid', name: '전지구 강수', state: 'MODEL', src: 'Open-Meteo 격자 5°', act: true },
+      // 2026-09-20 W4: 'Open-Meteo 격자 5°' 한 시각의 그라데이션이었다. 같은 id 가 이제 GFS 강수율 프레임의 구간색이다 — 출처를 사실대로.
+      { id: 'raingrid', name: '전지구 강수', state: 'MODEL', src: 'NOAA GFS 0.5° · 강수율 mm/h · 5일 예보 · 3시간 간격', act: true },
       { id: 'tempgrid', name: '전지구 기온', state: 'MODEL', src: 'NOAA GFS 0.5° · 5일 예보 · 3시간 간격', act: true },
       { id: 'presgrid', name: '전지구 기압', state: 'MODEL', src: 'Open-Meteo 격자 5°', act: true },
       { id: 'windgrid', name: '전지구 풍속', state: 'MODEL', src: 'NOAA GFS 0.5° · 10 m · 5일 예보 · 3시간 간격', act: true },

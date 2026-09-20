@@ -29,6 +29,7 @@ import { timeBus as sharedTimeBus } from './time-bus.js?v=1';
 import { decodeByte, sharedGfsFrames } from './gfs-frames.js?v=1';
 import { fieldLegend as sharedLegend } from './field-legend.js?v=1';
 import { bandColor, formatValue, isolineSpec, scaleOf } from './field-scales.js?v=1';
+import { logReadout, readTicks, topBandNote } from './field-log.js?v=1';
 import { FieldRenderer, halfStepOf } from './field-renderer.js?v=1';
 import { FIELD_LABEL_CAP, FieldLabels, labelLevels, labelText, pickLabelSpots, thinField } from './field-labels.js?v=1';
 
@@ -53,6 +54,20 @@ export const FIELD_DESCRIPTORS = Object.freeze({
     quantity: Object.freeze({ ko: '풍속', en: 'Wind speed' }),
     isoName: Object.freeze({ ko: '등풍속선', en: 'Isotachs' }),
     isolineChoices: Object.freeze([]),
+  }),
+  // 강수(2026-09-20 W4) — 시안 03: mm/h 구간색 8단 + **강한 코어 윤곽**(10 mm/h 한 줄). 자료는 GFS 강수율 프레임의 R 채널이고
+  // **log10 으로 실려 있다**(transfer) — 0.05 ~ 30 mm/h 를 255칸에. 맨 아래 칸(0.1 mm/h 미만)은 눈금표가 불투명도 0 으로
+  // 두었으므로 칠하지 않는다: 안 오는 곳을 파랗게 칠하면 지구 전체가 비가 된다.
+  // 예전 'raingrid' 는 Open-Meteo 5°(한 칸 555 km) 한 시각의 선형 램프였다 — 소나기 하나가 한반도만 한 네모가 됐다.
+  // 누적(1h · 3h · 24h)은 아직 없다. 눈금표에 단위 전환(mm)이 준비돼 있지만 **단추를 그리지 않는다** — 누를 때 아무 일도
+  // 안 나는 토글을 만들지 않는다(죽은 토글 금지). apcp 버킷 합산은 다음 묶음이다.
+  raingrid: Object.freeze({
+    layerId: 'raingrid', fieldId: 'precip', scaleId: 'precip', mode: 'scalar', mask: 'none', transfer: 'log10',
+    title: Object.freeze({ ko: '전지구 강수 · 지금 내리는 세기', en: 'Global precipitation · rate' }),
+    quantity: Object.freeze({ ko: '강수율', en: 'Precipitation rate' }),
+    isoName: Object.freeze({ ko: '강한 코어 윤곽', en: 'Heavy-core outline' }),
+    isolineChoices: Object.freeze([]),
+    zeroText: Object.freeze({ ko: '비 없음', en: 'No rain' }),
   }),
 });
 
@@ -181,13 +196,17 @@ export const statusText = (st, { ko = true, short = false } = {}) => {
 /**
  * 누른 자리의 값 — frames.sampleAt 의 결과를 화면의 말로.  → { ok, value, text, note } | { ok:false, text }
  *   눈금(step)은 매니페스트의 디코드 scale 에서 온다(기온 0.5). 그 눈금으로 반올림하고 '~' 를 붙인다.
+ *   로그로 실린 자료(강수율)에는 그 상수 눈금이 없다 — 표본이 step 대신 floor(자료의 바닥)를 달고 오고, 글자는 field-log.js 가 짓는다.
  */
-export const readoutOf = (sample, { scale, mode = 'scalar', resolutionDeg = null, ko = true } = {}) => {
+export const readoutOf = (sample, { scale, mode = 'scalar', resolutionDeg = null, zeroText = null, ko = true } = {}) => {
   if (!sample) return { ok: false, text: ko ? '값을 읽을 프레임이 아직 없습니다' : 'No frame to read from yet' };
   if (sample.outOfRange) return { ok: false, text: ko ? '예보 범위 밖 — 값을 말하지 않습니다' : 'Outside the forecast range — no value is given' };
   if (!sample.decoded) return { ok: false, text: ko ? '이 필드는 값으로 풀 수 없습니다' : 'This field cannot be decoded' };
   const raw = mode === 'magnitudeRG' ? Math.hypot(sample.values[0], sample.values[1]) : sample.value;
   if (!Number.isFinite(raw)) return { ok: false, text: '—' };
+  if (sample.floor != null) {   // 로그 자료 — 상수 눈금으로 반올림하지 않는다(field-log.js 머리말)
+    return logReadout({ scale, raw, floor: sample.floor, cell: cellLabel(resolutionDeg, ko), zeroText, ko });
+  }
   const step = sample.step > 0 ? sample.step : 0.5;
   const value = Math.round(raw / step) * step;
   const text = `~${formatValue(scale, value)}`;
@@ -244,18 +263,25 @@ export const fieldCardInner = (m) => {
   const L = (o) => (o ? (o[ko ? 'ko' : 'en'] || o.ko || '') : '');
   const unit = m.scale.unit;
   const lines = [];
+  // 칸 수는 **칠하는 칸**만 센다 — 강수는 경계 8 + 1 = 9칸이지만 맨 아래(0.1 mm/h 미만)는 칠하지 않아 화면에도 범례에도 8칸이다.
+  const painted = m.scale.alpha.filter((a) => a > 0).length;
   lines.push(`<b>${esc(L(m.desc.title))}</b> — ${ko
-    ? `${m.scale.breaks.length + 1}단 구간색입니다. 색 사이를 섞지 않습니다 — 색 경계 = 범례 경계 = 등치선 값.`
-    : `${m.scale.breaks.length + 1} solid bands. Colours are never blended — band edge = legend edge = isoline value.`}`);
+    ? `${painted}단 구간색입니다. 색 사이를 섞지 않습니다 — 색 경계 = 범례 경계 = 등치선 값.`
+    : `${painted} solid bands. Colours are never blended — band edge = legend edge = isoline value.`}`);
   lines.push(`<span data-field-live>${fieldCardLive(m)}</span>`);
-  if (m.choices && m.choices.length) {
+  const spec = isolineSpec(m.scale, m.isoChoice);
+  if (spec) {
     const btn = (action, data, on, text) => `<button data-action="${action}" data-layer="${esc(m.id)}" ${data} aria-pressed="${on ? 'true' : 'false'}" style="${pressed(on)}">${esc(text)}</button>`;
-    const steps = m.choices.map((c) => btn('field-iso-step', `data-choice="${esc(c)}"`, m.isoOn && m.isoChoice === c, `${c}${unit}`)).join('');
-    const spec = isolineSpec(m.scale, m.isoChoice);
-    const major = spec && spec.majorEvery ? (ko ? ` · ${spec.majorEvery}${unit} 마다 굵은 선과 숫자` : ` · bold line and number every ${spec.majorEvery}${unit}`) : '';
+    // 간격 단추는 눈금표에 선택지가 있을 때만(기온 2°C|5°C). 없는 눈금(강수의 코어 윤곽 하나)은 켬/끔뿐이다 — 없는 단추를 그리지 않는다.
+    const steps = (m.choices || []).map((c) => btn('field-iso-step', `data-choice="${esc(c)}"`, m.isoOn && m.isoChoice === c, `${c}${unit}`)).join('');
+    const major = spec.majorEvery ? (ko ? ` · ${spec.majorEvery}${unit} 마다 굵은 선과 숫자` : ` · bold line and number every ${spec.majorEvery}${unit}`) : '';
+    // 간격이 고르지 않은 눈금은 그을 값을 글자로 적는다('10 mm/h 이상') — 선이 무엇을 두르고 있는지 색 없이도 읽힌다.
+    const only = (!spec.interval && spec.levels && spec.levels.length)
+      ? (ko ? ` · ${spec.levels.map((v) => labelText(m.scale, v)).join(' · ')} 이상` : ` · at ${spec.levels.map((v) => labelText(m.scale, v)).join(' · ')} and above`)
+      : '';
     lines.push(`<span style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 2px">${esc(L(m.desc.isoName))} `
       + btn('field-iso', `data-set="${m.isoOn ? 'off' : 'on'}"`, m.isoOn, m.isoOn ? (ko ? '켬' : 'On') : (ko ? '끔' : 'Off'))
-      + `${steps}</span><span style="opacity:.8">${ko ? '흰 선' : 'White lines'}${major}</span>`);
+      + `${steps}</span><span style="opacity:.8">${ko ? '흰 선' : 'White lines'}${major}${only}</span>`);
   }
   lines.push(ko
     ? `이 색면은 <b>관측이 아니라 수치예보 모델값</b>입니다 — ${esc(cellLabel(m.info && m.info.resolutionDeg, true))} 한 칸의 평균이라 도시·지점의 값과 다를 수 있습니다.`
@@ -325,7 +351,7 @@ export class FieldLayer {
     if (this.group) return;
     const d = this.deps;
     this.renderer = new FieldRenderer({
-      scale: this.scale, mode: this.desc.mode, mask: this.desc.mask,
+      scale: this.scale, mode: this.desc.mode, mask: this.desc.mask, transfer: this.desc.transfer || 'linear',
       terrain: d.terrain || null, geometry: d.geometry || null, segments: d.segments,
     });
     this.labels = new FieldLabels({
@@ -350,7 +376,10 @@ export class FieldLayer {
     const spec = f.fieldSpec(this.desc.fieldId);
     const need = this.desc.mode === 'magnitudeRG' ? 2 : 1;
     if (!spec.decodable || !spec.channels || spec.channels.length < need) return 'NO_DECODE';
-    if (spec.channels.slice(0, need).some((c) => c.transfer !== 'linear')) return 'NO_DECODE';
+    // 디코드 식은 descriptor 가 바란 것과 매니페스트가 실은 것이 **같아야** 한다. 다르면 셰이더가 다른 식으로 풀어
+    // 조용히 틀린 값을 칠한다 — 그리지 않고 이유를 말한다(인코더가 바뀌면 여기서 걸린다).
+    const want = this.desc.transfer || 'linear';
+    if (spec.channels.slice(0, need).some((c) => c.transfer !== want)) return 'NO_DECODE';
     return null;
   }
 
@@ -585,7 +614,8 @@ export class FieldLayer {
     if (this.status.kind === 'outOfRange') return { outOfRange: this.status.side };
     let s = null;
     try { s = this.frames.sampleAt(this.desc.fieldId, this.timeBus.validMs(), lat, lon); } catch (e) { s = null; }
-    if (s && this.spec && this.spec.channels) s.step = Number(this.spec.channels[0].scale.toPrecision(1));   // 0.5 · 0.50196 → 0.5 · 1 → 1
+    // 선형은 상수 눈금(0.5 · 0.50196 → 0.5 · 1 → 1), 로그는 눈금 대신 자료의 바닥(floor) — readoutOf 가 그것을 보고 길을 가른다.
+    if (s && this.spec && this.spec.channels) Object.assign(s, readTicks(this.spec.channels[0]));
     return s;
   }
 
@@ -593,7 +623,7 @@ export class FieldLayer {
     if (!this.probePoint) return null;
     const info = this.frames.info ? this.frames.info() : null;
     const r = readoutOf(this.sampleAt(this.probePoint.lat, this.probePoint.lon),
-      { scale: this.scale, mode: this.desc.mode, resolutionDeg: info && info.resolutionDeg, ko: this.ko });
+      { scale: this.scale, mode: this.desc.mode, resolutionDeg: info && info.resolutionDeg, zeroText: this.desc.zeroText, ko: this.ko });
     return { ...this.probePoint, ...r };
   }
 
@@ -605,7 +635,8 @@ export class FieldLayer {
     if (!this.active) return null;
     const ko = this.ko;
     const info = this.frames.info ? this.frames.info() : null;
-    const r = readoutOf(this.sampleAt(lat, lon), { scale: this.scale, mode: this.desc.mode, resolutionDeg: info && info.resolutionDeg, ko });
+    const r = readoutOf(this.sampleAt(lat, lon),
+      { scale: this.scale, mode: this.desc.mode, resolutionDeg: info && info.resolutionDeg, zeroText: this.desc.zeroText, ko });
     const q = this.desc.quantity[ko ? 'ko' : 'en'];
     const stat = (k, v) => `<div class="stat"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`;
     const meta = [sourceLabel(info)];
@@ -652,7 +683,9 @@ export class FieldLayer {
     this.legend.show({
       scale: this.scale, title: this.desc.title, source: sourceLabel(info),
       run: info ? info.run : null, valid: this.timeBus.validMs(),
-      note: blocked ? short : (probeLine || short),
+      // 아무 일도 없을 때 비는 한 줄: 자료가 눈금표의 **맨 위 칸을 못 채우면** 그 사실을 말한다(강수율은 30 mm/h 에서 포화 —
+      // '≥ 50 mm/h' 칸은 이 자료로 나오지 않는다). 천장은 매니페스트에서 온다(field-log.js topBandNote).
+      note: blocked ? short : (probeLine || short || topBandNote(this.scale, this.spec && this.spec.channels && this.spec.channels[0], ko)),
     }, `field:${this.id}`, LEGEND_PRIORITY_FIELD);
     const model = this.cardModel(probe);
     const inner = fieldCardInner(model);

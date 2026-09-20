@@ -37,6 +37,17 @@
 //        ③ 자료는 반올림으로 만들어졌다(handler.py). 30.0 으로 적힌 칸의 참값은 29.75 ~ 30.25 다 — '30 이상' 칸에 넣는 쪽이 자료의 뜻이다.
 //   등치선도 같은 값(v + q/2)으로 긋는다 — 선과 색 경계가 늘 같은 자리다. 풍속(크기 모드)은 경계가 눈금 위에 있지 않아 0 을 더한다.
 //
+// ── 로그로 실린 자료 (강수율 · W4 2026-09-20) ────────────────────────────────────────────────────────────────
+//   매니페스트가 transfer 'log10' 이라고 말하는 필드는 값 = 10^(byte/255 × logSpan + logLo) 이고, 정해진 바이트
+//   하나(zeroByte)가 '없음' = 0 이다(강수율은 바이트 0 = 0.05 mm/h 미만). 디코드는 **tapValue 안**에서 한다 —
+//   네 칸을 정수 바이트로 되돌려 **각각 값으로 푼 뒤** 값에서 공간·시간 보간하는 길이 그대로 쓰인다.
+//   ⚠️ 바이트를 먼저 섞고 나중에 풀면 틀린다: 1 mm/h 와 10 mm/h 의 가운데는 5.5 mm/h 인데, 바이트의 가운데를 풀면
+//      3.16 mm/h(기하평균)가 나온다. 비 오는 가장자리가 통째로 한 칸씩 약해 보인다.
+//   디코드 식은 컴파일 때 갈린다(#ifdef FIELD_TRANSFER_LOG10) — 선형 필드가 프래그먼트마다 분기를 밟지 않게.
+//   GLSL 에는 log10 도 pow(10, x) 의 보증도 없다 — exp2(x × LOG2_10) 으로 셈한다(field-log.js 가 같은 수를 쥔다).
+//   반 눈금(위 '읽히는 값')은 로그에서 **0** 이다 — 이유는 field-log.js 머리말('읽히는 값 규칙을 로그에는 쓰지 않는다').
+//   R 채널만 값이다: 강수 프레임의 G 는 강수 종류 부호, B 는 유도값이라 섞으면 없는 값이 된다(매니페스트 notDecoded).
+//
 // ── 등치선 ──────────────────────────────────────────────────────────────────────────────────────────────────
 //   기법은 main.js 의 해저 등심선과 같다(값을 간격으로 나눠 fract · 굵기는 fwidth 로 화면 px 에 묶는다 — 줌과 무관).
 //   다른 점 둘:
@@ -74,6 +85,7 @@
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
 import { bandCount, breaksFloat32, paletteRGBA } from './field-scales.js?v=1';
+import { FIELD_LOG2_10, logUniforms, shaderLogDecode } from './field-log.js?v=1';
 
 // 셰이더의 고정 길이 uniform 배열. 지금 가장 긴 눈금은 기온(경계 10). 넘치면 breaksFloat32 가 던진다 — 조용히 자르지 않는다.
 export const FIELD_MAX_BREAKS = 16;
@@ -133,6 +145,7 @@ export const scaleUniforms = (scale) => ({
 /**
  * 구간과 등치선을 정할 때 보간값에 더하는 반 눈금(머리말 '무엇을 그 규칙에 넣나'). 눈금은 매니페스트의 디코드 scale 이다 — 여기 적지 않는다.
  * 크기 모드(풍속)는 0: 두 성분의 크기는 눈금 위에 있지 않고 경계(1·5·10…)도 그렇다.
+ * 로그 자료(강수율)도 0 이다 — 눈금이 값마다 다르고 경계가 바이트 값 위에 있지 않다(field-log.js 머리말).
  */
 export const halfStepOf = (channels, mode = 'scalar') => {
   const c = channels && channels[0];
@@ -233,16 +246,23 @@ export const gridCoordOf = (uvT, size, lat, lon, out = [0, 0]) => {
   return out;
 };
 
-const tapValue = (px, decode, k, col, row, ni, nj, wraps) => {
+/** 채널 하나의 '바이트 → 값' — 셰이더 tapValue 안의 디코드와 같은 식이다(로그는 field-log.js 의 사본을 그대로 탄다). */
+const decoderOf = (ch) => {
+  if (ch && ch.transfer === 'log10') { const u = logUniforms(ch); return (b) => shaderLogDecode(u, b); }
+  return (b) => b * ch.scale + ch.offset;
+};
+
+const tapValue = (px, dec, k, col, row, ni, nj, wraps) => {
   const x = wraps ? ((col % ni) + ni) % ni : Math.max(0, Math.min(ni - 1, col));
   const y = Math.max(0, Math.min(nj - 1, row));
-  return px.data[(y * ni + x) * px.channels + k] * decode[k].scale + decode[k].offset;
+  return dec[k](px.data[(y * ni + x) * px.channels + k]);
 };
 
 /**
  * 셰이더가 한 픽셀에서 셈하는 값을 CPU 사본으로 똑같이 셈한다(시험용 거울 — 앱은 frames.sampleAt 을 쓴다).
- *   a · b   프레임의 CPU 사본 {data, channels} · mix 0~1 · decode [{scale, offset}, …](채널 순) · mode 'scalar' | 'magnitudeRG'
- * 네 칸을 **풀고 나서** a + (b − a)·t 로 잇는다 — a = b 면 결과가 정확히 a 다.
+ *   a · b   프레임의 CPU 사본 {data, channels} · mix 0~1 · decode  frames.fieldSpec(id).channels(채널 순 · 선형이든 로그든) ·
+ *   mode 'scalar' | 'magnitudeRG'
+ * 네 칸을 **풀고 나서** a + (b − a)·t 로 잇는다 — a = b 면 결과가 정확히 a 다. 로그 채널도 같은 자리에서 풀린다(머리말 '로그로 실린 자료').
  */
 export const shaderValueAt = ({ a, b, mix = 0, decode, uvT, size, wraps = true, mode = 'scalar' }, lat, lon) => {
   const g = gridCoordOf(uvT, size, lat, lon);
@@ -252,11 +272,12 @@ export const shaderValueAt = ({ a, b, mix = 0, decode, uvT, size, wraps = true, 
   const fx = g[0] - x0;
   const fy = gy - y0;
   const chans = mode === 'magnitudeRG' ? 2 : 1;
+  const dec = decode.slice(0, chans).map(decoderOf);
   const at = (px, k) => {
-    const v00 = tapValue(px, decode, k, x0, y0, size.ni, size.nj, wraps);
-    const v10 = tapValue(px, decode, k, x0 + 1, y0, size.ni, size.nj, wraps);
-    const v01 = tapValue(px, decode, k, x0, y0 + 1, size.ni, size.nj, wraps);
-    const v11 = tapValue(px, decode, k, x0 + 1, y0 + 1, size.ni, size.nj, wraps);
+    const v00 = tapValue(px, dec, k, x0, y0, size.ni, size.nj, wraps);
+    const v10 = tapValue(px, dec, k, x0 + 1, y0, size.ni, size.nj, wraps);
+    const v01 = tapValue(px, dec, k, x0, y0 + 1, size.ni, size.nj, wraps);
+    const v11 = tapValue(px, dec, k, x0 + 1, y0 + 1, size.ni, size.nj, wraps);
     const top = v00 + (v10 - v00) * fx;
     const bot = v01 + (v11 - v01) * fx;
     return top + (bot - top) * fy;
@@ -357,6 +378,11 @@ uniform float uPxScale;      // 장치 픽셀비 — 굵기는 CSS px 로 정한
 uniform sampler2D uHeightMap;
 uniform float uHasHeight;
 #endif
+#ifdef FIELD_TRANSFER_LOG10
+uniform vec2 uLog;           // 로그 디코드: (logSpan/255, logLo) — 값 = 10^(byte * uLog.x + uLog.y) (매니페스트에서 온다)
+uniform float uZeroByte;     // 이 바이트는 '없음' = 0 (강수율은 0.05 mm/h 미만)
+const float LOG2_10 = ${FIELD_LOG2_10};   // GLSL 에 log10 이 없다 — 10^x = exp2(x * LOG2_10). field-log.js 와 같은 수다
+#endif
 varying vec3 vUnit;
 
 const float PI = 3.141592653589793;
@@ -366,7 +392,15 @@ const float PI = 3.141592653589793;
 vec2 tapValue(sampler2D tex, float col, float row) {
   vec2 uv = vec2((col + 0.5) / uGridSize.x, 1.0 - (row + 0.5) / uGridSize.y);
   vec2 bytes = floor(texture2D(tex, uv).rg * 255.0 + 0.5);
+#ifdef FIELD_TRANSFER_LOG10
+  // 로그 자료는 **한 칸씩 여기서 값으로 푼다** — 바이트를 섞은 뒤 풀면 두 값의 기하평균이 나온다(머리말 '로그로 실린 자료').
+  // 없음 바이트는 0 이다(10^(…) 은 0 이 되지 못한다). 정수로 되돌린 바이트끼리 재므로 0.5 문턱이 정확하다.
+  // G 는 읽지 않는다: 강수 프레임의 G(종류 부호)·B(유도값)는 값이 아니라 섞을 수 없다.
+  float val = abs(bytes.x - uZeroByte) < 0.5 ? 0.0 : exp2((bytes.x * uLog.x + uLog.y) * LOG2_10);
+  return vec2(val, 0.0);
+#else
   return bytes * uDecode.xz + uDecode.yw;
+#endif
 }
 
 // 네 칸 이중선형. a + (b − a)·t 꼴 — 고원에서 정확히 a (머리말 ②). 경도는 감고 위도는 극 행에서 멈춘다(frames.sampleAt 과 같다).
@@ -464,25 +498,29 @@ void main() {
 
 const MODES = Object.freeze(['scalar', 'magnitudeRG']);
 const MASKS = Object.freeze(['none', 'ocean']);
+const TRANSFERS = Object.freeze(['linear', 'log10']);
 
 /**
- * new FieldRenderer({ scale, mode, mask, terrain, geometry, segments, lift, opacity, renderOrder })
+ * new FieldRenderer({ scale, mode, mask, transfer, terrain, geometry, segments, lift, opacity, renderOrder })
  *   scale     field-scales.js 의 얼린 눈금(scaleOf('temp'))
  *   mode      'scalar'(기온·기압) | 'magnitudeRG'(풍속 = |R,G|)
  *   mask      'none' | 'ocean'(고도 ≥ 0 인 픽셀을 버린다)
+ *   transfer  'linear'(byte × scale + offset) | 'log10'(강수율 — 머리말 '로그로 실린 자료'). 매니페스트가 말한 것과 다르면 setField 가 던진다.
  *   terrain   main.js 지구의 uniform 묶음 — uHeightMap · uHasHeight · uExagger **객체를 그대로** 물린다. 없으면(시험) 평평한 구.
  *   geometry  지구의 SphereGeometry 를 받아 같이 쓴다(머리말 '지형'). 없으면 segments 로 하나 만든다.
  * 프레임이 오기 전에는 보이지 않는다(visible = false) — 빈 색·검은 구를 그리지 않는다. setFrames 가 켠다.
  */
 export class FieldRenderer {
   constructor({
-    scale, mode = 'scalar', mask = 'none', terrain = null, geometry = null, segments = [1024, 512],
+    scale, mode = 'scalar', mask = 'none', transfer = 'linear', terrain = null, geometry = null, segments = [1024, 512],
     lift = FIELD_LIFT, opacity = FIELD_OPACITY, renderOrder = FIELD_RENDER_ORDER,
   } = {}) {
     if (!MODES.includes(mode)) throw new RangeError(`field-renderer: 모르는 mode '${mode}'`);
     if (!MASKS.includes(mask)) throw new RangeError(`field-renderer: 모르는 mask '${mask}'`);
+    if (!TRANSFERS.includes(transfer)) throw new RangeError(`field-renderer: 모르는 transfer '${transfer}'`);
     this.mode = mode;
     this.mask = mask;
+    this.transfer = transfer;
     const t = terrain || {};
     this.uniforms = {
       uTexA: { value: null },
@@ -492,6 +530,9 @@ export class FieldRenderer {
       uWrapX: { value: 1 },
       uUv: { value: new THREE.Vector4(1, 0, 1, 0) },
       uDecode: { value: new THREE.Vector4(1, 0, 1, 0) },
+      // 로그 디코드(강수율). 선형 필드에서는 셰이더가 읽지 않는다 — 그래도 재질에 두는 것은 uHeightMap 과 같은 이유다(uniform 표가 한 벌).
+      uLog: { value: new THREE.Vector2(0, 0) },
+      uZeroByte: { value: 0 },
       uBreaks: { value: new Float32Array(FIELD_MAX_BREAKS) },
       uPalette: { value: null },
       uBandCount: { value: 1 },
@@ -517,6 +558,7 @@ export class FieldRenderer {
     const defines = { FIELD_MAX_BREAKS, FIELD_MAX_LEVELS };
     if (mode === 'magnitudeRG') defines.FIELD_MODE_MAGNITUDE = 1;
     if (mask === 'ocean') defines.FIELD_MASK_OCEAN = 1;
+    if (transfer === 'log10') defines.FIELD_TRANSFER_LOG10 = 1;
     this.material = new THREE.ShaderMaterial({
       uniforms: this.uniforms, defines, vertexShader: FIELD_VERT, fragmentShader: FIELD_FRAG,
       transparent: true, depthWrite: false, depthTest: true, precision: 'highp',
@@ -541,7 +583,12 @@ export class FieldRenderer {
 
   get object() { return this.mesh; }
 
-  /** 눈금표 → 경계 배열 + 팔레트 텍스처. 팔레트는 **NearestFilter** 다 — Linear 로 읽으면 칸 사이에서 색이 섞여 그라데이션으로 돌아간다. */
+  /**
+   * 눈금표 → 경계 배열 + 팔레트 텍스처. 팔레트는 **NearestFilter** 다 — Linear 로 읽으면 칸 사이에서 색이 섞여 그라데이션으로 돌아간다.
+   * '칠하지 않는 칸'(강수 0.1 mm/h 미만 · 눈금표의 불투명도 0)은 팔레트의 **알파 바이트 0** 으로 들어온다:
+   * 셰이더가 bandA = 0 을 받고 선도 없으면 outA < 0.004 에서 discard 한다 — 옅게도 칠하지 않고 아예 그리지 않는다.
+   * 그래서 렌더러는 어느 칸이 '칠하지 않는 칸'인지 따로 알 필요가 없다. 눈금표 한 줄이 그것을 말한다.
+   */
   setScale(scale) {
     const u = scaleUniforms(scale);
     this.uniforms.uBreaks.value.set(u.breaks);
@@ -562,18 +609,30 @@ export class FieldRenderer {
 
   /**
    * 어느 필드인가 — 프레임 저장소가 말해 준 것을 그대로 넣는다(디코드 상수를 여기 적지 않는다).
-   *   channels  frames.fieldSpec(id).channels (선형 식만 — log 식 필드는 W4 가 다룬다)
+   *   channels  frames.fieldSpec(id).channels (이 렌더러의 transfer 와 같은 식이어야 한다 — 다르면 던진다)
    *   uv        frames.uvTransform(id) · grid  frames.fieldSpec(id).grid
+   * ⚠️ 디코드 식이 어긋나면 화면이 죽지 않고 **조용히 틀린 값**을 칠한다(셰이더의 #ifdef 는 컴파일 때 이미 갈렸다) — 그래서 던진다.
    */
   setField({ channels, uv, grid }) {
     const need = this.mode === 'magnitudeRG' ? 2 : 1;
     if (!channels || channels.length < need) throw new RangeError(`field-renderer: '${this.mode}' 는 채널 ${need}개가 필요하다`);
     for (let k = 0; k < need; k += 1) {
-      if (channels[k].transfer !== 'linear') throw new RangeError('field-renderer: 선형 디코드만 그린다(log 식은 값 보간이 다르다)');
+      if (channels[k].transfer !== this.transfer) {
+        throw new RangeError(this.transfer === 'linear'
+          ? `field-renderer: 선형 디코드만 그린다 — 이 필드는 '${channels[k].transfer}' 다(로그 필드는 transfer:'log10' 렌더러가 그린다)`
+          : `field-renderer: 이 렌더러는 '${this.transfer}' 로 푼다 — 매니페스트의 '${channels[k].transfer}' 와 다르다`);
+      }
     }
     const c0 = channels[0];
-    const c1 = channels[1] || c0;
-    this.uniforms.uDecode.value.set(c0.scale, c0.offset, c1.scale, c1.offset);
+    if (this.transfer === 'log10') {
+      // 로그는 채널 하나(R)뿐이다. uDecode 는 건드리지 않는다 — 로그 채널에는 scale·offset 이 없어 넣으면 NaN 이 된다.
+      const u = logUniforms(c0);
+      this.uniforms.uLog.value.set(u.span, u.lo);
+      this.uniforms.uZeroByte.value = u.zeroByte;
+    } else {
+      const c1 = channels[1] || c0;
+      this.uniforms.uDecode.value.set(c0.scale, c0.offset, c1.scale, c1.offset);
+    }
     this.uniforms.uUv.value.set(uv.su, uv.ou, uv.sv, uv.ov);
     this.uniforms.uGridSize.value.set(grid.ni, grid.nj);
     this.uniforms.uWrapX.value = grid.wraps === false ? 0 : 1;

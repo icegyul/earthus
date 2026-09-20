@@ -185,6 +185,12 @@ export const FIELD_MANIFEST_RELOAD_MS = 30 * 60 * 1000;
 // 느린 회선에서 요청이 끊기지 않고 멈추면 메뉴가 '켜는 중'에 영영 머문다(main.js 지형 타일 로딩이 같은 이유로 15초 타임아웃을 둔다).
 export const FIELD_FIRST_FRAME_TIMEOUT_MS = 20 * 1000;
 
+// 색면이 켜져 있는 동안 시각을 다시 재는 주기 (2026-09-20 작업 E3 ⑥ · B1 반박 검증).
+//   시간 버스는 **오프셋이 바뀔 때만** 알린다. 그런데 유효 시각은 now() + offset 이라 오프셋이 그대로여도 '지금'은 흐른다 —
+//   색면은 켠 순간의 두 프레임과 비율에 멈춘 채, 범례의 유효 시각까지 옛 글로 남았다(페이지를 한 시간 열어 두면 한 시간이 어긋난다).
+//   바람 층이 이미 같은 규칙으로 돈다(wind-layer.js tick 의 slow >= 60). 1분이면 3시간 간격의 비율이 0.6% 씩 움직인다.
+export const FIELD_TIME_REFRESH_MS = 60 * 1000;
+
 const H = 3600_000;
 const p2 = (n) => String(n).padStart(2, '0');
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -481,6 +487,7 @@ export class FieldLayer {
     this.unsubTime = null;
     this.unsubSwap = null;
     this.reloadTimer = null;
+    this.timeTimer = null;  // 1분마다 시각을 다시 잰다 — 오프셋이 그대로여도 '지금'은 흐른다
     this.firstTimer = null;
     this.firstDone = null;
     this.lastInner = null;  // 마지막으로 내보낸 카드 글 · 단추 모양 — 같으면 DOM 을 건드리지 않는다
@@ -607,7 +614,11 @@ export class FieldLayer {
     }
     this.unsubTime = this.timeBus.on(() => this.onTime());    // 듣기 시작하면 지금 시각으로 바로 한 번 부른다(time-bus.js)
     const setI = this.deps.setInterval || (typeof setInterval === 'function' ? setInterval : null);
-    if (setI) this.reloadTimer = setI(() => this.reloadIfStale(), FIELD_MANIFEST_RELOAD_MS);
+    if (setI) {
+      this.reloadTimer = setI(() => this.reloadIfStale(), FIELD_MANIFEST_RELOAD_MS);
+      // 시간 버스는 오프셋이 바뀔 때만 알린다 — '지금'이 흐르는 것은 아무도 안 알려 준다. 1분에 한 번 스스로 잰다.
+      this.timeTimer = setI(() => { if (this.active) this.onTime(); }, FIELD_TIME_REFRESH_MS);
+    }
     await first;
     if (gen !== this.gen) return { on: false };
     if (this.status.kind === 'nodata') return this.fail(this.status.reason);
@@ -627,10 +638,11 @@ export class FieldLayer {
     this.req += 1;
     if (this.unsubTime) { this.unsubTime(); this.unsubTime = null; }
     if (this.unsubSwap) { this.unsubSwap(); this.unsubSwap = null; }
-    if (this.reloadTimer != null) {
+    if (this.reloadTimer != null || this.timeTimer != null) {
       const clr = this.deps.clearInterval || (typeof clearInterval === 'function' ? clearInterval : null);
-      if (clr) clr(this.reloadTimer);
+      if (clr) { if (this.reloadTimer != null) clr(this.reloadTimer); if (this.timeTimer != null) clr(this.timeTimer); }
       this.reloadTimer = null;
+      this.timeTimer = null;
     }
     this.settleFirst();
     if (this.renderer) this.renderer.setVisible(false);

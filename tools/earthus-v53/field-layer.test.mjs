@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import {
-  FIELD_DESCRIPTORS, FieldLayer, cellLabel, fieldCardHtml, fieldStatusOf, readoutOf, sourceLabel, statusText, swapFieldCard,
+  FIELD_DESCRIPTORS, FIELD_TIME_REFRESH_MS, FieldLayer, cellLabel, fieldCardHtml, fieldStatusOf, readoutOf, sourceLabel, statusText, swapFieldCard,
 } from '../../prototype/v2-three/js/field-layer.js';
 import { createGfsFrames } from '../../prototype/v2-three/js/gfs-frames.js';
 import { createTimeBus } from '../../prototype/v2-three/js/time-bus.js';
@@ -61,14 +61,16 @@ function rig({ manifest = SCHEMA2, failManifest = false, failImages = false, now
   const legend = { shown: false, last: null, shows: 0, mount() {}, show(a) { this.shown = true; this.last = a; this.shows += 1; }, hide() { this.shown = false; } };
   const cardEl = { innerHTML: '' };
   const doc = { querySelectorAll: (sel) => (sel === '[data-field-card="tempgrid"]' ? [cardEl] : []) };
-  const timers = { set: 0, cleared: 0 };
+  // 되풀이 타이머는 두 개다(매니페스트 30분 · 시각 1분). 시험이 직접 때릴 수 있게 함수와 주기를 쥐고 있는다.
+  const timers = { set: 0, cleared: 0, fns: [], fire(ms) { for (const t of this.fns) if (t.ms === ms) t.fn(); } };
   const swaps = [];
   const parent = { children: [], add(o) { this.children.push(o); }, remove(o) { this.children = this.children.filter((x) => x !== o); } };
   const layer = new FieldLayer(FIELD_DESCRIPTORS.tempgrid, {
     frames, timeBus, legend, doc, parent, segments: [8, 4], getLang: () => 'ko', now: () => state.now,
     makeLabelTexture: (text) => ({ tex: { text, dispose() {} }, w: 92, h: 40 }),
     onCard: (swap) => swaps.push(swap),
-    setInterval: () => { timers.set += 1; return 7; }, clearInterval: () => { timers.cleared += 1; },
+    setInterval: (fn, ms) => { timers.set += 1; timers.fns.push({ id: timers.set, fn, ms }); return timers.set; },
+    clearInterval: (id) => { timers.cleared += 1; timers.fns = timers.fns.filter((t) => t.id !== id); },
   });
   return { layer, frames, timeBus, legend, calls, state, cardEl, timers, swaps, parent };
 }
@@ -142,6 +144,37 @@ test('같은 두 프레임 사이에서는 섞는 비율만 바뀐다 — 다시
   layer.off();
 });
 
+// 2026-09-20 작업 E3 ⑥ (B1 반박 검증) — 시간 버스는 **오프셋이 바뀔 때만** 알린다. 유효 시각은 now() + offset 이라
+//   오프셋이 그대로여도 '지금'은 흐르는데, 색면은 켠 순간의 비율과 유효 시각에 멈춰 있었다.
+//   바람 층은 이미 1분마다 다시 잰다(tick 의 slow >= 60) — 색면에도 같은 규칙을 둔다.
+test("'지금'은 흐른다 — 오프셋이 그대로여도 1분마다 시각을 다시 잰다(프레임은 다시 청하지 않는다)", async () => {
+  const { layer, legend, calls, state, timers } = rig();               // 지금 = 런 + 1.5 h → f000 과 f003 의 한가운데
+  await layer.on();
+  await tick(20);
+  const u = layer.renderer.uniforms;
+  assert.equal(u.uMix.value, 0.5);
+  const asked = calls.images.length;
+  const requests = layer.requests;
+  const validBefore = legend.last.valid;
+
+  state.now += 30 * 60 * 1000;                                         // 30분이 지났다 — 타임라인은 아무도 안 만졌다
+  assert.equal(u.uMix.value, 0.5, '아무도 안 알려 주면 색면은 켠 순간에 멈춰 있다');
+  timers.fire(FIELD_TIME_REFRESH_MS);                                  // 1분 타이머가 깨어난다
+  await tick(20);
+  assert.ok(Math.abs(u.uMix.value - (0.5 + 0.5 / 3)) < 1e-9, `비율이 따라오지 않았다 (${u.uMix.value})`);
+  assert.equal(legend.last.valid, validBefore + 30 * 60 * 1000, '범례의 유효 시각이 옛 글로 남았다');
+  assert.equal(calls.images.length, asked, '같은 두 프레임 사이다 — 네트워크 0건');
+  assert.equal(layer.requests, requests);
+
+  // 흐르다 다음 키프레임으로 넘어가면 그때는 청한다(f003↔f006).
+  state.now += 2 * H;                                                  // 런 + 4 h
+  timers.fire(FIELD_TIME_REFRESH_MS);
+  await tick(20);
+  assert.equal(layer.key, '3|6');
+  assert.equal(layer.requests, requests + 1);
+  layer.off();
+});
+
 test('타임라인을 빨리 밀어도 늦게 온 옛 응답이 새 그림을 덮지 않는다', async () => {
   // f009 는 늦게 온다(40ms). 그 사이 사용자는 f000~f003 구간으로 돌아갔다.
   const { layer, frames, timeBus } = rig({ delay: (url) => (hourOf(url) === 9 ? 40 : 1) });
@@ -165,13 +198,14 @@ test('끈 뒤에는 시간 버스가 불러도 아무것도 하지 않는다 —
   await tick(20);
   assert.equal(timeBus.listeners(), 1);
   assert.equal(legend.shown, true);
-  assert.equal(timers.set, 1);
+  assert.equal(timers.set, 2, '되풀이 타이머는 둘이다 — 매니페스트 30분 · 시각 1분');
   layer.off();
   assert.equal(timeBus.listeners(), 0, '안 풀면 꺼진 레이어가 프레임을 계속 받는다');
   assert.equal(legend.shown, false);
   assert.equal(layer.renderer.mesh.visible, false);
   assert.deepEqual([layer.labels.count, layer.labels.group.visible], [0, false]);
-  assert.equal(timers.cleared, 1);
+  assert.equal(timers.cleared, 2, '둘 다 풀어야 한다 — 꺼진 레이어가 1분마다 깨어나면 안 된다');
+  assert.equal(timers.fns.length, 0);
   const asked = calls.images.length;
   const shows = legend.shows;
   timeBus.set(7 * H);

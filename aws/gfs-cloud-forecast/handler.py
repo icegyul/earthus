@@ -43,11 +43,11 @@ CDN 전송은 사용자 수에 비례하는 유일한 비용이므로 여기서 
     u{step}.png  RGB(B=0)     UGRD·VGRD 10 m above ground  m/s = byte / 255 × 128 − 64 — 700hPa 바람(w 프레임)과
                               같은 디코드 식. 다만 4° 평균이 아니라 격자 그대로이고(지표 바람은 입자·색면이 직접
                               읽는다), 0.5 m/s 선양자화를 하지 않는다(오차 0.5 → 0.25 m/s, _wind10_byte 주석)
-    m{step}.png  회색 1채널   PRMSL mean sea level     hPa = byte × 0.5 + 940     (940 ~ 1067.5, 밖은 끝값)
+    m{step}.png  회색 1채널   PRMSL mean sea level     hPa = byte × 1 + 870       (870 ~ 1125, 밖은 끝값)
     a{step}.png  회색 1채널   APCP surface 누적강수    mm  = byte 0 이면 0, 아니면 10^(byte/255 × span + log10(0.1))
   왜 8bit 1채널 선형인가: 브라우저는 16bit PNG 를 8bit 로 내려 읽는다. 채널 하나에 값 하나를 선형으로 두면
   하드웨어 LinearFilter 보간이 곧 '값' 보간이 된다 — 두 채널에 나눠 담으면 바이트 경계에서 보간이 깨진다.
-  눈금 0.5 는 구간 경계(기온 5°C·2°C, 등압선 4hPa)가 전부 눈금 위에 오도록 고른 값이다.
+  눈금(기온 0.5 · 기압 1)은 구간 경계(기온 5°C·2°C, 등압선 4hPa)가 전부 눈금 위에 오도록 고른 값이다.
   누적강수만 log 다: 구간 경계(0.1·0.5·1·2·5·10·20·50 mm)가 0.5mm 선형 눈금에 못 올라가고,
   태풍의 6시간 누적은 127mm 를 넘는다. 같은 파일의 강수 강도(_rate_byte)와 같은 문법이다.
 
@@ -115,7 +115,11 @@ _LOG_SPAN = math.log10(CWAT_HI) - _LOG_LO
 FIELDS_ON = os.environ.get('GFS_FC_FIELDS', '1') != '0'
 # 선형 인코딩의 범위. 눈금은 구간 경계가 정확히 눈금 위에 오는 값으로 골랐다(머리 주석).
 TEMP_LO_C, TEMP_STEP_C = -80.0, 0.5          # byte = round((°C + 80) / 0.5)  → −80 ~ +47.5 °C
-MSLP_LO_HPA, MSLP_STEP_HPA = 940.0, 0.5      # byte = round((hPa − 940) / 0.5) → 940 ~ 1067.5 hPa
+# 기압은 처음에 940 ~ 1067.5 hPa(0.5 눈금)였다. 운영 첫 실행(2026-09-20 런 2026092000)에서 **354칸이 940 바닥에 눌렸다** —
+# 태풍 중심이 평평한 940 고원이 된다. 태풍을 보려고 만든 제품에서 그것은 틀린 기본값이라, 이 프레임을 읽는 브라우저 코드가
+# 아직 없을 때 넓혔다. 8bit 에 0.5 눈금으로는 127.5hPa 밖에 못 담는다 — 기록상 최저(870, 태풍 Tip)부터 최고(1084, 시베리아)까지
+# 담으려면 1hPa 눈금이어야 한다. 4hPa 등압선은 여전히 눈금 위다. 브라우저는 상수를 매니페스트 fields.mslp 에서 읽는다(박지 말 것).
+MSLP_LO_HPA, MSLP_STEP_HPA = 870.0, 1.0      # byte = round(hPa − 870) → 870 ~ 1125 hPa
 APCP_LO, APCP_HI = 0.1, 250.0                # mm — log 인코딩 범위. 0.1 = 가장 낮은 구간 경계, 250 = 6시간 누적의 천장
 _ALOG_LO = math.log10(APCP_LO)
 _ALOG_SPAN = math.log10(APCP_HI) - _ALOG_LO
@@ -535,7 +539,7 @@ def _linear_bytes(vals, x0, per_unit):
     """8bit 선형: byte = floor((x − x0) × per_unit + 0.5), 0~255 로 누른다. → (bytes, 끝값으로 눌린 칸 수)
 
     반올림은 이 파일의 다른 곳과 같은 '반 올림'(+0.5 뒤 버림)이다. 눌린 칸 수를 같이 돌려주는 이유:
-    범위 밖은 끝값이 된다 — 태풍 중심이 940hPa 아래로 내려가면 940 으로 찍힌다. 그게 몇 칸인지
+    범위 밖은 끝값이 된다 — 기온이 −80°C 아래로 내려가면 −80 으로 찍힌다(기압도 같다). 그게 몇 칸인지
     매니페스트에 적어 두면 범위가 모자란 날을 화면이 아니라 숫자로 안다.
     값에 None 이 있으면(비트맵 결측) TypeError — 기온·기압에는 '자료 없음'을 뜻할 바이트가 없으므로
     지어내지 않고 그 프레임을 생략한다(build_step 이 잡는다).
@@ -554,7 +558,7 @@ def _temp_bytes(kelvin):
 
 
 def _mslp_bytes(pascal):
-    """PRMSL 은 파스칼로 온다. hPa = Pa / 100 → byte = round((hPa − 940) / 0.5)."""
+    """PRMSL 은 파스칼로 온다. hPa = Pa / 100 → byte = round((hPa − MSLP_LO_HPA) / MSLP_STEP_HPA)."""
     return _linear_bytes(pascal, MSLP_LO_HPA * 100.0, 1.0 / (MSLP_STEP_HPA * 100.0))
 
 

@@ -468,15 +468,19 @@ class EncodingRoundTrip(unittest.TestCase):
 
     def test_pressure(self):
         spec = H.field_specs()['mslp']['channels']['R']
-        hpa = [940.0 + k * 0.0413 for k in range(int(127.5 / 0.0413))]
+        hpa = [870.0 + k * 0.0413 for k in range(int(255.0 / 0.0413))]
         b, clipped = H._mslp_bytes([p * 100.0 for p in hpa])
         self.assertEqual(0, clipped)
         worst = max(abs(byte * spec['scale'] + spec['offset'] - p) for byte, p in zip(b, hpa))
-        self.assertLessEqual(worst, 0.25 + 1e-9)
-        isobars, _ = H._mslp_bytes([p * 100.0 for p in range(940, 1068, 4)])
-        self.assertEqual(list(range(940, 1068, 4)), [byte * 0.5 + 940.0 for byte in isobars], '4hPa 등압선은 눈금 위')
-        deep, clipped = H._mslp_bytes([90500.0, 108500.0])
-        self.assertEqual(([0, 255], 2), (list(deep), clipped), '940 아래 태풍 중심·1067.5 위 고기압은 끝값')
+        self.assertLessEqual(worst, 0.5 + 1e-9, '오차는 눈금(1hPa)의 절반 이하')
+        isobars, _ = H._mslp_bytes([p * 100.0 for p in range(872, 1125, 4)])
+        self.assertEqual(list(range(872, 1125, 4)), [byte * spec['scale'] + spec['offset'] for byte in isobars], '4hPa 등압선은 눈금 위')
+        # 2026-09-20 운영 첫 실행에서 940 바닥에 354칸이 눌렸다 — 태풍 중심(기록 최저 870)과 시베리아 고기압(기록 최고 1084)이 다 들어와야 한다
+        storm, clipped = H._mslp_bytes([87000.0, 90500.0, 93997.0, 108400.0])
+        self.assertEqual(0, clipped, '강한 태풍 중심과 기록적 고기압이 범위 안이다')
+        self.assertEqual([870.0, 905.0, 940.0, 1084.0], [byte * spec['scale'] + spec['offset'] for byte in storm])
+        deep, clipped = H._mslp_bytes([86000.0, 113000.0])
+        self.assertEqual(([0, 255], 2), (list(deep), clipped), '범위 밖은 끝값으로 찍고 센다')
 
     def test_wind10_uses_the_same_decode_as_the_700hpa_frame_with_half_the_error(self):
         spec = H.field_specs()['wind10']['channels']['R']
@@ -509,7 +513,7 @@ class EncodingRoundTrip(unittest.TestCase):
     def test_the_text_encoding_says_what_the_numbers_say(self):
         text = H.FIELD_ENCODING_TEXT
         self.assertIn('degC = byte*0.5-80', text['temp'])
-        self.assertIn('hPa = byte*0.5+940', text['mslp'])
+        self.assertIn('hPa = byte*1.0+870', text['mslp'])
         self.assertIn('R/255*128-64', text['wind10.R'])
         self.assertIn('10^(byte/255*%.4f%+.4f)' % (H._ALOG_SPAN, H._ALOG_LO), text['apcp'])
 
@@ -582,10 +586,13 @@ class Orientation(TinyGrid):
         a = png_pixels(H.apcp_png(field(0.0, 40.0)))[3]
         u = png_pixels(H.wind10_png(field(0.0, 30.0), field(0.0, -30.0)))[3]
         self.assertEqual(220, t[cj][ci])
-        self.assertEqual(40, m[cj][ci])
+        # 기압 바이트는 눈금 상수에서 셈한다 — 2026-09-20 에 범위를 940/0.5 → 870/1.0 으로 넓히면서 박아 둔 숫자(40·120)가 깨졌다.
+        # 이 시험이 지키는 것은 '같은 방향으로 도는가'이지 눈금이 아니다.
+        m_byte = lambda hpa: int(round((hpa - H.MSLP_LO_HPA) / H.MSLP_STEP_HPA))
+        self.assertEqual(m_byte(960.0), m[cj][ci])
         self.assertGreater(a[cj][ci], 0)
         self.assertEqual((H._wind10_byte(30.0), H._wind10_byte(-30.0), 0), tuple(u[cj][ci * 3:ci * 3 + 3]))
-        for rows, bpp, rest in ((t, 1, 160), (m, 1, 120), (a, 1, 0)):
+        for rows, bpp, rest in ((t, 1, 160), (m, 1, m_byte(1000.0)), (a, 1, 0)):
             others = {r[i] for j, r in enumerate(rows) for i in range(self.NI) if (j, i) != (cj, ci)}
             self.assertEqual({rest}, others)
 

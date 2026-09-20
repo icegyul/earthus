@@ -66,7 +66,7 @@ export const i18n = {
 };
 
 const KO = {
-  search: '검색 (나라·시군구·도시·공항)',
+  search: '찾기 · 물어보기 (메뉴·나라·시군구·도시·공항 · 질문)',
   ask: '지구에 묻기 — 지금 켜 놓은 자료만 근거로 답합니다',
   share: '이 화면 공유 (링크 복사 · 그림 저장)',
   help: '사용법 다시 보기',
@@ -76,7 +76,7 @@ const KO = {
   play5d: '5일 예보 재생', close: '닫기',
   loadTerrain: '지형 데이터 로딩', loadPrep: '지형 데이터 로딩 준비…',
   mapAttrib: '위성영상 © Esri · Maxar · Earthstar Geographics',
-  searchPh: '검색 — 나라·시군구·도시·공항',
+  searchPh: '메뉴·장소를 찾거나, 질문을 그대로 적으세요',
   shareLink: '🔗 이 화면 링크 복사',
   shareImage: '🖼 지구 그림 저장 (JPG)',
   shareNote: '링크에는 카메라 위치·켜 놓은 레이어·선택한 나라가 담깁니다',
@@ -161,7 +161,7 @@ const KO = {
 };
 
 const EN = {
-  search: 'Search (country · district · city · airport)',
+  search: 'Find · Ask (topics, places, airports — or type a question)',
   ask: 'Ask the Earth — answers are grounded only in the layers you have on',
   share: 'Share this view (copy link · save image)',
   help: 'Show the walkthrough again',
@@ -171,7 +171,7 @@ const EN = {
   play5d: 'Play the 5-day forecast', close: 'Close',
   loadTerrain: 'Loading terrain', loadPrep: 'Preparing terrain…',
   mapAttrib: 'Satellite imagery © Esri · Maxar · Earthstar Geographics',
-  searchPh: 'Search — country, district, city, airport',
+  searchPh: 'Find a topic or place — or type a question',
   shareLink: '🔗 Copy link to this view',
   shareImage: '🖼 Save the Earth as an image (JPG)',
   shareNote: 'The link carries the camera position, the layers you have on, and the country you selected',

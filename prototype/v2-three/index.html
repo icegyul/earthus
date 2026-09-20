@@ -85,6 +85,7 @@
   }
   #chrome button:hover, #chrome button.on, #chrome a#btn-research:hover { border-color: var(--accent); color: var(--accent); }
   #chrome a#btn-research { text-decoration: none; }
+  #chrome button[hidden] { display: none !important; }   /* ✦ 는 돋보기로 합쳐 숨겼다 — 폭별 규칙이 display 를 되살리지 못하게 */
   .drawer {
     display: none; margin-top: 8px;
     background: var(--panel-bg); border: 1px solid var(--panel-line);
@@ -95,7 +96,8 @@
 
   /* 지구에 묻기 (§17C) — 답과 함께 '무엇을 근거로 썼는지'와 '장면에서 무엇을 했는지'를
      같은 크기로 보여준다. 답만 크게 보이면 근거 없는 문장이 사실처럼 읽힌다. */
-  .ask-head { font-weight: 600; margin-bottom: 3px; }
+  .ask-head { font-weight: 600; margin-bottom: 3px; display: flex; align-items: center; }
+  .ask-head .ui-x { margin-left: auto; }   /* ✦ 단추를 숨긴 뒤로 서랍을 닫는 손잡이 */
   .ask-hint { color: var(--text-dim); font-size: 11px; line-height: 1.55; margin-bottom: 9px; }
   .ask-row { display: flex; gap: 6px; }
   .ask-row input { flex: 1; min-width: 0; padding: 7px 9px; border-radius: 7px;
@@ -1422,8 +1424,12 @@
 <div id="panel" role="main">
   <h1 class="sr-only">EARTHUS 지구 탐색</h1>
   <div id="chrome" role="toolbar" aria-label="주요 기능">
-    <button id="btn-search" data-i18n-title="search" title="검색 (나라·시군구·도시·공항)" aria-label="검색 (나라·시군구·도시·공항)">⌕</button>
-    <button id="btn-ask" data-i18n-title="ask" title="지구에 묻기 — 지금 켜 놓은 자료만 근거로 답합니다" aria-label="지구에 묻기 — 지금 켜 놓은 자료만 근거로 답합니다">✦</button>
+    <button id="btn-search" data-i18n-title="search" title="찾기 · 물어보기 (메뉴·나라·시군구·도시·공항 · 질문)" aria-label="찾기 · 물어보기 (메뉴·나라·시군구·도시·공항 · 질문)">⌕</button>
+    <!-- ✦(지구에 묻기) 단추는 2026-09-20 에 돋보기로 합쳤다 — PD: "질문검색을 메뉴에서 삭제해 · v1 의 오른쪽 상단처럼".
+         돋보기에 문장을 치면 맨 아래 '「…」 물어보기' 줄이 이 서랍을 연다(main.js renderHits → askEarth.openWith).
+         ⚠️ 단추는 지우지 않고 숨긴다: ask-earth.js 가 이 단추의 onclick 을 서랍의 문으로 쓰고,
+            main.js 'shell-open-ask' 와 QA 스크립트(tools/qa_v2_*.mjs)가 #btn-ask 를 누른다. -->
+    <button id="btn-ask" hidden tabindex="-1" aria-hidden="true" data-i18n-title="ask" title="지구에 묻기 — 지금 켜 놓은 자료만 근거로 답합니다">✦</button>
     <button id="btn-share" data-i18n-title="share" title="이 화면 공유 (링크 복사 · 그림 저장)" aria-label="이 화면 공유 (링크 복사 · 그림 저장)">⤴</button>
     <button id="btn-help" data-i18n-title="help" title="사용법 다시 보기" aria-label="사용법 다시 보기">?</button>
     <button id="btn-settings" data-i18n-title="settings" title="설정" aria-label="설정">⚙</button>
@@ -1443,8 +1449,8 @@
   <div id="ask-drawer" class="drawer"></div>
 
   <div id="search-drawer" class="drawer">
-    <h2 class="sr-only">검색</h2>
-    <input type="text" id="c-search" data-i18n-ph="searchPh" placeholder="검색 — 나라·시군구·도시·공항" autocomplete="off" />
+    <h2 class="sr-only">찾기 · 물어보기</h2>
+    <input type="text" id="c-search" data-i18n-ph="searchPh" placeholder="메뉴·장소를 찾거나, 질문을 그대로 적으세요" autocomplete="off" />
     <div id="search-results"></div>
   </div>
 

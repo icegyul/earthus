@@ -285,6 +285,33 @@ test('없앤 절의 배경·조작은 다른 자리에 살아 있다 — 바탕 
   assert.match(indexHtml, /id="btn-search"/);
 });
 
+// 2026-09-20 — 메뉴 안 '메뉴·질문 검색' 칸을 없애고 상단 돋보기(⌕) 하나로 합쳤다
+// (PD: "질문검색을 메뉴에서 삭제해 · v1 에 오른쪽 상단에 질문 입력 버튼 처럼").
+// 칸이 사라졌다고 **찾기와 묻기까지 사라지면 안 된다** — 둘 다 돋보기에 살아 있는지를 못 박는다.
+test('찾기와 묻기는 상단 돋보기 하나다 — 메뉴 안 검색 칸은 없고, 기능은 남았다', async () => {
+  const indexHtml = readFileSync(new URL('../prototype/v2-three/index.html', import.meta.url), 'utf8');
+  // 없어진 것
+  assert.doesNotMatch(shellSrc, /data-menu-search/, '메뉴 안 검색 칸이 남아 있다');
+  assert.doesNotMatch(shellSrc, /menuQuery\s*=/, '쓰이지 않는 검색 상태가 남아 있다');
+  // 남은 것 — '켜진 자료만' 은 검색이 아니라 거르개다
+  assert.match(shellSrc, /data-active-only/, "'켜진 자료만' 거르개가 사라졌다");
+  // 돋보기가 메뉴를 찾는다 — 판정은 메뉴와 같은 함수(matchesMenu) 하나
+  assert.match(shellSrc, /const findTopics = /);
+  assert.match(shellSrc, /findTopics,\s*\n\s*openTopic:/, '셸이 findTopics · openTopic 을 밖으로 내지 않는다');
+  assert.match(mainSrc, /shell\.findTopics\(q, \d+\)/, '돋보기가 메뉴를 찾지 않는다');
+  assert.match(mainSrc, /shell\.openTopic\(h\.tp\.sceneId, h\.tp\.layerId\)/);
+  // 돋보기가 묻는다 — 친 문장 그대로(소문자로 바꾼 검색어가 아니라)
+  assert.match(mainSrc, /askEarth\.openWith\(asked\)/, "돋보기에 '물어보기' 줄이 없다");
+  assert.match(mainSrc, /const asked = searchInput\.value\.trim\(\);/, '질문을 친 그대로 보내지 않는다');
+  assert.match(src('ask-earth.js'), /openWith\(qRaw\)/);
+  // ✦ 단추는 숨겼을 뿐 지우지 않았다 — 서랍의 문이고 QA 스크립트가 누른다
+  assert.match(indexHtml, /<button id="btn-ask" hidden /, '#btn-ask 가 없거나 숨겨지지 않았다');
+  // 판정이 실제로 도는지 — 이름·출처로 걸린다, 빈 검색어는 아무것도 안 돌려준다
+  const { matchesMenu } = await import('../prototype/v2-three/js/information-contract.js');
+  assert.equal(matchesMenu('파고', ['파고와 너울', 'Waves']), true);
+  assert.equal(matchesMenu('파고 공항', ['파고와 너울', 'Waves']), false, '낱말 전부가 걸려야 한다');
+});
+
 test('하단 바로 들어와도 그 도메인이 펼쳐진다', () => {
   // 펼침을 먼저 정하고 그린다. 순서가 뒤바뀌면 접힌 채로 그려 놓고 상태만 바꾼다.
   const i = shellSrc.indexOf('const gotoScene');

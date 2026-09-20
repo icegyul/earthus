@@ -272,7 +272,9 @@ export function initShell(hooks) {
   // 하단바 '우주' 칸으로 서랍을 열었을 때만 켜는 표시 — 같은 AETHERUS 서랍이라도
   // 왼쪽 가장자리 탭으로 열었으면 우주 불을 켜지 않는다(들어온 문이 다르다).
   let spaceDoor = false;
-  let menuQuery = '';
+  /* 메뉴 안 검색 칸(menuQuery)은 2026-09-20 에 없앴다 — PD: "질문검색을 메뉴에서 삭제해 ·
+     v1 의 오른쪽 상단 버튼처럼". 찾기와 묻기는 상단 돋보기(⌕) 하나가 한다(findTopics 참고).
+     '켜진 자료만' 은 검색이 아니라 거르개라 메뉴에 남는다. */
   let activeOnly = false;
   let selectedMenu = null;
 
@@ -437,7 +439,8 @@ export function initShell(hooks) {
   };
 
   // 현상 한 줄이 검색어에 걸리는가 — 이름·질문뿐 아니라 속한 레이어 이름·출처까지 본다.
-  const phenMatches = (entry) => matchesMenu(menuQuery, [
+  // 검색어는 밖(상단 돋보기)에서 온다 — 메뉴 안 검색 칸은 없앴다.
+  const phenMatches = (entry, q) => matchesMenu(q, [
     entry.p.label.ko, entry.p.label.en, entry.p.question.ko, entry.p.question.en,
     entry.members.map((m) => m.l.name).join(' '),
     entry.members.map((m) => m.l.src).join(' '),
@@ -458,7 +461,7 @@ export function initShell(hooks) {
     const sel = !!selectedMenu && (selectedMenu.s.id + '/' + selectedMenu.l.id) === entry.rep.key;
     const name = i18n.ko ? entry.p.label.ko : entry.p.label.en;
     const more = entry.members.length > 1;
-    const open = expandedPhenomena.has(entry.id) || !!menuQuery;
+    const open = expandedPhenomena.has(entry.id);
     // 자료가 여럿이면 펼쳐서 그 안의 레이어를 그대로 켤 수 있다 — 기능은 하나도 안 사라진다.
     const expander = more
       ? '<button class="mp-expand" data-expand="' + entry.id + '" aria-expanded="' + (open ? 'true' : 'false')
@@ -501,21 +504,51 @@ export function initShell(hooks) {
 
   const groupSectionHtml = (gid) => {
     const all = GROUP_INDEX.get(gid) || [];
-    const shown = all.filter((e) => {
-      if (activeOnly && !e.members.some((m) => layerOnState(m).on)) return false;
-      return phenMatches(e);
-    });
+    const shown = all.filter((e) => !activeOnly || e.members.some((m) => layerOnState(m).on));
     if (!shown.length) return '';
     const g = GROUP_BY_ID.get(gid);
     const label = i18n.ko ? g.label.ko : g.label.en;
-    const hidden = !menuQuery && collapsedSections.has(gid);
+    // '켜진 자료만' 은 접힌 절도 펼친다 — 절이 전부 접힌 채 시작하므로(기본), 거르고도 제목만 남으면
+    // 무엇이 켜져 있는지 여전히 안 보인다. (예전에는 검색어가 있을 때 이렇게 펼쳤다.)
+    const hidden = !activeOnly && collapsedSections.has(gid);
     return '<section class="mp-sec" data-section="' + gid + '" style="--sc:' + groupAccent(gid) + '">'
       + '<h3 class="mp-title"><button data-collapse="' + gid + '" aria-expanded="' + (hidden ? 'false' : 'true') + '">'
       + groupIconHtml(gid) + '<i></i>' + safeText(label) + '<em>' + shown.length + '</em></button></h3>'
       + '<div ' + (hidden ? 'hidden' : '') + '>'
-      + (menuQuery || activeOnly ? '' : chipsFor(gid))
+      + (activeOnly ? '' : chipsFor(gid))
       + shown.map(phenomenonRowHtml).join('')
       + '</div></section>';
+  };
+
+  // 거른 결과가 비었을 때 — 남은 거르개는 '켜진 자료만' 하나다. 무엇을 하면 되는지를 말한다.
+  const emptyMenuHtml = () => `<p role="status">${i18n.ko
+    ? '켜진 자료가 없습니다. \'켜진 자료만\' 을 끄면 전체 메뉴가 보입니다.'
+    : 'Nothing is switched on. Untick “Active only” to see every topic.'}</p>`;
+
+  /* 상단 돋보기(⌕)가 메뉴도 찾는다 — 2026-09-20.
+     메뉴 안 검색 칸을 없애면서 '이름으로 현상 찾기'까지 사라지면 안 된다. 같은 판정(phenMatches →
+     matchesMenu)을 밖에서 부르게 낸다 — 판정이 둘이면 돋보기가 찾은 것과 메뉴에 있는 것이 갈라진다.
+     EARTHUS 묶음 전부 + 우주. 돌려주는 것은 그리는 데 필요한 최소한(이름·묶음·대표 레이어)뿐이다. */
+  const findTopics = (q, limit = 6) => {
+    const query = String(q || '').trim();
+    if (!query) return [];
+    const out = [];
+    for (const gid of [...EARTHUS_MENU_GROUPS, 'space']) {
+      const g = GROUP_BY_ID.get(gid);
+      for (const e of GROUP_INDEX.get(gid) || []) {
+        if (!phenMatches(e, query)) continue;
+        out.push({
+          id: e.id,
+          name: i18n.ko ? e.p.label.ko : e.p.label.en,
+          group: g ? (i18n.ko ? g.label.ko : g.label.en) : '',
+          sceneId: e.rep.s.id,
+          layerId: e.rep.l.id,
+          on: e.members.some((m) => layerOnState(m).on),
+        });
+        if (out.length >= limit) return out;
+      }
+    }
+    return out;
   };
 
   /* '지구 표현 · 이동' 절은 2026-09-20 에 없앴다 (PD: "이건 뭔지 모르겠어 메뉴에서 삭제").
@@ -710,10 +743,9 @@ export function initShell(hooks) {
         <div class="mp-head-copy"><b>${isReport ? (i18n.ko ? '리포트' : 'REPORTS') : aeth ? 'AETHERUS' : 'EARTHUS'}</b><small>${isReport ? (i18n.ko ? '사건 분석 · 지구 회고 · 전망' : 'Event analysis · retrospective · outlook') : i18n.t(aeth ? 'mpTagA' : 'mpTagE')}</small></div>
         <button class="ui-x" data-x="1" aria-label="${i18n.ko ? '메뉴 닫기':'Close menu'}">✕</button>
       </div>
-      ${isReport ? '' : `<div class="mp-search"><label>${i18n.ko ? '메뉴·질문 검색':'Find a topic'}<input type="search" data-menu-search value="${safeText(menuQuery)}" placeholder="${i18n.ko ? '예: 파고, 무장애, 한국':'Search topics'}"></label>
-      <label class="mp-active-only"><input type="checkbox" data-active-only ${activeOnly ? 'checked':''}>${i18n.ko ? '켜진 자료만':'Active only'}</label></div>`}
+      ${isReport ? '' : `<div class="mp-search"><label class="mp-active-only"><input type="checkbox" data-active-only ${activeOnly ? 'checked':''}>${i18n.ko ? '켜진 자료만':'Active only'}</label></div>`}
       <div class="mp-body">
-        ${isReport ? reportPanelHtml() : groups.map(groupSectionHtml).join('') || `<p role="status">${i18n.ko ? '조건에 맞는 메뉴가 없습니다. 검색어 또는 필터를 바꿔 주세요.':'No matching topics. Change the search or filter.'}</p>`}
+        ${isReport ? reportPanelHtml() : groups.map(groupSectionHtml).join('') || emptyMenuHtml()}
         ${isReport ? '' : `<div class="mp-foot">${i18n.t('mpFoot')}</div>`}
       </div>`;
     panel.classList.add('open');
@@ -745,14 +777,14 @@ export function initShell(hooks) {
     const body = panel.querySelector('.mp-body');
     const top = body ? body.scrollTop : 0;
     const active = document.activeElement;
-    const restore = active && panel.contains(active) ? {search:active.matches('[data-menu-search]'), start:active.selectionStart, end:active.selectionEnd,scene:active.dataset.fscene,id:active.dataset.flayer,collapse:active.dataset.collapse} : null;
+    const restore = active && panel.contains(active) ? {scene:active.dataset.fscene,id:active.dataset.flayer,collapse:active.dataset.collapse} : null;
     const onChips = [...panel.querySelectorAll('.mp-chip.on')]
       .map((c) => c.dataset.region || c.dataset.pop).filter(Boolean);
     openPanel(openBrand);
     const body2 = panel.querySelector('.mp-body');
     if (body2 && top) body2.scrollTop = top;
-    const restoreEl = restore?.search ? panel.querySelector('[data-menu-search]') : restore?.id ? panel.querySelector(`[data-fscene="${restore.scene}"][data-flayer="${restore.id}"]`) : restore?.collapse ? panel.querySelector(`[data-collapse="${restore.collapse}"]`) : null;
-    if (restoreEl) { restoreEl.focus({preventScroll:true}); if(restore?.search)restoreEl.setSelectionRange(restore.start,restore.end); }
+    const restoreEl = restore?.id ? panel.querySelector(`[data-fscene="${restore.scene}"][data-flayer="${restore.id}"]`) : restore?.collapse ? panel.querySelector(`[data-collapse="${restore.collapse}"]`) : null;
+    if (restoreEl) restoreEl.focus({preventScroll:true});
     for (const key of onChips) {
       const c = panel.querySelector(`.mp-chip[data-region="${key}"], .mp-chip[data-pop="${key}"]`);
       if (c) c.classList.add('on');
@@ -769,18 +801,18 @@ export function initShell(hooks) {
         그러면 **지금 글자를 치고 있는 input 이 글자마다 파괴된다** — 한글은 자모가 조합되는
         도중에 입력 요소가 사라지므로 "ㅎㅏㄴ" 처럼 풀려 버리고, '켜진 자료만' 체크박스는
         누르는 순간 포커스를 잃는다. 값과 커서를 되살려도 조합 중인 IME 는 되살릴 수 없다.
-     그리는 함수는 openPanel 과 같은 것을 쓴다 — 그리는 곳이 둘이면 또 갈라진다. */
+     그리는 함수는 openPanel 과 같은 것을 쓴다 — 그리는 곳이 둘이면 또 갈라진다.
+     (2026-09-20: 검색 칸은 상단 돋보기로 옮겨 없앴다. 위 규칙은 '켜진 자료만' 체크박스에 그대로
+      해당한다 — 패널을 통째로 다시 쓰면 누르는 순간 포커스를 잃는다.) */
   panel.addEventListener('input',e=>{
-    if(e.target.matches('[data-menu-search]')) menuQuery=e.target.value;
-    else if(e.target.matches('[data-active-only]')) activeOnly=e.target.checked;
+    if(e.target.matches('[data-active-only]')) activeOnly=e.target.checked;
     else return;
     const body = panel.querySelector('.mp-body');
     if (!body) return;
     const aeth = openBrand === 'aetherus';
     const groups = aeth ? ['space'] : [...EARTHUS_MENU_GROUPS];
-    // 꼬리말(.mp-foot)도 .mp-body 안에 있다 — 같이 그리지 않으면 검색하는 동안만 사라진다.
-    body.innerHTML = (groups.map(groupSectionHtml).join('')
-      || `<p role="status">${i18n.ko?'조건에 맞는 메뉴가 없습니다. 검색어 또는 필터를 바꿔 주세요.':'No matching topics. Change the search or filter.'}</p>`)
+    // 꼬리말(.mp-foot)도 .mp-body 안에 있다 — 같이 그리지 않으면 거르는 동안만 사라진다.
+    body.innerHTML = (groups.map(groupSectionHtml).join('') || emptyMenuHtml())
       + `<div class="mp-foot">${i18n.t('mpFoot')}</div>`;
   });
   panel.addEventListener('keydown',e=>{if(e.key==='Escape'){const brand=openBrand;closeFlyout();(brand==='aetherus'?tabA:tabE).focus();}});
@@ -1493,6 +1525,19 @@ export function initShell(hooks) {
     openIntel: (tab) => { if (tab) showTab(tab, 'intent'); setIntelOpen(true); },
     // 추천 질문의 위성 경로 — 우주 씬으로 보내 SGP4 전파를 실제로 보여준다 (sim-q · satellite-track).
     gotoScene,
+    // 상단 돋보기가 쓴다 — 메뉴 줄을 누른 것과 **같은 길**로 간다(켜져 있으면 끈다. 그래서 돋보기가
+    // 결과 줄에 '켜기/끄기'를 적는다). 길을 따로 내면 메뉴와 돋보기의 동작이 갈라진다.
+    findTopics,
+    openTopic: (sceneId, layerId) => {
+      const scene = SCENES.find((s) => s.id === sceneId);
+      const layer = scene && scene.layers.find((l) => l.id === layerId);
+      if (!layer || !hooks.onLayerAction) return false;
+      selectedMenu = { s: scene, l: layer };
+      applyCapabilityGating();
+      intelContent.scrollTop = 0;
+      hooks.onLayerAction(scene.id, layer);
+      return true;
+    },
   };
 }
 

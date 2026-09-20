@@ -33,6 +33,7 @@ const TOOLS = {
 const T = {
   ko: {
     title: '지구에 묻기',
+    close: '물어보기 닫기',
     hint: '지금 켜 놓은 레이어의 값만 근거로 답합니다. 화면에 없는 것은 답하지 않습니다.',
     ph: '예) 지금 이 지역에 비가 오나? 무슨 근거로?',
     ask: '묻기',
@@ -60,6 +61,7 @@ const T = {
   },
   en: {
     title: 'Ask the Earth',
+    close: 'Close Ask',
     hint: 'Answers are grounded only in the layers you have on. It will not answer what is not on screen.',
     ph: 'e.g. Is it raining here right now, and on what evidence?',
     ask: 'Ask',
@@ -110,7 +112,7 @@ export class AskEarth {
     if (!btn || !box) return;
     const t = this.t;
     box.innerHTML = `
-      <div class="ask-head">${esc(t.title)}</div>
+      <div class="ask-head">${esc(t.title)}<button type="button" class="ui-x" id="ask-x" aria-label="${esc(t.close)}">✕</button></div>
       <div class="ask-hint">${esc(t.hint)}</div>
       <div class="ask-row">
         <input type="text" id="ask-q" maxlength="${MAX_Q}" placeholder="${esc(t.ph)}" autocomplete="off" />
@@ -121,7 +123,10 @@ export class AskEarth {
     const input = box.querySelector('#ask-q');
     const go = box.querySelector('#ask-go');
     go.onclick = () => this.ask(input.value);
-    input.onkeydown = (e) => { if (e.key === 'Enter') this.ask(input.value); };
+    // Enter = 묻기 · Esc = 닫기. ⚠️ ✦ 단추를 돋보기로 합쳐 숨긴 뒤(2026-09-20)로는 서랍을 닫을 손잡이가
+    //   화면에 없었다 — 닫기(✕)와 Esc 를 서랍 안에 둔다. 단추를 숨기면 그 단추가 하던 '닫기'도 같이 옮겨야 한다.
+    input.onkeydown = (e) => { if (e.key === 'Enter' && !e.isComposing) this.ask(input.value); else if (e.key === 'Escape') this.close(); };
+    box.querySelector('#ask-x').onclick = () => this.close();
     btn.onclick = () => {
       const open = box.classList.toggle('open');
       btn.classList.toggle('on', open);
@@ -144,6 +149,16 @@ export class AskEarth {
   close() {
     if (this.box) this.box.classList.remove('open');
     if (this.btn) this.btn.classList.remove('on');
+  }
+
+  // 상단 돋보기의 '「…」 물어보기' 줄이 부른다(2026-09-20 — ✦ 단추는 돋보기로 합쳤다).
+  // 서랍을 **같은 문**(btn.onclick)으로 열어 onOpen 까지 그대로 타고, 친 문장을 그대로 묻는다.
+  openWith(qRaw) {
+    if (!this.box || !this.btn) return;
+    if (!this.box.classList.contains('open')) this.btn.onclick();
+    const input = this.box.querySelector('#ask-q');
+    if (input) input.value = String(qRaw || '');
+    this.ask(qRaw);
   }
 
   async ask(qRaw) {

@@ -5158,6 +5158,8 @@ async function main() {
   const toggleDrawer = (drawer, btn) => {
     const willOpen = !drawer.classList.contains('open');
     closeDrawers();
+    // 물어보기 서랍도 같은 자리에 뜬다 — ✦ 를 돋보기로 합친 뒤로는 돋보기를 다시 누르면 두 서랍이 겹쳤다.
+    askEarth.close();
     shell.closeFlyout();
     if (willOpen) {
       drawer.classList.add('open');
@@ -5648,6 +5650,7 @@ async function main() {
         const d = document.createElement('div');
         d.className = 'search-hit';
         if (rt.error) {
+          d.classList.add('search-none');
           d.style.color = 'var(--text-dim)';
           d.textContent = `항로 — '${rt.error}' 공항을 찾지 못했습니다`;
           searchResults.appendChild(d);
@@ -5693,6 +5696,16 @@ async function main() {
         }
       }
     }
+    /* 메뉴의 현상도 여기서 찾는다 — 메뉴 안 '메뉴·질문 검색' 칸은 2026-09-20 에 없앴다
+       (PD: "질문검색을 메뉴에서 삭제해 · v1 의 오른쪽 상단처럼"). 찾기와 묻기가 돋보기 하나로 모인다.
+       판정은 메뉴와 같은 것(shell.findTopics → matchesMenu)을 쓴다. 누르면 메뉴 줄을 누른 것과 같은
+       길로 가므로(켜져 있으면 꺼진다) 줄에 '켜기/끄기'를 적는다. 장소보다 먼저 둔다 — '파고'를 친
+       사람이 찾는 것은 공항이 아니다. */
+    const topics = shell.findTopics(q, 5).map((tp) => ({
+      kind: 'topic', tp,
+      label: `◉ ${tp.name} · ${tp.group} — ${tp.on ? (i18n.ko ? '켜져 있음 · 끄기' : 'on · turn off') : (i18n.ko ? '켜기' : 'turn on')}`,
+    }));
+    hits.unshift(...topics);
     for (const h of hits) {
       const d = document.createElement('div');
       d.className = 'search-hit';
@@ -5701,6 +5714,7 @@ async function main() {
         searchResults.innerHTML = '';
         searchInput.value = '';
         closeDrawers();
+        if (h.kind === 'topic') { shell.openTopic(h.tp.sceneId, h.tp.layerId); return; }
         if (h.kind === 'country') { focus.clear(); const cc = centroidOfCountry(h.f); if (cc) countryClick = cc; focus.select(h.f); return; }
         // 공항·시군구는 그 지점 상공으로 — 국가 포커스는 건드리지 않는다
         let ty = THREE.MathUtils.degToRad(h.lon);
@@ -5715,9 +5729,25 @@ async function main() {
     }
     if (!hits.length) {
       const d = document.createElement('div');
-      d.className = 'search-hit';
+      d.className = 'search-hit search-none';   // 누를 것이 아니다 — Enter 가 이 줄을 고르지 않게 표시한다
       d.style.color = 'var(--text-dim)';
-      d.textContent = '일치하는 나라·시군구·도시·공항이 없습니다';
+      d.textContent = i18n.ko ? '일치하는 메뉴·나라·시군구·도시·공항이 없습니다' : 'No matching topic, country, city or airport';
+      searchResults.appendChild(d);
+    }
+    /* 물어보기 — 검색창이 곧 질문창이다 (v1 js/search.js 와 같은 문법, 2026-09-20 PD 지시).
+       무엇을 치든 맨 아래에 "이 문장을 그대로 물어보기" 줄을 둔다. 찾는 것이 없어도 이 줄은 남는다.
+       ⚠️ q 는 소문자로 바꾼 검색용이다 — 질문은 **친 그대로** 보낸다. */
+    const asked = searchInput.value.trim();
+    if (asked) {
+      const d = document.createElement('div');
+      d.className = 'search-hit search-ask';
+      d.textContent = i18n.ko ? `✦ 「${asked}」 물어보기 — 지금 켜 놓은 자료만 근거로 답합니다` : `✦ Ask: “${asked}” — answered only from the data you have on`;
+      d.addEventListener('click', () => {
+        searchResults.innerHTML = '';
+        searchInput.value = '';
+        closeDrawers();
+        askEarth.openWith(asked);
+      });
       searchResults.appendChild(d);
     }
   };
@@ -5725,6 +5755,13 @@ async function main() {
     const q = searchInput.value.trim().toLowerCase();
     if (q && !airports) { loadAirports().then(() => renderHits(searchInput.value.trim().toLowerCase())); }
     renderHits(q);
+  });
+  // Enter = 맨 위 결과. 결과가 물어보기 줄뿐이면 그대로 묻는다 — 돋보기에 문장을 치고 Enter 를 누르는 것이
+  // 이 창의 가장 흔한 쓰임이 된다(메뉴의 질문 검색 칸이 하던 일).
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' || e.isComposing) return;
+    const first = searchResults.querySelector('.search-hit:not(.search-none)');
+    if (first) { e.preventDefault(); first.click(); }
   });
 
   // 눈·얼음 관측 레이어 (P1 계절 컨텍스트): GIBS MODIS NDSI — extent만, 적설 깊이 아님

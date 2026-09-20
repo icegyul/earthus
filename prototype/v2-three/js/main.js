@@ -3167,6 +3167,13 @@ async function main() {
   window.__earthusVol = cloudVol;
   const aethLink = new AetherusLink(scene);
   window.__earthusAeth = aethLink;
+  /* 궤도 인텔리전스의 배지 — 코어의 판정(freshness)을 v2 배지 어휘로 옮긴다.
+     2026-09-20: 카드 배지가 'LIVE' 로 못박혀 있었다. 운영 스냅샷이 16일 묵어 코어가 지구에
+     0기를 그리는 동안에도 배지는 LIVE 였다. 새 어휘는 만들지 않는다 — STALE('이전 자료')·
+     UNAVAILABLE('확인 불가')은 engine-bridge 에 이미 있는 낱말이다.
+     자료를 아직 안 받았으면 null 을 준다(메뉴의 고정 배지를 그대로 둔다 — 모르는 상태를 지어내지 않는다). */
+  const AETH_ORBIT_BADGE = { FRESH: 'LIVE', STALE: 'STALE', EMPTY: 'UNAVAILABLE' };
+  const aethOrbitBadge = () => AETH_ORBIT_BADGE[aethLink.core.freshness()] || null;
 
   // ---- 정본 엔진 런타임 등록 (core/engine-runtime.js 계약) ----------------
   // 기존 모듈은 고치지 않고 어댑터로 감싼다. 런타임이 ResourceScope·품질 전파·측정을 맡는다.
@@ -3911,7 +3918,14 @@ async function main() {
     if (live) return liveLayers.state(live[0]);
     if (sid === 'space' && id === 'sats') return satLayer.state('core');
     if (sid === 'space' && id === 'starlink') return satLayer.state('starlink');
-    if (sid === 'space' && id === 'aeth-orbit') return aethLink.state();
+    if (sid === 'space' && id === 'aeth-orbit') {
+      /* 메뉴 줄의 배지는 고정 문자열(LIVE)이다. 코어가 자료를 받아 묵었다고 판정한 뒤에는
+         그 판정으로 낮춘다 — 셸이 st.badge 를 고정 배지보다 먼저 쓴다(ui-shell rowBadge).
+         한 번도 안 켠 동안은 자료를 안 받았으니 알 수 없다 — 고정 배지가 그대로 나간다. */
+      const st = aethLink.state();
+      const badge = aethOrbitBadge();
+      return badge && badge !== 'LIVE' ? { ...st, badge } : st;
+    }
     return {};
   };
 
@@ -4285,7 +4299,8 @@ async function main() {
         aethLink.toggle().then((st) => {
           if(!current())return;
           shell.refreshFlyout();
-          if (st.on) note('궤도 인텔리전스', aethLink.card(), 'LIVE');
+          // 배지는 코어의 판정을 따른다 — 'LIVE' 로 못박혀 있어 16일 묵은 스냅샷(지구에 0기)에도 LIVE 였다(2026-09-20).
+          if (st.on) note('궤도 인텔리전스', aethLink.card(), aethOrbitBadge() || 'LIVE');
           else if (st.error) note('궤도 인텔리전스', `AETHERUS 과학 API에 연결하지 못했습니다 — 위치·근접사건을 생성하지 않습니다.<br/>${st.error}`, 'UNAVAILABLE');
           else { lockedNote = null; shell.renderIntel(); }
         });

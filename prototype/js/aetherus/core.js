@@ -75,6 +75,17 @@ export const loadSatJs = () => {
 const num = (n) => (typeof n === 'number' && Number.isFinite(n) ? n : null);
 const fmt = (n) => (n == null ? '—' : n.toLocaleString());
 
+/* 나이·상한을 사람이 읽는 길이로 적는다. 하루를 넘기면 '일'이다.
+   ⚠️ 2026-09-20: 이 환산은 positionBlockReason 안에만 있었고, 카드의 나이 문구에는 '일'
+      단위가 없었다. 그래서 16일 묵은 운영 스냅샷이 '약 390시간 전'으로 나갔다 — 얼마나
+      낡았는지 읽히지 않는다. 모듈로 올려 칩(state)·카드(card)·차단 사유가 같은 자를 쓴다.
+      (영어 문구에 한국어 단위가 섞여 나가던 것도 여기서 같이 가른다.) */
+const span = (sec, ko = true) => {
+  const [n, unit] = sec >= 86400 ? [sec / 86400, ko ? '일' : ' d']
+    : sec >= 3600 ? [sec / 3600, ko ? '시간' : ' h'] : [sec / 60, ko ? '분' : ' min'];
+  return `${Math.round(n)}${unit}`;
+};
+
 /** 파편·로켓바디 판별 — 정본 이름 규약(CelesTrak/SATCAT)을 그대로 읽는다. */
 export const isDebris = (name) => /\bDEB\b|DEBRIS|R\/B|ROCKET BODY/i.test(name || '');
 
@@ -320,15 +331,72 @@ export class AetherusCore {
     return this.entries.filter((e) => e.epochMs != null && e.epochMs < cut).length;
   }
 
+  /* 지금 자리를 낼 수 있는 객체들 — positions() 가 건너뛰는 조건과 같은 조건으로 고른다.
+     ⚠️ 2026-09-20: 화면이 말하는 '몇 기 표시'가 이 목록이 아니라 받은 목록 전체
+        (entries.length)였다. 운영 스냅샷이 16일 묵어 지구에는 0기를 그리면서 카드
+        머리말은 '500기를 지금 자리에 그렸습니다'라고 했다. 말하는 수와 그리는 수가
+        같은 곳에서 나오게 한다 — 칩(state)·카드(card)·유효성(positionsUsable) 모두
+        이 목록 하나를 본다. (SGP4 가 요소를 거부하는 객체는 풀어 봐야 알 수 있어
+        여기서 못 센다 — 이 수는 '그릴 수 있는 최대'다.) */
+  _drawable() {
+    if (!this.entries.length) return [];
+    if (this.mode() === 'SGP4') {
+      const cut = Date.now() - MAX_ELEMENT_AGE_S * 1000;
+      return this.entries.filter((e) => e.omm && !(e.epochMs != null && e.epochMs < cut));
+    }
+    const age = this.ageSeconds();
+    return age != null && age <= this.ageLimitSeconds() ? this.entries : [];
+  }
+
+  /** 지금 자리를 낼 수 있는 객체 수 — 화면이 '몇 기 표시'라고 말할 때의 근거. */
+  drawableCount() { return this._drawable().length; }
+
   /* 위치를 그려도 되는가.
      ⚠️ 요소 경로에서는 한 벌 전체를 통으로 막지 않는다 — 객체마다 요소 나이가
         다르므로 낡은 것만 빼고 나머지는 그린다(뺀 수는 카드에 적는다). 통으로
-        막으면 오래된 한 기 때문에 멀쩡한 499기가 사라진다. */
+        막으면 오래된 한 기 때문에 멀쩡한 499기가 사라진다.
+     2026-09-20: 요소 경로의 판정이 '낡은 수 < 받은 수'였는데, 요소 없이 온 객체는
+        낡은 수에 안 잡혀서 "나머지는 전부 낡고 요소 없는 객체만 남은" 벌이 그릴 수
+        있는 것으로 판정됐다(그려지는 것은 0기). 그릴 수 있는 객체가 하나라도 있는가로
+        바꿨다 — 그 밖의 경우에는 예전 판정과 같은 답이다. */
   positionsUsable() {
-    if (!this.entries.length) return false;
-    if (this.mode() === 'SGP4') return this.tooOld() < this.entries.length;
+    return this._drawable().length > 0;
+  }
+
+  /** 자료가 상한보다 묵어서 위치를 못 그리는 상태인가 — 배지와 칩이 이 값을 본다.
+      (객체가 아예 없거나 시각을 모르는 것은 '묵음'이 아니라 '없음'이다 — 나이를 지어내지 않는다) */
+  stale() {
+    if (this.positionsUsable()) return false;
     const age = this.ageSeconds();
-    return age != null && age <= this.ageLimitSeconds();
+    return age != null && age > this.ageLimitSeconds();
+  }
+
+  /** 배지가 볼 한 낱말 — 'FRESH' 그릴 수 있다 · 'STALE' 묵어서 안 그린다 · 'EMPTY' 받은 것이 없어 못 그린다.
+      자료를 아직 안 받았으면 null(없는 상태를 지어내지 않는다). 이 낱말을 자기 배지 어휘로 옮기는
+      일은 각 지구가 한다 — 코어는 렌더러도 화면 어휘도 모른다. */
+  freshness() {
+    if (!this.loaded) return null;
+    if (this.positionsUsable()) return 'FRESH';
+    return this.stale() ? 'STALE' : 'EMPTY';
+  }
+
+  /**
+   * 위치를 안 그릴 때 **맨 앞에** 놓는 한 줄. 그릴 수 있으면 null.
+   * 칩(state)과 카드 첫 줄(card)이 같은 말을 하도록 한 곳에서 만든다 — 2026-09-20 까지
+   * 칩은 '위치 비표시'라 하고 카드 머리말은 '그렸습니다'라 했다.
+   * 상한은 경로마다 다르다(요소 7일 · 상태벡터는 발행 정책값, 분 단위) — 적어 넣지 않고 읽는다.
+   */
+  withheldLine(ko = true) {
+    if (this.positionsUsable()) return null;
+    if (!this.stale()) {
+      return ko ? `위치 표시 안 함 — ${this.positionBlockReason(true) || '표시할 수 있는 자리가 없습니다.'}`
+        : `Positions not shown — ${this.positionBlockReason(false) || 'nothing can be positioned.'}`;
+    }
+    const age = this.ageSeconds();
+    const limit = this.ageLimitSeconds();
+    return ko
+      ? `위치 표시 안 함 — ${this.fromSnapshot ? '스냅샷' : '자료'} ${span(age)} 전(상한 ${span(limit)})`
+      : `Positions not shown — ${this.fromSnapshot ? 'snapshot' : 'data'} is ${span(age, false)} old (limit ${span(limit, false)})`;
   }
 
   /** 위치를 못 그리는 이유 한 줄. 그릴 수 있으면 null. */
@@ -339,20 +407,19 @@ export class AetherusCore {
     const limit = this.ageLimitSeconds();
     if (this.positionsUsable()) return null;   // 일부만 낡은 건 아래 카드가 개수로 적는다
     if (age <= limit) return null;
-    const span = (sec) => (sec >= 86400 ? `${Math.round(sec / 86400)}일`
-      : sec >= 3600 ? `${Math.round(sec / 3600)}시간` : `${Math.round(sec / 60)}분`);
+    // span 은 모듈 맨 위로 올렸다(2026-09-20) — 카드·칩도 같은 환산을 쓴다.
     if (this.mode() === 'SGP4') {
       return ko
         ? `모든 궤도요소가 허용(${span(limit)})보다 오래됐습니다 — 가장 오래된 것이 `
           + `${span(age)} 전입니다. 이만큼 낡은 요소로 푼 자리는 실제와 크게 `
           + '벌어집니다 — 그리지 않습니다.'
-        : `Every element set is older than the ${span(limit)} limit (oldest ${span(age)}) — not drawn.`;
+        : `Every element set is older than the ${span(limit, false)} limit (oldest ${span(age, false)}) — not drawn.`;
     }
     return ko
       ? `스냅샷이 ${span(age)} 전 것이고 이 발행본에는 궤도요소가 없습니다 `
         + `(상태벡터 허용 ${span(limit)}). 위성은 초당 약 7.5km 를 지나가므로 `
         + '이 위치는 지금 위치가 아닙니다 — 그리지 않습니다.'
-      : `Snapshot is ${span(age)} old with no elements published (state-vector limit ${span(limit)}). `
+      : `Snapshot is ${span(age, false)} old with no elements published (state-vector limit ${span(limit, false)}). `
         + 'Objects move ~7.5 km/s, so these are not current positions — not drawn.';
   }
 
@@ -425,32 +492,54 @@ export class AetherusCore {
   state(ko = true) {
     const age = this.ageSeconds();
     const total = this.totalObjects();
-    const shown = this.positionsUsable() ? this.entries.length : 0;
+    // 받은 수가 아니라 그릴 수 있는 수 — 일부만 낡은 벌에서도 화면의 점 수와 맞는다.
+    const shown = this.drawableCount();
     const sgp4 = this.mode() === 'SGP4';
     const src = sgp4 ? (ko ? '요소 SGP4' : 'SGP4 from elements')
       : this.fromSnapshot ? (ko ? '발행 스냅샷' : 'published snapshot') : (ko ? '서버' : 'server');
+    /* 하루를 넘기면 '일'로 적는다. 이틀(172800초)부터였는데 카드와 기준이 달라
+       같은 자료가 칩에서는 '30시간', 카드에서는 '1일'이 될 뻔했다 — 하루로 맞췄다(2026-09-20). */
     const ageTxt = age == null ? '—'
       : age < 90 ? `${Math.round(age)}s`
         : age < 5400 ? `${Math.round(age / 60)}분`
-          : age < 172800 ? `${Math.round(age / 3600)}시간` : `${Math.round(age / 86400)}일`;
+          : age < 86400 ? `${Math.round(age / 3600)}시간` : `${Math.round(age / 86400)}일`;
+    /* 위치를 안 그릴 때 — 카드 첫 줄과 같은 문장을 쓴다(withheldLine).
+       묵어서 안 그리는 것이면 '자료 묵음'을 맨 앞에 둔다. 이 칩은 메뉴에서 흐린 회색
+       글씨로 나가므로(v1 .aetherus-route small · v2 .mp-note) 그 말이 회색으로 읽힌다.
+       나이는 머리에 이미 있으니 꼬리의 '요소 N 전'은 되풀이하지 않는다.
+       ⚠️ 여기에 HTML 을 넣지 않는다 — 관제센터(js/spaceops)가 이 줄을 이스케이프해서 쓴다. */
+    const withheld = this.withheldLine(ko);
     if (ko) {
-      const head = shown
-        ? `${fmt(shown)}기 표시${total ? ` / 정본 ${fmt(total)}기` : ''}`
-        : `위치 비표시 (${total ? `정본 ${fmt(total)}기` : '카탈로그'} 확인)`;
+      if (withheld) {
+        return `${this.stale() ? '자료 묵음 · ' : ''}${withheld}`
+          + `${total ? ` · 정본 ${fmt(total)}기` : ''} · 근접 ${this.conjunctions.length}건 · ${src}`
+          + (this.lastError ? ' · 갱신 실패' : '');
+      }
+      const head = `${fmt(shown)}기 표시${total ? ` / 정본 ${fmt(total)}기` : ''}`;
       return `${head} · 근접 ${this.conjunctions.length}건 · ${src} · 요소 ${ageTxt} 전`
         + (this.lastError ? ' · 갱신 실패' : '');
     }
-    const head = shown ? `${fmt(shown)} shown${total ? ` / ${fmt(total)} catalogued` : ''}`
-      : 'positions withheld';
-    return `${head} · ${this.conjunctions.length} conjunctions · ${src} · ${ageTxt} old`;
+    if (withheld) {
+      return `${this.stale() ? 'Stale data · ' : ''}${withheld} · ${this.conjunctions.length} conjunctions · ${src}`;
+    }
+    const head = `${fmt(shown)} shown${total ? ` / ${fmt(total)} catalogued` : ''}`;
+    // 영어 줄에 한국어 단위('5분 old')가 섞여 나가던 것을 같이 가른다.
+    const ageEn = age == null ? '—' : age < 90 ? `${Math.round(age)} s` : span(age, false);
+    return `${head} · ${this.conjunctions.length} conjunctions · ${src} · ${ageEn} old`;
   }
 
   /** 레이어를 켰을 때 띄우는 설명 카드(HTML). 세 지구가 같은 글을 쓴다. */
   card(ko = true) {
     const age = this.ageSeconds();
+    /* 하루를 넘기면 '일'로 적는다 — '일' 갈래가 없어 16일 묵은 스냅샷이 '390시간 전'으로
+       나갔다(2026-09-20). 영어 카드에는 한국어 '…전'이 그대로 들어가고 있었다 — 따로 만든다. */
     const ageTxt = age == null ? '—' : age < 90 ? `${Math.round(age)}초 전`
-      : age < 5400 ? `${Math.round(age / 60)}분 전` : `${Math.round(age / 3600)}시간 전`;
+      : age < 5400 ? `${Math.round(age / 60)}분 전`
+        : age < 86400 ? `${Math.round(age / 3600)}시간 전` : `${Math.round(age / 86400)}일 전`;
+    const ageEn = age == null ? '—' : age < 90 ? `${Math.round(age)} s` : span(age, false);
     const lines = [];
+    // '몇 기 표시'는 받은 수가 아니라 그릴 수 있는 수다 — 아래 '빼고 그렸습니다' 줄들과 셈이 맞는다.
+    const drawn = this._drawable();
 
     const sgp4 = this.mode() === 'SGP4';
     lines.push(ko
@@ -464,16 +553,16 @@ export class AetherusCore {
       lines.push(`<b>${ko ? '위치 비표시' : 'Positions withheld'}</b> — ${block}`);
     } else if (sgp4) {
       lines.push(ko
-        ? `${fmt(this.entries.length)}기 표시 · <b>궤도요소로 브라우저가 직접 SGP4</b>를 풉니다`
+        ? `${fmt(drawn.length)}기 표시 · <b>궤도요소로 브라우저가 직접 SGP4</b>를 풉니다`
           + ` (요소 epoch ${ageTxt}). 서버가 쓰는 것과 같은 모델·같은 요소라 시각이 흘러도`
           + ' 유효합니다 — 다만 공개 GP 요소는 하루 1km 안팎으로 벌어집니다.'
-        : `${fmt(this.entries.length)} objects · <b>SGP4 run in the browser from the published elements</b>`
-          + ` (epoch ${ageTxt}), the same model and element set the server uses.`);
+        : `${fmt(drawn.length)} objects · <b>SGP4 run in the browser from the published elements</b>`
+          + ` (epoch ${ageEn} ago), the same model and element set the server uses.`);
     } else {
       lines.push(ko
-        ? `${fmt(this.entries.length)}기 표시 · 산출 ${ageTxt} · 이 발행본에는 궤도요소가 없어`
+        ? `${fmt(drawn.length)}기 표시 · 산출 ${ageTxt} · 이 발행본에는 궤도요소가 없어`
           + ` 서버 속도벡터로 최대 ${MAX_LINEAR_ADVANCE_S}초만 선형 보간(LINEAR_ADVANCE)합니다.`
-        : `${fmt(this.entries.length)} objects · sampled ${ageTxt} · no elements in this snapshot, `
+        : `${fmt(drawn.length)} objects · sampled ${ageEn} ago · no elements in this snapshot, `
           + `so gaps are linearly advanced at most ${MAX_LINEAR_ADVANCE_S}s.`);
     }
 
@@ -555,28 +644,72 @@ export class AetherusCore {
     /* ── 2026-09-06 받은 지적: "이게 무슨 말인지 모르겠어. 요약하고 일반인이 알기 쉽게 설명해놔."
        위 lines 는 전부 근거다 — **지우지 않는다.** 대신 맨 위에 숫자 요약과 쉬운 말 설명을 놓고,
        근거는 접이식 안으로 넣는다. 궁금한 사람은 펼치고, 대부분은 세 줄만 읽으면 된다. */
-    const shownN = this.entries.length;
+    /* ── 2026-09-20 머리말이 거짓을 말했다 ──────────────────────────────────────
+       shownN 이 받은 수(this.entries.length)였다 — 그릴 수 있는지(positionsUsable)와 무관하게.
+       운영 스냅샷이 16일 묵어(2026-09-04 발행 · 요소 상한 7일) 지구에는 0기를 그리는데 카드
+       첫 줄은 '500기를 지금 자리에 그렸습니다'였다. 바로 위 state() 는 같은 상황에서 0 을
+       썼고, 올바른 '위치 비표시' 문장은 접힌 근거 안에만 있었다 — 가장 눈에 띄는 줄이 틀렸다.
+       이제 머리말은 칩과 같은 수(_drawable)를 쓰고, 안 그릴 때는 그 사실이 **첫 줄**이다.
+       '지금 쓰는 자료는 … 조금씩 벌어집니다' 문단도 같이 가른다 — 안 그리면서 '조금씩
+       벌어진다'고 하면 그리고 있다는 말이 된다. */
+    const shownN = drawn.length;
+    const shownDeb = drawn.filter((e) => e.debris).length;   // '그중'은 그린 것 가운데서 센다
     const conjN = this.conjunctions.length;
+    const withheld = this.withheldLine(ko);
+    // 안 그리는 까닭이 '묵어서'인지 '받은 것이 없어서'인지 — 없는데 나이를 말하면 그것도 지어낸 말이다.
+    const isStale = this.stale();
+    const limitTxt = span(this.ageLimitSeconds(), ko);
+    let lead;
+    let posPara;
+    if (ko) {
+      lead = withheld
+        ? `<div class="ai-lead"><b>${withheld}</b><br/>`
+          + (isStale ? '이만큼 묵은 자료로 계산한 자리는 실제 위치가 아닙니다 — 지구에 그리지 않았습니다.<br/>' : '')
+          /* 근접사건은 TCA 가 미래인 것만 남긴 목록이라 스냅샷이 묵어도 적을 수 있다. 다만
+             '없습니다'는 '앞으로 없다'가 아니라 '이 자료에는 안 남았다'는 뜻임을 같이 적는다. */
+          + `${conjN ? `이 자료가 계산해 둔 근접 예정 <b>${conjN}건</b>은 아직 그 시각이 오지 않아 그대로 적습니다.`
+            : '근접사건 목록도 같은 자료에서 온 것이라, 앞으로 예정된 것은 남아 있지 않습니다.'}</div>`
+        : `<div class="ai-lead">지구 둘레를 도는 물체 <b>${fmt(shownN)}기</b>를 지금 자리에 그렸습니다`
+          + `${shownDeb ? ` · 그중 <b>${fmt(shownDeb)}기</b>가 부서진 파편입니다` : ''}.<br/>`
+          + `${conjN ? `가까이 스쳐 지나갈 일이 <b>${conjN}건</b> 예정돼 있습니다.`
+            : '앞으로 가까이 스쳐 지나갈 일은 목록에 없습니다.'}</div>`;
+      posPara = '<p class="ai-easy">위치는 각국이 공개한 <b>궤도 정보</b>를 그대로 받아 계산합니다 —'
+        + ' 저희가 지어내지 않습니다.'
+        + (isStale
+          ? ` 지금 가진 자료는 <b>${ageTxt}</b> 것입니다 — 허용 상한(${limitTxt})을 넘긴 자료로는`
+            + ' 자리를 그리지 않습니다. 새 자료가 발행되면 다시 그립니다.</p>'
+          : withheld
+            ? ' 지금은 자리를 낼 수 있는 자료가 없어 그리지 않습니다.</p>'
+            : ` 지금 쓰는 자료는 <b>${ageTxt}</b> 것이고, 시간이 지난 만큼 실제 위치와 조금씩 벌어집니다.</p>`);
+    } else {
+      lead = withheld
+        ? `<div class="ai-lead"><b>${withheld}</b><br/>`
+          + (isStale ? 'Positions computed from data this old are not current positions — nothing is drawn on the globe.<br/>' : '')
+          + `${conjN ? `<b>${conjN}</b> close approaches computed from this data are still in the future and are listed as they are.`
+            : 'The conjunction list comes from the same data; no upcoming event is left in it.'}</div>`
+        : `<div class="ai-lead"><b>${fmt(shownN)}</b> objects drawn at their current positions`
+          + `${shownDeb ? ` · <b>${fmt(shownDeb)}</b> of them are debris` : ''}.<br/>`
+          + `${conjN ? `<b>${conjN}</b> close approaches are expected.` : 'No upcoming close approaches in this list.'}</div>`;
+      posPara = '<p class="ai-easy">Positions come from publicly published <b>orbital elements</b> — nothing is invented here.'
+        + (isStale
+          ? ` The data in hand is <b>${ageEn}</b> old — beyond the ${limitTxt} limit, so no position is drawn`
+            + ' until newer data is published.</p>'
+          : withheld
+            ? ' Nothing in hand can be positioned right now, so nothing is drawn.</p>'
+            : ` This data is <b>${ageEn}</b> old and drifts from reality as time passes.</p>`);
+    }
     const easy = ko
-      ? `<div class="ai-lead">지구 둘레를 도는 물체 <b>${fmt(shownN)}기</b>를 지금 자리에 그렸습니다`
-        + `${deb ? ` · 그중 <b>${fmt(deb)}기</b>가 부서진 파편입니다` : ''}.<br/>`
-        + `${conjN ? `가까이 스쳐 지나갈 일이 <b>${conjN}건</b> 예정돼 있습니다.`
-          : '앞으로 가까이 스쳐 지나갈 일은 목록에 없습니다.'}</div>`
+      ? lead
         + '<p class="ai-easy"><b>우주쓰레기</b>란 수명이 끝난 위성·로켓과, 그것들이 부딪히거나 터져서'
         + ' 생긴 파편입니다. 초속 7km 남짓으로 돌기 때문에 1cm 조각도 위성을 부술 수 있어,'
         + ' 무엇이 어디 있는지 세어 두는 일이 중요합니다.</p>'
-        + `<p class="ai-easy">위치는 각국이 공개한 <b>궤도 정보</b>를 그대로 받아 계산합니다 —`
-        + ` 저희가 지어내지 않습니다. 지금 쓰는 자료는 <b>${ageTxt}</b> 것이고, 시간이 지난 만큼`
-        + ' 실제 위치와 조금씩 벌어집니다.</p>'
+        + posPara
         + '<p class="ai-easy"><b>보기만 하는 화면</b>입니다 — 위성이나 기관에 어떤 명령도 보내지 않습니다.</p>'
         + `<details class="ai-more"><summary>자세한 근거 · 기술 정보</summary>${lines.join('<br/>')}</details>`
-      : `<div class="ai-lead"><b>${fmt(shownN)}</b> objects drawn at their current positions`
-        + `${deb ? ` · <b>${fmt(deb)}</b> of them are debris` : ''}.<br/>`
-        + `${conjN ? `<b>${conjN}</b> close approaches are expected.` : 'No upcoming close approaches in this list.'}</div>`
+      : lead
         + '<p class="ai-easy"><b>Space debris</b> is dead satellites, spent rockets and the fragments they leave'
         + ' behind. At roughly 7 km per second even a 1 cm piece can destroy a satellite, so keeping count matters.</p>'
-        + `<p class="ai-easy">Positions come from publicly published <b>orbital elements</b> — nothing is invented here.`
-        + ` This data is <b>${ageTxt}</b> old and drifts from reality as time passes.</p>`
+        + posPara
         + '<p class="ai-easy"><b>Advisory only</b> — no command is sent to any satellite or agency.</p>'
         + `<details class="ai-more"><summary>Evidence · technical detail</summary>${lines.join('<br/>')}</details>`;
     return easy;

@@ -215,7 +215,10 @@ export const SCENES = [
     layers: [
       { id: 'sats', name: '위성 추적 (정거장·기상·과학·항법)', state: 'LIVE', src: 'CelesTrak · SGP4', act: true },
       { id: 'starlink', name: '스타링크', state: 'LIVE', src: 'CelesTrak · SGP4', act: true },
-      { id: 'aeth-orbit', name: '궤도 인텔리전스 (우주쓰레기·정본 카탈로그·근접사건)', state: 'LIVE', src: 'AETHERUS API · 서버 SGP4', act: true },
+      /* 출처 줄이 'AETHERUS API · 서버 SGP4' 였다. 운영에는 상시 API 서버가 없다 — 수동으로 발행한
+         정적 스냅샷(/aetherus/*.json)을 읽고, 자리는 그 궤도요소로 브라우저가 직접 SGP4 를 푼다
+         (prototype/js/aetherus/core.js). 없는 서버를 출처로 적고 있었다(2026-09-20). */
+      { id: 'aeth-orbit', name: '궤도 인텔리전스 (우주쓰레기·정본 카탈로그·근접사건)', state: 'LIVE', src: '발행 스냅샷 · 브라우저 SGP4', act: true },
       { id: 'aurora', name: '오로라 예보 (지금 보이는 곳)', state: 'OFFICIAL_FORECAST', src: 'NOAA SWPC OVATION', act: true },
       { id: 'launch', name: '발사 일정 (세계 로켓)', state: 'OFFICIAL_FORECAST', src: 'TheSpaceDevs LL2', act: true },
       { id: 'solaract', name: '오늘의 태양 (실황 관측)', state: 'OBSERVED', src: 'NASA SDO · NOAA SWPC X선', act: true },
@@ -446,12 +449,18 @@ export function initShell(hooks) {
     entry.members.map((m) => m.l.src).join(' '),
   ]);
 
+  /* 메뉴 줄의 배지. 목록에 적힌 고정 문자열(state)이 기본이지만, 레이어가 자기 상태로
+     낮춘 배지(st.badge)를 주면 그것이 먼저다. 2026-09-20: 궤도 인텔리전스는 스냅샷이 16일
+     묵어 지구에 0기를 그리는 동안에도 메뉴 줄은 고정 LIVE 였다. 배지를 주는 레이어가 없으면
+     예전과 똑같이 그린다 — 다른 줄은 하나도 바뀌지 않는다. */
+  const rowBadge = (rec) => dataBadge(layerOnState(rec).badge || rec.l.state);
+
   const layerRowHtml = (rec, sub = true) => {
     const st = layerOnState(rec);
     return '<button class="mp-item' + (sub ? ' mp-sub' : '') + (rec.l.state === 'LOCKED' ? ' locked' : '') + (st.on ? ' on' : '') + '"'
       + ' data-fscene="' + rec.s.id + '" data-flayer="' + rec.l.id + '"'
       + ' title="' + safeText(rec.l.src) + '" aria-pressed="' + (!!st.on) + '">'
-      + '<span class="mp-lbl">' + i18n.layer(rec.l.id, rec.l.name, rec.s.id) + '</span>' + dataBadge(rec.l.state)
+      + '<span class="mp-lbl">' + i18n.layer(rec.l.id, rec.l.name, rec.s.id) + '</span>' + rowBadge(rec)
       + (st.on && st.note ? '<span class="mp-note">' + st.note + '</span>' : '')
       + '</button>';
   };
@@ -481,7 +490,7 @@ export function initShell(hooks) {
       + '<button class="mp-item mp-phen-main' + (entry.rep.l.state === 'LOCKED' ? ' locked' : '') + (anyOn ? ' on' : '') + '"'
       + ' data-fscene="' + entry.rep.s.id + '" data-flayer="' + entry.rep.l.id + '"'
       + ' title="' + safeText(i18n.ko ? entry.p.question.ko : entry.p.question.en) + '" aria-pressed="' + anyOn + '">'
-      + ico + '<span class="mp-lbl">' + safeText(name) + '</span>' + dataBadge(entry.rep.l.state)
+      + ico + '<span class="mp-lbl">' + safeText(name) + '</span>' + rowBadge(entry.rep)
       + '</button>' + expander
       + (open && more ? '<div class="mp-subs">' + entry.members.map(layerRowHtml).join('') + '</div>' : '')
       + '</div>';

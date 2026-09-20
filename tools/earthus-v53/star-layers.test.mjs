@@ -12,6 +12,8 @@ const src = (rel) => lf(readFileSync(new URL(`../../prototype/v2-three/js/${rel}
 
 const { FIELD_DESCRIPTORS, isFieldLayerId } = await import('../../prototype/v2-three/js/field-layer.js');
 const { scaleOf, isolineSpec, SCALE_FOR_LAYER } = await import('../../prototype/v2-three/js/field-scales.js');
+// 진짜 판정 모듈 — 아래 '진짜 starLayers 를 돌린다' 시험이 main.js 의 리터럴에 그대로 물린다.
+const { CLOUD_LEVEL, createCloudYield } = await import('../../prototype/v2-three/js/cloud-yield.js');
 
 test('풍속 색면은 입자와 같은 GFS 10 m 프레임을 크기(magnitudeRG)로 그린다 — 등풍속선은 없다', () => {
   const d = FIELD_DESCRIPTORS.windgrid;
@@ -67,13 +69,98 @@ test('main.js 가 매 프레임 무대를 정리한다 — 구름 불투명도 �
   assert.match(main, /const CLOUD_OPACITY_FULL = clouds\.uniforms\.uOpacity\.value;/, '원래 불투명도를 숫자로 다시 적지 않는다 — CloudManager 가 정한 값을 기억한다');
   // 구름 예보의 비·뇌우 층도 구름과 같은 비율로 물러난다 — 구름만 끄면 색면 위에 보라색 뇌우 표시만 남는다(운영에서 실측)
   assert.match(body, /pu\.value = PRECIP_OPACITY_FULL \* \(CLOUD_OPACITY_FULL > 0 \? u\.value \/ CLOUD_OPACITY_FULL : 1\)/);
-  // 색면이 깔려 있으면(기온이든 풍속이든) 입자는 흰색 — 색은 밑의 색면과 범례가 말한다
-  assert.match(body, /windLayer\.setColorMode\(star === 'field' \? 'white' : 'speed'\)/);
+  // 색면이 깔려 있으면(기온이든 풍속이든) 입자는 흰색 — 색은 밑의 색면과 범례가 말한다.
+  // 2026-09-20 정정 — 여기만 '켜져 있으면'을 보고 있었다. 구름·윤곽선과 **같은 drawing** 을 본다:
+  // 예보 범위 밖이라 색면이 안 보이는데 입자만 흰색으로 남으면 색을 말해 줄 것이 화면에 하나도 없다.
+  assert.match(body, /windLayer\.setColorMode\(star === 'field' && drawing \? 'white' : 'speed'\)/);
   // 색면은 한 번에 하나라, 기온을 보는 중에 풍속 색면을 자동으로 깔면 기온이 조용히 꺼진다 — 깔린 색면이 없을 때만 깐다
   assert.match(body, /const otherFieldOn = liveLayers\.activeIds\(\)\.some\(\(id\) => id !== 'windgrid' && isFieldLayerId\(id\)\)/);
   assert.match(body, /const want = windOn \? \(!speedOn && !otherFieldOn\) : \(this\.autoSpeed && speedOn\);/);
   assert.match(body, /liveLayers\.toggle\('windgrid'\)/);
   // 우리가 같이 켠 것만 같이 끈다 — 사용자가 따로 켠 풍속 색면을 바람을 끌 때 같이 끄면 안 된다
+});
+
+// 2026-09-20 정정 — 위 시험은 main.js 를 **글자로** 대조한다. 글자가 맞아도 배선이 틀릴 수 있어서(판정은 cloud-yield 가
+// 하지만 그 결과를 불투명도로 옮기는 것은 여기다), 진짜 starLayers 를 **돌려서** 구름 불투명도가 목표에 닿는지 본다.
+// main.js 는 통째로 들일 수 없다(DOM·WebGL·네트워크) — 그 객체 리터럴만 떼어 가짜 이웃과 함께 부른다.
+/** main.js 의 starLayers 리터럴을 그대로 떼어 부른다. 돌려주는 것은 { star, clouds, wind, outlines } — 화면에 닿는 값들. */
+function runStarLayers() {
+  const main = src('main.js');
+  const at = main.indexOf('const starLayers = {');
+  const body = `${main.slice(at, main.indexOf('\n  };', at))}\n};\nreturn starLayers;`;
+  const stage = {
+    clouds: { mode: 'obs', uniforms: { uOpacity: { value: 0.92 } }, precip: { uniforms: { uOpacity: { value: 0.7 } } } },
+    wind: { colorMode: null },
+    outlines: { visible: null, ticks: 0 },
+    field: { star: null, sf: null },
+  };
+  const liveLayers = {
+    layers: {},
+    starLayer: () => stage.field.star,
+    starField: () => stage.field.sf,
+    activeIds: () => Object.keys(liveLayers.layers).filter((k) => liveLayers.layers[k].on),
+    toggle: async () => {},
+  };
+  const make = new Function(
+    'liveLayers', 'FIELD_DESCRIPTORS', 'cloudYield', 'i18n', 'fieldOutlines', 'CLOUD_LEVEL',
+    'CLOUD_OPACITY_WIND_ONLY', 'CLOUD_OPACITY_FULL', 'PRECIP_OPACITY_FULL', 'clouds', 'windLayer', 'isFieldLayerId', 'shell',
+    body,
+  );
+  const cloudYield = createCloudYield();
+  const layers = make(
+    liveLayers, FIELD_DESCRIPTORS, cloudYield, { ko: true },
+    { setVisible(v) { stage.outlines.visible = v; }, tick() { stage.outlines.ticks += 1; } },
+    CLOUD_LEVEL, 0.28, 0.92, 0.7, stage.clouds,
+    { setColorMode(m) { stage.wind.colorMode = m; } },
+    isFieldLayerId, { refreshFlyout() {} },
+  );
+  // 불투명도는 프레임마다 목표로 **다가간다**(남은 거리 × dt × 5 · 60fps 면 한 프레임에 1/12). 그래서 한 프레임만 돌려서는
+  // 목표에 안 닿는다 — 0.004 보다 가까워지면 딱 붙는 마지막 줄까지 가도록 넉넉히 돌린다(200 프레임 = 3.3초).
+  // 숫자를 박지 않고 **목표에 견준다** — 감속 상수를 바꿔도 이 시험은 '닿는가'만 묻는다.
+  stage.settle = (frames = 200) => { for (let i = 0; i < frames; i += 1) layers.tick(1 / 60); return stage.clouds.uniforms.uOpacity.value; };
+  return { layers, stage, liveLayers, cloudYield };
+}
+
+test('진짜 starLayers 를 돌린다 — 구름 불투명도가 0 · 옅게 · 그대로에 실제로 닿는다', () => {
+  const { stage, liveLayers, cloudYield } = runStarLayers();
+  const FULL = 0.92; const DIM = 0.28;
+
+  // ① 아무것도 없으면 구름은 그대로다.
+  assert.equal(stage.settle(), FULL);
+  assert.equal(stage.wind.colorMode, 'speed');
+  assert.equal(stage.outlines.visible, false);
+
+  // ② 색면이 그려지는 중 → 구름 0 · 비·뇌우도 같이 0 · 입자는 흰색 · 윤곽선이 선다.
+  liveLayers.layers.tempgrid = { on: true };
+  stage.field = { star: 'field', sf: { id: 'tempgrid', drawing: true } };
+  assert.equal(stage.settle(), 0, '색면이 주인공인데 구름이 물러나지 않았다');
+  assert.equal(stage.clouds.precip.uniforms.uOpacity.value, 0, '구름은 꺼졌는데 뇌우 표시만 색면 위에 남았다');
+  assert.equal(stage.wind.colorMode, 'white');
+  assert.equal(stage.outlines.visible, true);
+
+  // ③ 같은 색면이 예보 범위 밖으로 밀려 안 그려진다 → 구름이 돌아온다(맨 지구 금지) · 입자 색도 · 윤곽선도.
+  stage.field.sf.drawing = false;
+  assert.equal(stage.settle(), FULL, '색면이 안 보이는데 구름까지 눌러 맨 지구만 남았다');
+  assert.equal(stage.wind.colorMode, 'speed', '색면이 안 보이는데 입자만 흰색으로 남았다');
+  assert.equal(stage.outlines.visible, false);
+
+  // ④ 다시 그려지면 물리고, 그때 사용자가 구름 단추를 누르면 그 손이 이긴다(죽은 토글 금지).
+  stage.field.sf.drawing = true;
+  assert.equal(stage.settle(), 0);
+  cloudYield.handPicked();
+  assert.equal(stage.settle(), FULL, '구름 단추를 눌렀는데 화면이 그대로다 — 죽은 토글이다');
+
+  // ⑤ 색면을 껐다 켜면 손자국이 지워져 다시 물린다.
+  stage.field = { star: null, sf: null };
+  stage.settle(1);
+  stage.field = { star: 'field', sf: { id: 'tempgrid', drawing: true } };
+  assert.equal(stage.settle(), 0);
+
+  // ⑥ 입자만이면 옅게 — 옛 규칙 그대로다.
+  liveLayers.layers.tempgrid.on = false;
+  liveLayers.layers.wind = { on: true };
+  stage.field = { star: 'wind', sf: null };
+  assert.equal(stage.settle(), DIM);
 });
 
 // 2026-09-20 반박 검증 — 색면은 한 번에 하나다. 두 색면은 같은 반지름·같은 renderOrder·불투명 0.8 이라

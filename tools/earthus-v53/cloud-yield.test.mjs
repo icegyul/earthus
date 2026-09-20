@@ -49,6 +49,21 @@ test('② 사용자가 구름을 직접 누르면 그 손이 이긴다 — 그�
   assert.equal(y.read({ ...args, cloudsOn: false }).note, null);
 });
 
+// 2026-09-20 정정 — 사용자가 이미 구름을 꺼 둔 채로 색면을 켜는 자리. 물린 것이 없는데 '숨겼습니다'라고 적고 있었다.
+test('이미 꺼 둔 구름을 우리가 숨겼다고 말하지 않는다 — 하지 않은 일을 했다고 적지 않는다', () => {
+  const off = { star: 'field', drawing: true, cloudsOn: false, quantity: TEMP };
+  const r = cloudYieldFor(off);
+  assert.equal(r.yielded, false, '우리가 물린 것이 없는데 물렸다고 셈했다');
+  assert.equal(r.note, null, '사용자가 끈 구름을 우리가 숨겼다고 적었다 — 출처 줄의 거짓 진술이다');
+  // 구름이 켜져 있으면 그때는 정말 우리가 물린 것이다 — 이 시험이 '말을 통째로 없애는' 고침을 통과시키지 않게.
+  assert.equal(cloudYieldFor({ ...off, cloudsOn: true }).yielded, true);
+  assert.match(cloudYieldFor({ ...off, cloudsOn: true }).note, /구름을 숨겼습니다/);
+  // level 은 FULL 로 돌아가지만 화면은 그대로다 — CloudManager.set('off') 가 mesh·precip·bolts 를 안 보이게 두고 있다.
+  assert.equal(r.level, CLOUD_LEVEL.FULL);
+  const y = createCloudYield();
+  assert.equal(y.read(off).note, null, '상태를 쥔 쪽도 같은 판정을 본다');
+});
+
 test('② 색면을 껐다 켜면 손자국이 지워져 다시 물린다', () => {
   const y = createCloudYield();
   const on = { star: 'field', drawing: true, quantity: TEMP };

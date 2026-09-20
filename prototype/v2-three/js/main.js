@@ -3275,7 +3275,9 @@ async function main() {
       const windOn = !!(liveLayers.layers.wind && liveLayers.layers.wind.on);
       const speedOn = !!(liveLayers.layers.windgrid && liveLayers.layers.windgrid.on);
       // 색면이 깔려 있으면(어느 것이든) 입자는 흰색이다 — 색은 밑의 색면과 범례가 말한다. 아무 색면도 없으면 입자가 풍속 구간색.
-      windLayer.setColorMode(star === 'field' ? 'white' : 'speed');
+      // ⚠️ 2026-09-20 정정 — '켜져 있으면'이 아니라 **구름·윤곽선과 같은 drawing** 을 본다. 예보 범위 밖이라 색면이 안 보이는데
+      //    입자만 흰색으로 남으면, 색을 말해 줄 것이 화면에 하나도 없는 채로 흰 입자만 흐른다.
+      windLayer.setColorMode(star === 'field' && drawing ? 'white' : 'speed');
       // ⚠️ 색면은 한 번에 하나다(toggleFieldLayer). 그래서 기온을 보는 중에 바람을 켜면서 풍속 색면을 자동으로 깔면
       //    **기온이 조용히 꺼진다.** 지시서 W3: '입자 토글은 기온·강수 색면 위에서도 유지된다 — 색면 라디오와 무관한 공용 오버레이'.
       //    그러니 자동으로 까는 것은 **깔린 색면이 하나도 없을 때뿐**이다. 기온 위에서는 흰 입자가 흐른다.

@@ -30,7 +30,11 @@ export const cloudYieldFor = ({
   star = null, drawing = false, manual = false, cloudsOn = true, quantity = null, ko = true,
 } = {}) => {
   const field = star === 'field';
-  const yielded = field && !!drawing && !manual;
+  // ⚠️ cloudsOn 을 본다(2026-09-20 정정) — 사용자가 이미 구름을 꺼 둔 채로 색면을 켜면 우리는 아무것도 물린 것이 없다.
+  //    그런데도 '구름을 숨겼습니다'라고 적으면 **하지 않은 일을 했다고 말하는 것**이다. v2 의 출처 줄은 '무엇을 왜 했는지'를
+  //    말하는 자리라 그 한 줄이 곧 거짓 진술이 된다. level 은 어차피 화면에 차이가 없다 — 구름이 꺼져 있으면
+  //    CloudManager.set('off') 가 mesh·precip·bolts 를 visible=false 로 두고 있어서 불투명도가 무엇이든 안 보인다.
+  const yielded = field && !!drawing && !manual && !!cloudsOn;
   const level = yielded ? CLOUD_LEVEL.OFF : (star === 'wind' ? CLOUD_LEVEL.DIM : CLOUD_LEVEL.FULL);
   const name = quantity ? (ko ? quantity.ko : quantity.en) : (ko ? '색면' : 'this field');
   let note = null;

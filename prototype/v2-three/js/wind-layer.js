@@ -17,6 +17,10 @@
 //   ② 프레임이 없으면(매니페스트 실패 · 이 런에 wind10 없음 · 그림 받기 실패 · 예보 범위 밖) **막대기로 물러나지 않는다.**
 //      '자료 없음'과 이유를 말하고 아무것도 그리지 않는다. 끝 프레임을 범위 밖 시각의 바람이라고 흘리지도 않는다.
 //   ③ 꺼져 있는 동안 tick 은 아무것도 하지 않는다 — 시간 버스도 듣지 않는다(꺼진 층이 프레임을 계속 받으면 안 된다).
+//   ④ (2026-09-20 작업 E3) 늦게 온 장을 **순서로 버리지 않는다.** 재생은 0.22초마다 한 칸인데 프레임 한 장은 0.8초쯤
+//      걸린다 — 옛 규칙(청한 순서 seq 가 다르면 버린다)은 재생 중 들어오는 장을 전부 떨어뜨려 입자가 첫 두 장에
+//      얼어붙었다. 이제 **시간 거리**로 가른다(frame-arrival.js): 지금 엔진에 든 구간보다 지금 시각에 가까우면 넣는다.
+//      넣은 뒤에는 다음 한 장을 미리 청한다(prefetchAfter) — 저장소가 중복과 캐시를 맡는다.
 //
 // 켜고 끄는 주인은 LiveLayers 다(레이어 id 'wind' — 개명하지 않는다). 이 층은 deps.isOn() 을 tick 에서 물어 따라간다 —
 //   LiveLayers.toggle · clearAll 에 줄을 끼우지 않으려고(그 두 곳은 같은 묶음의 다른 작업도 고친다).
@@ -32,6 +36,7 @@
 
 import { timeBus as sharedTimeBus } from './time-bus.js?v=1';
 import { sharedGfsFrames } from './gfs-frames.js?v=1';
+import { acceptsArrival, forecastHourAt } from './frame-arrival.js?v=1';
 import { scaleOf, legendModel, bandIndex, KT_PER_MS } from './field-scales.js?v=1';
 import { fieldLegend as sharedLegend, legendMetaLine } from './field-legend.js?v=1';
 import { WindParticles, particleBudgetFor, particleCountFor, sampleWind, WIND_CALM_MS, WIND_SPEED_BOUNDS_MS } from './wind-particles.js?v=1';
@@ -278,9 +283,10 @@ export function createWindLayer(deps = {}) {
   let status = 'idle';           // idle · loading · ready · out-of-range · no-data
   let reason = '';
   let key = null;                // 지금 입자 엔진에 들어 있는 키프레임 ('세대|a.h|b.h')
+  let heldSpan = null;           // 그 키프레임의 구간 { ha, hb } — 늦게 온 장과 시간 거리를 견준다(frame-arrival.js)
   let pendingKey = null;         // 청해 놓고 아직 안 온 키프레임
   let pending = null;            // 그 약속(같은 키프레임을 두 번 청하지 않는다)
-  let seq = 0;                   // 늦게 온 옛 응답이 새 응답을 덮지 않게
+  let gen = 0;                   // 켜고 끈 세대 — 꺼진 층에는 늦게 온 장을 넣지 않는다
   let lastBr = null;
   let lastT = NaN;
   let colorMode = 'speed';
@@ -296,7 +302,7 @@ export function createWindLayer(deps = {}) {
   const fwd = { x: 0, y: 0, z: -1 };
   const readTmp = { u: 0, v: 0 };
   const legendArgs = { scale, title: TITLE, source: SOURCE, run: null, valid: null, note: undefined };
-  const counters = { pixelRequests: 0, fieldSets: 0, mixSets: 0, updates: 0 };
+  const counters = { pixelRequests: 0, fieldSets: 0, mixSets: 0, updates: 0, prefetches: 0, lateDrops: 0 };
 
   let intensity = 3;
   try {
@@ -329,9 +335,39 @@ export function createWindLayer(deps = {}) {
   }
 
   function fail(why) {
-    status = 'no-data'; reason = why; key = null;
+    status = 'no-data'; reason = why; key = null; heldSpan = null;
     if (particles) particles.setField(null);         // 입자 0 — 막대기로 물러나지 않는다
     publish();
+  }
+
+  // 지금 이 시각에는 그릴 것이 없다 — 늦게 온 장이 그 화면을 되살리면 안 된다(frame-arrival.js 의 stale).
+  const blocked = () => status === 'out-of-range' || status === 'no-data';
+
+  /** 도착한 장 { ha, hb } 을 지금 엔진에 든 것과 **시간 거리**로 견준다. 저장소가 탈이 나면 거리를 못 재고 → 넣지 않는다. */
+  function takesArrival(ha, hb) {
+    const tNow = bus.validMs();
+    let cur = null;
+    try { cur = frames.bracket(WIND_FIELD_ID, tNow); } catch (e) { cur = null; }
+    const ok = acceptsArrival({
+      arriving: { ha, hb },
+      held: heldSpan,
+      current: cur && !cur.outOfRange ? { ha: cur.a.h, hb: cur.b.h } : null,
+      hourNow: forecastHourAt(cur, tNow),
+      stale: blocked(),
+    });
+    if (!ok) counters.lateDrops += 1;
+    return { ok, cur };
+  }
+
+  /** 재생이 다음 구간으로 넘어갈 때 끊기지 않게 한 장 앞을 받아 둔다. 저장소가 중복과 캐시를 맡는다(field-layer.prefetchAfter 와 같은 길). */
+  function prefetchAfter(hb) {
+    const list = frames.framesFor ? frames.framesFor(WIND_FIELD_ID) : null;
+    if (!list || !list.length) return;
+    const at = list.findIndex((f) => f && f.h === hb);
+    const next = at >= 0 ? list[at + 1] : null;
+    if (!next) return;
+    counters.prefetches += 1;
+    Promise.resolve(frames.pixels(WIND_FIELD_ID, next.h)).catch(() => {});
   }
 
   /** 시간 버스가 부른다(그리고 1분마다 한 번 — '지금'이 흐른다). 돌려주는 약속은 키프레임이 들어간 뒤에 풀린다(true = 흐른다). */
@@ -342,14 +378,14 @@ export function createWindLayer(deps = {}) {
     try { br = frames.has(WIND_FIELD_ID) ? frames.bracket(WIND_FIELD_ID, tMs) : null; } catch (e) { br = null; }
     lastBr = br;
     if (!br) {
-      seq += 1; pendingKey = null; pending = null;
+      pendingKey = null; pending = null;
       fail('이 GFS 런에는 10 m 바람 프레임이 없습니다');
       return Promise.resolve(false);
     }
     if (br.outOfRange) {
       // 끝 프레임을 범위 밖 시각의 바람이라고 흘리지 않는다(gfs-frames.js 머리말 '쓰는 쪽이 알아야 할 것').
-      seq += 1; pendingKey = null; pending = null;
-      status = 'out-of-range'; reason = '예보 범위 밖 — 이 시각의 GFS 바람 프레임이 없습니다'; key = null;
+      pendingKey = null; pending = null;
+      status = 'out-of-range'; reason = '예보 범위 밖 — 이 시각의 GFS 바람 프레임이 없습니다'; key = null; heldSpan = null;
       if (particles) particles.setField(null);
       publish();
       return Promise.resolve(false);
@@ -357,23 +393,30 @@ export function createWindLayer(deps = {}) {
     const k = `${token()}|${br.a.h}|${br.b.h}`;
     if (k === key) {
       // 같은 두 프레임 사이 — 픽셀을 다시 청하지 않는다. 비율만 바뀐다.
-      seq += 1; pendingKey = null; pending = null;    // 다른 키프레임을 청해 놨다면 그것은 이제 옛 것이다
+      // 다른 구간을 청해 둔 것이 있어도 버리지 않는다: 그것이 도착할 무렵 시각이 그쪽으로 가 있으면 넣는 것이 맞고,
+      // 여기로 돌아와 있으면 아래 도착 판정이 '더 멀다'고 떨어뜨린다(frame-arrival.js).
       if (particles) { particles.setMix(br.mix); counters.mixSets += 1; }
       status = 'ready'; reason = '';
       publish();
       return Promise.resolve(true);
     }
     if (k === pendingKey && pending) { publish(); return pending; }   // 같은 두 장을 이미 청했다 — 다시 청하지 않는다
-    const mine = ++seq;
+    const myGen = gen;
     pendingKey = k;
     if (status !== 'ready') status = 'loading';
     const ha = br.a.h; const hb = br.b.h;
     counters.pixelRequests += ha === hb ? 1 : 2;
     const pa = frames.pixels(WIND_FIELD_ID, ha);
     const pb = ha === hb ? pa : frames.pixels(WIND_FIELD_ID, hb);
-    pending = Promise.all([pa, pb]).then(([a, b]) => {
-      if (mine !== seq) return false;                 // 그 사이 더 새 시각을 청했거나 껐다(빠른 스크럽) — 옛 장을 넣지 않는다
-      pendingKey = null; pending = null;
+    const mine = Promise.all([pa, pb]).then(([a, b]) => {
+      if (myGen !== gen) return false;                // 그 사이 껐다 — 꺼진 층이 입자 엔진을 만지지 않는다
+      // 내 자리표만 지운다. 두 장이 한꺼번에 오는 중일 수 있어서(빠른 스크럽), 남의 자리표를 지우면
+      // 그쪽을 '안 청한 것'으로 여겨 같은 두 장을 다시 청한다.
+      if (pendingKey === k) { pendingKey = null; pending = null; }
+      // 늦게 왔다고 버리지 않는다 — **지금 시각에 더 가까운 장**이면 지금 든 것보다 낫다(frame-arrival.js 머리말).
+      // 이 판정을 아래 검사들보다 **먼저** 한다: 스크럽으로 지나친 구간의 장이 탈나 있어도 잘 흐르던 화면을 지우지 않게.
+      const { ok: take, cur } = takesArrival(ha, hb);
+      if (!take) return false;
       if (!a || !b) { fail('바람 프레임 그림을 받지 못했습니다'); return false; }
       if (!spec) spec = windFieldSpecOf(frames.fieldSpec(WIND_FIELD_ID));
       if (a.w !== spec.w || a.h !== spec.h || b.w !== spec.w || b.h !== spec.h
@@ -381,23 +424,27 @@ export function createWindLayer(deps = {}) {
         fail('받은 바람 프레임의 크기·채널이 목록과 다릅니다'); return false;
       }
       // 받는 사이 같은 두 프레임 안에서 시각이 움직였을 수 있다 — 비율은 지금 것으로.
-      const cur = frames.bracket(WIND_FIELD_ID, bus.validMs());
       const mix = cur && !cur.outOfRange && cur.a.h === ha && cur.b.h === hb ? cur.mix : br.mix;
       ensureParticles().setField({
         w: spec.w, h: spec.h, dataA: a.data, dataB: a === b ? null : b.data, mix, decode: spec.decode, grid: spec.grid,
       });
       counters.fieldSets += 1;
-      key = k; status = 'ready'; reason = '';
+      key = k; heldSpan = { ha, hb }; status = 'ready'; reason = '';
       publish();
+      prefetchAfter(hb);                              // 다음 한 장을 미리 — 재생이 구간을 넘을 때 끊기지 않게
       return true;
     }).catch((e) => {
-      if (mine !== seq) return false;
-      pendingKey = null; pending = null;
+      if (myGen !== gen) return false;
+      if (pendingKey === k) { pendingKey = null; pending = null; }
+      // 못 받은 장이 **지금 시각의 장이 아니면** 화면을 비우지 않는다 — 스크럽으로 지나친 구간 하나가 실패했다고
+      // 잘 흐르던 입자를 '자료 없음'으로 지우면 안 된다. 지금 시각의 장이면 그때 다시 청해 그때 실패를 말한다.
+      if (!takesArrival(ha, hb).ok) return false;
       fail(String((e && e.message) || e).replace(/^자료 없음 — /, ''));
       return false;
     });
+    pending = mine;
     publish();
-    return pending;
+    return mine;
   }
 
   // 상태가 바뀌었다(시각 · 키프레임 · 자료 없음) — 범례를 고쳐 쓰고, 열려 있는 카드를 쥔 쪽(main.js)에 알린다.
@@ -454,14 +501,14 @@ export function createWindLayer(deps = {}) {
       if (particles) particles.setVisible(true);
       slow = 0; lastEx = NaN; lastR = NaN; lastPs = NaN; viewW = 0;
       offSwap = frames.onSwap
-        ? frames.onSwap(() => { key = null; pendingKey = null; pending = null; spec = null; if (on) syncTime(); })
+        ? frames.onSwap(() => { key = null; heldSpan = null; pendingKey = null; pending = null; spec = null; gen += 1; if (on) syncTime(); })
         : null;
       offBus = bus.on(() => { syncTime(); });          // 바로 한 번 불린다 — 타임라인을 민 뒤에 켜도 그 시각에서 시작한다
     } else {
       if (offBus) offBus();
       if (offSwap) offSwap();
       offBus = null; offSwap = null;
-      seq += 1; pendingKey = null; pending = null;      // 오는 중인 응답은 버린다 — 꺼진 층이 입자 엔진을 만지지 않는다
+      gen += 1; pendingKey = null; pending = null;      // 오는 중인 응답은 버린다 — 꺼진 층이 입자 엔진을 만지지 않는다
       if (particles) particles.setVisible(false);
       hideLegend();
     }
@@ -646,7 +693,7 @@ export function createWindLayer(deps = {}) {
     dispose() {
       setOn(false);
       if (particles) particles.dispose();
-      particles = null; key = null; status = 'idle';
+      particles = null; key = null; heldSpan = null; status = 'idle';
     },
   };
 

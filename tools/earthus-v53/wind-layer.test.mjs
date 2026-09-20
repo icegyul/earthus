@@ -150,8 +150,10 @@ const windAt = (layer, lat, lon) => sampleWind(fieldOf(layer), lat, lon, { u: 0,
 test('시각을 밀면 맞는 두 프레임의 픽셀을 청하고, 같은 키프레임 안에서는 다시 청하지 않는다 — mix 가 맞다', async () => {
   const hz = harness();                                   // '지금' = 런 + 1시간 → f000 과 f003 사이 1/3
   await hz.layer.load();
-  assert.deepEqual(hz.calls.pixels, ['wind10:0', 'wind10:3']);
-  assert.deepEqual(hz.calls.image.map((u) => `${letterOf(u)}${hourOf(u)}`), ['u0', 'u3'], '바람 프레임 두 장만 받는다(구름·기온은 받지 않는다)');
+  // 키프레임 두 장 + **다음 한 장**(2026-09-20 작업 E3 ①). 넣은 뒤 바로 앞 장을 미리 청한다 —
+  // 재생이 구간을 넘을 때 끊기지 않게. 색면(field-layer.prefetchAfter)이 이미 그렇게 한다.
+  assert.deepEqual(hz.calls.pixels, ['wind10:0', 'wind10:3', 'wind10:6']);
+  assert.deepEqual(hz.calls.image.map((u) => `${letterOf(u)}${hourOf(u)}`), ['u0', 'u3', 'u6'], '바람 프레임(+ 미리 받는 다음 한 장) 말고 다른 것을 받는다(구름·기온은 받지 않는다)');
   assert.ok(Math.abs(fieldOf(hz.layer).mix - 1 / 3) < 1e-9);
   // 저장소의 CPU 사본이 그대로 들어간다(2채널 — 복사하지 않는다).
   assert.equal(fieldOf(hz.layer).stride, 2);
@@ -164,16 +166,16 @@ test('시각을 밀면 맞는 두 프레임의 픽셀을 청하고, 같은 키�
   hz.sw.on = true;
   hz.layer.tick(1 / 30, CAM);                             // 켜짐 → 시간 버스를 듣기 시작한다(바로 한 번 불린다)
   assert.equal(hz.bus.listeners(), 1);
-  assert.deepEqual(hz.calls.pixels, ['wind10:0', 'wind10:3'], '켜는 순간 같은 두 장을 또 청했다');
+  assert.deepEqual(hz.calls.pixels, ['wind10:0', 'wind10:3', 'wind10:6'], '켜는 순간 같은 두 장을 또 청했다');
 
   hz.bus.set(1 * H);                                      // 유효 = 런 + 2시간 → 같은 두 프레임 · 2/3
   hz.bus.set(1.5 * H);                                    // 같은 두 프레임 · 5/6
-  assert.deepEqual(hz.calls.pixels, ['wind10:0', 'wind10:3'], '같은 키프레임 안에서 픽셀을 다시 청했다');
+  assert.deepEqual(hz.calls.pixels, ['wind10:0', 'wind10:3', 'wind10:6'], '같은 키프레임 안에서 픽셀을 다시 청했다');
   assert.ok(Math.abs(fieldOf(hz.layer).mix - 2.5 / 3) < 1e-9);
 
   hz.bus.set(3.5 * H);                                    // 유효 = 런 + 4.5시간 → f003 과 f006 사이 1/2
   await hz.layer.settled();
-  assert.deepEqual(hz.calls.pixels, ['wind10:0', 'wind10:3', 'wind10:3', 'wind10:6']);
+  assert.deepEqual(hz.calls.pixels, ['wind10:0', 'wind10:3', 'wind10:6', 'wind10:3', 'wind10:6', 'wind10:9']);
   assert.equal(hz.calls.image.filter((u) => hourOf(u) === 3).length, 1, 'f003 그림을 두 번 받았다(저장소 캐시를 안 탔다)');
   assert.equal(fieldOf(hz.layer).dataA, hz.store.pixelsNow('wind10', 3).data);
   assert.equal(fieldOf(hz.layer).dataB, hz.store.pixelsNow('wind10', 6).data);
@@ -181,9 +183,9 @@ test('시각을 밀면 맞는 두 프레임의 픽셀을 청하고, 같은 키�
   const w1 = windAt(hz.layer, -20, -60);
   assert.ok(Math.abs(w1.u + 5) < 0.3 && Math.abs(w1.v - 5) < 0.3, `${w1.u}, ${w1.v}`);
 
-  hz.bus.set(5 * H);                                      // 유효 = 정확히 f006 — 한 장만 청한다
+  hz.bus.set(5 * H);                                      // 유효 = 정확히 f006 — 한 장만 청한다(+ 다음 한 장 미리)
   await hz.layer.settled();
-  assert.deepEqual(hz.calls.pixels.slice(4), ['wind10:6']);
+  assert.deepEqual(hz.calls.pixels.slice(6), ['wind10:6', 'wind10:9']);
   assert.equal(fieldOf(hz.layer).dataB, null);
   assert.equal(hz.layer.state().status, 'ready');
 });
@@ -197,7 +199,7 @@ test("'지금'은 흐른다 — 오프셋이 그대로여도 1분마다 비율�
   hz.clock.now += 30 * 60 * 1000;                         // 30분이 지났다 — 타임라인은 아무도 안 만졌다
   for (let i = 0; i < 700; i += 1) hz.layer.tick(0.1, CAM);   // 70초어치 프레임
   assert.ok(Math.abs(fieldOf(hz.layer).mix - (before + 0.5 / 3)) < 1e-9, `${before} → ${fieldOf(hz.layer).mix}`);
-  assert.deepEqual(hz.calls.pixels, ['wind10:0', 'wind10:3']);
+  assert.deepEqual(hz.calls.pixels, ['wind10:0', 'wind10:3', 'wind10:6'], '켤 때의 미리 받기 말고 더 청했다');
 });
 
 test('빠른 스크럽 — 늦게 온 옛 응답이 새 키프레임을 덮지 않는다', async () => {
@@ -213,6 +215,99 @@ test('빠른 스크럽 — 늦게 온 옛 응답이 새 키프레임을 덮지 �
   assert.equal(fieldOf(hz.layer).dataB, hz.store.pixelsNow('wind10', 12).data);
   assert.ok(Math.abs(fieldOf(hz.layer).mix - 0.5) < 1e-9);
   assert.match(hz.layer.state().key, /\|9\|12$/);
+});
+
+// 위 시험은 두 응답이 청한 순서대로 오는 자리라, 옛 장이 먼저 도착해 잠깐 깔렸다가 새 장이 덮어도 끝 그림은 같다.
+// 여기서는 순서를 **뒤집어** 놓고 본다: 새 장이 먼저 들어간 뒤 옛 장이 오면 그것은 떨어져야 한다(거리가 더 멀다).
+test('늦게 온 옛 장이 이미 들어간 새 장을 덮지 않는다 — 순서를 뒤집어 놓고 본다', async () => {
+  const slow = new Set([6]);                              // f006(옛 구간의 뒷장)만 늦게 온다
+  const hz = harness({
+    storeOpts: {
+      loadImage: async (url) => {
+        const h = hourOf(url);
+        await new Promise((r) => setTimeout(r, slow.has(h) ? 60 : 1));
+        if (letterOf(url) !== 'u') throw new Error('404');
+        return windImage(() => UNIFORM[h]);
+      },
+    },
+  });
+  await hz.layer.load();
+  hz.sw.on = true;
+  hz.layer.tick(1 / 30, CAM);
+  hz.bus.set(3.5 * H);                                    // f003↔f006 을 청해 놓고 (f006 이 늦다)
+  hz.bus.set(9.5 * H);                                    // 그것이 오기 전에 f009↔f012 로 (이쪽이 먼저 들어간다)
+  await hz.layer.settled();
+  assert.match(hz.layer.state().key, /\|9\|12$/, '새 구간이 먼저 들어가야 이 시험이 뜻이 있다');
+  const sets = hz.layer.state().fieldSets;
+  await new Promise((r) => setTimeout(r, 120));           // 늦은 f003↔f006 이 이제 도착한다
+  assert.equal(hz.layer.state().fieldSets, sets, '늦은 옛 장이 새 장을 덮었다');
+  assert.ok(hz.layer.state().lateDrops >= 1, '떨어뜨린 것이 세어지지 않았다');
+  assert.match(hz.layer.state().key, /\|9\|12$/);
+});
+
+// 2026-09-20 작업 E3 ① — 재생 중에 늦게 온 장을 버리던 자리. 옛 규칙(청한 순서 seq)에서는 **한 장도** 안 들어갔다.
+//   여기서는 금지가 아니라 결과를 잰다: 지연 800 ms · 220 ms 재생에서 **구간 수의 절반 이상**이 실제로 엔진에 들어가나.
+//   시계는 진짜다(setTimeout) — 이 결함은 '응답이 오는 사이에 시각이 움직인다'는 경합 그 자체라 가짜 시계로는 재현되지 않는다.
+const delay = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/** 스텝을 h=54 까지 늘린 매니페스트(고정본은 0·3·6·9·12 뿐 — 재생을 오래 돌릴 구간이 모자란다). */
+const longManifest = () => {
+  const m = clone(SCHEMA2);
+  const last = m.steps[m.steps.length - 1];
+  for (let h = last.h + 3; h <= 54; h += 3) {
+    const s = clone(last);
+    s.h = h;
+    s.valid = new Date(T0 + h * H).toISOString().replace('.000Z', 'Z');
+    for (const k of Object.keys(s)) {
+      if (typeof s[k] === 'string' && /\d{3}\.png$/.test(s[k])) s[k] = s[k].replace(/\d{3}\.png$/, `${String(h).padStart(3, '0')}.png`);
+    }
+    m.steps.push(s);
+  }
+  return m;
+};
+
+test('재생 — 늦게 온 장도 지금 시각에 더 가까우면 넣는다(지연 800 ms · 220 ms 재생)', async () => {
+  const LATENCY = 800;
+  const PLAY_MS = 220;
+  const STEPS = 16;                                       // 한 칸 = 한 스텝(3시간) → 칸마다 구간이 바뀐다
+  const cache = new Map();
+  const hz = harness({
+    manifest: longManifest(),
+    storeOpts: {
+      loadImage: async (url) => {
+        await delay(LATENCY);                             // 운영에서 잰 프레임 한 장의 시간
+        if (letterOf(url) !== 'u') throw new Error('404');
+        const h = hourOf(url);
+        if (!cache.has(h)) cache.set(h, windImage(() => [10, h]));   // 시간마다 다른 값 — 어느 장이 들어갔는지 알 수 있게
+        return cache.get(h);
+      },
+    },
+  });
+  await hz.layer.load();
+  hz.sw.on = true;
+  hz.layer.tick(1 / 30, CAM);
+  const before = hz.layer.state().fieldSets;
+
+  const spans = new Set();
+  for (let i = 1; i <= STEPS; i += 1) {
+    hz.bus.set(i * 3 * H);                                // ▶ 재생: 한 칸에 3시간
+    const st = hz.layer.state();
+    spans.add(`${st.a}|${st.b}`);
+    hz.layer.tick(PLAY_MS / 1000, CAM);
+    await delay(PLAY_MS);
+  }
+  const during = hz.layer.state().fieldSets - before;
+  assert.equal(spans.size, STEPS, '칸마다 다른 구간을 지나야 이 시험이 뜻이 있다');
+  assert.ok(during >= Math.ceil(spans.size / 2),
+    `재생 중 엔진에 들어간 장이 ${during}장뿐이다 — 구간 ${spans.size}개의 절반(${Math.ceil(spans.size / 2)})에 못 미친다`);
+
+  // 마지막까지 흘려 보내면 지금 시각의 구간이 실제로 물린다 — '늦어서 버린다'가 아니라 '늦어도 따라잡는다'.
+  await delay(LATENCY * 2);
+  await hz.layer.settled();
+  const st = hz.layer.state();
+  assert.equal(st.status, 'ready');
+  assert.equal(st.a, STEPS * 3, `마지막 구간을 못 물었다 (${st.a}|${st.b})`);
+  assert.ok(hz.layer.state().prefetches > 0, '다음 한 장을 미리 청하지 않았다 — 구간을 넘을 때 끊긴다');
 });
 
 // ---------------------------------------------------------------- 끄기
@@ -244,7 +339,7 @@ test('끈 뒤에는 tick 이 아무것도 하지 않는다 — 시간 버스도 
   hz.sw.on = true;                                        // 다시 켜면 타임라인이 가 있는 시각에서 시작한다
   hz.layer.tick(1 / 30, CAM);
   await hz.layer.settled();
-  assert.deepEqual(hz.calls.pixels.slice(snap.pixels), ['wind10:6', 'wind10:9']);
+  assert.deepEqual(hz.calls.pixels.slice(snap.pixels), ['wind10:6', 'wind10:9', 'wind10:12']);
   assert.equal(p.object.visible || p.sim.count === 0, true);
 });
 

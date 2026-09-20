@@ -161,7 +161,8 @@ const SPECS = {
     ],
     // 20 hPa 마다 굵게 + 그 선에만 숫자 — 지시서 W3 의 기압 줄("흰 4 hPa 등압선(20 hPa 굵게, 전지구 뷰 8 hPa 솎음)").
     // (2026-09-20 D1 이전에는 majorEvery:null · label:'all' 이었다 — 모든 등압선이 같은 굵기였고 숫자가 4 hPa 마다 붙었다.)
-    isolines: { interval: 4, majorEvery: 20, emphasize: [1012], label: 'major' },
+    // 선은 20 hPa 마다 굵게, **숫자는 4 hPa 마다**(labelEvery) — PD 판단(2026-09-20): 20 hPa 마다면 전지구에 숫자가 네 개쯤이라 성기다.
+    isolines: { interval: 4, majorEvery: 20, labelEvery: 4, emphasize: [1012], label: 'major' },
     // H/L 기호의 색. 기상도 관례대로 저기압은 붉은 계열 · 고기압은 푸른 계열이고, 이 표의 색면(저기압 붉게 · 고기압 푸르게)과 방향이 같다.
     // 색은 여기 한 곳에만 적는다 — field-symbols.js 는 이 값을 읽어 글자를 굽는다.
     symbols: { L: '#ff5d63', H: '#6fb4ff' },

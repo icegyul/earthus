@@ -120,7 +120,9 @@ export const labelLevels = (spec, min, max) => {
     return out;
   };
   if (spec.label === 'major') {
-    const major = every(spec.majorEvery || spec.interval);
+    // 숫자 간격은 굵은 선 간격과 **따로** 정할 수 있다(labelEvery) — 기압은 선을 20 hPa 마다 굵게 하되 숫자는 4 hPa 마다 붙인다.
+    // (2026-09-20 PD: 20 hPa 마다면 전지구에서 숫자가 네 개쯤이라 성기다.)
+    const major = every(spec.labelEvery || spec.majorEvery || spec.interval);
     const emph = (spec.emphasize || []).filter(inRange);
     if (!emph.length) return major;
     return [...new Set([...major, ...emph])].sort((a, b) => a - b);

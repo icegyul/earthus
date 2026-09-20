@@ -1191,7 +1191,9 @@ export function createFloodOverlay(doc = {}, deps = {}) {
           if (!visible[i]) continue;
           cands.push({
             kind: 'station', key: `s${i}`, station: i, value: lastValues[i],
-            korea: (stations[i].country || '').startsWith('Korea'),
+            // 솎을 때 '한국 먼저'(plateRank)가 뜻하는 한국도 **카드가 세는 그 한국**이다 — 한 파일 안에서
+            // 두 가지 '한국'을 쓰면 화면의 차례와 카드의 셈이 다시 갈라진다(KOREA_COUNTRY 주석).
+            korea: stations[i].country === KOREA_COUNTRY,
             x: projected[i * 2], y: projected[i * 2 + 1], lat: stations[i].lat, lon: stations[i].lon,
           });
         }
@@ -1201,7 +1203,7 @@ export function createFloodOverlay(doc = {}, deps = {}) {
         if (!visible[m]) continue;                 // 메도이드가 뒤편이면 그 나라는 이번 판에 없다
         cands.push({
           kind: 'country', key: `c${g.country}`, group: g, value: (g.summary && g.summary.median),
-          korea: (g.country || '').startsWith('Korea'),
+          korea: g.country === KOREA_COUNTRY,
           x: projected[m * 2], y: projected[m * 2 + 1], lat: g.lat, lon: g.lon,
         });
       }

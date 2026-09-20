@@ -18,7 +18,7 @@ import {
 } from '../../prototype/v2-three/js/flood-discs.js';
 import {
   FLOOD_PAINTED_AT, FLOOD_PAINTED_KM2, FLOOD_PAINTED_PCT, FLOOD_SCENARIOS, FLOOD_YEARS,
-  KOREA_COUNTRY, floodPaintedLine, koreaStations, riseCompare,
+  KOREA_COUNTRY, floodCardInner, floodPaintedLine, koreaStations, riseCompare,
 } from '../../prototype/v2-three/js/flood-overlay.js';
 import { LiveLayers } from '../../prototype/v2-three/js/live-layers.js';
 import { FIELD_DESCRIPTORS, LEGEND_PRIORITY_FIELD } from '../../prototype/v2-three/js/field-layer.js';
@@ -322,6 +322,25 @@ test('⑥ 넓이의 방향은 관측소를 실제로 견줘 보장되는 만큼�
   assert.equal(riseCompare([1, Number.NaN], [1, 2]), null);
 });
 
+// ⚠️ 위의 두 시험은 **함수**를 부른다 — 카드가 그 함수를 안 쓰고 옛 고정 문장으로 되돌아가도 전부 초록이다.
+//    그래서 카드 본문이 이 한 줄을 그 함수에서 받는다는 것을 여기서 잠근다(그것이 이 결함의 실제 자리다).
+test('⑥ 카드 본문이 그 한 줄을 함수에서 받는다 — 고정 문장으로 되돌아갈 자리를 남기지 않는다', () => {
+  assert.match(OVERLAY_SRC, /L\.push\(floodPaintedLine\(m\)\);/, '카드가 면적 한 줄을 스스로 짓고 있다');
+  // 카드를 통째로 뽑아도 '잰 칸'이 그 안에 있다 — 지금 칸이 잰 칸과 다를 때
+  const other = FLOOD_SCENARIOS.find((s) => s.id !== REF_AT.scenario);
+  const card = floodCardInner({
+    scenario: other.id, year: FLOOD_YEARS[0], stations: 1016, countries: 113, soloCountries: 40,
+    globalMedian: 0.3, min: -1, max: 2, top: [], korea: [], koreaCount: 23,
+    source: 'IPCC AR6', license: 'CC BY 4.0', baseline: '1995–2014', depth: true, hasHeight: true,
+    painted: { n: 1016, lower: 1000, higher: 16, verdict: 'mixed' },
+  });
+  const label = FLOOD_SCENARIOS.find((s) => s.id === REF_AT.scenario).label;
+  assert.ok(card.includes(String(FLOOD_PAINTED_PCT)), '카드에 면적이 없다 — 전제가 깨졌다');
+  assert.ok(card.includes(label) && card.includes(REF_AT.year),
+    `카드가 ${FLOOD_PAINTED_PCT}% 를 적으면서 그것을 잰 칸을 말하지 않는다`);
+  assert.ok(!/좁습니다|넓습니다/.test(card), '엇갈리는데 카드가 한쪽으로 단정한다');
+});
+
 test('⑥ 카드에 박힌 면적은 지금 코드가 칠하는 그것이다(grow 전의 옛 수가 아니다)', () => {
   // 낡은 수(230,610 km² · 0.17%)는 부풀리기 전의 33.7% 로 센 값이었다.
   assert.notEqual(FLOOD_PAINTED_KM2, 230610);
@@ -345,6 +364,11 @@ test("⑦ '한국'은 대한민국이다 — startsWith('Korea') 는 북한까�
   assert.ok(OVERLAY_SRC.includes('koreaStations(rows)'), '카드가 이 가름으로 세지 않는다');
   assert.ok(!/rows\.filter\(\(r\) => \(r\.country \|\| ''\)\.startsWith/.test(OVERLAY_SRC),
     "아직 startsWith('Korea') 로 가르고 있다");
+  // 한 파일 안에서 '한국'이 두 가지면 화면의 차례(plateRank '한국 먼저')와 카드의 셈이 다시 갈라진다
+  assert.ok(!/korea: .*startsWith\('Korea'\)/.test(OVERLAY_SRC),
+    "원판을 솎는 차례는 아직 북한까지 '한국'으로 친다 — 카드와 화면이 다른 한국을 말한다");
+  assert.ok(OVERLAY_SRC.includes('korea: stations[i].country === KOREA_COUNTRY'), '관측소 원판의 차례');
+  assert.ok(OVERLAY_SRC.includes('korea: g.country === KOREA_COUNTRY'), '나라 원판의 차례');
 });
 
 /* ════════════════════════════════════════════════════════════════════════════

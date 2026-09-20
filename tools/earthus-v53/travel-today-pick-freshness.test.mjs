@@ -9,11 +9,14 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const { TravelScene, gateStamp, discoverBasis } = await import('../../prototype/v2-three/js/travel.js');
-// travel.js 와 **같은 URL**(?v=11)로 들여야 같은 사본이다 — 다른 URL 이면 여기서 바꾼 언어가 카드에 닿지 않는다.
-const { i18n } = await import('../../prototype/v2-three/js/i18n.js?v=11');
+const src = readFileSync(new URL('../../prototype/v2-three/js/travel.js', import.meta.url), 'utf8');
+// travel.js 와 **같은 URL**(질의문자열까지)로 들여야 같은 사본이다 — 다른 URL 이면 여기서 바꾼 언어가 카드에 닿지 않는다.
+// 버전 숫자를 시험에 적어 두지 않는다: 모두가 함께 버전을 올린 날 이 시험만 엉뚱한 이유로 깨진다. travel.js 가 쓴 것을 그대로 읽는다.
+const I18N_SPEC = (/from '\.\/(i18n\.js[^']*)'/.exec(src) || [])[1];
+assert.ok(I18N_SPEC, 'travel.js 가 i18n 을 들이지 않는다 — 영어 문장이 나올 길이 없다');
+const { i18n } = await import(`../../prototype/v2-three/js/${I18N_SPEC}`);
 
 const DATA = JSON.parse(readFileSync(new URL('../../prototype/v2-three/data/tourism/kto-discovery.json', import.meta.url), 'utf8'));
-const src = readFileSync(new URL('../../prototype/v2-three/js/travel.js', import.meta.url), 'utf8');
 const code = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');   // 주석은 사고 기록이라 옛 문장을 인용한다 — 뺀다
 
 // 게이트 캐시가 실제로 쓰는 두 가지 시각 꼴 (aws/kma-warn · aws/air-korea 의 observedKst)
@@ -148,7 +151,9 @@ test('"매일 다시 점수" 류 문장이 코드에도 화면에도 남지 않�
 });
 
 test('i18n 은 다른 모듈과 같은 URL 로 들인다 — 다르면 언어 단추가 닿지 않는 두 번째 사본이 생긴다', () => {
-  assert.match(code, /from '\.\/i18n\.js\?v=11'/);
+  // 언어를 바꾸는 쪽은 main.js 다(i18n.set). travel.js 는 main.js 와 글자 하나까지 같은 주소를 써야 한다.
   const main = readFileSync(new URL('../../prototype/v2-three/js/main.js', import.meta.url), 'utf8');
-  assert.match(main, /from '\.\/i18n\.js\?v=11'/, 'main.js 가 버전을 올리면 travel.js 도 같이 올려야 한다');
+  const mainSpec = (/from '\.\/(i18n\.js[^']*)'/.exec(main) || [])[1];
+  assert.ok(mainSpec, 'main.js 의 i18n import 를 찾지 못했다');
+  assert.equal(I18N_SPEC, mainSpec, 'main.js 가 i18n 버전을 올리면 travel.js 도 같이 올려야 한다');
 });

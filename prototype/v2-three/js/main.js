@@ -4980,8 +4980,33 @@ async function main() {
   // ---------------------------------------------------------------------------
   // 언어는 i18n 이 정한다 — 기기 언어는 최초 1회 기본값, 사용자가 바꾸면 그 선택이 이긴다.
   const askLang = i18n.lang;
+  /* 레이어 표는 **복합키**(scene/layer)다. 맨 id 로 만들었더니 같은 id 가 두 씬에 있을 때
+     뒤에 오는 씬이 앞을 덮어, 앞 레이어가 이 표에서 통째로 사라졌다 —
+     ocean/surf(해변 271곳·낚시터 946곳 · OBSERVED)가 내린 화면 hobby/surf 에 덮였다
+     (SCENES 순서가 ocean → hobby 라 마지막이 이긴다). 그래서 ocean/surf 를 켜 놓고 물어도
+     스냅샷에 안 들어갔고, openCard('surf') 는 '서핑 — 내린 화면' 제목 아래 해변 목록을 냈다.
+     레지스트리·i18n·ui-shell 이 2026-09 에 같은 이유로 복합키로 옮겼다 — 여기가 남아 있었다. */
   const layerIndex = new Map();
-  for (const sc of SCENES) for (const l of (sc.layers || [])) layerIndex.set(l.id, { sid: sc.id, l });
+  for (const sc of SCENES) for (const l of (sc.layers || [])) layerIndex.set(`${sc.id}/${l.id}`, { sid: sc.id, l });
+  /* 모델에게 주는 이름이 복합키로 바뀌었다(스냅샷의 id 가 곧 도구의 id 다 — aws/earthus-llm
+     handler.py 의 규약도 "id 는 스냅샷의 레이어 id"이고 목록을 따로 박아 두지 않는다).
+     그래도 모델이 맨 id 로 부를 수 있다. 받는 쪽 규칙은 셋이다:
+       ① 복합키가 정확히 맞으면 그것.
+       ② 맨 id 인데 그 id 를 쓰는 씬이 **하나뿐**이면 그것 — 고를 것이 하나라 짐작이 아니다.
+       ③ 맨 id 가 두 씬에 걸치면(surf · vessel) 고르지 않는다. 마지막 승자를 몰래 집던 자리가
+          바로 이 결함이었다. null 을 주면 ask-earth.js 가 '버린 것'으로 적어 화면에 남긴다. */
+  const bareIndex = new Map();
+  for (const key of layerIndex.keys()) {
+    const bare = key.slice(key.indexOf('/') + 1);
+    if (!bareIndex.has(bare)) bareIndex.set(bare, []);
+    bareIndex.get(bare).push(key);
+  }
+  const askLayer = (id) => {
+    const key = String(id || '');
+    if (layerIndex.has(key)) return layerIndex.get(key);
+    const same = bareIndex.get(key);
+    return (same && same.length === 1) ? layerIndex.get(same[0]) : null;
+  };
   const layerOn = (e) => {
     try { return !!(shellHooks.getLayerState(e.sid, e.l) || {}).on; } catch (err) { return false; }
   };
@@ -4989,12 +5014,14 @@ async function main() {
   const askSnapshot = () => {
     const layers = [];
     const available = [];   // 꺼져 있는 레이어 — 모델이 "이걸 켜면 답할 수 있다"고 제안할 때만 쓴다(값은 싣지 않는다)
-    for (const [id, e] of layerIndex) {
+    // 여기 싣는 id 가 곧 모델이 도구에 넣을 id 다(handler.py: "id 는 스냅샷의 레이어 id").
+    // 복합키를 실어야 같은 맨 id 를 쓰는 두 화면이 서로를 가리지 않는다.
+    for (const [key, e] of layerIndex) {
       if (e.l.state === 'LOCKED') continue;
       let st = {};
       try { st = shellHooks.getLayerState(e.sid, e.l) || {}; } catch (err) { st = {}; }
-      if (!st.on) { if (available.length < 40) available.push({ id, label: e.l.name, badge: e.l.state }); continue; }
-      layers.push({ id, label: e.l.name, badge: e.l.state, source: e.l.src, value: st.note });
+      if (!st.on) { if (available.length < 40) available.push({ id: key, label: e.l.name, badge: e.l.state }); continue; }
+      layers.push({ id: key, label: e.l.name, badge: e.l.state, source: e.l.src, value: st.note });
     }
     const lat = THREE.MathUtils.radToDeg(orbit.targetPitch);
     const lon = ((THREE.MathUtils.radToDeg(orbit.targetYaw) + 540) % 360) - 180;
@@ -5038,8 +5065,8 @@ async function main() {
     };
   };
   const askTools = {
-    showLayer: (id) => { const e = layerIndex.get(id); if (e && !layerOn(e)) shellHooks.onLayerAction(e.sid, e.l); },
-    hideLayer: (id) => { const e = layerIndex.get(id); if (e && layerOn(e)) shellHooks.onLayerAction(e.sid, e.l); },
+    showLayer: (id) => { const e = askLayer(id); if (e && !layerOn(e)) shellHooks.onLayerAction(e.sid, e.l); },
+    hideLayer: (id) => { const e = askLayer(id); if (e && layerOn(e)) shellHooks.onLayerAction(e.sid, e.l); },
     flyTo: (lat, lon, altKm) => {
       orbit.targetPitch = THREE.MathUtils.degToRad(lat);
       // 경도는 가까운 쪽으로 돈다 — 안 그러면 지구를 한 바퀴 되감는다.
@@ -5051,9 +5078,19 @@ async function main() {
       orbit.autoRotate = false;
     },
     openCard: (id) => {
-      const e = layerIndex.get(id);
+      const e = askLayer(id);
       if (!e) return;
-      const card = liveLayers.card(id);
+      /* ⚠️ liveLayers 의 카드 표도 맨 id 다(live-layers.js card(id) → this.layers[id]) — 그리고
+         확장 화면(LAB·취미)은 거기 없다. 그래서 hobby/surf 의 카드를 물으면 같은 맨 id 를 쓰는
+         ocean/surf(해변 271곳)의 카드가 남의 제목 아래 나왔다. 확장 화면은 liveLayers 에 묻지 않는다 —
+         지금 켜져 있으면 그 화면이 쓴 카드를 그대로, 아니면 출처만 적는다(없는 값을 지어내지 않는다). */
+      if (e.sid === 'lab' || e.sid === 'hobby') {
+        const live = !!extScene && extScene.active === `${e.sid}/${e.l.id}`;
+        if (live) { showNote(extScene.title, extScene.card(), extScene.badge); extScene.afterRender(); }
+        else showNote(e.l.name, `출처 ${e.l.src}`, e.l.state);
+        return;
+      }
+      const card = liveLayers.card(e.l.id);
       showNote(e.l.name, card || `출처 ${e.l.src}`, e.l.state);
     },
   };
@@ -5076,7 +5113,8 @@ async function main() {
   const askEarth = new AskEarth({
     lang: askLang,
     snapshot: askSnapshot,
-    layerName: (id) => (layerIndex.get(id) ? layerIndex.get(id).l.name : null),
+    // null 이면 ask-earth.js 가 그 제안을 실행하지 않고 '버린 것'에 적는다 — 몰래 다른 화면을 열지 않는다.
+    layerName: (id) => { const e = askLayer(id); return e ? e.l.name : null; },
     tools: askTools,
     captureScene: askCapture,
     restoreScene: askRestore,

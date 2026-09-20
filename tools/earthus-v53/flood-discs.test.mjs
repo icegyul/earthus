@@ -304,6 +304,13 @@ const fakeDoc = () => ({
   },
 });
 
+/** 경위도 → 장면 좌표 (live-layers.js 의 llToV3 와 같은 식). */
+const ll3 = (THREE, latDeg, lonDeg, r) => {
+  const la = (latDeg * Math.PI) / 180; const lo = (lonDeg * Math.PI) / 180;
+  const cl = Math.cos(la);
+  return new THREE.Vector3(r * cl * Math.sin(lo), r * Math.sin(la), r * cl * Math.cos(lo));
+};
+
 /** 한국이 화면 한가운데 오도록 지구를 돌려 놓은 카메라. */
 const koreaCamera = (THREE, distance, w, h) => {
   const cam = new THREE.PerspectiveCamera(48, w / h, 0.01, 100);
@@ -407,6 +414,45 @@ test('면이 떠 있는 시군구의 이름표는 솎여도 남는다', async ()
   discs.tick(cam);
   const back = discs.object.children.find((c) => c.userData.floodDisc.sggCd === dropped.sggCd);
   assert.ok(back.visible, '면이 떠 있는데 그 시군구 이름표가 솎여 사라졌다');
+  discs.setSelected(null);
+  discs.dispose();
+});
+
+// 시군구를 누르면 카메라가 지표 14 km 까지 내려간다(main.js flood-district 의 targetDist).
+// 판은 지표 위 0.004 반경(약 25 km)에 있으므로 그 순간 **카메라가 판보다 낮아진다**.
+// 지평선 판정(카메라가 접평면 위에 있나)은 그 자리에서 늘 0 을 내서, 도착하자마자 이름표가 사라졌다 —
+// 면은 떠 있는데 그것이 어디 것인지 화면이 못 말했다. 부산 중구 실측: 카메라 1.002197 < 판 1.004.
+test('작은 시군구로 내려가도 그 이름표가 남는다 — 카메라가 판보다 낮아지는 자리', async () => {
+  const THREE = await import('../../prototype/vendor/three-r184.module.min.js');
+  const discs = await makeDiscs(THREE);
+  const busanJung = REAL.districts.find((r) => r.name === '부산 중구');
+  const [lon, lat] = ANCHORS.districts[busanJung.sggCd];
+  // main.js 가 실제로 쓰는 식 그대로 — 여기에 숫자를 박지 않는다
+  const [w0, s0, e0, n0] = busanJung.bbox;
+  const cLat = (s0 + n0) / 2;
+  const spanKm = Math.max((e0 - w0) * 111 * Math.cos((cLat * Math.PI) / 180), (n0 - s0) * 111, 6);
+  const dist = 1 + Math.min(120, Math.max(14, spanKm * 1.6)) / 6371;
+  assert.ok(dist < 1.004, `전제가 깨졌다 — 카메라가 판보다 높다(${dist})`);
+  // 앱은 비스듬히 내려간다(orbit.targetTilt = 0.8) — 카메라를 조금 남쪽에 두고 그 시군구를 바라본다.
+  // 바로 위에서 지구 중심을 보면 판이 카메라 **뒤**에 놓여 투영부터 실패한다(앱에서 일어나지 않는 자세다).
+  const cam = koreaCamera(THREE, dist, 1280, 800);
+  const at = ll3(THREE, lat, lon, 1.004);
+  const eye = ll3(THREE, lat - 0.35, lon, dist);
+  cam.position.copy(eye);
+  cam.lookAt(at);
+  cam.updateMatrixWorld(true);
+  discs.setSelected(busanJung.sggCd);
+  discs.tick(cam);
+  const me = discs.object.children.find((c) => c.userData.floodDisc.sggCd === busanJung.sggCd);
+  assert.ok(me.visible, '면이 떠 있는데 그 시군구 이름표가 사라졌다 — 화면이 어디인지 못 말한다');
+  // 늘 켜 두는 것이 아니다: 지구 반대편은 가려져 안 보인다
+  const far = discs.object.children
+    .find((c) => Math.abs(c.userData.floodDisc.lon - lon) < 1 && false)
+    || discs.object.children.reduce((best, c) => {
+      const d = c.position.clone().normalize().dot(cam.position.clone().normalize());
+      return (!best || d < best._d) ? Object.assign(c, { _d: d }) : best;
+    }, null);
+  assert.ok(far && !far.visible, '지구 뒤편 이름표까지 뚫고 보인다');
   discs.setSelected(null);
   discs.dispose();
 });

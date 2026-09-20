@@ -3287,7 +3287,7 @@ async function main() {
     'ocean/khoasl245': ['khoasl245', '우리 바다 해수면 전망 SSP2-4.5'],
     'ocean/khoasl370': ['khoasl370', '우리 바다 해수면 전망 SSP3-7.0'],
     'ocean/khoasl585': ['khoasl585', '우리 바다 해수면 전망 SSP5-8.5'],
-    'ocean/khoaflood': ['khoaflood', '연안 침수 범위'],
+    'ocean/khoaflood': ['khoaflood', '연안 침수 예상도 — 가정 상황'],
     'hazards/lightning': ['lightning', '낙뢰 (최근 60분)'],
     'hazards/wildfire': ['wildfire', '산불 위험지수'],
     'weather/warn': ['warn', '기상 특보'],
@@ -4857,9 +4857,11 @@ async function main() {
         shell.renderIntel();
       } else if (action === 'flood-district' && ds.sgg) {
         // 시군구 침수 폴리곤을 받아 얹고, 그 위로 비스듬히 내려간다
-        showNote('연안 침수 범위', `${ds.sgg} 침수 예상도를 불러오는 중…`, 'OFFICIAL_OBSERVATION');
+        // 제목은 면 위에 걸리는 머리글이다 — '연안 침수 범위'라고 적으면 지금 잠긴 범위로 읽힌다.
+        // 배지도 관측(OFFICIAL_OBSERVATION)이 아니다: 기관이 미리 산출한 시나리오다.
+        showNote('연안 침수 예상도 — 가정 상황', `${ds.sgg} 침수 예상도를 불러오는 중…`, 'PROVIDER_FORECAST');
         liveLayers.loadFloodDistrict(ds.sgg).then((info) => {
-          if (!info) { showNote('연안 침수 범위', '침수 자료를 불러오지 못했습니다 — 그리지 않습니다.', 'UNAVAILABLE'); return; }
+          if (!info) { showNote('연안 침수 예상도 — 가정 상황', '침수 자료를 불러오지 못했습니다 — 그리지 않습니다.', 'UNAVAILABLE'); return; }
           const [w, sth, e2, n] = info.bbox;
           const lat = (sth + n) / 2;
           const lon = (w + e2) / 2;
@@ -4873,7 +4875,7 @@ async function main() {
           orbit.glide = 1.2;
           orbit.autoRotate = false;
           if (map.active) map.exit();
-          showNote('연안 침수 범위', liveLayers.floodDistrictCardHtml() + '<br/>' + liveLayers.card('khoaflood'), 'PROVIDER_FORECAST');
+          showNote('연안 침수 예상도 — 가정 상황', liveLayers.floodDistrictCardHtml() + '<br/>' + liveLayers.card('khoaflood'), 'PROVIDER_FORECAST');
         });
       } else if (action === 'feed-follow' && ds.id) {
         usage.track('event.follow');

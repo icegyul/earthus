@@ -144,6 +144,29 @@ export function floodLegendHtml(specs, ramp) {
   return `<div style="margin:6px 0 4px">${chips}</div>`;
 }
 
+/** 카메라(cam)에서 판(p)까지 **지구가 가로막고 있나**. 둘 다 지구 중심 기준 좌표다.
+ *  지평선 판정(newsChipOpacity)은 "카메라가 그 점의 접평면 위에 있나"를 보는데,
+ *  카메라가 판보다 **낮으면**(|P| ≥ |C|) 그 물음 자체가 성립하지 않아 늘 '안 보인다'가 된다.
+ *  실제로 그랬다: 시군구를 누르면 카메라가 지표 14 km 까지 내려가는데(main.js flood-district),
+ *  판은 지표 위 0.004 반경(약 25 km)에 있어 부산 중구 같은 작은 시군구에서는 도착하자마자
+ *  이름표가 사라졌다 — 면이 떠 있는데 그것이 어디 것인지 화면이 말하지 못했다.
+ *  그 자리에서 옳은 물음은 '가려졌나'다: 카메라→판 선분이 단위구를 파고드나.
+ *  돌려주는 것: true 면 막힌 것이 없다(그려도 된다). */
+export function floodDiscClear(p, cam) {
+  const dx = p.x - cam.x;
+  const dy = p.y - cam.y;
+  const dz = p.z - cam.z;
+  const dd = dx * dx + dy * dy + dz * dz;
+  if (!(dd > 0)) return true;
+  // 선분 위에서 지구 중심에 가장 가까운 점
+  const t = -(cam.x * dx + cam.y * dy + cam.z * dz) / dd;
+  if (t <= 0 || t >= 1) return true;            // 가장 가까운 지점이 선분 밖 — 사이에 지구가 없다
+  const cx = cam.x + t * dx;
+  const cy = cam.y + t * dy;
+  const cz = cam.z + t * dz;
+  return cx * cx + cy * cy + cz * cz >= 1;      // 단위구를 파고들지 않으면 보인다
+}
+
 /** 숨긴 곳이 있으면 그 사실을 말하는 한 줄. 없으면 빈 글자.
  *  숫자를 박지 않는다 — 지금 화면에 몇 개가 떠 있는지를 받아서 적는다.
  *  ⚠️ **그림이 한 번이라도 돈 뒤에만** 부른다. 레이어를 세우는 순간에는 아직 0 이라
@@ -261,7 +284,11 @@ export function createFloodDiscs({
     for (let i = 0; i < sprites.length; i += 1) {
       const spr = sprites[i];
       _wp.setFromMatrixPosition(spr.matrixWorld);
-      const alpha = horizonOpacity(_wp, _cp);
+      // 멀리서 볼 때(카메라가 판보다 높다)는 지평선 흐림 그대로 — 가장자리가 부드럽게 사라진다.
+      // 가까이 내려와 카메라가 판보다 낮아지면 그 식은 늘 0 을 낸다. 그때는 '가려졌나'만 본다.
+      const pl = Math.hypot(_wp.x, _wp.y, _wp.z);
+      const cl = Math.hypot(_cp.x, _cp.y, _cp.z);
+      const alpha = (cl > 0 && pl < cl) ? horizonOpacity(_wp, _cp) : (floodDiscClear(_wp, _cp) ? 1 : 0);
       if (alpha <= 0.02 || !projectPx(e, _wp.x, _wp.y, _wp.z, view.w, view.h, _p)) {
         // 지구 뒤편 — 솎기 후보도 아니다. 이번에 사라진 것이 있으면 다시 솎아야 한다.
         if (onScreen[i]) moved = true;
@@ -278,7 +305,10 @@ export function createFloodDiscs({
       cand.push({ x: _p[0], y: _p[1], key: sel ? -1 : i, _i: i });
       spr.scale.setX((spr.userData.baseAspect) * FLOOD_DISC_SCALE * (sel ? 1.12 : 1));
       spr.scale.setY(FLOOD_DISC_SCALE * (sel ? 1.12 : 1));
-      if (!moved && (Math.abs(_p[0] - lastX[i]) > FLOOD_RECULL_PX || Math.abs(_p[1] - lastY[i]) > FLOOD_RECULL_PX)) {
+      // ⚠️ 지난번에 안 보이던 판은 lastX 가 NaN 이다 — 비교가 전부 false 라 제 힘으로는 '움직였다'가 못 된다.
+      //    막 돌아 들어온 판이 자기 자리를 못 얻는 일이 없도록 먼저 본다.
+      if (!moved && (!Number.isFinite(lastX[i])
+        || Math.abs(_p[0] - lastX[i]) > FLOOD_RECULL_PX || Math.abs(_p[1] - lastY[i]) > FLOOD_RECULL_PX)) {
         moved = true;
       }
     }

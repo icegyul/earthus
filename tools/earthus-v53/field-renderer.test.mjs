@@ -309,6 +309,34 @@ test('지형 결은 음영 계수로 준다 — 평지에서는 정확히 1(= �
   assert.ok(Math.max(...ratios) - Math.min(...ratios) < 0.2, '채널마다 다른 비율로 깎였다 — 색조가 바뀐다');
 });
 
+// 2026-09-20 F2 정정 — 위 시험은 결의 **규칙**(평지 1 · 천장 1 · 바닥 min)만 쟀다. 규칙은 다 맞는데 **크기**가 틀려 있었다:
+//   k 0.55 · min 0.72 에서 비탈의 계수가 0.72 에 붙어, 결이 바탕 혼합보다 **네 배 크게** 색을 바꿨다. 게다가 계수는 태양을 따르므로
+//   값이 하나도 안 변해도 재생하거나 지구를 돌리면 같은 칸의 색이 변했다. 여기서는 그 **크기**를 상수에서 셈해 잠근다.
+test('지형 결이 새 오염원이 되지 않는다 — 결이 깎는 최대가 바탕이 섞이는 몫을 넘지 않는다', () => {
+  // 바탕이 색을 바꿀 수 있는 최대 = (1 − 불투명도) × 255. 결이 깎을 수 있는 최대 = (1 − min) × 불투명도 × 255.
+  // 뒤가 앞을 넘으면, 바탕 혼합을 줄이려고 올린 불투명도를 결이 도로 까먹는다. 숫자를 박지 않고 상수에서 셈한다.
+  const underBite = (1 - FIELD_OPACITY) * 255;
+  const shadeBite = (1 - FIELD_SHADE.min) * FIELD_OPACITY * 255;
+  assert.ok(shadeBite <= underBite + 0.5, `결이 깎는 최대 ${shadeBite.toFixed(1)} 가 바탕이 섞이는 몫 ${underBite.toFixed(1)} 보다 크다`);
+
+  // 같은 칸(값이 하나도 안 변했다) 위에서 해만 돈다 — 화면의 색이 얼마나 흔들리나. 흔들림이 평지의 차보다 크면
+  // 사용자는 '색이 변했으니 값이 변했나' 하고 읽는다. ▶ 로 5일을 재생하면 해가 실제로 한 바퀴 돈다.
+  const band = bandRGB('temp', 8);
+  const flatDiff = maxCh(paintedColorOf(band, UNDERS[0]), band);          // 결 없이 바탕만 섞였을 때의 차
+  let lo = 1; let hi = 0;
+  for (let i = 0; i <= 40; i += 1) {
+    // 해가 도는 동안 이 칸의 (lit, sphereLit) 이 훑는 범위. sphereLit 는 평평한 구의 밝기, lit 는 기울인 법선의 밝기다.
+    const sphereLit = i / 40;
+    const s = terrainShadeOf(Math.max(0, sphereLit - 0.35), sphereLit);   // 해를 등진 비탈(차 0.35)에서 가장 많이 깎인다
+    lo = Math.min(lo, s); hi = Math.max(hi, s);
+  }
+  const swing = maxCh(paintedColorOf(band, UNDERS[0], { shade: lo }), paintedColorOf(band, UNDERS[0], { shade: hi }));
+  assert.ok(swing <= flatDiff, `값이 안 변했는데 해가 도는 것만으로 색이 ${swing} 만큼 흔들린다 (평지의 차 ${flatDiff})`);
+
+  // 결이 아예 사라지지는 않았다 — 위 두 단언은 k 0 으로도 통과한다. 결을 뺄지는 PD 의 한 줄이다(field-renderer.js FIELD_SHADE 주석).
+  assert.ok(FIELD_SHADE.k > 0 && terrainShadeOf(0, 1) < 1, '결이 사라졌다 — 지시서 E3 ⑤ 는 지형 결을 음영 계수로 주라고 적었다');
+});
+
 test('셰이더의 지형 결 — 같은 규칙이고, 값이 1 로 정해지는 곳에서는 고도맵을 읽지 않는다', () => {
   // GLSL 은 시험이 실행하지 못한다. 규칙과 발열 장치를 글자로 잠근다.
   assert.match(FIELD_FRAG, /float terrainShade\(vec3 nGeo, float lon, float lat\)/);

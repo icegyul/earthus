@@ -57,7 +57,7 @@ test('넷이 새 길을 타고, 자외선은 색을 지어내지 않아 아직 �
   assert.equal(isFieldLayerId('uvgrid'), false, '자외선은 PD 표에 색 눈금이 없다 — 색을 지어내지 않는다');
   // 바다 3종만 셰이더 해안선(고도 ≥ 0 에서 버림)을 쓴다. 대기질은 육지 위에도 값이 있는 것이 맞다.
   assert.deepEqual(PORTED.map((id) => FIELD_DESCRIPTORS[id].mask), ['ocean', 'ocean', 'ocean', 'none']);
-  assert.deepEqual(PORTED.map((id) => FIELD_DESCRIPTORS[id].badge), ['OBSERVED', 'OBSERVED', 'MODEL', 'MODEL']);
+  assert.deepEqual(PORTED.map((id) => FIELD_DESCRIPTORS[id].badge), ['OBSERVED', 'OBSERVED', 'MODEL_SIGNAL', 'MODEL']);
 });
 
 test('눈금표 한 줄을 바꾸면 색·범례·등치선이 같이 움직인다', () => {

@@ -117,7 +117,8 @@ export const FIELD_DESCRIPTORS = Object.freeze({
   }),
   wavefield: Object.freeze({
     layerId: 'wavefield', source: 'marine', fieldId: 'wave', scaleId: 'wave',
-    mode: 'scalar', mask: 'ocean', missing: true, clip: true, badge: 'MODEL',
+    // 도장은 옛 metaWave 와 ui-shell 메뉴가 쓰던 것 그대로다 — 제공기관 모델 격자(PROVIDER_FORECAST)다.
+    mode: 'scalar', mask: 'ocean', missing: true, clip: true, badge: 'MODEL_SIGNAL',
     title: Object.freeze({ ko: '유의파고 · 5° 격자', en: 'Significant wave height · 5° grid' }),
     quantity: Object.freeze({ ko: '유의파고', en: 'Significant wave height' }),
     isoName: Object.freeze({ ko: '등파고선', en: 'Wave-height contours' }),

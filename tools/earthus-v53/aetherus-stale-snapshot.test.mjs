@@ -101,6 +101,8 @@ test('묵은 스냅샷(요소 16~17일) — 지구에 0기, 첫 줄은 "위치 �
   assert.ok(!beforeDetails(card).includes('조금씩 벌어집니다'));
   // 근거(접이식)는 지우지 않았다 — 거기에도 같은 사실이 있다.
   assert.match(card, /<details class="ai-more">.*<b>위치 비표시<\/b> — 모든 궤도요소가 허용\(7일\)보다 오래됐습니다/s);
+  // 카드 어디에도 '그렸습니다'가 없다 — 접힌 근거의 'N기는 빼고 그렸습니다' 줄도 0기를 그릴 때는 안 나간다.
+  assert.ok(!card.includes('그렸습니다'), card.match(/[^>]*그렸습니다/)?.[0]);
 
   // 배지가 볼 낱말 — LIVE 로 옮겨질 'FRESH' 가 아니다.
   assert.equal(core.freshness(), 'STALE');

@@ -590,7 +590,10 @@ export class AetherusCore {
     }
 
     const stale = this.tooOld();
-    if (stale) {
+    /* 그린 것이 있을 때만 적는다. 전부 묵어 0기를 그릴 때도 이 줄이 'N기는 빼고 그렸습니다'로
+       나가, 바로 위 '위치 비표시 — 모든 궤도요소가 … 오래됐습니다' 와 어긋났다(2026-09-20).
+       그 경우에는 위 줄이 이미 같은 사실을 말한다. */
+    if (stale && drawn.length) {
       lines.push(ko
         ? `궤도요소가 허용(${Math.round(MAX_ELEMENT_AGE_S / 86400)}일)보다 오래된 ${fmt(stale)}기는`
           + ' 빼고 그렸습니다 — 낡은 요소로 푼 자리를 진짜인 척하지 않습니다.'

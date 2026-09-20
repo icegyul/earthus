@@ -281,9 +281,14 @@ def handler(event=None, context=None):
 #     (이안류·조위는 resultType — 같은 기관인데 API 마다 다르다)
 #
 # ■ 시군구코드는 API 로 못 얻는다 — KHOA 미리보기 화면(odmiApiViewData.do,
-#   apiId=SV_AP_01_010)의 data-list 에 박힌 70곳을 그대로 옮겼다(2026-09-02).
-#   ⚠️ 이 70곳이 기관이 서비스하는 전부다. 강원 동해안이 아예 없다 —
-#     빠진 곳은 자료가 없는 것이지 침수가 없다는 뜻이 아니다. 화면에 적는다.
+#   apiId=SV_AP_01_010)의 data-list 를 눈으로 옮겨 적은 것이 아래 FLOOD_SGG 다(2026-09-02).
+#   ⚠️⚠️ 그때 이 자리와 색인 안내문이 **70** 이라고 적었는데 표에는 69개뿐이었다(2026-09-21 확인).
+#     한 곳을 빠뜨린 것인지 70 이라고 잘못 센 것인지 **모른다** — 미리보기 화면은 지금 열리지
+#     않고(2026-09-21 읽기 GET 실패), 목록을 돌려주는 API 도 없다. 확인되지 않은 수를
+#     화면에 적지 않기 위해, 수를 말하는 자리는 전부 len(FLOOD_SGG) 에서 센다.
+#     이 표가 기관이 서비스하는 **전부**라고도 적지 않는다 — 그것도 확인하지 못했다.
+#   ⚠️ 강원 동해안이 아예 없다. 빠진 곳은 자료가 없는 것이지 침수가 없다는 뜻이 아니다.
+#     그건 확인된 사실이므로 화면에 그대로 적는다.
 # ═══════════════════════════════════════════════════════════════════
 
 FLOOD_URL = "https://apis.data.go.kr/1192136/waterlogged/GetWaterloggedApiService"
@@ -386,10 +391,24 @@ def _put(key, doc, cache="public, max-age=86400"):
 FLOOD_PAGE = 60
 
 
+def flood_index_note():
+    """색인에 박히는 안내 문장. ⚠️ 시군구 수를 **글자로 적지 않는다** — FLOOD_SGG 에서 센다.
+    전에는 이 문장이 **70** 이라고 적었는데 표에는 69개뿐이어서, 화면이 69개짜리 자료와
+    단추를 그리면서 그 옆에 다른 수를 같이 적는 모순이 한 카드 안에 있었다(2026-09-21).
+    ⚠️ 이 문장은 S3 색인(ocean/khoa/flood-index.json)에 박힌다 — 고쳐도 수집기를 다시
+    돌리기 전까지 화면은 옛 문장을 읽는다."""
+    return (f"국립해양조사원 미리보기 목록에서 옮긴 연안 시군구 {len(FLOOD_SGG)}곳을 받아 온 것입니다"
+            "(이번에 실제로 자료가 있는 곳은 coveredCount 에 적습니다). "
+            "이 목록이 기관이 서비스하는 전부인지는 확인하지 못했습니다. "
+            "여기 없는 지역(강원 동해안 등)은 자료가 없는 것이지 "
+            "침수 위험이 없다는 뜻이 아닙니다. 침수값은 깊이 구간(m)이며 "
+            "기관 산출값을 그대로 옮깁니다.")
+
+
 def collect_flood(codes=None):
     """연안 침수 범위 — 시군구별 파일 + 색인. 폴리곤은 받은 좌표 그대로(6자리 반올림만).
     codes 를 주면 그 시군구만 받고 색인은 S3 의 기존 색인과 합친다 —
-    70곳을 한 번에 받으면 Lambda 시간(최대 15분)을 넘길 수 있어 10곳씩 나눠 부른다."""
+    FLOOD_SGG 전부를 한 번에 받으면 Lambda 시간(최대 15분)을 넘길 수 있어 10곳씩 나눠 부른다."""
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:00Z")
     index = []
     targets = [c for c in (codes or list(FLOOD_SGG)) if c in FLOOD_SGG]
@@ -399,7 +418,7 @@ def collect_flood(codes=None):
         page = 1
         while True:
             # ⚠️⚠️ 폴리곤 응답은 크다 — 해운대 199면이 약 6MB. 300건/25초로 받으면 전부 타임아웃이다
-            #    (실측 2026-09-02: 70곳 전부 실패). 60건씩, 120초로 받는다.
+            #    (실측 2026-09-02: 표에 있는 시군구가 전부 실패했다). 60건씩, 120초로 받는다.
             d = get_retry(FLOOD_URL, {"sggCd": code, "type": "json",
                                       "numOfRows": FLOOD_PAGE, "pageNo": page}, timeout=120)
             body = d.get("body") or {}
@@ -470,10 +489,7 @@ def collect_flood(codes=None):
         "totalPolygons": sum(r["count"] for r in index),
         "source": "해양수산부 국립해양조사원 연안 침수 정보 (공공데이터포털 data.go.kr)",
         "license": "공공누리 (출처표시)",
-        "note": ("기관이 제공하는 연안 시군구 70곳만 담겨 있습니다. "
-                 "여기 없는 지역(강원 동해안 등)은 자료가 없는 것이지 "
-                 "침수 위험이 없다는 뜻이 아닙니다. 침수값은 깊이 구간(m)이며 "
-                 "기관 산출값을 그대로 옮깁니다."),
+        "note": flood_index_note(),
     })
     print(f"[flood] 색인 {len(index)}곳 (자료 있는 곳 {len(covered)})")
     return {"ok": True, "districts": len(index), "covered": len(covered)}

@@ -302,7 +302,10 @@ test('formatValue — 눈금의 자릿수 · 빼기 기호 · 편차는 부호 �
   assert.equal(formatValue(scaleOf('sstAnom'), -0.8), '−0.8 °C');
   assert.equal(formatValue(scaleOf('sstAnom'), 0), '0.0 °C');
   assert.equal(formatValue(scaleOf('pm25'), 37.6), '38 µg/m³');
-  assert.equal(formatValue(scaleOf('pressure'), 1013.5), '1013.5 hPa');
+  // 기압 눈금은 정확히 1 hPa 다 — '1013.0' 은 없는 정밀이다(2026-09-20 반박 검증 · 기온은 0.5 라 소수 한 자리).
+  assert.equal(formatValue(scaleOf('pressure'), 1013), '1013 hPa');
+  assert.equal(formatValue(scaleOf('pressure'), 1013.5), '1014 hPa');
+  assert.equal(scaleOf('pressure').digits, 0);
   for (const v of [null, undefined, NaN, '', '27.5', true]) assert.equal(formatValue(scaleOf('temp'), v), '—', JSON.stringify(v));
 });
 

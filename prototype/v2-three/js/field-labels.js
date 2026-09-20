@@ -102,8 +102,13 @@ export const thinField = ({ pxA, pxB = null, channels, grid, mode = 'scalar', st
 
 /**
  * 어느 값에 라벨을 다나 — 등치선 명세(field-scales.isolineSpec)의 label 규칙대로, 자료 범위 안의 것만.
- *   'major'    굵은 선(majorEvery 의 배수)에만 — 기온 10°C 마다
+ *   'major'    굵은 선(majorEvery 의 배수)**과 강조선**에 — 기온 10°C 마다 · 기압 20 hPa 마다 + 1012
  *   'all'      모든 선 · 'emphasis' 강조값에만 · 'none' 없음
+ * ⚠️ 'major' 가 강조선을 같이 세는 이유(2026-09-20 반박 검증): 강조선은 화면에서 **가장 굵고 밝은 선**이다
+ *   (field-renderer.js FIELD_LINE — emphasisWidthPx 2.2 > majorWidthPx 1.9 · majorAlpha 0.95).
+ *   기압 1012 가 그랬다: 지구에서 제일 굵은 선 하나만 숫자가 없고, 그보다 가는 1000 · 1020 에는 숫자가 붙어
+ *   PD 가 굵은 선을 1008 인지 1012 인지 1016 인지 세어 맞혀야 했다. 강조는 '가장 중요하다'는 뜻이다.
+ *   기온 명세에는 emphasize 가 없어 아무것도 달라지지 않는다.
  */
 export const labelLevels = (spec, min, max) => {
   if (!spec || spec.label === 'none' || !(max >= min)) return [];
@@ -114,7 +119,12 @@ export const labelLevels = (spec, min, max) => {
     for (let k = Math.ceil(min / step); k * step <= max; k += 1) if (inRange(k * step)) out.push(k * step);
     return out;
   };
-  if (spec.label === 'major') return every(spec.majorEvery || spec.interval);
+  if (spec.label === 'major') {
+    const major = every(spec.majorEvery || spec.interval);
+    const emph = (spec.emphasize || []).filter(inRange);
+    if (!emph.length) return major;
+    return [...new Set([...major, ...emph])].sort((a, b) => a - b);
+  }
   if (spec.label === 'emphasis') return (spec.emphasize || []).filter(inRange);
   if (spec.levels) return spec.levels.filter(inRange);
   return every(spec.interval);

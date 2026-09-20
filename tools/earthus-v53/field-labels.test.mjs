@@ -12,7 +12,7 @@ import {
   FIELD_LABEL_CAP, FIELD_LABEL_MAX_LAT, FIELD_LABEL_MIN_SEP_DEG, FieldLabels,
   labelLevels, labelOpacity, labelText, pickLabelSpots, thinField, traceContours,
 } from '../../prototype/v2-three/js/field-labels.js';
-import { isolineSpec, scaleOf } from '../../prototype/v2-three/js/field-scales.js';
+import { defineScale, isolineSpec, scaleOf } from '../../prototype/v2-three/js/field-scales.js';
 
 const D2R = Math.PI / 180;
 const W = 720;
@@ -61,10 +61,21 @@ test('라벨은 주 레벨에만 — 기온은 2°C 를 골라도 5°C 를 골�
   assert.deepEqual(labelLevels(isolineSpec(temp, '5'), -23.5, 38), [-20, -10, 0, 10, 20, 30]);
   assert.deepEqual(labelLevels(isolineSpec(temp, '2'), -23.5, 38), [-20, -10, 0, 10, 20, 30]);
   assert.deepEqual(labelLevels(isolineSpec(temp, '5'), 10, 19.5), [], '최솟값과 같은 레벨은 넘을 곳이 없다');
-  // 기압(2026-09-20 D1): 선은 4 hPa 마다지만 숫자는 **굵은 선(20 hPa)** 에만 — 지시서 W3 의 "20 hPa 굵게".
+  // 기압(2026-09-20 D1): 선은 4 hPa 마다지만 숫자는 **굵은 선(20 hPa)과 강조선(1012)** 에만.
   // (그 전에는 label 'all' 이라 4 hPa 마다 숫자가 붙었고 이 줄이 [1004, 1008, 1012] 였다.)
-  assert.deepEqual(labelLevels(isolineSpec(scaleOf('pressure')), 960, 1045), [980, 1000, 1020, 1040]);
-  assert.deepEqual(labelLevels(isolineSpec(scaleOf('pressure')), 1001, 1013), [], '좁은 범위에는 굵은 선이 없다');
+  // ⚠️ 1012 가 빠져 있었다(2026-09-20 반박 검증): 강조선은 화면에서 **가장 굵고 밝은 선**인데
+  //    (field-renderer FIELD_LINE emphasisWidthPx 2.2 > majorWidthPx 1.9) 그 선에만 숫자가 없었다.
+  const pressure = isolineSpec(scaleOf('pressure'));
+  assert.deepEqual(pressure.emphasize, [1012]);
+  assert.deepEqual(labelLevels(pressure, 960, 1045), [980, 1000, 1012, 1020, 1040]);
+  assert.deepEqual(labelLevels(pressure, 944, 1057), [960, 980, 1000, 1012, 1020, 1040]);
+  assert.deepEqual(labelLevels(pressure, 1001, 1013), [1012], '굵은 선이 없어도 강조선에는 숫자가 붙는다');
+  assert.deepEqual(labelLevels(pressure, 1013, 1030), [1020], '범위 밖의 강조값은 넣지 않는다');
+  // 강조값이 굵은 선과 겹쳐도 한 번만 — 눈금표에서 세므로 표를 바꾸면 이 줄이 따라 바뀐다.
+  const pivot = defineScale({ ...scaleOf('pressure'), id: 'pressurePivot', isolines: { interval: 4, majorEvery: 20, emphasize: [1020], label: 'major' } });
+  assert.deepEqual(labelLevels(isolineSpec(pivot), 960, 1045), [980, 1000, 1020, 1040]);
+  // 기온 명세에는 emphasize 가 없다 — 위 두 줄이 그대로인 것이 그 증거다.
+  assert.deepEqual(isolineSpec(temp, '5').emphasize, []);
   assert.deepEqual(labelLevels(isolineSpec(scaleOf('sst')), 20, 30), [26, 29], '강조값에만');
   assert.deepEqual(labelLevels(isolineSpec(scaleOf('precip')), 0, 40), [], "label 'none'");
   assert.deepEqual(labelLevels(null, 0, 40), [], '등치선이 없는 눈금(풍속)');

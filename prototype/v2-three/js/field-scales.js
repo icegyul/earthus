@@ -144,7 +144,10 @@ const SPECS = {
   // H/L 기호를 찍는 일은 W1 의 몫이다(극값 찾기는 눈금이 아니라 자료의 일).
   pressure: {
     name: { ko: '해면기압', en: 'Sea-level pressure' },
-    unit: 'hPa', digits: 1, kind: 'diverging', pivot: 1012,
+    // ⚠️ digits 0 — 운영 매니페스트의 기압 눈금이 정확히 1 hPa 다(fields.mslp.channels.R scale). digits 1 이면
+    //    판독과 카드의 '모델 범위'가 '1013.0 hPa' 처럼 **없는 소수 한 자리**를 적는다(2026-09-20 반박 검증).
+    //    기온·풍속이 digits 1 인 것은 그 눈금이 0.5 라서다 — 자릿수는 눈금을 따라간다.
+    unit: 'hPa', digits: 0, kind: 'diverging', pivot: 1012,
     bands: [
       [null, '#a8243a', 0.4],   //        < 984    L* 38
       [984, '#cf5240', 0.4],    //  984 ~  992     L* 51

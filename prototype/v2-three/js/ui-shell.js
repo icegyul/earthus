@@ -64,7 +64,7 @@ export const SCENES = [
       // 2026-09-20 W4: 'Open-Meteo 격자 5°' 한 시각의 그라데이션이었다. 같은 id 가 이제 GFS 강수율 프레임의 구간색이다 — 출처를 사실대로.
       { id: 'raingrid', name: '전지구 강수', state: 'MODEL', src: 'NOAA GFS 0.5° · 강수율 mm/h · 5일 예보 · 3시간 간격', act: true },
       { id: 'tempgrid', name: '전지구 기온', state: 'MODEL', src: 'NOAA GFS 0.5° · 5일 예보 · 3시간 간격', act: true },
-      { id: 'presgrid', name: '전지구 기압', state: 'MODEL', src: 'Open-Meteo 격자 5°', act: true },
+      { id: 'presgrid', name: '전지구 기압', state: 'MODEL', src: 'NOAA GFS 0.5° · 해면기압 · 5일 예보 · 3시간 간격', act: true },
       { id: 'windgrid', name: '전지구 풍속', state: 'MODEL', src: 'NOAA GFS 0.5° · 10 m · 5일 예보 · 3시간 간격', act: true },
       { id: 'pm25grid', name: '전지구 초미세먼지', state: 'MODEL', src: 'CAMS 격자 5°', act: true },
       { id: 'uvgrid', name: '전지구 자외선', state: 'MODEL', src: 'CAMS 격자 5°', act: true },

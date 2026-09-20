@@ -32,6 +32,7 @@ import { bandColor, formatValue, isolineSpec, scaleOf } from './field-scales.js?
 import { logReadout, readTicks, topBandNote } from './field-log.js?v=1';
 import { FieldRenderer, halfStepOf } from './field-renderer.js?v=1';
 import { FIELD_LABEL_CAP, FieldLabels, labelLevels, labelText, pickLabelSpots, thinField } from './field-labels.js?v=1';
+import { FieldSymbols, SYMBOL_CAP, symbolCardRow } from './field-symbols.js?v=1';
 
 // 레이어 id → 무엇을 어떻게 그리나. 레이어 id·현상 id 는 개명하지 않는다(현상 레지스트리 규칙) — 'tempgrid' 그대로다.
 //   fieldId   프레임 저장소의 필드(gfs-frames.js) · scaleId  색 눈금표(field-scales.js)
@@ -70,6 +71,19 @@ export const FIELD_DESCRIPTORS = Object.freeze({
     isoName: Object.freeze({ ko: '강한 코어 윤곽', en: 'Heavy-core outline' }),
     isolineChoices: Object.freeze([]),
     zeroText: Object.freeze({ ko: '비 없음', en: 'No rain' }),
+  }),
+  // 해면기압(2026-09-20 D1) — 지시서 W1 표: "색면은 옅게 · 4 hPa 등압선 + H/L 기호". 색면의 불투명도는 눈금표가 정한다
+  // (field-scales.js pressure 의 칸마다 0.4 → 팔레트 알파 102 → 셰이더에서 × FIELD_OPACITY 0.8 = 0.32. 선이 주인공이다).
+  // 등압선 간격은 4 hPa 하나뿐이라 간격 단추가 없다 — 선택지가 하나면 단추로 가장하지 않는다(죽은 토글 금지).
+  // symbols 훅은 이 한 줄뿐이다: FieldLayer 가 field-symbols.js 의 층을 만들어 키프레임마다 먹인다(기온·풍속에는 없다).
+  // 예전 'presgrid' 는 Open-Meteo 5° 한 시각의 선형 램프(live-layers.js PRES_RAMP)였고 등압선도 H/L 도 없었다.
+  presgrid: Object.freeze({
+    layerId: 'presgrid', fieldId: 'mslp', scaleId: 'pressure', mode: 'scalar', mask: 'none', symbols: 'pressureCenters',
+    title: Object.freeze({ ko: '전지구 기압 · 해면', en: 'Global pressure · sea level' }),
+    quantity: Object.freeze({ ko: '해면기압', en: 'Sea-level pressure' }),
+    isoName: Object.freeze({ ko: '등압선', en: 'Isobars' }),
+    symbolName: Object.freeze({ ko: '고·저기압 기호 H/L', en: 'High/low centres' }),
+    isolineChoices: Object.freeze([]),
   }),
 });
 
@@ -271,20 +285,24 @@ export const fieldCardInner = (m) => {
     ? `${painted}단 구간색입니다. 색 사이를 섞지 않습니다 — 색 경계 = 범례 경계 = 등치선 값.`
     : `${painted} solid bands. Colours are never blended — band edge = legend edge = isoline value.`}`);
   lines.push(`<span data-field-live>${fieldCardLive(m)}</span>`);
-  const spec = isolineSpec(m.scale, m.isoChoice);
-  if (spec) {
-    const btn = (action, data, on, text) => `<button data-action="${action}" data-layer="${esc(m.id)}" ${data} aria-pressed="${on ? 'true' : 'false'}" style="${pressed(on)}">${esc(text)}</button>`;
-    // 간격 단추는 눈금표에 선택지가 있을 때만(기온 2°C|5°C). 없는 눈금(강수의 코어 윤곽 하나)은 켬/끔뿐이다 — 없는 단추를 그리지 않는다.
+  const btn = (action, data, on, text) => `<button data-action="${action}" data-layer="${esc(m.id)}" ${data} aria-pressed="${on ? 'true' : 'false'}" style="${pressed(on)}">${esc(text)}</button>`;
+  // 등치선이 있는 눈금이면 켬/끔은 늘 낸다. 간격 단추는 **선택지가 둘 이상일 때만** — 기압은 4 hPa 하나뿐이라
+  // 단추가 없고 굵은 선 간격만 글자로 적힌다(선택지가 하나면 단추로 가장하지 않는다 · 지시서 W3 '죽은 토글 금지').
+  if (m.scale.isolines) {
     const steps = (m.choices || []).map((c) => btn('field-iso-step', `data-choice="${esc(c)}"`, m.isoOn && m.isoChoice === c, `${c}${unit}`)).join('');
-    const major = spec.majorEvery ? (ko ? ` · ${spec.majorEvery}${unit} 마다 굵은 선과 숫자` : ` · bold line and number every ${spec.majorEvery}${unit}`) : '';
+    const spec = isolineSpec(m.scale, m.isoChoice);
+    const every = spec && spec.interval ? (ko ? ` ${spec.interval}${unit} 마다` : ` every ${spec.interval}${unit}`) : '';
     // 간격이 고르지 않은 눈금은 그을 값을 글자로 적는다('10 mm/h 이상') — 선이 무엇을 두르고 있는지 색 없이도 읽힌다.
-    const only = (!spec.interval && spec.levels && spec.levels.length)
+    const only = (spec && !spec.interval && spec.levels && spec.levels.length)
       ? (ko ? ` · ${spec.levels.map((v) => labelText(m.scale, v)).join(' · ')} 이상` : ` · at ${spec.levels.map((v) => labelText(m.scale, v)).join(' · ')} and above`)
       : '';
+    const major = spec && spec.majorEvery ? (ko ? ` · ${spec.majorEvery}${unit} 마다 굵은 선과 숫자` : ` · bold line and number every ${spec.majorEvery}${unit}`) : '';
     lines.push(`<span style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 2px">${esc(L(m.desc.isoName))} `
       + btn('field-iso', `data-set="${m.isoOn ? 'off' : 'on'}"`, m.isoOn, m.isoOn ? (ko ? '켬' : 'On') : (ko ? '끔' : 'Off'))
-      + `${steps}</span><span style="opacity:.8">${ko ? '흰 선' : 'White lines'}${major}${only}</span>`);
+      + `${steps}</span><span style="opacity:.8">${ko ? '흰 선' : 'White lines'}${steps ? '' : every}${major}${only}</span>`);
   }
+  // H/L 기호 — descriptor 에 symbols 훅이 있는 레이어(기압)에만. 글은 field-symbols.js 가 만든다(로직을 여기 두지 않는다).
+  if (m.symbolName) lines.push(symbolCardRow(m, btn));
   lines.push(ko
     ? `이 색면은 <b>관측이 아니라 수치예보 모델값</b>입니다 — ${esc(cellLabel(m.info && m.info.resolutionDeg, true))} 한 칸의 평균이라 도시·지점의 값과 다를 수 있습니다.`
     : `This field is <b>model output, not observation</b> — a ${esc(cellLabel(m.info && m.info.resolutionDeg, false))} cell mean that can differ from a city or station value.`);
@@ -332,6 +350,8 @@ export class FieldLayer {
     this.probePoint = null;
     this.renderer = null;
     this.labels = null;
+    this.symbols = null;   // descriptor.symbols 가 있는 레이어(기압)만 — field-symbols.js
+    this.symbolsOn = !!descriptor.symbols;
     this.group = null;
     this.thin = null;
     this.unsubTime = null;
@@ -361,11 +381,24 @@ export class FieldLayer {
       heightAt: d.heightAt || null, getExagger: d.getExagger || null,
       ...(d.makeLabelTexture ? { makeTexture: d.makeLabelTexture } : {}),
     });
+    // H/L 기호(기압) — descriptor 의 훅 하나로 붙는다. 기온·풍속은 이 줄을 지나가지 않는다.
+    if (this.desc.symbols === 'pressureCenters') {
+      this.symbols = new FieldSymbols({
+        scale: this.scale, cap: d.isPhone ? SYMBOL_CAP.phone : SYMBOL_CAP.desktop,
+        heightAt: d.heightAt || null, getExagger: d.getExagger || null,
+        ...(d.makeSymbolTexture ? { makeTexture: d.makeSymbolTexture } : {}),
+      });
+      this.symbols.setEnabled(this.symbolsOn);
+    }
     // 라벨의 지평선 흐림·앞 반구 상한은 색면이 그려지기 직전에 돈다 — main.js 의 프레임 루프에 줄을 더하지 않는다.
-    this.renderer.onFrame = (camera) => { if (this.labels.group.visible) this.labels.tick(camera); };
+    this.renderer.onFrame = (camera) => {
+      if (this.labels.group.visible) this.labels.tick(camera);
+      if (this.symbols && this.symbols.group.visible) this.symbols.tick(camera);
+    };
     this.group = new THREE.Group();
     this.group.add(this.renderer.mesh);
     this.group.add(this.labels.group);
+    if (this.symbols) this.group.add(this.symbols.group);
     this.labels.group.visible = false;
     if (d.parent && d.parent.add) d.parent.add(this.group);
   }
@@ -389,6 +422,8 @@ export class FieldLayer {
     const spec = this.frames.fieldSpec(this.desc.fieldId);
     this.renderer.setField({ channels: spec.channels, uv: this.frames.uvTransform(this.desc.fieldId), grid: spec.grid });
     this.renderer.setIsolines(isolineSpec(this.scale, this.isoChoice), this.isoOn);
+    // 기호도 같은 디코드 상수를 쓴다 — 이 저장소 어디에도 870·940 을 적지 않는다(매니페스트가 정본이다).
+    if (this.symbols) this.symbols.decode = spec.channels[0];
     this.spec = spec;
   }
 
@@ -447,6 +482,7 @@ export class FieldLayer {
     this.settleFirst();
     if (this.renderer) this.renderer.setVisible(false);
     if (this.labels) { this.labels.clear(); this.labels.group.visible = false; }
+    if (this.symbols) this.symbols.clear();                   // 스프라이트·짝·키를 비운다(텍스처는 돌려쓰려고 남긴다)
     // 범례는 앱에 하나다 — **내 것일 때만** 물러난다. 남은 주인(바람 입자 등)이 있으면 그쪽 범례가 바로 돌아온다.
     if (this.legend.release) this.legend.release(`field:${this.id}`); else this.legend.hide();
     this.key = null;
@@ -476,6 +512,7 @@ export class FieldLayer {
   hideDrawing() {
     if (this.renderer) this.renderer.setVisible(false);
     if (this.labels) this.labels.group.visible = false;
+    if (this.symbols) this.symbols.setVisible(false);
   }
 
   settleFirst() {
@@ -509,6 +546,7 @@ export class FieldLayer {
       if (ta && tb) {
         this.req += 1;                                        // 다른 구간을 청해 둔 것이 있으면 버린다 — 늦게 와서 지금 그림을 덮지 않게
         this.renderer.setFrames(ta, tb, br.mix);
+        if (this.symbols) this.symbols.setMix(br.mix);        // 사이에서는 찾지 않는다 — 대권을 따라 옮길 뿐이다
         this.showDrawing();
         this.setStatus(fieldStatusOf({ br, frames: list }));
         return;
@@ -535,6 +573,11 @@ export class FieldLayer {
       this.renderer.setFrames(ta, tb, mix);
       this.key = key;
       this.rebuildLabels(key, px[0], px[1] || null);
+      if (this.symbols) {                                     // 키프레임이 바뀔 때만 찾는다(두 프레임 각각) — 그 사이는 setMix
+        this.symbols.update(key, px[0], px[1] || px[0],
+          { grid: this.spec.grid, hourA: br.a.h, hourB: br.b.h, gapH: br.gapH || 3 });
+        this.symbols.setMix(mix);
+      }
       this.showDrawing();
       this.setStatus(fieldStatusOf({ br: { ...br, mix }, frames: list }));
       this.settleFirst();
@@ -551,6 +594,7 @@ export class FieldLayer {
   showDrawing() {
     this.renderer.setVisible(true);
     this.labels.group.visible = this.isoOn;                   // 라벨은 등치선의 숫자다 — 선을 끄면 같이 꺼진다
+    if (this.symbols) this.symbols.setVisible(true);          // 기호는 제 토글을 따른다(등압선과 별개다)
   }
 
   // 재생이 다음 구간으로 넘어갈 때 끊기지 않게 한 장 앞을 받아 둔다(프레임은 immutable 이라 HTTP 캐시에도 남는다).
@@ -594,6 +638,12 @@ export class FieldLayer {
       if (!this.choices.includes(String(ds.choice))) return false;
       this.isoChoice = String(ds.choice);
       this.isoOn = true;                                      // 간격을 고르는 것은 선을 보겠다는 뜻이다
+    } else if (action === 'field-symbols') {
+      if (!this.symbols) return false;                        // 기호가 없는 레이어(기온·풍속)에는 이 단추가 없다
+      this.symbolsOn = ds.set ? ds.set === 'on' : !this.symbolsOn;
+      this.symbols.setEnabled(this.symbolsOn);
+      this.publish();
+      return true;
     } else return false;
     if (this.renderer) {
       this.renderer.setIsolines(isolineSpec(this.scale, this.isoChoice), this.isoOn);
@@ -656,11 +706,16 @@ export class FieldLayer {
 
   cardModel(probe = this.active ? this.readProbe() : null) {
     const info = this.frames.info && this.frames.loaded ? this.frames.info() : null;
+    const ko = this.ko;
     return {
-      id: this.id, desc: this.desc, scale: this.scale, info, ko: this.ko,
+      id: this.id, desc: this.desc, scale: this.scale, info, ko,
       validMs: this.active ? this.timeBus.validMs() : null,
       status: this.status, isoOn: this.isoOn, isoChoice: this.isoChoice, choices: this.choices,
       stats: this.stats, probe,
+      // 기호(기압). 이름이 없으면 카드에 그 줄이 통째로 없다 — 기온·풍속이 그렇다.
+      symbolName: this.symbols && this.desc.symbolName ? (this.desc.symbolName[ko ? 'ko' : 'en'] || this.desc.symbolName.ko) : null,
+      symbolsOn: this.symbolsOn, symbolReady: this.symbols ? this.symbols.ready : true,
+      shown: this.symbols ? this.symbols.shown : null,
     };
   }
 
@@ -694,7 +749,7 @@ export class FieldLayer {
     if (inner === this.lastInner) return;                     // 글자가 그대로면 DOM 도 문자열도 건드리지 않는다
     // 떠 있는 카드를 제자리에서 고친다. 단추의 모양(켬/끔 · 간격)이 그대로면 시각을 따라 바뀌는 덩어리만 갈아 끼운다 —
     // 재생 중(220ms 마다 한 걸음)에 카드를 통째로 갈면 누르려던 단추가 손가락 밑에서 새 것으로 바뀐다.
-    const shape = `${this.isoOn}|${this.isoChoice}|${ko}`;
+    const shape = `${this.isoOn}|${this.isoChoice}|${this.symbolsOn}|${ko}`;
     const doc = this.deps.doc || (typeof document !== 'undefined' ? document : null);
     if (doc && doc.querySelectorAll) {
       for (const el of doc.querySelectorAll(`[data-field-card="${this.id}"]`)) {
@@ -713,7 +768,8 @@ export class FieldLayer {
     if (this.group && this.group.parent) this.group.parent.remove(this.group);
     if (this.renderer) this.renderer.dispose();
     if (this.labels) this.labels.dispose();
-    this.renderer = null; this.labels = null; this.group = null;
+    if (this.symbols) this.symbols.dispose();
+    this.renderer = null; this.labels = null; this.symbols = null; this.group = null;
   }
 }
 

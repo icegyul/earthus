@@ -61,7 +61,10 @@ test('라벨은 주 레벨에만 — 기온은 2°C 를 골라도 5°C 를 골�
   assert.deepEqual(labelLevels(isolineSpec(temp, '5'), -23.5, 38), [-20, -10, 0, 10, 20, 30]);
   assert.deepEqual(labelLevels(isolineSpec(temp, '2'), -23.5, 38), [-20, -10, 0, 10, 20, 30]);
   assert.deepEqual(labelLevels(isolineSpec(temp, '5'), 10, 19.5), [], '최솟값과 같은 레벨은 넘을 곳이 없다');
-  assert.deepEqual(labelLevels(isolineSpec(scaleOf('pressure')), 1001, 1013), [1004, 1008, 1012]);
+  // 기압(2026-09-20 D1): 선은 4 hPa 마다지만 숫자는 **굵은 선(20 hPa)** 에만 — 지시서 W3 의 "20 hPa 굵게".
+  // (그 전에는 label 'all' 이라 4 hPa 마다 숫자가 붙었고 이 줄이 [1004, 1008, 1012] 였다.)
+  assert.deepEqual(labelLevels(isolineSpec(scaleOf('pressure')), 960, 1045), [980, 1000, 1020, 1040]);
+  assert.deepEqual(labelLevels(isolineSpec(scaleOf('pressure')), 1001, 1013), [], '좁은 범위에는 굵은 선이 없다');
   assert.deepEqual(labelLevels(isolineSpec(scaleOf('sst')), 20, 30), [26, 29], '강조값에만');
   assert.deepEqual(labelLevels(isolineSpec(scaleOf('precip')), 0, 40), [], "label 'none'");
   assert.deepEqual(labelLevels(null, 0, 40), [], '등치선이 없는 눈금(풍속)');

@@ -220,6 +220,32 @@ test('두드러짐이 임계(등압선 간격)에 못 미치는 중심은 그리
   assert.deepEqual(carried.map((c) => c.hPa), [1020, 1030], '보이던 것이 먼저 — 순위가 오가는 중심에서 기호가 깜빡이지 않게');
 });
 
+test('히스테리시스는 앞으로 밀어도 되감아도 선다 — 짝의 양쪽을 다 기억한다', () => {
+  const { sym } = rig();
+  const f = (dlon) => frame(world([{ lat: 20, lon: dlon, sigma: 3, amp: -25 }]));
+  const f0 = f(0);
+  const f3 = f(3);
+  const f6 = f(6);
+  const carriedL = () => sym.list.find((c) => c.kind === 'L').carried;
+  sym.setVisible(true);
+  sym.update('0|3', f0, f3, { grid: GRID, hourA: 0, hourB: 3 });
+  sym.setMix(0.2);                                    // 가까운 쪽 키프레임은 h=0 이다(lerpCenter 의 nearest)
+  sym.tick(cameraAt(0, 0, 3));
+  assert.ok(sym.shown.L >= 1);
+  // 앞으로: 0|3 → 3|6. 보이던 중심은 h=0 의 것이지만 새 짝의 a 는 h=3 이다 — 양쪽을 물어야 이어진다.
+  sym.update('3|6', f3, f6, { grid: GRID, hourA: 3, hourB: 6 });
+  assert.equal(carriedL(), true, '앞으로 밀 때');
+  sym.setMix(0.2);
+  sym.tick(cameraAt(0, 0, 3));
+  // 되감기: 3|6 → 0|3. 이번에는 보이던 중심이 h=3 이고 새 짝의 **b** 가 h=3 이다.
+  sym.update('0|3', f0, f3, { grid: GRID, hourA: 0, hourB: 3 });
+  assert.equal(carriedL(), true, '되감을 때');
+  // 한 번도 안 보이던 중심은 이어지지 않는다.
+  sym.clear();
+  sym.update('0|3', f0, f3, { grid: GRID, hourA: 0, hourB: 3 });
+  assert.equal(carriedL(), false);
+});
+
 // ------------------------------------------------------------------------------------------------ 그리기
 
 test('앞 반구 상한 — 종류마다 따로 센다(데스크톱 8·8 · 폰 5·5) · 뒤편은 0', () => {

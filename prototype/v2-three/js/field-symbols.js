@@ -93,8 +93,11 @@ export const rankSymbols = (pairs, mix, { minProminence = 0, carry = null } = {}
     const promA = pair.a ? pair.a.prominence : -Infinity;
     const promB = pair.b ? pair.b.prominence : -Infinity;
     if (Math.max(promA, promB) < minProminence) continue;
-    c.carried = !!(carry && pair.a && carry.has(pair.a));
+    // ⚠️ 짝의 **양쪽**을 묻는다. 직전에 보이던 중심 객체는 그때 가까웠던 키프레임의 것이라(lerpCenter 의 nearest),
+    //    앞으로 밀 때는 b 쪽 · 되감을 때는 a 쪽에 있다. 한쪽만 물으면 히스테리시스가 한 방향에서만 선다.
+    c.carried = !!(carry && ((pair.a && carry.has(pair.a)) || (pair.b && carry.has(pair.b))));
     c.prominence = c.nearest.prominence;
+    c.pair = pair;                 // 다음 키프레임에서 '보이던 것'을 되짚을 열쇠(FieldSymbols.visibleCenters)
     out.push(c);
   }
   // 보이던 것 먼저 → 두드러진 것 먼저 → 북쪽 → 서쪽(난수 없는 순서).
@@ -263,7 +266,12 @@ export class FieldSymbols {
     if (key === this.key) return false;
     this.key = key;
     this.builds += 1;
-    if (!pxA || !this.decode) { this.setSymbols([]); return true; }
+    if (!pxA || !this.decode) {
+      // 디코드 상수는 FieldLayer.applyFieldSpec 이 넣는다. 없으면 조용히 안 그리는 대신 이유를 남긴다.
+      this.findError = pxA ? 'NO_DECODE' : 'NO_PIXELS';
+      this.setSymbols([]);
+      return true;
+    }
     if (!this.ensureMask(pxA.w, pxA.h, grid)) { this.setSymbols([]); return true; }
     // 기호는 색면의 덤이다 — 여기서 무엇이 잘못돼도 색면과 등압선은 그대로 있어야 한다.
     // (매니페스트가 전지구가 아닌 격자를 말하면 findPressureCenters 가 던진다 · 디코드 상수가 낯선 꼴이어도 던진다.)
@@ -294,10 +302,15 @@ export class FieldSymbols {
     this.setSymbols(rankSymbols(this.pairs, mix, { minProminence: this.minProminence, carry: this.carry }));
   }
 
+  // 지금 **보이는** 기호가 딛고 선 중심 객체들 — 두 키프레임의 것을 다 넣는다(위 rankSymbols 의 ⚠️).
   visibleCenters() {
     const out = [];
     for (let i = 0; i < this.count; i += 1) {
-      if (this.pool[i].material.opacity > 0 && this.list[i]) out.push(this.list[i].nearest);
+      if (!(this.pool[i].material.opacity > 0)) continue;
+      const p = this.list[i] && this.list[i].pair;
+      if (!p) continue;
+      if (p.a) out.push(p.a);
+      if (p.b) out.push(p.b);
     }
     return out;
   }

@@ -391,7 +391,25 @@ test('타임라인 자리에서 다시 조회하면 그 시각으로 읽고 한 
   const html = readout.seaHtml(got);
   assert.ok(html.includes(`유효 ${fmtValid(T0 + AHEAD, true)}`), '민 시각의 바람을 읽지 않았다');
   assert.match(html, /파도·수온·해류는 현재 시각 한 장/, '한 장짜리 자료가 예보처럼 읽힌다');
-  assert.ok(!/다시 조회해 주세요/.test(html), '방금 그 시각으로 읽었는데 다시 조회하라고 한다');
+  assert.match(html, /바람만 예보 프레임입니다/, '바람은 정말 그 시각의 프레임인데 그 말을 뺐다');
+  assert.ok(!/지점을 다시 눌러 주세요/.test(html), '방금 그 시각으로 읽었는데 다시 누르라고 한다');
+});
+
+test('타임라인을 지금으로 되돌리면 파도·수온을 없는 어긋남으로 몰지 않는다', async () => {
+  // 앞선 시각에서 읽은 카드를 두고 타임라인을 **지금으로** 되돌린 자리.
+  // 바람은 여전히 옛 프레임 것이지만, 파도·수온·해류는 애초에 현재 시각 한 장이라
+  // '지금'에서는 그 시각의 값이 맞다 — 여기서 어긋났다고 적으면 그 줄이 거짓이다.
+  const { readout, timeBus } = rig({ sea: oneSea(), buoys: { stations: [] } });
+  timeBus.set(AHEAD);
+  const got = await readout.sea(35, 125);
+  assert.ok(got.wind, '바람을 읽지 못했으면 이 시험은 아무것도 재지 않는다');
+  timeBus.set(0);
+  const back = readout.seaHtml(got);
+  // '파도·수온·해류' 라는 낱말이 나오는 자리는 어긋남 경고 두 줄뿐이다 — 지금 자리에서는 둘 다 거짓이다.
+  assert.ok(!/파도·수온·해류/.test(back),
+    "타임라인이 지금인데 한 장짜리 자료까지 '그 시각의 값이 아니다'라고 몰아 적었다");
+  assert.match(back, /지점을 다시 눌러 주세요/, '바람은 아직 옛 프레임 것인데 다시 누르라고 하지 않았다');
+  assert.ok(back.includes(`유효 ${fmtValid(T0 + AHEAD, true)}`), '바람이 어느 시각 것인지 잃었다');
 });
 
 test('지점 값 카드는 타임라인을 따라가지 않는다는 사실을 스스로 적는다', async () => {

@@ -212,6 +212,9 @@ export function createPointReadout(deps = {}) {
       .then(async (r) => {
         if (!r) return { json: null, st: 'failed' };
         // 404 는 '우리가 그 파일을 안 올린다'는 답이다 — 못 받은 것과 다르다.
+        // ⚠️ 이 갈래는 가짜 응답으로만 시험했다. 실제 S3 가 없는 키에 403 을 돌려주면(ListBucket 권한이
+        //    없는 공개 버킷이 그렇다) 없는 파일도 'failed' 가 된다 — 화면은 '못 받았다 · 다시 조회'라고
+        //    말한다. 틀린 쪽이 아니라 **모른다고 말하는 쪽**이라 그대로 둔다. 운영 응답을 확인하면 좁힌다.
         if (!r.ok) return { json: null, st: r.status === 404 ? 'missing' : 'failed' };
         const json = await r.json();
         return (json && typeof json === 'object') ? { json, st: 'ok' } : { json: null, st: 'missing' };
@@ -417,21 +420,25 @@ export function createPointReadout(deps = {}) {
       // 가만히 둔 화면을 '옮겼다'고 말하게 된다.
       const moved = Number.isFinite(sea.timeOffsetMs) && typeof timeBus.offsetMs === 'number'
         && timeBus.offsetMs !== sea.timeOffsetMs;
-      // 타임라인을 밀면 바람은 그 시각의 프레임이지만 **파도·수온은 한 장뿐**이다(수집기가 current= 로 받는다).
-      // 같은 바다를 칠하는 색면(wavefield)은 그때 스스로 숨는다 — 카드는 숨을 수 없으니 그 사실을 적는다.
-      // 이 줄이 없으면 T+48h 화면에서 '지금 파고'가 예보처럼 읽힌다.
+      // 어긋남은 **두 가지**이고 서로 독립이다. 한 문장에 묶으면 한쪽이 참일 때 다른 쪽이 거짓이 된다
+      // (앞선 판에서 타임라인을 지금으로 되돌린 자리가 그랬다 — 바람만 옛 프레임인데 파도·수온까지
+      //  '그 시각의 값이 아니다'라고 몰아 적었다).
+      //   ⓐ 타임라인이 지금이 아니다 → 파도·수온·해류는 한 장뿐이라(수집기가 current= 로 받는다)
+      //      그 시각의 값이 아니다. 같은 바다를 칠하는 색면(wavefield)은 그때 스스로 숨지만 카드는
+      //      숨을 수 없으니 적는다. 이 줄이 없으면 T+48h 화면에서 '지금 파고'가 예보처럼 읽힌다.
+      //   ⓑ 카드를 읽은 뒤에 타임라인이 옮겨졌다 → 바람도 지금 보고 있는 시각의 값이 아니다.
+      //      ⓐ 의 '바람만 예보 프레임입니다' 는 이때 거짓이므로 그 괄호를 뺀다.
       let drift = '';
-      if (moved) {
-        // 카드를 읽은 뒤에 타임라인이 움직였다 — 이때는 **바람까지** 지금 보고 있는 시각의 값이 아니다.
-        // 여기서 아래의 '바람만 예보 프레임입니다'를 적으면 그 줄이 거짓이 된다.
+      if (timeBus.isNow && !timeBus.isNow()) {
+        drift += `<p>${esc(ko
+          ? `타임라인이 지금이 아닙니다 — 파도·수온·해류는 현재 시각 한 장이라 그 시각의 값이 아닙니다${moved ? '.' : '(바람만 예보 프레임입니다).'}`
+          : `The timeline is not at now — waves, sea temperature and current are a single present-time snapshot, not values for that hour${moved ? '.' : ' (only the wind is a forecast frame).'}`)}</p>`;
+      }
+      if (moved && readMs != null) {
         const shown = fmtValid(timeBus.validMs(), ko);
-        drift = `<p>${esc(ko
-          ? `이 카드는 ${fmtValid(readMs, true)} 프레임을 읽은 것입니다 — 타임라인은 지금 ${shown} 을 가리킵니다. 파도·수온·해류는 물론 바람도 그 시각의 값이 아닙니다. 지점을 다시 눌러 주세요.`
-          : `This card was read from the ${fmtValid(readMs, false)} frame, but the timeline now points at ${shown}. Neither the waves, sea temperature and current nor the wind are values for that hour — click the point again.`)}</p>`;
-      } else if (timeBus.isNow && !timeBus.isNow()) {
-        drift = `<p>${esc(ko
-          ? '타임라인이 지금이 아닙니다 — 파도·수온·해류는 현재 시각 한 장이라 그 시각의 값이 아닙니다(바람만 예보 프레임입니다).'
-          : 'The timeline is not at now — waves, sea temperature and current are a single present-time snapshot, not values for that hour (only the wind is a forecast frame).')}</p>`;
+        drift += `<p>${esc(ko
+          ? `이 카드의 바람은 ${fmtValid(readMs, true)} 프레임에서 읽은 것입니다 — 타임라인은 지금 ${shown} 을 가리킵니다. 그 시각의 바람은 지점을 다시 눌러 주세요.`
+          : `The wind on this card was read from the ${fmtValid(readMs, false)} frame, but the timeline now points at ${shown} — click the point again to read the wind for that hour.`)}</p>`;
       }
       return rows.join('') + windLine + drift
         + `<p>${esc(ko ? '유의파고는 높은 쪽 1/3 파도의 평균 높이입니다.' : 'Significant wave height is the mean of the highest third of the waves.')}</p>`

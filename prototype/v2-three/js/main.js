@@ -32,6 +32,9 @@ import { CloudVolume } from './cloud-volume.js?v=4';
 // 구름이 위성 모드여도 필드 프레임은 떠야 하므로 CloudManager 안이 아니라 모듈 맨 위에 둔다.
 import { sharedGfsFrames } from './gfs-frames.js?v=1';
 const gfsFrames = sharedGfsFrames({ THREE });
+// 시간 하나(js/time-bus.js) — 타임라인이 가리키는 시각을 기온·바람·기압·관측 숫자가 전부 여기서 듣는다.
+// 예전에는 구름만 들었다(아래 onTimeOffset → clouds.setForecastOffset). v2 는 5일을 예보하는 서비스라 시간은 하나여야 한다.
+import { timeBus } from './time-bus.js?v=1';
 import { PopSculpture } from './pop-sculpture.js?v=13';
 import { PopMetricMenu } from './pop-metric-menu.js?v=1';
 import { QuickMenu } from './quick-menu.js?v=1';
@@ -4917,6 +4920,8 @@ async function main() {
       if (ms !== 0) clouds.prefetchFrames();
       clouds.setForecastOffset(ms);
       liveLayers.setTimeOffset(ms);
+      // 새 레이어는 여기에 줄을 더하지 않는다 — 시간 버스를 듣는다(time-bus.js). 줄을 하나 빠뜨리면 그 메뉴만 '지금'에 멈춘다.
+      timeBus.set(ms);
       syncCloudToTime(ms);
     },
     // 스트립 문구는 실제 상태에서 만든다. 예전엔 하드코딩이라
@@ -6237,6 +6242,7 @@ async function main() {
   // 공용 GFS 프레임 저장소(js/gfs-frames.js). 콘솔에서: await __earthus.frames.load() → __earthus.frames.info()
   // 위 객체 안이 아니라 따로 거는 이유: 같은 묶음의 다른 작업이 그 객체에 줄을 더하면 합칠 때 부딪힌다.
   window.__earthus.frames = gfsFrames;
+  window.__earthus.time = timeBus;   // 콘솔 확인용: __earthus.time.offsetMs · validMs() · isNow()
 
   let last = performance.now();
   const tickBody = (now) => {

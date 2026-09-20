@@ -30,6 +30,7 @@ import {
   windDeviceCap,
   windFieldSpecOf,
   windFromDeg,
+  windLimbLoFor,
   windRadiusFor,
   windReadoutModel,
 } from '../../prototype/v2-three/js/wind-layer.js';
@@ -680,6 +681,37 @@ test('입자 반지름 — 전지구 뷰에서는 색면 껍질과 같고, 가�
   ex = 10;                                                // 과장이 바뀌면 껍질을 다시 묻는다
   hz.layer.tick(1 / 30, camAt(20, 130, 3.0));
   assert.ok(Math.abs(hz.layer.particles.sim.radius - (1.004 + (10 * 9000) / 6371000)) < 1e-3);
+});
+
+test('지구 윤곽 밖에서는 바람이 흐르지 않는다 — 껍질이 지구보다 큰 만큼 가장자리 페이드를 안쪽에서 시작한다', async () => {
+  // 시선이 반지름 1 의 구에 접할 때, 그 시선 위의 껍질 점(반지름 r)의 법선·시선 cos = √(1 − 1/r²). 기하로 다시 잰다.
+  const r = 1.0746;
+  const d = 3;                                            // 카메라 거리 — 결과는 이 값과 무관해야 한다
+  for (const dist of [d, 1.5, 8]) {
+    const tAng = Math.acos(1 / dist);                     // 접점의 천저각
+    const T = { x: Math.sin(tAng), y: Math.cos(tAng) };   // 접점(카메라는 +y 축 위 dist)
+    const L = { x: T.x - 0, y: T.y - dist };              // 카메라 → 접점
+    const len = Math.hypot(L.x, L.y);
+    const s = Math.sqrt(r * r - 1);
+    const P = { x: T.x - (L.x / len) * s, y: T.y - (L.y / len) * s };   // 접점에서 카메라 쪽으로 √(r²−1) — 껍질 위의 점
+    assert.ok(Math.abs(Math.hypot(P.x, P.y) - r) < 1e-12);
+    const toCam = { x: -P.x, y: dist - P.y };
+    const facing = (P.x * toCam.x + P.y * toCam.y) / (r * Math.hypot(toCam.x, toCam.y));
+    assert.ok(Math.abs(facing - windLimbLoFor(r)) < 1e-12, `거리 ${dist}: ${facing} ≠ ${windLimbLoFor(r)}`);
+  }
+  assert.equal(windLimbLoFor(1), 0);
+  assert.equal(windLimbLoFor(0.9), 0);
+
+  let ex = 50;
+  const hz = harness({ extra: { exagger: () => ex, shellRadius: () => 1.004 + (ex * 9000) / 6371000 } });
+  await hz.layer.load();
+  assert.equal(hz.layer.particles.uniforms.uLimbLo.value, 0, '엔진 기본값은 예전과 같아야 한다(0)');
+  hz.sw.on = true;
+  hz.layer.tick(1 / 30, camAt(20, 130, 3.0));
+  const lo = hz.layer.particles.uniforms.uLimbLo.value;
+  assert.ok(Math.abs(lo - windLimbLoFor(hz.layer.particles.sim.radius)) < 1e-9 && lo > 0.36 && lo < 0.38, `${lo}`);
+  hz.layer.tick(1 / 30, camAt(20, 130, 1.03));            // 가까이 — 입자 반지름이 내려오면 페이드 시작점도 따라 내려온다
+  assert.ok(hz.layer.particles.uniforms.uLimbLo.value < lo);
 });
 
 test('카드에 적힌 것이 바뀌면 알린다(onChange) — 꺼져 있을 때와 아무것도 안 바뀌었을 때는 알리지 않는다', async () => {

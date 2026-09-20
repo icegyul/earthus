@@ -68,6 +68,13 @@ export function windRadiusFor(shellR, camDist) {
   return Math.max(1.0012, Math.min(shellR, 1 + (camDist - 1) * WIND_CAMERA_ALT_FRACTION));
 }
 
+/** 가장자리 페이드가 시작될 facing — 껍질이 지구보다 크면(과장 50× 에서 7.5%) 껍질의 바깥 띠가 지구 윤곽 밖 우주 위에 그려져
+ *  바람이 지구 밖에서 흐르는 것처럼 보인다. 시선이 지구(반지름 1)에 접하는 자리의 껍질 점은 facing = √(1 − 1/r²) 이다
+ *  (카메라 거리와 무관 — wind-particles.js setLimbLo 주석). 그 값부터 페이드하면 선이 지구 윤곽에서 끝난다. */
+export function windLimbLoFor(r) {
+  return r > 1 ? Math.sqrt(1 - 1 / (r * r)) : 0;
+}
+
 const TITLE = Object.freeze({ ko: '바람 · 10 m 풍속', en: 'Wind · 10 m speed' });
 const SOURCE = 'MODEL · GFS 0.5°';
 const clamp01 = (x) => (x > 0 ? (x < 1 ? x : 1) : 0);
@@ -484,7 +491,11 @@ export function createWindLayer(deps = {}) {
         const ex = exagger();
         if (ex !== lastEx) { lastEx = ex; shellR = shellRadius() + WIND_SHELL_LIFT; }
         const r = windRadiusFor(shellR, Math.hypot(camera.position.x, camera.position.y, camera.position.z));
-        if (!(Math.abs(r - lastR) <= 1e-5)) { lastR = r; particles.setRadius(r); }   // lastR 이 NaN(막 켰다)이면 참 — 부등호를 뒤집어 쓰면 영영 안 들어간다
+        if (!(Math.abs(r - lastR) <= 1e-5)) {            // lastR 이 NaN(막 켰다)이면 참 — 부등호를 뒤집어 쓰면 영영 안 들어간다
+          lastR = r;
+          particles.setRadius(r);
+          if (particles.setLimbLo) particles.setLimbLo(windLimbLoFor(r));
+        }
       }
       // 카메라가 보는 방향 = 월드 행렬의 −Z 축. 틸트 화면에서 입자를 시야 밖에 뿌리지 않게 엔진에 넘긴다.
       // (행렬은 직전 렌더에서 갱신된 것이라 한 프레임 늦다 — 뿌릴 캡을 고르는 데는 충분하다.)

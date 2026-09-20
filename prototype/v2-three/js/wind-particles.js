@@ -524,6 +524,7 @@ uniform float uSlots;
 uniform float uPhase;
 uniform float uGamma;
 uniform float uLimb;
+uniform float uLimbLo;
 uniform float uFeather;
 uniform vec2 uViewport;      // CSS px — 굵기를 CSS px 로 약속하려면 화면도 CSS px 로 받아야 한다
 uniform float uBounds[7];
@@ -556,7 +557,10 @@ void main() {
   vec3 center = modelMatrix[3].xyz;
   vec3 wp = mix(w0.xyz, w1.xyz, t);
   float facing = dot(normalize(wp - center), normalize(cameraPosition - wp));
-  float limb = smoothstep(0.0, uLimb, facing);
+  // uLimbLo(기본 0): 입자 껍질이 지구보다 클 때(색면 껍질은 과장 50× 에서 반지름 1.075) 껍질의 바깥 띠는 지구 윤곽 **밖**의
+  // 우주 위에 그려진다 — 바람이 지구 밖에서 흐르는 것처럼 보인다. 시선이 단위 구에 접하는 자리의 facing 은 카메라 거리와
+  // 무관하게 √(1 − 1/r²) 이다(setLimbLo 주석). 그 값부터 페이드를 시작하면 선은 지구 윤곽에서 끝난다.
+  float limb = smoothstep(uLimbLo, uLimbLo + uLimb, facing);
 
   int band = 0;
   for (int i = 0; i < 7; i++) { if (aStart.w >= uBounds[i]) band = i + 1; }
@@ -638,6 +642,7 @@ export class WindParticles {
       uPhase: { value: 0 },
       uGamma: { value: WIND_TRAIL_GAMMA },
       uLimb: { value: 0.18 },
+      uLimbLo: { value: 0 },
       uFeather: { value: this.primitive === 'ribbon' ? 1 : 0 },
       uViewport: { value: new THREE.Vector2(1440, 900) },
       uBounds: { value: Array.from(WIND_SPEED_BOUNDS_MS) },
@@ -704,6 +709,10 @@ export class WindParticles {
     });
   }
   setOpacity(a) { this.uniforms.uOpacity.value = clamp01(a); }
+  /** 가장자리 페이드가 시작되는 facing(0~1). 껍질 반지름 r > 1 이면 부르는 쪽이 √(1 − 1/r²) 를 넣는다 — 시선이 단위 구(지구 윤곽)에
+   *  접할 때 그 시선 위의 껍질 점 P 는 접점에서 √(r²−1) 떨어져 있고, P 의 법선과 시선이 이루는 cos 이 √(r²−1)/r 이다(카메라 거리와 무관).
+   *  그보다 작은 facing 은 지구 윤곽 밖의 우주 위다. 0 이면 예전과 같다(껍질 자신의 가장자리에서 페이드). */
+  setLimbLo(f) { this.uniforms.uLimbLo.value = f > 0 ? Math.min(f, 0.8) : 0; }
   setVisible(v) { this._on = !!v; if (!this._on) this.object.visible = false; }
 
   _layout() {

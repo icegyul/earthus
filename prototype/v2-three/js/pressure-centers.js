@@ -99,6 +99,28 @@
 //   ⚠️ 남은 한계(고친 척하지 않으려고 적는다): 고도 ≥ 1500 m 로 **둘러싸인** 분지(타림 약 1000 m)의 중심은 가려지지 않고,
 //     그 고개가 산 위 경정값이라 두드러짐이 실제보다 크게 잡힌다. 자리와 hPa 는 자료 그대로다.
 //
+// ── 왜 문턱이 둘인가 — 빙상은 1500 m 아래에 있다 (2026-09-20 2차 반박 검증) ────────────────────────────────
+//   1500 m 는 **가장 심한** 가짜만 걷어낸다. 서남극 빙상과 그린란드 가장자리는 z4 고도로 790~1,430 m 라 그 아래로 빠진다.
+//   운영 런 2026092006 의 41장을 진짜 z4 고도로 다시 돌려 세었다(H 513개 · 프레임당 12.5):
+//     서남극 −80~−72° 에 H 40여 개 — (−80,−25) 9개 1,112~1,130 m · (−75,−115) 7개 1,325~1,375 m ·
+//     (−75,−90) 7개 812~989 m · (−75,70) 5개 911~1,196 m. **그 H 들의 hPa 가 983~1005 다** —
+//     색면이 '저기압'으로 칠한 띠 위에 파란 H 가 서고, 카드는 그 옆에서 "남극에는 기호를 세우지 않습니다"라고 말했다.
+//   그렇다고 문턱을 전지구로 내릴 수는 없다. 같은 41장에서 **진짜** 고기압이 바로 그 높이에 있다:
+//     호주 고기압 (−35,150) 630~872 m · 두드러짐 98(전지구 1등) · 퀘벡 고기압 (50,−70) 478~691 m · 두드러짐 96 ·
+//     시베리아·우랄 고기압 (60,95) 333~574 m · (55,60) 335~714 m. 800 m 짜리 전지구 문턱은 이것들을 지운다.
+//   고친 뒤 같은 41장 실측: 빙상 위 H 36 → 4(그중 둘은 남극반도 해안 120 m — 경정이 만든 가짜가 아니다) ·
+//     |위도| < 60 에서 사라진 중심 **0개** · 퀘벡 32 → 32 · 호주 20 → 20 · 시베리아 29 → 29 ·
+//     야말 11 → 11 · 북태평양 10 → 10 · 남대서양 49 → 49. H 전체 513 → 483 · L 1379 → 1365.
+//   가르는 것은 **높이가 아니라 지면 공기의 온도**다. 해면 경정은 지면 기온에서 가짜 기둥의 온도를 외삽하는데,
+//   극지 빙상의 지면 공기는 −30~−50 °C 라 같은 고도가 훨씬 큰 가짜를 만든다. 그 온도를 이 모듈은 모르므로
+//   **위도로 대신한다**: |위도| ≥ POLAR_TERRAIN_LAT 에서만 문턱이 POLAR_TERRAIN_M 으로 내려간다.
+//   남극 빙상은 전부 −60° 보다 남쪽이고 그린란드 빙상은 60~83°N 이다. 몽골·티베트·안데스·호주는 그 밖이라 그대로다.
+//   ⚠️ 가림판은 그래서 **비트 두 장**이다(MASK_HIGH 1 · MASK_POLAR 2). 태어나기를 막는 데는 둘 다 쓰지만,
+//     '가림판에 닿은 고원의 H 는 버린다'는 치맛자락 규칙은 **MASK_HIGH 만** 읽는다. 극지 문턱까지 치맛자락으로
+//     읽으면 야말(66,56~60 · 고도 51~451 m · 두드러짐 14~15)과 시베리아 고기압(60.5~61.5,96~97 · 333~574 m ·
+//     두드러짐 13~14)이 옆 산에 닿았다는 이유로 사라진다(실측: 시베리아 H 29개 → 21개).
+//   밖에서 0·1 짜리 가림판을 그대로 넘겨도 예전과 똑같이 돈다 — 1 은 두 규칙 모두에서 가려진 칸이다.
+//
 // ── 시간 ────────────────────────────────────────────────────────────────────────────────────────────────────
 //   두 프레임 사이(mix)에서는 **찾지 않는다.** 셰이더가 섞은 장에서 찾으면 제 폭보다 멀리 움직인 저기압(태풍이 그렇다)이
 //   '얕은 저기압 둘'로 갈렸다가 다시 하나가 된다(교차 페이드의 함정) — 중심이 3시간마다 두 번 튄다. 대신 두 키프레임에서 각각 찾아 matchCenters 로 짝짓고
@@ -130,6 +152,19 @@ export const CENTER_MAX_PER_KIND = Object.freeze({ H: 40, L: 40 });
 // 이 고도(m) 이상이면 해면 경정을 믿기 어렵다고 표시한다. 지시 기본값 1500 m ≈ 850 hPa 면의 표준 고도
 // (국제표준대기 1,457 m): 땅이 850 hPa 면보다 높으면 '해면기압'은 150 hPa 어치가 넘는 없는 공기를 외삽한 값이다.
 export const HIGH_TERRAIN_M = 1500;
+
+// 극지 둘째 문턱 — 빙상은 1500 m 아래에 있다(머리 주석 '왜 문턱이 둘인가'). 이 위도 밖에서는 아무것도 바뀌지 않는다.
+//   60°: 남극 빙상은 전부 −60° 보다 남쪽 · 그린란드 빙상은 60~83°N. 몽골(42~54°)·티베트·안데스·호주는 이 밖이다.
+//   600 m: 운영 런 2026092006 의 41장을 진짜 z4 고도로 훑어 두 무리 사이에서 골랐다 —
+//     이 위도에서 **진짜** 고기압 중심의 최고 고도가 574 m(시베리아 60~61.5°N,96~97°E · 야말은 51~451 m)이고,
+//     빙상 위 가짜는 548 m 부터 1,375 m 까지였다. 600 은 진짜를 하나도 건드리지 않으면서 가짜를 36개 중 32개 지운다
+//     (500 으로 내리면 33개까지 지우지만 574 m 짜리 진짜가 가림판에 닿아 중심이 옆 칸으로 밀린다).
+export const POLAR_TERRAIN_LAT = 60;
+export const POLAR_TERRAIN_M = 600;
+
+// 가림판의 비트. 밖에서 0·1 짜리 표를 넘겨도 1 = 두 규칙 모두 가림이라 예전과 같이 돈다.
+export const MASK_HIGH = 1;    // 고도 ≥ HIGH_TERRAIN_M — 태어나기를 막고, H 의 치맛자락 규칙도 이것만 읽는다
+export const MASK_POLAR = 2;   // 극지 빙상 — 태어나기만 막는다(치맛자락으로 읽으면 진짜 고기압이 같이 지워진다)
 
 // 짝짓기 반경 — 시간당 2°(= 62 m/s). 중심이 실제로 움직이는 빠르기만이 아니라 **찾은 자리의 흔들림**까지 담으려는 값이다:
 // 빠른 온대저기압을 25~30 m/s 로 잡으면 3시간에 2.4~2.9° 이고, 바닥이 평평한 저기압은 고원(같은 바이트 칸들)의 모양이
@@ -223,10 +258,11 @@ function readField(field, opts) {
 // ---------------------------------------------------------------- 0단계: 고지대 가림판
 
 /**
- * 칸마다 '여기는 해면 경정을 믿을 수 없다'(1) 인지 아닌지(0). → { mask:Uint8Array(w×h), high, known, cells, ok }
+ * 칸마다 '여기는 해면 경정을 믿을 수 없다'인지 아닌지. → { mask:Uint8Array(w×h), high, polar, known, cells, ok }
+ *   칸의 값은 비트다: 0 = 믿을 만함 · MASK_HIGH(1) = 고도 ≥ highTerrainM · MASK_POLAR(2) = 극지 빙상(머리 주석).
  *   size        { w, h } — 프레임과 **같은 크기**여야 한다(행 0 = 북위 90 · 열 0 = 서경 180)
  *   elevationAt (lat, lon) → m. 지구본이 이미 가진 고도 샘플러를 그대로 받는다(LiveLayers.heightAt = main.js heightAtJs).
- *   opts        { grid, highTerrainM }
+ *   opts        { grid, highTerrainM, polarTerrainM, polarLat }
  * 지형은 로딩이 끝난 뒤 바뀌지 않는다 — **한 번 굽고 돌려쓴다**(720×361 = 26만 번 · 프레임마다 굽지 않는다).
  * ok=false 는 '고도를 아직 못 읽었다'는 뜻이다. 판정은 **가려진 칸의 수가 아니라 고도를 실제로 읽은 칸의 수**로 한다:
  *   main.js heightAtJs 는 고도맵이 없으면 어디서나 **정확히 0** 을 돌려주고(실패한 타일도 0 이다 — ocean-land-mask.js 의 같은 함정),
@@ -234,32 +270,38 @@ function readField(field, opts) {
  *   ⚠️ 가려진 칸의 비율로는 판정할 수 없다 — 고도가 0 이어도 남극관(아래 POLE_FADE)만으로 3~4% 가 가려진다.
  */
 export const ELEVATION_KNOWN_MIN_RATIO = 0.05;
-export function buildHighTerrainMask(size, elevationAt, { grid = null, highTerrainM = HIGH_TERRAIN_M } = {}) {
+export function buildHighTerrainMask(size, elevationAt, {
+  grid = null, highTerrainM = HIGH_TERRAIN_M, polarTerrainM = POLAR_TERRAIN_M, polarLat = POLAR_TERRAIN_LAT,
+} = {}) {
   const w = size && size.w | 0;
   const h = size && size.h | 0;
-  if (!(w > 1) || !(h > 1) || typeof elevationAt !== 'function') return { mask: null, high: 0, known: 0, cells: 0, ok: false };
+  if (!(w > 1) || !(h > 1) || typeof elevationAt !== 'function') return { mask: null, high: 0, polar: 0, known: 0, cells: 0, ok: false };
   const dLon = grid && Number.isFinite(grid.dLon) ? grid.dLon : 360 / w;
   const dLat = grid && Number.isFinite(grid.dLat) ? Math.abs(grid.dLat) : 180 / (h - 1);
   const lon0 = grid && Number.isFinite(grid.lon0) ? grid.lon0 : -180;
   const lat0 = grid && Number.isFinite(grid.lat0) ? grid.lat0 : 90;
   const mask = new Uint8Array(w * h);
   let high = 0;
+  let polar = 0;
   let known = 0;
   for (let j = 0; j < h; j += 1) {
     const lat = lat0 - j * dLat;
     // 극관: 화면의 지형과 같은 식으로 섞는다(위 POLE_FADE). 남극 안쪽은 이 한 줄로 전부 가려진다.
     const fade = smoothstep01((Math.abs(lat) - POLE_FADE.lo) / (POLE_FADE.hi - POLE_FADE.lo));
     const poleM = lat < 0 ? POLE_FADE.south : POLE_FADE.north;
+    // 극지 둘째 문턱은 이 위도 밖에서는 없는 것과 같다(머리 주석 '왜 문턱이 둘인가').
+    const polarHere = Math.abs(lat) >= polarLat ? polarTerrainM : Infinity;
     for (let i = 0; i < w; i += 1) {
       const raw = Number(elevationAt(lat, normLon(lon0 + i * dLon)));
       const got = Number.isFinite(raw) && raw !== 0;
       if (got) known += 1;
       const m = (got ? Math.max(0, raw) : 0) * (1 - fade) + poleM * fade;
-      if (m >= highTerrainM) { mask[j * w + i] = 1; high += 1; }
+      if (m >= highTerrainM) { mask[j * w + i] = MASK_HIGH; high += 1; }
+      else if (m >= polarHere) { mask[j * w + i] = MASK_POLAR; polar += 1; }
     }
   }
   const cells = w * h;
-  return { mask, high, known, cells, ok: known >= cells * ELEVATION_KNOWN_MIN_RATIO };
+  return { mask, high, polar, known, cells, ok: known >= cells * ELEVATION_KNOWN_MIN_RATIO };
 }
 
 // ---------------------------------------------------------------- 1단계: 후보와 두드러짐
@@ -308,7 +350,8 @@ function persistencePass(vals, wb, hb, minBytes, range, work, blocked = null) {
   for (let v = 0; v < 256; v += 1) count[v + 1] += count[v];
   for (let p = 0; p < n; p += 1) { order[count[vals[p]]] = p; count[vals[p]] += 1; }   // 안정 정렬 — 같은 값은 칸 번호순
   parent.fill(-1, 0, n);
-  const bad = blocked ? (root) => blocked[birth[root]] === 1 : () => false;
+  // 가림판은 비트다(MASK_HIGH · MASK_POLAR) — '1 인가'가 아니라 '가려졌나'를 묻는다.
+  const bad = blocked ? (root) => blocked[birth[root]] !== 0 : () => false;
   const found = [];
   const find = (x) => {
     while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; }
@@ -374,6 +417,7 @@ function persistencePass(vals, wb, hb, minBytes, range, work, blocked = null) {
 // start 가 든 고원(같은 바이트 · 8방향으로 이어진 칸 · 경도 랩 · 극 줄은 한 점)을 모아 중심 칸을 고른다.
 // seen 은 한 번의 찾기 동안 나눠 쓴다 — 이미 다른 후보가 가져간 고원이면 null.
 // highMask 를 주면 고원이 가린 칸에 **닿는지**(touchesMask)도 같이 본다 — 부르는 쪽이 쓴다(아래 '가림판 가장자리').
+// ⚠️ 닿았는지는 **MASK_HIGH 만** 센다. 극지 문턱(MASK_POLAR)까지 세면 그 옆의 진짜 고기압이 같이 지워진다(머리 주석).
 function plateauCentre(f, start, seen, highMask = null) {
   const { g, w, h } = f;
   if (seen[start]) return null;
@@ -395,7 +439,7 @@ function plateauCentre(f, start, seen, highMask = null) {
       const base = jj * w;
       for (let t = 0; t < 3; t += 1) {
         const c = base + (t === 0 ? il : (t === 1 ? i : ir));
-        if (highMask && highMask[c]) touchesMask = true;
+        if (highMask && (highMask[c] & MASK_HIGH)) touchesMask = true;
         if (!seen[c] && g[c] === v) { seen[c] = 1; cells.push(c); }
       }
     }
@@ -444,7 +488,8 @@ function plateauCentre(f, start, seen, highMask = null) {
  *   field   { w, h, data(Uint8Array), channels? } — gfs-frames pixels()/pixelsNow() 가 주는 CPU 사본 그대로
  *   decode  { scale, offset } — 매니페스트 fields.mslp.channels.R. 기본값 없음(안 주면 TypeError)
  *   opts    minProminenceL · minProminenceH (hPa · 기본 4)   minSeparationDeg (기본 8 · 같은 종류끼리)   maxH · maxL (기본 40)
- *           highMask (Uint8Array w×h · buildHighTerrainMask 의 것) **또는** elevationAt(lat, lon) → m   highTerrainM (기본 1500)
+ *           highMask (Uint8Array w×h · buildHighTerrainMask 의 것 — 비트 MASK_HIGH·MASK_POLAR) **또는** elevationAt(lat, lon) → m
+ *           highTerrainM (기본 1500) · polarTerrainM (기본 700) · polarLat (기본 60) — elevationAt 으로 여기서 구울 때만 쓰인다
  *           requireElevation (기본 true — 둘 다 없으면 TypeError · 머리 주석 '지형')
  *           block (기본 1 · 2 나 4 면 1단계만 묶음 격자에서 — 머리 주석)
  *           grid { lon0, lat0, dLon, dLat } (기본: 크기에서 유도 · 서경 180 시작)   channel (여러 채널 그림일 때 · 기본 0)
@@ -474,8 +519,12 @@ export function findPressureCenters(field, decode, opts = {}) {
   const highLimit = Number.isFinite(opts.highTerrainM) ? opts.highTerrainM : HIGH_TERRAIN_M;
   let highMask = (opts.highMask && opts.highMask.length === n) ? opts.highMask : null;
   if (!highMask && typeof opts.elevationAt === 'function') {
-    highMask = buildHighTerrainMask({ w, h }, opts.elevationAt,
-      { grid: { lon0: f.lon0, lat0: f.lat0, dLon: f.dLon, dLat: f.dLat }, highTerrainM: highLimit }).mask;
+    highMask = buildHighTerrainMask({ w, h }, opts.elevationAt, {
+      grid: { lon0: f.lon0, lat0: f.lat0, dLon: f.dLon, dLat: f.dLat },
+      highTerrainM: highLimit,
+      ...(Number.isFinite(opts.polarTerrainM) ? { polarTerrainM: opts.polarTerrainM } : {}),
+      ...(Number.isFinite(opts.polarLat) ? { polarLat: opts.polarLat } : {}),
+    }).mask;
   }
   if (!highMask && opts.requireElevation !== false && (cap.L || cap.H)) {
     throw new TypeError('PRESSURE_CENTERS_NEEDS_ELEVATION: highMask 나 elevationAt 을 준다 — 고지대 해면 경정이 가짜 H·L 을 만든다'
@@ -527,6 +576,7 @@ export function findPressureCenters(field, decode, opts = {}) {
       // ── 가림판 가장자리 ──
       // 해면 경정은 고도와 함께 **단조로** 부푼다. 그래서 가린 땅 바로 옆의 **가장 높은 안 가린 칸**이 저절로 극대가 된다 —
       // 운영 f003 실측으로 이 자리에 남은 H 는 전부 1,330~1,430 m(그린란드 동안 · 간쑤 · 콜롬비아 안데스 · 사하라 고지)였다.
+      // (닿았는지는 MASK_HIGH 만 센다 — 극지 문턱까지 세면 야말·시베리아의 진짜 고기압이 같이 지워진다. 머리 주석.)
       // 고원이 가린 칸에 닿으면 그 H 는 산의 치맛자락이다. **H 에만 쓴다**: 경정이 더하는 것은 기압이라 가짜는 고기압 쪽에 생기고,
       // 산자락의 저기압은 풍하측 저기압발생(제노바 저기압 · 앨버타 클리퍼)이라는 진짜 현상이다 — 그것을 지우면 안 된다.
       if (invert && at.touchesMask) continue;

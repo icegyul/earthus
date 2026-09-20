@@ -16,6 +16,10 @@ import {
   CENTER_MIN_SEPARATION_DEG,
   ELEVATION_KNOWN_MIN_RATIO,
   HIGH_TERRAIN_M,
+  MASK_HIGH,
+  MASK_POLAR,
+  POLAR_TERRAIN_LAT,
+  POLAR_TERRAIN_M,
   PRESSURE_PROMINENCE_HPA,
   buildHighTerrainMask,
   findPressureCenters,
@@ -437,6 +441,55 @@ test('가림판은 칸 표로도 준다 — 크기가 맞아야 쓰고, 극관�
   assert.ok(real.known >= W * H * ELEVATION_KNOWN_MIN_RATIO && real.ok);
   // 크기가 안 맞는 표는 못 쓴다 — 조용히 엉뚱한 칸을 가리느니 없는 것으로 본다(그리고 고도가 없으니 던진다).
   assert.throws(() => findPressureCenters(f, NOW, { highMask: new Uint8Array(10) }), /PRESSURE_CENTERS_NEEDS_ELEVATION/);
+});
+
+// 2026-09-20 2차 반박 검증. 1,500 m 문턱은 **빙상을 놓친다** — 서남극·그린란드는 z4 고도로 790~1,430 m 다.
+// 운영 41장에서 그 위에 hPa 983~1005 짜리 H 가 36개 섰고(색면이 저기압으로 칠한 띠 위다), 카드는 그 옆에서
+// "남극에는 기호를 세우지 않습니다"라고 적고 있었다. 그렇다고 전지구 문턱을 내릴 수는 없다 —
+// 같은 41장에서 호주 고기압(630~872 m · 두드러짐 98)과 퀘벡 고기압(478~691 m · 두드러짐 96)이 그 높이에 있다.
+test('극지 빙상은 둘째 문턱으로 가린다 — 같은 높이라도 중위도의 진짜 고기압은 남는다', () => {
+  const sheetH = { lat: -75, lon: -90, sigma: 4, amp: 22 };      // 빙상 위의 가짜 고기압
+  const sheetL = { lat: -72, lon: 60, sigma: 4, amp: -22 };      // 빙상 위의 가짜 저기압(경정은 L 도 망친다)
+  const realH = { lat: -35, lon: 150, sigma: 4, amp: 24 };       // 호주 고기압 — 같은 고도, 다른 위도
+  const f = fieldOf((lat, lon) => 1013 + bump(lat, lon, sheetH) + bump(lat, lon, sheetL) + bump(lat, lon, realH));
+  // 고도 1,000 m 인 땅이 세 군데. 셋 다 1,500 m 문턱 아래다.
+  const high1000 = (lat, lon) => {
+    const near = (c, deg) => greatCircleDeg(lat, lon, c.lat, c.lon) <= deg;
+    return (near(sheetH, 12) || near(sheetL, 12) || near(realH, 12)) ? 1000 : -3500;
+  };
+  // polarLat 91 = 둘째 문턱을 끈 것(어느 위도도 넘지 않는다) — 고치기 전의 규칙 그대로다.
+  const before = kindOf(centers(f, NOW, { elevationAt: high1000, polarLat: 91 }), 'H');
+  assert.equal(nearTo(before, sheetH.lat, sheetH.lon, 4).length, 1, '1,500 m 문턱만으로는 빙상 위의 가짜가 남는다');
+  const after = centers(f, NOW, { elevationAt: high1000 });
+  assert.equal(nearTo(kindOf(after, 'H'), sheetH.lat, sheetH.lon, 4).length, 0, '극지 빙상의 H 는 태어나지 못한다');
+  assert.equal(nearTo(kindOf(after, 'L'), sheetL.lat, sheetL.lon, 4).length, 0, 'L 도 같은 가짜다');
+  assert.equal(nearTo(kindOf(after, 'H'), realH.lat, realH.lon, 4).length, 1, '같은 1,000 m 라도 중위도는 그대로다');
+  // 문턱은 상수에서 센다 — 위도를 올리면 남극이 다시 나온다.
+  assert.ok(POLAR_TERRAIN_M < HIGH_TERRAIN_M && POLAR_TERRAIN_M <= 600);
+  assert.equal(POLAR_TERRAIN_LAT, 60);
+  const wide = centers(f, NOW, { elevationAt: high1000, polarLat: 80 });
+  assert.equal(nearTo(kindOf(wide, 'H'), sheetH.lat, sheetH.lon, 4).length, 1, '|위도| ≥ 80 에서만 내리면 −75° 는 그대로다');
+  const higher = centers(f, NOW, { elevationAt: high1000, polarTerrainM: 1200 });
+  assert.equal(nearTo(kindOf(higher, 'H'), sheetH.lat, sheetH.lon, 4).length, 1, '문턱을 1,000 m 위로 올려도 그대로다');
+});
+
+// 치맛자락 규칙('가림판에 닿은 고원의 H 는 버린다')이 극지 문턱까지 읽으면 그 옆의 **진짜** 고기압이 같이 지워진다 —
+// 운영 실측에서 야말(66°N · 고도 51~451 m · 두드러짐 14~15)과 시베리아 고기압(60.5~61.5°N · 333~574 m)이 그렇게 사라졌다.
+test('치맛자락 규칙은 MASK_HIGH 만 읽는다 — 극지 빙상 옆의 낮은 땅 위 고기압은 살아 남는다', () => {
+  const coast = { lat: 66, lon: 58, sigma: 3.5, amp: 21 };        // 야말 — 고도 300 m 의 진짜 고기압
+  const f = fieldOf((lat, lon) => 1013 + bump(lat, lon, coast));
+  // 고기압의 고원 **바로 옆**(우랄)이 900 m — 극지 문턱 위, 1,500 m 아래다.
+  const ural = (lat, lon) => lat > 60 && lon > 58.5 && lon < 72;
+  const mask = buildHighTerrainMask({ w: W, h: H }, (lat, lon) => (ural(lat, lon) ? 900 : 300));
+  assert.ok(mask.polar > 0 && mask.mask.some((v) => v === MASK_POLAR), '우랄 칸은 MASK_POLAR 다');
+  assert.equal(nearTo(kindOf(centers(f, NOW, { highMask: mask.mask }), 'H'), coast.lat, coast.lon, 3).length, 1);
+  // 같은 땅이 1,500 m 였다면 그 H 는 산의 치맛자락이다 — 그때는 버린다(옛 규칙 그대로).
+  const tall = buildHighTerrainMask({ w: W, h: H }, (lat, lon) => (ural(lat, lon) ? 1600 : 300));
+  assert.ok(tall.mask.some((v) => v === MASK_HIGH));
+  assert.equal(nearTo(kindOf(centers(f, NOW, { highMask: tall.mask }), 'H'), coast.lat, coast.lon, 3).length, 0);
+  // 밖에서 0·1 짜리 표를 그대로 넘기면 예전과 똑같다(1 = 두 규칙 모두 가림).
+  const plain = Uint8Array.from(tall.mask, (v) => (v ? 1 : 0));
+  assert.equal(nearTo(kindOf(centers(f, NOW, { highMask: plain }), 'H'), coast.lat, coast.lon, 3).length, 0);
 });
 
 test('가짜 옆의 진짜는 두드러짐을 고개에서 잘리지 않는다 — 한쪽만 가짜면 깊이와 무관하게 진짜가 산다', () => {

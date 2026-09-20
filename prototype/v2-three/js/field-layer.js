@@ -913,7 +913,8 @@ export class FieldLayer {
       // 기호(기압). 이름이 없으면 카드에 그 줄이 통째로 없다 — 기온·풍속이 그렇다.
       symbolName: this.symbols && this.desc.symbolName ? (this.desc.symbolName[ko ? 'ko' : 'en'] || this.desc.symbolName.ko) : null,
       symbolsOn: this.symbolsOn, symbolReady: this.symbols ? this.symbols.ready : true,
-      shown: this.symbols ? this.symbols.shown : null,
+      // 앞 반구 개수(symbols.shown)는 카드에 넘기지 않는다 — 그리는 프레임마다 바뀌는데 카드는 그때 다시
+      // 그려지지 않는다(field-symbols.js symbolCardRow 의 ⚠️). 콘솔에는 state().shown 으로 살아 있다.
     };
   }
 

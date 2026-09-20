@@ -19,6 +19,10 @@
 //   · 가림판은 지형이 안 변하므로 한 번만 굽는다(720×361 = 26만 번 · 실측 18 ms). 지형이 아직 안 왔으면(ok=false)
 //     **기호를 그리지 않고** 카드가 그 이유를 말한다 — 다음 키프레임에 다시 굽는다.
 //   · 그 규칙을 카드에 한 줄로 말한다(highTerrainNote) — 화면에서 남극·티베트에 H 가 없는 것이 고장이 아니라 결정이다.
+//   · ⚠️ 문턱은 둘이다(2026-09-20 2차 반박 검증): 1,500 m 만으로는 서남극·그린란드 빙상(790~1,430 m)이 남아
+//     운영 41장에서 hPa 983~1005 짜리 파란 H 가 빙상 위에 40여 개 섰다 — 색면이 '저기압'으로 칠한 띠 위에서다.
+//     |위도| ≥ 60° 에서만 문턱이 600 m 로 내려간다(pressure-centers.js POLAR_TERRAIN_M · 그 파일의 '왜 문턱이 둘인가').
+//     카드 글은 그 두 숫자를 **상수에서 세어** 적는다 — 카드가 화면과 다른 말을 하던 것이 이 결함이었다.
 //
 // ── 몇 개를 보이나 ──────────────────────────────────────────────────────────────────────────────────────────
 //   모듈은 전지구에서 종류당 40개까지 준다(pressure-centers.js CENTER_MAX_PER_KIND — 12 로 자르면 한국 쪽 저기압이
@@ -50,7 +54,7 @@ import * as THREE from '../../vendor/three-r184.module.min.js';
 import { labelOpacity } from './field-labels.js?v=1';
 import { isolineSpec } from './field-scales.js?v=1';
 import {
-  CENTER_MATCH_DEG_PER_HOUR, CENTER_MATCH_HPA_PER_HOUR, buildHighTerrainMask,
+  CENTER_MATCH_DEG_PER_HOUR, CENTER_MATCH_HPA_PER_HOUR, HIGH_TERRAIN_M, POLAR_TERRAIN_M, buildHighTerrainMask,
   findPressureCenters, formatCenter, lerpCenter, matchCenters,
 } from './pressure-centers.js?v=1';
 
@@ -131,24 +135,27 @@ export const highTerrainNote = (ko = true, ready = true) => {
       ? 'H·L 기호는 지형 고도를 받은 뒤에 섭니다 — 고지대의 해면 경정을 가려야 가짜 고기압이 생기지 않습니다.'
       : 'H/L symbols wait for the terrain heights — without them, sea-level reduction invents highs over high ground.';
   }
+  // 숫자는 눈금표가 아니라 찾기 모듈의 상수에서 센다 — 문턱을 바꾸면 이 줄이 따라 바뀐다(두 곳에 적지 않는다).
+  const hi = HIGH_TERRAIN_M.toLocaleString('en-US');
+  const polar = POLAR_TERRAIN_M.toLocaleString('en-US');
   return ko
-    ? '고도 1,500 m 이상(남극·그린란드·티베트·안데스)에는 기호를 세우지 않습니다 — 해면기압은 그곳에서 땅 밑의 없는 공기를 셈해 넣은 값입니다.'
-    : 'No symbols above 1,500 m (Antarctica, Greenland, Tibet, the Andes) — sea-level pressure there extrapolates air that is not present.';
+    ? `고도 ${hi} m 이상(티베트·안데스)과 극지 빙상 ${polar} m 이상(남극·그린란드)에는 기호를 세우지 않습니다 — 해면기압은 그곳에서 땅 밑의 없는 공기를 셈해 넣은 값입니다.`
+    : `No symbols above ${hi} m (Tibet, the Andes) or above ${polar} m on the polar ice sheets (Antarctica, Greenland) — sea-level pressure there extrapolates air that is not present.`;
 };
 
 /**
  * 카드의 기호 줄(순수). btn 은 field-layer.js 의 단추 만들기 — 단추 모양을 두 곳에 적지 않으려고 받아 쓴다.
- *   m = { id, symbolName, symbolsOn, symbolReady, shown, ko }
+ *   m = { id, symbolName, symbolsOn, symbolReady, ko }
+ * ⚠️ '앞 반구 H n · L n' 은 적지 않는다. 그 수는 tick(camera)이 **그리는 프레임마다** 다시 세는데 카드는
+ *    상태가 바뀔 때만 다시 그려진다 — 타임라인을 세워 두고 지구를 돌리면 화면은 바뀌고 숫자는 그대로다.
+ *    콘솔에는 살아 있다(state().shown) — 카드에 틀린 숫자를 적느니 적지 않는다.
  */
 export const symbolCardRow = (m, btn) => {
   const ko = m.ko !== false;
   const name = m.symbolName || (ko ? '고·저기압 기호' : 'H/L centres');
-  const count = m.symbolsOn && m.shown
-    ? `<span style="opacity:.8"> · ${ko ? `앞 반구 H ${m.shown.H} · L ${m.shown.L}` : `front hemisphere H ${m.shown.H} · L ${m.shown.L}`}</span>`
-    : '';
   return `<span style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 2px">${name} `
     + btn('field-symbols', `data-set="${m.symbolsOn ? 'off' : 'on'}"`, m.symbolsOn, m.symbolsOn ? (ko ? '켬' : 'On') : (ko ? '끔' : 'Off'))
-    + `</span><span style="opacity:.8">${highTerrainNote(ko, m.symbolReady !== false)}${count}</span>`;
+    + `</span><span style="opacity:.8">${highTerrainNote(ko, m.symbolReady !== false)}</span>`;
 };
 
 // ════════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -283,11 +290,11 @@ export class FieldSymbols {
       built = buildHighTerrainMask({ w, h }, this.heightAt, { grid });
     } catch (e) {
       this.maskError = String((e && e.message) || e);
-      this.maskInfo = { high: 0, known: 0, cells: w * h, ok: false };
+      this.maskInfo = { high: 0, polar: 0, known: 0, cells: w * h, ok: false };
       return null;
     }
     this.maskTried = true;
-    this.maskInfo = { high: built.high, known: built.known, cells: built.cells, ok: built.ok };
+    this.maskInfo = { high: built.high, polar: built.polar, known: built.known, cells: built.cells, ok: built.ok };
     if (built.ok) this.mask = built.mask;
     return this.mask;
   }

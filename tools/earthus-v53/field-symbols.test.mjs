@@ -15,7 +15,9 @@ import {
 } from '../../prototype/v2-three/js/field-symbols.js';
 import { FIELD_DESCRIPTORS } from '../../prototype/v2-three/js/field-layer.js';
 import { defineScale, isolineSpec, scaleOf } from '../../prototype/v2-three/js/field-scales.js';
-import { findPressureCenters, greatCircleDeg, matchCenters } from '../../prototype/v2-three/js/pressure-centers.js';
+import {
+  HIGH_TERRAIN_M, POLAR_TERRAIN_M, findPressureCenters, greatCircleDeg, matchCenters,
+} from '../../prototype/v2-three/js/pressure-centers.js';
 
 const W = 720;
 const H = 361;
@@ -86,11 +88,23 @@ test('카드 줄 — 켬/끔 단추 하나와 고지대 규칙 한 줄 · 기온
   const row = symbolCardRow({ id: 'presgrid', symbolName: '고·저기압 기호 H/L', symbolsOn: true, shown: { H: 3, L: 4 }, ko: true }, btn);
   assert.match(row, /field-symbols/);
   assert.match(row, /data-set="off"/, '켜져 있으면 누르면 꺼진다');
-  assert.match(row, /1,500 m/, '왜 남극·티베트에 기호가 없는지 카드가 말한다');
-  assert.match(row, /앞 반구 H 3 · L 4/);
+  assert.match(row, /1,500 m/, '왜 티베트·안데스에 기호가 없는지 카드가 말한다');
+  // 앞 반구 개수는 카드에 적지 않는다 — tick 이 프레임마다 다시 세는데 카드는 상태가 바뀔 때만 다시 그려진다.
+  assert.doesNotMatch(row, /앞 반구|front hemisphere/);
   assert.match(symbolCardRow({ symbolsOn: false, ko: true }, btn), /data-set="on"/);
   assert.match(highTerrainNote(true, false), /지형 고도를 받은 뒤/);
   assert.match(highTerrainNote(false, true), /1,500 m/);
+  // ⚠️ 카드가 화면과 다른 말을 하고 있었다(2026-09-20 2차 반박 검증): 1,500 m 만 적어 놓고 남극·그린란드를
+  //    그 괄호에 넣었는데, 빙상은 790~1,430 m 라 H 가 실제로 섰다. 두 문턱을 **상수에서 세어** 둘 다 적는다.
+  for (const ko of [true, false]) {
+    const note = highTerrainNote(ko, true);
+    assert.ok(note.includes(HIGH_TERRAIN_M.toLocaleString('en-US')), `${ko} · 고지대 문턱`);
+    assert.ok(note.includes(POLAR_TERRAIN_M.toLocaleString('en-US')), `${ko} · 극지 문턱`);
+    // 남극·그린란드는 **극지 문턱** 쪽에서만 이름을 댄다 — 1,500 m 절에서 약속하면 그때가 거짓말이다.
+    const [first, second] = ko ? note.split('과 극지 빙상') : note.split('or above');
+    assert.doesNotMatch(first, /남극|그린란드|Antarctica|Greenland/);
+    assert.match(second, /남극|그린란드|Antarctica|Greenland/);
+  }
   // descriptor 의 훅은 기압에만 있다 — 기온·풍속은 이 층을 만들지도 않는다.
   assert.equal(FIELD_DESCRIPTORS.presgrid.symbols, 'pressureCenters');
   assert.equal(FIELD_DESCRIPTORS.tempgrid.symbols, undefined);

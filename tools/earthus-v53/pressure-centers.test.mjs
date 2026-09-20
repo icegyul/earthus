@@ -10,10 +10,14 @@ import assert from 'node:assert/strict';
 import {
   CENTER_MATCH_DEG_PER_HOUR,
   CENTER_MATCH_MAX_DEG,
+  CENTER_MATCH_HPA_PER_HOUR,
+  CENTER_MATCH_MAX_DHPA,
   CENTER_MAX_PER_KIND,
   CENTER_MIN_SEPARATION_DEG,
+  ELEVATION_KNOWN_MIN_RATIO,
   HIGH_TERRAIN_M,
   PRESSURE_PROMINENCE_HPA,
+  buildHighTerrainMask,
   findPressureCenters,
   formatCenter,
   greatCircleDeg,
@@ -53,6 +57,9 @@ const oval = (lat, lon, c) => {
   const y = (lat - c.lat) / c.sy;
   return c.amp * Math.exp(-0.5 * (x * x + y * y));
 };
+// 2026-09-20 반박 검증 뒤: 모듈은 고지대 가림판(highMask · elevationAt) 없이는 중심을 찾지 않는다.
+// 이 파일의 합성 장에는 지형이 없다 — 그 뜻을 **글자로 밝히고** 부른다. 가리는 규칙 자체는 '지형' 절의 시험들이 본다.
+const centers = (f, dec, opts) => findPressureCenters(f, dec, { requireElevation: false, ...(opts || {}) });
 const kindOf = (list, kind) => list.filter((c) => c.kind === kind);
 const nearTo = (list, lat, lon, deg) => list.filter((c) => greatCircleDeg(c.lat, c.lon, lat, lon) <= deg);
 const byteAt = (f, c) => f.data[c.row * f.w + c.col];
@@ -63,7 +70,7 @@ const lcg = (seed) => () => { seed = (seed * 1664525 + 1013904223) % 4294967296;
 
 test('가우시안 저기압 하나 → L 하나 · 제자리 · hPa 는 눈금값 그대로', () => {
   const f = fieldOf((lat, lon) => 1013 + bump(lat, lon, { lat: 35, lon: 135, sigma: 4, amp: -28 }));
-  const lows = kindOf(findPressureCenters(f, NOW), 'L');
+  const lows = kindOf(centers(f, NOW), 'L');
   assert.equal(lows.length, 1);
   const c = lows[0];
   assert.ok(greatCircleDeg(c.lat, c.lon, 35, 135) <= 0.5, `위치 ${c.lat},${c.lon}`);
@@ -73,13 +80,13 @@ test('가우시안 저기압 하나 → L 하나 · 제자리 · hPa 는 눈금�
   assert.equal(c.hPa, byteAt(f, c) * NOW.scale + NOW.offset, '그 칸의 바이트를 푼 값이다 — 이웃과 보간하지 않는다');
   assert.equal(c.prominence, 28);                 // 하나뿐인 저기압 = 전지구 최저 → 장 전체의 폭
   // 평평한 바탕은 그 자체가 전지구 최고 '고원'이라 H 가 하나 나온다 — 합성 장의 성질이지 저기압 찾기의 흠이 아니다.
-  assert.deepEqual(kindOf(findPressureCenters(f, NOW), 'H').map((h) => h.hPa), [1013]);
+  assert.deepEqual(kindOf(centers(f, NOW), 'H').map((h) => h.hPa), [1013]);
 });
 
 test('격자점에서 벗어난 중심도 0.5° 안에 선다', () => {
   for (const [lat0, lon0] of [[35.2, 135.3], [-47.7, -12.4], [61.3, 8.9]]) {
     const f = fieldOf((lat, lon) => 1013 + bump(lat, lon, { lat: lat0, lon: lon0, sigma: 5, amp: -28.4 }));
-    const lows = kindOf(findPressureCenters(f, NOW), 'L');
+    const lows = kindOf(centers(f, NOW), 'L');
     assert.equal(lows.length, 1);
     const d = greatCircleDeg(lows[0].lat, lows[0].lon, lat0, lon0);
     assert.ok(d <= 0.5, `(${lat0}, ${lon0}) 에서 ${d.toFixed(2)}° 떨어졌다`);
@@ -93,7 +100,7 @@ test('8bit 고원 — 같은 최솟값이 20칸 넘게 깔려도 중심은 하�
   let floor = 0;
   for (const b of f.data) if (b === 120) floor += 1;
   assert.ok(floor >= 20, `고원 ${floor}칸`);
-  const lows = kindOf(findPressureCenters(f, NOW), 'L');
+  const lows = kindOf(centers(f, NOW), 'L');
   assert.equal(lows.length, 1);
   assert.equal(lows[0].hPa, 990);
   assert.ok(greatCircleDeg(lows[0].lat, lows[0].lon, 35, 135) <= 0.5);
@@ -106,7 +113,7 @@ test('초승달 고원 — 무게중심이 고원 밖이어도 기호는 고원 
     const open = lon > -40 && Math.abs(lat - 10) < 1.5;          // 동쪽을 터서 초승달로
     return d >= 4 && d <= 5 && !open ? 1000 : 1013;
   });
-  const lows = kindOf(findPressureCenters(f, NOW), 'L');
+  const lows = kindOf(centers(f, NOW), 'L');
   assert.equal(lows.length, 1);
   assert.equal(byteAt(f, lows[0]), 130, '중심 칸의 값이 곧 고원의 값이다');
   assert.equal(lows[0].hPa, 1000);
@@ -118,7 +125,7 @@ test('±180° 에 걸친 저기압은 둘로 갈리지 않는다', () => {
   let east = 0;
   for (let i = 0; i < 8; i += 1) { west += f.data[240 * W + i] === 115 ? 1 : 0; east += f.data[240 * W + (W - 1 - i)] === 115 ? 1 : 0; }
   assert.ok(west > 2 && east > 2, '고원이 열 0 과 열 719 양쪽에 다 걸쳐 있어야 시험이 뜻이 있다');
-  const lows = kindOf(findPressureCenters(f, NOW), 'L');
+  const lows = kindOf(centers(f, NOW), 'L');
   assert.equal(lows.length, 1);
   assert.equal(Math.abs(lows[0].lon), 180);
   assert.ok(Math.abs(lows[0].lat + 30) <= 0.5);
@@ -129,13 +136,13 @@ test('±180° 에 걸친 저기압은 둘로 갈리지 않는다', () => {
   // 모으므로) 그 둘째가 가려져 시험이 아무것도 못 본다.
   const sharp = fieldOf((lat, lon) => 1013 + bump(lat, lon, { lat: 40, lon: 180, sigma: 1.5, amp: -30.4 }));
   assert.deepEqual([sharp.data[100 * W], sharp.data[100 * W + 1], sharp.data[100 * W + W - 1]], [113, 114, 114], '바닥은 열 0 한 칸이다');
-  const found = kindOf(findPressureCenters(sharp, NOW, { minSeparationDeg: 0 }), 'L');
+  const found = kindOf(centers(sharp, NOW, { minSeparationDeg: 0 }), 'L');
   assert.deepEqual(found.map((c) => [c.lat, c.lon, c.col, c.hPa]), [[40, -180, 0, 983]]);
 });
 
 test('극 줄은 한 점이다 — 북극 위의 고기압은 H 하나 · 남극 위의 저기압은 L 하나', () => {
   const f = fieldOf((lat) => 1013 + 30 * Math.sin(lat * D2R));
-  const all = findPressureCenters(f, NOW);
+  const all = centers(f, NOW);
   const highs = kindOf(all, 'H');
   const lows = kindOf(all, 'L');
   assert.equal(highs.length, 1, '맨 윗줄 720칸이 720개의 고기압이 되면 안 된다');
@@ -152,20 +159,20 @@ test('극 줄의 값이 칸마다 달라도(있어서는 안 되는 자료) 극�
   const f = fieldOf(() => 1013);
   for (let i = 0; i < W; i += 1) f.data[i] = i % 2 === 0 ? 130 : 135;
   f.data[360] = 135;                                     // 경도 0° 의 칸은 일부러 고원 밖에 둔다
-  const lows = kindOf(findPressureCenters(f, NOW, { minSeparationDeg: 0 }), 'L');
+  const lows = kindOf(centers(f, NOW, { minSeparationDeg: 0 }), 'L');
   assert.deepEqual(lows.map((c) => [c.lat, c.lon, c.row, c.col, c.hPa]), [[90, 0, 0, 360, 1000]],
     'hPa 는 고원의 값이다 — 극이라 바꿔 적은 열(360)의 칸(1005)에서 다시 읽지 않는다');
 });
 
 test('극을 덮은 저기압은 극 건너편과 이어져 하나다 · 극 옆의 넓은 고원은 극으로 끌려가지 않는다', () => {
   const over = fieldOf((lat, lon) => 1013 + bump(lat, lon, { lat: 90, lon: 0, sigma: 4, amp: -20 }));
-  const a = kindOf(findPressureCenters(over, NOW, { minSeparationDeg: 0 }), 'L');
+  const a = kindOf(centers(over, NOW, { minSeparationDeg: 0 }), 'L');
   assert.equal(a.length, 1);
   assert.equal(a[0].lat, 90);
   // 북위 85° 에 반경 3.6° 의 평평한 바닥. 북위 88° 줄은 82° 줄보다 같은 거리에 칸이 네 배 많다 —
   // 칸을 그냥 세어 평균하면 중심이 극 쪽으로 1° 넘게 끌린다. 칸의 넓이(cos 위도)로 달아야 제자리다.
   const flat = fieldOf((lat, lon) => Math.max(993, 1013 + bump(lat, lon, { lat: 85, lon: 40, sigma: 4, amp: -30 })));
-  const b = kindOf(findPressureCenters(flat, NOW), 'L');
+  const b = kindOf(centers(flat, NOW), 'L');
   assert.equal(b.length, 1);
   assert.ok(greatCircleDeg(b[0].lat, b[0].lon, 85, 40) <= 0.5, `극 옆 고원의 중심이 ${b[0].lat},${b[0].lon} 에 섰다`);
 });
@@ -177,7 +184,7 @@ test('두드러짐 미달은 버린다 — 임계는 hPa 로 견준다(0.5 hPa �
   for (const dec of [NOW, OLD]) {
     for (const [depth, kept] of [[3, false], [6, true]]) {
       const f = fieldOf((lat, lon) => 1013 + bump(lat, lon, deep) + bump(lat, lon, { lat: 30, lon: 60, sigma: 3, amp: -depth }), dec);
-      const here = nearTo(kindOf(findPressureCenters(f, dec), 'L'), 30, 60, 3);
+      const here = nearTo(kindOf(centers(f, dec), 'L'), 30, 60, 3);
       // 0.5 hPa 눈금에서 깊이 3 hPa 는 6바이트다 — 임계를 바이트로 견주면 4 를 넘어 살아남는다.
       assert.equal(here.length, kept ? 1 : 0, `scale ${dec.scale} · 깊이 ${depth}`);
       if (kept) { assert.equal(here[0].prominence, 6); assert.equal(here[0].hPa, 1007); }
@@ -186,7 +193,7 @@ test('두드러짐 미달은 버린다 — 임계는 hPa 로 견준다(0.5 hPa �
   assert.deepEqual(PRESSURE_PROMINENCE_HPA, { L: 4, H: 4 });
   // 임계를 낮추면 같은 장에서 살아난다 — 값이 상수가 아니라 옵션을 탄다.
   const f = fieldOf((lat, lon) => 1013 + bump(lat, lon, deep) + bump(lat, lon, { lat: 30, lon: 60, sigma: 3, amp: -3 }));
-  assert.equal(nearTo(kindOf(findPressureCenters(f, NOW, { minProminenceL: 2 }), 'L'), 30, 60, 3).length, 1);
+  assert.equal(nearTo(kindOf(centers(f, NOW, { minProminenceL: 2 }), 'L'), 30, 60, 3).length, 1);
 });
 
 test('큰 저기압 옆구리의 혹은 중심이 아니다 — 고개가 얕으면(닫힌 4 hPa 등압선이 없으면) 버린다', () => {
@@ -196,11 +203,11 @@ test('큰 저기압 옆구리의 혹은 중심이 아니다 — 고개가 얕으
   assert.ok(Math.abs(greatCircleDeg(A.lat, A.lon, B.lat, B.lon) - 8) < 0.1);
   const f = fieldOf((lat, lon) => 1013 + bump(lat, lon, A) + bump(lat, lon, B));
   // minSeparationDeg 0 — 솎기가 아니라 두드러짐이 버리는 것을 본다.
-  const lows = kindOf(findPressureCenters(f, NOW, { minSeparationDeg: 0 }), 'L');
+  const lows = kindOf(centers(f, NOW, { minSeparationDeg: 0 }), 'L');
   assert.equal(lows.length, 1);
   assert.ok(greatCircleDeg(lows[0].lat, lows[0].lon, A.lat, A.lon) <= 1);
   // 둘째가 정말 극값이기는 했는지: 임계를 1 로 내리면 나오고 두드러짐은 4 미만이다.
-  const loose = kindOf(findPressureCenters(f, NOW, { minSeparationDeg: 0, minProminenceL: 1 }), 'L');
+  const loose = kindOf(centers(f, NOW, { minSeparationDeg: 0, minProminenceL: 1 }), 'L');
   const second = nearTo(loose, B.lat, B.lon, 2);
   assert.equal(second.length, 1);
   assert.ok(second[0].prominence >= 1 && second[0].prominence < 4, `둘째의 두드러짐 ${second[0].prominence}`);
@@ -216,7 +223,7 @@ test('태풍(반경 1.5° · 깊이 40 hPa)이 살아남고 깊이가 뭉개지�
     let minByte = 255;
     for (const b of f.data) if (b < minByte) minByte = b;
     for (const block of [1, 4]) {
-      const lows = kindOf(findPressureCenters(f, NOW, { block }), 'L');
+      const lows = kindOf(centers(f, NOW, { block }), 'L');
       assert.equal(lows.length, 1, `block ${block}`);
       assert.ok(greatCircleDeg(lows[0].lat, lows[0].lon, lat0, lon0) <= 0.5);
       assert.equal(lows[0].hPa, minByte + 870, '장의 최솟값 그대로 — 2° 로 솎은 격자였다면 중심 칸을 놓쳐 10 hPa 넘게 얕아진다');
@@ -241,7 +248,7 @@ const textbook = () => fieldOf((lat, lon) => {
 
 test('교과서 기압 배치 — 동서로 긴 아열대 고기압 둘 · 태풍 · 알류샨 저기압이 살고, 깊이 2 hPa 열저기압은 버린다', () => {
   const f = textbook();
-  const all = findPressureCenters(f, NOW);
+  const all = centers(f, NOW);
   const find = (name, kind, deg) => {
     const c = TEXTBOOK.find((x) => x.name === name);
     return nearTo(kindOf(all, kind), c.lat, c.lon, deg);
@@ -281,8 +288,8 @@ test('교과서 기압 배치 — 동서로 긴 아열대 고기압 둘 · 태�
 test('묶음 격자(block 4)는 같은 자리 · 같은 hPa 를 내고, 두드러짐만 보수적으로(크지 않게) 잡는다', () => {
   const f = textbook();
   const key = (c) => `${c.kind} ${c.row} ${c.col} ${c.hPa}`;
-  const exact = findPressureCenters(f, NOW, { maxH: 99, maxL: 99, minSeparationDeg: 0, minProminenceL: 6, minProminenceH: 6 });
-  const coarse = findPressureCenters(f, NOW, { maxH: 99, maxL: 99, minSeparationDeg: 0, block: 4 });
+  const exact = centers(f, NOW, { maxH: 99, maxL: 99, minSeparationDeg: 0, minProminenceL: 6, minProminenceH: 6 });
+  const coarse = centers(f, NOW, { maxH: 99, maxL: 99, minSeparationDeg: 0, block: 4 });
   const byKey = new Map(coarse.map((c) => [key(c), c]));
   assert.ok(exact.length >= 4);
   for (const c of exact) {
@@ -291,8 +298,8 @@ test('묶음 격자(block 4)는 같은 자리 · 같은 hPa 를 내고, 두드�
     assert.ok(m.prominence <= c.prominence && m.prominence >= c.prominence - 2, `${formatCenter(c)}: ${c.prominence} → ${m.prominence}`);
   }
   // 묶음은 4칸(2°)까지만이다 — 8칸에서는 두드러짐 16 hPa 짜리도 잃었다(모듈 머리 주석). 더 큰 값은 4 로 읽는다.
-  assert.deepEqual(findPressureCenters(f, NOW, { block: 8 }), findPressureCenters(f, NOW, { block: 4 }));
-  assert.deepEqual(findPressureCenters(f, NOW, { block: 0 }), findPressureCenters(f, NOW));
+  assert.deepEqual(centers(f, NOW, { block: 8 }), centers(f, NOW, { block: 4 }));
+  assert.deepEqual(centers(f, NOW, { block: 0 }), centers(f, NOW));
 });
 
 // ------------------------------------------------------------------------------------------------ 솎기와 상한
@@ -302,32 +309,36 @@ test('최소 간격 — 6° 떨어진 두 저기압은 센 쪽만, 10° 면 둘 
     + bump(lat, lon, { lat: 0, lon: 100, sigma: 1.5, amp: -25 })
     + bump(lat, lon, { lat: 0, lon: 100 + gap, sigma: 1.5, amp: -20 }));
   assert.equal(CENTER_MIN_SEPARATION_DEG, 8);
-  const close = kindOf(findPressureCenters(two(6), NOW), 'L');
+  const close = kindOf(centers(two(6), NOW), 'L');
   assert.deepEqual(close.map((c) => c.hPa), [988]);
   // 솎기 전에는 둘 다 닫힌 등압선을 가진 중심이었다 — 두드러짐이 아니라 간격이 버린 것이다.
-  assert.deepEqual(kindOf(findPressureCenters(two(6), NOW, { minSeparationDeg: 0 }), 'L').map((c) => c.hPa), [988, 993]);
-  assert.deepEqual(kindOf(findPressureCenters(two(10), NOW), 'L').map((c) => c.hPa), [988, 993]);
+  assert.deepEqual(kindOf(centers(two(6), NOW, { minSeparationDeg: 0 }), 'L').map((c) => c.hPa), [988, 993]);
+  assert.deepEqual(kindOf(centers(two(10), NOW), 'L').map((c) => c.hPa), [988, 993]);
 });
 
 test('최소 간격은 같은 종류끼리만이다 — 저기압 5° 옆의 고기압은 남는다', () => {
   const f = fieldOf((lat, lon) => 1013 + bump(lat, lon, { lat: 0, lon: 100, sigma: 1.5, amp: -25 })
     + bump(lat, lon, { lat: 0, lon: 105, sigma: 1.5, amp: 12 }));
-  const all = findPressureCenters(f, NOW);
+  const all = centers(f, NOW);
   assert.equal(nearTo(kindOf(all, 'L'), 0, 100, 1).length, 1);
   assert.equal(nearTo(kindOf(all, 'H'), 0, 105, 1).length, 1);
 });
 
-test('개수 상한 — 센 것부터 12개 · 옵션으로 줄인다 · 0 이면 그 종류를 찾지 않는다', () => {
+test('개수 상한 — 기본 40 은 전지구에서 사실상 자르지 않는다 · 옵션으로 줄인다 · 0 이면 그 종류를 찾지 않는다', () => {
+  // ⚠️ 이 시험은 '깊은 **12개**만 온다'를 잠그고 있었다. 2026-09-20 반박 검증이 운영 41장에서 그 12 가
+  //    **전지구에서 먼저** 자르는 바람에 한국 쪽 저기압이 남극해 저기압에게 자리를 뺏기는 것을 재현했다
+  //    (두드러짐 ≥ 8 hPa 인 L 이 프레임당 평균 6.4개 버려짐 · 사라짐 109건 중 75건은 순위가 밀린 것뿐).
+  //    개수로 거르는 일은 카메라를 아는 쪽(field-symbols.js)으로 옮기고 모듈의 기본 상한은 40 으로 올렸다.
   const lows15 = [];
   for (let k = 0; k < 15; k += 1) lows15.push({ lat: 0, lon: -168 + 24 * k, sigma: 2, amp: -(10 + k) });
   const f = fieldOf((lat, lon) => { let v = 1013; for (const c of lows15) v += bump(lat, lon, c); return v; });
-  assert.deepEqual(CENTER_MAX_PER_KIND, { H: 12, L: 12 });
-  const lows = kindOf(findPressureCenters(f, NOW), 'L');
-  assert.equal(lows.length, 12);
-  assert.deepEqual(lows.map((c) => c.hPa), [989, 990, 991, 992, 993, 994, 995, 996, 997, 998, 999, 1000]);   // 깊은 것부터 · 얕은 셋이 빠졌다
+  assert.deepEqual(CENTER_MAX_PER_KIND, { H: 40, L: 40 });
+  const lows = kindOf(centers(f, NOW), 'L');
+  assert.equal(lows.length, 15, '15개가 다 온다 — 기본 상한이 자르지 않는다');
+  assert.deepEqual(lows.map((c) => c.hPa), [989, 990, 991, 992, 993, 994, 995, 996, 997, 998, 999, 1000, 1001, 1002, 1003]);
   for (let k = 1; k < lows.length; k += 1) assert.ok(lows[k - 1].prominence >= lows[k].prominence, '센 것부터');
-  assert.deepEqual(kindOf(findPressureCenters(f, NOW, { maxL: 3 }), 'L').map((c) => c.hPa), [989, 990, 991]);
-  const none = findPressureCenters(f, NOW, { maxL: 0 });
+  assert.deepEqual(kindOf(centers(f, NOW, { maxL: 3 }), 'L').map((c) => c.hPa), [989, 990, 991]);
+  const none = centers(f, NOW, { maxL: 0 });
   assert.equal(kindOf(none, 'L').length, 0);
   assert.equal(kindOf(none, 'H').length, 1);
 });
@@ -338,33 +349,33 @@ test('디코드 상수를 바꾸면 hPa 가 바뀐다 — 모듈은 870 도 940 
   const low = (lat, lon) => 1013 + bump(lat, lon, { lat: 35, lon: 135, sigma: 4, amp: -28 });
   // ① 같은 바이트를 두 상수로 풀면 값이 다르다(자리는 같다).
   const f = fieldOf(low, NOW);
-  const a = kindOf(findPressureCenters(f, NOW), 'L')[0];
-  const b = kindOf(findPressureCenters(f, OLD), 'L')[0];
+  const a = kindOf(centers(f, NOW), 'L')[0];
+  const b = kindOf(centers(f, OLD), 'L')[0];
   assert.equal(a.hPa, 115 * 1 + 870);
   assert.equal(b.hPa, 115 * 0.5 + 940);
   assert.deepEqual([a.row, a.col], [b.row, b.col]);
   // ② 같은 기압장을 두 눈금으로 구우면 같은 값이 나온다.
-  const c = kindOf(findPressureCenters(fieldOf(low, OLD), OLD), 'L')[0];
+  const c = kindOf(centers(fieldOf(low, OLD), OLD), 'L')[0];
   assert.equal(c.hPa, 985);
   assert.equal(c.prominence, 28);
   assert.deepEqual([c.row, c.col], [a.row, a.col]);
   // ③ gfs-frames 의 채널 객체를 그대로 넘겨도 된다 · 상수가 없으면 지어내지 않고 던진다.
   const ch = { name: 'R', idx: 0, transfer: 'linear', scale: 1, offset: 870, min: 870, max: 1125, clamped: true };
-  assert.equal(kindOf(findPressureCenters(f, ch), 'L')[0].hPa, 985);
-  assert.throws(() => findPressureCenters(f), TypeError);
-  assert.throws(() => findPressureCenters(f, { scale: 1 }), TypeError);
-  assert.throws(() => findPressureCenters(f, { scale: 0, offset: 870 }), TypeError);
-  assert.throws(() => findPressureCenters(f, { transfer: 'log10', scale: 1, offset: 870 }), TypeError);
+  assert.equal(kindOf(centers(f, ch), 'L')[0].hPa, 985);
+  assert.throws(() => centers(f), TypeError);
+  assert.throws(() => centers(f, { scale: 1 }), TypeError);
+  assert.throws(() => centers(f, { scale: 0, offset: 870 }), TypeError);
+  assert.throws(() => centers(f, { transfer: 'log10', scale: 1, offset: 870 }), TypeError);
 });
 
 test('눈금 바닥에 눌린 중심은 saturated 를 달고 "≤" 로 적는다 — 940 hPa 바닥에 눌렸던 태풍(커밋 c90b0fd5)', () => {
   const f = fieldOf((lat, lon) => 1008 + bump(lat, lon, { lat: 20, lon: 130, sigma: 2, amp: -80 }), OLD);   // 실제 928 → 바이트 0
-  const c = kindOf(findPressureCenters(f, OLD), 'L')[0];
+  const c = kindOf(centers(f, OLD), 'L')[0];
   assert.equal(c.hPa, 940);
   assert.equal(c.saturated, true);
   assert.equal(formatCenter(c), 'L ≤940');
   // 눌리지 않은 중심에는 그 키가 없다.
-  const ok = kindOf(findPressureCenters(fieldOf((lat, lon) => 1008 + bump(lat, lon, { lat: 20, lon: 130, sigma: 2, amp: -40 }), OLD), OLD), 'L')[0];
+  const ok = kindOf(centers(fieldOf((lat, lon) => 1008 + bump(lat, lon, { lat: 20, lon: 130, sigma: 2, amp: -40 }), OLD), OLD), 'L')[0];
   assert.equal('saturated' in ok, false);
 });
 
@@ -380,46 +391,116 @@ test('formatCenter — 단위 없이 · 눈금 그대로', () => {
 
 // ------------------------------------------------------------------------------------------------ 지형
 
-test('elevationAt 을 주면 고지대 중심에 표시만 단다(지우지 않는다) · 안 주면 키 자체가 없다', () => {
+test('고지대 중심은 표시가 아니라 **삭제**다 — 찾기 전에 가린다 · 고도 없이 청하면 던진다', () => {
+  // ⚠️ 이 시험은 'elevationAt 을 주면 표시만 달고 지우지 않는다'를 잠그고 있었다. 2026-09-20 반박 검증이
+  //    운영 f003 에서 그 규칙의 결과를 셌다: H 12개 중 8개가 고지대 가짜(남극고원 1060 · 그린란드 1036 · 카라코람 1036 …)이고,
+  //    북태평양 고기압(prom 7)·남대서양 고기압(prom 6)은 자리가 없어 화면에 안 나왔다. 규칙을 뒤집는다.
   const f = fieldOf((lat, lon) => 1013 + bump(lat, lon, { lat: 33, lon: 88, sigma: 3, amp: -14 })     // 티베트 위
     + bump(lat, lon, { lat: 20, lon: 130, sigma: 3, amp: -20 }));                                      // 바다 위
   const tibet = (lat, lon) => (lat > 27 && lat < 38 && lon > 78 && lon < 100 ? 4500 : 0);
-  const plain = kindOf(findPressureCenters(f, NOW), 'L');
-  assert.equal(plain.length, 2);
-  for (const c of plain) assert.equal('overHighTerrain' in c, false, '모르는 것을 "아니다"라고 하지 않는다');
+  assert.equal(kindOf(centers(f, NOW), 'L').length, 2, '가림판이 없으면 둘 다 나온다 — 그 둘째가 가짜다');
 
-  const flagged = kindOf(findPressureCenters(f, NOW, { elevationAt: tibet }), 'L');
-  assert.equal(flagged.length, 2, '표시된 중심도 돌려준다 — 숨길지는 그리는 쪽이 정한다');
-  assert.equal(nearTo(flagged, 33, 88, 1)[0].overHighTerrain, true);
-  assert.equal(nearTo(flagged, 20, 130, 1)[0].overHighTerrain, false);
+  const kept = kindOf(centers(f, NOW, { elevationAt: tibet }), 'L');
+  assert.equal(kept.length, 1);
+  assert.equal(nearTo(kept, 20, 130, 1).length, 1, '바다 위의 진짜는 남는다');
+  assert.equal(nearTo(kept, 33, 88, 1).length, 0, '티베트 위의 가짜는 목록에 없다');
+  for (const c of kept) assert.equal('overHighTerrain' in c, false, '표시 키는 더 이상 없다 — 숨기는 일을 그리는 쪽에 미루지 않는다');
   assert.equal(HIGH_TERRAIN_M, 1500);
-  assert.equal(nearTo(kindOf(findPressureCenters(f, NOW, { elevationAt: () => 1500 }), 'L'), 20, 130, 1)[0].overHighTerrain, true, '경계 포함');
-  assert.equal(nearTo(kindOf(findPressureCenters(f, NOW, { elevationAt: () => 1499 }), 'L'), 20, 130, 1)[0].overHighTerrain, false);
-  assert.equal(nearTo(kindOf(findPressureCenters(f, NOW, { elevationAt: tibet, highTerrainM: 5000 }), 'L'), 33, 88, 1)[0].overHighTerrain, false);
-  // 고도를 못 읽은 곳은 고지대라고 하지 않는다.
-  for (const c of findPressureCenters(f, NOW, { elevationAt: () => NaN })) assert.equal(c.overHighTerrain, false);
-  for (const c of findPressureCenters(f, NOW, { elevationAt: () => null })) assert.equal(c.overHighTerrain, false);
+  assert.equal(kindOf(centers(f, NOW, { elevationAt: () => 1500 }), 'L').length, 0, '경계 포함 — 전부 고지대면 중심이 없다');
+  assert.equal(kindOf(centers(f, NOW, { elevationAt: () => 1499 }), 'L').length, 2);
+  assert.equal(nearTo(kindOf(centers(f, NOW, { elevationAt: tibet, highTerrainM: 5000 }), 'L'), 33, 88, 1).length, 1, '문턱을 올리면 남는다');
+  // 고도를 못 읽은 곳(NaN · null)은 고지대라고 하지 않는다 — **모르는 것으로 지우지도 않는다.**
+  // (고도맵이 통째로 안 온 상황은 buildHighTerrainMask 의 ok 가 말한다 — 그리는 쪽이 그때 H/L 을 아예 그리지 않는다.)
+  assert.equal(kindOf(centers(f, NOW, { elevationAt: () => NaN }), 'L').length, 2);
+  assert.equal(kindOf(centers(f, NOW, { elevationAt: () => null }), 'L').length, 2);
+  // 고도 없이 청하면 던진다 — '가짜가 섞인 채 조용히 배선'되는 길을 문서가 아니라 코드로 막는다.
+  assert.throws(() => findPressureCenters(f, NOW), /PRESSURE_CENTERS_NEEDS_ELEVATION/);
+  assert.throws(() => findPressureCenters(f, NOW, { maxH: 0 }), /PRESSURE_CENTERS_NEEDS_ELEVATION/, 'L 도 가짜가 된다(티베트 열저기압)');
+  assert.equal(findPressureCenters(f, NOW, { maxH: 0, maxL: 0 }).length, 0, '아무것도 안 청하면 던질 일이 없다');
 });
 
-test('고지대의 센 중심들이 믿을 만한 중심의 자리를 빼앗지 않는다 — 상한은 따로 센다', () => {
+test('가림판은 칸 표로도 준다 — 크기가 맞아야 쓰고, 극관은 화면의 지형(남극 2,800 m)을 따른다', () => {
+  const f = fieldOf((lat, lon) => 1013 + bump(lat, lon, { lat: -87, lon: 40, sigma: 3, amp: 34 })      // 남극고원 위의 가짜 고기압
+    + bump(lat, lon, { lat: 20, lon: 130, sigma: 3, amp: -20 }));                                      // 바다 위의 진짜 저기압
+  // heightAtJs 는 위도를 ±85° 로 자르고 극 셰이더의 poleFade(남극 2,800 m)가 없다 — 가림판이 그 보정을 대신한다.
+  const built = buildHighTerrainMask({ w: W, h: H }, () => 0);
+  assert.equal(built.mask.length, W * H);
+  assert.ok(built.high > 0, '고도가 0 이어도 남극관은 가려진다');
+  assert.ok(built.high < W * H * 0.06, '가려지는 것은 남극관뿐이다');
+  assert.equal(built.known, 0);
+  assert.equal(built.ok, false, '어디서나 정확히 0 — 고도맵이 안 온 판이다. 가려진 칸 수로는 이것을 못 가른다');
+  assert.equal(nearTo(kindOf(centers(f, NOW, { highMask: built.mask }), 'H'), -87, 40, 4).length, 0);
+  assert.equal(nearTo(kindOf(centers(f, NOW, { highMask: built.mask }), 'L'), 20, 130, 1).length, 1);
+  // 고도를 실제로 읽은 판(바다 칸은 수심 음수)은 ok 가 선다 — 문턱은 상수에서 센다.
+  const real = buildHighTerrainMask({ w: W, h: H }, (lat, lon) => (lat > 27 && lat < 38 && lon > 78 && lon < 100 ? 4500 : -3500));
+  assert.ok(real.high > built.high, '티베트만큼 더 가려진다');
+  assert.ok(real.known >= W * H * ELEVATION_KNOWN_MIN_RATIO && real.ok);
+  // 크기가 안 맞는 표는 못 쓴다 — 조용히 엉뚱한 칸을 가리느니 없는 것으로 본다(그리고 고도가 없으니 던진다).
+  assert.throws(() => findPressureCenters(f, NOW, { highMask: new Uint8Array(10) }), /PRESSURE_CENTERS_NEEDS_ELEVATION/);
+});
+
+test('가짜 옆의 진짜는 두드러짐을 고개에서 잘리지 않는다 — 한쪽만 가짜면 깊이와 무관하게 진짜가 산다', () => {
+  // 가짜 H(+35 · 고지대 위)와 진짜 H(+27)가 14° 떨어져 있고, 둘 사이의 고개는 1026 hPa 이다.
+  // '깊은 쪽이 산다'는 나이 규칙만 두면 진짜가 가짜에 흡수돼 두드러짐이 1040 − 1026 = 14 로 잘린다.
+  // 진짜의 두드러짐은 다음 **진짜** 중심까지의 고개(바탕 1013)에서 재야 한다 → 27.
+  const world = (lat, lon) => 1013 + bump(lat, lon, { lat: 0, lon: 0, sigma: 4, amp: 40 })       // 전지구 최고(진짜)
+    + bump(lat, lon, { lat: 34, lon: 100, sigma: 4, amp: 35 })                                    // 고지대 위의 가짜
+    + bump(lat, lon, { lat: 20, lon: 100, sigma: 4, amp: 27 });                                   // 그 옆의 진짜
+  const f = fieldOf(world);
+  const alps = (lat, lon) => (lat > 30 && lat < 40 && lon > 95 && lon < 105 ? 3000 : 0);
+  const cut = nearTo(kindOf(centers(f, NOW), 'H'), 20, 100, 2)[0];
+  assert.equal(cut.hPa, 1040);
+  assert.equal(cut.prominence, 14, '가림판이 없으면 가짜가 진짜를 잡아먹고 두드러짐을 고개에서 깎는다');
+  const kept = kindOf(centers(f, NOW, { elevationAt: alps }), 'H');
+  assert.equal(nearTo(kept, 34, 100, 2).length, 0, '가짜는 없다');
+  const whole = nearTo(kept, 20, 100, 2)[0];
+  assert.equal(whole.hPa, 1040);
+  assert.equal(whole.prominence, 27, '제 바닥을 지켜 다음 진짜까지의 고개에서 잰다');
+});
+
+test('고지대의 센 중심들이 믿을 만한 중심의 자리를 빼앗지 않는다 — 가림판이 있으면 아예 자리를 잡지 못한다', () => {
   // 남극 빙상 위의 가짜 저기압 4개(깊이 30~33)와 바다 위의 진짜 저기압 3개(깊이 10~12). 두드러짐은 가짜 쪽이 전부 더 크다.
   const fake = [0, 1, 2, 3].map((k) => ({ lat: -80, lon: -150 + 90 * k, sigma: 2, amp: -(30 + k) }));
   const real = [0, 1, 2].map((k) => ({ lat: 30, lon: -120 + 100 * k, sigma: 3, amp: -(10 + k) }));
   const f = fieldOf((lat, lon) => { let v = 1013; for (const c of [...fake, ...real]) v += bump(lat, lon, c); return v; });
   const ice = (lat) => (lat < -70 ? 3000 : 0);
-  // 표시 없이 3개만 달라고 하면 센 순서대로 가짜 셋이 온다 — 그리는 쪽이 고지대를 숨기면 지구에 L 이 하나도 없다.
-  assert.deepEqual(kindOf(findPressureCenters(f, NOW, { maxL: 3 }), 'L').map((c) => c.lat < -70), [true, true, true]);
-  // elevationAt 을 주면 믿을 만한 3개가 제 몫으로 다 온다. 가짜도 지우지 않는다(표시된 것 3개까지).
-  const lows = kindOf(findPressureCenters(f, NOW, { maxL: 3, elevationAt: ice }), 'L');
-  assert.deepEqual(lows.filter((c) => !c.overHighTerrain).map((c) => c.hPa), [1001, 1002, 1003]);
-  assert.deepEqual(lows.filter((c) => c.overHighTerrain).map((c) => c.hPa), [980, 981, 982]);
-  for (let k = 1; k < lows.length; k += 1) assert.ok(lows[k - 1].prominence >= lows[k].prominence, '표시가 있든 없든 한 목록 · 센 것부터');
+  // 가림판 없이 3개만 달라고 하면 센 순서대로 가짜 셋이 온다 — 지구에 진짜 L 이 하나도 안 보인다.
+  assert.deepEqual(kindOf(centers(f, NOW, { maxL: 3 }), 'L').map((c) => c.lat < -70), [true, true, true]);
+  // 가림판을 주면 **가짜는 목록에 없고** 진짜 셋이 상한 3 을 그대로 쓴다. 1등 자리(prom = 장 전체 폭)도 진짜의 것이다.
+  const lows = kindOf(centers(f, NOW, { maxL: 3, elevationAt: ice }), 'L');
+  assert.deepEqual(lows.map((c) => c.hPa), [1001, 1002, 1003]);
+  assert.deepEqual(lows.map((c) => c.lat < -70), [false, false, false]);
+  for (let k = 1; k < lows.length; k += 1) assert.ok(lows[k - 1].prominence >= lows[k].prominence, '센 것부터');
 });
 
 // ------------------------------------------------------------------------------------------------ 시간
 
+test('matchCenters — 가까워도 hPa 가 크게 다르면 짝이 아니다(반박 검증의 반례)', () => {
+  assert.equal(CENTER_MATCH_MAX_DHPA, 3 * CENTER_MATCH_HPA_PER_HOUR);
+  // 태풍이 b 목록에서 빠진 상황: 4.6° 옆의 얕은 저기압과 짝이 되면 'L 950' 이 미끄러진 뒤 'L 1004' 로 바뀐다
+  // — 3시간 만에 54 hPa 약해진 그림이다. 운영 실측에서 진짜 태풍의 3시간 최대 변화는 10 hPa 였다.
+  const a = [{ kind: 'L', lat: 25, lon: 135, hPa: 950 }];
+  const b = [{ kind: 'L', lat: 26, lon: 140, hPa: 1004 }];
+  assert.ok(greatCircleDeg(25, 135, 26, 140) < CENTER_MATCH_MAX_DEG, '거리만 보면 짝이 된다');
+  assert.deepEqual(matchCenters(a, b).map((p) => [!!p.a, !!p.b]), [[true, false], [false, true]]);
+  // 운영에서 실제로 난 엇짝: 'H 1052' 가 5.2° 옆의 'H 1016' 과 짝이 돼 mix 0.5 에서 글자가 36 hPa 뛰었다.
+  const hi = matchCenters([{ kind: 'H', lat: -76.5, lon: 102.5, hPa: 1052 }], [{ kind: 'H', lat: -73, lon: 117, hPa: 1016 }]);
+  assert.deepEqual(hi.map((p) => [!!p.a, !!p.b]), [[true, false], [false, true]]);
+  // 문턱 안이면 그대로 짝이다 — GFS 자체의 출렁임(3시간 10 hPa)까지는 같은 중심으로 본다.
+  const near = matchCenters([{ kind: 'L', lat: 25, lon: 135, hPa: 988 }], [{ kind: 'L', lat: 26, lon: 138, hPa: 978 }]);
+  assert.equal(near.length, 1);
+  assert.ok(near[0].a && near[0].b);
+  // 간격이 넓은 스텝(6시간)은 부르는 쪽이 시간당 값을 곱해 넘긴다.
+  const wide = matchCenters(a, b, 6 * CENTER_MATCH_DEG_PER_HOUR, 6 * CENTER_MATCH_HPA_PER_HOUR);
+  assert.equal(wide.length, 2, '6시간이어도 54 hPa 는 같은 중심이 아니다');
+  // hPa 를 모르는 합성 입력은 기압 문턱을 묻지 않는다 — 없는 값으로 짝을 끊지 않는다.
+  const noHpa = matchCenters([{ kind: 'L', lat: 0, lon: 0 }], [{ kind: 'L', lat: 0, lon: 2 }]);
+  assert.equal(noHpa.length, 1);
+  assert.ok(noHpa[0].a && noHpa[0].b);
+});
+
 test('matchCenters — 3시간에 5° 움직인 저기압은 짝이고, 30° 떨어진 것 · 종류가 다른 것은 짝이 아니다', () => {
-  const find = (list) => kindOf(findPressureCenters(fieldOf((lat, lon) => {
+  const find = (list) => kindOf(centers(fieldOf((lat, lon) => {
     let v = 1013;
     for (const c of list) v += bump(lat, lon, c);
     return v;
@@ -449,7 +530,7 @@ test('matchCenters — 3시간에 5° 움직인 저기압은 짝이고, 30° 떨
 
 test('lerpCenter — 짝은 대권을 따라 옮기고(±180° 는 짧은 쪽으로) hPa 는 지어내지 않는다 · 짝 없는 것은 제자리에서 나타나고 사라진다', () => {
   const a = { kind: 'L', lat: 30, lon: 178, hPa: 985, prominence: 20, row: 120, col: 716 };
-  const b = { kind: 'L', lat: 30, lon: -178, hPa: 981, prominence: 24, row: 120, col: 4, overHighTerrain: false };
+  const b = { kind: 'L', lat: 30, lon: -178, hPa: 981, prominence: 24, row: 120, col: 4 };
   const [pair] = matchCenters([a], [b]);
   assert.ok(pair.a && pair.b);
   const mid = lerpCenter(pair, 0.5);
@@ -464,8 +545,9 @@ test('lerpCenter — 짝은 대권을 따라 옮기고(±180° 는 짧은 쪽으
     assert.equal(c.hPa, t < 0.5 ? 985 : 981, `mix ${t} 의 hPa ${c.hPa} — 두 키프레임에 없는 숫자를 만들지 않는다`);
     assert.equal(c.nearest, t < 0.5 ? a : b);
   }
+  // overHighTerrain 은 더 이상 없다 — 고지대 중심은 찾기 전에 가려져 여기까지 오지 않는다.
   assert.equal('overHighTerrain' in lerpCenter(pair, 0.2), false);
-  assert.equal(lerpCenter(pair, 0.8).overHighTerrain, false);
+  assert.equal('overHighTerrain' in lerpCenter(pair, 0.8), false);
   assert.deepEqual([lerpCenter(pair, 0).lat, lerpCenter(pair, 0).lon], [30, 178]);
   assert.ok(Math.abs(lerpCenter(pair, 1).lon + 178) < 1e-9);
   assert.equal(formatCenter(lerpCenter(pair, 0.7)), 'L 981');
@@ -484,20 +566,20 @@ test('lerpCenter — 짝은 대권을 따라 옮기고(±180° 는 짧은 쪽으
 test('읽을 수 없는 프레임은 빈 목록이다 · 전지구 격자가 아니면 던진다 · 여러 채널 그림과 0°~360° 배치를 읽는다', () => {
   const low = (lat, lon) => 1013 + bump(lat, lon, { lat: 35, lon: -160, sigma: 4, amp: -28 });
   const f = fieldOf(low);
-  assert.deepEqual(findPressureCenters(null, NOW), []);
-  assert.deepEqual(findPressureCenters({ w: W, h: H, data: null }, NOW), []);
-  assert.deepEqual(findPressureCenters({ w: W, h: H, data: f.data.subarray(0, 1000) }, NOW), [], '격자와 크기가 안 맞는 그림에서 값을 읽지 않는다');
-  assert.deepEqual(findPressureCenters({ w: W, h: H, data: new Uint8Array(W * H).fill(143) }, NOW), [], '평평한 장에는 중심이 없다');
-  assert.throws(() => findPressureCenters(f, NOW, { grid: { lon0: 100, lat0: 60, dLon: 0.05, dLat: 0.05 } }), RangeError);
+  assert.deepEqual(centers(null, NOW), []);
+  assert.deepEqual(centers({ w: W, h: H, data: null }, NOW), []);
+  assert.deepEqual(centers({ w: W, h: H, data: f.data.subarray(0, 1000) }, NOW), [], '격자와 크기가 안 맞는 그림에서 값을 읽지 않는다');
+  assert.deepEqual(centers({ w: W, h: H, data: new Uint8Array(W * H).fill(143) }, NOW), [], '평평한 장에는 중심이 없다');
+  assert.throws(() => centers(f, NOW, { grid: { lon0: 100, lat0: 60, dLon: 0.05, dLat: 0.05 } }), RangeError);
 
   // RGBA 사본(풀 줄 모르는 필드는 gfs-frames 가 4채널을 그대로 둔다) — channels 로 폭을 알린다.
   const rgba = new Uint8Array(W * H * 4);
   for (let p = 0; p < W * H; p += 1) { rgba[p * 4] = f.data[p]; rgba[p * 4 + 3] = 255; }
-  assert.deepEqual(findPressureCenters({ w: W, h: H, channels: 4, data: rgba }, NOW), findPressureCenters(f, NOW));
+  assert.deepEqual(centers({ w: W, h: H, channels: 4, data: rgba }, NOW), centers(f, NOW));
 
   // 열 0 = 경도 0° 인 배치: 경도 200° 의 저기압은 −160° 로 나온다.
   const f360 = fieldOf(low, NOW, 0);
-  const c = kindOf(findPressureCenters(f360, NOW, { grid: { lon0: 0, lat0: 90, dLon: 0.5, dLat: -0.5 } }), 'L')[0];
+  const c = kindOf(centers(f360, NOW, { grid: { lon0: 0, lat0: 90, dLon: 0.5, dLat: -0.5 } }), 'L')[0];
   assert.deepEqual([c.lat, c.lon, c.col, c.hPa], [35, -160, 400, 985]);
 });
 
@@ -514,10 +596,10 @@ test('720×361 매끄러운 난수 장 — 실행 시간 상한 · 같은 입력
   const before = Uint8Array.from(f.data);
   const timeOf = (opts) => {
     const cold0 = performance.now();
-    const first = findPressureCenters(f, NOW, opts);
+    const first = centers(f, NOW, opts);
     const cold = performance.now() - cold0;
     let warm = Infinity;
-    for (let k = 0; k < 5; k += 1) { const t0 = performance.now(); findPressureCenters(f, NOW, opts); warm = Math.min(warm, performance.now() - t0); }
+    for (let k = 0; k < 5; k += 1) { const t0 = performance.now(); centers(f, NOW, opts); warm = Math.min(warm, performance.now() - t0); }
     return { first, cold, warm };
   };
   const exact = timeOf({});
@@ -530,8 +612,9 @@ test('720×361 매끄러운 난수 장 — 실행 시간 상한 · 같은 입력
   assert.ok(coarse.warm < 1500, `block 4 ${coarse.warm.toFixed(1)} ms`);
 
   assert.ok(exact.first.length > 4, '매끄러운 난수 장에는 중심이 여럿 있다');
-  assert.ok(kindOf(exact.first, 'H').length <= 12 && kindOf(exact.first, 'L').length <= 12);
-  assert.deepEqual(findPressureCenters(f, NOW), exact.first, '같은 입력에 같은 출력');
+  // 숫자를 박지 않는다 — 상한은 모듈의 상수에서 센다(12 를 박아 뒀다가 상한이 40 이 된 날 이 줄이 떨어졌다).
+  assert.ok(kindOf(exact.first, 'H').length <= CENTER_MAX_PER_KIND.H && kindOf(exact.first, 'L').length <= CENTER_MAX_PER_KIND.L);
+  assert.deepEqual(centers(f, NOW), exact.first, '같은 입력에 같은 출력');
   assert.deepEqual(f.data, before, '입력 프레임은 저장소 캐시의 것이다 — 고치면 안 된다');
   // 나온 것은 전부 진짜 극값이다: 8방향 이웃(경도 랩) 가운데 L 보다 낮은 칸 · H 보다 높은 칸이 없다.
   for (const c of exact.first) {

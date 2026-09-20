@@ -44,6 +44,16 @@ export const FIELD_DESCRIPTORS = Object.freeze({
     isoName: Object.freeze({ ko: '등온선', en: 'Isotherms' }),
     isolineChoices: Object.freeze(['2', '5']),
   }),
+  // 풍속(2026-09-20) — 시안 02: 풍속 구간색 8단 위로 흰 입자가 흐른다. 자료는 입자(js/wind-layer.js)와 같은 GFS 10 m u·v 프레임이고
+  // 셰이더가 디코드한 뒤 크기를 구한다(magnitudeRG). 풍속 등치선은 일부러 없다(눈금표 wind.isoline = null — 입자가 그 몫을 한다).
+  // 예전 'windgrid' 는 Open-Meteo 5°(한 칸 555 km) 한 시각의 선형 램프였다: 전지구 최대가 23.8 m/s 라 태풍이 격자 사이로 빠졌다.
+  windgrid: Object.freeze({
+    layerId: 'windgrid', fieldId: 'wind10', scaleId: 'wind', mode: 'magnitudeRG', mask: 'none',
+    title: Object.freeze({ ko: '전지구 풍속 · 지상 10 m', en: 'Global wind speed · 10 m' }),
+    quantity: Object.freeze({ ko: '풍속', en: 'Wind speed' }),
+    isoName: Object.freeze({ ko: '등풍속선', en: 'Isotachs' }),
+    isolineChoices: Object.freeze([]),
+  }),
 });
 
 // 매니페스트를 이보다 오래 안 읽었으면 다시 읽는다. 같은 런은 3시간마다 다시 구워지고 새 런은 6시간마다 온다(gfs-frames.js) —

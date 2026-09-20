@@ -309,6 +309,12 @@ export class LiveLayers {
   // ---------- W1 셰이더 색면 (js/field-layer.js) ----------
   // main.js 가 한 번 부른다: 프레임 저장소 · 지구의 지형 uniform 묶음 · 지구 지오메트리 · 폰 여부 · 카드 문자열을 갈아 끼울 자리.
   provideField(deps) { this._fieldDeps = { ...(this._fieldDeps || {}), ...deps }; }
+  // 색면(기온·풍속 …)이나 바람 입자가 켜져 있나 — main.js 가 이것을 보고 구름을 물린다(시안 01·02 는 구름 없이 색면이 주인공이다).
+  // 'field' = 색면이 있다(구름의 흰 베일이 구간색을 바꿔 범례와 어긋나게 한다 → 구름을 끈다) · 'wind' = 입자만 · null = 없음.
+  starLayer() {
+    for (const id of this.activeIds()) if (isFieldLayerId(id)) return 'field';
+    return this.layers.wind && this.layers.wind.on ? 'wind' : null;
+  }
 
   // 누른 자리의 모델값을 범례·카드에 적는다(켜진 색면이 없으면 아무 일도 없다 · 네트워크 0건).
   fieldProbe(lat, lon) { const f = activeField(this); return f ? f.probe(lat, lon) : null; }

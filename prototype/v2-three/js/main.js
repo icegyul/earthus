@@ -37,6 +37,8 @@ const gfsFrames = sharedGfsFrames({ THREE });
 // 시간 하나(js/time-bus.js) — 타임라인이 가리키는 시각을 기온·바람·기압·관측 숫자가 전부 여기서 듣는다.
 // 예전에는 구름만 들었다(아래 onTimeOffset → clouds.setForecastOffset). v2 는 5일을 예보하는 서비스라 시간은 하나여야 한다.
 import { timeBus } from './time-bus.js?v=1';
+// 색면 위의 나라·해안 윤곽선 — 새 색면이 바탕 지도의 국경을 덮어 '어디가 한반도인지' 알 수 없었다(js/field-outlines.js).
+import { createFieldOutlines } from './field-outlines.js?v=1';
 // 지상관측 두 문서(기상청 · GTS)는 공용 저장소(js/surface-obs.js)에서 받는다 — 바람·평년차·기입 모형·내 동네 카드가 같은 문서를 나눠 쓴다.
 import { surfaceObs } from './surface-obs.js?v=1';
 // 지구 위 실측 숫자(js/obs-labels.js · W1 ⑦) — 기온 색면이 켜져 있고 타임라인이 '지금'일 때만 관측소 값을 찍는다.
@@ -3208,6 +3210,52 @@ async function main() {
     },
   });
   liveLayers.windLayer = windLayer;
+
+  /* 주인공 레이어(색면 · 바람)가 켜진 동안의 무대 정리 — 2026-09-20, 합친 화면을 직접 보고 넣었다.
+     ① 구름이 물러난다. PD 정본 시안 01·02 는 구름 없이 색면이 주인공이다. 구름 셸(불투명 0.92)은 색면 위에 그려져
+        일본 남쪽 태풍 둘레의 구간색을 흰 베일로 덮었다 — 색이 값인 화면에서 흰 베일은 범례와 다른 색을 만든다.
+        색면이 있으면 0(끈다), 입자만 있으면 옅게 남긴다. 끄면 제자리로 돌아온다. 구름 설정·모드는 건드리지 않는다(불투명도만).
+     ② '바람'을 켜면 풍속 색면(windgrid)이 같이 깔린다 — 시안 02 는 풍속 구간색 위로 흰 유선이 흐른다. 입자만으로는 약한 바람
+        (어두운 파랑)이 밤바다에 묻혀 태풍만 보였다. 우리가 같이 켠 것만 같이 끈다(사용자가 따로 켠 풍속 색면은 그대로 둔다).
+     ③ 색면이 밑에 있으면 입자는 흰색, 없으면 풍속 구간색(wind-layer.setColorMode). */
+  // ④ 색면이 켜져 있으면 나라·해안 윤곽선이 그 위에 선다(field-outlines.js). 폴리곤은 국가 포커스가 이미 받아 둔 것이다 — 새 요청 0건.
+  const fieldOutlines = createFieldOutlines({
+    THREE, parent: scene,
+    getFeatures: () => (focus.data && focus.data.features) || null,
+    surfR: (la, lo, lift) => liveLayers.surfR(la, lo, lift),
+    getExagger: () => uniforms.uExagger.value,
+  });
+  window.__earthusOutlines = fieldOutlines;   // 콘솔 확인용: __earthusOutlines.state()
+  const CLOUD_OPACITY_FULL = clouds.uniforms.uOpacity.value;   // 0.92 — CloudManager 가 정한 값을 그대로 기억한다
+  const CLOUD_OPACITY_WIND_ONLY = 0.28;
+  const starLayers = {
+    windWasOn: false, autoSpeed: false, busy: false,
+    tick(dt) {
+      const star = liveLayers.starLayer();
+      fieldOutlines.setVisible(star === 'field');
+      fieldOutlines.tick();
+      const target = star === 'field' ? 0 : star === 'wind' ? CLOUD_OPACITY_WIND_ONLY : CLOUD_OPACITY_FULL;
+      const u = clouds.uniforms.uOpacity;
+      if (u.value !== target) {
+        u.value += (target - u.value) * Math.min(1, dt * 5);
+        if (Math.abs(u.value - target) < 0.004) u.value = target;
+      }
+      const windOn = !!(liveLayers.layers.wind && liveLayers.layers.wind.on);
+      const speedOn = !!(liveLayers.layers.windgrid && liveLayers.layers.windgrid.on);
+      windLayer.setColorMode(speedOn ? 'white' : 'speed');
+      if (windOn !== this.windWasOn && !this.busy) {
+        this.windWasOn = windOn;
+        const want = windOn ? !speedOn : (this.autoSpeed && speedOn);
+        if (want) {
+          this.busy = true;
+          this.autoSpeed = windOn;
+          Promise.resolve(liveLayers.toggle('windgrid')).catch(() => {}).then(() => { this.busy = false; shell.refreshFlyout(); });
+        } else if (!windOn) {
+          this.autoSpeed = false;
+        }
+      }
+    },
+  };
   window.__earthusWind = windLayer;   // 콘솔 확인용: __earthusWind.state()
   // 지구 위 실측 숫자 — 보임은 tick 에서 기온 레이어('tempgrid')의 켜짐만 읽어 넘기고, '지금'인지는 부품이 시간 버스에서 직접 듣는다.
   // 지평선 흐림은 뉴스 네모칸의 식(newsChipOpacity)을 그대로 넣는다 — 같은 식을 두 벌로 만들지 않는다.
@@ -6429,6 +6477,7 @@ async function main() {
     aethLink.update(now);
     liveLayers.tick(now, altKm);
     windLayer.tick(dt, camera);   // 바람 입자(W3) — 'wind' 레이어가 꺼져 있으면 첫 줄에서 돌아간다(아무것도 하지 않는다)
+    starLayers.tick(dt);          // 색면·바람이 주인공인 동안: 구름이 물러나고 · 바람 밑에 풍속 색면이 깔리고 · 입자는 흰색
     flightRoute.tick(now, camera);
     popSculpt.updateLabels(camera);
     popSculpt.updateScale(altKm);

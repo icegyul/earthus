@@ -16,6 +16,7 @@ import {
   SEG_FLOATS,
   WIND_CALM_MS,
   WIND_DEG_PER_PX_MAX,
+  WIND_DENSITY_CSS_PX,
   WIND_MAX_CHORD,
   WIND_SCREEN_PX_PER_S_PER_MS,
   WIND_SPEED_BOUNDS_MS,
@@ -35,6 +36,9 @@ import {
   visibleCapAngle,
   windSpeedBand,
 } from '../../prototype/v2-three/js/wind-particles.js';
+
+// 1440×900 화면의 입자 예산 — 밀도 상수에서 셈한다(시험에 숫자를 박지 않는다).
+const FULL_1440 = particleBudgetFor(1440, 900);
 
 // ---- 합성 프레임: 운영 매니페스트 fields.wind10 과 같은 모양 (720×361 · 행 0 = 90N · 열 0 = 180W · R=u G=v) ----
 const W = 720;
@@ -479,8 +483,12 @@ test('꼬리 길이는 프레임 수가 아니라 시간이다 — 30fps 와 60f
 });
 
 test('입자 수 = min(기기 예산, CSS 픽셀 밀도, 버퍼) × 단계/3 — 장치픽셀은 어디에도 없다', () => {
-  assert.equal(particleBudgetFor(1440, 900), 2817);          // v1 이 같은 화면에서 확정한 수(windfield.js:24)
-  assert.equal(particleBudgetFor(375, 812), 662);
+  // 숫자를 박지 않는다 — 밀도(WIND_DENSITY_CSS_PX)는 v2 화면을 보고 조정하는 값이다(2026-09-20 에 460 → 230). 지킬 것은 '식'이다:
+  // CSS 픽셀 면적 ÷ 밀도, 장치픽셀은 어디에도 없다.
+  assert.equal(FULL_1440, Math.round((1440 * 900) / WIND_DENSITY_CSS_PX));
+  assert.equal(particleBudgetFor(375, 812), Math.round((375 * 812) / WIND_DENSITY_CSS_PX));
+  assert.equal(particleBudgetFor(1440, 900, 460), 2817, '밀도를 넘기면 그 밀도로 센다');
+  assert.ok(particleBudgetFor(375, 812) <= 5000, '폰 상한(지시서 W3: 폰 ≤ 5,000)을 밀도만으로도 넘지 않는다');
   assert.equal(particleBudgetFor(0, 900), 0);
   assert.equal(particleCountFor(5000, 3), 5000);
   assert.equal(particleCountFor(5000, 2), 3333);
@@ -492,7 +500,7 @@ test('입자 수 = min(기기 예산, CSS 픽셀 밀도, 버퍼) × 단계/3 —
   sim.setField({ w: W, h: H, dataA: EAST10, decode: DECODE });
   assert.equal(sim.targetCount(), 5000);
   sim.setView(VIEW);
-  assert.equal(sim.targetCount(), 2817);
+  assert.equal(sim.targetCount(), Math.min(5000, FULL_1440));
   sim.setBudget(1500);
   assert.equal(sim.targetCount(), 1500);
   sim.setIntensity(1);
@@ -522,7 +530,9 @@ test('구간 — 경계 1·5·10·20·30·40·50 m/s, 경계값은 위 칸이다
 });
 
 test('그리기 — 물체 하나(드로우콜 1), 예산을 줄이면 그리는 정점 수가 준다. 버퍼는 다시 잡지 않는다', () => {
-  const wind = new WindParticles({ maxParticles: 3000, random: lcg(21) });
+  // 버퍼(MAXP)가 밀도보다 커야 'min(버퍼, 밀도) = 밀도'를 본다 — 밀도가 바뀌어도 성립하게 밀도에서 셈한다.
+  const MAXP = FULL_1440 + 183;
+  const wind = new WindParticles({ maxParticles: MAXP, random: lcg(21) });
   const scene = new THREE.Scene();
   scene.add(wind.object);
   const objs = []; scene.traverse((o) => { if (o !== scene) objs.push(o); });
@@ -546,9 +556,9 @@ test('그리기 — 물체 하나(드로우콜 1), 예산을 줄이면 그리는
   const drawn = () => { wind.update(1 / 30, cam); return wind.stats(); };
 
   let s = drawn();
-  assert.equal(s.particles, 2817);                      // min(버퍼 3000, 밀도 2817)
-  assert.equal(wind.geometry.instanceCount, 2817 * WIND_TRAIL_SEGMENTS);
-  assert.equal(s.drawnVertices, 2817 * WIND_TRAIL_SEGMENTS * 4);
+  assert.equal(s.particles, FULL_1440);                 // min(버퍼 MAXP, 밀도 FULL_1440)
+  assert.equal(wind.geometry.instanceCount, FULL_1440 * WIND_TRAIL_SEGMENTS);
+  assert.equal(s.drawnVertices, FULL_1440 * WIND_TRAIL_SEGMENTS * 4);
   assert.equal(s.drawCalls, 1);
   assert.equal(wind.object.visible, true);
 
@@ -570,16 +580,16 @@ test('그리기 — 물체 하나(드로우콜 1), 예산을 줄이면 그리는
   assert.equal(wind.buffer.version, versionBefore);
   assert.equal(wind.buffer.updateRanges.length, 0);
   assert.equal(wind.stats().uploadBytes, 0);
-  wind.setBudget(3000); wind.setIntensity(3);
-  assert.equal(drawn().particles, 2817);
+  wind.setBudget(MAXP); wind.setIntensity(3);
+  assert.equal(drawn().particles, FULL_1440);
   assert.equal(wind.gpu, gpu);
   assert.equal(wind.gpu.byteLength, bytes);
-  assert.equal(bytes, 3000 * WIND_TRAIL_SEGMENTS * SEG_FLOATS * 4);
+  assert.equal(bytes, MAXP * WIND_TRAIL_SEGMENTS * SEG_FLOATS * 4);
 
   // aSlot: 인스턴스 번호 = 슬롯 × 입자 수 + 입자.
   const slots = wind.slotAttr.array;
-  assert.equal(slots[0], 0); assert.equal(slots[2816], 0); assert.equal(slots[2817], 1);
-  assert.equal(slots[2817 * 11], 11); assert.equal(slots[2817 * 12 - 1], 11);
+  assert.equal(slots[0], 0); assert.equal(slots[FULL_1440 - 1], 0); assert.equal(slots[FULL_1440], 1);
+  assert.equal(slots[FULL_1440 * 11], 11); assert.equal(slots[FULL_1440 * 12 - 1], 11);
 
   wind.setVisible(false);
   wind.update(1 / 30, cam);

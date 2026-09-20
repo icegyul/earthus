@@ -384,7 +384,8 @@ test('buildWind 가 돌려주는 것에 선분·선·왕복 점이 없다 — �
   assert.match(card, /관측이 아닙니다/);
   assert.match(card, /과장 표현/);
   assert.doesNotMatch(card, /Open-Meteo|관측소 [\d,]+개소|실측 풍속/);
-  assert.match(ll.state('wind').note, /^GFS 00Z · 10 m · 입자 2,817$/);
+  // 입자 수는 밀도 상수에서 온다(화면을 보고 조정하는 값 — 박지 않는다)
+  assert.equal(ll.state('wind').note, `GFS 00Z · 10 m · 입자 ${particleBudgetFor(1440, 900).toLocaleString('ko-KR')}`);
 
   // 끄면 다음 tick 에 입자도 사라진다. 다시 켜면 받은 것을 그대로 쓴다(그림을 다시 받지 않는다).
   await ll.toggle('wind');
@@ -626,8 +627,8 @@ test('입자 강도 3단 — 기기 예산의 1/3 · 2/3 · 전부가 실제 입
   await hz.layer.load();
   hz.sw.on = true;
   const count = () => { hz.layer.tick(1 / 30, CAM); return hz.layer.particles.sim.count; };
-  const full = particleBudgetFor(1440, 900);              // 2,817 — CSS 픽셀 밀도
-  assert.equal(full, 2817);
+  const full = particleBudgetFor(1440, 900);              // CSS 픽셀 밀도에서 — 숫자를 박지 않는다(밀도는 화면을 보고 조정한다)
+  assert.ok(full > 1000 && full <= 18000, `1440×900 에서 ${full}개 — 상식 밖이다`);
   assert.equal(count(), full);
   assert.equal(hz.layer.setIntensity(2), 2);
   assert.equal(count(), Math.floor((full * 2) / 3));
@@ -654,7 +655,7 @@ test('입자 강도 3단 — 기기 예산의 1/3 · 2/3 · 전부가 실제 입
   assert.match(next, /data-k="1" class="on" aria-pressed="true"/);
   assert.match(next, /data-k="3" class="" aria-pressed="false"/);
   assert.match(next, /<div class="card">남의 카드<\/div>$/);
-  assert.match(next, /939개/);
+  assert.match(next, new RegExp(`${Math.floor(full / 3).toLocaleString('ko-KR')}개`));
   assert.equal(hz.layer.recard('<p>바람 카드가 아니다</p>'), '<p>바람 카드가 아니다</p>');
   assert.equal(windCardHtml({ intensity: 2, particles: 10, particleScale: 0.3, metaLine: '' }).match(/class="on"/g).length, 1);
 });

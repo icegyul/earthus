@@ -459,6 +459,9 @@ test("배선 — LiveLayers 의 'tempgrid' 는 이제 셰이더 색면을 켠다
   ll.onExaggerChanged();
   await tick(5);
   assert.ok(ll.layers.tempgrid.field.renderer.mesh === mesh, '과장이 바뀌었다고 색면을 다시 지었다');
+  // 주기 갱신이 이 레이어를 집어도 옛 5° 격자로 갈아 끼우지 않는다.
+  assert.equal(await ll.refresh('tempgrid'), false);
+  assert.ok(ll.layers.tempgrid.obj === field.object);
   assert.equal(oldPath, 0);
 
   // 끈다 → 구독이 풀린다. 다시 켜고 '전부 끄기'.

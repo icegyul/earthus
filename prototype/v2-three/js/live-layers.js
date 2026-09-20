@@ -375,6 +375,8 @@ export class LiveLayers {
   }
 
   async refresh(id) {
+    // 셰이더 색면은 스스로 갱신한다(시간 버스 · 세대 교체 · 30분마다 매니페스트). 여기로 오면 build() 가 옛 5° 격자를 받아 그라데이션으로 갈아 끼운다 — 막는다.
+    if (isFieldLayerId(id)) return false;
     const l = this.layers[id];
     if (!l || !l.on || l.loading || l.refreshing) return false;
     l.refreshing = true;

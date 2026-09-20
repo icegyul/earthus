@@ -2520,25 +2520,56 @@ export class LiveLayers {
     };
   }
 
-  // ---------- 대기질 (에어코리아 673개 측정소 · OBSERVED) ----------
+  // ---------- 대기질 (에어코리아 · OBSERVED) ----------
+  // 개수는 전부 airqDrawable() 하나에서 온다 — **그린 것만 셈한다**(그 머리말에 왜인지 적어 두었다).
   buildAirq(d) {
-    const items = (d.stations || [])
-      .filter((s) => s.lat != null && s.lon != null && s.grade)
+    const items = airqDrawable(d)
       .map((s) => ({ lat: s.lat, lon: s.lon, c: new THREE.Color(AIR_GRADE_COLOR[s.grade] || '#7f95a8') }));
     return this.makePoints(items, { size: 5.5, lift: 0.004 });
   }
 
   metaAirq(d) {
+    const stations = (d && d.stations) || [];
+    const drawn = airqDrawable(d);
     const byG = { 1: 0, 2: 0, 3: 0, 4: 0 };
-    (d.stations || []).forEach((s) => { if (byG[s.grade] != null) byG[s.grade] += 1; });
+    drawn.forEach((s) => { if (byG[s.grade] != null) byG[s.grade] += 1; });
+    // 왜 못 그렸는지는 **갈라서** 적는다. 좌표가 없는 것과 공식 등급이 없는 것은 다른 일이다.
+    const noCoord = stations.filter((s) => s.lat == null || s.lon == null).length;
+    const noGrade = stations.filter((s) => s.lat != null && s.lon != null && !s.grade).length;
+    const dropped = [noCoord ? `좌표 없음 ${noCoord}개소` : '', noGrade ? `등급 없음 ${noGrade}개소` : ''].filter(Boolean).join(' · ');
+    const obs = `관측 ${d.observedKst || '—'} KST · 출처 한국환경공단 에어코리아`;
+    // 자료가 제 상태를 적어 둔 문장. 우리가 이유를 지어내지 않고 **있는 것을 인용한다.**
+    const said = String((d.note && (d.note.ko || d.note)) || '').trim();
+    const quote = said
+      ? `<details style="margin-top:10px"><summary>자료가 스스로 적은 설명</summary>${escapeHtml(said).replace(/\n/g, '<br/>')}</details>`
+      : '';
+    /* ⚠️ 그릴 점이 0이면 **켜진 척하지 않는다**(2026-09-21 반박 검증).
+       2026-09-20 운영 자료는 값 672개소를 다 주면서 좌표를 한 곳도 안 줬다(hasCoordinates:false ·
+       located:0 · noCoordinatesCount:672). 그때 이 카드는 점 하나 없는 지구 앞에서 배지를 'OBSERVED'
+       로 달고 "측정소 0개소를 공식 4등급 색으로 표시" 라고 적은 바로 아래 줄에 "좋음 240 · 보통 404"
+       를 적었다 — 한 카드가 0곳과 240곳을 같이 말했다. 막으려고 둔 장치(coverage()의 빈 Box3 → null
+       → revealLayer 가 카메라를 안 옮긴다)는 조용히 지나갈 뿐 화면에 아무 말도 하지 않는다.
+       ⚠️ 'airq 는 안 된다'를 박지 않는다. 이 갈래는 **지금 자료 상태**만 보므로, 좌표가 돌아오는 날
+          refresh() 가 meta 를 갈아 끼우면서 저절로 OBSERVED 로 돌아온다. */
+    if (!drawn.length) {
+      return {
+        badge: 'INSUFFICIENT_DATA',
+        note: `표시 0개소 · 값은 ${stations.length}개소${dropped ? ` · ${dropped}` : ''} · ${d.observedKst || ''}`,
+        cardHtml: `<b>지구에 찍을 수 있는 측정소가 한 곳도 없어 아무것도 그리지 않았습니다.</b><br/>`
+          + `값은 ${stations.length}개소에서 왔습니다 — 다만 ${dropped || '좌표나 공식 등급이 없어'} 지구 위 자리를 정할 수 없습니다.<br/>`
+          + `없는 자리에 점을 찍지 않습니다. 등급 내역도 적지 않습니다 — 그리지 않은 것의 내역이기 때문입니다.<br/>`
+          + `${quote}${obs}`,
+      };
+    }
     const worst = [...(d.sido || [])].sort((a, b) => (b.pm25 || 0) - (a.pm25 || 0)).slice(0, 3);
-    const note = `${d.located || 0}개소 · 좋음 ${byG[1]} 보통 ${byG[2]} 나쁨 ${byG[3]} 매우나쁨 ${byG[4]} · ${d.observedKst || ''}`;
+    const note = `${drawn.length}개소 · 좋음 ${byG[1]} 보통 ${byG[2]} 나쁨 ${byG[3]} 매우나쁨 ${byG[4]} · ${d.observedKst || ''}`;
     return {
       badge: 'OBSERVED', note,
-      cardHtml: `에어코리아 통합대기환경 등급 — 측정소 ${d.located || 0}개소를 공식 4등급 색(좋음 파랑 → 매우나쁨 빨강)으로 표시.<br/>`
+      cardHtml: `에어코리아 통합대기환경 등급 — 측정소 ${drawn.length}개소를 공식 4등급 색(좋음 파랑 → 매우나쁨 빨강)으로 표시.<br/>`
         + `좋음 ${byG[1]} · 보통 ${byG[2]} · 나쁨 ${byG[3]} · 매우나쁨 ${byG[4]}<br/>`
+        + `${dropped ? `표시하지 않은 곳: ${dropped} — 값은 왔지만 지구 위 자리나 공식 등급이 없어 그리지 않았습니다.<br/>` : ''}`
         + `PM2.5 높은 시도: ${worst.map((s) => `${s.sido} ${s.pm25}㎍`).join(' · ') || '—'}<br/>`
-        + `관측 ${d.observedKst || '—'} KST · 출처 한국환경공단 에어코리아`,
+        + `${obs}`,
     };
   }
 
@@ -3367,6 +3398,19 @@ const WAVE_RAMP = rampFrom([
 
 // 에어코리아 공식 4등급 색 (좋음/보통/나쁨/매우나쁨)
 const AIR_GRADE_COLOR = { 1: '#3fa7ff', 2: '#4fd06a', 3: '#ffab3d', 4: '#ff4d4d' };
+
+/**
+ * 지구에 **찍을 수 있는** 측정소 — 좌표와 공식 등급이 둘 다 있는 것.
+ *
+ * ⚠️ 2026-09-21 반박 검증: 그리는 쪽(buildAirq)과 말하는 쪽(metaAirq)이 **다른 셈**을 쓰고 있었다.
+ *    그리는 쪽은 좌표·등급이 다 있는 것만 찍는데, 카드는 `d.located`(좌표가 있는 곳)로 개수를 적고
+ *    등급 내역은 또 다른 무리(등급이 있는 전부)에서 셌다. 셋이 갈라져 있어 한 카드가 한 자리에서
+ *    두 수를 말했다 — 운영 자료에서 "672개소를 표시" 라고 적으면서 내역은 642곳을 셌고,
+ *    좌표가 통째로 빠져 오던 날에는 그 차이가 **0 대 672** 였다(점 하나 없는 지구에 '공식 관측' 배지).
+ *    셈을 한 자리로 모은다 — 두 곳에 적으면 언젠가 다시 갈라진다.
+ */
+export const airqDrawable = (d) => (((d && d.stations) || [])
+  .filter((s) => s.lat != null && s.lon != null && s.grade));
 
 // 풍속(m/s) → 색 은 여기 없다(2026-09-20 W3). 관측소 막대기만 쓰던 HSL 연속 램프(windColor)였고 막대기와 함께 걷었다 —
 // 바람 입자의 색은 색 눈금표(js/field-scales.js 의 wind 8칸)에서 온다. 색을 두 곳에 적지 않는다.

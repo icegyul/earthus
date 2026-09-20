@@ -490,7 +490,10 @@ export function waveCard(place, grids, buoys, { threshold = 2.0, now = Date.now(
   return {
     kind: 'wave', id: 'wave', title: '파고 · 내 동네 앞바다', state: hit ? 'signal' : 'quiet',
     basis: { text: basisText, issueMs: w && w.time ? parseWhen(w.time) : null },
-    status: hourly ? '감시 중 · 다음 판정 = 앱 열 때·⟳ 때' : '감시 중 · 시간별 예보 응답 없음', when,
+    // (2026-09-20 W2) 시간별 파고는 **요청 자체를 하지 않는다**(main.js data.waveHourly = null).
+    // 여기가 '응답 없음' 이면 제공기관이 대답을 못 준 것처럼 읽힌다 — 묻지 않은 것과 답이 없는 것은 다르다.
+    // 위 reasons·engine 두 자리와 같은 말을 쓴다(한 곳만 고치면 카드가 두 말을 한다).
+    status: hourly ? '감시 중 · 다음 판정 = 앱 열 때·⟳ 때' : '감시 중 · 시간별 파고 예보는 우리 자료에 없음', when,
     why, timeline, certain: { grade, gradeKo: GRADE[grade], reasons },
     engine, engineSummary: usedN ? `${usedN}개 자료 중 ${sameDir}개 같은 방향` : null,
     facts: { wave: nowWave, threshold, maxWave: win ? win.maxWave : null }, badges: ['MODEL'],

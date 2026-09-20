@@ -420,30 +420,94 @@ test('막대기가 사라졌다 — buildSlr 이 내놓는 것에 LineSegments �
   assert.ok(FLOOD_LIFT * 6371 > 1, '전지구 뷰의 깊이 눈금(약 0.32 km)보다 한참 위여야 지구와 겹쳐 깜빡이지 않는다');
   assert.equal(mesh.renderOrder, FIELD_RENDER_ORDER);
   assert.equal(mesh.userData.keepGeometry, true, '남의 지오메트리라는 표 — live-layers.disposeObj 가 이것을 본다');
-  // 그 표 덕분에 켜는 중에 껐을 때 지구가 사라지지 않는다.
-  ll.disposeObj(built.obj);
-  assert.equal(disposed, 0, '지구의 지오메트리를 버렸다 — 화면이 통째로 사라진다');
   // 카드·메뉴 글은 읽을 때마다 지금 것이다(단추를 누른 뒤 다시 열어도 맞는다).
   assert.equal(built.meta.badge, 'MODEL_SIGNAL');
   assert.match(built.meta.note, /SSP5-8\.5 · 2100년/);
   assert.match(built.meta.cardHtml, /잠기는 땅/);
+  // 단추는 **장면에 선 겹면**을 잡는다 — 레이어에 달리기 전에는 잡을 것이 없다(늦게 온 옛 build 가 못 건드리는 이유).
+  assert.equal(ll.slrAction('slr-scenario', { layer: 'slr', ssp: 'ssp126' }), false, '켜지지 않은 겹면은 단추가 잡지 않는다');
+  ll.layers.slr = { on: true, obj: built.obj, data: AR6, meta: built.meta };
   assert.equal(ll.slrAction('slr-scenario', { layer: 'slr', ssp: 'ssp126' }), true);
   assert.match(built.meta.note, /SSP1-2\.6/, '단추를 누르면 메뉴 한 줄도 같이 바뀐다');
   assert.match(built.meta.cardHtml, /SSP1-2\.6 · 2100년/);
   assert.ok(cards.length >= 1 && /SSP1-2\.6/.test(cards[cards.length - 1]), '떠 있는 카드의 원본 글도 같이 바뀐다');
   assert.equal(ll.slrAction('slr-year', { layer: 'slr', year: '1999' }), false, '자료에 없는 연도는 받지 않는다');
+  // keepGeometry 표 덕분에 켜는 중에 껐을 때 지구가 사라지지 않는다.
+  ll.disposeObj(built.obj);
+  assert.equal(disposed, 0, '지구의 지오메트리를 버렸다 — 화면이 통째로 사라진다');
+});
+
+// 2026-09-20 반박 검증(결함 ①): 지은 겹면을 인스턴스 한 칸(this._flood)에 들고 새로 지을 때 먼저 dispose() 했다.
+// dispose() 는 group.parent.remove(group) 까지 하므로 **늦게 온 옛 build 가 지금 화면에 선 겹면을 장면에서 빼** 버렸다.
+// 메뉴는 켜졌다 하고 카드는 값을 멀쩡히 말하는데 지구에는 아무것도 없고, l.obj 가 있으니 껐다 켜도 안 돌아왔다(새로고침해야 했다).
+test('켜는 중에 한 번 껐다 다시 켜도 겹면은 장면에 남는다 — 늦게 온 옛 build 는 제 것만 버린다', async (t) => {
+  const { LiveLayers } = await import('../../prototype/v2-three/js/live-layers.js');
+  t.after(() => resetSharedLandMask());
+  const ll = new LiveLayers({ add() {} }, () => 0, () => 50, () => '');
+  ll.provideField({ terrain: fakeTerrain(), geometry: new THREE.SphereGeometry(1, 8, 4), landMask: fakeLand() });
+  // 느린 망 흉내 — 응답 차례를 손으로 연다(첫 요청 2.5초 · 세 번째 0.2초를 순서로만 재현한다).
+  const gate = [];
+  ll.build = (id) => new Promise((resolve) => { gate.push(() => resolve(ll.buildFromData(id, AR6))); });
+
+  const first = ll.toggle('slr');                       // ① 켠다 — 받는 중
+  assert.equal(gate.length, 1);
+  assert.deepEqual(await ll.toggle('slr'), { on: false });   // ② 받는 중에 끈다
+  const third = ll.toggle('slr');                       // ③ 다시 켠다
+  assert.equal(gate.length, 2);
+  gate[1]();                                            // 세 번째가 먼저 돌아온다
+  assert.equal((await third).on, true);
+  const live = ll.layers.slr.obj;
+  assert.equal(live.parent, ll.group, '켠 겹면이 장면에 섰다');
+
+  gate[0]();                                            // 첫 요청이 늦게 돌아온다
+  assert.deepEqual(await first, { on: false }, '취소된 build 는 레이어를 켜지 않는다');
+  const meshes = [];
+  ll.group.traverse((c) => { if (c.isMesh) meshes.push(c); });
+  assert.equal(meshes.length, 1, '늦게 온 옛 build 가 화면의 겹면을 장면에서 빼 갔다');
+  assert.equal(ll.layers.slr.obj, live);
+  assert.equal(live.parent, ll.group);
+  assert.equal(live.children[0].material.uniforms.uRise.value.image.data.length > 0, true, '살아 있는 겹면의 값 텍스처가 버려졌다');
+
+  // 단추와 카드는 '장면에 선 겹면'을 잡는다 — 마지막에 지어진 것이 아니라.
+  assert.equal(ll.floodOverlay(), live.userData.flood);
+  assert.equal(ll.slrAction('slr-year', { layer: 'slr', year: '2050' }), true);
+  assert.equal(live.userData.flood.state.year, '2050');
+  assert.match(ll.layers.slr.meta.cardHtml, /· 2050년/, '카드도 같은 겹면을 말한다');
+
+  // 껐다 켜면 그대로 돌아온다(장면에서 빠진 겹면의 visible 만 뒤집는 일이 없다).
+  assert.deepEqual(await ll.toggle('slr'), { on: false });
+  assert.equal(live.visible, false);
+  assert.equal((await ll.toggle('slr')).on, true);
+  assert.equal(live.visible, true);
+  assert.equal(live.parent, ll.group);
+});
+
+test('버리는 자리에서 값 텍스처와 색 표가 같이 정리된다 — ShaderMaterial 이라 m.map 갈래가 못 본다', async (t) => {
+  const { LiveLayers } = await import('../../prototype/v2-three/js/live-layers.js');
+  t.after(() => resetSharedLandMask());
+  const ll = new LiveLayers({ add() {} }, () => 0, () => 50, () => '');
+  ll.provideField({ terrain: fakeTerrain(), geometry: new THREE.SphereGeometry(1, 8, 4), landMask: fakeLand() });
+  const built = await ll.buildFromData('slr', AR6);
+  const u = built.obj.children[0].material.uniforms;
+  const bye = [];
+  for (const [name, tex] of [['uRise', u.uRise.value], ['uPalette', u.uPalette.value]]) {
+    tex.addEventListener('dispose', () => bye.push(name));
+  }
+  ll.disposeObj(built.obj);
+  assert.deepEqual(bye.sort(), ['uPalette', 'uRise'], '끌 때마다 1° 값 텍스처와 색 표가 쌓인다');
 });
 
 test('live-layers 와 main.js 의 배선 — 옛 막대기 코드가 없고 다시 짓는 길이 막혀 있다', () => {
   // 옛 buildSlr 의 재료(1.2 m 상한 색 정규화 · 기둥 높이)가 남아 있지 않다.
   assert.doesNotMatch(LIVE_SRC, /_slrItems|_slrMean|_slrMax/, '옛 막대기의 상태가 남아 있다');
   assert.ok(LIVE_SRC.includes('createFloodOverlay(d,'), 'buildSlr 이 잠기는 땅을 짓지 않는다');
-  assert.ok(LIVE_SRC.includes("case 'slr': return { obj: this.buildSlr(data), data, meta: this.metaSlr(data) };"), '레이어 id 는 그대로다');
+  assert.ok(LIVE_SRC.includes("case 'slr': { const obj = this.buildSlr(data); return { obj, data, meta: this.metaSlr(obj) }; }"), '레이어 id 는 그대로고, 카드는 지은 그 겹면을 받는다');
   assert.ok(LIVE_SRC.includes("case 'slr': return fetch('./sealevel/ar6.json'"), '자료 주소는 그대로다');
   // 과장 슬라이더가 이 레이어를 다시 짓지 않는다(1° IDW 격자를 슬라이더 한 칸마다 다시 구우면 폰이 멈춘다).
   assert.match(LIVE_SRC, /if \(id === 'slr'\) continue;/);
-  // 지구의 지오메트리를 같이 쓰는 면을 지우지 않는다.
-  assert.match(LIVE_SRC, /if \(c\.geometry && !\(c\.userData && c\.userData\.keepGeometry\)\) c\.geometry\.dispose\(\);/);
+  // 지구의 지오메트리를 같이 쓰는 면을 지우지 않는다 — 두 버리는 길(disposeObj · disposeDeep)에 같은 가드가 있다.
+  assert.equal((LIVE_SRC.match(/userData && \w+\.userData\.keepGeometry\)\) \w+\.geometry\.dispose\(\);/g) || []).length, 2,
+    'disposeDeep 에 가드가 없으면 onExaggerChanged 의 한 줄만 지구를 지키고 있다');
   // 카드의 단추가 실제로 이어져 있다.
   assert.match(MAIN_SRC, /action\.startsWith\('slr-'\)\) \{ liveLayers\.slrAction\(action, ds\);/);
   // 타임라인(시간 버스)을 구독하지 않는다 — 2100년 전망은 5일 예보가 아니다.

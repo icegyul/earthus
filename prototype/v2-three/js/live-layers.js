@@ -439,6 +439,9 @@ export class LiveLayers {
       // ⚠️ 지구의 지오메트리를 **같이 쓰는** 면이 있다(잠기는 땅 — 정점이 같아야 지형과 평행하다 · flood-overlay.js).
       //    표가 붙은 것은 여기서 버리지 않는다: 버리면 켜는 중에 한 번 껐다가 지구가 통째로 사라진다.
       if (c.geometry && !(c.userData && c.userData.keepGeometry)) c.geometry.dispose();
+      // 겹면(잠기는 땅)은 ShaderMaterial 이라 m.map 이 없다 — 값 텍스처(riseTex)와 색 표(paletteTex)는 uniforms 안에 있어
+      // 아래 갈래가 못 본다. 스스로 버리게 한다(여기가 이 겹면을 버리는 **유일한 자리**다 · buildSlr 머리말).
+      if (c.userData && c.userData.flood) c.userData.flood.dispose();
       if (c.material) {
         const mats = Array.isArray(c.material) ? c.material : [c.material];
         for (const m of mats) {
@@ -638,7 +641,8 @@ export class LiveLayers {
       case 'argo': return { obj: this.buildArgo(data), data, meta: this.metaArgo(data) };
       case 'launch': return { obj: this.buildLaunch(data), data, meta: this.metaLaunch(data) };
       case 'kmasea': return { obj: this.buildKmaSea(data), data, meta: this.metaKmaSea(data) };
-      case 'slr': return { obj: this.buildSlr(data), data, meta: this.metaSlr(data) };
+      // 겹면과 그 카드는 **같은 것**이어야 한다 — 지은 겹면을 metaSlr 에 그대로 넘긴다(buildSlr 머리말).
+      case 'slr': { const obj = this.buildSlr(data); return { obj, data, meta: this.metaSlr(obj) }; }
       case 'news': return { obj: this.buildNews(data), data, meta: this.metaNews(data) };
       case 'pop': return { obj: this.buildPop(data), data, meta: this.metaPop(data) };
       // 바다 색면 3종(sstfield · wavefield · sstanom)은 육지 가림판을 거쳐 짓는다 — oceanFieldLayer 주석.
@@ -2070,21 +2074,32 @@ export class LiveLayers {
   // PD: "지금은 해안가에 막대기 나와 — 내가 그 막대기 싫어서 업데이트 진행했던 건데."
   // 지금은 **지형 고도가 그 자리의 상승폭보다 낮은 육지**를 물빛으로 덮는다(욕조식 근사 · 카드가 네 가지를 고지한다).
   // 상승폭 IDW 격자 · 셰이더 · 카드 · 단추는 전부 js/flood-overlay.js 에 있다 — 세 작업이 이 파일을 동시에 고친다.
+  // ⚠️ 지은 api 는 인스턴스(this._flood)에 들지 않는다 — 들었더니 느린 망에서 **늦게 온 옛 build 가 화면에 선 겹면을 빼 버렸다**
+  //    (2026-09-20 반박 검증: 켜는 중에 껐다 켜면 메뉴는 켜졌다는데 지구에 아무것도 없고 껐다 켜도 안 돌아온다).
+  //    api 는 그것이 지은 **겹면 자신**(group.userData.flood)에 단다: 장면에 선 겹면과 단추가 잡는 겹면이 갈라질 자리가 없어진다.
+  //    버리는 것은 disposeObj 한 자리뿐이다(옛 build 는 제 겹면만 버린다).
   buildSlr(d) {
-    if (this._flood) this._flood.dispose();      // 다시 지을 때 옛 값 텍스처를 먼저 버린다
     // 지형 uniform 묶음·지구 지오메트리·카드 갈아끼우기는 색면이 쓰던 것을 그대로 쓴다(main.js provideField).
-    this._flood = createFloodOverlay(d, { ...(this._fieldDeps || {}), heightAt: this.heightAt });
-    return this._flood.object;
+    const flood = createFloodOverlay(d, { ...(this._fieldDeps || {}), heightAt: this.heightAt });
+    flood.object.userData.flood = flood;
+    return flood.object;
   }
 
   // 읽을 때마다 지금 것을 낸다 — 시나리오·연도 단추를 누른 뒤 카드를 다시 열어도 맞는 글이 나온다(색면 레이어와 같은 규칙).
-  metaSlr() {
-    const f = this._flood;
+  // 인수는 **바로 앞의 buildSlr 이 내놓은 그 겹면**이다(buildFromData 의 한 줄) — 카드가 다른 겹면을 말할 수 없다.
+  metaSlr(obj) {
+    const f = obj && obj.userData && obj.userData.flood;
     return { badge: 'MODEL_SIGNAL', get note() { return f.note(); }, get cardHtml() { return f.cardHtml(); } };
   }
 
+  /** 지금 **장면에 선** 겹면(잠기는 땅). 지은 것이 아니라 켜져 있는 것을 돌려준다 — 콘솔 확인에도 쓴다. */
+  floodOverlay() {
+    const l = this.layers.slr;
+    return (l && l.obj && l.obj.userData && l.obj.userData.flood) || null;
+  }
+
   /** 잠기는 땅 카드의 단추(data-action="slr-scenario" · "slr-year"). 처리했으면 true. */
-  slrAction(action, ds) { return this._flood ? this._flood.handleAction(action, ds || {}) : false; }
+  slrAction(action, ds) { const f = this.floodOverlay(); return f ? f.handleAction(action, ds || {}) : false; }
 
   // ---------- 한국 해상 관측망 (KMA 193지점 · OBSERVED) ----------
   // 파고를 보고하는 지점은 파고 색, 파고가 없는 지점은 흐린 점 — 값을 지어내지 않는다.
@@ -3134,7 +3149,9 @@ const AIR_GRADE_COLOR = { 1: '#3fa7ff', 2: '#4fd06a', 3: '#ffab3d', 4: '#ff4d4d'
 
 function disposeDeep(obj) {
   obj.traverse((o) => {
-    if (o.geometry) o.geometry.dispose();
+    // ⚠️ disposeObj 와 같은 가드다 — 지구의 지오메트리를 **같이 쓰는** 면(잠기는 땅)을 여기서 버리면 지구가 통째로 사라진다.
+    //    지금 이 길로 slr 이 오지 않는 것은 onExaggerChanged 의 한 줄 덕분뿐이라, 그 한 줄이 사라져도 화면이 살아남게 둔다.
+    if (o.geometry && !(o.userData && o.userData.keepGeometry)) o.geometry.dispose();
     if (o.material) {
       (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => m.dispose());
     }

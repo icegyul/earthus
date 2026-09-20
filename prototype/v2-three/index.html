@@ -52,7 +52,14 @@
     --nav-lift: 158px;                             /* 알약을 바닥에서 띄운 거리 — 좌하단 #hud 위 */
     --nav-pad: 4px;                                /* 알약 안쪽 여백 */
     --nav-h: calc(var(--tap) + var(--nav-pad) * 2 + 2px);        /* 버튼 + 여백 + 테두리 1px 둘 */
-    --nav-reserve: calc(var(--nav-lift) + var(--nav-h) + 8px + env(safe-area-inset-bottom));
+    --hud-lift: 66px;                              /* 좌하단 출처 독을 바닥에서 띄운 거리 */
+    --hud-h: 79px;                                 /* 그 독이 2줄일 때의 높이 (실측) */
+    /* ⚠️ 비켜서는 높이는 알약만 보면 안 된다(2026-09-21 가로 감사).
+       세로에서는 알약(158+54=212)이 출처 독(66+79=145)보다 늘 높이 올라와 알약만 봐도 맞았다.
+       눕히면 둘이 **같은 줄**에 서므로(가로는 폭이 남는다) 더 높이 올라오는 쪽이 출처 독이 된다.
+       한쪽만 보면 메뉴 패널이 나머지 하나에 깔린다 — 그래서 둘 중 큰 쪽을 덮는다.
+       세로 값은 그대로다: max(212, 145) + 8 = 220. */
+    --nav-reserve: calc(max(var(--nav-lift) + var(--nav-h), var(--hud-lift) + var(--hud-h)) + 8px + env(safe-area-inset-bottom));
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   /* 모바일: 창이 밀리지 않게. overscroll-behavior가 당겨서 새로고침·고무줄 튕김을 막는다 */
@@ -352,7 +359,10 @@
   #bottom-nav button svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
   #bottom-nav button:hover { background: rgba(74,144,217,0.12); color: var(--text); }
   #bottom-nav button.on { background: rgba(74,144,217,0.2); color: var(--accent); }
-  @media (max-width: 720px) {
+  /* ⚠️ 이 머리글의 뒤쪽 칸('눕힌 폰')은 아래 두 덩어리(#quake-cap·#hud, 좁은 화면 정리)와
+     **글자 하나까지 같아야 한다.** 하나만 고치면 같은 기기가 방향만 바꿔도 어긋난다.
+     뜻은 <style> 맨 끝 '눕힌 폰' 덩어리에 한 번만 적어 뒀다. */
+  @media (max-width: 720px), (max-height: 520px) and (pointer: coarse) and (orientation: landscape) {
     /* 좌하단 #hud(고도·과장+출처, 2줄 이상 되면 79px까지 자란다) 위로 확실히 띄운다 —
        100px 로 뒀더니 실측(iPhone 폭 375) 에서 하단 바가 출처 글줄을 가렸다(2026-09-07). */
     /* 수는 :root 의 --nav-* 가 갖는다. 여기에 158·44·4 를 다시 적으면 메뉴 패널이
@@ -511,13 +521,16 @@
     display: block; margin-top: 9px; font-size: 9.5px; line-height: 1.6;
     color: rgba(226,214,224,0.55); max-width: 340px;
   }
-  @media (max-width: 720px) {
+  @media (max-width: 720px), (max-height: 520px) and (pointer: coarse) and (orientation: landscape) {
     #quake-cap { left: 18px; bottom: 148px; max-width: 60vw; }
     #quake-cap > b { font-size: 17px; }
     #quake-cap .qk-date { font-size: 24px; }
     #quake-cap .qk-bar { width: 55vw; }
-    /* 좁은 화면에서 고도 표시가 재생 버튼 위에 겹쳐 타임스트립을 못 눌렀다 */
-    #hud { bottom: 66px; font-size: 10px; padding: 5px 10px; }
+    /* 좁은 화면에서 고도 표시가 재생 버튼 위에 겹쳐 타임스트립을 못 눌렀다.
+       ⚠️ 띄우는 거리(66)는 여기 적지 않는다 — :root 의 --hud-lift 하나가 주인이고
+          아래 '좁은 화면 정리' 덩어리가 그 토큰으로 bottom 을 준다. 여기 66 을 다시
+          적으면 눕힌 화면에서 토큰을 60 으로 바꿔도 이 줄이 이겨 ① 이 그대로 되돌아온다. */
+    #hud { font-size: 10px; padding: 5px 10px; }
   }
   /* 인구 데이터 조각(R-03 포스터 문법) 스타일은 아래쪽 "인구 데이터 조각 — 포스터
      타이포그래피" 블록 하나로 합쳤다(2026-09-08) — 여기 있던 첫 판은 그 블록이 나중에
@@ -834,6 +847,12 @@
     #field-legend .fl-fold { display: block; }
     #field-legend.fl-collapsed { grid-template-rows: 14px 10px 12px 12px 12px; }
     #field-legend.fl-collapsed .fl-note { display: none; }
+  }
+  /* 눕힌 폰(<style> 맨 끝 '눕힌 폰' 덩어리를 보라)에서는 위 폰 규칙이 아니라 1109 규칙이 걸린다 —
+     범례가 오른쪽 위 구석에 서므로 가로 노치는 **오른쪽**에서 그것을 가린다.
+     ⚠️ 범례 규칙은 이 절 한 곳에만 산다(field-legend 시험의 불변식) — 그래서 이 한 줄도 여기 둔다. */
+  @media (max-height: 520px) and (pointer: coarse) and (orientation: landscape) {
+    #field-legend { right: calc(14px + env(safe-area-inset-right)); }
   }
 
   /* ---------- 해양 시뮬레이션 뷰 ---------- */
@@ -1400,7 +1419,7 @@
   }
 
   /* ---------- 좁은 화면 정리 (기본 규칙보다 뒤에 와야 이긴다) ---------- */
-  @media (max-width: 720px) {
+  @media (max-width: 720px), (max-height: 520px) and (pointer: coarse) and (orientation: landscape) {
     #sculpt-cap { left: 12px; top: 72px; width: min(260px, 72vw); padding: 13px 15px 11px; }
     /* 모바일 캡션 압축 — 327px 통짜 카드가 지구의 40%를 가리지 않게 한다(2026-09-10 실측).
        순위는 접어 두고, 요약(나라·총인구·범례)만 먼저 보인다. */
@@ -1476,7 +1495,7 @@
       bottom: calc(10px + env(safe-area-inset-bottom));
       justify-content: center; gap: 8px; padding: 7px 10px;
     }
-    #hud { bottom: calc(66px + env(safe-area-inset-bottom)); }
+    #hud { bottom: calc(var(--hud-lift) + env(safe-area-inset-bottom)); }
     #quake-cap { bottom: calc(148px + env(safe-area-inset-bottom)); }
     #chrome { padding-top: calc(8px + env(safe-area-inset-top)); }
     /* ㉡ 타임라인 — 폰에서 주 조작인데 실측 '지금' 43×24 · 재생 33×24 · 슬라이더 184×16 이었다.
@@ -1512,8 +1531,12 @@
        패널 아래쪽 글이 잘린다(실측 2026-09-09: 79px 가림).
          hud   bottom 66  (2줄이면 79 까지 자란다)
          메뉴  bottom 158 · 높이 ~56  → 윗변이 214
-       그 위 6px 에 패널 바닥을 둔다. 손잡이(39px)가 있던 시절엔 그 두께가 완충이었다. */
-    #intel { right: 8px; bottom: calc(220px + env(safe-area-inset-bottom)); }
+       그 위 6px 에 패널 바닥을 둔다. 손잡이(39px)가 있던 시절엔 그 두께가 완충이었다.
+       ⚠️ 그 220 은 메뉴 패널이 비켜서는 높이와 **같은 수**다 — 그래서 여기 숫자를 적지 않고
+          --nav-reserve 를 읽는다(세로에서 220 + 안전영역, 값은 한 치도 안 변한다).
+          눕힌 폰에서는 이 수가 147 로 줄어드는데, 220 을 박아 두면 375 높이 화면에서
+          시트가 위 크롬(14~60) 위까지 올라와 검색·설정 줄을 덮는다. */
+    #intel { right: 8px; bottom: var(--nav-reserve); }
     #intel.open #intel-body { width: calc(100vw - 16px); max-height: 52vh; }
     /* M1 (2026-09-20) 3단 바텀시트. 바닥은 위 규칙 그대로(하단 메뉴 위 6px) 두고 높이만 단계로 바꾼다.
          peek  고른 것 한 줄(SELECT) — 탭 줄과 첫 카드 머리만
@@ -1527,7 +1550,7 @@
     #intel[data-sheet="peek"].open #intel-body { max-height: 118px; overflow: hidden; }
     #intel[data-sheet="half"].open #intel-body { max-height: 31vh; }
     #intel[data-sheet="full"].open #intel-body {
-      max-height: calc(100vh - 220px - 96px - env(safe-area-inset-bottom) - env(safe-area-inset-top)); }
+      max-height: calc(100vh - var(--nav-reserve) - 96px - env(safe-area-inset-top)); }
     #intel.open #intel-body { transition: max-height .18s ease; }
     @media (prefers-reduced-motion: reduce) { #intel.open #intel-body { transition: none; } }
     /* AETHERUS 전체화면 뷰(태양계·사진관·은하) — 좁은 화면에서 윗줄이 통째로 겹쳤다.
@@ -1558,6 +1581,58 @@
       left: 12px; right: 12px; transform: none; text-align: center;
       bottom: calc(12px + env(safe-area-inset-bottom));
     }
+  }
+
+  /* ---------- 눕힌 폰 (2026-09-21 반박 검증 ①②③) ----------
+     폰 규칙이 전부 `max-width: 720px` 안에 있었다. 같은 기기를 눕히면 **812×375** —
+     그 칸 밖이라 어젯밤 고친 것이 **하나도** 안 걸렸다. 기본 규칙만 남아서:
+       ① 좌하단 #hud(z7·불투명)가 bottom 12 로 돌아가 가운데 타임스트립(z4)의 '지금' 단추를
+          43×24 통째로 덮었다(#hud 14~284 × '지금' 220~263). #hud 엔 클릭 핸들러가 없으니
+          눌러도 **아무 일도 안 난다** — 시간을 옮겨 두면 현재로 돌아올 유일한 단추가 사라진다.
+       ② #menu-panel 이 --nav-reserve 를 안 읽고 top:50% · 100vh−96 으로, #bottom-nav 도
+          bottom:84 로 돌아가 **213×53** 겹쳤다. 알약(z6)이 패널(z5) 위라 그 자리의 메뉴 줄을
+          누르면 메뉴가 닫히고 엉뚱한 하단 탭이 열렸다. 44px 표적 규칙도 전부 꺼졌다.
+       ③ viewport-fit=cover 를 쓰는데 env(safe-area-inset-left/right) 를 쓰는 곳이 없었다 —
+          가로에서는 노치가 위가 아니라 **옆**에 온다.
+
+     그래서 폰 규칙을 '폭'이 아니라 **'폰이라는 사실'** 에 건다. 위 세 덩어리의 머리글에
+     `, (max-height: 520px) and (pointer: coarse) and (orientation: landscape)` 를 더했다.
+     세 조건이 전부 필요하다 — 하나라도 빼면 걸리면 안 되는 화면이 걸린다:
+       max-height 520  현역 폰을 눕힌 높이(가장 큰 것이 430 언저리)는 들어오고,
+                       태블릿 가로(1024×768)는 안 들어온다.
+       pointer coarse  창을 세로로 좁힌 노트북(1280×500)은 마우스라 안 걸린다.
+                       이것이 없으면 데스크톱이 폰 규칙에 걸려 그쪽이 망가진다.
+       orientation     안드로이드는 자판이 올라오면 레이아웃 뷰포트가 375×450 으로 납작해진다
+                       (interactive-widget=resizes-content). 방향을 안 보면 **세로로 검색을
+                       치는 동안** 가로 규칙이 켜져 화면이 튄다.
+
+     아래는 '눕혔을 때만 다른 수'다. 세로 수를 그대로 쓰면 메뉴 패널이 375 − 220 − 48 =
+     **107px** 로 찌그러진다. 세로로 쌓을 자리가 없으면 가로를 쓴다 — 눕힌 화면은 폭이 남는다:
+       타임스트립  바닥 10 (세로와 같다) · 화면 폭을 다 쓴다
+       출처 독     **왼쪽** · 바닥 60   '지금' 표적(44)의 윗변 52 위 8px
+       알약        **오른쪽** · 바닥 60  출처 독과 같은 줄에 나란히 선다
+     → --nav-reserve = max(60+54, 60+79) + 8 = 147 → 메뉴 높이 375 − 147 − 48 = 180. */
+  @media (max-height: 520px) and (pointer: coarse) and (orientation: landscape) {
+    :root {
+      /* '지금' 표적의 윗변은 바닥에서 10(띄움) + 1(테두리) + 7(안쪽 여백)
+         + 24/2(줄 높이 실측) + 44/2(표적) = 52 다. 그 위 8px 에 출처 독을 둔다. */
+      --hud-lift: 60px;
+      --nav-lift: 60px;                 /* 출처 독과 같은 줄 — 세로로 더 쌓을 높이가 없다 */
+    }
+    /* 알약을 오른쪽 끝에 붙인다. 가운데로 두면 667 폭(SE 가로)에서 왼쪽 출처 독이
+       첫 칸('지금')을 덮는다 — #hud 가 z7, 알약이 z6 이라 덮는 쪽이 이긴다. */
+    #bottom-nav { left: auto; right: calc(8px + env(safe-area-inset-right)); transform: none; }
+    /* 출처 독은 좌측 세로 손잡이(.edge-tab, 폭 42) 오른쪽으로 비켜 세운다 —
+       눕히면 손잡이 둘이 화면 한가운데 높이에 서서 독과 같은 자리를 다툰다. */
+    #hud { left: calc(52px + env(safe-area-inset-left)); }
+    /* ③ 가로에서는 노치가 옆에 온다. 가장자리에 여백을 두고 선 것들만 그 여백을 늘린다. */
+    #timestrip { left: calc(8px + env(safe-area-inset-left)); right: calc(8px + env(safe-area-inset-right)); }
+    #quake-cap { left: calc(18px + env(safe-area-inset-left)); }
+    #intel { right: calc(8px + env(safe-area-inset-right)); }
+    /* 색면 범례의 같은 고침은 여기 없다 — 그 규칙은 '색면 범례' 절 한 곳에만 산다(hunk 하나). */
+    /* 왼쪽 끝에 **딱 붙어** 서는 메뉴 시트는 자리를 옮기면 미끄러지는 셈(translateX)이 어긋난다 —
+       상자는 그대로 두고 안쪽 여백으로 글자만 노치 밖으로 민다. */
+    #menu-panel { padding-left: env(safe-area-inset-left); }
   }
 </style>
 </head>

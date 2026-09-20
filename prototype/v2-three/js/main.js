@@ -4859,9 +4859,14 @@ async function main() {
         // 시군구 침수 폴리곤을 받아 얹고, 그 위로 비스듬히 내려간다
         // 제목은 면 위에 걸리는 머리글이다 — '연안 침수 범위'라고 적으면 지금 잠긴 범위로 읽힌다.
         // 배지도 관측(OFFICIAL_OBSERVATION)이 아니다: 기관이 미리 산출한 시나리오다.
-        showNote('연안 침수 예상도 — 가정 상황', `${ds.sgg} 침수 예상도를 불러오는 중…`, 'PROVIDER_FORECAST');
+        // 이름과 용량은 색인에서 받는다 — 지구에서 원반을 누른 길과 이 카드 단추로 들어온 길이 **같은 글**을 쓴다.
+        // (2026-09-21 반박 검증: 주 경로인 원반 쪽은 시군구 코드 '46770' 만 찍고 33 MB 고지도 없었다.)
+        const fdNote = liveLayers.floodDistrictNotes(ds.sgg);
+        showNote('연안 침수 예상도 — 가정 상황', escUI(fdNote.loading), 'PROVIDER_FORECAST');
         liveLayers.loadFloodDistrict(ds.sgg).then((info) => {
-          if (!info) { showNote('연안 침수 예상도 — 가정 상황', '침수 자료를 불러오지 못했습니다 — 그리지 않습니다.', 'UNAVAILABLE'); return; }
+          // 더 나중에 누른 시군구가 이미 앞서 있다 — 카메라도 카드도 그쪽 것이다. 이것은 실패가 아니라 물러남이다.
+          if (info && info.stale) return;
+          if (!info) { showNote('연안 침수 예상도 — 가정 상황', escUI(fdNote.fail), 'UNAVAILABLE'); return; }
           const [w, sth, e2, n] = info.bbox;
           const lat = (sth + n) / 2;
           const lon = (w + e2) / 2;
@@ -4876,6 +4881,12 @@ async function main() {
           orbit.autoRotate = false;
           if (map.active) map.exit();
           showNote('연안 침수 예상도 — 가정 상황', liveLayers.floodDistrictCardHtml() + '<br/>' + liveLayers.card('khoaflood'), 'PROVIDER_FORECAST');
+        }).catch((e) => {
+          // ⚠️ 2026-09-21 반박 검증: 여기에 .catch 가 없어서 거부가 unhandledrejection → showFatal → #load-err 로 갔는데,
+          //    그 요소의 부모 #loading 은 .done(opacity:0) 이라 **글자는 적히지만 아무도 못 본다.**
+          //    카드는 '…불러오는 중…' 에서 영영 안 바뀌었다. 실패는 그 카드에 적는다.
+          showNote('연안 침수 예상도 — 가정 상황',
+            `${escUI(fdNote.fail)}<br/>${escUI((e && e.message) || e)}`, 'UNAVAILABLE');
         });
       } else if (action === 'feed-follow' && ds.id) {
         usage.track('event.follow');

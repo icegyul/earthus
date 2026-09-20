@@ -549,7 +549,8 @@ test('배선 — 공용 파일의 글자: 출처 문구 · 지점 기온 · 누�
     assert.ok(layer.includes(`from ${spec}`), `field-layer.js ${spec}`);
   }
   const live = read('../../prototype/v2-three/js/live-layers.js');
-  assert.match(live, /if \(isFieldLayerId\(id\)\) return toggleFieldLayer\(this, id\);/);
+  // (2026-09-21: 켜기의 문 안쪽에 잠기는 땅(slr)을 내리는 한 줄이 붙었다 — 갈리는 자리는 그대로다.)
+  assert.match(live, /if \(isFieldLayerId\(id\)\) \{\n\s+const r = await toggleFieldLayer\(this, id\);/);
   assert.match(live, /clearFieldLayers\(this\);/);
   assert.match(live, /모델 범위 \$\{rng\}/);
   assert.doesNotMatch(live, /\$\{desc\}<br\/>관측 범위/);

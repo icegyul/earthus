@@ -302,7 +302,8 @@ test('기온·풍속의 글은 한 글자도 안 바뀐다 — 한 시각 자료
 test('옛 가림판 경로가 이 레이어들에서 빠졌다 — refresh·과장 변경이 되살리지 못한다', () => {
   const live = src('live-layers.js');
   // 켜고 끄기 · 갱신 · 과장 변경 — 세 문이 모두 isFieldLayerId 에서 갈린다.
-  assert.match(live, /if \(isFieldLayerId\(id\)\) return toggleFieldLayer\(this, id\);/);
+  // (2026-09-21: 켜기의 문 안쪽에 잠기는 땅을 내리는 한 줄이 붙었다 — 갈리는 자리는 그대로다.)
+  assert.match(live, /if \(isFieldLayerId\(id\)\) \{\n\s+const r = await toggleFieldLayer\(this, id\);/);
   assert.match(live, /if \(isFieldLayerId\(id\)\) return false;/);
   assert.match(live, /if \(isFieldLayerId\(id\)\) continue;/);
   // 새 길에서는 가림판을 부르지 않는다 — 두 모듈 어디에도 그 부품을 들여오거나 부르는 줄이 없다(주석의 언급은 셈하지 않는다).

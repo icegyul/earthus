@@ -12,8 +12,9 @@ import { activeField, clearFieldLayers, isFieldLayerId, toggleFieldLayer } from 
 import { createFloodOverlay, FLOOD_QUANTITY } from './flood-overlay.js?v=1';
 // 연안 침수 예상도의 전국 색인(레이어 'khoaflood' · 2026-09-20 W6) — 지표를 고른 근거·원반 그리기·솎기·집기는 저 파일에 있다.
 import {
-  createFloodDiscs, floodClassLabel, floodDiscSpecs, floodHiddenNote, floodLegendHtml, floodSizeNote, floodThinRuleNote,
-  FLOOD_DISTRICT_TIMEOUT_MS, FLOOD_HEAVY_BYTES, FLOOD_METRIC_KO,
+  createFloodDiscs, floodClassLabel, floodDiscSpecs, floodDistrictLoadingNote, floodHiddenNote, floodLegendHtml,
+  floodSizeNote, floodThinRuleNote,
+  FLOOD_DISTRICT_FAIL_NOTE, FLOOD_DISTRICT_TIMEOUT_MS, FLOOD_HEAVY_BYTES, FLOOD_METRIC_KO,
 } from './flood-discs.js?v=1';
 // 지상관측 두 파일(기상청 · GTS)은 공용 저장소에서 받는다 — 바람·평년차·기입 모형·지구 위 관측 숫자가 같은 문서를 나눠 쓴다(surface-obs.js).
 import { surfaceObs } from './surface-obs.js?v=1';
@@ -51,14 +52,42 @@ const loadGibs = (layer, source) => {
 };
 const R_M = 6371000;
 
-const fetchJson = (path, timeoutMs = 15000, base = S3) =>
-  Promise.race([
-    fetch(`${base}${path}`, { cache: 'no-store' }).then((r) => {
-      if (!r.ok) throw new Error(`${path} HTTP ${r.status}`);
-      return r.json();
-    }),
-    new Promise((_, rej) => setTimeout(() => rej(new Error(`${path} timeout`)), timeoutMs)),
-  ]);
+/**
+ * JSON 하나. 시간이 다 되면 **요청 자체를 끊는다.**
+ *
+ * ⚠️ 2026-09-21 반박 검증으로 고친 것: 옛 길은 `Promise.race` 로 약속만 먼저 거절했다. 부른 쪽은 그 순간
+ *    '시간 초과'를 받지만 **내려받기는 그대로 살아 있었다** — 연안 침수 시군구 하나가 33 MB 이고 제한이 120초라,
+ *    이동통신망에서 포기했다고 말해 놓고 뒤에서 33 MB 를 마저 받았다. 화면이 제가 한 일을 말하지 않는 자리다.
+ *    이제 AbortController 로 진짜 끊는다. 끊어서 난 탈(AbortError)은 **같은 글자**로 바꿔 돌려준다 —
+ *    부른 쪽이 보는 것은 예전과 같은 `… timeout` 이다.
+ * ⚠️ 타이머는 끝나면 반드시 치운다. 안 그러면 제때 온 응답에도 120초짜리 타이머가 남아 시험(node)이 그만큼 기다린다.
+ */
+export const fetchJson = (path, timeoutMs = 15000, base = S3) => {
+  const url = `${base}${path}`;
+  const AC = globalThis.AbortController;
+  const ctl = typeof AC === 'function' ? new AC() : null;
+  let timer = null;
+  let timedOut = false;
+  const clear = () => { if (timer != null) { clearTimeout(timer); timer = null; } };
+  const body = fetch(url, { cache: 'no-store', ...(ctl ? { signal: ctl.signal } : {}) }).then((r) => {
+    if (!r.ok) throw new Error(`${path} HTTP ${r.status}`);
+    return r.json();
+  });
+  if (typeof setTimeout !== 'function') return body;
+  // 시간이 다 되면 ① 요청을 **끊고**(안 끊으면 33 MB 를 계속 받는다) ② 부른 쪽에게 곧바로 거절을 준다.
+  // 거절을 따로 내는 이유: 끊었을 때 fetch 가 반드시 정착한다는 보장은 환경마다 다르다 — 화면이 영영
+  // '불러오는 중'에 머무는 갈래를 남기지 않는다. 끊기까지 했으므로 뒤에서 받아 두는 일은 없다.
+  const timeout = new Promise((_, rej) => {
+    timer = setTimeout(() => { timedOut = true; if (ctl) ctl.abort(); rej(new Error(`${path} timeout`)); }, timeoutMs);
+    if (timer && typeof timer.unref === 'function') timer.unref();   // 시험에서 타이머가 프로세스를 붙잡지 않게
+  });
+  // 끊어서 난 탈(AbortError)은 **같은 글자**로 바꾼다 — 부른 쪽이 보는 것은 예전과 같은 `… timeout` 이다.
+  body.catch(() => {});                                              // 경주에서 진 쪽의 거부를 아무도 안 받는 일이 없게
+  return Promise.race([body, timeout]).then(
+    (v) => { clear(); return v; },
+    (e) => { clear(); throw timedOut ? new Error(`${path} timeout`) : e; },
+  );
+};
 
 // 발표기관의 유효시각 표기 "YYYYMMDDHHmm" (UTC) → ms
 const parseValidUtc = (v) => {
@@ -371,24 +400,68 @@ export class LiveLayers {
   // 색면 카드의 단추(등온선 켬/끔 · 2°C|5°C). 처리했으면 true.
   fieldAction(action, ds) { const f = activeField(this, (ds && ds.layer) || null); return f ? f.handleAction(action, ds || {}) : false; }
 
+  /**
+   * ── 색면 배타 묶음에 '잠기는 땅'(slr)도 넣는다 (2026-09-21 반박 검증) ─────────────────────────────────
+   * 무엇이 잘못돼 있었나: slr 은 FIELD_DESCRIPTORS 밖이라 색면끼리의 울타리(field-layer.js toggleFieldLayer)에
+   * 걸리지 않아 **기온 색면과 동시에 켜졌다.** 그런데 화면에서 둘은 같은 것이다 —
+   *   · 잠기는 땅 겹면은 색면과 **같은 renderOrder**(FIELD_RENDER_ORDER)에 반지름만 낮다. 같이 서면 색면이 그것을 덮는다:
+   *     메뉴는 '잠기는 땅 켜짐'이라는데 지구에는 없다.
+   *   · 범례는 앱에 하나인데 둘 다 **같은 세기**(LEGEND_PRIORITY_FIELD)로 든다. 세기가 같으면 나중에 show 한 쪽이
+   *     이기므로(field-legend.js topOwner), 기온 색면이 지구를 덮고 있는데 그 색을 읽을 눈금이 화면에서 사라진 채 머물렀다.
+   *     색면의 publish() 는 매 프레임이 아니라 setStatus·handleAction·probe 때만 도는 탓에 그 상태가 오래갔다.
+   * 그래서 toggleFieldLayer 의 울타리 주석("범례는 하나뿐이라 어느 쪽과도 맞지 않는 색이 화면에 남는다")이
+   * 가리키던 바로 그 자리를 slr 까지 넓힌다. starLayer() 가 이미 "잠기는 땅은 … 화면에서는 색면과 같은 것"이라 적어 두었다.
+   *
+   * 고르지 않은 길: ① 범례 세기를 낮춰 색면에 지게 하기 — 그러면 잠기는 땅이 켜진 채 제 눈금을 잃고, 화면에
+   * 두 색면이 겹치는 것은 그대로다. ② 범례를 둘 세우기 — 상자가 하나뿐이라 field-legend.js(남의 파일)를 고쳐야 한다.
+   * 지키려던 것은 하나다: **화면에 깔린 색을 값으로 되돌릴 눈금이 늘 있다.**
+   * 치르는 값도 적어 둔다: 색면을 켜면 숫자 원판도 같이 내려온다. 원판은 색면 위(renderOrder 7)에 서므로
+   * 원판만 남길 수도 있었지만, 그러면 '잠기는 땅 켜짐'이라는 메뉴 글과 안 보이는 겹면이 또 갈라진다.
+   */
+  /** 색면이 켜졌으니 잠기는 땅은 내려온다 — 끄는 갈래와 **같은 세 줄**을 쓴다(두 곳에 적으면 갈라진다). */
+  _slrOff() {
+    const l = this.layers.slr;
+    if (!l || !l.on) return;
+    if (l.obj) l.obj.visible = false;
+    l.on = false;
+  }
+
   async toggle(id) {
     // 셰이더 색면이 맡은 레이어(기온)는 저쪽에서 켜고 끈다. 아래의 build() → fetchFor('tempgrid')(5° 그라데이션) 길로는 가지 않는다 —
     // GFS 프레임이 없으면 그라데이션으로 물러나지 않고 '자료 없음'과 이유를 돌려준다.
-    if (isFieldLayerId(id)) return toggleFieldLayer(this, id);
+    if (isFieldLayerId(id)) {
+      const r = await toggleFieldLayer(this, id);
+      if (r && r.on) this._slrOff();      // 색면이 실제로 켜졌을 때만 — 켜기에 실패했는데 남의 층을 내리지 않는다
+      return r;
+    }
     let l = this.layers[id];
     if (l && l.on) {
       l.obj.visible = false;
       l.on = false;
-      // 끄면 근접 허용도, 지구 위 이름표의 선택 표시도 함께 해제한다
-      if (id === 'khoaflood') { this._floodSel = null; if (this._floodDiscs) this._floodDiscs.setSelected(null); }
+      // 끄면 근접 허용도, 지구 위 이름표의 선택 표시도 함께 해제한다.
+      // 세대 번호도 올린다 — 받는 중이던 시군구가 꺼진 레이어에 뒤늦게 내려앉지 않게(loadFloodDistrict 머리말).
+      if (id === 'khoaflood') {
+        this._floodSel = null; if (this._floodDiscs) this._floodDiscs.setSelected(null);
+        this._floodReq = (this._floodReq || 0) + 1;
+      }
       return { on: false };
+    }
+    if (l && l.loading) { l.cancelled = true; delete this.layers[id]; return { on: false }; }
+    // 여기서부터는 전부 **켜는** 갈래다 — 잠기는 땅을 켜기 전에 색면을 먼저 내린다(위 _slrOff 머리말의 울타리).
+    // (위의 두 갈래는 끄는 길이라 이 줄이 그 앞에 있으면 '끄려다 남의 색면을 껐다'가 된다.)
+    // 내릴 것이 없으면 await 하지 않는다 — 여기서 한 틱을 쉬면 build() 가 다음 마이크로태스크로 밀려,
+    // '켜는 중에 껐다 다시 켜기'를 재는 시험의 차례가 어긋난다(flood-overlay.test.mjs).
+    if (id === 'slr') {
+      for (const other of Object.keys(this._fields || {})) {
+        const oc = this.layers[other];
+        if (oc && (oc.on || oc.loading)) await toggleFieldLayer(this, other);
+      }
     }
     if (l && l.obj) {
       l.obj.visible = true;
       l.on = true;
       return { on: true, badge: l.meta.badge };
     }
-    if (l && l.loading) { l.cancelled = true; delete this.layers[id]; return { on: false }; }
     l = this.layers[id] = { on: false, loading: true };
     try {
       const built = await this.build(id);
@@ -1629,6 +1702,16 @@ export class LiveLayers {
     //    여기에 지금 개수를 적으면 "0곳만 붙어 있습니다"가 영영 남는다. 여기는 규칙만 적고,
     //    지금 개수는 그림이 돈 뒤에 만들어지는 시군구 카드(floodDistrictCardHtml)가 말한다.
     const hidden = floodThinRuleNote(specs.length);
+    // ⚠️ 기관 설명문(d.note)은 '연안 시군구 70곳'이라 말하는데 색인이 들고 온 것은 69곳이다(2026-09-21 실측 ·
+    //    count 0 인 칸도 없다 — 한 곳이 아예 안 들어 있다). 남의 문장을 그대로 옮기면 한 카드가 같은 자리에서
+    //    두 수를 말한다. 설명문은 그대로 싣되(강원 동해안 이야기가 거기 있다) **어긋난다는 사실을 화면이 적는다.**
+    //    어느 곳이 빠졌는지는 이 자료로 알 수 없다 — 모르는 것과 없는 것을 가른다.
+    //    70 을 여기 박지 않는다: 설명문에서 읽어 제 표와 견준다. 설명문이 고쳐지는 날 이 줄은 저절로 사라진다.
+    const said = Number((String(d.note || '').match(/(\d+)\s*곳/) || [])[1]);
+    const gapLine = Number.isFinite(said) && said !== rows.length
+      ? `<b>이 색인에 담겨 온 것은 ${rows.length}곳입니다</b> — 바로 위 기관 설명문은 ${said}곳이라고 적고 있어 `
+        + `${Math.abs(said - rows.length)}곳이 어긋납니다. 어느 곳이 빠졌는지는 이 자료에 적혀 있지 않습니다.<br/>`
+      : '';
     return {
       badge: 'PROVIDER_FORECAST',
       note: `${rows.length}곳 자료 · 침수면 ${Number(d.totalPolygons || 0).toLocaleString()}개`,
@@ -1640,6 +1723,7 @@ export class LiveLayers {
         + `${hidden ? `${escapeHtml(hidden)}<br/>` : ''}`
         + `<div style="margin:8px 0 6px">${buttons}</div>`
         + `${escapeHtml(d.note || '')}<br/>`
+        + gapLine
         + `${empty.length ? `자료가 비어 있는 곳: ${empty.join(' · ')} — 없는 것을 그리지 않습니다.<br/>` : ''}`
         // ⚠️ 이 자료는 **가정을 적어 주지 않는다**. 색인에도 시군구 문서에도 해수면 상승폭·재현주기 칸이 없다
         //    (실측 2026-09-20: generated·sggCd·name·unit·count·classes·bbox·source·license 뿐).
@@ -1665,14 +1749,45 @@ export class LiveLayers {
     return this._floodDiscs.pick({ x, y });
   }
 
-  // 시군구 하나의 침수 폴리곤을 받아 채운다. 반환: { name, count, bbox, classes } 또는 null
+  /** 누르기 전에 화면에 적을 것 — 이름 · 용량 · 받는 중 한 줄 · 못 받았을 때 한 줄.
+   *  지구에서 원반을 누른 길과 카드 단추로 들어간 길이 **여기 하나**에서 글을 받는다(flood-discs.js 가 글을 짓는다). */
+  floodDistrictNotes(code) {
+    const key = String(code);
+    const spec = (this._floodDiscs ? this._floodDiscs.specs() : []).find((s) => String(s.sggCd) === key)
+      || (this._floodDistricts || []).find((r) => String(r.sggCd) === key);
+    // 이름을 모르면 지어내지 않는다 — 그때만 코드를 그대로 쓴다(그 코드가 화면에 나온 유일한 경우다).
+    const name = (spec && spec.name) || key;
+    const bytes = spec && Number.isFinite(spec.bytes) ? spec.bytes : null;
+    return { name, bytes, loading: floodDistrictLoadingNote({ name, bytes }), fail: FLOOD_DISTRICT_FAIL_NOTE };
+  }
+
+  // 시군구 하나의 침수 폴리곤을 받아 채운다.
+  // 반환: { code, name, count, bbox, classes … } · 자료가 아니면 null · **더 나중에 누른 요청이 있으면** { stale: true }.
+  //
+  // ⚠️ 2026-09-21 반박 검증으로 고친 것: await 앞뒤로 '아직 내가 최신인가'를 묻지 않아, 두 시군구를 잇따라 누르면
+  //    **늦게 온 옛 응답**이 _floodMesh · _floodSel · setSelected 를 덮고 main.js 의 .then 이 옛 시군구로 카메라를 날렸다.
+  //    무거운 곳이 33 MB 라 이 차이는 몇 초씩 벌어진다.
+  //    이 저장소에 같은 병의 전례가 있다: buildSlr 이 늦게 온 옛 build 에 겹면을 빼앗겼고(그 머리말), 거기서는
+  //    '공용 자리에 들지 않고 제가 지은 겹면에 붙는' 방식으로 풀었다. 여기서는 자리가 하나뿐이라(_floodMesh 는
+  //    지구에 하나) 그 방식을 그대로 쓸 수 없다 — 대신 **같은 물음**(내가 아직 최신인가)을 세대 번호로 묻는다.
+  //    말은 맞춘다: 늦게 온 쪽은 제 결과를 내놓지 않고 물러난다.
   async loadFloodDistrict(code) {
     const l = this.layers.khoaflood;
     if (!l || !l.on) return null;
+    const req = this._floodReq = (this._floodReq || 0) + 1;
+    const mine = () => this._floodReq === req && this.layers.khoaflood === l && l.on;
     // ⚠️ 30초로는 큰 시군구가 못 들어온다. S3 는 이 파일들에 **gzip 을 주지 않는다** —
     //    실측(2026-09-20, 69곳 전부): 고흥군 33.0 MB · 해남군 24 MB · 여수시 21 MB, 10 MB 넘는 곳이 9곳,
     //    중앙값 1.95 MB, 69곳 합계 306.6 MB. 이동통신망에서 33 MB 는 30초 안에 안 온다.
-    const d = await fetchJson(`/ocean/khoa/flood/${code}.json`, FLOOD_DISTRICT_TIMEOUT_MS);
+    let d;
+    try {
+      d = await fetchJson(`/ocean/khoa/flood/${code}.json`, FLOOD_DISTRICT_TIMEOUT_MS);
+    } catch (e) {
+      // 늦게 온 **실패**도 늦은 것이다 — 그것으로 지금 화면의 카드를 실패로 덮지 않는다.
+      if (!mine()) return { stale: true };
+      throw e;
+    }
+    if (!mine()) return { stale: true };
     if (!d || !d.features) return null;
     if (this._floodMesh) { l.obj.remove(this._floodMesh); this.disposeObj(this._floodMesh); this._floodMesh = null; }
     const toV2 = (flat) => {
@@ -1740,8 +1855,9 @@ export class LiveLayers {
     const cls = Object.entries(s.classes || {}).sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]))
       .map(([k, v]) => `${k}m ${v}면`).join(' · ');
     // 이 카드는 **누른 뒤에** 만들어진다 — 그림이 이미 여러 번 돌았으므로 지금 개수가 진짜다.
+    // 화면 안 후보 수까지 받아야 '겹쳐서 가렸다'와 '화면 밖·지구 뒤편'을 가를 수 있다(flood-discs.js floodHiddenNote).
     const hidden = this._floodDiscs
-      ? floodHiddenNote(this._floodDiscs.shown(), this._floodDiscs.total()) : '';
+      ? floodHiddenNote(this._floodDiscs.shown(), this._floodDiscs.onScreen(), this._floodDiscs.total()) : '';
     return `<b>${escapeHtml(s.name)} 침수 예상 범위</b> — 구역 ${s.count.toLocaleString()}개<br/>`
       + `깊이 구간별: ${cls}<br/>`
       + `${hidden ? `${escapeHtml(hidden)}<br/>` : ''}`

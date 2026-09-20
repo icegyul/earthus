@@ -372,7 +372,8 @@ test('끝에서 끝까지 — 지형을 못 받으면 먼 바다만 칠하고 �
 //   그 부품을 직접 부르므로 이 파일이 지워지면 함께 지워진다.
 test('새 길의 문이 닫혀 있다 — 옛 가림판은 이제 죽은 코드다(글자를 잠그지 않는다)', () => {
   // 켜고 끄기 · 갱신 · 과장 변경 — 세 문이 모두 isFieldLayerId 에서 먼저 갈린다.
-  assert.match(liveSrc, /if \(isFieldLayerId\(id\)\) return toggleFieldLayer\(this, id\);/);
+  // (2026-09-21: 켜기의 문 안쪽에 잠기는 땅을 내리는 한 줄이 붙었다 — 갈리는 자리는 그대로다.)
+  assert.match(liveSrc, /if \(isFieldLayerId\(id\)\) \{\n\s+const r = await toggleFieldLayer\(this, id\);/);
   assert.match(liveSrc, /if \(isFieldLayerId\(id\)\) return false;/);
   assert.match(liveSrc, /if \(isFieldLayerId\(id\)\) continue;/);
   // 옮겨 간 색면은 새 길의 두 모듈에만 있다 — 그 어디에도 가림판을 들여오거나 부르는 줄이 없다(주석은 셈하지 않는다).

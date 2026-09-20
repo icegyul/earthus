@@ -32,13 +32,30 @@
 //   v=1). 구름·강수 셰이더의 uv(v = lat/π + 0.5)와 같은 방향이다. 위아래가 뒤집히면 남반구가 북반구에 그려진다.
 //   createImageBitmap(colorSpaceConversion:'none' · premultiplyAlpha:'none')을 검토했고 쓰지 않았다:
 //     ① 운영 프레임 7종의 PNG 청크는 IHDR·IDAT·IEND 뿐이다(실측) — gAMA·iCCP·sRGB 가 없으니 브라우저가
-//        바꿀 색이 없다. NoColorSpace 텍스처는 three 가 UNPACK_COLORSPACE_CONVERSION 을 NONE 으로 올린다.
-//     ② three 는 ImageBitmap 에서 flipY 를 무시한다(imageOrientation 으로 따로 뒤집어야 한다). 구름과 다른
-//        방향 규칙이 하나 더 생기고, 이 작업은 화면 없이 시험만으로 합쳐지므로 확인할 길이 없다.
+//        바꿀 색이 없다. NoColorSpace 텍스처는 three 가 UNPACK_COLORSPACE_CONVERSION 을 NONE 으로 올린다
+//        (vendor/three-r184 uploadTexture 에서 확인: colorSpace === NoColorSpace ? NONE : BROWSER_DEFAULT).
+//     ② three r184 는 그림이 ImageBitmap 이면 UNPACK_FLIP_Y · 선곱 · 색 변환 설정을 **통째로 건너뛴다**
+//        (같은 곳에서 확인: image instanceof ImageBitmap 이 아닐 때만 pixelStorei 를 부른다). flipY 가
+//        무시되므로 createImageBitmap 의 imageOrientation 으로 따로 뒤집어야 한다 — 구름과 다른 방향 규칙이
+//        하나 더 생기고, 이 작업은 화면 없이 시험만으로 합쳐지므로 확인할 길이 없다.
 //     ③ 새 필드 넷(gray8 · rgb8)은 알파가 없어 선곱이 값을 깎을 수 없다.
 //   CPU 사본은 같은 그림을 willReadFrequently 캔버스에 그려 읽는다(기존 CloudManager.sampleAt 과 같은 방식).
 //   ⚠️ 구름 프레임(회색+알파)만은 캔버스의 알파 선곱 때문에 알파가 작은 칸의 회색(운정고도)이 무뎌진다.
 //      기존 sampleAt 도 같은 한계를 갖고 있고 여기서 고치지 않았다 — 새 필드에는 해당이 없다.
+//
+// 쓰는 쪽(W1~W4)이 알아야 할 것 — 저장소는 값을 지어내지 않는 대신 **밝힌다**. 읽는 쪽이 그 표시를 봐야 한다:
+//   · 범위 밖 시각은 끝 프레임의 값이 outOfRange:'before'|'after' 와 함께 온다. 이걸 안 보면 T+120h 의 값을
+//     T+130h 의 값이라고 말하게 된다 — 범위 밖이면 값을 숨기거나 '예보 범위 밖'이라고 적는다.
+//   · 스텝이 빠진 곳은 a·b 사이가 3시간보다 넓다(gapH 6 이상). Inspector 의 '모델 프레임 사이 보간' 문구가 간격을 말해야 한다.
+//   · 텍스처 좌표: 칸은 점 격자다. 경도 lon 의 칸 중심은 u = ((lon − lon0)/dLon + 0.5)/ni 이고 위도는
+//     v = 1 − ((lat0 − lat)/dLat + 0.5)/nj 다. 구름 셰이더의 uv(lon/2π + 0.5 · lat/π + 0.5)를 그대로 쓰면
+//     경도는 늘 반 칸(0.25° ≈ 28 km), 위도는 적도 0 ~ 극 반 칸만큼 어긋난다(361행이 180.5° 를 덮는 셈이라서) —
+//     구름에서는 안 보이지만 등치선·클릭 값(sampleAt 은 점 격자로 정확히 읽는다)과 맞추려면 W1 셰이더가 보정한다.
+//     보정 계수는 uvTransform(id) 가 준다(uTex = uS × su + ou · vTex = vS × sv + ov).
+//   · LRU 가 쫓아낸 텍스처를 렌더러가 아직 쥐고 있을 수 있다. 화면은 산다(three 는 dispose 된 텍스처를 그림에서
+//     다시 올린다). 다만 그 장은 저장소의 바이트 셈에서 빠진다 — 시각이 바뀔 때마다 texture()/textureNow() 로
+//     다시 받아 쓰는 것이 규칙이다(그 호출이 '방금 썼다'는 표시이기도 하다).
+//   · 세대가 바뀌면(onSwap) 쥐고 있던 텍스처는 옛 세대의 것이다 — 다시 청한다.
 //
 // 이 파일은 DOM · THREE 를 import 하지 않는다. THREE · fetch · 그림 받기 · 픽셀 읽기를 전부 주입받는다 —
 // tools/earthus-v53/gfs-frames.test.mjs 가 가짜를 넣어 그대로 부른다. 계산은 순수 함수로 밖에 냈다.
@@ -286,6 +303,22 @@ function nearestOffset(px, grid, cell, lat, lon) {
   x = grid.wraps ? ((x % ni) + ni) % ni : Math.max(0, Math.min(ni - 1, x));
   y = Math.max(0, Math.min(nj - 1, y));
   return (y * ni + x) * px.channels;
+}
+
+// 구면 uv(구름·강수 셰이더가 쓰는 uS = lon/360 + 0.5 · vS = lat/180 + 0.5) → 이 격자의 텍스처 좌표.
+//   uTex = uS × su + ou ,  vTex = vS × sv + ov   (flipY 기본값 = 그림 첫 행(북)이 v 1 인 텍스처 기준)
+// 점 격자는 칸 중심이 격자점이라 반 칸이 더해진다: 0.5°(720×361)면 su 1 · ou 0.5/720 · sv 360/361 · ov 0.5/361.
+// 이 보정 없이 구면 uv 를 그대로 쓰면 색면·등치선이 sampleAt(클릭 값)과 최대 반 칸 어긋난다.
+// 묶음 평균 격자(700hPa 4°)는 칸이 그 구간을 덮으므로 반 칸을 더하지 않는다.
+export function uvTransformOf(grid, cell = 'point') {
+  if (!grid) return null;
+  const half = cell === 'block' ? 0 : 0.5;
+  return {
+    su: 360 / (grid.dLon * grid.ni),
+    ou: ((-180 - grid.lon0) / grid.dLon + half) / grid.ni,
+    sv: 180 / (grid.dLat * grid.nj),
+    ov: 1 - ((grid.lat0 + 90) / grid.dLat + half) / grid.nj,
+  };
 }
 
 // ---------------------------------------------------------------- LRU (순수)
@@ -561,6 +594,8 @@ export function createGfsFrames(deps = {}) {
     fields() { return Object.keys(need().fields); },
     has(id) { return !!(model && model.frames[id] && model.frames[id].length); },
     fieldSpec(id) { return fieldOf(id); },
+    // 구면 uv → 이 필드의 텍스처 좌표 {su, ou, sv, ov} (uvTransformOf 주석). 격자를 모르면 null.
+    uvTransform(id) { const f = fieldOf(id); return uvTransformOf(f.grid, f.cell); },
     // [{h, t(ms), url, window?}] 시간순. 없는 스텝은 빠진 채로 — apcp 는 f000 이 없다.
     framesFor(id) { fieldOf(id); return model.frames[id]; },
     // 매니페스트의 상대 경로 → 받을 주소(?g= 세대 포함). CloudManager.loadGfs 가 구름 프레임 주소를 여기서 만든다.

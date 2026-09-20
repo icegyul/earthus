@@ -8,7 +8,7 @@ import { readFileSync } from 'node:fs';
 import {
   GFS_FIELD_IDS, GFS_FRAMES_BUDGET, RUN_DELAY_HOURS, ByteLru,
   applyValueTextureDefaults, bracketFrames, budgetFor, compactPixels, createGfsFrames, decodeByte,
-  frameUrlOf, readManifest, runAgeOf, sharedGfsFrames,
+  frameUrlOf, readManifest, runAgeOf, sharedGfsFrames, uvTransformOf,
 } from '../../prototype/v2-three/js/gfs-frames.js';
 
 const here = (rel) => new URL(rel, import.meta.url);
@@ -416,6 +416,24 @@ test('받은 그림의 크기가 매니페스트 격자와 다르면 값을 읽�
   assert.equal(store.sampleAt('temp', T0, 37.5, 127), null);
 });
 
+test('uvTransform: 구면 uv 를 칸 중심으로 옮긴다 — 서울은 열 614 · 행 105 의 텍셀 한가운데', async () => {
+  const { store } = harness(SCHEMA2);
+  await store.load();
+  const k = store.uvTransform('temp');
+  const near = (a, b) => assert.ok(Math.abs(a - b) < 1e-12, `${a} ≠ ${b}`);
+  near(k.su, 1); near(k.ou, 0.5 / 720); near(k.sv, 360 / 361); near(k.ov, 0.5 / 361);
+  const uS = 127 / 360 + 0.5;                                   // 구름·강수 셰이더의 구면 uv
+  const vS = 37.5 / 180 + 0.5;
+  near(uS * k.su + k.ou, (614 + 0.5) / 720);
+  near(vS * k.sv + k.ov, 1 - (105 + 0.5) / 361);               // flipY 기본값: 그림 첫 행(북)이 v 1
+  near(1 * k.sv + k.ov, 1 - 0.5 / 361);                        // 북극 = 행 0 의 가운데
+  near(0 * k.sv + k.ov, 1 - 360.5 / 361);                      // 남극 = 행 360 의 가운데
+  // 700hPa 4° 는 묶음 평균이라 반 칸을 더하지 않는다.
+  const w = store.uvTransform('wind700');
+  near(w.ou, 0); near(w.su, 1); near(w.sv, 180 / (4 * 46)); near(w.ov, 1 - 45 / 46);
+  assert.equal(uvTransformOf(null), null);
+});
+
 test('모르는 디코드 식은 풀지 않는다', () => {
   const mf = clone(SCHEMA2);
   mf.fields.temp.channels.R = { transfer: 'gamma', g: 2.2 };
@@ -556,7 +574,9 @@ test('CloudManager.loadGfs 는 매니페스트와 프레임 주소를 저장소�
   const has = (re, why) => assert.ok(re.test(src), why || String(re));
   has(/import \{ sharedGfsFrames \} from '\.\/gfs-frames\.js\?v=\d+';/);
   has(/\nconst gfsFrames = sharedGfsFrames\(\{ THREE \}\);\n/, '저장소는 모듈 맨 위에서 하나 — 구름 모드와 무관하게 있어야 한다');
-  const body = /\n  async loadGfs\(\) \{\n([\s\S]*?)\n  \}\n\n  \/\/ 프레임 인덱스/.exec(src);
+  // 메서드의 끝 = 두 칸 들여쓴 첫 닫는 중괄호(안쪽 블록은 더 깊다). 뒤에 무엇이 오든 상관없게 — 같은 묶음의
+  // 다른 작업이 이 근처에 메서드를 더해도 이 시험이 가짜로 떨어지지 않는다.
+  const body = /\n  async loadGfs\(\) \{\n([\s\S]*?)\n  \}\n/.exec(src);
   assert.ok(body, 'loadGfs 를 찾지 못했다');
   const fn = body[1];
   assert.match(fn, /await gfsFrames\.load\(\)/);

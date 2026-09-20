@@ -91,6 +91,9 @@
 //     합쳐져 두드러짐이 장 전체 폭으로 부풀고 1등이 된다 — 가짜를 다른 가짜로 바꾸는 일이다.
 //     대신 합칠 때 한 규칙을 더 둔다: **한쪽만 가짜면 깊이와 무관하게 진짜가 산다.** 가짜는 진짜에 흡수되고 아무것도 보고하지 않으며,
 //     진짜는 제 바닥을 지켜 다음 **진짜** 중심과의 고개에서 두드러짐을 잰다(가짜 옆의 진짜 고기압이 고개에서 잘려 나가지 않는다).
+//     그리고 **가림판에 닿은 고원의 H 는 버린다**: 경정이 고도와 함께 단조로 부푸니 가린 땅 바로 옆의 가장 높은 안 가린 칸이
+//     저절로 극대가 된다(운영 f003 에서 가림판 뒤에도 남은 H 여섯의 고도가 전부 1,330~1,430 m 였다). L 에는 쓰지 않는다 —
+//     산자락의 저기압은 풍하측 저기압발생(제노바 저기압 · 앨버타 클리퍼)이라는 진짜 현상이다.
 //   **없으면 던진다**: opts.requireElevation 기본 true — 고도 없이 중심을 청하면 TypeError. '가짜가 섞인 채 조용히 배선'되는 길을
 //     문서가 아니라 코드로 막는다. 지형이 정말 없는 화면(시험 · 합성 장)은 requireElevation:false 로 그 뜻을 밝히고 부른다.
 //   ⚠️ 남은 한계(고친 척하지 않으려고 적는다): 고도 ≥ 1500 m 로 **둘러싸인** 분지(타림 약 1000 m)의 중심은 가려지지 않고,
@@ -370,7 +373,8 @@ function persistencePass(vals, wb, hb, minBytes, range, work, blocked = null) {
 
 // start 가 든 고원(같은 바이트 · 8방향으로 이어진 칸 · 경도 랩 · 극 줄은 한 점)을 모아 중심 칸을 고른다.
 // seen 은 한 번의 찾기 동안 나눠 쓴다 — 이미 다른 후보가 가져간 고원이면 null.
-function plateauCentre(f, start, seen) {
+// highMask 를 주면 고원이 가린 칸에 **닿는지**(touchesMask)도 같이 본다 — 부르는 쪽이 쓴다(아래 '가림판 가장자리').
+function plateauCentre(f, start, seen, highMask = null) {
   const { g, w, h } = f;
   if (seen[start]) return null;
   const v = g[start];
@@ -378,6 +382,7 @@ function plateauCentre(f, start, seen) {
   seen[start] = 1;
   let poleDoneN = false;
   let poleDoneS = false;
+  let touchesMask = false;
   for (let q = 0; q < cells.length; q += 1) {
     const p = cells[q];
     const j = (p / w) | 0;
@@ -390,6 +395,7 @@ function plateauCentre(f, start, seen) {
       const base = jj * w;
       for (let t = 0; t < 3; t += 1) {
         const c = base + (t === 0 ? il : (t === 1 ? i : ir));
+        if (highMask && highMask[c]) touchesMask = true;
         if (!seen[c] && g[c] === v) { seen[c] = 1; cells.push(c); }
       }
     }
@@ -428,7 +434,7 @@ function plateauCentre(f, start, seen) {
   if (row === 0 || row === h - 1) col = f.colOfLon0;     // 극은 경도가 없다 — 0° 로 적는다
   // byte 는 고원의 값이다. 극에서는 col 을 바꿔 적었으므로 (row, col) 칸에서 다시 읽지 않는다 —
   // 극 줄의 값이 칸마다 다른 자료(있어서는 안 되지만)에서 그 칸은 고원 밖일 수 있다.
-  return { row, col, byte: v };
+  return { row, col, byte: v, touchesMask };
 }
 
 // ---------------------------------------------------------------- 찾기
@@ -513,11 +519,17 @@ export function findPressureCenters(field, decode, opts = {}) {
     // ── 2단계
     const cands = [];
     for (const c of raw) {
-      const at = plateauCentre(f, stage.arg ? stage.arg[c.cell] : c.cell, seen);
+      const at = plateauCentre(f, stage.arg ? stage.arg[c.cell] : c.cell, seen, highMask);
       if (!at) continue;
       // 2단계가 고원의 무게중심으로 옮긴 자리가 가려진 칸일 수 있다(고원이 가림판 경계에 걸쳐 있으면).
       // 기호를 믿을 수 없는 땅 위에 세우지 않는다 — 여기서 한 번 더 묻는다.
       if (highMask && highMask[at.row * w + at.col]) continue;
+      // ── 가림판 가장자리 ──
+      // 해면 경정은 고도와 함께 **단조로** 부푼다. 그래서 가린 땅 바로 옆의 **가장 높은 안 가린 칸**이 저절로 극대가 된다 —
+      // 운영 f003 실측으로 이 자리에 남은 H 는 전부 1,330~1,430 m(그린란드 동안 · 간쑤 · 콜롬비아 안데스 · 사하라 고지)였다.
+      // 고원이 가린 칸에 닿으면 그 H 는 산의 치맛자락이다. **H 에만 쓴다**: 경정이 더하는 것은 기압이라 가짜는 고기압 쪽에 생기고,
+      // 산자락의 저기압은 풍하측 저기압발생(제노바 저기압 · 앨버타 클리퍼)이라는 진짜 현상이다 — 그것을 지우면 안 된다.
+      if (invert && at.touchesMask) continue;
       const { byte } = at;                               // 고원의 원래 바이트(뒤집기 전) — 2단계는 늘 원격자 g 를 읽는다
       const centre = {
         kind,

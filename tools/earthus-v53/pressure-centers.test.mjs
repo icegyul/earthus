@@ -458,6 +458,22 @@ test('가짜 옆의 진짜는 두드러짐을 고개에서 잘리지 않는다 �
   assert.equal(whole.prominence, 27, '제 바닥을 지켜 다음 진짜까지의 고개에서 잰다');
 });
 
+test('가림판에 닿은 고원의 H 는 산의 치맛자락이라 버린다 — L 은 풍하측 저기압이라 남긴다', () => {
+  // 운영 f003 실측: 가림판을 씌운 뒤에도 H 가 여섯 자리 남았고 그 고도가 전부 1,330~1,430 m 였다
+  // (그린란드 동안 · 간쑤 · 콜롬비아 안데스 …). 해면 경정이 고도와 함께 단조로 부푸니
+  // 가린 땅 **바로 옆의 가장 높은 안 가린 칸**이 저절로 극대가 된다.
+  const box = (lat, lon) => (lat >= 30.5 && lat <= 40 && lon >= 95 && lon <= 105 ? 3000 : 0);
+  const at = (amp) => fieldOf((la, lo) => 1013 + bump(la, lo, { lat: 30, lon: 100, sigma: 2, amp })
+    + bump(la, lo, { lat: -20, lon: -60, sigma: 4, amp: amp > 0 ? 30 : -30 }));            // 멀리 있는 진짜 하나
+  const high = at(20);
+  assert.equal(nearTo(kindOf(centers(high, NOW), 'H'), 30, 100, 1).length, 1, '가림판이 없으면 치맛자락이 H 로 잡힌다');
+  assert.equal(nearTo(kindOf(centers(high, NOW, { elevationAt: box }), 'H'), 30, 100, 1).length, 0);
+  assert.equal(nearTo(kindOf(centers(high, NOW, { elevationAt: box }), 'H'), -20, -60, 2).length, 1, '멀리 있는 진짜는 그대로');
+  const low = at(-20);
+  assert.equal(nearTo(kindOf(centers(low, NOW, { elevationAt: box }), 'L'), 30, 100, 1).length, 1,
+    '산자락의 저기압은 제노바 저기압·앨버타 클리퍼 같은 진짜 현상이다 — 지우지 않는다');
+});
+
 test('고지대의 센 중심들이 믿을 만한 중심의 자리를 빼앗지 않는다 — 가림판이 있으면 아예 자리를 잡지 못한다', () => {
   // 남극 빙상 위의 가짜 저기압 4개(깊이 30~33)와 바다 위의 진짜 저기압 3개(깊이 10~12). 두드러짐은 가짜 쪽이 전부 더 크다.
   const fake = [0, 1, 2, 3].map((k) => ({ lat: -80, lon: -150 + 90 * k, sigma: 2, amp: -(30 + k) }));

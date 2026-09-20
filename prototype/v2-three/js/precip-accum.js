@@ -528,6 +528,8 @@ export function applyAccumMode(layer, key) {
   const hours = key === 'rate' ? 0 : Number(key);
   layer.desc = hours ? accumDescriptorOf(layer.baseDesc, hours) : layer.baseDesc;
   layer.frames = hours ? storeFor(layer, hours) : layer.baseFrames;
+  // 다른 기간의 파생 장은 쥐고 있을 까닭이 없다 — 폰에서 색면 두 벌의 텍스처가 같이 남지 않게 비운다(다시 고르면 다시 굽는다).
+  for (const [h, store] of (layer._accumStores || [])) if (h !== hours && store.dispose) store.dispose();
   layer.scale = scaleOf(layer.desc.scaleId);
   layer.key = null;                                           // 물려 있던 두 장은 다른 필드의 것이다
   layer.stats = null;

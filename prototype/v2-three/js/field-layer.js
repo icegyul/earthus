@@ -35,6 +35,7 @@ import { FieldRenderer, halfStepOf } from './field-renderer.js?v=1';
 import { landMaskCardLine, sharedLandMask } from './land-mask.js?v=1';
 import { FIELD_LABEL_CAP, FieldLabels, labelLevels, labelText, pickLabelSpots, thinField } from './field-labels.js?v=1';
 import { FieldSymbols, SYMBOL_CAP, symbolCardRow } from './field-symbols.js?v=1';
+import { accumAction, accumCardRow, accumCardState, accumStatusText, accumValidMs } from './precip-accum.js?v=1';
 
 // 레이어 id → 무엇을 어떻게 그리나. 레이어 id·현상 id 는 개명하지 않는다(현상 레지스트리 규칙) — 'tempgrid' 그대로다.
 //   fieldId   프레임 저장소의 필드(gfs-frames.js) · scaleId  색 눈금표(field-scales.js)
@@ -68,8 +69,12 @@ export const FIELD_DESCRIPTORS = Object.freeze({
   // 예전 'raingrid' 는 Open-Meteo 5°(한 칸 555 km) 한 시각의 선형 램프였다 — 소나기 하나가 한반도만 한 네모가 됐다.
   // 누적(1h · 3h · 24h)은 아직 없다. 눈금표에 단위 전환(mm)이 준비돼 있지만 **단추를 그리지 않는다** — 누를 때 아무 일도
   // 안 나는 토글을 만들지 않는다(죽은 토글 금지). apcp 버킷 합산은 다음 묶음이다.
+  //   ⚠️ (2026-09-20 작업 E2) 그 '다음 묶음'이 왔다 — accum 훅 한 줄로 카드에 '현재 강우 | 3시간 | 24시간' 칩이 선다.
+  //   로직·저장소·글자는 전부 precip-accum.js 에 있다. **1시간 칩은 여전히 없다**: GFS 누적 버킷은 3시간이 가장 짧아
+  //   1시간 양은 지어내야 하고, 카드가 화면에서도 그 이유를 말한다. 누적을 고르면 눈금표가 precipAccum 으로 갈린다.
   raingrid: Object.freeze({
     layerId: 'raingrid', fieldId: 'precip', scaleId: 'precip', mode: 'scalar', mask: 'none', transfer: 'log10',
+    accum: 'precip',   // 누적 칩 훅(기압의 symbols 훅과 같은 자리) — 기온·바람·바다에는 이 줄이 없어 칩도 없다
     // ⚠️ 제목에 '지금'을 넣지 않는다 — 이것은 범례의 제목이고 바로 아래 줄에 유효 시각이 선다. T+72h 를 보는 중에
     //    '지금 내리는 세기 · 유효 09/23 09:00 KST' 라고 적히면 카드가 화면과 다른 말을 한다(2026-09-20 반박 검증의 그 사고).
     title: Object.freeze({ ko: '전지구 강수 · 강수율', en: 'Global precipitation · rate' }),
@@ -300,6 +305,10 @@ export const statusText = (st, { ko = true, short = false } = {}) => {
         : `Interpolated between model frames — ${fmtValid(st.a.t, false)} and ${fmtValid(st.b.t, false)} (${st.gapH} h apart), blended by value.`;
     }
     case 'exact': {
+      // 구간 누적(강수 3·24시간)은 '그 시각의 값'이 아니라 '그 구간 동안의 양'이다 — 프레임 하나를 그대로 칠하면서도
+      // 말해야 하는 것이 다르다(구간의 두 끝 · 몇 시간치). 글은 precip-accum.js 가 짓는다. 누적이 아니면 빈 글자다.
+      const acc = accumStatusText(st, { ko, short, fmtValid });
+      if (acc) return acc;
       if (short) return '';
       if (st.single) {
         return ko ? `자료 그대로 — 기준 ${fmtValid(st.a.t, true)} 한 장입니다` : `Data as issued — one snapshot at ${fmtValid(st.a.t, false)}`;
@@ -398,6 +407,8 @@ export const fieldCardInner = (m) => {
     : `${painted} solid bands. Colours are never blended — band edge = legend edge = isoline value.`}`);
   lines.push(`<span data-field-live>${fieldCardLive(m)}</span>`);
   const btn = (action, data, on, text) => `<button data-action="${action}" data-layer="${esc(m.id)}" ${data} aria-pressed="${on ? 'true' : 'false'}" style="${pressed(on)}">${esc(text)}</button>`;
+  // 기간 칩('현재 강우 | 3시간 | 24시간') — 누적 훅이 있는 레이어(강수)에만. 무엇이 칠해져 있는지를 먼저 고르는 자리라 맨 앞이다.
+  if (m.accum) lines.push(accumCardRow(m, btn));
   // 등치선이 있는 눈금이면 켬/끔은 늘 낸다(수온 1 °C 고정 · 파고 경계선 · 기압 4 hPa). 간격 단추는 **선택지가 둘 이상일 때만** —
   // 선택지가 하나뿐인 눈금은 단추로 가장하지 않고 굵은 선 간격만 글자로 적는다(지시서 W3 '죽은 토글 금지').
   const spec = isolineSpec(m.scale, m.isoChoice);
@@ -434,13 +445,15 @@ export const fieldCardInner = (m) => {
       cell: cellLabel(m.info && m.info.resolutionDeg, ko), ko,
     }))}</span>`);
   }
-  lines.push(m.info && m.info.single
+  // 닫는 줄은 descriptor 가 제 문장을 말할 수 있다 — 누적은 구간끼리 섞지 않으므로 아래의 '값으로 이어'가 거짓이 된다.
+  const timeline = L(m.desc.timelineNote);
+  lines.push(timeline || (m.info && m.info.single
     ? (ko
       ? '이 자료는 한 시각짜리 한 장입니다 — 타임라인을 밀면 색면을 숨기고 그렇게 말합니다. 지구를 누르면 그 자리의 값을 범례 아래에 적습니다(네트워크 조회 없음).'
       : 'This dataset is a single snapshot — move the timeline and the field hides and says so. Tap the globe to read the value there (no network request).')
     : (ko
       ? '타임라인을 밀면 5일 예보가 3시간 간격 프레임 사이를 값으로 이어 움직입니다. 지구를 누르면 그 자리의 모델값을 범례 아래에 적습니다(네트워크 조회 없음).'
-      : 'Drag the timeline: the 5-day forecast moves by value-blending 3-hourly frames. Tap the globe to read the model value there (no network request).'));
+      : 'Drag the timeline: the 5-day forecast moves by value-blending 3-hourly frames. Tap the globe to read the model value there (no network request).')));
   return lines.join('<br/>');
 };
 
@@ -812,6 +825,9 @@ export class FieldLayer {
       if (!this.choices.includes(String(ds.choice))) return false;
       this.isoChoice = String(ds.choice);
       this.isoOn = true;                                      // 간격을 고르는 것은 선을 보겠다는 뜻이다
+    } else if (action === 'field-accum') {
+      // 기간 칩(강수). descriptor·눈금표·저장소를 한꺼번에 갈아 끼우고 지금 시각으로 다시 그린다 — 전부 precip-accum.js 에서 한다.
+      return accumAction(this, ds);
     } else if (action === 'field-symbols') {
       if (!this.symbols) return false;                        // 기호가 없는 레이어(기온·풍속)에는 이 단추가 없다
       this.symbolsOn = ds.set ? ds.set === 'on' : !this.symbolsOn;
@@ -926,7 +942,10 @@ export class FieldLayer {
       // 육지 판의 현황 — 카드가 '무엇으로 육지를 갈랐나'를 사실대로 적는다(없으면 없다고 적는다).
       landMask: lm && lm.info ? lm.info() : null,
       cellWord: this.cellWord(info),
-      validMs: this.active ? this.timeBus.validMs() : null,
+      // 누적은 타임라인의 시각이 아니라 **그 구간의 끝**을 유효 시각으로 말한다(precip-accum.js accumValidMs).
+      validMs: this.active ? (accumValidMs(this) ?? this.timeBus.validMs()) : null,
+      // 기간 칩의 지금 상태. 누적 훅이 없는 레이어는 null 이라 카드에 그 줄이 통째로 없다.
+      accum: accumCardState(this),
       status: this.status, isoOn: this.isoOn, isoChoice: this.isoChoice, choices: this.choices,
       stats: this.stats, probe,
       // '모델 범위' 줄이 두 끝을 어떻게 말할지 정하는 데 쓴다(로그 자료의 바닥·천장 — field-log.js logRangeText).
@@ -978,7 +997,9 @@ export class FieldLayer {
     this.legend.show({
       scale: this.scale, title: this.desc.title, source: sourceLabel(info),
       // 한 시각짜리 자료에는 '런'이 없고 '유효'는 타임라인이 아니라 자료의 기준 시각이다.
-      run: info ? info.run : null, valid: (info && info.single) ? info.validMs : this.timeBus.validMs(),
+      // 누적 구간도 마찬가지다 — 타임라인의 10:30 을 적어 놓고 09:00 까지의 양을 칠하면 범례가 화면과 다른 말을 한다.
+      run: info ? info.run : null,
+      valid: accumValidMs(this) ?? ((info && info.single) ? info.validMs : this.timeBus.validMs()),
       // 아무 일도 없을 때 비는 한 줄 — 눈금표가 늘 하는 말과 포화 고지를 **둘 다** 적는다(scaleNote).
       // ⚠️ 이 객체에 같은 열쇠를 두 번 적지 마라: JS 는 뒤엣것만 남기고 조용히 앞엣것을 버린다(2026-09-20 에 실제로 한 번 그랬다 —
       //    D3 가 'single' 줄을 더하면서 run·valid·note 를 통째로 다시 적어, D2 가 세워 둔 포화 고지가 화면에서 사라졌다).
@@ -989,7 +1010,7 @@ export class FieldLayer {
     if (inner === this.lastInner) return;                     // 글자가 그대로면 DOM 도 문자열도 건드리지 않는다
     // 떠 있는 카드를 제자리에서 고친다. 단추의 모양(켬/끔 · 간격)이 그대로면 시각을 따라 바뀌는 덩어리만 갈아 끼운다 —
     // 재생 중(220ms 마다 한 걸음)에 카드를 통째로 갈면 누르려던 단추가 손가락 밑에서 새 것으로 바뀐다.
-    const shape = `${this.isoOn}|${this.isoChoice}|${this.symbolsOn}|${ko}`;
+    const shape = `${this.isoOn}|${this.isoChoice}|${this.symbolsOn}|${this.desc.accumHours || ''}|${ko}`;
     const doc = this.deps.doc || (typeof document !== 'undefined' ? document : null);
     if (doc && doc.querySelectorAll) {
       for (const el of doc.querySelectorAll(`[data-field-card="${this.id}"]`)) {

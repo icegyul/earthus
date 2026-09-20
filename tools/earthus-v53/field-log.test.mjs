@@ -215,7 +215,7 @@ test('범례는 자료가 못 채우는 맨 위 칸을 말한다 — 천장은 �
   assert.equal(topBandNote(SCALE, null), '');
 });
 
-test('카드 — 누적 단추가 없고, 고를 것 없는 등치선은 글자로 말한다', async () => {
+test('카드 — 기간 칩이 서고(1시간은 없다), 고를 것 없는 등치선은 글자로 말한다', async () => {
   const store = storeWith(() => byteFor(3));
   const timeBus = createTimeBus({ now: () => T0 });
   const legend = { last: null, show(a) { this.last = a; }, hide() {}, release() {} };
@@ -227,8 +227,14 @@ test('카드 — 누적 단추가 없고, 고를 것 없는 등치선은 글자�
   assert.deepEqual(await layer.on(), { on: true });
   const html = layer.cardHtml();
   assert.ok(!/field-iso-step/.test(html), '눈금표에 간격 선택지가 없다 — 없는 단추를 그리지 않는다');
-  assert.ok(!/누적|1h|3h|24h/.test(html), '누적은 아직 없다 — 누를 때 아무 일도 안 나는 토글을 그리지 않는다');
-  assert.ok(/mm\/h/.test(html) && !/>\s*mm\s*</.test(html), '단위는 mm/h 다(누적 mm 로 바뀌지 않는다)');
+  // (2026-09-20 작업 E2) D2 가 '누를 때 아무 일도 안 나는 토글'이라 비워 두었던 자리에 기간 칩이 섰다.
+  // 여전히 잠그는 것: **1시간 칩은 없다.** GFS 누적 버킷은 3시간이 가장 짧아 1시간 양은 지어내야 한다.
+  assert.match(html, /data-action="field-accum" data-layer="raingrid" data-window="rate" aria-pressed="true"/, '켠 직후는 현재 강우다');
+  assert.match(html, /data-window="3" aria-pressed="false"/);
+  assert.match(html, /data-window="24" aria-pressed="false"/);
+  assert.ok(!/data-window="1"/.test(html), '1시간 칩은 없다 — 지어내야 나오는 값에는 단추를 달지 않는다');
+  assert.match(html, /1시간 누적은 없습니다/, '없는 까닭을 화면이 말한다(조용히 빠뜨리지 않는다)');
+  assert.ok(/mm\/h/.test(html) && !/>\s*mm\s*</.test(html), '현재 강우에서는 단위가 mm/h 다(누적 mm 로 바뀌지 않는다)');
   assert.match(html, new RegExp(`${legendModel(SCALE).length}단 구간색`), '칠하는 칸만 센다 — 9칸이 아니라 8칸');
   assert.match(html, /강한 코어 윤곽/);
   assert.match(html, new RegExp(`${SCALE.isolines.levels[0]} mm/h 이상`), '선이 무엇을 두르는지 글자로 말한다');

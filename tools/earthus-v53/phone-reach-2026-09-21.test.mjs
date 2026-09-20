@@ -158,21 +158,33 @@ test('㉠ 넘치면 본문이 실제로 스크롤된다 — min-height:0 이 없
   assert.match(prop(body, 'overflow-y'), /auto|scroll/);
 });
 
-// ── ㉡ 폰에서 설정·로그인·기능설명에 닿는다 ─────────────────────────────────
-test('㉡ 설정·로그인·기능설명이 폰 폭에서 숨겨지지 않는다', () => {
-  const ids = ['btn-settings', 'btn-login', 'btn-help'];
+// ── ㉡ 폰에서 설정·로그인에 닿는다 ────────────────────────────────────────
+//
+// ⚠️ 2026-09-21 정정 — 이 자리에 원래 "폰 폭에서 이 셋이 숨겨지지 않는다"는 시험이 있었다.
+//    **전제가 틀렸다.** 운영 폰 화면(375×812)에서 직접 재 보니 `#btn-settings`·`#btn-login`·`#btn-help`
+//    는 정말 `display:none` 이지만, 그 규칙은 index.html 이 아니라 **런타임에 끼어드는 지구 전환기**
+//    (prototype/js/earth-switch.js · ADOPT 표)가 넣는다. 그 전환기가 설정·로그인을 **좌상단 ∧ 드롭다운으로
+//    입양**해 가므로(실측: 눌렀을 때 EARTHUS · Intelligence · 설정 · 로그인 네 줄이 각 170×40 으로 뜬다)
+//    폰에서도 계정에 닿는다 — 오히려 상단 막대에 되살리면 **같은 것이 두 군데** 생긴다.
+//    그래서 잠글 것은 '숨겨지지 않는다'가 아니라 **'입양해 가는 쪽과 여기가 어긋나지 않는다'** 이다.
+//    (전환기는 v1 모듈이고 v2 는 그것을 런타임에 들여 쓴다 — v1 을 고치면 무료 v1 서비스가 같이 흔들린다.)
+test('㉡ 설정·로그인은 상단 막대에 있고, 지구 전환기가 그 둘을 이름으로 찾아간다', () => {
   const chrome = html.slice(html.indexOf('<div id="chrome"'), html.indexOf('</div>', html.indexOf('<div id="chrome"')));
-  for (const id of ids) {
+  // 전환기는 id 와 aria-label 두 열쇠로 찾는다 — 둘 중 하나라도 어긋나면 드롭다운에서 조용히 사라진다.
+  for (const [id, label] of [['btn-settings', '설정'], ['btn-login', '로그인 / 계정']]) {
     const tag = chrome.match(new RegExp(`<(button|a)[^>]*id="${id}"[^>]*>`));
-    assert.ok(tag, `${id} 가 상단 막대에 없다`);
-    assert.ok(!/\shidden[\s>]/.test(tag[0]), `${id} 에 hidden 이 붙어 display:none !important 가 걸린다`);
+    assert.ok(tag, `${id} 가 상단 막대에 없다 — 전환기가 입양할 것이 없어 폰에서 계정에 닿지 못한다`);
+    assert.ok(tag[0].includes(`aria-label="${label}"`),
+      `${id} 의 aria-label 이 "${label}" 이 아니다 — earth-switch.js 의 ADOPT 셀렉터가 못 찾는다`);
+    assert.ok(!/\shidden[\s>]/.test(tag[0]), `${id} 에 hidden 이 붙으면 입양 전에 이미 죽는다`);
   }
-  // 이 셋을 겨누는 어떤 규칙도 display:none 을 걸지 않는다 — 폰 폭 규칙을 포함해 전부 훑는다.
+  // 이 저장소(index.html)는 그 셋을 스스로 숨기지 않는다 — 숨기는 일은 전환기 한 곳에서만 일어나야 한다.
+  // 두 곳에서 숨기면 전환기를 걷어낼 때 왜 안 보이는지 찾을 수 없다.
   for (const m of css.matchAll(/(?:^|[};])\s*([^{};@]+)\{([^{}]*)\}/g)) {
     const [, sel, body] = m;
-    if (!ids.some((id) => sel.includes(`#${id}`))) continue;
+    if (!['btn-settings', 'btn-login', 'btn-help'].some((id) => sel.includes(`#${id}`))) continue;
     assert.doesNotMatch(body, /display\s*:\s*none/,
-      `${sel.trim()} 이 설정·로그인·기능설명을 숨긴다 — 폰에 대체 입구가 없으므로 계정에 못 들어간다`);
+      `${sel.trim()} 이 여기서도 숨긴다 — 숨기는 주인은 earth-switch.js 하나여야 한다`);
   }
 });
 

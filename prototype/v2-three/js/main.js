@@ -3256,8 +3256,10 @@ async function main() {
       const sf = liveLayers.starField();
       const drawing = !!(sf && sf.drawing);
       const desc = sf ? FIELD_DESCRIPTORS[sf.id] : null;
+      // 이름은 색면 표에서 온다. 표 밖의 겹면(잠기는 땅)은 제 이름을 들고 온다 — 없으면 '색면'이라고만 적힌다.
+      const quantity = desc ? desc.quantity : (sf && sf.quantity) || null;
       const say = cloudYield.read({
-        star, drawing, cloudsOn: clouds.mode !== 'off', quantity: desc ? desc.quantity : null, ko: i18n.ko,
+        star, drawing, cloudsOn: clouds.mode !== 'off', quantity, ko: i18n.ko,
       });
       // 윤곽선도 색면이 실제로 그려질 때만 — 안 보이는 색면 위에 나라 테두리만 남기지 않는다.
       fieldOutlines.setVisible(star === 'field' && drawing);

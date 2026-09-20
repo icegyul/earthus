@@ -11,7 +11,7 @@ import { readFileSync } from 'node:fs';
 import * as THREE from '../../prototype/vendor/three-r184.module.min.js';
 
 import {
-  FLOOD_DEFAULT, FLOOD_FAR_KM, FLOOD_FRAG, FLOOD_IDW_K, FLOOD_LIFT, FLOOD_OPACITY, FLOOD_RIM, FLOOD_RISE_BASE, FLOOD_RISE_RES,
+  FLOOD_DEFAULT, FLOOD_FAR_KM, FLOOD_FRAG, FLOOD_IDW_K, FLOOD_LIFT, FLOOD_OPACITY, FLOOD_QUANTITY, FLOOD_RIM, FLOOD_RISE_BASE, FLOOD_RISE_RES,
   FLOOD_RISE_STEP, FLOOD_SCALE, FLOOD_SCENARIOS, FLOOD_TERRAIN_GLSL, FLOOD_VERT, FLOOD_YEARS,
   buildRiseStencil, createFloodOverlay, decodeRise, encodeRise, floodAt, floodBandIndex, floodCardInner, floodRimCoverage,
   floodStations, medianOf, riseAt, riseGridOf, riseRGBA, stationMedians, swapFloodCard,
@@ -19,6 +19,7 @@ import {
 import { FIELD_FRAG, FIELD_GRAD_EPS, FIELD_LIFT, FIELD_RENDER_ORDER, FIELD_VERT, lineCoverage } from '../../prototype/v2-three/js/field-renderer.js';
 import { bandIndex, legendModel } from '../../prototype/v2-three/js/field-scales.js';
 import { resetSharedLandMask } from '../../prototype/v2-three/js/land-mask.js';
+import { CLOUD_LEVEL, cloudYieldFor } from '../../prototype/v2-three/js/cloud-yield.js';
 
 const here = (rel) => new URL(rel, import.meta.url);
 const lf = (s) => s.replace(/\r\n/g, '\n');   // 이 워크트리는 CRLF 로 체크아웃된다 — 글자 대조는 LF 로 한다
@@ -512,11 +513,28 @@ test('잠기는 땅도 색면과 같은 주인공 대접을 받는다 — 켜면
   assert.equal(ll.starLayer(), null);
   const built = await ll.buildFromData('slr', AR6);
   ll.layers.slr = { on: true, obj: built.obj, data: AR6, meta: built.meta };
-  // main.js starLayers.tick 은 이 값 하나로 구름 불투명도를 0 으로 민다(색면과 같은 자리).
   assert.equal(ll.starLayer(), 'field', '구름 0.92 가 그대로 남으면 물가의 1.6 px 테는 보이지 않는다');
+  // ⚠️ starLayer 하나로는 부족하다(2026-09-20 합치기에서 실측). 작업 E3 ③ 이후 main.js 는 **그려지고 있나**(starField().drawing)
+  //    까지 보고 구름을 민다 — 색면 표 밖의 겹면이 그 사실을 말하지 않으면 구름은 0.92 그대로다.
+  const sf = ll.starField();
+  assert.equal(sf.id, 'slr');
+  assert.equal(sf.drawing, true, '지형을 받은 세션인데 안 그려지고 있다고 말한다 — 구름이 안 물러난다');
+  // ⚠️ 같은 것인가(===)로 견주지 않는다 — live-layers 는 './flood-overlay.js?v=1' 로 들여서 node 에서는 모듈이 두 벌이다.
+  //    정작 중요한 것은 **읽을 때마다 같은 객체가 나오는가**다(cloudYield.read 가 그것으로 글자를 다시 지을지 가른다).
+  assert.deepEqual(sf.quantity, FLOOD_QUANTITY, "이름이 없으면 화면에 '색면 색면을 보는 동안…'이라고 적힌다");
+  assert.equal(ll.starField().quantity, sf.quantity, '매 프레임 새 객체를 내면 구름 글자를 매 프레임 다시 짓는다');
+  // 그 값들을 그대로 구름 규칙에 넣으면 구름이 꺼진다(main.js starLayers.tick 이 하는 일과 같은 셈).
+  const say = cloudYieldFor({ star: ll.starLayer(), drawing: sf.drawing, quantity: sf.quantity, cloudsOn: true });
+  assert.equal(say.level, CLOUD_LEVEL.OFF);
+  assert.match(say.note, /잠기는 땅/, '무엇 때문에 구름을 숨겼는지 화면이 말한다');
+  // 지형을 못 받은 세션은 셰이더가 전부 discard 한다 — 그때까지 구름을 끄면 맨 지구만 남는다.
+  built.obj.userData.flood.uniforms.uHasHeight.value = 0;
+  assert.equal(ll.starField().drawing, false);
+  assert.equal(cloudYieldFor({ star: 'field', drawing: false, cloudsOn: true }).level, CLOUD_LEVEL.FULL);
+  built.obj.userData.flood.uniforms.uHasHeight.value = 1;
   ll.layers.slr.on = false;
   assert.equal(ll.starLayer(), null, '끄면 구름이 제자리로 돌아온다');
-  assert.match(MAIN_SRC, /const target = star === 'field' \? 0 :/, '구름을 미는 것은 이 한 줄이다');
+  assert.equal(ll.starField(), null, '꺼도 obj 는 남는다 — 켜짐을 같이 보지 않으면 구름이 계속 물러나 있다');
 });
 
 test('live-layers 와 main.js 의 배선 — 옛 막대기 코드가 없고 다시 짓는 길이 막혀 있다', () => {

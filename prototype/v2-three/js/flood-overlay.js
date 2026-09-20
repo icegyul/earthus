@@ -91,6 +91,14 @@ export const FLOOD_LIFT = FIELD_LIFT / 4;
 /** 물가의 밝은 테 — 굵기(CSS px)와 진하기. 전지구 줌에서 잠기는 땅은 실오라기라 **이 선이 그림의 주인공**이다. */
 export const FLOOD_RIM = Object.freeze({ color: Object.freeze([0.918, 0.988, 1.0]), widthPx: 1.6, alpha: 0.92 });
 
+/**
+ * 구름이 물러나며 화면에 적는 이름(js/cloud-yield.js 의 quantity 자리).
+ * 색면들은 FIELD_DESCRIPTORS 에서 이 이름을 얻는데, 잠기는 땅은 그 표 밖이라 여기서 준다 —
+ * 없으면 '색면 색면을 보는 동안 구름을 숨겼습니다'가 된다.
+ * ⚠️ cloudYield.read 는 이 객체를 **같은 것인가**로 견주므로(폰 발열) 매번 새로 짓지 않는다.
+ */
+export const FLOOD_QUANTITY = Object.freeze({ ko: '잠기는 땅', en: 'flooded land' });
+
 /** 시나리오 · 연도 — 자료에 있는 것 그대로다(ar6.json scenarios · years). 없는 칸은 단추로 그리지 않는다. */
 export const FLOOD_SCENARIOS = Object.freeze([
   Object.freeze({ id: 'ssp126', label: 'SSP1-2.6', word: '저배출' }),
@@ -835,6 +843,12 @@ export function createFloodOverlay(doc = {}, deps = {}) {
     get mesh() { return mesh; },
     get uniforms() { return uniforms; },
     get state() { return { ...state }; },
+    /**
+     * **지금 실제로 무엇인가 그려지고 있나.** 색면의 FieldLayer.isDrawing 과 같은 뜻이다 —
+     * 지형을 못 받은 세션은 셰이더 첫 줄에서 전부 discard 하므로(FLOOD_FRAG) 켜져 있어도 화면에는 아무것도 없다.
+     * main.js 가 이것을 보고 구름·윤곽선을 물린다: 안 보이는 겹면 때문에 구름까지 끄면 맨 지구만 남는다(작업 E3 ③).
+     */
+    get drawing() { return uniforms.uHasHeight.value > 0.5; },
     stencil() { return stencil; },
     grid() { return grid; },
     model() { return { ...stats, hasHeight: !!(uniforms.uHasHeight.value > 0.5), reach: reachState }; },

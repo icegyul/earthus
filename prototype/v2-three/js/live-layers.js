@@ -9,7 +9,7 @@ import { buildOceanMaskAsync, oceanMaskAlphaRGBA, oceanMaskCardLine, erodedGridN
 // W1 셰이더 색면(기온부터) — 프레임 저장소·시간 버스·범례·라벨을 묶는 접착제는 저 파일에 있다. 여기에는 거는 자리만 둔다.
 import { activeField, clearFieldLayers, isFieldLayerId, toggleFieldLayer } from './field-layer.js?v=1';
 // 잠기는 땅(레이어 'slr' · 2026-09-20 E1) — 상승폭 IDW 격자·셰이더·카드는 저 파일에 있다. 여기에도 거는 자리만 둔다.
-import { createFloodOverlay } from './flood-overlay.js?v=1';
+import { createFloodOverlay, FLOOD_QUANTITY } from './flood-overlay.js?v=1';
 // 지상관측 두 파일(기상청 · GTS)은 공용 저장소에서 받는다 — 바람·평년차·기입 모형·지구 위 관측 숫자가 같은 문서를 나눠 쓴다(surface-obs.js).
 import { surfaceObs } from './surface-obs.js?v=1';
 
@@ -328,13 +328,24 @@ export class LiveLayers {
   // 매 프레임 불린다: 열쇠 배열을 만들지 않고, 돌려주는 객체도 하나를 쥐고 돌려쓴다(폰 발열).
   starField() {
     const fields = this._fields;
-    if (!fields) return null;
-    for (const id in fields) {
-      const l = this.layers[id];
-      if (!l || !l.on || !fields[id].active) continue;
-      const out = this._starFieldOut || (this._starFieldOut = { id: null, drawing: false });
-      out.id = id;
-      out.drawing = fields[id].isDrawing();
+    if (fields) {
+      for (const id in fields) {
+        const l = this.layers[id];
+        if (!l || !l.on || !fields[id].active) continue;
+        const out = this._starFieldOut || (this._starFieldOut = { id: null, drawing: false });
+        out.id = id;
+        out.drawing = fields[id].isDrawing();
+        return out;
+      }
+    }
+    // 잠기는 땅(slr)은 FIELD_DESCRIPTORS 밖이지만 **화면에서는 색면과 같은 것**이다(위 starLayer 머리말).
+    // 여기서 말해 주지 않으면 starLayer 가 'field' 라 해도 drawing 이 거짓이라 구름이 0.92 그대로 남는다 —
+    // 물가의 1.6 px 테가 흰 구름에 묻혀, 켜도 '구름 낀 지구'가 된다(작업 E1 ④ × E3 ③ 이 만나는 자리).
+    // ⚠️ floodOverlay() 는 '지은 것'을 돌려준다(꺼도 obj 는 남고 visible 만 뒤집힌다) — 켜짐은 따로 본다.
+    const flood = this.layers.slr && this.layers.slr.on ? this.floodOverlay() : null;
+    if (flood) {
+      const out = this._starSlrOut || (this._starSlrOut = { id: 'slr', drawing: false, quantity: FLOOD_QUANTITY });
+      out.drawing = !!flood.drawing;
       return out;
     }
     return null;

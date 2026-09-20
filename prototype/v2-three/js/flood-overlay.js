@@ -138,6 +138,16 @@ export const FLOOD_OPACITY = 0.62;
 export const FLOOD_PAINTED_KM2 = 279614;
 export const FLOOD_PAINTED_PCT = 0.19;
 /**
+ * **그 수를 어느 칸에서 쟀나.** 위 두 수는 시나리오 하나 · 연도 하나에서 잰 것이다 —
+ * 카드가 그 사실을 적지 않으면, 시나리오 4 × 연도 3 = 12칸 가운데 어느 것을 눌러도 같은 숫자가 따라다니며
+ * '지금 화면의 수'인 척한다(2026-09-21 반박 검증). 칠하는 규칙은 상승폭에 대해 단조라
+ * SSP1-2.6/2050 과 SSP5-8.5/2150 이 같은 값일 수 없다.
+ * ⚠️ FLOOD_DEFAULT 를 가리키지 않는다. 이것은 '기본으로 보여 주는 칸'이 아니라 **잰 칸**이다 —
+ *    기본값을 옮기는 날 이 표가 따라 움직이면, 재지도 않은 칸의 수라고 카드가 말하게 된다.
+ *    판정이나 자료를 고쳐 다시 재면 위의 두 수와 이 두 글자를 **같이** 고친다.
+ */
+export const FLOOD_PAINTED_AT = Object.freeze({ scenario: 'ssp585', year: '2100' });
+/**
  * 지형 위로 띄우는 높이(지구 반지름 단위). 색면(FIELD_LIFT ≈ 7.6 km)의 1/4 인 약 1.9 km 다.
  * 왜 색면보다 낮게 띄우나: 색면은 '이 칸의 값'이라 몇 km 어긋나도 뜻이 안 바뀌지만, 이 면은 **물가의 선이 곧 답**이다.
  * 비스듬히 볼 때 띄운 높이는 그대로 시차가 된다(L · tanθ — 7.6 km 를 30° 에서 보면 4.4 km 가 밀린다).
@@ -316,6 +326,49 @@ export const floodStations = (items = []) => {
 
 /** 한 시나리오·연도의 관측소 값 세 줄 [중앙값, 하한, 상한] → 중앙값 배열(스텐실의 차례와 같다). */
 export const stationMedians = (stations, scenario, year) => stations.map((s) => s.s[scenario][year][0]);
+
+/**
+ * 상승폭 `a` 를 `b` 와 **관측소 하나하나** 견준다 → { n, lower, higher, verdict }.
+ *   verdict 'same' 전부 같다 · 'below' 한 곳도 더 높지 않다 · 'above' 한 곳도 더 낮지 않다 · 'mixed' 엇갈린다
+ *
+ * 왜 이 물음이 면적 이야기가 되나: 상승폭 격자는 IDW 라 어느 칸의 값도 **양수 무게의 가중평균**이고 무게의 합은 1 이다
+ * (riseGridOf). 그러니 지점값이 한 곳도 안 높으면 **어느 칸의 상승폭도 안 높다.** 그리고 칠하는 규칙은
+ * '지형 ≤ 상승폭' 이라 상승폭에 대해 단조다 — 칠해지는 땅은 반드시 부분집합이 된다.
+ * 바다 도달 판(reach)은 riseMaxGridOf, 즉 **시나리오·연도와 무관한** 최댓값으로 굽기 때문에 이 비교를 흔들지 않는다.
+ * → 그래서 'below' 일 때만 카드가 "그 칸보다 좁습니다"를 거짓 없이 말할 수 있다.
+ *
+ * ⚠️ 운영 자료로 재 보니 12칸 가운데 **11칸이 'mixed'** 다(2026-09-21 실측). 배출이 낮거나 이른 해라도
+ *    땅이 솟는 관측소(스칸디나비아 · 알래스카 · 31곳이 음수)에서는 값이 거꾸로 **높다** — 시간이 갈수록 더 내려가기 때문이다.
+ *    예: SSP1-2.6/2050 은 1,016곳 중 1,000곳이 낮고 16곳이 높다. 그래서 verdict 만으로는 카드가 할 말이 없어진다 —
+ *    센 수(lower · higher)를 같이 들려 보내, 말할 수 있는 것은 말하고 말할 수 없는 것은 말할 수 없다고 적게 한다.
+ * 견줄 수 없으면(길이가 다르거나 비어 있으면) null — 모르는 것을 '같다'로 메우지 않는다.
+ */
+export const riseCompare = (a, b) => {
+  if (!Array.isArray(a) || !Array.isArray(b) || !a.length || a.length !== b.length) return null;
+  let lower = 0;
+  let higher = 0;
+  for (let i = 0; i < a.length; i += 1) {
+    const x = a[i];
+    const y = b[i];
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+    if (x < y) lower += 1;
+    else if (x > y) higher += 1;
+  }
+  const verdict = (!lower && !higher) ? 'same' : (lower && higher) ? 'mixed' : (higher ? 'above' : 'below');
+  return Object.freeze({ n: a.length, lower, higher, verdict });
+};
+
+/**
+ * ar6.json 의 `country` 글자 그대로 — **대한민국**의 열쇠다.
+ * ⚠️ 2026-09-21 반박 검증: 카드가 `startsWith('Korea')` 로 골라 북한 관측소 한 곳(SONBONG)이 '한국 24곳'에 섞여 있었다.
+ *    앱의 다른 곳에서 '한국'은 대한민국이고, 화면의 나라 원판도 `country` 글자 그대로 갈라 두 나라를 따로 세운다
+ *    (slr-plates.js countryGroups) — 화면은 가르는데 카드만 뭉쳐 세고 있었다.
+ *    이름을 '한반도'로 바꾸는 길도 있었지만, 그러면 화면의 원판 둘과 카드의 한 덩어리가 다시 어긋난다.
+ */
+export const KOREA_COUNTRY = 'Korea, Republic Of';
+
+/** '한국' 줄이 세는 관측소 — 화면의 나라 원판과 **같은 가름**(country 글자 그대로)이다. */
+export const koreaStations = (rows = []) => rows.filter((r) => r && r.country === KOREA_COUNTRY);
 
 /**
  * ⚠️ 2026-09-20 작업 E5 — `discOrder`(작은 값부터 찍어 큰 값을 위에 남기던 차례)와 `stationFacing`(뒤편 버리기)은
@@ -760,6 +813,47 @@ export const floodLegendHtml = () => {
 };
 
 /**
+ * '칠해지는 땅이 얼마나 되나' 한 줄(순수).
+ *
+ * 무엇이 잘못돼 있었나(2026-09-21 반박 검증): 카드가 `0.19% · 279,614 km²` 를 **고정 숫자**로 적었는데,
+ * 같은 카드 위의 시나리오 4 × 연도 3 = 12칸 어느 것을 눌러도 그 수가 그대로였다. 칠하는 규칙은 상승폭에 대해
+ * 단조라 SSP1-2.6/2050 과 SSP5-8.5/2150 이 같을 수 없다 — 화면이 바뀌는데 숫자만 안 바뀌면 그 숫자가 거짓이 된다.
+ *
+ * 고친 방향: **잰 칸과 지금 칸을 둘 다 문장 안에 적는다.** 그리고 넓이의 방향은 `riseCompare`
+ * (관측소 1,016곳을 하나하나 견준 결과)가 **보장하는 만큼만** 말한다.
+ *   'same'  → 지금 화면이 바로 잰 칸이다. 숫자를 그대로 적는다.
+ *   'below' → 잰 칸보다 **반드시** 좁다(riseCompare 주석의 단조성).  'above' → 반드시 넓다.
+ *   'mixed' → 한 방향으로 말할 수 없다. 대신 **센 수**를 적는다(몇 곳이 낮고 몇 곳이 높은가).
+ *   null    → 견주지 못했다. 잰 칸의 수만 그 칸의 것으로 적는다.
+ * ⚠️ 지금 칸의 면적을 **숫자로 적지 않는다.** 그것을 알려면 0.25° 격자 100만 칸을 단추를 누를 때마다 다시 세야 하고
+ *    (바다 도달 판을 굽는 것과 같은 일이다), 그 값이 없는데 있는 척하지 않는 것이 이 저장소의 잣대다.
+ */
+export const floodPaintedLine = (m = {}) => {
+  const at = FLOOD_SCENARIOS.find((s) => s.id === FLOOD_PAINTED_AT.scenario) || FLOOD_SCENARIOS[3];
+  const atText = `${at.label} · ${FLOOD_PAINTED_AT.year}년`;
+  const now = FLOOD_SCENARIOS.find((s) => s.id === m.scenario);
+  const nowText = now && m.year ? `${now.label} · ${m.year}년` : '';
+  const size = `<b>${FLOOD_PAINTED_PCT}%</b>(약 ${FLOOD_PAINTED_KM2.toLocaleString()} km²)`;
+  const head = '<b>물빛 면은 이 지형 자료에서 해수면보다 낮아지는 땅</b>입니다 — '
+    + '네덜란드 · 미시시피 하류 · 북유럽 연안이 여기서 칠해집니다. ';
+  const c = m.painted;
+  if (c && c.verdict === 'same') {
+    return `<span style="opacity:.85">${head}지금 화면(${esc(atText)})에서 칠해지는 땅은 전지구 육지의 ${size}입니다.</span>`;
+  }
+  const lead = `${head}칠해지는 땅을 재 본 것은 <b>${esc(atText)}</b> 한 칸이고, 그때 전지구 육지의 ${size}였습니다. `
+    + `${nowText ? `지금 화면은 <b>${esc(nowText)}</b>라 이 수가 아닙니다 — ` : ''}`;
+  const tail = !c
+    ? '지금 칸의 넓이는 견주지 못했습니다.'
+    : c.verdict === 'below'
+      ? `관측소 ${c.n.toLocaleString()}곳이 <b>한 곳도 그 칸보다 높지 않아</b> 칠해지는 땅은 그보다 좁습니다.`
+      : c.verdict === 'above'
+        ? `관측소 ${c.n.toLocaleString()}곳이 <b>한 곳도 그 칸보다 낮지 않아</b> 칠해지는 땅은 그보다 넓습니다.`
+        : `관측소 ${c.n.toLocaleString()}곳 가운데 <b>${c.lower.toLocaleString()}곳이 그 칸보다 낮고 ${c.higher.toLocaleString()}곳이 높습니다</b>`
+          + '(높은 쪽은 땅이 솟아 상대 해수면이 내려가는 곳입니다). 그래서 <b>넓이가 어느 쪽인지는 이 자료만으로 말할 수 없습니다.</b>';
+  return `<span style="opacity:.85">${lead}${tail}</span>`;
+};
+
+/**
  * 카드 안쪽 글(순수).  model = 겹면의 model() — 지금 시나리오·연도·통계·육지 판 정보가 들어 있다.
  * 이웃한 카드들(live-layers.js 의 metaXxx)이 전부 한국어라 이 카드도 한국어다 — 색면 카드(field-layer.js)의 두 나라 말 규약은 저쪽 화면의 것이다.
  */
@@ -803,9 +897,7 @@ export const floodCardInner = (m) => {
   // **끄는 단추는 남기고**, 무엇이 칠해지고 무엇이 빠지는지를 카드가 먼저 말한다.
   L.push('<span style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0 2px">'
     + btn('slr-depth', '', !!m.depth, m.depth ? '잠기는 땅 끄기' : '잠기는 땅 켜기') + '</span>');
-  L.push(`<span style="opacity:.85"><b>물빛 면은 이 지형 자료에서 해수면보다 낮아지는 땅</b>입니다 — `
-    + `네덜란드 · 미시시피 하류 · 북유럽 연안이 여기서 칠해집니다. 칠해지는 땅은 전지구 육지의 `
-    + `<b>${FLOOD_PAINTED_PCT}%</b>(약 ${FLOOD_PAINTED_KM2.toLocaleString()} km²)입니다.</span>`);
+  L.push(floodPaintedLine(m));
   L.push('<span style="opacity:.85"><b>⚠️ 실제로 가장 위험한 곳이 오히려 빠집니다.</b> '
     + '두 가지 이유를 이 세션이 타일을 받아 직접 쟀습니다 — '
     + '① 지형이 건물 · 나무가 얹힌 <b>표면 고도</b>라 가장 크게 확대해도 다카 12 m · 뉴올리언스 7 m · 로테르담 2.4 m 로 읽혀 '
@@ -1251,6 +1343,18 @@ export function createFloodOverlay(doc = {}, deps = {}) {
     return farPctCache;
   }
 
+  /** 넓이를 잰 칸(FLOOD_PAINTED_AT)의 관측소 값 — 바뀌지 않으므로 한 번만 뽑는다. */
+  let paintedRefCache;
+  function paintedRefValues() {
+    if (paintedRefCache === undefined) {
+      paintedRefCache = FLOOD_SCENARIOS.some((s) => s.id === FLOOD_PAINTED_AT.scenario)
+        && FLOOD_YEARS.includes(FLOOD_PAINTED_AT.year)
+        ? stationMedians(stations, FLOOD_PAINTED_AT.scenario, FLOOD_PAINTED_AT.year)
+        : null;                       // 잰 칸이 자료에 없다 — 견주지 않는다(지어내지 않는다)
+    }
+    return paintedRefCache;
+  }
+
   /** 지금 시나리오·연도의 값으로 격자를 다시 굽는다(무게 판은 그대로 — 2 ms). */
   function recompute() {
     const values = stationMedians(stations, state.scenario, state.year);
@@ -1264,9 +1368,13 @@ export function createFloodOverlay(doc = {}, deps = {}) {
       return { name: s.name, country: s.country, v: cell[0], lo: cell[1], hi: cell[2] };
     });
     const sorted = [...rows].sort((a, b) => b.v - a.v);
-    const kr = rows.filter((r) => (r.country || '').startsWith('Korea'));
+    // '한국'은 대한민국이다 — 화면의 나라 원판과 같은 가름(KOREA_COUNTRY 주석에 근거).
+    const kr = koreaStations(rows);
     stats = {
       scenario: state.scenario, year: state.year, stations: stations.length,
+      // 칠해지는 땅의 넓이를 **잰 칸**과 견준 결과. 카드의 면적 한 줄이 이것을 보고 말한다(floodPaintedLine).
+      // 견줌은 관측소 값 배열끼리라 값싸다(1,016번) — 넓이를 다시 세는 것이 아니다.
+      painted: riseCompare(values, paintedRefValues()),
       globalMedian, farPct, landMask: landStore && landStore.info ? landStore.info() : null,
       hasHeight: !!(uniforms.uHasHeight.value > 0.5),
       reach: reachState, reachInfo: reachGrid ? reachInfo(reachGrid) : null,

@@ -71,6 +71,9 @@ export const SEA_GRIDS = Object.freeze([
 ]);
 export const BUOY_PATH = '/ocean/kma-buoy.json';
 
+/** 받은 답을 눌러 두는 시간. **실패는 여기 해당하지 않는다** — 실패는 캐시하지 않는다(doc 머리말). */
+export const DOC_TTL_MS = 10 * 60_000;
+
 /**
  * 해상 카드가 적는 줄. key 는 ocean/marine*.json 의 배열 이름 그대로다.
  *   ⚠️ 여기 **없는 것**이 곧 Open-Meteo 직호출에서 없앤 값이다:
@@ -179,16 +182,48 @@ export function createPointReadout(deps = {}) {
   // 색면 레이어의 30분 타이머가 본다(field-layer.js FIELD_MANIFEST_RELOAD_MS).
   const loadFrames = () => (frames.loaded ? Promise.resolve(frames.manifest) : frames.load());
 
+  // 받은 답만 눌러 둔다(ok · missing). 실패는 여기 들어가지 않는다.
   const docs = new Map();
-  function doc(path, ttlMs = 10 * 60_000) {
+  // 마지막 시도의 결과 — 실패도 남는다. 화면이 '못 받았다'와 '없다'를 **다른 문장**으로 적으려면 이게 있어야 한다.
+  // (이름이 status 면 weather() 안의 sampleField status 와 겹친다 — 겹치는 이름은 다음 사람이 헛짚는다.)
+  const docState = new Map();
+
+  /**
+   * 문서 한 장의 상태.
+   *   'ok'      받았고 내용이 있다
+   *   'missing' 물었고 답은 왔는데 우리가 그 자료를 안 갖고 있다(404 · 빈 문서) — '없다'고 말해도 되는 자리
+   *   'failed'  못 받았다 — '없다'고 말하면 거짓이다
+   */
+  const docStateOf = (path) => docState.get(path) || null;
+
+  /**
+   * ⚠️ **실패는 캐시하지 않는다.** 전에는 실패도 json=null 을 at=now() 로 눌러 두고 pending 을 비워서
+   *    10분 안의 재호출이 네트워크를 안 타고 곧바로 null 을 돌려줬다. 결과가 둘이었다:
+   *      ① '다시 조회' 단추가 10분간 아무 일도 안 했다(실패한 그 자리에서 다시 눌러도 같은 null 이다).
+   *      ② 파일 하나를 못 받은 것이 화면에서 '이 자리에 자료가 없다'는 **사실처럼** 읽혔다.
+   *    받은 답만 ttl 로 눌러 두고, 실패는 자리를 비워 다음 클릭이 정말 다시 받게 한다.
+   */
+  function doc(path, ttlMs = DOC_TTL_MS) {
     const hit = docs.get(path);
-    if (hit && (hit.pending || now() - hit.at < ttlMs)) return hit.pending || Promise.resolve(hit.json);
+    if (hit && hit.pending) return hit.pending;
+    if (hit && now() - hit.at < ttlMs) return Promise.resolve(hit.json);
     const pending = Promise.resolve()
       .then(() => doFetch(`${base}${path}`, { cache: 'no-store' }))
-      .then((r) => (r && r.ok ? r.json() : null))
-      .catch(() => null)
-      .then((json) => { docs.set(path, { at: now(), json, pending: null }); return json; });
-    docs.set(path, { at: now(), json: hit ? hit.json : null, pending });
+      .then(async (r) => {
+        if (!r) return { json: null, st: 'failed' };
+        // 404 는 '우리가 그 파일을 안 올린다'는 답이다 — 못 받은 것과 다르다.
+        if (!r.ok) return { json: null, st: r.status === 404 ? 'missing' : 'failed' };
+        const json = await r.json();
+        return (json && typeof json === 'object') ? { json, st: 'ok' } : { json: null, st: 'missing' };
+      })
+      .catch(() => ({ json: null, st: 'failed' }))
+      .then(({ json, st }) => {
+        docState.set(path, st);
+        if (st === 'failed') docs.delete(path);
+        else docs.set(path, { at: now(), json, pending: null });
+        return json;
+      });
+    docs.set(path, { at: hit ? hit.at : now(), json: hit ? hit.json : null, pending });
     return pending;
   }
 
@@ -244,9 +279,20 @@ export function createPointReadout(deps = {}) {
       const q = desc.quantity[ko ? 'ko' : 'en'];
       const meta = [sourceLabel(info), ...timeMeta(info, tMs, ko)];
       const st = statusText(status, { ko, short: true });
+      // 이 카드는 **클릭 순간의 프레임**을 읽어 글자로 구운 것이고, 타임라인이 움직여도 스스로 다시 짓지 못한다.
+      // 색면 카드에는 제자리 갱신 장치가 있지만(field-layer.js swapFieldCard) 그것은 FieldLayer 가 자기 id 로
+      // 표를 달아 둔 카드만 갈아 끼운다. 이 카드는 **그 색면이 꺼져 있을 때** 서는 카드라(main.js pointWeather
+      // ②) 갈아 끼울 주인이 없고, 주인을 만드는 일은 main.js 쪽 배선이다. 고치지 못하는 동안 숨기지 않고
+      // **화면이 제가 한 일을 말한다** — 값이 읽힌 카드에만 붙인다(값이 없는 카드에 붙이면 군소리다).
+      const frozen = r.ok
+        ? `<p style="opacity:.75">${esc(ko
+          ? '이 값은 위 유효 시각의 프레임에서 읽은 것입니다 — 타임라인을 옮기면 이 카드는 따라가지 않습니다. 그 시각의 값은 지점을 다시 눌러 주세요.'
+          : 'This value comes from the frame for the valid time above — the card does not follow the timeline. Click the point again to read another hour.')}</p>`
+        : '';
       const html = stat(q, r.ok ? r.text : '—') + stat(ko ? '지점' : 'Point', fmtPoint(lat, lon))
         + `<p>${esc(r.ok ? r.note : r.text)}${r.ok ? (ko ? ' — 도시·지점의 관측값이 아닙니다.' : ' — not a city or station observation.') : ''}</p>`
         + `<p>${esc(meta.join(' · '))}${st ? ` · ${esc(st)}` : ''}</p>`
+        + frozen
         + `<p style="opacity:.75">${ko ? '지구에 칠하는 것과 같은 프레임에서 읽었습니다 — 제3자 API 조회 없음.' : 'Read from the same frame the globe is painted with — no third-party API call.'}</p>`;
       const gridWord = desc.badge === 'OBSERVED' ? (ko ? '관측 격자값' : 'observed grid value') : (ko ? '모델 격자값' : 'model grid value');
       return {
@@ -257,7 +303,11 @@ export function createPointReadout(deps = {}) {
 
     /**
      * 해상 지점 — 우리 바다 격자 + GFS 10 m 바람 + (있으면) 기상청 해양관측망 실측.
-     * → { lat, lon, grid, gridInfo, wind, buoys, retrievedAt } | { lat, lon, none } | { lat, lon, error }
+     * → { lat, lon, grid, gridInfo, wind, buoys, buoyStatus, docs, tMs, timeOffsetMs, retrievedAt }
+     * | { lat, lon, none, reason, docs }   자료를 다 받았고 이 자리에 값이 **없다**
+     * | { lat, lon, error, docs }          못 받은 것이 있어 값이 있는지 **모른다**
+     *   buoys  [] = 목록을 읽었고 반경 안에 없다 · null = 목록을 못 받아 **모른다**
+     *   tMs    바람을 샘플한 시각. 카드의 '유효'는 이 값이고, 렌더 때 timeBus 를 다시 읽지 않는다.
      */
     async sea(lat, lon) {
       const tMs = timeBus.validMs();
@@ -277,11 +327,22 @@ export function createPointReadout(deps = {}) {
         const v = g ? seaValuesAt(g, lat, lon) : null;
         if (v && Number.isFinite(v.wave)) { grid = g; values = v; break; }
       }
+      // ⚠️ 값이 없는 것과 **못 받은 것**은 다른 사실이다. 전에는 둘 다 '자료 없음'으로 흘러
+      //    파일 하나를 못 받았을 뿐인데 화면이 '이 자리에 자료가 없다'고 단정했다.
+      //    받은 답이 하나도 없으면 오류, 일부만 못 받았으면 **모른다**, 다 받았으면 그제야 '없다'.
+      const gridDocs = SEA_GRIDS.map((g) => ({ path: g.path, st: docStateOf(g.path) }));
       if (!grid) {
-        const anyDoc = docsGot.some(Boolean);
-        return anyDoc
-          ? { lat, lon, none: true, reason: ko ? '이 자리는 우리 해양 격자에 값이 없습니다 — 연안 밖 바다를 눌러 보세요.' : 'Our ocean grid holds no value here — try a point further offshore.' }
-          : { lat, lon, error: ko ? '해양 격자 자료를 받지 못했습니다. 잠시 후 다시 조회해 주세요.' : 'The ocean grid could not be loaded. Please try again shortly.' };
+        const failed = gridDocs.filter((d) => d.st === 'failed');
+        if (!failed.length) {
+          return { lat, lon, none: true, docs: gridDocs,
+            reason: ko ? '이 자리는 우리 해양 격자에 값이 없습니다 — 연안 밖 바다를 눌러 보세요.' : 'Our ocean grid holds no value here — try a point further offshore.' };
+        }
+        const names = failed.map((d) => d.path.split('/').pop()).join(' · ');
+        return { lat, lon, docs: gridDocs,
+          error: failed.length === gridDocs.length
+            ? (ko ? '해양 격자 자료를 받지 못했습니다. 잠시 후 다시 조회해 주세요.' : 'The ocean grid could not be loaded. Please try again shortly.')
+            : (ko ? `해양 격자 가운데 ${names} 를 받지 못해 이 자리에 값이 있는지 알 수 없습니다. 잠시 후 다시 조회해 주세요.`
+              : `We could not load ${names}, so whether this point holds a value is unknown. Please try again shortly.`) };
       }
       // 바람은 색면·입자와 같은 GFS 10 m 프레임에서 읽는다(u·v 두 채널 → 크기와 불어오는 쪽).
       let wind = null;
@@ -295,10 +356,18 @@ export function createPointReadout(deps = {}) {
           status: ws.status,
         };
       }
-      const nearBuoys = buoyJson ? buoysNear({ lat, lon }, buoyJson, BUOY_KM, BUOY_FRESH_H, now()) : [];
+      // ⚠️ **null(모름) 과 [](없음) 을 나눈다.** 관측점 목록을 못 받았을 때와 반경 안에 정말 없을 때가
+      //    같은 빈 배열이면, 카드가 '100 km 안에 파고 관측점이 없습니다' 라고 단정한다 —
+      //    있는 관측점을 없다고 말하는 것은 '없는 것을 있는 척'의 뒤집힌 형태다.
+      //    목록을 **읽었을 때만** 없다고 말할 자격이 생긴다.
+      const buoyStatus = docStateOf(BUOY_PATH);
+      const nearBuoys = buoyStatus === 'ok' ? buoysNear({ lat, lon }, buoyJson, BUOY_KM, BUOY_FRESH_H, now()) : null;
       return {
         lat, lon, grid: values, gridInfo: { res: grid.res, time: grid.time, source: grid.source },
-        wind, buoys: nearBuoys, retrievedAt: new Date(now()).toISOString(),
+        wind, buoys: nearBuoys, buoyStatus, docs: gridDocs,
+        // 바람을 읽은 **그 시각**. 카드가 적는 '유효'는 이 값이다(timeBus 를 렌더 때 다시 읽지 않는다).
+        tMs, timeOffsetMs: typeof timeBus.offsetMs === 'number' ? timeBus.offsetMs : null,
+        retrievedAt: new Date(now()).toISOString(),
       };
     },
 
@@ -314,8 +383,11 @@ export function createPointReadout(deps = {}) {
       const windLine = sea.wind
         ? stat(ko ? '풍속 · 10 m' : 'Wind · 10 m', `${sea.wind.speed.toFixed(1)} m/s ${compass16(sea.wind.dirDeg)}${ko ? '풍' : ''}`)
         : stat(ko ? '풍속 · 10 m' : 'Wind · 10 m', '—');
-      // 실측 우선 — 가까운 파고 부이가 신선하면 모델과의 차이를 숫자로 적는다. 없으면 '없다'고 적는다.
-      const fresh = (sea.buoys || []).filter((b) => b.fresh);
+      // 실측 우선 — 가까운 파고 부이가 신선하면 모델과의 차이를 숫자로 적는다.
+      // ⚠️ '없다'고 적는 것은 **목록을 읽었을 때뿐**이다(sea.buoys 가 배열). 못 받았으면(null) 모른다고 적는다.
+      const known = Array.isArray(sea.buoys);
+      const list = known ? sea.buoys : [];
+      const fresh = list.filter((b) => b.fresh);
       const wave = sea.grid.wave;
       let obs;
       if (fresh.length && Number.isFinite(wave)) {
@@ -323,24 +395,44 @@ export function createPointReadout(deps = {}) {
         obs = ko
           ? `실측 — 기상청 해양관측망 ${b.name}(${b.km} km) 유의파고 ${b.wh} m · 위 격자값과 ${Math.abs(b.wh - wave).toFixed(1)} m 차이`
           : `Observed — KMA ${b.name} (${b.km} km): ${b.wh} m, differing from the grid value by ${Math.abs(b.wh - wave).toFixed(1)} m`;
-      } else if ((sea.buoys || []).length) {
+      } else if (list.length) {
         obs = ko
-          ? `실측 — ${BUOY_KM} km 안 파고 관측점(${sea.buoys[0].name})이 ${BUOY_FRESH_H}시간 넘어 대조에서 뺐습니다.`
-          : `Observed — the nearest wave station (${sea.buoys[0].name}) is older than ${BUOY_FRESH_H} h and was left out.`;
+          ? `실측 — ${BUOY_KM} km 안 파고 관측점(${list[0].name})이 ${BUOY_FRESH_H}시간 넘어 대조에서 뺐습니다.`
+          : `Observed — the nearest wave station (${list[0].name}) is older than ${BUOY_FRESH_H} h and was left out.`;
+      } else if (!known) {
+        obs = ko
+          ? `실측 — 기상청 해양관측망 목록(${BUOY_PATH.split('/').pop()})을 받지 못했습니다. ${BUOY_KM} km 안에 파고 관측점이 있는지 모릅니다 — 아래는 격자값뿐입니다.`
+          : `Observed — the KMA station list (${BUOY_PATH.split('/').pop()}) could not be loaded, so whether a wave station lies within ${BUOY_KM} km is unknown. What follows is the grid value only.`;
       } else {
         obs = ko
           ? `실측 — ${BUOY_KM} km 안에 파고 관측점이 없습니다(기상청 해양관측망은 우리 바다만 덮습니다). 격자값만입니다.`
           : `Observed — no wave station within ${BUOY_KM} km (the KMA network covers Korean waters only). Grid value only.`;
       }
-      const windMeta = sea.wind ? [sourceLabel(info), ...timeMeta(info, timeBus.validMs(), ko)].join(' · ') : '';
+      // ⚠️ 유효 시각은 **이 카드가 읽은 시각**(sea.tMs)이다. 렌더 때 timeBus 를 다시 읽으면,
+      //    풍속 숫자는 클릭 순간에 굳어 있는데 그 옆 시각 딱지만 타임라인을 따라 움직인다 —
+      //    같은 줄이 한 숫자를 두 시각의 것이라고 말하게 된다.
+      const readMs = Number.isFinite(sea.tMs) ? sea.tMs : null;
+      const windMeta = sea.wind ? [sourceLabel(info), ...timeMeta(info, readMs, ko)].join(' · ') : '';
+      // 클릭 뒤에 타임라인이 옮겨졌나. **오프셋**으로 본다 — validMs 는 벽시계가 흘러도 달라지므로
+      // 가만히 둔 화면을 '옮겼다'고 말하게 된다.
+      const moved = Number.isFinite(sea.timeOffsetMs) && typeof timeBus.offsetMs === 'number'
+        && timeBus.offsetMs !== sea.timeOffsetMs;
       // 타임라인을 밀면 바람은 그 시각의 프레임이지만 **파도·수온은 한 장뿐**이다(수집기가 current= 로 받는다).
       // 같은 바다를 칠하는 색면(wavefield)은 그때 스스로 숨는다 — 카드는 숨을 수 없으니 그 사실을 적는다.
       // 이 줄이 없으면 T+48h 화면에서 '지금 파고'가 예보처럼 읽힌다.
-      const drift = timeBus.isNow && !timeBus.isNow()
-        ? `<p>${esc(ko
+      let drift = '';
+      if (moved) {
+        // 카드를 읽은 뒤에 타임라인이 움직였다 — 이때는 **바람까지** 지금 보고 있는 시각의 값이 아니다.
+        // 여기서 아래의 '바람만 예보 프레임입니다'를 적으면 그 줄이 거짓이 된다.
+        const shown = fmtValid(timeBus.validMs(), ko);
+        drift = `<p>${esc(ko
+          ? `이 카드는 ${fmtValid(readMs, true)} 프레임을 읽은 것입니다 — 타임라인은 지금 ${shown} 을 가리킵니다. 파도·수온·해류는 물론 바람도 그 시각의 값이 아닙니다. 지점을 다시 눌러 주세요.`
+          : `This card was read from the ${fmtValid(readMs, false)} frame, but the timeline now points at ${shown}. Neither the waves, sea temperature and current nor the wind are values for that hour — click the point again.`)}</p>`;
+      } else if (timeBus.isNow && !timeBus.isNow()) {
+        drift = `<p>${esc(ko
           ? '타임라인이 지금이 아닙니다 — 파도·수온·해류는 현재 시각 한 장이라 그 시각의 값이 아닙니다(바람만 예보 프레임입니다).'
-          : 'The timeline is not at now — waves, sea temperature and current are a single present-time snapshot, not values for that hour (only the wind is a forecast frame).')}</p>`
-        : '';
+          : 'The timeline is not at now — waves, sea temperature and current are a single present-time snapshot, not values for that hour (only the wind is a forecast frame).')}</p>`;
+      }
       return rows.join('') + windLine + drift
         + `<p>${esc(ko ? '유의파고는 높은 쪽 1/3 파도의 평균 높이입니다.' : 'Significant wave height is the mean of the highest third of the waves.')}</p>`
         + `<p>${esc(obs)}</p>`
@@ -350,8 +442,10 @@ export function createPointReadout(deps = {}) {
           : 'Wind-wave height and swell direction are not in our ocean grid, so those rows are absent — we do not fill them with an approximation.')}</p>`;
     },
 
-    /** 시험·콘솔용. */
+    /** 시험·콘솔용. docsLoaded 는 **받은 답**만이다(실패는 캐시하지 않으므로 여기 없다). */
     docsLoaded() { return [...docs.keys()]; },
+    /** 문서별 마지막 시도 결과 — 'ok' | 'missing' | 'failed' | null(아직 안 물었다). */
+    docStatus(path) { return path ? docStateOf(path) : Object.fromEntries(docState); },
   };
   return api;
 }

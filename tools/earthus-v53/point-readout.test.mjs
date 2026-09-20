@@ -117,9 +117,11 @@ const filled = (nx, ny, at, vals) => {
   return out;
 };
 
-function rig({ nowMs = T0, sea = null, buoys = null, missDocs = false } = {}) {
+// missBuoy   부이 파일만 못 받는다 — '못 받았다'와 '반경 안에 없다'를 가르는 시험이 쓴다
+// state.fail 도중에 넣고 뺄 수 있는 실패 — '실패를 자료 없음으로 캐시하지 않는다'가 쓴다(시계는 그대로 둔다)
+function rig({ nowMs = T0, sea = null, buoys = null, missDocs = false, missBuoy = false } = {}) {
   const urls = [];
-  const state = { now: nowMs };
+  const state = { now: nowMs, fail: new Set() };
   const frames = createGfsFrames({
     THREE: FakeTHREE,
     now: () => state.now,
@@ -133,9 +135,10 @@ function rig({ nowMs = T0, sea = null, buoys = null, missDocs = false } = {}) {
     fetch: async (url) => {
       urls.push(url);
       if (missDocs) return { ok: false };
+      if ([...state.fail].some((p) => url.includes(p))) return { ok: false };
       if (url.includes('marine-ea')) return { ok: true, json: async () => null };
       if (url.includes('marine.json')) return { ok: true, json: async () => sea };
-      if (url.includes('kma-buoy')) return { ok: true, json: async () => buoys };
+      if (url.includes('kma-buoy')) return missBuoy ? { ok: false } : { ok: true, json: async () => buoys };
       return { ok: false };
     },
   });
@@ -350,4 +353,108 @@ test('방위는 16방위로 읽어 준다', () => {
 
 test('바다 격자는 0.5° 동아시아를 먼저 본다', () => {
   assert.deepEqual(SEA_GRIDS.map((g) => g.path), ['/ocean/marine-ea.json', '/ocean/marine.json']);
+});
+
+// ════════════════════════════════════════════════════════════════════════════════════════════
+//  카드가 말한 시각이 카드가 읽은 시각이다 — 숫자는 굳었는데 딱지만 움직이지 않는다
+// ════════════════════════════════════════════════════════════════════════════════════════════
+
+const WAVE_CELL = 23 * 72 + 61;   // 5° 격자에서 lat 35 · lon 125 칸
+const oneSea = () => seaDoc(filled(72, 33, WAVE_CELL, { wave: 1.4, sst: 21.3 }));
+// 픽스처의 프레임은 +0~+12h 다(steps 다섯) — 바람을 **읽을 수 있는** 자리에서 재야 이 시험이 무언가를 잰다.
+const AHEAD = 9 * H;
+
+test('해상 카드의 유효 시각은 그 값을 읽은 시각이다 — 타임라인만 미끄러지지 않는다', async () => {
+  const { readout, timeBus } = rig({ sea: oneSea(), buoys: { stations: [] } });
+  const got = await readout.sea(35, 125);
+  assert.ok(got.wind, '바람을 읽지 못했으면 이 시험은 아무것도 재지 않는다');
+  const read = `유효 ${fmtValid(T0, true)}`;
+  assert.ok(readout.seaHtml(got).includes(read), `읽은 시각(${read})을 안 적었다`);
+
+  // 카드는 그대로 두고 타임라인만 민다 — 지점을 **다시 누르지 않았다**.
+  timeBus.set(AHEAD);
+  const after = readout.seaHtml(got);
+  assert.ok(!after.includes(`유효 ${fmtValid(T0 + AHEAD, true)}`),
+    '풍속 숫자는 클릭 순간에 굳었는데 유효 시각 딱지만 옮겨 갔다');
+  assert.ok(after.includes(read), '카드가 자기가 읽은 시각을 잃었다');
+  assert.ok(!after.includes('바람만 예보 프레임입니다'),
+    "바람도 지금 보고 있는 시각의 값이 아닌데 '바람만 예보 프레임'이라 적었다");
+  assert.ok(after.includes(fmtValid(T0 + AHEAD, true)),
+    '타임라인이 어디를 가리키는지 말해야 사용자가 다시 조회할 이유를 안다');
+});
+
+test('타임라인 자리에서 다시 조회하면 그 시각으로 읽고 한 장짜리 자료만 경고한다', async () => {
+  const { readout, timeBus } = rig({ sea: oneSea(), buoys: { stations: [] } });
+  timeBus.set(AHEAD);
+  const got = await readout.sea(35, 125);
+  assert.ok(got.wind, '민 시각의 바람을 읽지 못했으면 이 시험은 아무것도 재지 않는다');
+  const html = readout.seaHtml(got);
+  assert.ok(html.includes(`유효 ${fmtValid(T0 + AHEAD, true)}`), '민 시각의 바람을 읽지 않았다');
+  assert.match(html, /파도·수온·해류는 현재 시각 한 장/, '한 장짜리 자료가 예보처럼 읽힌다');
+  assert.ok(!/다시 조회해 주세요/.test(html), '방금 그 시각으로 읽었는데 다시 조회하라고 한다');
+});
+
+test('지점 값 카드는 타임라인을 따라가지 않는다는 사실을 스스로 적는다', async () => {
+  // 색면 카드에는 제자리 갱신 장치가 있지만(field-layer.js swapFieldCard) 그것은 FieldLayer 가
+  // 가진 카드만 갈아 끼운다. 지점 카드는 그 색면이 **꺼져 있을 때** 서는 카드라 갈아 끼울 주인이 없다 —
+  // 그래서 화면이 제가 한 일을 말한다.
+  const { readout } = rig();
+  const card = await readout.weather(37.5, 127, 'temperature');
+  assert.match(card.html, /타임라인을 옮기면 이 카드는 따라가지 않습니다/);
+  const absent = await readout.weather(37.5, 127, 'humidity');
+  assert.ok(!/타임라인을 옮기면/.test(absent.html), '값이 없는 카드에까지 붙일 말이 아니다');
+});
+
+// ════════════════════════════════════════════════════════════════════════════════════════════
+//  못 받은 것과 없는 것을 가른다
+// ════════════════════════════════════════════════════════════════════════════════════════════
+
+test("받기 실패를 '자료 없음'으로 캐시하지 않는다 — 다시 조회가 정말 다시 받는다", async () => {
+  const { readout, urls, state } = rig({ sea: oneSea(), buoys: { stations: [] } });
+  const hits = () => urls.filter((u) => u.endsWith('/ocean/marine.json')).length;
+  state.fail.add('marine.json');
+  const first = await readout.sea(35, 125);
+  assert.ok(first.error && !first.grid, '격자를 못 받았는데 값이 있는 척했다');
+  const before = hits();
+  assert.ok(before > 0, '첫 조회가 아예 요청을 안 했다면 시험이 아무것도 안 잰 것이다');
+
+  // 시계는 그대로다 — TTL 이 지나서 다시 받은 것이 아니다.
+  state.fail.delete('marine.json');
+  const second = await readout.sea(35, 125);
+  assert.ok(hits() > before, "'다시 조회'가 네트워크를 안 탔다 — 실패를 '자료 없음'으로 캐시했다");
+  assert.ok(second.grid, '두 번째 조회가 값을 읽지 못했다');
+});
+
+test('받은 문서는 여전히 한 번만 받는다 — 실패만 다시 받는다', async () => {
+  const { readout, urls } = rig({ sea: oneSea(), buoys: { stations: [] } });
+  const hits = () => urls.filter((u) => u.endsWith('/ocean/marine.json')).length;
+  await readout.sea(35, 125);
+  const after = hits();
+  await readout.sea(35.2, 125.2);
+  assert.equal(hits(), after, '성공한 문서까지 클릭마다 다시 받으면 10분 캐시가 없는 것이다');
+});
+
+test('일부만 못 받으면 없다고 단정하지 않고 모른다고 적는다', async () => {
+  const { readout, state } = rig({ sea: oneSea(), buoys: { stations: [] } });
+  state.fail.add('marine.json');
+  const got = await readout.sea(35, 125);
+  assert.ok(!got.none, "파일 하나를 못 받은 것을 '이 자리에 자료가 없다'는 사실로 적었다");
+  assert.match(got.error, /알 수 없습니다/);
+  assert.match(got.error, /marine\.json/, '무엇을 못 받았는지 말하지 않았다');
+});
+
+test('부이 자료를 못 받은 것과 반경 안에 정말 없는 것을 가른다', async () => {
+  const gone = rig({ sea: oneSea(), missBuoy: true });
+  const goneSea = await gone.readout.sea(35, 125);
+  assert.equal(goneSea.buoys, null, "못 받은 것을 '없음'(빈 배열)으로 뭉갰다");
+  const goneHtml = gone.readout.seaHtml(goneSea);
+  assert.ok(!goneHtml.includes(`${BUOY_KM} km 안에 파고 관측점이 없습니다`),
+    '있는 관측점을 없다고 단정했다 — 없는 것을 있는 척의 뒤집힌 형태다');
+  assert.match(goneHtml, /받지 못했습니다/);
+
+  const read = rig({ sea: oneSea(), buoys: { stations: [] } });
+  const readSea = await read.readout.sea(35, 125);
+  assert.deepEqual(readSea.buoys, [], '목록을 읽었으면 없다는 것도 사실이다');
+  assert.ok(read.readout.seaHtml(readSea).includes(`${BUOY_KM} km 안에 파고 관측점이 없습니다`),
+    '목록을 읽고 정말 없는데도 없다고 못 적으면 그것도 거짓이다');
 });

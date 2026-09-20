@@ -556,6 +556,14 @@ export function applyAccumMode(layer, key) {
     layer.setStatus({ kind: 'nodata', reason: why });         // 누적 자료가 없으면 이유를 말한다 — 강수율로 되돌아가지 않는다
     return true;
   }
+  // ⚠️ 그리기를 **먼저 멈춘다.** 위에서 눈금표(setScale → 경계·팔레트)와 아래의 applyFieldSpec(→ 디코드 상수)은 그 자리에서
+  //    갈리는데, 물려 있는 텍스처는 아직 앞 모드의 것이다. 남겨 두면 파생 장이 구워질 때까지(폰 콜드 캐시에서 apcp 최대
+  //    여섯 장, 0.5~2초) 셰이더가 **강수율 mm/h 바이트를 누적 mm 상수로 푼다** — 바이트 200 은 7.55 mm/h(노랑 칸)인데
+  //    137 mm(맨 위 자홍 칸)로 읽혀 비 오는 곳이 통째로 두세 칸 위로 튄다. 3시간→24시간 전환도 같다(장은 3시간치인데
+  //    카드는 이미 '24시간 누적'이라 적는다). 타임라인 이동과 달리 여기서는 '깜빡임 방지'가 근거가 되지 않는다 —
+  //    남겨 둔 장이 지금 상수로는 **다른 물리량**이기 때문이다. 받는 중이라고 말하는 것이 틀린 값을 보여 주는 것보다 낫다.
+  //    onTime() 의 성공 경로가 showDrawing() 을 부르므로 새 장이 오는 즉시 다시 선다.
+  layer.hideDrawing();
   layer.applyFieldSpec();
   layer.onTime();
   return true;

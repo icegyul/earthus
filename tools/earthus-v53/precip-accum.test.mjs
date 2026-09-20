@@ -277,6 +277,48 @@ test('기간 칩 — 누적을 고르면 범례 · 카드 · 클릭 값이 같�
   assert.equal(timeBus.validMs() > 0, true);
 });
 
+test('칩을 누른 순간 앞 모드의 장을 새 상수로 풀지 않는다 — 파생 장이 올 때까지 색면을 감춘다', async () => {
+  // 왜 이 시험이 있나: 칩을 누르면 눈금표(경계·팔레트)와 디코드 상수(uLog)는 **그 자리에서** 갈린다. 물려 있는 텍스처를
+  // 그대로 두면 파생 장이 구워질 때까지 셰이더가 앞 모드의 바이트를 새 상수로 푼다 — 강수율 mm/h 가 누적 mm 로 읽혀
+  // 비 오는 곳이 통째로 두세 칸 위로 튄다. '받는 중'이라고 말하는 것과 **틀린 값을 칠하는 것**은 다르다.
+  const { layer } = rig();
+  await layer.on();
+  const u = layer.renderer.uniforms;
+  const press = (key) => assert.equal(layer.handleAction('field-accum', { layer: 'raingrid', window: key }), true);
+
+  // ① 현재 강우 → 24시간
+  const rateTex = u.uTexA.value;
+  press('24');
+  assert.equal(u.uBreaks.value[0], Math.fround(scaleOf('precipAccum').breaks[0]), '경계는 누른 그 자리에서 누적의 것이 된다');
+  assert.equal(u.uTexA.value, rateTex, '물려 있는 장은 아직 앞 모드의 것이다 — 그래서 감춰야 한다');
+  assert.equal(layer.renderer.mesh.visible, false, '파생 장이 오기 전에는 그리지 않는다');
+  await tick(20);
+  assert.equal(layer.renderer.mesh.visible, true, '파생 장이 오면 곧바로 다시 선다');
+  const tex24 = u.uTexA.value;
+  assert.notEqual(tex24, rateTex, '새 장이 물렸다');
+
+  // ② 기간 사이(3시간 → 24시간)도 같은 구멍이었다 — 카드는 이미 '24시간'이라 적는데 장은 3시간치였다.
+  press('3');
+  assert.equal(layer.renderer.mesh.visible, false);
+  await tick(20);
+  const tex3 = u.uTexA.value;
+  assert.notEqual(tex3, tex24, '3시간 장은 24시간 장과 다른 장이다');
+  press('24');
+  assert.equal(u.uTexA.value, tex3, '누른 직후에도 물려 있는 것은 3시간 장이다');
+  assert.equal(layer.renderer.mesh.visible, false, '3시간 장을 24시간 상수로 풀지 않는다');
+  await tick(20);
+  assert.equal(layer.renderer.mesh.visible, true);
+
+  // ③ 되돌아오는 방향(누적 → 현재 강우)도 마찬가지다
+  press('rate');
+  assert.equal(u.uBreaks.value[0], Math.fround(scaleOf('precip').breaks[0]), '경계는 그 자리에서 강수율의 것으로 돌아온다');
+  assert.equal(layer.renderer.mesh.visible, false);
+  await tick(20);
+  assert.equal(layer.renderer.mesh.visible, true);
+  assert.equal(u.uTexA.value, rateTex, '강수율 장은 원 저장소에 그대로 있다');
+  layer.off();
+});
+
 test('범례의 유효 시각은 타임라인이 아니라 **누적 구간의 끝**이다 — 카드가 화면과 다른 말을 하지 않는다', async () => {
   const { layer, legend, timeBus } = rig(T0 + 24 * H);
   await layer.on();

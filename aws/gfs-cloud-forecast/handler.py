@@ -69,6 +69,31 @@ CDN 전송은 사용자 수에 비례하는 유일한 비용이므로 여기서 
   레벨 문자열은 필터 페이지에서 확인했다(2026-09-20): lev_2_m_above_ground · lev_10_m_above_ground ·
      lev_mean_sea_level · var_TMP · var_PRMSL · var_APCP. 틀리면 0바이트/500 이다(CWAT 때 밟은 함정).
 
+옛 프레임 3종의 디코드 상수 — 2026-09-20 C1 (매니페스트 fields.cloud · fields.wind700 · fields.precip):
+  왜: v2 의 공용 프레임 저장소(prototype/v2-three/js/gfs-frames.js)는 디코드 상수를 매니페스트 fields{} 에서만 읽는다.
+  W0 은 새 넷(temp · wind10 · mslp · apcp)만 실었고 옛 셋은 위의 글(encoding{})뿐이라, 저장소가 풀지 못하고 바이트만
+  돌려줬다(decoded:false). W4(강수 mm/h 구간색 · 클릭 값)가 p 프레임의 R 을 **값**으로 읽어야 한다.
+  무엇을 싣나 — 저장소가 아는 식(linear · log10)으로 풀리는 '양'만 channels{} 에 싣는다:
+    precip.R  = PRATE mm/h log (_PLOG_LO · _PLOG_SPAN)   cloud.A = CWAT kg/m² log (_LOG_LO · _LOG_SPAN)
+    wind700.R · G = 700hPa u · v (10 m 바람과 같은 식)
+  무엇을 안 싣나 — precip.G(종류 부호) · precip.B(뇌우, DERIVED) · cloud 회색(운정고도, DERIVED):
+    ① 저장소는 channels{} 의 채널을 전부 풀 수 있어야 그 필드를 푼다(하나라도 모르는 식이면 필드 전체가 decoded:false).
+    ② 실으면 저장소가 그 채널을 칸 사이·프레임 사이로 **섞는다**. 부호 0(비)과 255(눈)의 가운데 128 은 '어는 비'라는
+       다른 부호다 — 없던 판정이 생긴다. 유도값도 '잰 양'처럼 섞여 나간다. 저장소에 범주·유도 채널을 뜻하는 표현이 없다.
+    ③ 구름 회색은 브라우저가 캔버스로 되읽을 때 알파 선곱으로 깎인다(알파 0 인 칸은 0 이 된다 — gfs-frames.js 머리 주석).
+    그래서 channels{} 가 아니라 저장소가 읽지 않는 설명 칸 notDecoded{} 에 '어느 encoding 글을 보라'만 적는다. 숫자를 다시 적지 않는다.
+  ⚠️ 상수는 인코더가 쓰는 그 이름에서 만든다(field_specs). 인코더의 범위를 바꾸면 매니페스트가 따라 바뀐다 — 시험이
+     인코더 → 바이트 → (매니페스트 상수로) 디코드 왕복으로 잠근다.
+  ⚠️ 구름 알파는 CWAT_Q 의 배수로 **내림**된 바이트다. 255 는 나오지 않는다 — 끝값은 252(≈1.86 kg/m², CWAT_HI 가 아니다).
+     풀면 참값보다 늘 낮거나 같다(최대 CWAT_Q − 0.5 눈금). 식은 encoding.A 의 글과 같게 뒀다(가운데로 옮기지 않았다 —
+     한 매니페스트 안에서 글과 숫자가 다른 값을 말하면 안 된다). 눈금 폭은 channels.A.byteStep 이 말한다.
+  ⚠️ 700hPa 바람은 4° **묶음 평균**이다(wind_png). 저장소는 fields{} 에 실린 격자를 '점 격자'로 읽는다(묶음을 뜻하는 칸이 없다).
+     그래서 격자의 원점을 묶음의 첫 점(−180 · 90)이 아니라 **묶음의 가운데**로 적는다 — 그래야 저장소의 bilinear 와
+     uvTransform 이 값을 제자리에 놓는다(첫 점으로 적으면 1.75° 어긋난다). 옛 키 windGrid 는 그대로다.
+  ⚠️ 끄개(GFS_FC_FIELDS=0)여도 이 셋은 싣는다. 끄개는 NOMADS 에 **새 변수·레벨을 청하지 않는** 스위치다. c · w · p 는
+     모든 스텝의 필수 프레임이라 상수가 늘 참이고, 기온 요청이 탈 난 날 끄개를 내렸다고 강수 판독까지 죽으면 안 된다.
+     매니페스트 세대(schema)는 2 그대로다 — 키를 더했을 뿐이고, 읽는 쪽은 fields.precip 이 있는지로 안다.
+
 정직 규칙: 받지 못한 스텝은 매니페스트에 넣지 않는다. 빈 프레임을 만들지 않는다.
 GRIB 해독은 grib2lite (순수 파이썬, eccodes 2.48 과 일치 검증 — f000/f024/f120, 전 필드).
 """
@@ -101,6 +126,9 @@ RES_DEG = {'1p00': 1.0, '0p50': 0.5}[RES]
 BASE = 'https://nomads.ncep.noaa.gov/cgi-bin/filter_gfs_%s.pl' % RES
 UA = 'earthus/2.0 (+https://earthus.net)'
 NI, NJ = int(round(360 / RES_DEG)), int(round(180 / RES_DEG)) + 1
+# 프레임의 첫 칸(행0 · 열0)이 놓인 곳 — 서경 180 · 북위 90. 매니페스트 grid 에 숫자로 적혀 있던 값이다.
+# fields.wind700 의 격자 원점(묶음 가운데)을 같은 수에서 셈하려고 이름을 붙였다. 매니페스트에 나가는 값은 그대로다.
+GRID_LON0, GRID_LAT0 = -180.0, 90.0
 # 바람은 부드러워 4°면 충분하다 — 해상도를 올려도 바람 파일은 그대로 90×46 으로 둔다.
 WIND_DIV = int(round(4.0 / RES_DEG))  # 바람 다운샘플 배수 → 90×46 (4° 격자)
 WNI, WNJ = NI // WIND_DIV, (NJ + WIND_DIV - 1) // WIND_DIV
@@ -125,6 +153,7 @@ _ALOG_LO = math.log10(APCP_LO)
 _ALOG_SPAN = math.log10(APCP_HI) - _ALOG_LO
 RUNS_KEEP = 4                                # 매니페스트 runs[] 에 남기는 런 수 — GFS 하루 4런 = 최근 24시간
 # 매니페스트 세대. 2 = 필드 프레임(t·u·m·a) · fields · runs[] 가 들어간 판. 옛 키는 그대로다.
+# C1(옛 셋을 fields{} 에 더함)에서는 올리지 않았다 — 있던 키는 그대로이고 fields{} 에 항목이 늘었을 뿐이다.
 MANIFEST_SCHEMA = 2
 
 s3 = boto3.client('s3', region_name=REGION)
@@ -411,10 +440,17 @@ def encode_png_rgba(w, h, rows):
     return encode_png(w, h, rows, 6)
 
 
+# 700hPa 바람의 선(先)양자화 눈금(m/s). _wind_byte 안에 'round(ms * 2.0) / 2.0' 으로 박혀 있던 수다 —
+# 매니페스트 fields.wind700 이 같은 수를 읽도록 이름을 붙였다(인코더를 바꾸면 매니페스트가 따라 바뀐다).
+# 0.5 는 2 의 거듭제곱이라 'x / 0.5' 는 'x × 2.0' 과, '정수 × 0.5' 는 '정수 / 2.0' 과 비트까지 같다 —
+# 프레임 바이트는 그대로다(시험 LegacyFrameConstants 가 옛 식과 촘촘히 대조한다).
+WIND_PREQ_MS = 0.5
+
+
 def _wind_byte(ms):
     if ms is None:
         return 128
-    q = round(ms * 2.0) / 2.0                          # 0.5 m/s 양자화 — 값의 가짓수를 줄여 PNG 를 작게
+    q = round(ms / WIND_PREQ_MS) * WIND_PREQ_MS        # 0.5 m/s 양자화 — 값의 가짓수를 줄여 PNG 를 작게
     return int(max(0.0, min(255.0, (q + 64.0) / 128.0 * 255.0)) + 0.5)
 
 
@@ -696,6 +732,10 @@ def field_frames(step, opt, why):
 
 # 프레임 이름(= 매니페스트 스텝 키) → 파일 머리글자. 'wind' 는 700hPa 4° 가 이미 쓰고 있어 10 m 는 'wind10' 이다.
 FIELD_FILES = {'temp': 't', 'wind10': 'u', 'mslp': 'm', 'apcp': 'a'}
+# 옛 프레임 3종이 매니페스트 fields{} 에서 쓰는 id — v2 공용 프레임 저장소(gfs-frames.js FRAME_STEP_KEY)의 이름 그대로다.
+# 스텝 키는 개명하지 않는다: cloud → steps[].file · wind700 → steps[].wind · precip → steps[].precip.
+# 이 셋은 모든 스텝의 필수 프레임이라 끄개(FIELDS_ON)와 무관하게 늘 싣는다(머리 주석 C1).
+LEGACY_FIELD_IDS = ('cloud', 'wind700', 'precip')
 
 # 사람이 읽는 풀이 — 기존 encoding 칸의 문체를 따른다. 기계가 읽는 상수는 field_specs() 다.
 FIELD_ENCODING_TEXT = {
@@ -718,10 +758,89 @@ def field_specs():
 
     linear: value = byte × scale + offset.  log10: byte 0 = 0, 아니면 value = 10^(byte/255 × logSpan + logLo).
     채널 하나에 값 하나라 LinearFilter 보간이 값 보간이 된다(머리 주석).
+
+    2026-09-20 C1: 옛 프레임 3종(LEGACY_FIELD_IDS)을 뒤에 **더했다**. 앞의 넷은 글자 하나 바꾸지 않았다.
+    channels{} 에는 저장소가 풀 수 있는 '양'만 싣는다. 종류 부호·유도값은 notDecoded{}(저장소가 읽지 않는 설명 칸)에
+    'encoding 의 어느 글을 보라'만 적는다 — 이유는 머리 주석 C1. 숫자는 전부 인코더가 쓰는 이름에서 온다.
     """
     grid = {'ni': NI, 'nj': NJ, 'sameAs': 'grid'}
     wind = {'transfer': 'linear', 'scale': 128.0 / 255.0, 'offset': -64.0, 'min': -64.0, 'max': 64.0,
             'clamped': True}
+    # ---- 옛 셋의 재료 (C1)
+    # 700hPa 바람: wind_png 은 점 WIND_DIV × WIND_DIV 개를 평균한다. 묶음 (ii, jj) 의 점은 열 ii·DIV … ii·DIV + DIV−1 이라
+    # 그 가운데는 첫 점에서 (DIV − 1)/2 칸이다. 저장소는 이 격자를 점 격자로 읽으므로 원점을 가운데로 적는다(머리 주석 C1).
+    block_off = (WIND_DIV - 1) / 2.0 * RES_DEG
+    wind_grid = {'ni': WNI, 'nj': WNJ, 'lon0': GRID_LON0 + block_off, 'lat0': GRID_LAT0 - block_off,
+                 'dLon': WIND_DIV * RES_DEG, 'dLat': WIND_DIV * RES_DEG,
+                 'sameAs': 'windGrid, stated as the centres of its cells'}
+    wind700 = dict(wind, preQuantized=WIND_PREQ_MS)
+    wind_max_err = WIND_PREQ_MS / 2.0 + wind['scale'] / 2.0
+    # 구름 알파·회색은 눈금의 배수로 내림된다(cloud_png) — 255 는 나오지 않는다. 닿을 수 있는 가장 큰 바이트에서 끝값을 셈한다.
+    cwat_top_byte = (255 // CWAT_Q) * CWAT_Q
+    legacy = {
+        'cloud': {'file': 'c{h:03d}.png', 'stepKey': 'file', 'png': 'gray+alpha8', 'grid': grid,
+                  'variable': 'CWAT', 'level': 'entire atmosphere (considered as a single layer)',
+                  'unit': 'kg/m^2',
+                  'channels': {'A': {'transfer': 'log10', 'logLo': _LOG_LO, 'logSpan': _LOG_SPAN,
+                                     'zeroByte': 0, 'min': CWAT_LO,
+                                     'max': 10 ** (cwat_top_byte / 255.0 * _LOG_SPAN + _LOG_LO),
+                                     'maxByte': cwat_top_byte, 'byteStep': CWAT_Q, 'rounding': 'floor'}},
+                  'notDecoded': {'gray': {
+                      'kind': 'derived', 'encodingKeys': ['B', 'quantization'],
+                      'browserChannels': 'R=G=B', 'byteStep': TOP_Q, 'rounding': 'floor',
+                      'why': 'DERIVED cloud-top height, not a GFS output: a store that decodes it would '
+                             'publish and time-blend it like a measured quantity. It is also unreliable '
+                             'on the CPU side: reading the PNG back through a canvas premultiplies by '
+                             'alpha, so gray is damaged where alpha is small and lost where alpha is 0'}},
+                  'note': 'same formula as encoding.A. Alpha bytes are floored to multiples of %d, so a '
+                          'decoded value is never above the true one by more than half a byte tick and '
+                          'can be below it by up to %.1f byte ticks; byte 255 never occurs (top byte %d). '
+                          'Byte 0 = no cloud water, or less than the first step above %.3f kg/m^2'
+                          % (CWAT_Q, CWAT_Q - 0.5, cwat_top_byte, CWAT_LO)},
+        'wind700': {'file': 'w{h:03d}.png', 'stepKey': 'wind', 'png': 'rgba8 (B unused = 0, A = 255)',
+                    'grid': wind_grid,
+                    'variable': 'UGRD,VGRD', 'level': '%s mb' % WIND_LEVEL, 'unit': 'm/s',
+                    'channels': {'R': dict(wind700, component='u (eastward)'),
+                                 'G': dict(wind700, component='v (northward)')},
+                    'cellMean': {'of': 'grid', 'ni': WIND_DIV, 'nj': WIND_DIV,
+                                 'note': 'each value is the mean of the %d x %d grid points whose first '
+                                         'point is column ii*%d, row jj*%d of grid; grid.lon0/lat0 here '
+                                         'are the centres of those blocks (first point + %.2f deg), not '
+                                         'the first point' % (WIND_DIV, WIND_DIV, WIND_DIV, WIND_DIV,
+                                                              block_off)},
+                    'note': 'same decode formula as wind10; values are pre-quantized to %.1f m/s before '
+                            'the byte, so the round-trip error is up to %.3f m/s. Byte 128 (calm, or no '
+                            'data in the block) decodes to %+.3f m/s because 0 m/s falls between two '
+                            'bytes. The last row averages only the %d grid row(s) that exist, so its '
+                            'true centre is nearer the pole than grid.lat0 says and values poleward of '
+                            'the last full block are a blend with it. Used to advect cloud between '
+                            'frames, not a surface wind'
+                            % (WIND_PREQ_MS, wind_max_err, 128 * wind['scale'] + wind['offset'],
+                               NJ - (WNJ - 1) * WIND_DIV)},
+        'precip': {'file': 'p{h:03d}.png', 'stepKey': 'precip', 'png': 'rgb8', 'grid': grid,
+                   'variable': 'PRATE', 'level': 'surface', 'unit': 'mm/h',
+                   'channels': {'R': {'transfer': 'log10', 'logLo': _PLOG_LO, 'logSpan': _PLOG_SPAN,
+                                      'zeroByte': 0, 'min': PRATE_LO, 'max': PRATE_HI}},
+                   'notDecoded': {
+                       'G': {'kind': 'category', 'encodingKeys': ['precip.G'],
+                             'why': 'a type code, not a quantity: blending two codes in space or time '
+                                    'yields a third code that the model never issued. Read the nearest '
+                                    'cell of one frame; written only where R > 0'},
+                       'B': {'kind': 'derived', 'encodingKeys': ['precip.B'],
+                             'why': 'DERIVED likelihood made here, not a GFS output and without a unit: '
+                                    'a store that decodes it would publish and time-blend it like a '
+                                    'measured quantity. Written only where R > 0'}},
+                   'note': 'instantaneous model precipitation rate at the valid time (PRATE x 3600), '
+                           'not an accumulation - for amounts use apcp. Byte 0 = no precipitation '
+                           '(at or below %.2f mm/h); rates above %.0f mm/h are clamped to byte 255'
+                           % (PRATE_LO, PRATE_HI)},
+    }
+    # 새 넷이 앞, 옛 셋이 뒤다 — 이미 나가던 JSON 의 앞부분이 그대로 남는다.
+    return dict(_new_field_specs(grid, wind), **legacy)
+
+
+def _new_field_specs(grid, wind):
+    """W0 의 새 넷(temp · wind10 · mslp · apcp). field_specs 의 본문이던 것을 그대로 옮겼다 — 값도 순서도 같다."""
     return {
         'temp': {'file': 't{h:03d}.png', 'stepKey': 'temp', 'png': 'gray8', 'grid': grid,
                  'variable': 'TMP', 'level': '2 m above ground', 'unit': 'degC',
@@ -879,7 +998,7 @@ def handler(event, context):
         'truthClass': 'MODEL_SIGNAL',
         'run': run.strftime('%Y-%m-%dT%H:%M:%SZ'),
         'generatedAt': generated_at,
-        'grid': {'ni': NI, 'nj': NJ, 'lon0': -180.0, 'dLon': RES_DEG, 'lat0': 90.0, 'dLat': -RES_DEG,
+        'grid': {'ni': NI, 'nj': NJ, 'lon0': GRID_LON0, 'dLon': RES_DEG, 'lat0': GRID_LAT0, 'dLat': -RES_DEG,
                  'note': 'row 0 = 90N, col 0 = 180W; %.2f° ≈ %.0fkm at equator'
                          % (RES_DEG, RES_DEG * 111.0)},
         # ⚠️ dLon/dLat 에 WIND_DIV(다운샘플 '배수')를 그대로 적고 있었다 — 0.5° 로 올린 뒤로 운영 매니페스트가
@@ -919,10 +1038,15 @@ def handler(event, context):
     manifest['model'] = 'GFS'
     manifest['resolutionDeg'] = RES_DEG
     manifest['runTag'] = run_tag
+    specs = field_specs()
     if FIELDS_ON:
         manifest['encoding'].update(FIELD_ENCODING_TEXT)
-        manifest['fields'] = field_specs()
+        manifest['fields'] = specs
         manifest['fieldMissing'] = field_missing
+    else:
+        # 끄개를 내려도 옛 셋(c · w · p)의 상수는 싣는다 — 그 프레임은 늘 있고, 상수는 인코더의 성질이지 요청의 성질이 아니다.
+        # 새 넷은 프레임이 없으니 싣지 않는다(없는 프레임의 풀이를 적지 않는다). 이유는 머리 주석 C1.
+        manifest['fields'] = {name: specs[name] for name in LEGACY_FIELD_IDS}
     manifest['decodeStats'] = {
         'messagesPerStep': max(fr.get('messages', 0) for fr in done.values()),
         'decodedPerStep': max(fr.get('decoded', 0) for fr in done.values()),

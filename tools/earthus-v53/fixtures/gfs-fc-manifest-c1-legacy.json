@@ -1,0 +1,301 @@
+{
+ "_fixture": "Manifest fragment made by aws/gfs-cloud-forecast/tests/test_field_frames.py (C1FixtureLock.document) from handler.py constants at the production grid. Not a production copy: steps are three made-up frame paths. Do not edit by hand.",
+ "run": "2026-09-20T00:00:00Z",
+ "generatedAt": "2026-09-20T04:56:36Z",
+ "grid": {
+  "ni": 720,
+  "nj": 361,
+  "lon0": -180.0,
+  "dLon": 0.5,
+  "lat0": 90.0,
+  "dLat": -0.5
+ },
+ "windGrid": {
+  "ni": 90,
+  "nj": 46,
+  "dLon": 4.0,
+  "dLat": 4.0
+ },
+ "stepHours": 3,
+ "steps": [
+  {
+   "h": 0,
+   "valid": "2026-09-20T00:00:00Z",
+   "file": "2026092000/c000.png",
+   "wind": "2026092000/w000.png",
+   "precip": "2026092000/p000.png",
+   "temp": "2026092000/t000.png",
+   "wind10": "2026092000/u000.png",
+   "mslp": "2026092000/m000.png"
+  },
+  {
+   "h": 3,
+   "valid": "2026-09-20T03:00:00Z",
+   "file": "2026092000/c003.png",
+   "wind": "2026092000/w003.png",
+   "precip": "2026092000/p003.png",
+   "temp": "2026092000/t003.png",
+   "wind10": "2026092000/u003.png",
+   "mslp": "2026092000/m003.png",
+   "apcp": "2026092000/a003.png",
+   "apcpWindow": {
+    "fromH": 0,
+    "toH": 3
+   }
+  },
+  {
+   "h": 6,
+   "valid": "2026-09-20T06:00:00Z",
+   "file": "2026092000/c006.png",
+   "wind": "2026092000/w006.png",
+   "precip": "2026092000/p006.png",
+   "temp": "2026092000/t006.png",
+   "wind10": "2026092000/u006.png",
+   "mslp": "2026092000/m006.png",
+   "apcp": "2026092000/a006.png",
+   "apcpWindow": {
+    "fromH": 0,
+    "toH": 6
+   }
+  }
+ ],
+ "schema": 2,
+ "model": "GFS",
+ "resolutionDeg": 0.5,
+ "runTag": "2026092000",
+ "fields": {
+  "temp": {
+   "file": "t{h:03d}.png",
+   "stepKey": "temp",
+   "png": "gray8",
+   "grid": {
+    "ni": 720,
+    "nj": 361,
+    "sameAs": "grid"
+   },
+   "variable": "TMP",
+   "level": "2 m above ground",
+   "unit": "degC",
+   "channels": {
+    "R": {
+     "transfer": "linear",
+     "scale": 0.5,
+     "offset": -80.0,
+     "min": -80.0,
+     "max": 47.5,
+     "clamped": true
+    }
+   },
+   "note": "model 2 m temperature on a 0.50° cell (~56 km), not a station value"
+  },
+  "wind10": {
+   "file": "u{h:03d}.png",
+   "stepKey": "wind10",
+   "png": "rgb8 (B unused = 0)",
+   "grid": {
+    "ni": 720,
+    "nj": 361,
+    "sameAs": "grid"
+   },
+   "variable": "UGRD,VGRD",
+   "level": "10 m above ground",
+   "unit": "m/s",
+   "channels": {
+    "R": {
+     "transfer": "linear",
+     "scale": 0.5019607843137255,
+     "offset": -64.0,
+     "min": -64.0,
+     "max": 64.0,
+     "clamped": true,
+     "component": "u (eastward)"
+    },
+    "G": {
+     "transfer": "linear",
+     "scale": 0.5019607843137255,
+     "offset": -64.0,
+     "min": -64.0,
+     "max": 64.0,
+     "clamped": true,
+     "component": "v (northward)"
+    }
+   },
+   "note": "same decode formula as the 700 hPa wind frame (wind.R/G) but on the full grid and without the 0.5 m/s pre-quantization (max error 0.251 m/s instead of 0.5)"
+  },
+  "mslp": {
+   "file": "m{h:03d}.png",
+   "stepKey": "mslp",
+   "png": "gray8",
+   "grid": {
+    "ni": 720,
+    "nj": 361,
+    "sameAs": "grid"
+   },
+   "variable": "PRMSL",
+   "level": "mean sea level",
+   "unit": "hPa",
+   "channels": {
+    "R": {
+     "transfer": "linear",
+     "scale": 1.0,
+     "offset": 870.0,
+     "min": 870.0,
+     "max": 1125.0,
+     "clamped": true
+    }
+   },
+   "note": "values outside the range are clamped to the end value; steps[].mslpClipped counts such cells"
+  },
+  "apcp": {
+   "file": "a{h:03d}.png",
+   "stepKey": "apcp",
+   "png": "gray8",
+   "grid": {
+    "ni": 720,
+    "nj": 361,
+    "sameAs": "grid"
+   },
+   "variable": "APCP",
+   "level": "surface",
+   "unit": "mm",
+   "channels": {
+    "R": {
+     "transfer": "log10",
+     "logLo": -1.0,
+     "logSpan": 3.3979400086720375,
+     "zeroByte": 0,
+     "min": 0.1,
+     "max": 250.0
+    }
+   },
+   "window": "steps[].apcpWindow {fromH,toH} hours from run, read from GRIB PDT 4.8",
+   "note": "GFS 6-hour bucket as delivered (resets every 6 h): 3 h at h%6==3, 6 h at h%6==0; no frame at h=0 (analysis has no accumulation). 3-hour amount at h%6==0 is a[h] - a[h-3]. The run-total APCP record is not published."
+  },
+  "cloud": {
+   "file": "c{h:03d}.png",
+   "stepKey": "file",
+   "png": "gray+alpha8",
+   "grid": {
+    "ni": 720,
+    "nj": 361,
+    "sameAs": "grid"
+   },
+   "variable": "CWAT",
+   "level": "entire atmosphere (considered as a single layer)",
+   "unit": "kg/m^2",
+   "channels": {
+    "A": {
+     "transfer": "log10",
+     "logLo": -2.3010299956639813,
+     "logSpan": 2.6020599913279625,
+     "zeroByte": 0,
+     "min": 0.005,
+     "max": 1.8638781843022025,
+     "maxByte": 252,
+     "byteStep": 4,
+     "rounding": "floor"
+    }
+   },
+   "notDecoded": {
+    "gray": {
+     "kind": "derived",
+     "encodingKeys": [
+      "B",
+      "quantization"
+     ],
+     "browserChannels": "R=G=B",
+     "byteStep": 4,
+     "rounding": "floor",
+     "why": "DERIVED cloud-top height, not a GFS output: a store that decodes it would publish and time-blend it like a measured quantity. It is also unreliable on the CPU side: reading the PNG back through a canvas premultiplies by alpha, so gray is damaged where alpha is small and lost where alpha is 0"
+    }
+   },
+   "note": "same formula as encoding.A. Alpha bytes are floored to multiples of 4, so a decoded value is never above the true one by more than half a byte tick and can be below it by up to 3.5 byte ticks; byte 255 never occurs (top byte 252). Byte 0 = no cloud water, or less than the first step above 0.005 kg/m^2"
+  },
+  "wind700": {
+   "file": "w{h:03d}.png",
+   "stepKey": "wind",
+   "png": "rgba8 (B unused = 0, A = 255)",
+   "grid": {
+    "ni": 90,
+    "nj": 46,
+    "lon0": -178.25,
+    "lat0": 88.25,
+    "dLon": 4.0,
+    "dLat": 4.0,
+    "sameAs": "windGrid, stated as the centres of its cells"
+   },
+   "variable": "UGRD,VGRD",
+   "level": "700 mb",
+   "unit": "m/s",
+   "channels": {
+    "R": {
+     "transfer": "linear",
+     "scale": 0.5019607843137255,
+     "offset": -64.0,
+     "min": -64.0,
+     "max": 64.0,
+     "clamped": true,
+     "preQuantized": 0.5,
+     "component": "u (eastward)"
+    },
+    "G": {
+     "transfer": "linear",
+     "scale": 0.5019607843137255,
+     "offset": -64.0,
+     "min": -64.0,
+     "max": 64.0,
+     "clamped": true,
+     "preQuantized": 0.5,
+     "component": "v (northward)"
+    }
+   },
+   "cellMean": {
+    "of": "grid",
+    "ni": 8,
+    "nj": 8,
+    "note": "each value is the mean of the 8 x 8 grid points whose first point is column ii*8, row jj*8 of grid; grid.lon0/lat0 here are the centres of those blocks (first point + 1.75 deg), not the first point"
+   },
+   "note": "same decode formula as wind10; values are pre-quantized to 0.5 m/s before the byte, so the round-trip error is up to 0.501 m/s. Byte 128 (calm, or no data in the block) decodes to +0.251 m/s because 0 m/s falls between two bytes. The last row averages only the 1 grid row(s) that exist, so its true centre is nearer the pole than grid.lat0 says and values poleward of the last full block are a blend with it. Used to advect cloud between frames, not a surface wind"
+  },
+  "precip": {
+   "file": "p{h:03d}.png",
+   "stepKey": "precip",
+   "png": "rgb8",
+   "grid": {
+    "ni": 720,
+    "nj": 361,
+    "sameAs": "grid"
+   },
+   "variable": "PRATE",
+   "level": "surface",
+   "unit": "mm/h",
+   "channels": {
+    "R": {
+     "transfer": "log10",
+     "logLo": -1.3010299956639813,
+     "logSpan": 2.778151250383644,
+     "zeroByte": 0,
+     "min": 0.05,
+     "max": 30.0
+    }
+   },
+   "notDecoded": {
+    "G": {
+     "kind": "category",
+     "encodingKeys": [
+      "precip.G"
+     ],
+     "why": "a type code, not a quantity: blending two codes in space or time yields a third code that the model never issued. Read the nearest cell of one frame; written only where R > 0"
+    },
+    "B": {
+     "kind": "derived",
+     "encodingKeys": [
+      "precip.B"
+     ],
+     "why": "DERIVED likelihood made here, not a GFS output and without a unit: a store that decodes it would publish and time-blend it like a measured quantity. Written only where R > 0"
+    }
+   },
+   "note": "instantaneous model precipitation rate at the valid time (PRATE x 3600), not an accumulation - for amounts use apcp. Byte 0 = no precipitation (at or below 0.05 mm/h); rates above 30 mm/h are clamped to byte 255"
+  }
+ }
+}

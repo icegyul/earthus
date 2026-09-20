@@ -15,6 +15,9 @@ AWS 도 NOMADS 도 필요 없다. GRIB2 메시지를 여기서 **합성**한다(
   ⑦ 누적강수 — 두 장 중 6시간 버킷을 고르고 구간을 GRIB 에서 읽어 적는다. f000 에는 없다
   ⑧ runs[] — 최근 4런, 새 런이 앞, 가리키는 사본이 실제로 있다
   ⑨ 패키징 — 배포 스크립트가 zip 하는 파일 목록이 실제 import 폐쇄와 같다
+  ⑩ 옛 프레임 3종(c · w · p)의 디코드 상수 — 2026-09-20 C1. 인코더 → 프레임 바이트 → (매니페스트 상수만으로) 값.
+     프레임 바이트는 예전과 같고, 옛 키·옛 글은 그대로이고, 종류 부호·유도값은 channels{} 에 없다.
+     JS 쪽 픽스처(tools/earthus-v53/fixtures/gfs-fc-manifest-c1-legacy.json)가 이 함수의 출력과 같은지도 여기서 잠근다.
 """
 import importlib.util
 import io
@@ -28,7 +31,7 @@ import sys
 import unittest
 import unittest.mock
 import zlib
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 HERE = pathlib.Path(__file__).parent
 FUNC = HERE.parent
@@ -121,6 +124,21 @@ def png_pixels(png):
             assert f == 0, '모르는 필터 %d' % f
         rows.append(bytes(line))
     return w, h, ctype, rows
+
+
+def decode_channel(ch, byte):
+    """매니페스트 fields{}.channels 의 한 채널로 바이트를 푼다 — prototype/v2-three/js/gfs-frames.js decodeByte 와 같은 식.
+    (그 저장소가 실제로 이 매니페스트를 읽어 푸는지는 tools/earthus-v53/gfs-frames-legacy-fields.test.mjs 가 본다.)"""
+    if ch['transfer'] == 'linear':
+        return byte * ch['scale'] + ch['offset']
+    if byte == ch['zeroByte']:
+        return 0.0
+    return 10 ** (byte / 255.0 * ch['logSpan'] + ch['logLo'])
+
+
+# JS 시험의 픽스처 둘. schema2 = W0 이 운영에 낸 매니페스트의 사본(옛 키·옛 글의 대조 기준), c1-legacy = 이 시험이 만든 조각.
+SCHEMA2_FIXTURE = REPO / 'tools' / 'earthus-v53' / 'fixtures' / 'gfs-fc-manifest-schema2.json'
+C1_FIXTURE = REPO / 'tools' / 'earthus-v53' / 'fixtures' / 'gfs-fc-manifest-c1-legacy.json'
 
 
 class TinyGrid(unittest.TestCase):
@@ -674,7 +692,8 @@ class Manifest(TinyGrid):
         # 새 키
         self.assertEqual(2, mf['schema'])
         self.assertEqual(('GFS', '2026091918'), (mf['model'], mf['runTag']))
-        self.assertEqual({'temp', 'wind10', 'mslp', 'apcp'}, set(mf['fields']))
+        # 2026-09-20 C1: 옛 프레임 셋(cloud · wind700 · precip)의 상수가 **뒤에** 더해졌다. 앞의 넷은 순서까지 그대로다.
+        self.assertEqual(['temp', 'wind10', 'mslp', 'apcp', 'cloud', 'wind700', 'precip'], list(mf['fields']))
         for name in ('temp', 'wind10.R', 'wind10.G', 'mslp', 'apcp'):
             self.assertIn(name, mf['encoding'])
         self.assertEqual({'temp': [], 'wind10': [], 'mslp': [], 'apcp': []}, mf['fieldMissing'])
@@ -776,7 +795,13 @@ class Manifest(TinyGrid):
             _, mf = self.run_handler(s3)
         for key in OLD_TOP_KEYS:
             self.assertIn(key, mf)
-        self.assertNotIn('fields', mf)
+        # 2026-09-20 C1: 여기서 'fields 가 없다'를 보고 있었다. 끄개는 NOMADS 에 새 변수를 청하지 않는 스위치이고,
+        # c · w · p 프레임은 그때도 전부 나간다 — 그 셋의 디코드 상수는 남아야 끄개를 내린 날에도 강수 값이 읽힌다.
+        # 새 넷은 프레임이 없으니 풀이도 없다.
+        self.assertEqual(['cloud', 'wind700', 'precip'], list(mf['fields']))
+        self.assertEqual(json.loads(json.dumps({k: H.field_specs()[k] for k in H.LEGACY_FIELD_IDS})), mf['fields'],
+                         '끄개와 무관하게 같은 상수다')
+        self.assertNotIn('fieldMissing', mf)
         self.assertNotIn('temp', mf['encoding'])
         self.assertFalse([k for k in s3.objects if re.search(r'/[tuma]\d{3}\.png$', k)])
         self.assertEqual(12, mf['decodeStats']['decodedPerStep'])
@@ -834,6 +859,63 @@ class Manifest(TinyGrid):
         self.assertEqual([], mf['runs'])
         self.assertEqual(4, len(mf['steps']))
 
+    # ---- 옛 프레임 3종의 디코드 상수 (2026-09-20 C1)
+    def test_legacy_frames_decode_back_with_the_manifest_constants(self):
+        """저장소(gfs-frames.js)가 할 일을 그대로 한다: 매니페스트 fields{} 의 숫자만으로 c · w · p 에서 값을 꺼낸다."""
+        s3 = FakeS3()
+        _, mf = self.run_handler(s3)
+        step, f = mf['steps'][3], mf['fields']
+        self.assertEqual(('file', 'wind', 'precip'), tuple(f[k]['stepKey'] for k in ('cloud', 'wind700', 'precip')),
+                         '스텝 키는 개명하지 않는다 — 저장소의 FRAME_STEP_KEY 와 같아야 프레임이 잡힌다')
+
+        def first_pixel(step_key):
+            return png_pixels(s3.objects['clouds/gfs-fc/' + step[step_key]])[3][0]
+
+        r = f['precip']['channels']['R']
+        rate = decode_channel(r, first_pixel('precip')[0])                  # PRATE 0.0005 kg/m²/s = 1.8 mm/h
+        self.assertLessEqual(abs(math.log10(rate) - math.log10(1.8)), r['logSpan'] / 255.0 / 2 + 1e-9)
+        a = f['cloud']['channels']['A']
+        water = decode_channel(a, first_pixel('file')[1])                   # CWAT 0.4 kg/m² — 회색+알파의 둘째 바이트
+        tick = a['logSpan'] / 255.0
+        err = math.log10(water) - math.log10(0.4)
+        self.assertTrue(-(a['byteStep'] - 0.5) * tick - 1e-9 <= err <= tick / 2 + 1e-9, err)
+        w = first_pixel('wind')
+        bound = f['wind700']['channels']['R']['preQuantized'] / 2 + f['wind700']['channels']['R']['scale'] / 2
+        self.assertAlmostEqual(11.0, decode_channel(f['wind700']['channels']['R'], w[0]), delta=bound)
+        self.assertAlmostEqual(-7.0, decode_channel(f['wind700']['channels']['G'], w[1]), delta=bound)
+
+    def test_codes_and_derived_channels_are_described_not_decoded(self):
+        """종류 부호(precip.G)·유도값(precip.B · 구름 회색)은 channels{} 에 없다 — 있으면 저장소가 섞는다.
+        설명 칸은 숫자를 다시 적지 않고 이미 있는 encoding 글을 가리킨다. 가리킨 글은 실제로 있어야 한다."""
+        _, mf = self.run_handler(FakeS3())
+        f = mf['fields']
+        self.assertEqual((['A'], ['R', 'G'], ['R']),
+                         tuple(list(f[k]['channels']) for k in ('cloud', 'wind700', 'precip')))
+        for name, skipped in (('precip', {'G': 'category', 'B': 'derived'}), ('cloud', {'gray': 'derived'})):
+            notes = f[name]['notDecoded']
+            self.assertEqual(skipped, {k: v['kind'] for k, v in notes.items()})
+            for v in notes.values():
+                self.assertTrue(v['why'])
+                for key in v['encodingKeys']:
+                    self.assertIn(key, mf['encoding'], '가리킨 encoding 글이 없다: ' + key)
+        for spec in f.values():
+            for ch in spec['channels'].values():
+                self.assertIn(ch['transfer'], ('linear', 'log10'), '저장소가 아는 식은 둘뿐이다(gfs-frames.js readChannel)')
+
+    def test_adding_the_legacy_specs_changed_no_old_key_and_no_old_text(self):
+        """W0 이 운영에 낸 매니페스트(JS 픽스처 schema2 = 운영 사본)와 글자까지 대조한다."""
+        _, mf = self.run_handler(FakeS3())
+        old = json.loads(SCHEMA2_FIXTURE.read_text(encoding='utf-8'))
+        for key in OLD_ENCODING_KEYS + ('temp', 'wind10.R', 'wind10.G', 'apcp'):
+            self.assertEqual(old['encoding'][key], mf['encoding'][key], key)
+        # encoding.mslp · fields.mslp 는 뺀다 — 그 픽스처는 기압 범위를 870~1125 로 넓히기(c90b0fd5) 전의 사본이다.
+        self.assertEqual((old['grid']['lon0'], old['grid']['lat0']), (mf['grid']['lon0'], mf['grid']['lat0']))
+        self.assertEqual(tuple(old['windGrid']), tuple(mf['windGrid']), '옛 키 windGrid 는 모양 그대로')
+        self.assertEqual(old['schema'], mf['schema'], '세대는 올리지 않았다 — 키를 더했을 뿐이다')
+        self.assertEqual([k for k in old if not k.startswith('_')], list(mf), '맨 위 키의 목록과 순서')
+        for name in ('ni', 'nj', 'dLon', 'dLat'):
+            self.assertEqual(mf['windGrid'][name], mf['fields']['wind700']['grid'][name], name)
+
     def test_garbage_in_previous_runs_is_ignored(self):
         cur = {'tag': '2026092000', 'run': 'x', 'manifest': '2026092000/manifest.json'}
         prev = {'runs': ['2026091918', {'tag': 2026091912}, {'tag': '2026091906'},
@@ -841,6 +923,244 @@ class Manifest(TinyGrid):
         self.assertEqual(['2026092000', '2026091900'], [r['tag'] for r in H.merge_runs(prev, cur)])
         self.assertEqual([cur], H.merge_runs(None, cur))
         self.assertEqual([cur], H.merge_runs({}, cur))
+
+
+# ---------------------------------------------------------------- ⑩ 옛 프레임 3종의 디코드 상수 (C1)
+class LegacyFrameConstants(TinyGrid):
+    """인코더(precip_png · cloud_png · wind_png) → 프레임 바이트 → 매니페스트 상수로 디코드.
+
+    상수를 시험에 다시 적지 않는다 — field_specs() 가 낸 숫자만 쓴다. 인코더의 범위를 바꾸고 매니페스트를
+    안 바꾸면(또는 그 반대면) 여기서 왕복이 깨진다.
+    """
+
+    def at(self, rows, bpp, channel, src):
+        """원격자의 칸 src(행·열0=경도0°) 가 프레임에서 가진 바이트. 프레임은 열0=서경180 으로 돌려져 있다."""
+        j, c = divmod(src, self.NI)
+        return rows[j][((c + self.NI // 2) % self.NI) * bpp + channel]
+
+    def ladder(self, lo, hi):
+        """lo ~ hi 를 log 로 고르게 — 격자 칸 수만큼."""
+        a, b = math.log10(lo), math.log10(hi)
+        return [10 ** (a + (b - a) * k / (self.n - 1)) for k in range(self.n)]
+
+    def test_precip_rate_round_trip_through_the_frame(self):
+        ch = H.field_specs()['precip']['channels']['R']
+        self.assertEqual(('log10', 0), (ch['transfer'], ch['zeroByte']))
+        half_tick = ch['logSpan'] / 255.0 / 2
+        first = 10 ** (ch['logLo'] + half_tick)                 # 이 아래는 바이트 0 으로 반올림된다
+        mmh = self.ladder(first * 1.001, ch['max'] * 0.999)
+        w, h, ctype, rows = png_pixels(H.precip_png({7: [x / 3600.0 for x in mmh]}, None))   # PRATE 는 kg/m²/s 로 온다
+        self.assertEqual((self.NI, self.NJ, 2), (w, h, ctype))
+        worst = 0.0
+        for src, want in enumerate(mmh):
+            byte = self.at(rows, 3, 0, src)
+            self.assertGreater(byte, 0, want)
+            worst = max(worst, abs(math.log10(decode_channel(ch, byte)) - math.log10(want)))
+        self.assertLessEqual(worst, half_tick + 1e-9, '오차는 log 눈금의 절반 이하')
+        self.assertGreater(worst, half_tick * 0.5, '칸마다 다른 값이 실제로 실렸다(전부 한 바이트가 아니다)')
+
+    def test_precip_zero_byte_is_no_rain_and_the_ceiling_is_the_end_value(self):
+        ch = H.field_specs()['precip']['channels']['R']
+        first = 10 ** (ch['logLo'] + ch['logSpan'] / 255.0 / 2)
+        vals = self.flat(0.0)
+        dry = [None, 0.0, ch['min'] * 0.5, ch['min'], first * 0.999]
+        wet = [ch['max'], ch['max'] * 13.0]
+        for k, x in enumerate(dry + wet):
+            vals[k] = None if x is None else x / 3600.0
+        rows = png_pixels(H.precip_png({7: vals}, None))[3]
+        got = [self.at(rows, 3, 0, k) for k in range(len(dry) + len(wet))]
+        self.assertEqual([0] * len(dry) + [255, 255], got)
+        self.assertEqual(0.0, decode_channel(ch, 0), '바이트 0 = 비 없음. 10^logLo(0.05)가 아니다')
+        self.assertAlmostEqual(ch['max'], decode_channel(ch, 255), places=9)
+        self.assertEqual((H.PRATE_LO, H.PRATE_HI), (ch['min'], ch['max']))
+
+    def test_type_and_thunder_are_written_only_where_it_rains(self):
+        """notDecoded 의 'written only where R > 0' 이 참인지 — 비 없는 칸의 G·B 는 뜻이 없다(0)."""
+        rate = self.flat(0.0)
+        rate[3] = 5.0 / 3600.0
+        wet = {7: rate, 37: self.flat(3.0 / 3600.0), 195: self.flat(1.0)}       # 눈 판정·대류강수는 전 칸에 있다
+        rows = png_pixels(H.precip_png(wet, self.flat(2500.0)))[3]
+        for src in range(self.n):
+            r, g, b = (self.at(rows, 3, k, src) for k in range(3))
+            self.assertEqual((r > 0, g > 0, b > 0), (src == 3,) * 3, src)
+
+    def test_cloud_water_round_trip_is_one_sided_because_the_byte_is_floored(self):
+        ch = H.field_specs()['cloud']['channels']['A']
+        self.assertEqual((H.CWAT_Q, 'floor', 0), (ch['byteStep'], ch['rounding'], ch['zeroByte']))
+        tick = ch['logSpan'] / 255.0
+        # 인코더 혼자(_cwat_byte, 내림 전): 눈금의 절반
+        for kg in self.ladder(ch['min'] * 1.02, H.CWAT_HI * 0.999):
+            self.assertLessEqual(abs(math.log10(decode_channel(ch, H._cwat_byte(kg))) - math.log10(kg)),
+                                 tick / 2 + 1e-9, kg)
+        # 프레임을 거치면 CWAT_Q 의 배수로 내림된다 — 푼 값은 참값보다 반 눈금 넘게 높지 않고, (Q − 0.5) 눈금까지 낮다.
+        first = 10 ** (ch['logLo'] + (ch['byteStep'] - 0.5) * tick)             # 이 위부터 바이트가 0 이 아니다
+        water = self.ladder(first * 1.001, H.CWAT_HI * 0.999)
+        w, h, ctype, rows = png_pixels(H.cloud_png(water, self.flat(0.0), self.flat(0.0), self.flat(0.0)))
+        self.assertEqual((self.NI, self.NJ, 4), (w, h, ctype))
+        low = high = 0.0
+        for src, want in enumerate(water):
+            byte = self.at(rows, 2, 1, src)
+            self.assertTrue(byte > 0 and byte % ch['byteStep'] == 0, byte)
+            err = (math.log10(decode_channel(ch, byte)) - math.log10(want)) / tick      # 눈금 단위
+            low, high = min(low, err), max(high, err)
+        self.assertLessEqual(high, 0.5 + 1e-6)
+        self.assertGreaterEqual(low, -(ch['byteStep'] - 0.5) - 1e-6)
+        self.assertLess(low, -(ch['byteStep'] - 1.0), '내림이 실제로 있다 — 반 눈금이라고 적으면 거짓이다')
+
+    def test_cloud_water_zero_byte_and_the_top_byte_that_is_not_255(self):
+        ch = H.field_specs()['cloud']['channels']['A']
+        first = 10 ** (ch['logLo'] + (ch['byteStep'] - 0.5) * ch['logSpan'] / 255.0)
+        water = self.flat(0.0)
+        dry = [None, 0.0, -1.0, ch['min'], first * 0.999]
+        thick = [H.CWAT_HI, 50.0]
+        for k, x in enumerate(dry + thick):
+            water[k] = x
+        rows = png_pixels(H.cloud_png(water, self.flat(0.0), self.flat(0.0), self.flat(0.0)))[3]
+        got = [self.at(rows, 2, 1, k) for k in range(len(dry) + len(thick))]
+        self.assertEqual([0] * len(dry) + [ch['maxByte']] * 2, got)
+        self.assertEqual(0.0, decode_channel(ch, 0))
+        self.assertEqual(252, ch['maxByte'], '운영 눈금(CWAT_Q 4)에서 끝 바이트는 252 다 — 255 는 나오지 않는다')
+        self.assertAlmostEqual(ch['max'], decode_channel(ch, ch['maxByte']), places=12)
+        self.assertLess(ch['max'], H.CWAT_HI, '끝값은 CWAT_HI 가 아니다 — 닿을 수 있는 가장 큰 바이트의 값이다')
+        self.assertEqual(H.CWAT_LO, ch['min'])
+
+    def test_wind700_round_trip_carries_the_prequantization(self):
+        spec = H.field_specs()['wind700']
+        r, g = spec['channels']['R'], spec['channels']['G']
+        self.assertEqual(H.field_specs()['wind10']['channels']['R']['scale'], r['scale'], '10 m 바람과 같은 식')
+        self.assertEqual(H.WIND_PREQ_MS, r['preQuantized'])
+        bound = r['preQuantized'] / 2 + r['scale'] / 2
+        worst = 0.0
+        for k in range(400):
+            x = -64.0 + k * 0.3203
+            w, h, ctype, rows = png_pixels(H.wind_png(self.flat(x), self.flat(-x)))
+            self.assertEqual((H.WNI, H.WNJ, 6), (w, h, ctype))
+            for row in rows:
+                for ii in range(w):
+                    self.assertEqual((0, 255), (row[ii * 4 + 2], row[ii * 4 + 3]))
+                    worst = max(worst, abs(decode_channel(r, row[ii * 4]) - x),
+                                abs(decode_channel(g, row[ii * 4 + 1]) + x))
+        self.assertLessEqual(worst, bound + 1e-9, '선양자화 반 눈금 + 바이트 반 눈금')
+        self.assertGreater(worst, r['scale'] / 2 + 0.1, '바이트 반 눈금만으로는 설명이 안 된다 — 선양자화를 말해야 한다')
+        self.assertIn('%.3f m/s' % bound, spec['note'])
+
+    def test_wind700_end_values_calm_and_the_block_mean(self):
+        r = H.field_specs()['wind700']['channels']['R']
+        px = png_pixels(H.wind_png(self.flat(-90.0), self.flat(90.0)))[3][0]
+        self.assertEqual((r['min'], r['max']), (decode_channel(r, px[0]), decode_channel(r, px[1])), '밖은 끝값')
+        calm = png_pixels(H.wind_png(self.flat(None), self.flat(None)))[3][0]
+        self.assertEqual((128, 128), (calm[0], calm[1]))
+        self.assertAlmostEqual(128 * r['scale'] + r['offset'], decode_channel(r, calm[0]))
+        self.assertGreater(decode_channel(r, 128), 0.0, '바이트 128 은 0 m/s 가 아니다(0 은 127 과 128 사이) — note 가 말한다')
+        # 묶음 평균: 한 묶음 안에서 10 과 12 가 번갈아 → 11
+        u = [10.0 if k % 2 == 0 else 12.0 for k in range(self.n)]
+        mean = png_pixels(H.wind_png(u, self.flat(0.0)))[3][0]
+        self.assertEqual(H._wind_byte(11.0), mean[0])
+        cm = H.field_specs()['wind700']['cellMean']
+        self.assertEqual((H.WIND_DIV, H.WIND_DIV, 'grid'), (cm['ni'], cm['nj'], cm['of']))
+
+    def test_wind_byte_is_bit_identical_to_the_old_literal_formula(self):
+        """WIND_PREQ_MS 로 이름을 붙이면서 'round(ms * 2.0) / 2.0' 을 'round(ms / 0.5) * 0.5' 로 고쳤다.
+        w 프레임의 바이트가 한 칸도 달라지면 안 된다 — 고치기 전의 식을 여기 그대로 적어 촘촘히 대조한다."""
+        def old(ms):
+            if ms is None:
+                return 128
+            q = round(ms * 2.0) / 2.0
+            return int(max(0.0, min(255.0, (q + 64.0) / 128.0 * 255.0)) + 0.5)
+        xs = ([k * 0.0137 - 70.0 for k in range(10300)] + [k * 0.25 - 70.0 for k in range(561)]     # 0.25 = 반올림 경계
+              + [None, 0.0, -0.0, 1e-12, -1e-12, 0.24999999999, 0.25000000001, 63.75, 64.0, 1e9, -1e9])
+        self.assertEqual([old(x) for x in xs], [H._wind_byte(x) for x in xs])
+
+
+class LegacyWindGridGeometry(unittest.TestCase):
+    """운영 격자(0p50)에서: fields.wind700.grid 의 원점은 묶음의 **가운데**다.
+
+    저장소(gfs-frames.js)는 fields{} 에 실린 격자를 점 격자로 읽는다 — 칸 (r, c) 의 값이 lon0 + c·dLon · lat0 − r·dLat
+    **그 점**에 있다고 본다. wind_png 은 점 8 × 8 개의 평균을 한 칸에 담으므로 그 값의 자리는 묶음의 가운데다.
+    """
+
+    def setUp(self):
+        self.assertEqual((720, 361, 8), (H.NI, H.NJ, H.WIND_DIV), '이 시험은 기본 해상도(0p50)를 전제한다')
+        self.g = H.field_specs()['wind700']['grid']
+
+    def test_origin_is_the_mean_position_of_the_first_block(self):
+        lons = [H.GRID_LON0 + i * H.RES_DEG for i in range(H.WIND_DIV)]
+        lats = [H.GRID_LAT0 - j * H.RES_DEG for j in range(H.WIND_DIV)]
+        self.assertEqual((sum(lons) / len(lons), sum(lats) / len(lats)), (self.g['lon0'], self.g['lat0']))
+        self.assertEqual((H.WNI, H.WNJ, H.WIND_DIV * H.RES_DEG, H.WIND_DIV * H.RES_DEG),
+                         (self.g['ni'], self.g['nj'], self.g['dLon'], self.g['dLat']))
+        self.assertEqual(360.0, self.g['ni'] * self.g['dLon'], '경도를 한 바퀴 덮는다 — 저장소가 날짜변경선을 잇는다')
+
+    def test_a_spike_over_seoul_lands_in_the_cell_whose_stated_centre_is_nearest(self):
+        """서울(37.5N 127E) 한 점에만 64 m/s → 그 묶음의 평균 1 m/s. 어느 칸이 튀는지, 그 칸의 '적힌 자리'가 맞는지."""
+        row, col = round((90 - 37.5) / 0.5), int(127.0 / 0.5)                  # 원격자: 열 = 동경 / 0.5
+        u = [0.0] * (H.NI * H.NJ)
+        u[row * H.NI + col] = 64.0
+        w, h, _, rows = png_pixels(H.wind_png(u, [0.0] * (H.NI * H.NJ)))
+        hits = [(jj, ii) for jj in range(h) for ii in range(w) if rows[jj][ii * 4] != 128]
+        self.assertEqual([(13, 76)], hits)
+        (jj, ii), = hits
+        lon_c, lat_c = self.g['lon0'] + ii * self.g['dLon'], self.g['lat0'] - jj * self.g['dLat']
+        self.assertLessEqual(abs(lon_c - 127.0), self.g['dLon'] / 2)
+        self.assertLessEqual(abs(lat_c - 37.5), self.g['dLat'] / 2)
+        # 원점을 묶음의 첫 점(−180 · 90)으로 적었다면 이 칸은 124E 가 되어 서울에서 반 칸 넘게 떨어진다 — 그래서 가운데로 적는다.
+        self.assertGreater(abs(H.GRID_LON0 + ii * self.g['dLon'] - 127.0), self.g['dLon'] / 2)
+
+
+class C1FixtureLock(unittest.TestCase):
+    """JS 시험(tools/earthus-v53/gfs-frames-legacy-fields.test.mjs)이 읽는 매니페스트 조각은 손으로 친 JSON 이 아니다.
+
+    아래 document() 가 handler 의 상수로 만든 것이고, 파일이 그것과 다르면 여기서 떨어진다 — 인코더·매니페스트를
+    고치면 픽스처를 다시 만들어야 JS 시험이 '지금의 매니페스트'를 본다. 다시 만들기:
+      C1_WRITE_FIXTURE=1 PYTHONUTF8=1 python -m pytest -q -p no:cacheprovider aws/gfs-cloud-forecast -k C1FixtureLock
+    """
+
+    @staticmethod
+    def document():
+        run = datetime(2026, 9, 20, 0, tzinfo=timezone.utc)
+        tag = run.strftime('%Y%m%d%H')
+        steps = []
+        for h in (0, 3, 6):
+            st = {'h': h, 'valid': (run + timedelta(hours=h)).strftime('%Y-%m-%dT%H:%M:%SZ'),
+                  'file': '%s/c%03d.png' % (tag, h), 'wind': '%s/w%03d.png' % (tag, h),
+                  'precip': '%s/p%03d.png' % (tag, h)}
+            for name, letter in H.FIELD_FILES.items():
+                if name == 'apcp' and h == 0:
+                    continue                                            # 분석장에는 누적이 없다
+                st[name] = '%s/%s%03d.png' % (tag, letter, h)
+            if h:
+                st['apcpWindow'] = {'fromH': 0, 'toH': h}
+            steps.append(st)
+        return {
+            '_fixture': 'Manifest fragment made by aws/gfs-cloud-forecast/tests/test_field_frames.py '
+                        '(C1FixtureLock.document) from handler.py constants at the production grid. '
+                        'Not a production copy: steps are three made-up frame paths. Do not edit by hand.',
+            'run': run.strftime('%Y-%m-%dT%H:%M:%SZ'), 'generatedAt': '2026-09-20T04:56:36Z',
+            'grid': {'ni': H.NI, 'nj': H.NJ, 'lon0': H.GRID_LON0, 'dLon': H.RES_DEG,
+                     'lat0': H.GRID_LAT0, 'dLat': -H.RES_DEG},
+            'windGrid': {'ni': H.WNI, 'nj': H.WNJ, 'dLon': H.WIND_DIV * H.RES_DEG, 'dLat': H.WIND_DIV * H.RES_DEG},
+            'stepHours': H.STEP_H, 'steps': steps,
+            'schema': H.MANIFEST_SCHEMA, 'model': 'GFS', 'resolutionDeg': H.RES_DEG, 'runTag': tag,
+            'fields': H.field_specs(),
+        }
+
+    def test_the_js_fixture_is_exactly_what_the_handler_constants_produce(self):
+        self.assertEqual((720, 361), (H.NI, H.NJ), '픽스처는 기본 해상도(0p50)의 것이다')
+        want = json.loads(json.dumps(self.document()))
+        if os.environ.get('C1_WRITE_FIXTURE') == '1':
+            with open(C1_FIXTURE, 'w', encoding='utf-8', newline='\n') as fh:
+                fh.write(json.dumps(want, ensure_ascii=False, indent=1) + '\n')
+        self.assertTrue(C1_FIXTURE.exists(), '픽스처가 없다 — 이 클래스의 머리말에 다시 만드는 명령이 있다')
+        self.assertEqual(want, json.loads(C1_FIXTURE.read_text(encoding='utf-8')),
+                         '픽스처가 handler 의 상수와 다르다 — 다시 만들어라(클래스 머리말)')
+
+    def test_the_four_w0_specs_are_the_ones_production_already_publishes(self):
+        """앞의 넷은 글자 하나 바꾸지 않았다 — W0 이 운영에 낸 매니페스트 사본(schema2 픽스처)과 대조한다."""
+        old = json.loads(SCHEMA2_FIXTURE.read_text(encoding='utf-8'))['fields']
+        now = json.loads(json.dumps(H.field_specs()))
+        for name in ('temp', 'wind10', 'apcp'):        # mslp 는 뺀다: 그 사본은 기압 범위를 넓히기(c90b0fd5) 전의 것이다
+            self.assertEqual(old[name], now[name], name)
+        self.assertEqual(tuple(H.LEGACY_FIELD_IDS), tuple(now)[4:])
 
 
 # ---------------------------------------------------------------- 요청 URL

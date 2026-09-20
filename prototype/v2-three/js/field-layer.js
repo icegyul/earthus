@@ -35,7 +35,7 @@ import { FieldRenderer, halfStepOf } from './field-renderer.js?v=1';
 import { landMaskCardLine, sharedLandMask } from './land-mask.js?v=1';
 import { FIELD_LABEL_CAP, FieldLabels, labelLevels, labelText, pickLabelSpots, thinField } from './field-labels.js?v=1';
 import { FieldSymbols, SYMBOL_CAP, symbolCardRow } from './field-symbols.js?v=1';
-import { accumAction, accumCardRow, accumCardState, accumStatusText, accumValidMs } from './precip-accum.js?v=1';
+import { accumAction, accumCardRow, accumCardState, accumLegendNote, accumStatusText, accumValidMs } from './precip-accum.js?v=1';
 
 // 레이어 id → 무엇을 어떻게 그리나. 레이어 id·현상 id 는 개명하지 않는다(현상 레지스트리 규칙) — 'tempgrid' 그대로다.
 //   fieldId   프레임 저장소의 필드(gfs-frames.js) · scaleId  색 눈금표(field-scales.js)
@@ -1003,7 +1003,8 @@ export class FieldLayer {
       // 아무 일도 없을 때 비는 한 줄 — 눈금표가 늘 하는 말과 포화 고지를 **둘 다** 적는다(scaleNote).
       // ⚠️ 이 객체에 같은 열쇠를 두 번 적지 마라: JS 는 뒤엣것만 남기고 조용히 앞엣것을 버린다(2026-09-20 에 실제로 한 번 그랬다 —
       //    D3 가 'single' 줄을 더하면서 run·valid·note 를 통째로 다시 적어, D2 가 세워 둔 포화 고지가 화면에서 사라졌다).
-      note: blocked ? short : (probeLine || short || this.scaleNote()),
+      //    누적은 short 가 늘 차 있어(구간 문구) scaleNote 를 밀어냈다 — 그 갈래에서는 둘을 이어 넘긴다.
+      note: blocked ? short : (probeLine || accumLegendNote(this, short) || short || this.scaleNote()),
     }, `field:${this.id}`, LEGEND_PRIORITY_FIELD);
     const model = this.cardModel(probe);
     const inner = fieldCardInner(model);

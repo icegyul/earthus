@@ -334,6 +334,26 @@ test('범례의 유효 시각은 타임라인이 아니라 **누적 구간의 �
   layer.off();
 });
 
+test('누적에서도 눈금표의 상시 고지가 남는다 — 구간 문구가 그것을 밀어내지 않는다', async () => {
+  // 범례의 풀이 줄은 하나다. 누적에서는 구간 문구가 늘 차 있어(현재 강우에서는 빈 글자였다) 눈금표가 늘 하는 말이
+  // 화면에서 통째로 사라졌다 — '둘 중 하나만 넘기면 나머지를 잃는다'는 그 규칙을 누적 갈래가 다시 깬 것이다.
+  const { layer, legend } = rig();
+  await layer.on();
+  const rateNote = scaleOf('precip').legendNote.ko;
+  assert.ok(legend.last.note.includes(rateNote), '현재 강우에서는 눈금표의 말이 있었다');
+
+  await chip(layer, '24');
+  const accNote = scaleOf('precipAccum').legendNote.ko;
+  assert.match(legend.last.note, /24시간 누적/, '구간 문구는 그대로 있고');
+  assert.ok(legend.last.note.includes(accNote), `누적 눈금표의 말도 남는다 — ${legend.last.note}`);
+  assert.ok(!legend.last.note.includes(rateNote), '남는 것은 지금 눈금표(누적)의 말이다');
+
+  await chip(layer, 'rate');
+  assert.ok(legend.last.note.includes(rateNote));
+  assert.ok(!/누적/.test(legend.last.note), '현재 강우로 돌아오면 구간 문구가 없다');
+  layer.off();
+});
+
 test('런 시작 직후의 24시간 — 모자란 채로 그리고 카드가 몇 시간치인지 말한다', async () => {
   const { layer } = rig(T0 + 6 * H);                           // 런 + 6 h
   await layer.on();

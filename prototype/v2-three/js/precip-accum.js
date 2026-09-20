@@ -605,6 +605,19 @@ export const accumStatusText = (st, { ko = true, short = false, fmtValid = null 
     : `${want} was asked for, but this run only covers ${got} (${span}) — the missing hours are left out, not painted as zero.`;
 };
 
+/**
+ * 누적일 때 범례의 풀이 줄. 누적이 아니면 null 이라 부른 쪽이 제 길로 간다.
+ * 무엇을 고치나: 범례의 풀이 줄은 하나다. 누적에서는 statusText(short) 가 **늘** 구간 문구를 내놓으므로
+ * (현재 강우에서는 빈 글자였다) 눈금표의 상시 고지(scaleNote — '0.5 mm 미만은 칠하지 않습니다')가 화면에서
+ * 통째로 사라졌다. field-layer.js 의 scaleNote 주석이 스스로 적어 둔 규칙('둘 중 하나만 넘기면 나머지를 잃는다')을
+ * 누적 갈래가 다시 깬 것이다. scaleNote 가 두 조각을 잇듯 여기서도 같은 가운뎃점으로 잇는다.
+ */
+export const accumLegendNote = (layer, short) => {
+  if (!layer || !layer.desc || !layer.desc.accumHours || !short) return null;
+  const note = layer.scaleNote ? layer.scaleNote() : '';
+  return note ? `${short} · ${note}` : short;
+};
+
 /** 범례·카드가 말하는 유효 시각. 누적은 타임라인의 시각이 아니라 **그 구간의 끝**이다. 누적이 아니면 null. */
 export const accumValidMs = (layer) => {
   const fr = layer && layer.status && layer.status.a;

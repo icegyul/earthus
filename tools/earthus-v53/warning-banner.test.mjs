@@ -5,8 +5,13 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const b = await import('../../prototype/v2-three/js/warning-banner.js');
-const main = readFileSync(new URL('../../prototype/v2-three/js/main.js', import.meta.url), 'utf8');
-const src = readFileSync(new URL('../../prototype/v2-three/js/warning-banner.js', import.meta.url), 'utf8');
+// ⚠️ 줄바꿈을 LF 로 맞춰 읽는다. 이 저장소는 core.autocrlf=true 인 윈도우에서 돌고, git 이 파일을 다시 쓰는 순간
+//    (cherry-pick · 새 워크트리 체크아웃) 작업본이 CRLF 로 풀린다. 아래 정규식은 LF 를 못박고 있어서 그때마다
+//    내용이 한 글자도 안 바뀌었는데 시험이 떨어졌다 — 2026-09-20 에 워크트리 5개와 본 체크아웃이 모두 같은 3건에 걸렸다.
+//    시험이 지키려는 것은 소스의 내용이지 줄바꿈이 아니다.
+const lf = (s) => s.replace(/\r\n/g, '\n');
+const main = lf(readFileSync(new URL('../../prototype/v2-three/js/main.js', import.meta.url), 'utf8'));
+const src = lf(readFileSync(new URL('../../prototype/v2-three/js/warning-banner.js', import.meta.url), 'utf8'));
 
 const W = (over = {}) => ({ region: '서울', kind: '호우', level: '경보', levelRank: 2, effectiveKst: '202609200100',
   cap: { status: 'Actual', msgType: 'Alert', severity: 'Severe' }, ...over });

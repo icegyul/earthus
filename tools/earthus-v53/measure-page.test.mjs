@@ -5,8 +5,13 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const root = (p) => new URL(`../../${p}`, import.meta.url);
-const src = readFileSync(root('prototype/v2-three/js/measure.js'), 'utf8');
-const main = readFileSync(root('prototype/v2-three/js/main.js'), 'utf8');
+// ⚠️ 줄바꿈을 LF 로 맞춰 읽는다. 이 저장소는 core.autocrlf=true 인 윈도우에서 돌고, git 이 파일을 다시 쓰는 순간
+//    (cherry-pick · 새 워크트리 체크아웃) 작업본이 CRLF 로 풀린다. 아래 정규식은 LF 를 못박고 있어서 그때마다
+//    내용이 한 글자도 안 바뀌었는데 시험이 떨어졌다 — 2026-09-20 에 워크트리 5개와 본 체크아웃이 모두 같은 3건에 걸렸다.
+//    시험이 지키려는 것은 소스의 내용이지 줄바꿈이 아니다.
+const lf = (s) => s.replace(/\r\n/g, '\n');
+const src = lf(readFileSync(root('prototype/v2-three/js/measure.js'), 'utf8'));
+const main = lf(readFileSync(root('prototype/v2-three/js/main.js'), 'utf8'));
 
 test('?measure=1 일 때만 불러온다 — 평소 사용자에게는 한 바이트도 안 간다', () => {
   assert.match(main, /get\('measure'\) === '1'\) \{\n\s+import\('\.\/measure\.js\?v=1'\)/);

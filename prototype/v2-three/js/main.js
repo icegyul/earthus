@@ -4807,6 +4807,8 @@ async function main() {
     onAction: (action, ds, value) => {
       // 색면 카드의 단추(등온선 켬/끔 · 2°C|5°C) — js/field-layer.js 가 셰이더를 바꾸고 카드 글을 제자리에서 갈아 끼운다(provideField 의 onCard).
       if (typeof action === 'string' && action.startsWith('field-')) { liveLayers.fieldAction(action, ds); return; }
+      // 잠기는 땅 카드의 단추(시나리오 4 × 연도 3) — js/flood-overlay.js 가 상승폭 격자를 다시 굽고 카드 글을 제자리에서 갈아 끼운다.
+      if (typeof action === 'string' && action.startsWith('slr-')) { liveLayers.slrAction(action, ds); shell.refreshFlyout(); return; }
       // 확장 화면(LAB·취미) 카드의 버튼 — data-action="ext:…" 만 여기서 받는다
       const ex = extScene ? extScene.handleAction(action, ds, value) : null;
       if (ex) {

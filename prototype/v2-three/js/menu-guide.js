@@ -43,7 +43,7 @@ export const MENU_QUESTIONS = Object.freeze({
   "kmasea": "한국 바다 실측은",
   "sstfield": "바다 표면 온도는",
   "sstanom": "평년보다 바다가 얼마나 따뜻한가",
-  "slr": "2100년에 해수면이 얼마나 오를 수 있나",
+  "slr": "해수면이 오르면 어디가 물에 잠기나",
   "khoasl126": "저배출이면 우리 바다는",
   "khoasl245": "중간 배출이면 우리 바다는",
   "khoasl370": "고배출이면 우리 바다는",

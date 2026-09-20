@@ -8,6 +8,8 @@ import { bulletinRecords, bulletinTimesHtml, escapeHtml, sourceTimeLabel, SEA_LE
 import { buildOceanMaskAsync, oceanMaskAlphaRGBA, oceanMaskCardLine, erodedGridNodes } from './ocean-land-mask.js?v=1';
 // W1 셰이더 색면(기온부터) — 프레임 저장소·시간 버스·범례·라벨을 묶는 접착제는 저 파일에 있다. 여기에는 거는 자리만 둔다.
 import { activeField, clearFieldLayers, isFieldLayerId, toggleFieldLayer } from './field-layer.js?v=1';
+// 잠기는 땅(레이어 'slr' · 2026-09-20 E1) — 상승폭 IDW 격자·셰이더·카드는 저 파일에 있다. 여기에도 거는 자리만 둔다.
+import { createFloodOverlay } from './flood-overlay.js?v=1';
 // 지상관측 두 파일(기상청 · GTS)은 공용 저장소에서 받는다 — 바람·평년차·기입 모형·지구 위 관측 숫자가 같은 문서를 나눠 쓴다(surface-obs.js).
 import { surfaceObs } from './surface-obs.js?v=1';
 
@@ -434,7 +436,9 @@ export class LiveLayers {
   disposeObj(obj) {
     if (!obj) return;
     obj.traverse((c) => {
-      if (c.geometry) c.geometry.dispose();
+      // ⚠️ 지구의 지오메트리를 **같이 쓰는** 면이 있다(잠기는 땅 — 정점이 같아야 지형과 평행하다 · flood-overlay.js).
+      //    표가 붙은 것은 여기서 버리지 않는다: 버리면 켜는 중에 한 번 껐다가 지구가 통째로 사라진다.
+      if (c.geometry && !(c.userData && c.userData.keepGeometry)) c.geometry.dispose();
       if (c.material) {
         const mats = Array.isArray(c.material) ? c.material : [c.material];
         for (const m of mats) {
@@ -477,6 +481,9 @@ export class LiveLayers {
       // 바다 색면은 과장과 무관하다 — 껍질 반지름은 고정(해수면은 과장해도 r=1)이고 육지 가림은
       // 고도의 부호만 본다. 다시 지으면 슬라이더 한 칸마다 같은 그림을 새로 올릴 뿐이다.
       if (OCEAN_FIELD_IDS.has(id)) continue;
+      // 잠기는 땅(slr)도 지구의 uniform 묶음을 그대로 물고 있어 과장을 저절로 따라간다. 여기로 오면 1° IDW 격자까지
+      // 다시 구우면서 같은 그림을 새로 올릴 뿐이다(슬라이더 한 칸마다).
+      if (id === 'slr') continue;
       const revision = l.geometryRevision = (l.geometryRevision || 0) + 1;
       this.buildFromData(id, l.data).then((built) => {
         if(this.layers[id] !== l || l.geometryRevision !== revision || l.cancelled) {this.disposeObj(built.obj);return;}
@@ -2057,71 +2064,27 @@ export class LiveLayers {
     };
   }
 
-  // ---------- 해수면 상승 전망 (IPCC AR6 · 전 세계 조위관측소) ----------
-  // 전망(projection)이지 예보가 아니다. 기둥 높이 = 2100년 중앙값 상승폭, 색 = 시나리오 위험도.
-  // 시나리오는 SSP5-8.5(고배출)를 기본 표시하고 카드에서 4개 시나리오를 모두 보여준다.
-  buildSlr(d, scenario = 'ssp585') {
-    const items = (d.items || []).filter((i) => i.s && i.s[scenario] && i.s[scenario]['2100']);
-    this._slrItems = items;
-    this._slrScenario = scenario;
-    const g = new THREE.Group();
-    if (!items.length) return g;
-    const vals = items.map((i) => i.s[scenario]['2100'][0]);
-    const maxV = Math.max(...vals);
-    this._slrMax = maxV;
-    this._slrMean = vals.reduce((a, b) => a + b, 0) / vals.length;
-    const pos = new Float32Array(items.length * 6);
-    const col = new Float32Array(items.length * 6);
-    items.forEach((it, i) => {
-      const v = it.s[scenario]['2100'][0];
-      const f = Math.min(Math.max(v / 1.2, 0), 1); // 1.2m를 상한으로 색 정규화
-      const c = new THREE.Color().setHSL(0.58 - f * 0.58, 0.85, 0.42 + f * 0.16);
-      const p = llToV3(it.lat, it.lon, this.surfR(it.lat, it.lon, 0.0025));
-      const up = p.clone().normalize();
-      const h = 0.003 + f * 0.045;
-      pos[i * 6] = p.x; pos[i * 6 + 1] = p.y; pos[i * 6 + 2] = p.z;
-      pos[i * 6 + 3] = p.x + up.x * h;
-      pos[i * 6 + 4] = p.y + up.y * h;
-      pos[i * 6 + 5] = p.z + up.z * h;
-      col[i * 6] = c.r * 0.25; col[i * 6 + 1] = c.g * 0.25; col[i * 6 + 2] = c.b * 0.25;
-      col[i * 6 + 3] = c.r; col[i * 6 + 4] = c.g; col[i * 6 + 5] = c.b;
-    });
-    const lg = new THREE.BufferGeometry();
-    lg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    lg.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    g.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({
-      vertexColors: true, transparent: true, opacity: 0.92, depthWrite: false,
-    })));
-    g.add(this.makePoints(items.map((it) => {
-      const v = it.s[scenario]['2100'][0];
-      const f = Math.min(Math.max(v / 1.2, 0), 1);
-      return { lat: it.lat, lon: it.lon, c: new THREE.Color().setHSL(0.58 - f * 0.58, 0.85, 0.5) };
-    }), { size: 4, lift: 0.0025, opacity: 0.85 }));
-    return g;
+  // ---------- 해수면 상승 전망 — '잠기는 땅' (IPCC AR6 · 전 세계 조위관측소) ----------
+  // 2026-09-20 작업 E1. 옛 길은 조위관측소 1,016곳에 **수직 막대기**(LineSegments)와 점을 세웠다: 막대기 길이는
+  // 1 m 가 아니라 상승폭에 비례한 '보이기용 길이'(19~306 km)였고, 정작 어디가 잠기는지는 화면에 없었다.
+  // PD: "지금은 해안가에 막대기 나와 — 내가 그 막대기 싫어서 업데이트 진행했던 건데."
+  // 지금은 **지형 고도가 그 자리의 상승폭보다 낮은 육지**를 물빛으로 덮는다(욕조식 근사 · 카드가 네 가지를 고지한다).
+  // 상승폭 IDW 격자 · 셰이더 · 카드 · 단추는 전부 js/flood-overlay.js 에 있다 — 세 작업이 이 파일을 동시에 고친다.
+  buildSlr(d) {
+    if (this._flood) this._flood.dispose();      // 다시 지을 때 옛 값 텍스처를 먼저 버린다
+    // 지형 uniform 묶음·지구 지오메트리·카드 갈아끼우기는 색면이 쓰던 것을 그대로 쓴다(main.js provideField).
+    this._flood = createFloodOverlay(d, { ...(this._fieldDeps || {}), heightAt: this.heightAt });
+    return this._flood.object;
   }
 
-  metaSlr(d) {
-    const items = this._slrItems || [];
-    const kr = items.filter((i) => (i.country || '').startsWith('Korea'));
-    const fmtM = (x) => (x == null ? '—' : `${x.toFixed(2)}m`);
-    const line = (it) => {
-      const a = it.s.ssp245 && it.s.ssp245['2100'];
-      const b = it.s.ssp585 && it.s.ssp585['2100'];
-      return `${it.name} — 저감(SSP2-4.5) <b>${fmtM(a && a[0])}</b> · 고배출(SSP5-8.5) <b>${fmtM(b && b[0])}</b>`;
-    };
-    const krTop = [...kr].sort((x, y) => (y.s.ssp585['2100'][0]) - (x.s.ssp585['2100'][0])).slice(0, 5);
-    const worst = [...items].sort((x, y) => (y.s.ssp585['2100'][0]) - (x.s.ssp585['2100'][0])).slice(0, 3);
-    return {
-      badge: 'MODEL_SIGNAL',
-      note: `${items.length.toLocaleString()}개 조위관측소 · 2100년 SSP5-8.5 평균 ${fmtM(this._slrMean)} · 최대 ${fmtM(this._slrMax)}`,
-      cardHtml: `<b>2100년 해수면 상승 전망</b> — 전 세계 조위관측소 ${items.length.toLocaleString()}곳. 기둥 높이·색 = 고배출 시나리오(SSP5-8.5) 중앙값.<br/>`
-        + `<b>한국 ${kr.length}곳</b><br/>${krTop.map((i) => `· ${line(i)}`).join('<br/>')}<br/>`
-        + `세계 최대: ${worst.map((i) => `${i.name} ${fmtM(i.s.ssp585['2100'][0])}`).join(' · ')}<br/>`
-        + `기준선 ${d.baseline || '1995–2014 평균'} · 각 값은 중앙값이며 원자료에는 17~83% 범위가 함께 있습니다.<br/>`
-        + `<b>예보가 아니라 시나리오별 전망입니다.</b> 배출 경로에 따라 값이 달라지며, 지역 침수 여부는 이 값 하나로 판단할 수 없습니다.<br/>`
-        + `출처 ${d.source || 'IPCC AR6 · NASA/JPL'} · ${d.license || 'CC BY 4.0'}`,
-    };
+  // 읽을 때마다 지금 것을 낸다 — 시나리오·연도 단추를 누른 뒤 카드를 다시 열어도 맞는 글이 나온다(색면 레이어와 같은 규칙).
+  metaSlr() {
+    const f = this._flood;
+    return { badge: 'MODEL_SIGNAL', get note() { return f.note(); }, get cardHtml() { return f.cardHtml(); } };
   }
+
+  /** 잠기는 땅 카드의 단추(data-action="slr-scenario" · "slr-year"). 처리했으면 true. */
+  slrAction(action, ds) { return this._flood ? this._flood.handleAction(action, ds || {}) : false; }
 
   // ---------- 한국 해상 관측망 (KMA 193지점 · OBSERVED) ----------
   // 파고를 보고하는 지점은 파고 색, 파고가 없는 지점은 흐린 점 — 값을 지어내지 않는다.

@@ -95,7 +95,8 @@ export const SCENES = [
     glyph: '해',
     accent: '#5FD3C0',
     layers: [
-      { id: 'marine', name: '해양 모델 · 파고와 바람', state: 'MODEL_SIGNAL', src: 'Open-Meteo Marine · GFS 바람', act: true },
+      // 2026-09-20 W2: 브라우저가 지점마다 marine-api 를 직접 부르던 것을 걷어냈다. 이제 같은 자료를 우리 격자에서 읽는다 — 출처를 사실대로.
+      { id: 'marine', name: '해양 격자 · 파도와 바람', state: 'MODEL_SIGNAL', src: 'Open-Meteo Marine 경유 · 0.5°(동아시아)/5° 격자 · 현재 시각 · 바람은 GFS 0.5° 프레임', act: true },
       { id: 'oceanfocus', name: '해양 포커스', state: 'DERIVED', src: '선택 해역 · 연결된 해양 자료', act: true },
       { id: 'typhoonsim', name: '태풍 해상 가정 장면', state: 'DEMO', src: '해양 모델 입력 · 장면 표현(기록 남는 계산 아님)', act: true },
       { id: 'buoys', name: '해양 부이 관측 (수온)', state: 'OBSERVED', src: 'NDBC 등 · 1.0 S3', act: true },

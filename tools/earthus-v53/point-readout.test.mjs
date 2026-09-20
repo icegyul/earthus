@@ -18,7 +18,7 @@ import {
   BUOY_KM, METRIC_ABSENT, METRIC_LAYER, POINT_BASE, SEA_GRIDS, SEA_ROWS,
   compass16, createPointReadout, seaIndexAt, seaSourceLine, seaValuesAt,
 } from '../../prototype/v2-three/js/point-readout.js';
-import { FIELD_DESCRIPTORS, cellLabel, readoutOf } from '../../prototype/v2-three/js/field-layer.js';
+import { FIELD_DESCRIPTORS, cellLabel, fmtValid, readoutOf } from '../../prototype/v2-three/js/field-layer.js';
 import { createGfsFrames } from '../../prototype/v2-three/js/gfs-frames.js';
 import { createTimeBus } from '../../prototype/v2-three/js/time-bus.js';
 import { scaleOf } from '../../prototype/v2-three/js/field-scales.js';
@@ -290,7 +290,7 @@ test('출처 줄이 무엇을·얼마나 큰 칸을·언제 것인지 셋 다 �
   const line = seaSourceLine({ res: 5, time: '2026-09-20T12:00:00Z', source: 'Open-Meteo Marine' }, true);
   assert.match(line, /Open-Meteo Marine 경유/, '남의 자료를 우리 것처럼 부르면 안 된다');
   assert.ok(line.includes(cellLabel(5, true)), '칸 크기가 없다');
-  assert.match(line, /기준 \d\d-\d\d \d\d:\d\d KST/, '기준 시각이 없다');
+  assert.match(line, /기준 \d\d\/\d\d \d\d:\d\d KST/, '기준 시각이 없다');
 });
 
 test('격자에 값이 없는 자리는 이유를 말하고 값을 내지 않는다', async () => {
@@ -323,6 +323,22 @@ test('격자 파일을 못 받으면 없는 값을 만들지 않고 오류로 �
   const { readout } = rig({ missDocs: true });
   const got = await readout.sea(35, 125);
   assert.ok(got.error && !got.grid);
+});
+
+test('타임라인을 밀면 파도는 그 시각의 값이 아니라고 적는다', async () => {
+  const doc = seaDoc(filled(72, 33, 23 * 72 + 61, { wave: 1.4 }));
+  const { readout, timeBus } = rig({ sea: doc, buoys: { stations: [] } });
+  const now = readout.seaHtml(await readout.sea(35, 125));
+  assert.ok(!now.includes('타임라인이 지금이 아닙니다'), "'지금'인데 어긋남을 말했다");
+  timeBus.set(48 * H);
+  const later = readout.seaHtml(await readout.sea(35, 125));
+  assert.match(later, /파도·수온·해류는 현재 시각 한 장/, '예보 시각에서 한 장짜리 자료가 예보처럼 읽힌다');
+});
+
+test('한 카드 안의 날짜 문법이 하나다 — 색면·범례와 같은 fmtValid 를 쓴다', () => {
+  const line = seaSourceLine({ res: 5, time: '2026-09-20T12:00:00Z', source: 'Open-Meteo Marine' }, true);
+  assert.ok(line.includes(fmtValid(Date.parse('2026-09-20T12:00:00Z'), true)),
+    '같은 카드에서 두 가지 날짜 꼴이 섞이면 둘이 다른 자료처럼 읽힌다');
 });
 
 test('방위는 16방위로 읽어 준다', () => {

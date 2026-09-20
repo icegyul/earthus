@@ -34,7 +34,7 @@
 // 이 파일은 DOM 을 모른다. frames · timeBus · fetch · now 를 주입받는다 —
 // tools/earthus-v53/point-readout.test.mjs 가 가짜를 넣어 **우리 S3 말고 아무 데도 안 간다**를 잠근다.
 
-import { FIELD_DESCRIPTORS, cellLabel, fieldStatusOf, readoutOf, sourceLabel, statusText, timeMeta } from './field-layer.js?v=1';
+import { FIELD_DESCRIPTORS, cellLabel, fieldStatusOf, fmtValid, readoutOf, sourceLabel, statusText, timeMeta } from './field-layer.js?v=1';
 import { scaleOf } from './field-scales.js?v=1';
 import { readTicks } from './field-log.js?v=1';
 import { buoysNear } from './for-me-signal.js?v=2';
@@ -150,8 +150,10 @@ export function seaSourceLine(grid, ko = true) {
   const src = (grid && grid.source) || 'Open-Meteo Marine';
   const cell = cellLabel(grid && grid.res, ko);
   const t = parseIso(grid && grid.time);
+  // 날짜 문법은 색면·범례와 같은 함수(fmtValid)를 쓴다 — 한 카드 안에서 '09-20 21:00' 과 '09/20 22:41' 이
+  // 섞여 있으면 둘이 다른 자료처럼 읽힌다.
   const when = t != null
-    ? `${ko ? '기준' : 'as of'} ${new Date(t + (ko ? 9 * H : 0)).toISOString().slice(5, 16).replace('T', ' ')} ${ko ? 'KST' : 'UTC'}`
+    ? `${ko ? '기준' : 'as of'} ${fmtValid(t, ko)}`
     : (ko ? '기준 시각 미제공' : 'no reference time given');
   return ko
     ? `MODEL_SIGNAL · ${src} 경유 · ${cell} 점 표본 · ${when}`
@@ -331,7 +333,15 @@ export function createPointReadout(deps = {}) {
           : `Observed — no wave station within ${BUOY_KM} km (the KMA network covers Korean waters only). Grid value only.`;
       }
       const windMeta = sea.wind ? [sourceLabel(info), ...timeMeta(info, timeBus.validMs(), ko)].join(' · ') : '';
-      return rows.join('') + windLine
+      // 타임라인을 밀면 바람은 그 시각의 프레임이지만 **파도·수온은 한 장뿐**이다(수집기가 current= 로 받는다).
+      // 같은 바다를 칠하는 색면(wavefield)은 그때 스스로 숨는다 — 카드는 숨을 수 없으니 그 사실을 적는다.
+      // 이 줄이 없으면 T+48h 화면에서 '지금 파고'가 예보처럼 읽힌다.
+      const drift = timeBus.isNow && !timeBus.isNow()
+        ? `<p>${esc(ko
+          ? '타임라인이 지금이 아닙니다 — 파도·수온·해류는 현재 시각 한 장이라 그 시각의 값이 아닙니다(바람만 예보 프레임입니다).'
+          : 'The timeline is not at now — waves, sea temperature and current are a single present-time snapshot, not values for that hour (only the wind is a forecast frame).')}</p>`
+        : '';
+      return rows.join('') + windLine + drift
         + `<p>${esc(ko ? '유의파고는 높은 쪽 1/3 파도의 평균 높이입니다.' : 'Significant wave height is the mean of the highest third of the waves.')}</p>`
         + `<p>${esc(obs)}</p>`
         + `<p>${esc(seaSourceLine({ ...sea.gridInfo }, ko))}${windMeta ? `<br/>${esc(`${ko ? '바람' : 'Wind'}: ${windMeta}`)}` : ''}</p>`

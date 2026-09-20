@@ -3467,10 +3467,13 @@ async function main() {
   const forMeStateLine = (c) => c.state === 'signal' ? '🟠 영향 가능성 있음' : c.state === 'quiet' ? '🟢 지금은 영향 신호 없음' : '⚪ 판단 불가';
   const forMeWhenHtml = (w, c) => {
     if (c.kind === 'wave') {
-      // 파고는 시간별 예보(내 동네 1점)로 창을 만든다 — 태풍의 강풍역 문구를 쓰지 않는다
+      // 파고는 시간별 예보(내 동네 1점)로 창을 만든다 — 태풍의 강풍역 문구를 쓰지 않는다.
+      // ⚠️ (2026-09-20 W2) 아래 두 줄은 **지금은 닿지 않는다**: 시간별 파고를 브라우저가 직접 부르던 길을
+      //    걷어냈고 우리 수집기는 한 시각만 받는다(loadForMe 의 waveHourly 주석). 수집기가 시계열을 실으면
+      //    그대로 되살아난다 — 그래서 지우지 않고 둔다.
       if (w) return `${w.startNow ? '지금부터' : `${fmtKst(w.startMs)} KST`} ~ ${w.openEnd ? '예보 끝(3일) 이후 미확정' : `${fmtKst(w.endMs)} KST`}<br/>최대 <b>${w.peakWave.toFixed(1)} m · ${fmtKst(w.peakMs)} KST</b> (시간별 1점 예보, 폭 ±1h)<div class="forme-src">${escUI(w.agencyKo || '')} · 지금 격자값과 예보 1점은 다른 자료라 값이 다를 수 있습니다</div>`;
       if (c.facts && c.facts.maxWave != null) return `3일 내 임계 초과 예보 없음 · 최대 ${(+c.facts.maxWave).toFixed(1)} m`;
-      return '시간별 예보 응답 없음 — 지금 격자값만으로 판정';
+      return '시간별 파고가 우리 자료에 없습니다 — 지금 격자값만으로 판정합니다(언제부터·얼마나는 말하지 않습니다)';
     }
     if (c.kind === 'quake') return `이미 발생한 사건 — 시각은 발생 시각(${c.basis && c.basis.issueMs ? fmtKst(c.basis.issueMs) + ' KST' : '—'})`;
     if (c.kind === 'tsunami') return '도달시간은 INTELLIGENCE 의 EARTHUS 추정(SIMULATION_ONLY)에만 있습니다';

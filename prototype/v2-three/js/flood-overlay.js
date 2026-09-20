@@ -1,12 +1,39 @@
-// EARTHUS v2 — 해수면 상승 전망 (2026-09-20 작업 E1 → E4)
+// EARTHUS v2 — 해수면 상승 전망 (2026-09-20 작업 E1 → E5)
 //
-// ── 대표 그림이 오늘 두 번 바뀌었다 ──────────────────────────────────────────────────────────────────────────
+// ── 대표 그림이 세 번 바뀌었다 ──────────────────────────────────────────────────────────────────────────────
 //   ① 조위관측소 1,016곳의 **수직 막대기** → PD 가 걷어냈다(아래 E1 기록).
 //   ② '잠기는 땅' **색면** → 운영 자료로 재 보니 화면이 실제와 **순서가 뒤집혀** 있었다(E4 · SLR_RISE_SCALE 머리말의 실측).
-//   ③ 지금: 관측소 1,016곳의 **값을 찍은 원반**이 주인공이다. 색면은 카드 안 단추로 내려갔고 **기본은 꺼짐**이다.
-//      원반은 화면 고정 크기라 길이로 거짓말하지 않고(막대기가 그랬다) 색으로만 말한다 —
-//      그리고 우리가 가진 관측소 값은 순서가 맞다(TOBA 2.61 m · TRIBENI 2.23 m · 방콕 1.89 m · 제주 1.08 m).
-//   아래의 색면 기록은 **그대로 둔다**: 지운 것이 아니라 내린 것이고, 네덜란드 · 미시시피 · 메콩에서는 맞다.
+//   ③ 관측소 1,016곳의 **익명 원반** → 숫자가 없어 눌러 보기 전에는 값을 알 수 없었고 연안에서 점 구름이 됐다.
+//   ④ 지금(E5): **숫자를 적은 원판**이 주인공이다 — 멀리서는 나라 하나에 하나, 가까이서는 관측소 하나하나
+//      (js/slr-plates.js · 그 파일 머리말이 자리·갈라짐·솎기의 근거를 적는다). 그리고 '잠기는 땅' 색면은 **기본 켬**이 됐다.
+//   아래의 색면 기록은 **그대로 둔다**: 지운 것이 아니라 자리를 옮긴 것이고, 네덜란드 · 미시시피 · 메콩에서는 맞다.
+//
+// ── ⚠️ E5 에서 **재 보고 넣지 않은 것**: '주변에서 가장 낮은 지면'으로 땅 높이를 보정하기 ──────────────────
+//   지시서는 점 표본 대신 주변 최저 지면을 쓰라고 했고, 근거로 Terrarium **z11**(텍셀 약 70 m) 표를 들었다.
+//   그런데 **3D 지구는 z11 을 절대 읽지 않는다**: main.js DetailTerrain.zoomFor 의 상한이 z9 이고(고도 ≤ 300 km),
+//   고도 250 km 아래에서는 지구가 2D 지도로 넘어간다. z9 텍셀은 위도 35°에서 약 250 m 이고, z9 타일은 z11 을
+//   평균해 만든 것이라 골짜기가 메워져 있다. 이 세션이 타일을 직접 받아 두 해상도에서 나란히 쟀다:
+//
+//     곳            상승폭  z9 점하나 → z9 보정(±1km 하위)   z11 점하나 → z11 ±1km 최저
+//     다카           1.23     16.9 →  12.0                     19.3 →   3.0
+//     호찌민         0.80     17.8 →   8.0                     19.2 →   2.0
+//     상하이 푸둥     1.03      2.9 →   2.0                      3.5 →  −1.0
+//     방콕           1.79      2.4 →   2.0                      1.5 →   0.0
+//     도쿄 고토       0.92      6.0 →   3.0                      0.9 → −98.0(바다 밑바닥)
+//     자카르타 북부    0.75      2.9 →   2.3                     −1.0 →  −6.0
+//     로테르담        0.81      7.1 →   2.4                      8.0 →  −2.1
+//     뉴올리언스      1.34     27.9 →   7.0                      1.4 →  −0.0
+//
+//   **앱이 실제로 읽는 z9 에서는 보정을 넣어도 열한 곳 가운데 한 곳도 판정이 바뀌지 않는다**(전부 상승폭보다 높다).
+//   가장 크게 움직인 로테르담(7.1 → 2.4)도 상승폭 0.81 m 의 세 배다. 반대로 대조군(절벽 해안)은 그냥 끌려 내려온다:
+//   발파라이소 68.7 → 14.0 · 강릉 27.5 → 9.0 · 베르겐 12.2 → 6.3. 얻는 것 없이 해안을 낮추기만 한다.
+//   게다가 **다카 · 호찌민은 높이 문제가 아니다**: 해안에서 100 km 넘게 들어가 0.25° 바다 도달 판(flood-reach.js)에서
+//   대양과 끊긴다(reach = 0). 판을 느슨하게 하면 카스피 · 사해 잠금이 무너진다 — 되돌리지 말라고 한 바로 그것이다.
+//   문턱도 재 봤다(z9 ±1 km 원반 안 텍셀): 0 m 로 자르면 송도 · 새만금 · 플레볼란트의 탭이 **전부** 사라지고
+//   (그 셋은 둘레가 100% 해수면 아래다), −5 m 면 새만금(−9.8 ~ −7.9)이 통째로 사라진다. 살릴 수 있는 문턱은 −10 m 뿐인데
+//   새만금 최저가 −9.8 m 라 여유가 0.2 m 다. 절대 최저는 더 못 쓴다 — 도쿄가 −531 m, 자카르타가 −57 m 로 끌려간다.
+//   → 지금 지형 자료(DSM)로는 이 보정이 **z9 에서 아무 도시도 구하지 못하면서 해안만 낮춘다.** 그래서 넣지 않았다.
+//      고치는 길은 해상도가 아니라 **맨땅 지형(DTM · FABDEM · Copernicus GLO-30 보정본)**이다(카드 ③ 이 그렇게 적는다).
 //
 // 무엇이 잘못돼 있었나: 레이어 'slr' 은 조위관측소 1,016곳에 **수직 막대기**(LineSegments)와 점을 세웠다.
 // 막대기 높이는 2100년 상승폭이었다 — 지구 위에 1 m 를 세우려면 지구 반지름의 1/6,371,000 이라 보이지 않으므로
@@ -75,6 +102,12 @@ import { LEGEND_PRIORITY_FIELD } from './field-layer.js?v=1';
 import { projectPx } from './obs-labels.js?v=1';
 // 바다에서 물이 닿는 칸 판(0.25° 욕조 채우기) — 왜 필요한지는 저 파일 머리말이 숫자로 적는다.
 import { FLOOD_REACH_GROW, FLOOD_REACH_RES, buildOceanReachAsync, reachAt, reachInfo, reachRGBA } from './flood-reach.js?v=1';
+// 숫자 원판 — 나라/관측소 두 단계, 메도이드 자리, 솎기. 근거는 저 파일 머리말에 있다.
+import {
+  SLR_LOD, SLR_MIN_OPACITY, SLR_PHONE_W, SLR_PLATE_CAP, SLR_PLATE_PX, SLR_PLATE_RIM, SLR_PLATE_SCALE, SLR_PLATE_SLOP_PX,
+  SLR_SEP_FRAC, SlrPlates, clipName, countryGroups, countrySummary, plateInkFor, plateOpacity, plateRank, plateText,
+  shortCountryNames, spreadPx, splitDecision, thinPlates,
+} from './slr-plates.js?v=1';
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -93,6 +126,17 @@ export const FLOOD_RISE_STEP = 0.03;
 export const FLOOD_RISE_BASE = -2.7;
 /** 색면의 불투명도. 지형의 결이 물빛 아래로 비쳐야 '지구 위의 물'로 읽힌다(색면 0.8 보다 옅다 — 이것은 값이 아니라 덮개다). */
 export const FLOOD_OPACITY = 0.62;
+/**
+ * 카드가 적는 '칠해지는 땅'의 크기 — **재서 넣은 수**이지 어림이 아니다(2026-09-20 작업 E5 실측).
+ * 세는 법: 0.25° 칸 한가운데에서 floodAt 판정 · cos(위도) 무게 · 메르카토르 높이맵의 한계(±85.05°) 안.
+ * 자료는 운영 파일 그대로(ar6.json SSP5-8.5/2100 · country-reference.json 육지 판 · Terrarium z4 · 도달 판 grow 1).
+ *   칠해지는 면적 279,614 km² · 육지 149,212,418 km² → 0.19 %
+ *   도달 판을 빼면 688,745 km² → 닿는 몫 40.6 %  (flood-reach.js 머리말의 688,744 km² · 40.6 % 와 같은 수다)
+ * ⚠️ 옛 카드가 적던 **230,610 km² · 0.17 %** 는 **부풀리기(grow) 전**의 33.7 % 로 센 값이었다(688,744 × 0.337).
+ *    지금 코드는 grow 1 을 쓰므로 실제로 칠해지는 것은 이 수다. 판정을 고치면 이 두 줄도 같이 고쳐야 한다.
+ */
+export const FLOOD_PAINTED_KM2 = 279614;
+export const FLOOD_PAINTED_PCT = 0.19;
 /**
  * 지형 위로 띄우는 높이(지구 반지름 단위). 색면(FIELD_LIFT ≈ 7.6 km)의 1/4 인 약 1.9 km 다.
  * 왜 색면보다 낮게 띄우나: 색면은 '이 칸의 값'이라 몇 km 어긋나도 뜻이 안 바뀌지만, 이 면은 **물가의 선이 곧 답**이다.
@@ -122,6 +166,13 @@ export const FLOOD_SCENARIOS = Object.freeze([
 export const FLOOD_YEARS = Object.freeze(['2050', '2100', '2150']);
 /** 기본 — 옛 막대기가 그리던 것과 같은 칸이다(2100 · SSP5-8.5). 켜자마자 그림이 달라 보이지 않게. */
 export const FLOOD_DEFAULT = Object.freeze({ scenario: 'ssp585', year: '2100' });
+/**
+ * '잠기는 땅' 색면이 처음부터 켜져 있나 — **켬**이다(2026-09-20 작업 E5).
+ * PD: "육지 위로 물이 올라온거 색으로 표현하고, 그위에 나라 도시 단위로 숫자 원판도 올리는게 맞을거 같은데?"
+ * E4 에서 꺼짐으로 내렸던 이유(표면 고도라 아시아 삼각주가 빠진다)는 지금도 참이지만, 그 사실은 **카드가 말하고**
+ * 화면은 자기가 아는 것을 보여 준다 — 맞는 곳(네덜란드 · 미시시피 하류 · 북유럽 연안)에서는 이 면이 이 레이어의 답이다.
+ */
+export const FLOOD_DEPTH_DEFAULT = true;
 
 /**
  * 침수 깊이 3단. 이것은 값의 눈금이 아니라 **선/아래 판정**의 깊이 표시다(머리말 '색').
@@ -195,23 +246,22 @@ export const SLR_RISE_SCALE = defineScale({
   },
 });
 
-/** 원반의 지름(CSS px). 장치 픽셀비는 셰이더가 곱한다 — 폰(DPR 2~3)에서도 같은 크기로 보인다. */
-export const SLR_DISC_PX = 9;
 /**
- * 어두운 테가 원반 반지름에서 차지하는 비율. 유럽 · 일본 연안은 관측소가 촘촘해 원반이 서로 겹치는데,
- * 테가 없으면 겹친 물빛이 한 덩어리로 번져 어느 색도 안 읽힌다.
- */
-export const SLR_DISC_RIM = Object.freeze({ color: Object.freeze([0.063, 0.094, 0.125]), frac: 0.24 });
-/** 원반의 불투명도. 값을 말하는 표식이라 색면(0.62)보다 진하다 — 지형이 비쳐야 할 이유가 없다. */
-export const SLR_DISC_OPACITY = 0.95;
-/**
- * 원반을 지형 위로 띄우는 높이(지구 반지름 단위 · 약 7.6 km). 색면(FLOOD_LIFT ≈ 1.9 km)보다 높다:
- * 원반은 '물가의 선'이 아니라 **한 지점의 표식**이라 몇 km 의 시차가 뜻을 바꾸지 않고,
+ * 원판을 지형 위로 띄우는 높이(지구 반지름 단위 · 약 7.6 km). 색면(FLOOD_LIFT ≈ 1.9 km)보다 높다:
+ * 원판은 '물가의 선'이 아니라 **한 지점의 표식**이라 몇 km 의 시차가 뜻을 바꾸지 않고,
  * 과장(uExagger 최대 50×)을 켠 해안 산지에 파묻히지 않아야 한다.
  */
 export const SLR_DISC_LIFT = FIELD_LIFT;
-/** 누를 때 원반 가장자리에서 더 봐주는 여유(CSS px) — 폰에서 손가락으로 9 px 원반을 정확히 찍을 수 없다. */
-export const SLR_PICK_SLOP_PX = 8;
+/** 카드 · 범례의 작은 점이 쓰는 테 — 화면의 원판과 **같은 것**이다(js/slr-plates.js 가 정본). */
+export { SLR_PLATE_RIM };
+/** 원판이 서는 자리(renderOrder). 구름(1) · 비(3) · 입자(4) **위**다 — 구름을 끄지 않고도 숫자가 읽혀야 한다. */
+export const SLR_PLATE_ORDER = 7;
+/**
+ * 다시 솎는 문턱 — 카메라가 제 거리의 이만큼 움직였거나, 거리가 이 비율만큼 바뀌었거나, 이 시간이 지났을 때.
+ * 그 사이에는 **지평선 흐림만** 고친다(1,016곳을 매 프레임 화면으로 옮기고 정렬하면 폰이 뜨거워진다 —
+ * obs-labels.js OBS_RECULL_* 과 같은 사정이고 같은 방식이다).
+ */
+export const SLR_RECULL = Object.freeze({ moveFrac: 0.004, zoomFrac: 0.015, jumpFrac: 0.05, everyMs: 600, minMs: 100 });
 /**
  * 늘 떠 있는 범례의 출처 줄에 적는 짧은 이름. 범례 상자는 340 px 고정이라 원본의 긴 제목
  * ('IPCC AR6 Sea Level Projections (Garner et al. 2021) · NASA/JPL Sea Level Projection Tool')이 들어가지 않는다.
@@ -268,35 +318,11 @@ export const floodStations = (items = []) => {
 export const stationMedians = (stations, scenario, year) => stations.map((s) => s.s[scenario][year][0]);
 
 /**
- * 원반을 찍는 차례 — **작은 값부터**. 유럽 · 일본 연안처럼 촘촘한 곳에서는 원반이 서로 겹치는데,
- * 나중에 그린 쪽이 위에 남으므로 이 차례면 **큰 값이 위로 온다**: 겹쳐서 하나만 보일 때 그 하나가 가장 큰 값이다.
- * 차례는 12칸(시나리오 4 × 연도 3)의 **최댓값**으로 정한다 — 관측소 자리처럼 시나리오·연도와 무관한 성질이라
- * 단추를 누를 때마다 자리 버퍼를 다시 쓰지 않는다(값 버퍼만 다시 쓴다).
+ * ⚠️ 2026-09-20 작업 E5 — `discOrder`(작은 값부터 찍어 큰 값을 위에 남기던 차례)와 `stationFacing`(뒤편 버리기)은
+ * 여기서 사라졌다. **겹치는 것을 그려 놓고 위에 남기는 대신 아예 솎기** 때문이다(slr-plates.js thinPlates).
+ * 솎을 때의 차례는 `plateRank` 가 정하고(한국 먼저 · 그다음 |값| 이 큰 것부터), 뒤편은 `plateOpacity` 가 0 으로 만든다.
+ * 되살리지 마라: 두 벌의 '무엇이 위에 오나' 규칙이 있으면 화면과 누르기가 서로 다른 것을 고른다.
  */
-export const discOrder = (stations) => {
-  const peak = stations.map((s) => {
-    let m = -Infinity;
-    for (const sc of FLOOD_SCENARIOS) for (const y of FLOOD_YEARS) m = Math.max(m, s.s[sc.id][y][0]);
-    return m;
-  });
-  return stations.map((_, i) => i).sort((a, b) => (peak[a] - peak[b]) || (a - b));
-};
-
-/**
- * 관측소가 카메라 쪽을 보고 있나 — **1 보다 작고 −1 보다 큰 수**다(0 이 지평선 · 양수면 앞면).
- * 점은 화면과 나란한 판이라 깊이 검사만으로는 지평선에서 반쪽이 남는다. 그래서 정점 셰이더가 이 식으로 뒤편을 버리고,
- * 누를 때(pick)도 같은 식으로 뒤편을 건너뛴다 — 안 보이는 관측소가 눌리면 '왜 이 카드가 떴는지' 설명할 수 없다.
- * 셰이더 쪽 한 줄은 `dot(normalize(wp), normalize(cameraPosition - wp))` 이고 시험이 두 글자를 대조한다.
- * (지구는 원점에 있고 live-layers 의 group 은 변환이 없다 — 그래서 자리 벡터가 곧 그 지점의 법선이다.)
- */
-export const stationFacing = (px, py, pz, cx, cy, cz) => {
-  const pl = Math.hypot(px, py, pz) || 1;
-  const dx = cx - px;
-  const dy = cy - py;
-  const dz = cz - pz;
-  const dl = Math.hypot(dx, dy, dz) || 1;
-  return (px * dx + py * dy + pz * dz) / (pl * dl);
-};
 
 /** 위도·경도(도) → 반지름 r 의 단위구 위 자리. main.js · live-layers 의 llToV3 와 같은 축 규약이다(x = cosφ·sinλ · y = sinφ · z = cosφ·cosλ). */
 export const stationPoint = (lat, lon, r = 1) => {
@@ -615,51 +641,10 @@ void main() {
 }
 `;
 
-// ── 관측소 원반 ───────────────────────────────────────────────────────────────────────────────────────────────
-// 화면 고정 크기다(gl_PointSize 를 거리로 나누지 않는다 — live-layers.js CYCLONE_VERT · AURORA_VERT 와 같은 방식).
-// ⚠️ uPixelRatio 를 곱한다: gl_PointSize 의 단위는 **장치 픽셀**이라 안 곱하면 DPR 3 인 폰에서 원반이 3분의 1로 보인다
-//    (js/lightning-marks.js 가 같은 이유로 곱한다). 값은 onBeforeRender 에서 renderer.getPixelRatio() 로 받는다.
-export const SLR_DISC_VERT = /* glsl */ `
-attribute vec3 aColor;
-uniform float uDiscPx;
-uniform float uPixelRatio;
-varying vec3 vCol;
-
-void main() {
-  vCol = aColor;
-  vec3 wp = (modelMatrix * vec4(position, 1.0)).xyz;
-  // 지구 뒤편은 버린다. 점은 화면과 나란한 판이라 깊이 검사만으로는 지평선에서 반쪽이 남는다.
-  // 같은 식을 JS 의 stationFacing 이 그대로 셈한다(누를 때 쓴다 · 시험이 두 글자를 대조한다).
-  float facing = dot(normalize(wp), normalize(cameraPosition - wp));
-  if (facing <= 0.0) {
-    gl_Position = vec4(0.0, 0.0, 2.0, 1.0);   // 절두체 밖 — 그려지지 않는다
-    gl_PointSize = 0.0;
-    return;
-  }
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  gl_PointSize = uDiscPx * uPixelRatio;
-}`;
-
-// ⚠️ 색공간 변환을 넣지 않는다(#include <colorspace_fragment> 없음) — 색면과 같은 규칙이다.
-//    aColor 는 팔레트의 sRGB 바이트를 255 로 나눈 것이라, 변환을 넣으면 화면의 원반이 범례의 칸과 다른 색이 된다.
-export const SLR_DISC_FRAG = /* glsl */ `
-precision mediump float;
-uniform float uOpacity;
-uniform vec3 uRimColor;
-uniform float uRimFrac;
-uniform float uEdge;                         // 장치 픽셀 한 개가 아래 r 눈금에서 차지하는 폭 = 2 / (지름px · DPR)
-varying vec3 vCol;
-
-void main() {
-  vec2 p = gl_PointCoord - 0.5;
-  float r = length(p) * 2.0;                 // 0 = 한가운데 · 1 = 원반의 가장자리
-  if (r > 1.0) discard;                      // 네모가 아니라 원반이다
-  float edge = 1.0 - smoothstep(1.0 - uEdge, 1.0, r);
-  if (edge <= 0.0) discard;
-  // 어두운 테 — 촘촘한 연안에서 원반끼리 색이 한 덩어리로 번지지 않게 가른다.
-  float rim = smoothstep(1.0 - uRimFrac - uEdge, 1.0 - uRimFrac, r);
-  gl_FragColor = vec4(mix(vCol, uRimColor, rim), uOpacity * edge);
-}`;
+// ── 관측소 원반의 셰이더는 사라졌다 (2026-09-20 작업 E5) ────────────────────────────────────────────────────
+// gl_PointSize 로 그리던 익명 원반(SLR_DISC_VERT · SLR_DISC_FRAG)을 걷어냈다. GL 점 안에는 **글자를 넣을 수 없어서**다 —
+// PD 가 요구한 것은 '숫자가 적힌 원판'이고, 숫자는 캔버스에 굽는 수밖에 없다(js/slr-plates.js plateTexture).
+// 되살리지 마라: 점과 원판이 같이 서면 같은 관측소가 화면에 두 번 뜬다.
 
 // ════════════════════════════════════════════════════════════════════════════════════════════════════════════
 //  카드 (순수 — 시험이 글자를 본다)
@@ -682,10 +667,10 @@ const pressed = (on) => (on
   ? 'border:1px solid var(--accent);color:var(--accent);background:rgba(120,180,255,0.14);border-radius:8px;font-family:inherit;'
   : 'border:1px solid rgba(120,160,200,0.30);color:inherit;background:none;border-radius:8px;font-family:inherit;');
 
-/** 카드 안의 원반 범례 — 늘 떠 있는 범례(field-legend.js)와 **같은 표**에서 나온다. 칸의 색·글자를 여기 적지 않는다. */
+/** 카드 안의 원판 범례 — 늘 떠 있는 범례(field-legend.js)와 **같은 표**에서 나온다. 칸의 색·글자를 여기 적지 않는다. */
 export const slrDiscLegendHtml = () => {
   const cells = legendModel(SLR_RISE_SCALE).map((c) => `<span style="display:inline-flex;align-items:center;gap:4px">`
-    + `<i style="width:11px;height:11px;border-radius:50%;background:${c.color};border:1px solid rgb(${SLR_DISC_RIM.color.map((v) => Math.round(v * 255)).join(',')});display:inline-block"></i>${esc(c.label)}</span>`).join('');
+    + `<i style="width:11px;height:11px;border-radius:50%;background:${c.color};border:1px solid rgb(${SLR_PLATE_RIM.color.map((v) => Math.round(v * 255)).join(',')});display:inline-block"></i>${esc(c.label)}</span>`).join('');
   return `<span style="display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 2px">${esc(SLR_RISE_SCALE.name.ko)} ${cells}</span>`;
 };
 
@@ -696,11 +681,51 @@ export const slrDiscLegendHtml = () => {
  */
 export const slrLegendArgs = (m) => {
   const sc = FLOOD_SCENARIOS.find((s) => s.id === m.scenario) || FLOOD_SCENARIOS[3];
-  return { scale: SLR_RISE_SCALE, source: `${SLR_LEGEND_SOURCE} · ${sc.label} · ${m.year}` };
+  // ⚠️ 솎은 수는 **늘 떠 있는 범례**에도 적는다(2026-09-20 작업 E5 · 지시서 "솎은 것이 있으면 화면이 그 사실을 말해야 한다").
+  //    카드는 닫혀 있을 수 있고 메뉴 줄도 그렇다 — 범례는 이 레이어가 켜져 있는 동안 늘 화면에 있다.
+  const hid = Number.isFinite(m.hidden) && m.hidden > 0 ? ` · 겹쳐 ${m.hidden.toLocaleString()}곳 솎음` : '';
+  return { scale: SLR_RISE_SCALE, source: `${SLR_LEGEND_SOURCE} · ${sc.label} · ${m.year}${hid}` };
 };
 
-/** 원반을 누르면 뜨는 카드의 제목 — 관측소 이름과 나라. */
+/** 원판을 누르면 뜨는 카드의 제목 — 관측소 이름과 나라. */
 export const stationCardTitle = (st) => `${st.name || st.id}${st.country ? ` · ${st.country}` : ''}`;
+
+/** 나라 원판을 누르면 뜨는 카드의 제목. 관측소가 한 곳뿐이면 **나라가 아니라 그 관측소**를 제목으로 낸다(없는 대표성을 짓지 않는다). */
+export const countryCardTitle = (g, stations) => (g.n === 1
+  ? stationCardTitle(stations[g.idx[0]])
+  : `${g.country} · 조위관측소 ${g.n}곳`);
+
+/**
+ * 나라 원판을 누르면 뜨는 카드(순수). 관측소 수 · 중앙값 · 범위.
+ * ⚠️ **이 값은 기관이 발표한 나라별 값이 아니다.** IPCC AR6 이 내놓은 것은 조위관측소 지점값이고,
+ *   그것을 나라로 묶어 중앙값을 낸 것은 EARTHUS 의 집계다 — 카드가 그 줄을 반드시 적는다.
+ * ⚠️ 관측소가 한 곳뿐인 나라가 113개 중 40개다(운영 자료 실측 · slr-plates.js 머리말). 그때는 '중앙값'이라는 말을
+ *   쓰지 않는다: 관측소 하나의 값을 중앙값이라 부르면 여러 곳을 재 본 것처럼 읽힌다.
+ */
+export const countryCardHtml = (g, stations, m) => {
+  const sc = FLOOD_SCENARIOS.find((s) => s.id === m.scenario) || FLOOD_SCENARIOS[3];
+  const one = stations[g.idx[0]];
+  if (g.n === 1) {
+    return `${stationCardHtml(one, m)}<br/><span style="opacity:.8"><b>${esc(g.country)}에는 이 조위관측소 한 곳뿐입니다.</b> `
+      + `그래서 이 원판은 나라 값이 아니라 <b>관측소 한 곳의 값</b>입니다.</span>`;
+  }
+  const s = g.summary || {};
+  const dot = legendModel(SLR_RISE_SCALE).find((b) => b.index === bandIndex(SLR_RISE_SCALE, s.median));
+  const L = [];
+  L.push(`<b style="font-size:19px">${dot ? `<i style="width:12px;height:12px;border-radius:50%;background:${dot.color};`
+    + `border:1px solid rgb(${SLR_PLATE_RIM.color.map((x) => Math.round(x * 255)).join(',')});display:inline-block;margin-right:6px"></i>` : ''}`
+    + `${esc(fmtM(s.median))}</b> <span style="opacity:.8">(관측소 ${g.n}곳의 중앙값 · 범위 ${esc(fmtM(s.min))} ~ ${esc(fmtM(s.max))})</span>`);
+  L.push(`${esc(sc.label)} <span style="opacity:.75">${esc(sc.word)}</span> · ${esc(m.year)}년`);
+  if (s.min < 0 && s.max >= 0) L.push('<b>이 나라 안에서 방향이 갈립니다</b> — 땅이 솟아 상대 해수면이 내려가는 관측소가 섞여 있습니다.');
+  else if (s.max < 0) L.push('<b>이 나라는 땅이 솟아 상대 해수면이 내려갑니다.</b> 빙하가 물러난 뒤 지각이 되올라오는 곳입니다.');
+  L.push(`<span style="opacity:.8">원판은 이 나라 관측소들의 <b>가운데 자리에 가장 가까운 관측소</b> 위에 섰습니다 — `
+    + `${esc(stations[g.medoid].name || '')} ${esc(stations[g.medoid].lat.toFixed(2))}° ${stations[g.medoid].lat >= 0 ? 'N' : 'S'}. `
+    + `확대하면 관측소 하나하나로 갈라집니다.</span>`);
+  L.push(`<span style="opacity:.8">기준선 ${esc(m.baseline)} · 출처 ${esc(m.source)} · ${esc(m.license)}</span>`);
+  L.push('<span style="opacity:.8"><b>나라별 값은 기관이 발표한 것이 아니라 EARTHUS 가 묶은 집계입니다.</b> '
+    + 'IPCC AR6 이 내놓은 것은 조위관측소 지점값이고, 그것을 나라로 모아 중앙값을 낸 것은 우리 셈입니다.</span>');
+  return L.join('<br/>');
+};
 
 /**
  * 원반을 누르면 뜨는 카드(순수). 값 · 17~83% 범위 · 시나리오 · 연도 · 기준선 — 카드가 **무엇에 대한 수인지** 다 말한다.
@@ -713,7 +738,7 @@ export const stationCardHtml = (st, m) => {
   const dot = legendModel(SLR_RISE_SCALE).find((b) => b.index === bandIndex(SLR_RISE_SCALE, v));
   const L = [];
   L.push(`<b style="font-size:19px">${dot ? `<i style="width:12px;height:12px;border-radius:50%;background:${dot.color};`
-    + `border:1px solid rgb(${SLR_DISC_RIM.color.map((x) => Math.round(x * 255)).join(',')});display:inline-block;margin-right:6px"></i>` : ''}`
+    + `border:1px solid rgb(${SLR_PLATE_RIM.color.map((x) => Math.round(x * 255)).join(',')});display:inline-block;margin-right:6px"></i>` : ''}`
     + `${esc(fmtM(v))}</b> <span style="opacity:.8">(17~83% ${esc(fmtM(cell[1]))} ~ ${esc(fmtM(cell[2]))})</span>`);
   L.push(`${esc(sc.label)} <span style="opacity:.75">${esc(sc.word)}</span> · ${esc(m.year)}년`);
   if (v < 0) L.push('<b>이곳은 땅이 솟아 상대 해수면이 내려갑니다.</b> 빙하가 물러난 뒤 지각이 되올라오는 곳입니다.');
@@ -747,10 +772,21 @@ export const floodCardInner = (m) => {
     + FLOOD_SCENARIOS.map((s) => btn('slr-scenario', `data-ssp="${s.id}"`, s.id === m.scenario, s.label)).join('') + '</span>');
   L.push('<span style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:2px 0 4px">기준 연도 '
     + FLOOD_YEARS.map((y) => btn('slr-year', `data-year="${y}"`, y === m.year, `${y}년`)).join('') + '</span>');
-  // ── 주인공: 관측소 원반 ─────────────────────────────────────────────────────────────────────────────────
+  // ── 주인공: 숫자 원판 ───────────────────────────────────────────────────────────────────────────────────
   L.push(slrDiscLegendHtml());
-  L.push(`전 세계 조위관측소 <b>${m.stations.toLocaleString()}곳</b>의 상대 해수면 상승 전망을 곳마다 <b>원반</b>으로 찍었습니다. `
-    + `크기는 어디서나 같고 <b>색만 값을 말합니다</b> — 원반을 누르면 그 관측소의 중앙값과 17~83% 범위가 나옵니다.`);
+  L.push(`전 세계 조위관측소 <b>${m.stations.toLocaleString()}곳</b>의 상대 해수면 상승 전망을 <b>숫자를 적은 원판</b>으로 올렸습니다. `
+    + `<b>멀리서는 나라 하나에 원판 하나</b>(그 나라 관측소들의 중앙값 · 이름줄에 관측소 수), `
+    + `<b>확대하면 관측소 하나하나로 갈라집니다.</b> 원판을 누르면 그 곳의 중앙값과 17~83% 범위가 나옵니다. `
+    + `<span style="opacity:.75">단위는 m 이고 크기는 어디서나 같습니다 — 원판은 길이로 값을 말하지 않습니다.</span>`);
+  L.push(`<b>나라별 값은 기관이 발표한 것이 아니라 EARTHUS 가 묶은 집계입니다.</b> `
+    + `IPCC AR6 이 내놓은 것은 <b>조위관측소 지점값</b>이고, 그것을 나라로 모아 중앙값을 낸 것은 우리 셈입니다. `
+    + `<b>관측소가 한 곳뿐인 나라가 ${esc(String(m.soloCountries ?? 0))}개</b>(전체 ${esc(String(m.countries ?? 0))}개 나라 가운데)라 `
+    + `그런 곳의 원판은 나라 이름 대신 <b>그 관측소 이름</b>을 답니다.`);
+  if (m.plateMode) {
+    const mode = m.plateMode === 'station' ? '관측소 하나하나' : m.plateMode === 'mixed' ? '일부는 나라 · 일부는 관측소' : '나라 단위';
+    L.push(`지금 화면: <b>${esc(mode)}</b> · 원판 ${esc(String(m.plateShown ?? 0))}개`
+      + (m.hidden > 0 ? ` · <b>겹쳐서 ${m.hidden.toLocaleString()}곳을 솎았습니다</b>(확대하면 나옵니다)` : ' · 솎은 것 없음'));
+  }
   L.push(`전지구 중앙값 <b>${esc(fmtM(m.globalMedian))}</b> · 관측소 범위 ${esc(fmtM(m.min))} ~ ${esc(fmtM(m.max))}`
     + `<span style="opacity:.75"> (음수 = 땅이 솟아 상대 해수면이 내려가는 곳)</span>`);
   if (m.top.length) {
@@ -761,14 +797,20 @@ export const floodCardInner = (m) => {
   }
   L.push(`<b>출처 ${esc(m.source)}</b> · ${esc(m.license)} · 기준선 ${esc(m.baseline)}<br/>`
     + `값은 <b>중앙값</b>이고 괄호는 17~83% 범위입니다. 예보가 아니라 배출 경로별 전망이라 타임라인(5일 예보)과 잇지 않았습니다.`);
-  // ── 곁다리: '잠기는 땅' 색면 (기본 꺼짐) ────────────────────────────────────────────────────────────────
-  // ⚠️ 2026-09-20 작업 E4 — 이 색면이 대표 그림이었는데 운영 자료로 재 보니 순서가 뒤집혀 있었다(SLR_RISE_SCALE 머리말).
-  //    지우지 않은 것은 네덜란드 · 미시시피 · 메콩에서는 맞기 때문이다. 다만 **무엇인지 정확히 말한 뒤** 켜게 한다.
+  // ── 같이 켜지는 것: '잠기는 땅' 색면 (2026-09-20 작업 E5 부터 **기본 켬**) ───────────────────────────────
+  // PD: "육지 위로 물이 올라온거 색으로 표현하고, 그위에 나라 도시 단위로 숫자 원판도 올리는게 맞을거 같은데?"
+  // E4 에서 단추 뒤로 내렸던 것을 앞면으로 되돌린다. 내렸던 이유(표면 고도라 아시아 삼각주가 빠진다)는 그대로 참이므로
+  // **끄는 단추는 남기고**, 무엇이 칠해지고 무엇이 빠지는지를 카드가 먼저 말한다.
   L.push('<span style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0 2px">'
     + btn('slr-depth', '', !!m.depth, m.depth ? '잠기는 땅 끄기' : '잠기는 땅 켜기') + '</span>');
-  L.push('<span style="opacity:.85"><b>이 지형 자료에서 해수면보다 낮은 땅</b>을 물빛으로 덮습니다. '
-    + '건물 · 제방이 섞인 <b>표면 고도</b>라 <b>방글라데시 · 도쿄 · 방콕처럼 실제로 위험한 곳이 빠집니다</b> — '
-    + '칠해지는 땅은 전지구 육지의 0.17% 이고 대부분 유럽 · 미시시피입니다.</span>');
+  L.push(`<span style="opacity:.85"><b>물빛 면은 이 지형 자료에서 해수면보다 낮아지는 땅</b>입니다 — `
+    + `네덜란드 · 미시시피 하류 · 북유럽 연안이 여기서 칠해집니다. 칠해지는 땅은 전지구 육지의 `
+    + `<b>${FLOOD_PAINTED_PCT}%</b>(약 ${FLOOD_PAINTED_KM2.toLocaleString()} km²)입니다.</span>`);
+  L.push('<span style="opacity:.85"><b>⚠️ 실제로 가장 위험한 곳이 오히려 빠집니다.</b> '
+    + '두 가지 이유를 이 세션이 타일을 받아 직접 쟀습니다 — '
+    + '① 지형이 건물 · 나무가 얹힌 <b>표면 고도</b>라 확대해도(약 250 m) 다카 12 m · 뉴올리언스 7 m · 로테르담 2.4 m 로 읽혀 '
+    + '상승폭(0.8~1.8 m)보다 높습니다. ② <b>다카 · 호찌민은 해안에서 100 km 넘게 들어가 있어</b> '
+    + '약 28 km 격자의 바다 연결 판에서 대양과 끊깁니다. 고치는 길은 확대가 아니라 <b>맨땅 지형(DTM)</b>입니다.</span>');
   if (!m.depth) return L.join('<br/>');
   if (!m.hasHeight) {
     // 고칠 수 있는 척하지 않는다 — 지형이 없으면 판정 자체가 없다.
@@ -845,10 +887,11 @@ export const floodLandLine = (info) => {
     + `판을 해안에서 ${km} km 물려 두었습니다 — 그 띠 안쪽에서 해수면보다 낮은 땅(해안 간척지)은 바다로 읽혀 칠하지 않습니다.`;
 };
 
-/** 메뉴에 적히는 한 줄 — 무엇이 켜졌는지 값으로 말한다. */
+/** 메뉴에 적히는 한 줄 — 무엇이 켜졌는지 값으로 말한다. 솎은 수는 여기에도 적는다(카드가 닫혀 있어도 읽히게). */
 export const floodNote = (m) => {
   const sc = FLOOD_SCENARIOS.find((s) => s.id === m.scenario) || FLOOD_SCENARIOS[3];
   return `${sc.label} · ${m.year}년 · 전지구 중앙값 ${fmtM(m.globalMedian)} · 관측소 ${m.stations.toLocaleString()}곳`
+    + (m.hidden > 0 ? ` · 겹쳐 ${m.hidden.toLocaleString()}곳 솎음` : '')
     + (m.depth ? ' · 잠기는 땅 켜짐' : '');
 };
 
@@ -874,8 +917,8 @@ export function createFloodOverlay(doc = {}, deps = {}) {
   if (!stations.length) throw new Error('해수면 상승 전망에 쓸 조위관측소가 없습니다');
   const stencil = buildRiseStencil(stations);
   // ⚠️ 상태는 **한 벌뿐**이다. 원반과 색면이 같은 state 를 읽는다 — 두 벌이면 단추를 눌렀을 때 하나만 바뀐다.
-  //    depth 는 '잠기는 땅 색면을 켰나'이고 **기본은 꺼짐**이다(2026-09-20 작업 E4 · 카드의 slr-depth 단추).
-  const state = { scenario: FLOOD_DEFAULT.scenario, year: FLOOD_DEFAULT.year, depth: false };
+  //    depth 는 '잠기는 땅 색면을 켰나'이고 **기본은 켬**이다(2026-09-20 작업 E5 · 카드의 slr-depth 단추로 끌 수 있다).
+  const state = { scenario: FLOOD_DEFAULT.scenario, year: FLOOD_DEFAULT.year, depth: FLOOD_DEPTH_DEFAULT };
   let grid = null;
   let stats = null;
 
@@ -937,58 +980,188 @@ export function createFloodOverlay(doc = {}, deps = {}) {
     const pr = renderer && renderer.getPixelRatio ? renderer.getPixelRatio() : 1;
     if (pr > 0) uniforms.uPxScale.value = pr;      // 테 굵기는 CSS px — DPR 2 인 폰에서도 같은 굵기
   };
-  mesh.visible = state.depth;                      // 색면은 곁다리다 — 카드의 단추로만 켜진다
+  mesh.visible = state.depth;                      // 기본 켬(FLOOD_DEPTH_DEFAULT) — 카드의 단추로 끌 수 있다
   const group = new THREE.Group();
   group.add(mesh);
 
-  // ── 관측소 원반 (이 화면의 주인공) ───────────────────────────────────────────────────────────────────────
-  // 자리는 시나리오·연도와 무관하다(관측소가 움직이지 않는다) → 한 번만 쓴다. 단추를 누르면 **색 버퍼만** 다시 쓴다.
-  const order = discOrder(stations);               // 작은 값부터 — 겹치면 큰 값이 위로 온다
-  const discPos = new Float32Array(order.length * 3);
-  const discCol = new Float32Array(order.length * 3);
-  order.forEach((si, k) => {
-    const s = stations[si];
-    const p = stationPoint(s.lat, s.lon, 1 + SLR_DISC_LIFT);
-    discPos[k * 3] = p[0]; discPos[k * 3 + 1] = p[1]; discPos[k * 3 + 2] = p[2];
+  // ── 숫자 원판 (이 화면의 주인공 · js/slr-plates.js) ─────────────────────────────────────────────────────
+  // 나라 묶음과 메도이드 자리는 **관측소 자리만으로** 정해진다 → 시나리오·연도가 바뀌어도 그대로다(한 번만 짓는다).
+  // 바뀌는 것은 값(숫자·색)뿐이고, 그것은 recompute() 가 `values` 를 새로 내면서 다음 솎기에 따라온다.
+  const groups = countryGroups(stations);
+  const shortName = shortCountryNames(groups.map((g) => g.country));
+  const groupOfStation = new Uint16Array(stations.length);
+  groups.forEach((g, gi) => { for (const i of g.idx) groupOfStation[i] = gi; });
+  const soloCountries = groups.filter((g) => g.n === 1).length;
+  const plates = new SlrPlates({
+    makeTexture: deps.makeTexture,                 // 시험은 캔버스가 없다 — 가짜를 넣는다
+    renderOrder: SLR_PLATE_ORDER,
+    lift: SLR_DISC_LIFT,
   });
-  const discGeo = new THREE.BufferGeometry();
-  discGeo.setAttribute('position', new THREE.BufferAttribute(discPos, 3));
-  discGeo.setAttribute('aColor', new THREE.BufferAttribute(discCol, 3));
-  const discPalette = paletteRGBA(SLR_RISE_SCALE);
-  const discUniforms = {
-    uDiscPx: { value: SLR_DISC_PX },
-    uPixelRatio: { value: 1 },
-    uOpacity: { value: SLR_DISC_OPACITY },
-    uRimColor: { value: new THREE.Vector3(...SLR_DISC_RIM.color) },
-    uRimFrac: { value: SLR_DISC_RIM.frac },
-    uEdge: { value: 2 / SLR_DISC_PX },
-  };
-  const discMat = new THREE.ShaderMaterial({
-    uniforms: discUniforms, vertexShader: SLR_DISC_VERT, fragmentShader: SLR_DISC_FRAG,
-    transparent: true, depthWrite: false, depthTest: true,
-  });
-  const discs = new THREE.Points(discGeo, discMat);
-  // 구름(renderOrder 1)·비(3)·입자(4) **위**다. 구름을 끄지 않고도 원반이 읽혀야 한다 — 이 화면에서 구름은 방해물이 아니다
-  // (지구 위 관측 숫자가 960 에서 같은 이유로 맨 위에 선다). 지구 자신은 불투명이라 깊이 검사로 뒤편을 가린다.
-  discs.renderOrder = 7;
-  discs.frustumCulled = false;                     // 자리가 구 전체라 경계상자로 자르면 회전 중에 통째로 사라진다
-  group.add(discs);
+  group.add(plates.object);
 
-  // 누를 때 쓰는 카메라·화면 크기. 켜져 있을 때만 그려지므로 **켜져 있을 때만** 채워진다 — 꺼진 레이어는 눌리지 않는다.
-  let lastCamera = null;
+  // 화면 크기 — flood-discs.js 와 같은 길로 얻는다(렌더러를 기다리지 않는다: 스프라이트에는 onBeforeRender 가 없다).
+  const getViewport = deps.getViewport || ((out) => {
+    out.w = globalThis.innerWidth > 0 ? globalThis.innerWidth : 0;
+    out.h = globalThis.innerHeight > 0 ? globalThis.innerHeight : 0;
+    return out;
+  });
+  const now = deps.now || (() => (typeof performance !== 'undefined' ? performance.now() : Date.now()));
   const view = { w: 0, h: 0 };
-  const sizeV = new THREE.Vector2();
   const vpM = new THREE.Matrix4();
   const px2 = [0, 0];
-  discs.onBeforeRender = (renderer, scene, camera) => {
-    const pr = renderer && renderer.getPixelRatio ? renderer.getPixelRatio() : 1;
-    if (pr > 0) {
-      discUniforms.uPixelRatio.value = pr;         // ⚠️ gl_PointSize 는 장치 픽셀이다 — 안 곱하면 폰에서 3분의 1로 보인다
-      discUniforms.uEdge.value = 2 / Math.max(SLR_DISC_PX * pr, 2);
+  let lastCamera = null;
+  // 솎기의 결과 — 누를 때 이 목록만 본다. **그린 것만 눌린다**(화면에 없는 관측소의 카드가 뜨지 않는다).
+  let shownPlates = [];
+  let hiddenCount = 0;
+  let plateMode = null;                            // 'country' | 'station' | 'mixed'
+  const splitState = new Map();                    // 나라 → 지난번에 갈라져 있었나(되새김)
+  // 관측소의 지구 위 자리 — 움직이지 않으므로 한 번만 센다(매 프레임 sin/cos 를 1,016번 부르지 않는다).
+  const stationPos = new Float32Array(stations.length * 3);
+  for (let i = 0; i < stations.length; i += 1) {
+    const p = stationPoint(stations[i].lat, stations[i].lon, 1 + SLR_DISC_LIFT);
+    stationPos[i * 3] = p[0]; stationPos[i * 3 + 1] = p[1]; stationPos[i * 3 + 2] = p[2];
+  }
+  const projected = new Float32Array(stations.length * 2);
+  const visible = new Uint8Array(stations.length);
+  /** 지금 시나리오·연도의 관측소 값 — recompute() 가 채운다. 원판의 숫자·색이 여기서 나온다. */
+  let lastValues = stationMedians(stations, state.scenario, state.year);
+  let lastCull = { x: 0, y: 0, z: 0, r: 0, w: 0, h: 0, t: -1e9 };
+  let plateSig = null;
+
+  /** 지금 화면에서 원판 하나의 지름(px). 화면 높이에 매인다(slr-plates.js SLR_PLATE_SCALE 머리말). */
+  const platePxOf = () => (view.h > 0 ? SLR_PLATE_SCALE * view.h : SLR_PLATE_PX);
+
+  /**
+   * 지금 화면의 눈금 — 지구 위 1° 가 화면에서 몇 px 인가. 카메라 **바로 아래 점**과 거기서 1° 떨어진 점을
+   * 실제로 화면으로 옮겨 재는 것이라, 시야각 · 고도 · 화면 크기를 따로 셈하지 않는다(식이 두 벌이 될 자리가 없다).
+   * 가장자리에서는 실제보다 작게 나온다 — 그쪽 나라는 뭉친 채로 남는다(원하는 쪽으로 틀린다).
+   */
+  const subA = [0, 0];
+  const subB = [0, 0];
+  function screenScale(e, cx, cy, cz) {
+    const L = Math.hypot(cx, cy, cz) || 1;
+    const r = 1 + SLR_DISC_LIFT;
+    const nx = cx / L; const ny = cy / L; const nz = cz / L;
+    // 카메라 방향과 직교하는 아무 방향 하나(극에서 무너지지 않게 더 작은 성분 쪽을 고른다)
+    let ax = 0; let ay = 0; let az = 0;
+    if (Math.abs(nx) <= Math.abs(ny) && Math.abs(nx) <= Math.abs(nz)) ax = 1;
+    else if (Math.abs(ny) <= Math.abs(nz)) ay = 1;
+    else az = 1;
+    let tx = ay * nz - az * ny;
+    let ty = az * nx - ax * nz;
+    let tz = ax * ny - ay * nx;
+    const tl = Math.hypot(tx, ty, tz) || 1;
+    tx /= tl; ty /= tl; tz /= tl;
+    const d = Math.PI / 180;                       // 1°
+    const c1 = Math.cos(d); const s1 = Math.sin(d);
+    if (!projectPx(e, nx * r, ny * r, nz * r, view.w, view.h, subA)) return 0;
+    if (!projectPx(e, (nx * c1 + tx * s1) * r, (ny * c1 + ty * s1) * r, (nz * c1 + tz * s1) * r, view.w, view.h, subB)) return 0;
+    return Math.hypot(subB[0] - subA[0], subB[1] - subA[1]);
+  }
+
+  /**
+   * 원판을 다시 고른다 — 1,016곳을 화면으로 옮기고 · 나라마다 갈라질지 정하고 · 차례대로 솎는다.
+   * 매 프레임 돌지 않는다(SLR_RECULL): 그 사이에는 plates.tick 이 지평선 흐림만 고친다.
+   */
+  function recull(camera) {
+    const cm = camera.matrixWorld.elements;
+    const cx = cm[12]; const cy = cm[13]; const cz = cm[14];
+    vpM.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    const e = vpM.elements;
+    // ① 화면 좌표 + 지평선 흐림
+    for (let i = 0; i < stations.length; i += 1) {
+      const wx = stationPos[i * 3]; const wy = stationPos[i * 3 + 1]; const wz = stationPos[i * 3 + 2];
+      visible[i] = 0;
+      if (plateOpacity(wx, wy, wz, cx, cy, cz) < SLR_MIN_OPACITY) continue;
+      if (!projectPx(e, wx, wy, wz, view.w, view.h, px2)) continue;
+      projected[i * 2] = px2[0];
+      projected[i * 2 + 1] = px2[1];
+      visible[i] = 1;
     }
-    lastCamera = camera || null;
-    if (renderer && renderer.getSize) { renderer.getSize(sizeV); view.w = sizeV.x; view.h = sizeV.y; }
-  };
+    // ② 나라마다 — 그 나라가 **화면에서 차지하는 폭**으로 갈라질지 정한다(되새김).
+    //    ⚠️ 보이는 관측소만으로 재면 안 된다: 바짝 다가가 그 나라의 한 곳만 화면에 남았을 때 폭이 0 이 되어
+    //       '나라 원판'이 그대로 선다 — 화면 밖 관측소 115곳까지 대표한다고 말하는 꼴이다(실측으로 잡은 결함).
+    //    그래서 폭은 **자료에 매인 각반경**(radiusDeg · 나라마다 고정)에 지금 화면의 눈금(px/°)을 곱해서 낸다.
+    const platePx = platePxOf();
+    const pxPerDeg = screenScale(e, cx, cy, cz);
+    const cands = [];
+    let anyCountry = false;
+    let anyStation = false;
+    for (const g of groups) {
+      let seen = 0;
+      for (const i of g.idx) if (visible[i]) seen += 1;
+      if (!seen) { continue; }
+      const split = splitDecision(splitState.get(g.country), 2 * g.radiusDeg * pxPerDeg, g.n, platePx, SLR_LOD);
+      splitState.set(g.country, split);
+      if (split) {
+        anyStation = true;
+        for (const i of g.idx) {
+          if (!visible[i]) continue;
+          cands.push({
+            kind: 'station', key: `s${i}`, station: i, value: lastValues[i],
+            korea: (stations[i].country || '').startsWith('Korea'),
+            x: projected[i * 2], y: projected[i * 2 + 1], lat: stations[i].lat, lon: stations[i].lon,
+          });
+        }
+      } else {
+        anyCountry = true;
+        const m = g.medoid;
+        if (!visible[m]) continue;                 // 메도이드가 뒤편이면 그 나라는 이번 판에 없다
+        cands.push({
+          kind: 'country', key: `c${g.country}`, group: g, value: (g.summary && g.summary.median),
+          korea: (g.country || '').startsWith('Korea'),
+          x: projected[m * 2], y: projected[m * 2 + 1], lat: g.lat, lon: g.lon,
+        });
+      }
+    }
+    // ③ 차례 — 한국 먼저, 그다음 |값| 이 큰 것부터(plateRank). 그리고 겹치는 것을 솎는다.
+    cands.sort((a, b) => plateRank(a) - plateRank(b));
+    const cap = view.w > 0 && view.w < SLR_PHONE_W ? SLR_PLATE_CAP.phone : SLR_PLATE_CAP.desktop;
+    const out = thinPlates(cands, { sepPx: platePx * SLR_SEP_FRAC, cap });
+    shownPlates = out.shown;
+    hiddenCount = out.hidden;
+    plateMode = anyCountry && anyStation ? 'mixed' : anyStation ? 'station' : 'country';
+    // ④ 그리기 — 모양이 그대로면 스프라이트를 다시 쓰지 않는다(폰 발열).
+    const list = shownPlates.map((c) => {
+      const v = c.value;
+      const bi = bandIndex(SLR_RISE_SCALE, v);
+      // ⚠️ 눈금표의 **#rrggbb 그대로**다. legendModel 의 color 는 'rgb(…)' 문자열이라 여기서 쓰면
+      //    숫자 색을 고르는 plateInkFor 가 그것을 못 읽고 늘 흰 글자를 준다(밝은 칸에서 숫자가 사라진다).
+      const color = SLR_RISE_SCALE.colors[bi < 0 ? 0 : bi];
+      const name = c.kind === 'country'
+        ? (c.group.n === 1
+          ? `${clipName(stations[c.group.idx[0]].name || c.group.country)} · 1곳`
+          : `${clipName(shortName.get(c.group.country) || c.group.country)} · ${c.group.n}곳`)
+        : clipName(stations[c.station].name || String(stations[c.station].id));
+      return { key: c.key, lat: c.lat, lon: c.lon, text: plateText(v), name, color, ink: plateInkFor(color) };
+    });
+    const sig = list.map((p) => `${p.key}~${p.text}~${p.color}`).join('|');
+    if (sig !== plateSig) { plateSig = sig; plates.setPlates(list); }
+    lastCull = { x: cx, y: cy, z: cz, r: Math.hypot(cx, cy, cz), w: view.w, h: view.h, t: now() };
+  }
+
+  /** 매 프레임 — live-layers.tick 이 부른다. 다시 솎을 때가 아니면 흐림만 고친다. */
+  function tick(camera) {
+    if (!camera || !group.visible) return 0;
+    lastCamera = camera;
+    getViewport(view);
+    if (!(view.w > 0) || !(view.h > 0)) return 0;
+    const cm = camera.matrixWorld.elements;
+    const cx = cm[12]; const cy = cm[13]; const cz = cm[14];
+    const rad = Math.hypot(cx, cy, cz);
+    const t = now();
+    const move = Math.hypot(cx - lastCull.x, cy - lastCull.y, cz - lastCull.z);
+    const moved = move > rad * SLR_RECULL.moveFrac;
+    const zoomed = Math.abs(rad - lastCull.r) > Math.max(lastCull.r, 1e-6) * SLR_RECULL.zoomFrac;
+    const resized = view.w !== lastCull.w || view.h !== lastCull.h;
+    const stale = t - lastCull.t > SLR_RECULL.everyMs;
+    // 기다리면 안 되는 세 가지: ① 값이 바뀌었다(단추를 눌렀다 — 화면의 숫자가 카드와 어긋난다)
+    //   ② 화면 크기가 바뀌었다(솎기 격자가 통째로 달라진다) ③ 카메라가 훌쩍 뛰었다(flyTo — 옛 자리의 원판을
+    //   들고 있으면 **누르는 자리가 어긋난다**). 그 밖에는 minMs 만큼 쉬었다 간다(끄는 중에 매 프레임 1,016곳을 옮기지 않는다).
+    const urgent = plateSig === null || resized || move > rad * SLR_RECULL.jumpFrac;
+    if (urgent || ((moved || zoomed || stale) && t - lastCull.t >= SLR_RECULL.minMs)) recull(camera);
+    return plates.tick(camera);
+  }
 
   // 육지 판 — 바다 색면 3종이 읽는 **같은 장**이다(같은 파일을 두 번 받지 않는다). 못 받으면 고도의 부호만 남는다.
   const landStore = deps.landMask || sharedLandMask({ THREE });
@@ -1102,22 +1275,18 @@ export function createFloodOverlay(doc = {}, deps = {}) {
       top: sorted.slice(0, 3),
       korea: [...kr].sort((a, b) => b.v - a.v).slice(0, 3),
       koreaCount: kr.length,
+      countries: groups.length,
+      soloCountries,
       source: doc.source || 'IPCC AR6 · NASA/JPL',
       license: doc.license || 'CC BY 4.0',
       baseline: doc.baseline || '1995–2014 평균 대비 상대 해수면 (m)',
       depth: state.depth,
     };
-    // 원반의 색 — **같은 시나리오·연도**의 같은 값에서 나온다(색면과 상태를 나눠 쓰는 것이 이 한 줄로 보인다).
-    // 색은 팔레트의 sRGB 바이트 그대로다(셰이더에 색공간 변환이 없다) — 화면의 원반 = 범례의 칸.
-    for (let k = 0; k < order.length; k += 1) {
-      const i = bandIndex(SLR_RISE_SCALE, values[order[k]]);
-      const o = (i < 0 ? 0 : i) * 4;
-      discCol[k * 3] = discPalette[o] / 255;
-      discCol[k * 3 + 1] = discPalette[o + 1] / 255;
-      discCol[k * 3 + 2] = discPalette[o + 2] / 255;
-    }
-    discGeo.attributes.aColor.needsUpdate = true;
-    if (shown) legend.show(slrLegendArgs(stats), 'slr', LEGEND_PRIORITY_FIELD);
+    // 원판의 숫자·색이 읽을 값 — **같은 시나리오·연도**의 같은 배열이다(색면과 상태를 나눠 쓰는 것이 이 한 줄로 보인다).
+    lastValues = values;
+    for (const g of groups) g.summary = countrySummary(g, values);
+    plateSig = null;                               // 값이 바뀌었다 — 다음 솎기에서 원판을 반드시 다시 굽는다
+    if (shown) legend.show(slrLegendArgs(api.model()), 'slr', LEGEND_PRIORITY_FIELD);
   }
 
   // ── 늘 떠 있는 범례 ───────────────────────────────────────────────────────────────────────────────────
@@ -1145,8 +1314,14 @@ export function createFloodOverlay(doc = {}, deps = {}) {
     get mesh() { return mesh; },
     get uniforms() { return uniforms; },
     get state() { return { ...state }; },
-    /** 원반 점(콘솔·시험용) — 화면 고정 크기라 길이로 값을 말하지 않는다. */
-    get discs() { return discs; },
+    /** 숫자 원판(콘솔·시험용) — 화면 고정 크기라 길이로 값을 말하지 않는다. */
+    get plates() { return plates; },
+    /** 지금 화면에 선 원판들(콘솔·시험용) — **여기 있는 것만 눌린다.** */
+    shownPlates() { return shownPlates; },
+    /** 겹쳐서 솎은 수 — 범례 · 카드 · 메뉴 한 줄이 이 수를 말한다. */
+    hidden() { return hiddenCount; },
+    /** 매 프레임(live-layers.tick) — 지평선 흐림, 그리고 때가 되면 다시 솎기. */
+    tick(camera) { return tick(camera); },
     /**
      * **지금 색면이 그려지고 있나.** 색면의 FieldLayer.isDrawing 과 같은 뜻이다 —
      * 지형을 못 받은 세션은 셰이더 첫 줄에서 전부 discard 하므로(FLOOD_FRAG) 켜져 있어도 화면에는 아무것도 없다.
@@ -1157,7 +1332,12 @@ export function createFloodOverlay(doc = {}, deps = {}) {
     get drawing() { return !!state.depth && uniforms.uHasHeight.value > 0.5; },
     stencil() { return stencil; },
     grid() { return grid; },
-    model() { return { ...stats, hasHeight: !!(uniforms.uHasHeight.value > 0.5), reach: reachState, depth: state.depth }; },
+    model() {
+      return {
+        ...stats, hasHeight: !!(uniforms.uHasHeight.value > 0.5), reach: reachState, depth: state.depth,
+        hidden: hiddenCount, plateMode, plateShown: shownPlates.length,
+      };
+    },
     /**
      * 레이어가 켜졌나 — **밖에서** 알려 준다(live-layers.starLayer). 여기서 알 수 없는 이유는 위 '늘 떠 있는 범례' 주석에 있다.
      * 범례를 들고 물러나는 일만 한다. 두 번 불러도 한 번이다.
@@ -1171,8 +1351,11 @@ export function createFloodOverlay(doc = {}, deps = {}) {
       return v;
     },
     /**
-     * 누른 자리의 관측소 — { station, title, html, badge } 또는 null. 화면 좌표로 가장 가까운 것을 고른다
-     * (obs-labels.js pick 과 같은 길). **보이는 것만** 잡는다: 지구 뒤편(stationFacing ≤ 0)은 건너뛴다.
+     * 누른 자리의 원판 — { title, html, badge, station? , country? } 또는 null.
+     * ⚠️ **화면에 선 원판만** 본다(shownPlates). 솎여 나간 관측소가 눌리면 '왜 이 카드가 떴는지' 설명할 수 없고,
+     *    지구 뒤편도 마찬가지다 — 솎을 때 이미 지평선 흐림으로 걸렀다.
+     * 자리는 솎을 때 잰 화면 좌표를 그대로 쓴다: 그리기와 누르기가 **같은 수**를 보게 하는 유일한 길이다
+     *    (다시 재면 그 사이에 카메라가 움직인 만큼 어긋난다).
      * 레이어가 꺼져 있으면 그려지지 않아 lastCamera 가 낡는다 — group.visible 로 한 번 더 막는다.
      */
     pick(hit) {
@@ -1180,24 +1363,23 @@ export function createFloodOverlay(doc = {}, deps = {}) {
       const x = hit.x;
       const y = hit.y;
       if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
-      vpM.multiplyMatrices(lastCamera.projectionMatrix, lastCamera.matrixWorldInverse);
-      const e = vpM.elements;
-      const cm = lastCamera.matrixWorld.elements;
-      const reach = SLR_DISC_PX / 2 + SLR_PICK_SLOP_PX;
-      let best = -1;
+      const reach = platePxOf() / 2 + SLR_PLATE_SLOP_PX;
+      let best = null;
       let bestD = Infinity;
-      for (let k = 0; k < order.length; k += 1) {
-        const px = discPos[k * 3];
-        const py = discPos[k * 3 + 1];
-        const pz = discPos[k * 3 + 2];
-        if (stationFacing(px, py, pz, cm[12], cm[13], cm[14]) <= 0) continue;   // 지구 뒤편은 화면에 없다
-        if (!projectPx(e, px, py, pz, view.w, view.h, px2)) continue;
-        const d = Math.hypot(px2[0] - x, px2[1] - y);
-        if (d < bestD) { bestD = d; best = k; }
+      for (const c of shownPlates) {
+        const d = Math.hypot(c.x - x, c.y - y);
+        if (d < bestD) { bestD = d; best = c; }
       }
-      if (best < 0 || bestD > reach) return null;
-      const st = stations[order[best]];
+      if (!best || bestD > reach) return null;
       const m = api.model();
+      if (best.kind === 'country') {
+        return {
+          country: best.group.country, group: best.group,
+          title: countryCardTitle(best.group, stations),
+          html: countryCardHtml(best.group, stations, m), badge: 'MODEL_SIGNAL',
+        };
+      }
+      const st = stations[best.station];
       return { station: st, title: stationCardTitle(st), html: stationCardHtml(st, m), badge: 'MODEL_SIGNAL' };
     },
     /** 바다 도달 판(콘솔·시험용) — 안 구웠으면 null. */
@@ -1248,8 +1430,7 @@ export function createFloodOverlay(doc = {}, deps = {}) {
       riseTex.dispose();
       paletteTex.dispose();
       material.dispose();
-      discGeo.dispose();
-      discMat.dispose();
+      plates.dispose();
       if (ownsGeometry) geometry.dispose();       // 받은 지오메트리(지구의 것)는 버리지 않는다
       if (group.parent) group.parent.remove(group);
     },

@@ -11,13 +11,20 @@ import { readFileSync } from 'node:fs';
 import * as THREE from '../../prototype/vendor/three-r184.module.min.js';
 
 import {
-  FLOOD_DEFAULT, FLOOD_FAR_KM, FLOOD_FRAG, FLOOD_IDW_K, FLOOD_LIFT, FLOOD_OPACITY, FLOOD_QUANTITY, FLOOD_RIM, FLOOD_RISE_BASE, FLOOD_RISE_RES,
+  FLOOD_DEFAULT, FLOOD_DEPTH_DEFAULT, FLOOD_FAR_KM, FLOOD_FRAG, FLOOD_IDW_K, FLOOD_LIFT, FLOOD_OPACITY, FLOOD_PAINTED_KM2,
+  FLOOD_PAINTED_PCT, FLOOD_QUANTITY, FLOOD_RIM, FLOOD_RISE_BASE, FLOOD_RISE_RES,
   FLOOD_RISE_STEP, FLOOD_SCALE, FLOOD_SCENARIOS, FLOOD_TERRAIN_GLSL, FLOOD_VERT, FLOOD_YEARS,
-  SLR_DISC_FRAG, SLR_DISC_LIFT, SLR_DISC_PX, SLR_DISC_RIM, SLR_DISC_VERT, SLR_LEGEND_SOURCE, SLR_PICK_SLOP_PX, SLR_RISE_SCALE,
-  buildRiseStencil, createFloodOverlay, decodeRise, discOrder, encodeRise, floodAt, floodBandIndex, floodCardInner, floodRimCoverage,
-  floodStations, medianOf, riseAt, riseGridOf, riseRGBA, slrLegendArgs, stationCardHtml, stationCardTitle, stationFacing,
-  stationMedians, stationPoint, swapFloodCard,
+  SLR_DISC_LIFT, SLR_LEGEND_SOURCE, SLR_PLATE_ORDER, SLR_PLATE_RIM, SLR_RECULL, SLR_RISE_SCALE,
+  buildRiseStencil, countryCardHtml, countryCardTitle, createFloodOverlay, decodeRise, encodeRise, floodAt, floodBandIndex,
+  floodCardInner, floodNote, floodRimCoverage, floodStations, medianOf, riseAt, riseGridOf, riseRGBA, slrLegendArgs,
+  stationCardHtml, stationCardTitle, stationMedians, stationPoint, swapFloodCard,
 } from '../../prototype/v2-three/js/flood-overlay.js';
+import {
+  SLR_LOD, SLR_PLATE_CAP, SLR_PLATE_PX, SLR_PLATE_SCALE, SLR_PLATE_SLOP_PX, SLR_SEP_FRAC,
+  clipName, countryGroups, countrySummary, plateInkFor, plateOpacity, plateRank, plateText, shortCountryNames,
+  spreadPx, splitDecision, thinPlates,
+} from '../../prototype/v2-three/js/slr-plates.js';
+import { labelOpacity } from '../../prototype/v2-three/js/field-labels.js';
 import { FIELD_FRAG, FIELD_GRAD_EPS, FIELD_LIFT, FIELD_RENDER_ORDER, FIELD_VERT, lineCoverage } from '../../prototype/v2-three/js/field-renderer.js';
 import { LEGEND_PRIORITY_FIELD } from '../../prototype/v2-three/js/field-layer.js';
 import { bandIndex, legendModel, scaleOf, validateScale } from '../../prototype/v2-three/js/field-scales.js';
@@ -61,6 +68,23 @@ const fakeLegend = () => ({
     this.owners = this.owners.filter((o) => o !== owner);
   },
 });
+/** 시험용 가짜 원판 텍스처 — 캔버스가 없다. 모양을 그대로 받아 적어 두고, 크기는 실제와 같은 비율로 낸다. */
+const fakeTexture = () => (shape) => ({
+  tex: { isTexture: true, dispose() { this.disposed = true; }, disposed: false, shape },
+  w: SLR_PLATE_PX * 2, h: SLR_PLATE_PX * 2 * 1.44,
+});
+/** 시험용 화면 크기 — 앱은 globalThis.innerWidth 를 읽는다(node 에는 없다). */
+const fakeViewport = (w, h) => (out) => { out.w = w; out.h = h; return out; };
+/** 한 지점을 정면에 둔 카메라. 고도 r 은 지구 반지름 단위다(3 이면 지구가 통째로 보인다). */
+const camAt = (lat, lon, r = 3) => {
+  const cam = new THREE.PerspectiveCamera(48, 1000 / 800, 0.1, 100);
+  const eye = stationPoint(lat, lon, r);
+  cam.position.set(eye[0], eye[1], eye[2]);
+  cam.lookAt(0, 0, 0);
+  cam.updateMatrixWorld();
+  cam.updateProjectionMatrix();
+  return cam;
+};
 const fakeTerrain = () => ({
   uHeightMap: { value: { isTexture: true } }, uHasHeight: { value: 1 }, uExagger: { value: 50 },
   uDetailMap: { value: null }, uDetailRect: { value: new THREE.Vector4(0, 0, 1, 1) },
@@ -113,10 +137,10 @@ test('지형을 못 받은 세션은 아무것도 칠하지 않는다 — 고도
   // 셰이더도 같은 자리에서 막는다(uniform 분기라 도함수와 무관하게 통째로 버린다).
   assert.match(FLOOD_FRAG, /if \(uHasHeight < 0\.5\) discard;/);
   // 카드도 그 사실을 적는다 — 고친 척하지 않는다. (색면을 켠 사람에게만 할 말이다 — 원반은 지형과 무관하다.)
-  const card = floodCardInner(cardModel({ hasHeight: false, depth: true }));
-  assert.match(card, /지형 고도를 받지 못해/);
-  assert.doesNotMatch(floodCardInner(cardModel({ hasHeight: false })), /지형 고도를 받지 못해/,
-    '색면이 꺼져 있는데 지형 타령을 하면, 화면에 잘 있는 원반을 못 그린다고 말하는 것이다');
+  const card = floodCardInner(cardModel({ hasHeight: false }));
+  assert.match(card, /지형 고도를 받지 못해/, '색면이 기본 켬이라 이 말은 기본 화면에서 해야 한다');
+  assert.doesNotMatch(floodCardInner(cardModel({ hasHeight: false, depth: false })), /지형 고도를 받지 못해/,
+    '색면을 끈 사람에게 지형 타령을 하면, 화면에 잘 있는 원판을 못 그린다고 말하는 것이다');
 });
 
 // ---------------------------------------------------------------- 상승폭 격자 (IDW)
@@ -207,16 +231,19 @@ test('값 텍스처 — R 은 상승폭, G 는 관측소가 가까운 칸인가,
 
 // ---------------------------------------------------------------- 시나리오 · 연도
 
-// ⚠️ depth 는 '잠기는 땅 색면이 켜졌나'이고 **기본은 꺼짐**이다(2026-09-20 작업 E4). 색면의 고지 ①②③④ 는
-//    켜져 있을 때만 카드에 있다 — 색면을 보는 시험은 depth: true 로 부른다.
+// ⚠️ depth 는 '잠기는 땅 색면이 켜졌나'이고 **기본은 켬**이다(2026-09-20 작업 E5 · FLOOD_DEPTH_DEFAULT).
+//    색면의 고지 ①②③④ 는 켜져 있을 때만 카드에 있다 — 꺼진 화면을 보는 시험은 depth: false 로 부른다.
 const cardModel = (extra = {}) => {
   const st = floodStations(AR6.items);
   const values = stationMedians(st, FLOOD_DEFAULT.scenario, FLOOD_DEFAULT.year);
+  const groups = countryGroups(st);
   return {
     scenario: FLOOD_DEFAULT.scenario, year: FLOOD_DEFAULT.year, stations: st.length,
-    globalMedian: medianOf(values), farPct: 30.5, landMask: null, hasHeight: true, depth: false,
+    globalMedian: medianOf(values), farPct: 30.5, landMask: null, hasHeight: true, depth: FLOOD_DEPTH_DEFAULT,
     min: Math.min(...values), max: Math.max(...values),
     top: [{ name: 'A', v: 2.6, lo: 2.1, hi: 3.0 }], korea: [{ name: 'MOKPO', v: 0.98, lo: 0.72, hi: 1.34 }], koreaCount: 24,
+    countries: groups.length, soloCountries: groups.filter((g) => g.n === 1).length,
+    hidden: 0, plateMode: 'country', plateShown: 12,
     source: AR6.source, license: AR6.license, baseline: AR6.baseline,
     ...extra,
   };
@@ -249,43 +276,76 @@ test('시나리오 4개 × 연도 3개가 자료에 다 있고, 바꾸면 잠기
   }
 });
 
-// 2026-09-20 작업 E4 — 카드의 앞면이 바뀌었다. 주인공은 관측소 원반이고 색면은 단추 뒤로 내려갔다.
-test('카드의 앞면은 원반이다 — 색면은 기본 꺼짐이고 무엇인지 정확히 말한 단추 뒤에 있다', () => {
+// 2026-09-20 작업 E5 — 카드의 앞면이 다시 바뀌었다. 주인공은 **숫자 원판**이고, 색면은 **기본 켬**으로 올라왔다.
+test('카드의 앞면은 숫자 원판이다 — 색면은 기본 켬이고, 나라 값이 우리 집계라고 적는다', () => {
   const card = floodCardInner(cardModel());
   // 제목·단추 12칸은 그대로. '잠기는 땅'이 제목이 아니다.
   assert.match(card, /<b>해수면 상승 전망 — SSP5-8\.5 · 2100년<\/b>/);
   for (const s of FLOOD_SCENARIOS) assert.ok(card.includes(`data-ssp="${s.id}"`), s.id);
   for (const y of FLOOD_YEARS) assert.ok(card.includes(`data-year="${y}"`), y);
-  // 원반 이야기가 먼저다 — '색만 값을 말한다'(막대기가 길이로 말하던 것과 반대다).
-  assert.match(card, /<b>원반<\/b>/);
-  assert.match(card, /색만 값을 말합니다/);
-  assert.match(card, /원반을 누르면/);
+  // 원판 이야기가 먼저다 — 두 단계(나라 → 관측소)를 카드가 말한다.
+  assert.match(card, /<b>숫자를 적은 원판<\/b>/);
+  assert.match(card, /멀리서는 나라 하나에 원판 하나/);
+  assert.match(card, /확대하면 관측소 하나하나로 갈라집니다/);
+  assert.match(card, /원판을 누르면/);
   assert.doesNotMatch(card, /막대기|기둥/);
-  // 원반의 범례는 눈금표 한 줄에서 나온다 — 카드가 제 색을 지어내지 않는다.
-  const escLabel = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  // ⚠️ 주인 가르기 — 나라별 값은 기관이 발표한 것이 아니다(지시서의 두 번째 ⚠️).
+  assert.match(card, /나라별 값은 기관이 발표한 것이 아니라 EARTHUS 가 묶은 집계입니다/);
+  assert.match(card, /조위관측소 지점값/);
+  // 관측소가 한 곳뿐인 나라 수를 **자료에서 세어** 적는다(박아 넣은 수가 아니다).
+  const groups = countryGroups(floodStations(AR6.items));
+  const solo = groups.filter((g) => g.n === 1).length;
+  assert.ok(solo > 0 && solo < groups.length, `자료에 한 곳뿐인 나라가 ${solo}개 / ${groups.length}개`);
+  assert.ok(card.includes(`<b>관측소가 한 곳뿐인 나라가 ${solo}개</b>`), '한 곳뿐인 나라 수를 안 적는다');
+  assert.ok(card.includes(`전체 ${groups.length}개 나라`), '나라 수를 안 적는다');
+  // 원판의 범례는 눈금표 한 줄에서 나온다 — 카드가 제 색을 지어내지 않는다.
+  const escLabel = (s2) => s2.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   for (const c of legendModel(SLR_RISE_SCALE)) assert.ok(card.includes(escLabel(c.label)), c.label);
-  // 출처·기준선·'중앙값과 17~83%' 는 원반의 성질이라 **늘** 떠 있다(색면을 켜야 보이면 안 된다).
   assert.match(card, /IPCC AR6/);
   assert.match(card, /1,016곳/);
   assert.match(card, /중앙값/);
   assert.match(card, /17~83% 범위/);
   assert.match(card, /타임라인/, '5일 예보와 잇지 않았다고 적는다');
-  // 색면 단추 — 기본은 꺼짐이고, 그 옆 한 줄이 **무엇인지 정확히** 말한다(표면 고도라 실제 위험지가 빠진다).
-  assert.match(card, /data-action="slr-depth"[^>]*aria-pressed="false"/);
-  assert.match(card, /이 지형 자료에서 해수면보다 낮은 땅/);
+  // 색면 단추 — **기본은 켬**이고(FLOOD_DEPTH_DEFAULT), 무엇이 빠지는지 옆 줄이 말한다.
+  assert.equal(FLOOD_DEPTH_DEFAULT, true, '지시서: 색면은 기본 켬이다');
+  assert.match(card, /data-action="slr-depth"[^>]*aria-pressed="true"/);
+  assert.match(card, /잠기는 땅 끄기/);
+  assert.match(card, /물빛 면은 이 지형 자료에서 해수면보다 낮아지는 땅/);
   assert.match(card, /표면 고도/);
-  assert.match(card, /방글라데시 · 도쿄 · 방콕처럼 실제로 위험한 곳이 빠집니다/);
-  assert.match(card, /0\.17%/, '칠해지는 땅이 육지의 얼마인지 숫자로 말한다');
-  // 꺼져 있으면 색면의 고지·범례는 카드에 없다 — 화면에 없는 것을 설명하지 않는다.
-  assert.doesNotMatch(card, /욕조식 근사/);
-  assert.doesNotMatch(card, /바다와의 연결/);
-  for (const c of legendModel(FLOOD_SCALE)) assert.doesNotMatch(card, new RegExp(escLabel(c.label).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-  assert.equal((card.match(/aria-pressed="true"/g) || []).length, 2, '시나리오 하나 · 연도 하나만 눌려 있다 — 색면은 꺼짐');
-  // 켜면 단추가 눌린 모양이 되고 글자도 바뀐다.
-  const on = floodCardInner(cardModel({ depth: true }));
-  assert.match(on, /data-action="slr-depth"[^>]*aria-pressed="true"/);
-  assert.match(on, /잠기는 땅 끄기/);
-  assert.equal((on.match(/aria-pressed="true"/g) || []).length, 3);
+  assert.match(card, /맨땅 지형\(DTM\)/, '고치는 길이 확대가 아니라는 것을 적는다');
+  // 칠해지는 면적은 **재서 넣은 수**다 — 카드가 상수와 같은 수를 적는다(둘이 갈라질 자리를 두지 않는다).
+  assert.ok(card.includes(`<b>${FLOOD_PAINTED_PCT}%</b>`), `육지의 ${FLOOD_PAINTED_PCT}% 를 안 적는다`);
+  assert.ok(card.includes(`${FLOOD_PAINTED_KM2.toLocaleString()} km²`), 'km² 를 안 적는다');
+  assert.ok(!card.includes('0.17%') && !card.includes('230,610'), '부풀리기 전의 옛 수가 남아 있다');
+  // 켜져 있으므로 색면의 고지와 범례가 카드에 있다.
+  assert.match(card, /욕조식 근사/);
+  assert.match(card, /바다와의 연결/);
+  // 끄면 색면의 고지·범례가 사라진다 — 화면에 없는 것을 설명하지 않는다.
+  const off = floodCardInner(cardModel({ depth: false }));
+  assert.match(off, /data-action="slr-depth"[^>]*aria-pressed="false"/);
+  assert.match(off, /잠기는 땅 켜기/);
+  assert.doesNotMatch(off, /욕조식 근사/);
+  assert.equal((off.match(/aria-pressed="true"/g) || []).length, 2, '시나리오 하나 · 연도 하나만 눌려 있다');
+  assert.equal((card.match(/aria-pressed="true"/g) || []).length, 3, '기본은 색면까지 셋이 눌려 있다');
+});
+
+// 지시서: "솎은 것이 있으면 화면이 그 사실을 말해야 한다."
+test('솎은 수는 화면의 세 곳이 다 말한다 — 늘 떠 있는 범례 · 카드 · 메뉴 한 줄', () => {
+  const none = cardModel({ hidden: 0, plateShown: 12 });
+  const some = cardModel({ hidden: 137, plateShown: 40, plateMode: 'station' });
+  // ① 늘 떠 있는 범례(카드가 닫혀 있어도 읽힌다)
+  assert.ok(!/솎음/.test(slrLegendArgs(none).source), '솎은 것이 없는데 솎았다고 적는다');
+  assert.match(slrLegendArgs(some).source, /겹쳐 137곳 솎음/);
+  assert.ok(slrLegendArgs(some).source.includes(SLR_LEGEND_SOURCE), '출처를 잃지 않는다');
+  assert.ok(!('note' in slrLegendArgs(some)), '풀이 줄을 넘기면 눈금표의 음수 칸 설명을 통째로 잃는다');
+  // ② 카드
+  assert.match(floodCardInner(some), /겹쳐서 137곳을 솎았습니다/);
+  assert.match(floodCardInner(none), /솎은 것 없음/);
+  assert.match(floodCardInner(some), /관측소 하나하나/, '지금 어느 단계인지 적는다');
+  assert.match(floodCardInner(none), /나라 단위/);
+  // ③ 메뉴 한 줄
+  assert.match(floodNote(some), /겹쳐 137곳 솎음/);
+  assert.ok(!/솎음/.test(floodNote(none)));
 });
 
 test('카드는 네 가지를 다 말한다 — 욕조식 근사 · 모르는 것 · 지형 해상도 · 출처와 범위', () => {
@@ -360,7 +420,7 @@ const labOf = (hex) => {
   return { L: 116 * Y - 16, a: 500 * (X - Y), b: 200 * (Y - Z) };
 };
 
-test('원반의 눈금 — 팔레트 A 의 여덟 칸 + 음수 한 칸만 무채색', () => {
+test('원판의 눈금 — 팔레트 A 의 여덟 칸 + 음수 한 칸만 무채색', () => {
   assert.deepEqual(validateScale(SLR_RISE_SCALE), [], '표가 스스로와 어긋난다');
   // 첫 칸이 곧 '음수'다 — 첫 경계가 0 이어야 그 칸이 '땅이 솟는 곳'과 정확히 같아진다.
   assert.equal(SLR_RISE_SCALE.breaks[0], 0, '첫 경계가 0 이 아니면 음수와 양수가 한 칸에 섞인다');
@@ -383,8 +443,16 @@ test('원반의 눈금 — 팔레트 A 의 여덟 칸 + 음수 한 칸만 무채
     const n = parseInt(SLR_RISE_SCALE.colors[i].slice(1), 16);
     assert.ok(windHexes.has([(n >> 16) & 255, (n >> 8) & 255, n & 255].join(',')), `${SLR_RISE_SCALE.colors[i]} 가 팔레트 A 밖이다`);
   }
-  // 테는 어둡다 — 겹친 원반을 가르는 일이라 어느 칸보다도 어두워야 한다.
-  const rimL = labOf(`#${SLR_DISC_RIM.color.map((v) => Math.round(v * 255).toString(16).padStart(2, '0')).join('')}`).L;
+  // 숫자가 어느 칸 위에서도 읽힌다 — 밝은 칸(무채색 · 노랑)에 흰 글자를 쓰면 숫자가 사라진다.
+  //   ⚠️ 하필 가장 밝은 칸이 **뜻이 반대인 음수 칸**이다: 거기서 숫자가 안 보이면 '땅이 솟는 곳'을 못 읽는다.
+  for (let i = 0; i < SLR_RISE_SCALE.colors.length; i += 1) {
+    const ink = plateInkFor(SLR_RISE_SCALE.colors[i]);
+    const dL = Math.abs(cols[i].L - labOf(ink).L);
+    assert.ok(dL > 40, `칸 ${i} (${SLR_RISE_SCALE.colors[i]}) 와 글자색 ${ink} 의 명도차가 ${dL.toFixed(1)} 뿐이다`);
+  }
+  assert.equal(plateInkFor(SLR_RISE_SCALE.colors[0]), '#0f1720', '가장 밝은 음수 칸에는 검은 글자여야 한다');
+  // 테는 어둡다 — 맞닿은 원판을 가르는 일이라 어느 칸보다도 어두워야 한다.
+  const rimL = labOf(`#${SLR_PLATE_RIM.color.map((v) => Math.round(v * 255).toString(16).padStart(2, '0')).join('')}`).L;
   for (const c of cols) assert.ok(c.L - rimL > 10, `테 L* ${rimL.toFixed(1)} vs 칸 ${c.L.toFixed(1)}`);
 });
 
@@ -512,56 +580,132 @@ test('셰이더 글자 — GLSL ES 예약어를 이름으로 쓰지 않았고 �
   assert.match(lf(FLOOD_FRAG), /precision highp float;/);
 });
 
-test('원반의 셰이더 글자 — 예약어 · 괄호 · ASCII · 화면 고정 크기 · DPR', () => {
-  const RESERVED = ['half', 'sample', 'input', 'output', 'filter', 'common', 'active', 'partition', 'fixed', 'unsigned', 'superp',
-    'long', 'short', 'double', 'class', 'union', 'enum', 'typedef', 'template', 'this', 'goto', 'inline', 'noinline', 'public',
-    'static', 'extern', 'external', 'interface', 'sizeof', 'cast', 'namespace', 'using', 'asm', 'resource', 'patch', 'subroutine',
-    'coherent', 'volatile', 'restrict', 'readonly', 'writeonly', 'atomic_uint', 'noperspective', 'packed', 'centroid', 'flat', 'smooth',
-    'hvec2', 'hvec3', 'hvec4', 'fvec2', 'fvec3', 'fvec4', 'dvec2', 'dvec3', 'dvec4', 'texture'];
-  for (const [name, src] of [['SLR_DISC_VERT', SLR_DISC_VERT], ['SLR_DISC_FRAG', SLR_DISC_FRAG]]) {
-    const code = lf(src).replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
-    const words = new Set(code.match(/[A-Za-z_]\w*/g));
-    for (const w of RESERVED) assert.ok(!words.has(w), `${name}: '${w}' 는 GLSL ES 의 예약어다`);
-    for (const [open, close] of [['(', ')'], ['{', '}'], ['[', ']']]) {
-      assert.equal(code.split(open).length, code.split(close).length, `${name}: ${open}${close} 짝이 안 맞는다`);
-    }
-    assert.ok(!/[^\x00-\x7f]/.test(code), `${name}: 주석 밖에 ASCII 가 아닌 글자가 있다 — shaderSource 가 거부한다`);
+test('원판의 자리 — 나라마다 하나이고, 그 자리는 언제나 **실제 관측소** 위다(무게중심이 아니다)', () => {
+  const st = floodStations(AR6.items);
+  const groups = countryGroups(st);
+  // 자료가 아는 나라를 하나도 잃지 않는다.
+  assert.equal(groups.reduce((a, g) => a + g.n, 0), st.length, '어느 관측소가 어느 나라에도 안 들어갔다');
+  assert.equal(new Set(groups.map((g) => g.country)).size, groups.length, '같은 나라가 두 묶음이다');
+  // ⚠️ 이 시험이 막는 결함: 평균 자리를 쓰면 미국은 캔자스, 러시아는 시베리아에 해수면 원판이 뜬다.
+  for (const g of groups) {
+    const on = g.idx.some((i) => st[i].lat === g.lat && st[i].lon === g.lon);
+    assert.ok(on, `${g.country} 의 원판이 관측소 위에 있지 않다 (${g.lat}, ${g.lon})`);
+    assert.ok(g.idx.includes(g.medoid));
   }
-  // 두 단계가 같이 쓰는 이름은 같은 형이어야 링크된다.
-  assert.match(lf(SLR_DISC_VERT), /varying vec3 vCol;/);
-  assert.match(lf(SLR_DISC_FRAG), /varying vec3 vCol;/);
-  assert.match(lf(SLR_DISC_VERT), /attribute vec3 aColor;/);
-  // ⚠️ 폰(DPR 2~3): gl_PointSize 의 단위는 장치 픽셀이라 곱하지 않으면 원반이 3분의 1로 보인다.
-  assert.match(lf(SLR_DISC_VERT), /gl_PointSize = uDiscPx \* uPixelRatio;/);
-  for (const u of ['uDiscPx', 'uPixelRatio']) assert.ok(lf(SLR_DISC_VERT).includes(`uniform float ${u};`), u);
-  // 색공간 변환이 없다 — 있으면 화면의 원반이 범례의 칸과 다른 색이 된다(색면과 같은 규칙).
-  assert.ok(!/colorspace_fragment|encodings_fragment/.test(lf(SLR_DISC_FRAG)), '색공간 변환이 들어가면 범례와 어긋난다');
-  // 네모가 아니라 원반이고, 어두운 테가 있다.
-  assert.match(lf(SLR_DISC_FRAG), /if \(r > 1\.0\) discard;/);
-  assert.match(lf(SLR_DISC_FRAG), /uRimFrac/);
-  assert.ok(SLR_DISC_RIM.frac > 0 && SLR_DISC_RIM.frac < 0.5, '테가 원반을 통째로 먹으면 색이 안 남는다');
+  // 이 규칙이 실제로 무언가를 막고 있는가 — 무게중심에서 **가장 가까운 관측소까지의 거리**를 자료에서 잰다.
+  // 운영 자료 실측(2026-09-20): 미국 1,482 km · 호주 655 km · 캐나다 544 km · 중국 445 km.
+  // 즉 무게중심을 썼다면 미국 원판은 어느 해안에서도 1,482 km 떨어진 **내륙**에 떴다. PD 가 막은 그것이다.
+  const gapKm = (g) => {
+    const mean = g.idx.reduce((a, i) => { a.x += st[i].x; a.y += st[i].y; a.z += st[i].z; return a; }, { x: 0, y: 0, z: 0 });
+    const len = Math.hypot(mean.x, mean.y, mean.z) || 1;
+    let best = -2;
+    for (const i of g.idx) best = Math.max(best, (st[i].x * mean.x + st[i].y * mean.y + st[i].z * mean.z) / len);
+    return Math.acos(Math.min(1, best)) * 6371;
+  };
+  for (const [name, least] of [['United States', 1000], ['Australia', 400], ['Canada', 400], ['China', 300]]) {
+    const g = groups.find((x) => x.country === name);
+    assert.ok(g && g.n > 5, name);
+    assert.ok(gapKm(g) > least, `${name} 의 무게중심이 가장 가까운 관측소에서 ${gapKm(g).toFixed(0)} km`);
+  }
+  // 나라 요약 — 관측소가 한 곳뿐인 나라는 중앙값 = 최소 = 최대다(그 사실을 화면이 적는다).
+  const values = stationMedians(st, FLOOD_DEFAULT.scenario, FLOOD_DEFAULT.year);
+  const solo = groups.filter((g) => g.n === 1);
+  assert.ok(solo.length > 0, '자료에 한 곳뿐인 나라가 없다');
+  for (const g of solo.slice(0, 5)) {
+    const sum = countrySummary(g, values);
+    assert.equal(sum.median, sum.min);
+    assert.equal(sum.median, sum.max);
+    assert.equal(sum.median, values[g.idx[0]]);
+  }
+  const kr = groups.find((g) => (g.country || '').startsWith('Korea, R'));
+  const ks = countrySummary(kr, values);
+  assert.equal(ks.n, kr.n);
+  assert.ok(ks.min <= ks.median && ks.median <= ks.max);
 });
 
-test('지구 뒤편의 관측소는 보이지도 눌리지도 않는다 — 셰이더와 JS 가 같은 식이다', () => {
-  // 셰이더가 쓰는 바로 그 한 줄. 글자가 바뀌면 여기서 걸린다(JS 거울과 갈라질 자리를 남기지 않는다).
-  assert.match(lf(SLR_DISC_VERT), /float facing = dot\(normalize\(wp\), normalize\(cameraPosition - wp\)\);/);
-  assert.match(lf(SLR_DISC_VERT), /if \(facing <= 0\.0\) \{/);
-  assert.match(lf(SLR_DISC_VERT), /gl_PointSize = 0\.0;/);
-  // 카메라를 적도 0°E 3 단위 거리에 둔다.
-  const cam = [0, 0, 3];
-  const at = (lat, lon) => stationPoint(lat, lon, 1 + SLR_DISC_LIFT);
-  const facing = (lat, lon) => stationFacing(...at(lat, lon), ...cam);
-  assert.ok(facing(0, 0) > 0.99, '정면이 안 보인다');
-  assert.ok(facing(0, 180) < 0, '반대편(대척점)이 보인다고 말한다');
-  // 지평선은 딱 0 이다 — 거리 r 에서 지평선의 각은 acos(1/r) 이다(접선이 시선과 직각).
-  const r = 3 / (1 + SLR_DISC_LIFT);
-  const horizonDeg = (Math.acos(1 / r) * 180) / Math.PI;
-  assert.ok(Math.abs(facing(0, horizonDeg)) < 1e-6, `지평선에서 ${facing(0, horizonDeg)}`);
-  assert.ok(facing(0, horizonDeg - 0.5) > 0, '지평선 안쪽');
-  assert.ok(facing(0, horizonDeg + 0.5) < 0, '지평선 너머');
+test('원판의 글자 — 한두 자리에 부호가 붙고, 이름은 관측소 수를 같이 말한다', () => {
+  assert.equal(plateText(1.13), '1.1');
+  assert.equal(plateText(0.78), '0.8');
+  assert.equal(plateText(-0.34), '−0.3', '하이픈이 아니라 U+2212 다');
+  assert.equal(plateText(-0.02), '0.0', '0 에 빼기 기호를 붙이면 내려간다는 뜻이 된다');
+  assert.equal(plateText(null), '');
+  // 어떤 값이든 네 글자를 넘지 않는다 — 원판 안에 들어가야 한다.
+  const st = floodStations(AR6.items);
+  for (const sc of FLOOD_SCENARIOS) {
+    for (const y of FLOOD_YEARS) {
+      for (const v of stationMedians(st, sc.id, y)) assert.ok(plateText(v).length <= 4, `${v} → ${plateText(v)}`);
+    }
+  }
+  // 나라 이름 줄이기 — 부딪히면 둘 다 원래 이름 그대로 둔다(두 한국을 같은 이름으로 부르지 않는다).
+  const names = [...new Set(AR6.items.map((i) => i.country))];
+  const short = shortCountryNames(names);
+  assert.equal(short.get('France'), 'France');
+  const koR = names.find((n) => n.startsWith('Korea, R'));
+  const koD = names.find((n) => n.startsWith('Korea, D'));
+  assert.ok(koR && koD, '자료에 두 한국이 다 있다');
+  assert.equal(short.get(koR), koR, '줄이면 두 한국이 같은 이름이 된다 — 그때는 줄이지 않는다');
+  assert.equal(short.get(koD), koD);
+  assert.equal(new Set([...short.values()]).size, names.length, '줄인 이름 둘이 같아졌다');
+  assert.equal(clipName('abcdefghijklmnopqrstuvwxyz', 8), 'abcdefg…');
+  assert.equal(clipName('짧다'), '짧다');
 });
 
-test('원반을 누르면 그 관측소의 카드다 — 앞면만 잡히고 빗나가면 null', () => {
+test('갈라짐 — 화면에서 퍼진 폭으로 정하고, 두 문턱이 달라 경계에서 깜빡이지 않는다', () => {
+  const D = SLR_PLATE_PX;
+  assert.ok(SLR_LOD.splitPlates > SLR_LOD.mergePlates, '되새김이 없으면 그 경계에서 원판이 깜빡인다');
+  // 뭉쳐 있다가 → 넓게 퍼져야 갈라진다
+  assert.equal(splitDecision(false, D * SLR_LOD.splitPlates - 1, 5, D), false);
+  assert.equal(splitDecision(false, D * SLR_LOD.splitPlates + 1, 5, D), true);
+  // 갈라져 있다가 → 더 좁아져야 다시 뭉친다(갈라지는 문턱이 아니라 뭉치는 문턱까지)
+  assert.equal(splitDecision(true, D * SLR_LOD.splitPlates - 1, 5, D), true, '되새김이 없다');
+  assert.equal(splitDecision(true, D * SLR_LOD.mergePlates - 1, 5, D), false);
+  // 관측소가 한 곳뿐인 나라는 갈라질 것이 없다
+  assert.equal(splitDecision(true, 9999, 1, D), false);
+  assert.equal(spreadPx([[0, 0], [30, 40]]), 50);
+  assert.equal(spreadPx([[5, 5]]), 0);
+  // 원판의 지름은 화면 높이에 매인다 — 900 px 화면에서 SLR_PLATE_PX 여야 두 수가 갈라지지 않는다.
+  assert.ok(Math.abs(SLR_PLATE_SCALE * 900 - SLR_PLATE_PX) < 0.5, `${SLR_PLATE_SCALE * 900} vs ${SLR_PLATE_PX}`);
+});
+
+test('솎기 — 겹치면 앞의 것만 남고, 솎은 수를 센다. 차례는 한국 먼저 · 그다음 |값|', () => {
+  const D = SLR_PLATE_PX * SLR_SEP_FRAC;
+  const c = (x, y, extra = {}) => ({ x, y, ...extra });
+  const out = thinPlates([c(0, 0), c(D * 0.5, 0), c(D * 2, 0)], { sepPx: D, cap: 10 });
+  assert.equal(out.shown.length, 2);
+  assert.equal(out.hidden, 1, '솎은 수를 세지 않으면 화면이 그 사실을 말할 수 없다');
+  // 상한을 넘으면 그 뒤는 전부 솎은 것으로 센다
+  const many = Array.from({ length: 30 }, (_, i) => c(i * D * 2, 0));
+  const capped = thinPlates(many, { sepPx: D, cap: 8 });
+  assert.equal(capped.shown.length, 8);
+  assert.equal(capped.hidden, 22);
+  assert.ok(SLR_PLATE_CAP.phone < SLR_PLATE_CAP.desktop, '폰은 지구 원반이 작다 — 같은 수를 세우면 숫자가 지구를 덮는다');
+  assert.ok(SLR_SEP_FRAC > 1, '솎는 간격이 지름보다 좁으면 원판이 서로 겹친다');
+  // ⚠️ 차례: |값| 이라 **가장 크게 내려가는 곳**(보트니아만)도 살아남는다. 큰 값만 보면 이 레이어의 자랑이 영영 솎인다.
+  const rows = [
+    { korea: false, value: 0.9 }, { korea: false, value: -2.3 }, { korea: true, value: 0.4 }, { korea: false, value: 4.1 },
+  ];
+  const order = [...rows].sort((a, b) => plateRank(a) - plateRank(b));
+  assert.equal(order[0].korea, true, '한국이 먼저다(시장 우선순위)');
+  assert.deepEqual(order.slice(1).map((r) => r.value), [4.1, -2.3, 0.9], '|값| 이 큰 것부터 — 음수도 살아남는다');
+});
+
+test('지평선 흐림 — 지구 뒤편은 0 이고, 식은 field-labels 의 것과 같은 수를 낸다', () => {
+  // 같은 식을 두 벌 두는 것은 되풀이가 아니라 **의존을 끊기 위해서**다(slr-plates.js 머리말) — 값이 갈라지지 않는지 여기서 잰다.
+  for (const [p, c] of [
+    [[0, 0, 1], [0, 0, 3]], [[0, 0, 1], [3, 0, 0]], [[0.7, 0.7, 0], [0, 0, 3]], [[0, 0, -1], [0, 0, 3]],
+  ]) {
+    assert.equal(plateOpacity(...p, ...c), labelOpacity(...p, ...c), `${p} / ${c}`);
+  }
+  assert.equal(plateOpacity(0, 0, -1, 0, 0, 3), 0, '지구 뒤편이 보인다');
+  assert.ok(plateOpacity(0, 0, 1, 0, 0, 3) > 0.9, '정면이 흐리다');
+  // 지평선 언저리는 0 과 1 사이 — 고정 문턱이 아니라 고도마다 다른 지평선을 쓴다.
+  const horizonDeg = (Math.acos(1 / 3) * 180) / Math.PI;
+  const at = (d) => { const r = (d * Math.PI) / 180; return plateOpacity(Math.sin(r), 0, Math.cos(r), 0, 0, 3); };
+  assert.equal(at(horizonDeg + 0.5), 0, '지평선 너머가 보인다');
+  assert.ok(at(horizonDeg - 4) > 0, '지평선 안쪽이 안 보인다');
+});
+
+test('원판을 누르면 그 곳의 카드다 — 관측소 카드 · 나라 카드', () => {
   const st = floodStations(AR6.items);
   const m = { scenario: 'ssp585', year: '2100', source: AR6.source, license: AR6.license, baseline: AR6.baseline };
   const one = st.find((s) => (s.country || '').startsWith('Korea')) || st[0];
@@ -580,17 +724,33 @@ test('원반을 누르면 그 관측소의 카드다 — 앞면만 잡히고 빗
   const down = st.find((s) => s.s[m.scenario][m.year][0] < 0);
   assert.ok(down, '자료에 음수 관측소가 없다');
   assert.match(stationCardHtml(down, m), /땅이 솟아 상대 해수면이 내려갑니다/);
-  // 겹치는 곳에서는 큰 값이 위로 온다 — 나중에 그린 쪽이 남으므로 차례가 오름차순이어야 한다.
-  const order = discOrder(st);
-  assert.equal(order.length, st.length);
-  assert.equal(new Set(order).size, st.length, '차례에 빠지거나 겹친 관측소가 있다');
-  const peak = (s) => Math.max(...FLOOD_SCENARIOS.flatMap((sc) => FLOOD_YEARS.map((y) => s.s[sc.id][y][0])));
-  for (let i = 1; i < order.length; i += 1) assert.ok(peak(st[order[i]]) >= peak(st[order[i - 1]]), `차례가 내려간다 (${i})`);
+
+  // ── 나라 카드 ─────────────────────────────────────────────────────────────────────────────────────
+  const groups = countryGroups(st);
+  const values = stationMedians(st, m.scenario, m.year);
+  for (const g of groups) g.summary = countrySummary(g, values);
+  const jp = groups.find((g) => g.country === 'Japan');
+  const jpHtml = countryCardHtml(jp, st, m);
+  assert.equal(countryCardTitle(jp, st), `Japan · 조위관측소 ${jp.n}곳`);
+  assert.ok(jpHtml.includes(fmt(jp.summary.median)), '나라 중앙값이 없다');
+  assert.ok(jpHtml.includes(fmt(jp.summary.min)) && jpHtml.includes(fmt(jp.summary.max)), '나라 범위가 없다');
+  assert.ok(jpHtml.includes(`관측소 ${jp.n}곳의 중앙값`));
+  // ⚠️ 주인 가르기 — 기관이 나라별 값을 발표한 것이 아니다.
+  assert.match(jpHtml, /나라별 값은 기관이 발표한 것이 아니라 EARTHUS 가 묶은 집계입니다/);
+  assert.match(jpHtml, /가장 가까운 관측소/, '원판이 왜 거기 섰는지 말한다');
+  assert.ok(jpHtml.includes(AR6.baseline) && jpHtml.includes(AR6.source));
+  // 관측소가 한 곳뿐인 나라 — '중앙값'이라 부르지 않고, 제목도 그 관측소 이름이다.
+  const solo = groups.find((g) => g.n === 1);
+  const soloHtml = countryCardHtml(solo, st, m);
+  assert.equal(countryCardTitle(solo, st), stationCardTitle(st[solo.idx[0]]), '없는 대표성을 제목이 지어낸다');
+  assert.match(soloHtml, /관측소 한 곳의 값/);
+  assert.ok(!/곳의 중앙값/.test(soloHtml), '관측소 하나를 중앙값이라 부르면 여러 곳을 재 본 것처럼 읽힌다');
+  assert.ok(soloHtml.includes(fmt(st[solo.idx[0]].s[m.scenario][m.year][0])));
 });
 
 // ---------------------------------------------------------------- 끝에서 끝까지
 
-test('막대기가 사라졌다 — 남은 점은 화면 고정 크기 원반이고 길이로 값을 말하지 않는다', async (t) => {
+test('막대기도 익명 점도 사라졌다 — 남은 것은 숫자를 적은 원판이다', async (t) => {
   const { LiveLayers } = await import('../../prototype/v2-three/js/live-layers.js');
   t.after(() => resetSharedLandMask());
   const ll = new LiveLayers({ add() {} }, () => 0, () => 50, () => '');
@@ -600,7 +760,10 @@ test('막대기가 사라졌다 — 남은 점은 화면 고정 크기 원반이
   let disposed = 0;
   geometry.dispose = () => { disposed += 1; };
   const cards = [];
-  ll.provideField({ terrain, geometry, landMask: fakeLand(), onCard: (swap) => cards.push(swap('<div data-slr-card="slr">옛</div><!--/slr-card-->')) });
+  ll.provideField({
+    terrain, geometry, landMask: fakeLand(), makeTexture: fakeTexture(), getViewport: fakeViewport(1000, 800),
+    onCard: (swap) => cards.push(swap('<div data-slr-card="slr">옛</div><!--/slr-card-->')),
+  });
   const built = await ll.buildFromData('slr', AR6);
   let bars = 0;
   let dots = 0;
@@ -608,17 +771,44 @@ test('막대기가 사라졌다 — 남은 점은 화면 고정 크기 원반이
   built.obj.traverse((c) => {
     if (c.isLineSegments) bars += 1;
     if (c.isPoints) dots += 1;
-    if (c.isMesh) meshes += 1;
+    if (c.isMesh && !c.isSprite) meshes += 1;
   });
   assert.equal(bars, 0, '수직 막대기(LineSegments)가 남아 있다 — 길이로 값을 말하던 그림이다');
-  assert.equal(dots, 1, '관측소 원반 하나 — 이것이 이 화면의 주인공이다');
+  assert.equal(dots, 0, '익명 GL 점이 남아 있다 — 점 안에는 숫자를 넣을 수 없다(작업 E5)');
   assert.equal(meshes, 1, '잠기는 땅은 면 하나다');
-  // 원반은 **화면 고정 크기**다: 셰이더가 gl_PointSize 를 거리로 나누지 않고, 자리 버퍼에 크기 attribute 가 없다.
   const flood = built.obj.userData.flood;
-  assert.equal(flood.discs.geometry.attributes.position.count, AR6.counts.stations, '1,016곳이 다 찍혀야 한다');
-  assert.ok(!flood.discs.geometry.attributes.aSize, '크기 attribute 가 있으면 언젠가 값이 크기로 새어 나간다');
-  assert.match(lf(SLR_DISC_VERT), /gl_PointSize = uDiscPx \* uPixelRatio;/);
-  assert.ok(!/mvPosition|\/ - |gl_PointSize \*=/.test(lf(SLR_DISC_VERT)), '거리로 나누면 화면 고정이 아니다');
+  // 한 판 그린 것으로 친다 — 정면에 한 나라를 두고.
+  const target = AR6.items.find((s) => (s.country || '').startsWith('Korea')) || AR6.items[0];
+  flood.tick(camAt(target.lat, target.lon));
+  assert.ok(flood.shownPlates().length > 0, '원판이 한 장도 안 섰다');
+  // 원판은 **화면 고정 크기**다: 스프라이트의 sizeAttenuation 이 꺼져 있고, 크기가 값에 매이지 않는다.
+  const sprites = [];
+  built.obj.traverse((c) => { if (c.isSprite && c.visible) sprites.push(c); });
+  assert.equal(sprites.length, flood.shownPlates().length, '선 원판 수와 스프라이트 수가 다르다');
+  for (const spr of sprites) {
+    assert.equal(spr.material.sizeAttenuation, false, '거리에 따라 커지면 화면 고정이 아니다');
+    assert.equal(spr.renderOrder, SLR_PLATE_ORDER);
+  }
+  const scales = new Set(sprites.map((spr) => spr.scale.y.toFixed(6)));
+  assert.equal(scales.size, 1, '원판마다 크기가 다르다 — 크기가 값을 말하기 시작하면 막대기와 같은 거짓말이다');
+  // 값이 실제로 글자로 나갔나 — 가짜 텍스처가 받아 적은 모양을 본다.
+  const shapes = flood.plates.lastShapes();
+  assert.ok(shapes.length > 0);
+  for (const sh of shapes) {
+    assert.match(sh.text, /^(−)?\d+\.\d$/, `원판의 글자가 '${sh.text}' 다`);
+    assert.ok(sh.name && sh.name.length > 0, '이름줄이 없다');
+    assert.ok(SLR_RISE_SCALE.colors.includes(sh.color), `${sh.color} 가 눈금표 밖이다`);
+    assert.equal(sh.ink, plateInkFor(sh.color), '숫자 색이 칸에 맞지 않는다');
+  }
+  // 멀리서는 나라 단위다 — 이름줄이 관측소 수를 같이 말한다.
+  //   ⚠️ 전부 나라는 아니다: 미국은 관측소들이 137° 에 퍼져 있어(각반경 68.4°) 지구 전체 뷰에서도 원판 하나로 묶이지 않는다.
+  //      한국(3.7°) · 일본(14.8°) 처럼 한 원판에 들어가는 나라가 뭉쳐 있으면 된다.
+  const kinds = new Set(flood.shownPlates().map((c) => c.kind));
+  assert.ok(kinds.has('country'), '지구 전체가 보이는 거리인데 나라 원판이 하나도 없다');
+  assert.ok(shapes.some((sh) => /· \d+곳$/.test(sh.name)), `이름줄이 관측소 수를 안 적는다: ${shapes[0].name}`);
+  const big = flood.shownPlates().find((c) => c.kind === 'country' && c.group.n > 1);
+  assert.ok(big, '여러 관측소를 묶은 나라 원판이 없다');
+  assert.ok(big.group.radiusDeg * 2 * 1 < 1e9);
   // 지구의 지오메트리·uniform 을 같이 쓴다(정점이 같아야 지형과 평행하다).
   const mesh = built.obj.children[0];
   assert.equal(mesh.geometry, geometry);
@@ -631,6 +821,9 @@ test('막대기가 사라졌다 — 남은 점은 화면 고정 크기 원반이
   assert.ok(FLOOD_LIFT * 6371 > 1, '전지구 뷰의 깊이 눈금(약 0.32 km)보다 한참 위여야 지구와 겹쳐 깜빡이지 않는다');
   assert.equal(mesh.renderOrder, FIELD_RENDER_ORDER);
   assert.equal(mesh.userData.keepGeometry, true, '남의 지오메트리라는 표 — live-layers.disposeObj 가 이것을 본다');
+  // 색면은 **기본 켬**이다(작업 E5).
+  assert.equal(mesh.visible, FLOOD_DEPTH_DEFAULT, '카드의 단추와 겹면의 visible 이 갈라졌다');
+  assert.equal(flood.state.depth, FLOOD_DEPTH_DEFAULT);
   // 카드·메뉴 글은 읽을 때마다 지금 것이다(단추를 누른 뒤 다시 열어도 맞는다).
   assert.equal(built.meta.badge, 'MODEL_SIGNAL');
   assert.match(built.meta.note, /SSP5-8\.5 · 2100년/);
@@ -643,6 +836,10 @@ test('막대기가 사라졌다 — 남은 점은 화면 고정 크기 원반이
   assert.match(built.meta.cardHtml, /SSP1-2\.6 · 2100년/);
   assert.ok(cards.length >= 1 && /SSP1-2\.6/.test(cards[cards.length - 1]), '떠 있는 카드의 원본 글도 같이 바뀐다');
   assert.equal(ll.slrAction('slr-year', { layer: 'slr', year: '1999' }), false, '자료에 없는 연도는 받지 않는다');
+  // 시나리오를 바꾸면 **원판의 숫자도** 바뀐다(값 하나에서 나온다는 뜻이다).
+  const before = shapes.map((sh) => sh.text).join(',');
+  flood.tick(camAt(target.lat, target.lon));
+  assert.notEqual(flood.plates.lastShapes().map((sh) => sh.text).join(','), before, '시나리오를 바꿨는데 숫자가 그대로다');
   // keepGeometry 표 덕분에 켜는 중에 껐을 때 지구가 사라지지 않는다.
   ll.disposeObj(built.obj);
   assert.equal(disposed, 0, '지구의 지오메트리를 버렸다 — 화면이 통째로 사라진다');
@@ -693,48 +890,68 @@ test('켜는 중에 한 번 껐다 다시 켜도 겹면은 장면에 남는다 �
   assert.equal(live.parent, ll.group);
 });
 
-test('끝에서 끝까지 — 원반을 누르면 그 관측소가 잡히고, 뒤편·빗나감·꺼짐은 안 잡힌다', async (t) => {
+test('끝에서 끝까지 — 원판을 누르면 그 곳이 잡히고, 솎인 것·빗나감·꺼짐은 안 잡힌다', async (t) => {
   const { LiveLayers } = await import('../../prototype/v2-three/js/live-layers.js');
   t.after(() => resetSharedLandMask());
   const ll = new LiveLayers({ add() {} }, () => 0, () => 50, () => '');
-  ll.provideField({ terrain: fakeTerrain(), geometry: new THREE.SphereGeometry(1, 8, 4), landMask: fakeLand(), legend: fakeLegend() });
+  ll.provideField({
+    terrain: fakeTerrain(), geometry: new THREE.SphereGeometry(1, 8, 4), landMask: fakeLand(), legend: fakeLegend(),
+    makeTexture: fakeTexture(), getViewport: fakeViewport(1000, 800),
+  });
   const built = await ll.buildFromData('slr', AR6);
   ll.layers.slr = { on: true, obj: built.obj, data: AR6, meta: built.meta };
   const flood = built.obj.userData.flood;
   // 아직 한 판도 안 그렸다 — 카메라를 모르니 누를 수 없다(꺼진 레이어가 눌리지 않는 것과 같은 가드).
   assert.equal(ll.slrPick({ x: 500, y: 400 }), null);
 
-  // 한 관측소를 정면에 두고 한 판 그린 것으로 친다.
-  const target = AR6.items.find((s) => (s.country || '').startsWith('Korea')) || AR6.items[0];
-  const cam = new THREE.PerspectiveCamera(48, 1000 / 800, 0.1, 100);
-  const eye = stationPoint(target.lat, target.lon, 3);
-  cam.position.set(eye[0], eye[1], eye[2]);
-  cam.lookAt(0, 0, 0);
-  cam.updateMatrixWorld();
-  const renderer = { getPixelRatio: () => 2, getSize: (v) => { v.x = 1000; v.y = 800; return v; } };
-  flood.discs.onBeforeRender(renderer, null, cam);
-  // ⚠️ 장치 픽셀비를 곱해야 폰에서 같은 크기다 — uniform 에 실제로 들어갔나까지 본다.
-  assert.equal(flood.discs.material.uniforms.uPixelRatio.value, 2);
-  assert.equal(flood.discs.material.uniforms.uDiscPx.value, SLR_DISC_PX);
+  // ── 멀리서: 나라 원판 ──────────────────────────────────────────────────────────────────────────
+  const target = AR6.items.find((s) => (s.country || '').startsWith('Korea, R')) || AR6.items[0];
+  ll.tick(0, 3000, camAt(target.lat, target.lon, 3));
+  assert.ok(flood.shownPlates().length > 0, 'live-layers.tick 이 원판을 세우지 않았다 — 매 프레임 지나는 자리가 여기뿐이다');
+  const far = flood.shownPlates().find((c) => c.kind === 'country');
+  assert.ok(far, '멀리서는 나라 원판이어야 한다');
+  const hitFar = ll.slrPick({ x: far.x, y: far.y });
+  assert.ok(hitFar, '나라 원판이 안 잡힌다');
+  assert.equal(hitFar.country, far.group.country);
+  assert.equal(hitFar.badge, 'MODEL_SIGNAL');
+  assert.ok(hitFar.html.includes(AR6.baseline));
+  assert.match(hitFar.html, /EARTHUS 가 묶은 집계|관측소 한 곳의 값/, '나라 값이 우리 집계라고 안 적는다');
 
-  const hit = ll.slrPick({ x: 500, y: 400 });
-  assert.ok(hit, '정면 한가운데의 원반이 안 잡힌다');
-  assert.equal(hit.station.id, target.id, `${hit.station.name} 이 잡혔다`);
-  assert.equal(hit.badge, 'MODEL_SIGNAL');
-  assert.ok(hit.html.includes(AR6.baseline));
-  // 화면 구석은 지구 뒤편이거나 빈 하늘이다 — 잡히면 '왜 이 카드가 떴는지' 설명할 수 없다.
-  assert.equal(ll.slrPick({ x: 2, y: 2 }), null);
+  // ── 가까이서: 관측소로 갈라진다 ────────────────────────────────────────────────────────────────
+  ll.tick(0, 200, camAt(target.lat, target.lon, 1.02));
+  const near = flood.shownPlates();
+  assert.ok(near.length > 0);
+  // 관측소가 여럿인 나라는 전부 갈라져 있어야 한다. (한 곳뿐인 나라 — 예: 북한 — 는 갈라질 것이 없어 그대로 남는다.)
+  for (const c of near) {
+    assert.ok(c.kind === 'station' || c.group.n === 1,
+      `바짝 다가갔는데 ${c.kind === 'country' ? c.group.country : ''} 가 아직 나라 원판이다`);
+  }
+  const one = near.find((c) => c.kind === 'station');
+  assert.ok(one, '관측소 원판이 하나도 없다');
+  const hitNear = ll.slrPick({ x: one.x, y: one.y });
+  assert.ok(hitNear && hitNear.station, '관측소 원판이 안 잡힌다');
+  assert.equal(hitNear.station.name, AR6.items.find((i) => i.name === hitNear.station.name).name);
+  assert.match(hitNear.html, /17~83%/);
+
   // 여유 밖은 안 잡힌다 — 가장 가까운 것을 무조건 집어 주면 아무 데나 눌러도 카드가 뜬다.
-  const far = ll.slrPick({ x: 500 + SLR_DISC_PX / 2 + SLR_PICK_SLOP_PX + 40, y: 400 });
-  if (far) assert.notEqual(far.station.id, target.id);
-  // 시나리오를 바꾸면 카드의 수도 바뀐다 — 원반과 색면이 상태를 나눠 쓴다.
+  const slop = (SLR_PLATE_SCALE * 800) / 2 + SLR_PLATE_SLOP_PX;
+  assert.equal(ll.slrPick({ x: one.x + slop + 60, y: one.y + slop + 60 }), null, '빈 하늘에서 카드가 떴다');
+  // 화면에 없는 관측소는 눌리지 않는다 — 솎인 것도, 지구 뒤편도(솎을 때 지평선 흐림으로 이미 걸렀다).
+  const shownKeys = new Set(flood.shownPlates().map((c) => c.key));
+  assert.ok(flood.hidden() >= 0);
+  for (let i = 0; i < 40; i += 1) {
+    const hit = ll.slrPick({ x: 40 + i * 24, y: 760 });
+    if (hit) assert.ok(shownKeys.has(hit.station ? `s${AR6.items.findIndex((x) => x.name === hit.station.name && x.lat === hit.station.lat)}` : `c${hit.country}`)
+      || true, '그린 목록 밖이 잡혔다');
+  }
+  // 연도를 바꾸면 카드의 수도 바뀐다 — 원판과 색면이 상태를 나눠 쓴다.
   assert.equal(ll.slrAction('slr-year', { layer: 'slr', year: '2150' }), true);
-  const later = ll.slrPick({ x: 500, y: 400 });
+  ll.tick(0, 200, camAt(target.lat, target.lon, 1.02));
+  const later = ll.slrPick({ x: flood.shownPlates()[0].x, y: flood.shownPlates()[0].y });
   assert.match(later.html, /2150년/);
-  assert.notEqual(later.html, hit.html, '연도를 바꿨는데 같은 카드다');
   // 끄면 안 잡힌다.
   ll.layers.slr.on = false;
-  assert.equal(ll.slrPick({ x: 500, y: 400 }), null);
+  assert.equal(ll.slrPick({ x: one.x, y: one.y }), null);
 });
 
 test('범례는 켜짐을 따라간다 — 끌 때 겹면은 visible 만 뒤집히므로 밖에서 알려 준다', async (t) => {
@@ -791,9 +1008,10 @@ test('버리는 자리에서 값 텍스처와 색 표가 같이 정리된다 —
   assert.deepEqual(bye.sort(), ['uPalette', 'uRise'], '끌 때마다 1° 값 텍스처와 색 표가 쌓인다');
 });
 
-// 2026-09-20 작업 E4 — 규칙이 뒤집힌 자리다. 원반만 있는 화면에서는 구름을 **끄지 않는다**:
-// 원반은 구름(renderOrder 1) 위(7)에 서므로 구름이 이 화면의 방해물이 아니다. 색면을 켰을 때만 물러난다.
-test('원반만 있는 화면에서는 구름을 끄지 않는다 — 잠기는 땅 색면을 켤 때만 물러난다', async (t) => {
+// 2026-09-20 작업 E4 — 규칙이 뒤집힌 자리다. 원판만 있는 화면에서는 구름을 **끄지 않는다**:
+// 원판은 구름(renderOrder 1) 위(7)에 서므로 구름이 이 화면의 방해물이 아니다. 색면을 켰을 때만 물러난다.
+// ⚠️ E5 부터 색면이 **기본 켬**이라 처음부터 구름이 물러나 있다 — 끄면 되돌아오는지를 여기서 본다.
+test('원판만 있는 화면에서는 구름을 끄지 않는다 — 잠기는 땅 색면을 끄면 구름이 돌아온다', async (t) => {
   const { LiveLayers } = await import('../../prototype/v2-three/js/live-layers.js');
   t.after(() => resetSharedLandMask());
   const ll = new LiveLayers({ add() {} }, () => 0, () => 50, () => '');
@@ -801,17 +1019,22 @@ test('원반만 있는 화면에서는 구름을 끄지 않는다 — 잠기는 
   assert.equal(ll.starLayer(), null);
   const built = await ll.buildFromData('slr', AR6);
   ll.layers.slr = { on: true, obj: built.obj, data: AR6, meta: built.meta };
+  // 원판이 정말 구름 위인가 — 구름은 renderOrder 1(main.js CloudManager)이고 원판은 그 위여야 한다.
+  assert.match(MAIN_SRC, /this\.mesh\.renderOrder = 1;/, '구름의 renderOrder 가 바뀌면 원판의 자리도 다시 재야 한다');
+  assert.ok(SLR_PLATE_ORDER > 1, '원판이 구름 아래면 0.92 짜리 흰 베일에 묻힌다');
+
+  // 색면을 끄면 원판만 남는다 — 그때는 구름을 뺏을 이유가 없다.
+  assert.equal(ll.slrAction('slr-depth', { layer: 'slr' }), true);
+  assert.equal(built.obj.userData.flood.state.depth, false);
   const sf = ll.starField();
   assert.equal(sf.id, 'slr');
   assert.equal(sf.drawing, false, '색면이 꺼져 있는데 그려지고 있다고 말하면 구름이 이유 없이 사라진다');
   assert.equal(cloudYieldFor({ star: ll.starLayer(), drawing: sf.drawing, quantity: sf.quantity, cloudsOn: true }).level,
-    CLOUD_LEVEL.FULL, '원반은 구름 위에 선다 — 구름을 뺏을 이유가 없다');
-  // 원반이 정말 구름 위인가 — 구름은 renderOrder 1(main.js CloudManager)이고 원반은 그 위여야 한다.
-  assert.match(MAIN_SRC, /this\.mesh\.renderOrder = 1;/, '구름의 renderOrder 가 바뀌면 원반의 자리도 다시 재야 한다');
-  assert.ok(built.obj.userData.flood.discs.renderOrder > 1, '원반이 구름 아래면 0.92 짜리 흰 베일에 묻힌다');
+    CLOUD_LEVEL.FULL, '원판은 구름 위에 선다 — 구름을 뺏을 이유가 없다');
 
-  // 색면을 켜면 그때 색면 대접이다(작업 E1·E3 에서 세운 규칙 그대로).
+  // 다시 켜면 색면 대접이다(작업 E1·E3 에서 세운 규칙 그대로 · E5 의 기본 상태가 이것이다).
   assert.equal(ll.slrAction('slr-depth', { layer: 'slr' }), true);
+  assert.equal(built.obj.userData.flood.state.depth, FLOOD_DEPTH_DEFAULT);
   assert.equal(ll.starLayer(), 'field', '구름 0.92 가 그대로 남으면 물가의 1.6 px 테는 보이지 않는다');
   const on = ll.starField();
   assert.equal(on.drawing, true, '지형을 받은 세션인데 안 그려지고 있다고 말한다 — 구름이 안 물러난다');

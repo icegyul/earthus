@@ -217,10 +217,12 @@ test('겹면이 판을 굽고 셰이더에 물린다 — 다 굽기 전과 뒤�
     reachOptions: { res: 2 },        // 시험은 성긴 판으로 — 성질은 같고 1,036,800칸을 돌지 않는다
   });
   assert.equal(f.uniforms.uHasReach.value, 0, '굽기 전에는 가르지 않는다');
-  // 바다 도달 판은 '잠기는 땅' 색면의 고지다 — 그 색면은 기본 꺼짐이라 카드에 나오지 않는다(2026-09-20 작업 E4).
-  assert.doesNotMatch(f.cardHtml(), /바다와의 연결/, '색면이 꺼져 있는데 색면의 고지를 적는다');
-  assert.equal(f.handleAction('slr-depth', { layer: 'slr' }), true);
+  // 바다 도달 판은 '잠기는 땅' 색면의 고지다 — 그 색면은 **기본 켬**이라 처음부터 카드에 있다(2026-09-20 작업 E5).
   assert.match(f.cardHtml(), /바다와의 연결은 아직 가리지 않았습니다/);
+  // 색면을 끄면 그 고지도 사라진다 — 화면에 없는 것을 설명하지 않는다.
+  assert.equal(f.handleAction('slr-depth', { layer: 'slr' }), true);
+  assert.doesNotMatch(f.cardHtml(), /바다와의 연결/, '색면이 꺼져 있는데 색면의 고지를 적는다');
+  assert.equal(f.handleAction('slr-depth', { layer: 'slr' }), true);   // 다시 켠다(아래는 색면이 켜진 화면의 시험이다)
   await f.reachReady();
   assert.equal(f.uniforms.uHasReach.value, 1);
   assert.equal(f.model().reach, 'ready');

@@ -2437,6 +2437,12 @@ export class LiveLayers {
   tick(nowMs, altKm, camera) {
     const fd = this.layers.khoaflood;
     if (camera && this._floodDiscs && fd && fd.on) this._floodDiscs.tick(camera);
+    // 해수면 상승 전망의 **숫자 원판**은 스프라이트라 onBeforeRender 가 없다 — 매 프레임 지나는 자리가 여기뿐이다.
+    // 지평선 흐림만 고치고, 카메라가 충분히 움직였을 때에만 다시 솎는다(js/flood-overlay.js SLR_RECULL).
+    if (camera && this.layers.slr && this.layers.slr.on) {
+      const sf = this.floodOverlay();
+      if (sf && sf.tick) sf.tick(camera);
+    }
     for (const l of Object.values(this.layers)) {
       if (l.on && l.obj && l.obj.userData && l.obj.userData.animMats) {
         for (const m of l.obj.userData.animMats) m.uniforms.uTime.value = nowMs * 0.001;

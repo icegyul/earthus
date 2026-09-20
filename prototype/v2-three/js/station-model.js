@@ -17,9 +17,10 @@
 //   그대로 섞으면 okta 8(온흐림)이 10분법 8(7~8 구간)로 읽혀 흐림이 갬으로 둔갑한다.
 //   GTS 는 10분법으로 환산해서 쓰고, 환산했다는 사실을 카드에 적는다.
 import * as THREE from '../../vendor/three-r184.module.min.js';
-
-const AWS_URL = '/wind/kma-aws.json';
-const GTS_URL = '/wind/gts-global.json';
+// 두 관측 문서는 공용 저장소에서 받는다(surface-obs.js · 2026-09-20). 예전에는 여기서 '/wind/kma-aws.json' ·
+// '/wind/gts-global.json' 을 따로 받았다 — 바람 레이어·지구 위 관측 숫자와 같은 1.1 MB 를 메뉴마다 다시 내려받았고,
+// 주소가 페이지 기준 상대경로라 earthus.net(CloudFront) 밖에서는(로컬 개발 서버) 404 였다. 저장소는 S3 를 직접 읽는다.
+import { surfaceObs } from './surface-obs.js?v=1';
 
 // 고도별 예산. 멀리서 다 찍으면 기호가 서로 겹쳐 아무것도 안 읽힌다.
 const LOD = [
@@ -221,11 +222,7 @@ export class StationModel {
   // 두 자료를 그대로 나란히 둔다. 합치지 않는다 — 척도도 기관도 다르다.
   async load() {
     if (this.sites) return this.meta;
-    const get = (u) => fetch(u, { cache: 'no-cache' }).then((r) => {
-      if (!r.ok) throw new Error(`${u} ${r.status}`);
-      return r.json();
-    });
-    const [aws, gts] = await Promise.all([get(AWS_URL).catch(() => null), get(GTS_URL).catch(() => null)]);
+    const { aws, gts } = await surfaceObs.both();   // 한쪽이 실패하면 그쪽만 null — 예전 get(...).catch(() => null) 과 같은 뜻
     if (!aws && !gts) throw new Error('지상관측 자료를 받지 못했습니다');
     const sites = [];
     if (aws && aws.stations) {

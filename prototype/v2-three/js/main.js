@@ -37,6 +37,8 @@ const gfsFrames = sharedGfsFrames({ THREE });
 // 시간 하나(js/time-bus.js) — 타임라인이 가리키는 시각을 기온·바람·기압·관측 숫자가 전부 여기서 듣는다.
 // 예전에는 구름만 들었다(아래 onTimeOffset → clouds.setForecastOffset). v2 는 5일을 예보하는 서비스라 시간은 하나여야 한다.
 import { timeBus } from './time-bus.js?v=1';
+// 지상관측 두 문서(기상청 · GTS)는 공용 저장소(js/surface-obs.js)에서 받는다 — 바람·평년차·기입 모형·내 동네 카드가 같은 문서를 나눠 쓴다.
+import { surfaceObs } from './surface-obs.js?v=1';
 import { PopSculpture } from './pop-sculpture.js?v=13';
 import { PopMetricMenu } from './pop-metric-menu.js?v=1';
 import { QuickMenu } from './quick-menu.js?v=1';
@@ -3723,7 +3725,7 @@ async function main() {
       const [warn, air, aws, stn, tsuIdx] = await Promise.all([
         fetchS3('/events/kma-warn.json'),
         fetchS3('/wind/korea-air-obs.json'),
-        fetchS3('/wind/kma-aws.json'),
+        surfaceObs.doc('aws').catch(() => null),   // 공용 저장소 — 바람·관측 숫자가 이미 받아 뒀으면 다시 받지 않는다
         myEarth.stations ? Promise.resolve(null) : fetchS3('/events/kma-warn-stations.json'),
         // FOR ME × 시뮬레이션(2026-09-20) — 쓰나미 도달시간 색인(작다, 최근 30일). 실패해도 감시 판정은 그대로 돈다.
         fetchS3('/ocean/tsunami-eta.json').catch(() => null),
@@ -6303,6 +6305,7 @@ async function main() {
   // 위 객체 안이 아니라 따로 거는 이유: 같은 묶음의 다른 작업이 그 객체에 줄을 더하면 합칠 때 부딪힌다.
   window.__earthus.frames = gfsFrames;
   window.__earthus.time = timeBus;   // 콘솔 확인용: __earthus.time.offsetMs · validMs() · isNow()
+  window.__earthus.surfaceObs = surfaceObs;   // 콘솔 확인용: __earthus.surfaceObs.stats() → 관측 문서를 파일마다 실제로 몇 번 받았나
 
   let last = performance.now();
   const tickBody = (now) => {

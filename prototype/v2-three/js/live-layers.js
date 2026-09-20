@@ -8,6 +8,8 @@ import { bulletinRecords, bulletinTimesHtml, escapeHtml, sourceTimeLabel, SEA_LE
 import { buildOceanMaskAsync, oceanMaskAlphaRGBA, oceanMaskCardLine, erodedGridNodes } from './ocean-land-mask.js?v=1';
 // W1 셰이더 색면(기온부터) — 프레임 저장소·시간 버스·범례·라벨을 묶는 접착제는 저 파일에 있다. 여기에는 거는 자리만 둔다.
 import { activeField, clearFieldLayers, isFieldLayerId, toggleFieldLayer } from './field-layer.js?v=1';
+// 지상관측 두 파일(기상청 · GTS)은 공용 저장소에서 받는다 — 바람·평년차·기입 모형·지구 위 관측 숫자가 같은 문서를 나눠 쓴다(surface-obs.js).
+import { surfaceObs } from './surface-obs.js?v=1';
 
 // CloudFront(earthus.net)는 /clouds/* 외 경로에 CORS 헤더를 안 붙인다 → 1.0처럼 S3 직접 (CORS *)
 const S3 = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
@@ -574,7 +576,7 @@ export class LiveLayers {
       case 'khoaflood': return fetchJson('/ocean/khoa/flood-index.json', 20000);
       // 평년 대비 기온 — 실황과 평년을 같은 지점 id로 맞춰 뺀다
       case 'tempanom': return Promise.all([
-        fetchJson('/wind/kma-aws.json', 25000),
+        surfaceObs.doc('aws'),
         fetchJson('/wind/kma-normal.json', 30000),
       ]).then(([aws, norm]) => {
         if (!aws || !norm) throw new Error('실황 또는 평년값 없음');

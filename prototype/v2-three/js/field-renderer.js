@@ -26,6 +26,17 @@
 //   idx = Σ step(uBreaks[i], v)  — 아래 경계 포함 · 위 경계 제외 · float32 비교. 남는 칸은 BREAK_PAD(3e38)라 늘 0 을 더한다.
 //   JS 로 옮긴 shaderBandIndex 가 모든 경계와 그 바로 아래에서 field-scales.bandIndex 와 같은지 시험이 본다.
 //
+// ── 무엇을 그 규칙에 넣나 — **읽히는 값**(눈금값)이다 ─────────────────────────────────────────────────────────
+//   규칙에 넣는 값은 보간값 v 가 아니라 v + 반 눈금(기온 0.25°C)이다. 풀어 쓰면 '가장 가까운 눈금값의 칸':
+//     step(경계, v + q/2)  ⇔  round(v/q)·q ≥ 경계        (q = 자료의 눈금 0.5°C · 경계가 눈금 위에 있을 때 · 동률은 위로)
+//   이유 ① 경계(30°C)가 자료의 눈금 위에 있어서, 보간값을 그대로 넣으면 'v ≥ 30' 인 곳은 30.0 고원과 그 고원을 잇는 **격자선**뿐이다 —
+//          색 경계가 0.5° 칸의 모서리를 따라 계단으로 꺾인다(확대하면 픽셀 그림이 된다). 지시서 W1-2 가 바란 것은 '매끄러운 곡선'이다.
+//          반 눈금을 더하면 경계는 29.5 와 30.0 사이 **경사면의 한가운데**를 지난다 — 마칭 스퀘어가 긋는 그 곡선이다.
+//        ② 누른 자리의 값은 눈금으로 반올림해 '~30.0 °C' 라고 말한다(field-layer.js). 보간값 29.8 을 '25–30' 색으로 칠해 놓고
+//          '~30.0 °C' 라고 말하면 색과 글자가 어긋난다. 눈금값으로 칠하면 **칠해진 칸 = 읽히는 값의 칸**이다(시험이 전 구간을 훑는다).
+//        ③ 자료는 반올림으로 만들어졌다(handler.py). 30.0 으로 적힌 칸의 참값은 29.75 ~ 30.25 다 — '30 이상' 칸에 넣는 쪽이 자료의 뜻이다.
+//   등치선도 같은 값(v + q/2)으로 긋는다 — 선과 색 경계가 늘 같은 자리다. 풍속(크기 모드)은 경계가 눈금 위에 있지 않아 0 을 더한다.
+//
 // ── 등치선 ──────────────────────────────────────────────────────────────────────────────────────────────────
 //   기법은 main.js 의 해저 등심선과 같다(값을 간격으로 나눠 fract · 굵기는 fwidth 로 화면 px 에 묶는다 — 줌과 무관).
 //   다른 점 둘:
@@ -118,6 +129,18 @@ export const scaleUniforms = (scale) => ({
   bandCount: bandCount(scale),
   palette: paletteRGBA(scale),
 });
+
+/**
+ * 구간과 등치선을 정할 때 보간값에 더하는 반 눈금(머리말 '무엇을 그 규칙에 넣나'). 눈금은 매니페스트의 디코드 scale 이다 — 여기 적지 않는다.
+ * 크기 모드(풍속)는 0: 두 성분의 크기는 눈금 위에 있지 않고 경계(1·5·10…)도 그렇다.
+ */
+export const halfStepOf = (channels, mode = 'scalar') => {
+  const c = channels && channels[0];
+  return (mode === 'scalar' && c && c.transfer === 'linear' && c.scale > 0) ? c.scale / 2 : 0;
+};
+
+/** 셰이더가 한 픽셀을 칠하는 칸: 읽히는 값(v + 반 눈금)을 구간 규칙에 넣는다. */
+export const paintedBandIndex = (breaksPadded, v, halfStep = 0) => shaderBandIndex(breaksPadded, v + halfStep);
 
 /** 셰이더의 구간 찾기를 그대로 옮긴 것:  idx = Σ step(uBreaks[i], v).  step(edge, x) = x >= edge ? 1 : 0 · 둘 다 float32. */
 export const shaderBandIndex = (breaksPadded, v) => {
@@ -328,6 +351,7 @@ uniform vec3 uLineColor;
 uniform vec4 uLineStyle;     // 보통 굵기px · 굵은 굵기px · 보통 알파 · 굵은 알파
 uniform vec2 uLineFade;      // 이웃 선 간격(px): 사라지는 값 · 다 보이는 값
 uniform float uGradEps;
+uniform float uHalfStep;     // 자료 눈금의 절반(기온 0.25) — 구간과 등치선은 '읽히는 값' v + uHalfStep 으로 정한다(머리말)
 uniform float uPxScale;      // 장치 픽셀비 — 굵기는 CSS px 로 정한다
 #ifdef FIELD_MASK_OCEAN
 uniform sampler2D uHeightMap;
@@ -404,22 +428,23 @@ void main() {
   float v = c.x;
 #endif
 
-  // 색은 양자화한다 — field-scales.js 의 구간 규칙 그대로(아래 경계 포함). 팔레트는 한 번만 읽는다.
+  // 색은 양자화한다 — field-scales.js 의 구간 규칙 그대로(아래 경계 포함). 넣는 값은 읽히는 값(v + 반 눈금)이다. 팔레트는 한 번만 읽는다.
+  float vs = v + uHalfStep;
   float idx = 0.0;
-  for (int i = 0; i < FIELD_MAX_BREAKS; i++) idx += step(uBreaks[i], v);
+  for (int i = 0; i < FIELD_MAX_BREAKS; i++) idx += step(uBreaks[i], vs);
   vec4 band = texture2D(uPalette, vec2((idx + 0.5) / uBandCount, 0.5));
   float bandA = band.a * uOpacity;
 
   // 등치선
   float line = 0.0;
   if (uIsoOn > 0.5) {
-    float grad = fwidth(v);
-    line = intervalLine(v, grad, uIsoInterval, uLineStyle.x * uPxScale) * uLineStyle.z;
-    line = max(line, intervalLine(v, grad, uIsoMajor, uLineStyle.y * uPxScale) * uLineStyle.w);
+    float grad = fwidth(vs);
+    line = intervalLine(vs, grad, uIsoInterval, uLineStyle.x * uPxScale) * uLineStyle.z;
+    line = max(line, intervalLine(vs, grad, uIsoMajor, uLineStyle.y * uPxScale) * uLineStyle.w);
     for (int i = 0; i < FIELD_MAX_LEVELS; i++) {
       if (float(i) >= uIsoLevelCount) break;
       float wide = step(uLineStyle.x + 0.01, uIsoWidths[i]);
-      float cov = lineCover(uIsoLevels[i] - v, grad, uIsoWidths[i] * uPxScale);
+      float cov = lineCover(uIsoLevels[i] - vs, grad, uIsoWidths[i] * uPxScale);
       line = max(line, cov * (uLineStyle.z + (uLineStyle.w - uLineStyle.z) * wide));
     }
   }
@@ -481,6 +506,7 @@ export class FieldRenderer {
       uLineStyle: { value: new THREE.Vector4(FIELD_LINE.minorWidthPx, FIELD_LINE.majorWidthPx, FIELD_LINE.minorAlpha, FIELD_LINE.majorAlpha) },
       uLineFade: { value: new THREE.Vector2(FIELD_LINE.fadePx[0], FIELD_LINE.fadePx[1]) },
       uGradEps: { value: FIELD_GRAD_EPS },
+      uHalfStep: { value: 0 },
       uPxScale: { value: 1 },
       // 지형 — main.js 의 uniform **객체**를 그대로 쓴다. 과장·고도맵이 바뀌면 저쪽이 value 를 고치고 이쪽은 같은 객체를 읽는다.
       uHeightMap: t.uHeightMap || { value: null },
@@ -551,6 +577,7 @@ export class FieldRenderer {
     this.uniforms.uUv.value.set(uv.su, uv.ou, uv.sv, uv.ov);
     this.uniforms.uGridSize.value.set(grid.ni, grid.nj);
     this.uniforms.uWrapX.value = grid.wraps === false ? 0 : 1;
+    this.uniforms.uHalfStep.value = halfStepOf(channels, this.mode);
   }
 
   /** 두 프레임과 그 사이 비율. texA 가 없으면 숨는다 — 없는 자료를 빈 색으로 그리지 않는다. */

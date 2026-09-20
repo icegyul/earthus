@@ -29,7 +29,7 @@ import { timeBus as sharedTimeBus } from './time-bus.js?v=1';
 import { sharedGfsFrames } from './gfs-frames.js?v=1';
 import { fieldLegend as sharedLegend } from './field-legend.js?v=1';
 import { bandColor, formatValue, isolineSpec, scaleOf } from './field-scales.js?v=1';
-import { FieldRenderer } from './field-renderer.js?v=1';
+import { FieldRenderer, halfStepOf } from './field-renderer.js?v=1';
 import { FIELD_LABEL_CAP, FieldLabels, labelLevels, labelText, pickLabelSpots, thinField } from './field-labels.js?v=1';
 
 // 레이어 id → 무엇을 어떻게 그리나. 레이어 id·현상 id 는 개명하지 않는다(현상 레지스트리 규칙) — 'tempgrid' 그대로다.
@@ -495,7 +495,7 @@ export class FieldLayer {
       const iso = isolineSpec(this.scale, this.isoChoice);
       const levels = labelLevels(iso, this.thin.min, this.thin.max);
       const cap = (this.deps.isPhone ? FIELD_LABEL_CAP.phone : FIELD_LABEL_CAP.desktop) * 2;
-      return pickLabelSpots(this.thin, levels, { maxTotal: cap })
+      return pickLabelSpots(this.thin, levels, { maxTotal: cap, shift: halfStepOf(spec.channels, this.desc.mode) })
         .map((s) => ({ lat: s.lat, lon: s.lon, level: s.level, text: labelText(this.scale, s.level) }));
     });
   }

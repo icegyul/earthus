@@ -13,7 +13,8 @@ import * as THREE from '../../prototype/vendor/three-r184.module.min.js';
 import {
   FIELD_FRAG, FIELD_GRAD_EPS, FIELD_LIFT, FIELD_LINE, FIELD_MAX_BREAKS, FIELD_MAX_LEVELS, FIELD_RENDER_ORDER,
   FIELD_TERRAIN_GLSL, FIELD_VERT, FieldRenderer,
-  gridCoordOf, intervalLineCoverage, isolineAlpha, isolineUniforms, lineCoverage, scaleUniforms, shaderBandIndex, shaderValueAt,
+  gridCoordOf, halfStepOf, intervalLineCoverage, isolineAlpha, isolineUniforms, lineCoverage, paintedBandIndex, scaleUniforms,
+  shaderBandIndex, shaderValueAt,
 } from '../../prototype/v2-three/js/field-renderer.js';
 import {
   BREAK_PAD, FIELD_SCALES, SCALE_IDS, bandIndex, defineScale, isolineSpec, legendModel, scaleOf,
@@ -102,10 +103,37 @@ test('셰이더의 구간 찾기는 모든 눈금 · 모든 경계에서 field-s
   assert.deepEqual([35, 34.999, -10, -10.001].map((v) => shaderBandIndex(t, v)), [10, 9, 1, 0]);
 });
 
+test('칠해진 칸 = 읽히는 값의 칸 — 보간값을 0.5°C 눈금으로 반올림한 값을 구간 규칙에 넣은 것과 전 구간에서 같다', () => {
+  const temp = scaleOf('temp');
+  const { breaks } = scaleUniforms(temp);
+  const chans = [{ transfer: 'linear', scale: 0.5, offset: -80 }];
+  const h = halfStepOf(chans, 'scalar');
+  assert.equal(h, 0.25, '반 눈금은 매니페스트의 디코드 scale 에서 온다');
+  // −80 ~ +47.5°C 를 1/64°C 걸음으로 훑는다(2의 거듭제곱이라 동률 0.25 · 0.75 도 정확히 밟는다).
+  for (let k = -80 * 64; k <= 47.5 * 64; k += 1) {
+    const v = k / 64;
+    const shown = Math.round(v / 0.5) * 0.5;                 // 누른 자리에서 '~30.0 °C' 라고 말하는 그 값(field-layer.js readoutOf)
+    assert.equal(paintedBandIndex(breaks, v, h), bandIndex(temp, shown), `${v} → 읽히는 값 ${shown}`);
+  }
+  // 경계 30 의 색은 29.75 에서 바뀐다 — 29.5 고원과 30.0 고원 사이 경사면의 한가운데다(격자선을 따라 꺾이지 않는다).
+  assert.deepEqual([29.74, 29.75, 30].map((v) => paintedBandIndex(breaks, v, h)), [8, 9, 9]);
+  // 눈금값 그 자체(격자점 · 고원)는 반 눈금을 더해도 제 칸이다.
+  for (let b = 0; b <= 255; b += 1) assert.equal(paintedBandIndex(breaks, b * 0.5 - 80, h), bandIndex(temp, b * 0.5 - 80));
+  // 풍속(크기 모드)은 더하지 않는다. log 식 필드도.
+  assert.equal(halfStepOf([{ transfer: 'linear', scale: 0.5 }, { transfer: 'linear', scale: 0.5 }], 'magnitudeRG'), 0);
+  assert.equal(halfStepOf([{ transfer: 'log10', logLo: 0, logSpan: 1 }], 'scalar'), 0);
+  const r = new FieldRenderer({ scale: temp, segments: [8, 4] });
+  r.setField({ channels: chans, uv: { su: 1, ou: 0, sv: 1, ov: 0 }, grid: { ni: 720, nj: 361 } });
+  assert.equal(r.uniforms.uHalfStep.value, 0.25);
+  r.dispose();
+});
+
 test('셰이더 소스 — 값을 보간하고 색은 양자화한다: 팔레트는 한 번 읽고 구간색끼리 섞는 연산이 없다', () => {
   const frag = lf(FIELD_FRAG);
   assert.equal((frag.match(/texture2D\(uPalette/g) || []).length, 1, '팔레트를 두 번 읽으면 두 색을 섞을 길이 생긴다');
-  assert.match(frag, /for \(int i = 0; i < FIELD_MAX_BREAKS; i\+\+\) idx \+= step\(uBreaks\[i\], v\);/, '구간 규칙 = Σ step(경계, 값)');
+  assert.match(frag, /float vs = v \+ uHalfStep;\s+float idx = 0\.0;\s+for \(int i = 0; i < FIELD_MAX_BREAKS; i\+\+\) idx \+= step\(uBreaks\[i\], vs\);/,
+    '구간 규칙 = Σ step(경계, 읽히는 값)');
+  assert.match(frag, /float grad = fwidth\(vs\);\s+line = intervalLine\(vs, grad, uIsoInterval,/, '등치선도 같은 값으로 긋는다 — 선과 색 경계가 같은 자리다');
   assert.match(frag, /vec2\(\(idx \+ 0\.5\) \/ uBandCount, 0\.5\)/, '칸 한가운데를 읽는다');
   assert.doesNotMatch(frag, /\bmix\s*\(/, '프래그먼트에 mix() 가 없다 — 값의 보간도 a + (b − a)·t 로 직접 쓴다');
   // band.rgb 가 다른 색과 만나는 곳은 등치선을 얹는 한 줄뿐이고 상대는 상수 uLineColor 다.
@@ -163,25 +191,41 @@ test('경사면에서는 선이 서고, 주 레벨(10°C 마다)이 더 굵고 �
   assert.equal(isolineAlpha(29.9, grad, isolineUniforms(isolineSpec(scaleOf('temp'), '5'), false)), 0);
 });
 
-test('선은 레벨의 아래쪽에만 선다 — 8bit 고원의 양쪽 가장자리에 두 줄이 서지 않는다', () => {
-  // 화면 한 줄을 훑는다: 29.0 → 30.0 경사 · 30.0 고원 40px · 30.0 → 31.0 경사 (0.5°C 눈금 자료를 이중선형으로 이은 모양).
+// 화면 한 줄을 훑어 선이 몇 줄 서는지 센다. values = 픽셀마다의 보간값 · h = 반 눈금. 기울기는 이웃 픽셀의 차(fwidth 자리).
+const scanLine = (values, h, iso) => {
+  const vs = values.map((v) => v + h);
+  const alpha = vs.map((v, i) => isolineAlpha(v, Math.abs(vs[Math.min(vs.length - 1, i + 1)] - vs[Math.max(0, i - 1)]) / 2, iso));
+  let runs = 0;
+  for (let i = 0; i < alpha.length; i += 1) if (alpha[i] > 0.3 && !(alpha[i - 1] > 0.3)) runs += 1;
+  const first = alpha.findIndex((a) => a > 0.3);
+  const last = alpha.length - 1 - [...alpha].reverse().findIndex((a) => a > 0.3);
+  return { alpha, runs, first, last, edge: vs.findIndex((v) => v >= 30) };
+};
+
+test('선은 색 경계의 아래쪽 한 곳에만 선다 — 8bit 고원의 양쪽 가장자리에 두 줄이 서지 않는다', () => {
+  // 29.0 → 30.0 경사 · 30.0 고원 40px · 30.0 → 31.0 경사 (0.5°C 눈금 자료를 이중선형으로 이은 모양).
   const px = [];
   for (let x = 0; x < 20; x += 1) px.push(29 + x / 20);
   for (let x = 0; x < 40; x += 1) px.push(30);
   for (let x = 0; x <= 20; x += 1) px.push(30 + x / 20);
   const iso = isolineUniforms(isolineSpec(scaleOf('temp'), '5'), true);
-  const alpha = px.map((v, i) => {
-    const grad = Math.abs(px[Math.min(px.length - 1, i + 1)] - px[Math.max(0, i - 1)]) / 2;   // 화면 기울기(fwidth 자리)
-    return isolineAlpha(v, grad, iso);
-  });
-  let runs = 0;
-  for (let i = 0; i < alpha.length; i += 1) if (alpha[i] > 0.3 && !(alpha[i - 1] > 0.3)) runs += 1;
-  assert.equal(runs, 1, `30°C 선은 한 줄이어야 한다 (${runs}줄)`);
-  const first = alpha.findIndex((a) => a > 0.3);
-  const last = alpha.length - 1 - [...alpha].reverse().findIndex((a) => a > 0.3);
-  assert.ok(first >= 16 && last <= 22, `선은 v < 30 과 v ≥ 30 의 경계(20px 부근) — 색 경계와 같은 자리에 선다 (${first}~${last})`);
-  assert.ok(alpha.slice(24, 58).every((a) => a === 0), '고원 한가운데에는 아무것도 없다');
-  assert.ok(alpha.slice(62).every((a) => a === 0), '고원의 위쪽 가장자리에 둘째 선이 없다');
+  const breaks = scaleUniforms(scaleOf('temp')).breaks;
+  const s = scanLine(px, 0.25, iso);
+  assert.equal(s.runs, 1, `30°C 선은 한 줄이어야 한다 (${s.runs}줄)`);
+  assert.equal(s.edge, 15, '색 경계는 읽히는 값이 30 이 되는 곳 — 보간값 29.75 · 경사면의 한가운데');
+  assert.equal(paintedBandIndex(breaks, px[14], 0.25), 8);
+  assert.equal(paintedBandIndex(breaks, px[15], 0.25), 9);
+  assert.ok(s.first >= s.edge - 4 && s.last === s.edge - 1, `선은 색 경계 바로 아래에 붙어 선다 (${s.first}~${s.last} · 경계 ${s.edge})`);
+  assert.ok(s.alpha.slice(s.edge).every((a) => a === 0), '경계 위쪽(30 이상 칸) · 고원 · 고원의 먼 가장자리에는 선이 없다');
+  // 두 프레임을 반씩 섞은 순간: 29.5 고원(A)과 30.0 고원(B)이 겹친 곳은 보간값 29.75 = 읽히는 값 30.0 의 고원이 된다.
+  // 고원 전체가 선으로 번지지 않고, 고원의 양쪽이 아니라 아래쪽 한 곳에만 선다.
+  const mixed = [];
+  for (let x = 0; x < 20; x += 1) mixed.push(29.25 + (x / 20) * 0.5);
+  for (let x = 0; x < 40; x += 1) mixed.push(29.75);
+  for (let x = 0; x <= 20; x += 1) mixed.push(29.75 + (x / 20) * 0.5);
+  const m = scanLine(mixed, 0.25, iso);
+  assert.equal(m.runs, 1);
+  assert.ok(m.alpha.slice(m.edge).every((a) => a === 0));
 });
 
 test('선이 화면 픽셀보다 촘촘해지면 스스로 사라진다', () => {

@@ -116,6 +116,18 @@ test('날짜변경선 — 경도 180° 를 품은 원도 끊기지 않은 한 �
   assert.ok(traceContours(open, 30).length >= 2);
 });
 
+test('라벨은 셰이더의 선을 따라간다 — 선이 반 눈금 아래(v = 레벨 − 0.25)에 서면 라벨도 거기 선다', () => {
+  const C = [10, -30];
+  const thin = thinField({ pxA: frame(cone(...C)), channels: TEMP, grid: GRID });
+  const plain = pickLabelSpots(thin, [20], {});
+  const shifted = pickLabelSpots(thin, [20], { shift: 0.25 });
+  assert.ok(plain.length >= 3 && shifted.length >= 3);
+  // 원뿔은 1° 에 0.5°C 다 — 19.75°C 선은 20°C 선보다 0.5° 바깥이다. 글자는 그대로 20 이다.
+  const mean = (list) => list.reduce((s, p) => s + ang(p.lat, p.lon, ...C), 0) / list.length;
+  assert.ok(Math.abs(mean(shifted) - mean(plain) - 0.5) < 0.35, `${mean(plain).toFixed(2)}° → ${mean(shifted).toFixed(2)}°`);
+  assert.ok(shifted.every((s) => s.level === 20));
+});
+
 test('두 프레임 사이에서 흔들리는 곳보다 가만있는 곳에 라벨을 세운다', () => {
   // 위도에 따라 내려가는 기온(가로 등온선). 동반구는 두 프레임이 같고 서반구는 일교차처럼 8°C 흔들린다.
   const base = (lat) => 30 - Math.abs(lat) * 0.6;

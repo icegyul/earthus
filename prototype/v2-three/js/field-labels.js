@@ -12,6 +12,7 @@
 //   · 그 대가: 두 프레임 사이에서 선은 움직이는데 라벨은 서 있다. 그래서 자리는 **두 프레임의 가운데 값**((A+B)/2)에서 찾고
 //     (어긋남이 3시간치가 아니라 1.5시간치가 된다), 두 프레임의 차가 작은 곳(바다 · 일교차가 작은 곳)을 먼저 고른다.
 //   · 선이 색 경계와 같은 자리에 서도록 안/밖 규칙을 색면과 맞췄다: '안' = v ≥ 레벨(구간 규칙의 '아래 경계 포함').
+//     셰이더는 구간과 선을 '읽히는 값'(v + 반 눈금)으로 정한다(field-renderer.js 머리말) — 그래서 자리는 레벨 − 반 눈금의 선에서 찾는다(shift).
 //
 // v1 의 contour-math.js 를 들여오지 않았다. 지시서 W1-4 는 그 파일을 '수정 없이 v2 로' 쓰라고 했지만, 이 묶음의 작업 지시가
 // 그것을 뒤집었다 — v2 모듈은 prototype/js/ 를 런타임에 import 하지 않는다(v1 과 v2 는 다른 서비스다). 여기 것은 v2 의 것으로 새로 지었고
@@ -213,11 +214,13 @@ export const traceContours = (t, level) => {
  * 라벨 자리 고르기.  → [{ lat, lon, level, text? }] 우선순위 순(앞의 것이 먼저 보인다).
  *   thin    thinField 의 결과 · levels  labelLevels 의 결과
  *   한 선 위에서는 alongDeg 마다 한 자리를 잡되, 그 둘레에서 두 프레임의 차(spread)가 가장 작은 꼭짓점을 고른다.
+ *   shift  셰이더가 구간·등치선을 정할 때 값에 더하는 반 눈금(field-renderer.js halfStepOf). 선은 v + shift = 레벨, 곧 v = 레벨 − shift 에 선다 —
+ *          라벨도 그 선을 따라간다(글자는 레벨 그대로 '20°C').
  *   전체에서는 긴 선부터, 이미 고른 자리와 minSepDeg 이상 떨어진 것만, maxTotal 개까지.
  */
 export const pickLabelSpots = (thin, levels, {
   maxTotal = FIELD_LABEL_CAP.desktop * 2, minSepDeg = FIELD_LABEL_MIN_SEP_DEG, minLineDeg = FIELD_LABEL_MIN_LINE_DEG,
-  alongDeg = FIELD_LABEL_ALONG_DEG, maxLat = FIELD_LABEL_MAX_LAT,
+  alongDeg = FIELD_LABEL_ALONG_DEG, maxLat = FIELD_LABEL_MAX_LAT, shift = 0,
 } = {}) => {
   const spreadAt = (lon, lat) => {
     const i = Math.round((wrapLon(lon) - thin.lon0) / thin.dLon);
@@ -227,7 +230,7 @@ export const pickLabelSpots = (thin, levels, {
   };
   const cands = [];
   for (const level of levels) {
-    for (const line of traceContours(thin, level)) {
+    for (const line of traceContours(thin, level - shift)) {
       if (line.lengthDeg < minLineDeg) continue;
       const count = Math.max(1, Math.min(8, Math.round(line.lengthDeg / alongDeg)));
       // 꼭짓점마다 선을 따라 잰 거리

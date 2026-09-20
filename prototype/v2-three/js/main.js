@@ -18,7 +18,7 @@ import { attachEvidencePopover } from './evidence-popover.js?v=1';
 import { currentTier } from './report-center.js?v=2';
 import { decideCapabilityAccess, lockExplanation, TIER } from '../../js/access-mode.js';
 import { evaluateWatch, myZone, loadWatch, saveWatch } from './watch.js?v=1';
-import { LiveLayers } from './live-layers.js?v=39-information';
+import { LiveLayers, newsChipOpacity } from './live-layers.js?v=39-information';
 import { StationModel } from './station-model.js?v=2';
 import { AskEarth } from './ask-earth.js?v=3';
 import { i18n } from './i18n.js?v=11';
@@ -39,6 +39,9 @@ const gfsFrames = sharedGfsFrames({ THREE });
 import { timeBus } from './time-bus.js?v=1';
 // 지상관측 두 문서(기상청 · GTS)는 공용 저장소(js/surface-obs.js)에서 받는다 — 바람·평년차·기입 모형·내 동네 카드가 같은 문서를 나눠 쓴다.
 import { surfaceObs } from './surface-obs.js?v=1';
+// 지구 위 실측 숫자(js/obs-labels.js · W1 ⑦) — 기온 색면이 켜져 있고 타임라인이 '지금'일 때만 관측소 값을 찍는다.
+import { createObsLabels, obsCardHtml, obsCardTitle } from './obs-labels.js?v=1';
+let obsLabels = null;   // main() 안에서 만든다. 클릭 핸들러가 그보다 먼저 정의되므로 extScene 처럼 모듈 자리에 둔다
 import { PopSculpture } from './pop-sculpture.js?v=13';
 import { PopMetricMenu } from './pop-metric-menu.js?v=1';
 import { QuickMenu } from './quick-menu.js?v=1';
@@ -2810,6 +2813,16 @@ async function main() {
     // 색면(기온)이 켜져 있으면 누른 자리의 모델값을 범례와 그 카드에 적는다 — 프레임의 CPU 사본에서 읽는다(네트워크 0건).
     // 아래의 선택 흐름(확장 화면·여행·해구·국가·해상)은 그대로 이어진다. 색면이 꺼져 있으면 아무 일도 없다.
     liveLayers.fieldProbe(lat, lon);
+    // 지구 위 관측 숫자(OBS)를 눌렀으면 그 지점 카드가 먼저다 — 라벨은 무엇보다 위에 그려지므로 누른 사람이 본 것도 그것이다.
+    // 찍혀 있는 라벨만 잡힌다(기온 색면 ON · 타임라인 '지금'). 값·관측 시각·출처는 전부 문서에서 온다.
+    const ob = obsLabels && obsLabels.pick({ x: e.clientX, y: e.clientY });
+    if (ob) {
+      focus.clear();
+      const lang = i18n.ko ? 'ko' : 'en';
+      showNote(obsCardTitle(ob, lang), obsCardHtml(ob, { lang }), ob.badge);
+      shell.refreshFlyout();
+      return;
+    }
     // 해구 표시가 켜져 있으면 해구선 우선 — 바다 클릭이 해상 실황으로 새지 않게
     // 여행 씬이 켜져 있으면 시군구 비콘 우선 — 근거 5줄 카드
     // 확장 화면(취미)이 켜져 있으면 그 표시가 우선 — 해변·활공장·거북 같은 것을 눌렀을 때
@@ -3196,6 +3209,16 @@ async function main() {
   });
   liveLayers.windLayer = windLayer;
   window.__earthusWind = windLayer;   // 콘솔 확인용: __earthusWind.state()
+  // 지구 위 실측 숫자 — 보임은 tick 에서 기온 레이어('tempgrid')의 켜짐만 읽어 넘기고, '지금'인지는 부품이 시간 버스에서 직접 듣는다.
+  // 지평선 흐림은 뉴스 네모칸의 식(newsChipOpacity)을 그대로 넣는다 — 같은 식을 두 벌로 만들지 않는다.
+  obsLabels = createObsLabels({
+    THREE, scene, timeBus,
+    getData: () => surfaceObs.both(),
+    surfR: (la, lo) => liveLayers.surfR(la, lo, 0.001),
+    horizonOpacity: newsChipOpacity,
+    isPhone: () => isMobileUA,
+    getExagger: () => uniforms.uExagger.value,
+  });
   seafloor = new SeaFloor(scene, heightAtJs, dataBadge);
   travel = new TravelScene(scene, heightAtJs, () => uniforms.uExagger.value);
   // 확장 화면(LAB·취미)이 쓰는 카메라 이동 — askTools.flyTo 와 같은 식 (경도는 가까운 쪽으로)
@@ -6306,6 +6329,8 @@ async function main() {
   window.__earthus.frames = gfsFrames;
   window.__earthus.time = timeBus;   // 콘솔 확인용: __earthus.time.offsetMs · validMs() · isNow()
   window.__earthus.surfaceObs = surfaceObs;   // 콘솔 확인용: __earthus.surfaceObs.stats() → 관측 문서를 파일마다 실제로 몇 번 받았나
+  // 콘솔 확인용: __earthus.obs.state() → 왜 찍히는지/안 찍히는지(reasonKo) · __earthus.obs.placed() → 지금 찍힌 지점
+  window.__earthus.obs = obsLabels;
 
   let last = performance.now();
   const tickBody = (now) => {
@@ -6416,6 +6441,9 @@ async function main() {
     buildLabelCandidates();
     shell.updateLabels(camera, altKm);
     synop.update(camera, altKm);
+    // 관측 숫자(OBS): 기온 색면이 켜져 있을 때만. 상태만 읽는다 — tempgrid 를 어떻게 그리는지는 이 줄이 모른다.
+    obsLabels.setVisible(!!liveLayers.state('tempgrid').on);
+    obsLabels.tick(camera);
     // PHASE 4 §9 — 지도 클릭과 메뉴 클릭이 같은 문맥으로 수렴한다.
     // 사건을 열고(정본 id), 그 사건이 속한 현상을 패널 선택으로도 맞춘다.
     // 이게 없으면 지도에서 태풍을 눌러도 패널은 무엇을 고른 것인지 모른다.

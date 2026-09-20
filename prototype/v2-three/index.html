@@ -810,13 +810,30 @@
   #field-legend .fl-meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #field-legend .fl-meta.fl-stale { color: #f5c67a; }
   #field-legend .fl-note { overflow: hidden; }
+  /* 접는 단추 — 줄이 아니라 **줄 바깥**이다(position:absolute). 줄로 끼면 grid-template-rows 여섯 칸 규약이 깨진다.
+     넓은 화면에서는 아예 없다: 오른쪽 아래 구석에서는 116px 가 아무것도 가리지 않는다. */
+  #field-legend .fl-fold {
+    position: absolute; top: 4px; right: 6px; display: none; pointer-events: auto;
+    width: 24px; height: 20px; padding: 0; margin: 0; border: 0; border-radius: 6px;
+    background: transparent; color: var(--text-dim); font: inherit; font-size: 11px; line-height: 20px; cursor: pointer;
+  }
+  #field-legend .fl-fold:hover { color: var(--text); }
+  /* 풀이가 없는 눈금에서는 단추도 없다 — display:block 이 [hidden] 의 기본값을 이기지 못하게. */
+  #field-legend .fl-fold[hidden] { display: none; }
   @media (max-width: 1109px) {
     #field-legend { top: 66px; bottom: auto; }
     /* 이 폭에서는 검색·설정 서랍이 범례 자리까지 온다 — 서랍이 열린 동안은 범례가 비켜 선다(서랍을 읽는 중이다). */
     body:has(.drawer.open) #field-legend { visibility: hidden; }
   }
+  /* 폰(≤ 720): 범례가 지구 위쪽을 116px 가리고, 풀이 줄이 24px 안에서 세 줄로 접혀 잘렸다(2026-09-21 PD 실측 ③).
+     ⚠️ 접어서 숨기는 것은 **풀이 한 줄뿐**이다 — 띠 · 경계 숫자 · 단위 · 출처 · 런 · 유효시각은 접어도 남는다.
+        (접힘 89px · 펼침은 풀이 줄이 auto 라 글이 더 이상 잘리지 않는다. 기본은 접힘 — js/field-legend.js 의 근거.) */
   @media (max-width: 720px) {
-    #field-legend { left: 8px; right: 8px; width: auto; top: calc(108px + env(safe-area-inset-top)); }
+    #field-legend { left: 8px; right: 8px; width: auto; top: calc(108px + env(safe-area-inset-top)); height: auto; grid-template-rows: 14px 10px 12px 12px 12px auto; }
+    #field-legend .fl-title { padding-right: 26px; }
+    #field-legend .fl-fold { display: block; }
+    #field-legend.fl-collapsed { grid-template-rows: 14px 10px 12px 12px 12px; }
+    #field-legend.fl-collapsed .fl-note { display: none; }
   }
 
   /* ---------- 해양 시뮬레이션 뷰 ---------- */

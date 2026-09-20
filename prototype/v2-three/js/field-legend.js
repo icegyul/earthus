@@ -42,9 +42,25 @@ const H = 3600_000;
 export const RUN_STALE_H = 12;
 
 const TEXT = {
-  ko: { run: '런', valid: '유효', stale: '지연', legend: '범례' },
-  en: { run: 'run', valid: 'valid', stale: 'delayed', legend: 'Legend' },
+  ko: {
+    run: '런', valid: '유효', stale: '지연', legend: '범례',
+    fold: '풀이 접기', unfold: '풀이 펼치기',
+  },
+  en: {
+    run: 'run', valid: 'valid', stale: 'delayed', legend: 'Legend',
+    fold: 'Hide note', unfold: 'Show note',
+  },
 };
+
+/**
+ * 폰에서 **기본으로 접는다**(2026-09-21 PD 폰 실측 ③ — 범례가 375×812 화면 위 116 px 을 먹고 글이 잘렸다).
+ * ⚠️ 접어서 숨기는 것은 **풀이 한 줄(.fl-note)뿐**이다. 띠 · 경계 숫자 · 단위 · 출처 · 런 · 유효시각은 접어도 남는다 —
+ *    이 저장소의 잣대가 "색을 값으로 되돌릴 눈금과 그 출처가 화면에 늘 있다"이기 때문이다.
+ *    풀이만 접는 근거: 풀이는 눈금표에 박힌 **고정된 설명문**이라 자료가 바뀌어도 그대로고(legendNote), 한 번 읽으면 된다.
+ *    반대로 출처·유효시각은 프레임마다 바뀌는 **사실**이라 접으면 화면이 거짓말을 하게 된다.
+ * 넓은 화면에서는 이 이름표가 아무 일도 하지 않는다 — 접는 규칙은 index.html 의 폰 구간(≤ 720px) 안에만 있다.
+ */
+export const LEGEND_COLLAPSED_CLASS = 'fl-collapsed';
 
 // 입자 풀이 — 바람 눈금의 legendNote 와 같은 글이다. 기온·강수 색면 위에 입자를 켰을 때(W3) show({ note }) 로 넘기라고 내놓는다.
 export const PARTICLE_NOTE = Object.freeze({ ...scaleOf('wind').legendNote });
@@ -127,6 +143,20 @@ export const createFieldLegend = ({ doc, now = () => Date.now(), getLang = () =>
   let lastKey = null;
   let lastArgs = null;
 
+  let collapsed = true;                            // 폰 기본값 — 근거는 LEGEND_COLLAPSED_CLASS 주석
+
+  /** 접힘을 상자의 이름표 하나로 말한다. 넓은 화면에서는 이 이름표에 걸린 규칙이 없어 아무 일도 안 난다. */
+  const applyFold = () => {
+    if (!root) return;
+    root.className = collapsed ? `field-legend ${LEGEND_COLLAPSED_CLASS}` : 'field-legend';
+    if (!parts || !parts.fold) return;
+    const T = TEXT[getLang() === 'en' ? 'en' : 'ko'];
+    parts.fold.textContent = collapsed ? '▾' : '▴';        // 글자는 textContent 로만(이 파일 규약)
+    parts.fold.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    parts.fold.setAttribute('aria-label', collapsed ? T.unfold : T.fold);
+    parts.fold.title = collapsed ? T.unfold : T.fold;
+  };
+
   const build = (d) => {
     root = el(d, 'section', 'field-legend');
     root.id = 'field-legend';
@@ -139,9 +169,15 @@ export const createFieldLegend = ({ doc, now = () => Date.now(), getLang = () =>
       alt: el(d, 'div', 'fl-ticks fl-alt'),
       meta: el(d, 'div', 'fl-meta'),
       note: el(d, 'div', 'fl-note'),
+      // 접는 단추 — **줄 바깥**이다(index.html 에서 position:absolute). 줄로 끼면 칸 여섯 개 규약이 깨진다.
+      fold: el(d, 'button', 'fl-fold'),
     };
     parts.bands.setAttribute('role', 'list');
-    for (const k of ['title', 'bands', 'ticks', 'alt', 'meta', 'note']) root.appendChild(parts[k]);
+    parts.fold.setAttribute('type', 'button');
+    // addEventListener 가 아니라 onclick 이다 — 두 번 매달릴 수 없고, 시험의 가짜 DOM 이 그대로 부를 수 있다.
+    parts.fold.onclick = (ev) => { if (ev && ev.preventDefault) ev.preventDefault(); collapsed = !collapsed; applyFold(); };
+    for (const k of ['title', 'bands', 'ticks', 'alt', 'meta', 'note', 'fold']) root.appendChild(parts[k]);
+    applyFold();
   };
 
   const tickRow = (d, row, ticks, unit) => {
@@ -177,7 +213,11 @@ export const createFieldLegend = ({ doc, now = () => Date.now(), getLang = () =>
     parts.meta.textContent = view.meta;
     parts.meta.className = view.stale ? 'fl-meta fl-stale' : 'fl-meta';
     parts.note.textContent = view.note;
+    // 풀이가 없는 눈금이 있다(기온 · 해면기압 · 유의파고 · PM2.5). 그때는 접는 단추를 두지 않는다 —
+    // 펼쳐도 아무것도 안 나오는 단추는 **죽은 토글**이다(이 저장소의 규칙 · flood-overlay.js 머리말).
+    parts.fold.hidden = !view.note;
     root.setAttribute('aria-label', `${TEXT[getLang() === 'en' ? 'en' : 'ko'].legend} — ${view.title} (${view.unit})`);
+    applyFold();                                    // 언어를 바꾸면 단추의 이름도 따라온다(refresh 가 여기로 온다)
     root.hidden = false;
     return view;
   };
@@ -233,6 +273,11 @@ export const createFieldLegend = ({ doc, now = () => Date.now(), getLang = () =>
     refresh() { return (lastArgs && root && !root.hidden) ? paint(lastArgs) : null; },
     /** 지금 주인 수 — 시험과 콘솔용. */
     owners() { return [...owners.keys()]; },
+    /**
+     * 풀이 줄이 접혀 있나 · 접고 펴기. 인자 없이 부르면 지금 상태만 돌려준다.
+     * 켜고 끄는 것은 화면의 단추지만(폰), 시험과 콘솔이 같은 문으로 들어올 수 있어야 한다.
+     */
+    folded(v) { if (v !== undefined) { collapsed = !!v; applyFold(); } return collapsed; },
     get el() { return root; },
   };
 };

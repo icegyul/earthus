@@ -178,7 +178,8 @@ test('레이어를 바꿔도 상자의 뼈대가 같다 — 줄 여섯 개가 �
   const skeleton = () => root.children.map((c) => c.className.replace(' fl-stale', ''));
   legend.show({ scale: scaleOf('temp'), run: RUN, valid: VALID });
   const first = skeleton();
-  assert.deepEqual(first, ['fl-title', 'fl-bands', 'fl-ticks', 'fl-ticks fl-alt', 'fl-meta', 'fl-note']);
+  // 줄 여섯 개 + 접는 단추 하나. 단추는 **줄이 아니다**(index.html 에서 position:absolute) — 그래서 칸 여섯 개 규약이 그대로다.
+  assert.deepEqual(first, ['fl-title', 'fl-bands', 'fl-ticks', 'fl-ticks fl-alt', 'fl-meta', 'fl-note', 'fl-fold']);
   const rowsBefore = [...root.children];
   for (const id of SCALE_IDS) {
     legend.show({ scale: scaleOf(id), run: RUN, valid: VALID });

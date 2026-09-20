@@ -28,7 +28,9 @@
 //   fieldLegend.show({ scale: scaleOf('precip'), unitAlt: true, … });    // 누적을 고르면 단위가 mm 로
 //   fieldLegend.hide();                                       // 색면을 끄면
 //   fieldLegend.refresh();                                    // 언어를 바꾼 뒤(main.js applyI18n)
-//   콘솔에서 한 번 보기:  (await import('./js/field-legend.js?v=1')).demo('wind')
+//   콘솔에서 한 번 보기: 이 모듈을 동적으로 들여 demo('wind') 를 부른다 — 주소는 페이지 기준 js/field-legend.js?v=1 이다.
+//   ⚠️ 여기에 import 식을 글자 그대로 적지 마라: 번들 무결성 검사(tools/build-v2-bundle.sh 4/4)가 주석 속 import 도 읽어
+//      이 파일 기준 상대경로(js/js/…)로 풀고 '없는 import'로 빌드를 떨어뜨린다(2026-09-20 실측 — 배포 직전에 걸렸다).
 //   타임라인을 밀 때마다 show() 를 불러도 된다 — 눈금·단위·언어가 같으면 칸을 다시 만들지 않고 시각 글자만 바꾼다.
 
 import { i18n } from './i18n.js?v=11';

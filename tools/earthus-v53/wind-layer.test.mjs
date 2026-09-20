@@ -270,16 +270,17 @@ test('재생 — 늦게 온 장도 지금 시각에 더 가까우면 넣는다(�
   const LATENCY = 800;
   const PLAY_MS = 220;
   const STEPS = 16;                                       // 한 칸 = 한 스텝(3시간) → 칸마다 구간이 바뀐다
-  const cache = new Map();
+  // 그림은 **미리** 다 지어 둔다. 지연 안에서 지으면(720×361 한 장에 26만 칸) 느린 기계에서 한 장이 0.8초를 넘어
+  // 재는 대상이 '늦게 온 장을 받나'가 아니라 '이 기계가 얼마나 느리나'가 된다.
+  const manifest = longManifest();
+  const cache = new Map(manifest.steps.map((s) => [s.h, windImage(() => [10, s.h])]));   // 시간마다 다른 값 — 어느 장이 들어갔는지 알 수 있게
   const hz = harness({
-    manifest: longManifest(),
+    manifest,
     storeOpts: {
       loadImage: async (url) => {
         await delay(LATENCY);                             // 운영에서 잰 프레임 한 장의 시간
         if (letterOf(url) !== 'u') throw new Error('404');
-        const h = hourOf(url);
-        if (!cache.has(h)) cache.set(h, windImage(() => [10, h]));   // 시간마다 다른 값 — 어느 장이 들어갔는지 알 수 있게
-        return cache.get(h);
+        return cache.get(hourOf(url));
       },
     },
   });

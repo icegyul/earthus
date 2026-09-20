@@ -2830,6 +2830,15 @@ async function main() {
       shell.refreshFlyout();
       return;
     }
+    // 해수면 상승 전망의 관측소 원반을 눌렀으면 그 지점 카드가 먼저다 — 원반은 구름 위(renderOrder 7)에 서므로
+    // 누른 사람이 본 것도 그것이다. 꺼져 있거나 빗나갔으면 null 이라 아래 선택 흐름으로 그대로 흐른다.
+    const slrHit = liveLayers.slrPick({ x: e.clientX, y: e.clientY });
+    if (slrHit) {
+      focus.clear();
+      showNote(slrHit.title, slrHit.html, slrHit.badge);
+      shell.refreshFlyout();
+      return;
+    }
     // 해구 표시가 켜져 있으면 해구선 우선 — 바다 클릭이 해상 실황으로 새지 않게
     // 여행 씬이 켜져 있으면 시군구 비콘 우선 — 근거 5줄 카드
     // 확장 화면(취미)이 켜져 있으면 그 표시가 우선 — 해변·활공장·거북 같은 것을 눌렀을 때
@@ -3463,7 +3472,7 @@ async function main() {
     'weather/wind': ['wind', '바람 흐름 · GFS 10 m'],
     'space/launch': ['launch', '발사 일정'],
     'ocean/kmasea': ['kmasea', '해상 관측망'],
-    'ocean/slr': ['slr', '해수면 상승 — 잠기는 땅'],
+    'ocean/slr': ['slr', '해수면 상승 전망'],
     'people/news': ['news', '지역 뉴스'],
     'people/pop': ['pop', '국가 인구'],
     'ocean/sstfield': ['sstfield', '해수면 온도'],

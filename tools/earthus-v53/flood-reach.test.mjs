@@ -217,6 +217,9 @@ test('겹면이 판을 굽고 셰이더에 물린다 — 다 굽기 전과 뒤�
     reachOptions: { res: 2 },        // 시험은 성긴 판으로 — 성질은 같고 1,036,800칸을 돌지 않는다
   });
   assert.equal(f.uniforms.uHasReach.value, 0, '굽기 전에는 가르지 않는다');
+  // 바다 도달 판은 '잠기는 땅' 색면의 고지다 — 그 색면은 기본 꺼짐이라 카드에 나오지 않는다(2026-09-20 작업 E4).
+  assert.doesNotMatch(f.cardHtml(), /바다와의 연결/, '색면이 꺼져 있는데 색면의 고지를 적는다');
+  assert.equal(f.handleAction('slr-depth', { layer: 'slr' }), true);
   assert.match(f.cardHtml(), /바다와의 연결은 아직 가리지 않았습니다/);
   await f.reachReady();
   assert.equal(f.uniforms.uHasReach.value, 1);
@@ -249,9 +252,10 @@ test('부풀리기 자체 — growReach 는 지나갈 수 있나와 무관하게
 });
 
 test('카드가 판을 말한다 — 구운 뒤와 못 구운 때의 문장이 다르고 둘 다 사실이다', () => {
+  // depth: true — 바다 도달 판의 고지는 '잠기는 땅' 색면을 켠 사람에게만 할 말이다(그 색면은 기본 꺼짐이다).
   const base = {
     scenario: 'ssp585', year: '2100', stations: 1016, globalMedian: 0.78, farPct: 30.5, landMask: null,
-    hasHeight: true, min: -2.38, max: 4.15, top: [], korea: [], koreaCount: 24,
+    hasHeight: true, depth: true, min: -2.38, max: 4.15, top: [], korea: [], koreaCount: 24,
     source: 'IPCC AR6', license: 'CC BY 4.0', baseline: '1995–2014',
   };
   const ready = floodCardInner({ ...base, reach: 'ready', reachInfo: { cellKm: 28, grow: 1 } });

@@ -314,10 +314,16 @@ export class LiveLayers {
   // 색면(기온·풍속 …)이나 바람 입자가 켜져 있나 — main.js 가 이것을 보고 구름을 물린다(시안 01·02 는 구름 없이 색면이 주인공이다).
   // 'field' = 색면이 있다(구름의 흰 베일이 구간색을 바꿔 범례와 어긋나게 한다 → 구름을 끈다) · 'wind' = 입자만 · null = 없음.
   starLayer() {
+    // 해수면 상승 전망의 **범례**는 켜짐을 따라간다. 끌 때 toggle 은 겹면을 버리지 않고 visible 만 뒤집으므로
+    // 겹면 스스로는 꺼진 것을 알 수 없다(onBeforeRender 가 안 불린다) — 매 프레임 지나는 자리가 여기뿐이라 여기서 알려 준다.
+    // setOn 은 바뀔 때만 일한다(두 번 불러도 한 번이다).
+    const slrOverlay = this.floodOverlay();
+    if (slrOverlay) slrOverlay.setOn(!!(this.layers.slr && this.layers.slr.on));
     for (const id of this.activeIds()) if (isFieldLayerId(id)) return 'field';
-    // 잠기는 땅(slr)도 색면과 같은 대접을 받아야 한다 — 이 레이어가 그리는 것은 해안의 실오라기와 물가의 1.6 px 테라
-    // 구름(0.92)이 그대로 덮으면 켜도 '아무 변화 없는 구름 낀 지구'다(2026-09-20 반박 검증: 구름을 직접 끈 뒤에야 보였다).
-    // 색면 대접에는 해안·국경 윤곽선(field-outlines)이 같이 딸려 온다 — 물가를 보는 화면이라 도움이 된다.
+    // 잠기는 땅 **색면**이 켜져 있을 때만 색면 대접이다 — 구름(0.92)이 물가의 1.6 px 테를 덮기 때문이다.
+    // ⚠️ 2026-09-20 작업 E4: 원반만 있는 화면에서는 구름을 끄지 않는다(원반은 renderOrder 7 로 구름 위에 선다).
+    //    그 판정은 starField().drawing 이 하므로(색면이 켜졌을 때만 참) 여기서 'field' 를 내도 구름은 그대로 있다 —
+    //    윤곽선·입자 색도 전부 drawing 을 같이 보고 움직인다(main.js starLayers.tick).
     if (this.layers.slr && this.layers.slr.on) return 'field';
     return this.layers.wind && this.layers.wind.on ? 'wind' : null;
   }
@@ -2113,8 +2119,11 @@ export class LiveLayers {
     return (l && l.obj && l.obj.userData && l.obj.userData.flood) || null;
   }
 
-  /** 잠기는 땅 카드의 단추(data-action="slr-scenario" · "slr-year"). 처리했으면 true. */
+  /** 해수면 상승 전망 카드의 단추(data-action="slr-scenario" · "slr-year" · "slr-depth"). 처리했으면 true. */
   slrAction(action, ds) { const f = this.floodOverlay(); return f ? f.handleAction(action, ds || {}) : false; }
+
+  /** 누른 자리의 조위관측소 원반 — { station, title, html, badge } 또는 null(꺼져 있거나 빗나갔다). 인수는 화면 CSS px. */
+  slrPick(hit) { const l = this.layers.slr; if (!l || !l.on) return null; const f = this.floodOverlay(); return f ? f.pick(hit) : null; }
 
   // ---------- 한국 해상 관측망 (KMA 193지점 · OBSERVED) ----------
   // 파고를 보고하는 지점은 파고 색, 파고가 없는 지점은 흐린 점 — 값을 지어내지 않는다.

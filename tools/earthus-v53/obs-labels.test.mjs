@@ -14,8 +14,8 @@ import { createTimeBus } from '../../prototype/v2-three/js/time-bus.js';
 import { newsChipOpacity } from '../../prototype/v2-three/js/live-layers.js';
 import {
   createObsLabels, normalizeSurfaceObs, obsNumber, obsValue, obsWindDirDeg, parseObsTime, kstLabel, formatObs, fmt1, obsFresh,
-  thinPoints, thinAdaptive, projectPx, windTangent, layoutLabel, obsCardHtml, obsCardTitle, obsOrderKey, obsLegendLine,
-  OBS_MAX_DESKTOP, OBS_MAX_PHONE, OBS_MAX_AGE_MS, OBS_CELL_CSS, OBS_CELL_LADDER, OBS_RECULL_MIN_MS, OBS_GLYPHS_PER_LABEL,
+  thinPoints, thinAdaptive, projectPx, windTangent, obsNextAskMs, layoutLabel, obsCardHtml, obsCardTitle, obsOrderKey, obsLegendLine,
+  OBS_MAX_DESKTOP, OBS_MAX_PHONE, OBS_MAX_AGE_MS, OBS_CELL_CSS, OBS_CELL_LADDER, OBS_REFRESH_MS, OBS_RECULL_MIN_MS, OBS_GLYPHS_PER_LABEL,
   OBS_CELL_ARROW, OBS_CELL_DOT, OBS_CELL_TAG, OBS_ATLAS_CELLS, OBS_BADGE,
 } from '../../prototype/v2-three/js/obs-labels.js';
 
@@ -442,14 +442,58 @@ test('끄는 동안 매 프레임 솎지 않는다 — 미룬 솎기는 카메�
   assert.equal(L.labels.state().culls, 2, "미뤄 둔 솎기를 잊었다 — 멈춘 카메라를 '할 일 없음'으로 넘겼다");
 });
 
-test('문서가 같으면 다시 풀지 않는다 — 20분마다 묻되, 저장소가 같은 객체를 주면 그대로 둔다', async () => {
-  const L = make({ aws: awsDoc([SEOUL]) });
-  const cam = cameraAt(...KOREA, 1.3);
+test('문서는 다음 발행이 지나야 다시 묻는다 — 그 전에 물으면 같은 1.1 MB 를 헛되이 받는다', async () => {
+  const M = 60000;
+  // 운영과 같은 꼴: 기상청 05:25Z · GTS 05:35Z 발행, 지금 05:50Z
+  const L = make({ aws: awsDoc([SEOUL], { generated: '2026-09-20T05:25:00Z' }), gts: gtsDoc([gtsSt('47412', 'Sapporo', 43.06, 141.33, 19.0)], { generated: '2026-09-20T05:35:00Z' }) });
+  const cam = cameraAt(...KOREA, 1.6);
   await L.show(cam);
-  L.clock.t += 21 * 60 * 1000;
+  assert.equal(L.gets(), 1);
+  L.clock.t = NOW + 40 * M;                           // 06:30Z — 기상청은 새로 나왔겠지만 GTS 는 아직이다
+  L.labels.tick(cam); await settle();
+  assert.equal(L.gets(), 1, '두 문서가 모두 다음 발행을 지나기 전에 물었다 — 시간당 두 번 받게 된다');
+  L.clock.t = NOW + 48 * M;                           // 06:38Z — GTS 06:35 발행 + 2분을 지났다
+  L.labels.tick(cam); await settle();
+  assert.equal(L.gets(), 2, '다음 발행이 지났는데 묻지 않았다 — 숫자가 한 시간 더 늙는다');
+  L.clock.t += 5 * M;                                 // 같은 문서가 왔다(수집기가 늦다) → 10분 뒤에 다시
+  L.labels.tick(cam); await settle();
+  assert.equal(L.gets(), 2);
+  L.clock.t += 6 * M;
   L.labels.tick(cam); await settle(); L.labels.tick(cam);
-  assert.equal(L.gets(), 2, '20분이 지났는데 문서를 다시 묻지 않았다');
-  assert.equal(L.labels.state().placed, 1);
+  assert.equal(L.gets(), 3);
+  assert.equal(L.labels.state().placed, 2, '같은 문서를 다시 받았다고 라벨이 사라지면 안 된다');
+
+  const at = NOW;
+  assert.equal(obsNextAskMs(at, NaN, NaN, true), at + OBS_REFRESH_MS, 'generated 를 못 읽으면 10분마다 묻는다');
+  assert.equal(obsNextAskMs(at, at - 5 * M, at - 15 * M, true), at - 5 * M + 62 * M, '늦게 발행된 쪽을 기다린다');
+  assert.equal(obsNextAskMs(at, at + 5 * 3600000, NaN, true), at + 62 * M, '기기 시계가 늦어 발행이 미래로 읽혀도 한 주기를 넘겨 기다리지 않는다');
+  assert.ok(obsNextAskMs(at, NaN, NaN, false) - at <= 60000, '아무것도 못 받았으면 곧 다시 묻는다');
+});
+
+test('들고 있는 시간까지 쳐도 정상 운영에서는 상한 안이다 — 서버 파일의 가장 늙은 나이 + 12분', () => {
+  const M = 60000;
+  assert.ok(obsFresh(NOW - (145 + 12) * M, 'KMA', NOW));
+  assert.ok(obsFresh(NOW - (215 + 12) * M, 'GTS', NOW));
+  assert.equal(OBS_MAX_AGE_MS.KMA, (145 + 12 + 30) * M);
+  assert.equal(OBS_MAX_AGE_MS.GTS, (215 + 12 + 30) * M);
+});
+
+test("두 문서를 모두 못 받으면 '지점이 없다'가 아니라 '받지 못했다'고 말한다", async () => {
+  const L = make({ aws: null, gts: null });
+  const cam = cameraAt(...KOREA, 1.6);
+  await L.show(cam);
+  const st = L.labels.state();
+  assert.equal(st.reason, 'error');
+  assert.equal(st.shown, false);
+  assert.ok(st.loadError);
+  L.clock.t += 61000;                                 // 1분 뒤 다시 묻는다 — 회선이 한 번 끊겼다고 메뉴를 오래 비우지 않는다
+  L.labels.tick(cam); await settle();
+  assert.equal(L.gets(), 2);
+
+  const T = make({ getData: async () => { throw new Error('boom'); } });
+  await T.show(cam);
+  assert.equal(T.labels.state().reason, 'error');
+  assert.equal(T.labels.state().loadError, 'boom');
 });
 
 /* ───────────── 누르기 · 카드 ───────────── */

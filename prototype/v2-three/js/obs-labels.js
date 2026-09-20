@@ -31,11 +31,13 @@
 //   · 풍속·기압은 음수가 있을 수 없다 — 기관과 무관하게 음수는 전부 결측이다(실측: GTS 풍속 −9.0 이 177곳 온 날이 있다).
 //
 // ⚠️ 늙음 상한이 기관마다 다른 이유(실측 · 상수 OBS_MAX_AGE_MS)
-//   · kma-aws   cron(25 * * * ? *) 가 '한 시간 전 정시'를 읽는다(handler.py:314) → 정상 운영에서 나이가 1시간 25분 ~ 2시간 26분.
+//   · kma-aws   cron(25 * * * ? *) 가 '한 시간 전 정시'를 읽는다(handler.py:314) → 서버 파일의 나이가 1시간 25분 ~ 2시간 25분.
 //   · gts-global cron(35 * * * ? *) 가 '두 시간 전 정시'를 읽는다(handler.py:247 backHours=2 — SYNOP 은 허브에 늦게 찬다)
-//                → 정상 운영에서 나이가 **2시간 35분 ~ 3시간 36분**. 즉 '2시간' 한 줄로 자르면 GTS 는 영원히 안 찍히고,
-//                기상청도 매시 25분 동안 사라진다. 상한은 '정상 운영의 가장 늙은 나이 + 약 30분'이다 — 수집기가 한 번
-//                빠지면 숫자가 사라지는 것이 맞고(그것이 이 규칙의 목적이다), 정상일 때 사라지면 안 된다.
+//                → 서버 파일의 나이가 **2시간 35분 ~ 3시간 35분**. 즉 '2시간' 한 줄로 자르면 GTS 는 영원히 안 찍히고,
+//                기상청도 매시 25분 동안 사라진다.
+//   · 여기에 **브라우저가 들고 있는 시간**이 더해진다: 다음 발행 예상 시각 + 2분에 다시 묻고, 헛걸음이면 10분 뒤에 또 묻는다(약 12분).
+//   상한 = 서버 파일의 가장 늙은 나이 + 들고 있는 시간 + 여유 30분(Lambda 지연). 수집기가 한 번 빠지면 숫자가 사라지는 것이 맞고
+//   (그것이 이 규칙의 목적이다), 정상일 때 깜빡이면 안 된다.
 //
 // ⚠️ 한국은 두 파일에 다 있다. GTS 의 WMO 번호 47xxx = '47' + 기상청 지점번호(47108 = 서울 108). 같은 지점을 두 번 찍지 않게
 //   GTS 쪽을 버린다 — 기상청 것이 더 새롭고 좌표가 정확하다(실측: GTS 47104 는 NOAA 지점표 조인 탓에 북강릉에서 100 km 떨어져 찍힌다).
@@ -53,7 +55,13 @@
 export const OBS_MAX_DESKTOP = 60;
 export const OBS_MAX_PHONE = 24;
 // 늙음 상한(ms) — 위 머리말의 실측 근거. 숫자를 바꾸려면 수집기의 cron 과 '몇 시간 전 정시를 읽는가'를 먼저 본다.
-export const OBS_MAX_AGE_MS = Object.freeze({ KMA: 3 * 3600 * 1000, GTS: 4 * 3600 * 1000 });
+//   서버 파일의 가장 늙은 나이(분): 기상청 60 + 25 + 60 = 145 · GTS 120 + 35 + 60 = 215      [읽는 정시 + 발행 분 + 발행 주기]
+const OBS_HOLD_MIN = 12;     // 브라우저가 들고 있는 시간: 다음 발행 예상 + 2분에 묻고, 헛걸음이면 10분 뒤(OBS_REFRESH_MS)
+const OBS_SLACK_MIN = 30;    // Lambda 지연·재시도 여유
+export const OBS_MAX_AGE_MS = Object.freeze({
+  KMA: (145 + OBS_HOLD_MIN + OBS_SLACK_MIN) * 60000,     // 3시간 7분
+  GTS: (215 + OBS_HOLD_MIN + OBS_SLACK_MIN) * 60000,     // 4시간 17분
+});
 // 기기 시계가 틀려 관측이 '미래'로 읽힐 때의 허용 폭. 넘으면 나이를 믿을 수 없으니 찍지 않는다.
 export const OBS_FUTURE_SLACK_MS = 3600 * 1000;
 // 솎기 버킷(CSS px). 라벨 한 개의 자리(점 + '−12.4' + OBS 꼬리표 ≈ 50×26)에 숨 쉴 틈을 더한 크기.
@@ -68,9 +76,14 @@ export const OBS_RECULL_ZOOM = 0.12;
 export const OBS_RECULL_MIN_MS = 120;
 // 카메라가 멈춰 있어도 관측은 늙는다 — 이 간격으로 한 번씩 다시 솎아 상한을 넘긴 지점을 내린다.
 export const OBS_AGE_RECHECK_MS = 5 * 60 * 1000;
-// 문서를 다시 묻는 간격. 수집기는 매시 한 번 돌고, live-layers 의 바람 레이어도 20분이다(REFRESH_MIN.wind).
-export const OBS_REFRESH_MS = 20 * 60 * 1000;
-// 아무것도 못 받았을 때 다시 묻는 간격 — 20분을 기다리게 하면 한 번의 회선 끊김이 메뉴를 20분 비운다.
+// 문서를 언제 다시 묻나. 두 수집기는 매시 한 번 발행한다 — 받아 둔 문서의 generated + 1시간(+2분)이 지나기 전에는
+//   물어 봐야 같은 파일이다(1.1 MB 를 헛되이 받는다). 두 문서가 **모두** 다음 발행을 지났을 때 묻고(기상청 25분 · GTS 35분 —
+//   따로 물으면 시간당 두 번, 같이 물으면 한 번이다), 그래도 옛 문서면 OBS_REFRESH_MS 뒤에 다시 묻는다.
+//   generated 를 못 읽으면 그냥 OBS_REFRESH_MS 마다 묻는다. 저장소 TTL(10분)과 같아서 물을 때는 실제로 새로 받는다.
+export const OBS_PUBLISH_EVERY_MS = 60 * 60 * 1000;
+export const OBS_PUBLISH_SLACK_MS = 2 * 60 * 1000;
+export const OBS_REFRESH_MS = 10 * 60 * 1000;
+// 아무것도 못 받았을 때 다시 묻는 간격 — 10분을 기다리게 하면 한 번의 회선 끊김이 메뉴를 10분 비운다.
 export const OBS_RETRY_MS = 60 * 1000;
 // 지평선 흐림이 이 값보다 옅은 지점은 새로 뽑지 않는다(이미 찍힌 라벨은 0 까지 흐려지며 넘어간다).
 export const OBS_MIN_OPACITY = 0.35;
@@ -163,6 +176,19 @@ export function obsFresh(obsMs, src, nowMs, maxAge = OBS_MAX_AGE_MS) {
   const age = nowMs - obsMs;
   const lim = maxAge[src];
   return Number.isFinite(lim) && age <= lim && age >= -OBS_FUTURE_SLACK_MS;
+}
+
+// 다음에 문서를 물을 시각(ms). generated 는 두 문서의 발행 시각(ms · 못 읽으면 NaN).
+//   · 아무것도 없으면 OBS_RETRY_MS 뒤.
+//   · 있으면 '두 문서 모두 다음 발행을 지난 때'와 '마지막으로 물은 뒤 OBS_REFRESH_MS' 중 늦은 쪽.
+//   · 기기 시계가 늦어 generated 가 미래로 읽혀도 마지막으로 물은 뒤 한 주기(+여유)를 넘겨 기다리지는 않는다.
+export function obsNextAskMs(lastLoadMs, genAwsMs, genGtsMs, hasSites) {
+  if (!hasSites) return lastLoadMs + OBS_RETRY_MS;
+  const step = OBS_PUBLISH_EVERY_MS + OBS_PUBLISH_SLACK_MS;
+  let due = -Infinity;
+  if (Number.isFinite(genAwsMs)) due = Math.max(due, genAwsMs + step);
+  if (Number.isFinite(genGtsMs)) due = Math.max(due, genGtsMs + step);
+  return Math.max(lastLoadMs + OBS_REFRESH_MS, Math.min(due, lastLoadMs + step));
 }
 
 const D2R = Math.PI / 180;
@@ -467,7 +493,7 @@ export function createObsLabels({
 
   let requested = false, isNow = timeBus.isNow(), metric = 'temp', disposed = false;
   let sites = null, docs = { KMA: null, GTS: null }, dropped = null;
-  let lastAws, lastGts, loading = false, loadError = null, lastLoadMs = -Infinity;
+  let lastAws, lastGts, loading = false, loadError = null, lastLoadMs = -Infinity, nextAskMs = -Infinity;
   let dirty = true, pending = false, culls = 0, loads = 0, alphaWrites = 0;
   let placed = 0, freshCount = 0, cellScale = 1, lastCullMs = -Infinity;
   let mesh = null, geo = null, mat = null, atlas = null, noCanvas = false;
@@ -533,6 +559,10 @@ export function createObsLabels({
     const aws = got && got.aws ? got.aws : null;
     const gts = got && got.gts ? got.gts : null;
     lastLoadMs = now();
+    // 둘 다 못 받았다 — '관측 지점이 없다'가 아니라 '받지 못했다'이다(공용 저장소의 both() 는 실패를 null 로 바꿔 준다).
+    loadError = !aws && !gts ? '관측 문서 두 개를 모두 받지 못했다' : null;
+    const gen = (d) => (d && typeof d.generated === 'string' ? Date.parse(d.generated) : NaN);
+    nextAskMs = obsNextAskMs(lastLoadMs, gen(aws), gen(gts), !!(aws || gts));
     if (aws === lastAws && gts === lastGts && sites) return;      // 같은 문서다(저장소가 TTL 안에서 같은 객체를 준다) — 다시 풀지 않는다
     lastAws = aws; lastGts = gts;
     const n = normalizeSurfaceObs({ aws, gts });
@@ -548,10 +578,11 @@ export function createObsLabels({
     if (loading || disposed) return;
     loading = true; loads += 1;
     Promise.resolve().then(() => getData()).then((got) => {
-      loading = false; loadError = null;
+      loading = false;
       if (!disposed) adopt(got);
     }, (e) => {
       loading = false; lastLoadMs = now();
+      nextAskMs = lastLoadMs + OBS_RETRY_MS;
       loadError = String((e && e.message) || e);
     });
   };
@@ -650,7 +681,7 @@ export function createObsLabels({
     lastCamera = camera;
     if (!requested || !isNow) { hide(); return; }
     const t = now();
-    if (!loading && t - lastLoadMs > (sites && sites.length ? OBS_REFRESH_MS : OBS_RETRY_MS) && (!sites || !isHidden())) load();
+    if (!loading && t >= nextAskMs && (!sites || !isHidden())) load();
     if (!sites || !sites.length) { hide(); return; }
     if (!ensureGpu()) return;
     getViewport(view);
@@ -693,7 +724,7 @@ export function createObsLabels({
     if (!isNow) return 'not-now';
     if (noCanvas) return 'no-canvas';
     if (!sites) return loading || loads === 0 ? 'loading' : (loadError ? 'error' : 'no-data');
-    if (!sites.length) return 'no-data';
+    if (!sites.length) return loadError ? 'error' : 'no-data';
     if (culls > 0 && freshCount === 0) return 'stale';
     if (culls > 0 && placed === 0) return 'none-in-view';
     return 'ok';

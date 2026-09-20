@@ -61,6 +61,8 @@
 //     거리/기울기가 0/0 이 되고, 값이 레벨과 같으면(30.0 고원 · 또는 29.5 와 30.5 를 시간으로 반씩 섞은 순간) 면 전체가
 //     흰 선으로 번진다. 가드는 그 둘을 같이 막는다. 셰이더 식을 JS 로 옮긴 lineCoverage 를 시험이 잠근다.
 //   · 선이 화면 픽셀보다 촘촘해지면(전지구 뷰의 2°C 선 · 전선대) 스스로 흐려진다 — 모아레 대신 색면만 남는다.
+//     ⚠️ 그 '촘촘함'은 **CSS px** 로 잰다. fwidth 는 장치 픽셀 기준이라 DPR 2 인 폰에서는 같은 화면이 두 배로 넓게
+//        읽혀, 사라져야 할 선이 절반쯤 살아남아 전선대가 허옇게 떴다(2026-09-20 작업 E3 ④). 굵기와 같은 자로 나눈다.
 //   간격·굵은 선·강조값은 field-scales.isolineSpec 에서만 온다(기온 2°C|5°C · 10°C 마다 굵게). 풍속처럼 명세가 null 이면 안 긋는다.
 //
 // ── 지형 ────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -208,12 +210,20 @@ export const lineCoverage = (below, grad, widthPx) => {
   return 1 - smooth(hw - 0.5, hw + 0.5, Math.abs(below / grad - (hw + 0.5)));
 };
 
-/** 고른 간격의 선. 이웃 선 사이가 fadePx 보다 좁으면 흐려진다(선이 픽셀보다 촘촘한 곳 — 모아레 대신 색면만 남긴다). */
-export const intervalLineCoverage = (v, grad, interval, widthPx) => {
+/**
+ * 고른 간격의 선. 이웃 선 사이가 fadePx 보다 좁으면 흐려진다(선이 픽셀보다 촘촘한 곳 — 모아레 대신 색면만 남긴다).
+ *   widthPx  선 굵기(**장치** px — 부른 쪽이 이미 pxScale 을 곱했다) · pxScale  장치 픽셀비
+ * ⚠️ 흐림 문턱만은 **CSS px** 로 잰다. grad(= fwidth)는 장치 px 당 값 변화라 interval/grad 는 장치 px 간격이고,
+ *    fadePx(3·8)는 FIELD_LINE 이 CSS px 로 적어 둔 수다. DPR 2 인 폰에서는 장치 간격이 CSS 의 두 배라
+ *    사라져야 할 선(CSS 2.5 px 간격)이 장치 5 px 로 읽혀 0.35 쯤 살아남는다 — 전선대가 통째로 허옇게 뜬다
+ *    (2026-09-20 작업 E3 ④ · B1 반박 검증). pxScale 로 나눠 CSS px 기준으로 되돌린다.
+ */
+export const intervalLineCoverage = (v, grad, interval, widthPx, pxScale = 1) => {
   if (!(interval > 0) || !(grad > FIELD_GRAD_EPS)) return 0;
   const f = v / interval;
   const fr = f - Math.floor(f);
-  const fade = smooth(FIELD_LINE.fadePx[0], FIELD_LINE.fadePx[1], interval / grad);
+  const s = pxScale > 0 ? pxScale : 1;
+  const fade = smooth(FIELD_LINE.fadePx[0], FIELD_LINE.fadePx[1], interval / (grad * s));
   return lineCoverage((1 - fr) * interval, grad, widthPx) * fade;   // fr = 0(레벨 위)이면 다음 레벨까지 한 간격이 남았다 — 선이 아니다
 };
 
@@ -221,9 +231,9 @@ export const intervalLineCoverage = (v, grad, interval, widthPx) => {
 export const isolineAlpha = (v, grad, iso, pxScale = 1) => {
   if (!iso || !iso.on) return 0;
   let a = 0;
-  if (iso.interval) a = intervalLineCoverage(v, grad, iso.interval, FIELD_LINE.minorWidthPx * pxScale) * FIELD_LINE.minorAlpha;
+  if (iso.interval) a = intervalLineCoverage(v, grad, iso.interval, FIELD_LINE.minorWidthPx * pxScale, pxScale) * FIELD_LINE.minorAlpha;
   if (iso.majorEvery) {
-    a = Math.max(a, intervalLineCoverage(v, grad, iso.majorEvery, FIELD_LINE.majorWidthPx * pxScale) * FIELD_LINE.majorAlpha);
+    a = Math.max(a, intervalLineCoverage(v, grad, iso.majorEvery, FIELD_LINE.majorWidthPx * pxScale, pxScale) * FIELD_LINE.majorAlpha);
   }
   for (let i = 0; i < iso.levelCount; i += 1) {
     const wide = iso.widths[i] > FIELD_LINE.minorWidthPx;
@@ -422,7 +432,7 @@ uniform float uIsoWidths[FIELD_MAX_LEVELS];
 uniform float uIsoLevelCount;
 uniform vec3 uLineColor;
 uniform vec4 uLineStyle;     // 보통 굵기px · 굵은 굵기px · 보통 알파 · 굵은 알파
-uniform vec2 uLineFade;      // 이웃 선 간격(px): 사라지는 값 · 다 보이는 값
+uniform vec2 uLineFade;      // 이웃 선 간격(**CSS** px): 사라지는 값 · 다 보이는 값
 uniform float uGradEps;
 uniform float uHalfStep;     // 자료 눈금의 절반(기온 0.25) — 구간과 등치선은 '읽히는 값' v + uHalfStep 으로 정한다(머리말)
 uniform float uPxScale;      // 장치 픽셀비 — 굵기는 CSS px 로 정한다
@@ -504,7 +514,9 @@ float lineCover(float below, float grad, float widthPx) {
 float intervalLine(float v, float grad, float interval, float widthPx) {
   if (interval <= 0.0 || grad <= uGradEps) return 0.0;
   float fr = fract(v / interval);
-  float fade = smoothstep(uLineFade.x, uLineFade.y, interval / grad);
+  // 흐림 문턱은 CSS px 로 잰다 — grad 는 장치 px 당 값 변화라 interval/grad 는 장치 px 간격이고,
+  // uLineFade 는 CSS px 로 적힌 수다(JS 의 intervalLineCoverage 와 같은 식 · 머리말 '등치선').
+  float fade = smoothstep(uLineFade.x, uLineFade.y, interval / (grad * max(uPxScale, 0.0001)));
   return lineCover((1.0 - fr) * interval, grad, widthPx) * fade;
 }
 

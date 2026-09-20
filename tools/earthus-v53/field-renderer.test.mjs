@@ -235,6 +235,36 @@ test('선이 화면 픽셀보다 촘촘해지면 스스로 사라진다', () => 
   assert.ok(intervalLineCoverage(19, 1.0, 10, 1.9) > 0.5);
 });
 
+// 2026-09-20 작업 E3 ④ (B1 반박 검증) — 흐림 문턱이 **장치 픽셀** 기준이었다.
+//   fwidth 는 장치 px 당 값 변화라 interval/grad 는 장치 px 간격인데, 문턱(FIELD_LINE.fadePx 3·8)은 CSS px 로 적힌 수다.
+//   DPR 2 인 폰에서는 같은 화면이 두 배로 넓게 읽혀, 사라져야 할 선이 절반쯤 살아남아 전선대가 허옇게 떴다.
+//   숫자를 박지 않고 상수(fadePx)에서 셈한다 — 문턱을 바꾸면 이 시험이 같이 따라간다.
+test('흐림 문턱은 CSS px 로 잰다 — DPR 2 인 폰에서 촘촘한 선이 허옇게 살아남지 않는다', () => {
+  const [gone, full] = FIELD_LINE.fadePx;
+  const interval = 5;
+  // CSS 간격이 '사라지는 값' 아래가 되게 기울기를 고른다: cssGap = interval / (grad × dpr).
+  const dpr = 2;
+  const grad = interval / (gone * 0.8 * dpr);              // CSS 간격 = fadePx[0] × 0.8 → 완전히 사라져야 한다
+  assert.ok(interval / (grad * dpr) < gone, '이 기울기에서 CSS 간격이 문턱 아래라야 시험이 뜻이 있다');
+  assert.ok(interval / grad > gone, '장치 간격으로만 보면 문턱 위다 — 옛 코드가 선을 그리던 자리');
+  const w = FIELD_LINE.minorWidthPx * dpr;
+  assert.equal(intervalLineCoverage(interval - 1 * grad, grad, interval, w, dpr), 0,
+    'DPR 2 에서 촘촘한 선이 남았다 — 전선대가 허옇게 뜬다');
+  // 같은 화면을 DPR 1 로 보면 CSS 간격이 두 배라 선이 산다 — 문턱 자체를 올린 것이 아니다.
+  const grad1 = interval / (full * 1.5);
+  assert.ok(intervalLineCoverage(interval - 1 * grad1, grad1, interval, FIELD_LINE.minorWidthPx, 1) > 0.5);
+  // 등치선 알파도 같은 자를 쓴다(거울 함수 둘이 어긋나면 화면과 시험이 갈린다).
+  const iso = isolineUniforms(isolineSpec(scaleOf('temp'), '5'), true);
+  assert.equal(isolineAlpha(25 - 1 * grad, grad, iso, dpr), 0, 'isolineAlpha 가 pxScale 을 흐림에 넘기지 않았다');
+  assert.ok(isolineAlpha(25 - 1 * grad, grad, iso, 1) > 0, 'DPR 1 에서는 같은 자리에 선이 선다');
+});
+
+test('셰이더도 같은 자로 잰다 — 굵기는 pxScale 을 곱하고 흐림은 pxScale 로 나눈다', () => {
+  // GLSL 은 시험이 실행하지 못한다(WebGL 없음). 글자로 잠근다 — JS 거울과 식이 갈리면 화면만 틀린다.
+  assert.match(FIELD_FRAG, /float fade = smoothstep\(uLineFade\.x, uLineFade\.y, interval \/ \(grad \* max\(uPxScale, 0\.0001\)\)\);/);
+  assert.match(FIELD_FRAG, /uniform float uPxScale;/);
+});
+
 // ---------------------------------------------------------------- uv 보정 · 값
 
 test('uv 보정이 서울 칸(행 105 · 열 614)을 제자리에 놓는다', () => {

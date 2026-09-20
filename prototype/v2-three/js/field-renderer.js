@@ -82,6 +82,12 @@
 //   팔레트는 sRGB 바이트 그대로 올리고(NoColorSpace) 셰이더도 colorspace 변환 없이 그대로 쓴다. 캔버스는 sRGB 이므로
 //   화면의 색 = 표의 #rrggbb = 범례(DOM)의 색이다. 선형화했다 되돌리는 길(SRGBColorSpace + colorspace_fragment)은
 //   같은 값을 두 번 반올림할 뿐이다. ⚠️ 둘을 섞으면(한쪽만 변환) 띠가 허옇게 뜨고 범례와 어긋난다.
+//   ⚠️ 2026-09-20(작업 E3 ⑤) — 그런데 **바탕색이 섞이는 몫**이 그 약속을 깼다. 불투명 0.8 이면 20% 가 밑의 지구 색이라,
+//      범례가 (238,129,48)인 25~30 °C 칸이 밤바다 위에서는 (192,107,46) · 밝은 사막 위에서는 (230,139,66) ·
+//      빙상 위에서는 (237,151,87) 로 칠해졌다(채널 최대 차 46 · 15~20 °C 칸은 47). 색이 곧 값인 화면에서 바탕이 값을 바꿨다.
+//      0.92 로 올려 그 몫을 8% 로 줄였다 — 같은 세 자리가 (220,120,47) · (235,133,55) · (238,138,64) 로 최대 차 19 다.
+//      지형 결은 바탕색 대신 **음영 계수**로 준다(아래 FIELD_SHADE · 셰이더 terrainShade): 색조는 그대로 두고 밝기만
+//      깎으므로 평지에서는 화면의 색이 범례의 색 그대로이고, 비탈에서만 최대 28% 어두워진다.
 //
 // 이 파일은 DOM 을 모른다. 계산은 순수 함수로 밖에 냈고 시험이 그대로 부른다. THREE 는 WebGL 없이도 재질·기하가 만들어진다.
 
@@ -101,9 +107,18 @@ export const FIELD_MAX_LEVELS = 8;
 export const FIELD_LIFT = 0.0012;
 
 // 색면의 불투명도. 1 이면 지형 음영이 사라져 '지구 위의 자료'가 아니라 색칠한 공이 되고(시안 01 은 산맥의 음영이 색 아래로 비친다),
-// 0.7(옛 대기 색면)이면 밝은 사막·빙상 위에서 구간색이 범례의 색과 달라 보인다. 0.8 = 색이 주인이고 지형은 결만 남는 값.
-// ⚠️ 화면으로 재지 못한 값이다(이 작업은 브라우저 금지). 본 세션이 시안과 대조해 이 한 줄을 고치면 된다.
-export const FIELD_OPACITY = 0.8;
+// 0.7(옛 대기 색면)이면 밝은 사막·빙상 위에서 구간색이 범례의 색과 달라 보인다.
+// ⚠️ 2026-09-20 작업 E3 ⑤ — 0.8 이었다. 그런데 **바탕색을 섞어 지형 결을 내면 색이 범례와 달라진다**(머리말 '색 공간'의
+//    실측 표: 채널 최대 차 47). 색이 곧 값인 화면에서 바탕이 값을 바꾸면 안 된다. 그래서 두 가지를 바꿨다:
+//      ① 0.92 로 올린다 — 바탕이 섞이는 몫이 20% 에서 8% 로 줄어 어느 바탕 위에서나 범례 색에 가깝다(최대 차 19).
+//      ② 지형 결은 바탕색이 아니라 **음영 계수**로 준다(아래 FIELD_SHADE). 색조는 그대로 두고 밝기만 깎는다.
+export const FIELD_OPACITY = 0.92;
+
+// 지형 결 — 구간색에 곱하는 계수. 셰이더가 전역 고도맵으로 경사 음영을 셈해 **평평한 구와의 차이만** 깎는다:
+//   평지에서는 정확히 1(= 범례 색 그대로) · 해가 등진 비탈에서만 어두워진다 · 밤면은 양쪽이 다 0 이라 손대지 않는다.
+//   k  차이에 곱하는 세기 · min  아무리 깎여도 여기까지(색을 못 알아볼 만큼 어두워지지 않게)
+// 위로는 1 을 넘지 않는다 — **범례 색이 천장이다.** 밝은 비탈이 범례보다 밝아지면 그 칸의 색을 다시 읽을 수 없다.
+export const FIELD_SHADE = Object.freeze({ k: 0.55, min: 0.72 });
 
 // 그리는 순서. 불투명한 지구는 따로 먼저 그려지므로 투명체끼리의 순서만 정한다.
 //   −1 = 구름(1)·강수(3)·입자(4)·라벨(7~8)보다 먼저 = **구름 아래 · 지표 위.** 지상 2 m 기온은 구름 밑의 값이다.
@@ -196,6 +211,23 @@ export const isolineUniforms = (spec, on = true) => {
 const smooth = (e0, e1, x) => {
   const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0)));
   return t * t * (3 - 2 * t);
+};
+
+/**
+ * 지형 결의 계수 — 셰이더 terrainShade 의 마지막 줄과 같은 식(시험용 거울). 기울기를 어떻게 구하느냐는 셰이더의 일이고,
+ * 여기서는 **규칙**을 잰다: 평지(lit = sphereLit)면 정확히 1, 해가 등진 비탈이면 어두워지되 min 아래로는 안 가고, 1 을 넘지 않는다.
+ *   lit  기울인 법선의 밝기 · sphereLit  평평한 구의 밝기 (둘 다 0~1)
+ */
+export const terrainShadeOf = (lit, sphereLit, k = FIELD_SHADE.k) => {
+  if (!(k > 0) || !(sphereLit > 0)) return 1;      // 세기 0 · 밤면 — 값을 어둡게 하지 않는다
+  const x = 1 + k * (lit - sphereLit);
+  return Math.max(FIELD_SHADE.min, Math.min(1, x));
+};
+
+/** 화면에 칠해지는 색 = 구간색 × 지형 결 × 불투명도 + 바탕 × (1 − 불투명도). 범례 색과 얼마나 다른지를 숫자로 보려고 둔다. */
+export const paintedColorOf = (band, under, { shade = 1, opacity = FIELD_OPACITY } = {}) => {
+  const a = Math.max(0, Math.min(1, opacity));
+  return band.map((c, i) => Math.round(c * shade * a + under[i] * (1 - a)));
 };
 
 /**
@@ -436,9 +468,15 @@ uniform vec2 uLineFade;      // 이웃 선 간격(**CSS** px): 사라지는 값 
 uniform float uGradEps;
 uniform float uHalfStep;     // 자료 눈금의 절반(기온 0.25) — 구간과 등치선은 '읽히는 값' v + uHalfStep 으로 정한다(머리말)
 uniform float uPxScale;      // 장치 픽셀비 — 굵기는 CSS px 로 정한다
-#ifdef FIELD_MASK_OCEAN
+// 지형 — 바다 가림과 지형 결이 **같은 고도맵 한 장**을 본다. 그래서 #ifdef 밖에 둔다(안에 또 적으면 같은 이름이
+// 두 번 선언돼 바다 레이어에서만 셰이더가 통째로 컴파일되지 않는다). main.js 지구의 uniform 객체를 그대로 물고 있다.
 uniform sampler2D uHeightMap;
 uniform float uHasHeight;
+uniform float uExagger;      // 음영 세기만 쓴다 — 변위는 정점 셰이더가 한다
+uniform float uShade;        // 지구의 음영 세기(설정 ⚙) — 지구와 색면이 같은 손잡이를 따른다
+uniform vec3 uSunDir;        // 실시간 태양(월드 고정) 또는 수동 조명 — main.js 가 매 프레임 넣는다
+uniform float uShadeK;       // 0 이면 지형 결 없음(평평한 구와의 차이에 곱하는 세기)
+#ifdef FIELD_MASK_OCEAN
 uniform sampler2D uLandMask;   // 등장방형 육지 판 — R > 0.5 면 육지(land-mask.js · 행 0 = 남 · NearestFilter)
 uniform float uHasLand;        // 0 이면 판이 없다 — 옛 동작(고도 부호만)으로 돈다
 #endif
@@ -509,6 +547,44 @@ float lineCover(float below, float grad, float widthPx) {
   if (grad <= uGradEps || below <= 0.0) return 0.0;
   float hw = widthPx * 0.5;     // ⚠️ 'half' 라고 이름 붙이면 안 된다 — GLSL ES 의 예약어라 셰이더가 통째로 컴파일되지 않는다
   return 1.0 - smoothstep(hw - 0.5, hw + 0.5, abs(below / grad - (hw + 0.5)));
+}
+
+// 전역 고도맵의 한 점(m). 바다 가림이 쓰던 그 두 줄과 같은 식이다 — 디테일 타일은 보지 않는다(색면의 '결'에는 전역 한 장이면 된다).
+// ⚠️ 이름을 heightAt 으로 두지 않는다: main.js 지구 셰이더의 같은 이름 함수와 헷갈리기 쉽고, 그쪽은 디테일 타일까지 섞는다.
+float fieldHeightM(float lon, float lat) {
+  float latC = clamp(lat, -1.4844, 1.4844);
+  vec2 muv = vec2(lon / (2.0 * PI) + 0.5, 0.5 - log(tan(PI * 0.25 + latC * 0.5)) / (2.0 * PI));
+  return dot(texture2D(uHeightMap, muv).rgb, vec3(65280.0, 255.0, 255.0 / 256.0)) - 32768.0;
+}
+
+// 지형 결 — 구간색에 곱하는 계수. main.js EARTH_FRAG 의 hillshade 와 **같은 기법**(고도 기울기로 법선을 기울여 태양과 내적)이되,
+// 돌려주는 것은 밝기가 아니라 **평평한 구와의 차이**다: 평지에서는 정확히 1 이라 화면의 색이 범례의 색 그대로이고,
+// 비탈에서만 어두워진다. 밤면은 양쪽이 다 0 이라 1 이 된다 — 색면은 값이지 조명이 아니다(밤에 값이 어두워지면 안 된다).
+// 위로는 1 을 넘지 않는다: 밝은 비탈이 범례보다 밝아지면 그 칸의 색을 되읽을 수 없다.
+// ⚠️ 폰 발열 — 이 함수는 고도맵을 최대 다섯 번 읽는다. 값이 1 로 정해지는 곳에서는 **읽기 전에** 빠져나간다:
+//    밤면(고도맵 0회 · 지구의 절반) · 바다와 극(1회 · 낮 쪽 화면의 대부분). 다섯 번 읽는 것은 해가 든 육지뿐이다.
+float terrainShade(vec3 nGeo, float lon, float lat) {
+  if (uHasHeight < 0.5 || uShadeK <= 0.0) return 1.0;
+  float sphereLit = clamp(dot(nGeo, uSunDir), 0.0, 1.0);   // ⚠️ 'flat' 이라 부르면 안 된다 — GLSL ES 의 예약어다
+  if (sphereLit <= 0.0) return 1.0;                        // 밤면 — 색면은 값이지 조명이 아니다(밤이라고 값이 어두워지면 안 된다)
+  float hC = fieldHeightM(lon, lat);
+  float poleFade = smoothstep(1.437, 1.4844, abs(lat));
+  // 지구와 같은 식 — 과장의 제곱근만큼만 음영을 키운다(같은 50배를 또 곱하면 낮은 구릉까지 자갈처럼 번쩍인다).
+  // 해수면 아래(측심 — 원본이 성겨 계단이 결로 드러난다)와 극에서는 0 이다.
+  float bumpK = sqrt(max(uExagger, 1.0)) * 2.0 * uShade * smoothstep(0.0, 30.0, hC) * (1.0 - poleFade);
+  if (bumpK <= 0.0) return 1.0;
+  vec3 crossUp = cross(vec3(0.0, 1.0, 0.0), nGeo);
+  if (length(crossUp) <= 1e-4) return 1.0;                 // 극에서는 동서 축이 없다 — 결을 만들지 않는다
+  float e = 0.0016;                                        // 전역 고도맵 한 칸쯤(약 10 km) — 이보다 잘게 미분하면 타일의 계단이 결이 된다
+  float arcE = e * 6371000.0 * max(cos(lat), 0.08);
+  float arcN = e * 6371000.0;
+  float slopeE = (fieldHeightM(lon + e, lat) - fieldHeightM(lon - e, lat)) / (2.0 * arcE);
+  float slopeN = (fieldHeightM(lon, lat + e) - fieldHeightM(lon, lat - e)) / (2.0 * arcN);
+  vec3 tE = normalize(crossUp);
+  vec3 tN = cross(nGeo, tE);
+  vec3 N = normalize(nGeo - (slopeE * tE + slopeN * tN) * bumpK);
+  float lit = clamp(dot(N, uSunDir), 0.0, 1.0);
+  return clamp(1.0 + uShadeK * (lit - sphereLit), ${FIELD_SHADE.min.toFixed(4)}, 1.0);
 }
 
 float intervalLine(float v, float grad, float interval, float widthPx) {
@@ -585,6 +661,9 @@ void main() {
   for (int i = 0; i < FIELD_MAX_BREAKS; i++) idx += step(uBreaks[i], vs);
   vec4 band = texture2D(uPalette, vec2((idx + 0.5) / uBandCount, 0.5));
   float bandA = band.a * uOpacity;
+  // 지형 결은 **바탕색을 섞어** 내지 않는다(그러면 밑에 무엇이 있느냐에 따라 같은 값이 다른 색으로 칠해져 범례와 어긋난다).
+  // 색조는 그대로 두고 밝기만 깎는 계수 하나로 준다 — 평지에서는 1 이라 화면의 색 = 범례의 색이다.
+  band.rgb *= terrainShade(n, lon, lat);
 
   // 등치선
   float line = 0.0;
@@ -633,7 +712,7 @@ export class FieldRenderer {
   constructor({
     scale, mode = 'scalar', mask = 'none', transfer = 'linear', missing = false, clip = false,
     terrain = null, geometry = null, segments = [1024, 512],
-    lift = FIELD_LIFT, opacity = FIELD_OPACITY, renderOrder = FIELD_RENDER_ORDER,
+    lift = FIELD_LIFT, opacity = FIELD_OPACITY, renderOrder = FIELD_RENDER_ORDER, shadeK = FIELD_SHADE.k,
   } = {}) {
     if (!MODES.includes(mode)) throw new RangeError(`field-renderer: 모르는 mode '${mode}'`);
     if (!MASKS.includes(mask)) throw new RangeError(`field-renderer: 모르는 mask '${mask}'`);
@@ -672,10 +751,15 @@ export class FieldRenderer {
       uGradEps: { value: FIELD_GRAD_EPS },
       uHalfStep: { value: 0 },
       uPxScale: { value: 1 },
-      // 지형 — main.js 의 uniform **객체**를 그대로 쓴다. 과장·고도맵이 바뀌면 저쪽이 value 를 고치고 이쪽은 같은 객체를 읽는다.
+      // 지형 — main.js 의 uniform **객체**를 그대로 쓴다. 과장·고도맵·태양이 바뀌면 저쪽이 value 를 고치고 이쪽은 같은 객체를 읽는다.
+      // (그래서 지형 결에 필요한 것이 늘어도 여기서 매 프레임 맞춰 줄 일이 없다 — 태양은 main.js tick 이 uSunDir 에 넣는다.)
       uHeightMap: t.uHeightMap || { value: null },
       uHasHeight: t.uHasHeight || { value: 0 },
       uExagger: t.uExagger || { value: 1 },
+      uShade: t.uShade || { value: 0.9 },
+      uSunDir: t.uSunDir || { value: new THREE.Vector3(0, 0, 1) },
+      // 지형 결의 세기. 지구 uniform 묶음이 없으면(시험 · 지형을 못 받은 세션) 0 — 셰이더가 그 줄을 지나간다.
+      uShadeK: { value: t.uHeightMap ? shadeK : 0 },
       uLift: { value: lift },
       // 육지 판 — 바다 가림 레이어만 쓴다. 판이 오기 전에는 uHasLand = 0 이라 셰이더가 이 줄을 지나간다(열린 실패).
       uLandMask: { value: null },

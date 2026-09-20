@@ -11,13 +11,13 @@ import { readFileSync } from 'node:fs';
 import * as THREE from '../../prototype/vendor/three-r184.module.min.js';
 
 import {
-  FIELD_FRAG, FIELD_GRAD_EPS, FIELD_LIFT, FIELD_LINE, FIELD_MAX_BREAKS, FIELD_MAX_LEVELS, FIELD_RENDER_ORDER,
-  FIELD_TERRAIN_GLSL, FIELD_VERT, FieldRenderer,
-  gridCoordOf, halfStepOf, intervalLineCoverage, isolineAlpha, isolineUniforms, lineCoverage, paintedBandIndex, scaleUniforms,
-  shaderBandIndex, shaderValueAt,
+  FIELD_FRAG, FIELD_GRAD_EPS, FIELD_LIFT, FIELD_LINE, FIELD_MAX_BREAKS, FIELD_MAX_LEVELS, FIELD_OPACITY,
+  FIELD_RENDER_ORDER, FIELD_SHADE, FIELD_TERRAIN_GLSL, FIELD_VERT, FieldRenderer,
+  gridCoordOf, halfStepOf, intervalLineCoverage, isolineAlpha, isolineUniforms, lineCoverage, paintedBandIndex,
+  paintedColorOf, scaleUniforms, shaderBandIndex, shaderValueAt, terrainShadeOf,
 } from '../../prototype/v2-three/js/field-renderer.js';
 import {
-  BREAK_PAD, FIELD_SCALES, SCALE_IDS, bandIndex, defineScale, isolineSpec, legendModel, scaleOf,
+  BREAK_PAD, FIELD_SCALES, SCALE_IDS, bandIndex, defineScale, isolineSpec, legendModel, paletteRGBA, scaleOf,
 } from '../../prototype/v2-three/js/field-scales.js';
 import { createGfsFrames, uvTransformOf } from '../../prototype/v2-three/js/gfs-frames.js';
 
@@ -136,10 +136,12 @@ test('셰이더 소스 — 값을 보간하고 색은 양자화한다: 팔레트
   assert.match(frag, /float grad = fwidth\(vs\);\s+line = intervalLine\(vs, grad, uIsoInterval,/, '등치선도 같은 값으로 긋는다 — 선과 색 경계가 같은 자리다');
   assert.match(frag, /vec2\(\(idx \+ 0\.5\) \/ uBandCount, 0\.5\)/, '칸 한가운데를 읽는다');
   assert.doesNotMatch(frag, /\bmix\s*\(/, '프래그먼트에 mix() 가 없다 — 값의 보간도 a + (b − a)·t 로 직접 쓴다');
-  // band.rgb 가 다른 색과 만나는 곳은 등치선을 얹는 한 줄뿐이고 상대는 상수 uLineColor 다.
+  // band.rgb 가 **다른 색**과 만나는 곳은 등치선을 얹는 한 줄뿐이고 상대는 상수 uLineColor 다.
+  // (2026-09-20 작업 E3 ⑤ — 지형 결은 색이 아니라 스칼라 계수 하나를 곱한다. 채널마다 같은 수를 곱하므로 색조가 그대로다.)
   const uses = frag.split('\n').filter((l) => /band\.rgb/.test(l));
-  assert.equal(uses.length, 1);
-  assert.match(uses[0], /uLineColor \* line \+ band\.rgb \* bandA \* \(1\.0 - line\)/);
+  assert.equal(uses.length, 2);
+  assert.match(uses[0], /^\s*band\.rgb \*= terrainShade\(n, lon, lat\);$/, '지형 결이 색을 섞으면 그것은 바탕색 혼합이다');
+  assert.match(uses[1], /uLineColor \* line \+ band\.rgb \* bandA \* \(1\.0 - line\)/);
   assert.doesNotMatch(frag, /colorspace_fragment/, 'sRGB 바이트를 그대로 내보낸다 — 변환을 한쪽만 넣으면 범례와 색이 어긋난다');
   // 값은 풀고 나서 섞는다 · 고원에서 정확한 꼴.
   assert.match(frag, /floor\(texture2D\(tex, uv\)\.rg \* 255\.0 \+ 0\.5\)/, '정수 바이트로 되돌린 뒤 푼다');
@@ -257,6 +259,88 @@ test('흐림 문턱은 CSS px 로 잰다 — DPR 2 인 폰에서 촘촘한 선�
   const iso = isolineUniforms(isolineSpec(scaleOf('temp'), '5'), true);
   assert.equal(isolineAlpha(25 - 1 * grad, grad, iso, dpr), 0, 'isolineAlpha 가 pxScale 을 흐림에 넘기지 않았다');
   assert.ok(isolineAlpha(25 - 1 * grad, grad, iso, 1) > 0, 'DPR 1 에서는 같은 자리에 선이 선다');
+});
+
+// ---------------------------------------------------------------- 불투명도 · 지형 결 (2026-09-20 작업 E3 ⑤)
+
+// 바탕색을 섞어 지형 결을 내면 밑에 무엇이 있느냐에 따라 **같은 값이 다른 색**으로 칠해진다 — 색이 곧 값인 화면에서
+// 그것은 범례가 거짓말을 한다는 뜻이다. 여기서는 '어느 바탕 위에서 얼마나 달라지나'를 숫자로 잰다.
+const UNDERS = Object.freeze([
+  Object.freeze([10, 20, 40]),      // 밤바다
+  Object.freeze([200, 180, 140]),   // 밝은 사막
+  Object.freeze([235, 240, 245]),   // 빙상
+]);
+const maxCh = (a, b) => Math.max(...a.map((c, i) => Math.abs(c - b[i])));
+const bandRGB = (scaleId, i) => [...paletteRGBA(scaleOf(scaleId)).slice(i * 4, i * 4 + 3)];
+
+test('화면의 색이 범례의 색이다 — 바탕이 섞이는 몫을 줄였다', () => {
+  const worstAt = (a) => Math.max(...[6, 8, 0].map((i) => {
+    const band = bandRGB('temp', i);
+    return Math.max(...UNDERS.map((u) => maxCh(paintedColorOf(band, u, { opacity: a }), band)));
+  }));
+  // 바탕이 섞이는 몫의 상한은 (1 − 불투명도) × 255 다 — 숫자를 박지 않고 상수에서 셈한다.
+  assert.ok(worstAt(FIELD_OPACITY) <= 255 * (1 - FIELD_OPACITY) + 0.5, `범례와 ${worstAt(FIELD_OPACITY)} 만큼 다르다`);
+  // 옛 값(0.8)보다 실제로 가까워졌다 — 이 줄이 없으면 불투명도를 도로 내려도 위 단언이 통과한다.
+  assert.ok(worstAt(FIELD_OPACITY) < worstAt(0.8) * 0.6,
+    `옛 0.8 의 최대 차 ${worstAt(0.8)} → 지금 ${worstAt(FIELD_OPACITY)}`);
+  // 기압처럼 일부러 옅은 눈금(칸 알파 0.4)은 옅은 채로 남는다 — 이 작업이 '선이 주인공'을 뒤집지 않는다.
+  const pres = paletteRGBA(scaleOf('pressure'));
+  assert.ok(pres[3] / 255 * FIELD_OPACITY < 0.45, '기압 색면이 더 이상 옅지 않다');
+});
+
+test('지형 결은 음영 계수로 준다 — 평지에서는 정확히 1(= 범례 색 그대로), 위로는 범례를 넘지 않는다', () => {
+  // 평지: 기울인 법선이 평평한 구와 같다 → 차이 0 → 1. 이것이 '화면의 색 = 범례의 색'을 지킨다.
+  for (const s of [0.1, 0.5, 0.9, 1]) assert.equal(terrainShadeOf(s, s), 1, `평지(${s})에서 색이 바뀌었다`);
+  // 해를 등진 비탈: 어두워지되 바닥 아래로는 안 간다(색을 못 알아볼 만큼 어두워지지 않게).
+  assert.ok(terrainShadeOf(0.2, 0.8) < 1);
+  assert.equal(terrainShadeOf(0, 1), Math.max(FIELD_SHADE.min, 1 - FIELD_SHADE.k));
+  assert.ok(terrainShadeOf(0, 1) >= FIELD_SHADE.min);
+  // 해를 마주한 비탈: 천장이 1 이다 — 범례보다 밝아지면 그 칸의 색을 되읽을 수 없다.
+  assert.equal(terrainShadeOf(1, 0.2), 1);
+  // 밤면은 손대지 않는다 — 색면은 값이지 조명이 아니다.
+  assert.equal(terrainShadeOf(0, 0), 1);
+  // 세기 0(지형을 못 받은 세션)이면 결이 없다.
+  assert.equal(terrainShadeOf(0, 1, 0), 1);
+  // 깎이는 폭은 눈에 보이되 색조를 바꾸지는 않는다(밝기만 곱한다).
+  const band = bandRGB('temp', 8);
+  const dark = paintedColorOf(band, UNDERS[0], { shade: terrainShadeOf(0, 1) });
+  assert.ok(maxCh(dark, band) > 20, '결이 눈에 안 띄면 지형이 사라진 색칠한 공이 된다');
+  const ratios = dark.map((c, i) => c / Math.max(1, paintedColorOf(band, UNDERS[0])[i]));
+  assert.ok(Math.max(...ratios) - Math.min(...ratios) < 0.2, '채널마다 다른 비율로 깎였다 — 색조가 바뀐다');
+});
+
+test('셰이더의 지형 결 — 같은 규칙이고, 값이 1 로 정해지는 곳에서는 고도맵을 읽지 않는다', () => {
+  // GLSL 은 시험이 실행하지 못한다. 규칙과 발열 장치를 글자로 잠근다.
+  assert.match(FIELD_FRAG, /float terrainShade\(vec3 nGeo, float lon, float lat\)/);
+  assert.match(FIELD_FRAG, /band\.rgb \*= terrainShade\(n, lon, lat\);/, '구간색에 계수를 곱하지 않는다');
+  assert.match(FIELD_FRAG, new RegExp(`clamp\\(1\\.0 \\+ uShadeK \\* \\(lit - sphereLit\\), ${FIELD_SHADE.min.toFixed(4)}, 1\\.0\\)`),
+    'JS 거울(terrainShadeOf)과 식이 다르다');
+  // 밤면 · 바다 · 극에서는 읽기 전에 빠져나간다(폰 발열).
+  assert.match(FIELD_FRAG, /if \(sphereLit <= 0\.0\) return 1\.0;[\s\S]{0,200}?float hC = fieldHeightM\(lon, lat\);/);
+  assert.match(FIELD_FRAG, /if \(bumpK <= 0\.0\) return 1\.0;[\s\S]{0,400}?slopeE/);
+  // (예약어는 아래 '셰이더 글자' 시험이 두 단계 전부를 본다 — 여기서 같은 목록을 두 벌로 만들지 않는다.)
+  // 같은 uniform 을 두 번 선언하지 않는다 — #ifdef 안팎에 나눠 적으면 바다 레이어에서만 컴파일이 깨진다.
+  for (const u of ['uHeightMap', 'uHasHeight', 'uSunDir', 'uShade', 'uShadeK', 'uExagger']) {
+    assert.equal((FIELD_FRAG.match(new RegExp(`^\\s*uniform\\s+\\w+\\s+${u};`, 'gm')) || []).length, 1, `uniform ${u} 선언이 하나가 아니다`);
+  }
+});
+
+test('지형 결의 uniform 은 지구의 객체를 그대로 문다 — 태양·음영 손잡이를 두 벌로 만들지 않는다', () => {
+  const terrain = {
+    uHeightMap: { value: 'tex' }, uHasHeight: { value: 1 }, uExagger: { value: 50 },
+    uShade: { value: 0.9 }, uSunDir: { value: new THREE.Vector3(0, 0, 1) },
+  };
+  const r = new FieldRenderer({ scale: scaleOf('temp'), terrain, segments: [8, 4] });
+  for (const k of ['uHeightMap', 'uHasHeight', 'uExagger', 'uShade', 'uSunDir']) {
+    assert.equal(r.uniforms[k], terrain[k], `${k} 를 새 객체로 만들었다 — 지구가 바꿔도 색면이 안 따라간다`);
+  }
+  assert.equal(r.uniforms.uShadeK.value, FIELD_SHADE.k);
+  r.dispose();
+  // 지형 묶음이 없으면(시험 · 지형을 못 받은 세션) 결을 만들지 않는다 — 셰이더가 그 줄을 지나간다.
+  const bare = new FieldRenderer({ scale: scaleOf('temp'), segments: [8, 4] });
+  assert.equal(bare.uniforms.uShadeK.value, 0);
+  assert.equal(bare.uniforms.uOpacity.value, FIELD_OPACITY);
+  bare.dispose();
 });
 
 test('셰이더도 같은 자로 잰다 — 굵기는 pxScale 을 곱하고 흐림은 pxScale 로 나눈다', () => {
@@ -437,7 +521,9 @@ test('셰이더 글자 — GLSL ES 예약어를 이름으로 쓰지 않았고 �
   assert.match(lf(FIELD_FRAG), /varying vec3 vUnit;/);
   assert.match(lf(FIELD_VERT), /uniform sampler2D uHeightMap;\s+uniform float uHasHeight;/);
   // 바다 가림은 두 단이다 — 육지 판(uLandMask · 2026-09-20 반박 검증) 과 고도(uHeightMap). 둘 다 제 '있음' 플래그를 달고 온다.
-  assert.match(lf(FIELD_FRAG), /#ifdef FIELD_MASK_OCEAN\s+uniform sampler2D uHeightMap;\s+uniform float uHasHeight;\s+uniform sampler2D uLandMask;[^\n]*\s+uniform float uHasLand;[^\n]*\s+#endif/);
+  // ⚠️ 고도맵은 2026-09-20(작업 E3 ⑤)부터 지형 결도 쓴다 — 그래서 #ifdef **밖**에 한 번만 선언한다(안에 또 적으면
+  //    같은 이름이 두 번 선언돼 바다 레이어에서만 셰이더가 통째로 컴파일되지 않는다). 판 둘만 ifdef 안에 남는다.
+  assert.match(lf(FIELD_FRAG), /uniform sampler2D uHeightMap;\s+uniform float uHasHeight;[\s\S]*#ifdef FIELD_MASK_OCEAN\s+uniform sampler2D uLandMask;[^\n]*\s+uniform float uHasLand;[^\n]*\s+#endif/);
   // 셰이더가 읽는 uniform 은 전부 재질에 있다(이름이 어긋나면 값이 0 으로 들어가 색면이 한 색이 된다).
   const r = new FieldRenderer({ scale: scaleOf('temp'), mode: 'magnitudeRG', mask: 'ocean', segments: [8, 4] });
   const declared = new Set([...lf(FIELD_VERT + FIELD_FRAG).matchAll(/uniform\s+\w+\s+(\w+)/g)].map((m) => m[1]));

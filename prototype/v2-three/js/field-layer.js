@@ -80,6 +80,8 @@ export const FIELD_DESCRIPTORS = Object.freeze({
   }),
   // 해면기압(2026-09-20 D1) — 지시서 W1 표: "색면은 옅게 · 4 hPa 등압선 + H/L 기호". 색면의 불투명도는 눈금표가 정한다
   // (field-scales.js pressure 의 칸마다 0.4 → 팔레트 알파 102 → 셰이더에서 × FIELD_OPACITY 0.8 = 0.32. 선이 주인공이다).
+  // ⚠️ 2026-09-20(작업 E3 ⑤) 정정 — FIELD_OPACITY 가 0.92 가 됐다. 이 칸의 실제 불투명도는 0.4 × 0.92 = 0.368 이다.
+  //    옅다는 뜻은 그대로고(선이 주인공이다), 바탕색이 섞이는 몫이 줄어 색면이 범례 색에 더 가까워진 것뿐이다.
   // 등압선 간격은 4 hPa 하나뿐이라 간격 단추가 없다 — 선택지가 하나면 단추로 가장하지 않는다(죽은 토글 금지).
   // symbols 훅은 이 한 줄뿐이다: FieldLayer 가 field-symbols.js 의 층을 만들어 키프레임마다 먹인다(기온·풍속에는 없다).
   // 예전 'presgrid' 는 Open-Meteo 5° 한 시각의 선형 램프(live-layers.js PRES_RAMP)였고 등압선도 H/L 도 없었다.

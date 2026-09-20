@@ -446,7 +446,7 @@ export function createPointReadout(deps = {}) {
       let drift = '';
       if (timeBus.isNow && !timeBus.isNow()) {
         drift += `<p>${esc(ko
-          ? `타임라인이 지금이 아닙니다 — 파도·수온·해류는 현재 시각 한 장이라 그 시각의 값이 아닙니다${moved ? '.' : '(바람만 예보 프레임입니다).'}`
+          ? `타임라인이 지금이 아닙니다 — 파도·수온·해류는 현재 시각 한 장이라 그 시각의 값이 아닙니다${(moved || !sea.wind) ? '.' : '(바람만 예보 프레임입니다).'}`
           : `The timeline is not at now — waves, sea temperature and current are a single present-time snapshot, not values for that hour${moved ? '.' : ' (only the wind is a forecast frame).'}`)}</p>`;
       }
       // ⚠️ 바람을 **읽지 못한** 카드에는 이 줄을 적지 않는다(2026-09-21 재검). 풍속 줄이 '—' 이고

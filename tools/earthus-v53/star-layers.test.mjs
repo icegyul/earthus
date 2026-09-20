@@ -74,7 +74,10 @@ test('main.js 가 매 프레임 무대를 정리한다 — 구름 불투명도 �
   // 예보 범위 밖이라 색면이 안 보이는데 입자만 흰색으로 남으면 색을 말해 줄 것이 화면에 하나도 없다.
   assert.match(body, /windLayer\.setColorMode\(star === 'field' && drawing \? 'white' : 'speed'\)/);
   // 색면은 한 번에 하나라, 기온을 보는 중에 풍속 색면을 자동으로 깔면 기온이 조용히 꺼진다 — 깔린 색면이 없을 때만 깐다
-  assert.match(body, /const otherFieldOn = liveLayers\.activeIds\(\)\.some\(\(id\) => id !== 'windgrid' && isFieldLayerId\(id\)\)/);
+  /* ⚠️ 2026-09-21 — 술어가 **배타 묶음과 같은 넓이**여야 한다. isFieldLayerId 는 FIELD_DESCRIPTORS 만 보는데
+     잠기는 땅(slr)도 같은 묶음이다 — 안 세면 바람을 켤 때 풍속 색면이 자동으로 깔리며 그것을 조용히 내린다
+     (2026-09-21 반박 검증이 잡은 자리). */
+  assert.match(body, /const otherFieldOn = liveLayers\.activeIds\(\)\.some\(\(id\) => id !== 'windgrid' && \(isFieldLayerId\(id\) \|\| id === 'slr'\)\)/);
   assert.match(body, /const want = windOn \? \(!speedOn && !otherFieldOn\) : \(this\.autoSpeed && speedOn\);/);
   assert.match(body, /liveLayers\.toggle\('windgrid'\)/);
   // 우리가 같이 켠 것만 같이 끈다 — 사용자가 따로 켠 풍속 색면을 바람을 끌 때 같이 끄면 안 된다

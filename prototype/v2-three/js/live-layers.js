@@ -722,7 +722,10 @@ export class LiveLayers {
       // 원반을 놓을 자리(면적가중 중심점)는 번들 안에 있다 — 없어도 색인만으로 그린다(bbox 중점으로 물러난다).
       case 'khoaflood': return Promise.all([
         fetchJson('/ocean/khoa/flood-index.json', 20000),
-        fetch('./data/khoa-flood-anchors.json').then((r) => (r.ok ? r.json() : null)).catch(() => null),
+        // ⚠️ no-store — 이 파일은 data/* 라 운영에서 max-age=86400 이 붙는다. 수집기가 파일 크기를 바꾼 날
+        //    카드가 **하루 동안 옛 용량**을 말한다(2026-09-21 실측: 33 MB → 4.82 MB 인데 고지는 33 MB).
+        //    3.7 KB 라 비용이 없고, 같은 Promise.all 의 짝(fetchJson)과 신선도가 같아진다.
+        fetch('./data/khoa-flood-anchors.json', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
       ]).then(([idx, anch]) => ({ ...idx, _anchors: (anch && anch.districts) || null }));
       // 평년 대비 기온 — 실황과 평년을 같은 지점 id로 맞춰 뺀다
       case 'tempanom': return Promise.all([

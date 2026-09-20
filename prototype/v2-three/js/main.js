@@ -3119,7 +3119,9 @@ async function main() {
       // ⚠️ 색면은 한 번에 하나다(toggleFieldLayer). 그래서 기온을 보는 중에 바람을 켜면서 풍속 색면을 자동으로 깔면
       //    **기온이 조용히 꺼진다.** 지시서 W3: '입자 토글은 기온·강수 색면 위에서도 유지된다 — 색면 라디오와 무관한 공용 오버레이'.
       //    그러니 자동으로 까는 것은 **깔린 색면이 하나도 없을 때뿐**이다. 기온 위에서는 흰 입자가 흐른다.
-      const otherFieldOn = liveLayers.activeIds().some((id) => id !== 'windgrid' && isFieldLayerId(id));
+      // ⚠️ 배타 묶음과 **같은 넓이**로 물어야 한다(2026-09-21 반박 검증). isFieldLayerId 는 FIELD_DESCRIPTORS 만 보는데
+      //    잠기는 땅(slr)도 같은 묶음이다 — 안 세면 바람을 켤 때 풍속 색면이 자동으로 깔리며 그것을 조용히 내린다.
+      const otherFieldOn = liveLayers.activeIds().some((id) => id !== 'windgrid' && (isFieldLayerId(id) || id === 'slr'));
       if (windOn !== this.windWasOn && !this.busy) {
         this.windWasOn = windOn;
         const want = windOn ? (!speedOn && !otherFieldOn) : (this.autoSpeed && speedOn);
@@ -3769,7 +3771,7 @@ async function main() {
     const envCells = [];
     if (d.air && d.air.km < 400) {
       const g = AIR_GRADE_KO[d.air.it.grade] || ['—', '#7f95a8'];
-      envCells.push(`<div class="me-env"><span class="k">💨 대기질<small>${escUI(d.air.it.name)} ${d.air.km}km</small></span><b style="color:${g[1]}">${g[0]} · PM2.5 ${d.air.it.pm25 ?? '—'}㎡</b></div>`);
+      envCells.push(`<div class="me-env"><span class="k">💨 대기질<small>${escUI(d.air.it.name)} ${d.air.km}km</small></span><b style="color:${g[1]}">${g[0]} · PM2.5 ${d.air.it.pm25 ?? '—'} ㎍/㎥</b></div>`);
     } else {
       envCells.push('<div class="me-env"><span class="k">💨 대기질<small>한국 관측망</small></span><b class="na">주변 측정소 없음</b></div>');
     }

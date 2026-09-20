@@ -37,7 +37,14 @@ const px = (expr, vars, env = {}, depth = 0) => {
     return `(${px(vars[n], vars, env, depth + 1)}px)`;
   });
   s = s.replace(/env\([a-z-]+\)/g, '0px');
-  s = s.replace(/(\d*\.?\d+)vh/g, (_, n) => `${(Number(n) / 100) * vh}px`);
+  /* ⚠️ **vh 와 dvh 는 다른 자다**(2026-09-21 반박 검증이 이 셈기의 맹점을 잡았다).
+     vh(=lvh)는 주소창이 접힌 '가장 큰' 높이이고, dvh 와 position:fixed 요소는 **지금 보이는** 높이를 쓴다.
+     예전에는 둘 다 VH 로 풀어서, 100vh 로 잡은 상자와 fixed 로 잡은 상자가 어긋나는 결함을
+     **구조적으로 못 봤다** — 실제로 그 결함이 들어왔고 시험은 초록이었다.
+     env.lvh 를 주면 vh 만 그 값으로 푼다(dvh·%·fixed 는 그대로 보이는 높이). */
+  const lvh = env.lvh ?? vh;
+  s = s.replace(/(\d*\.?\d+)dvh/g, (_, n) => `${(Number(n) / 100) * vh}px`);
+  s = s.replace(/(\d*\.?\d+)vh/g, (_, n) => `${(Number(n) / 100) * lvh}px`);
   s = s.replace(/(\d*\.?\d+)vw/g, (_, n) => `${(Number(n) / 100) * vw}px`);
   // % 는 화면 높이로 푼다. 이 셈기는 세로 값(top·height·bottom·margin)에만 쓰므로
   // 고정 위치 요소의 % 기준은 언제나 뷰포트 높이다. 가로 값에는 % 를 쓰지 않는다.
@@ -278,4 +285,39 @@ test('㉢ 출처 독 펼치기 ▾ — 표적 44×44, 왼쪽 이웃은 누를 �
   const navUnderside = px(prop(decl(PHONE, '#bottom-nav'), 'bottom'), V);
   assert.ok(hudRowCenter + t.h / 2 <= navUnderside,
     `표적 위쪽 끝 ${hudRowCenter + t.h / 2} 가 알약 아랫변 ${navUnderside} 를 넘는다`);
+});
+
+/* ── ㉣ 주소창이 펴져 있는 진짜 폰 (2026-09-21 반박 검증) ─────────────────────
+   이 페이지는 html·body 가 overflow:hidden 이라 **주소창이 접히지 않는다.**
+   그래서 `100vh`(=lvh · 접혔을 때의 가장 큰 높이)와 `position:fixed` 가 쓰는
+   '지금 보이는 높이'가 **늘** 다르다. 두 상자를 다른 자로 재면 그 차이만큼 패널이
+   내려앉아 마지막 묶음이 도로 알약에 깔린다.
+   개발자 도구 에뮬레이션에는 주소창이 없어 lvh == 보이는 높이라 재현되지 않는다 —
+   화면 시험이 못 보는 종류이므로 여기서 수로 잡는다. */
+test('㉣ 주소창이 펴져 있어도 메뉴 바닥이 알약 위에 있다 — dvh 로 재야 한다', () => {
+  const VIS = 712;          // 지금 보이는 높이(주소창이 100px 을 먹은 상태)
+  const LVH = 812;          // 주소창이 접혔을 때의 높이 = 100vh 가 푸는 값
+  const env = { vh: VIS, lvh: LVH };
+
+  const mp = decl(PHONE, '#menu-panel');
+  const bottom = px(prop(mp, 'top'), V, env) + px(prop(mp, 'max-height'), V, env) / 2;
+
+  const nav = decl(PHONE, '#bottom-nav');
+  const navTop = VIS - px(prop(nav, 'bottom'), V, env) - px('var(--nav-h)', V, env);
+
+  assert.ok(bottom <= navTop,
+    `주소창이 ${LVH - VIS}px 펴져 있을 때 패널 바닥 ${Math.round(bottom)} 이 알약 윗변 ${Math.round(navTop)} 보다 ${Math.round(bottom - navTop)}px 아래다`);
+
+  // 주소창이 없는 환경(에뮬레이터·데스크톱)에서도 그대로여야 한다 — 고치면서 다른 화면을 깨지 않았다.
+  const same = { vh: LVH, lvh: LVH };
+  const b2 = px(prop(mp, 'top'), V, same) + px(prop(mp, 'max-height'), V, same) / 2;
+  const n2 = LVH - px(prop(nav, 'bottom'), V, same) - px('var(--nav-h)', V, same);
+  assert.ok(b2 <= n2, '주소창이 없을 때조차 깔린다');
+});
+
+test('㉣ 셈기가 vh 와 dvh 를 갈라 푼다 — 안 그러면 이 부류를 영영 못 본다', () => {
+  const env = { vh: 712, lvh: 812 };
+  assert.equal(px('100vh', V, env), 812, 'vh 를 보이는 높이로 풀면 결함이 숨는다');
+  assert.equal(px('100dvh', V, env), 712, 'dvh 는 지금 보이는 높이다');
+  assert.equal(px('100vh', V, { vh: 812 }), 812, '주소창이 없으면 둘이 같다');
 });

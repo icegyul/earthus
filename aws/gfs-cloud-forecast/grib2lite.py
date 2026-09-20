@@ -109,7 +109,27 @@ def describe(secs):
         unit = s4[17]
         fh = _u(s4, 18, 4)
         d['forecastHours'] = fh if unit == 1 else (fh * 24 if unit == 2 else None)
+    if tmpl4 == 8 and len(s4) >= 53:
+        # 템플릿 4.8 = 구간 통계(평균·누적). 구간의 '시작'이 forecastHours 이고 길이가 여기 있다.
+        # 왜 읽나(2026-09-20): GFS 의 APCP(누적강수)는 한 스텝에 **두 장** 온다 —
+        #   6시간마다 0 으로 되돌아가는 버킷(6-9 hour acc)과 런 시작부터의 총량(0-9 hour acc).
+        #   카테고리·번호·레벨이 똑같아서 이 구간 길이를 안 읽으면 둘을 가를 수 없다.
+        # 옥텟(1부터): 42 구간 수 · 47 통계 처리(0 평균 · 1 누적) · 49 구간 단위 · 50-53 구간 길이.
+        # 실자료로 대조했다(2026091918 f009): 누적 두 장이 (시작 6, 길이 3) · (시작 0, 길이 9).
+        d['statProcess'] = s4[46]
+        d['rangeHours'] = _hours(s4[48], _u(s4, 49, 4))
     return d
+
+
+# 코드표 4.4 — 시간 단위를 '시간'으로. 모르는 단위는 값을 짐작하지 않고 None 을 준다.
+_UNIT_HOURS = {1: 1, 2: 24, 10: 3, 11: 6, 12: 12}
+
+
+def _hours(unit, n):
+    if unit == 0:                                # 분 — 시간으로 나누어떨어질 때만
+        return n // 60 if n % 60 == 0 else None
+    mul = _UNIT_HOURS.get(unit)
+    return n * mul if mul else None
 
 
 def _grid(secs):

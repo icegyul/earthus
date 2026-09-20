@@ -53,7 +53,11 @@ fi
 echo "== 3/3 실행 =="
 if [[ "$INVOKE" == "1" ]]; then
   OUT="$TMP/out.json"
-  aws lambda invoke --function-name "$FN" --region "$REGION" --cli-read-timeout 330 \
+  # 읽기 제한을 함수 한도(900초)보다 길게 둔다. 330초였다 — 기준 실측이 243~270초라 빠듯했고,
+  # 2026-09-20 필드 프레임(t·u·m·a)을 더해 300초 안팎이 예상된다. 제한을 넘기면 CLI 가 끊고 **다시 부른다**
+  # (같은 런을 두 번 만든다). 한 번만 부르도록 재시도도 끈다.
+  AWS_MAX_ATTEMPTS=1 \
+  aws lambda invoke --function-name "$FN" --region "$REGION" --cli-read-timeout 930 \
     --payload '{}' "$(w "$OUT")" --query 'StatusCode' --output text
   python - "$(w "$OUT")" <<'PY'
 import json, sys

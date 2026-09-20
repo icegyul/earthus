@@ -728,11 +728,13 @@ export const PHENOMENA = Object.freeze({
     label: Object.freeze({ ko: '기압', en: 'Pressure' }),
     short: Object.freeze({ ko: '기압', en: 'Pressure' }),
     question: Object.freeze({ ko: '고기압과 저기압은 어디인가', en: 'Where are the highs and the lows?' }),
-    capabilities: Object.freeze({ current: true, history: false, intelligence: false, forecast: false, simulation: false, evidence: true, report: false }),
+    // 2026-09-20 D1 — presgrid 가 Open-Meteo 5° **한 시각**에서 GFS 0.5° 5일 예보로 바뀌었는데 이 줄은 그대로였다.
+    // 레지스트리는 화면이 읽는 정본이라, 예보가 있는데 forecast:false 면 '앞' 탭이 통째로 닫힌다(ui-shell CAP_TAB).
+    capabilities: Object.freeze({ current: true, history: false, intelligence: false, forecast: true, simulation: false, evidence: true, report: false }),
     availability: 'partial',
     evidenceProfile: 'PROVIDER_FORECAST',
-    temporalMode: '지금(1시간 갱신)',
-    scope: '전지구 5°(약 555km) 격자의 해면기압. 등압선용 1°(약 111km) 동아시아 판이 서버에 있으나 v2 는 읽지 않는다.',
+    temporalMode: '지금 + 5일 예보(3시간 프레임 · 런은 6시간마다)',
+    scope: '전지구 0.5°(약 55km) 격자의 해면기압. 4 hPa 등압선과 H/L 중심 기호를 그 판에서 직접 긋는다(1° 동아시아 판은 쓰지 않는다).',
     dataProducts: Object.freeze(['weather/presgrid']),
   }),
   'weather.station_obs': Object.freeze({

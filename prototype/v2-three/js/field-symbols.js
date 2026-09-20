@@ -244,7 +244,8 @@ export class FieldSymbols {
     this.maskInfo = null;
     this.maskError = null;          // 고도를 읽다 던졌다(교차 출처로 더럽혀진 캔버스 등) — 기호만 없고 색면은 산다
     this.findError = null;
-    this.carry = new Set();           // 직전 키프레임에 **보이던** 중심 객체
+    this.carry = new Set();           // 직전 키프레임에 **보이던** 중심 객체(place 가 읽는다)
+    this.lastShown = new Set();       // tick 이 적는다 — 스프라이트 불투명도를 상태로 쓰지 않는다(rememberShown)
     this.visible = false;
     this.shown = { H: 0, L: 0 };
     this.finds = 0;                   // 프레임에서 중심을 찾은 횟수(시험·콘솔 확인용)
@@ -355,21 +356,33 @@ export class FieldSymbols {
   }
 
   place(mix, fresh) {
-    if (fresh) this.carry = new Set(this.visibleCenters());
-    this.setSymbols(rankSymbols(this.pairs, mix, { minProminence: this.minProminence, carry: this.carry }));
+    if (fresh) this.carry = this.lastShown;
+    const list = rankSymbols(this.pairs, mix, { minProminence: this.minProminence, carry: this.carry });
+    // 그리지 않고 키프레임을 잇달아 지나가도(타임라인을 빠르게 끌 때) 기억이 끊기지 않게, **이어진 줄**의 중심을
+    // 표에 얹어 둔다. 보였다고 지어내는 것이 아니다 — 보이던 것과 같은 중심이라는 뜻이고,
+    // 다음 tick 의 rememberShown 이 '정말 보인 것'으로 표를 다시 적는다.
+    if (fresh) {
+      for (const c of list) {
+        if (!c.carried || !c.pair) continue;
+        if (c.pair.a) this.lastShown.add(c.pair.a);
+        if (c.pair.b) this.lastShown.add(c.pair.b);
+      }
+    }
+    this.setSymbols(list);
   }
 
-  // 지금 **보이는** 기호가 딛고 선 중심 객체들 — 두 키프레임의 것을 다 넣는다(위 rankSymbols 의 ⚠️).
-  visibleCenters() {
-    const out = [];
+  // 마지막으로 **정말 보였던** 기호가 딛고 선 중심 객체들을 다시 적는다 — 두 키프레임의 것을 다 넣는다(rankSymbols 의 ⚠️).
+  // ⚠️ 스프라이트의 불투명도로 되짚지 않는다: setSymbols 가 전부 0 으로 두고 다음 tick 이 되살리므로,
+  //    그리기 전에 키프레임이 바뀌면(타임라인을 빠르게 끌면 그렇다) 보이던 것이 없는 셈이 되어 히스테리시스가 쉰다.
+  rememberShown() {
+    this.lastShown.clear();
     for (let i = 0; i < this.count; i += 1) {
       if (!(this.pool[i].material.opacity > 0)) continue;
       const p = this.list[i] && this.list[i].pair;
       if (!p) continue;
-      if (p.a) out.push(p.a);
-      if (p.b) out.push(p.b);
+      if (p.a) this.lastShown.add(p.a);
+      if (p.b) this.lastShown.add(p.b);
     }
-    return out;
   }
 
   textureFor(c) {
@@ -407,8 +420,12 @@ export class FieldSymbols {
       this.unit[i * 4 + 3] = this.heightAt ? Math.max(0, Number(this.heightAt(c.lat, c.lon)) || 0) : 0;
       const t = this.textureFor(c);
       const spr = this.pool[i];
-      spr.material.map = t.tex;
-      spr.material.needsUpdate = true;
+      // ⚠️ 같은 텍스처인데도 needsUpdate 를 세우면 material.version 이 계속 올라 three 가 기호마다 프로그램·유니폼을
+      //    다시 훑는다. setSymbols 는 시간 버스가 부를 때마다(재생 중 초 단위) 도는 자리다 — 바뀔 때만 세운다.
+      if (spr.material.map !== t.tex) {
+        spr.material.map = t.tex;
+        spr.material.needsUpdate = true;
+      }
       spr.material.opacity = 0;           // 첫 tick 이 정한다 — 그 전에는 지구 뒤편 것이 비치지 않게
       spr.scale.set((t.w / t.h) * SYMBOL_SCALE, SYMBOL_SCALE, 1);
       spr.userData.fieldSymbol = c;
@@ -443,6 +460,7 @@ export class FieldSymbols {
     const cz = m[14];
     let nH = 0;
     let nL = 0;
+    let flipped = false;
     for (let i = 0; i < this.count; i += 1) {
       const spr = this.pool[i];
       const p = spr.position;
@@ -451,8 +469,11 @@ export class FieldSymbols {
       const isH = this.list[i].kind === 'H';
       if (a > 0 && (isH ? nH : nL) >= (isH ? this.cap.H : this.cap.L)) a = 0;
       if (a > 0) { if (isH) nH += 1; else nL += 1; }
+      if ((a > 0) !== (spr.material.opacity > 0)) flipped = true;
       spr.material.opacity = a;
     }
+    // '보였다'는 표는 **보이는 것이 바뀔 때만** 다시 적는다 — 매 프레임 Set 을 새로 담지 않는다(폰 발열).
+    if (flipped) this.rememberShown();
     this.shown = { H: nH, L: nL };
     return nH + nL;
   }
@@ -487,6 +508,7 @@ export class FieldSymbols {
     // 레이어를 껐다 켜는 사이에 런이 갈릴 수 있다 — 쥔 것을 들고 넘어가지 않는다(머리 주석).
     this.forget();
     this.carry = new Set();
+    this.lastShown.clear();
     this.shown = { H: 0, L: 0 };
     this.group.visible = false;
     this.visible = false;

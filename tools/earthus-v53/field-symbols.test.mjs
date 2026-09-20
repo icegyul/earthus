@@ -302,6 +302,25 @@ test('히스테리시스는 앞으로 밀어도 되감아도 선다 — 짝의 �
   assert.equal(carriedL(), false);
 });
 
+// 히스테리시스가 '보이던 것'을 스프라이트의 불투명도에서 되짚으면, setSymbols 가 전부 0 으로 두고 **다음 tick 이**
+// 되살리는 사이에 키프레임이 바뀌는 순간(타임라인을 빠르게 끌면 그렇다) 보이던 것이 없는 셈이 된다.
+test('보이던 것은 그리기 사이에 키프레임이 두 번 바뀌어도 기억한다 — 불투명도를 상태로 쓰지 않는다', () => {
+  const { sym } = rig();
+  const f = (dlon) => frame(world([{ lat: 20, lon: dlon, sigma: 3, amp: -25 }]));
+  const [f0, f3, f6, f9] = [f(0), f(3), f(6), f(9)];
+  const carriedL = () => sym.list.find((c) => c.kind === 'L').carried;
+  sym.setVisible(true);
+  sym.update('0|3', f0, f3, { grid: GRID, hourA: 0, hourB: 3 });
+  sym.tick(cameraAt(0, 0, 3));                        // 여기까지는 그렸다
+  assert.ok(sym.shown.L >= 1);
+  // 이제 **그리지 않고** 두 구간을 잇달아 지난다(setSymbols 가 알파를 0 으로 둔 채다).
+  sym.update('3|6', f3, f6, { grid: GRID, hourA: 3, hourB: 6 });
+  assert.equal(carriedL(), true, '한 번 건너뛸 때');
+  assert.ok(sym.pool.slice(0, sym.count).every((s) => s.material.opacity === 0), '그 사이 알파는 0 이다');
+  sym.update('6|9', f6, f9, { grid: GRID, hourA: 6, hourB: 9 });
+  assert.equal(carriedL(), true, '두 번 건너뛸 때도 — 마지막으로 정말 보였던 중심을 기억한다');
+});
+
 // ------------------------------------------------------------------------------------------------ 그리기
 
 test('앞 반구 상한 — 종류마다 따로 센다(데스크톱 8·8 · 폰 5·5) · 뒤편은 0', () => {

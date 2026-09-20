@@ -587,7 +587,11 @@ test('CloudManager.loadGfs 는 매니페스트와 프레임 주소를 저장소�
   // 그대로여야 하는 것들
   assert.match(fn, /uGfsTexel\.value\.set\(1 \/ mf\.grid\.ni, 1 \/ mf\.grid\.nj\)/);
   assert.match(fn, /\.filter\(\(f\) => Number\.isFinite\(f\.t\) && f\.wind\)\.sort\(\(a, b\) => a\.t - b\.t\)/);
-  assert.equal((fn.match(/return this\.loadGfsPoints\(\)/g) || []).length, 3, '지점 방식 폴백 세 곳');
+  // (2026-09-20 W2) 폴백 세 곳이 정직한 실패 세 곳이 됐다. 예전 폴백은 Open-Meteo 지점 810개로 12° 격자를
+  // 만들어 칠했다 — 유료 서비스의 라이선스 노출이었고, 적도에서 한 칸이 약 1,300 km 였다.
+  assert.equal((fn.match(/throw new Error\(/g) || []).length, 3, '못 받으면 세 자리 모두 던진다');
+  assert.doesNotMatch(fn, /loadGfsPoints/, '지점 폴백이 아직 남아 있다');
+  assert.doesNotMatch(src, /\n  async loadGfsPoints\(\) \{/, '폴백 함수 자체가 죽은 길로 남아 있다');
   const texAt = /\n  frameTexAt\(i\) \{\n([\s\S]*?)\n  \}\n/.exec(src)[1];
   assert.match(texAt, /new THREE\.TextureLoader\(\)/, '구름 프레임은 아직 자기 캐시(texCache)로 받는다');
   has(/\n  prefetchFrames\(\) \{\n/, '지연 프리페치는 그대로다');

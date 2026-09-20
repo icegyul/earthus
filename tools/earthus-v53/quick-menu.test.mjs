@@ -61,16 +61,19 @@ test('오른쪽 버튼은 메뉴의 것 — 지구 선택(픽) 경로에서 제�
 });
 
 test('항목이 하는 일은 실제 조회·실제 화면이다 — 가짜 값이 없다 (§18)', () => {
-  // 기온·습도·바람·강수 → 지점 실황(Open-Meteo 현재값) 조회로 흘러간다.
+  // 기온·바람·강수 → 우리 GFS 0.5° 프레임의 지점 값으로 흘러간다(습도는 그 프레임에 없어 없다고 말한다).
   assert.match(mainSrc, /if \(hit\) pointWeather\(hit\.lat, hit\.lon, metricId\);/);
   // 인구 → 기존 국가 픽 + 지표 메뉴(실제 격자를 세는 기둥).
   assert.match(mainSrc, /focus\.pick\(hit\.lat, hit\.lon\)/);
   assert.match(mainSrc, /popMetricMenu\.showAt\(x, y, 'population'\)/);
   // 설정 → 기존 설정 서랍 버튼을 그대로 누른다 — 새 화면을 만들지 않는다.
   assert.match(mainSrc, /document\.getElementById\('btn-settings'\)\.click\(\)/);
-  // 지점 실황 카드는 출처·유효 시각·조회 시각을 적는다 (원칙 §1).
-  assert.match(mainSrc, /Open-Meteo \(GFS 분석\) · 유효/);
-  assert.match(mainSrc, /조회 \$\{new Date\(\)\.toISOString\(\)\}/);
+  // 지점 값 카드는 출처·런·유효 시각을 적는다 (원칙 §1). 글은 point-readout.js 가 짓는다 —
+  // 색면 카드(field-layer.js readoutNote)와 **같은 순수 함수**라야 레이어를 켜고 끌 때 숫자가 달라지지 않는다.
+  const prSrc = src('prototype/v2-three/js/point-readout.js');
+  assert.match(prSrc, /sourceLabel\(info\), \.\.\.timeMeta\(info, tMs, ko\)/, '출처와 시각을 안 적는다');
+  assert.match(prSrc, /도시·지점의 관측값이 아닙니다/, '격자값을 지점 실측인 척하면 안 된다');
+  assert.doesNotMatch(mainSrc, /Open-Meteo \(GFS 분석\)/, '지점 카드가 아직 남의 API 를 출처로 적는다');
   assert.match(mainSrc, /action === 'point-weather-retry'/, '조회 실패 시 다시 시도가 없다');
 });
 

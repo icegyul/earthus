@@ -23,6 +23,7 @@ import {
 } from '../../prototype/v2-three/js/field-renderer.js';
 import { bandColor, bandIndex, isolineSpec, legendModel, paletteRGBA, scaleOf } from '../../prototype/v2-three/js/field-scales.js';
 import { FIELD_DESCRIPTORS, FieldLayer, readoutOf } from '../../prototype/v2-three/js/field-layer.js';
+import { METRIC_LAYER } from '../../prototype/v2-three/js/point-readout.js';
 import { createGfsFrames, decodeByte, readManifest } from '../../prototype/v2-three/js/gfs-frames.js';
 import { createTimeBus } from '../../prototype/v2-three/js/time-bus.js';
 
@@ -383,14 +384,15 @@ test('지점 시트가 강수를 색면에서 받는다 — 제공자·격자·�
   const menu = src('quick-menu.js');
   // 퀵메뉴의 강수 id 는 'rain' 이다 — 이름이 바뀌면 아래 인수인계가 조용히 끊긴다.
   assert.match(menu, /\{ id: 'rain',/, "퀵메뉴의 강수 id 가 'rain' 이 아니다");
-  const at = main.indexOf('const fieldNote =');
+  // 지표 → 색면 레이어 인수인계는 이제 표 하나다(point-readout.js METRIC_LAYER) — main.js 가 삼항으로 늘어놓지 않는다.
+  assert.equal(METRIC_LAYER.temperature, 'tempgrid', '기온 인수인계가 사라졌다');
+  assert.equal(METRIC_LAYER.rain, 'raingrid',
+    "강수 색면이 GFS 0.5° mm/h 인데 지점 시트가 다른 자료를 부르면 카드가 화면과 다른 말을 한다");
+  const at = main.indexOf('const layerId = METRIC_LAYER[metric];');
   assert.ok(at > 0, 'pointWeather 의 색면 인수인계 줄이 없다');
-  const line = main.slice(at, main.indexOf(';', at));
-  assert.match(line, /metric === 'temperature'[\s\S]*fieldReadout\('tempgrid'/, '기온 인수인계가 사라졌다');
-  assert.match(line, /metric === 'rain'[\s\S]*fieldReadout\('raingrid'/,
-    "강수 색면이 GFS 0.5° mm/h 로 바뀌었는데 지점 시트는 Open-Meteo `current` 의 mm 를 부른다 — 카드가 화면과 다른 말을 한다");
-  // 색면이 꺼져 있으면 fieldReadout 이 null 이라 옛 Open-Meteo 길로 떨어진다 — 그 길을 걷어 내지는 않았다.
-  assert.match(main.slice(at), /api\.open-meteo\.com\/v1\/forecast/, '색면이 꺼졌을 때 갈 길이 없어졌다');
+  // (2026-09-20 W2) 색면이 꺼져 있을 때 갈 길도 **우리 프레임**이다 — 옛 Open-Meteo 길은 걷어냈다.
+  assert.match(main.slice(at), /pointReadout\.weather\(lat, lon, metric\)/, '색면이 꺼졌을 때 갈 길이 없어졌다');
+  assert.doesNotMatch(main, /api\.open-meteo\.com\/v1\/forecast/, '지점 시트가 아직 제3자 API 를 부른다');
 });
 
 test('같은 사실을 적는 세 곳이 같은 말을 한다 — 메뉴 출처 · 레지스트리 기간 · 레지스트리 범위', async () => {

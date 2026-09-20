@@ -449,7 +449,7 @@ export const PROVIDERS = Object.freeze([
   // 브라우저가 직접 부르는 서드파티 — 캐시 파이프라인 밖이라 HEAD 프로브 없이 호출 결과로만 판단
   { id: 'gdacs', label: 'GDACS 사건', origin: '브라우저 직접', slaMin: 180 },
   { id: 'usgs', label: 'USGS 지진', origin: '브라우저 직접', slaMin: 60 },
-  { id: 'openmeteo', label: 'Open-Meteo (해상·예보)', origin: '브라우저 직접', slaMin: 180 },
+  { id: 'openmeteo', label: 'Open-Meteo (항로 공항 날씨만)', origin: '브라우저 직접', slaMin: 180 },
   { id: 'gibs', label: 'NASA GIBS (눈·얼음)', origin: '브라우저 직접', slaMin: 1440 },
   { id: 'scufn', label: 'GEBCO SCUFN 가제티어', origin: '브라우저 직접', slaMin: null },
   { id: 'celestrak', label: 'CelesTrak TLE', origin: '1.0 S3 캐시', probe: `${S3}/celestrak/catalog.json.gz`, slaMin: 1440 },
@@ -468,6 +468,10 @@ const PATH_MAP = Object.freeze({
   '/events/typhoon-official.json': { layer: 'hazards/tyoff', provider: 'tyoff' },
   '/events/typhoon-ecmwf.json': { layer: 'hazards/tyens', provider: null },
   '/ocean/kma-buoy.json': { layer: 'ocean/kmasea', provider: null },
+  // 2026-09-20 W2: 해상 지점 카드가 marine-api.open-meteo.com 을 직접 부르던 것을 걷어냈다 — 이제 이 두 파일을
+  // 읽는다(point-readout.js). 'ocean/marine' 의 신선도는 제공기관 응답이 아니라 우리 수집 파일의 시각이다.
+  '/ocean/marine.json': { layer: 'ocean/marine', provider: null },
+  '/ocean/marine-ea.json': { layer: 'ocean/marine', provider: null },
   '/ocean/khoa/flood-index.json': { layer: 'ocean/khoaflood', provider: null },
   '/tourism/seoul-flow.json': { layer: 'people/seoul', provider: null },
   '/wind/korea-air-obs.json': { layer: 'weather/airq', provider: 'airq' },
@@ -484,7 +488,10 @@ const HOST_RULES = Object.freeze([
   { host: 'earthus.net/tourism', layer: 'people/seoul' },
   { host: 'gdacs.org', provider: 'gdacs', layer: 'hazards/tc' },
   { host: 'earthquake.usgs.gov', provider: 'usgs', layer: 'hazards/eq' },
-  { host: 'open-meteo.com', provider: 'openmeteo', layer: 'ocean/marine' },
+  // 남은 브라우저 직호출은 js/route.js 의 공항 날씨 하나뿐이다(돌풍·시정·WMO 날씨코드가 우리 GFS 프레임에 없고,
+  // 항로는 최대 7일인데 프레임은 120시간에서 끝난다 — 그 파일 머리말 참조). 그것이 그리는 레이어는 'people/flight' 인데
+  // LAYER_TRUTH 에 항목이 없다(임시 항로는 스스로 DERIVED 라고 밝힌다) — 그래서 layer 는 null 이고 제공자 건강만 센다.
+  { host: 'open-meteo.com', provider: 'openmeteo', layer: null },
   { host: 'gibs.earthdata.nasa.gov', provider: 'gibs', layer: 'land/snow' },
   { host: 'services2.arcgis.com', provider: 'scufn', layer: 'ocean/trenches' },
   { host: 'll.thespacedevs.com', provider: 'spacedevs', layer: 'space/launch' },

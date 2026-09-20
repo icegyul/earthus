@@ -15,6 +15,7 @@ import {
 import { createGfsFrames } from '../../prototype/v2-three/js/gfs-frames.js';
 import { createTimeBus } from '../../prototype/v2-three/js/time-bus.js';
 import { SCALE_FOR_LAYER, scaleOf } from '../../prototype/v2-three/js/field-scales.js';
+import { METRIC_LAYER } from '../../prototype/v2-three/js/point-readout.js';
 
 const here = (rel) => new URL(rel, import.meta.url);
 const lf = (s) => s.replace(/\r\n/g, '\n');
@@ -530,11 +531,13 @@ test('배선 — 공용 파일의 글자: 출처 문구 · 지점 기온 · 누�
   assert.match(shell, /\{ id: 'tempgrid', name: '전지구 기온', state: 'MODEL', src: 'NOAA GFS 0\.5° · 5일 예보 · 3시간 간격', act: true \}/);
   const main = read('../../prototype/v2-three/js/main.js');
   assert.match(main, /liveLayers\.provideField\(\{\s*frames: gfsFrames, terrain: uniforms, geometry: earth\.geometry, isPhone: isMobileUA,/);
-  // 지점 기온: 색면이 켜져 있으면 텍스처 사본에서 읽고 돌아간다 — Open-Meteo 를 부르는 줄보다 앞이다.
+  // 지점 값: 색면이 켜져 있으면 **화면에 칠해진** 텍스처 사본에서 읽고 돌아간다 — 프레임을 새로 받는 줄보다 앞이다.
+  // (2026-09-20 W2) 그 다음 줄도 이제 우리 자료다: 옛 길이던 api.open-meteo.com 직호출을 걷어냈다.
   const pw = main.slice(main.indexOf('const pointWeather = async'), main.indexOf('const seaCardHtml'));
-  const at = pw.indexOf("liveLayers.fieldReadout('tempgrid', lat, lon)");
-  assert.ok(at > 0 && at < pw.indexOf('await fetch(`https://api.open-meteo.com'), '텍스처 읽기가 네트워크 호출보다 먼저다');
-  assert.match(pw, /const fieldNote = metric === 'temperature' \? liveLayers\.fieldReadout/);
+  const at = pw.indexOf('liveLayers.fieldReadout(layerId, lat, lon)');
+  assert.ok(at > 0 && at < pw.indexOf('pointReadout.weather('), '텍스처 읽기가 프레임 받기보다 먼저다');
+  assert.match(pw, /const layerId = METRIC_LAYER\[metric\];/, '지표 → 색면 레이어 표가 point-readout.js 의 것이어야 한다');
+  assert.doesNotMatch(pw, /open-meteo\.com/, '지점 값이 아직 제3자 API 를 부른다');
   assert.match(main, /const \{ lat, lon \} = hit;[\s\S]{0,400}liveLayers\.fieldProbe\(lat, lon\);/);
   assert.match(main, /action\.startsWith\('field-'\)\) \{ liveLayers\.fieldAction\(action, ds\); return; \}/);
   // 레이어 id 는 그대로다.

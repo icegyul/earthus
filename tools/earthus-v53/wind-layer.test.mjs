@@ -88,7 +88,7 @@ const DESKTOP_NAV = { userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' };
 const PHONE_NAV = { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)' };
 
 /** 진짜 저장소 + 가짜 네트워크 + 진짜 시간 버스 + 진짜 입자 엔진. 층이 저장소에 무엇을 청했는지는 pixelCalls 에 남는다. */
-function harness({ manifest = SCHEMA2, images = uniformImages, nowMs = T0 + 1 * H, nav = DESKTOP_NAV, view = { w: 1440, h: 900 }, extra = {} } = {}) {
+function harness({ manifest = SCHEMA2, images = uniformImages, nowMs = T0 + 1 * H, nav = DESKTOP_NAV, view = { w: 1440, h: 900 }, extra = {}, storeOpts = {} } = {}) {
   const calls = { image: [], manifest: 0, pixels: [] };
   const clock = { now: nowMs };
   const state = { manifest, failManifest: false };
@@ -108,6 +108,7 @@ function harness({ manifest = SCHEMA2, images = uniformImages, nowMs = T0 + 1 * 
       return img;
     },
     readPixels: (img) => ({ w: img.width, h: img.height, data: img.rgba }),
+    ...storeOpts,
   });
   // 층이 저장소에 청한 픽셀만 센다(저장소 안의 캐시 적중과는 다른 숫자다 — '다시 청하지 않는다'는 층의 약속이다).
   const frames = Object.create(store);
@@ -530,6 +531,32 @@ test('지구 클릭 — 가장 가까운 0.5° 격자점의 ~N m/s · 16방위(�
   assert.equal(windReadoutModel({ u: 0.1, v: 0.1 }).calm, true);
 });
 
+test('클릭 값은 화면에 흐르는 바로 그 격자에서 읽는다 — 저장소 캐시가 우리 프레임을 밀어내도 영영 "받는 중"이 되지 않는다', async () => {
+  // 저장소는 구름·기온과 나눠 쓰는 LRU 다(폰 32 MB ≈ 20장). 상한을 1바이트로 조여 '다른 레이어가 우리 두 장을 밀어낸' 상황을 만든다.
+  const hz = harness({ storeOpts: { maxBytes: 1 } });
+  await hz.layer.load();
+  hz.sw.on = true;
+  hz.layer.tick(1 / 30, CAM);
+  assert.equal(hz.store.pixelsNow('wind10', 0), null, '시험 전제: f000 이 캐시에서 밀려나 있어야 한다');
+  assert.equal(hz.store.sampleAt('wind10', hz.bus.validMs(), 37.5, 127), null, '시험 전제: 저장소는 이 시각의 값을 못 준다');
+  assert.ok(fieldOf(hz.layer) && hz.layer.particles.sim.count > 0, '입자는 계속 흐른다(엔진이 바이트를 쥐고 있다)');
+  const images = hz.calls.image.length;
+  const r = hz.layer.readoutAt(37.56, 126.97);
+  assert.equal(r.badge, 'MODEL', '입자는 흐르는데 클릭은 받는 중이다');
+  assert.equal(r.model.speedMs, 7.5);
+  assert.equal(r.model.dir.code, 'WSW');
+  assert.equal(hz.calls.image.length, images, '클릭이 그림을 받으러 갔다');
+
+  // 새 키프레임을 청해 놓은 동안에는 화면의 격자가 옛 시각 것이다 — 그 값을 새 시각의 값이라고 말하지 않는다.
+  hz.bus.set(6.5 * H);
+  assert.equal(hz.layer.readoutAt(37.56, 126.97).badge, 'LOADING');
+  await hz.layer.settled();
+  const r2 = hz.layer.readoutAt(37.56, 126.97);           // f006(서쪽으로 10)↔f009(남쪽으로 10) 의 1/2 → 북동풍
+  assert.equal(r2.badge, 'MODEL');
+  assert.equal(r2.model.dir.code, 'NE');
+  assert.match(r2.html, /유효 09\/20 16:30 KST/);
+});
+
 // ---------------------------------------------------------------- 색 · 범례
 
 test('입자 색과 경계가 색 눈금표(field-scales wind)에서 온다 — 엔진의 임시 색이 아니다', async () => {
@@ -724,14 +751,17 @@ test('카드에 적힌 것이 바뀌면 알린다(onChange) — 꺼져 있을 �
   assert.equal(changes, 1);
   for (let i = 0; i < 30; i += 1) hz.layer.tick(1 / 30, CAM);
   assert.equal(changes, 1, '아무것도 안 바뀌었는데 매 프레임 알린다 — 패널이 계속 다시 그려진다');
-  hz.bus.set(1 * H);                                      // 같은 두 프레임 · 보간 % 가 바뀐다
-  assert.equal(changes, 2);
-  assert.match(hz.layer.cardHtml(), /f000↔f003 사이 보간 67%/);
+  hz.bus.set(1 * H);                                      // 같은 두 프레임 안 — 카드에 적힌 것은 그대로다(재생 중 0.2초마다 온다)
+  hz.bus.set(1.5 * H);
+  assert.equal(changes, 1, '같은 두 프레임 안에서 밀 때마다 패널을 다시 그리게 한다');
+  assert.match(hz.layer.cardHtml(), /f000↔f003 모델 프레임 사이 보간/);
   hz.bus.set(3.5 * H);                                    // 새 키프레임 — 받는 중(1) → 들어옴(2)
   await hz.layer.settled();
+  assert.equal(changes, 3);
+  assert.match(hz.layer.cardHtml(), /f003↔f006 모델 프레임 사이 보간/);
+  assert.doesNotMatch(hz.layer.cardHtml(), /유효 \d\d\/\d\d|보간 \d+%/, '카드(글자 사본)에 금방 옛 글이 되는 값(유효 시각 · 보간 %)을 적었다');
+  hz.bus.set(13 * H);                                     // 예보 범위 밖 — 카드가 그렇게 말해야 한다
   assert.equal(changes, 4);
-  assert.match(hz.layer.cardHtml(), /f003↔f006 사이 보간 50%/);
-  assert.doesNotMatch(hz.layer.cardHtml(), /유효 \d\d\/\d\d/, '카드(글자 사본)에 분 단위로 흐르는 유효 시각을 적었다 — 범례의 몫이다');
   hz.sw.on = false;
   hz.layer.tick(1 / 30, CAM);
   hz.bus.set(9.5 * H);

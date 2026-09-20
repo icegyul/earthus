@@ -198,7 +198,8 @@ export const LAYER_TRUTH = Object.freeze({
   'people/poptower': { kind: K.PROVIDER_FORECAST, slaMin: null },
 
   // 2026-09-04: 정합성 검사가 배지 누락으로 잡아낸 7건. 동작은 했지만 신선도가 안 보였다.
-  // 일기도 기입 모형은 바람 관측과 같은 관측점(KMA AWS·GTS SYNOP)을 쓴다 — SLA도 같게 둔다.
+  // 일기도 기입 모형은 예전 '바람 관측' 레이어와 같은 관측점(KMA AWS·GTS SYNOP)을 쓴다 — SLA(90분)도 그 관측 주기에서 온 값이다.
+  // (2026-09-20 W3: weather/wind 는 GFS 모델 바람 입자로 바뀌어 더는 관측이 아니다. 지상 관측 레이어는 이제 이것 하나다.)
   'weather/synop': { kind: K.OFFICIAL_OBSERVATION, slaMin: 90 },
   // 관광 5종은 KTO 공개 산출물을 미리 집계해 파일로 싣는다 — 분 단위로 늙지 않는 등재부다.
   // 다만 '오늘 발견'만은 그 등재부에 특보·대기질을 우리가 합쳐 점수를 낸 것이라 등급이 다르다.

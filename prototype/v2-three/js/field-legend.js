@@ -19,7 +19,7 @@
 //   position: fixed 라 다른 UI 의 흐름에 끼지 않는다. z-index 3 — 우측 패널·바텀시트(4)가 펼쳐지면 그 아래로 들어간다.
 //   ⚠️ W5 에서 Inspector 가 생기면 mount(inspector 안의 자리) 로 옮기고 index.html 의 position 규칙을 걷는다.
 //
-// ── 쓰는 법 (아직 main.js 에 배선하지 않았다 — W1 FieldRenderer 가 한다) ─────────────────────────────────────
+// ── 쓰는 법 (첫 배선은 바람 층 js/wind-layer.js — 2026-09-20 W3 · 색면의 범례는 W1 FieldRenderer 가 잇는다) ───────────────
 //   import { fieldLegend } from './field-legend.js?v=1';
 //   import { scaleOf } from './field-scales.js?v=1';        // ⚠️ 질의문자열까지 이 파일의 import 와 똑같이(ES 모듈은 URL 전체로 구분된다)
 //   fieldLegend.mount(document.body);                        // 한 번. 다시 불러도 상자는 하나다

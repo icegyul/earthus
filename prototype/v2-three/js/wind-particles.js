@@ -689,7 +689,9 @@ export class WindParticles {
     this.sim.setView(view);
     if (this.sim.view) this.uniforms.uViewport.value.set(this.sim.view.widthCss, this.sim.view.heightCss);
   }
-  /** 기기 예산(입자 수). 부르는 쪽이 flowRenderBudget × ThermalGovernor.particleScale 로 정한다. */
+  /** 기기 예산(입자 수). 부르는 쪽(js/wind-layer.js windBudget)이 min(기기 상한, 화면 CSS 픽셀 밀도) × ThermalGovernor.particleScale 로 정한다.
+   *  (처음에는 'flowRenderBudget × particleScale' 이라 적었다 — 상한(18,000)에 발열 배율을 곱해도 밀도 예산(2,817)보다 커서 화면의
+   *   입자 수가 그대로였다. 2026-09-20 W3 배선 때 밀도 예산에 곱하는 것으로 바꿨다 — 이유는 windBudget 주석.) */
   setBudget(n) { this.sim.setBudget(n); }
   /** 입자 강도 칩 — 1 = 예산의 1/3 · 2 = 2/3 · 3 = 전부. */
   setIntensity(k) { this.sim.setIntensity(k); }

@@ -34,7 +34,7 @@ import { timeBus as sharedTimeBus } from './time-bus.js?v=1';
 import { sharedGfsFrames } from './gfs-frames.js?v=1';
 import { scaleOf, legendModel, bandIndex, KT_PER_MS } from './field-scales.js?v=1';
 import { fieldLegend as sharedLegend, legendMetaLine } from './field-legend.js?v=1';
-import { WindParticles, particleBudgetFor, particleCountFor, WIND_CALM_MS, WIND_SPEED_BOUNDS_MS } from './wind-particles.js?v=1';
+import { WindParticles, particleBudgetFor, particleCountFor, sampleWind, WIND_CALM_MS, WIND_SPEED_BOUNDS_MS } from './wind-particles.js?v=1';
 
 const D2R = Math.PI / 180;
 const R2D = 180 / Math.PI;
@@ -286,6 +286,7 @@ export function createWindLayer(deps = {}) {
   let viewW = 0; let viewH = 0; let viewFov = 0;
   const vp = { w: 0, h: 0 };
   const fwd = { x: 0, y: 0, z: -1 };
+  const readTmp = { u: 0, v: 0 };
   const legendArgs = { scale, title: TITLE, source: SOURCE, run: null, valid: null, note: undefined };
   const counters = { pixelRequests: 0, fieldSets: 0, mixSets: 0, updates: 0 };
 
@@ -391,13 +392,13 @@ export function createWindLayer(deps = {}) {
 
   // 상태가 바뀌었다(시각 · 키프레임 · 자료 없음) — 범례를 고쳐 쓰고, 열려 있는 카드를 쥔 쪽(main.js)에 알린다.
   // 카드는 main.js 가 글자 사본으로 쥐고 있어서, 알리지 않으면 타임라인을 밀어도 카드의 '유효 시각'이 옛 글로 남는다.
-  //   알리는 것은 **카드에 적힌 것이 바뀌었을 때만**이다(상태 · 두 프레임 · 보간 % · 받는 중) — 유효 시각(분 단위로 흐른다)은
-  //   카드가 아니라 범례에 있다. 1분마다 패널을 통째로 다시 그리면 읽던 자리가 튄다.
+  //   알리는 것은 **카드에 적힌 것이 바뀌었을 때만**이다(상태 · 두 프레임 · 받는 중). 유효 시각은 범례가 말하고, 두 프레임 사이의
+  //   비율(재생 중 0.2초마다 바뀐다)은 카드에 적지 않는다 — 그때마다 패널을 통째로 다시 그리면 읽던 자리가 튄다.
   function publish() {
     paintLegend();
     if (!on || !deps.onChange) return;
     const br = lastBr;
-    const sig = `${status}|${reason}|${br && br.a ? `${br.a.h}|${br.b.h}|${Math.round(br.mix * 100)}` : ''}|${pendingKey ? 1 : 0}`;
+    const sig = `${status}|${reason}|${br && br.a ? `${br.a.h}|${br.b.h}` : ''}|${pendingKey ? 1 : 0}`;
     if (sig === lastSig) return;
     lastSig = sig;
     try { deps.onChange(); } catch (e) { /* 듣는 쪽의 탈이 바람을 세우면 안 된다 */ }
@@ -411,7 +412,10 @@ export function createWindLayer(deps = {}) {
     legendArgs.run = info ? info.run : null;
     legendArgs.valid = blocked ? null : lastT;        // 범위 밖 시각을 '유효'라고 적지 않는다
     // 풀이 줄: 평소에는 눈금표의 입자 과장 고지(undefined 면 범례가 그것을 쓴다), 자료가 없으면 그 이유.
-    legendArgs.note = blocked ? { ko: reason, en: reason } : undefined;
+    // 영어 화면에는 영어로 — 이유의 세부(한국어 문장)는 카드가 말하고, 범례의 한 줄은 상태만 옮긴다.
+    legendArgs.note = blocked
+      ? { ko: reason, en: status === 'out-of-range' ? 'Outside the forecast range — no GFS wind frame for this time' : 'No data — GFS 10 m wind frames are unavailable' }
+      : undefined;
     legend.show(legendArgs);
     legendOurs = true;
   }
@@ -532,18 +536,25 @@ export function createWindLayer(deps = {}) {
       if (status === 'out-of-range' || status === 'no-data') {
         return { title, badge: 'UNAVAILABLE', html: `<p><b>자료 없음</b> — ${reason}</p><p>${metaOf(null)}</p>`, model: null };
       }
-      let field = null;
-      try { field = frames.fieldSpec(WIND_FIELD_ID); } catch (e) { field = null; }
-      const pt = field ? nearestGridPoint(field.grid, lat, lon) : null;
-      const tMs = bus.validMs();
-      // 값은 프레임의 CPU 사본에서 읽는다 — 네트워크 0건(두 프레임은 이 층이 이미 받아 뒀다). 격자점에서 읽으므로 공간 보간이 없다.
-      const s = pt ? frames.sampleAt(WIND_FIELD_ID, tMs, pt.lat, pt.lon) : null;
-      if (!s || s.outOfRange || !s.decoded) {
+      // 값은 **지금 화면에 흐르는 바로 그 격자**(입자 엔진에 들어 있는 두 프레임 · 같은 비율)에서 읽는다 — 네트워크 0건.
+      // ⚠️ 프레임 저장소의 sampleAt 으로 읽지 않는다: 그쪽은 두 프레임이 **캐시에 남아 있을 때만** 값을 준다. 저장소는 구름·기온과
+      //    나눠 쓰는 LRU(폰 32 MB ≈ 20장)라 다른 레이어가 우리 두 장을 밀어낼 수 있다 — 입자는 계속 흐르는데(엔진이 바이트를 쥐고 있다)
+      //    클릭은 영영 '받는 중'이 된다. 화면에 보이는 것과 클릭 값이 같은 자료에서 나와야 한다는 점에서도 이쪽이 맞다.
+      const f = particles && particles.sim ? particles.sim.field : null;
+      const br = lastBr;
+      if (status !== 'ready' || pendingKey || !f || !spec || !br || br.outOfRange) {
+        // 새 키프레임을 청해 놓은 동안은 화면의 격자가 옛 시각 것이다 — 그 값을 새 시각의 값이라고 말하지 않는다(곧 들어온다).
         return { title, badge: 'LOADING', html: '<p role="status">이 시각의 바람 프레임을 받는 중입니다 — 잠시 뒤 다시 눌러 주세요.</p>', model: null };
       }
-      const m = windReadoutModel({ u: s.values[0], v: s.values[1], point: pt, clicked: { lat, lon }, scale });
-      const between = s.interpolated ? ` · ${fNum(s.a.h)}↔${fNum(s.b.h)} 모델 프레임 사이 보간(${s.gapH}시간 간격)` : '';
-      return { title, badge: 'MODEL', html: windReadoutHtml(m, `${metaOf(tMs)}${between}`), model: m };
+      // 저장소와 같은 모양의 격자 명세(dLat 은 크기)로 격자점을 찾는다. 격자점에서 읽으므로 공간 보간이 없다(이웃 가중치 0).
+      const pt = nearestGridPoint({ ni: spec.w, nj: spec.h, lon0: spec.grid.lon0, lat0: spec.grid.lat0, dLon: spec.grid.dLon, dLat: -spec.grid.dLat, wraps: true }, lat, lon);
+      const w = pt ? sampleWind(f, pt.lat, pt.lon, readTmp) : null;
+      if (!w) {
+        return { title, badge: 'UNAVAILABLE', html: `<p><b>자료 없음</b> — 이 격자점에는 바람 값이 비어 있습니다.</p><p>${metaOf(lastT)}</p>`, model: null };
+      }
+      const m = windReadoutModel({ u: w.u, v: w.v, point: pt, clicked: { lat, lon }, scale });
+      const between = br.a !== br.b && br.mix > 0 ? ` · ${fNum(br.a.h)}↔${fNum(br.b.h)} 모델 프레임 사이 보간(${br.gapH}시간 간격)` : '';
+      return { title, badge: 'MODEL', html: windReadoutHtml(m, `${metaOf(lastT)}${between}`), model: m };
     },
 
     cardHtml() {
@@ -554,7 +565,7 @@ export function createWindLayer(deps = {}) {
       const br = lastBr;
       const interp = !blocked && br && !br.outOfRange
         ? (br.a === br.b ? `${fNum(br.a.h)} 프레임 그대로`
-          : `${fNum(br.a.h)}↔${fNum(br.b.h)} 사이 보간 ${Math.round(br.mix * 100)}%${br.gapH > 3 ? ` · 간격 ${br.gapH}시간` : ''}`)
+          : `${fNum(br.a.h)}↔${fNum(br.b.h)} 모델 프레임 사이 보간${br.gapH > 3 ? ` · 간격 ${br.gapH}시간` : ''}`)
         : '';
       const ps = particleScale();
       return windCardHtml({

@@ -39,8 +39,11 @@ test("LiveLayers.starLayer — 색면이 있으면 'field', 입자만이면 'win
   assert.equal(host.starLayer(), 'wind');
   host.layers.tempgrid = { on: true };
   assert.equal(host.starLayer(), 'field', '색면이 입자보다 먼저다 — 구름을 완전히 꺼야 한다');
+  // 2026-09-20 작업 D3 — 바다 3종과 대기질이 새 렌더러로 옮겨졌다. descriptor 를 더하면 자동으로 같은 대접을 받는다.
   host.layers.tempgrid.on = false; host.layers.wind.on = false; host.layers.sstfield = { on: true };
-  assert.equal(host.starLayer(), null, '새 렌더러로 옮기지 않은 옛 색면은 주인공으로 치지 않는다(구름을 끄지 않는다)');
+  assert.equal(host.starLayer(), 'field', '새 렌더러로 옮긴 색면(수온)도 구름을 끄는 주인공이다');
+  host.layers.sstfield.on = false; host.layers.raingrid = { on: true };
+  assert.equal(host.starLayer(), null, '아직 옮기지 않은 옛 색면(강수 5° 그라데이션)은 주인공으로 치지 않는다(구름을 끄지 않는다)');
 });
 
 test('main.js 가 매 프레임 무대를 정리한다 — 구름 불투명도 · 바람 밑 풍속 색면 · 입자 색', () => {

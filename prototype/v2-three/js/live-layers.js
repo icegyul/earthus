@@ -450,6 +450,9 @@ export class LiveLayers {
     this.lastExagger = ex;
     for (const [id, l] of Object.entries(this.layers)) {
       if (!l.obj || !l.data) continue;
+      // 셰이더 색면(js/field-layer.js)은 지형 uniform 을 지구와 **같은 객체로** 물고 있어 과장이 바뀌면 저절로 따라간다.
+      // 여기로 오면 buildFromData 가 옛 그라데이션 껍질을 새로 지어 갈아 끼운다 — 막는다(refresh 와 같은 규칙).
+      if (isFieldLayerId(id)) continue;
       // 바다 색면은 과장과 무관하다 — 껍질 반지름은 고정(해수면은 과장해도 r=1)이고 육지 가림은
       // 고도의 부호만 본다. 다시 지으면 슬라이더 한 칸마다 같은 그림을 새로 올릴 뿐이다.
       if (OCEAN_FIELD_IDS.has(id)) continue;

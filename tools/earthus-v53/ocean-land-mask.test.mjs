@@ -347,7 +347,18 @@ test('끝에서 끝까지 — 지형을 못 받으면 먼 바다만 칠하고 �
   assert.equal(paintedPixels(fakeDom.last), valued, '가림판이 있으면 색 텍스처는 깎지 않는다');
 });
 
-test('배선 — 바다 3종만 가림판을 거치고 대기 색면은 그대로다', () => {
+// ⚠️ 2026-09-20(작업 D3) — 이 절이 지키는 것이 바뀌었다.
+//   바다 3종(sstfield · wavefield · sstanom)의 **살아 있는 길**은 이제 W1 셰이더 색면이다: 값 텍스처(grid-frames.js)를
+//   올리고 셰이더가 지형 고도 ≥ 0 인 프래그먼트를 버린다(field-renderer.js FIELD_MASK_OCEAN). 0.25° CPU 가림판이
+//   비우던 해안 15~40 km 와 다도해·대한해협이 돌아왔다.
+//   아래 줄들은 그러므로 **살아 있는 배선이 아니라 옛 길의 모양**을 지킨다. 지우지 않고 남겨 두는 이유:
+//     · LiveLayers.toggle 이 isFieldLayerId 로 먼저 갈라지므로 이 case 들은 닿지 않는다(죽은 코드다).
+//     · 그래도 남긴 것은 새 길이 못 서는 자료(예: 아직 안 옮긴 색면)가 이 길을 다시 탈 수 있어서다 —
+//       그때 가림판이 통째로 빠져 있으면 육지가 다시 물든다. 모양이 무너지지 않았는지만 본다.
+//   ocean-land-mask.js 자체는 남긴다: 0.25° 로 고도를 분류하는 유일한 부품이고 erodedGridNodes 는
+//   옛 buildField 의 대체 규칙이다. 다만 **바다 3종은 더는 부르지 않는다** — 그 몫은 셰이더의 uHasHeight 갈림이 한다
+//   (지형을 못 받은 세션에서는 '네 칸이 다 값일 때만 칠한다'로 자료 자신의 결측이 해안선 노릇을 한다).
+test('옛 길의 모양 — 바다 3종만 가림판을 거치고 대기 색면은 그대로다(지금은 닿지 않는 길)', () => {
   assert.match(liveSrc, /case 'sstfield': return this\.oceanFieldLayer\(data, 'sst', SST_RAMP,/);
   assert.match(liveSrc, /case 'wavefield': return this\.oceanFieldLayer\(data, 'wave', WAVE_RAMP,/);
   assert.match(liveSrc, /case 'sstanom': return this\.oceanFieldLayer\(data, 'sstAnom', SSTANOM_RAMP,/);
@@ -367,4 +378,9 @@ test('배선 — 바다 3종만 가림판을 거치고 대기 색면은 그대�
   assert.equal(lines.length, 3);
   // 과장을 바꿔도 바다 색면은 다시 짓지 않는다(같은 그림) — 1× 와 50× 에서 같은 판이다.
   assert.match(liveSrc, /if \(OCEAN_FIELD_IDS\.has\(id\)\) continue;/);
+  // 그리고 셰이더 색면은 그보다 **먼저** 걸러진다 — data 가 차 있어도 옛 껍질을 다시 지어 갈아 끼우지 않는다.
+  assert.match(liveSrc, /if \(isFieldLayerId\(id\)\) continue;[\s\S]{0,400}if \(OCEAN_FIELD_IDS\.has\(id\)\) continue;/);
+  // 켜고 끄는 주인은 저쪽이다 — 이 길로 오는 문이 닫혀 있는지 본다.
+  assert.match(liveSrc, /if \(isFieldLayerId\(id\)\) return toggleFieldLayer\(this, id\);/);
+  assert.match(liveSrc, /if \(isFieldLayerId\(id\)\) return false;/);
 });

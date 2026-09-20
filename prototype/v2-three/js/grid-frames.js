@@ -397,9 +397,10 @@ export function createGridFrames(source, deps = {}) {
   function ensure(id) {
     const f = fieldOf(id);
     const hit = built.get(id);
-    if (hit) return hit;
+    // THREE 가 뒤늦게 온 경우(provide)에는 텍스처만 다시 짓는다 — 바이트는 그대로다.
+    if (hit && (hit.tex || !THREE)) return hit;
     counters.builds += 1;
-    const q = quantizeGrid(model.doc[f.spec.key], f.grid, f.channels[0]);
+    const q = hit ? { ...hit.stats, px: hit.px, tex: hit.texBytes } : quantizeGrid(model.doc[f.spec.key], f.grid, f.channels[0]);
     let tex = null;
     if (THREE) {
       tex = new THREE.DataTexture(q.tex, f.grid.ni, f.grid.nj, THREE.RGBAFormat);
@@ -413,7 +414,10 @@ export function createGridFrames(source, deps = {}) {
       tex.colorSpace = THREE.NoColorSpace;      // 값이지 색이 아니다
       tex.needsUpdate = true;
     }
-    const entry = { px: q.px, tex, stats: { present: q.present, total: q.total, min: q.min, max: q.max, clampedHi: q.clampedHi, clampedLo: q.clampedLo } };
+    const entry = {
+      px: q.px, tex, texBytes: q.tex,
+      stats: { present: q.present, total: q.total, min: q.min, max: q.max, clampedHi: q.clampedHi, clampedLo: q.clampedLo },
+    };
     built.set(id, entry);
     return entry;
   }

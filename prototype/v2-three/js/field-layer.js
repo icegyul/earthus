@@ -27,6 +27,7 @@ import * as THREE from '../../vendor/three-r184.module.min.js';
 import { i18n } from './i18n.js?v=11';
 import { timeBus as sharedTimeBus } from './time-bus.js?v=1';
 import { decodeByte, sharedGfsFrames } from './gfs-frames.js?v=1';
+import { sharedGridFrames } from './grid-frames.js?v=1';
 import { fieldLegend as sharedLegend } from './field-legend.js?v=1';
 import { bandColor, formatValue, isolineSpec, scaleOf } from './field-scales.js?v=1';
 import { logReadout, readTicks, topBandNote } from './field-log.js?v=1';
@@ -38,6 +39,10 @@ import { FieldSymbols, SYMBOL_CAP, symbolCardRow } from './field-symbols.js?v=1'
 //   fieldId   프레임 저장소의 필드(gfs-frames.js) · scaleId  색 눈금표(field-scales.js)
 //   mode      'scalar' | 'magnitudeRG'(풍속) · mask  'none' | 'ocean'
 //   isolineChoices  카드에 단추로 낼 등치선 간격 — 눈금표에 실제로 있는 것만 나온다
+//   source    이 자료를 내놓는 저장소(grid-frames.js GRID_SOURCES 의 열쇠). 없으면 공용 GFS 프레임 저장소다.
+//   missing   둘째 채널이 결측 마스크다(JSON 격자) · clip  격자 밖을 버린다(지역 격자 · 극까지 안 닿는 격자)
+//   badge     메뉴·카드의 성질 도장. 없으면 'MODEL'(GFS 색면).
+//   nature    카드의 '이 색면은 <b>…</b>입니다' 한 마디 · cellWord  '한 칸의 <…>'(평균 | 표본)
 export const FIELD_DESCRIPTORS = Object.freeze({
   tempgrid: Object.freeze({
     layerId: 'tempgrid', fieldId: 'temp', scaleId: 'temp', mode: 'scalar', mask: 'none',
@@ -85,6 +90,48 @@ export const FIELD_DESCRIPTORS = Object.freeze({
     symbolName: Object.freeze({ ko: '고·저기압 기호 H/L', en: 'High/low centres' }),
     isolineChoices: Object.freeze([]),
   }),
+  // ── JSON 격자 한 장짜리 자료 4종 (2026-09-20 작업 D3) ─────────────────────────────────────────────────────
+  // 옛 길은 캔버스 선형 램프 + 0.25° CPU 가림판(ocean-land-mask.js)이었다: 육지는 비었지만 해안 15~40 km 와
+  // 다도해·대한해협까지 계단 모양으로 통째로 비었다. 여기서는 자료를 값 텍스처로 올리고(grid-frames.js)
+  // **셰이더가 지형 고도 ≥ 0 에서 버린다** — 해안선이 프래그먼트 단위다.
+  // 자외선(uvgrid)은 없다: PD 표에 색 눈금이 없어 색을 지어낼 수 없다(field-scales.js:266).
+  sstfield: Object.freeze({
+    layerId: 'sstfield', source: 'sstGlobal', fieldId: 'sst', scaleId: 'sst',
+    mode: 'scalar', mask: 'ocean', missing: true, clip: true, badge: 'OBSERVED',
+    title: Object.freeze({ ko: '해수면 온도 · OISST 1°', en: 'Sea surface temperature · OISST 1°' }),
+    quantity: Object.freeze({ ko: '해수면 온도', en: 'Sea surface temperature' }),
+    isoName: Object.freeze({ ko: '등온선 1 °C', en: 'Isotherms 1 °C' }),
+    isolineChoices: Object.freeze([]),
+    nature: Object.freeze({ ko: '모델이 아니라 하루치 관측 분석장', en: 'a daily observation analysis, not model output' }),
+    cellWord: Object.freeze({ ko: '표본', en: 'sample' }),   // 0.25° 원본을 네 칸마다 뽑았다 — 1° 칸의 평균이 아니다
+  }),
+  sstanom: Object.freeze({
+    layerId: 'sstanom', source: 'sstAnomEa', fieldId: 'sstAnom', scaleId: 'sstAnom',
+    mode: 'scalar', mask: 'ocean', missing: true, clip: true, badge: 'OBSERVED',
+    title: Object.freeze({ ko: '평년 대비 수온 · 동아시아 0.5°', en: 'SST anomaly · East Asia 0.5°' }),
+    quantity: Object.freeze({ ko: '평년 대비 수온', en: 'SST anomaly' }),
+    isoName: Object.freeze({ ko: '등치선', en: 'Contours' }),
+    isolineChoices: Object.freeze([]),
+    nature: Object.freeze({ ko: '관측에서 1991~2020 평년을 뺀 값', en: 'observation minus the 1991–2020 normal' }),
+    cellWord: Object.freeze({ ko: '표본', en: 'sample' }),
+  }),
+  wavefield: Object.freeze({
+    layerId: 'wavefield', source: 'marine', fieldId: 'wave', scaleId: 'wave',
+    mode: 'scalar', mask: 'ocean', missing: true, clip: true, badge: 'MODEL',
+    title: Object.freeze({ ko: '유의파고 · 5° 격자', en: 'Significant wave height · 5° grid' }),
+    quantity: Object.freeze({ ko: '유의파고', en: 'Significant wave height' }),
+    isoName: Object.freeze({ ko: '등파고선', en: 'Wave-height contours' }),
+    isolineChoices: Object.freeze([]),
+  }),
+  pm25grid: Object.freeze({
+    // 바다 가림이 없다 — 대기질은 육지 위에도 값이 있는 것이 맞다. 결측 마스크는 켠다(CAMS 격자에 구멍이 날 수 있다).
+    layerId: 'pm25grid', source: 'air', fieldId: 'pm25', scaleId: 'pm25',
+    mode: 'scalar', mask: 'none', missing: true, clip: true, badge: 'MODEL',
+    title: Object.freeze({ ko: '초미세먼지 PM2.5 · 5° 격자', en: 'PM2.5 · 5° grid' }),
+    quantity: Object.freeze({ ko: '초미세먼지 PM2.5', en: 'PM2.5' }),
+    isoName: Object.freeze({ ko: '등치선', en: 'Contours' }),
+    isolineChoices: Object.freeze([]),
+  }),
 });
 
 // 매니페스트를 이보다 오래 안 읽었으면 다시 읽는다. 같은 런은 3시간마다 다시 구워지고 새 런은 6시간마다 온다(gfs-frames.js) —
@@ -97,6 +144,8 @@ export const LEGEND_PRIORITY_FIELD = 10;
 export function fullRangeOf(pxA, pxB, channels, mode = 'scalar') {
   let min = Infinity;
   let max = -Infinity;
+  // 결측 채널(JSON 격자)이 있으면 그 칸의 값 바이트는 값이 아니다 — 카드의 '모델 범위'에 자리값(−10 °C 등)이 들어가지 않게.
+  const miss = Array.isArray(channels) ? channels.findIndex((c) => c && c.role === 'mask') : -1;
   const look = (px) => {
     if (!px || !px.data) return;
     const n = px.channels || 1;
@@ -113,7 +162,15 @@ export function fullRangeOf(pxA, pxB, channels, mode = 'scalar') {
     }
     let lo = 255;
     let hi = 0;
-    for (let i = 0; i < len; i += n) { const b = px.data[i]; if (b < lo) lo = b; if (b > hi) hi = b; }
+    let any = false;
+    for (let i = 0; i < len; i += n) {
+      if (miss >= 0 && px.data[i + miss] < 128) continue;
+      any = true;
+      const b = px.data[i];
+      if (b < lo) lo = b;
+      if (b > hi) hi = b;
+    }
+    if (miss >= 0 && !any) return;
     // 단조 증가 인코딩(linear · log10)이라 바이트의 min/max 가 값의 min/max 다 — 260,000 칸을 값으로 풀지 않는다.
     for (const b of [lo, hi]) { const x = decodeByte(channels[0], b); if (x < min) min = x; if (x > max) max = x; }
   };
@@ -148,10 +205,27 @@ export const fmtValid = (ms, ko = true) => {
 };
 const fmtPoint = (lat, lon) => `${lat >= 0 ? 'N' : 'S'}${Math.abs(lat).toFixed(1)}° ${lon >= 0 ? 'E' : 'W'}${Math.abs(lon).toFixed(1)}°`;
 
-/** 'MODEL · NOAA GFS 0.5°' — 모델 이름과 해상도는 매니페스트가 말한 것이다. */
+/** 'MODEL · NOAA GFS 0.5°' — 모델 이름과 해상도는 매니페스트가 말한 것이다.
+ *  저장소가 출처를 통째로 말하면(JSON 격자 — 'OBSERVED · NOAA OISST v2.1 1°' · 'MODEL · Open-Meteo Marine 경유 5°')
+ *  그것을 그대로 쓴다. 남의 기관 자료에 'NOAA' 를 붙여 부르지 않는다. */
 export const sourceLabel = (info) => {
   const res = info && Number.isFinite(info.resolutionDeg) ? ` ${info.resolutionDeg}°` : '';
+  if (info && info.sourceName) return `${info.kind || 'MODEL'} · ${info.sourceName}${res}`;
   return `MODEL · NOAA ${(info && info.model) || 'GFS'}${res}`;
+};
+
+/** 출처 뒤에 붙는 시각 조각. 한 시각짜리 자료는 '런'도 '유효'도 아니라 **기준 시각** 하나다 — 예보인 척하지 않는다. */
+export const timeMeta = (info, validMs, ko = true) => {
+  const out = [];
+  if (info && info.single) {
+    if (Number.isFinite(info.validMs)) {
+      out.push(`${ko ? '기준' : 'as of'} ${fmtValid(info.validMs, ko)}${info.delayed ? ` · ${ko ? '지연' : 'delayed'}` : ''}`);
+    }
+    return out;
+  }
+  if (info && Number.isFinite(info.runMs)) out.push(`${ko ? '런' : 'run'} ${fmtRun(info.runMs)}`);
+  if (Number.isFinite(validMs)) out.push(`${ko ? '유효' : 'valid'} ${fmtValid(validMs, ko)}`);
+  return out;
 };
 
 /** '0.5° 격자(약 55 km)' — 적도에서 1° ≈ 111.2 km, 5 km 단위로 말한다(그보다 잘게 말할 정밀도가 아니다). */
@@ -170,10 +244,10 @@ export const fieldStatusOf = ({ br, loading = false, reason = null, frames = nul
   if (!br) return { kind: 'nodata', reason: 'NO_FRAMES' };
   const first = frames && frames.length ? frames[0].t : null;
   const last = frames && frames.length ? frames[frames.length - 1].t : null;
-  if (br.outOfRange) return { kind: 'outOfRange', side: br.outOfRange, first, last };
+  if (br.outOfRange) return { kind: 'outOfRange', side: br.outOfRange, first, last, single: !!br.single };
   if (loading) return { kind: 'loading', a: br.a, b: br.b };
   if (br.mix > 0 && br.a !== br.b) return { kind: 'interp', a: br.a, b: br.b, mix: br.mix, gapH: br.gapH };
-  return { kind: 'exact', a: br.a };
+  return { kind: 'exact', a: br.a, single: !!br.single };
 };
 
 const REASON_TEXT = {
@@ -182,6 +256,9 @@ const REASON_TEXT = {
   NO_DECODE: { ko: '이 필드를 값으로 푸는 상수가 예보 목록에 없습니다', en: 'the manifest has no decode constants for this field' },
   NO_FRAMES: { ko: '프레임 목록이 비어 있습니다', en: 'the frame list is empty' },
   FRAME_FAILED: { ko: '이 시각의 프레임을 받지 못했습니다', en: 'the frame for this time could not be loaded' },
+  // JSON 격자 한 장짜리 자료(grid-frames.js) — '예보 목록'이 아니라 그 파일을 못 받은 것이다.
+  NO_DOCUMENT: { ko: '이 자료 파일을 받지 못했습니다', en: 'this dataset could not be loaded' },
+  NO_GRID: { ko: '받은 파일에 격자가 없습니다', en: 'the file that arrived carries no grid' },
 };
 export const reasonText = (code, ko = true) => (REASON_TEXT[code] ? REASON_TEXT[code][ko ? 'ko' : 'en'] : String(code || ''));
 
@@ -191,6 +268,14 @@ export const statusText = (st, { ko = true, short = false } = {}) => {
   switch (st.kind) {
     case 'nodata': return ko ? `자료 없음 — ${reasonText(st.reason, true)}` : `No data — ${reasonText(st.reason, false)}`;
     case 'outOfRange': {
+      // 한 시각짜리 자료는 '예보 범위'라는 것이 없다 — 예보인 척하지 않고 그대로 말한다.
+      // (이 글은 카드에서 esc 되고 범례에서는 textContent 다 — 표를 넣지 않는다.)
+      if (st.single) {
+        if (short) return ko ? '이 자료는 현재 시각만 있습니다 — 색면을 숨겼습니다' : 'Present moment only — field hidden';
+        return ko
+          ? '이 자료는 현재 시각만 있습니다 — 타임라인을 지금으로 되돌리면 다시 보입니다. 한 장을 예보로 늘여 칠하지 않습니다.'
+          : 'This dataset covers the present moment only — return the timeline to now. One snapshot is not stretched into a forecast.';
+      }
       if (short) return ko ? '예보 범위 밖 — 색면을 숨겼습니다' : 'Outside the forecast range — field hidden';
       const span = st.first != null ? `${fmtValid(st.first, ko)} ~ ${fmtValid(st.last, ko)}` : '';
       return ko
@@ -204,7 +289,13 @@ export const statusText = (st, { ko = true, short = false } = {}) => {
         ? `모델 프레임 사이 보간 — ${fmtValid(st.a.t, true)} 와 ${fmtValid(st.b.t, true)} 프레임 사이(${st.gapH}시간 간격)를 값으로 이었습니다.`
         : `Interpolated between model frames — ${fmtValid(st.a.t, false)} and ${fmtValid(st.b.t, false)} (${st.gapH} h apart), blended by value.`;
     }
-    case 'exact': return short ? '' : (ko ? `모델 프레임 그대로 — ${fmtValid(st.a.t, true)}` : `Model frame as issued — ${fmtValid(st.a.t, false)}`);
+    case 'exact': {
+      if (short) return '';
+      if (st.single) {
+        return ko ? `자료 그대로 — 기준 ${fmtValid(st.a.t, true)} 한 장입니다` : `Data as issued — one snapshot at ${fmtValid(st.a.t, false)}`;
+      }
+      return ko ? `모델 프레임 그대로 — ${fmtValid(st.a.t, true)}` : `Model frame as issued — ${fmtValid(st.a.t, false)}`;
+    }
     default: return '';
   }
 };
@@ -214,9 +305,14 @@ export const statusText = (st, { ko = true, short = false } = {}) => {
  *   눈금(step)은 매니페스트의 디코드 scale 에서 온다(기온 0.5). 그 눈금으로 반올림하고 '~' 를 붙인다.
  *   로그로 실린 자료(강수율)에는 그 상수 눈금이 없다 — 표본이 step 대신 floor(자료의 바닥)를 달고 오고, 글자는 field-log.js 가 짓는다.
  */
-export const readoutOf = (sample, { scale, mode = 'scalar', resolutionDeg = null, zeroText = null, ko = true } = {}) => {
+export const readoutOf = (sample, { scale, mode = 'scalar', resolutionDeg = null, zeroText = null, cellWord = null, ko = true } = {}) => {
   if (!sample) return { ok: false, text: ko ? '값을 읽을 프레임이 아직 없습니다' : 'No frame to read from yet' };
-  if (sample.outOfRange) return { ok: false, text: ko ? '예보 범위 밖 — 값을 말하지 않습니다' : 'Outside the forecast range — no value is given' };
+  // 바다 자료를 육지에서 눌렀다 — 셰이더는 고도 ≥ 0 을 버리는데 클릭은 그 판을 안 거친다(FieldLayer.sampleAt).
+  if (sample.land) return { ok: false, text: ko ? '육지입니다 — 이 바다 자료에는 값이 없습니다' : 'On land — this ocean dataset has no value here' };
+  if (sample.outOfRange) {
+    if (sample.single) return { ok: false, text: ko ? '현재 시각의 자료만 있습니다 — 값을 말하지 않습니다' : 'Present moment only — no value is given' };
+    return { ok: false, text: ko ? '예보 범위 밖 — 값을 말하지 않습니다' : 'Outside the forecast range — no value is given' };
+  }
   if (!sample.decoded) return { ok: false, text: ko ? '이 필드는 값으로 풀 수 없습니다' : 'This field cannot be decoded' };
   const raw = mode === 'magnitudeRG' ? Math.hypot(sample.values[0], sample.values[1]) : sample.value;
   if (!Number.isFinite(raw)) return { ok: false, text: '—' };
@@ -226,8 +322,9 @@ export const readoutOf = (sample, { scale, mode = 'scalar', resolutionDeg = null
   const step = sample.step > 0 ? sample.step : 0.5;
   const value = Math.round(raw / step) * step;
   const text = `~${formatValue(scale, value)}`;
-  const note = ko ? `${cellLabel(resolutionDeg, true)} 평균 · ${formatValue(scale, step).replace(/^[+−]/, '')} 눈금`
-    : `${cellLabel(resolutionDeg, false)} mean · ${formatValue(scale, step).replace(/^[+−]/, '')} steps`;
+  const cw = (cellWord && (cellWord[ko ? 'ko' : 'en'] || cellWord.ko)) || (ko ? '평균' : 'mean');
+  const note = ko ? `${cellLabel(resolutionDeg, true)} ${cw} · ${formatValue(scale, step).replace(/^[+−]/, '')} 눈금`
+    : `${cellLabel(resolutionDeg, false)} ${cw} · ${formatValue(scale, step).replace(/^[+−]/, '')} steps`;
   return { ok: true, value, text, note, color: bandColor(scale, value) };
 };
 
@@ -256,9 +353,7 @@ const pressed = (on) => (on
 /** 카드에서 **시각을 따라 바뀌는 줄**만: 출처·런·유효 시각 · 상태 · 모델 범위 · 누른 곳. 타임라인이 움직이는 동안 이 덩어리만 갈아 끼운다. */
 export const fieldCardLive = (m) => {
   const ko = m.ko !== false;
-  const meta = [sourceLabel(m.info)];
-  if (m.info && Number.isFinite(m.info.runMs)) meta.push(`${ko ? '런' : 'run'} ${fmtRun(m.info.runMs)}`);
-  if (Number.isFinite(m.validMs)) meta.push(`${ko ? '유효' : 'valid'} ${fmtValid(m.validMs, ko)}`);
+  const meta = [sourceLabel(m.info), ...timeMeta(m.info, m.validMs, ko)];
   const lines = [esc(meta.join(' · '))];
   const st = statusText(m.status, { ko });
   if (st) lines.push(esc(st));
@@ -286,29 +381,41 @@ export const fieldCardInner = (m) => {
     : `${painted} solid bands. Colours are never blended — band edge = legend edge = isoline value.`}`);
   lines.push(`<span data-field-live>${fieldCardLive(m)}</span>`);
   const btn = (action, data, on, text) => `<button data-action="${action}" data-layer="${esc(m.id)}" ${data} aria-pressed="${on ? 'true' : 'false'}" style="${pressed(on)}">${esc(text)}</button>`;
-  // 등치선이 있는 눈금이면 켬/끔은 늘 낸다. 간격 단추는 **선택지가 둘 이상일 때만** — 기압은 4 hPa 하나뿐이라
-  // 단추가 없고 굵은 선 간격만 글자로 적힌다(선택지가 하나면 단추로 가장하지 않는다 · 지시서 W3 '죽은 토글 금지').
-  if (m.scale.isolines) {
+  // 등치선이 있는 눈금이면 켬/끔은 늘 낸다(수온 1 °C 고정 · 파고 경계선 · 기압 4 hPa). 간격 단추는 **선택지가 둘 이상일 때만** —
+  // 선택지가 하나뿐인 눈금은 단추로 가장하지 않고 굵은 선 간격만 글자로 적는다(지시서 W3 '죽은 토글 금지').
+  const spec = isolineSpec(m.scale, m.isoChoice);
+  if (spec) {
     const steps = (m.choices || []).map((c) => btn('field-iso-step', `data-choice="${esc(c)}"`, m.isoOn && m.isoChoice === c, `${c}${unit}`)).join('');
-    const spec = isolineSpec(m.scale, m.isoChoice);
-    const every = spec && spec.interval ? (ko ? ` ${spec.interval}${unit} 마다` : ` every ${spec.interval}${unit}`) : '';
+    const every = spec.interval ? (ko ? ` ${spec.interval}${unit} 마다` : ` every ${spec.interval}${unit}`) : '';
+    const major = spec.majorEvery ? (ko ? ` · ${spec.majorEvery}${unit} 마다 굵은 선과 숫자` : ` · bold line and number every ${spec.majorEvery}${unit}`) : '';
     // 간격이 고르지 않은 눈금은 그을 값을 글자로 적는다('10 mm/h 이상') — 선이 무엇을 두르고 있는지 색 없이도 읽힌다.
-    const only = (spec && !spec.interval && spec.levels && spec.levels.length)
+    const only = (!spec.interval && spec.levels && spec.levels.length)
       ? (ko ? ` · ${spec.levels.map((v) => labelText(m.scale, v)).join(' · ')} 이상` : ` · at ${spec.levels.map((v) => labelText(m.scale, v)).join(' · ')} and above`)
       : '';
-    const major = spec && spec.majorEvery ? (ko ? ` · ${spec.majorEvery}${unit} 마다 굵은 선과 숫자` : ` · bold line and number every ${spec.majorEvery}${unit}`) : '';
+    // 강조선(수온 26 · 29 °C · 편차 0 선)은 값을 적는다 — 왜 그 선만 굵은지 화면만 보고는 모른다.
+    const emph = spec.emphasize && spec.emphasize.length
+      ? (ko ? ` · ${spec.emphasize.map((v) => formatValue(m.scale, v)).join(' · ')} 는 굵게`
+        : ` · bold at ${spec.emphasize.map((v) => formatValue(m.scale, v)).join(' · ')}`)
+      : '';
     lines.push(`<span style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 2px">${esc(L(m.desc.isoName))} `
       + btn('field-iso', `data-set="${m.isoOn ? 'off' : 'on'}"`, m.isoOn, m.isoOn ? (ko ? '켬' : 'On') : (ko ? '끔' : 'Off'))
-      + `${steps}</span><span style="opacity:.8">${ko ? '흰 선' : 'White lines'}${steps ? '' : every}${major}${only}</span>`);
+      + `${steps}</span><span style="opacity:.8">${ko ? '흰 선' : 'White lines'}${steps ? '' : every}${major}${only}${emph}</span>`);
   }
   // H/L 기호 — descriptor 에 symbols 훅이 있는 레이어(기압)에만. 글은 field-symbols.js 가 만든다(로직을 여기 두지 않는다).
   if (m.symbolName) lines.push(symbolCardRow(m, btn));
+  // '이 색면은 …입니다' 의 한 마디와 '한 칸의 …' 은 descriptor 가 바꿀 수 있다 — 관측 분석장을 모델값이라 부르지 않는다.
+  const nature = L(m.desc.nature) || (ko ? '관측이 아니라 수치예보 모델값' : 'model output, not observation');
+  const cw = L(m.desc.cellWord) || (ko ? '평균' : 'mean');
   lines.push(ko
-    ? `이 색면은 <b>관측이 아니라 수치예보 모델값</b>입니다 — ${esc(cellLabel(m.info && m.info.resolutionDeg, true))} 한 칸의 평균이라 도시·지점의 값과 다를 수 있습니다.`
-    : `This field is <b>model output, not observation</b> — a ${esc(cellLabel(m.info && m.info.resolutionDeg, false))} cell mean that can differ from a city or station value.`);
-  lines.push(ko
-    ? '타임라인을 밀면 5일 예보가 3시간 간격 프레임 사이를 값으로 이어 움직입니다. 지구를 누르면 그 자리의 모델값을 범례 아래에 적습니다(네트워크 조회 없음).'
-    : 'Drag the timeline: the 5-day forecast moves by value-blending 3-hourly frames. Tap the globe to read the model value there (no network request).');
+    ? `이 색면은 <b>${esc(nature)}</b>입니다 — ${esc(cellLabel(m.info && m.info.resolutionDeg, true))} 한 칸의 ${esc(cw)}이라 도시·지점의 값과 다를 수 있습니다.`
+    : `This field is <b>${esc(nature)}</b> — a ${esc(cellLabel(m.info && m.info.resolutionDeg, false))} cell ${esc(cw)} that can differ from a city or station value.`);
+  lines.push(m.info && m.info.single
+    ? (ko
+      ? '이 자료는 한 시각짜리 한 장입니다 — 타임라인을 밀면 색면을 숨기고 그렇게 말합니다. 지구를 누르면 그 자리의 값을 범례 아래에 적습니다(네트워크 조회 없음).'
+      : 'This dataset is a single snapshot — move the timeline and the field hides and says so. Tap the globe to read the value there (no network request).')
+    : (ko
+      ? '타임라인을 밀면 5일 예보가 3시간 간격 프레임 사이를 값으로 이어 움직입니다. 지구를 누르면 그 자리의 모델값을 범례 아래에 적습니다(네트워크 조회 없음).'
+      : 'Drag the timeline: the 5-day forecast moves by value-blending 3-hourly frames. Tap the globe to read the model value there (no network request).'));
   return lines.join('<br/>');
 };
 
@@ -374,6 +481,8 @@ export class FieldLayer {
     const d = this.deps;
     this.renderer = new FieldRenderer({
       scale: this.scale, mode: this.desc.mode, mask: this.desc.mask, transfer: this.desc.transfer || 'linear',
+      scale: this.scale, mode: this.desc.mode, mask: this.desc.mask,
+      missing: !!this.desc.missing, clip: !!this.desc.clip,
       terrain: d.terrain || null, geometry: d.geometry || null, segments: d.segments,
     });
     this.labels = new FieldLabels({
@@ -406,7 +515,8 @@ export class FieldLayer {
   // 왜 못 그리나 — 그릴 수 있으면 null. 그라데이션으로 물러나지 않는다: 이유를 말하고 끝낸다.
   unavailableReason() {
     const f = this.frames;
-    if (!f.loaded) return 'NO_MANIFEST';
+    // 저장소가 제 이유를 말하면 그것을 쓴다(JSON 격자는 '예보 목록'이 아니라 그 파일을 못 받은 것이다).
+    if (!f.loaded) return f.noDataReason || 'NO_MANIFEST';
     if (!f.has(this.desc.fieldId)) return 'NO_FIELD';
     const spec = f.fieldSpec(this.desc.fieldId);
     const need = this.desc.mode === 'magnitudeRG' ? 2 : 1;
@@ -663,7 +773,14 @@ export class FieldLayer {
 
   sampleAt(lat, lon) {
     // 범위 밖이면 읽지 않는다. 저장소는 끝 프레임의 값을 outOfRange 표시와 함께 주지만(그 프레임이 캐시에 있을 때), 그 값은 이 시각의 값이 아니다.
-    if (this.status.kind === 'outOfRange') return { outOfRange: this.status.side };
+    if (this.status.kind === 'outOfRange') return { outOfRange: this.status.side, single: !!this.status.single };
+    // 바다 자료를 육지에서 누르면 값을 말하지 않는다 — 셰이더는 고도 ≥ 0 을 버리는데(mask 'ocean') 클릭은 그 판을 안 거쳐,
+    // 해안 칸의 마스크 가중값(가장 가까운 바다 값)을 서울의 수온처럼 적게 된다. 고도를 모르는 세션에서는 그냥 읽는다.
+    if (this.desc.mask === 'ocean' && this.deps.heightAt) {
+      let h = null;
+      try { h = this.deps.heightAt(lat, lon); } catch (e) { h = null; }
+      if (Number.isFinite(h) && h >= 0) return { land: true };
+    }
     let s = null;
     try { s = this.frames.sampleAt(this.desc.fieldId, this.timeBus.validMs(), lat, lon); } catch (e) { s = null; }
     // 선형은 상수 눈금(0.5 · 0.50196 → 0.5 · 1 → 1), 로그는 눈금 대신 자료의 바닥(floor) — readoutOf 가 그것을 보고 길을 가른다.
@@ -675,9 +792,13 @@ export class FieldLayer {
     if (!this.probePoint) return null;
     const info = this.frames.info ? this.frames.info() : null;
     const r = readoutOf(this.sampleAt(this.probePoint.lat, this.probePoint.lon),
-      { scale: this.scale, mode: this.desc.mode, resolutionDeg: info && info.resolutionDeg, zeroText: this.desc.zeroText, ko: this.ko });
+      { scale: this.scale, mode: this.desc.mode, resolutionDeg: info && info.resolutionDeg,
+        zeroText: this.desc.zeroText, cellWord: this.desc.cellWord, ko: this.ko });
     return { ...this.probePoint, ...r };
   }
+
+  /** 저장소가 받아 둔 원본 문서(JSON 격자만 · GFS 프레임에는 없다). main.js 의 Intelligence 띠가 여기서 패킷을 읽는다. */
+  document() { return this.frames.document ? this.frames.document() : null; }
 
   /**
    * 지점 값 카드(main.js pointWeather 가 부른다). 레이어가 꺼져 있으면 null — 부른 쪽이 제 길로 간다.
@@ -688,18 +809,26 @@ export class FieldLayer {
     const ko = this.ko;
     const info = this.frames.info ? this.frames.info() : null;
     const r = readoutOf(this.sampleAt(lat, lon),
-      { scale: this.scale, mode: this.desc.mode, resolutionDeg: info && info.resolutionDeg, zeroText: this.desc.zeroText, ko });
+      { scale: this.scale, mode: this.desc.mode, resolutionDeg: info && info.resolutionDeg,
+        zeroText: this.desc.zeroText, cellWord: this.desc.cellWord, ko });
     const q = this.desc.quantity[ko ? 'ko' : 'en'];
     const stat = (k, v) => `<div class="stat"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`;
-    const meta = [sourceLabel(info)];
-    if (info && Number.isFinite(info.runMs)) meta.push(`${ko ? '런' : 'run'} ${fmtRun(info.runMs)}`);
-    meta.push(`${ko ? '유효' : 'valid'} ${fmtValid(this.timeBus.validMs(), ko)}`);
+    const meta = [sourceLabel(info), ...timeMeta(info, this.timeBus.validMs(), ko)];
     const st = statusText(this.status, { ko, short: true });
     const html = stat(q, r.ok ? r.text : '—') + stat(ko ? '지점' : 'Point', fmtPoint(lat, lon))
       + `<p>${esc(r.ok ? r.note : r.text)}${r.ok ? (ko ? ' — 도시·지점의 관측값이 아닙니다.' : ' — not a city or station observation.') : ''}</p>`
       + `<p>${esc(meta.join(' · '))}${st ? ` · ${esc(st)}` : ''}</p>`
       + `<p style="opacity:.75">${ko ? '화면에 칠해진 프레임에서 읽었습니다 — 네트워크 조회 없음.' : 'Read from the frame on screen — no network request.'}</p>`;
-    return { title: ko ? `지점 ${q}(모델 격자값)` : `Point ${q.toLowerCase()} (model grid value)`, html, badge: r.ok ? 'MODEL_SIGNAL' : 'UNAVAILABLE' };
+    // 성질 도장은 descriptor 가 말한다 — 관측 분석장(OISST)에 'MODEL_SIGNAL' 을 찍지 않는다.
+    const badge = this.desc.badge === 'OBSERVED' ? 'OBSERVED' : 'MODEL_SIGNAL';
+    return { title: ko ? `지점 ${q}(${this.gridWord(true)})` : `Point ${q.toLowerCase()} (${this.gridWord(false)})`, html, badge: r.ok ? badge : 'UNAVAILABLE' };
+  }
+
+  /** '모델 격자값' | '관측 격자값' — 지점 카드의 제목에 쓴다. */
+  gridWord(ko = true) {
+    const obs = this.desc.badge === 'OBSERVED';
+    if (ko) return obs ? '관측 격자값' : '모델 격자값';
+    return obs ? 'observed grid value' : 'model grid value';
   }
 
   // ---------------------------------------------------------------- 말하기 (범례 · 카드)
@@ -724,8 +853,9 @@ export class FieldLayer {
   /** 메뉴 줄의 짧은 상태(LiveLayers.state().note). */
   note() {
     const info = this.frames.info && this.frames.loaded ? this.frames.info() : null;
-    const run = info && Number.isFinite(info.runMs) ? ` · ${this.ko ? '런' : 'run'} ${fmtRun(info.runMs)}` : '';
-    return `${sourceLabel(info).replace(/^MODEL · /, '')}${run}`;
+    const t = timeMeta(info, null, this.ko);
+    // 앞의 성질 도장(MODEL · OBSERVED …)은 메뉴 줄이 따로 보이므로 글에서 뗀다.
+    return `${sourceLabel(info).replace(/^[A-Z_]+ · /, '')}${t.length ? ` · ${t[0]}` : ''}`;
   }
 
   publish() {
@@ -743,6 +873,9 @@ export class FieldLayer {
       // 아무 일도 없을 때 비는 한 줄: 자료가 눈금표의 **맨 위 칸을 못 채우면** 그 사실을 말한다(강수율은 30 mm/h 에서 포화 —
       // '≥ 50 mm/h' 칸은 이 자료로 나오지 않는다). 천장은 매니페스트에서 온다(field-log.js topBandNote).
       note: blocked ? short : (probeLine || short || topBandNote(this.scale, this.spec && this.spec.channels && this.spec.channels[0], ko)),
+      // 한 시각짜리 자료에는 '런'이 없고 '유효'는 타임라인이 아니라 자료의 기준 시각이다.
+      run: info ? info.run : null, valid: (info && info.single) ? info.validMs : this.timeBus.validMs(),
+      note: blocked ? short : (probeLine || short),
     }, `field:${this.id}`, LEGEND_PRIORITY_FIELD);
     const model = this.cardModel(probe);
     const inner = fieldCardInner(model);
@@ -783,8 +916,12 @@ export const isFieldLayerId = (id) => Object.prototype.hasOwnProperty.call(FIELD
 const fieldOf = (host, id) => {
   host._fields = host._fields || {};
   if (!host._fields[id]) {
-    host._fields[id] = new FieldLayer(FIELD_DESCRIPTORS[id], {
+    const desc = FIELD_DESCRIPTORS[id];
+    host._fields[id] = new FieldLayer(desc, {
       parent: host.group, heightAt: host.heightAt, getExagger: host.getExagger, ...(host._fieldDeps || {}),
+      // descriptor.source 가 있으면 그 자료의 저장소(JSON 격자 한 장)를 쓴다 — 없으면 공용 GFS 프레임 저장소다.
+      // 저장소는 자료마다 하나라 같은 파일을 두 레이어가 써도 한 번만 받는다(grid-frames.js sharedGridFrames).
+      ...(desc.source ? { frames: sharedGridFrames(desc.source, { THREE }) } : {}),
     });
   }
   return host._fields[id];
@@ -823,9 +960,13 @@ export async function toggleFieldLayer(host, id) {
   entry.on = true;
   entry.obj = field.object;
   entry.obj.visible = true;
+  // 받아 둔 원본 문서를 그대로 달아 둔다 — main.js 의 Intelligence 띠가 layers.sstfield.data 의 intel 패킷을 읽는다(새 요청 없음).
+  // ⚠️ data 가 차면 onExaggerChanged 가 옛 buildFromData 길로 이 레이어를 다시 지으려 한다 — live-layers.js 가 isFieldLayerId 로 막는다.
+  entry.data = field.document ? field.document() : null;
+  const badge = FIELD_DESCRIPTORS[id].badge || 'MODEL';
   // 카드·짧은 상태는 읽을 때마다 지금 것을 낸다(타임라인을 밀면 유효 시각이 바뀐다).
-  entry.meta = { badge: 'MODEL', get note() { return field.note(); }, get cardHtml() { return field.cardHtml(); } };
-  return { on: true, badge: 'MODEL' };
+  entry.meta = { badge, get note() { return field.note(); }, get cardHtml() { return field.cardHtml(); } };
+  return { on: true, badge };
 }
 
 /** 켜져 있는 색면 레이어(없으면 null). id 를 주면 그 레이어만. */

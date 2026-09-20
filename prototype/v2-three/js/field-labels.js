@@ -71,7 +71,11 @@ export const thinField = ({ pxA, pxB = null, channels, grid, mode = 'scalar', st
   const ny = Math.floor((grid.nj - 1) / sy) + 1;
   const n = nxUse * ny;
   const t = (out && out.mid && out.mid.length === n) ? out : { mid: new Float32Array(n), spread: new Float32Array(n) };
+  // 결측 채널(JSON 격자 — grid-frames.js)이 있으면 그 칸은 값이 아니라 NaN 이다. 육지의 SST null 을 −10 °C 로 읽으면
+  // 해안마다 가짜 등온선이 서고 라벨이 그 선을 따라간다(traceContours 는 NaN 이 닿은 칸을 건너뛴다).
+  const miss = channels.findIndex((c) => c && c.role === 'mask');
   const valueOf = (px, o) => {
+    if (miss >= 0 && px.data[o + miss] < 128) return NaN;
     const a = decodeByte(channels[0], px.data[o]);
     if (mode !== 'magnitudeRG') return a;
     return Math.hypot(a, decodeByte(channels[1], px.data[o + 1]));
@@ -156,6 +160,8 @@ export const traceContours = (t, level) => {
   const segs = [];             // [변 번호, 변 번호]
   for (let j = 0; j < ny - 1; j += 1) {
     for (let i = 0; i < cols; i += 1) {
+      // 결측(NaN)이 한 꼭짓점이라도 닿은 칸에는 선을 긋지 않는다 — 육지 옆에 가짜 등치선과 NaN 좌표가 생긴다.
+      if (Number.isNaN(at(i, j) + at(i + 1, j) + at(i + 1, j + 1) + at(i, j + 1))) continue;
       const tl = at(i, j) >= level; const tr = at(i + 1, j) >= level;
       const br = at(i + 1, j + 1) >= level; const bl = at(i, j + 1) >= level;
       const code = (tl ? 8 : 0) | (tr ? 4 : 0) | (br ? 2 : 0) | (bl ? 1 : 0);

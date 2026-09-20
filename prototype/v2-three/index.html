@@ -761,6 +761,41 @@
   #ts-play { color: var(--accent); }
   #ts-label { font-size: 10px; color: var(--text-dim); min-width: 46px; font-variant-numeric: tabular-nums; }
 
+  /* ---------- 색면 범례 (W1 · js/field-legend.js — 칸·숫자·단위는 js/field-scales.js 의 표에서 나온다) ----------
+     자리: 넓은 화면은 오른쪽 아래 구석 — 우측 패널 #intel 이 bottom 156 에서 시작하므로 그 아래 136px 가 빈다.
+       1110 아래로는 가운데 타임스트립(bottom 12)·하단 바(bottom 84)와 가로로 겹치기 시작해 상단 줄 아래 오른쪽으로 올린다.
+       폰은 아래가 꽉 찼다(타임스트립 10 · hud 66~145 · 하단 바 158~214 · 바텀시트 220~) — 전환기(8~48)·상단 줄(56~102) 아래로 간다.
+     ⚠️ 폭·높이·줄 높이를 전부 고정한다. 기온 11칸이든 풍속 8칸이든 칸이 같은 폭을 나눠 갖고, kt 줄·풀이 줄은 비어도 자리를 지킨다
+        — 레이어를 바꿔도 상자가 움직이지 않는다(W1 완료 기준 'reflow 없음'). 칸은 단색이다(색 번짐 띠를 쓰지 않는다).
+     z-index 3: 우측 패널·바텀시트(4)가 펼쳐지면 그 아래로 들어간다. 드래그는 지구로 통과시키고 띠만 툴팁을 받는다. */
+  #field-legend {
+    position: fixed; right: 14px; bottom: 12px; z-index: 3; width: 340px; height: 116px;
+    display: grid; grid-template-rows: 14px 10px 12px 12px 12px 24px; row-gap: 3px; align-content: start;
+    padding: 8px 12px 7px; background: var(--panel-bg); border: 1px solid var(--panel-line); border-radius: 10px;
+    backdrop-filter: blur(8px); font-size: 9.5px; line-height: 12px; color: var(--text-dim);
+    font-variant-numeric: tabular-nums; pointer-events: none; overflow: hidden;
+  }
+  #field-legend[hidden] { display: none; }
+  #field-legend .fl-title { font-size: 11px; line-height: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #field-legend .fl-bands { display: flex; gap: 1px; pointer-events: auto; }
+  #field-legend .fl-band { flex: 1 1 0; min-width: 0; border-radius: 1px; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.10); }
+  #field-legend .fl-ticks { position: relative; color: var(--text); }
+  #field-legend .fl-alt { color: var(--text-dim); }
+  #field-legend .fl-tick { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
+  #field-legend .fl-tick0 { transform: none; }
+  #field-legend .fl-unit { position: absolute; top: 0; right: 0; font-style: normal; color: var(--text-dim); }
+  #field-legend .fl-meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #field-legend .fl-meta.fl-stale { color: #f5c67a; }
+  #field-legend .fl-note { overflow: hidden; }
+  @media (max-width: 1109px) {
+    #field-legend { top: 66px; bottom: auto; }
+    /* 이 폭에서는 검색·설정 서랍이 범례 자리까지 온다 — 서랍이 열린 동안은 범례가 비켜 선다(서랍을 읽는 중이다). */
+    body:has(.drawer.open) #field-legend { visibility: hidden; }
+  }
+  @media (max-width: 720px) {
+    #field-legend { left: 8px; right: 8px; width: auto; top: calc(108px + env(safe-area-inset-top)); }
+  }
+
   /* ---------- 해양 시뮬레이션 뷰 ---------- */
   #simview { position: fixed; inset: 0; z-index: 8; display: none; background: #000; }
   #simview.active { display: block; }

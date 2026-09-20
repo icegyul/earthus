@@ -3,6 +3,7 @@
 //   ① 대기질  — 그린 점 수와 카드가 적는 수가 같은가. 그릴 것이 0이면 배지가 내려가나.
 //   ② 연안 침수 — '어긋난다'는 줄이 **같은 뜻의 두 수**를 견주는가(간 곳 vs 자료가 있던 곳).
 //   ③ 잠기는 땅 — 켜기에 실패했을 때 남의 색면을 내리고 가지 않는가.
+//   ④ 내린 화면 — 카드가 대는 근거 파일이 **실제로 있는 파일**인가.
 //
 // 숫자는 하나도 박지 않는다. 운영 자료 사본(fixtures/)과 다른 파일의 상수에서 셈한다.
 import test from 'node:test';
@@ -11,11 +12,14 @@ import { readFileSync } from 'node:fs';
 
 import { LiveLayers, airqDrawable } from '../../prototype/v2-three/js/live-layers.js';
 import { FIELD_DESCRIPTORS } from '../../prototype/v2-three/js/field-layer.js';
+import { WITHDRAWN } from '../../prototype/v2-three/js/ext-scene.js';
 
 const here = (rel) => new URL(rel, import.meta.url);
 const lf = (s) => s.replace(/\r\n/g, '\n');   // 이 워크트리는 CRLF 로 체크아웃될 수 있다
 const read = (rel) => lf(readFileSync(here(rel), 'utf8'));
 const LIVE_SRC = read('../../prototype/v2-three/js/live-layers.js');
+const EXT_SRC = read('../../prototype/v2-three/js/ext-scene.js');
+const COLLECTOR_SRC = read('../../aws/khoa-coast/handler.py');
 const AIR = JSON.parse(read('fixtures/korea-air-obs-20260921.json'));
 const FLOOD = JSON.parse(read('fixtures/khoa-flood-index-20260920.json'));
 
@@ -196,4 +200,45 @@ test('③ 내릴 색면이 없으면 한 틱도 쉬지 않는다 — build 를 �
   const p = LiveLayers.prototype.toggle.call(h, 'slr');
   assert.equal(buildStarted, true, 'build 가 곧바로 시작되지 않았다 — 내릴 것도 없는데 한 틱을 쉬었다');
   await p;
+});
+
+/* ════════════════════════════════════════════════════════════════════════════
+   ④ 내린 화면 — 카드가 없는 파일을 근거로 댔다
+   ════════════════════════════════════════════════════════════════════════════
+   낚시 카드는 "국립해양조사원 조위관측소 자료(ocean/coast.json)" 라고 적었는데 그런 파일은 없다.
+   수집기(aws/khoa-coast/handler.py)가 실제로 올리는 자리는 events/coast-kr.json 이다.
+   (2026-09-21 02:21 KST 공개 GET 실측: ocean/coast.json → 403 · events/coast-kr.json → 200.)
+   없는 파일을 근거로 대면 그 카드 전체를 믿을 수 없게 된다. */
+
+test('④ 낚시 카드가 대는 경로는 수집기가 실제로 올리는 자리다', () => {
+  const dst = (COLLECTOR_SRC.match(/^DST\s*=\s*"([^"]+)"/m) || [])[1];
+  assert.ok(dst, '수집기에서 올리는 자리를 못 읽었다 — 견줄 정본이 없다');
+  const w = WITHDRAWN['hobby/fishing'];
+  for (const lang of ['ko', 'en']) {
+    assert.ok(w[lang].why.includes(dst), `${lang}.why 가 수집기의 자리(${dst})를 대지 않는다`);
+  }
+});
+
+test('④ 없는 파일 이름을 화면에 내보내지 않는다 — 내력은 주석에만 남긴다', () => {
+  // 주석은 빼고 본다. 'ocean/coast.json 이었다'는 **내력**이고, 내력을 지우면 다음 사람이
+  // 같은 자리를 다시 만든다(flood-slr-contract.test.mjs 가 같은 가름을 쓴다).
+  const codeOnly = EXT_SRC.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+  assert.ok(!/ocean\/coast\.json/.test(codeOnly),
+    '없는 파일(ocean/coast.json)을 아직 화면에 내보내는 문장이 있다');
+  assert.match(EXT_SRC, /ocean\/coast\.json/,
+    '내력까지 지웠다 — 왜 고쳤는지가 사라지면 다음 사람이 같은 자리를 다시 만든다');
+});
+
+test('④ 카드는 그 문서의 **구조**를 말한다 — 그날그날 바뀌는 수를 얼려 두지 않는다', () => {
+  // 조위 지점 수는 날마다 바뀐다(2026-09-21 02:21 KST 에는 45곳을 훑어 0곳이 응답했다).
+  // 그 수를 굳은 카드에 박으면 서핑 카드가 이미 잡힌 것과 같은 거짓말이 된다 — 내력은 주석에 적는다.
+  const w = WITHDRAWN['hobby/fishing'];
+  for (const lang of ['ko', 'en']) {
+    const copy = Object.values(w[lang]).join(' ');
+    assert.deepEqual([...copy.matchAll(/\d+\s*(?:곳|stations?)/gi)].map((m) => m[0]), [],
+      `${lang} 카드가 지점 수를 글자로 적었다 — 그 수는 날마다 바뀐다`);
+  }
+  // 말해야 할 것은 바뀌지 않는 사실이다: 만조·간조 예측 칸이 없다
+  assert.match(w.ko.why, /만조|간조/);
+  assert.match(w.en.why, /high|low|tide/i);
 });

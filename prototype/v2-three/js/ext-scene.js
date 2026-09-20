@@ -65,8 +65,16 @@ const EXT_VERSION = 'v=1';
    (main.js 는 sid==='hobby' 면 곧장 open) 누구나 닿았다.
 
    왜 우리 자료로 갈아 끼우지 않고 내렸나 — **화면의 머리값을 우리 자료로 못 만든다**:
-     · 물때(만조·간조 시각·조차)   ocean/coast.json 은 조위관측소의 '지금 조위' 한 점만 준다.
+     · 물때(만조·간조 시각·조차)   events/coast-kr.json 은 조위관측소마다 '지금 조위(tideCm)'
+                                   한 값만 준다 — 만조·간조 시각 칸이 아예 없다.
                                    낚시 화면의 이름이 물때인데 그 값이 없다.
+                                   ⚠️ 2026-09-21 고침: 여기와 아래 카드가 근거로 대던 `ocean/coast.json`
+                                   은 **없는 파일**이었다(공개 GET 2026-09-21 02:36 KST: ocean/coast.json
+                                   → 403 · events/coast-kr.json → 200). 수집기 aws/khoa-coast/handler.py
+                                   의 DST 가 정본이다. 없는 파일을 근거로 대면 카드 전체를 믿을 수 없게 된다.
+                                   같은 시각 실측: 그 문서는 조위관측소 45곳을 훑어 **0곳**이 응답했고
+                                   이안류도 0곳이었다. 지점 수는 날마다 바뀌므로 카드에는 적지 않는다 —
+                                   카드가 말하는 것은 바뀌지 않는 사실(만조·간조 칸이 없다)뿐이다.
      · 너울 방향 · 풍파 높이·주기   ocean/marine*.json 에 그 칸이 없다 —
                                    point-readout.js 도 같은 이유로 그 줄을 뺐다.
      · 저층 운량 · 시정 · CAPE      clouds/gfs-fc 프레임에 그 필드가 없다(매니페스트 fields).
@@ -100,13 +108,13 @@ export const WITHDRAWN = Object.freeze({
     ko: Object.freeze({
       title: '낚시 — 내린 화면',
       cant: '물때(만조·간조 시각·조차) · 풍파 높이 · 너울 방향',
-      why: '국립해양조사원 조위관측소 자료(ocean/coast.json)는 지금 조위 한 점만 주고 만조·간조 예측이 없습니다.',
+      why: '국립해양조사원 조위관측소 자료(events/coast-kr.json)는 관측소마다 지금 조위 한 값만 주고, 만조·간조 시각 칸이 아예 없습니다.',
       instead: '지구의 바다를 누르면 파고·너울·수온·해류를 우리 격자와 부이 실측으로 읽어 줍니다. 물때는 아직 어디에도 없습니다.',
     }),
     en: Object.freeze({
       title: 'Fishing — withdrawn',
       cant: 'tide table (high/low times, range), wind-wave height, swell direction',
-      why: 'KHOA tide-gauge data (ocean/coast.json) gives only the current level — no predicted highs and lows.',
+      why: 'KHOA tide-gauge data (events/coast-kr.json) carries one current level per gauge — it has no column for predicted high and low tide times.',
       instead: 'Tap the sea for waves, swell, SST and current. We still have no tide table anywhere.',
     }),
   }),

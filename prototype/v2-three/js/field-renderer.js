@@ -168,8 +168,8 @@ const smooth = (e0, e1, x) => {
  */
 export const lineCoverage = (below, grad, widthPx) => {
   if (!(grad > FIELD_GRAD_EPS) || !(below > 0)) return 0;
-  const half = widthPx / 2;
-  return 1 - smooth(half - 0.5, half + 0.5, Math.abs(below / grad - (half + 0.5)));
+  const hw = widthPx / 2;
+  return 1 - smooth(hw - 0.5, hw + 0.5, Math.abs(below / grad - (hw + 0.5)));
 };
 
 /** 고른 간격의 선. 이웃 선 사이가 fadePx 보다 좁으면 흐려진다(선이 픽셀보다 촘촘한 곳 — 모아레 대신 색면만 남긴다). */
@@ -363,8 +363,8 @@ vec2 sampleGrid(sampler2D tex, vec2 g) {
 // 선 하나의 덮임 — JS 의 lineCoverage 와 같은 식. 레벨의 아래쪽에만 서고, 기울기가 문턱 이하면(고원) 긋지 않는다.
 float lineCover(float below, float grad, float widthPx) {
   if (grad <= uGradEps || below <= 0.0) return 0.0;
-  float half = widthPx * 0.5;
-  return 1.0 - smoothstep(half - 0.5, half + 0.5, abs(below / grad - (half + 0.5)));
+  float hw = widthPx * 0.5;     // ⚠️ 'half' 라고 이름 붙이면 안 된다 — GLSL ES 의 예약어라 셰이더가 통째로 컴파일되지 않는다
+  return 1.0 - smoothstep(hw - 0.5, hw + 0.5, abs(below / grad - (hw + 0.5)));
 }
 
 float intervalLine(float v, float grad, float interval, float widthPx) {

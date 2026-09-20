@@ -341,6 +341,36 @@ test('과장이 바뀌면 uniform 만 바뀐다 — 지구의 uniform 객체와 
   assert.equal(ownDisposed, 1);
 });
 
+test('셰이더 글자 — GLSL ES 예약어를 이름으로 쓰지 않았고 괄호가 맞는다(화면 없이 잡을 수 있는 컴파일 오류)', () => {
+  // 이 작업은 WebGL 없이 합쳐진다. 'half' 하나로 셰이더가 통째로 컴파일되지 않고 색면이 조용히 사라진다 — 실제로 한 번 그렇게 썼다.
+  const RESERVED = ['half', 'sample', 'input', 'output', 'filter', 'common', 'active', 'partition', 'fixed', 'unsigned', 'superp',
+    'long', 'short', 'double', 'class', 'union', 'enum', 'typedef', 'template', 'this', 'goto', 'inline', 'noinline', 'public',
+    'static', 'extern', 'external', 'interface', 'sizeof', 'cast', 'namespace', 'using', 'asm', 'resource', 'patch', 'subroutine',
+    'coherent', 'volatile', 'restrict', 'readonly', 'writeonly', 'atomic_uint', 'noperspective', 'packed', 'centroid', 'flat', 'smooth',
+    'hvec2', 'hvec3', 'hvec4', 'fvec2', 'fvec3', 'fvec4', 'dvec2', 'dvec3', 'dvec4', 'texture'];
+  for (const [name, src] of [['FIELD_VERT', FIELD_VERT], ['FIELD_FRAG', FIELD_FRAG]]) {
+    const code = lf(src).replace(/\/\/[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    const words = new Set(code.match(/[A-Za-z_]\w*/g));
+    for (const w of RESERVED) assert.ok(!words.has(w), `${name}: '${w}' 는 GLSL ES 3.00 의 예약어다`);
+    for (const [open, close] of [['(', ')'], ['{', '}'], ['[', ']']]) {
+      assert.equal(code.split(open).length, code.split(close).length, `${name}: ${open}${close} 짝이 안 맞는다`);
+    }
+    assert.ok(!/[^\x00-\x7f]/.test(code), `${name}: 주석 밖에 ASCII 가 아닌 글자가 있다 — shaderSource 가 거부한다`);
+    assert.equal((code.match(/#ifdef|#ifndef|#if /g) || []).length, (code.match(/#endif/g) || []).length, `${name}: #if / #endif 짝`);
+  }
+  // 두 단계가 같이 쓰는 이름은 같은 형이어야 링크된다.
+  assert.match(lf(FIELD_VERT), /varying vec3 vUnit;/);
+  assert.match(lf(FIELD_FRAG), /varying vec3 vUnit;/);
+  assert.match(lf(FIELD_VERT), /uniform sampler2D uHeightMap;\s+uniform float uHasHeight;/);
+  assert.match(lf(FIELD_FRAG), /#ifdef FIELD_MASK_OCEAN\s+uniform sampler2D uHeightMap;\s+uniform float uHasHeight;\s+#endif/);
+  // 셰이더가 읽는 uniform 은 전부 재질에 있다(이름이 어긋나면 값이 0 으로 들어가 색면이 한 색이 된다).
+  const r = new FieldRenderer({ scale: scaleOf('temp'), mode: 'magnitudeRG', mask: 'ocean', segments: [8, 4] });
+  const declared = new Set([...lf(FIELD_VERT + FIELD_FRAG).matchAll(/uniform\s+\w+\s+(\w+)/g)].map((m) => m[1]));
+  for (const name of declared) assert.ok(name in r.uniforms, `재질에 uniform '${name}' 가 없다`);
+  for (const name of Object.keys(r.uniforms)) assert.ok(declared.has(name), `셰이더가 안 읽는 uniform '${name}'`);
+  r.dispose();
+});
+
 // ---------------------------------------------------------------- 그리기 객체
 
 test('프레임이 오기 전에는 그리지 않는다 · 구름 아래 지표 위 · 투명하되 깊이를 쓰지 않는다', () => {

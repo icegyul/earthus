@@ -719,8 +719,8 @@ export const PHENOMENA = Object.freeze({
     capabilities: Object.freeze({ current: true, history: false, intelligence: false, forecast: true, simulation: false, evidence: true, report: false }),
     availability: 'partial',
     evidenceProfile: 'PROVIDER_FORECAST 2 · OFFICIAL_OBSERVATION 1 — 관측은 weather/radar 하나뿐이고 카드도 그렇게 적는다(\'이 앱에서 지금 실제로 내리는 비를 보는 유일한 화면입니다\', live-layers.js:1235)',
-    temporalMode: '지금(레이더 5분 · 격자 1시간) + 예보 +120h(3시간 간격)',
-    scope: '관측은 한국뿐(기상청 HSR 레이더 합성영상 — 좌표계가 없어 지구본에 얹지 않고 원본 영상 그대로 보여 준다). 전지구 강수는 5° 모델 격자, 예보 프레임은 전지구 0.5°.',
+    temporalMode: '지금(레이더 5분) + 예보 +120h · 격자 3시간(GFS 0.5° 예보 프레임)',
+    scope: '관측은 한국뿐(기상청 HSR 레이더 합성영상 — 좌표계가 없어 지구본에 얹지 않고 원본 영상 그대로 보여 준다). 전지구 강수는 NOAA GFS 0.5° 예보 프레임의 강수율(mm/h)이다 — 5° 한 시각의 선형 램프가 아니다(2026-09-20 작업 D2).',
     dataProducts: Object.freeze(['weather/radar', 'weather/raingrid', 'weather/cloud-gfs']),
   }),
   'weather.pressure': Object.freeze({

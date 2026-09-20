@@ -30,7 +30,7 @@ import { decodeByte, sharedGfsFrames } from './gfs-frames.js?v=1';
 import { sharedGridFrames } from './grid-frames.js?v=1';
 import { fieldLegend as sharedLegend } from './field-legend.js?v=1';
 import { bandColor, formatValue, isolineSpec, scaleOf } from './field-scales.js?v=1';
-import { logReadout, readTicks, topBandNote } from './field-log.js?v=1';
+import { logRangeText, logReadout, readTicks, topBandNote } from './field-log.js?v=1';
 import { FieldRenderer, halfStepOf } from './field-renderer.js?v=1';
 import { FIELD_LABEL_CAP, FieldLabels, labelLevels, labelText, pickLabelSpots, thinField } from './field-labels.js?v=1';
 import { FieldSymbols, SYMBOL_CAP, symbolCardRow } from './field-symbols.js?v=1';
@@ -360,7 +360,11 @@ export const fieldCardLive = (m) => {
   if (st) lines.push(esc(st));
   if (m.stats && Number.isFinite(m.stats.min)) {
     // '이 두 프레임'이라고 적는다 — 화면은 두 프레임 사이를 섞은 값이라 어느 한 프레임의 범위가 아니다.
-    lines.push(`${ko ? '모델 범위' : 'Model range'} ${esc(formatValue(m.scale, m.stats.min))} ~ ${esc(formatValue(m.scale, m.stats.max))}`
+    // 로그로 실린 자료(강수율)는 두 끝이 값이 아닐 수 있어 field-log.js 가 따로 짓는다('비 없음(…미만)' · '(인코딩 천장)').
+    // 빈 글자를 돌려주면 선형 자료 — 옛 길(formatValue) 그대로다.
+    const span = logRangeText(m.scale, m.stats, m.ch, m.desc && m.desc.zeroText, ko)
+      || `${formatValue(m.scale, m.stats.min)} ~ ${formatValue(m.scale, m.stats.max)}`;
+    lines.push(`${ko ? '모델 범위' : 'Model range'} ${esc(span)}`
       + `<span style="opacity:.7"> (${ko ? '이 두 프레임 · 전지구' : 'these two frames · global'})</span>`);
   }
   if (m.probe) {
@@ -842,6 +846,8 @@ export class FieldLayer {
       validMs: this.active ? this.timeBus.validMs() : null,
       status: this.status, isoOn: this.isoOn, isoChoice: this.isoChoice, choices: this.choices,
       stats: this.stats, probe,
+      // '모델 범위' 줄이 두 끝을 어떻게 말할지 정하는 데 쓴다(로그 자료의 바닥·천장 — field-log.js logRangeText).
+      ch: this.spec && this.spec.channels ? this.spec.channels[0] : null,
       // 기호(기압). 이름이 없으면 카드에 그 줄이 통째로 없다 — 기온·풍속이 그렇다.
       symbolName: this.symbols && this.desc.symbolName ? (this.desc.symbolName[ko ? 'ko' : 'en'] || this.desc.symbolName.ko) : null,
       symbolsOn: this.symbolsOn, symbolReady: this.symbols ? this.symbols.ready : true,

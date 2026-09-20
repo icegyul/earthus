@@ -15,7 +15,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import {
-  FIELD_LOG2_10, logReadout, logUniforms, logValueText, readTicks, shaderLogDecode, topBandNote,
+  FIELD_LOG2_10, logRangeText, logReadout, logUniforms, logValueText, readTicks, shaderLogDecode, topBandNote,
 } from '../../prototype/v2-three/js/field-log.js';
 import {
   FIELD_FRAG, FIELD_LINE, FieldRenderer,
@@ -254,6 +254,37 @@ test('카드 — 누적 단추가 없고, 고를 것 없는 등치선은 글자�
   layer.off();
 });
 
+test("카드의 '모델 범위' — 운영 프레임처럼 바이트 0 과 255 가 같이 있어도 두 수로 굳지 않는다", async () => {
+  // 전지구 프레임은 늘 '비 없음' 칸(바이트 0)과 천장에 닿은 칸을 함께 갖는다 — 그래서 이 줄이 '0.0 ~ 30.0 mm/h' 로 굳어 있었다.
+  const spread = (rByte) => {
+    const rgba = new Uint8Array(720 * 361 * 4);
+    for (let p = 0; p < 720 * 361; p += 1) rgba.set([p === 0 ? 0 : p === 1 ? 255 : rByte, 200, 77, 255], p * 4);
+    return { width: 720, height: 361, rgba };
+  };
+  const store = createGfsFrames({
+    THREE: FakeTHREE,
+    now: () => T0,
+    fetch: async () => ({ ok: true, json: async () => clone(C1) }),
+    loadImage: async () => spread(byteFor(3)),
+    readPixels: (img) => ({ w: img.width, h: img.height, data: img.rgba }),
+  });
+  const layer = new FieldLayer(FIELD_DESCRIPTORS.raingrid, {
+    frames: store, timeBus: createTimeBus({ now: () => T0 }), legend: { show() {}, hide() {}, release() {} },
+    parent: { add() {}, remove() {} }, segments: [8, 4], getLang: () => 'ko', now: () => T0,
+    makeLabelTexture: (text) => ({ tex: { text, dispose() {} }, w: 92, h: 40 }),
+    setInterval: () => 1, clearInterval: () => {},
+  });
+  assert.deepEqual(await layer.on(), { on: true });
+  const html = layer.cardHtml();
+  const line = /모델 범위 ([^<]+)/.exec(html);
+  assert.ok(line, "'모델 범위' 줄이 없다");
+  assert.ok(line[1].includes('비 없음'), `바닥이 값인 척한다 — '${line[1]}'`);
+  assert.ok(line[1].includes('인코딩 천장'), `천장이 모델의 최댓값인 척한다 — '${line[1]}'`);
+  assert.ok(!/0\.0 mm\/h/.test(line[1]), "'0.0 mm/h' 는 모델이 낸 강수율이 아니다");
+  assert.ok(!/30\.0 mm\/h/.test(line[1]), '자릿수가 바로 밑 클릭 값(유효숫자)과 갈린다');
+  layer.off();
+});
+
 // ---------------------------------------------------------------- ⑥ 클릭 값
 
 test('클릭 값 — 유효숫자 2자리 · 0 은 비 없음 · 색 점은 칠해진 칸 그대로', () => {
@@ -289,6 +320,55 @@ test('클릭 값 — 유효숫자 2자리 · 0 은 비 없음 · 색 점은 칠�
   assert.equal(logReadout({ scale: SCALE, raw: NaN, floor: CH.min }).ok, false);
 });
 
+// ── 2026-09-20 반박 검증 — 글자와 색 점이 서로 다른 칸을 가리켰다 ───────────────────────────────────────────
+test('클릭 값 — 경계 바로 아래 값의 글자가 경계로 올라가지 않는다(글자와 색 점이 같은 칸)', () => {
+  const opts = { scale: SCALE, resolutionDeg: 0.5, zeroText: FIELD_DESCRIPTORS.raingrid.zeroText, ko: true };
+  const at = (v) => readoutOf({ decoded: true, value: v, values: [v], floor: CH.min }, opts);
+  // 칠하는 경계마다 그 0.2 % 아래를 눌러 본다 — 숫자를 박지 않고 눈금표에서 셈한다.
+  for (const b of SCALE.breaks) {
+    const just = b * (1 - 2e-3);
+    const r = at(just);
+    assert.equal(bandIndex(SCALE, Number(r.text.replace(/[^0-9.]/g, ''))), bandIndex(SCALE, just),
+      `${b} mm/h 바로 아래(${just})의 글자 '${r.text}' 가 제 칸을 떠났다`);
+    assert.equal(r.color, bandColor(SCALE, just), '색 점은 늘 칠해진 칸 그대로다');
+    // 경계 위아래가 **같은 글자**를 달면 안 된다 — '~' 하나로는 색 점이 다른 이유를 말하지 못한다.
+    assert.notEqual(r.text, at(b).text, `${b} mm/h 의 위아래가 같은 글자다`);
+  }
+  // 작업자 머리말이 예로 든 그 값. 실제 출력은 '~2.0' 이 아니라 소수 0 이 깎인 '~2 mm/h' 였다 — 2.0 과 글자까지 같았다.
+  assert.equal(at(2).text, '~2 mm/h');
+  assert.notEqual(at(1.996).text, '~2 mm/h');
+  assert.equal(bandColor(SCALE, 1.996), bandColor(SCALE, 1.5), '1.996 은 1 – 2 칸이다');
+  // 경계에서 먼 값은 여전히 유효숫자 2자리다 — 늘 길게 적지 않는다.
+  assert.equal(at(2.437).text, '~2.4 mm/h');
+  assert.equal(at(24.37).text, '~24 mm/h');
+  // 칠하지 않는 칸(0.1 mm/h 미만)도 경계다: 0.0997 을 '~0.1' 이라 적으면 바로 옆줄과 한 줄 안에서 부딪친다.
+  const near = at(0.0997);
+  assert.match(near.note, /0\.1 mm\/h 미만이라 칠하지 않습니다/);
+  assert.ok(!/~0\.1 mm\/h$/.test(near.text), `글자 '${near.text}' 가 옆줄('0.1 mm/h 미만')을 반박한다`);
+  assert.equal(near.text, '~0.0997 mm/h');
+  // 경계에 유효숫자 5자리 안쪽까지 붙으면 값을 말하지 않고 경계 하나로 말한다(자리를 더 늘리는 대신).
+  assert.equal(at(SCALE.breaks[0] * (1 - 1e-9)).text, '0.1 mm/h 미만');
+});
+
+test("'모델 범위' 는 로그 자료의 두 끝을 값인 척하지 않는다 — 바닥은 '비 없음' · 천장은 인코딩 천장", () => {
+  const z = FIELD_DESCRIPTORS.raingrid.zeroText;
+  // 바이트 0(비 없음)부터 바이트 255(천장)까지 — 운영 프레임이 늘 이렇게 나와 이 줄이 두 수로 굳어 있었다.
+  const full = logRangeText(SCALE, { min: decodeByte(CH, 0), max: decodeByte(CH, 255) }, CH, z, true);
+  assert.ok(full.includes('비 없음'), `바닥은 모델이 낸 강수율이 아니다 — '${full}'`);
+  assert.ok(full.includes(logValueText(SCALE, CH.min)), '바닥이 얼마 미만인지 말한다');
+  assert.ok(full.includes('인코딩 천장'), `천장은 모델의 최댓값이 아니다 — '${full}'`);
+  assert.ok(!/0\.0 mm\/h/.test(full) && !/30\.0 mm\/h/.test(full), '클릭 값과 같은 자릿수(유효숫자)로 적는다');
+  assert.ok(full.includes(logValueText(SCALE, decodeByte(CH, 255))), '천장의 수는 매니페스트에서 온다');
+  // 천장에 안 닿고 바닥 위에 있는 두 끝은 그냥 값으로 적는다 — 없는 한계를 지어내지 않는다.
+  const mid = logRangeText(SCALE, { min: 0.44, max: 3.2 }, CH, z, true);
+  assert.equal(mid, `${logValueText(SCALE, 0.44)} ~ ${logValueText(SCALE, 3.2)}`);
+  assert.ok(!/천장|비 없음/.test(mid));
+  assert.match(logRangeText(SCALE, { min: 0, max: decodeByte(CH, 255) }, CH, z, false), /No rain \(below .+\) ~ .+\(encoding ceiling\)/);
+  // 선형 자료는 빈 글자 — 부른 쪽이 옛 길(formatValue)로 간다.
+  assert.equal(logRangeText(scaleOf('temp'), { min: -10, max: 30 }, MODEL.fields.temp.channels[0], null, true), '');
+  assert.equal(logRangeText(SCALE, { min: 1, max: 2 }, null, z, true), '');
+});
+
 // ---------------------------------------------------------------- ⑦ 배선
 
 // ── 2026-09-20 반박 검증 — 색면은 바뀌었는데 그 위에 뜨는 지점 시트는 옛 자료를 불렀다 ──────────────────────
@@ -305,6 +385,20 @@ test('지점 시트가 강수를 색면에서 받는다 — 제공자·격자·�
     "강수 색면이 GFS 0.5° mm/h 로 바뀌었는데 지점 시트는 Open-Meteo `current` 의 mm 를 부른다 — 카드가 화면과 다른 말을 한다");
   // 색면이 꺼져 있으면 fieldReadout 이 null 이라 옛 Open-Meteo 길로 떨어진다 — 그 길을 걷어 내지는 않았다.
   assert.match(main.slice(at), /api\.open-meteo\.com\/v1\/forecast/, '색면이 꺼졌을 때 갈 길이 없어졌다');
+});
+
+test('같은 사실을 적는 세 곳이 같은 말을 한다 — 메뉴 출처 · 레지스트리 기간 · 레지스트리 범위', async () => {
+  // ui-shell 의 SCENES src 한 줄만 고치고 레지스트리를 두면, 이력 탭의 '기간'(ui-shell.js 가 temporalMode 를 그대로 그린다)이
+  // 옛 5°·1시간 격자를 계속 말한다. 화면에 그려지는 두 줄이 서로 다른 자료를 가리키는 일이 없게 한다.
+  assert.match(src('ui-shell.js'), /id: 'raingrid'[^}]*GFS 0\.5°[^}]*mm\/h/, '메뉴 출처가 색면의 자료를 말하지 않는다');
+  assert.doesNotMatch(src('ui-shell.js'), /id: 'raingrid'[^}]*Open-Meteo/, '메뉴 출처가 아직 Open-Meteo 라고 말한다');
+  const { PHENOMENA } = await import('../../prototype/v2-three/js/phenomenon-registry.js');
+  const p = PHENOMENA['weather.precipitation'];
+  assert.ok(p, '현상 id 는 개명하지 않는다');
+  assert.doesNotMatch(p.temporalMode, /격자 1시간/, "이력 탭의 '기간' 이 아직 5° 1시간 격자라고 말한다");
+  assert.match(p.temporalMode, /격자 3시간/, '예보 프레임의 간격(3시간)을 말한다');
+  assert.doesNotMatch(p.scope, /전지구 강수는 5° 모델 격자/, '전지구 강수는 더 이상 5° 격자가 아니다');
+  assert.match(p.scope, /GFS 0\.5°/);
 });
 
 test('범례의 note 는 열쇠 하나다 — 같은 열쇠를 두 번 적으면 JS 가 앞엣것을 조용히 버린다', () => {

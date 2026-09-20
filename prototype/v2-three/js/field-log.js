@@ -31,12 +31,20 @@
 //   (강수 소수 1자리)로 적을 법한데, 그러면 **아래쪽에서 거짓말이 된다**: 0.051 mm/h 를 '0.1 mm/h' 라고 적게 되고
 //   그 값은 칠하지도 않는 칸이다(범례는 0.1 에서 시작한다). 로그 자료는 자릿수가 아니라 **유효숫자**로 읽어야 한다 —
 //   0.051 · 0.44 · 2.4 · 24 mm/h. 색 점(bandColor)은 반올림하지 않은 값에서 뽑으므로 늘 칠해진 칸과 같다.
-//   남는 흠 하나: 경계에서 0.5 % 안쪽인 값은 글자가 경계 숫자로 반올림되면서 아래 칸의 색 점을 달 수 있다
-//   (1.996 → '2.0 mm/h' 인데 색은 '1 – 2'). 값이 아니라 **글자의 반올림**이고 '~' 가 그것을 말한다.
+//
+// ── 글자와 색 점은 **같은 칸**을 가리켜야 한다 (2026-09-20 반박 검증) ──────────────────────────────────────
+//   전에는 여기 '남는 흠 하나' 라고만 적혀 있었다: 경계 바로 아래 값은 글자가 경계 숫자로 올라가면서 아래 칸의
+//   색 점을 단다. 실제 출력은 적어 둔 것보다 나빴다 — 1.996 은 '~2.0' 이 아니라 소수 0 이 깎여 '~2 mm/h' 가 되고,
+//   2.0 의 글자와 **글자 하나까지 같다.** 같은 글자가 서로 다른 색 점을 달면 '~' 로는 변명이 안 된다.
+//   고친 길은 **값 우선**이다(글자 우선이 아니다): 색 점은 그대로 raw 의 칸(= 화면에 칠해진 칸)에서 뽑고,
+//   글자는 유효숫자 2자리로 시작하되 그 글자의 수가 **다른 칸**에 떨어지면 한 자리씩 늘린다(logReadSig).
+//   1.996 → '~1.996 mm/h'. 글자가 길어지는 것은 경계에서 0.3 % 안쪽인 값뿐이고, 그 대가로 카드가 화면과
+//   같은 말을 한다 — PD 가 두 번 잡아낸 것이 '카드가 화면과 다른 말' 이다.
+//   ⚠️ 글자 우선(반올림한 수로 색 점을 뽑기)은 고르지 않았다. 그러면 색 점이 손가락 밑에 칠해진 칸을 떠난다.
 //
 // 이 파일은 DOM · THREE · 네트워크를 모른다(순수 함수). 시험은 tools/earthus-v53/field-log.test.mjs.
 
-import { bandColor } from './field-scales.js?v=1';
+import { bandColor, bandIndex } from './field-scales.js?v=1';
 
 // GLSL 에는 log10 이 없다 — exp2(x × LOG2_10) 으로 10^x 를 셈한다. 셰이더(field-renderer.js FIELD_FRAG)에 적힌 글자와
 // **같은 수**여야 한다(시험이 셰이더 소스에서 이 숫자를 찾는다). Math.log2(10) 과 같은 배정도 값이다.
@@ -44,6 +52,16 @@ export const FIELD_LOG2_10 = 3.321928094887362;
 
 // 유효숫자 2자리로 적되 소수는 이 자리까지만(구름 수액 0.005 kg/m² 가 여기 닿는다).
 export const LOG_TEXT_MAX_DIGITS = 3;
+
+// 클릭 값의 글자가 제 칸에 남으려고 자리를 늘릴 때의 상한.
+//   SIG    8bit 한 칸이 값의 ×1.0126(0.26 %)이라 유효숫자 5자리면 자료가 말할 수 있는 것을 이미 다 쓴 것이다.
+//   DIGITS 늘리는 길에서는 소수 자릿수 상한(LOG_TEXT_MAX_DIGITS)을 풀어야 한다 — 경계 0.5 의 0.08 % 아래인
+//          0.4996 mm/h 는 소수 세 자리로는 '0.500'(= 0.5)이 되어 아무리 유효숫자를 늘려도 제 칸에 못 남는다.
+export const LOG_READ_MAX_SIG = 5;
+const LOG_READ_MAX_DIGITS = 12;
+
+/** 유효숫자 sig 자리로 적을 때의 소수 자릿수. 글자(logValueText)와 수(logValueNumber)가 **같은 자리**를 쓰게 한 곳에 둔다. */
+const decimalsOf = (a, sig, maxDigits) => Math.max(0, Math.min(maxDigits, sig - 1 - Math.floor(Math.log10(a))));
 
 const MINUS = '−';   // 하이픈이 아니라 빼기 기호 — field-scales.js 와 같은 규칙(tabular-nums 에서 줄이 맞는다)
 
@@ -77,15 +95,42 @@ export const readTicks = (ch) => {
   return Number.isFinite(ch.scale) ? { step: Number(ch.scale.toPrecision(1)) } : {};
 };
 
-/** 로그 자료의 값 한 개 → '2.4 mm/h'. **유효숫자 2자리**(소수 자릿수 고정이 아니다 — 머리말). 값 없음은 '—'. */
-export const logValueText = (scale, v) => {
+/**
+ * 로그 자료의 값 한 개 → '2.4 mm/h'. **유효숫자 2자리**(소수 자릿수 고정이 아니다 — 머리말). 값 없음은 '—'.
+ * sig·maxDigits 를 올려 부르는 곳은 클릭 값의 자리 늘리기 하나다(logReadSig) — 그 밖에서는 기본값으로 쓴다.
+ */
+export const logValueText = (scale, v, sig = 2, maxDigits = LOG_TEXT_MAX_DIGITS) => {
   if (!Number.isFinite(v)) return '—';
   const a = Math.abs(v);
   if (a === 0) return `0 ${scale.unit}`;
-  const digits = Math.max(0, Math.min(LOG_TEXT_MAX_DIGITS, 1 - Math.floor(Math.log10(a))));
+  const digits = decimalsOf(a, sig, maxDigits);
   let s = a.toFixed(digits);
   if (digits > 0) s = s.replace(/\.?0+$/, '');   // toFixed(양수)는 늘 소수점이 있다 — '100' 의 0 을 깎을 길이 없다
   return `${v < 0 ? MINUS : ''}${s} ${scale.unit}`;
+};
+
+/**
+ * logValueText 와 **같은 인수로 같은 수**. 글자가 어느 칸에 떨어지는지 보려고 둔다 —
+ * 글자를 되읽어 수로 바꾸면(단위·빼기 기호를 떼어 내면) 두 길이 갈릴 수 있다. 한 자리 셈(decimalsOf)을 나눠 쓴다.
+ */
+export const logValueNumber = (v, sig = 2, maxDigits = LOG_TEXT_MAX_DIGITS) => {
+  if (!Number.isFinite(v)) return NaN;
+  const a = Math.abs(v);
+  if (a === 0) return 0;
+  return (v < 0 ? -1 : 1) * Number(a.toFixed(decimalsOf(a, sig, maxDigits)));
+};
+
+/**
+ * 클릭 값의 글자가 쓸 유효숫자 자릿수 — 2 로 시작해, 그 자리로 적은 수가 raw 와 **다른 칸**에 떨어지면 한 자리씩 늘린다.
+ * 색 점은 raw 에서 뽑으므로(bandColor) 이렇게 해야 글자와 색 점이 같은 칸을 가리킨다(머리말 '글자와 색 점').
+ * 상한까지 가도 칸이 안 맞으면 상한을 돌려준다 — 자료가 말할 수 있는 것보다 더 적어 봐야 거짓 정밀도다.
+ */
+export const logReadSig = (scale, raw) => {
+  const want = bandIndex(scale, raw);
+  for (let sig = 2; sig < LOG_READ_MAX_SIG; sig += 1) {
+    if (bandIndex(scale, logValueNumber(raw, sig, LOG_READ_MAX_DIGITS)) === want) return sig;
+  }
+  return LOG_READ_MAX_SIG;
 };
 
 /**
@@ -130,5 +175,44 @@ export const logReadout = ({ scale, raw, floor = 0, cell = '', zeroText = null, 
   const note = hidden
     ? (ko ? `${mean} · ${logValueText(scale, unpainted)} 미만이라 칠하지 않습니다` : `${mean} · below ${logValueText(scale, unpainted)}, left unpainted`)
     : mean;
-  return { ok: true, value: raw, text: `~${logValueText(scale, raw)}`, note, color: bandColor(scale, raw) };
+  // 글자는 제 칸에 남을 만큼만 자리를 늘린다(logReadSig) — 색 점은 늘 raw 의 칸이다(머리말 '글자와 색 점').
+  // 칠하지 않는 칸의 경계(0.1 mm/h)도 눈금표의 경계라, 0.0997 mm/h 는 이 길에서 저절로 '~0.0997' 이 된다:
+  // 전에는 '~0.1 mm/h' 라고 적어 놓고 바로 옆줄에서 '0.1 mm/h 미만이라 칠하지 않습니다' 라고 해 한 줄이 스스로를 반박했다.
+  const sig = logReadSig(scale, raw);
+  const shown = logValueNumber(raw, sig, sig > 2 ? LOG_READ_MAX_DIGITS : LOG_TEXT_MAX_DIGITS);
+  // 자리를 상한까지 늘려도 글자가 경계를 못 넘어오면(경계에서 유효숫자 5자리 안쪽 — 보간값이라 드물게 가능하다)
+  // 값을 말하지 않고 경계 하나로 말한다. 바닥 아래의 '비 없음(0.05 mm/h 미만)' 과 같은 문법이다.
+  if (hidden && shown >= unpainted) {
+    const edge = logValueText(scale, unpainted);
+    return { ok: true, value: raw, text: ko ? `${edge} 미만` : `below ${edge}`, note, color: bandColor(scale, raw) };
+  }
+  return {
+    ok: true,
+    value: raw,
+    text: `~${logValueText(scale, raw, sig, sig > 2 ? LOG_READ_MAX_DIGITS : LOG_TEXT_MAX_DIGITS)}`,
+    note,
+    color: bandColor(scale, raw),
+  };
+};
+
+/**
+ * 카드의 '모델 범위' 한 줄 — 로그로 실린 자료에서는 두 끝이 **값이 아닐 수 있다.**
+ * 바닥(매니페스트 min) 미만은 모델이 낸 강수율이 아니라 '비 없음' 바이트이고, 천장(ch.max)은 모델의 최댓값이 아니라
+ * **인코딩 천장**이다(운영 프레임 실측: 바이트 255 인 칸이 전지구에 하나뿐이었다). 그대로 두면 이 줄이 늘 같은 두 수
+ * ('0.0 mm/h ~ 30.0 mm/h')로 굳어 자료를 아무것도 말하지 않는다. 자릿수도 클릭 값과 같은 길(logValueText)로 맞춘다 —
+ * 전에는 이 줄만 formatValue 의 소수 1자리('30.0')라 바로 밑 클릭 값('~30')과 문법이 갈렸다.
+ * 선형 자료(ch 가 로그가 아니거나 없을 때)는 부른 쪽의 formatValue 를 그대로 쓰라고 빈 글자를 돌려준다.
+ */
+export const logRangeText = (scale, stats, ch = null, zeroText = null, ko = true) => {
+  if (!ch || ch.transfer !== 'log10' || !stats || !Number.isFinite(stats.min) || !Number.isFinite(stats.max)) return '';
+  const none = (zeroText && (zeroText[ko ? 'ko' : 'en'] || zeroText.ko)) || (ko ? '없음' : 'None');
+  const floor = Number(ch.min);
+  const ceil = Number(ch.max);
+  const lo = Number.isFinite(floor) && stats.min < floor
+    ? (ko ? `${none}(${logValueText(scale, floor)} 미만)` : `${none} (below ${logValueText(scale, floor)})`)
+    : logValueText(scale, stats.min);
+  // 마지막 바이트를 값으로 푼 수는 천장과 딱 떨어지지 않는다(10^(logSpan+logLo) = 30.00000000000001) — 비율로 견준다.
+  const capped = Number.isFinite(ceil) && ceil > 0 && stats.max >= ceil * (1 - 1e-9);
+  const hi = logValueText(scale, stats.max) + (capped ? (ko ? ' (인코딩 천장)' : ' (encoding ceiling)') : '');
+  return `${lo} ~ ${hi}`;
 };

@@ -33,6 +33,17 @@
 //   글자마다 텍스처 한 장을 돌려쓴다(live-layers.js 뉴스 네모칸 · field-labels.js 의 선례): 같은 'H 1024' 가 세 군데 서도 한 장이다.
 //   깊이 검사는 끈다(스프라이트 판의 절반이 구면 안쪽으로 들어가 잘린다) — 대신 지평선에서 흐려지고 뒤편은 0 이다.
 //
+// ── 쥐고 있는 중심은 **그 그림의 것**이다 (2026-09-20 반박 검증) ────────────────────────────────────────────
+//   처음에는 찾은 결과를 예보 시각 h(0·3·…·120)로 쥐었다. h 는 **런마다 다시 쓰이는 번호**다 —
+//   매니페스트를 30분마다 다시 읽어 00Z 가 06Z 로 갈리면(gfs-frames onSwap) 같은 h 의 그림이 통째로 바뀌는데
+//   그 번호로 물으면 옛 런에서 찾은 중심이 그대로 나온다. 실측 재현: 75|78 을 본 뒤 런이 갈리면
+//   'L 940 @(−62,107)' 이 남고 참값은 'L 935 @(−62,66.5)' 이었다(수천 km 떨어진 자리에 기호가 선다).
+//   디코드 눈금이 바뀌어도(0.5/940 → 1/870 은 실제로 한 번 있었다) 옛 눈금으로 푼 숫자가 그대로 남았다.
+//   그래서 **그림 객체 자체**를 열쇠로 쥔다(WeakMap): 같은 장이면 같은 결과이고, 런이 갈리면 저장소가
+//   새 객체를 주므로 저절로 다시 찾는다. 몇 장을 쥘지 세지 않아도 프레임 저장소가 그 장을 버리면 같이 사라진다.
+//   눈금(decode)이 바뀌면 숫자가 달라지므로 쥔 것을 전부 버리고 key 도 버린다 — 다음 update 가 같은 '75|78' 을
+//   들고 와도 다시 찾는다(런이 갈릴 때 FieldLayer 는 제 key 만 비우고 같은 글자를 다시 보낸다).
+//
 // 계산은 DOM·THREE 없는 순수 함수로 밖에 냈다(시험이 그대로 부른다). 캔버스는 주입받을 수 있다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
@@ -105,6 +116,13 @@ export const rankSymbols = (pairs, mix, { minProminence = 0, carry = null } = {}
     || (b.prominence - a.prominence) || (a.lat - b.lat) || (a.lon - b.lon));
   return out;
 };
+
+/**
+ * 디코드 상수의 지문. 이 글자가 바뀌면 같은 바이트가 다른 hPa 로 풀린다 — 쥐고 있던 중심을 버려야 한다.
+ * 객체가 같은지로 묻지 않는다: 매니페스트를 다시 읽으면 **값이 같아도 새 객체**다(공연히 다 버리게 된다).
+ */
+export const decodeSignature = (d) => (d && Number.isFinite(d.scale) && Number.isFinite(d.offset)
+  ? `${d.transfer || 'linear'}:${d.scale}:${d.offset}` : 'none');
 
 /** 카드에 적는 고지대 규칙 한 줄. 화면에 남극·티베트 H 가 없는 것이 고장이 아니라 결정임을 말한다. */
 export const highTerrainNote = (ko = true, ready = true) => {
@@ -188,6 +206,14 @@ export class FieldSymbols {
   } = {}) {
     this.group = new THREE.Group();
     this.scale = scale;
+    // ⚠️ decode 는 접근자다(아래 get/set) — 캐시를 비우므로 **캐시보다 먼저** 놓일 수 없다. 여기서는 뒷받침만 둔다.
+    this._decode = null;
+    this._decodeSig = 'none';
+    this.byPx = new WeakMap();        // 프레임 CPU 사본(객체) → 중심 목록. 저장소가 그 장을 버리면 같이 사라진다
+    this.lastPxA = null;              // 직전 update 가 본 두 장 — 같은 key 라도 그림이 다르면 다시 찾는다
+    this.lastPxB = null;
+    this.hours = [null, null];        // 콘솔 확인용(캐시 열쇠가 아니다 — 위 머리 주석)
+    this.key = null;
     this.decode = decode;
     this.cap = cap;
     this.heightAt = heightAt;
@@ -206,8 +232,6 @@ export class FieldSymbols {
     this.unit = new Float32Array(0);  // 기호마다 [ux, uy, uz, 고도 m]
     this.list = [];                   // 지금 그리는 기호(rankSymbols 의 결과)
     this.pairs = [];
-    this.byHour = new Map();          // 프레임 시각(h) → 중심 목록. 같은 장은 같은 결과다
-    this.key = null;
     this.mask = null;
     this.maskTried = false;
     this.maskInfo = null;
@@ -223,6 +247,28 @@ export class FieldSymbols {
   }
 
   get object() { return this.group; }
+
+  /**
+   * 디코드 상수. FieldLayer.applyFieldSpec 이 넣는다 — 켤 때 한 번, 런이 갈릴 때 한 번(onSwap).
+   * 눈금이 바뀌면 쥐고 있던 중심의 hPa 는 옛 눈금으로 푼 숫자다 → 전부 버리고 다시 찾는다(머리 주석).
+   */
+  get decode() { return this._decode; }
+
+  set decode(d) {
+    const sig = decodeSignature(d);
+    this._decode = d;
+    if (sig === this._decodeSig) return;
+    this._decodeSig = sig;
+    this.forget();
+  }
+
+  /** 쥐고 있던 중심을 버린다 — 자료의 출처(런 · 디코드 눈금)가 바뀌었을 때. 스프라이트는 건드리지 않는다. */
+  forget() {
+    this.byPx = new WeakMap();
+    this.lastPxA = null;
+    this.lastPxB = null;
+    this.key = null;
+  }
 
   /** 지형 고도를 못 받았으면 false — 카드가 그 사실을 말하고 기호를 그리지 않는다. */
   get ready() { return !!this.mask; }
@@ -246,15 +292,15 @@ export class FieldSymbols {
     return this.mask;
   }
 
-  centersFor(hour, px, grid) {
-    let list = this.byHour.get(hour);
+  // 열쇠는 **그림 객체**다(머리 주석 '쥐고 있는 중심은 그 그림의 것이다'). 프레임 저장소가 그 장을 버리면
+  // WeakMap 의 줄도 같이 사라져, 41장을 다 쥐는 일도 몇 장만 쥐려고 세는 일도 없다.
+  centersFor(px, grid) {
+    let list = this.byPx.get(px);
     if (list) return list;
     this.finds += 1;
     list = findPressureCenters({ w: px.w, h: px.h, data: px.data, channels: px.channels },
       this.decode, { highMask: this.mask, grid });
-    this.byHour.set(hour, list);
-    // 키프레임 앞뒤 몇 장만 쥔다 — 41장을 다 쥐면 폰에서 배열 수십 개가 남는다.
-    if (this.byHour.size > 6) this.byHour.delete(this.byHour.keys().next().value);
+    this.byPx.set(px, list);
     return list;
   }
 
@@ -263,8 +309,12 @@ export class FieldSymbols {
    *   px      { w, h, channels, data } 두 장(b 가 없으면 a 하나) · grid  fieldSpec(id).grid · gapH  두 프레임의 간격(시간)
    */
   update(key, pxA, pxB, { grid, hourA, hourB, gapH = 3 } = {}) {
-    if (key === this.key) return false;
+    // ⚠️ 글자가 같아도(런이 갈리면 FieldLayer 는 같은 '75|78' 을 다시 보낸다) **그림이 다르면 다른 장**이다.
+    if (key === this.key && pxA === this.lastPxA && pxB === this.lastPxB) return false;
     this.key = key;
+    this.lastPxA = pxA;
+    this.lastPxB = pxB;
+    this.hours = [hourA ?? null, hourB ?? null];
     this.builds += 1;
     if (!pxA || !this.decode) {
       // 디코드 상수는 FieldLayer.applyFieldSpec 이 넣는다. 없으면 조용히 안 그리는 대신 이유를 남긴다.
@@ -276,8 +326,8 @@ export class FieldSymbols {
     // 기호는 색면의 덤이다 — 여기서 무엇이 잘못돼도 색면과 등압선은 그대로 있어야 한다.
     // (매니페스트가 전지구가 아닌 격자를 말하면 findPressureCenters 가 던진다 · 디코드 상수가 낯선 꼴이어도 던진다.)
     try {
-      const a = this.centersFor(hourA, pxA, grid);
-      const b = (pxB && hourB !== hourA) ? this.centersFor(hourB, pxB, grid) : a;
+      const a = this.centersFor(pxA, grid);
+      const b = (pxB && pxB !== pxA) ? this.centersFor(pxB, grid) : a;
       const g = gapH > 0 ? gapH : 3;
       this.pairs = matchCenters(a, b, g * CENTER_MATCH_DEG_PER_HOUR, g * CENTER_MATCH_HPA_PER_HOUR);
       this.place(this.mix, true);
@@ -417,6 +467,8 @@ export class FieldSymbols {
       maskError: this.maskError, findError: this.findError,
       symbols: this.count, shown: { ...this.shown }, textures: this.textures.size,
       finds: this.finds, builds: this.builds, mix: this.mix,
+      // 런이 갈렸는지 콘솔에서 보이게 — 눈금이 바뀌면 이 글자가 바뀌고 쥔 것이 버려진다(머리 주석).
+      decode: this._decodeSig, key: this.key, hours: [...this.hours],
     };
   }
 
@@ -425,7 +477,8 @@ export class FieldSymbols {
     this.count = 0;
     this.list = [];
     this.pairs = [];
-    this.key = null;
+    // 레이어를 껐다 켜는 사이에 런이 갈릴 수 있다 — 쥔 것을 들고 넘어가지 않는다(머리 주석).
+    this.forget();
     this.carry = new Set();
     this.shown = { H: 0, L: 0 };
     this.group.visible = false;
@@ -438,7 +491,6 @@ export class FieldSymbols {
     this.pool.length = 0;
     for (const e of this.textures.values()) if (e.tex && e.tex.dispose) e.tex.dispose();
     this.textures.clear();
-    this.byHour.clear();
     this.mask = null;
   }
 }

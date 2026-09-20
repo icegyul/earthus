@@ -11,7 +11,7 @@ import assert from 'node:assert/strict';
 import * as THREE from '../../prototype/vendor/three-r184.module.min.js';
 
 import {
-  FieldSymbols, SYMBOL_CAP, centerLabel, highTerrainNote, rankSymbols, symbolCardRow, symbolKey,
+  FieldSymbols, SYMBOL_CAP, centerLabel, decodeSignature, highTerrainNote, rankSymbols, symbolCardRow, symbolKey,
 } from '../../prototype/v2-three/js/field-symbols.js';
 import { FIELD_DESCRIPTORS } from '../../prototype/v2-three/js/field-layer.js';
 import { defineScale, isolineSpec, scaleOf } from '../../prototype/v2-three/js/field-scales.js';
@@ -185,6 +185,48 @@ test('키프레임이 안 바뀌면 다시 찾지 않는다 · 같은 프레임�
   const c = frame(world([{ lat: 30, lon: 138, sigma: 3, amp: -32 }]));
   assert.equal(sym.update('3|6', b, c, { grid: GRID, hourA: 3, hourB: 6 }), true);
   assert.deepEqual([sym.builds, sym.finds], [2, 3]);
+});
+
+// 런이 갈리면(매니페스트 30분마다 다시 읽음 · gfs-frames onSwap) **같은 h 의 그림이 통째로 바뀐다.**
+// 예보 시각 h 로 쥐면 옛 런에서 찾은 중심이 그대로 나오고, FieldLayer 는 제 key 만 비운 채 같은 '75|78' 을
+// 다시 보내므로 update 가 '안 바뀌었다'고 일찍 돌아선다 — 기호가 수천 km 떨어진 자리에 선다(2026-09-20 반박 검증).
+test('런이 갈리면 쥐고 있던 중심을 버린다 — 같은 예보 시각이라도 그림이 바뀌면 다시 찾는다', () => {
+  const { sym } = rig();
+  const oldA = frame(world([{ lat: 30, lon: 130, sigma: 3, amp: -28 }]));   // 옛 런: L 985 @ 130°E
+  const oldB = frame(world([{ lat: 30, lon: 133, sigma: 3, amp: -28 }]));
+  const newA = frame(world([{ lat: -20, lon: -60, sigma: 3, amp: -33 }]));  // 새 런: L 980 @ 60°W
+  const newB = frame(world([{ lat: -20, lon: -57, sigma: 3, amp: -33 }]));
+  sym.update('75|78', oldA, oldB, { grid: GRID, hourA: 75, hourB: 78 });
+  assert.equal(at(sym, 'L', 30, 130, 4).length, 1);
+  // ① 껐다 켜는 사이에 런이 갈린다(FieldLayer.off → on).
+  sym.clear();
+  sym.update('75|78', newA, newB, { grid: GRID, hourA: 75, hourB: 78 });
+  assert.equal(at(sym, 'L', 30, 130, 4).length, 0, '옛 런의 중심이 남으면 안 된다');
+  assert.equal(at(sym, 'L', -20, -60, 4).length, 1);
+  // ② 켠 채로 런이 갈린다(onSwap 은 FieldLayer 의 key 만 비운다 — 기호에는 같은 글자가 다시 온다).
+  const { sym: live } = rig();
+  live.update('75|78', oldA, oldB, { grid: GRID, hourA: 75, hourB: 78 });
+  assert.equal(live.update('75|78', newA, newB, { grid: GRID, hourA: 75, hourB: 78 }), true, '그림이 다르면 다시 찾는다');
+  assert.equal(at(live, 'L', 30, 130, 4).length, 0);
+  assert.equal(at(live, 'L', -20, -60, 4).length, 1);
+  // ③ 눈금이 바뀌면(0.5/940 → 1/870 은 실제로 한 번 있었다) 같은 그림도 다른 숫자다 — 쥔 것을 버린다.
+  const { sym: rescaled } = rig({ decode: OLD });
+  const f = frame(world([{ lat: 30, lon: 130, sigma: 3, amp: -28 }]), OLD);   // OLD 눈금으로 구운 장
+  rescaled.update('0|0', f, null, { grid: GRID, hourA: 0, hourB: 0 });
+  assert.equal(symbolKey(at(rescaled, 'L', 30, 130)[0]), 'L 985');
+  rescaled.decode = NOW;                                   // FieldLayer.applyFieldSpec 이 하는 일
+  assert.equal(rescaled.key, null, '눈금이 바뀌면 key 도 버린다');
+  rescaled.update('0|0', f, null, { grid: GRID, hourA: 0, hourB: 0 });
+  // OLD 로 구운 바이트 90((985−940)/0.5)을 NOW 로 다시 풀면 90×1+870 = 960 이다.
+  assert.equal(symbolKey(at(rescaled, 'L', 30, 130)[0]), 'L 960', '같은 바이트를 새 눈금으로 다시 푼다');
+  // 값이 같은 새 객체(매니페스트를 다시 읽으면 그렇다)로는 버리지 않는다 — 공연히 다 버리지 않게.
+  const before = rescaled.finds;
+  rescaled.decode = { ...NOW };
+  assert.equal(rescaled.key, '0|0');
+  assert.equal(rescaled.finds, before);
+  assert.equal(decodeSignature(NOW), decodeSignature({ ...NOW }));
+  assert.notEqual(decodeSignature(NOW), decodeSignature(OLD));
+  assert.equal(decodeSignature(null), 'none');
 });
 
 test('mix 에 따라 기호가 두 중심 사이를 움직이고, 글자는 가까운 쪽 키프레임의 것이다', () => {

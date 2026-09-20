@@ -298,7 +298,9 @@ test('누른 자리의 값 — 네트워크 0건 · 0.5°C 눈금 · ~ · "0.5°
   assert.match(legend.last.note, /~−4\.0 °C/);
   // 지점 값 카드(main.js pointWeather 가 쓴다).
   const note = layer.readoutNote(37.5, 127);
-  assert.equal(note.badge, 'MODEL_SIGNAL');
+  // 도장은 descriptor 의 말 그대로다. 옛 삼항('OBSERVED 가 아니면 MODEL_SIGNAL')은 메뉴 줄이 'MODEL' 이라고 적는
+  // 레이어에까지 'MODEL_SIGNAL' 을 찍었다(2026-09-20 반박 검증). 둘은 같은 배지로 그려지지만 말이 갈리면 안 된다.
+  assert.equal(note.badge, 'MODEL');
   assert.match(note.title, /모델 격자값/);
   assert.match(note.html, /~−4\.0 °C/);
   assert.match(note.html, /0\.5° 격자\(약 55 km\) 평균 · 0\.5 °C 눈금 — 도시·지점의 관측값이 아닙니다/);

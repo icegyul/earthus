@@ -18,6 +18,7 @@ const src = (rel) => lf(readFileSync(new URL(`../../prototype/v2-three/js/${rel}
 
 const {
   FIELD_DESCRIPTORS, FieldLayer, fieldCardInner, fullRangeOf, isFieldLayerId, readoutOf, statusText, timeMeta,
+  toggleFieldLayer,
 } = await import('../../prototype/v2-three/js/field-layer.js');
 const { GRID_SOURCES, createGridFrames, encodeByte } = await import('../../prototype/v2-three/js/grid-frames.js');
 const { isolineSpec, legendModel, scaleOf } = await import('../../prototype/v2-three/js/field-scales.js');
@@ -315,4 +316,88 @@ test('옛 가림판 경로가 이 레이어들에서 빠졌다 — refresh·과�
   assert.match(shell, /id: 'wavefield'[^}]*5° 격자\(약 555 km\) · 현재 시각/);
   assert.match(shell, /id: 'pm25grid'[^}]*5°\(약 555 km\) · 현재 시각/);
   assert.match(shell, /id: 'sstanom'[^}]*동아시아 0\.5° 격자/);
+});
+
+// ════════════════════════════════════════════════════════════════════════════════════════════════════════════
+//  2026-09-20 반박 검증 — 카드가 **저장소가 말한 것**을 버리고 제 말만 하던 자리들
+// ════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+test("한 칸의 '평균' 과 '값' — descriptor 가 말하지 않으면 저장소가 말한 것을 쓴다", async () => {
+  // aws/marine-grid 는 5° 격자점마다 제공기관을 한 번씩 부르는 **점 표본**이다 — 555 km 칸의 평균이 아니다.
+  // 저장소가 cellWord 를 내보내는데 descriptor 에 줄이 없다는 이유로 카드가 '평균'이라 적고 있었다.
+  assert.equal(GRID_SOURCES.marine.cellWord.ko, '값');
+  assert.equal(GRID_SOURCES.air.cellWord.ko, '값');
+  const shape = { res: 5, nx: 72, ny: 33, lat0: -80, lon0: -180 };
+  const wave = rig('wavefield', makeDoc(shape, 'wave', (lat) => 1 + Math.abs(lat) / 20, () => false, { time: '2026-09-20T06:00:00Z' }));
+  assert.equal((await wave.layer.on()).on, true);
+  assert.match(wave.layer.cardHtml(), /5° 격자\(약 555 km\) 한 칸의 값이라/);
+  assert.doesNotMatch(wave.layer.cardHtml(), /한 칸의 평균이라/);
+  assert.match(wave.layer.readoutNote(0, 0).html, /5° 격자\(약 555 km\) 값 ·/);
+  wave.layer.off();
+  // descriptor 가 말하면 그것이 이긴다(수온의 '표본' — 0.25° 원본을 네 칸마다 뽑았다).
+  const sst = rig('sstfield', sstDoc());
+  assert.equal((await sst.layer.on()).on, true);
+  assert.match(sst.layer.cardHtml(), /1° 격자\(약 110 km\) 한 칸의 표본/);
+  sst.layer.off();
+});
+
+test('지점 카드의 도장이 메뉴 줄과 같은 말을 한다 — 삼항으로 가르지 않는다', async () => {
+  const shape = { res: 5, nx: 72, ny: 33, lat0: -80, lon0: -180 };
+  const air = rig('pm25grid', makeDoc(shape, 'pm25', () => 30, () => false, { time: '2026-09-20T06:00:00Z' }));
+  assert.equal((await air.layer.on()).on, true);
+  // descriptor · 메뉴 줄 · 지점 카드가 한 낱말이어야 한다. 옛 삼항('OBSERVED 가 아니면 MODEL_SIGNAL')은 여기만 다르게 찍었다.
+  assert.equal(FIELD_DESCRIPTORS.pm25grid.badge, 'MODEL');
+  assert.equal(air.layer.readoutNote(35, 130).badge, 'MODEL');
+  air.layer.off();
+  const wave = rig('wavefield', makeDoc(shape, 'wave', () => 2, () => false, { time: '2026-09-20T06:00:00Z' }));
+  assert.equal((await wave.layer.on()).on, true);
+  assert.equal(wave.layer.readoutNote(0, 0).badge, FIELD_DESCRIPTORS.wavefield.badge);
+  wave.layer.off();
+  const sst = rig('sstfield', sstDoc());
+  assert.equal((await sst.layer.on()).on, true);
+  assert.equal(sst.layer.readoutNote(20, 130).badge, 'OBSERVED', '관측 분석장에 모델 도장을 찍으면 안 된다');
+  sst.layer.off();
+});
+
+test('눈금 글자는 눈금 자신의 유효자리로 찍는다 — 0.05 °C 를 "0.1 °C 눈금" 이라 적지 않는다', async () => {
+  const shape = { res: 0.5, nx: 73, ny: 49, lat0: 23.125, lon0: 114.125 };
+  const doc = makeDoc(shape, 'sstAnom', () => 1.2, () => false,
+    { observed: '2026-09-20T06:00:00Z', sst: new Array(73 * 49).fill(24) });
+  const r = rig('sstanom', doc);
+  assert.equal((await r.layer.on()).on, true);
+  const note = r.layer.readoutNote(35, 130);
+  assert.match(note.html, /0\.05 °C 눈금/, '채널의 눈금은 0.05 °C 인데 카드가 다른 수를 적는다');
+  assert.doesNotMatch(note.html, /0\.1 °C 눈금/);
+  // 값 쪽은 그대로 눈금표의 자릿수다 — 화면에 칠한 색과 같은 자리로 읽힌다.
+  assert.match(note.html, /~\+1\.2 °C/);
+  r.layer.off();
+});
+
+test('켤 때 붙인 문서를 붙들지 않는다 — 저장소가 세대를 갈면 띠도 새 패킷을 읽는다', async () => {
+  const desc = FIELD_DESCRIPTORS.wavefield;
+  const shape = { res: 5, nx: 72, ny: 33, lat0: -80, lon0: -180 };
+  const first = makeDoc(shape, 'wave', () => 2, () => false, { time: '2026-09-20T06:00:00Z', intel: 'old' });
+  const second = makeDoc(shape, 'wave', () => 3, () => false, { time: '2026-09-20T09:00:00Z', intel: 'new' });
+  let doc = first;
+  const frames = createGridFrames(GRID_SOURCES[desc.source], {
+    THREE: FakeTHREE, now: () => NOW, fetch: async () => ({ ok: true, json: async () => doc }),
+  });
+  const subs = new Set();
+  const layer = new FieldLayer(desc, {
+    frames,
+    timeBus: { validMs: () => NOW, isNow: () => true, on(fn) { subs.add(fn); fn(0); return () => subs.delete(fn); } },
+    legend: { show() {}, release() {} },
+    landMask: null, segments: [8, 4], now: () => NOW,
+    setInterval: () => 0, clearInterval: () => {},
+    makeLabelTexture: (text) => ({ tex: { text, dispose() {} }, w: 92, h: 40 }),
+  });
+  // 저장소는 자료마다 하나라 toggleFieldLayer 가 공용 것을 고른다 — 시험이 쓸 레이어를 먼저 앉혀 그 길을 비켜 간다.
+  const host = { group: { add() {}, remove() {} }, layers: {}, _fields: { wavefield: layer } };
+  const st = await toggleFieldLayer(host, 'wavefield');
+  assert.equal(st.on, true, st.error);
+  assert.equal(host.layers.wavefield.data.intel, 'old');
+  doc = second;
+  await frames.load();
+  assert.equal(frames.stats().swaps, 1, '저장소가 세대를 갈지 않았다 — 시험의 전제가 깨졌다');
+  assert.equal(host.layers.wavefield.data.intel, 'new', '토글하던 순간의 옛 문서를 아직 붙들고 있다');
 });

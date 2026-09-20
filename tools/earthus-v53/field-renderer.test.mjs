@@ -406,7 +406,8 @@ test('셰이더 글자 — GLSL ES 예약어를 이름으로 쓰지 않았고 �
   assert.match(lf(FIELD_VERT), /varying vec3 vUnit;/);
   assert.match(lf(FIELD_FRAG), /varying vec3 vUnit;/);
   assert.match(lf(FIELD_VERT), /uniform sampler2D uHeightMap;\s+uniform float uHasHeight;/);
-  assert.match(lf(FIELD_FRAG), /#ifdef FIELD_MASK_OCEAN\s+uniform sampler2D uHeightMap;\s+uniform float uHasHeight;\s+#endif/);
+  // 바다 가림은 두 단이다 — 육지 판(uLandMask · 2026-09-20 반박 검증) 과 고도(uHeightMap). 둘 다 제 '있음' 플래그를 달고 온다.
+  assert.match(lf(FIELD_FRAG), /#ifdef FIELD_MASK_OCEAN\s+uniform sampler2D uHeightMap;\s+uniform float uHasHeight;\s+uniform sampler2D uLandMask;[^\n]*\s+uniform float uHasLand;[^\n]*\s+#endif/);
   // 셰이더가 읽는 uniform 은 전부 재질에 있다(이름이 어긋나면 값이 0 으로 들어가 색면이 한 색이 된다).
   const r = new FieldRenderer({ scale: scaleOf('temp'), mode: 'magnitudeRG', mask: 'ocean', segments: [8, 4] });
   const declared = new Set([...lf(FIELD_VERT + FIELD_FRAG).matchAll(/uniform\s+\w+\s+(\w+)/g)].map((m) => m[1]));
@@ -461,5 +462,10 @@ test('모드와 가림은 컴파일 때 갈린다 — 풍속(|R,G|) · 바다 �
   assert.throws(() => new FieldRenderer({ scale: scaleOf('temp'), mode: 'vector' }), /모르는 mode/);
   assert.throws(() => new FieldRenderer({ scale: scaleOf('temp'), mask: 'land' }), /모르는 mask/);
   assert.match(lf(FIELD_FRAG), /#ifdef FIELD_MASK_OCEAN[\s\S]*if \(hgt >= 0\.0\) discard;/);
+  // 육지 판이 **고도보다 먼저** 선다. 고도 부호만으로는 해수면보다 낮은 육지를 가르지 못한다(land-mask.js 머리말) —
+  // 판이 뒤에 서면 그 자리는 이미 칠해진 뒤다. 판이 없으면(uHasLand 0) 옛 동작 그대로다.
+  const frag = lf(FIELD_FRAG);
+  assert.ok(frag.indexOf('uLandMask, vec2(') < frag.indexOf('if (hgt >= 0.0) discard;'), '육지 판이 고도 가림보다 뒤에 있다');
+  assert.match(frag, /if \(uHasLand > 0\.5\) \{\s+if \(texture2D\(uLandMask, vec2\(lon \/ \(2\.0 \* PI\) \+ 0\.5, lat \/ PI \+ 0\.5\)\)\.r > 0\.5\) discard;/);
   wind.dispose(); temp.dispose();
 });

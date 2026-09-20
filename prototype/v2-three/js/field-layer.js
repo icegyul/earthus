@@ -32,6 +32,7 @@ import { fieldLegend as sharedLegend } from './field-legend.js?v=1';
 import { bandColor, formatValue, isolineSpec, scaleOf } from './field-scales.js?v=1';
 import { logRangeText, logReadout, readTicks, topBandNote } from './field-log.js?v=1';
 import { FieldRenderer, halfStepOf } from './field-renderer.js?v=1';
+import { landMaskCardLine, sharedLandMask } from './land-mask.js?v=1';
 import { FIELD_LABEL_CAP, FieldLabels, labelLevels, labelText, pickLabelSpots, thinField } from './field-labels.js?v=1';
 import { FieldSymbols, SYMBOL_CAP, symbolCardRow } from './field-symbols.js?v=1';
 
@@ -324,8 +325,11 @@ export const readoutOf = (sample, { scale, mode = 'scalar', resolutionDeg = null
   const value = Math.round(raw / step) * step;
   const text = `~${formatValue(scale, value)}`;
   const cw = (cellWord && (cellWord[ko ? 'ko' : 'en'] || cellWord.ko)) || (ko ? '평균' : 'mean');
-  const note = ko ? `${cellLabel(resolutionDeg, true)} ${cw} · ${formatValue(scale, step).replace(/^[+−]/, '')} 눈금`
-    : `${cellLabel(resolutionDeg, false)} ${cw} · ${formatValue(scale, step).replace(/^[+−]/, '')} steps`;
+  // ⚠️ 눈금 글자는 formatValue 로 찍으면 안 된다 — 눈금표의 자릿수로 반올림된다(편차의 0.05 °C 눈금이 '0.1 °C' 가 됐다).
+  //    눈금은 눈금 자신의 유효자리로 적는다. 값 쪽은 그대로 눈금표의 자릿수다(화면에 칠한 색과 같은 자리로 읽힌다).
+  const stepText = `${String(step)} ${scale.unit}`;
+  const note = ko ? `${cellLabel(resolutionDeg, true)} ${cw} · ${stepText} 눈금`
+    : `${cellLabel(resolutionDeg, false)} ${cw} · ${stepText} steps`;
   return { ok: true, value, text, note, color: bandColor(scale, value) };
 };
 
@@ -410,10 +414,18 @@ export const fieldCardInner = (m) => {
   if (m.symbolName) lines.push(symbolCardRow(m, btn));
   // '이 색면은 …입니다' 의 한 마디와 '한 칸의 …' 은 descriptor 가 바꿀 수 있다 — 관측 분석장을 모델값이라 부르지 않는다.
   const nature = L(m.desc.nature) || (ko ? '관측이 아니라 수치예보 모델값' : 'model output, not observation');
-  const cw = L(m.desc.cellWord) || (ko ? '평균' : 'mean');
+  // descriptor 가 말하지 않으면 저장소가 말한 것(m.cellWord — info.cellWord 에서 온다)을 쓴다. 둘 다 없으면 '평균'.
+  const cw = L(m.cellWord || m.desc.cellWord) || (ko ? '평균' : 'mean');
   lines.push(ko
     ? `이 색면은 <b>${esc(nature)}</b>입니다 — ${esc(cellLabel(m.info && m.info.resolutionDeg, true))} 한 칸의 ${esc(cw)}이라 도시·지점의 값과 다를 수 있습니다.`
     : `This field is <b>${esc(nature)}</b> — a ${esc(cellLabel(m.info && m.info.resolutionDeg, false))} cell ${esc(cw)} that can differ from a city or station value.`);
+  // 바다에만 칠하는 색면은 **무엇으로 육지를 갈랐는지**를 말한다. 옛 0.25° 가림판의 카드(oceanMaskCardLine)가 하던
+  // 말이고, 셰이더로 옮기면서 빠져 있었다(2026-09-20 반박 검증). 판을 못 받은 세션에서는 그 사실을 그대로 적는다.
+  if (m.desc.mask === 'ocean') {
+    lines.push(`<span style="opacity:.8">${esc(landMaskCardLine(m.landMask, {
+      cell: cellLabel(m.info && m.info.resolutionDeg, ko), ko,
+    }))}</span>`);
+  }
   lines.push(m.info && m.info.single
     ? (ko
       ? '이 자료는 한 시각짜리 한 장입니다 — 타임라인을 밀면 색면을 숨기고 그렇게 말합니다. 지구를 누르면 그 자리의 값을 범례 아래에 적습니다(네트워크 조회 없음).'
@@ -484,12 +496,13 @@ export class FieldLayer {
   ensureObjects() {
     if (this.group) return;
     const d = this.deps;
+    // (2026-09-20 반박 검증: 세 작업을 합칠 때 같은 세 열쇠가 두 번 적혀 있었다 — 값이 같아 동작은 같았다. 한 벌로 줄인다.)
     this.renderer = new FieldRenderer({
       scale: this.scale, mode: this.desc.mode, mask: this.desc.mask, transfer: this.desc.transfer || 'linear',
-      scale: this.scale, mode: this.desc.mode, mask: this.desc.mask,
       missing: !!this.desc.missing, clip: !!this.desc.clip,
       terrain: d.terrain || null, geometry: d.geometry || null, segments: d.segments,
     });
+    if (this.desc.mask === 'ocean') this.attachLandMask();
     this.labels = new FieldLabels({
       maxFront: d.isPhone ? FIELD_LABEL_CAP.phone : FIELD_LABEL_CAP.desktop,
       heightAt: d.heightAt || null, getExagger: d.getExagger || null,
@@ -515,6 +528,31 @@ export class FieldLayer {
     if (this.symbols) this.group.add(this.symbols.group);
     this.labels.group.visible = false;
     if (d.parent && d.parent.add) d.parent.add(this.group);
+  }
+
+  /** 이 레이어가 읽는 육지 판(mask 'ocean' 만). 시험은 deps.landMask 로 가짜를 넣는다.
+   *  카드를 그릴 때마다 불리므로 저장소를 붙들어 둔다 — 재생 중 220 ms 마다 객체를 새로 만들지 않는다. */
+  landMask() {
+    if (this.desc.mask !== 'ocean') return null;
+    if (this.deps.landMask !== undefined) return this.deps.landMask;
+    if (!this._landMask) this._landMask = sharedLandMask({ THREE });
+    return this._landMask;
+  }
+
+  /**
+   * 판을 받아 셰이더에 물린다. **기다리지 않는다** — 판이 늦게 와도 색면은 먼저 서고, 안 와도(열린 실패)
+   * 고도 부호만으로 가르던 옛 동작으로 돈다. 판은 앱에 한 장이라 레이어를 바꿔 켜도 다시 받지 않는다.
+   */
+  attachLandMask() {
+    const lm = this.landMask();
+    if (!lm || !this.renderer) return;
+    if (lm.texture && lm.texture()) { this.renderer.setLandMask(lm.texture()); return; }
+    if (!lm.load) return;
+    Promise.resolve(lm.load()).then(() => {
+      if (!this.renderer || !lm.texture) return;
+      this.renderer.setLandMask(lm.texture());
+      this.publish();                                         // 카드의 고지 줄이 '판 없음'에서 '판 있음'으로 바뀐다
+    }).catch(() => {});
   }
 
   // 왜 못 그리나 — 그릴 수 있으면 null. 그라데이션으로 물러나지 않는다: 이유를 말하고 끝낸다.
@@ -779,12 +817,23 @@ export class FieldLayer {
   sampleAt(lat, lon) {
     // 범위 밖이면 읽지 않는다. 저장소는 끝 프레임의 값을 outOfRange 표시와 함께 주지만(그 프레임이 캐시에 있을 때), 그 값은 이 시각의 값이 아니다.
     if (this.status.kind === 'outOfRange') return { outOfRange: this.status.side, single: !!this.status.single };
-    // 바다 자료를 육지에서 누르면 값을 말하지 않는다 — 셰이더는 고도 ≥ 0 을 버리는데(mask 'ocean') 클릭은 그 판을 안 거쳐,
-    // 해안 칸의 마스크 가중값(가장 가까운 바다 값)을 서울의 수온처럼 적게 된다. 고도를 모르는 세션에서는 그냥 읽는다.
-    if (this.desc.mask === 'ocean' && this.deps.heightAt) {
-      let h = null;
-      try { h = this.deps.heightAt(lat, lon); } catch (e) { h = null; }
-      if (Number.isFinite(h) && h >= 0) return { land: true };
+    // 바다 자료를 육지에서 누르면 값을 말하지 않는다 — 클릭은 셰이더를 안 거치므로 해안 칸의 마스크 가중값
+    // (가장 가까운 바다 값)을 서울의 수온처럼 적게 된다. **셰이더와 같은 두 단**을 같은 차례로 본다(field-renderer.js main):
+    //   ① 육지 판 — 셰이더가 읽는 것과 **같은 장**을 같은 칸 고르기로 읽는다. 다른 판을 쓰면 화면은 칠하는데 카드는
+    //      '육지입니다'라고 말하는 어긋남이 생긴다(그 반대도 같다).
+    //   ② 고도 — uHasHeight 가 0 인 세션(지형 타일이 통째로 실패)에서는 main.js heightAtJs 가 **어디서나 0** 을 돌려준다.
+    //      그것을 육지로 읽으면 칠해진 먼 바다를 눌러도 '육지입니다'가 뜬다. 셰이더도 그 세션에서는 고도를 안 보므로
+    //      여기서도 안 본다 — 판정의 근거를 화면과 같은 곳에 둔다(2026-09-20 반박 검증 minor).
+    if (this.desc.mask === 'ocean') {
+      const lm = this.landMask();
+      if (lm && lm.landAt && lm.landAt(lat, lon) === 1) return { land: true };
+      const t = this.deps.terrain;
+      const hasHeight = t && t.uHasHeight ? t.uHasHeight.value > 0.5 : !!this.deps.heightAt;
+      if (hasHeight && this.deps.heightAt) {
+        let h = null;
+        try { h = this.deps.heightAt(lat, lon); } catch (e) { h = null; }
+        if (Number.isFinite(h) && h >= 0) return { land: true };
+      }
     }
     let s = null;
     try { s = this.frames.sampleAt(this.desc.fieldId, this.timeBus.validMs(), lat, lon); } catch (e) { s = null; }
@@ -798,7 +847,7 @@ export class FieldLayer {
     const info = this.frames.info ? this.frames.info() : null;
     const r = readoutOf(this.sampleAt(this.probePoint.lat, this.probePoint.lon),
       { scale: this.scale, mode: this.desc.mode, resolutionDeg: info && info.resolutionDeg,
-        zeroText: this.desc.zeroText, cellWord: this.desc.cellWord, ko: this.ko });
+        zeroText: this.desc.zeroText, cellWord: this.cellWord(info), ko: this.ko });
     return { ...this.probePoint, ...r };
   }
 
@@ -815,7 +864,7 @@ export class FieldLayer {
     const info = this.frames.info ? this.frames.info() : null;
     const r = readoutOf(this.sampleAt(lat, lon),
       { scale: this.scale, mode: this.desc.mode, resolutionDeg: info && info.resolutionDeg,
-        zeroText: this.desc.zeroText, cellWord: this.desc.cellWord, ko });
+        zeroText: this.desc.zeroText, cellWord: this.cellWord(info), ko });
     const q = this.desc.quantity[ko ? 'ko' : 'en'];
     const stat = (k, v) => `<div class="stat"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`;
     const meta = [sourceLabel(info), ...timeMeta(info, this.timeBus.validMs(), ko)];
@@ -825,9 +874,18 @@ export class FieldLayer {
       + `<p>${esc(meta.join(' · '))}${st ? ` · ${esc(st)}` : ''}</p>`
       + `<p style="opacity:.75">${ko ? '화면에 칠해진 프레임에서 읽었습니다 — 네트워크 조회 없음.' : 'Read from the frame on screen — no network request.'}</p>`;
     // 성질 도장은 descriptor 가 말한다 — 관측 분석장(OISST)에 'MODEL_SIGNAL' 을 찍지 않는다.
-    const badge = this.desc.badge === 'OBSERVED' ? 'OBSERVED' : 'MODEL_SIGNAL';
+    // ⚠️ 삼항으로 가르면 안 된다: 'OBSERVED 가 아니면 MODEL_SIGNAL' 이라 대기질(descriptor · 메뉴 모두 'MODEL')만
+    //    지점 카드에서 'MODEL_SIGNAL' 도장을 받았다. descriptor 의 말을 그대로 쓴다(2026-09-20 반박 검증).
+    const badge = this.desc.badge || 'MODEL';
     return { title: ko ? `지점 ${q}(${this.gridWord(true)})` : `Point ${q.toLowerCase()} (${this.gridWord(false)})`, html, badge: r.ok ? badge : 'UNAVAILABLE' };
   }
+
+  /**
+   * '한 칸의 <…>' 의 낱말. descriptor 가 말하면 그것을, 아니면 **저장소가 말하는 것**을 쓴다(info.cellWord).
+   * 파고·대기질은 5° 격자점마다 제공기관을 한 번씩 부른 **점 표본**인데(aws/marine-grid) descriptor 에 줄이 없어
+   * 카드가 '한 칸의 평균'이라고 적고 있었다 — 저장소는 '값'이라고 내보내는데 아무도 읽지 않았다(2026-09-20 반박 검증).
+   */
+  cellWord(info = null) { return this.desc.cellWord || (info && info.cellWord) || null; }
 
   /** '모델 격자값' | '관측 격자값' — 지점 카드의 제목에 쓴다. */
   gridWord(ko = true) {
@@ -841,8 +899,12 @@ export class FieldLayer {
   cardModel(probe = this.active ? this.readProbe() : null) {
     const info = this.frames.info && this.frames.loaded ? this.frames.info() : null;
     const ko = this.ko;
+    const lm = this.landMask();
     return {
       id: this.id, desc: this.desc, scale: this.scale, info, ko,
+      // 육지 판의 현황 — 카드가 '무엇으로 육지를 갈랐나'를 사실대로 적는다(없으면 없다고 적는다).
+      landMask: lm && lm.info ? lm.info() : null,
+      cellWord: this.cellWord(info),
       validMs: this.active ? this.timeBus.validMs() : null,
       status: this.status, isoOn: this.isoOn, isoChoice: this.isoChoice, choices: this.choices,
       stats: this.stats, probe,
@@ -985,7 +1047,12 @@ export async function toggleFieldLayer(host, id) {
   entry.obj.visible = true;
   // 받아 둔 원본 문서를 그대로 달아 둔다 — main.js 의 Intelligence 띠가 layers.sstfield.data 의 intel 패킷을 읽는다(새 요청 없음).
   // ⚠️ data 가 차면 onExaggerChanged 가 옛 buildFromData 길로 이 레이어를 다시 지으려 한다 — live-layers.js 가 isFieldLayerId 로 막는다.
-  entry.data = field.document ? field.document() : null;
+  // ⚠️ 값으로 붙들면 안 된다 — 저장소는 30분마다 다시 읽고 세대가 바뀌면 문서를 갈아 끼우는데, 토글하던 순간의 옛 문서가
+  //    그대로 남아 띠가 어제 패킷을 읽게 된다(2026-09-20 반박 검증). 읽을 때마다 지금 문서를 준다.
+  Object.defineProperty(entry, 'data', {
+    configurable: true, enumerable: true,
+    get() { return field.document ? field.document() : null; },
+  });
   const badge = FIELD_DESCRIPTORS[id].badge || 'MODEL';
   // 카드·짧은 상태는 읽을 때마다 지금 것을 낸다(타임라인을 밀면 유효 시각이 바뀐다).
   entry.meta = { badge, get note() { return field.note(); }, get cardHtml() { return field.cardHtml(); } };

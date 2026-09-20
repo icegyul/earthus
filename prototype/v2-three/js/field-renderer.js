@@ -391,6 +391,9 @@ void main() {
 // 바다 가림(FIELD_MASK_OCEAN)은 능력만 있다 — 고도 ≥ 0 인 픽셀을 버린다. 바다 레이어를 옮겨 오는 것은 다음 묶음의 일이다.
 //   ⚠️ 2026-09-20(작업 D3) — 그 '다음 묶음'이 왔다. 수온·파고·평년대비수온이 이 가림을 쓴다: 0.25° CPU 가림판이
 //      비우던 해안 15~40 km 와 다도해·대한해협이 프래그먼트 단위 해안선으로 돌아왔다(grid-frames.js 머리말).
+//   ⚠️ 2026-09-20(반박 검증) — 고도의 **부호**만으로는 해수면보다 낮은 육지(네덜란드 간척지 · 카스피 저지 ·
+//      요르단 계곡)를 가르지 못해 그 위에 바다 색면이 칠해졌다. 그래서 가림이 두 단이 됐다: 깎은 육지 판
+//      (uLandMask · land-mask.js)이 먼저고 고도가 그다음이다. 판이 없으면 uHasLand = 0 으로 옛 동작이다.
 // 같은 작업에서 define 둘이 늘었다 — 둘 다 **없는 값을 그리지 않기 위한 것**이다:
 //   FIELD_MISSING_MASK   G 채널이 '값 있음(255)/없음(0)'인 자료. 네 칸을 마스크로 가중해 이어(maskedGrid)
 //                        결측 이웃과 섞지 않는다. 네 칸이 다 결측이면 버린다.
@@ -426,6 +429,8 @@ uniform float uPxScale;      // 장치 픽셀비 — 굵기는 CSS px 로 정한
 #ifdef FIELD_MASK_OCEAN
 uniform sampler2D uHeightMap;
 uniform float uHasHeight;
+uniform sampler2D uLandMask;   // 등장방형 육지 판 — R > 0.5 면 육지(land-mask.js · 행 0 = 남 · NearestFilter)
+uniform float uHasLand;        // 0 이면 판이 없다 — 옛 동작(고도 부호만)으로 돈다
 #endif
 #ifdef FIELD_TRANSFER_LOG10
 uniform vec2 uLog;           // 로그 디코드: (logSpan/255, logLo) — 값 = 10^(byte * uLog.x + uLog.y) (매니페스트에서 온다)
@@ -509,6 +514,13 @@ void main() {
   float lon = atan(n.x, n.z);
 
 #ifdef FIELD_MASK_OCEAN
+  // ① 육지 판이 먼저다. 고도의 **부호**로는 해수면보다 낮은 육지(네덜란드 간척지 −3 m · 요르단 계곡 −217 m ·
+  //    카라기예 −107 m)를 가르지 못한다 — 2026-09-20 반박 검증이 운영 자료로 재현한 자리다(land-mask.js 머리말).
+  //    판은 한 칸(약 28 km) 깎여 있어 **바다는 잃지 않는다**: 해안 한 칸 안쪽은 아래 ②가 맡는다.
+  if (uHasLand > 0.5) {
+    if (texture2D(uLandMask, vec2(lon / (2.0 * PI) + 0.5, lat / PI + 0.5)).r > 0.5) discard;
+  }
+  // ② 고도 가림 — 해수면 위는 전부 육지다. 해안선이 프래그먼트 단위인 것은 이 줄이다.
   if (uHasHeight > 0.5) {
     float latC = clamp(lat, -1.4844, 1.4844);
     vec2 muv = vec2(lon / (2.0 * PI) + 0.5, 0.5 - log(tan(PI * 0.25 + latC * 0.5)) / (2.0 * PI));
@@ -653,6 +665,9 @@ export class FieldRenderer {
       uHasHeight: t.uHasHeight || { value: 0 },
       uExagger: t.uExagger || { value: 1 },
       uLift: { value: lift },
+      // 육지 판 — 바다 가림 레이어만 쓴다. 판이 오기 전에는 uHasLand = 0 이라 셰이더가 이 줄을 지나간다(열린 실패).
+      uLandMask: { value: null },
+      uHasLand: { value: 0 },
     };
     const defines = { FIELD_MAX_BREAKS, FIELD_MAX_LEVELS };
     if (mode === 'magnitudeRG') defines.FIELD_MODE_MAGNITUDE = 1;
@@ -769,6 +784,16 @@ export class FieldRenderer {
   }
 
   setOpacity(a) { this.uniforms.uOpacity.value = Math.max(0, Math.min(1, a)); }
+
+  /**
+   * 육지 판을 물린다(mask 'ocean' 에서만 뜻이 있다 — 다른 렌더러는 셰이더에 그 줄이 없다).
+   * 판이 없거나(null) 아직 못 받았으면 uHasLand = 0 이라 고도 부호만으로 가르던 옛 동작 그대로다.
+   * 판 텍스처는 저장소(land-mask.js)의 것이다 — 여기서 버리지 않는다.
+   */
+  setLandMask(tex) {
+    this.uniforms.uLandMask.value = tex || null;
+    this.uniforms.uHasLand.value = (this.mask === 'ocean' && tex) ? 1 : 0;
+  }
 
   setVisible(v) { this.mesh.visible = !!v && !!this.uniforms.uTexA.value; }
 

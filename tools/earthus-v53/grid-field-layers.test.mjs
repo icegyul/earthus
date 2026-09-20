@@ -400,4 +400,8 @@ test('켤 때 붙인 문서를 붙들지 않는다 — 저장소가 세대를 �
   await frames.load();
   assert.equal(frames.stats().swaps, 1, '저장소가 세대를 갈지 않았다 — 시험의 전제가 깨졌다');
   assert.equal(host.layers.wavefield.data.intel, 'new', '토글하던 순간의 옛 문서를 아직 붙들고 있다');
+  // 모듈은 strict 다 — getter 만 두면 쓰는 쪽에서 TypeError 가 나고 그 탈이 레이어 고리를 통째로 멈춘다.
+  // 지금은 쓰는 쪽이 없지만(live-layers 의 두 자리는 isFieldLayerId 뒤다) 그 갈래를 닫아 둔다.
+  assert.doesNotThrow(() => { host.layers.wavefield.data = { intel: 'stale' }; });
+  assert.equal(host.layers.wavefield.data.intel, 'new', '넣은 낡은 값이 정본을 덮었다');
 });

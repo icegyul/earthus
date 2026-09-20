@@ -1049,9 +1049,14 @@ export async function toggleFieldLayer(host, id) {
   // ⚠️ data 가 차면 onExaggerChanged 가 옛 buildFromData 길로 이 레이어를 다시 지으려 한다 — live-layers.js 가 isFieldLayerId 로 막는다.
   // ⚠️ 값으로 붙들면 안 된다 — 저장소는 30분마다 다시 읽고 세대가 바뀌면 문서를 갈아 끼우는데, 토글하던 순간의 옛 문서가
   //    그대로 남아 띠가 어제 패킷을 읽게 된다(2026-09-20 반박 검증). 읽을 때마다 지금 문서를 준다.
+  // ⚠️ 쓰기도 받아 둔다. 모듈은 strict 라 getter 만 있는 속성에 값을 넣으면 TypeError 가 나고, 그 탈이
+  //    this.layers 를 도는 고리 안에서 터지면 색면 셋이 아니라 그 고리 전체가 멈춘다. 지금은 쓰는 쪽이
+  //    없지만(live-layers 의 두 자리는 isFieldLayerId 뒤라 닿지 않는다) 한 줄로 그 갈래를 닫아 둔다.
+  //    삼키는 것이 맞다 — 여기서 정본은 저장소이고, 넣으려던 값은 어차피 그때의 낡은 문서다.
   Object.defineProperty(entry, 'data', {
     configurable: true, enumerable: true,
     get() { return field.document ? field.document() : null; },
+    set() { /* 저장소가 정본이다 — 붙든 값을 두지 않는다 */ },
   });
   const badge = FIELD_DESCRIPTORS[id].badge || 'MODEL';
   // 카드·짧은 상태는 읽을 때마다 지금 것을 낸다(타임라인을 밀면 유효 시각이 바뀐다).

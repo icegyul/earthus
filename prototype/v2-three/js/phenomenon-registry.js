@@ -241,16 +241,28 @@ export const PHENOMENA = Object.freeze({
     scope: '전지구. 고른 지점의 수심 기둥을 GEBCO 0.1° 격자로 내려간다 — 셀 안 15초 원본 576개의 최솟값을 보존한 뒤 인접 셀을 보간한 정보 제품이고, 특정 좌표의 실측 수심이 아니며 항해·해상 안전용이 아니다. 육지 셀이면 육지라고 쓰고 잠수하지 않는다. 생물은 OBIS 5° 해역 기록 수 요약 — 개체수도 현재 분포도 아니다. 특집 잠수는 /data/trenches.json items[0].',
     dataProducts: Object.freeze(['hobby/dive']),
   }),
+  // ── 2026-09-21 내린 화면 셋 (ocean.fishing_conditions · ocean.surf_conditions · weather.paragliding) ──
+  // 무엇이 있었나: 세 현상은 각각 hobby 화면 하나만 산출물로 갖는데, 그 화면이 ext-scene.js 의 ctx.v1() 로
+  //   1.0 모듈을 런타임에 들여와 브라우저에서 Open-Meteo 를 직접 불렀다. 유료 서비스에 비상업 API 라
+  //   그 길을 막았고(ext-scene.js WITHDRAWN · V1_DENY), 그 값들은 우리 격자로는 내지 못한다.
+  //   화면이 내려간 순간 현상의 능력도 전부 사라진다 — 산출물이 그 화면 하나뿐이기 때문이다.
+  // 왜 'planned' 인가: 이 파일의 availability 어휘는 ready · partial · planned 셋뿐이고, 새 낱말을
+  //   여기서 만들면 이것을 읽는 쪽(ui-shell 능력 게이팅 · report-center · main.js askPhenomenon)이
+  //   모르는 값을 받는다. 셋 중 'planned' 는 이미 '오늘 화면에 나오는 자료가 없다'는 뜻으로 쓰이고 있다 —
+  //   ocean.vessel_traffic 은 'AIS 재배포 안 함(정책)' 이라 계획이 아예 없는데도 'planned' 다.
+  //   ⚠️ 그래도 'planned'(예정)는 '내렸다'와 같은 말이 아니다. 'withdrawn' 을 어휘에 더할지는 PD 결정이고,
+  //   더하기 전까지 여기서는 가장 덜 거짓인 값을 고른다. weather.paragliding 은 그 결정이 특히 열려 있다
+  //   (tools/directive-2026-09-20/grammar-matrix.json WIND_DESCRIPTOR: pendingPD — 토글 · v1 이관 · 삭제).
   'ocean.fishing_conditions': Object.freeze({
     domain: 'ocean',
     label: Object.freeze({ ko: '낚시', en: 'Fishing' }),
     short: Object.freeze({ ko: '낚시', en: 'Fishing' }),
     question: Object.freeze({ ko: '물이 얼마나 움직이고, 지금 나가면 위험한가', en: 'How much is the water moving, and is it dangerous to go out now?' }),
-    capabilities: Object.freeze({ current: true, history: false, intelligence: false, forecast: false, simulation: false, evidence: true, report: false }),
-    availability: 'ready',
-    evidenceProfile: 'PROVIDER_FORECAST (legacy state MODEL) mixed with OFFICIAL_OBSERVATION — Open-Meteo Marine tide/wave model next to KMA buoy/AWS measurement and KHOA rip grade; no LAYER_TRUTH entry (truthKind null).',
-    temporalMode: '지금 + 조위 N_DAYS 일 시간별 예보 — 파랑·수온은 current 값(리드타임 없음), 물때만 다일 예보',
-    scope: '낚시터 1,009곳 — 한국 946곳(prototype/data/fishing.json) + 일본 63곳. 방파제·갯바위(섬)·선착장·마리나·항 다섯 종류를 색으로 구분하되 색으로 좋다/나쁘다를 말하지 않는다. 안전을 맨 위에 둔다(너울·바람·이안류). 조황은 우리가 아는 값이 아니므로 무슨 고기가 나오는지 말하지 않는다.',
+    capabilities: Object.freeze({ current: false, history: false, intelligence: false, forecast: false, simulation: false, evidence: false, report: false }),
+    availability: 'planned',
+    evidenceProfile: '없음 — 화면을 내려 값을 내지 않는다. 근거를 보일 표면 자체가 없다(LAYER_TRUTH 에 hobby/fishing 항목도 없다).',
+    temporalMode: '없음 — 내린 화면이라 시간축에 아무것도 싣지 않는다.',
+    scope: '오늘은 아무것도 나오지 않는다. 물때(만조·간조 예측)가 우리 자료 어디에도 없고, 그 값을 내던 길이 Open-Meteo Marine 직호출이었다. 낚시터 1,009곳의 **장소 목록**은 그대로 살아 있다 — 다른 현상(ocean.coastal_spots · 레이어 ocean/surf)이 들고 있고 한국 946곳 + 일본 63곳을 지구에 찍는다. 여기서 사라진 것은 장소가 아니라 그 장소의 물 상태다.',
     dataProducts: Object.freeze(['hobby/fishing']),
   }),
   'ocean.sea_ice': Object.freeze({
@@ -356,11 +368,12 @@ export const PHENOMENA = Object.freeze({
     label: Object.freeze({ ko: '서핑', en: 'Surf' }),
     short: Object.freeze({ ko: '서핑', en: 'Surf' }),
     question: Object.freeze({ ko: '이 해변에 너울이 들어오는가', en: 'Is the swell reaching this beach?' }),
-    capabilities: Object.freeze({ current: true, history: false, intelligence: false, forecast: false, simulation: false, evidence: true, report: false }),
-    availability: 'ready',
-    evidenceProfile: 'PROVIDER_FORECAST (legacy state MODEL) mixed with OFFICIAL_OBSERVATION — Open-Meteo Marine model values shown next to KMA buoy/AWS measurements and a KHOA rip grade; no LAYER_TRUTH entry exists (truthKind null).',
-    temporalMode: '지금 — 파랑·수온은 Open-Meteo Marine current 값(리드타임 없음), 조위만 2일 시간별. 부이 10분, AWS 바람 10분, 이안류 관측 시각 표기.',
-    scope: '해변 1,027곳 — 한국 271곳(prototype/data/beaches.json) + 일본 756곳(prototype/data/jp/beaches.json). 세 가지만 말한다: 스웰이 들어오는가(스웰 방향 대 해변 방위) · 파면이 깔끔한가(육풍/해풍) · 어떤 파도인가(주기). 점수를 만들지 않고 \'타기 좋습니다\'라고 말하지 않는다. 부이 실측은 120km 이내일 때만 붙이고, 이안류 등급은 국립해양조사원이 매긴 해수욕장 10곳만. 일본 해변은 facing 이 없어 핵심 판단을 못 하며 그 사실을 화면에 적는다.',
+    // 2026-09-21 내린 화면 — 사유와 'planned' 를 고른 까닭은 ocean.fishing_conditions 위의 주석 하나에 적었다.
+    capabilities: Object.freeze({ current: false, history: false, intelligence: false, forecast: false, simulation: false, evidence: false, report: false }),
+    availability: 'planned',
+    evidenceProfile: '없음 — 화면을 내려 값을 내지 않는다. 근거를 보일 표면 자체가 없다(LAYER_TRUTH 에 hobby/surf 항목도 없다).',
+    temporalMode: '없음 — 내린 화면이라 시간축에 아무것도 싣지 않는다.',
+    scope: '오늘은 아무것도 나오지 않는다. 너울 방향·풍파·주기가 우리 격자에 없고, 그 값을 내던 길이 Open-Meteo Marine 직호출이었다. 해변 1,027곳의 **장소 목록**은 그대로 살아 있다 — 다른 현상(ocean.coastal_spots · 레이어 ocean/surf)이 들고 있고 한국 271곳 + 일본 756곳을 지구에 찍는다. 여기서 사라진 것은 해변이 아니라 그 해변에 드는 너울이다.',
     dataProducts: Object.freeze(['hobby/surf']),
   }),
   'ocean.surface_current': Object.freeze({
@@ -704,11 +717,12 @@ export const PHENOMENA = Object.freeze({
     label: Object.freeze({ ko: '패러글라이딩', en: 'Paragliding' }),
     short: Object.freeze({ ko: '패러글라이딩', en: 'Paragliding' }),
     question: Object.freeze({ ko: '이 활공장의 바람과 구름 밑면은', en: 'What is the wind and the cloud base at this site?' }),
-    capabilities: Object.freeze({ current: true, history: false, intelligence: false, forecast: false, simulation: false, evidence: true, report: false }),
-    availability: 'partial',
-    evidenceProfile: 'PROVIDER_FORECAST (legacy state MODEL) — Open-Meteo model current values, with an EARTHUS_ANALYSIS cloud-base approximation; no LAYER_TRUTH entry (truthKind null).',
-    temporalMode: '지금만 — Open-Meteo `current` 값 한 시점, 리드타임 없음',
-    scope: '한국 활공장 26곳 — OSM 에 sport=free_flying 로 직접 태그된 것만 쓰고 산 이름을 짐작해 좌표를 붙이지 않는다(문경 단산에서 동명이산 139m 봉우리를 적을 뻔했다). 바람 구간(light/ok/brisk/strong/danger)과 16방위, Espy 근사 구름 밑면. \'날기 좋다\'고 말하지 않는다 — 이륙 가능 여부는 등급·날개·경험에 달렸고 무엇보다 이륙장이 어느 쪽을 보는지 자료에 없다. 좌표는 산 정상이지 이륙장이 아니므로 찾아가는 좌표로 쓰면 안 된다.',
+    // 2026-09-21 내린 화면 — 사유와 'planned' 를 고른 까닭은 ocean.fishing_conditions 위의 주석 하나에 적었다.
+    capabilities: Object.freeze({ current: false, history: false, intelligence: false, forecast: false, simulation: false, evidence: false, report: false }),
+    availability: 'planned',
+    evidenceProfile: '없음 — 화면을 내려 값을 내지 않는다. 근거를 보일 표면 자체가 없다(LAYER_TRUTH 에 hobby/para 항목도 없다).',
+    temporalMode: '없음 — 내린 화면이라 시간축에 아무것도 싣지 않는다.',
+    scope: '오늘은 아무것도 나오지 않는다. 저층 운량·시정·CAPE 가 우리 프레임에 없고, 그 값을 내던 길이 Open-Meteo 직호출이었다. 활공장 26곳의 좌표(OSM sport=free_flying)는 자료 파일에 남아 있지만 지구에 그리지 않는다 — 좌표는 산 정상이지 이륙장이 아니고, 이륙장이 어느 쪽을 보는지는 어느 자료에도 없어서 목록만 띄워도 답이 되지 않는다.',
     dataProducts: Object.freeze(['hobby/para']),
   }),
   'weather.precipitation': Object.freeze({

@@ -2803,6 +2803,9 @@ async function main() {
     const hit = raycastGlobe(e.clientX, e.clientY);
     if (!hit) { focus.clear(); return; }
     const { lat, lon } = hit;
+    // 색면(기온)이 켜져 있으면 누른 자리의 모델값을 범례와 그 카드에 적는다 — 프레임의 CPU 사본에서 읽는다(네트워크 0건).
+    // 아래의 선택 흐름(확장 화면·여행·해구·국가·해상)은 그대로 이어진다. 색면이 꺼져 있으면 아무 일도 없다.
+    liveLayers.fieldProbe(lat, lon);
     // 해구 표시가 켜져 있으면 해구선 우선 — 바다 클릭이 해상 실황으로 새지 않게
     // 여행 씬이 켜져 있으면 시군구 비콘 우선 — 근거 5줄 카드
     // 확장 화면(취미)이 켜져 있으면 그 표시가 우선 — 해변·활공장·거북 같은 것을 눌렀을 때
@@ -2935,6 +2938,17 @@ async function main() {
   const pointWeather = async (lat, lon, metric = 'temperature') => {
     pointWeatherLast = { lat, lon, metric };
     const current = selectionGate.next();
+    // 기온 색면이 켜져 있으면 기온은 화면에 칠해진 GFS 프레임의 CPU 사본에서 읽는다(js/field-layer.js readoutNote) — **네트워크 호출 0건.**
+    // 전에는 색면이 있든 없든 아래에서 api.open-meteo.com 을 브라우저가 직접 불렀다(지시서 W2 'Open-Meteo 직접 호출을 걷어낸다').
+    // 값은 0.5°C 눈금 · '~' · "0.5° 격자(약 55 km) 평균 · GFS run/valid" 로 말한다. 타임라인이 예보 시각이면 그 시각의 값이다.
+    // 습도·바람·강수와, 색면이 꺼져 있을 때의 기온은 아래의 옛 길 그대로다(그 필드의 색면이 생기는 묶음에서 같은 식으로 옮긴다).
+    const fieldNote = metric === 'temperature' ? liveLayers.fieldReadout('tempgrid', lat, lon) : null;
+    if (fieldNote) {
+      if (pointWeatherReq) pointWeatherReq.abort();
+      pointWeatherReq = null;
+      showNote(fieldNote.title, fieldNote.html, fieldNote.badge);
+      return;
+    }
     const ctrl = new AbortController();
     pointWeatherReq = ctrl;
     showNote('지점 실황', `<div class="card"><div class="card-h">지점 ${fmtPt(lat, lon)}</div><div class="card-b" role="status">모델 분석값 조회 중…</div></div>`, 'LOADING');
@@ -3140,6 +3154,13 @@ async function main() {
   };
 
   const liveLayers = new LiveLayers(scene, heightAtJs, () => uniforms.uExagger.value, dataBadge);
+  // W1·W2 셰이더 색면(js/field-layer.js — 기온부터). 색면이 지형을 따라가도록 지구의 uniform 묶음과 지오메트리를 **그대로** 넘긴다:
+  // 과장이 바뀌면 위 uniforms.uExagger.value 하나만 바뀌고 색면은 같은 객체를 읽는다(지오메트리를 다시 만들지 않는다).
+  // onCard: 타임라인을 밀면 카드의 유효 시각·보간 문구가 바뀐다 — 떠 있는 카드의 원본 문자열에서 그 레이어의 카드만 갈아 끼운다.
+  liveLayers.provideField({
+    frames: gfsFrames, terrain: uniforms, geometry: earth.geometry, isPhone: isMobileUA,
+    onCard: (swap) => { if (lockedNote && typeof lockedNote.body === 'string') lockedNote.body = swap(lockedNote.body); },
+  });
   // 항로 — 항공편 추적이 아니라 '구간을 잇는 표현'이다 (js/route.js 머리말 참조)
   const flightRoute = new FlightRoute(scene, () => uniforms.uExagger.value);
   // 켜 둔 레이어를 원본 갱신 주기에 맞춰 실제로 다시 받는다 (배지만 갱신되던 문제)
@@ -4634,6 +4655,8 @@ async function main() {
         </div></div>`;
     },
     onAction: (action, ds, value) => {
+      // 색면 카드의 단추(등온선 켬/끔 · 2°C|5°C) — js/field-layer.js 가 셰이더를 바꾸고 카드 글을 제자리에서 갈아 끼운다(provideField 의 onCard).
+      if (typeof action === 'string' && action.startsWith('field-')) { liveLayers.fieldAction(action, ds); return; }
       // 확장 화면(LAB·취미) 카드의 버튼 — data-action="ext:…" 만 여기서 받는다
       const ex = extScene ? extScene.handleAction(action, ds, value) : null;
       if (ex) {

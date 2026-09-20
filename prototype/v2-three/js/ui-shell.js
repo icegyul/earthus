@@ -62,7 +62,7 @@ export const SCENES = [
       { id: 'cloud-off', name: '구름 끄기', state: 'LIVE', src: '—', act: true },
       { id: 'radar', name: '레이더 강수 (지금 내리는 비)', state: 'OBSERVED', src: 'KMA HSR 합성영상 · 5분', act: true },
       { id: 'raingrid', name: '전지구 강수', state: 'MODEL', src: 'Open-Meteo 격자 5°', act: true },
-      { id: 'tempgrid', name: '전지구 기온', state: 'MODEL', src: 'Open-Meteo 격자 5°', act: true },
+      { id: 'tempgrid', name: '전지구 기온', state: 'MODEL', src: 'NOAA GFS 0.5° · 5일 예보 · 3시간 간격', act: true },
       { id: 'presgrid', name: '전지구 기압', state: 'MODEL', src: 'Open-Meteo 격자 5°', act: true },
       { id: 'windgrid', name: '전지구 풍속', state: 'MODEL', src: 'Open-Meteo 격자 5°', act: true },
       { id: 'pm25grid', name: '전지구 초미세먼지', state: 'MODEL', src: 'CAMS 격자 5°', act: true },

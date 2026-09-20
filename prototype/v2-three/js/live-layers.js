@@ -6,6 +6,8 @@ import * as THREE from '../../vendor/three-r184.module.min.js';
 import { bulletinRecords, bulletinTimesHtml, escapeHtml, sourceTimeLabel, SEA_LEVEL_SCALE_CM, seaLevelFractionCm } from './source-context.js?v=20260905';
 // 바다 색면의 육지 가림 — 판정·해안 띠·대체 규칙은 DOM·THREE 없는 순수 함수로 저 파일에 있다(시험이 그대로 부른다).
 import { buildOceanMaskAsync, oceanMaskAlphaRGBA, oceanMaskCardLine, erodedGridNodes } from './ocean-land-mask.js?v=1';
+// W1 셰이더 색면(기온부터) — 프레임 저장소·시간 버스·범례·라벨을 묶는 접착제는 저 파일에 있다. 여기에는 거는 자리만 둔다.
+import { activeField, clearFieldLayers, isFieldLayerId, toggleFieldLayer } from './field-layer.js?v=1';
 
 // CloudFront(earthus.net)는 /clouds/* 외 경로에 CORS 헤더를 안 붙인다 → 1.0처럼 S3 직접 (CORS *)
 const S3 = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
@@ -300,7 +302,23 @@ export class LiveLayers {
     return l && l.meta ? l.meta.cardHtml : '';
   }
 
+  // ---------- W1 셰이더 색면 (js/field-layer.js) ----------
+  // main.js 가 한 번 부른다: 프레임 저장소 · 지구의 지형 uniform 묶음 · 지구 지오메트리 · 폰 여부 · 카드 문자열을 갈아 끼울 자리.
+  provideField(deps) { this._fieldDeps = { ...(this._fieldDeps || {}), ...deps }; }
+
+  // 누른 자리의 모델값을 범례·카드에 적는다(켜진 색면이 없으면 아무 일도 없다 · 네트워크 0건).
+  fieldProbe(lat, lon) { const f = activeField(this); return f ? f.probe(lat, lon) : null; }
+
+  // 지점 값 카드 { title, html, badge } — 그 색면이 꺼져 있으면 null(부른 쪽이 제 길로 간다).
+  fieldReadout(id, lat, lon) { const f = activeField(this, id); return f ? f.readoutNote(lat, lon) : null; }
+
+  // 색면 카드의 단추(등온선 켬/끔 · 2°C|5°C). 처리했으면 true.
+  fieldAction(action, ds) { const f = activeField(this, (ds && ds.layer) || null); return f ? f.handleAction(action, ds || {}) : false; }
+
   async toggle(id) {
+    // 셰이더 색면이 맡은 레이어(기온)는 저쪽에서 켜고 끈다. 아래의 build() → fetchFor('tempgrid')(5° 그라데이션) 길로는 가지 않는다 —
+    // GFS 프레임이 없으면 그라데이션으로 물러나지 않고 '자료 없음'과 이유를 돌려준다.
+    if (isFieldLayerId(id)) return toggleFieldLayer(this, id);
     let l = this.layers[id];
     if (l && l.on) {
       l.obj.visible = false;
@@ -341,6 +359,7 @@ export class LiveLayers {
       if(layer.obj)layer.obj.visible=false;
       layer.on=false;
     }
+    clearFieldLayers(this);   // 셰이더 색면은 보이지 않게만 해서는 안 꺼진다 — 시간 버스 구독을 풀고 범례를 감춘다
     this._floodSel=null;
   }
 
@@ -1354,7 +1373,8 @@ export class LiveLayers {
     return {
       badge: 'MODEL', note,
       cardHtml: `<b>전지구 ${ko}</b> — ${Math.round(360 / d.res)}×${Math.round(180 / d.res)} (${d.res}°) 격자 중 값이 있는 <b>${(s.n || 0).toLocaleString()}칸</b>을 칠합니다.<br/>`
-        + `${desc}<br/>관측 범위 ${rng}<br/>`
+        // '관측 범위'라고 적혀 있었다 — 이 카드의 격자는 전부 수치예보 모델값이다(바로 아래 줄이 그렇게 말한다). 모델값을 관측이라 부르지 않는다.
+        + `${desc}<br/>모델 범위 ${rng}<br/>`
         + `이 격자는 <b>관측이 아니라 수치예보 모델값</b>입니다 — 관측이 필요하면 지점 관측 레이어를 쓰세요.<br/>`
         + `지형 과장(${this.getExagger ? Math.round(this.getExagger()) : 1}×) 때문에 산에 파묻히지 않도록 <b>대기층 높이</b>에 얹어 그립니다.<br/>`
         + `출처 ${d.source || src} · 기준시각 ${kstShort(d.time)}`,

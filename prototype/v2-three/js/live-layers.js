@@ -4,6 +4,8 @@
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
 import { bulletinRecords, bulletinTimesHtml, escapeHtml, sourceTimeLabel, SEA_LEVEL_SCALE_CM, seaLevelFractionCm } from './source-context.js?v=20260905';
+// 바다 색면의 육지 가림 — 판정·해안 띠·대체 규칙은 DOM·THREE 없는 순수 함수로 저 파일에 있다(시험이 그대로 부른다).
+import { buildOceanMaskAsync, oceanMaskAlphaRGBA, oceanMaskCardLine, erodedGridNodes } from './ocean-land-mask.js?v=1';
 
 // CloudFront(earthus.net)는 /clouds/* 외 경로에 CORS 헤더를 안 붙인다 → 1.0처럼 S3 직접 (CORS *)
 const S3 = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
@@ -225,6 +227,10 @@ void main() {
   #include <colorspace_fragment>
 }`;
 
+// 바다 색면 3종 — 해수면(r=1) 위 고정 껍질에 칠하고, 육지는 가림판(ocean-land-mask.js)으로 비운다.
+// 대기 색면(기온·기압·강수…)은 여기 넣지 않는다: 그쪽은 육지 위에도 값이 있는 것이 맞다.
+const OCEAN_FIELD_IDS = new Set(['sstfield', 'wavefield', 'sstanom']);
+
 export class LiveLayers {
   constructor(scene, heightAt, getExagger, dataBadge) {
     this.group = new THREE.Group();
@@ -413,6 +419,9 @@ export class LiveLayers {
     this.lastExagger = ex;
     for (const [id, l] of Object.entries(this.layers)) {
       if (!l.obj || !l.data) continue;
+      // 바다 색면은 과장과 무관하다 — 껍질 반지름은 고정(해수면은 과장해도 r=1)이고 육지 가림은
+      // 고도의 부호만 본다. 다시 지으면 슬라이더 한 칸마다 같은 그림을 새로 올릴 뿐이다.
+      if (OCEAN_FIELD_IDS.has(id)) continue;
       const revision = l.geometryRevision = (l.geometryRevision || 0) + 1;
       this.buildFromData(id, l.data).then((built) => {
         if(this.layers[id] !== l || l.geometryRevision !== revision || l.cancelled) {this.disposeObj(built.obj);return;}
@@ -427,6 +436,9 @@ export class LiveLayers {
   }
 
   async build(id) {
+    // 바다 색면이면 자료를 받는 동안 육지 가림판을 같이 만들기 시작한다(첫 번만 · 이후는 저장된 판).
+    // 실패는 여기서 삼킨다 — oceanFieldLayer 가 같은 약속을 다시 기다리고, 거기서 대체 규칙으로 간다.
+    if (OCEAN_FIELD_IDS.has(id)) this.oceanMask().catch(() => {});
     const data = await this.fetchFor(id);
     return this.buildFromData(id, data);
   }
@@ -570,8 +582,9 @@ export class LiveLayers {
       case 'slr': return { obj: this.buildSlr(data), data, meta: this.metaSlr(data) };
       case 'news': return { obj: this.buildNews(data), data, meta: this.metaNews(data) };
       case 'pop': return { obj: this.buildPop(data), data, meta: this.metaPop(data) };
-      case 'sstfield': return { obj: this.buildField(data, 'sst', SST_RAMP), data, meta: this.metaSst(data) };
-      case 'wavefield': return { obj: this.buildField(data, 'wave', WAVE_RAMP), data, meta: this.metaWave(data) };
+      // 바다 색면 3종(sstfield · wavefield · sstanom)은 육지 가림판을 거쳐 짓는다 — oceanFieldLayer 주석.
+      case 'sstfield': return this.oceanFieldLayer(data, 'sst', SST_RAMP, (d) => this.metaSst(d));
+      case 'wavefield': return this.oceanFieldLayer(data, 'wave', WAVE_RAMP, (d) => this.metaWave(d));
       case 'current': return { obj: this.buildCurrent(data), data, meta: this.metaCurrent(data) };
       case 'surf': return { obj: this.buildSurf(data), data, meta: this.metaSurf(data) };
       case 'tyanalog': return { obj: this.buildTyAnalog(data), data, meta: this.metaTyAnalog(data) };
@@ -589,7 +602,7 @@ export class LiveLayers {
       case 'solaract': return { obj: new THREE.Group(), data, meta: this.metaSolarAct(data) };
       case 'crustal': return { obj: this.buildCrustal(data), data, meta: this.metaCrustal(data) };
       case 'tyens': return { obj: this.buildTyEns(data), data, meta: this.metaTyEns(data) };
-      case 'sstanom': return { obj: this.buildField(data, 'sstAnom', SSTANOM_RAMP), data, meta: this.metaSstAnom(data) };
+      case 'sstanom': return this.oceanFieldLayer(data, 'sstAnom', SSTANOM_RAMP, (d) => this.metaSstAnom(d));
       case 'seaice': return { obj: this.buildGibsShell(data), data, meta: this.metaGibs(data, 'seaice') };
       case 'lst': return { obj: this.buildGibsShell(data), data, meta: this.metaGibs(data, 'lst') };
       case 'aurora': return { obj: this.buildAurora(data), data, meta: this.metaAurora(data) };
@@ -1148,10 +1161,19 @@ export class LiveLayers {
   // 바다는 지오메트리상 정확히 반경 1.0(수심은 변위 없음)이라 1.0012 셸이면 딱 위에 앉는다.
   // opts.radius: 대기 격자는 과장된 지형에 파묻히므로 구름처럼 지형 위에 얹는다.
   //              바다 격자(수온·파고)는 해수면이 정확히 r=1이라 기본값 그대로 쓴다.
+  // ⚠️ 2026-09-20 — 위 두 줄은 '바다 위에서는' 맞지만 육지를 빠뜨린 말이었다. 1.0012 껍질은 지형을
+  //    모른다: 과장 50× 에서 해발 153 m 이하 육지가 껍질 아래에 놓여 물빛에 덮였고(가까이 가면 과장이
+  //    자동으로 낮아져 1,529 m 까지), 값 없는 칸을 알파 0 으로 두는 것만으로는 막히지 않았다 —
+  //    파고 격자는 해안 육지의 점에도 가까운 바다 값을 실어 온다(marine-grid cell_selection=sea).
+  //    그래서 바다 3종은 아래 두 옵션 중 하나를 반드시 받는다(oceanFieldLayer). 대기 격자는 받지 않는다.
+  // opts.alphaMap:   육지 가림판 텍스처(oceanMask). 색 텍스처는 그대로 두고 알파만 곱한다 — 지울 뿐 칠하지 않는다.
+  // opts.erodeNodes: 지형을 못 받아 가림판이 없을 때의 대체 규칙 — 값 없는 칸에 닿은 격자점은 칠하지 않는다.
   buildField(d, key, ramp, opts = {}) {
     const arr = d[key];
     if (!arr) throw new Error(`${key} 격자 없음`);
     const { nx, ny, res, lat0, lon0 } = d;
+    // 경도로 한 바퀴 도는 격자면 이웃 판정도 날짜변경선을 넘어 감는다(동아시아판은 감지 않는다).
+    const open = opts.erodeNodes ? erodedGridNodes(arr, nx, ny, nx * res >= 360 - 1e-6) : null;
     const CW = Math.round(360 / res);
     const CH = Math.round(180 / res);
     const can = document.createElement('canvas');
@@ -1173,11 +1195,13 @@ export class LiveLayers {
         const px = ((Math.floor((lon + 180) / res) % CW) + CW) % CW;
         const c = ramp(v);
         if (!c) continue;              // ramp가 null이면 '칠하지 않음' — 0을 값으로 그리지 않는다
-        const o = (py * CW + px) * 4;
-        img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 235;
+        // 통계는 칠하기 전에 센다 — 카드의 'N칸 · 범위'는 받은 자료의 것이지 화면에 남은 칸의 것이 아니다.
         n += 1;
         if (v < min) min = v;
         if (v > max) max = v;
+        if (open && !open[y * nx + x]) continue;   // 대체 규칙: 해안(값 없는 칸)에 닿은 격자점은 비운다
+        const o = (py * CW + px) * 4;
+        img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 235;
       }
     }
     ctx.putImageData(img, 0, 0);
@@ -1192,11 +1216,58 @@ export class LiveLayers {
       new THREE.SphereGeometry(opts.radius || 1.0012, 256, 128),
       new THREE.MeshBasicMaterial({
         map: tex, transparent: true, opacity: opts.opacity || 0.82, depthWrite: false,
+        // 가림판은 세 바다 레이어가 같이 쓰는 한 장이다. disposeObj 는 m.map 만 버리므로
+        // 레이어를 갱신·해제해도 이 판은 남는다 — 여기서 복제하거나 버리지 말 것.
+        alphaMap: opts.alphaMap || null,
       }),
     );
     mesh.rotation.y = -Math.PI / 2; // 구면 UV(경도 0 기준)와 렌더 좌표 정렬
     mesh.renderOrder = 2;
     return mesh;
+  }
+
+  // ---------- 바다 색면의 육지 가림판 (세 레이어 공용 · 한 번만 만든다) ----------
+  // 고도(heightAt = main.js heightAtJs)를 0.25° 칸으로 훑어 '바다로 확인된 칸'만 255 인 텍스처를 만든다.
+  // 415만 점을 한 번에 돌면 휴대폰에서 화면이 멈추므로 8ms 씩 쪼개 돈다(buildOceanMaskAsync).
+  // 지형은 로딩 뒤 바뀌지 않으므로 쓸 수 있는 판은 끝까지 붙들어 둔다. 쓸 수 없는 판(지형 미수신)은
+  // 붙들지 않는다 — 다음 갱신 때 다시 본다.
+  // 돌려주는 것: { info, texture } — texture 가 null 이면 buildField 의 대체 규칙(erodeNodes)으로 간다.
+  oceanMask() {
+    if (this._oceanMask) return this._oceanMask;
+    const job = buildOceanMaskAsync(this.heightAt).then((built) => {
+      const { cells, ...info } = built;            // 칸 배열(1 MB)은 텍스처로 옮기고 놓는다
+      if (!built.usable) {
+        if (this._oceanMask === job) this._oceanMask = null;
+        return { info, texture: null };
+      }
+      const tex = new THREE.DataTexture(oceanMaskAlphaRGBA(built), built.width, built.height, THREE.RGBAFormat);
+      // 행 0 이 남쪽이다(ocean-land-mask.js createOceanMask). DataTexture 의 기본 flipY=false 와 맞물려
+      // 첫 행이 v=0(남극)에 놓인다 — flipY 를 켜면 가림판만 위아래가 뒤집혀 남반구 바다가 사라진다.
+      tex.minFilter = THREE.LinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.wrapS = THREE.RepeatWrapping;            // 색 텍스처와 같은 감김 — 날짜변경선 이음매 없음
+      tex.wrapT = THREE.ClampToEdgeWrapping;
+      tex.generateMipmaps = false;
+      tex.needsUpdate = true;                      // 색이 아니라 알파다 — colorSpace 는 건드리지 않는다
+      return { info, texture: tex };
+    }).catch((e) => {
+      // 가림판이 죽어도 레이어는 죽이지 않는다 — 대체 규칙으로 그린다.
+      console.warn('[live-layers] 바다 가림판 실패', e);
+      if (this._oceanMask === job) this._oceanMask = null;
+      return { info: null, texture: null };
+    });
+    this._oceanMask = job;
+    return job;
+  }
+
+  // 바다 색면 한 장. 가림판을 기다린 뒤 buildField → meta 를 **같은 틱에** 잇는다 —
+  // meta 는 buildField 가 방금 채운 this._fieldStat 을 읽는데, 두 바다 레이어가 동시에 지어질 때
+  // 사이에 await 가 끼면 남의 통계를 읽는다.
+  async oceanFieldLayer(data, key, ramp, metaOf) {
+    const mask = await this.oceanMask();
+    this._oceanMaskInfo = mask.info;               // 카드의 '바다에만 칠합니다' 줄이 읽는다
+    const obj = this.buildField(data, key, ramp, mask.texture ? { alphaMap: mask.texture } : { erodeNodes: true });
+    return { obj, data, meta: metaOf(data) };
   }
 
   // ---------- 전지구 산불 화점 (NASA FIRMS · VIIRS 375m NRT) ----------
@@ -1788,6 +1859,7 @@ export class LiveLayers {
       cardHtml: `<b>바다가 평년보다 얼마나 뜨거운가</b> — 관측 수온에서 ${d.period || '1991-2020'} 평년값을 뺀 값입니다.<br/>`
         + `붉을수록 평년보다 높고 푸를수록 낮습니다. <b>±0.25°C 안쪽은 칠하지 않습니다</b>(평년과 같다는 뜻).<br/>`
         + `범위 ${rng} · 값 있는 해양 격자 ${(s.n || 0).toLocaleString()}칸 (동아시아 0.5°)<br/>`
+        + `${oceanMaskCardLine(this._oceanMaskInfo)}<br/>`
         + `'26도'보다 '평년보다 3도 높다'가 태풍·폭염을 설명합니다.<br/>`
         + `출처 ${d.source || 'NOAA OISST v2.1'} · ${d.attribution || ''} · 관측일 ${(d.observed || '').slice(0, 10)}`,
     };
@@ -1800,6 +1872,7 @@ export class LiveLayers {
       badge: 'OBSERVED', note,
       cardHtml: `전지구 해수면 온도 — ${(s.n || 0).toLocaleString()}개 해양 격자(1°)를 한색 −2°C → 난색 32°C로 표시합니다. 육지·결측 해역은 칠하지 않습니다.<br/>`
         + `관측 범위 ${Number.isFinite(s.min) ? `${s.min.toFixed(1)}°C ~ ${s.max.toFixed(1)}°C` : '—'}<br/>`
+        + `${oceanMaskCardLine(this._oceanMaskInfo)}<br/>`
         + `출처 ${d.source || 'NOAA OISST v2.1'} · 관측일 ${(d.observed || '').slice(0, 10)} · ${d.sampling || ''}<br/>`
         + `일별 관측 분석장(위성+부이 융합)이며 예보가 아닙니다.`,
     };
@@ -1812,6 +1885,7 @@ export class LiveLayers {
       badge: 'MODEL_SIGNAL', note,
       cardHtml: `전지구 유의파고 — ${(s.n || 0).toLocaleString()}개 해양 격자(5°)를 청 0m → 적 8m로 표시합니다.<br/>`
         + `현재 격자 최고 ${Number.isFinite(s.max) ? `${s.max.toFixed(1)}m` : '—'}<br/>`
+        + `${oceanMaskCardLine(this._oceanMaskInfo)}<br/>`
         + `출처 ${d.source || 'Open-Meteo Marine'} · 기준 ${(d.time || '').replace('T', ' ').slice(0, 16)}Z<br/>`
         + `해상 모델 값입니다 — 관측 지점값은 '해상 관측망'(기상청 193지점)을 보세요.`,
     };

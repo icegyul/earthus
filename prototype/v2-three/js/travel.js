@@ -12,6 +12,9 @@
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
 import { renderBadge } from './engine-bridge.js?v=15';
+// ⚠️ 질의문자열(?v=11)까지 다른 모듈과 똑같이 적는다. ES 모듈은 URL 전체로 구분되므로 './i18n.js' 로 들이면
+//    언어 단추(main.js 의 i18n.set)가 닿지 않는 두 번째 사본이 생겨, 이 카드만 옛 언어로 남는다.
+import { i18n } from './i18n.js?v=11';
 import { TRAVEL_CATALOGS, ACCESSIBILITY_LABELS, TRAVEL_INTRO_LABELS, safeSourceUrl, validateTravelCatalog, searchTravelCatalog,
   detailSummaryUrl, validateTravelDetailSummary, providerPlainText, providerHomepage } from './travel-catalog.js';
 
@@ -41,6 +44,41 @@ const MODES = Object.freeze({
   en: { title: '영문 콘텐츠', key: 'english' },
   visitors: { title: '방문자 스냅샷', key: 'visitorsDomestic' },
 });
+
+// ---------------------------------------------------------------- 자료 시각 (오늘 발견 카드)
+// 2026-09-20: 카드가 '매일 다시 점수 매깁니다'라고 말했는데 절반만 참이었다. 날마다 바뀌는 것은
+// 게이트(특보·대기질)뿐이고, 점수 몸통(목적 밀도·덜 붐빔)은 미리 집계해 실은 파일 값이다.
+// 그래서 카드는 '무엇이 지금 값이고 무엇이 언제 집계한 값인지'를 따로 적는다.
+// ⚠️ 날짜는 전부 자료에서 읽는다. 코드에 날짜를 박으면 파일을 새로 집계한 날부터 카드가 다시 거짓말을 한다.
+
+// 게이트 자료가 스스로 적어 둔 관측 시각(KST)을 읽는다 — 우리가 받아 온 시각을 '자료의 지금'이라 부르지 않는다.
+//   기상청 특보 캐시  observedKst 'YYYYMMDDHHmm'
+//   에어코리아 캐시   observedKst 'YYYY-MM-DD HH:mm' ("24:00" 이 올 수 있어 Date 로 바꾸지 않고 글자 그대로 둔다)
+// 받지 못했으면 ok:false, 받았지만 모르는 꼴이면 at:null — 어느 쪽이든 시각을 지어내지 않는다.
+export const gateStamp = (doc) => {
+  if (!doc || doc.__error) return { ok: false, at: null };
+  const s = String(doc.observedKst ?? '').trim();
+  const m = /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})$/.exec(s) || /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/.exec(s);
+  return { ok: true, at: m ? `${m[1]}-${m[2]}-${m[3]} ${m[4]}:${m[5]}` : null };
+};
+
+// 점수 몸통이 언제 것인지 — 집계일은 파일의 generatedAt, 방문자 기간은 시군구마다 적힌 dateFrom~dateTo.
+// 집계일은 provLine 의 '수집' 날짜와 같은 식으로 읽는다(파일에 적힌 날짜 글자 그대로 앞 10자 — 지금 파일은 UTC 로 적혀 있다).
+// 방문자 기간은 지역마다 다를 수 있다(tools/build_kto_discovery.py 가 지역별로 있는 날만 평균한다).
+// 그래서 전 지역이 같은 기간일 때만 'N일의 하루 평균'이라 말하고, 다르면 범위만 말한다.
+export const discoverBasis = (data) => {
+  const gen = /^\d{4}-\d{2}-\d{2}/.exec(String((data && data.generatedAt) ?? ''));
+  const vs = ((data && data.regions) || []).map((r) => r.visitors).filter((v) => v && v.dateFrom && v.dateTo);
+  let visitors = null;
+  if (vs.length) {
+    const from = vs.reduce((a, v) => (v.dateFrom < a ? v.dateFrom : a), vs[0].dateFrom);
+    const to = vs.reduce((a, v) => (v.dateTo > a ? v.dateTo : a), vs[0].dateTo);
+    const uniform = new Set(vs.map((v) => `${v.dateFrom}|${v.dateTo}|${v.dayCount}|${v.aggregation}`)).size === 1;
+    visitors = { from, to, uniform, dayCount: uniform ? Number(vs[0].dayCount) || null : null,
+      meanPerDay: uniform && vs[0].aggregation === 'MEAN_PER_DAY', regionCount: vs.length };
+  }
+  return { compiledOn: gen ? gen[0] : null, visitors };
+};
 
 let dotTex = null;
 const getDotTex = () => {
@@ -339,6 +377,44 @@ export class TravelScene {
     return `${esc(p.sourceName || svc)} · ${p.itemCount != null ? n(p.itemCount) + '건' : ''} · 수집 ${esc((p.fetchedAt || '').slice(0, 10))}`;
   }
 
+  // '오늘 발견' 카드 첫머리 — 무엇이 지금 값이고(특보·대기질) 무엇이 언제 집계한 값인지(목적 밀도·덜 붐빔)를 가른다.
+  // 전에는 여기서 '…매일 다시 점수 매깁니다'라고 했다. 매일 달라지는 것은 게이트뿐이라 그 문장은 절반만 참이었다(2026-09-20).
+  // 시각·날짜는 전부 자료에서 읽는다(gateStamp · discoverBasis). 게이트를 받지 못했으면 시각 대신 '확인 불가'와
+  // '이번에는 거르지 못했다'를 적는다 — 그때 gateFor 는 아무도 빼지 않으므로 '0곳 제외'만 보이면 안전하다는 말로 읽힌다.
+  // 방문자 고지(이동통신 기반 · 관광객 수 아님)는 기간 옆에 그대로 둔다.
+  basisHtml() {
+    const ko = i18n.ko;
+    const b = discoverBasis(this.data);
+    // 게이트 한 줄: 받았고 시각이 있으면 그 시각, 받았지만 시각이 없으면 없다고, 못 받았으면 '거르지 못했다'고.
+    const gateLine = (doc, t) => {
+      const g = gateStamp(doc);
+      if (!g.ok) return ko ? `${t.ko} <b>확인 불가</b> — 이번에는 ${t.koBy} 거르지 못했습니다` : `${t.en} <b>unavailable</b> — no ${t.enBy} filter was applied this time`;
+      if (!g.at) return ko ? `${t.ko}(자료에 시각이 없음)` : `${t.en} (no time stated in the data)`;
+      return ko ? `${t.ko} ${esc(g.at)} KST ${t.koAt}` : `${t.en} ${t.enAt} ${esc(g.at)} KST`;
+    };
+    const gates = this.gates || {};
+    const warn = gateLine(gates.warn, { ko: '기상청 특보', en: 'KMA warnings', koAt: '기준', enAt: 'as of', koBy: '특보로', enBy: 'warning' });
+    const air = gateLine(gates.air, { ko: '에어코리아 대기질', en: 'AirKorea air quality', koAt: '측정', enAt: 'measured', koBy: '대기질로', enBy: 'air-quality' });
+    const v = b.visitors;
+    const who = ko ? '방문자(이동통신 기반 · 관광객 수 아님)' : 'visitors (mobile-signal based, not tourist counts)';
+    let visitors;
+    if (!v) visitors = ko ? '방문자 자료 없음 — 덜 붐빔은 중립 50 (지어내지 않음)' : 'no visitor data — the quiet score stays neutral at 50 (nothing is invented)';
+    else if (!v.uniform) visitors = ko ? `${who}는 ${esc(v.from)}~${esc(v.to)} 사이 값이며 지역마다 집계 기간이 다릅니다` : `${who} fall between ${esc(v.from)} and ${esc(v.to)}, and the window differs by district`;
+    else if (v.meanPerDay && v.dayCount > 1) visitors = ko ? `${who}는 ${esc(v.from)}~${esc(v.to)} ${n(v.dayCount)}일의 하루 평균` : `${who} are a daily mean over the ${n(v.dayCount)} days ${esc(v.from)} to ${esc(v.to)}`;
+    else if (v.from === v.to) visitors = ko ? `${who}는 ${esc(v.from)} 하루치` : `${who} are a single day, ${esc(v.from)}`;
+    else visitors = ko ? `${who}는 ${esc(v.from)}~${esc(v.to)} 기간의 값` : `${who} cover ${esc(v.from)} to ${esc(v.to)}`;   // 며칠 평균인지 자료가 말하지 않으면 말하지 않는다
+    const compiled = b.compiledOn
+      ? (ko ? `<b>${esc(b.compiledOn)}</b>에 집계한 파일 값입니다` : `they come from a file compiled on <b>${esc(b.compiledOn)}</b>`)
+      : (ko ? '미리 집계한 파일 값입니다(집계일이 파일에 적혀 있지 않음)' : 'they come from a pre-compiled file (its compile date is not written in it)');
+    return ko
+      ? `시군구 <b>${n(this.data.regions.length)}곳</b>의 후보 점수입니다.
+        <b>지금 값은 특보·대기질뿐입니다</b> — ${warn} · ${air}. 이 메뉴를 열 때 이 둘로 후보를 다시 거릅니다.
+        목적 밀도(무장애·웰니스·영문 관광정보 건수)와 덜 붐빔(방문자)은 지금 값이 아니라 ${compiled} — ${visitors}.`
+      : `Candidate scores for <b>${n(this.data.regions.length)}</b> districts.
+        <b>Only the warnings and air quality are current values</b> — ${warn} · ${air}. Opening this menu filters the candidates again with those two.
+        Purpose density (barrier-free, wellness and English listing counts) and the quiet score (visitors) are not current: ${compiled} — ${visitors}.`;
+  }
+
   sceneCard() {
     if (this.busy) return this.loadingCard(this.mode);
     if (this.error) return `<section class="card tv-catalog"><div class="card-h">${esc(this.title)}</div><div class="card-b"><p role="status">관광지 목록을 불러오지 못했습니다.</p><p>자료가 없는 지역이라는 뜻은 아닙니다. 다시 불러오거나 공식 자료를 확인하세요.</p><button type="button" class="tv-button" data-action="travel-retry">다시 불러오기</button><p><a href="https://www.data.go.kr/" target="_blank" rel="noopener noreferrer">공공데이터포털에서 원자료 확인</a></p></div></section>`;
@@ -348,10 +424,15 @@ export class TravelScene {
     const top = this.top.map((r) => `<div class="stat"><span class="k">${esc(r.nameKo)} <span style="opacity:.6">${esc(r.province.slice(0, 2))}</span></span><span class="v">${(r.score * 100).toFixed(0)}</span></div>`).join('');
     const blocked = this.data.regions.filter((r) => r.components && r.components.gate.blocked).length;
     const title = MODES[this.mode] ? MODES[this.mode].title : '여행';
+    // 첫머리는 basisHtml() — 지금 값(게이트)과 집계한 값(점수 몸통)을 가른다. 아래 공식 문장은 한국어 그대로 두고 영어만 붙였다
+    // (영어 화면에서 첫머리만 영어고 공식이 한국어면 같은 단락이 두 언어로 끊긴다). 그 밖의 카드 본문은 아직 한국어다 — i18n.js 머리말 참조.
+    const formula = i18n.ko
+      ? `점수 = 목적 밀도 0.6 + 덜 붐빔 0.4. 특보 발효·미세먼지 나쁨은 후보에서 뺍니다 — 지금 <b>${blocked}곳</b> 제외.`
+      : `Score = purpose density × 0.6 + quiet × 0.4. Districts under an active warning or with a poor fine-dust grade are removed — <b>${blocked}</b> removed now.`;
     return `<div class="card"><div class="card-h">${esc(title)} <span class="badge sim">EARTHUS DISCOVERY</span></div>
       <div class="card-b">
-        시군구 <b>${n(this.data.regions.length)}곳</b>을 데이터랩 5종 + 기상청 특보 + 에어코리아로 매일 다시 점수 매깁니다.
-        점수 = 목적 밀도 0.6 + 덜 붐빔 0.4. 특보 발효·미세먼지 나쁨은 후보에서 뺍니다 — 지금 <b>${blocked}곳</b> 제외.
+        ${this.basisHtml()}
+        ${formula}
         <div class="stats" style="margin-top:8px">${top}</div>
         <div style="margin-top:8px;opacity:.7;font-size:10.5px;line-height:1.5">
           ${esc(this.data.notes.label)}<br/>${esc(this.data.notes.visitors)}<br/>

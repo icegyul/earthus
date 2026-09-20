@@ -38,6 +38,7 @@
 결과  s3://<CACHE_BUCKET>/events/coast-kr.json
 """
 
+import gzip
 import json
 import os
 import urllib.parse
@@ -315,8 +316,15 @@ FLOOD_SGG = {
 }
 
 
+#: 좌표 소수 자리. 5 자리 = 경도 1° 의 10만분의 1 ≈ **1.1 m** — 기관 산출물의 정밀도보다 촘촘하고,
+#: 우리 화면이 가장 확대했을 때의 지형 해상도(약 300 m/px)보다 300배 세밀하다. 그림에서 달라지는 것이 없다.
+#: 6 자리(0.1 m)에서 여기로 줄인 이유는 용량이다 — 실측(거제시 5,036면): 7.55 MB → 6.84 MB,
+#: gzip 까지 하면 **1.87 MB → 1.34 MB**. 폰에서 한 번 누르는 데 받는 양이라 그대로 체감된다.
+WKT_DECIMALS = 5
+
+
 def wkt_multipolygon(s):
-    """WKT MULTIPOLYGON → [[링(평탄 [lon,lat,...])...], ...]. 좌표는 6자리로 줄인다.
+    """WKT MULTIPOLYGON → [[링(평탄 [lon,lat,...])...], ...]. 좌표는 WKT_DECIMALS 자리로 줄인다.
     정식 파서를 안 쓰는 이유: Lambda 의존성을 안 늘리려고.
     이 소스의 WKT 는 단일 기관 산출물이라 형식이 균일하다 — 그때만 허용되는 지름길."""
     s = s.strip()
@@ -332,8 +340,8 @@ def wkt_multipolygon(s):
                 xy = pair.split()
                 if len(xy) >= 2:
                     try:
-                        flat.append(round(float(xy[0]), 6))
-                        flat.append(round(float(xy[1]), 6))
+                        flat.append(round(float(xy[0]), WKT_DECIMALS))
+                        flat.append(round(float(xy[1]), WKT_DECIMALS))
                     except ValueError:
                         return None
             if len(flat) >= 6:
@@ -357,11 +365,22 @@ def get_retry(url, params, tries=3, timeout=25):
     raise last
 
 
+#: 이 크기(바이트)를 넘는 문서는 gzip 으로 올린다. 작은 문서는 압축이 되레 손해다(헤더 + CPU).
+#: S3 는 우리가 시키지 않으면 압축하지 않는다 — Accept-Encoding: gzip 을 보내도 원본을 그대로 준다(실측).
+#: 브라우저의 fetch 는 Content-Encoding: gzip 을 알아서 풀므로 읽는 쪽 코드는 바뀌지 않는다.
+GZIP_MIN_BYTES = 64 * 1024
+
+
 def _put(key, doc, cache="public, max-age=86400"):
     body = json.dumps(doc, ensure_ascii=False, separators=(",", ":")).encode()
+    raw = len(body)
+    extra = {}
+    if raw >= GZIP_MIN_BYTES:
+        body = gzip.compress(body, 6)
+        extra["ContentEncoding"] = "gzip"
     s3.put_object(Bucket=BUCKET, Key=key, Body=body,
-                  ContentType="application/json; charset=utf-8", CacheControl=cache)
-    return len(body)
+                  ContentType="application/json; charset=utf-8", CacheControl=cache, **extra)
+    return raw
 
 
 FLOOD_PAGE = 60

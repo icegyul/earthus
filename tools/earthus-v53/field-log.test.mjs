@@ -292,6 +292,21 @@ test('클릭 값 — 유효숫자 2자리 · 0 은 비 없음 · 색 점은 칠�
 // ---------------------------------------------------------------- ⑦ 배선
 
 // ── 2026-09-20 반박 검증 — 색면은 바뀌었는데 그 위에 뜨는 지점 시트는 옛 자료를 불렀다 ──────────────────────
+test('지점 시트가 강수를 색면에서 받는다 — 제공자·격자·단위·시각이 지구본과 갈리지 않는다', () => {
+  const main = src('main.js');
+  const menu = src('quick-menu.js');
+  // 퀵메뉴의 강수 id 는 'rain' 이다 — 이름이 바뀌면 아래 인수인계가 조용히 끊긴다.
+  assert.match(menu, /\{ id: 'rain',/, "퀵메뉴의 강수 id 가 'rain' 이 아니다");
+  const at = main.indexOf('const fieldNote =');
+  assert.ok(at > 0, 'pointWeather 의 색면 인수인계 줄이 없다');
+  const line = main.slice(at, main.indexOf(';', at));
+  assert.match(line, /metric === 'temperature'[\s\S]*fieldReadout\('tempgrid'/, '기온 인수인계가 사라졌다');
+  assert.match(line, /metric === 'rain'[\s\S]*fieldReadout\('raingrid'/,
+    "강수 색면이 GFS 0.5° mm/h 로 바뀌었는데 지점 시트는 Open-Meteo `current` 의 mm 를 부른다 — 카드가 화면과 다른 말을 한다");
+  // 색면이 꺼져 있으면 fieldReadout 이 null 이라 옛 Open-Meteo 길로 떨어진다 — 그 길을 걷어 내지는 않았다.
+  assert.match(main.slice(at), /api\.open-meteo\.com\/v1\/forecast/, '색면이 꺼졌을 때 갈 길이 없어졌다');
+});
+
 test('범례의 note 는 열쇠 하나다 — 같은 열쇠를 두 번 적으면 JS 가 앞엣것을 조용히 버린다', () => {
   const layer = src('field-layer.js');
   const at = layer.indexOf('this.legend.show({');

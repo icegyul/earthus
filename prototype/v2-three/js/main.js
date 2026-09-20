@@ -2972,8 +2972,15 @@ async function main() {
     // 기온 색면이 켜져 있으면 기온은 화면에 칠해진 GFS 프레임의 CPU 사본에서 읽는다(js/field-layer.js readoutNote) — **네트워크 호출 0건.**
     // 전에는 색면이 있든 없든 아래에서 api.open-meteo.com 을 브라우저가 직접 불렀다(지시서 W2 'Open-Meteo 직접 호출을 걷어낸다').
     // 값은 0.5°C 눈금 · '~' · "0.5° 격자(약 55 km) 평균 · GFS run/valid" 로 말한다. 타임라인이 예보 시각이면 그 시각의 값이다.
-    // 습도·바람·강수와, 색면이 꺼져 있을 때의 기온은 아래의 옛 길 그대로다(그 필드의 색면이 생기는 묶음에서 같은 식으로 옮긴다).
-    const fieldNote = metric === 'temperature' ? liveLayers.fieldReadout('tempgrid', lat, lon) : null;
+    // 강수도 같은 길이다(작업 D2) — 'raingrid' 가 GFS 0.5° 강수율 mm/h 색면으로 바뀌었으니 지점 시트도 **그 프레임**에서 읽는다.
+    //   ⚠️ 이 인수인계가 없으면 지구본은 '~30 mm/h · 유효 09/23 09:00 KST' 라고 칠해 놓고 그 위의 카드는 Open-Meteo `current` 의
+    //     '강수 0 mm · 유효 <지금> UTC' 를 적는다 — 제공자·격자·단위·시각이 한꺼번에 갈리고, mm 와 mm/h 는 숫자가 견줄 만해서
+    //     PD 는 '같은 값이 서로 다르다' 로 읽는다(2026-09-20 반박 검증이 잡아낸 '카드가 화면과 다른 말' 과 같은 부류).
+    // 습도·바람과, 색면이 꺼져 있을 때의 기온·강수는 아래의 옛 길 그대로다(그 필드의 색면이 생기는 묶음에서 같은 식으로 옮긴다).
+    // 퀵메뉴의 id 는 quick-menu.js 의 ITEMS 가 정본이다 — 강수는 'rain'('precipitation' 이 아니다).
+    const fieldNote = metric === 'temperature' ? liveLayers.fieldReadout('tempgrid', lat, lon)
+      : metric === 'rain' ? liveLayers.fieldReadout('raingrid', lat, lon)
+        : null;
     if (fieldNote) {
       if (pointWeatherReq) pointWeatherReq.abort();
       pointWeatherReq = null;

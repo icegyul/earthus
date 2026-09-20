@@ -548,13 +548,18 @@ export const accumCardRow = (m, btn) => {
     : (ko
       ? `그 시각까지 ${a.key}시간 동안의 양(mm)입니다 — 모델 강수율의 합산입니다. 겹치지 않는 GFS 누적 버킷만 더합니다(브라우저에서 · 새 수집 없음).`
       : `The amount over the ${a.key} h ending at that time (mm) — a sum of the model precipitation buckets, taken from non-overlapping GFS buckets in the browser.`);
-  // 뺄셈으로 얻은 구간은 눈금이 거칠다 — 6시간 버킷 두 장이 각각 값의 ×1.031 로 눌려 있어, 그 차의 분해능은
-  // **앞 구간 양의 약 3 %** 다(앞 3시간에 100 mm 가 왔으면 이 3시간은 3 mm 눈금이다). 한계를 결과 옆에 둔다.
-  const cut = a.plan && a.plan.terms.some((t) => t.sign < 0)
+  // 뺄셈으로 얻은 구간은 눈금이 거칠다 — 두 장이 각각 값의 ×1.031 로 눌려 있어 그 차의 분해능은 **덜어 낸 양의 약 3 %** 다.
+  // ⚠️ 기간마다 뺄셈의 뜻이 다르다. 3시간은 장 하나에서 장 하나를 빼는 것(6시간 − 앞 3시간)이라 값 전체가 그 차이지만,
+  //    24시간은 다섯 장을 더하고 **구간 앞머리 3시간 한 장만** 덜어 낸 것이라 거칠어지는 것은 그 3시간 몫뿐이다
+  //    (운영 프레임으로 잰 파생 24시간 장의 왕복 상대오차는 최대 1.82 %). 한 문장을 둘에 돌려쓰면 24시간에서 거짓이 된다.
+  const hasCut = !!(a.plan && a.plan.terms.some((t) => t.sign < 0));
+  const cut = !hasCut ? '' : (a.key === '3'
     ? (ko
       ? '이 시각의 값은 6시간 버킷에서 앞 3시간 버킷을 <b>뺀</b> 것입니다 — 앞 구간의 양이 클수록 눈금이 거칠어집니다(그 양의 약 3 %).'
       : 'At this step the amount is a 6 h bucket <b>minus</b> the preceding 3 h bucket — the larger the earlier amount, the coarser this one (about 3 % of it).')
-    : '';
+    : (ko
+      ? '이 시각의 값은 버킷들을 더한 뒤 구간 앞머리의 3시간 한 장을 <b>덜어 내</b> 맞춘 것입니다 — 덜어 낸 그 3시간 양의 약 3 % 만큼만 거칠어집니다.'
+      : 'At this step the buckets are summed and a single leading 3 h bucket is <b>taken off</b> to trim the window — only that trimmed amount is coarsened (about 3 % of it).'));
   // 아직 안 고른 기간이 지금 커서에서 몇 시간치인지 **누르기 전에** 적는다. 한 런은 제 시작 이전을 모르므로
   // 런이 막 나왔을 때(그 런이 최신인 내내다) '24시간 누적'은 3·6·9…시간치다 — 눌러 본 뒤에야 알게 하지 않는다.
   const ahead = accumAheadText(a.avail, ko);

@@ -449,6 +449,15 @@ test('3시간이 뺄셈으로 나오는 시각에는 그 한계를 카드가 말
   assert.match(row(6), /약 3 %/, '거칠어진 눈금을 수로 말한다');
   assert.ok(!/뺀/.test(row(9)), '3시간 버킷이 그대로 있는 시각에는 그 줄이 없다');
   assert.ok(!/뺀/.test(row(null, 'rate')), '현재 강우에는 그 줄이 없다');
+
+  // 24시간에도 음수 항은 있지만(h=27 은 +27 +24 +18 +12 +6 −3) 뜻이 다르다 — 값 전체가 뺄셈이 아니라
+  // 구간 앞머리 3시간 한 장을 덜어 낸 것이다. 3시간 전용 문장을 돌려쓰면 화면이 거짓을 적는다.
+  const row24 = (endH) => accumCardRow({ ko: true, accum: { key: '24', keys: ACCUM_KEYS, plan: planAccumulation(FRAMES, endH, 24) } }, btn);
+  assert.ok(planAccumulation(FRAMES, 27, 24).terms.some((t) => t.sign < 0), '픽스처가 음수 항을 내지 못하면 이 시험은 눈을 감는다');
+  assert.ok(!/6시간 버킷에서 앞 3시간 버킷을/.test(row24(27)), '24시간 값은 6시간 − 3시간 이 아니다');
+  assert.match(row24(27), /덜어 내<\/b> 맞춘 것입니다/);
+  assert.match(row24(27), /덜어 낸 그 3시간 양의 약 3 %/, '거칠어지는 것은 덜어 낸 몫뿐이다');
+  assert.ok(!/덜어 내/.test(row24(24)), '정각에서는 덜어 낼 것이 없다 — 그 줄도 없다');
 });
 
 test('칩은 셋뿐이다 — 1시간은 자료가 못 내놓으므로 단추를 달지 않는다', () => {

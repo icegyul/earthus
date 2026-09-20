@@ -291,6 +291,48 @@ export const shaderValueAt = ({ a, b, mix = 0, decode, uvT, size, wraps = true, 
   return mode === 'magnitudeRG' ? Math.hypot(c[0], c[1]) : c[0];   // 풍속은 두 성분을 섞은 **뒤에** 크기를 구한다
 };
 
+/**
+ * 셰이더의 maskedGrid 를 JS 로 옮긴 것 — 결측 채널이 있는 자료(JSON 격자)의 한 픽셀.
+ *   px  프레임의 CPU 사본 {data, channels} — 칸마다 [값 바이트, 마스크 바이트]
+ *   → { value, weight, all }   weight 0 = 네 칸이 다 결측(셰이더는 버린다) · all 1 = 네 칸이 다 값이다
+ * 무게의 합이 아니라 **곱**으로 '다 있나'를 가른다(셰이더와 같은 이유 — float 에서 합은 1 에 못 미친다).
+ */
+export const shaderMaskedAt = ({ px, decode, uvT, size, wraps = true }, lat, lon) => {
+  const g = gridCoordOf(uvT, size, lat, lon);
+  const gy = Math.max(0, Math.min(size.nj - 1, g[1]));
+  const x0 = Math.floor(g[0]);
+  const y0 = Math.floor(gy);
+  const fx = g[0] - x0;
+  const fy = gy - y0;
+  const tap = (col, row) => {
+    const x = wraps ? ((col % size.ni) + size.ni) % size.ni : Math.max(0, Math.min(size.ni - 1, col));
+    const y = Math.max(0, Math.min(size.nj - 1, row));
+    const o = (y * size.ni + x) * px.channels;
+    return { v: px.data[o] * decode[0].scale + decode[0].offset, m: px.data[o + 1] >= 128 ? 1 : 0 };
+  };
+  const c00 = tap(x0, y0);
+  const c10 = tap(x0 + 1, y0);
+  const c01 = tap(x0, y0 + 1);
+  const c11 = tap(x0 + 1, y0 + 1);
+  const w00 = (1 - fx) * (1 - fy) * c00.m;
+  const w10 = fx * (1 - fy) * c10.m;
+  const w01 = (1 - fx) * fy * c01.m;
+  const w11 = fx * fy * c11.m;
+  const sw = w00 + w10 + w01 + w11;
+  return {
+    value: sw > 0 ? (c00.v * w00 + c10.v * w10 + c01.v * w01 + c11.v * w11) / sw : 0,
+    weight: sw,
+    all: c00.m * c10.m * c01.m * c11.m,
+  };
+};
+
+/** 셰이더의 FIELD_CLIP_OUTSIDE 와 같은 판정 — 격자 밖이면 참(칠하지 않는다). */
+export const shaderClipsOutside = (uvT, size, wraps, lat, lon) => {
+  const g = gridCoordOf(uvT, size, lat, lon);
+  if (g[1] < -0.5 || g[1] > size.nj - 0.5) return true;
+  return !wraps && (g[0] < -0.5 || g[0] > size.ni - 0.5);
+};
+
 // ════════════════════════════════════════════════════════════════════════════════════════════════════════════
 //  셰이더
 // ════════════════════════════════════════════════════════════════════════════════════════════════════════════
@@ -347,6 +389,13 @@ void main() {
 // 프래그먼트. ⚠️ highp 여야 한다 — mediump 는 기압(1013.0)의 0.5 hPa 눈금을 못 담는다(field-scales.js 머리말).
 //   sampler 도 highp 로 적는다: 기본(lowp)이면 읽은 값이 10bit 로 잘리는 GPU 가 있다.
 // 바다 가림(FIELD_MASK_OCEAN)은 능력만 있다 — 고도 ≥ 0 인 픽셀을 버린다. 바다 레이어를 옮겨 오는 것은 다음 묶음의 일이다.
+//   ⚠️ 2026-09-20(작업 D3) — 그 '다음 묶음'이 왔다. 수온·파고·평년대비수온이 이 가림을 쓴다: 0.25° CPU 가림판이
+//      비우던 해안 15~40 km 와 다도해·대한해협이 프래그먼트 단위 해안선으로 돌아왔다(grid-frames.js 머리말).
+// 같은 작업에서 define 둘이 늘었다 — 둘 다 **없는 값을 그리지 않기 위한 것**이다:
+//   FIELD_MISSING_MASK   G 채널이 '값 있음(255)/없음(0)'인 자료. 네 칸을 마스크로 가중해 이어(maskedGrid)
+//                        결측 이웃과 섞지 않는다. 네 칸이 다 결측이면 버린다.
+//   FIELD_CLIP_OUTSIDE   격자 밖을 버린다. 지역 격자(동아시아 편차 114~150°E)와 ±80° 격자(OISST)의
+//                        가장자리 칸이 지구 반대편·극까지 늘어나던 것을 막는다.
 export const FIELD_FRAG = /* glsl */ `
 precision highp float;
 precision highp sampler2D;
@@ -418,6 +467,28 @@ vec2 sampleGrid(sampler2D tex, vec2 g) {
   return top + (bot - top) * f.y;
 }
 
+#ifdef FIELD_MISSING_MASK
+// 결측(육지의 SST null 등)은 값이 아니다. 네 칸을 **마스크로 가중해** 잇는다 — 결측 이웃은 무게 0 이라
+// 해안에 가짜 값 띠가 서지 않는다(grid-frames.js 머리말 '결측은 값이 아니다'). G 채널은 바이트 그대로(0 또는 255)다.
+//   → vec3(값, 무게의 합, 네 칸이 다 값이면 1)
+// ⚠️ '네 칸이 다 있나'를 무게의 합이 1 인지로 가르면 안 된다 — (1−f)+f 가 float 에서 0.99999994 가 된다. 곱으로 가른다.
+vec3 maskedGrid(sampler2D tex, vec2 g) {
+  vec2 g0 = floor(g);
+  vec2 f = g - g0;
+  float x1 = uWrapX > 0.5 ? g0.x + 1.0 : min(g0.x + 1.0, uGridSize.x - 1.0);
+  float y1 = min(g0.y + 1.0, uGridSize.y - 1.0);
+  vec2 v00 = tapValue(tex, g0.x, g0.y);
+  vec2 v10 = tapValue(tex, x1, g0.y);
+  vec2 v01 = tapValue(tex, g0.x, y1);
+  vec2 v11 = tapValue(tex, x1, y1);
+  vec4 m = vec4(step(127.5, v00.y), step(127.5, v10.y), step(127.5, v01.y), step(127.5, v11.y));
+  vec4 w = vec4((1.0 - f.x) * (1.0 - f.y), f.x * (1.0 - f.y), (1.0 - f.x) * f.y, f.x * f.y) * m;
+  float sw = w.x + w.y + w.z + w.w;
+  float val = v00.x * w.x + v10.x * w.y + v01.x * w.z + v11.x * w.w;
+  return vec3(sw > 0.0 ? val / sw : 0.0, sw, m.x * m.y * m.z * m.w);
+}
+#endif
+
 // 선 하나의 덮임 — JS 의 lineCoverage 와 같은 식. 레벨의 아래쪽에만 서고, 기울기가 문턱 이하면(고원) 긋지 않는다.
 float lineCover(float below, float grad, float widthPx) {
   if (grad <= uGradEps || below <= 0.0) return 0.0;
@@ -450,11 +521,33 @@ void main() {
   vec2 suv = vec2(lon / (2.0 * PI) + 0.5, lat / PI + 0.5);
   vec2 tuv = vec2(suv.x * uUv.x + uUv.y, suv.y * uUv.z + uUv.w);
   vec2 g = vec2(tuv.x * uGridSize.x - 0.5, (1.0 - tuv.y) * uGridSize.y - 0.5);
+#ifdef FIELD_CLIP_OUTSIDE
+  // 격자 밖에서는 아무 말도 하지 않는다. 아래 clamp 는 '전지구 격자가 극 행에서 멈춘다'는 규칙이라
+  // 위도로 ±90° 를 다 덮지 않는 격자(OISST 는 ±80°)에서는 가장자리 행을 극까지 늘여 칠한다 — 그 전에 버린다.
+  // 경도는 한 바퀴 도는 격자면 감기므로 판정하지 않고, 지역 격자(동아시아 편차 114~150°E)만 본다.
+  // 여유 반 칸은 점 격자가 대표하는 칸의 폭이다(끝 점이 제 칸의 한가운데에 있다).
+  if (g.y < -0.5 || g.y > uGridSize.y - 0.5) discard;
+  if (uWrapX < 0.5 && (g.x < -0.5 || g.x > uGridSize.x - 0.5)) discard;
+#endif
   g.y = clamp(g.y, 0.0, uGridSize.y - 1.0);
 
   // 값을 보간한다 — 공간(네 칸)도 시간(두 프레임)도 값으로.
+#ifdef FIELD_MISSING_MASK
+  vec3 ma = maskedGrid(uTexA, g);
+  vec3 mb = maskedGrid(uTexB, g);
+  if (min(ma.y, mb.y) <= 0.0) discard;                  // 네 칸이 다 결측 — 없는 값을 지어내지 않는다
+#ifdef FIELD_MASK_OCEAN
+  // 지형을 통째로 못 받은 세션(uHasHeight = 0)은 위의 고도 가림이 돌지 않는다. 그때는 **자료 자신의 결측**이
+  // 해안선 노릇을 한다 — 네 칸이 다 값일 때만 칠한다(옛 erodeNodes 대체 규칙과 같은 뜻이고, 자리는 프래그먼트다).
+  // 전부 가리지도(바다가 사라진다), 전부 드러내지도(육지가 물든다) 않는 자리다.
+  if (uHasHeight < 0.5 && min(ma.z, mb.z) < 0.5) discard;
+#endif
+  vec2 ca = vec2(ma.x, 0.0);
+  vec2 cb = vec2(mb.x, 0.0);
+#else
   vec2 ca = sampleGrid(uTexA, g);
   vec2 cb = sampleGrid(uTexB, g);
+#endif
   vec2 c = ca + (cb - ca) * uMix;
 #ifdef FIELD_MODE_MAGNITUDE
   float v = length(c);          // 풍속 = |(u, v)| — 두 성분을 섞은 뒤에 크기를 구한다
@@ -501,26 +594,32 @@ const MASKS = Object.freeze(['none', 'ocean']);
 const TRANSFERS = Object.freeze(['linear', 'log10']);
 
 /**
- * new FieldRenderer({ scale, mode, mask, transfer, terrain, geometry, segments, lift, opacity, renderOrder })
+ * new FieldRenderer({ scale, mode, mask, transfer, missing, clip, terrain, geometry, segments, lift, opacity, renderOrder })
  *   scale     field-scales.js 의 얼린 눈금(scaleOf('temp'))
  *   mode      'scalar'(기온·기압) | 'magnitudeRG'(풍속 = |R,G|)
  *   mask      'none' | 'ocean'(고도 ≥ 0 인 픽셀을 버린다)
  *   transfer  'linear'(byte × scale + offset) | 'log10'(강수율 — 머리말 '로그로 실린 자료'). 매니페스트가 말한 것과 다르면 setField 가 던진다.
+ *   missing   참이면 둘째 채널이 결측 마스크다 — 네 칸을 마스크로 가중해 잇고 다 결측이면 버린다(JSON 격자)
+ *   clip      참이면 격자 밖을 버린다(지역 격자 · 극까지 안 닿는 격자). 전지구 0.5° GFS 는 거짓이다
  *   terrain   main.js 지구의 uniform 묶음 — uHeightMap · uHasHeight · uExagger **객체를 그대로** 물린다. 없으면(시험) 평평한 구.
  *   geometry  지구의 SphereGeometry 를 받아 같이 쓴다(머리말 '지형'). 없으면 segments 로 하나 만든다.
  * 프레임이 오기 전에는 보이지 않는다(visible = false) — 빈 색·검은 구를 그리지 않는다. setFrames 가 켠다.
  */
 export class FieldRenderer {
   constructor({
-    scale, mode = 'scalar', mask = 'none', transfer = 'linear', terrain = null, geometry = null, segments = [1024, 512],
+    scale, mode = 'scalar', mask = 'none', transfer = 'linear', missing = false, clip = false,
+    terrain = null, geometry = null, segments = [1024, 512],
     lift = FIELD_LIFT, opacity = FIELD_OPACITY, renderOrder = FIELD_RENDER_ORDER,
   } = {}) {
     if (!MODES.includes(mode)) throw new RangeError(`field-renderer: 모르는 mode '${mode}'`);
     if (!MASKS.includes(mask)) throw new RangeError(`field-renderer: 모르는 mask '${mask}'`);
     if (!TRANSFERS.includes(transfer)) throw new RangeError(`field-renderer: 모르는 transfer '${transfer}'`);
+    if (missing && mode === 'magnitudeRG') throw new RangeError('field-renderer: 크기 모드는 둘째 채널이 성분이라 결측 마스크를 실을 수 없다');
     this.mode = mode;
     this.mask = mask;
     this.transfer = transfer;
+    this.missing = !!missing;
+    this.clip = !!clip;
     const t = terrain || {};
     this.uniforms = {
       uTexA: { value: null },
@@ -559,6 +658,8 @@ export class FieldRenderer {
     if (mode === 'magnitudeRG') defines.FIELD_MODE_MAGNITUDE = 1;
     if (mask === 'ocean') defines.FIELD_MASK_OCEAN = 1;
     if (transfer === 'log10') defines.FIELD_TRANSFER_LOG10 = 1;
+    if (this.missing) defines.FIELD_MISSING_MASK = 1;
+    if (this.clip) defines.FIELD_CLIP_OUTSIDE = 1;
     this.material = new THREE.ShaderMaterial({
       uniforms: this.uniforms, defines, vertexShader: FIELD_VERT, fragmentShader: FIELD_FRAG,
       transparent: true, depthWrite: false, depthTest: true, precision: 'highp',
@@ -622,6 +723,10 @@ export class FieldRenderer {
           ? `field-renderer: 선형 디코드만 그린다 — 이 필드는 '${channels[k].transfer}' 다(로그 필드는 transfer:'log10' 렌더러가 그린다)`
           : `field-renderer: 이 렌더러는 '${this.transfer}' 로 푼다 — 매니페스트의 '${channels[k].transfer}' 와 다르다`);
       }
+    }
+    // 결측을 셈하겠다고 했으면 둘째 채널이 실제로 마스크여야 한다 — 성분 채널을 마스크로 읽으면 바다가 통째로 사라진다.
+    if (this.missing && !(channels[1] && channels[1].role === 'mask')) {
+      throw new RangeError("field-renderer: missing 인데 둘째 채널이 결측 마스크(role 'mask')가 아니다");
     }
     const c0 = channels[0];
     if (this.transfer === 'log10') {

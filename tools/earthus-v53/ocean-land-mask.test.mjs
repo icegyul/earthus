@@ -358,29 +358,30 @@ test('끝에서 끝까지 — 지형을 못 받으면 먼 바다만 칠하고 �
 //   ocean-land-mask.js 자체는 남긴다: 0.25° 로 고도를 분류하는 유일한 부품이고 erodedGridNodes 는
 //   옛 buildField 의 대체 규칙이다. 다만 **바다 3종은 더는 부르지 않는다** — 그 몫은 셰이더의 uHasHeight 갈림이 한다
 //   (지형을 못 받은 세션에서는 '네 칸이 다 값일 때만 칠한다'로 자료 자신의 결측이 해안선 노릇을 한다).
-test('옛 길의 모양 — 바다 3종만 가림판을 거치고 대기 색면은 그대로다(지금은 닿지 않는 길)', () => {
-  assert.match(liveSrc, /case 'sstfield': return this\.oceanFieldLayer\(data, 'sst', SST_RAMP,/);
-  assert.match(liveSrc, /case 'wavefield': return this\.oceanFieldLayer\(data, 'wave', WAVE_RAMP,/);
-  assert.match(liveSrc, /case 'sstanom': return this\.oceanFieldLayer\(data, 'sstAnom', SSTANOM_RAMP,/);
-  // 대기 색면은 육지 위에도 값이 있는 것이 맞다 — 가림판을 받으면 안 된다.
-  assert.match(liveSrc, /case 'tempgrid': return \{ obj: this\.buildField\(data, 't', TEMP_RAMP, this\.airShell\(\)\)/);
-  assert.match(liveSrc, /case 'presgrid': return \{ obj: this\.buildField\(data, 'mslp', PRES_RAMP, this\.airShell\(\)\)/);
-  assert.doesNotMatch(liveSrc, /airShell\(\)[^\n]*alphaMap/);
-  // 가림판이 있으면 alphaMap, 없으면 대체 규칙 — 둘 중 하나는 반드시 걸린다.
-  assert.match(liveSrc,
-    /this\.buildField\(data, key, ramp, mask\.texture \? \{ alphaMap: mask\.texture \} : \{ erodeNodes: true \}\)/);
-  assert.match(liveSrc, /alphaMap: opts\.alphaMap \|\| null,/);
-  assert.match(liveSrc, /const open = opts\.erodeNodes \? erodedGridNodes\(arr, nx, ny,/);
-  // 가림판은 heightAt 으로 만든다 — main.js 가 생성자로 넘긴 heightAtJs.
-  assert.match(liveSrc, /buildOceanMaskAsync\(this\.heightAt\)/);
-  // 카드 세 장 모두 그 한 줄을 싣는다.
-  const lines = liveSrc.match(/\$\{oceanMaskCardLine\(this\._oceanMaskInfo\)\}<br\/>/g) || [];
-  assert.equal(lines.length, 3);
-  // 과장을 바꿔도 바다 색면은 다시 짓지 않는다(같은 그림) — 1× 와 50× 에서 같은 판이다.
-  assert.match(liveSrc, /if \(OCEAN_FIELD_IDS\.has\(id\)\) continue;/);
-  // 그리고 셰이더 색면은 그보다 **먼저** 걸러진다 — data 가 차 있어도 옛 껍질을 다시 지어 갈아 끼우지 않는다.
-  assert.match(liveSrc, /if \(isFieldLayerId\(id\)\) continue;[\s\S]{0,400}if \(OCEAN_FIELD_IDS\.has\(id\)\) continue;/);
-  // 켜고 끄는 주인은 저쪽이다 — 이 길로 오는 문이 닫혀 있는지 본다.
+// ⚠️ 2026-09-20(반박 검증) — 이 절이 **더는 옛 줄의 글자를 잠그지 않는다.**
+//   먼젓번 글은 `case 'sstfield': return this.oceanFieldLayer(…)` 같은 죽은 줄을 글자 그대로 대조했다.
+//   스스로 '지금은 닿지 않는 길'이라 적어 놓고 그 글자를 붙들고 있었으니, 언젠가 그 줄을 지우려는 사람은
+//   고칠 것이 없는데도 이 시험을 고쳐야 했다. 남은 색면(강수·기압·자외선)이 옮겨지는 날 옛 길을 파일째
+//   지울 수 있도록, 여기서는 **지금도 참이어야 하는 것**만 본다:
+//     · 새 길의 문 셋이 닫혀 있다(켜기 · 갱신 · 과장 변경) — 이것이 옛 길을 죽은 코드로 만드는 근거다.
+//     · 옮겨 간 색면 중 누구도 가림판을 부르지 않는다 — 새 길의 육지 가림은 셰이더가 한다
+//       (육지 판 uLandMask + 고도 · land-mask.js · field-renderer.js FIELD_MASK_OCEAN).
+//   ocean-land-mask.js 자체는 남긴다: 0.25° 로 고도를 분류하는 유일한 부품이고, 위의 순수 계산 절들은
+//   그 부품을 직접 부르므로 이 파일이 지워지면 함께 지워진다.
+test('새 길의 문이 닫혀 있다 — 옛 가림판은 이제 죽은 코드다(글자를 잠그지 않는다)', () => {
+  // 켜고 끄기 · 갱신 · 과장 변경 — 세 문이 모두 isFieldLayerId 에서 먼저 갈린다.
   assert.match(liveSrc, /if \(isFieldLayerId\(id\)\) return toggleFieldLayer\(this, id\);/);
   assert.match(liveSrc, /if \(isFieldLayerId\(id\)\) return false;/);
+  assert.match(liveSrc, /if \(isFieldLayerId\(id\)\) continue;/);
+  // 옮겨 간 색면은 새 길의 두 모듈에만 있다 — 그 어디에도 가림판을 들여오거나 부르는 줄이 없다(주석은 셈하지 않는다).
+  for (const rel of ['field-layer.js', 'grid-frames.js', 'land-mask.js']) {
+    const code = readFileSync(new URL(`../../prototype/v2-three/js/${rel}`, import.meta.url), 'utf8')
+      .replace(/^\s*\/\/.*$/gm, '');
+    assert.doesNotMatch(code, /ocean-land-mask|oceanMask\(|erodedGridNodes|alphaMap/, `${rel} 이 옛 가림판을 부른다`);
+  }
+  // 갱신표에서도 빠졌다 — refresh(id) 가 false 를 내므로 남겨 두면 타이머만 헛돈다.
+  const table = liveSrc.match(/static get REFRESH_MIN\(\)[\s\S]*?\n  \}/)[0];
+  for (const id of ['sstfield', 'wavefield']) {
+    assert.doesNotMatch(table.replace(/^\s*\/\/.*$/gm, ''), new RegExp(`${id}\\s*:`), `REFRESH_MIN 에 죽은 줄 '${id}' 가 남았다`);
+  }
 });

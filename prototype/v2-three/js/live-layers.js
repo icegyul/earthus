@@ -380,7 +380,10 @@ export class LiveLayers {
     return {
       lightning: 5, warn: 10, kmasea: 10, buoys: 20, airq: 20, wind: 20,
       tsunami: 10, seoul: 10, tyoff: 30, wildfire: 30, news: 30,
-      sstfield: 180, wavefield: 60, current: 60, tyanalog: 60,
+      // sstfield · wavefield 는 여기 없다 — 셰이더 색면으로 옮겨 가 refresh() 가 isFieldLayerId 에서 false 를 낸다.
+      // 남겨 두면 30초 타이머가 아무 일도 못 하는 호출을 3시간·1시간마다 되풀이한다(2026-09-20 반박 검증).
+      // 저장소 스스로 30분마다 다시 읽는다(field-layer.js FIELD_MANIFEST_RELOAD_MS).
+      current: 60, tyanalog: 60,
     };
   }
 

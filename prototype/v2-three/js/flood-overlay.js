@@ -60,6 +60,8 @@ import * as THREE from '../../vendor/three-r184.module.min.js';
 import { FIELD_LIFT, FIELD_GRAD_EPS, FIELD_RENDER_ORDER, FIELD_TERRAIN_GLSL, FIELD_VERT, lineCoverage } from './field-renderer.js?v=1';
 import { defineScale, legendModel, paletteRGBA } from './field-scales.js?v=1';
 import { LAND_MASK_RES, sharedLandMask } from './land-mask.js?v=1';
+// 바다에서 물이 닿는 칸 판(0.25° 욕조 채우기) — 왜 필요한지는 저 파일 머리말이 숫자로 적는다.
+import { FLOOD_REACH_GROW, FLOOD_REACH_RES, buildOceanReachAsync, reachAt, reachInfo, reachRGBA } from './flood-reach.js?v=1';
 
 // ── 상수 ──────────────────────────────────────────────────────────────────────────────────────────────────────
 
@@ -104,9 +106,11 @@ export const FLOOD_DEFAULT = Object.freeze({ scenario: 'ssp585', year: '2100' })
  * 침수 깊이 3단. 이것은 값의 눈금이 아니라 **선/아래 판정**의 깊이 표시다(머리말 '색').
  *   L* 83.8 → 63.5 → 38.6 — 깊을수록 어둡다. 이웃 칸의 명도차 20 이상이라 색각 이상에서도 순서가 읽힌다(시험이 잰다).
  */
+// ⚠️ 이름이 '침수 깊이' 였다(2026-09-20 반박 검증으로 고침). 이 수는 물이 그만큼 찬다는 뜻이 아니라
+//    **지금 지형이 예상 해수면보다 그만큼 낮다**는 뜻이다. 옛 이름으로는 사해의 −415 m 가 '침수 깊이 415 m' 였다.
 export const FLOOD_SCALE = defineScale({
   id: 'floodDepth',
-  name: { ko: '침수 깊이', en: 'Flood depth' },
+  name: { ko: '해수면보다 낮은 정도', en: 'Depth below the projected sea level' },
   unit: 'm', digits: 1, kind: 'sequential',
   bands: [
     [null, '#8fdcf7'],   //      < 0.5 m   L* 83.8
@@ -114,8 +118,8 @@ export const FLOOD_SCALE = defineScale({
     [2, '#1257b8'],      //      ≥ 2 m     L* 38.6
   ],
   legendNote: {
-    ko: '깊이는 지금 지형과 상승폭의 차이입니다 — 침수 예측이 아닙니다',
-    en: 'Depth is today’s terrain minus the projected rise — not a flood forecast',
+    ko: '지금 지형이 예상 해수면보다 얼마나 낮은가입니다 — 물이 차는 깊이가 아닙니다',
+    en: 'How far today’s terrain lies below the projected sea level — not a water depth',
   },
 });
 
@@ -264,6 +268,23 @@ export function riseGridOf(stencil, values, fallback) {
   return { res: stencil.res, width, height, values: out, fallback: fb, farCells };
 }
 
+/**
+ * 12칸(시나리오 4 × 연도 3) 가운데 **가장 큰** 상승폭 격자. 바다 도달 판을 한 번만 굽기 위한 것이다(flood-reach.js 머리말):
+ * 상승폭이 작아지면 물이 지나갈 수 있는 칸은 줄어들 뿐이라, 최대에서 닿지 않는 칸은 어느 시나리오에서도 닿지 않는다.
+ */
+export function riseMaxGridOf(stencil, stations) {
+  let out = null;
+  for (const sc of FLOOD_SCENARIOS) {
+    for (const y of FLOOD_YEARS) {
+      const values = stationMedians(stations, sc.id, y);
+      const g = riseGridOf(stencil, values, medianOf(values));
+      if (!out) out = { ...g, values: Float32Array.from(g.values) };
+      else for (let i = 0; i < out.values.length; i += 1) out.values[i] = Math.max(out.values[i], g.values[i]);
+    }
+  }
+  return out;
+}
+
 /** 값(m) → 바이트. 눈금 밖은 양 끝으로 잘린다(운영 자료는 −2.38 ~ 4.15 m 라 잘리지 않는다). */
 export const encodeRise = (v) => Math.max(0, Math.min(255, Math.round((v - FLOOD_RISE_BASE) / FLOOD_RISE_STEP)));
 /** 바이트 → 값(m). 셰이더의 `바이트 * uRiseDecode.x + uRiseDecode.y` 와 같은 식이다. */
@@ -325,12 +346,13 @@ export const floodRimCoverage = (sub, grad, widthPx) => lineCoverage(sub, grad, 
 
 /**
  * 한 지점을 칠하나 — 셰이더 main() 과 같은 차례.
- *   deps { heightAt(lat,lon) → m · landAt(lat,lon) → 0|1|null · riseAt(lat,lon) → m · hasHeight }
+ *   deps { heightAt(lat,lon) → m · landAt(lat,lon) → 0|1|null · riseAt(lat,lon) → m · reachAt(lat,lon) → 0|1|null · hasHeight }
  *   → { painted, why, height, rise, depth, band }
- * why: 'noTerrain'(지형을 못 받았다 — 아무것도 말하지 않는다) · 'sea'(바다다) · 'dry'(물보다 높다)
+ * why: 'noTerrain'(지형을 못 받았다 — 아무것도 말하지 않는다) · 'sea'(바다다) · 'dry'(물보다 높다) ·
+ *      'basin'(물보다 낮지만 바다에서 물이 닿지 않는 내륙 저지다 — 사해 · 카스피 저지)
  */
 export function floodAt(deps, lat, lon) {
-  const { heightAt, landAt = null, riseAt: riseOf, hasHeight = true } = deps || {};
+  const { heightAt, landAt = null, riseAt: riseOf, reachAt: reachOf = null, hasHeight = true } = deps || {};
   if (!hasHeight || typeof heightAt !== 'function') return { painted: false, why: 'noTerrain' };
   const h = heightAt(lat, lon);
   const plate = landAt ? landAt(lat, lon) : null;
@@ -341,6 +363,8 @@ export function floodAt(deps, lat, lon) {
   const rise = riseOf(lat, lon);
   const depth = rise - h;
   if (!(depth > 0)) return { painted: false, why: 'dry', height: h, rise, depth };
+  // 셰이더와 같은 차례의 마지막 단. 판이 아직 없으면(uHasReach = 0) 가르지 않는다 — 카드가 그 사실을 적는다.
+  if (reachOf && reachOf(lat, lon) !== 1) return { painted: false, why: 'basin', height: h, rise, depth };
   return { painted: true, why: 'wet', height: h, rise, depth, band: floodBandIndex(depth) };
 }
 
@@ -405,6 +429,8 @@ uniform sampler2D uRise;       // 1° 상승폭 격자 (R = 바이트 · 행 0 =
 uniform vec2 uRiseDecode;      // 값(m) = 바이트 * x + y
 uniform sampler2D uLandMask;   // 등장방형 육지 판 — R > 0.5 면 육지(land-mask.js · 행 0 = 남 · NearestFilter)
 uniform float uHasLand;        // 0 이면 판이 없다 — 고도의 부호만으로 가른다
+uniform sampler2D uReach;      // 0.25° 바다 도달 판 — R > 0.5 면 대양에서 물이 닿는 칸(flood-reach.js · 행 0 = 남 · NearestFilter)
+uniform float uHasReach;       // 0 이면 아직 안 구웠다 — 그때는 가르지 않고 카드가 그 사실을 적는다
 uniform sampler2D uPalette;    // 1×N · NearestFilter · sRGB 바이트 그대로
 uniform float uBandCount;
 uniform vec2 uDepthBreaks;     // 깊이 경계 둘 (0.5 · 2 m)
@@ -438,6 +464,9 @@ void main() {
   float plate = uHasLand > 0.5 ? step(0.5, texture2D(uLandMask, suv).r) : 0.0;
   if (max(plate, step(0.0, hgt)) < 0.5) discard;       // 바다다 — 이미 물이라 칠하지 않는다
   if (sub <= 0.0) discard;                             // 물보다 높다
+  // 바다에서 물이 닿지 않는 내륙 저지(사해 · 카스피 저지 · 카타라 · 투르판)는 칠하지 않는다.
+  // 해수면이 올라도 그곳에는 바닷물이 가지 않는다 — 옛 화면에서 전지구 뷰의 파란 것이 카스피 저지 하나였다(flood-reach.js 머리말).
+  if (uHasReach > 0.5 && texture2D(uReach, suv).r < 0.5) discard;
 
   float idx = step(uDepthBreaks.x, sub) + step(uDepthBreaks.y, sub);
   vec4 band = texture2D(uPalette, vec2((idx + 0.5) / uBandCount, 0.5));
@@ -477,7 +506,8 @@ export const floodLegendHtml = () => {
     + `<i style="width:14px;height:10px;border-radius:2px;background:${c.color};display:inline-block"></i>${esc(c.label)}</span>`).join('');
   const rim = `<span style="display:inline-flex;align-items:center;gap:4px">`
     + `<i style="width:14px;height:10px;border-radius:2px;background:rgb(${FLOOD_RIM.color.map((v) => Math.round(v * 255)).join(',')});display:inline-block"></i>물가</span>`;
-  return `<span style="display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 2px">침수 깊이 ${cells}${rim}</span>`;
+  // 이름은 표 한 줄에서 온다 — 범례와 표가 다른 이름을 말할 자리를 남기지 않는다(머리말 '색').
+  return `<span style="display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 2px">${esc(FLOOD_SCALE.name.ko)} ${cells}${rim}</span>`;
 };
 
 /**
@@ -512,9 +542,9 @@ export const floodCardInner = (m) => {
   L.push(`<b>① 이것은 침수 예측이 아닙니다.</b> 해수면이 그만큼 오르면 <b>지금 지형에서</b> 물보다 낮아지는 땅을 칠한 것입니다(욕조식 근사).`);
   // ⚠️ 2026-09-20 반박 검증: 여기서 '제방 뒤의 낮은 땅도 칠해진다(네덜란드 간척지)'고 약속했는데 화면은 그 반대였다.
   //    간척지는 지형 자료 자체가 아직 바다라서 칠하지 않는다(아래 floodLandLine 과 같은 사실). 약속을 화면에 맞춘다.
-  L.push(`<b>② 방조제 · 배수 · 지반침하 · 바다와의 연결을 모릅니다.</b> 제방 뒤의 <b>내륙</b> 저지도 칠해지고, `
-    + `바다와 이어지지 않은 저지(사해 · 카스피 저지)도 칠해집니다. `
+  L.push(`<b>② 방조제 · 배수 · 지반침하를 모릅니다.</b> 제방 뒤의 <b>내륙</b> 저지도 칠해집니다. `
     + `거꾸로 <b>간척지 · 매립지(송도 · 새만금)는 지형 자료가 아직 바다로 담고 있어 칠하지 않습니다.</b>`);
+  L.push(floodReachLine(m));
   // ⚠️ 같은 검증: '확대할수록 제자리를 찾는다'는 약속은 밀집 해안 도시에서 지켜지지 않았다. 실측(z9 · Terrarium):
   //    도쿄 고토구 11.0 m · 방콕 중심 10.0 m · 상하이 푸둥 7.0 m · 로테르담 7.2 m — 실제 지면은 0~4 m 다.
   //    상승폭 0.75~1.7 m 와 견주면 전부 '마른 땅'이라 확대해도 비어 있다. 지형 해상도가 아니라 자료의 성질이라
@@ -535,6 +565,25 @@ export const floodCardInner = (m) => {
 };
 
 export const floodCardHtml = (m) => cardOpen + floodCardInner(m) + cardClose;
+
+/**
+ * 바다와의 연결 판정 한 줄 — 무엇을 보고 무엇을 못 보는지를 상태 그대로 말한다(2026-09-20 반박 검증).
+ * 옛 카드는 '바다와의 연결을 모릅니다 … 사해 · 카스피 저지도 칠해집니다' 한 줄로 넘겼는데, 실제로 칠해지는 면적의
+ * 66.3% 가 그런 땅이었다. 긴 카드 한 줄과 화면 전체를 덮은 색은 무게가 다르다 — 이제 화면에서 가르고, 한 줄은 그 사실을 적는다.
+ */
+export const floodReachLine = (m) => {
+  const st = m && m.reach;
+  // 칸 크기는 **구운 판이 들고 온 것**을 적는다 — 상수를 다시 적으면 판과 카드가 갈라질 자리가 생긴다.
+  const cellKm = (m && m.reachInfo && m.reachInfo.cellKm) || Math.round(FLOOD_REACH_RES * 111.195);
+  if (st === 'ready') {
+    return `<b>바다와의 연결은 약 ${cellKm} km 격자로만 봅니다.</b> 대양에서 물이 닿는 칸만 칠하므로 `
+      + `바다와 이어지지 않는 내륙 저지(사해 · 카스피 저지 · 카타라)는 칠하지 않습니다 — 해수면이 올라도 그곳에는 바닷물이 가지 않습니다. `
+      + `그 격자가 삼킬 만큼 좁은 물길(삼각주 · 수로)을 놓치지 않으려고 ${FLOOD_REACH_GROW} 칸짜리 벽은 한 번 넘어갑니다 — `
+      + `그보다 두꺼운 벽 뒤의 저지는 바다와 이어져 있어도 칠하지 않습니다.`;
+  }
+  return `<b>바다와의 연결은 아직 가리지 않았습니다.</b> 지형 고도를 다 읽어야 대양에서 물이 닿는 칸을 셀 수 있습니다 — `
+    + `그때까지는 바다와 이어지지 않는 내륙 저지(사해 · 카스피 저지)도 함께 칠해집니다.`;
+};
 
 /**
  * 육지 판정의 고지 한 줄. 바다 색면의 landMaskCardLine 과 **같은 사실**을 말하지만 방향이 반대라 글을 따로 짓는다:
@@ -616,6 +665,8 @@ export function createFloodOverlay(doc = {}, deps = {}) {
     uRiseDecode: { value: new THREE.Vector2(FLOOD_RISE_STEP, FLOOD_RISE_BASE) },
     uLandMask: { value: null },
     uHasLand: { value: 0 },
+    uReach: { value: null },
+    uHasReach: { value: 0 },
     uPalette: { value: paletteTex },
     uBandCount: { value: FLOOD_SCALE.colors.length },
     uDepthBreaks: { value: new THREE.Vector2(FLOOD_SCALE.breaks[0], FLOOD_SCALE.breaks[1]) },
@@ -655,6 +706,57 @@ export function createFloodOverlay(doc = {}, deps = {}) {
     Promise.resolve(landStore.load()).then(() => { attachLand(); recompute(); publish(); }).catch(() => {});
   }
   attachLand();
+
+  // ── 바다 도달 판 (0.25° 욕조 채우기 · flood-reach.js) ─────────────────────────────────────────────────────
+  // 지형이 없으면 셀 것이 없다(heightAt 이 어디서나 0 을 돌려주면 전 지구가 '물이 닿는 칸'이 된다). 그래서 uHasHeight 를 기다린다.
+  // 기다리는 김에 **카드도 그때 고친다** — 지형이 늦게 오면 카드가 '지형을 받지 못해…'에 멈춰 있던 결함을 같이 닫는다.
+  let reachGrid = null;
+  let reachTex = null;
+  let reachState = deps.heightAt ? 'pending' : 'noSampler';   // pending → running → ready | noTerrain | failed
+  let reachTimer = null;
+  let disposed = false;
+  const terrainReady = () => uniforms.uHasHeight.value > 0.5 && typeof deps.heightAt === 'function';
+  function attachReach(grid) {
+    reachGrid = grid;
+    reachTex = new THREE.DataTexture(reachRGBA(grid), grid.width, grid.height, THREE.RGBAFormat);
+    reachTex.minFilter = THREE.NearestFilter;      // 칸 판정이다 — 섞으면 해안에서 경계가 흐려진다(육지 판과 같은 규칙)
+    reachTex.magFilter = THREE.NearestFilter;
+    reachTex.wrapS = THREE.RepeatWrapping;
+    reachTex.wrapT = THREE.ClampToEdgeWrapping;
+    reachTex.generateMipmaps = false;
+    reachTex.colorSpace = THREE.NoColorSpace;
+    reachTex.needsUpdate = true;
+    uniforms.uReach.value = reachTex;
+    uniforms.uHasReach.value = 1;
+    reachState = 'ready';
+  }
+  let reachPromise = null;
+  function startReach() {
+    if (disposed || reachState === 'running' || reachState === 'ready' || reachState === 'noSampler') return reachPromise;
+    reachState = 'running';
+    const riseMax = riseMaxGridOf(stencil, stations);
+    reachPromise = buildOceanReachAsync({
+      heightAt: (la, lo) => deps.heightAt(la, lo),
+      riseAt: (la, lo) => riseAt(riseMax, la, lo),
+      ...(deps.reachOptions || {}),
+    }).then((g) => { if (disposed) return; attachReach(g); recompute(); publish(); })
+      .catch(() => { if (disposed) return; reachState = 'failed'; recompute(); publish(); });
+    return reachPromise;
+  }
+  // 운영에서는 지구가 먼저 서므로 첫 판에서 바로 참이다. 그래도 기다리는 길을 두는 것은, 지형이 늦은 세션에서
+  // 화면과 카드가 영영 '판정 없음'에 멈추기 때문이다(반박 검증 minor). 1분이면 포기하고 그 사실을 적는다.
+  const REACH_WAIT_MS = 500;
+  const REACH_WAIT_MAX = 120;
+  let reachWaits = 0;
+  function waitForTerrain() {
+    if (disposed || reachState !== 'pending') return;
+    if (terrainReady()) { startReach(); return; }
+    if (reachWaits >= REACH_WAIT_MAX) { reachState = 'noTerrain'; publish(); return; }
+    reachWaits += 1;
+    if (typeof setTimeout !== 'function') return;
+    reachTimer = setTimeout(waitForTerrain, REACH_WAIT_MS);
+    if (reachTimer && typeof reachTimer.unref === 'function') reachTimer.unref();   // 시험(node)에서 타이머가 프로세스를 붙잡지 않게
+  }
 
   /**
    * 관측소가 먼 **육지** 칸의 비율(%) — 카드가 '어디를 전지구 중앙값으로 뒀나'를 숫자로 말하는 근거.
@@ -698,6 +800,7 @@ export function createFloodOverlay(doc = {}, deps = {}) {
       scenario: state.scenario, year: state.year, stations: stations.length,
       globalMedian, farPct, landMask: landStore && landStore.info ? landStore.info() : null,
       hasHeight: !!(uniforms.uHasHeight.value > 0.5),
+      reach: reachState, reachInfo: reachGrid ? reachInfo(reachGrid) : null,
       min: rows.length ? Math.min(...rows.map((r) => r.v)) : null,
       max: rows.length ? Math.max(...rows.map((r) => r.v)) : null,
       top: sorted.slice(0, 3),
@@ -709,6 +812,7 @@ export function createFloodOverlay(doc = {}, deps = {}) {
     };
   }
   recompute();
+  waitForTerrain();     // 운영에서는 지구가 이미 서 있어 첫 판에서 바로 굽기 시작한다
 
   let lastInner = null;
   /** 떠 있는 카드를 제자리에서 고치고, 그 **원본 문자열**도 같이 바꾼다(패널이 다시 그려질 때 옛 글이 되살아나지 않게). */
@@ -728,7 +832,11 @@ export function createFloodOverlay(doc = {}, deps = {}) {
     get state() { return { ...state }; },
     stencil() { return stencil; },
     grid() { return grid; },
-    model() { return { ...stats, hasHeight: !!(uniforms.uHasHeight.value > 0.5) }; },
+    model() { return { ...stats, hasHeight: !!(uniforms.uHasHeight.value > 0.5), reach: reachState }; },
+    /** 바다 도달 판(콘솔·시험용) — 안 구웠으면 null. */
+    reachGrid() { return reachGrid; },
+    /** 판을 다 구웠을 때 풀리는 약속(시험이 기다린다) — 아직 시작도 안 했으면 null. */
+    reachReady() { return reachPromise; },
     /** 지금 상태의 카드 글 · 메뉴 한 줄 — 읽을 때마다 지금 것을 낸다(단추를 누른 뒤 다시 열어도 맞는다). */
     cardHtml() { return floodCardHtml(api.model()); },
     note() { return floodNote(api.model()); },
@@ -738,6 +846,7 @@ export function createFloodOverlay(doc = {}, deps = {}) {
         heightAt: heightAt || deps.heightAt,
         landAt: landStore && landStore.landAt ? (la, lo) => landStore.landAt(la, lo) : null,
         riseAt: (la, lo) => riseAt(grid, la, lo),
+        reachAt: reachGrid ? (la, lo) => reachAt(reachGrid, la, lo) : null,
         hasHeight: uniforms.uHasHeight.value > 0.5,
       }, lat, lon);
     },
@@ -758,6 +867,10 @@ export function createFloodOverlay(doc = {}, deps = {}) {
       return true;
     },
     dispose() {
+      disposed = true;             // 늦게 끝난 굽기가 버린 겹면에 텍스처를 달거나 카드를 고치지 않게
+      if (reachTimer && typeof clearTimeout === 'function') clearTimeout(reachTimer);
+      reachTimer = null;
+      if (reachTex) reachTex.dispose();
       riseTex.dispose();
       paletteTex.dispose();
       material.dispose();

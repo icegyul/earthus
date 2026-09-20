@@ -497,6 +497,21 @@ test('버리는 자리에서 값 텍스처와 색 표가 같이 정리된다 —
   assert.deepEqual(bye.sort(), ['uPalette', 'uRise'], '끌 때마다 1° 값 텍스처와 색 표가 쌓인다');
 });
 
+test('잠기는 땅도 색면과 같은 주인공 대접을 받는다 — 켜면 구름이 물러난다', async (t) => {
+  const { LiveLayers } = await import('../../prototype/v2-three/js/live-layers.js');
+  t.after(() => resetSharedLandMask());
+  const ll = new LiveLayers({ add() {} }, () => 0, () => 50, () => '');
+  ll.provideField({ terrain: fakeTerrain(), geometry: new THREE.SphereGeometry(1, 8, 4), landMask: fakeLand() });
+  assert.equal(ll.starLayer(), null);
+  const built = await ll.buildFromData('slr', AR6);
+  ll.layers.slr = { on: true, obj: built.obj, data: AR6, meta: built.meta };
+  // main.js starLayers.tick 은 이 값 하나로 구름 불투명도를 0 으로 민다(색면과 같은 자리).
+  assert.equal(ll.starLayer(), 'field', '구름 0.92 가 그대로 남으면 물가의 1.6 px 테는 보이지 않는다');
+  ll.layers.slr.on = false;
+  assert.equal(ll.starLayer(), null, '끄면 구름이 제자리로 돌아온다');
+  assert.match(MAIN_SRC, /const target = star === 'field' \? 0 :/, '구름을 미는 것은 이 한 줄이다');
+});
+
 test('live-layers 와 main.js 의 배선 — 옛 막대기 코드가 없고 다시 짓는 길이 막혀 있다', () => {
   // 옛 buildSlr 의 재료(1.2 m 상한 색 정규화 · 기둥 높이)가 남아 있지 않다.
   assert.doesNotMatch(LIVE_SRC, /_slrItems|_slrMean|_slrMax/, '옛 막대기의 상태가 남아 있다');

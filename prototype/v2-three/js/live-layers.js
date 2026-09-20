@@ -315,6 +315,10 @@ export class LiveLayers {
   // 'field' = 색면이 있다(구름의 흰 베일이 구간색을 바꿔 범례와 어긋나게 한다 → 구름을 끈다) · 'wind' = 입자만 · null = 없음.
   starLayer() {
     for (const id of this.activeIds()) if (isFieldLayerId(id)) return 'field';
+    // 잠기는 땅(slr)도 색면과 같은 대접을 받아야 한다 — 이 레이어가 그리는 것은 해안의 실오라기와 물가의 1.6 px 테라
+    // 구름(0.92)이 그대로 덮으면 켜도 '아무 변화 없는 구름 낀 지구'다(2026-09-20 반박 검증: 구름을 직접 끈 뒤에야 보였다).
+    // 색면 대접에는 해안·국경 윤곽선(field-outlines)이 같이 딸려 온다 — 물가를 보는 화면이라 도움이 된다.
+    if (this.layers.slr && this.layers.slr.on) return 'field';
     return this.layers.wind && this.layers.wind.on ? 'wind' : null;
   }
 

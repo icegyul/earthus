@@ -1,0 +1,593 @@
+// EARTHUS v2 — 공통 색면 렌더러 (DEV-DIRECTIVE 2026-09-20 · W1 "한 번 잘 만들어 여섯 번 쓴다" · 기준 구현체는 W2 기온)
+//
+// 무엇이 잘못돼 있었나: 색면(live-layers.js buildField)은 5° 격자 한 시각을 72×36 캔버스에 **선형 램프로 먼저 칠하고**
+// LinearFilter 로 늘렸다 — 색을 섞은 뒤 또 섞는 그라데이션이다. 등치선·라벨·범례가 없고, 타임라인을 밀어도 안 움직이고,
+// 반지름이 고정된 껍질이라 지형을 모른다(2026-09-20 바다 색면이 육지를 덮은 버그의 원인).
+// PD: "기온도 그라데이션이 아니라 선으로 하기로 했는데 그라데이션이네?" · "등치선은 만들거지?"
+//
+// 원칙은 하나다 — **값을 보간하고, 색은 양자화한다.**
+//   값 텍스처 A·B(8bit 선형 · gfs-frames.js) → 격자점 네 칸을 **풀어서** 이중선형 → 두 시각을 값으로 섞음 →
+//   구간 찾기(field-scales.js 의 구간 규칙 그대로) → 1×N 팔레트(NearestFilter)에서 색 한 칸.
+//   색끼리 섞는 연산은 없다. 색 위에 얹히는 것은 흰 등치선 하나뿐이다(아래 '등치선').
+//
+// ── 왜 하드웨어 이중선형(texture2D 한 번)을 쓰지 않고 네 칸을 직접 읽나 ─────────────────────────────────────────
+//   ① 자료가 8bit(기온 0.5°C 눈금)라 **같은 값이 수백 칸 깔린 고원**이 흔하고, 구간 경계(30°C)와 등치선 값이 바로 그
+//      눈금 위에 있다. 하드웨어 보간은 r = byte/255 를 float 로 돌려주므로 r×255 가 219.99998 이 되기도 한다 —
+//      30.0°C 고원이 통째로 '25–30' 칸으로 칠해지거나 픽셀마다 갈린다. 칸 한가운데를 읽어 **정수 바이트로 되돌린 뒤**
+//      (floor(r×255+0.5)) 풀면 CPU 사본(frames.sampleAt — 클릭 값)과 같은 수가 된다: 칠해진 칸 = 클릭한 값의 칸.
+//   ② 보간을 a + (b − a)·t 꼴로 직접 쓴다. a = b 인 고원에서 결과가 **정확히 a** 다(a·(1−t) + b·t 는 1 ulp 흔들린다).
+//      그래야 고원의 화면 기울기 fwidth(v) 가 정확히 0 이고, 아래 고원 가드가 잡음 없이 선다.
+//   ③ GPU 의 보간 가중치는 8bit 고정소수라 한 칸이 256px 보다 크게 보이는 줌에서 값이 잔계단이 된다 — 등치선이 점선이 된다.
+//   값은 프래그먼트당 텍스처 8번 읽기(두 시각 × 네 칸)다. 지구 셰이더(main.js EARTH_FRAG)가 고도만 9번 읽는다 — 같은 급이다.
+//   칸 좌표는 구면 uv → gfs-frames.js uvTransform(id) 의 su·ou·sv·ov → (열, 행) 으로 간다. 점 격자 보정이 거기 들어 있다
+//   (서울 37.5N 127E = 행 105 · 열 614 — 시험이 잠근다). 경도는 감고(RepeatWrapping) 위도는 극 행에서 멈춘다 — sampleAt 과 같다.
+//
+// ── 구간 찾기 (field-scales.js 머리말 '구간 규칙'과 **같은 규칙**) ─────────────────────────────────────────────
+//   idx = Σ step(uBreaks[i], v)  — 아래 경계 포함 · 위 경계 제외 · float32 비교. 남는 칸은 BREAK_PAD(3e38)라 늘 0 을 더한다.
+//   JS 로 옮긴 shaderBandIndex 가 모든 경계와 그 바로 아래에서 field-scales.bandIndex 와 같은지 시험이 본다.
+//
+// ── 등치선 ──────────────────────────────────────────────────────────────────────────────────────────────────
+//   기법은 main.js 의 해저 등심선과 같다(값을 간격으로 나눠 fract · 굵기는 fwidth 로 화면 px 에 묶는다 — 줌과 무관).
+//   다른 점 둘:
+//   · **아래쪽에서만 긋는다.** 선은 통째로 'v < 레벨' 쪽에 들어앉는다 — 위쪽 가장자리가 레벨(= 색 경계)에 닿고 거기서 알파가 0 이다.
+//     이유: 위 ①의 고원. 30.0°C 고원은 양쪽 가장자리에서 v = 30 이 된다. 가운데 맞춤 선(|v − L| < w)이면 고원의 **양쪽**에
+//     선이 서서 등온선이 두 줄이 된다(열대 바다에서는 수백 km 떨어진 두 줄). 레벨 위쪽에 1px 이라도 걸치면 같은 일이 난다 —
+//     고원을 벗어나는 첫 픽셀도 'v 가 L 을 막 넘은 픽셀'이기 때문이다(처음에 그렇게 짰다가 시험이 두 줄을 잡았다).
+//     아래쪽에서만 그으면 선은 'v < L 과 v ≥ L 의 경계' 한 곳에만 선다 — 그 자리가 곧 색 경계다(구간 규칙이 아래 경계 포함이므로).
+//     색 경계 = 등치선 = 범례 경계. 선의 가운데는 경계에서 (굵기/2 + 0.5)px 아래이고 양쪽 가장자리가 다 매끄럽다.
+//   · **고원 가드.** 화면 기울기 fwidth(v) 가 FIELD_GRAD_EPS 이하면 선을 긋지 않는다. 고원 한가운데서는 기울기가 0 이라
+//     거리/기울기가 0/0 이 되고, 값이 레벨과 같으면(30.0 고원 · 또는 29.5 와 30.5 를 시간으로 반씩 섞은 순간) 면 전체가
+//     흰 선으로 번진다. 가드는 그 둘을 같이 막는다. 셰이더 식을 JS 로 옮긴 lineCoverage 를 시험이 잠근다.
+//   · 선이 화면 픽셀보다 촘촘해지면(전지구 뷰의 2°C 선 · 전선대) 스스로 흐려진다 — 모아레 대신 색면만 남는다.
+//   간격·굵은 선·강조값은 field-scales.isolineSpec 에서만 온다(기온 2°C|5°C · 10°C 마다 굵게). 풍속처럼 명세가 null 이면 안 긋는다.
+//
+// ── 지형 ────────────────────────────────────────────────────────────────────────────────────────────────────
+//   색면은 **지형을 따라간다.** 정점을 main.js EARTH_VERT 와 같은 식으로 올리고(uHeightMap · mercatorUV · decodeHeight ·
+//   displacementHeight · 극지 페이드 · max(h,0)/R × uExagger) 그 위에 FIELD_LIFT 만큼 띄운다. 고정 반지름 껍질이면
+//   과장 50× 에서 산이 색을 뚫고 나오거나 저지대가 색에 묻힌다.
+//   · GLSL 조각은 main.js 에서 꺼내 오지 않고 **같은 글자로 여기 한 벌 더 둔다**(FIELD_TERRAIN_GLSL). main.js 의 셰이더를
+//     한 글자도 건드리지 않으려는 것이고(세 작업이 main.js 를 동시에 고친다), 두 벌이 어긋나면 시험이 떨어진다
+//     (tools/earthus-v53/field-renderer.test.mjs 가 main.js 의 함수 본문과 글자를 대조한다).
+//   · uniform 은 **main.js 의 객체를 그대로 물린다**(terrain.uHeightMap · uHasHeight · uExagger). 과장이 바뀌면 main.js 가
+//     그 객체의 value 를 고치고 이 셰이더는 같은 객체를 읽는다 — 지오메트리를 다시 만들지 않고, 여기서 따로 맞출 것도 없다.
+//   · 지오메트리도 지구의 것을 받아 같이 쓴다(1024×512). 정점이 같고 변위 식이 같으면 두 면은 어디서나 FIELD_LIFT 만큼
+//     떨어진 평행면이다. 성긴 구를 따로 만들면 지구의 사이 정점이 그 위로 솟는다(히말라야 · 과장 50× 에서 약 0.008).
+//     같이 쓰면 52만 정점 버퍼(16 MB)를 한 벌 더 올리지도 않는다. 받은 지오메트리는 dispose 하지 않는다.
+//
+// ── 색 공간 ─────────────────────────────────────────────────────────────────────────────────────────────────
+//   팔레트는 sRGB 바이트 그대로 올리고(NoColorSpace) 셰이더도 colorspace 변환 없이 그대로 쓴다. 캔버스는 sRGB 이므로
+//   화면의 색 = 표의 #rrggbb = 범례(DOM)의 색이다. 선형화했다 되돌리는 길(SRGBColorSpace + colorspace_fragment)은
+//   같은 값을 두 번 반올림할 뿐이다. ⚠️ 둘을 섞으면(한쪽만 변환) 띠가 허옇게 뜨고 범례와 어긋난다.
+//
+// 이 파일은 DOM 을 모른다. 계산은 순수 함수로 밖에 냈고 시험이 그대로 부른다. THREE 는 WebGL 없이도 재질·기하가 만들어진다.
+
+import * as THREE from '../../vendor/three-r184.module.min.js';
+import { bandCount, breaksFloat32, paletteRGBA } from './field-scales.js?v=1';
+
+// 셰이더의 고정 길이 uniform 배열. 지금 가장 긴 눈금은 기온(경계 10). 넘치면 breaksFloat32 가 던진다 — 조용히 자르지 않는다.
+export const FIELD_MAX_BREAKS = 16;
+// 간격이 고르지 않은 등치선(파고 1·2·3·4·6·9 m)과 강조값(기압 1012 · SST 26·29)을 담는 칸 수.
+export const FIELD_MAX_LEVELS = 8;
+
+// 지형 위로 띄우는 높이(지구 반지름 단위). 0.0012 ≈ 7.6 km.
+//   · 기존 색면·강수면·바람 입자(wind-particles.js radius 1.0012)가 바다 위에서 쓰던 그 값이다 — 입자와 색면이 같은 높이라야
+//     비스듬히 볼 때 시차가 없다(지시서 W3).
+//   · 깊이 버퍼: 전지구 뷰(거리 2 · near 0.005 · 24bit)의 깊이 눈금은 약 5e-5 다 — 24배 여유. 지형과 평행면이라 더 띄울 이유가 없다.
+export const FIELD_LIFT = 0.0012;
+
+// 색면의 불투명도. 1 이면 지형 음영이 사라져 '지구 위의 자료'가 아니라 색칠한 공이 되고(시안 01 은 산맥의 음영이 색 아래로 비친다),
+// 0.7(옛 대기 색면)이면 밝은 사막·빙상 위에서 구간색이 범례의 색과 달라 보인다. 0.8 = 색이 주인이고 지형은 결만 남는 값.
+// ⚠️ 화면으로 재지 못한 값이다(이 작업은 브라우저 금지). 본 세션이 시안과 대조해 이 한 줄을 고치면 된다.
+export const FIELD_OPACITY = 0.8;
+
+// 그리는 순서. 불투명한 지구는 따로 먼저 그려지므로 투명체끼리의 순서만 정한다.
+//   −1 = 구름(1)·강수(3)·입자(4)·라벨(7~8)보다 먼저 = **구름 아래 · 지표 위.** 지상 2 m 기온은 구름 밑의 값이다.
+//   옛 색면은 2 였다(구름 위에 덧칠). 그 껍질은 구름과 같은 높이(1.004+)에 떠 있었으니 앞뒤가 맞았지만, 이 면은 지형에 붙어 있다 —
+//   2 로 두면 아래에 있는 면이 위에 있는 구름을 덮어 칠한다.
+//   ⚠️ 그 대가: 구름(기본 켜짐 · 관측 구름 불투명도 0.92)이 색면을 가린다. 시안 01 에는 구름이 없다. 색면을 켤 때 구름을 어떻게 할지는
+//      셸(W5 'View 분리')의 결정이라 여기서 구름을 건드리지 않았다. 화면에서 구름 위로 올려야겠으면 이 값을 2 로 바꾸면 된다.
+export const FIELD_RENDER_ORDER = -1;
+
+// 고원 가드의 문턱 — 화면 1px 에 값이 이만큼도 안 변하면 선을 긋지 않는다(값 단위/장치 px).
+// 고원에서는 위 ②덕에 기울기가 **정확히 0** 이라 문턱은 작아도 된다. 실제 경사는 한 칸에 0.5°C 이상이므로
+// 1e-5 는 한 칸이 5만 px 로 보일 때에나 닿는다(그런 줌은 없다).
+export const FIELD_GRAD_EPS = 1e-5;
+
+// 등치선의 모양 (CSS px · 장치 픽셀비는 그릴 때 곱한다 — DPR 2 인 폰에서도 같은 굵기).
+//   보통 선은 가늘고 옅게, 주 레벨(기온 10°C 마다)은 굵고 또렷하게 — 시안 01 의 흰 선.
+//   fadePx: 이웃한 선 사이가 이 px 보다 좁아지면 흐려지기 시작해(둘째 값) 첫째 값에서 사라진다.
+export const FIELD_LINE = Object.freeze({
+  color: Object.freeze([1, 1, 1]),
+  minorWidthPx: 1.0, majorWidthPx: 1.9, emphasisWidthPx: 2.2,
+  minorAlpha: 0.62, majorAlpha: 0.95,
+  fadePx: Object.freeze([3, 8]),
+});
+
+// ════════════════════════════════════════════════════════════════════════════════════════════════════════════
+//  순수 계산 — 셰이더가 하는 일을 JS 로 옮긴 것. 시험은 이 함수들로 '결과'를 본다.
+// ════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+/**
+ * 눈금표 한 장 → 셰이더가 읽는 것 셋. 표를 한 줄 바꾸면 셋이 같이 바뀐다(W1 완료 기준 ①) — 색·경계를 여기 다시 적지 않는다.
+ *   breaks    Float32Array(FIELD_MAX_BREAKS) — 남는 칸은 BREAK_PAD
+ *   bandCount 칸 수(팔레트 텍스처의 폭)
+ *   palette   Uint8Array(칸 수 × 4) — sRGB 바이트 + 칸 불투명도
+ */
+export const scaleUniforms = (scale) => ({
+  breaks: breaksFloat32(scale, FIELD_MAX_BREAKS),
+  bandCount: bandCount(scale),
+  palette: paletteRGBA(scale),
+});
+
+/** 셰이더의 구간 찾기를 그대로 옮긴 것:  idx = Σ step(uBreaks[i], v).  step(edge, x) = x >= edge ? 1 : 0 · 둘 다 float32. */
+export const shaderBandIndex = (breaksPadded, v) => {
+  const x = Math.fround(v);
+  let idx = 0;
+  for (let i = 0; i < breaksPadded.length; i += 1) idx += x >= breaksPadded[i] ? 1 : 0;
+  return idx;
+};
+
+/**
+ * 등치선 명세(field-scales.isolineSpec) → 셰이더 uniform 값.
+ *   interval·majorEvery 는 고른 간격의 선(기온 · 기압 · SST). levels[] 는 그 밖의 선 —
+ *   간격이 없는 눈금은 levels 전부(파고 · 강수 코어), 간격이 있는 눈금은 강조값만(기압 1012 · SST 26·29)이 굵게 들어간다.
+ *   명세가 null(풍속 · PM2.5)이거나 on 이 거짓이면 전부 0 — 셰이더는 선 계산을 건너뛴다.
+ */
+export const isolineUniforms = (spec, on = true) => {
+  const levels = new Float32Array(FIELD_MAX_LEVELS);
+  const widths = new Float32Array(FIELD_MAX_LEVELS);
+  const out = { on: 0, interval: 0, majorEvery: 0, levels, widths, levelCount: 0 };
+  if (!spec || !on) return out;
+  out.on = 1;
+  out.interval = spec.interval > 0 ? spec.interval : 0;
+  out.majorEvery = (out.interval && spec.majorEvery > 0) ? spec.majorEvery : 0;
+  const emph = new Set(spec.emphasize || []);
+  const list = out.interval ? [...emph] : [...new Set([...(spec.levels || []), ...emph])];
+  list.sort((a, b) => a - b);
+  if (list.length > FIELD_MAX_LEVELS) {
+    throw new RangeError(`field-renderer: 등치선 값 ${list.length}개가 ${FIELD_MAX_LEVELS}칸에 안 들어간다`);
+  }
+  list.forEach((lv, i) => {
+    levels[i] = lv;
+    widths[i] = emph.has(lv) ? FIELD_LINE.emphasisWidthPx : FIELD_LINE.minorWidthPx;
+  });
+  out.levelCount = list.length;
+  return out;
+};
+
+const smooth = (e0, e1, x) => {
+  const t = Math.max(0, Math.min(1, (x - e0) / (e1 - e0)));
+  return t * t * (3 - 2 * t);
+};
+
+/**
+ * 선 하나가 이 픽셀을 얼마나 덮나 (0~1). 셰이더의 lineCover 와 같은 식.
+ *   below   레벨까지 **아래에서** 남은 값(L − v). 0 이하면(레벨에 닿았거나 넘었다) 선이 아니다 — 그 픽셀은 위 칸의 색이다.
+ *   grad    화면 1px 에 값이 변하는 양(fwidth(v)) · widthPx  선 굵기(장치 px)
+ * 고원 가드: grad 가 문턱 이하면 0. 선의 가운데는 레벨에서 (굵기/2 + 0.5)px 아래 — 레벨에 닿는 곳과 반대쪽 끝에서 알파가 0 이다.
+ */
+export const lineCoverage = (below, grad, widthPx) => {
+  if (!(grad > FIELD_GRAD_EPS) || !(below > 0)) return 0;
+  const half = widthPx / 2;
+  return 1 - smooth(half - 0.5, half + 0.5, Math.abs(below / grad - (half + 0.5)));
+};
+
+/** 고른 간격의 선. 이웃 선 사이가 fadePx 보다 좁으면 흐려진다(선이 픽셀보다 촘촘한 곳 — 모아레 대신 색면만 남긴다). */
+export const intervalLineCoverage = (v, grad, interval, widthPx) => {
+  if (!(interval > 0) || !(grad > FIELD_GRAD_EPS)) return 0;
+  const f = v / interval;
+  const fr = f - Math.floor(f);
+  const fade = smooth(FIELD_LINE.fadePx[0], FIELD_LINE.fadePx[1], interval / grad);
+  return lineCoverage((1 - fr) * interval, grad, widthPx) * fade;   // fr = 0(레벨 위)이면 다음 레벨까지 한 간격이 남았다 — 선이 아니다
+};
+
+/** 한 픽셀의 등치선 알파 — 보통 선 · 굵은 선 · 따로 적힌 값 중 가장 센 것. iso 는 isolineUniforms 의 결과. pxScale = 장치 픽셀비. */
+export const isolineAlpha = (v, grad, iso, pxScale = 1) => {
+  if (!iso || !iso.on) return 0;
+  let a = 0;
+  if (iso.interval) a = intervalLineCoverage(v, grad, iso.interval, FIELD_LINE.minorWidthPx * pxScale) * FIELD_LINE.minorAlpha;
+  if (iso.majorEvery) {
+    a = Math.max(a, intervalLineCoverage(v, grad, iso.majorEvery, FIELD_LINE.majorWidthPx * pxScale) * FIELD_LINE.majorAlpha);
+  }
+  for (let i = 0; i < iso.levelCount; i += 1) {
+    const wide = iso.widths[i] > FIELD_LINE.minorWidthPx;
+    a = Math.max(a, lineCoverage(iso.levels[i] - v, grad, iso.widths[i] * pxScale)
+      * (wide ? FIELD_LINE.majorAlpha : FIELD_LINE.minorAlpha));
+  }
+  return a;
+};
+
+/**
+ * 위도·경도 → 값 텍스처의 연속 칸 좌표 [열, 행] (행 0 = 북). 셰이더의 gridCoord 와 같은 식이다:
+ *   구면 uv(uS = lon/360 + 0.5 · vS = lat/180 + 0.5) → uvTransform(su·ou·sv·ov) → 텍스처 uv → (u·ni − 0.5 , (1 − v)·nj − 0.5).
+ *   flipY(THREE 기본)라 그림 첫 행(북)이 v = 1 이다 — 그래서 1 − v.
+ */
+export const gridCoordOf = (uvT, size, lat, lon, out = [0, 0]) => {
+  const u = (lon / 360 + 0.5) * uvT.su + uvT.ou;
+  const v = (lat / 180 + 0.5) * uvT.sv + uvT.ov;
+  out[0] = u * size.ni - 0.5;
+  out[1] = (1 - v) * size.nj - 0.5;
+  return out;
+};
+
+const tapValue = (px, decode, k, col, row, ni, nj, wraps) => {
+  const x = wraps ? ((col % ni) + ni) % ni : Math.max(0, Math.min(ni - 1, col));
+  const y = Math.max(0, Math.min(nj - 1, row));
+  return px.data[(y * ni + x) * px.channels + k] * decode[k].scale + decode[k].offset;
+};
+
+/**
+ * 셰이더가 한 픽셀에서 셈하는 값을 CPU 사본으로 똑같이 셈한다(시험용 거울 — 앱은 frames.sampleAt 을 쓴다).
+ *   a · b   프레임의 CPU 사본 {data, channels} · mix 0~1 · decode [{scale, offset}, …](채널 순) · mode 'scalar' | 'magnitudeRG'
+ * 네 칸을 **풀고 나서** a + (b − a)·t 로 잇는다 — a = b 면 결과가 정확히 a 다.
+ */
+export const shaderValueAt = ({ a, b, mix = 0, decode, uvT, size, wraps = true, mode = 'scalar' }, lat, lon) => {
+  const g = gridCoordOf(uvT, size, lat, lon);
+  const gy = Math.max(0, Math.min(size.nj - 1, g[1]));
+  const x0 = Math.floor(g[0]);
+  const y0 = Math.floor(gy);
+  const fx = g[0] - x0;
+  const fy = gy - y0;
+  const chans = mode === 'magnitudeRG' ? 2 : 1;
+  const at = (px, k) => {
+    const v00 = tapValue(px, decode, k, x0, y0, size.ni, size.nj, wraps);
+    const v10 = tapValue(px, decode, k, x0 + 1, y0, size.ni, size.nj, wraps);
+    const v01 = tapValue(px, decode, k, x0, y0 + 1, size.ni, size.nj, wraps);
+    const v11 = tapValue(px, decode, k, x0 + 1, y0 + 1, size.ni, size.nj, wraps);
+    const top = v00 + (v10 - v00) * fx;
+    const bot = v01 + (v11 - v01) * fx;
+    return top + (bot - top) * fy;
+  };
+  const c = [];
+  for (let k = 0; k < chans; k += 1) {
+    const va = at(a, k);
+    const vb = b && mix > 0 ? at(b, k) : va;
+    c.push(va + (vb - va) * mix);
+  }
+  return mode === 'magnitudeRG' ? Math.hypot(c[0], c[1]) : c[0];   // 풍속은 두 성분을 섞은 **뒤에** 크기를 구한다
+};
+
+// ════════════════════════════════════════════════════════════════════════════════════════════════════════════
+//  셰이더
+// ════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+// main.js TERRAIN_GLSL 의 세 함수와 **같은 글자**다(머리말 '지형'). 고치려면 main.js 를 먼저 고치고 여기를 맞춘다 — 시험이 대조한다.
+export const FIELD_TERRAIN_GLSL = /* glsl */ `
+uniform sampler2D uHeightMap;
+uniform float uHasHeight;
+
+const float PI = 3.141592653589793;
+
+float decodeHeight(vec3 rgb) {
+  return dot(rgb, vec3(65280.0, 255.0, 255.0 / 256.0)) - 32768.0;
+}
+
+vec2 mercatorUV(float lon, float lat) {
+  float u = lon / (2.0 * PI) + 0.5;
+  float latC = clamp(lat, -1.4844, 1.4844); // ±85.05°
+  float v = 0.5 - log(tan(PI * 0.25 + latC * 0.5)) / (2.0 * PI);
+  return vec2(u, v);
+}
+
+float displacementHeight(float lon, float lat) {
+  if (uHasHeight < 0.5) return 0.0;
+  float e = 0.003; // ≈ 메시 반 셀
+  float c = decodeHeight(texture2D(uHeightMap, mercatorUV(lon, lat)).rgb);
+  float n4 = decodeHeight(texture2D(uHeightMap, mercatorUV(lon + e, lat)).rgb)
+           + decodeHeight(texture2D(uHeightMap, mercatorUV(lon - e, lat)).rgb)
+           + decodeHeight(texture2D(uHeightMap, mercatorUV(lon, lat + e)).rgb)
+           + decodeHeight(texture2D(uHeightMap, mercatorUV(lon, lat - e)).rgb);
+  return c * 0.4 + n4 * 0.15;
+}
+`;
+
+// 정점: main.js EARTH_VERT 의 변위를 그대로 따르고(극지 페이드 포함 — 빼면 남극 빙상 2,800 m 아래에 색이 묻힌다) uLift 만 더한다.
+export const FIELD_VERT = FIELD_TERRAIN_GLSL + /* glsl */ `
+uniform float uExagger;
+uniform float uLift;
+varying vec3 vUnit;
+
+void main() {
+  vUnit = normalize(position);
+  float lat = asin(clamp(vUnit.y, -1.0, 1.0));
+  float lon = atan(vUnit.x, vUnit.z);
+  float h = displacementHeight(lon, lat);
+  float poleFade = smoothstep(1.437, 1.4844, abs(lat));
+  h = mix(h, lat < 0.0 ? 2800.0 : 0.0, poleFade);
+  float disp = max(h, 0.0) / 6371000.0 * uExagger;
+  vec3 p = vUnit * (1.0 + disp + uLift);
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+}
+`;
+
+// 프래그먼트. ⚠️ highp 여야 한다 — mediump 는 기압(1013.0)의 0.5 hPa 눈금을 못 담는다(field-scales.js 머리말).
+//   sampler 도 highp 로 적는다: 기본(lowp)이면 읽은 값이 10bit 로 잘리는 GPU 가 있다.
+// 바다 가림(FIELD_MASK_OCEAN)은 능력만 있다 — 고도 ≥ 0 인 픽셀을 버린다. 바다 레이어를 옮겨 오는 것은 다음 묶음의 일이다.
+export const FIELD_FRAG = /* glsl */ `
+precision highp float;
+precision highp sampler2D;
+
+uniform sampler2D uTexA;
+uniform sampler2D uTexB;
+uniform float uMix;
+uniform vec2 uGridSize;      // 칸 수 (ni, nj)
+uniform float uWrapX;        // 1 = 경도로 한 바퀴 도는 격자
+uniform vec4 uUv;            // gfs-frames uvTransform: su, ou, sv, ov
+uniform vec4 uDecode;        // 채널 R 의 scale·offset , 채널 G 의 scale·offset (매니페스트에서 온다)
+uniform float uBreaks[FIELD_MAX_BREAKS];
+uniform sampler2D uPalette;  // 1×N · NearestFilter · sRGB 바이트 그대로
+uniform float uBandCount;
+uniform float uOpacity;
+uniform float uIsoOn;
+uniform float uIsoInterval;
+uniform float uIsoMajor;
+uniform float uIsoLevels[FIELD_MAX_LEVELS];
+uniform float uIsoWidths[FIELD_MAX_LEVELS];
+uniform float uIsoLevelCount;
+uniform vec3 uLineColor;
+uniform vec4 uLineStyle;     // 보통 굵기px · 굵은 굵기px · 보통 알파 · 굵은 알파
+uniform vec2 uLineFade;      // 이웃 선 간격(px): 사라지는 값 · 다 보이는 값
+uniform float uGradEps;
+uniform float uPxScale;      // 장치 픽셀비 — 굵기는 CSS px 로 정한다
+#ifdef FIELD_MASK_OCEAN
+uniform sampler2D uHeightMap;
+uniform float uHasHeight;
+#endif
+varying vec3 vUnit;
+
+const float PI = 3.141592653589793;
+
+// 격자점 (열, 행) 한 칸을 **풀어서** 돌려준다. 칸 한가운데를 읽으므로 LinearFilter 텍스처여도 그 칸의 바이트 그대로다.
+// floor(r×255 + 0.5) 로 정수 바이트로 되돌린다 — 머리말 ①.
+vec2 tapValue(sampler2D tex, float col, float row) {
+  vec2 uv = vec2((col + 0.5) / uGridSize.x, 1.0 - (row + 0.5) / uGridSize.y);
+  vec2 bytes = floor(texture2D(tex, uv).rg * 255.0 + 0.5);
+  return bytes * uDecode.xz + uDecode.yw;
+}
+
+// 네 칸 이중선형. a + (b − a)·t 꼴 — 고원에서 정확히 a (머리말 ②). 경도는 감고 위도는 극 행에서 멈춘다(frames.sampleAt 과 같다).
+vec2 sampleGrid(sampler2D tex, vec2 g) {
+  vec2 g0 = floor(g);
+  vec2 f = g - g0;
+  float x1 = uWrapX > 0.5 ? g0.x + 1.0 : min(g0.x + 1.0, uGridSize.x - 1.0);
+  float y1 = min(g0.y + 1.0, uGridSize.y - 1.0);
+  vec2 v00 = tapValue(tex, g0.x, g0.y);
+  vec2 v10 = tapValue(tex, x1, g0.y);
+  vec2 v01 = tapValue(tex, g0.x, y1);
+  vec2 v11 = tapValue(tex, x1, y1);
+  vec2 top = v00 + (v10 - v00) * f.x;
+  vec2 bot = v01 + (v11 - v01) * f.x;
+  return top + (bot - top) * f.y;
+}
+
+// 선 하나의 덮임 — JS 의 lineCoverage 와 같은 식. 레벨의 아래쪽에만 서고, 기울기가 문턱 이하면(고원) 긋지 않는다.
+float lineCover(float below, float grad, float widthPx) {
+  if (grad <= uGradEps || below <= 0.0) return 0.0;
+  float half = widthPx * 0.5;
+  return 1.0 - smoothstep(half - 0.5, half + 0.5, abs(below / grad - (half + 0.5)));
+}
+
+float intervalLine(float v, float grad, float interval, float widthPx) {
+  if (interval <= 0.0 || grad <= uGradEps) return 0.0;
+  float fr = fract(v / interval);
+  float fade = smoothstep(uLineFade.x, uLineFade.y, interval / grad);
+  return lineCover((1.0 - fr) * interval, grad, widthPx) * fade;
+}
+
+void main() {
+  vec3 n = normalize(vUnit);
+  float lat = asin(clamp(n.y, -1.0, 1.0));
+  float lon = atan(n.x, n.z);
+
+#ifdef FIELD_MASK_OCEAN
+  if (uHasHeight > 0.5) {
+    float latC = clamp(lat, -1.4844, 1.4844);
+    vec2 muv = vec2(lon / (2.0 * PI) + 0.5, 0.5 - log(tan(PI * 0.25 + latC * 0.5)) / (2.0 * PI));
+    float hgt = dot(texture2D(uHeightMap, muv).rgb, vec3(65280.0, 255.0, 255.0 / 256.0)) - 32768.0;
+    if (hgt >= 0.0) discard;
+  }
+#endif
+
+  // 구면 uv → 점 격자 보정 → 연속 칸 좌표 (JS 의 gridCoordOf 와 같은 식)
+  vec2 suv = vec2(lon / (2.0 * PI) + 0.5, lat / PI + 0.5);
+  vec2 tuv = vec2(suv.x * uUv.x + uUv.y, suv.y * uUv.z + uUv.w);
+  vec2 g = vec2(tuv.x * uGridSize.x - 0.5, (1.0 - tuv.y) * uGridSize.y - 0.5);
+  g.y = clamp(g.y, 0.0, uGridSize.y - 1.0);
+
+  // 값을 보간한다 — 공간(네 칸)도 시간(두 프레임)도 값으로.
+  vec2 ca = sampleGrid(uTexA, g);
+  vec2 cb = sampleGrid(uTexB, g);
+  vec2 c = ca + (cb - ca) * uMix;
+#ifdef FIELD_MODE_MAGNITUDE
+  float v = length(c);          // 풍속 = |(u, v)| — 두 성분을 섞은 뒤에 크기를 구한다
+#else
+  float v = c.x;
+#endif
+
+  // 색은 양자화한다 — field-scales.js 의 구간 규칙 그대로(아래 경계 포함). 팔레트는 한 번만 읽는다.
+  float idx = 0.0;
+  for (int i = 0; i < FIELD_MAX_BREAKS; i++) idx += step(uBreaks[i], v);
+  vec4 band = texture2D(uPalette, vec2((idx + 0.5) / uBandCount, 0.5));
+  float bandA = band.a * uOpacity;
+
+  // 등치선
+  float line = 0.0;
+  if (uIsoOn > 0.5) {
+    float grad = fwidth(v);
+    line = intervalLine(v, grad, uIsoInterval, uLineStyle.x * uPxScale) * uLineStyle.z;
+    line = max(line, intervalLine(v, grad, uIsoMajor, uLineStyle.y * uPxScale) * uLineStyle.w);
+    for (int i = 0; i < FIELD_MAX_LEVELS; i++) {
+      if (float(i) >= uIsoLevelCount) break;
+      float wide = step(uLineStyle.x + 0.01, uIsoWidths[i]);
+      float cov = lineCover(uIsoLevels[i] - v, grad, uIsoWidths[i] * uPxScale);
+      line = max(line, cov * (uLineStyle.z + (uLineStyle.w - uLineStyle.z) * wide));
+    }
+  }
+
+  // 흰 선을 구간색 **위에 얹는다**(over 합성). 이 셰이더에서 색이 다른 색과 만나는 곳은 여기 하나고, 상대는 늘 상수 uLineColor 다 —
+  // 구간색끼리는 어디서도 섞이지 않는다.
+  float outA = line + bandA * (1.0 - line);
+  if (outA < 0.004) discard;
+  vec3 rgb = (uLineColor * line + band.rgb * bandA * (1.0 - line)) / outA;
+  gl_FragColor = vec4(rgb, outA);   // sRGB 바이트 그대로 — colorspace 변환을 넣지 않는다(머리말 '색 공간')
+}
+`;
+
+// ════════════════════════════════════════════════════════════════════════════════════════════════════════════
+//  그리기
+// ════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+const MODES = Object.freeze(['scalar', 'magnitudeRG']);
+const MASKS = Object.freeze(['none', 'ocean']);
+
+/**
+ * new FieldRenderer({ scale, mode, mask, terrain, geometry, segments, lift, opacity, renderOrder })
+ *   scale     field-scales.js 의 얼린 눈금(scaleOf('temp'))
+ *   mode      'scalar'(기온·기압) | 'magnitudeRG'(풍속 = |R,G|)
+ *   mask      'none' | 'ocean'(고도 ≥ 0 인 픽셀을 버린다)
+ *   terrain   main.js 지구의 uniform 묶음 — uHeightMap · uHasHeight · uExagger **객체를 그대로** 물린다. 없으면(시험) 평평한 구.
+ *   geometry  지구의 SphereGeometry 를 받아 같이 쓴다(머리말 '지형'). 없으면 segments 로 하나 만든다.
+ * 프레임이 오기 전에는 보이지 않는다(visible = false) — 빈 색·검은 구를 그리지 않는다. setFrames 가 켠다.
+ */
+export class FieldRenderer {
+  constructor({
+    scale, mode = 'scalar', mask = 'none', terrain = null, geometry = null, segments = [1024, 512],
+    lift = FIELD_LIFT, opacity = FIELD_OPACITY, renderOrder = FIELD_RENDER_ORDER,
+  } = {}) {
+    if (!MODES.includes(mode)) throw new RangeError(`field-renderer: 모르는 mode '${mode}'`);
+    if (!MASKS.includes(mask)) throw new RangeError(`field-renderer: 모르는 mask '${mask}'`);
+    this.mode = mode;
+    this.mask = mask;
+    const t = terrain || {};
+    this.uniforms = {
+      uTexA: { value: null },
+      uTexB: { value: null },
+      uMix: { value: 0 },
+      uGridSize: { value: new THREE.Vector2(1, 1) },
+      uWrapX: { value: 1 },
+      uUv: { value: new THREE.Vector4(1, 0, 1, 0) },
+      uDecode: { value: new THREE.Vector4(1, 0, 1, 0) },
+      uBreaks: { value: new Float32Array(FIELD_MAX_BREAKS) },
+      uPalette: { value: null },
+      uBandCount: { value: 1 },
+      uOpacity: { value: opacity },
+      uIsoOn: { value: 0 },
+      uIsoInterval: { value: 0 },
+      uIsoMajor: { value: 0 },
+      uIsoLevels: { value: new Float32Array(FIELD_MAX_LEVELS) },
+      uIsoWidths: { value: new Float32Array(FIELD_MAX_LEVELS) },
+      uIsoLevelCount: { value: 0 },
+      uLineColor: { value: new THREE.Vector3(...FIELD_LINE.color) },
+      uLineStyle: { value: new THREE.Vector4(FIELD_LINE.minorWidthPx, FIELD_LINE.majorWidthPx, FIELD_LINE.minorAlpha, FIELD_LINE.majorAlpha) },
+      uLineFade: { value: new THREE.Vector2(FIELD_LINE.fadePx[0], FIELD_LINE.fadePx[1]) },
+      uGradEps: { value: FIELD_GRAD_EPS },
+      uPxScale: { value: 1 },
+      // 지형 — main.js 의 uniform **객체**를 그대로 쓴다. 과장·고도맵이 바뀌면 저쪽이 value 를 고치고 이쪽은 같은 객체를 읽는다.
+      uHeightMap: t.uHeightMap || { value: null },
+      uHasHeight: t.uHasHeight || { value: 0 },
+      uExagger: t.uExagger || { value: 1 },
+      uLift: { value: lift },
+    };
+    const defines = { FIELD_MAX_BREAKS, FIELD_MAX_LEVELS };
+    if (mode === 'magnitudeRG') defines.FIELD_MODE_MAGNITUDE = 1;
+    if (mask === 'ocean') defines.FIELD_MASK_OCEAN = 1;
+    this.material = new THREE.ShaderMaterial({
+      uniforms: this.uniforms, defines, vertexShader: FIELD_VERT, fragmentShader: FIELD_FRAG,
+      transparent: true, depthWrite: false, depthTest: true, precision: 'highp',
+    });
+    this.ownsGeometry = !geometry;
+    this.geometry = geometry || new THREE.SphereGeometry(1, segments[0], segments[1]);
+    this.mesh = new THREE.Mesh(this.geometry, this.material);
+    this.mesh.renderOrder = renderOrder;
+    this.mesh.frustumCulled = false;   // 정점이 셰이더에서 올라간다 — 반지름 1 짜리 경계구로 자르면 과장된 산 너머가 잘린다
+    this.mesh.visible = false;
+    // 그리기 직전: 장치 픽셀비를 맞추고(선 굵기는 CSS px) 듣는 쪽(라벨)에 카메라를 넘긴다. tick 을 따로 배선하지 않는다.
+    this.onFrame = null;
+    this.mesh.onBeforeRender = (renderer, _scene, camera) => {
+      const pr = renderer && renderer.getPixelRatio ? renderer.getPixelRatio() : 1;
+      if (pr > 0) this.uniforms.uPxScale.value = pr;
+      if (this.onFrame) this.onFrame(camera);
+    };
+    this.palette = null;
+    this.scale = null;
+    if (scale) this.setScale(scale);
+  }
+
+  get object() { return this.mesh; }
+
+  /** 눈금표 → 경계 배열 + 팔레트 텍스처. 팔레트는 **NearestFilter** 다 — Linear 로 읽으면 칸 사이에서 색이 섞여 그라데이션으로 돌아간다. */
+  setScale(scale) {
+    const u = scaleUniforms(scale);
+    this.uniforms.uBreaks.value.set(u.breaks);
+    this.uniforms.uBandCount.value = u.bandCount;
+    if (this.palette) this.palette.dispose();
+    const tex = new THREE.DataTexture(u.palette, u.bandCount, 1, THREE.RGBAFormat);
+    tex.minFilter = THREE.NearestFilter;
+    tex.magFilter = THREE.NearestFilter;
+    tex.wrapS = THREE.ClampToEdgeWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    tex.generateMipmaps = false;
+    tex.colorSpace = THREE.NoColorSpace;   // sRGB 바이트를 그대로 내보낸다(머리말 '색 공간')
+    tex.needsUpdate = true;
+    this.palette = tex;
+    this.uniforms.uPalette.value = tex;
+    this.scale = scale;
+  }
+
+  /**
+   * 어느 필드인가 — 프레임 저장소가 말해 준 것을 그대로 넣는다(디코드 상수를 여기 적지 않는다).
+   *   channels  frames.fieldSpec(id).channels (선형 식만 — log 식 필드는 W4 가 다룬다)
+   *   uv        frames.uvTransform(id) · grid  frames.fieldSpec(id).grid
+   */
+  setField({ channels, uv, grid }) {
+    const need = this.mode === 'magnitudeRG' ? 2 : 1;
+    if (!channels || channels.length < need) throw new RangeError(`field-renderer: '${this.mode}' 는 채널 ${need}개가 필요하다`);
+    for (let k = 0; k < need; k += 1) {
+      if (channels[k].transfer !== 'linear') throw new RangeError('field-renderer: 선형 디코드만 그린다(log 식은 값 보간이 다르다)');
+    }
+    const c0 = channels[0];
+    const c1 = channels[1] || c0;
+    this.uniforms.uDecode.value.set(c0.scale, c0.offset, c1.scale, c1.offset);
+    this.uniforms.uUv.value.set(uv.su, uv.ou, uv.sv, uv.ov);
+    this.uniforms.uGridSize.value.set(grid.ni, grid.nj);
+    this.uniforms.uWrapX.value = grid.wraps === false ? 0 : 1;
+  }
+
+  /** 두 프레임과 그 사이 비율. texA 가 없으면 숨는다 — 없는 자료를 빈 색으로 그리지 않는다. */
+  setFrames(texA, texB, mix = 0) {
+    if (!texA) { this.mesh.visible = false; return; }
+    this.uniforms.uTexA.value = texA;
+    this.uniforms.uTexB.value = texB || texA;
+    this.setMix(texB ? mix : 0);
+    this.mesh.visible = true;
+  }
+
+  setMix(mix) { this.uniforms.uMix.value = Math.max(0, Math.min(1, Number(mix) || 0)); }
+
+  /** 등치선 — field-scales.isolineSpec 의 결과와 켬/끔. 명세가 null(풍속)이면 on 이어도 긋지 않는다. */
+  setIsolines(spec, on = true) {
+    const iso = isolineUniforms(spec, on);
+    const u = this.uniforms;
+    u.uIsoOn.value = iso.on;
+    u.uIsoInterval.value = iso.interval;
+    u.uIsoMajor.value = iso.majorEvery;
+    u.uIsoLevels.value.set(iso.levels);
+    u.uIsoWidths.value.set(iso.widths);
+    u.uIsoLevelCount.value = iso.levelCount;
+    return iso;
+  }
+
+  setOpacity(a) { this.uniforms.uOpacity.value = Math.max(0, Math.min(1, a)); }
+
+  setVisible(v) { this.mesh.visible = !!v && !!this.uniforms.uTexA.value; }
+
+  dispose() {
+    if (this.palette) this.palette.dispose();
+    this.material.dispose();
+    if (this.ownsGeometry) this.geometry.dispose();   // 받은 지오메트리(지구의 것)는 버리지 않는다
+    // 값 텍스처는 프레임 저장소의 것이다 — 여기서 버리지 않는다.
+    this.uniforms.uTexA.value = null;
+    this.uniforms.uTexB.value = null;
+    this.mesh.visible = false;
+  }
+}

@@ -870,13 +870,11 @@ export class FieldLayer {
     const probeLine = probe ? `${ko ? '누른 곳' : 'Picked'} ${fmtPoint(probe.lat, probe.lon)} ${probe.text}${probe.note ? ` · ${probe.note}` : ''}` : '';
     this.legend.show({
       scale: this.scale, title: this.desc.title, source: sourceLabel(info),
-      run: info ? info.run : null, valid: this.timeBus.validMs(),
       // 아무 일도 없을 때 비는 한 줄: 자료가 눈금표의 **맨 위 칸을 못 채우면** 그 사실을 말한다(강수율은 30 mm/h 에서 포화 —
       // '≥ 50 mm/h' 칸은 이 자료로 나오지 않는다). 천장은 매니페스트에서 온다(field-log.js topBandNote).
       note: blocked ? short : (probeLine || short || topBandNote(this.scale, this.spec && this.spec.channels && this.spec.channels[0], ko)),
       // 한 시각짜리 자료에는 '런'이 없고 '유효'는 타임라인이 아니라 자료의 기준 시각이다.
       run: info ? info.run : null, valid: (info && info.single) ? info.validMs : this.timeBus.validMs(),
-      note: blocked ? short : (probeLine || short),
     }, `field:${this.id}`, LEGEND_PRIORITY_FIELD);
     const model = this.cardModel(probe);
     const inner = fieldCardInner(model);

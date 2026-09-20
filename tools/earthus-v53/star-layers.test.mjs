@@ -40,10 +40,16 @@ test("LiveLayers.starLayer — 색면이 있으면 'field', 입자만이면 'win
   host.layers.tempgrid = { on: true };
   assert.equal(host.starLayer(), 'field', '색면이 입자보다 먼저다 — 구름을 완전히 꺼야 한다');
   // 2026-09-20 작업 D3 — 바다 3종과 대기질이 새 렌더러로 옮겨졌다. descriptor 를 더하면 자동으로 같은 대접을 받는다.
-  host.layers.tempgrid.on = false; host.layers.wind.on = false; host.layers.sstfield = { on: true };
+  host.layers.tempgrid.on = false; host.layers.wind.on = false; host.layers.buoys = { on: true };
+  assert.equal(host.starLayer(), null, '색면이 아닌 레이어(부이 점 등)는 주인공이 아니다 — 구름을 끄지 않는다');
+  // 바다 3종은 2026-09-20 작업 D3 에서 새 렌더러로 옮겨졌다 — 이제 색면이라 구름을 물린다
+  host.layers.sstfield = { on: true };
   assert.equal(host.starLayer(), 'field', '새 렌더러로 옮긴 색면(수온)도 구름을 끄는 주인공이다');
+  // 강수도 같은 날 옮겨졌다(작업 D2) — 옛 5° 그라데이션이 아니라 GFS 강수율 구간색이다
   host.layers.sstfield.on = false; host.layers.raingrid = { on: true };
-  assert.equal(host.starLayer(), null, '아직 옮기지 않은 옛 색면(강수 5° 그라데이션)은 주인공으로 치지 않는다(구름을 끄지 않는다)');
+  assert.equal(host.starLayer(), 'field');
+  host.layers.raingrid.on = false;
+  assert.equal(host.starLayer(), null, '켜진 색면이 없으면 구름이 돌아온다');
 });
 
 test('main.js 가 매 프레임 무대를 정리한다 — 구름 불투명도 · 바람 밑 풍속 색면 · 입자 색', () => {

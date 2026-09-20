@@ -630,3 +630,23 @@ test('㉤ 눕힌 화면에는 눕힌 화면의 수를 준다 — 세로 수를 �
   assert.equal(px(prop(body, 'min-height'), vars, env), 0);
   assert.match(prop(body, 'overflow-y'), /auto|scroll/);
 });
+
+/* ── ㉥ 좁은 가로 화면에서 출처 독이 알약을 덮지 않는다 (2026-09-21 재검) ──────
+   눕힌 칸이 독과 알약을 **같은 줄**에 세우는데, 286행이 640px 이하에서 #srcNote 를
+   62vw 까지 넓힌다. 그래서 640×360(360×640 안드로이드를 눕힌 것) 같은 화면에서
+   독(z7·불투명)이 알약(z6)의 첫 두 칸을 덮어 눌러도 아무 일이 안 났다.
+   PD 기기(812×375)는 폭이 넉넉해 안 걸리지만, 한 기기에서 안 보인다고 없는 결함이 아니다. */
+test('㉥ 좁은 가로에서도 출처 글이 알약 앞에서 끊긴다', () => {
+  const NAV_W = 298;            // 테두리2 + 여백10 + 5칸×54 + 틈 4×4 (A 갈래가 셈한 값)
+  const HUD_LEFT = 52;          // 눕힌 칸의 #hud left
+  const GAP = 8;                // 알약 오른쪽 여백
+  for (const vw of [640, 667, 812]) {
+    const env = { vw, vh: 360 };
+    const src = decl(css, '#srcNote');
+    const maxW = px(prop(src, 'max-width'), V, env);
+    const hudRight = HUD_LEFT + 26 + maxW;          // 독 = 아이콘 26 + 글자
+    const navLeft = vw - GAP - NAV_W;
+    assert.ok(hudRight <= navLeft,
+      `${vw}×360 에서 출처 독 오른쪽 끝 ${Math.round(hudRight)} 이 알약 왼쪽 ${Math.round(navLeft)} 을 ${Math.round(hudRight - navLeft)}px 넘는다`);
+  }
+});

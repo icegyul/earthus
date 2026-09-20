@@ -198,3 +198,26 @@ test('카드 문장이 화면과 맞는다 — 막대를 말하지 않고 네모
   assert.match(meta.cardHtml, /href="https:\/\/example\.org\/0"/, '원문 링크가 빠졌다');
   assert.equal(meta.badge, 'LIVE');
 });
+
+// 2026-09-20 — 제목·매체·링크는 남의 RSS 가 준 글자다. 카드는 innerHTML 로 들어가므로 그대로 넣으면
+// 따옴표 하나로 속성이 열리고 javascript: 링크가 통과한다. 막대 제거 작업 중에 발견해 같이 막았다.
+test('남의 RSS 글자가 카드에서 마크업이 되지 않는다 — 글자는 escape, 링크는 http(s) 만', () => {
+  const L = layers();
+  const hostile = {
+    ...FIXTURE,
+    source: 'feeds <img src=x onerror=alert(1)>',
+    items: [
+      { region: '동남아', title: '"><img src=x onerror=alert(1)>', link: 'https://example.org/a" onmouseover="alert(1)', source: '<b>매체</b>', utc: FIXTURE.items[0].utc },
+      { region: '동남아', title: '링크가 자바스크립트', link: 'javascript:alert(1)', source: '매체', utc: FIXTURE.items[0].utc },
+    ],
+  };
+  L.buildNews(hostile);
+  const html = L.metaNews(hostile).cardHtml;
+  assert.doesNotMatch(html, /<img/i, '제목·출처의 태그가 그대로 나갔다');
+  assert.doesNotMatch(html, /<b>매체<\/b>/, '매체 이름의 태그가 그대로 나갔다');
+  assert.doesNotMatch(html, /href="javascript:/i, 'javascript: 링크가 통과했다');
+  assert.doesNotMatch(html, /" onmouseover="/, '링크의 따옴표가 속성을 열었다');
+  // 결과: 글자는 글자로 남고, 링크 없는 기사도 제목은 보인다
+  assert.match(html, /&lt;img src=x onerror=alert\(1\)&gt;/);
+  assert.match(html, /링크가 자바스크립트/);
+});

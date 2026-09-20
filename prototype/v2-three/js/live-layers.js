@@ -1044,9 +1044,16 @@ export class LiveLayers {
       const list = by[k].slice(0, 3).map((it) => {
         const t = new Date(it.utc);
         const ago = Number.isNaN(t.getTime()) ? '' : `${Math.max(0, Math.round((Date.now() - t.getTime()) / 3600000))}시간 전`;
-        return `&nbsp;&nbsp;<a href="${it.link}" target="_blank" rel="noopener">${(it.title || '').slice(0, 46)}</a> <span style="color:var(--text-dim)">${it.source} · ${ago}</span>`;
+        // ⚠️ 제목·매체·링크는 **남의 RSS 가 준 글자**다 — 그대로 innerHTML 에 넣으면 따옴표 하나로 속성이 열리고
+        //    javascript: 링크도 통과한다(수집기가 태그는 걷어내지만 거기까지다). 쓰나미 카드(buildTsunami 의 기관 원문
+        //    링크)와 같은 규칙: 글자는 escapeHtml, 링크는 http(s) 만. 2026-09-20 막대 제거 작업 중에 발견.
+        const title = escapeHtml((it.title || '').slice(0, 46));
+        const head = /^https?:\/\//i.test(it.link || '')
+          ? `<a href="${escapeHtml(it.link)}" target="_blank" rel="noopener noreferrer">${title}</a>`
+          : title;
+        return `&nbsp;&nbsp;${head} <span style="color:var(--text-dim)">${escapeHtml(it.source || '')} · ${ago}</span>`;
       }).join('<br/>');
-      return `<b>${k}</b> ${by[k].length}건<br/>${list}`;
+      return `<b>${escapeHtml(k)}</b> ${by[k].length}건<br/>${list}`;
     }).join('<br/>');
     const note = `${(d.items || []).length}건 · ${keys.map((k) => `${k} ${by[k].length}`).join(' · ')}`;
     // 2026-09-20: 이 문장은 '…묶어 세웠습니다(막대 높이 = 기사 수)'였다. 막대를 없앴으므로(buildNews 주석)
@@ -1054,7 +1061,7 @@ export class LiveLayers {
     return {
       badge: 'LIVE', note,
       cardHtml: `세계 각 지역 매체가 지금 내보내는 헤드라인입니다 — 기사에 좌표가 없어 <b>지역 대표점</b>에 지역마다 네모칸 하나로 묶었습니다(네모칸의 숫자 = 기사 수). 특정 지점의 사건 위치가 아닙니다.<br/>${rows}<br/>`
-        + `출처 ${(d.source || '').slice(0, 120)}<br/>헤드라인·링크만 표시하며 본문은 각 매체에서 확인하세요 · ${(d.generated || '').replace('T', ' ').slice(0, 16)}Z`,
+        + `출처 ${escapeHtml((d.source || '').slice(0, 120))}<br/>헤드라인·링크만 표시하며 본문은 각 매체에서 확인하세요 · ${escapeHtml((d.generated || '').replace('T', ' ').slice(0, 16))}Z`,
     };
   }
 

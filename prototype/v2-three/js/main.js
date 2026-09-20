@@ -3228,6 +3228,7 @@ async function main() {
   window.__earthusOutlines = fieldOutlines;   // 콘솔 확인용: __earthusOutlines.state()
   const CLOUD_OPACITY_FULL = clouds.uniforms.uOpacity.value;   // 0.92 — CloudManager 가 정한 값을 그대로 기억한다
   const CLOUD_OPACITY_WIND_ONLY = 0.28;
+  const PRECIP_OPACITY_FULL = clouds.precip ? clouds.precip.uniforms.uOpacity.value : 0;   // PrecipField 가 정한 값을 기억한다
   const starLayers = {
     windWasOn: false, autoSpeed: false, busy: false,
     tick(dt) {
@@ -3240,6 +3241,10 @@ async function main() {
         u.value += (target - u.value) * Math.min(1, dt * 5);
         if (Math.abs(u.value - target) < 0.004) u.value = target;
       }
+      // 구름 예보의 비·눈·뇌우 층(PrecipField)은 구름의 일부다 — 구름이 물러나면 같이 물러난다. 운영에서 기온을 켠 채 타임라인을 T+72h 로
+      // 밀었더니 구름은 꺼졌는데 필리핀 부근의 보라색 뇌우 표시만 색면 위에 남아 있었다. 비율은 구름과 같게(원래 값 × 구름의 비율).
+      const pu = clouds.precip && clouds.precip.uniforms.uOpacity;
+      if (pu) pu.value = PRECIP_OPACITY_FULL * (CLOUD_OPACITY_FULL > 0 ? u.value / CLOUD_OPACITY_FULL : 1);
       const windOn = !!(liveLayers.layers.wind && liveLayers.layers.wind.on);
       const speedOn = !!(liveLayers.layers.windgrid && liveLayers.layers.windgrid.on);
       windLayer.setColorMode(speedOn ? 'white' : 'speed');

@@ -51,6 +51,8 @@ test('main.js 가 매 프레임 무대를 정리한다 — 구름 불투명도 �
   const body = main.slice(at, main.indexOf('\n  };', at));
   assert.match(body, /star === 'field' \? 0 : star === 'wind' \? CLOUD_OPACITY_WIND_ONLY : CLOUD_OPACITY_FULL/, '색면이 있으면 구름을 끈다(0)');
   assert.match(main, /const CLOUD_OPACITY_FULL = clouds\.uniforms\.uOpacity\.value;/, '원래 불투명도를 숫자로 다시 적지 않는다 — CloudManager 가 정한 값을 기억한다');
+  // 구름 예보의 비·뇌우 층도 구름과 같은 비율로 물러난다 — 구름만 끄면 색면 위에 보라색 뇌우 표시만 남는다(운영에서 실측)
+  assert.match(body, /pu\.value = PRECIP_OPACITY_FULL \* \(CLOUD_OPACITY_FULL > 0 \? u\.value \/ CLOUD_OPACITY_FULL : 1\)/);
   assert.match(body, /windLayer\.setColorMode\(speedOn \? 'white' : 'speed'\)/);
   assert.match(body, /liveLayers\.toggle\('windgrid'\)/);
   // 우리가 같이 켠 것만 같이 끈다 — 사용자가 따로 켠 풍속 색면을 바람을 끌 때 같이 끄면 안 된다

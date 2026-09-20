@@ -63,7 +63,9 @@ export const FIELD_DESCRIPTORS = Object.freeze({
   // 안 나는 토글을 만들지 않는다(죽은 토글 금지). apcp 버킷 합산은 다음 묶음이다.
   raingrid: Object.freeze({
     layerId: 'raingrid', fieldId: 'precip', scaleId: 'precip', mode: 'scalar', mask: 'none', transfer: 'log10',
-    title: Object.freeze({ ko: '전지구 강수 · 지금 내리는 세기', en: 'Global precipitation · rate' }),
+    // ⚠️ 제목에 '지금'을 넣지 않는다 — 이것은 범례의 제목이고 바로 아래 줄에 유효 시각이 선다. T+72h 를 보는 중에
+    //    '지금 내리는 세기 · 유효 09/23 09:00 KST' 라고 적히면 카드가 화면과 다른 말을 한다(2026-09-20 반박 검증의 그 사고).
+    title: Object.freeze({ ko: '전지구 강수 · 강수율', en: 'Global precipitation · rate' }),
     quantity: Object.freeze({ ko: '강수율', en: 'Precipitation rate' }),
     isoName: Object.freeze({ ko: '강한 코어 윤곽', en: 'Heavy-core outline' }),
     isolineChoices: Object.freeze([]),

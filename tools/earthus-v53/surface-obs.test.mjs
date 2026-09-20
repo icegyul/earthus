@@ -94,7 +94,9 @@ test('v2 에서 이 두 파일을 받던 네 자리가 전부 공용 저장소�
       || /_URL\s*=\s*['"]\/wind\/(kma-aws|gts-global)\.json/.test(l));
     assert.deepEqual(own, [], `${name} 이 관측 문서를 아직 따로 받는다`);
   }
-  assert.match(live, /case 'wind':[\s\S]{0,120}surfaceObs\.doc\('aws'\)[\s\S]{0,80}surfaceObs\.doc\('gts'\)/);
+  // 바람('wind')은 같은 묶음에서 관측소 JSON 을 아예 안 받게 됐다 — GFS 10 m 프레임의 입자 층이다(js/wind-layer.js).
+  // 두 작업을 합친 뒤에는 '바람이 저장소를 쓴다'가 아니라 '바람이 관측 문서를 따로 받지 않는다'가 지킬 것이다(위 own 검사가 본다).
+  assert.doesNotMatch(live, /case 'wind':[\s\S]{0,200}surfaceObs\.doc\(/, "바람이 다시 관측소 JSON 을 받는다 — 막대기로 돌아가는 길이다");
   assert.match(live, /case 'tempanom':[\s\S]{0,80}surfaceObs\.doc\('aws'\)/);
   assert.match(synop, /await surfaceObs\.both\(\)/);
 });

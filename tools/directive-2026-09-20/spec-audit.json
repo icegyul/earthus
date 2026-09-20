@@ -1,0 +1,1718 @@
+{
+ "high": [
+  {
+   "promise": "구간 경계가 섞이지 않는 단계색 — 기온·기압·바람·SST·SST편차·파고 6개 변수 전부",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:12, 25-32 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/live-layers.js:2931-2944 rampFrom — 정지점 사이 `a[1]+(b[1]-a[1])*f` 선형 보간이고 단계 분기가 없다. :1108-1109 tex.minFilter/magFilter = THREE.LinearFilter, :1113 SphereGeometry(…,256,128) 위에 72×36(5°) 캔버스를 늘려 붙인다 — 번짐이 두 겹. 계약 6종 전부 이 경로: :581-586(t·mslp·spd), :571-574(sst·wave), :588(sstAnom). 대조 v1: prototype/js/gridoverlay.js:22-31 `stepped: true` + 주석 '색을 부드럽게 섞으면 경계가 안 읽힌다'",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "돈 내고 켠 색면이 경계 없는 그라데이션이라 '지금 몇 도 구간인지'를 눈으로 구분할 수 없다.",
+   "domain": "render"
+  },
+  {
+   "promise": "기온 등치선 -25,-10,0,10,20,30,40°C (7레벨) + 긴 경로부터 레벨당 최대 두 라벨",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:25, 34-35 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/live-layers.js:582 tempgrid → buildField(:1072-1121)는 캔버스 색 텍스처만 만들고 선·라벨 생성이 없다. v2 전체에 marching/contour/등치선 문자열 0건(js/i18n.js·js/phenomenon-registry.js 의 'contour' 는 용어·레지스트리 문자열). 해저 등심선(main.js:502-519)은 셰이더 수심 밴딩이라 격자 등치선이 아니다",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "'몇 도 선이 어디까지 올라왔나'가 기온 레이어를 보는 이유인데 그 선이 화면에 없다.",
+   "domain": "render"
+  },
+  {
+   "promise": "기압 등치선 4hPa 간격 + 고·저기압 중심 H/L 기호",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:27 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/live-layers.js:583 presgrid → buildField 색면만. v2 전체에 isobar·등압선 코드 0건(js/phenomenon-registry.js 의 '등압선' 은 현상 설명 문자열). v1 구현: prototype/js/isobars.js:30 `const STEP = 4`, :47-48 HI/LO, :50-70 극값 탐색",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "등압선 간격이 곧 바람 세기라는 판독이 통째로 빠져 있어, 색면만으로는 '어디가 높나'만 알고 '얼마나 급한가'를 모른다.",
+   "domain": "render"
+  },
+  {
+   "promise": "SST 등치선 4,10,16,22,26,29°C (6레벨)",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:30 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/live-layers.js:571 sstfield → buildField(data,'sst',SST_RAMP) 색면만. SST_RAMP 정지점은 -2,4,10,16,22,27,32 (:2957-2960)라 계약 경계 26·29 는 색 눈금에도 없다. 카드(:1721-1722)는 '한색 −2°C → 난색 32°C' 라는 양끝 문장만 준다",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "26·29°C는 산호 백화·태풍 발달을 가르는 경계인데 선으로도 색 경계로도 표시되지 않는다.",
+   "domain": "render"
+  },
+  {
+   "promise": "SST 편차 등치선 -1.5,-0.5,0,0.5,1.5°C (5레벨, 0 강조)",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:31 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/live-layers.js:588 sstanom → buildField(data,'sstAnom',SSTANOM_RAMP) 색면만. SSTANOM_BASE 정지점 -4,-2,-0.5,0.5,2,4 (:2995-2998)로 ±1.5 경계가 없고, :2999 SSTANOM_RAMP 는 |v|<0.25 를 null 로 버려 0 강조선 자리를 아예 비운다. v1 정의: prototype/js/continuous-contours.js:37 (`emphasis: 0`)",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "평년보다 뜨거운지 차가운지를 가르는 0 선이 없어, 편차 레이어에서 가장 중요한 경계를 눈으로 짚을 수 없다.",
+   "domain": "render"
+  },
+  {
+   "promise": "파고 1,2,3,4,6,9m 경계 단계색 · 등치선도 같은 경계값",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:32 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/live-layers.js:572 wavefield → buildField. WAVE_RAMP 정지점 0,1,2.5,4,6,8 (:3012-3015) — 계약에 없는 2.5·8 이 들어가 있고 계약의 3·9 가 빠졌다. 등치선도 없음. 카드(:1733-1734)는 '청 0m → 적 8m' 뿐. v1 정의: prototype/js/continuous-contours.js:38 levels [1,2,3,4,6,9]",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "색 경계가 계약과 다른 대표 사례로, 색면과 등치선이 같은 값이어야 한다는 규칙 자체가 깨져 있다.",
+   "domain": "render"
+  },
+  {
+   "promise": "범례의 해상도 · 유효 원격자 n · 위도 범위 · 등치선 기준 · 결측 처리 (5항목)",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:16 (2026-08-12)",
+   "verdict": "PARTIAL",
+   "evidence": "prototype/v2-three/js/live-layers.js:1188-1194 metaGrid — 해상도(`${360/d.res}×${180/d.res} (${d.res}°)`)·유효 원격자 n(`값이 있는 N칸`)·기준시각은 카드에 있고, 결측 처리도 변수별 문장으로 있다(:1178 '0.1mm 미만은 칠하지 않습니다', :1183 '밤(0)은 칠하지 않습니다'). 없는 것은 위도 범위, 등치선 기준(등치선 자체가 없다), 그리고 **색을 값으로 되돌리는 눈금**이다 — index.html 전체에서 색 눈금 마크업은 지진 깊이(:474-484 .qk-legend)와 인구 조각(:1162-1171 .sc-legend) 둘뿐이고 linear-gradient 도 그 두 곳뿐(index.html:474, 1133)",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "카드가 '몇 칸·어느 범위'까지는 정직하게 적지만 색 눈금이 없어, 화면에 칠해진 색 하나를 값으로 되돌릴 방법이 없다.",
+   "domain": "render"
+  },
+  {
+   "promise": "현재 화면 주요 도시의 최근접 원격자값 (지구 위 도시 값 라벨)",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:14 (2026-08-12) + prototype/js/readability.js:1-5",
+   "verdict": "MISSING",
+   "evidence": "색면 6종 어디에도 값 라벨 경로가 없다 — prototype/v2-three/js/live-layers.js 에 fillText 0건(grep: fillText 는 main.js:6147 워터마크, ext-scene.js:177·travel.js:66 라벨 헬퍼, seafloor.js:84 뿐). 지구 라벨 후보는 국가 폴리곤 bbox 중심만 만든다(main.js:5319-5348 buildLabelCandidates — nameKo/nameEn/code3). v1: prototype/js/gridoverlay.js:826-872 도시 최근접 격자값 라벨 + readability.js:376-390 `~` 표기 규칙",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "색면을 켠 상태에서 화면 안 도시의 실제 수치가 한 개도 안 떠서, 유료 화면이 '예쁜 색 한 장'으로 끝난다.",
+   "domain": "render"
+  },
+  {
+   "promise": "바람 입자는 방향 판독용 과장 — 전지구 u/v 입자장",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:28, 47 (2026-08-12) + prototype/v2-three/NEXT_STEPS.md 웨이브2 '남은 것 … 바람장/대기질(1.0 /wind)' (2026-09-01)",
+   "verdict": "PARTIAL",
+   "evidence": "windgrid 는 속력 색면만(prototype/v2-three/js/live-layers.js:584→1154-1166 buildWindGrid). 'wind' 레이어에 입자 흐름이 실제로 있으나 관측 지점 선분 위에서만 흐르고, 코드가 스스로 '관측 지점의 실측 벡터 위에서만 움직임 — 격자 보간·유선 생성 없음'이라고 적는다(:2181-2183, 지점당 P_PER=2). v1 전지구 입자장: prototype/js/windfield.js (615줄)",
+   "userVisible": "HIGH",
+   "fixSize": "LARGE",
+   "whyItMatters": "바다와 관측 공백 지역에는 흐름이 한 줄도 흐르지 않아, 전지구 화면에서 바람이 '어디서 어디로 가는지'가 보이지 않는다.",
+   "domain": "render"
+  },
+  {
+   "promise": "내일 최고/최저 기온 — 각 전용 단계색 · 범례 경계값 · °C 원격자 (tmax 0,12,22,28,33,38 / tmin -20,-10,0,8,16,24)",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:26 (2026-08-12) + prototype/js/continuous-contours.js:33-34",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/ui-shell.js:61-84 weather 섹션 전체 레이어 목록에 내일 기온 항목이 없다(있는 것: radar·raingrid·tempgrid·presgrid·windgrid·pm25grid·uvgrid·구름 6종·tempanom·wind·synop·airq·warn). live-layers.js:509-551 fetch 표와 :565-600 build 표에도 없다. v1: prototype/js/layerbar.js:138 tmax, :140 tmin + gridoverlay.js:55-64 tmax 전용 stepped 눈금('현재기온과 같은 색을 쓰면 두 레이어를 구분할 수 없다')",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "계약 표 8행 중 한 행이 레이어째로 없어, v2 날씨 메뉴에 '내일'을 색으로 보는 화면이 하나도 없다.",
+   "domain": "render"
+  },
+  {
+   "promise": "유료 경계가 실제로 작동한다는 전제 — 정본 39~48행 표 전체(FREE/EXPLORER/PRO 칸 구분)",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:39-48 (2026-09-14 정본) + prototype/js/config.local.js:30-31",
+   "verdict": "MISSING",
+   "evidence": "prototype/js/config.local.js:30-31 `MONETIZATION_MODE: 'FREE_OPEN'` · `SALES_OPEN: false`. prototype/js/access-mode.js decideCapabilityAccess 는 requiredTier 판정 **앞에서** `if (isFreeOpenMode(mode)) return { allowed:true, reason:'FREE_OPEN_UNTIL_PAID_LAUNCH' }` 로 빠져나간다. prototype/v2-three/js/main.js:4552 monetizationMode() 기본값도 'FREE_OPEN'. 즉 intel-strip.js:19-22 SECTION_TIER, entitlement.js:14-23 MINIMUM_TIER, lab-reports-page.js:13 allowed() 를 포함한 v2 의 모든 등급 판정이 오늘 한 번도 실행되지 않는다",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "1차 감사가 통째로 빠뜨린 항목 — 지금 유료 구독이라는 것이 아예 열려 있지 않고, 아래 모든 경계는 스위치를 켜는 날 처음 돌아가는 코드다.",
+   "domain": "product"
+  },
+  {
+   "promise": "PRO(₩29,000/월) 한 문장 = '지구의 조건을 바꾸어 시뮬레이션한다'. SCENARIO·SIMULATION·결과 해석이 PRO 전용 칸",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:41,48,70 (2026-09-14 정본)",
+   "verdict": "PARTIAL",
+   "evidence": "prototype/v2-three/js/sim-questions.js:40-351 — 현상 21종 중 status AVAILABLE 1종(hazards.tsunami, :62), LIMITED 3종(ocean.wave :48 · hazards.typhoon :83 · space.satellite :103), NOT_AVAILABLE 17종. 질문 24개 중 AVAILABLE 2개(:75-76, 둘 다 쓰나미). ⚠️ 1차 정정: :409-410 `pressable()` 이 LIMITED+action 도 누를 수 있게 하므로 **실제로 무언가 일어나는 버튼은 6개**(쓰나미 2 + 파도 1 + 태풍 경로 1 + 위성 2)이고, 나머지 18개가 사유 문장만 낸다",
+   "userVisible": "HIGH",
+   "fixSize": "LARGE",
+   "whyItMatters": "PRO 칸에서 '기록 남는 계산'이라 부를 수 있는 것은 쓰나미 하나이고 나머지 다섯 버튼은 장면이거나 기관 예보 인용이다.",
+   "domain": "product"
+  },
+  {
+   "promise": "Scenario = 태풍 가정 실험 baseline(§F: 풍속 ±15 m/s·눈까지 거리, baselineEventId 기록), 요금 PRO",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:29 (2026-09-14 정본)",
+   "verdict": "PARTIAL",
+   "evidence": "슬라이더 실재: prototype/v2-three/js/main.js:5270-5271 (sc-wind min=-15 max=15 · sc-eye 5~200km). ⚠️ 1차 뒤집음 — main.js:5276-5286 `record()` 가 `{eventId, revisionId, agency, baseline:{lat,lon,windMs}, windOffsetMs, eyeKm, badge:'SIMULATION_ONLY', at}` 을 localStorage 'earthus.scenario'(최근 30건)에 **실제로 기록한다.** 식별자 `baselineEventId` 만 저장소 코드 0건(prototype/·aws/·tools/ 전수 grep 확인)이고 기록 자체는 eventId+revisionId 로 있다. 남은 한계: main.js:4589 '실험 기록은 이 기기에만 남습니다' — 서버 회차가 아니고, main.js:4586 이 '결과는 파도 장면이지 예보도, 기록 남는 계산도 아닙니다'라고 적는다. main.js:5295 launchScenario 는 기준선 없는 두 번째 경로다",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "기준선은 기록되지만 그 기록이 이 기기 localStorage 안에만 있어, 구독자가 기기를 바꾸면 자기 실험이 사라진다.",
+   "domain": "product"
+  },
+  {
+   "promise": "EXPLORER(₩9,900/월) = REPORT ✓. 리포트 센터는 최신·월간·분기·연간·전망 다섯 갈래",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:47 (2026-09-14 정본) + prototype/v2-three/js/ui-shell.js:596-601 (REPORT_TABS 5종)",
+   "verdict": "PARTIAL",
+   "evidence": "오늘 실측 재확인: https://earthus-cache-kr.s3.us-east-2.amazonaws.com/reports/published/index.json → 200, 321바이트, 본문 전체가 `years.2026 = [ {reportId:'report:2026-08', type:'RETROSPECTIVE_MONTHLY', publishedAt:'2026-09-08T11:38:53Z', version:1} ]` **1건**. quarterly·annual·outlook 0건. ui-shell.js:540-542 주석이 '아직 없는 것: 월간·분기·연간 회고와 세 전망 — 생성기가 없다'라고 스스로 적는다",
+   "userVisible": "HIGH",
+   "fixSize": "LARGE",
+   "whyItMatters": "EXPLORER 를 파는 한 문장이 '보고서를 만든다'인데 정기 발행물은 한 달치 한 장뿐이고 탭은 다섯 개다.",
+   "domain": "product"
+  },
+  {
+   "promise": "COMPARE(비교) 탭을 CONTROL → PLUS 로 내린다 = EXPLORER 가 산다. 고급 Intelligence 에 '과거 비교' 포함",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:45,80 (2026-09-14 정본)",
+   "verdict": "PARTIAL",
+   "evidence": "⚠️ 1차 뒤집음(MISSING→PARTIAL). 1차는 event-room.js·scenario-compare.js 만 보고 0건이라 했지만, **prototype/v2-three/js/intel-feed.js:605-638 `compareHtml()` 이 '이전 발표와 비교' 카드를 실제로 그린다** — 회차 칩(rev-chip), 기관별 이전/현재 h0·+24h 표, 변경 목록, 당시 발표 원문 불변 링크(sourceRef), 비교 딥링크. prototype/v2-three/js/main.js:4853 이 'feed-compare' 액션을 받는다. 또 intel-feed.js:126-180 loadPast + :196-208 pastHtml 이 'PAST — 주변 30일'(USGS 반경 300km·30일·M2.5+)과 TC 공식 발표 타임라인을 그린다. 남은 사실: intel-feed.js:606 `if (it.kind !== 'TC') return ''` — 비교는 태풍 전용, PAST 는 지진·태풍만. 등급 판정은 붙어 있지 않아 지금 무료다. entitlement.js:22 `COMPARE: ACCESS_TIER.PLUS` 를 읽는 화면은 여전히 0개이고, prototype/v2-three/js/scenario-compare.js(75행)는 저장소 전체에서 import 0건(문자열 'scenario-compare' 전수 grep 무결과)",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "'과거 비교'는 태풍 사건에서 실제로 작동하고 있으므로 EXPLORER 가 살 물건이 아예 없는 것은 아니지만, 지금은 무료로 나가고 태풍 밖에서는 없다.",
+   "domain": "product"
+  },
+  {
+   "promise": "고급 Intelligence 7종(ANOMALY·WHY·RELATION·IMPACT/FOR ME·Confidence·변화 추적·과거 비교)을 EXPLORER 가 전부 받는다",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:45 (2026-09-14 정본)",
+   "verdict": "PARTIAL",
+   "evidence": "7종 재집계(1차의 '2종'은 과소): ① WHY — intel-strip.js:173-180, SECTION_TIER WHY=EXPLORER(:21), FREE 는 1건만 노출 후 lockBlock ✅올바르게 잠김. ② RELATION/IMPACT — :188-197, IMPACT=EXPLORER ✅. ③ Confidence — ⚠️1차 뒤집음: **:202-207 이 packet.confidence.grade 를 EVIDENCE 절에 그리고 `inputs.rule` 만 유료 뒤로 숨긴다** ✅부분 잠김. ④ ANOMALY — :146-156 이 items 루프·평년 이름/기간·method·coverageKo 까지 그린다. 그런데 이게 WHAT 절 안이고 SECTION_TIER.WHAT = TIER.FREE(:20) → **정본 45행이 유료라고 적은 것이 무료로 나간다(경계 어긋남)**. ⑤ 변화 추적(CHANGE) — :97-102·:141-145 에 from→to·delta·since 로 있고, 정본 44행이 CHANGE 를 기본(FREE)에 넣었으므로 코드와 문서가 일치(격차 아님). ⑥ 과거 비교 — 위 항목(intel-feed compareHtml/pastHtml), 무료·태풍지진 한정. ⑦ FOR ME — IMPACT 와 같은 것으로 정본 20행이 명시. 결과: 화면에 무언가 서 있는 것 6/7, 올바로 잠긴 것 3, 잘못 무료인 것 1(ANOMALY), 잠금 없이 좁게 있는 것 1(과거 비교)",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "요금표가 ✓ 하나로 묶어 파는 7종 중 EXPLORER 결제가 실제로 열어 주는 것은 3종이고, 나머지는 이미 무료이거나 태풍에만 있다.",
+   "domain": "product"
+  },
+  {
+   "promise": "기본 Intelligence(WHAT·CHANGE·기관 예보·특보)는 FREE, 고급은 EXPLORER — 즉 현상마다 인텔 띠가 뜬다는 전제",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:44-45 (2026-09-14 정본)",
+   "verdict": "PARTIAL",
+   "evidence": "docs/INTEL-COVERAGE-2026-09-20.md:6 (도구 생성표, 손으로 못 고침) — intelligence:true **34** 현상 중 패킷 생산자가 있는 것 **4**(hazards.earthquake · hazards.typhoon · ocean.sst · weather.temperature_anomaly). 5칸(WHAT·WHY·NEXT·IMPACT·EVIDENCE)을 모두 ✅ 로 채운 현상은 :11 `hazards.typhoon` **1개**. 나머지 30현상은 표에 '생산자 없음'. 화면 쪽 근거: intel-strip.js:80 이 packet 이 없으면 빈 문자열을 돌려주므로 띠 자체가 안 그려진다. ⚠️ 덧붙임 — 같은 표에서 `hazards.tsunami` 도 '생산자 없음'이다. PRO 의 유일한 계산 현상에 인텔 패킷이 없다(다만 event-room.js:272-273 이 PTWC 게시문 ETA 대조를 따로 그린다). 같은 날짜 docs/INTEL-REAUDIT-2026-09-20.md 는 33 이라 적어 34 vs 33 불일치가 남아 있고, COVERAGE 쪽이 생성물이라 더 신뢰한다",
+   "userVisible": "HIGH",
+   "fixSize": "LARGE",
+   "whyItMatters": "구독자가 지구에서 아무 현상이나 눌렀을 때 인텔 띠를 볼 확률이 34분의 4이고, 5칸이 다 차는 것은 태풍 하나다.",
+   "domain": "product"
+  },
+  {
+   "promise": "구독 화면이 파는 목록 — EXPLORER 11항목 / INTELLIGENCE 11항목",
+   "source": "prototype/js/billing.js:100-127 (EXPLORER_FEATURES), 133-165 (INTELLIGENCE_FEATURES) — 개발지침서 v5.3 §27.2·§27.3 사본",
+   "verdict": "PARTIAL",
+   "evidence": "billing.js:100-127 EXPLORER 11개 중 soon:true 8개(데일리 피드·이벤트 룸 전체·리플레이·MY EARTH·전문 렌즈·심해·아카이브 되감기·데일리 브리프), soon 없는 3개는 유사 사건·사후 리뷰·사건 추적. :133-165 INTELLIGENCE 11개 중 soon:true 10개(:134 'EXPLORER 전체'만 제외). ⚠️ 이 목록은 두 방향으로 틀리다: :109-110 이 '이벤트 룸 전체 — NOW·WHY·NEXT·**PAST·COMPARE**·FOR ME·EVIDENCE'를 soon:true 로 적는데 PAST·COMPARE 는 intel-feed.js 에 이미 있다(위 항목). 정본 §5 '정합해야 할 곳' 표(:78-88)에 billing.js 가 **없어** 결제 화면만 v5.3 §27 의 옛 항목 구성을 계속 판다",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "결제 화면 22줄 중 18줄이 '준비 중'인데 그중 일부는 이미 만들어져 있어, 사용자는 있는 것도 없다고 읽고 없는 것도 살 수 있다고 읽는다.",
+   "domain": "product"
+  },
+  {
+   "promise": "창립 멤버 500명 — '언제나 정가의 반값'(이용약관 제8조 제7항). 사전등록 화면에 라이브로 걸려 있다",
+   "source": "prototype/index.html (라이브) · docs/FOUNDING-500.md:9-15 vs AGENTS.md:40",
+   "verdict": "UNKNOWN",
+   "evidence": "두 문서가 다르다. docs/FOUNDING-500.md:9-15(2026-08-09 갱신): '운영 DB 적용과 9개 검증까지 끝났다 … ☑ founding.sql 적용·9/9 검증 · ☑ checkout 배포(SALES_ENABLED=false, 운영 503 SALES_CLOSED 확인)'. AGENTS.md:40: '창립 멤버 500 — 반값 결제 (코드 작성 완료 · 적용 대기, ⚠️ SALES_OPEN=true 전 필수)'. ⚠️ 1차는 'AGENTS.md 는 날짜가 없어 우열을 정할 수 없다'고 했으나 git 으로 정해진다 — `git log -S\"적용 대기\" -- AGENTS.md` = 02423387 **2026-08-06** 에 들어온 뒤 한 번도 안 고쳐졌고, `git log -1 -- docs/FOUNDING-500.md` = 578497a0 **2026-08-09**. 즉 AGENTS.md 쪽이 3일 오래된 문장이다. 그래도 저장소로는 운영 DB 상태를 볼 수 없어 UNKNOWN 을 유지한다",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "반값 경로가 실제로 운영 DB 에 없는 채 판매를 열면 창립 멤버가 정가를 내고 그건 약관 제8조 제7항 위반이다.",
+   "domain": "product"
+  },
+  {
+   "promise": "phenomenon-registry `intelligence:true` 34현상 — 고르면 문맥 한 줄에 '해석' 칩이 뜨고 5절(WHAT/WHY/NEXT/IMPACT/EVIDENCE) 띠가 붙는다 (계약 §C-0 표, LAYER-PLAN §2.2)",
+   "source": "docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md:99-109 (2026-09-14) + docs/INTEL-COVERAGE-2026-09-20.md:6 (2026-09-20, 최신)",
+   "verdict": "PARTIAL",
+   "evidence": "직접 import 해 집계: PHENOMENA 66건 중 intelligence:true **34건**(첫 감사 수치와 일치). ui-shell.js:1170 `CAP_KO.intelligence='해석'` → :1172-1186 `phenomenonLine()` 이 `ctx.capabilities[k]` 가 true 인 능력을 전부 찍으므로 34건 모두 '해석' 칩이 뜬다. 그런데 패킷을 돌려주는 곳은 main.js:4098-4112 `intelHostFor()` 뿐이고 hazards.typhoon·hazards.earthquake·ocean.sst·weather.temperature_anomaly **4개만** 반환, 나머지는 `return null`. intel-strip.js:80 이 `if (!packet …) return ''` 이라 띠가 아예 안 그려진다. docs/INTEL-COVERAGE-2026-09-20.md:6 이 '34 현상 중 패킷 생산자가 있는 것 4 (운영 확인)' 로 같은 수치를 기록했다. → 30개 현상은 '해석' 글자만 있고 누를 것이 없다.",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "유료 등급이 파는 '해석'이라는 말이 화면에 34번 찍히는데 실제로 열리는 것은 4번뿐이라, 구독자가 나머지 30번을 만날 때마다 속았다고 느낀다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "§D PRO Simulation 8단계 — `Simulation Request → ①Consent Check → ②PRO Check → ③Human Approval → ④Engine → ⑤SimulationRunRecord → ⑥runRef → ⑦Result → ⑧3D·Report·Narration`, §K-2 'RUN SIMULATION 버튼 클릭 → §D 정식 흐름'",
+   "source": "docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md:146-156 (§D), :419 (§K), :437 (§K-2)",
+   "verdict": "PARTIAL",
+   "evidence": "main.js:4732-4744 — `tsunami-reach` 는 ②PRO 검사(`decideCapabilityAccess`, requiredTier: TIER.INTELLIGENCE) 하나만 하고 통과하면 `shell.showTab('scenario')` 로 탭만 연다. ①동의·③승인은 v2 화면에 없다 — Grep(ripgrep)으로 `동의|consent|승인|approv` 를 prototype/v2-three/js/*.js 전체에 돌린 결과, 시뮬 승인·동의 관련 히트는 0건이고 걸린 '승인'은 ask-earth.js:6,12,25 의 '승인된 Scene Tool 목록'(무관)뿐이다. RUN 버튼도 없다 — main.js:4557-4576 시나리오 탭은 '사건 방 열기 →' 버튼 하나로 끝나고, 실제 계산은 aws/tsunami-eta 의 15분 스케줄 배치다. ④~⑦은 화면에서 일어나지 않는다.",
+   "userVisible": "HIGH",
+   "fixSize": "LARGE",
+   "whyItMatters": "PRO(₩29,000/월)가 'SIMULATE THE EARTH'로 파는 것은 오늘 실행 권한이 아니라 '이미 배치로 계산돼 있는 도달시간을 볼 권한'이다 — 구독자가 조건을 바꿔 돌릴 수 있는 것이 하나도 없다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "`capabilities.forecast: true` → 인텔 패널의 NEXT 탭이 열리고 '예보' 칩이 붙는다 (CAP_TAB `next: 'forecast'`)",
+   "source": "prototype/v2-three/js/ui-shell.js:318 + 계약 §C-0:105 'NEXT — Intelligence의 핵심 상품'",
+   "verdict": "PARTIAL",
+   "evidence": "실측 forecast:true 13건(import 집계). 그중 3건은 자기 자료에 앞을 말하는 것이 없다 — ui-shell.js:192-194 `eq`·`eqhistory`·`eqdepth` 전부 `state:'OBSERVED'`(hazards.earthquake), :123 `seoul` OBSERVED·:127 `livemix` DERIVED(people.crowding), :218 `aeth-orbit` LIVE(space.orbital_debris). ui-shell.js:1136-1146 `nextHtml()` 은 켜진 레이어 중 state 가 /FORECAST|WARNING|MODEL/ 인 것만 모으므로 셋 다 `nextEmpty` 만 나온다. 보조 경로도 막혀 있다 — `eventNextHtml()` 이 부르는 intel-feed.js:681-689 `nextRows()` 는 `p.revisions[].agencies`(태풍 회차 패킷) 가 있어야 하므로 지진에서는 항상 []. docs/INTEL-COVERAGE-2026-09-20.md:10 도 지진 NEXT 를 '기관 여진 예보를 받는 수집기가 없다' 로 비워 두었는데 레지스트리는 forecast:true 다. 나머지 10건은 정상이며 `weather.mountain_summit` 은 ui-shell.js:182 `mountain` state 'OFFICIAL_FORECAST' 로 **실제로 동작한다 — 미구현이 아니다.**",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "'예보' 칩을 보고 NEXT 탭을 연 구독자가 빈 카드를 만나는 현상이 3개 있고, 그중 지진은 사람들이 가장 앞을 궁금해하는 현상이다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "ANOMALY·PATTERN = EXPLORER (FREE 는 결과 일부 노출 뒤 잠금) — 1차가 빠뜨린 항목",
+   "source": "docs/INTELLIGENCE-LAYER-PLAN-2026-09-14.md:96 (§3.1) + docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:45 '고급 Intelligence(ANOMALY·WHY·RELATION·IMPACT/FOR ME·Confidence·변화 추적·과거 비교) → FREE 제한(결과 일부 노출)' (두 문서 모두 09-14, 서로 일치)",
+   "verdict": "MISSING",
+   "evidence": "intel-questions.js:33 `WHAT: ['current','change','anomaly','pattern']` — ANOMALY·PATTERN 은 독립 절이 아니라 **WHAT 절의 재료**다. 그런데 intel-strip.js:20 `SECTION_TIER = { WHAT: TIER.FREE, NEXT: FREE, EVIDENCE: FREE }`, :21 `WHY: EXPLORER, IMPACT: EXPLORER`. intelSectionHtml 의 WHAT 분기(:139-170)를 줄 단위로 확인하면 `packet.anomaly` 항목(평년 대비 값·baseline·period)과 `packet.pattern`(여진 실제수 vs RJ 모형 기대수, 기관 예보 위치 차, 지속 시간)을 전부 출력하며 `acc.allowed` 검사가 **한 번도 없다** — grep 실측상 `acc.allowed` 는 :110·175·180·190·197·205 에만 나오고 WHAT 분기 안에는 없다. 즉 두 정본 문서가 EXPLORER 로 지정한 ANOMALY·PATTERN 이 FREE 로 나간다. 남는 EXPLORER 전용 표면을 INTEL-COVERAGE-2026-09-20.md 표로 세면: 태풍 WHY·IMPACT 2칸 + ocean.sst IMPACT 1칸 = **현상 2개 3칸**(지진·평년차는 WHY·IMPACT 둘 다 '—').",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "EXPLORER(₩9,900/월)가 66현상을 통틀어 독점으로 파는 내용이 오늘 현상 2개 3칸뿐이고, 가장 값어치 있는 '평년 대비'와 '여진 모형'은 무료로 나간다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "UX 수리 지시서 §7.2 \"사용자가 1차 메뉴를 선택하면: 1. Navigation drawer를 닫는다 … 4. 지구가 다시 최대 영역을 확보한다\" + §10 체크 \"모바일에서 메뉴가 지구를 가리지 않도록 한다\"",
+   "source": "docs/icon-system/EARTHUS_V2_CURRENT_UX_PROBLEM_REPAIR_DIRECTIVE_v1.0.md:293-299, 371 (2026-09-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/ui-shell.js:852 — 레이어 행을 눌러도 closeFlyout() 을 부르지 않는다(호출처는 535 스크림·786 Esc·789 ✕·811·833 리포트→현상·856·860 브랜드탭뿐). 1차가 못 본 것을 실측으로 더했다: prototype/v2-three/js/main.js:4053-4056 showNote() 가 shell.openIntel() 을 불러 결과 카드가 **반드시** 열린다. 그런데 prototype/v2-three/index.html:672 #intel{z-index:4} < :388 #menu-panel{z-index:5} 이고, ui-shell.js:251 root=document.body·:896 root.appendChild(intel) 라 intel 은 스크림(index.html:1435, z=4) 위·서랍 아래에 그려진다. 폭은 index.html:1342 #menu-panel width:min(470px,calc(100vw - 46px)) → 375px 에서 329px, index.html:1371-1383 #intel right:8px·width:calc(100vw - 16px)·max-height:31vh → 두 상자가 가로로 약 87% 겹친다",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "돈을 낸 사람이 폰에서 자료를 하나 켜면 방금 산 결과 카드가 서랍 뒤에 가려져, 한 번 더 지구를 눌러 서랍을 치워야 값을 볼 수 있다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "인텔리전스 능력 줄은 \"없는 능력은 적지 않는다 — '준비 중'으로 위장하면 사용자는 곧 열린다고 읽는다\" (해당 코드 자신의 규칙) · 계약 §C-0 \"빈 NEXT 카드를 만들지 않는다 — 결과가 없으면 절 전체를 숨긴다\"",
+   "source": "prototype/v2-three/js/ui-shell.js:1167-1169 주석, docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md (INTELLIGENCE 5절 표 아래 단락)",
+   "verdict": "PARTIAL",
+   "evidence": "1차가 통째로 빠뜨린 항목이다. prototype/v2-three/js/ui-shell.js:1176 `Object.keys(dict).filter((k)=>ctx.capabilities[k])` — 능력 줄('… · 현재 · 해석 · 근거 · 시뮬레이션')을 **레지스트리의 정적 선언**으로 그린다. prototype/v2-three/js/phenomenon-registry.js:81 'hazards.tsunami' capabilities.intelligence:true. 그런데 prototype/v2-three/js/intel-strip.js:80 `if (!packet || …) return ''` — 패킷이 없으면 띠를 아예 안 그린다. docs/INTEL-COVERAGE-2026-09-20.md 표: intelligence:true 34현상 중 생산자가 있는 것 4(태풍·지진·해수면온도·평년대비기온). 남은 30현상은 화면이 '해석'을 광고하고 띠는 나오지 않는다",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "유료 구독의 핵심 상품인 '해석'이 30개 현상에서 글자로만 존재해, 눌러도 아무것도 안 나오는 경험이 4번 중 3번 이상 반복된다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "PILOT SCREEN SPEC — 쓰나미 INTELLIGENCE 에 WHY/WHAT/NEXT/IMPACT/EVIDENCE 5절을 채운다",
+   "source": "docs/PILOT-SCREEN-SPEC-TEMPERATURE-TSUNAMI-2026-09-18.md:79-90 (2026-09-18)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/main.js:4098-4110 intelHostFor() 의 분기는 TC(태풍)·EQ(지진)·ocean.sst·weather.temperature_anomaly 넷뿐 — hazards.tsunami 분기가 없다. docs/INTEL-COVERAGE-2026-09-20.md 표에서도 `hazards.tsunami` = '생산자 없음'. 틀은 실재한다(intel-strip.js:136-212 WHAT/WHY/NEXT/IMPACT/EVIDENCE 전부 구현). 1차가 놓친 보완 사실: SIMULATION 탭에는 쓰나미 전용 분기가 이미 있다(main.js:4565-4575 — √(g·h) 도달시간, 사건 선택 유도, SIMULATION_ONLY 배지)",
+   "userVisible": "HIGH",
+   "fixSize": "LARGE",
+   "whyItMatters": "'완전한 케이스'로 고른 파일럿 현상조차 Intelligence 띠가 뜨지 않아, 구독자가 제품의 대표 기능을 한 번도 제대로 볼 수 없다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "정보 접근성 CSS 가 맡는 것 = \"글자 크기·대비·최소 터치 영역(44px)·포커스 표시\"",
+   "source": "prototype/v2-three/js/information-access.css:3 (2026-09-05), prototype/v2-three/index.html:341 주석 \"터치 최소 44px(iOS HIG)\" (2026-09-10 감사)",
+   "verdict": "PARTIAL",
+   "evidence": "적용된 곳(직접 확인): prototype/v2-three/index.html:342 #bottom-nav button{min-width:50px;min-height:44px}, information-access.css:9 .mp-search input{min-height:44px}, :11 .mp-title button{min-height:44px}, :13 #intel .intel-tabs button{min-height:44px}·.card-b button{min-height:44px}, :29 #intel .context-details input{min-height:44px}. 미적용: prototype/v2-three/index.html:81-82 `#chrome button, #chrome a#btn-research { width:30px; height:28px }` — 상단 도구줄 7개(⌕ 검색·✦ 묻기·⤴ 공유·? 도움말·⚙ 설정·○ 로그인·⚗ 연구) 전부. 모바일 미디어쿼리(index.html:1362)는 `#chrome{padding-top:…}` 만 바꾼다. information-access.css:10 .mp-active-only{min-height:30px}·체크박스 18×18, :27 #intel-close{width:32px}",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "2026-09-20 에 권역 이동 칩을 없애면서 지역 이동의 유일한 통로가 된 ⌕ 검색이 30×28px 이라, 폰에서 장소를 찾는 첫 동작부터 잘 안 눌린다.",
+   "domain": "ux"
+  }
+ ],
+ "missing": [
+  {
+   "promise": "구간 경계가 섞이지 않는 단계색 — 기온·기압·바람·SST·SST편차·파고 6개 변수 전부",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:12, 25-32 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/live-layers.js:2931-2944 rampFrom — 정지점 사이 `a[1]+(b[1]-a[1])*f` 선형 보간이고 단계 분기가 없다. :1108-1109 tex.minFilter/magFilter = THREE.LinearFilter, :1113 SphereGeometry(…,256,128) 위에 72×36(5°) 캔버스를 늘려 붙인다 — 번짐이 두 겹. 계약 6종 전부 이 경로: :581-586(t·mslp·spd), :571-574(sst·wave), :588(sstAnom). 대조 v1: prototype/js/gridoverlay.js:22-31 `stepped: true` + 주석 '색을 부드럽게 섞으면 경계가 안 읽힌다'",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "돈 내고 켠 색면이 경계 없는 그라데이션이라 '지금 몇 도 구간인지'를 눈으로 구분할 수 없다.",
+   "domain": "render"
+  },
+  {
+   "promise": "기온 등치선 -25,-10,0,10,20,30,40°C (7레벨) + 긴 경로부터 레벨당 최대 두 라벨",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:25, 34-35 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/live-layers.js:582 tempgrid → buildField(:1072-1121)는 캔버스 색 텍스처만 만들고 선·라벨 생성이 없다. v2 전체에 marching/contour/등치선 문자열 0건(js/i18n.js·js/phenomenon-registry.js 의 'contour' 는 용어·레지스트리 문자열). 해저 등심선(main.js:502-519)은 셰이더 수심 밴딩이라 격자 등치선이 아니다",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "'몇 도 선이 어디까지 올라왔나'가 기온 레이어를 보는 이유인데 그 선이 화면에 없다.",
+   "domain": "render"
+  },
+  {
+   "promise": "기압 등치선 4hPa 간격 + 고·저기압 중심 H/L 기호",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:27 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/live-layers.js:583 presgrid → buildField 색면만. v2 전체에 isobar·등압선 코드 0건(js/phenomenon-registry.js 의 '등압선' 은 현상 설명 문자열). v1 구현: prototype/js/isobars.js:30 `const STEP = 4`, :47-48 HI/LO, :50-70 극값 탐색",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "등압선 간격이 곧 바람 세기라는 판독이 통째로 빠져 있어, 색면만으로는 '어디가 높나'만 알고 '얼마나 급한가'를 모른다.",
+   "domain": "render"
+  },
+  {
+   "promise": "기압 선은 동아시아 1° 전용판(pressure-ea.json), 전지구 5°로 가짜 정밀선 금지",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:27 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/live-layers.js:511-514 — raingrid·tempgrid·presgrid·windgrid 가 모두 `/wind/global.json` 하나(5°)를 공유한다. 'pressure-ea' 문자열 v2 전체 0건. v1: prototype/js/isobars.js:26 `${API.WIND}/pressure-ea.json`, prototype/js/gridoverlay.js:420 pressureEa, :394 bbox 20~50N/110~160E",
+   "userVisible": "MEDIUM",
+   "fixSize": "SMALL",
+   "whyItMatters": "등압선을 넣으려 해도 전제가 되는 1° 자료가 v2 에 연결돼 있지 않아 선 작업보다 앞에 와야 하는 항목이다.",
+   "domain": "render"
+  },
+  {
+   "promise": "SST 등치선 4,10,16,22,26,29°C (6레벨)",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:30 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/live-layers.js:571 sstfield → buildField(data,'sst',SST_RAMP) 색면만. SST_RAMP 정지점은 -2,4,10,16,22,27,32 (:2957-2960)라 계약 경계 26·29 는 색 눈금에도 없다. 카드(:1721-1722)는 '한색 −2°C → 난색 32°C' 라는 양끝 문장만 준다",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "26·29°C는 산호 백화·태풍 발달을 가르는 경계인데 선으로도 색 경계로도 표시되지 않는다.",
+   "domain": "render"
+  },
+  {
+   "promise": "SST 편차 등치선 -1.5,-0.5,0,0.5,1.5°C (5레벨, 0 강조)",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:31 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/live-layers.js:588 sstanom → buildField(data,'sstAnom',SSTANOM_RAMP) 색면만. SSTANOM_BASE 정지점 -4,-2,-0.5,0.5,2,4 (:2995-2998)로 ±1.5 경계가 없고, :2999 SSTANOM_RAMP 는 |v|<0.25 를 null 로 버려 0 강조선 자리를 아예 비운다. v1 정의: prototype/js/continuous-contours.js:37 (`emphasis: 0`)",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "평년보다 뜨거운지 차가운지를 가르는 0 선이 없어, 편차 레이어에서 가장 중요한 경계를 눈으로 짚을 수 없다.",
+   "domain": "render"
+  },
+  {
+   "promise": "파고 1,2,3,4,6,9m 경계 단계색 · 등치선도 같은 경계값",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:32 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/live-layers.js:572 wavefield → buildField. WAVE_RAMP 정지점 0,1,2.5,4,6,8 (:3012-3015) — 계약에 없는 2.5·8 이 들어가 있고 계약의 3·9 가 빠졌다. 등치선도 없음. 카드(:1733-1734)는 '청 0m → 적 8m' 뿐. v1 정의: prototype/js/continuous-contours.js:38 levels [1,2,3,4,6,9]",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "색 경계가 계약과 다른 대표 사례로, 색면과 등치선이 같은 값이어야 한다는 규칙 자체가 깨져 있다.",
+   "domain": "render"
+  },
+  {
+   "promise": "현재 화면 주요 도시의 최근접 원격자값 (지구 위 도시 값 라벨)",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:14 (2026-08-12) + prototype/js/readability.js:1-5",
+   "verdict": "MISSING",
+   "evidence": "색면 6종 어디에도 값 라벨 경로가 없다 — prototype/v2-three/js/live-layers.js 에 fillText 0건(grep: fillText 는 main.js:6147 워터마크, ext-scene.js:177·travel.js:66 라벨 헬퍼, seafloor.js:84 뿐). 지구 라벨 후보는 국가 폴리곤 bbox 중심만 만든다(main.js:5319-5348 buildLabelCandidates — nameKo/nameEn/code3). v1: prototype/js/gridoverlay.js:826-872 도시 최근접 격자값 라벨 + readability.js:376-390 `~` 표기 규칙",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "색면을 켠 상태에서 화면 안 도시의 실제 수치가 한 개도 안 떠서, 유료 화면이 '예쁜 색 한 장'으로 끝난다.",
+   "domain": "render"
+  },
+  {
+   "promise": "내일 최고/최저 기온 — 각 전용 단계색 · 범례 경계값 · °C 원격자 (tmax 0,12,22,28,33,38 / tmin -20,-10,0,8,16,24)",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:26 (2026-08-12) + prototype/js/continuous-contours.js:33-34",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/ui-shell.js:61-84 weather 섹션 전체 레이어 목록에 내일 기온 항목이 없다(있는 것: radar·raingrid·tempgrid·presgrid·windgrid·pm25grid·uvgrid·구름 6종·tempanom·wind·synop·airq·warn). live-layers.js:509-551 fetch 표와 :565-600 build 표에도 없다. v1: prototype/js/layerbar.js:138 tmax, :140 tmin + gridoverlay.js:55-64 tmax 전용 stepped 눈금('현재기온과 같은 색을 쓰면 두 레이어를 구분할 수 없다')",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "계약 표 8행 중 한 행이 레이어째로 없어, v2 날씨 메뉴에 '내일'을 색으로 보는 화면이 하나도 없다.",
+   "domain": "render"
+  },
+  {
+   "promise": "TPW — 10mm 단계색 · 등치선 10~70mm · mm 원격자 (공개 승인 전 TPW_READY=false 유지)",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:29 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/ 전체에 'TPW'·'가강수' 문자열 0건(js/ 및 index.html 전수 grep). v1 구현: prototype/js/gridoverlay.js:41-51 tpw stepped 8단계, continuous-contours.js:36 levels 10~70mm, layerbar.js:133 tpw 항목",
+   "userVisible": "MEDIUM",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "v1 에서도 공개 플래그가 걸린 층이라 급하지 않지만, 승인이 나도 v2 에는 켤 코드 자체가 없다.",
+   "domain": "render"
+  },
+  {
+   "promise": "대륙 포커스(§19.4 Continent Focus) — 국가 bbox 유니온으로 다음 단계",
+   "source": "prototype/v2-three/NEXT_STEPS.md:78, '## 3. 알려진 프로토타입 한계' 절 (2026-09-01)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/ 전체에 continentFocus·'대륙 포커스' 문자열 0건. 포커스는 국가 단위만 존재한다(main.js:5319-5348 buildLabelCandidates 가 focus.data 국가 폴리곤만 다룬다)",
+   "userVisible": "LOW",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "문서가 스스로 '미구현'이라 적어 둔 한계라 약속 위반은 아니고, 사용자가 없는 줄도 모르는 기능이다.",
+   "domain": "render"
+  },
+  {
+   "promise": "유료 경계가 실제로 작동한다는 전제 — 정본 39~48행 표 전체(FREE/EXPLORER/PRO 칸 구분)",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:39-48 (2026-09-14 정본) + prototype/js/config.local.js:30-31",
+   "verdict": "MISSING",
+   "evidence": "prototype/js/config.local.js:30-31 `MONETIZATION_MODE: 'FREE_OPEN'` · `SALES_OPEN: false`. prototype/js/access-mode.js decideCapabilityAccess 는 requiredTier 판정 **앞에서** `if (isFreeOpenMode(mode)) return { allowed:true, reason:'FREE_OPEN_UNTIL_PAID_LAUNCH' }` 로 빠져나간다. prototype/v2-three/js/main.js:4552 monetizationMode() 기본값도 'FREE_OPEN'. 즉 intel-strip.js:19-22 SECTION_TIER, entitlement.js:14-23 MINIMUM_TIER, lab-reports-page.js:13 allowed() 를 포함한 v2 의 모든 등급 판정이 오늘 한 번도 실행되지 않는다",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "1차 감사가 통째로 빠뜨린 항목 — 지금 유료 구독이라는 것이 아예 열려 있지 않고, 아래 모든 경계는 스위치를 켜는 날 처음 돌아가는 코드다.",
+   "domain": "product"
+  },
+  {
+   "promise": "Ask Earthus — FREE 는 '기본(한도)', EXPLORER·PRO 는 ✓(무제한)",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:46 (2026-09-14 정본)",
+   "verdict": "MISSING",
+   "evidence": "클라이언트: prototype/v2-three/js/ask-earth.js(268행) 에서 quota·limit·tier·decideCapabilityAccess 전수 grep 0건 — 있는 상수는 :23 `MAX_Q = 400`(질문 글자 수, :116 maxlength·:154 길이 검사)뿐. 서버도 확인했다: aws/earthus-llm/{handler.py, narration_guard.py} 에서 quota·rate_limit·throttle·per_day·daily·limit·tier·paid 전수 grep **0건** — 한도가 서버에도 없다. prototype/js/earthus2/v02/paid/entitlement.js:27,33 quotaRemaining 과 paid/usage-metering.js 는 존재하지만 화면 import 0개(v02/index.js 재수출과 prototype/v2-deploy/ 빌드 사본뿐)",
+   "userVisible": "MEDIUM",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "요금표에서 유료의 근거가 '한도 해제'인데 무료 쪽에 풀 한도가 없어 구독해도 달라지는 것이 없다.",
+   "domain": "product"
+  },
+  {
+   "promise": "ANOMALY·PATTERN = EXPLORER (FREE 는 결과 일부 노출 뒤 잠금) — 1차가 빠뜨린 항목",
+   "source": "docs/INTELLIGENCE-LAYER-PLAN-2026-09-14.md:96 (§3.1) + docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:45 '고급 Intelligence(ANOMALY·WHY·RELATION·IMPACT/FOR ME·Confidence·변화 추적·과거 비교) → FREE 제한(결과 일부 노출)' (두 문서 모두 09-14, 서로 일치)",
+   "verdict": "MISSING",
+   "evidence": "intel-questions.js:33 `WHAT: ['current','change','anomaly','pattern']` — ANOMALY·PATTERN 은 독립 절이 아니라 **WHAT 절의 재료**다. 그런데 intel-strip.js:20 `SECTION_TIER = { WHAT: TIER.FREE, NEXT: FREE, EVIDENCE: FREE }`, :21 `WHY: EXPLORER, IMPACT: EXPLORER`. intelSectionHtml 의 WHAT 분기(:139-170)를 줄 단위로 확인하면 `packet.anomaly` 항목(평년 대비 값·baseline·period)과 `packet.pattern`(여진 실제수 vs RJ 모형 기대수, 기관 예보 위치 차, 지속 시간)을 전부 출력하며 `acc.allowed` 검사가 **한 번도 없다** — grep 실측상 `acc.allowed` 는 :110·175·180·190·197·205 에만 나오고 WHAT 분기 안에는 없다. 즉 두 정본 문서가 EXPLORER 로 지정한 ANOMALY·PATTERN 이 FREE 로 나간다. 남는 EXPLORER 전용 표면을 INTEL-COVERAGE-2026-09-20.md 표로 세면: 태풍 WHY·IMPACT 2칸 + ocean.sst IMPACT 1칸 = **현상 2개 3칸**(지진·평년차는 WHY·IMPACT 둘 다 '—').",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "EXPLORER(₩9,900/월)가 66현상을 통틀어 독점으로 파는 내용이 오늘 현상 2개 3칸뿐이고, 가장 값어치 있는 '평년 대비'와 '여진 모형'은 무료로 나간다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "UX 수리 지시서 §7.2 \"사용자가 1차 메뉴를 선택하면: 1. Navigation drawer를 닫는다 … 4. 지구가 다시 최대 영역을 확보한다\" + §10 체크 \"모바일에서 메뉴가 지구를 가리지 않도록 한다\"",
+   "source": "docs/icon-system/EARTHUS_V2_CURRENT_UX_PROBLEM_REPAIR_DIRECTIVE_v1.0.md:293-299, 371 (2026-09-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/ui-shell.js:852 — 레이어 행을 눌러도 closeFlyout() 을 부르지 않는다(호출처는 535 스크림·786 Esc·789 ✕·811·833 리포트→현상·856·860 브랜드탭뿐). 1차가 못 본 것을 실측으로 더했다: prototype/v2-three/js/main.js:4053-4056 showNote() 가 shell.openIntel() 을 불러 결과 카드가 **반드시** 열린다. 그런데 prototype/v2-three/index.html:672 #intel{z-index:4} < :388 #menu-panel{z-index:5} 이고, ui-shell.js:251 root=document.body·:896 root.appendChild(intel) 라 intel 은 스크림(index.html:1435, z=4) 위·서랍 아래에 그려진다. 폭은 index.html:1342 #menu-panel width:min(470px,calc(100vw - 46px)) → 375px 에서 329px, index.html:1371-1383 #intel right:8px·width:calc(100vw - 16px)·max-height:31vh → 두 상자가 가로로 약 87% 겹친다",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "돈을 낸 사람이 폰에서 자료를 하나 켜면 방금 산 결과 카드가 서랍 뒤에 가려져, 한 번 더 지구를 눌러 서랍을 치워야 값을 볼 수 있다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "PILOT SCREEN SPEC — 쓰나미 INTELLIGENCE 에 WHY/WHAT/NEXT/IMPACT/EVIDENCE 5절을 채운다",
+   "source": "docs/PILOT-SCREEN-SPEC-TEMPERATURE-TSUNAMI-2026-09-18.md:79-90 (2026-09-18)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/main.js:4098-4110 intelHostFor() 의 분기는 TC(태풍)·EQ(지진)·ocean.sst·weather.temperature_anomaly 넷뿐 — hazards.tsunami 분기가 없다. docs/INTEL-COVERAGE-2026-09-20.md 표에서도 `hazards.tsunami` = '생산자 없음'. 틀은 실재한다(intel-strip.js:136-212 WHAT/WHY/NEXT/IMPACT/EVIDENCE 전부 구현). 1차가 놓친 보완 사실: SIMULATION 탭에는 쓰나미 전용 분기가 이미 있다(main.js:4565-4575 — √(g·h) 도달시간, 사건 선택 유도, SIMULATION_ONLY 배지)",
+   "userVisible": "HIGH",
+   "fixSize": "LARGE",
+   "whyItMatters": "'완전한 케이스'로 고른 파일럿 현상조차 Intelligence 띠가 뜨지 않아, 구독자가 제품의 대표 기능을 한 번도 제대로 볼 수 없다.",
+   "domain": "ux"
+  }
+ ],
+ "partial": [
+  {
+   "promise": "범례의 해상도 · 유효 원격자 n · 위도 범위 · 등치선 기준 · 결측 처리 (5항목)",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:16 (2026-08-12)",
+   "verdict": "PARTIAL",
+   "evidence": "prototype/v2-three/js/live-layers.js:1188-1194 metaGrid — 해상도(`${360/d.res}×${180/d.res} (${d.res}°)`)·유효 원격자 n(`값이 있는 N칸`)·기준시각은 카드에 있고, 결측 처리도 변수별 문장으로 있다(:1178 '0.1mm 미만은 칠하지 않습니다', :1183 '밤(0)은 칠하지 않습니다'). 없는 것은 위도 범위, 등치선 기준(등치선 자체가 없다), 그리고 **색을 값으로 되돌리는 눈금**이다 — index.html 전체에서 색 눈금 마크업은 지진 깊이(:474-484 .qk-legend)와 인구 조각(:1162-1171 .sc-legend) 둘뿐이고 linear-gradient 도 그 두 곳뿐(index.html:474, 1133)",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "카드가 '몇 칸·어느 범위'까지는 정직하게 적지만 색 눈금이 없어, 화면에 칠해진 색 하나를 값으로 되돌릴 방법이 없다.",
+   "domain": "render"
+  },
+  {
+   "promise": "지점을 누른 좌표·원격자값·단위·시각·출처 Evidence — 화면 숫자는 보간 픽셀이 아니라 원격자값",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:15 (2026-08-12) + prototype/js/readability.js:4-5",
+   "verdict": "PARTIAL",
+   "evidence": "prototype/v2-three/js/main.js:2925-2950 pointWeather — 좌표·단위·유효시각·조회시각·출처 줄은 정직하게 나온다(:2938-2945). 그러나 :2932 에서 화면에 그려진 격자를 읽지 않고 api.open-meteo.com 지점 조회를 새로 던진다. 답하는 항목도 기온·습도·강수·바람뿐이라 sstfield·wavefield·sstanom 색면에는 이 경로가 없다(해상 클릭은 :2898 marine API 로 별개 처리)",
+   "userVisible": "MEDIUM",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "눌러서 나온 숫자와 그 자리에 칠해진 색이 서로 다른 자료라 어긋날 수 있는데, 화면은 그 사실을 말하지 않는다.",
+   "domain": "render"
+  },
+  {
+   "promise": "바람 입자는 방향 판독용 과장 — 전지구 u/v 입자장",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:28, 47 (2026-08-12) + prototype/v2-three/NEXT_STEPS.md 웨이브2 '남은 것 … 바람장/대기질(1.0 /wind)' (2026-09-01)",
+   "verdict": "PARTIAL",
+   "evidence": "windgrid 는 속력 색면만(prototype/v2-three/js/live-layers.js:584→1154-1166 buildWindGrid). 'wind' 레이어에 입자 흐름이 실제로 있으나 관측 지점 선분 위에서만 흐르고, 코드가 스스로 '관측 지점의 실측 벡터 위에서만 움직임 — 격자 보간·유선 생성 없음'이라고 적는다(:2181-2183, 지점당 P_PER=2). v1 전지구 입자장: prototype/js/windfield.js (615줄)",
+   "userVisible": "HIGH",
+   "fixSize": "LARGE",
+   "whyItMatters": "바다와 관측 공백 지역에는 흐름이 한 줄도 흐르지 않아, 전지구 화면에서 바람이 '어디서 어디로 가는지'가 보이지 않는다.",
+   "domain": "render"
+  },
+  {
+   "promise": "1.0 지구 스타일 46레이어를 v2 씬별 레이어로 분산",
+   "source": "prototype/v2-three/NEXT_STEPS.md:9 표 (2026-09-01) + v1 실목록 prototype/js/layerbar.js",
+   "verdict": "PARTIAL",
+   "evidence": "표가 선언한 1차분('GIBS 직결분(눈 NDSI·해빙·지표온도)부터')은 **되어 있다** — prototype/v2-three/js/ui-shell.js:42-44 snow·seaice·lst, live-layers.js:523-527 loadGibs + :593-594 buildGibsShell. aurora 도 이식 완료(ui-shell.js:219, live-layers.js:529, 595). 반면 v1 색면 중 humidity·pm10·dust·aqi·ozone·swell·windfc·drought·fog·heatdome 는 v2 레이어 표(ui-shell.js:61-84, 91-115)에 없고 문자열도 0건이다(dust·swell·humidity·pm10 히트는 ext/hobby-*·travel.js·main.js 카드 문구나 지점조회 필드일 뿐 레이어가 아니다). v1 원목록: prototype/js/layerbar.js:129,142,172-180,195,203,205,238",
+   "userVisible": "MEDIUM",
+   "fixSize": "LARGE",
+   "whyItMatters": "v1 에서 무료로 보던 색면 10종이 유료 v2 에는 없어, 요금을 내면 볼 수 있는 것이 오히려 줄어 보인다.",
+   "domain": "render"
+  },
+  {
+   "promise": "TIME 등시선 재생 30 / 60 / … / 720분 · RESULT '관측소 도달시간 표 + 등시선 지도'",
+   "source": "docs/PILOT-SCREEN-SPEC-TEMPERATURE-TSUNAMI-2026-09-18.md:99, 104 (가장 최신 화면 명세)",
+   "verdict": "PARTIAL",
+   "evidence": "선은 그린다 — prototype/v2-three/js/intel-feed.js:583-598 drawIsochrones 가 720분까지 모든 레벨을 순회한다. 그러나 :588-593 에서 레벨별 구분 없이 한 배열 pts 에 밀어 넣고 색 하나(0xffa64d)의 LineSegments 하나로 합쳐 어느 선이 30분인지 알 수 없고, 레벨 값 라벨도 시간대 재생 제어도 이 코드에 없다. 도달시간도 표가 아니라 한국 3곳+해외 3곳 요약이다(event-room.js:268-277 `.slice(0,3)` 두 번)",
+   "userVisible": "MEDIUM",
+   "fixSize": "SMALL",
+   "whyItMatters": "쓰나미 화면에서 '몇 분 뒤 어디까지'가 핵심인데, 주황 선 뭉치만 보이고 시간을 읽을 수 없다.",
+   "domain": "render"
+  },
+  {
+   "promise": "PRO(₩29,000/월) 한 문장 = '지구의 조건을 바꾸어 시뮬레이션한다'. SCENARIO·SIMULATION·결과 해석이 PRO 전용 칸",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:41,48,70 (2026-09-14 정본)",
+   "verdict": "PARTIAL",
+   "evidence": "prototype/v2-three/js/sim-questions.js:40-351 — 현상 21종 중 status AVAILABLE 1종(hazards.tsunami, :62), LIMITED 3종(ocean.wave :48 · hazards.typhoon :83 · space.satellite :103), NOT_AVAILABLE 17종. 질문 24개 중 AVAILABLE 2개(:75-76, 둘 다 쓰나미). ⚠️ 1차 정정: :409-410 `pressable()` 이 LIMITED+action 도 누를 수 있게 하므로 **실제로 무언가 일어나는 버튼은 6개**(쓰나미 2 + 파도 1 + 태풍 경로 1 + 위성 2)이고, 나머지 18개가 사유 문장만 낸다",
+   "userVisible": "HIGH",
+   "fixSize": "LARGE",
+   "whyItMatters": "PRO 칸에서 '기록 남는 계산'이라 부를 수 있는 것은 쓰나미 하나이고 나머지 다섯 버튼은 장면이거나 기관 예보 인용이다.",
+   "domain": "product"
+  },
+  {
+   "promise": "Scenario = 태풍 가정 실험 baseline(§F: 풍속 ±15 m/s·눈까지 거리, baselineEventId 기록), 요금 PRO",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:29 (2026-09-14 정본)",
+   "verdict": "PARTIAL",
+   "evidence": "슬라이더 실재: prototype/v2-three/js/main.js:5270-5271 (sc-wind min=-15 max=15 · sc-eye 5~200km). ⚠️ 1차 뒤집음 — main.js:5276-5286 `record()` 가 `{eventId, revisionId, agency, baseline:{lat,lon,windMs}, windOffsetMs, eyeKm, badge:'SIMULATION_ONLY', at}` 을 localStorage 'earthus.scenario'(최근 30건)에 **실제로 기록한다.** 식별자 `baselineEventId` 만 저장소 코드 0건(prototype/·aws/·tools/ 전수 grep 확인)이고 기록 자체는 eventId+revisionId 로 있다. 남은 한계: main.js:4589 '실험 기록은 이 기기에만 남습니다' — 서버 회차가 아니고, main.js:4586 이 '결과는 파도 장면이지 예보도, 기록 남는 계산도 아닙니다'라고 적는다. main.js:5295 launchScenario 는 기준선 없는 두 번째 경로다",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "기준선은 기록되지만 그 기록이 이 기기 localStorage 안에만 있어, 구독자가 기기를 바꾸면 자기 실험이 사라진다.",
+   "domain": "product"
+  },
+  {
+   "promise": "EXPLORER(₩9,900/월) = REPORT ✓. 리포트 센터는 최신·월간·분기·연간·전망 다섯 갈래",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:47 (2026-09-14 정본) + prototype/v2-three/js/ui-shell.js:596-601 (REPORT_TABS 5종)",
+   "verdict": "PARTIAL",
+   "evidence": "오늘 실측 재확인: https://earthus-cache-kr.s3.us-east-2.amazonaws.com/reports/published/index.json → 200, 321바이트, 본문 전체가 `years.2026 = [ {reportId:'report:2026-08', type:'RETROSPECTIVE_MONTHLY', publishedAt:'2026-09-08T11:38:53Z', version:1} ]` **1건**. quarterly·annual·outlook 0건. ui-shell.js:540-542 주석이 '아직 없는 것: 월간·분기·연간 회고와 세 전망 — 생성기가 없다'라고 스스로 적는다",
+   "userVisible": "HIGH",
+   "fixSize": "LARGE",
+   "whyItMatters": "EXPLORER 를 파는 한 문장이 '보고서를 만든다'인데 정기 발행물은 한 달치 한 장뿐이고 탭은 다섯 개다.",
+   "domain": "product"
+  },
+  {
+   "promise": "COMPARE(비교) 탭을 CONTROL → PLUS 로 내린다 = EXPLORER 가 산다. 고급 Intelligence 에 '과거 비교' 포함",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:45,80 (2026-09-14 정본)",
+   "verdict": "PARTIAL",
+   "evidence": "⚠️ 1차 뒤집음(MISSING→PARTIAL). 1차는 event-room.js·scenario-compare.js 만 보고 0건이라 했지만, **prototype/v2-three/js/intel-feed.js:605-638 `compareHtml()` 이 '이전 발표와 비교' 카드를 실제로 그린다** — 회차 칩(rev-chip), 기관별 이전/현재 h0·+24h 표, 변경 목록, 당시 발표 원문 불변 링크(sourceRef), 비교 딥링크. prototype/v2-three/js/main.js:4853 이 'feed-compare' 액션을 받는다. 또 intel-feed.js:126-180 loadPast + :196-208 pastHtml 이 'PAST — 주변 30일'(USGS 반경 300km·30일·M2.5+)과 TC 공식 발표 타임라인을 그린다. 남은 사실: intel-feed.js:606 `if (it.kind !== 'TC') return ''` — 비교는 태풍 전용, PAST 는 지진·태풍만. 등급 판정은 붙어 있지 않아 지금 무료다. entitlement.js:22 `COMPARE: ACCESS_TIER.PLUS` 를 읽는 화면은 여전히 0개이고, prototype/v2-three/js/scenario-compare.js(75행)는 저장소 전체에서 import 0건(문자열 'scenario-compare' 전수 grep 무결과)",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "'과거 비교'는 태풍 사건에서 실제로 작동하고 있으므로 EXPLORER 가 살 물건이 아예 없는 것은 아니지만, 지금은 무료로 나가고 태풍 밖에서는 없다.",
+   "domain": "product"
+  },
+  {
+   "promise": "고급 Intelligence 7종(ANOMALY·WHY·RELATION·IMPACT/FOR ME·Confidence·변화 추적·과거 비교)을 EXPLORER 가 전부 받는다",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:45 (2026-09-14 정본)",
+   "verdict": "PARTIAL",
+   "evidence": "7종 재집계(1차의 '2종'은 과소): ① WHY — intel-strip.js:173-180, SECTION_TIER WHY=EXPLORER(:21), FREE 는 1건만 노출 후 lockBlock ✅올바르게 잠김. ② RELATION/IMPACT — :188-197, IMPACT=EXPLORER ✅. ③ Confidence — ⚠️1차 뒤집음: **:202-207 이 packet.confidence.grade 를 EVIDENCE 절에 그리고 `inputs.rule` 만 유료 뒤로 숨긴다** ✅부분 잠김. ④ ANOMALY — :146-156 이 items 루프·평년 이름/기간·method·coverageKo 까지 그린다. 그런데 이게 WHAT 절 안이고 SECTION_TIER.WHAT = TIER.FREE(:20) → **정본 45행이 유료라고 적은 것이 무료로 나간다(경계 어긋남)**. ⑤ 변화 추적(CHANGE) — :97-102·:141-145 에 from→to·delta·since 로 있고, 정본 44행이 CHANGE 를 기본(FREE)에 넣었으므로 코드와 문서가 일치(격차 아님). ⑥ 과거 비교 — 위 항목(intel-feed compareHtml/pastHtml), 무료·태풍지진 한정. ⑦ FOR ME — IMPACT 와 같은 것으로 정본 20행이 명시. 결과: 화면에 무언가 서 있는 것 6/7, 올바로 잠긴 것 3, 잘못 무료인 것 1(ANOMALY), 잠금 없이 좁게 있는 것 1(과거 비교)",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "요금표가 ✓ 하나로 묶어 파는 7종 중 EXPLORER 결제가 실제로 열어 주는 것은 3종이고, 나머지는 이미 무료이거나 태풍에만 있다.",
+   "domain": "product"
+  },
+  {
+   "promise": "기본 Intelligence(WHAT·CHANGE·기관 예보·특보)는 FREE, 고급은 EXPLORER — 즉 현상마다 인텔 띠가 뜬다는 전제",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:44-45 (2026-09-14 정본)",
+   "verdict": "PARTIAL",
+   "evidence": "docs/INTEL-COVERAGE-2026-09-20.md:6 (도구 생성표, 손으로 못 고침) — intelligence:true **34** 현상 중 패킷 생산자가 있는 것 **4**(hazards.earthquake · hazards.typhoon · ocean.sst · weather.temperature_anomaly). 5칸(WHAT·WHY·NEXT·IMPACT·EVIDENCE)을 모두 ✅ 로 채운 현상은 :11 `hazards.typhoon` **1개**. 나머지 30현상은 표에 '생산자 없음'. 화면 쪽 근거: intel-strip.js:80 이 packet 이 없으면 빈 문자열을 돌려주므로 띠 자체가 안 그려진다. ⚠️ 덧붙임 — 같은 표에서 `hazards.tsunami` 도 '생산자 없음'이다. PRO 의 유일한 계산 현상에 인텔 패킷이 없다(다만 event-room.js:272-273 이 PTWC 게시문 ETA 대조를 따로 그린다). 같은 날짜 docs/INTEL-REAUDIT-2026-09-20.md 는 33 이라 적어 34 vs 33 불일치가 남아 있고, COVERAGE 쪽이 생성물이라 더 신뢰한다",
+   "userVisible": "HIGH",
+   "fixSize": "LARGE",
+   "whyItMatters": "구독자가 지구에서 아무 현상이나 눌렀을 때 인텔 띠를 볼 확률이 34분의 4이고, 5칸이 다 차는 것은 태풍 하나다.",
+   "domain": "product"
+  },
+  {
+   "promise": "구독 화면이 파는 목록 — EXPLORER 11항목 / INTELLIGENCE 11항목",
+   "source": "prototype/js/billing.js:100-127 (EXPLORER_FEATURES), 133-165 (INTELLIGENCE_FEATURES) — 개발지침서 v5.3 §27.2·§27.3 사본",
+   "verdict": "PARTIAL",
+   "evidence": "billing.js:100-127 EXPLORER 11개 중 soon:true 8개(데일리 피드·이벤트 룸 전체·리플레이·MY EARTH·전문 렌즈·심해·아카이브 되감기·데일리 브리프), soon 없는 3개는 유사 사건·사후 리뷰·사건 추적. :133-165 INTELLIGENCE 11개 중 soon:true 10개(:134 'EXPLORER 전체'만 제외). ⚠️ 이 목록은 두 방향으로 틀리다: :109-110 이 '이벤트 룸 전체 — NOW·WHY·NEXT·**PAST·COMPARE**·FOR ME·EVIDENCE'를 soon:true 로 적는데 PAST·COMPARE 는 intel-feed.js 에 이미 있다(위 항목). 정본 §5 '정합해야 할 곳' 표(:78-88)에 billing.js 가 **없어** 결제 화면만 v5.3 §27 의 옛 항목 구성을 계속 판다",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "결제 화면 22줄 중 18줄이 '준비 중'인데 그중 일부는 이미 만들어져 있어, 사용자는 있는 것도 없다고 읽고 없는 것도 살 수 있다고 읽는다.",
+   "domain": "product"
+  },
+  {
+   "promise": "REPORT = EXPLORER 영역(표 47행). 요금 id 는 explorer / intelligence 두 단",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:47,69-70 (2026-09-14 정본)",
+   "verdict": "PARTIAL",
+   "evidence": "오늘 실측: https://earthus.net/ocean/lab-reports.json → 200, count **280**. 자료 쪽 access 값은 prototype/js/lab-reports.js:54 `access: clean(report.access) || 'pro'` 와 :78 `access: 'pro'` 로 붙는다. ⚠️ 이 필드를 **읽는 코드가 없다** — lab-reports-page.js·lab-report-detail.js 에서 'access' grep 0건. 실제 문은 lab-reports-page.js:13 `function allowed() { return auth.isPaid() || auth.isAdmin(); }` 하나이고 prototype/js/auth.js:235 `isPaid() { return tierAtLeast(this.tier(), TIER.EXPLORER); }` 이므로 동작은 EXPLORER 이상 = 정본과 일치한다. 즉 'pro' 는 읽히지 않는 죽은 표시값이다",
+   "userVisible": "MEDIUM",
+   "fixSize": "SMALL",
+   "whyItMatters": "동작은 맞지만 자료를 그대로 읽는 사람(내부 감사·문서)은 280건이 전부 ₩29,000 칸에 있는 것으로 오해한다.",
+   "domain": "product"
+  },
+  {
+   "promise": "사건 추적 · 알림 — 관심 지점 20곳까지, 의미 있는 정정이 나오면 알린다 (무료는 1곳)",
+   "source": "prototype/js/billing.js:105-106 (EXPLORER_FEATURES, soon 없음 = 지금 파는 것)",
+   "verdict": "PARTIAL",
+   "evidence": "알림 기반은 있다 — prototype/js/push.js:108 pushManager.subscribe, 배포된 config.local.js VAPID 실키. 차등이 없는 이유는 코드가 스스로 적는다: prototype/js/ui-alerts.js:11 '현재 FREE_OPEN 정책에서는 안전 알림과 관광 혼잡 지켜보기를 모두 무료로 열고, 비용 폭주 방지를 위한 서버 상한 20곳만 둔다. 판매가 다시 열리기 전에는 잠그지 않는다', :420-421 화면 문구도 같다. ⚠️ 1차 진단 수정 — '경계가 없다'가 아니라 config.local.js:30 FREE_OPEN 하에서 **의도적으로 열어 둔 것**이다. 1곳/20곳 분기 코드는 실제로 없으므로 PAID 전환 시 새로 써야 한다",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "지금 사용자는 손해가 없지만, 판매를 여는 날 EXPLORER 의 핵심 차별(20곳)을 구현할 코드가 아직 한 줄도 없다.",
+   "domain": "product"
+  },
+  {
+   "promise": "REPORT·SIMULATION 은 유료 칸 — 즉 v2 화면이 사용자 등급을 알아야 한다",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:47-48 (2026-09-14 정본)",
+   "verdict": "PARTIAL",
+   "evidence": "prototype/v2-three/js/report-center.js:99-105 `currentTier()` = `window.EARTHUS_TIER || localStorage.getItem('earthus.tier') || 'free'`. 소비처는 확인됨 — ui-shell.js:651·1228 과 main.js:4720·4733 이 이 값을 mode 와 함께 넘긴다. 그러나 쓰는 쪽만 있고 채우는 쪽이 하나다: prototype/js/store.js:138 setTier 를 부르는 곳은 prototype/js/ui-account.js:429(v1 auth.onChange) 뿐. report-center.js:8-11 이 'FREE/PRO 는 표시 구분이지 보안 경계가 아니다 … 클라이언트에서 감추는 것은 돈을 받는 근거가 될 수 없다'고 스스로 적어 둔다. 서버가 두 판을 따로 내려 주는 경로는 없다",
+   "userVisible": "MEDIUM",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "판매가 열리면 v1 을 거치지 않고 /v2/ 로 바로 들어온 구독자는 무료로 보이고, 반대로 localStorage 한 줄이면 누구나 PRO 화면이 된다.",
+   "domain": "product"
+  },
+  {
+   "promise": "연구 작업 공간 — 자료·조건을 고정해 실험을 실행하고 재현한다 (지구 화면 ⚗ 버튼)",
+   "source": "prototype/v2-three/index.html:1432 (라이브 버튼) + prototype/v2-three/js/research/api-client.js:2",
+   "verdict": "PARTIAL",
+   "evidence": "오늘 실측: https://earthus.net/research.html → **200**(15,295바이트, 페이지는 뜬다). https://earthus.net/api/research/datasets → **405**. prototype/v2-three/js/research/api-client.js:2 `BASE='/api/research'`, :12 실패 문구가 '로컬 research-runtime 서버를 실행하고 같은 주소에서 이 페이지를 열어 주세요'. workspace.js:239-250 의 비교 버튼도 같은 BASE 를 쓴다",
+   "userVisible": "MEDIUM",
+   "fixSize": "LARGE",
+   "whyItMatters": "운영에서 ⚗ 를 누른 구독자는 빈 작업공간과 '로컬 서버를 실행하라'는 개발자용 안내를 받는다.",
+   "domain": "product"
+  },
+  {
+   "promise": "발행본은 reports/published/ 아래에 있고 버킷 정책이 그 접두사를 연다 → 공개 200",
+   "source": "aws/_shared/publication_privacy.py:52 + docs/earthus-v2/INTEGRATION-10-RESULT.md:99",
+   "verdict": "PARTIAL",
+   "evidence": "오늘 실측으로 1차와 같은 결과: https://earthus.net/reports/published/index.json → **403**(111바이트), 같은 객체 S3 직결 https://earthus-cache-kr.s3.us-east-2.amazonaws.com/reports/published/index.json → **200**(321바이트, 본문 확인). 화면이 안 깨지는 이유는 prototype/v2-three/js/ui-shell.js:551-552 `reportBase()` 기본값이 S3 직결이기 때문이다. INTEGRATION-10-RESULT 의 200 이 CloudFront 였는지 S3 였는지는 문서로 확정 못 했다 — 1차와 같은 UNKNOWN 이 남는다",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "지금은 보이지만 reportBase 를 상대경로로 되돌리는 순간 리포트 센터 전체가 403 이 되므로, 유료 칸의 유일한 발행물이 설정 한 줄에 매달려 있다.",
+   "domain": "product"
+  },
+  {
+   "promise": "유사 사건(analog) · 사후 리뷰(예보 대 실제) — EXPLORER 가 지금 사는 것(soon 아님)",
+   "source": "prototype/js/billing.js:101-104 (EXPLORER_FEATURES, soon 없음)",
+   "verdict": "PARTIAL",
+   "evidence": "사후 리뷰는 **있다**: prototype/v2-three/js/intel-feed.js:639-679 `verifyHtml()` 이 '종료 검증 (IBTrACS 최종 경로 기준)' / '당시 전망 검증(잠정)' 카드를 기관별 방향오차·45° 안 비율·위치오차(n 포함)로 그리고, :651-657 이 자료 없는 기관을 0km 로 채우지 않도록 막는다. :640 `if (it.kind !== 'TC') return ''` — 태풍 전용. 유사 사건 카드는 **없다**: `findHistoricalAnalogs` 는 prototype/js/earthus2/v11/orchestrator/advanced-intelligence-service.js:4 에만 있고 화면 호출부 0개, 화면에 남은 것은 intel-feed.js:662·lab-report-detail.js:16 의 `EARTHUS_ANALOG_MEDIAN` 기준선 한 줄뿐이다",
+   "userVisible": "MEDIUM",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "결제 화면이 '지금 파는 것' 두 줄로 적은 것 중 하나는 태풍에서 실제로 작동하고 하나는 화면이 없다.",
+   "domain": "product"
+  },
+  {
+   "promise": "phenomenon-registry `intelligence:true` 34현상 — 고르면 문맥 한 줄에 '해석' 칩이 뜨고 5절(WHAT/WHY/NEXT/IMPACT/EVIDENCE) 띠가 붙는다 (계약 §C-0 표, LAYER-PLAN §2.2)",
+   "source": "docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md:99-109 (2026-09-14) + docs/INTEL-COVERAGE-2026-09-20.md:6 (2026-09-20, 최신)",
+   "verdict": "PARTIAL",
+   "evidence": "직접 import 해 집계: PHENOMENA 66건 중 intelligence:true **34건**(첫 감사 수치와 일치). ui-shell.js:1170 `CAP_KO.intelligence='해석'` → :1172-1186 `phenomenonLine()` 이 `ctx.capabilities[k]` 가 true 인 능력을 전부 찍으므로 34건 모두 '해석' 칩이 뜬다. 그런데 패킷을 돌려주는 곳은 main.js:4098-4112 `intelHostFor()` 뿐이고 hazards.typhoon·hazards.earthquake·ocean.sst·weather.temperature_anomaly **4개만** 반환, 나머지는 `return null`. intel-strip.js:80 이 `if (!packet …) return ''` 이라 띠가 아예 안 그려진다. docs/INTEL-COVERAGE-2026-09-20.md:6 이 '34 현상 중 패킷 생산자가 있는 것 4 (운영 확인)' 로 같은 수치를 기록했다. → 30개 현상은 '해석' 글자만 있고 누를 것이 없다.",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "유료 등급이 파는 '해석'이라는 말이 화면에 34번 찍히는데 실제로 열리는 것은 4번뿐이라, 구독자가 나머지 30번을 만날 때마다 속았다고 느낀다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "§D PRO Simulation 8단계 — `Simulation Request → ①Consent Check → ②PRO Check → ③Human Approval → ④Engine → ⑤SimulationRunRecord → ⑥runRef → ⑦Result → ⑧3D·Report·Narration`, §K-2 'RUN SIMULATION 버튼 클릭 → §D 정식 흐름'",
+   "source": "docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md:146-156 (§D), :419 (§K), :437 (§K-2)",
+   "verdict": "PARTIAL",
+   "evidence": "main.js:4732-4744 — `tsunami-reach` 는 ②PRO 검사(`decideCapabilityAccess`, requiredTier: TIER.INTELLIGENCE) 하나만 하고 통과하면 `shell.showTab('scenario')` 로 탭만 연다. ①동의·③승인은 v2 화면에 없다 — Grep(ripgrep)으로 `동의|consent|승인|approv` 를 prototype/v2-three/js/*.js 전체에 돌린 결과, 시뮬 승인·동의 관련 히트는 0건이고 걸린 '승인'은 ask-earth.js:6,12,25 의 '승인된 Scene Tool 목록'(무관)뿐이다. RUN 버튼도 없다 — main.js:4557-4576 시나리오 탭은 '사건 방 열기 →' 버튼 하나로 끝나고, 실제 계산은 aws/tsunami-eta 의 15분 스케줄 배치다. ④~⑦은 화면에서 일어나지 않는다.",
+   "userVisible": "HIGH",
+   "fixSize": "LARGE",
+   "whyItMatters": "PRO(₩29,000/월)가 'SIMULATE THE EARTH'로 파는 것은 오늘 실행 권한이 아니라 '이미 배치로 계산돼 있는 도달시간을 볼 권한'이다 — 구독자가 조건을 바꿔 돌릴 수 있는 것이 하나도 없다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "J-7 `동의·PRO·승인 없이 실행 요청 거절` — 검사 자리는 `sim-link.js` + 서버. §E `화면의 모든 시뮬 값은 runRef 링크와 limits[] 문장을 달고 나간다`",
+   "source": "docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md:408 (J-7), :200 (§E)",
+   "verdict": "PARTIAL",
+   "evidence": "1차가 MISSING 이라 했으나 반만 맞다. (1) `sim-link.js` 는 없다 — `grep -rn sim-link prototype/ aws/ tools/` 0건. (2) **limits 문장은 이미 뜬다** — event-room.js:277 이 쓰나미 카드 sub 에 '첫 파 도달 추정 · 장파 근사 √(g·h) · 0.2° 격자 · <b>파고·침수 아님</b>' 을 달고 :281 이 '계산이 없다는 것이지 위험이 없다는 뜻이 아닙니다' 를 단다. 다만 서버의 `limits` 필드(aws/tsunami-eta/handler.py:347)를 읽는 것이 아니라 클라이언트에 박아 둔 같은 뜻의 문장이다. (3) runRef 링크는 없다 — watch.js:100 이 `runRef: 'tsunami-eta:'+e.usgsId` 를 **클라이언트에서 지어내고** 어디에도 찍지 않는다. (4) 검증기 aws/_shared/simulation_link.py 는 존재하고 §E 4필드를 강제하며, **호출자도 있다** — tools/research/register_simulation_run.py 가 `from_research_runtime`·`require_valid` 를 실제로 쓴다(1차의 '시험 말고 호출자 0' 은 틀렸다). 다만 그것은 사람이 손으로 돌리는 CLI 이고(docstring '이 도구는 실행하지 않는다'), 원장 디렉터리 `data/simulation-runs/` 는 저장소에 없다.",
+   "userVisible": "MEDIUM",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "한계 문장은 정직하게 뜨지만 runRef 원장이 비어 있어, 구독자가 본 시뮬 값이 어느 실행의 산출인지 되짚을 방법이 없다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "`capabilities.forecast: true` → 인텔 패널의 NEXT 탭이 열리고 '예보' 칩이 붙는다 (CAP_TAB `next: 'forecast'`)",
+   "source": "prototype/v2-three/js/ui-shell.js:318 + 계약 §C-0:105 'NEXT — Intelligence의 핵심 상품'",
+   "verdict": "PARTIAL",
+   "evidence": "실측 forecast:true 13건(import 집계). 그중 3건은 자기 자료에 앞을 말하는 것이 없다 — ui-shell.js:192-194 `eq`·`eqhistory`·`eqdepth` 전부 `state:'OBSERVED'`(hazards.earthquake), :123 `seoul` OBSERVED·:127 `livemix` DERIVED(people.crowding), :218 `aeth-orbit` LIVE(space.orbital_debris). ui-shell.js:1136-1146 `nextHtml()` 은 켜진 레이어 중 state 가 /FORECAST|WARNING|MODEL/ 인 것만 모으므로 셋 다 `nextEmpty` 만 나온다. 보조 경로도 막혀 있다 — `eventNextHtml()` 이 부르는 intel-feed.js:681-689 `nextRows()` 는 `p.revisions[].agencies`(태풍 회차 패킷) 가 있어야 하므로 지진에서는 항상 []. docs/INTEL-COVERAGE-2026-09-20.md:10 도 지진 NEXT 를 '기관 여진 예보를 받는 수집기가 없다' 로 비워 두었는데 레지스트리는 forecast:true 다. 나머지 10건은 정상이며 `weather.mountain_summit` 은 ui-shell.js:182 `mountain` state 'OFFICIAL_FORECAST' 로 **실제로 동작한다 — 미구현이 아니다.**",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "'예보' 칩을 보고 NEXT 탭을 연 구독자가 빈 카드를 만나는 현상이 3개 있고, 그중 지진은 사람들이 가장 앞을 궁금해하는 현상이다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "P2a 변화 창고 — `intel/change/{layer}.json` 롤업 Lambda `aws/intel-rollup/`. 완료 기준 '롤업 파일 생성 주기 확인'",
+   "source": "docs/INTELLIGENCE-LAYER-PLAN-2026-09-14.md:85 (P2a)",
+   "verdict": "PARTIAL",
+   "evidence": "aws/intel-rollup/handler.py·rollup.py·tests 와 aws/configure-intel-rollup-schedule.sh 는 있고 rollup.py 가 aws/_shared/intel_contract 를 쓴다. 그러나 (1) 미배포 — tools/deploy-queue-2026-09-20.sh:16 이 'intel-rollup — **새 Lambda**(P2a 변화 창고)' 로 PD 대기 목록(:28 `STEPS=(public-api glacial-lake-us intel-rollup earthus-llm)`)에 올려 두었다. (2) 배포돼도 읽는 쪽이 없다 — `grep -rln 'intel/change|intel-rollup' prototype/ aws/ tools/` 의 히트는 자기 자신·스케줄 스크립트·배포 큐뿐이고 prototype/ 는 0건. 태풍의 `change` 는 aws/cyclone-analog/intel_v1.py 가 따로 계산한다. 배포 이후 실제 S3 상태는 저장소에서 확인 불가.",
+   "userVisible": "LOW",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "'변화 추적'은 EXPLORER 로 파는 항목인데 그 창고가 배포도 안 됐고 화면이 읽지도 않아, 태풍 말고는 변화가 나올 곳이 없다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "P4 서술 — earthus-llm 에 §C-2 일곱 검사(FORBIDDEN_CAUSAL·%·confidence 숫자·coverage.missing 절 이름·대피 어휘·특보 해제 오독·스냅샷에 없는 수치)를 '프롬프트 약속이 아니라 서버 바이트' 로 건다",
+   "source": "docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md:120-136 (§C-2)",
+   "verdict": "PARTIAL",
+   "evidence": "코드는 계약대로다 — aws/earthus-llm/narration_guard.py:58 `REASONS = ('CAUSAL','PERCENT','CONFIDENCE_NUMBER','MISSING_SECTION','EVACUATION','WARNING_LIFTED','NUMBER')` 일곱 개가 §C-2 순서 그대로이고, :271 이 히트를 REASONS 순서로 정리하며, handler.py:450 이 `narration_guard.check(...)` 를 부른다. 어휘는 aws/_shared/intel_contract 를 통해 정본에서 읽는다. 다만 **운영 반영은 저장소에서 확인 불가** — tools/deploy-queue-2026-09-20.sh:17-18 이 'earthus-llm — 서술 가드(P4) … PD 판단 뒤에 올린다' 로 대기 목록에 남겨 두었고, 이 감사 시점 이후 PD 가 스크립트를 돌렸는지는 알 수 없다(UNKNOWN).",
+   "userVisible": "MEDIUM",
+   "fixSize": "SMALL",
+   "whyItMatters": "가드가 아직 안 올라가 있다면 '지구와 대화' 답이 인과·확률 문장을 낼 수 있고, 그것 하나가 EARTHUS 가 파는 '정직함' 전체를 깎는다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "§L-4 선행조건 3 — `phenomenon-registry.js` 갱신: `hazards.glacial_lake_flood` 를 알래스카 지역 한정으로 켠다. §I P0 에 배치. 신규 수집기 `aws/glacial-lake-us`",
+   "source": "docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md:525 (§L-4), :531 (§L-5 P0)",
+   "verdict": "PARTIAL",
+   "evidence": "지역 한정 자체는 **됐다** — phenomenon-registry.js:50-64 의 `scope` 가 '알래스카 주노 멘덴홀 강(빙하호 Suicide Basin 아래) 한 곳 — USGS 15052500 실측·NWS MNDA2 공식 예보를 인용한다(events/glof-alaska.json)' 로 갱신돼 있다. 안 켜진 것은 능력 쪽이다 — :55 `capabilities` 7칸 전부 false, `availability:'planned'`, ui-shell.js:205 `glof` 는 `state:'LOCKED'`. 수집기 aws/glacial-lake-us 는 존재하나 배포 대기다(deploy-queue :28 STEPS, :15 '새 Lambda'). 레지스트리 주석 :62-63 이 '수집기는 배포 대기 — 운영에 자료가 들어오고 P1 에서 화면에 이어지기 전까지 능력은 올리지 않는다' 로 이유를 적어 두었다 — **의도된 보류이지 누락이 아니다.**",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "보류 이유가 코드에 적혀 있어 정직하지만, 메뉴에 LOCKED 항목이 하나 더 남는다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "S-A `ScenarioCompare` 컴포넌트 — baseline vs branch 비교. §K-5 '내 시뮬레이션 목록'의 비교 화면",
+   "source": "docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md:360 (§I S-A), :460 (§K-5)",
+   "verdict": "PARTIAL",
+   "evidence": "prototype/v2-three/js/scenario-compare.js 는 존재하고(:25 에서 `base.runRef === branch.runRef` 비교) 시험도 있다(tools/earthus-v53/scenario-compare.test.mjs). 그러나 화면이 부르지 않는다 — `grep -rn 'scenario-compare' prototype/ tools/` 의 히트는 시험 파일 두 줄(:10 import, :59 소스 읽기)뿐이고, main.js(import 60줄)·ui-shell.js(import 24줄) 어느 목록에도 없다. 비교할 실행 기록 자체도 없다(`data/simulation-runs/` 부재).",
+   "userVisible": "LOW",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "비교할 실행이 아직 0건이라 지금 배선해도 보여 줄 것이 없다 — 계약 §I 순서상 일정대로 미배선이다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "P5 보고서 — report-engine 에 `phenomenon-intel` 종류. 완료 기준 '`reports/published/` 에 한 건 · 색인 갱신'",
+   "source": "docs/INTELLIGENCE-LAYER-PLAN-2026-09-14.md:88 (P5)",
+   "verdict": "PARTIAL",
+   "evidence": "엔진은 끝까지 있다 — sections.py:304-313 `INTEL_REPORT_TYPE='PHENOMENON_INTEL'`, generator.py:139·290·388, export.py:36·44·157, adapters/phenomenon_intel_adapter.py:35, quality.py·narrative.py·pipeline.py 연결, 시험 tests/test_p5_phenomenon_intel.py. 그러나 **자동 생산 경로가 없다** — `ls aws/report-engine/` 에 handler.py 가 없고(capture/cli/compose/…/stories 만), cli.py:156 `cmd_intel` + :255-266 `intel` 하위 명령으로 사람이 돌려야 한다. 화면 연결도 없다 — prototype/ 전체에서 'phenomenon-intel'·'PHENOMENON_INTEL' 0건이고 phenomenon-registry.js:1009 `reportKindsForPhenomenon` 이 훑는 REPORT_KIND_PHENOMENON 에도 없다. `reports/published/` 실물은 S3 라 UNKNOWN.",
+   "userVisible": "MEDIUM",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "요금제 정본이 'EXPLORER = Report' 라고 선을 그었는데(PRODUCT-STRUCTURE:50) 그 Report 가 아직 CLI 안에만 있어, EXPLORER 가 파는 두 기둥 중 하나가 화면에 없다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "요금제 게이트 — ANOMALY·PATTERN·WHY·RELATED·IMPACT·Confidence = EXPLORER, 시뮬 실행 = PRO, FREE 는 결과 일부 노출 뒤 잠금",
+   "source": "docs/INTELLIGENCE-LAYER-PLAN-2026-09-14.md:96-98 (§3.1) + docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:44-45 (정본) + 계약 §K:419",
+   "verdict": "PARTIAL",
+   "evidence": "1차 근거의 `main.js:473` 은 셰이더 코드라 잘못된 인용이다. 실제 자리는 이렇다. 게이트 기계는 있다 — intel-strip.js:19-22 `SECTION_TIER`, :68 `sectionAccess`, :175·190 `acc.allowed ? items : items.slice(0,1)`(FREE 결과 일부 노출), :180·197 `lockBlock`, main.js:4732-4736 쓰나미 PRO 검사. 그러나 **오늘 아무것도 잠기지 않는다** — prototype/js/config.local.js:30 `MONETIZATION_MODE:'FREE_OPEN'`, config.local.example.js:92 `SALES_OPEN:false` 이고 access-mode.js:75-77 이 FREE_OPEN 이면 무조건 `allowed:true` 를 돌려준다. 등급 자체도 클라이언트뿐이다 — report-center.js:99-106 `currentTier()` 가 `window.EARTHUS_TIER || localStorage.getItem('earthus.tier')` 를 읽고, 저장소에 서버 검사 코드는 찾지 못했다(aws/public-api/ 디렉터리 없음).",
+   "userVisible": "MEDIUM",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "오늘은 구독 자체가 닫혀 있어(SALES_OPEN:false) 아무도 돈을 낼 수 없고, PAID 로 켜는 순간 잠글 내용이 아래 항목만큼밖에 없다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "§2.3 연결표 `prototype/v2-three/js/phenomenon-relations.js` — `{from,to,relation,evidenceRef}` 로 RELATED·IMPACT 를 만들고, `reference` 는 문헌 표기와 함께 화면에 '교과서 관계'로 보인다 — 1차가 빠뜨린 항목",
+   "source": "docs/INTELLIGENCE-LAYER-PLAN-2026-09-14.md:74-76 (§2.3)",
+   "verdict": "PARTIAL",
+   "evidence": "파일은 계약대로다 — phenomenon-relations.js:17-42 에 연결 4건(지진→쓰나미 computed, 태풍→특보 co_located, 태풍→부이 co_located, 태풍→수온 reference + Gray 1968 인용)과 :44-45 `relationsFrom`/`relationsOf` 가 있고 tools/earthus-v53/intel-questions.test.mjs:105-123 이 검사한다. 그러나 **화면 어디에서도 import 하지 않는다** — `grep -rn 'phenomenon-relations' prototype/v2-three/` 의 히트 0건(main.js·ui-shell.js·intel-strip.js import 목록 확인, intel-questions.js:22 는 PHENOMENA 만 import). 화면의 IMPACT 절(intel-strip.js:189-197)은 서버 패킷의 `packet.related` 만 그린다. 즉 패킷이 있는 4현상은 서버가 준 연결로 채워지고, 나머지 62현상은 이 표가 있어도 띠 자체가 안 그려져 쓸 자리가 없다.",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "계약 §C-0 이 빈 띠를 금지하므로 지금은 배선해도 보일 곳이 없다 — 띠가 넓어질 때 같이 이어야 할 숙제다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "인텔리전스 능력 줄은 \"없는 능력은 적지 않는다 — '준비 중'으로 위장하면 사용자는 곧 열린다고 읽는다\" (해당 코드 자신의 규칙) · 계약 §C-0 \"빈 NEXT 카드를 만들지 않는다 — 결과가 없으면 절 전체를 숨긴다\"",
+   "source": "prototype/v2-three/js/ui-shell.js:1167-1169 주석, docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md (INTELLIGENCE 5절 표 아래 단락)",
+   "verdict": "PARTIAL",
+   "evidence": "1차가 통째로 빠뜨린 항목이다. prototype/v2-three/js/ui-shell.js:1176 `Object.keys(dict).filter((k)=>ctx.capabilities[k])` — 능력 줄('… · 현재 · 해석 · 근거 · 시뮬레이션')을 **레지스트리의 정적 선언**으로 그린다. prototype/v2-three/js/phenomenon-registry.js:81 'hazards.tsunami' capabilities.intelligence:true. 그런데 prototype/v2-three/js/intel-strip.js:80 `if (!packet || …) return ''` — 패킷이 없으면 띠를 아예 안 그린다. docs/INTEL-COVERAGE-2026-09-20.md 표: intelligence:true 34현상 중 생산자가 있는 것 4(태풍·지진·해수면온도·평년대비기온). 남은 30현상은 화면이 '해석'을 광고하고 띠는 나오지 않는다",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "유료 구독의 핵심 상품인 '해석'이 30개 현상에서 글자로만 존재해, 눌러도 아무것도 안 나오는 경험이 4번 중 3번 이상 반복된다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "정보 접근성 CSS 가 맡는 것 = \"글자 크기·대비·최소 터치 영역(44px)·포커스 표시\"",
+   "source": "prototype/v2-three/js/information-access.css:3 (2026-09-05), prototype/v2-three/index.html:341 주석 \"터치 최소 44px(iOS HIG)\" (2026-09-10 감사)",
+   "verdict": "PARTIAL",
+   "evidence": "적용된 곳(직접 확인): prototype/v2-three/index.html:342 #bottom-nav button{min-width:50px;min-height:44px}, information-access.css:9 .mp-search input{min-height:44px}, :11 .mp-title button{min-height:44px}, :13 #intel .intel-tabs button{min-height:44px}·.card-b button{min-height:44px}, :29 #intel .context-details input{min-height:44px}. 미적용: prototype/v2-three/index.html:81-82 `#chrome button, #chrome a#btn-research { width:30px; height:28px }` — 상단 도구줄 7개(⌕ 검색·✦ 묻기·⤴ 공유·? 도움말·⚙ 설정·○ 로그인·⚗ 연구) 전부. 모바일 미디어쿼리(index.html:1362)는 `#chrome{padding-top:…}` 만 바꾼다. information-access.css:10 .mp-active-only{min-height:30px}·체크박스 18×18, :27 #intel-close{width:32px}",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "2026-09-20 에 권역 이동 칩을 없애면서 지역 이동의 유일한 통로가 된 ⌕ 검색이 30×28px 이라, 폰에서 장소를 찾는 첫 동작부터 잘 안 눌린다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "정보 접근성 보고서 §7 \"텍스트를 200% 확대해도 정보와 기능이 사라지지 않는 기준으로 실제 검수해야 한다\"(W3C resize-text 인용) + information-access.css 가 맡는 것에 \"글자 크기\" 포함",
+   "source": "docs/information-access-20260905/report.md §7 표 아래 단락 (2026-09-05), prototype/v2-three/js/information-access.css:3",
+   "verdict": "PARTIAL",
+   "evidence": "1차가 빠뜨린 항목. prototype/v2-three/index.html:10 `<meta name=\"viewport\" content=\"… maximum-scale=1, viewport-fit=cover, user-scalable=no …\">` — 사용자 확대를 막는 값 두 개가 같이 들어 있다. prototype/v2-three/js/main.js:695 `for (const type of ['gesturestart','gesturechange','gestureend'])` 가 iOS 의 핀치 제스처까지 preventDefault 로 막는다(index.html:5-7 주석이 이것을 '실제 방어선'이라 적는다). 고정 글자 크기를 키운 것은 사실이다(information-access.css:9,11,12,13 — 14~16px). 참고: prototype/index.html:7 v1 도 user-scalable=no 이지만 maximum-scale 은 없다",
+   "userVisible": "MEDIUM",
+   "fixSize": "SMALL",
+   "whyItMatters": "글자를 키워 읽는 구독자가 브라우저 확대라는 마지막 수단까지 막혀 있어, 접근성을 표방한 화면이 정작 본인에게는 안 맞는다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "PILOT SCREEN SPEC — 기온 INFORMATION(바텀시트 half)에 '28.4°C [OFFICIAL_OBSERVATION] / 1h +0.6°C / 6h +2.1°C / 24h 추이 그래프 / 습도 72% · 바람 2.1 m/s / 기상청 동네예보' 를 띄운다",
+   "source": "docs/PILOT-SCREEN-SPEC-TEMPERATURE-TSUNAMI-2026-09-18.md:19-33 (2026-09-18)",
+   "verdict": "PARTIAL",
+   "evidence": "1차는 MISSING 이라 했으나 일부는 이미 있다 — prototype/v2-three/js/main.js:2926-2945 pointWeather() 가 기온·습도·강수·바람을 한 카드에 그린다(:2940-2943). 다만 (가) 경로가 다르다: 레이어 탭이 아니라 지구 우클릭/길게누르기 퀵메뉴다, (나) 출처가 다르다: Open-Meteo GFS 분석 `MODEL_SIGNAL` 이지 기상청 `OFFICIAL_OBSERVATION` 이 아니다(:2939 배지, :2944 출처 줄). 없는 것: 1h·6h 델타, 24h 추이 그래프(prototype/v2-three/js 전체에 sparkline·추이 그리기 0건 — grep 확인), 기상청 동네예보 인용, 그리고 main.js:4098-4110 intelHostFor() 에 weather.temperature 분기 없음(docs/INTEL-COVERAGE-2026-09-20.md 도 '생산자 없음')",
+   "userVisible": "MEDIUM",
+   "fixSize": "LARGE",
+   "whyItMatters": "'서울 기온'이라는 가장 기본적인 질문에서 구독자가 받는 것은 모델 분석값 네 줄이고, 파일럿이 약속한 관측·변화·추이는 아직 없다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "아이콘 적용 지시서 V2 §6 \"On selecting a subject, expose: Current / Change / Anomaly / Compare / Intelligence\" · UX 수리 지시서 §4 \"선택 후 context panel: 현재 / 변화 / 이상징후 / 비교 / Intelligence\"",
+   "source": "docs/icon-system/EARTHUS_V1_V2_ICON_APPLICATION_DIRECTIVE_v1.0.md:30-36, docs/icon-system/EARTHUS_V2_CURRENT_UX_PROBLEM_REPAIR_DIRECTIVE_v1.0.md:187-193 (2026-09-12)",
+   "verdict": "PARTIAL",
+   "evidence": "Current·Change·Anomaly 는 WHAT 절 안에 실재한다 — prototype/v2-three/js/intel-strip.js:137-140(current.values), :141-145(change.items), :147-156(anomaly.items). Intelligence 도 있다. Compare(비교)만 진입점이 0 이다: prototype/v2-three/js/ui-shell.js:880-891 탭 7개는 사건·내 지역·선택 자료·자료의 근거·예보·예정·이력·시뮬레이션이고 '비교'가 없다. prototype/v2-three/js/scenario-compare.js 는 75줄로 존재하지만 prototype/ 전체에서 import 하는 파일이 0(tools/earthus-v53/scenario-compare.test.mjs:10 만 읽는다)",
+   "userVisible": "MEDIUM",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "'두 조건을 비교한다'는 유료 티어의 대표 약속인데 모듈과 시험만 있고 화면에 문이 없어, 구독자가 그 기능에 도달할 방법이 없다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "첫 방문 안내 2단계 — \"EARTHUS는 지형·날씨·해양·사람·재해, AETHERUS는 우주·궤도\" (영어 'terrain, weather, ocean, people and hazards')",
+   "source": "prototype/v2-three/js/onboard.js:51 (한국어), :30 (영어)",
+   "verdict": "PARTIAL",
+   "evidence": "1차는 MISSING 이라 했으나 자료 자체는 전부 서랍 안에 있다 — 이름만 어긋난다. prototype/v2-three/js/phenomenon-registry.js:1058-1121 MENU_GROUPS 의 실제 절 이름은 대기 · 바다 · 재해 · 눈·얼음 · '대기질 · 관측' · '생태 · 사람 · 여행' 여섯(+AETHERUS 우주). 날씨→대기, 해양→바다, 재해→재해로는 짐작이 가능하나, '지형'(land.terrain)은 :1092-1097 '대기질 · 관측' 절 안에 있고 '사람'은 :1100-1110 '생태 · 사람 · 여행' 절에 섞여 있다. 2026-09-13 커밋 2c319b95 §3.2 묶음 전환 뒤 안내문만 갱신되지 않았다",
+   "userVisible": "MEDIUM",
+   "fixSize": "SMALL",
+   "whyItMatters": "첫 화면에서 읽는 다섯 이름 중 둘이 서랍에 없어, 돈 낼지 판단하는 첫 1분에 '지형은 어디 갔지'로 시간을 쓴다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "첫 방문 안내 3단계 — \"지구를 우클릭하면 그 자리의 빠른 메뉴가 뜹니다\" / 'Right-click the globe for a quick menu'",
+   "source": "prototype/v2-three/js/onboard.js:58 (한국어), :35 (영어)",
+   "verdict": "PARTIAL",
+   "evidence": "기능은 폰에도 있다 — prototype/v2-three/js/main.js:2764-2772, pointerType 이 touch·pen 이면 450ms 길게 누르기(이동 ≤10px, :2750-2755)로 같은 quickMenu.open() 을 연다. 안내 문구에는 '길게 누르기'가 없다(onboard.js 전체 grep 0건). 문서-코드 모순도 그대로다: prototype/v2-three/js/ui-shell.js:874 \"⚠️ 롱프레스는 쓰지 않는다 — 레이어 피커의 '길게 눌러 핀'과 겹친다(§C-0)\" 와 계약 docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md:95 가 같은 취지로 적혀 있으나, v2-three 에 '길게 눌러 핀' 기능은 없고(문자열 0건) 롱프레스는 실제로 쓰고 있다",
+   "userVisible": "MEDIUM",
+   "fixSize": "SMALL",
+   "whyItMatters": "폰 구독자에게 '우클릭'이라고만 알려 줘, 이미 만들어 둔 가장 빠른 진입 경로를 끝까지 모르고 쓴다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "정보 접근성 보고서 §7 지도 접근성 — \"지도와 대응하는 목록/표, 키보드 선택, 색 외 단위·문자\" / 완료 조건 \"지구 드래그 없이도 장소의 값을 찾을 수 있음\"",
+   "source": "docs/information-access-20260905/report.md §7 표 '지도 접근성' 행 (2026-09-05)",
+   "verdict": "PARTIAL",
+   "evidence": "대응 목록은 있다 — 사건 탭(ui-shell.js:880), 내 지역 탭(:883), 상단 검색(index.html:1425). 키보드 선택은 없다: prototype/v2-three/index.html:1420 `<canvas id=\"scene\" role=\"img\" tabindex=\"0\" aria-label=\"3D 지구 — 드래그로 회전 (키보드는 하단 탐색 메뉴 사용)\">` 로 스스로 넘긴다. v2-three/js 의 keydown 핸들러 전수: main.js:2848(Escape 만), ui-shell.js:786(Escape), onboard.js:103(Escape), quick-menu.js:53·pop-metric-menu.js:56(Escape), evidence-popover.js:70, galaxy/sky/solar-view(전체화면 전용). 화살표키로 지구를 돌리거나 사건·관측소를 고르는 경로는 0건인데 canvas 는 tabindex=0 이라 탭 이동 중 아무 동작 없는 정지점이 된다",
+   "userVisible": "MEDIUM",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "마우스를 못 쓰는 구독자는 지구 위 사건을 직접 고를 수 없고, 포커스가 지구에 멈추면 아무 키도 듣지 않는다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "'권역 이동' — 한반도·전 지구·동북아시아·동남아시아·남아시아·오세아니아·유럽·중동·아프리카·북미·남미·북극·남극 13칸으로 그 구도로 날아간다",
+   "source": "docs/information-access-20260905/menu-inventory.json:289-481 (2026-09-05 생성 스냅샷), 대체 주장은 prototype/v2-three/js/ui-shell.js:363-366, :527 (2026-09-20)",
+   "verdict": "PARTIAL",
+   "evidence": "칩 목록은 커밋 1cb6bf41 에서 삭제됐고 그리는 곳이 없다(ui-shell.js:487-498 chipsFor 는 'society' 인구 국가 칩만 그린다). 클릭 처리(hooks.onRegion)는 ui-shell.js:843-845 에 남아 있다. 대체 경로의 범위는 화면이 스스로 적는다 — prototype/v2-three/index.html:1425 `aria-label=\"검색 (나라·시군구·도시·공항)\"`. 즉 나라·도시는 검색으로 대체되지만 '전 지구'·'북극'·'남극'·'동북아시아' 같은 권역·전구 구도는 그 넷 중 어디에도 없다. 같은 절에서 함께 빠진 land/globe(전지구 보기)도 메뉴에 없다(phenomenon-registry.js:862 phenomenon:null → ui-shell.js:400 제외)",
+   "userVisible": "MEDIUM",
+   "fixSize": "SMALL",
+   "whyItMatters": "확대해 들어간 구독자가 '전 지구로 돌아가기'와 극지 구도를 부를 버튼이 없어, 휠로 직접 빼는 수밖에 없다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "'내 위치로 이동' — 내 주변 정보를 보려고 카메라를 내 위치로 옮긴다",
+   "source": "docs/information-access-20260905/menu-inventory.json:705 (2026-09-05), 대체 주장은 prototype/v2-three/js/ui-shell.js:525 \"내 위치 → 하단 탭(…내 지역)에 같은 문이 이미 있다\"",
+   "verdict": "PARTIAL",
+   "evidence": "카메라를 실제로 옮기는 구현은 prototype/v2-three/js/main.js:4401-4413 'land/locate' 분기(orbit.targetYaw·targetPitch·targetDist=1.15 설정)인데, phenomenon-registry.js:864 가 phenomenon:null 이라 ui-shell.js:400 에서 메뉴에서 빠졌고 다른 호출처가 없다(grep: engine-bridge.js:161 등록·information-contract.js:6,14 표기뿐). 대체라고 적힌 하단 '내 지역' 경로는 main.js:4768-4774 'my-locate' 인데 myEarth.place 저장 + localStorage + refreshMyEarth() 만 하고 orbit 을 건드리지 않는다",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "'내 지역'을 등록해도 지구는 그 자리로 가지 않아, 내 동네를 눈으로 확인하려면 직접 돌려 찾아야 한다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "PILOT SCREEN SPEC EVIDENCE 절 \"기상청 ○○관측소 · 관측 20:10 · 예보 발표 17:00\" / 정보 접근성 보고서 §7 \"observedAt / validAt / issuedAt / retrievedAt 분리\"",
+   "source": "docs/PILOT-SCREEN-SPEC-TEMPERATURE-TSUNAMI-2026-09-18.md:44, docs/information-access-20260905/report.md §7 '데이터 시각' 행 (2026-09-05)",
+   "verdict": "PARTIAL",
+   "evidence": "1차의 근거가 좁았다. EVIDENCE 절만 보면 맞다 — prototype/v2-three/js/intel-strip.js:199-201 은 `s.id + 배지 + ageMin 분 전` 만 그린다. 그러나 절대 시각은 다른 절에서 이미 나온다: :139 WHAT 이 값마다 `${s.source} · ${fmtAt(v.at)}`, :144 변화의 `기준 ${fmtAt(c.since)}`, :186 NEXT 가 `발표 ${fmtAt(n.issuedAt)}`. 스키마도 갖췄다(aws/_shared/contracts/intel-packet-v1.schema.json:28-47). 사건 피드는 분리돼 있다(intel-feed.js:43,189)",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "관측 시각과 발표 시각은 이미 화면에 나오고 EVIDENCE 절에서만 상대시간이라, 구독자가 실제로 헷갈릴 여지는 작다.",
+   "domain": "ux"
+  }
+ ],
+ "overturned": [
+  {
+   "domain": "render",
+   "note": "범례 항목: 1차는 MISSING 이라 했으나 PARTIAL 이 맞다. live-layers.js:1188-1194 metaGrid 카드가 이미 격자 해상도(`72×36 (5°)`)·유효 원격자 n(`값이 있는 N칸`)·기준시각을 적고, 결측 처리도 변수별로 문장으로 적는다(:1178, :1183). 계약 5항목 중 실제로 없는 것은 위도 범위·등치선 기준 둘이고, 진짜 빠진 핵심은 5항목 목록 밖에 있는 '색을 값으로 되돌리는 색 눈금'이다. '판독 UI 0' 이라는 표현은 과장이다."
+  },
+  {
+   "domain": "render",
+   "note": "'v2 화면에는 숫자가 한 개도 없다'(도시 값 라벨 항목의 note)는 사실과 다르다. prototype/v2-three/js/station-model.js:303-311 이 기온(ta)과 이슬점(td)을 지구 위 SVG text 로 관측지점마다 찍는다('일기도 기입 모형' synop 레이어, ui-shell.js:81). travel.js:58-72·292·550 과 ext-scene.js:168-185 makeLabel 도 지명 글자 스프라이트를 지구에 얹는다. 정확한 진술은 '색면 6종에는 값 라벨 경로가 없다'이며, 그 좁은 진술은 유효하다(live-layers.js 내 fillText 0건)."
+  },
+  {
+   "domain": "render",
+   "note": "'지구 위 라벨은 국가명뿐'(NEXT_STEPS:77 항목)도 PARTIAL 로 내려야 한다. travel.js:292 는 지역명(nameKo), :550 은 관광지 제목 8개를 라벨 스프라이트로 지구에 놓는다. 또한 NEXT_STEPS:77 은 '## 3. 알려진 프로토타입 한계' 절의 자기 신고 문장이지 이행 약속이 아니다 — 대륙 포커스(:78)도 같은 절이다. 약속 위반과 같은 무게로 세면 안 된다."
+  },
+  {
+   "domain": "render",
+   "note": "'1.0 46레이어 분산' 항목은 MISSING 이 아니라 PARTIAL 이다. NEXT_STEPS:9 는 표의 상태 칸에 'GIBS 직결분(눈 NDSI·해빙·지표온도)부터 — URL 검증 완료'라고 1차분을 특정했고, 그 1차분은 v2 에 실제로 들어와 있다(ui-shell.js:42-44 snow·seaice·lst, live-layers.js:523-527, 593-594). aurora 도 완료(ui-shell.js:219). 미이식 10종은 사실이지만 '단계별 이식표의 후속 단계 미착수'가 정확한 성격이다."
+  },
+  {
+   "domain": "render",
+   "note": "1차의 'prototype/v2-three/js/ 전체 문자열 검사에서 tmax·tmin 0건'은 검사 자체가 부정확하다 — 대소문자 무시 검색에서 live-layers.js:2085 tMinus, main.js:99 eotMin, research/result-layer.js:106 latMin/latMax, ext/hobby-sea-common.js:232 getMinutes 가 걸린다. 다만 전부 오탐이고 레이어로서의 tmax·tmin 은 ui-shell.js:61-84 레이어 표와 live-layers.js:509-600 fetch/build 표 어디에도 없으므로 결론(MISSING)은 유지된다."
+  },
+  {
+   "domain": "render",
+   "note": "바람 등치선(2,5,10,15,20,30,45m/s)은 갭이 아니다 — 재확인 완료. prototype/js/continuous-contours.js:24-30 이 '⚠️⚠️ 바람(wind·windfc)에는 등치선을 그리지 않는다 (2026-09-08 제거) … 세기는 색면이, 방향은 입자가 말한다'고 적는다. 08-12 계약보다 09-08 결정이 최신이므로 계약표의 이 칸은 구현하면 안 된다. 1차도 같은 판단이었고 그대로 유지한다."
+  },
+  {
+   "domain": "render",
+   "note": "PILOT 명세의 '39개 관측소'는 명세 쪽이 낡았다. prototype/v2-three/js/sim-questions.js:64 주석이 '2026-09-20: 예전 39개는 틀렸다 — STATIONS 는 38곳'이라고 적는다. 도달시간 항목을 고칠 때 39를 기준으로 삼으면 안 된다."
+  },
+  {
+   "domain": "render",
+   "note": "등치선 고치는 크기를 1차보다 낮게 잡았다(LARGE→MEDIUM). 마칭스퀘어 수학이 이미 렌더러 독립 모듈로 있다 — prototype/js/contour-math.js(154줄)는 gridmath.js 만 import 하고 Cesium 을 모른다. Cesium 에 묶인 것은 그리기 계층뿐이다(continuous-contours.js:12 viewer.js, :63·118-140 Cesium API). v2 에는 이미 서버 선분을 LineSegments 로 그리는 경로(intel-feed.js:583-598)와 글자 스프라이트 헬퍼(travel.js:58-72)가 있어, 포팅은 신규 개발이 아니라 렌더러 교체에 가깝다."
+  },
+  {
+   "domain": "product",
+   "note": "【1차 최대 오류】 '고급 Intelligence 7종 중 Confidence·변화 추적(CHANGE)·과거 비교는 절도 문자열도 없다' — 세 개 모두 틀렸다. Confidence 는 prototype/v2-three/js/intel-strip.js:202-207 이 EVIDENCE 절에 등급을 그리고 inputs.rule 만 유료 뒤로 숨긴다. CHANGE 는 intel-strip.js:97-102(띠 요약)·:141-145(WHAT 본문)에 from→to·delta·since 로 있다. 과거 비교는 아래 항목 참조."
+  },
+  {
+   "domain": "product",
+   "note": "'COMPARE 는 누를 데가 없다 / event-room.js(420행)에 COMPARE·PAST 문자열 0건' — event-room.js 만 보고 내린 결론이다. prototype/v2-three/js/intel-feed.js:605-638 compareHtml() 이 '이전 발표와 비교' 카드(회차 칩·기관별 h0/+24h 표·변경 목록·당시 발표 원문 불변 링크·딥링크)를 그리고 main.js:4853 이 'feed-compare' 액션을 받는다. intel-feed.js:126-180·196-208 은 'PAST — 주변 30일'(USGS 300km/30일/M2.5+)과 TC 공식 발표 타임라인을 그린다. 태풍·지진 한정이고 등급 판정이 안 붙어 무료라는 점이 실제 격차다."
+  },
+  {
+   "domain": "product",
+   "note": "'baselineEventId 가 0건이므로 기준선이 기록되지 않는다' — 식별자 이름이 0건인 것은 맞지만(prototype/·aws/·tools/ 전수 확인) 결론이 틀렸다. prototype/v2-three/js/main.js:5276-5286 record() 가 eventId·revisionId·agency·baseline{lat,lon,windMs}·windOffsetMs·eyeKm·badge 'SIMULATION_ONLY'·시각을 localStorage 'earthus.scenario' 에 실제로 남긴다. 진짜 한계는 '기록이 없다'가 아니라 '기록이 이 기기에만 남는다'(main.js:4589)이다."
+  },
+  {
+   "domain": "product",
+   "note": "'ANOMALY 는 WHAT 안 평년 대비 한 줄' — 한 줄이 아니라 intel-strip.js:146-156 의 items 루프로 평년값·평년 기간·method·coverage 까지 그린다. 그리고 1차가 놓친 진짜 문제는 그 절(WHAT)이 SECTION_TIER 에서 TIER.FREE(:20)라, 정본 45행이 유료라고 적은 ANOMALY 가 지금 무료로 나간다는 경계 어긋남이다."
+  },
+  {
+   "domain": "product",
+   "note": "'추천 질문 24개 중 available 2개 → 나머지 18개는 사유 문장만' — 숫자는 맞지만 사용자 체감이 과소 표현됐다. sim-questions.js:409-410 pressable() 이 LIMITED+action 도 누를 수 있게 하므로 실제로 무언가 열리는 버튼은 6개(쓰나미 2·파도 1·태풍 경로 1·위성 2)다."
+  },
+  {
+   "domain": "product",
+   "note": "'AGENTS.md 는 날짜가 없어 FOUNDING-500 과 우열을 정할 수 없다' — git 으로 정해진다. `git log -S\"적용 대기\" -- AGENTS.md` = 2026-08-06(02423387) 이후 미수정, `git log -1 -- docs/FOUNDING-500.md` = 2026-08-09(578497a0). AGENTS.md 쪽이 3일 오래된 문장이다. 판정은 여전히 UNKNOWN(저장소로 운영 DB 를 볼 수 없다)."
+  },
+  {
+   "domain": "product",
+   "note": "'사건 추적·알림에 유료 차등이 없다 = 경계가 없다' — 진단이 바뀐다. prototype/js/ui-alerts.js:11 이 적듯 FREE_OPEN 정책에서 의도적으로 연 것이고 20곳은 비용 상한이다. 격차는 '지금 잘못 열려 있다'가 아니라 'PAID 전환 시 1곳/20곳 분기를 새로 써야 한다'이다."
+  },
+  {
+   "domain": "product",
+   "note": "【1차 누락】 유료 경계 자체가 오늘 한 번도 실행되지 않는다. prototype/js/config.local.js:30-31 이 MONETIZATION_MODE:'FREE_OPEN'·SALES_OPEN:false 이고, prototype/js/access-mode.js decideCapabilityAccess 가 requiredTier 판정 앞에서 FREE_OPEN 이면 무조건 allowed:true 로 빠져나간다. 1차 보고서 어디에도 이 사실이 없는데, 이것이 위 모든 항목의 전제다."
+  },
+  {
+   "domain": "product",
+   "note": "【1차 누락】 billing.js:109-110 이 '이벤트 룸 전체 — NOW·WHY·NEXT·PAST·COMPARE·FOR ME·EVIDENCE'를 soon:true 로 적지만 PAST·COMPARE 는 intel-feed.js 에 이미 구현돼 있다. 결제 화면이 과장만 하는 게 아니라 있는 것도 없다고 적는 방향으로도 틀려 있다."
+  },
+  {
+   "domain": "product",
+   "note": "【1차 누락】 사후 리뷰(billing.js:103, soon 없음 = 지금 파는 것)는 실제로 구현돼 있다 — prototype/v2-three/js/intel-feed.js:639-679 verifyHtml() 의 '종료 검증(IBTrACS 최종 경로 기준)' 표. 반면 같은 줄에 묶인 유사 사건 카드는 화면이 없다(findHistoricalAnalogs 는 v11 라이브러리에만 있고 호출부 0개)."
+  },
+  {
+   "domain": "product",
+   "note": "【1차 누락】 docs/INTEL-COVERAGE-2026-09-20.md 표에서 hazards.tsunami 도 '생산자 없음'이다. PRO 의 유일한 계산 현상에 인텔 패킷이 없다(대신 event-room.js:272-273 의 PTWC ETA 대조가 따로 붙는다)."
+  },
+  {
+   "domain": "product",
+   "note": "【1차 누락】 aws/earthus-llm 서버에도 한도가 없다. handler.py·narration_guard.py 에서 quota·rate_limit·throttle·per_day·tier 전수 grep 0건 — 1차는 클라이언트만 보고 MISSING 이라 했는데, 서버까지 확인해도 같은 결론이라 이 항목은 오히려 더 단단해졌다."
+  },
+  {
+   "domain": "intel",
+   "note": "1차 3항 `J-7 / sim-link.js` — 판정을 MISSING → PARTIAL 로 내린다. 1차는 'simulation_link.py 를 부르는 코드가 자기 시험 말고 하나도 없다' 고 했으나 틀렸다: tools/research/register_simulation_run.py 가 `sl.from_research_runtime`·`sl.require_valid` 를 실제로 쓰고 `_NON_HUMAN` 승인자 거절까지 건다. 또 1차는 §E 의 'limits[] 문장' 을 없다고 봤으나 event-room.js:277·281 이 쓰나미 카드에 한계 문장('장파 근사 √(g·h) · 0.2° 격자 · 파고·침수 아님', '계산이 없다는 것이지 위험이 없다는 뜻이 아닙니다')을 이미 단다. 남은 진짜 결손은 runRef 링크 부재와 원장 부재(`data/simulation-runs/` 없음)뿐이다."
+  },
+  {
+   "domain": "intel",
+   "note": "1차 12항 `P2b build_kma_normals.py` — 판정(DONE)은 유지하되 근거를 보강한다. 1차는 '일이 다른 곳에서 돼 있다' 고만 적었는데, LAYER-PLAN P2b 의 완료 기준은 파일 이름이 아니라 '평년 출처·기간이 패킷 baseline 에 찍힘' 이고 그 기준이 aws/kma-aws/intel_temp.py:170-171 에서 문자 그대로 충족된다(`baseline.source='기상청 API허브 sfc_norm1 (tmst=2021)'`, `period`). 파일 이름만 계획과 다르다."
+  },
+  {
+   "domain": "intel",
+   "note": "1차 14항 요금제 — 근거 줄 `main.js:473` 은 지구 셰이더 코드다(대기 림·해양 포커스). 잘못된 인용이라 폐기하고 intel-strip.js:19-22·68·175·190, access-mode.js:75-77, config.local.js:30, report-center.js:99-106 으로 바꿔 적었다. 또 1차 JSON 은 14항 중간에서 잘려 있어, 그 뒤에 더 있었을 항목은 이번 검증에 들어오지 못했다 — 확인하지 못한 범위다."
+  },
+  {
+   "domain": "intel",
+   "note": "1차 4항의 'weather.mountain_summit 은 정상' 이라는 단서 — 실측으로 확인해 그대로 유지한다. ui-shell.js:182 `mountain` 의 state 가 'OFFICIAL_FORECAST' 라 NEXT 탭이 실제로 채워진다. 미구현으로 적으면 오판이다."
+  },
+  {
+   "domain": "intel",
+   "note": "1차 10·11항(66건 재감사, SIM_CAPABILITIES 12항목) — 판정 DONE 유지, 근거를 실측으로 갈음했다. 레지스트리·sim-questions 를 직접 import 해 66 / intelligence 34 / forecast 13 / simulation 1 / SIM_CAPABILITIES 21(available 1·limited 3·not_available 17) 을 얻었고 모두 INTEL-REAUDIT-2026-09-20 과 일치한다. 09-14 계약·계획 문서의 숫자만 낡았다."
+  },
+  {
+   "domain": "intel",
+   "note": "확인하지 못한 것(UNKNOWN 으로 남긴다) — (1) intel-rollup·earthus-llm·glacial-lake-us·public-api 4건의 실제 운영 배포 여부는 저장소로 알 수 없다(deploy-queue 는 대기 목록일 뿐). (2) `reports/published/` 에 phenomenon-intel 발행본이 한 건이라도 있는지는 S3 라 확인 불가. (3) 인텔 패킷 URL 에 서버 인증이 걸려 있는지 확인하지 않았으므로, 클라이언트 등급 판정(report-center.js:99)만 보고 '결제벽이 우회 가능하다' 고 단정하지 않았다."
+  },
+  {
+   "domain": "ux",
+   "note": "【방법론 정정 — 1차 18건 중 5건의 근거가 '약속'이 아니었다】 docs/information-access-20260905/menu-inventory.json 은 머리에 `\"generatedAt\": \"2026-09-05T00:37:33.325Z\", \"baseCommit\": \"4d164263\"` 를 달고 있는 **생성된 현황 스냅샷**이지 기획서가 아니다(직접 열어 확인). 1차는 이 표의 행 22개가 지금 코드와 다르다는 이유로 MISSING 5건을 세웠는데, 그건 '기획됐는데 안 만들어진 것'이 아니라 '9월 5일 이후 의도적으로 옮겨진 것을 문서가 못 따라간 것'이다. PD 에게 '미구현 22건'으로 보고하면 없는 부채를 만든다."
+  },
+  {
+   "domain": "ux",
+   "note": "권역 이동 13칸: MISSING → PARTIAL. 칩이 사라진 것은 맞지만 커밋 1cb6bf41 이 대체 경로(상단 검색)를 명시했고(ui-shell.js:363-366, :527), 나라·시군구·도시·공항은 실제로 검색으로 간다(index.html:1425 aria-label). 남는 구멍은 '전 지구'·북극·남극 같은 권역 구도뿐이다."
+  },
+  {
+   "domain": "ux",
+   "note": "바탕지도 3종(base-ne2·base-bluemarble·base-truecolor): MISSING → DONE. 자료 레이어가 아니라 지구 표면 재질이라 설정(⚙)으로 옮긴 것이 설계 결정이고, 옮겨간 자리를 직접 확인했다 — prototype/v2-three/index.html:1471-1474 `<div class=\"seg\" id=\"base-seg\">` 안에 자연지형·블루마블·오늘의 지구 세 버튼이 실재한다. 켜는 함수도 main.js:4414- 'land/base-*' 분기로 살아 있다."
+  },
+  {
+   "domain": "ux",
+   "note": "'지구 사건 피드'(feed): MISSING → DONE. 하단 바 첫 칸이 그 문이다 — prototype/v2-three/js/ui-shell.js:984-990 NAV_ITEMS 의 `{ id:'feed', ko:'지금' }`. 같은 파일 :976-981 주석이 '이 다섯은 원래 있던 것이고 가드 시험의 기대값'이라고 적는다. 메뉴에서 뺀 것이 아니라 더 눈에 띄는 자리로 올린 것이다."
+  },
+  {
+   "domain": "ux",
+   "note": "'해양 포커스'(oceanfocus): MISSING → DONE. phenomenon-registry.js:881 이 role:'control' 로 분류해 메뉴에서 뺀 것이고, 같은 일을 지도 클릭이 한다(ui-shell.js:526). 조작(control)을 자료 목록에 넣지 않는 것은 그 자체가 §3.2 의 규칙이다."
+  },
+  {
+   "domain": "ux",
+   "note": "panel:whatif '가정 실험' → '시뮬레이션', panel:places '내 장소' → '내 지역': PARTIAL → DONE. 탭은 둘 다 있고(ui-shell.js:883, :891) 개명은 근거가 기록된 의도적 결정이다 — :889-890 이 2026-09-07 지시 §18('사용자가 찾을 수 있는 이름을 먼저 쓴다')을, :881-882 가 375폭 실측('내 장소 · FOR ME' 가 옆 탭 글자를 덮었다)을 인용한다. 1차도 note 에서 '탭 자체는 있다'고 인정했으므로 갭으로 셀 것이 아니다."
+  },
+  {
+   "domain": "ux",
+   "note": "v1 'WONDER — 앱 전환'·'세 지구 전환' 2행: MISSING → DONE. prototype/js/earth-switch.js:69-72 EARTHS 배열이 earthus·intel 둘뿐인 것은 맞으나, 이는 2026-09-14 WONDER 제거 결정의 **결과**다(같은 파일 :7 주석). 날짜 충돌 명시: menu-inventory.json 2026-09-05 스냅샷 vs earth-switch.js 2026-09-14 결정 — 후자가 최신이고 정본이다."
+  },
+  {
+   "domain": "ux",
+   "note": "PILOT 기온 INFORMATION: MISSING → PARTIAL. 1차는 '추이 그래프 코드도 없다'까지만 보고 화면 전체가 없다고 적었으나, main.js:2926-2945 pointWeather() 가 기온·습도·강수·바람을 이미 한 카드로 띄운다. 빠진 것은 출처 등급(Open-Meteo MODEL_SIGNAL ≠ 기상청 OFFICIAL_OBSERVATION)·1h/6h 델타·24h 그래프·동네예보 넷이다."
+  },
+  {
+   "domain": "ux",
+   "note": "첫 방문 안내 2단계: MISSING → PARTIAL. 안내가 대는 다섯 이름의 **내용**은 서랍에 전부 있고 라벨만 어긋난다(날씨→대기, 해양→바다). 실제로 못 찾는 것은 '지형'(대기질·관측 절 안)과 '사람'(생태·사람·여행 절 안) 둘이다."
+  },
+  {
+   "domain": "ux",
+   "note": "EVIDENCE 절 절대 시각: PARTIAL 유지하되 userVisible MEDIUM → LOW. 1차가 EVIDENCE 절만 보고 '절대 시각을 쓰지 않는다'고 적었는데, 같은 파일 intel-strip.js:139(WHAT 의 `fmtAt(v.at)`)·:144(변화 기준 시각)·:186(NEXT 의 `발표 ${issuedAt}`)이 이미 절대 시각을 그린다. 사용자가 보는 화면에는 시각이 나온다."
+  },
+  {
+   "domain": "ux",
+   "note": "쓰나미 INTELLIGENCE: MISSING 유지하되 근거 보강. 1차는 '쓰나미 화면이 없다'로 읽히게 썼으나, SIMULATION 탭에는 쓰나미 전용 카드가 이미 있다(main.js:4565-4575 — 도달시간 √(g·h) 설명, M6.5/100km/바다 조건 명시, 사건 방 유도, SIMULATION_ONLY 배지). 없는 것은 5절 Intelligence 패킷 하나로 좁혀야 한다."
+  },
+  {
+   "domain": "ux",
+   "note": "【1차가 통째로 빠뜨린 것 2건】 (1) ui-shell.js:1176 능력 줄이 패킷 유무와 무관하게 정적 레지스트리만 보고 '해석'을 광고한다 — intelligence:true 34현상 중 생산자는 4뿐이라 30현상에서 광고와 화면이 어긋난다. 바로 위 :1167-1169 주석이 '없는 능력은 적지 않는다'고 스스로 금지한 바로 그 일이다. (2) index.html:10 viewport 의 `maximum-scale=1, user-scalable=no` + main.js:695 gesturestart 차단이 report.md §7 의 '200% 확대 검수' 기준과 정면으로 충돌한다."
+  },
+  {
+   "domain": "ux",
+   "note": "B1(서랍이 안 닫힌다) 근거 강화 — 1차는 '서랍이 그대로 떠 있다'까지만 봤다. 실제로는 더 나쁘다: main.js:4053-4056 showNote() 가 항상 shell.openIntel() 을 부르는데, ui-shell.js:251 root=document.body 이고 index.html:672 #intel{z-index:4} < :388 #menu-panel{z-index:5} 라 **방금 연 결과 카드가 서랍 뒤에 그려진다**. 375×812 기준 가로 겹침이 약 87% 다."
+  }
+ ],
+ "all": [
+  {
+   "promise": "구간 경계가 섞이지 않는 단계색 — 기온·기압·바람·SST·SST편차·파고 6개 변수 전부",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:12, 25-32 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/live-layers.js:2931-2944 rampFrom — 정지점 사이 `a[1]+(b[1]-a[1])*f` 선형 보간이고 단계 분기가 없다. :1108-1109 tex.minFilter/magFilter = THREE.LinearFilter, :1113 SphereGeometry(…,256,128) 위에 72×36(5°) 캔버스를 늘려 붙인다 — 번짐이 두 겹. 계약 6종 전부 이 경로: :581-586(t·mslp·spd), :571-574(sst·wave), :588(sstAnom). 대조 v1: prototype/js/gridoverlay.js:22-31 `stepped: true` + 주석 '색을 부드럽게 섞으면 경계가 안 읽힌다'",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "돈 내고 켠 색면이 경계 없는 그라데이션이라 '지금 몇 도 구간인지'를 눈으로 구분할 수 없다.",
+   "domain": "render"
+  },
+  {
+   "promise": "기온 등치선 -25,-10,0,10,20,30,40°C (7레벨) + 긴 경로부터 레벨당 최대 두 라벨",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:25, 34-35 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/live-layers.js:582 tempgrid → buildField(:1072-1121)는 캔버스 색 텍스처만 만들고 선·라벨 생성이 없다. v2 전체에 marching/contour/등치선 문자열 0건(js/i18n.js·js/phenomenon-registry.js 의 'contour' 는 용어·레지스트리 문자열). 해저 등심선(main.js:502-519)은 셰이더 수심 밴딩이라 격자 등치선이 아니다",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "'몇 도 선이 어디까지 올라왔나'가 기온 레이어를 보는 이유인데 그 선이 화면에 없다.",
+   "domain": "render"
+  },
+  {
+   "promise": "기압 등치선 4hPa 간격 + 고·저기압 중심 H/L 기호",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:27 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/live-layers.js:583 presgrid → buildField 색면만. v2 전체에 isobar·등압선 코드 0건(js/phenomenon-registry.js 의 '등압선' 은 현상 설명 문자열). v1 구현: prototype/js/isobars.js:30 `const STEP = 4`, :47-48 HI/LO, :50-70 극값 탐색",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "등압선 간격이 곧 바람 세기라는 판독이 통째로 빠져 있어, 색면만으로는 '어디가 높나'만 알고 '얼마나 급한가'를 모른다.",
+   "domain": "render"
+  },
+  {
+   "promise": "기압 선은 동아시아 1° 전용판(pressure-ea.json), 전지구 5°로 가짜 정밀선 금지",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:27 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/live-layers.js:511-514 — raingrid·tempgrid·presgrid·windgrid 가 모두 `/wind/global.json` 하나(5°)를 공유한다. 'pressure-ea' 문자열 v2 전체 0건. v1: prototype/js/isobars.js:26 `${API.WIND}/pressure-ea.json`, prototype/js/gridoverlay.js:420 pressureEa, :394 bbox 20~50N/110~160E",
+   "userVisible": "MEDIUM",
+   "fixSize": "SMALL",
+   "whyItMatters": "등압선을 넣으려 해도 전제가 되는 1° 자료가 v2 에 연결돼 있지 않아 선 작업보다 앞에 와야 하는 항목이다.",
+   "domain": "render"
+  },
+  {
+   "promise": "SST 등치선 4,10,16,22,26,29°C (6레벨)",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:30 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/live-layers.js:571 sstfield → buildField(data,'sst',SST_RAMP) 색면만. SST_RAMP 정지점은 -2,4,10,16,22,27,32 (:2957-2960)라 계약 경계 26·29 는 색 눈금에도 없다. 카드(:1721-1722)는 '한색 −2°C → 난색 32°C' 라는 양끝 문장만 준다",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "26·29°C는 산호 백화·태풍 발달을 가르는 경계인데 선으로도 색 경계로도 표시되지 않는다.",
+   "domain": "render"
+  },
+  {
+   "promise": "SST 편차 등치선 -1.5,-0.5,0,0.5,1.5°C (5레벨, 0 강조)",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:31 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/live-layers.js:588 sstanom → buildField(data,'sstAnom',SSTANOM_RAMP) 색면만. SSTANOM_BASE 정지점 -4,-2,-0.5,0.5,2,4 (:2995-2998)로 ±1.5 경계가 없고, :2999 SSTANOM_RAMP 는 |v|<0.25 를 null 로 버려 0 강조선 자리를 아예 비운다. v1 정의: prototype/js/continuous-contours.js:37 (`emphasis: 0`)",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "평년보다 뜨거운지 차가운지를 가르는 0 선이 없어, 편차 레이어에서 가장 중요한 경계를 눈으로 짚을 수 없다.",
+   "domain": "render"
+  },
+  {
+   "promise": "파고 1,2,3,4,6,9m 경계 단계색 · 등치선도 같은 경계값",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:32 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/live-layers.js:572 wavefield → buildField. WAVE_RAMP 정지점 0,1,2.5,4,6,8 (:3012-3015) — 계약에 없는 2.5·8 이 들어가 있고 계약의 3·9 가 빠졌다. 등치선도 없음. 카드(:1733-1734)는 '청 0m → 적 8m' 뿐. v1 정의: prototype/js/continuous-contours.js:38 levels [1,2,3,4,6,9]",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "색 경계가 계약과 다른 대표 사례로, 색면과 등치선이 같은 값이어야 한다는 규칙 자체가 깨져 있다.",
+   "domain": "render"
+  },
+  {
+   "promise": "범례의 해상도 · 유효 원격자 n · 위도 범위 · 등치선 기준 · 결측 처리 (5항목)",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:16 (2026-08-12)",
+   "verdict": "PARTIAL",
+   "evidence": "prototype/v2-three/js/live-layers.js:1188-1194 metaGrid — 해상도(`${360/d.res}×${180/d.res} (${d.res}°)`)·유효 원격자 n(`값이 있는 N칸`)·기준시각은 카드에 있고, 결측 처리도 변수별 문장으로 있다(:1178 '0.1mm 미만은 칠하지 않습니다', :1183 '밤(0)은 칠하지 않습니다'). 없는 것은 위도 범위, 등치선 기준(등치선 자체가 없다), 그리고 **색을 값으로 되돌리는 눈금**이다 — index.html 전체에서 색 눈금 마크업은 지진 깊이(:474-484 .qk-legend)와 인구 조각(:1162-1171 .sc-legend) 둘뿐이고 linear-gradient 도 그 두 곳뿐(index.html:474, 1133)",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "카드가 '몇 칸·어느 범위'까지는 정직하게 적지만 색 눈금이 없어, 화면에 칠해진 색 하나를 값으로 되돌릴 방법이 없다.",
+   "domain": "render"
+  },
+  {
+   "promise": "현재 화면 주요 도시의 최근접 원격자값 (지구 위 도시 값 라벨)",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:14 (2026-08-12) + prototype/js/readability.js:1-5",
+   "verdict": "MISSING",
+   "evidence": "색면 6종 어디에도 값 라벨 경로가 없다 — prototype/v2-three/js/live-layers.js 에 fillText 0건(grep: fillText 는 main.js:6147 워터마크, ext-scene.js:177·travel.js:66 라벨 헬퍼, seafloor.js:84 뿐). 지구 라벨 후보는 국가 폴리곤 bbox 중심만 만든다(main.js:5319-5348 buildLabelCandidates — nameKo/nameEn/code3). v1: prototype/js/gridoverlay.js:826-872 도시 최근접 격자값 라벨 + readability.js:376-390 `~` 표기 규칙",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "색면을 켠 상태에서 화면 안 도시의 실제 수치가 한 개도 안 떠서, 유료 화면이 '예쁜 색 한 장'으로 끝난다.",
+   "domain": "render"
+  },
+  {
+   "promise": "지점을 누른 좌표·원격자값·단위·시각·출처 Evidence — 화면 숫자는 보간 픽셀이 아니라 원격자값",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:15 (2026-08-12) + prototype/js/readability.js:4-5",
+   "verdict": "PARTIAL",
+   "evidence": "prototype/v2-three/js/main.js:2925-2950 pointWeather — 좌표·단위·유효시각·조회시각·출처 줄은 정직하게 나온다(:2938-2945). 그러나 :2932 에서 화면에 그려진 격자를 읽지 않고 api.open-meteo.com 지점 조회를 새로 던진다. 답하는 항목도 기온·습도·강수·바람뿐이라 sstfield·wavefield·sstanom 색면에는 이 경로가 없다(해상 클릭은 :2898 marine API 로 별개 처리)",
+   "userVisible": "MEDIUM",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "눌러서 나온 숫자와 그 자리에 칠해진 색이 서로 다른 자료라 어긋날 수 있는데, 화면은 그 사실을 말하지 않는다.",
+   "domain": "render"
+  },
+  {
+   "promise": "바람 입자는 방향 판독용 과장 — 전지구 u/v 입자장",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:28, 47 (2026-08-12) + prototype/v2-three/NEXT_STEPS.md 웨이브2 '남은 것 … 바람장/대기질(1.0 /wind)' (2026-09-01)",
+   "verdict": "PARTIAL",
+   "evidence": "windgrid 는 속력 색면만(prototype/v2-three/js/live-layers.js:584→1154-1166 buildWindGrid). 'wind' 레이어에 입자 흐름이 실제로 있으나 관측 지점 선분 위에서만 흐르고, 코드가 스스로 '관측 지점의 실측 벡터 위에서만 움직임 — 격자 보간·유선 생성 없음'이라고 적는다(:2181-2183, 지점당 P_PER=2). v1 전지구 입자장: prototype/js/windfield.js (615줄)",
+   "userVisible": "HIGH",
+   "fixSize": "LARGE",
+   "whyItMatters": "바다와 관측 공백 지역에는 흐름이 한 줄도 흐르지 않아, 전지구 화면에서 바람이 '어디서 어디로 가는지'가 보이지 않는다.",
+   "domain": "render"
+  },
+  {
+   "promise": "내일 최고/최저 기온 — 각 전용 단계색 · 범례 경계값 · °C 원격자 (tmax 0,12,22,28,33,38 / tmin -20,-10,0,8,16,24)",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:26 (2026-08-12) + prototype/js/continuous-contours.js:33-34",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/ui-shell.js:61-84 weather 섹션 전체 레이어 목록에 내일 기온 항목이 없다(있는 것: radar·raingrid·tempgrid·presgrid·windgrid·pm25grid·uvgrid·구름 6종·tempanom·wind·synop·airq·warn). live-layers.js:509-551 fetch 표와 :565-600 build 표에도 없다. v1: prototype/js/layerbar.js:138 tmax, :140 tmin + gridoverlay.js:55-64 tmax 전용 stepped 눈금('현재기온과 같은 색을 쓰면 두 레이어를 구분할 수 없다')",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "계약 표 8행 중 한 행이 레이어째로 없어, v2 날씨 메뉴에 '내일'을 색으로 보는 화면이 하나도 없다.",
+   "domain": "render"
+  },
+  {
+   "promise": "TPW — 10mm 단계색 · 등치선 10~70mm · mm 원격자 (공개 승인 전 TPW_READY=false 유지)",
+   "source": "docs/earthus-v23/CONTINUOUS_LAYERS.md:29 (2026-08-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/ 전체에 'TPW'·'가강수' 문자열 0건(js/ 및 index.html 전수 grep). v1 구현: prototype/js/gridoverlay.js:41-51 tpw stepped 8단계, continuous-contours.js:36 levels 10~70mm, layerbar.js:133 tpw 항목",
+   "userVisible": "MEDIUM",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "v1 에서도 공개 플래그가 걸린 층이라 급하지 않지만, 승인이 나도 v2 에는 켤 코드 자체가 없다.",
+   "domain": "render"
+  },
+  {
+   "promise": "1.0 지구 스타일 46레이어를 v2 씬별 레이어로 분산",
+   "source": "prototype/v2-three/NEXT_STEPS.md:9 표 (2026-09-01) + v1 실목록 prototype/js/layerbar.js",
+   "verdict": "PARTIAL",
+   "evidence": "표가 선언한 1차분('GIBS 직결분(눈 NDSI·해빙·지표온도)부터')은 **되어 있다** — prototype/v2-three/js/ui-shell.js:42-44 snow·seaice·lst, live-layers.js:523-527 loadGibs + :593-594 buildGibsShell. aurora 도 이식 완료(ui-shell.js:219, live-layers.js:529, 595). 반면 v1 색면 중 humidity·pm10·dust·aqi·ozone·swell·windfc·drought·fog·heatdome 는 v2 레이어 표(ui-shell.js:61-84, 91-115)에 없고 문자열도 0건이다(dust·swell·humidity·pm10 히트는 ext/hobby-*·travel.js·main.js 카드 문구나 지점조회 필드일 뿐 레이어가 아니다). v1 원목록: prototype/js/layerbar.js:129,142,172-180,195,203,205,238",
+   "userVisible": "MEDIUM",
+   "fixSize": "LARGE",
+   "whyItMatters": "v1 에서 무료로 보던 색면 10종이 유료 v2 에는 없어, 요금을 내면 볼 수 있는 것이 오히려 줄어 보인다.",
+   "domain": "render"
+  },
+  {
+   "promise": "대륙 포커스(§19.4 Continent Focus) — 국가 bbox 유니온으로 다음 단계",
+   "source": "prototype/v2-three/NEXT_STEPS.md:78, '## 3. 알려진 프로토타입 한계' 절 (2026-09-01)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/ 전체에 continentFocus·'대륙 포커스' 문자열 0건. 포커스는 국가 단위만 존재한다(main.js:5319-5348 buildLabelCandidates 가 focus.data 국가 폴리곤만 다룬다)",
+   "userVisible": "LOW",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "문서가 스스로 '미구현'이라 적어 둔 한계라 약속 위반은 아니고, 사용자가 없는 줄도 모르는 기능이다.",
+   "domain": "render"
+  },
+  {
+   "promise": "TIME 등시선 재생 30 / 60 / … / 720분 · RESULT '관측소 도달시간 표 + 등시선 지도'",
+   "source": "docs/PILOT-SCREEN-SPEC-TEMPERATURE-TSUNAMI-2026-09-18.md:99, 104 (가장 최신 화면 명세)",
+   "verdict": "PARTIAL",
+   "evidence": "선은 그린다 — prototype/v2-three/js/intel-feed.js:583-598 drawIsochrones 가 720분까지 모든 레벨을 순회한다. 그러나 :588-593 에서 레벨별 구분 없이 한 배열 pts 에 밀어 넣고 색 하나(0xffa64d)의 LineSegments 하나로 합쳐 어느 선이 30분인지 알 수 없고, 레벨 값 라벨도 시간대 재생 제어도 이 코드에 없다. 도달시간도 표가 아니라 한국 3곳+해외 3곳 요약이다(event-room.js:268-277 `.slice(0,3)` 두 번)",
+   "userVisible": "MEDIUM",
+   "fixSize": "SMALL",
+   "whyItMatters": "쓰나미 화면에서 '몇 분 뒤 어디까지'가 핵심인데, 주황 선 뭉치만 보이고 시간을 읽을 수 없다.",
+   "domain": "render"
+  },
+  {
+   "promise": "P6 대기 산란 (2026-09-01 남은 것)",
+   "source": "prototype/v2-three/NEXT_STEPS.md 웨이브2 '남은 것' (2026-09-01)",
+   "verdict": "DONE",
+   "evidence": "prototype/v2-three/js/main.js:528 ATMO_VERT, :539 ATMO_FRAG 셰이더가 정의돼 있고 :2547-2548 에서 ShaderMaterial 로 씬에 부착된다",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "이미 구현돼 있으므로 미구현으로 세면 안 된다 — 첫 화면 인상에 가장 크게 기여하는 부분이다.",
+   "domain": "render"
+  },
+  {
+   "promise": "해저 등심선 · 해수면/해저 분리 (P3 남은 것)",
+   "source": "prototype/v2-three/NEXT_STEPS.md 웨이브2·P4 절 (2026-09-01)",
+   "verdict": "DONE",
+   "evidence": "prototype/v2-three/js/main.js:283-284 uIsobath/uIsobathStep 유니폼, :502-519 셰이더 등심선(간격 가변·주곡선 구분), :2501-2502 기본값 500m, :4468-4475 메뉴 토글, ui-shell.js:112 isobath 항목",
+   "userVisible": "MEDIUM",
+   "fixSize": "SMALL",
+   "whyItMatters": "구현돼 있을 뿐 아니라, v2 가 '선을 못 그려서' 기상 등치선이 없는 게 아님을 보여주는 근거다.",
+   "domain": "render"
+  },
+  {
+   "promise": "유료 경계가 실제로 작동한다는 전제 — 정본 39~48행 표 전체(FREE/EXPLORER/PRO 칸 구분)",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:39-48 (2026-09-14 정본) + prototype/js/config.local.js:30-31",
+   "verdict": "MISSING",
+   "evidence": "prototype/js/config.local.js:30-31 `MONETIZATION_MODE: 'FREE_OPEN'` · `SALES_OPEN: false`. prototype/js/access-mode.js decideCapabilityAccess 는 requiredTier 판정 **앞에서** `if (isFreeOpenMode(mode)) return { allowed:true, reason:'FREE_OPEN_UNTIL_PAID_LAUNCH' }` 로 빠져나간다. prototype/v2-three/js/main.js:4552 monetizationMode() 기본값도 'FREE_OPEN'. 즉 intel-strip.js:19-22 SECTION_TIER, entitlement.js:14-23 MINIMUM_TIER, lab-reports-page.js:13 allowed() 를 포함한 v2 의 모든 등급 판정이 오늘 한 번도 실행되지 않는다",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "1차 감사가 통째로 빠뜨린 항목 — 지금 유료 구독이라는 것이 아예 열려 있지 않고, 아래 모든 경계는 스위치를 켜는 날 처음 돌아가는 코드다.",
+   "domain": "product"
+  },
+  {
+   "promise": "PRO(₩29,000/월) 한 문장 = '지구의 조건을 바꾸어 시뮬레이션한다'. SCENARIO·SIMULATION·결과 해석이 PRO 전용 칸",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:41,48,70 (2026-09-14 정본)",
+   "verdict": "PARTIAL",
+   "evidence": "prototype/v2-three/js/sim-questions.js:40-351 — 현상 21종 중 status AVAILABLE 1종(hazards.tsunami, :62), LIMITED 3종(ocean.wave :48 · hazards.typhoon :83 · space.satellite :103), NOT_AVAILABLE 17종. 질문 24개 중 AVAILABLE 2개(:75-76, 둘 다 쓰나미). ⚠️ 1차 정정: :409-410 `pressable()` 이 LIMITED+action 도 누를 수 있게 하므로 **실제로 무언가 일어나는 버튼은 6개**(쓰나미 2 + 파도 1 + 태풍 경로 1 + 위성 2)이고, 나머지 18개가 사유 문장만 낸다",
+   "userVisible": "HIGH",
+   "fixSize": "LARGE",
+   "whyItMatters": "PRO 칸에서 '기록 남는 계산'이라 부를 수 있는 것은 쓰나미 하나이고 나머지 다섯 버튼은 장면이거나 기관 예보 인용이다.",
+   "domain": "product"
+  },
+  {
+   "promise": "Scenario = 태풍 가정 실험 baseline(§F: 풍속 ±15 m/s·눈까지 거리, baselineEventId 기록), 요금 PRO",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:29 (2026-09-14 정본)",
+   "verdict": "PARTIAL",
+   "evidence": "슬라이더 실재: prototype/v2-three/js/main.js:5270-5271 (sc-wind min=-15 max=15 · sc-eye 5~200km). ⚠️ 1차 뒤집음 — main.js:5276-5286 `record()` 가 `{eventId, revisionId, agency, baseline:{lat,lon,windMs}, windOffsetMs, eyeKm, badge:'SIMULATION_ONLY', at}` 을 localStorage 'earthus.scenario'(최근 30건)에 **실제로 기록한다.** 식별자 `baselineEventId` 만 저장소 코드 0건(prototype/·aws/·tools/ 전수 grep 확인)이고 기록 자체는 eventId+revisionId 로 있다. 남은 한계: main.js:4589 '실험 기록은 이 기기에만 남습니다' — 서버 회차가 아니고, main.js:4586 이 '결과는 파도 장면이지 예보도, 기록 남는 계산도 아닙니다'라고 적는다. main.js:5295 launchScenario 는 기준선 없는 두 번째 경로다",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "기준선은 기록되지만 그 기록이 이 기기 localStorage 안에만 있어, 구독자가 기기를 바꾸면 자기 실험이 사라진다.",
+   "domain": "product"
+  },
+  {
+   "promise": "EXPLORER(₩9,900/월) = REPORT ✓. 리포트 센터는 최신·월간·분기·연간·전망 다섯 갈래",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:47 (2026-09-14 정본) + prototype/v2-three/js/ui-shell.js:596-601 (REPORT_TABS 5종)",
+   "verdict": "PARTIAL",
+   "evidence": "오늘 실측 재확인: https://earthus-cache-kr.s3.us-east-2.amazonaws.com/reports/published/index.json → 200, 321바이트, 본문 전체가 `years.2026 = [ {reportId:'report:2026-08', type:'RETROSPECTIVE_MONTHLY', publishedAt:'2026-09-08T11:38:53Z', version:1} ]` **1건**. quarterly·annual·outlook 0건. ui-shell.js:540-542 주석이 '아직 없는 것: 월간·분기·연간 회고와 세 전망 — 생성기가 없다'라고 스스로 적는다",
+   "userVisible": "HIGH",
+   "fixSize": "LARGE",
+   "whyItMatters": "EXPLORER 를 파는 한 문장이 '보고서를 만든다'인데 정기 발행물은 한 달치 한 장뿐이고 탭은 다섯 개다.",
+   "domain": "product"
+  },
+  {
+   "promise": "COMPARE(비교) 탭을 CONTROL → PLUS 로 내린다 = EXPLORER 가 산다. 고급 Intelligence 에 '과거 비교' 포함",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:45,80 (2026-09-14 정본)",
+   "verdict": "PARTIAL",
+   "evidence": "⚠️ 1차 뒤집음(MISSING→PARTIAL). 1차는 event-room.js·scenario-compare.js 만 보고 0건이라 했지만, **prototype/v2-three/js/intel-feed.js:605-638 `compareHtml()` 이 '이전 발표와 비교' 카드를 실제로 그린다** — 회차 칩(rev-chip), 기관별 이전/현재 h0·+24h 표, 변경 목록, 당시 발표 원문 불변 링크(sourceRef), 비교 딥링크. prototype/v2-three/js/main.js:4853 이 'feed-compare' 액션을 받는다. 또 intel-feed.js:126-180 loadPast + :196-208 pastHtml 이 'PAST — 주변 30일'(USGS 반경 300km·30일·M2.5+)과 TC 공식 발표 타임라인을 그린다. 남은 사실: intel-feed.js:606 `if (it.kind !== 'TC') return ''` — 비교는 태풍 전용, PAST 는 지진·태풍만. 등급 판정은 붙어 있지 않아 지금 무료다. entitlement.js:22 `COMPARE: ACCESS_TIER.PLUS` 를 읽는 화면은 여전히 0개이고, prototype/v2-three/js/scenario-compare.js(75행)는 저장소 전체에서 import 0건(문자열 'scenario-compare' 전수 grep 무결과)",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "'과거 비교'는 태풍 사건에서 실제로 작동하고 있으므로 EXPLORER 가 살 물건이 아예 없는 것은 아니지만, 지금은 무료로 나가고 태풍 밖에서는 없다.",
+   "domain": "product"
+  },
+  {
+   "promise": "고급 Intelligence 7종(ANOMALY·WHY·RELATION·IMPACT/FOR ME·Confidence·변화 추적·과거 비교)을 EXPLORER 가 전부 받는다",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:45 (2026-09-14 정본)",
+   "verdict": "PARTIAL",
+   "evidence": "7종 재집계(1차의 '2종'은 과소): ① WHY — intel-strip.js:173-180, SECTION_TIER WHY=EXPLORER(:21), FREE 는 1건만 노출 후 lockBlock ✅올바르게 잠김. ② RELATION/IMPACT — :188-197, IMPACT=EXPLORER ✅. ③ Confidence — ⚠️1차 뒤집음: **:202-207 이 packet.confidence.grade 를 EVIDENCE 절에 그리고 `inputs.rule` 만 유료 뒤로 숨긴다** ✅부분 잠김. ④ ANOMALY — :146-156 이 items 루프·평년 이름/기간·method·coverageKo 까지 그린다. 그런데 이게 WHAT 절 안이고 SECTION_TIER.WHAT = TIER.FREE(:20) → **정본 45행이 유료라고 적은 것이 무료로 나간다(경계 어긋남)**. ⑤ 변화 추적(CHANGE) — :97-102·:141-145 에 from→to·delta·since 로 있고, 정본 44행이 CHANGE 를 기본(FREE)에 넣었으므로 코드와 문서가 일치(격차 아님). ⑥ 과거 비교 — 위 항목(intel-feed compareHtml/pastHtml), 무료·태풍지진 한정. ⑦ FOR ME — IMPACT 와 같은 것으로 정본 20행이 명시. 결과: 화면에 무언가 서 있는 것 6/7, 올바로 잠긴 것 3, 잘못 무료인 것 1(ANOMALY), 잠금 없이 좁게 있는 것 1(과거 비교)",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "요금표가 ✓ 하나로 묶어 파는 7종 중 EXPLORER 결제가 실제로 열어 주는 것은 3종이고, 나머지는 이미 무료이거나 태풍에만 있다.",
+   "domain": "product"
+  },
+  {
+   "promise": "기본 Intelligence(WHAT·CHANGE·기관 예보·특보)는 FREE, 고급은 EXPLORER — 즉 현상마다 인텔 띠가 뜬다는 전제",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:44-45 (2026-09-14 정본)",
+   "verdict": "PARTIAL",
+   "evidence": "docs/INTEL-COVERAGE-2026-09-20.md:6 (도구 생성표, 손으로 못 고침) — intelligence:true **34** 현상 중 패킷 생산자가 있는 것 **4**(hazards.earthquake · hazards.typhoon · ocean.sst · weather.temperature_anomaly). 5칸(WHAT·WHY·NEXT·IMPACT·EVIDENCE)을 모두 ✅ 로 채운 현상은 :11 `hazards.typhoon` **1개**. 나머지 30현상은 표에 '생산자 없음'. 화면 쪽 근거: intel-strip.js:80 이 packet 이 없으면 빈 문자열을 돌려주므로 띠 자체가 안 그려진다. ⚠️ 덧붙임 — 같은 표에서 `hazards.tsunami` 도 '생산자 없음'이다. PRO 의 유일한 계산 현상에 인텔 패킷이 없다(다만 event-room.js:272-273 이 PTWC 게시문 ETA 대조를 따로 그린다). 같은 날짜 docs/INTEL-REAUDIT-2026-09-20.md 는 33 이라 적어 34 vs 33 불일치가 남아 있고, COVERAGE 쪽이 생성물이라 더 신뢰한다",
+   "userVisible": "HIGH",
+   "fixSize": "LARGE",
+   "whyItMatters": "구독자가 지구에서 아무 현상이나 눌렀을 때 인텔 띠를 볼 확률이 34분의 4이고, 5칸이 다 차는 것은 태풍 하나다.",
+   "domain": "product"
+  },
+  {
+   "promise": "구독 화면이 파는 목록 — EXPLORER 11항목 / INTELLIGENCE 11항목",
+   "source": "prototype/js/billing.js:100-127 (EXPLORER_FEATURES), 133-165 (INTELLIGENCE_FEATURES) — 개발지침서 v5.3 §27.2·§27.3 사본",
+   "verdict": "PARTIAL",
+   "evidence": "billing.js:100-127 EXPLORER 11개 중 soon:true 8개(데일리 피드·이벤트 룸 전체·리플레이·MY EARTH·전문 렌즈·심해·아카이브 되감기·데일리 브리프), soon 없는 3개는 유사 사건·사후 리뷰·사건 추적. :133-165 INTELLIGENCE 11개 중 soon:true 10개(:134 'EXPLORER 전체'만 제외). ⚠️ 이 목록은 두 방향으로 틀리다: :109-110 이 '이벤트 룸 전체 — NOW·WHY·NEXT·**PAST·COMPARE**·FOR ME·EVIDENCE'를 soon:true 로 적는데 PAST·COMPARE 는 intel-feed.js 에 이미 있다(위 항목). 정본 §5 '정합해야 할 곳' 표(:78-88)에 billing.js 가 **없어** 결제 화면만 v5.3 §27 의 옛 항목 구성을 계속 판다",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "결제 화면 22줄 중 18줄이 '준비 중'인데 그중 일부는 이미 만들어져 있어, 사용자는 있는 것도 없다고 읽고 없는 것도 살 수 있다고 읽는다.",
+   "domain": "product"
+  },
+  {
+   "promise": "Ask Earthus — FREE 는 '기본(한도)', EXPLORER·PRO 는 ✓(무제한)",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:46 (2026-09-14 정본)",
+   "verdict": "MISSING",
+   "evidence": "클라이언트: prototype/v2-three/js/ask-earth.js(268행) 에서 quota·limit·tier·decideCapabilityAccess 전수 grep 0건 — 있는 상수는 :23 `MAX_Q = 400`(질문 글자 수, :116 maxlength·:154 길이 검사)뿐. 서버도 확인했다: aws/earthus-llm/{handler.py, narration_guard.py} 에서 quota·rate_limit·throttle·per_day·daily·limit·tier·paid 전수 grep **0건** — 한도가 서버에도 없다. prototype/js/earthus2/v02/paid/entitlement.js:27,33 quotaRemaining 과 paid/usage-metering.js 는 존재하지만 화면 import 0개(v02/index.js 재수출과 prototype/v2-deploy/ 빌드 사본뿐)",
+   "userVisible": "MEDIUM",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "요금표에서 유료의 근거가 '한도 해제'인데 무료 쪽에 풀 한도가 없어 구독해도 달라지는 것이 없다.",
+   "domain": "product"
+  },
+  {
+   "promise": "REPORT = EXPLORER 영역(표 47행). 요금 id 는 explorer / intelligence 두 단",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:47,69-70 (2026-09-14 정본)",
+   "verdict": "PARTIAL",
+   "evidence": "오늘 실측: https://earthus.net/ocean/lab-reports.json → 200, count **280**. 자료 쪽 access 값은 prototype/js/lab-reports.js:54 `access: clean(report.access) || 'pro'` 와 :78 `access: 'pro'` 로 붙는다. ⚠️ 이 필드를 **읽는 코드가 없다** — lab-reports-page.js·lab-report-detail.js 에서 'access' grep 0건. 실제 문은 lab-reports-page.js:13 `function allowed() { return auth.isPaid() || auth.isAdmin(); }` 하나이고 prototype/js/auth.js:235 `isPaid() { return tierAtLeast(this.tier(), TIER.EXPLORER); }` 이므로 동작은 EXPLORER 이상 = 정본과 일치한다. 즉 'pro' 는 읽히지 않는 죽은 표시값이다",
+   "userVisible": "MEDIUM",
+   "fixSize": "SMALL",
+   "whyItMatters": "동작은 맞지만 자료를 그대로 읽는 사람(내부 감사·문서)은 280건이 전부 ₩29,000 칸에 있는 것으로 오해한다.",
+   "domain": "product"
+  },
+  {
+   "promise": "사건 추적 · 알림 — 관심 지점 20곳까지, 의미 있는 정정이 나오면 알린다 (무료는 1곳)",
+   "source": "prototype/js/billing.js:105-106 (EXPLORER_FEATURES, soon 없음 = 지금 파는 것)",
+   "verdict": "PARTIAL",
+   "evidence": "알림 기반은 있다 — prototype/js/push.js:108 pushManager.subscribe, 배포된 config.local.js VAPID 실키. 차등이 없는 이유는 코드가 스스로 적는다: prototype/js/ui-alerts.js:11 '현재 FREE_OPEN 정책에서는 안전 알림과 관광 혼잡 지켜보기를 모두 무료로 열고, 비용 폭주 방지를 위한 서버 상한 20곳만 둔다. 판매가 다시 열리기 전에는 잠그지 않는다', :420-421 화면 문구도 같다. ⚠️ 1차 진단 수정 — '경계가 없다'가 아니라 config.local.js:30 FREE_OPEN 하에서 **의도적으로 열어 둔 것**이다. 1곳/20곳 분기 코드는 실제로 없으므로 PAID 전환 시 새로 써야 한다",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "지금 사용자는 손해가 없지만, 판매를 여는 날 EXPLORER 의 핵심 차별(20곳)을 구현할 코드가 아직 한 줄도 없다.",
+   "domain": "product"
+  },
+  {
+   "promise": "REPORT·SIMULATION 은 유료 칸 — 즉 v2 화면이 사용자 등급을 알아야 한다",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:47-48 (2026-09-14 정본)",
+   "verdict": "PARTIAL",
+   "evidence": "prototype/v2-three/js/report-center.js:99-105 `currentTier()` = `window.EARTHUS_TIER || localStorage.getItem('earthus.tier') || 'free'`. 소비처는 확인됨 — ui-shell.js:651·1228 과 main.js:4720·4733 이 이 값을 mode 와 함께 넘긴다. 그러나 쓰는 쪽만 있고 채우는 쪽이 하나다: prototype/js/store.js:138 setTier 를 부르는 곳은 prototype/js/ui-account.js:429(v1 auth.onChange) 뿐. report-center.js:8-11 이 'FREE/PRO 는 표시 구분이지 보안 경계가 아니다 … 클라이언트에서 감추는 것은 돈을 받는 근거가 될 수 없다'고 스스로 적어 둔다. 서버가 두 판을 따로 내려 주는 경로는 없다",
+   "userVisible": "MEDIUM",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "판매가 열리면 v1 을 거치지 않고 /v2/ 로 바로 들어온 구독자는 무료로 보이고, 반대로 localStorage 한 줄이면 누구나 PRO 화면이 된다.",
+   "domain": "product"
+  },
+  {
+   "promise": "연구 작업 공간 — 자료·조건을 고정해 실험을 실행하고 재현한다 (지구 화면 ⚗ 버튼)",
+   "source": "prototype/v2-three/index.html:1432 (라이브 버튼) + prototype/v2-three/js/research/api-client.js:2",
+   "verdict": "PARTIAL",
+   "evidence": "오늘 실측: https://earthus.net/research.html → **200**(15,295바이트, 페이지는 뜬다). https://earthus.net/api/research/datasets → **405**. prototype/v2-three/js/research/api-client.js:2 `BASE='/api/research'`, :12 실패 문구가 '로컬 research-runtime 서버를 실행하고 같은 주소에서 이 페이지를 열어 주세요'. workspace.js:239-250 의 비교 버튼도 같은 BASE 를 쓴다",
+   "userVisible": "MEDIUM",
+   "fixSize": "LARGE",
+   "whyItMatters": "운영에서 ⚗ 를 누른 구독자는 빈 작업공간과 '로컬 서버를 실행하라'는 개발자용 안내를 받는다.",
+   "domain": "product"
+  },
+  {
+   "promise": "발행본은 reports/published/ 아래에 있고 버킷 정책이 그 접두사를 연다 → 공개 200",
+   "source": "aws/_shared/publication_privacy.py:52 + docs/earthus-v2/INTEGRATION-10-RESULT.md:99",
+   "verdict": "PARTIAL",
+   "evidence": "오늘 실측으로 1차와 같은 결과: https://earthus.net/reports/published/index.json → **403**(111바이트), 같은 객체 S3 직결 https://earthus-cache-kr.s3.us-east-2.amazonaws.com/reports/published/index.json → **200**(321바이트, 본문 확인). 화면이 안 깨지는 이유는 prototype/v2-three/js/ui-shell.js:551-552 `reportBase()` 기본값이 S3 직결이기 때문이다. INTEGRATION-10-RESULT 의 200 이 CloudFront 였는지 S3 였는지는 문서로 확정 못 했다 — 1차와 같은 UNKNOWN 이 남는다",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "지금은 보이지만 reportBase 를 상대경로로 되돌리는 순간 리포트 센터 전체가 403 이 되므로, 유료 칸의 유일한 발행물이 설정 한 줄에 매달려 있다.",
+   "domain": "product"
+  },
+  {
+   "promise": "유사 사건(analog) · 사후 리뷰(예보 대 실제) — EXPLORER 가 지금 사는 것(soon 아님)",
+   "source": "prototype/js/billing.js:101-104 (EXPLORER_FEATURES, soon 없음)",
+   "verdict": "PARTIAL",
+   "evidence": "사후 리뷰는 **있다**: prototype/v2-three/js/intel-feed.js:639-679 `verifyHtml()` 이 '종료 검증 (IBTrACS 최종 경로 기준)' / '당시 전망 검증(잠정)' 카드를 기관별 방향오차·45° 안 비율·위치오차(n 포함)로 그리고, :651-657 이 자료 없는 기관을 0km 로 채우지 않도록 막는다. :640 `if (it.kind !== 'TC') return ''` — 태풍 전용. 유사 사건 카드는 **없다**: `findHistoricalAnalogs` 는 prototype/js/earthus2/v11/orchestrator/advanced-intelligence-service.js:4 에만 있고 화면 호출부 0개, 화면에 남은 것은 intel-feed.js:662·lab-report-detail.js:16 의 `EARTHUS_ANALOG_MEDIAN` 기준선 한 줄뿐이다",
+   "userVisible": "MEDIUM",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "결제 화면이 '지금 파는 것' 두 줄로 적은 것 중 하나는 태풍에서 실제로 작동하고 하나는 화면이 없다.",
+   "domain": "product"
+  },
+  {
+   "promise": "쓰나미 도달시간 = Physics 시뮬레이션, PRO(정본 표 30행)",
+   "source": "docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:30 (2026-09-14 정본)",
+   "verdict": "DONE",
+   "evidence": "prototype/v2-three/js/sim-questions.js:58-78 — status AVAILABLE(:62), engineRef 'aws/tsunami-eta/handler.py'(:61), outputs '38개 해안 지점 도달시간 · 30~720분 등시선'(:64), 질문 2개 모두 AVAILABLE(:75-76). 결과 대조도 있다 — prototype/v2-three/js/event-room.js:272-273 이 'PTWC 게시문 ETA 대조 n곳 · 평균 차 m분'을 그린다. 한계도 코드가 적는다: :68-72 지역별 검증은 한국 10곳만 끝났고 나머지 28곳은 검증 전",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "PRO 가 오늘 온전히 파는 유일한 계산이고, 기관 발표와 대조까지 붙어 있는 것도 이것 하나다.",
+   "domain": "product"
+  },
+  {
+   "promise": "LAB 사건 분석 보고서 — 사건 당시 입력과 계산 회차를 보존하고 종료 뒤 관측과 대조한다",
+   "source": "prototype/lab-reports.html (라이브) · docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:47 REPORT=EXPLORER",
+   "verdict": "DONE",
+   "evidence": "오늘 실측: https://earthus.net/ocean/lab-reports.json → 200, **count 280**(JSON 의 count 필드와 reports 배열 길이 모두 280 확인). 열람 문은 prototype/js/lab-reports-page.js:13 allowed() = auth.isPaid()||auth.isAdmin(), 미로그인 안내는 :37-40 이 '제목·상태·방법론은 볼 수 있습니다'로 그린다. ⚠️ 이 보고서들의 engine 은 사건 분석 계산기이지 정본 §N 의 Physics 시뮬레이션이 아니다 — 시뮬레이션 수에 더하면 안 된다",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "EXPLORER 결제로 손에 쥘 수 있는 가장 큰 실물 덩어리이고, 실제로 운영에 280건이 올라가 있다.",
+   "domain": "product"
+  },
+  {
+   "promise": "창립 멤버 500명 — '언제나 정가의 반값'(이용약관 제8조 제7항). 사전등록 화면에 라이브로 걸려 있다",
+   "source": "prototype/index.html (라이브) · docs/FOUNDING-500.md:9-15 vs AGENTS.md:40",
+   "verdict": "UNKNOWN",
+   "evidence": "두 문서가 다르다. docs/FOUNDING-500.md:9-15(2026-08-09 갱신): '운영 DB 적용과 9개 검증까지 끝났다 … ☑ founding.sql 적용·9/9 검증 · ☑ checkout 배포(SALES_ENABLED=false, 운영 503 SALES_CLOSED 확인)'. AGENTS.md:40: '창립 멤버 500 — 반값 결제 (코드 작성 완료 · 적용 대기, ⚠️ SALES_OPEN=true 전 필수)'. ⚠️ 1차는 'AGENTS.md 는 날짜가 없어 우열을 정할 수 없다'고 했으나 git 으로 정해진다 — `git log -S\"적용 대기\" -- AGENTS.md` = 02423387 **2026-08-06** 에 들어온 뒤 한 번도 안 고쳐졌고, `git log -1 -- docs/FOUNDING-500.md` = 578497a0 **2026-08-09**. 즉 AGENTS.md 쪽이 3일 오래된 문장이다. 그래도 저장소로는 운영 DB 상태를 볼 수 없어 UNKNOWN 을 유지한다",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "반값 경로가 실제로 운영 DB 에 없는 채 판매를 열면 창립 멤버가 정가를 내고 그건 약관 제8조 제7항 위반이다.",
+   "domain": "product"
+  },
+  {
+   "promise": "(요금제 정본에 약속 없음 — 과제가 확인을 요청한 항목) 오프라인 팩",
+   "source": "prototype/js/earthus2/v02/paid/offline-trip-pack.js · docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md 에 항목 없음",
+   "verdict": "UNKNOWN",
+   "evidence": "prototype/js/earthus2/v02/paid/offline-trip-pack.js 에 buildOfflineTripPackPlan() 순수 함수가 있다. 호출부 전수 grep(`buildOfflineTripPackPlan`, prototype/ 전체, earthus2/v0* 라이브러리 자체 제외) 결과 남는 것은 prototype/v2-deploy/engine/paid/offline-trip-pack.js:3 — **v2-deploy 는 생성물**이므로 실사용 화면 호출부 0개. 정본 요금제 문서에도 '오프라인'이라는 말이 없다",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "돈을 받는데 없는 것이 아니라 아무 데도 약속되지 않은 채 라이브러리에만 있는 것이라, 팔 생각이면 문서부터 있어야 한다.",
+   "domain": "product"
+  },
+  {
+   "promise": "(요금제 정본에 약속 없음 — 과제가 확인을 요청한 항목) 국가 잠금해제",
+   "source": "prototype/js/earthus2/v02/paid/country-unlock.js · docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md 에 항목 없음",
+   "verdict": "UNKNOWN",
+   "evidence": "prototype/js/earthus2/v02/paid/country-unlock.js 에 countryReadinessScore()·CountryUnlockLedger·countryOpenGate() 가 있다. 호출부 전수 grep 결과 라이브러리 밖에 남는 것은 prototype/v2-deploy/engine/ops/readiness-compiler.js:1,8 뿐이고 이는 **생성물 사본**이다 — 화면 연결 0개. entitlement.js 의 countryEnabled 인자를 채우는 코드도 없다",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "후원으로 국가를 여는 상품은 어느 요금제 문서에도 없어서, 구독자 관점에서는 존재하지 않는 기능이다.",
+   "domain": "product"
+  },
+  {
+   "promise": "phenomenon-registry `intelligence:true` 34현상 — 고르면 문맥 한 줄에 '해석' 칩이 뜨고 5절(WHAT/WHY/NEXT/IMPACT/EVIDENCE) 띠가 붙는다 (계약 §C-0 표, LAYER-PLAN §2.2)",
+   "source": "docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md:99-109 (2026-09-14) + docs/INTEL-COVERAGE-2026-09-20.md:6 (2026-09-20, 최신)",
+   "verdict": "PARTIAL",
+   "evidence": "직접 import 해 집계: PHENOMENA 66건 중 intelligence:true **34건**(첫 감사 수치와 일치). ui-shell.js:1170 `CAP_KO.intelligence='해석'` → :1172-1186 `phenomenonLine()` 이 `ctx.capabilities[k]` 가 true 인 능력을 전부 찍으므로 34건 모두 '해석' 칩이 뜬다. 그런데 패킷을 돌려주는 곳은 main.js:4098-4112 `intelHostFor()` 뿐이고 hazards.typhoon·hazards.earthquake·ocean.sst·weather.temperature_anomaly **4개만** 반환, 나머지는 `return null`. intel-strip.js:80 이 `if (!packet …) return ''` 이라 띠가 아예 안 그려진다. docs/INTEL-COVERAGE-2026-09-20.md:6 이 '34 현상 중 패킷 생산자가 있는 것 4 (운영 확인)' 로 같은 수치를 기록했다. → 30개 현상은 '해석' 글자만 있고 누를 것이 없다.",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "유료 등급이 파는 '해석'이라는 말이 화면에 34번 찍히는데 실제로 열리는 것은 4번뿐이라, 구독자가 나머지 30번을 만날 때마다 속았다고 느낀다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "§D PRO Simulation 8단계 — `Simulation Request → ①Consent Check → ②PRO Check → ③Human Approval → ④Engine → ⑤SimulationRunRecord → ⑥runRef → ⑦Result → ⑧3D·Report·Narration`, §K-2 'RUN SIMULATION 버튼 클릭 → §D 정식 흐름'",
+   "source": "docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md:146-156 (§D), :419 (§K), :437 (§K-2)",
+   "verdict": "PARTIAL",
+   "evidence": "main.js:4732-4744 — `tsunami-reach` 는 ②PRO 검사(`decideCapabilityAccess`, requiredTier: TIER.INTELLIGENCE) 하나만 하고 통과하면 `shell.showTab('scenario')` 로 탭만 연다. ①동의·③승인은 v2 화면에 없다 — Grep(ripgrep)으로 `동의|consent|승인|approv` 를 prototype/v2-three/js/*.js 전체에 돌린 결과, 시뮬 승인·동의 관련 히트는 0건이고 걸린 '승인'은 ask-earth.js:6,12,25 의 '승인된 Scene Tool 목록'(무관)뿐이다. RUN 버튼도 없다 — main.js:4557-4576 시나리오 탭은 '사건 방 열기 →' 버튼 하나로 끝나고, 실제 계산은 aws/tsunami-eta 의 15분 스케줄 배치다. ④~⑦은 화면에서 일어나지 않는다.",
+   "userVisible": "HIGH",
+   "fixSize": "LARGE",
+   "whyItMatters": "PRO(₩29,000/월)가 'SIMULATE THE EARTH'로 파는 것은 오늘 실행 권한이 아니라 '이미 배치로 계산돼 있는 도달시간을 볼 권한'이다 — 구독자가 조건을 바꿔 돌릴 수 있는 것이 하나도 없다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "J-7 `동의·PRO·승인 없이 실행 요청 거절` — 검사 자리는 `sim-link.js` + 서버. §E `화면의 모든 시뮬 값은 runRef 링크와 limits[] 문장을 달고 나간다`",
+   "source": "docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md:408 (J-7), :200 (§E)",
+   "verdict": "PARTIAL",
+   "evidence": "1차가 MISSING 이라 했으나 반만 맞다. (1) `sim-link.js` 는 없다 — `grep -rn sim-link prototype/ aws/ tools/` 0건. (2) **limits 문장은 이미 뜬다** — event-room.js:277 이 쓰나미 카드 sub 에 '첫 파 도달 추정 · 장파 근사 √(g·h) · 0.2° 격자 · <b>파고·침수 아님</b>' 을 달고 :281 이 '계산이 없다는 것이지 위험이 없다는 뜻이 아닙니다' 를 단다. 다만 서버의 `limits` 필드(aws/tsunami-eta/handler.py:347)를 읽는 것이 아니라 클라이언트에 박아 둔 같은 뜻의 문장이다. (3) runRef 링크는 없다 — watch.js:100 이 `runRef: 'tsunami-eta:'+e.usgsId` 를 **클라이언트에서 지어내고** 어디에도 찍지 않는다. (4) 검증기 aws/_shared/simulation_link.py 는 존재하고 §E 4필드를 강제하며, **호출자도 있다** — tools/research/register_simulation_run.py 가 `from_research_runtime`·`require_valid` 를 실제로 쓴다(1차의 '시험 말고 호출자 0' 은 틀렸다). 다만 그것은 사람이 손으로 돌리는 CLI 이고(docstring '이 도구는 실행하지 않는다'), 원장 디렉터리 `data/simulation-runs/` 는 저장소에 없다.",
+   "userVisible": "MEDIUM",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "한계 문장은 정직하게 뜨지만 runRef 원장이 비어 있어, 구독자가 본 시뮬 값이 어느 실행의 산출인지 되짚을 방법이 없다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "`capabilities.forecast: true` → 인텔 패널의 NEXT 탭이 열리고 '예보' 칩이 붙는다 (CAP_TAB `next: 'forecast'`)",
+   "source": "prototype/v2-three/js/ui-shell.js:318 + 계약 §C-0:105 'NEXT — Intelligence의 핵심 상품'",
+   "verdict": "PARTIAL",
+   "evidence": "실측 forecast:true 13건(import 집계). 그중 3건은 자기 자료에 앞을 말하는 것이 없다 — ui-shell.js:192-194 `eq`·`eqhistory`·`eqdepth` 전부 `state:'OBSERVED'`(hazards.earthquake), :123 `seoul` OBSERVED·:127 `livemix` DERIVED(people.crowding), :218 `aeth-orbit` LIVE(space.orbital_debris). ui-shell.js:1136-1146 `nextHtml()` 은 켜진 레이어 중 state 가 /FORECAST|WARNING|MODEL/ 인 것만 모으므로 셋 다 `nextEmpty` 만 나온다. 보조 경로도 막혀 있다 — `eventNextHtml()` 이 부르는 intel-feed.js:681-689 `nextRows()` 는 `p.revisions[].agencies`(태풍 회차 패킷) 가 있어야 하므로 지진에서는 항상 []. docs/INTEL-COVERAGE-2026-09-20.md:10 도 지진 NEXT 를 '기관 여진 예보를 받는 수집기가 없다' 로 비워 두었는데 레지스트리는 forecast:true 다. 나머지 10건은 정상이며 `weather.mountain_summit` 은 ui-shell.js:182 `mountain` state 'OFFICIAL_FORECAST' 로 **실제로 동작한다 — 미구현이 아니다.**",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "'예보' 칩을 보고 NEXT 탭을 연 구독자가 빈 카드를 만나는 현상이 3개 있고, 그중 지진은 사람들이 가장 앞을 궁금해하는 현상이다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "P2a 변화 창고 — `intel/change/{layer}.json` 롤업 Lambda `aws/intel-rollup/`. 완료 기준 '롤업 파일 생성 주기 확인'",
+   "source": "docs/INTELLIGENCE-LAYER-PLAN-2026-09-14.md:85 (P2a)",
+   "verdict": "PARTIAL",
+   "evidence": "aws/intel-rollup/handler.py·rollup.py·tests 와 aws/configure-intel-rollup-schedule.sh 는 있고 rollup.py 가 aws/_shared/intel_contract 를 쓴다. 그러나 (1) 미배포 — tools/deploy-queue-2026-09-20.sh:16 이 'intel-rollup — **새 Lambda**(P2a 변화 창고)' 로 PD 대기 목록(:28 `STEPS=(public-api glacial-lake-us intel-rollup earthus-llm)`)에 올려 두었다. (2) 배포돼도 읽는 쪽이 없다 — `grep -rln 'intel/change|intel-rollup' prototype/ aws/ tools/` 의 히트는 자기 자신·스케줄 스크립트·배포 큐뿐이고 prototype/ 는 0건. 태풍의 `change` 는 aws/cyclone-analog/intel_v1.py 가 따로 계산한다. 배포 이후 실제 S3 상태는 저장소에서 확인 불가.",
+   "userVisible": "LOW",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "'변화 추적'은 EXPLORER 로 파는 항목인데 그 창고가 배포도 안 됐고 화면이 읽지도 않아, 태풍 말고는 변화가 나올 곳이 없다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "P4 서술 — earthus-llm 에 §C-2 일곱 검사(FORBIDDEN_CAUSAL·%·confidence 숫자·coverage.missing 절 이름·대피 어휘·특보 해제 오독·스냅샷에 없는 수치)를 '프롬프트 약속이 아니라 서버 바이트' 로 건다",
+   "source": "docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md:120-136 (§C-2)",
+   "verdict": "PARTIAL",
+   "evidence": "코드는 계약대로다 — aws/earthus-llm/narration_guard.py:58 `REASONS = ('CAUSAL','PERCENT','CONFIDENCE_NUMBER','MISSING_SECTION','EVACUATION','WARNING_LIFTED','NUMBER')` 일곱 개가 §C-2 순서 그대로이고, :271 이 히트를 REASONS 순서로 정리하며, handler.py:450 이 `narration_guard.check(...)` 를 부른다. 어휘는 aws/_shared/intel_contract 를 통해 정본에서 읽는다. 다만 **운영 반영은 저장소에서 확인 불가** — tools/deploy-queue-2026-09-20.sh:17-18 이 'earthus-llm — 서술 가드(P4) … PD 판단 뒤에 올린다' 로 대기 목록에 남겨 두었고, 이 감사 시점 이후 PD 가 스크립트를 돌렸는지는 알 수 없다(UNKNOWN).",
+   "userVisible": "MEDIUM",
+   "fixSize": "SMALL",
+   "whyItMatters": "가드가 아직 안 올라가 있다면 '지구와 대화' 답이 인과·확률 문장을 낼 수 있고, 그것 하나가 EARTHUS 가 파는 '정직함' 전체를 깎는다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "§L-4 선행조건 3 — `phenomenon-registry.js` 갱신: `hazards.glacial_lake_flood` 를 알래스카 지역 한정으로 켠다. §I P0 에 배치. 신규 수집기 `aws/glacial-lake-us`",
+   "source": "docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md:525 (§L-4), :531 (§L-5 P0)",
+   "verdict": "PARTIAL",
+   "evidence": "지역 한정 자체는 **됐다** — phenomenon-registry.js:50-64 의 `scope` 가 '알래스카 주노 멘덴홀 강(빙하호 Suicide Basin 아래) 한 곳 — USGS 15052500 실측·NWS MNDA2 공식 예보를 인용한다(events/glof-alaska.json)' 로 갱신돼 있다. 안 켜진 것은 능력 쪽이다 — :55 `capabilities` 7칸 전부 false, `availability:'planned'`, ui-shell.js:205 `glof` 는 `state:'LOCKED'`. 수집기 aws/glacial-lake-us 는 존재하나 배포 대기다(deploy-queue :28 STEPS, :15 '새 Lambda'). 레지스트리 주석 :62-63 이 '수집기는 배포 대기 — 운영에 자료가 들어오고 P1 에서 화면에 이어지기 전까지 능력은 올리지 않는다' 로 이유를 적어 두었다 — **의도된 보류이지 누락이 아니다.**",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "보류 이유가 코드에 적혀 있어 정직하지만, 메뉴에 LOCKED 항목이 하나 더 남는다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "S-A `ScenarioCompare` 컴포넌트 — baseline vs branch 비교. §K-5 '내 시뮬레이션 목록'의 비교 화면",
+   "source": "docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md:360 (§I S-A), :460 (§K-5)",
+   "verdict": "PARTIAL",
+   "evidence": "prototype/v2-three/js/scenario-compare.js 는 존재하고(:25 에서 `base.runRef === branch.runRef` 비교) 시험도 있다(tools/earthus-v53/scenario-compare.test.mjs). 그러나 화면이 부르지 않는다 — `grep -rn 'scenario-compare' prototype/ tools/` 의 히트는 시험 파일 두 줄(:10 import, :59 소스 읽기)뿐이고, main.js(import 60줄)·ui-shell.js(import 24줄) 어느 목록에도 없다. 비교할 실행 기록 자체도 없다(`data/simulation-runs/` 부재).",
+   "userVisible": "LOW",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "비교할 실행이 아직 0건이라 지금 배선해도 보여 줄 것이 없다 — 계약 §I 순서상 일정대로 미배선이다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "P5 보고서 — report-engine 에 `phenomenon-intel` 종류. 완료 기준 '`reports/published/` 에 한 건 · 색인 갱신'",
+   "source": "docs/INTELLIGENCE-LAYER-PLAN-2026-09-14.md:88 (P5)",
+   "verdict": "PARTIAL",
+   "evidence": "엔진은 끝까지 있다 — sections.py:304-313 `INTEL_REPORT_TYPE='PHENOMENON_INTEL'`, generator.py:139·290·388, export.py:36·44·157, adapters/phenomenon_intel_adapter.py:35, quality.py·narrative.py·pipeline.py 연결, 시험 tests/test_p5_phenomenon_intel.py. 그러나 **자동 생산 경로가 없다** — `ls aws/report-engine/` 에 handler.py 가 없고(capture/cli/compose/…/stories 만), cli.py:156 `cmd_intel` + :255-266 `intel` 하위 명령으로 사람이 돌려야 한다. 화면 연결도 없다 — prototype/ 전체에서 'phenomenon-intel'·'PHENOMENON_INTEL' 0건이고 phenomenon-registry.js:1009 `reportKindsForPhenomenon` 이 훑는 REPORT_KIND_PHENOMENON 에도 없다. `reports/published/` 실물은 S3 라 UNKNOWN.",
+   "userVisible": "MEDIUM",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "요금제 정본이 'EXPLORER = Report' 라고 선을 그었는데(PRODUCT-STRUCTURE:50) 그 Report 가 아직 CLI 안에만 있어, EXPLORER 가 파는 두 기둥 중 하나가 화면에 없다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "P0 완료 기준 — `phenomenon-registry` 의 `intelligence:true` 66건 재감사",
+   "source": "docs/INTELLIGENCE-LAYER-PLAN-2026-09-14.md:83 (2026-09-14) vs docs/INTEL-REAUDIT-2026-09-20.md:18 (2026-09-20, 최신)",
+   "verdict": "DONE",
+   "evidence": "숫자만 문서가 틀렸다. 레지스트리를 import 해 집계: PHENOMENA 전체 **66**, intelligence:true **34**. INTEL-REAUDIT-2026-09-20.md:18-24 표가 '재감사 전 44 → true→false 11 → 후 33' 을 기록했고 P3 에서 ocean.sst 가 올라와 34 — 실측과 일치한다. 즉 재감사 대상은 66 이 아니라 44 였고, 66 은 전체 현상 수다. 작업 자체는 완료. 두 문서가 충돌하면 09-20 REAUDIT 이 최신이자 정답이고, 09-14 LAYER-PLAN:83 의 '66건' 만 정정되지 않았다.",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "사용자에게는 보이지 않는다 — 계획 문서 한 줄의 숫자 오타다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "§G-2 실측 — `SIM_CAPABILITIES` 는 12항목이고 그중 `not_available` 이 8건. §I '여진 승격 — PRO 엔진 수 2→3'",
+   "source": "docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md:264 · :368 vs docs/INTEL-REAUDIT-2026-09-20.md:66 (최신)",
+   "verdict": "DONE",
+   "evidence": "sim-questions.js 를 import 해 집계: **21항목 / available 1 / limited 3 / not_available 17**. INTEL-REAUDIT-2026-09-20.md:66 이 '21항목 · available 1(쓰나미) · 등재 9건 not_available' 로 이미 같은 수를 기록했고 :70 이 '정정 뒤 simulation:true 는 hazards.tsunami 하나' 라고 적었다 — 레지스트리 실측(simulation:true = hazards.tsunami 1건)과 일치한다. 등재 작업은 계약대로 수행됐고 계약 본문 §G-2:264 의 숫자만 낡았다. §I:368 의 '엔진 수 2→3' 도 오늘 available 이 1이므로 실제로는 1→2 다.",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "사용자에게는 보이지 않지만, PRO 가 오늘 실제로 파는 엔진이 1개라는 사실이 계약 본문에는 2개로 적혀 있다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "P2 (b) 기후값 확장 — 한국 ASOS 30년 평년. 산출물 `aws/climatology/build_kma_normals.py`. 완료 기준 '평년 출처·기간이 패킷 `baseline` 에 찍힘'",
+   "source": "docs/INTELLIGENCE-LAYER-PLAN-2026-09-14.md:85 (P2b)",
+   "verdict": "DONE",
+   "evidence": "이름이 적힌 파일은 없다(aws/climatology/ 에는 build_korea_series·build_land_series·build_seaice_series·build_sst_clim·build_sst_series·handler 뿐). 그러나 **완료 기준은 다른 곳에서 충족된다.** aws/kma-normal/handler.py:48-49 `PERIOD='2021'` / `PERIOD_LABEL='1991-2020'` 이 기상청 API허브 sfc_norm1 평년값을 받고(:8-13 기준 기간 표, OISST 평년과 일부러 맞춤), :16 결측 -99.9 처리까지 적어 두었다. 그 산출물을 aws/kma-aws/intel_temp.py:141-144 가 wind/kma-normal.json 으로 읽고 :170-171 에서 `baseline {name, source:'기상청 API허브 sfc_norm1 (tmst=2021)', period}` 를 패킷에 찍는다. :193-194 가 sources 에도 등재한다. **미구현으로 적으면 오판이다 — 계획 문서의 산출물 경로만 틀렸다.**",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "'평년보다 몇 도'는 구독자가 가장 먼저 묻는 해석이고, 그 근거 기간(1991-2020)이 화면 값에 실제로 붙어 나간다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "§C-3 어휘 단일 정본 — EVIDENCE_KIND 10종·FORBIDDEN_CAUSAL 9어휘·고정 문장을 한 파일에 두고 Python·JS 가 같이 읽는다. '정규식을 두 언어에 중복해 박지 않는다'",
+   "source": "docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md:138-140",
+   "verdict": "DONE",
+   "evidence": "정본 파일 aws/_shared/contracts/intel-vocab.json + intel-packet-v1.schema.json 이 있다. Python 쪽은 aws/_shared/intel_contract.py 를 통해 30개 모듈이 읽는다(cyclone-analog/intel_v1.py, earthus-llm/handler.py·narration_guard.py, kma-aws/intel_temp.py, lab-events/intel_quake.py, marine-grid/intel_sst.py, intel-rollup/rollup.py, report-engine 4파일 등 — grep 실측). JS 는 직접 못 읽는다 — intel-questions.js:18-20 이 '브라우저가 JSON import 를 못 하는 기기가 있어서 여기에는 절 대응표만 옮겨 두고, 시험이 정본과 한 글자라도 다르면 깨진다' 고 이유를 밝히고, 그 시험(tools/earthus-v53/intel-questions.test.mjs)이 대조한다. **글자 그대로의 '한 파일'은 아니지만 중복 드리프트는 시험으로 막혀 있고 코드가 그 사실을 밝힌다 — 미구현이 아니다.**",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "사용자에게 보이지 않는다 — 금지 어휘가 두 언어에서 어긋날 위험이 시험으로 잠겨 있다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "요금제 게이트 — ANOMALY·PATTERN·WHY·RELATED·IMPACT·Confidence = EXPLORER, 시뮬 실행 = PRO, FREE 는 결과 일부 노출 뒤 잠금",
+   "source": "docs/INTELLIGENCE-LAYER-PLAN-2026-09-14.md:96-98 (§3.1) + docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:44-45 (정본) + 계약 §K:419",
+   "verdict": "PARTIAL",
+   "evidence": "1차 근거의 `main.js:473` 은 셰이더 코드라 잘못된 인용이다. 실제 자리는 이렇다. 게이트 기계는 있다 — intel-strip.js:19-22 `SECTION_TIER`, :68 `sectionAccess`, :175·190 `acc.allowed ? items : items.slice(0,1)`(FREE 결과 일부 노출), :180·197 `lockBlock`, main.js:4732-4736 쓰나미 PRO 검사. 그러나 **오늘 아무것도 잠기지 않는다** — prototype/js/config.local.js:30 `MONETIZATION_MODE:'FREE_OPEN'`, config.local.example.js:92 `SALES_OPEN:false` 이고 access-mode.js:75-77 이 FREE_OPEN 이면 무조건 `allowed:true` 를 돌려준다. 등급 자체도 클라이언트뿐이다 — report-center.js:99-106 `currentTier()` 가 `window.EARTHUS_TIER || localStorage.getItem('earthus.tier')` 를 읽고, 저장소에 서버 검사 코드는 찾지 못했다(aws/public-api/ 디렉터리 없음).",
+   "userVisible": "MEDIUM",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "오늘은 구독 자체가 닫혀 있어(SALES_OPEN:false) 아무도 돈을 낼 수 없고, PAID 로 켜는 순간 잠글 내용이 아래 항목만큼밖에 없다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "ANOMALY·PATTERN = EXPLORER (FREE 는 결과 일부 노출 뒤 잠금) — 1차가 빠뜨린 항목",
+   "source": "docs/INTELLIGENCE-LAYER-PLAN-2026-09-14.md:96 (§3.1) + docs/PRODUCT-STRUCTURE-AND-TIERS-2026-09-14.md:45 '고급 Intelligence(ANOMALY·WHY·RELATION·IMPACT/FOR ME·Confidence·변화 추적·과거 비교) → FREE 제한(결과 일부 노출)' (두 문서 모두 09-14, 서로 일치)",
+   "verdict": "MISSING",
+   "evidence": "intel-questions.js:33 `WHAT: ['current','change','anomaly','pattern']` — ANOMALY·PATTERN 은 독립 절이 아니라 **WHAT 절의 재료**다. 그런데 intel-strip.js:20 `SECTION_TIER = { WHAT: TIER.FREE, NEXT: FREE, EVIDENCE: FREE }`, :21 `WHY: EXPLORER, IMPACT: EXPLORER`. intelSectionHtml 의 WHAT 분기(:139-170)를 줄 단위로 확인하면 `packet.anomaly` 항목(평년 대비 값·baseline·period)과 `packet.pattern`(여진 실제수 vs RJ 모형 기대수, 기관 예보 위치 차, 지속 시간)을 전부 출력하며 `acc.allowed` 검사가 **한 번도 없다** — grep 실측상 `acc.allowed` 는 :110·175·180·190·197·205 에만 나오고 WHAT 분기 안에는 없다. 즉 두 정본 문서가 EXPLORER 로 지정한 ANOMALY·PATTERN 이 FREE 로 나간다. 남는 EXPLORER 전용 표면을 INTEL-COVERAGE-2026-09-20.md 표로 세면: 태풍 WHY·IMPACT 2칸 + ocean.sst IMPACT 1칸 = **현상 2개 3칸**(지진·평년차는 WHY·IMPACT 둘 다 '—').",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "EXPLORER(₩9,900/월)가 66현상을 통틀어 독점으로 파는 내용이 오늘 현상 2개 3칸뿐이고, 가장 값어치 있는 '평년 대비'와 '여진 모형'은 무료로 나간다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "§2.3 연결표 `prototype/v2-three/js/phenomenon-relations.js` — `{from,to,relation,evidenceRef}` 로 RELATED·IMPACT 를 만들고, `reference` 는 문헌 표기와 함께 화면에 '교과서 관계'로 보인다 — 1차가 빠뜨린 항목",
+   "source": "docs/INTELLIGENCE-LAYER-PLAN-2026-09-14.md:74-76 (§2.3)",
+   "verdict": "PARTIAL",
+   "evidence": "파일은 계약대로다 — phenomenon-relations.js:17-42 에 연결 4건(지진→쓰나미 computed, 태풍→특보 co_located, 태풍→부이 co_located, 태풍→수온 reference + Gray 1968 인용)과 :44-45 `relationsFrom`/`relationsOf` 가 있고 tools/earthus-v53/intel-questions.test.mjs:105-123 이 검사한다. 그러나 **화면 어디에서도 import 하지 않는다** — `grep -rn 'phenomenon-relations' prototype/v2-three/` 의 히트 0건(main.js·ui-shell.js·intel-strip.js import 목록 확인, intel-questions.js:22 는 PHENOMENA 만 import). 화면의 IMPACT 절(intel-strip.js:189-197)은 서버 패킷의 `packet.related` 만 그린다. 즉 패킷이 있는 4현상은 서버가 준 연결로 채워지고, 나머지 62현상은 이 표가 있어도 띠 자체가 안 그려져 쓸 자리가 없다.",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "계약 §C-0 이 빈 띠를 금지하므로 지금은 배선해도 보일 곳이 없다 — 띠가 넓어질 때 같이 이어야 할 숙제다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "P6 완료 기준 — '현상별 5칸 표' 생성물",
+   "source": "docs/INTELLIGENCE-LAYER-PLAN-2026-09-14.md:89 (P6) — 1차가 빠뜨린 항목",
+   "verdict": "DONE",
+   "evidence": "docs/INTEL-COVERAGE-2026-09-20.md 가 그 표다 — :3 이 '생성: `node tools/earthus-v53/intel-coverage-table.mjs` — 손으로 고치지 않는다. 판정은 화면과 같은 sectionStatus' 라고 밝히고, :8-42 에 34현상 × WHAT/WHY/NEXT/IMPACT/EVIDENCE 5칸이 생산자 이름과 함께 채워져 있다. 판정 함수가 화면과 같은 `sectionStatus` 라 표와 화면이 어긋날 수 없다. 최근 커밋 082490bb 가 같은 내용을 기록한다.",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "사용자에게는 안 보이지만, 이 표가 있어 '어느 현상이 어디까지 되는가'를 팔기 전에 내부에서 먼저 볼 수 있다.",
+   "domain": "intel"
+  },
+  {
+   "promise": "UX 수리 지시서 §7.2 \"사용자가 1차 메뉴를 선택하면: 1. Navigation drawer를 닫는다 … 4. 지구가 다시 최대 영역을 확보한다\" + §10 체크 \"모바일에서 메뉴가 지구를 가리지 않도록 한다\"",
+   "source": "docs/icon-system/EARTHUS_V2_CURRENT_UX_PROBLEM_REPAIR_DIRECTIVE_v1.0.md:293-299, 371 (2026-09-12)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/ui-shell.js:852 — 레이어 행을 눌러도 closeFlyout() 을 부르지 않는다(호출처는 535 스크림·786 Esc·789 ✕·811·833 리포트→현상·856·860 브랜드탭뿐). 1차가 못 본 것을 실측으로 더했다: prototype/v2-three/js/main.js:4053-4056 showNote() 가 shell.openIntel() 을 불러 결과 카드가 **반드시** 열린다. 그런데 prototype/v2-three/index.html:672 #intel{z-index:4} < :388 #menu-panel{z-index:5} 이고, ui-shell.js:251 root=document.body·:896 root.appendChild(intel) 라 intel 은 스크림(index.html:1435, z=4) 위·서랍 아래에 그려진다. 폭은 index.html:1342 #menu-panel width:min(470px,calc(100vw - 46px)) → 375px 에서 329px, index.html:1371-1383 #intel right:8px·width:calc(100vw - 16px)·max-height:31vh → 두 상자가 가로로 약 87% 겹친다",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "돈을 낸 사람이 폰에서 자료를 하나 켜면 방금 산 결과 카드가 서랍 뒤에 가려져, 한 번 더 지구를 눌러 서랍을 치워야 값을 볼 수 있다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "인텔리전스 능력 줄은 \"없는 능력은 적지 않는다 — '준비 중'으로 위장하면 사용자는 곧 열린다고 읽는다\" (해당 코드 자신의 규칙) · 계약 §C-0 \"빈 NEXT 카드를 만들지 않는다 — 결과가 없으면 절 전체를 숨긴다\"",
+   "source": "prototype/v2-three/js/ui-shell.js:1167-1169 주석, docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md (INTELLIGENCE 5절 표 아래 단락)",
+   "verdict": "PARTIAL",
+   "evidence": "1차가 통째로 빠뜨린 항목이다. prototype/v2-three/js/ui-shell.js:1176 `Object.keys(dict).filter((k)=>ctx.capabilities[k])` — 능력 줄('… · 현재 · 해석 · 근거 · 시뮬레이션')을 **레지스트리의 정적 선언**으로 그린다. prototype/v2-three/js/phenomenon-registry.js:81 'hazards.tsunami' capabilities.intelligence:true. 그런데 prototype/v2-three/js/intel-strip.js:80 `if (!packet || …) return ''` — 패킷이 없으면 띠를 아예 안 그린다. docs/INTEL-COVERAGE-2026-09-20.md 표: intelligence:true 34현상 중 생산자가 있는 것 4(태풍·지진·해수면온도·평년대비기온). 남은 30현상은 화면이 '해석'을 광고하고 띠는 나오지 않는다",
+   "userVisible": "HIGH",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "유료 구독의 핵심 상품인 '해석'이 30개 현상에서 글자로만 존재해, 눌러도 아무것도 안 나오는 경험이 4번 중 3번 이상 반복된다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "PILOT SCREEN SPEC — 쓰나미 INTELLIGENCE 에 WHY/WHAT/NEXT/IMPACT/EVIDENCE 5절을 채운다",
+   "source": "docs/PILOT-SCREEN-SPEC-TEMPERATURE-TSUNAMI-2026-09-18.md:79-90 (2026-09-18)",
+   "verdict": "MISSING",
+   "evidence": "prototype/v2-three/js/main.js:4098-4110 intelHostFor() 의 분기는 TC(태풍)·EQ(지진)·ocean.sst·weather.temperature_anomaly 넷뿐 — hazards.tsunami 분기가 없다. docs/INTEL-COVERAGE-2026-09-20.md 표에서도 `hazards.tsunami` = '생산자 없음'. 틀은 실재한다(intel-strip.js:136-212 WHAT/WHY/NEXT/IMPACT/EVIDENCE 전부 구현). 1차가 놓친 보완 사실: SIMULATION 탭에는 쓰나미 전용 분기가 이미 있다(main.js:4565-4575 — √(g·h) 도달시간, 사건 선택 유도, SIMULATION_ONLY 배지)",
+   "userVisible": "HIGH",
+   "fixSize": "LARGE",
+   "whyItMatters": "'완전한 케이스'로 고른 파일럿 현상조차 Intelligence 띠가 뜨지 않아, 구독자가 제품의 대표 기능을 한 번도 제대로 볼 수 없다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "정보 접근성 CSS 가 맡는 것 = \"글자 크기·대비·최소 터치 영역(44px)·포커스 표시\"",
+   "source": "prototype/v2-three/js/information-access.css:3 (2026-09-05), prototype/v2-three/index.html:341 주석 \"터치 최소 44px(iOS HIG)\" (2026-09-10 감사)",
+   "verdict": "PARTIAL",
+   "evidence": "적용된 곳(직접 확인): prototype/v2-three/index.html:342 #bottom-nav button{min-width:50px;min-height:44px}, information-access.css:9 .mp-search input{min-height:44px}, :11 .mp-title button{min-height:44px}, :13 #intel .intel-tabs button{min-height:44px}·.card-b button{min-height:44px}, :29 #intel .context-details input{min-height:44px}. 미적용: prototype/v2-three/index.html:81-82 `#chrome button, #chrome a#btn-research { width:30px; height:28px }` — 상단 도구줄 7개(⌕ 검색·✦ 묻기·⤴ 공유·? 도움말·⚙ 설정·○ 로그인·⚗ 연구) 전부. 모바일 미디어쿼리(index.html:1362)는 `#chrome{padding-top:…}` 만 바꾼다. information-access.css:10 .mp-active-only{min-height:30px}·체크박스 18×18, :27 #intel-close{width:32px}",
+   "userVisible": "HIGH",
+   "fixSize": "SMALL",
+   "whyItMatters": "2026-09-20 에 권역 이동 칩을 없애면서 지역 이동의 유일한 통로가 된 ⌕ 검색이 30×28px 이라, 폰에서 장소를 찾는 첫 동작부터 잘 안 눌린다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "정보 접근성 보고서 §7 \"텍스트를 200% 확대해도 정보와 기능이 사라지지 않는 기준으로 실제 검수해야 한다\"(W3C resize-text 인용) + information-access.css 가 맡는 것에 \"글자 크기\" 포함",
+   "source": "docs/information-access-20260905/report.md §7 표 아래 단락 (2026-09-05), prototype/v2-three/js/information-access.css:3",
+   "verdict": "PARTIAL",
+   "evidence": "1차가 빠뜨린 항목. prototype/v2-three/index.html:10 `<meta name=\"viewport\" content=\"… maximum-scale=1, viewport-fit=cover, user-scalable=no …\">` — 사용자 확대를 막는 값 두 개가 같이 들어 있다. prototype/v2-three/js/main.js:695 `for (const type of ['gesturestart','gesturechange','gestureend'])` 가 iOS 의 핀치 제스처까지 preventDefault 로 막는다(index.html:5-7 주석이 이것을 '실제 방어선'이라 적는다). 고정 글자 크기를 키운 것은 사실이다(information-access.css:9,11,12,13 — 14~16px). 참고: prototype/index.html:7 v1 도 user-scalable=no 이지만 maximum-scale 은 없다",
+   "userVisible": "MEDIUM",
+   "fixSize": "SMALL",
+   "whyItMatters": "글자를 키워 읽는 구독자가 브라우저 확대라는 마지막 수단까지 막혀 있어, 접근성을 표방한 화면이 정작 본인에게는 안 맞는다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "PILOT SCREEN SPEC — 기온 INFORMATION(바텀시트 half)에 '28.4°C [OFFICIAL_OBSERVATION] / 1h +0.6°C / 6h +2.1°C / 24h 추이 그래프 / 습도 72% · 바람 2.1 m/s / 기상청 동네예보' 를 띄운다",
+   "source": "docs/PILOT-SCREEN-SPEC-TEMPERATURE-TSUNAMI-2026-09-18.md:19-33 (2026-09-18)",
+   "verdict": "PARTIAL",
+   "evidence": "1차는 MISSING 이라 했으나 일부는 이미 있다 — prototype/v2-three/js/main.js:2926-2945 pointWeather() 가 기온·습도·강수·바람을 한 카드에 그린다(:2940-2943). 다만 (가) 경로가 다르다: 레이어 탭이 아니라 지구 우클릭/길게누르기 퀵메뉴다, (나) 출처가 다르다: Open-Meteo GFS 분석 `MODEL_SIGNAL` 이지 기상청 `OFFICIAL_OBSERVATION` 이 아니다(:2939 배지, :2944 출처 줄). 없는 것: 1h·6h 델타, 24h 추이 그래프(prototype/v2-three/js 전체에 sparkline·추이 그리기 0건 — grep 확인), 기상청 동네예보 인용, 그리고 main.js:4098-4110 intelHostFor() 에 weather.temperature 분기 없음(docs/INTEL-COVERAGE-2026-09-20.md 도 '생산자 없음')",
+   "userVisible": "MEDIUM",
+   "fixSize": "LARGE",
+   "whyItMatters": "'서울 기온'이라는 가장 기본적인 질문에서 구독자가 받는 것은 모델 분석값 네 줄이고, 파일럿이 약속한 관측·변화·추이는 아직 없다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "아이콘 적용 지시서 V2 §6 \"On selecting a subject, expose: Current / Change / Anomaly / Compare / Intelligence\" · UX 수리 지시서 §4 \"선택 후 context panel: 현재 / 변화 / 이상징후 / 비교 / Intelligence\"",
+   "source": "docs/icon-system/EARTHUS_V1_V2_ICON_APPLICATION_DIRECTIVE_v1.0.md:30-36, docs/icon-system/EARTHUS_V2_CURRENT_UX_PROBLEM_REPAIR_DIRECTIVE_v1.0.md:187-193 (2026-09-12)",
+   "verdict": "PARTIAL",
+   "evidence": "Current·Change·Anomaly 는 WHAT 절 안에 실재한다 — prototype/v2-three/js/intel-strip.js:137-140(current.values), :141-145(change.items), :147-156(anomaly.items). Intelligence 도 있다. Compare(비교)만 진입점이 0 이다: prototype/v2-three/js/ui-shell.js:880-891 탭 7개는 사건·내 지역·선택 자료·자료의 근거·예보·예정·이력·시뮬레이션이고 '비교'가 없다. prototype/v2-three/js/scenario-compare.js 는 75줄로 존재하지만 prototype/ 전체에서 import 하는 파일이 0(tools/earthus-v53/scenario-compare.test.mjs:10 만 읽는다)",
+   "userVisible": "MEDIUM",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "'두 조건을 비교한다'는 유료 티어의 대표 약속인데 모듈과 시험만 있고 화면에 문이 없어, 구독자가 그 기능에 도달할 방법이 없다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "첫 방문 안내 2단계 — \"EARTHUS는 지형·날씨·해양·사람·재해, AETHERUS는 우주·궤도\" (영어 'terrain, weather, ocean, people and hazards')",
+   "source": "prototype/v2-three/js/onboard.js:51 (한국어), :30 (영어)",
+   "verdict": "PARTIAL",
+   "evidence": "1차는 MISSING 이라 했으나 자료 자체는 전부 서랍 안에 있다 — 이름만 어긋난다. prototype/v2-three/js/phenomenon-registry.js:1058-1121 MENU_GROUPS 의 실제 절 이름은 대기 · 바다 · 재해 · 눈·얼음 · '대기질 · 관측' · '생태 · 사람 · 여행' 여섯(+AETHERUS 우주). 날씨→대기, 해양→바다, 재해→재해로는 짐작이 가능하나, '지형'(land.terrain)은 :1092-1097 '대기질 · 관측' 절 안에 있고 '사람'은 :1100-1110 '생태 · 사람 · 여행' 절에 섞여 있다. 2026-09-13 커밋 2c319b95 §3.2 묶음 전환 뒤 안내문만 갱신되지 않았다",
+   "userVisible": "MEDIUM",
+   "fixSize": "SMALL",
+   "whyItMatters": "첫 화면에서 읽는 다섯 이름 중 둘이 서랍에 없어, 돈 낼지 판단하는 첫 1분에 '지형은 어디 갔지'로 시간을 쓴다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "첫 방문 안내 3단계 — \"지구를 우클릭하면 그 자리의 빠른 메뉴가 뜹니다\" / 'Right-click the globe for a quick menu'",
+   "source": "prototype/v2-three/js/onboard.js:58 (한국어), :35 (영어)",
+   "verdict": "PARTIAL",
+   "evidence": "기능은 폰에도 있다 — prototype/v2-three/js/main.js:2764-2772, pointerType 이 touch·pen 이면 450ms 길게 누르기(이동 ≤10px, :2750-2755)로 같은 quickMenu.open() 을 연다. 안내 문구에는 '길게 누르기'가 없다(onboard.js 전체 grep 0건). 문서-코드 모순도 그대로다: prototype/v2-three/js/ui-shell.js:874 \"⚠️ 롱프레스는 쓰지 않는다 — 레이어 피커의 '길게 눌러 핀'과 겹친다(§C-0)\" 와 계약 docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md:95 가 같은 취지로 적혀 있으나, v2-three 에 '길게 눌러 핀' 기능은 없고(문자열 0건) 롱프레스는 실제로 쓰고 있다",
+   "userVisible": "MEDIUM",
+   "fixSize": "SMALL",
+   "whyItMatters": "폰 구독자에게 '우클릭'이라고만 알려 줘, 이미 만들어 둔 가장 빠른 진입 경로를 끝까지 모르고 쓴다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "정보 접근성 보고서 §7 지도 접근성 — \"지도와 대응하는 목록/표, 키보드 선택, 색 외 단위·문자\" / 완료 조건 \"지구 드래그 없이도 장소의 값을 찾을 수 있음\"",
+   "source": "docs/information-access-20260905/report.md §7 표 '지도 접근성' 행 (2026-09-05)",
+   "verdict": "PARTIAL",
+   "evidence": "대응 목록은 있다 — 사건 탭(ui-shell.js:880), 내 지역 탭(:883), 상단 검색(index.html:1425). 키보드 선택은 없다: prototype/v2-three/index.html:1420 `<canvas id=\"scene\" role=\"img\" tabindex=\"0\" aria-label=\"3D 지구 — 드래그로 회전 (키보드는 하단 탐색 메뉴 사용)\">` 로 스스로 넘긴다. v2-three/js 의 keydown 핸들러 전수: main.js:2848(Escape 만), ui-shell.js:786(Escape), onboard.js:103(Escape), quick-menu.js:53·pop-metric-menu.js:56(Escape), evidence-popover.js:70, galaxy/sky/solar-view(전체화면 전용). 화살표키로 지구를 돌리거나 사건·관측소를 고르는 경로는 0건인데 canvas 는 tabindex=0 이라 탭 이동 중 아무 동작 없는 정지점이 된다",
+   "userVisible": "MEDIUM",
+   "fixSize": "MEDIUM",
+   "whyItMatters": "마우스를 못 쓰는 구독자는 지구 위 사건을 직접 고를 수 없고, 포커스가 지구에 멈추면 아무 키도 듣지 않는다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "'권역 이동' — 한반도·전 지구·동북아시아·동남아시아·남아시아·오세아니아·유럽·중동·아프리카·북미·남미·북극·남극 13칸으로 그 구도로 날아간다",
+   "source": "docs/information-access-20260905/menu-inventory.json:289-481 (2026-09-05 생성 스냅샷), 대체 주장은 prototype/v2-three/js/ui-shell.js:363-366, :527 (2026-09-20)",
+   "verdict": "PARTIAL",
+   "evidence": "칩 목록은 커밋 1cb6bf41 에서 삭제됐고 그리는 곳이 없다(ui-shell.js:487-498 chipsFor 는 'society' 인구 국가 칩만 그린다). 클릭 처리(hooks.onRegion)는 ui-shell.js:843-845 에 남아 있다. 대체 경로의 범위는 화면이 스스로 적는다 — prototype/v2-three/index.html:1425 `aria-label=\"검색 (나라·시군구·도시·공항)\"`. 즉 나라·도시는 검색으로 대체되지만 '전 지구'·'북극'·'남극'·'동북아시아' 같은 권역·전구 구도는 그 넷 중 어디에도 없다. 같은 절에서 함께 빠진 land/globe(전지구 보기)도 메뉴에 없다(phenomenon-registry.js:862 phenomenon:null → ui-shell.js:400 제외)",
+   "userVisible": "MEDIUM",
+   "fixSize": "SMALL",
+   "whyItMatters": "확대해 들어간 구독자가 '전 지구로 돌아가기'와 극지 구도를 부를 버튼이 없어, 휠로 직접 빼는 수밖에 없다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "'내 위치로 이동' — 내 주변 정보를 보려고 카메라를 내 위치로 옮긴다",
+   "source": "docs/information-access-20260905/menu-inventory.json:705 (2026-09-05), 대체 주장은 prototype/v2-three/js/ui-shell.js:525 \"내 위치 → 하단 탭(…내 지역)에 같은 문이 이미 있다\"",
+   "verdict": "PARTIAL",
+   "evidence": "카메라를 실제로 옮기는 구현은 prototype/v2-three/js/main.js:4401-4413 'land/locate' 분기(orbit.targetYaw·targetPitch·targetDist=1.15 설정)인데, phenomenon-registry.js:864 가 phenomenon:null 이라 ui-shell.js:400 에서 메뉴에서 빠졌고 다른 호출처가 없다(grep: engine-bridge.js:161 등록·information-contract.js:6,14 표기뿐). 대체라고 적힌 하단 '내 지역' 경로는 main.js:4768-4774 'my-locate' 인데 myEarth.place 저장 + localStorage + refreshMyEarth() 만 하고 orbit 을 건드리지 않는다",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "'내 지역'을 등록해도 지구는 그 자리로 가지 않아, 내 동네를 눈으로 확인하려면 직접 돌려 찾아야 한다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "PILOT SCREEN SPEC EVIDENCE 절 \"기상청 ○○관측소 · 관측 20:10 · 예보 발표 17:00\" / 정보 접근성 보고서 §7 \"observedAt / validAt / issuedAt / retrievedAt 분리\"",
+   "source": "docs/PILOT-SCREEN-SPEC-TEMPERATURE-TSUNAMI-2026-09-18.md:44, docs/information-access-20260905/report.md §7 '데이터 시각' 행 (2026-09-05)",
+   "verdict": "PARTIAL",
+   "evidence": "1차의 근거가 좁았다. EVIDENCE 절만 보면 맞다 — prototype/v2-three/js/intel-strip.js:199-201 은 `s.id + 배지 + ageMin 분 전` 만 그린다. 그러나 절대 시각은 다른 절에서 이미 나온다: :139 WHAT 이 값마다 `${s.source} · ${fmtAt(v.at)}`, :144 변화의 `기준 ${fmtAt(c.since)}`, :186 NEXT 가 `발표 ${fmtAt(n.issuedAt)}`. 스키마도 갖췄다(aws/_shared/contracts/intel-packet-v1.schema.json:28-47). 사건 피드는 분리돼 있다(intel-feed.js:43,189)",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "관측 시각과 발표 시각은 이미 화면에 나오고 EVIDENCE 절에서만 상대시간이라, 구독자가 실제로 헷갈릴 여지는 작다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "계약 §C-0 M1 — 폰에서는 3단 바텀시트(peek → half → full), Context Action 은 새 부품이 아니라 이 시트에 흡수 / 모바일 안전영역(viewport-fit=cover)",
+   "source": "docs/EARTHUS-CORE-ARCHITECTURE-AND-EXECUTION-CONTRACT-2026-09-14.md:89-95 (2026-09-14)",
+   "verdict": "DONE",
+   "evidence": "prototype/v2-three/js/ui-shell.js:899-925 — SHEET_STEPS ['peek','half','full'], grip 누름(|dy|<24)은 한 단 순환, 끌면 방향으로 한 단, peek 아래로 끌면 closeIntel(). prototype/v2-three/index.html:1378-1387 — .sheet-grip 22px, peek 118px / half 31vh / full calc(100vh - 220px - 96px - safe-area), prefers-reduced-motion 처리까지. safe-area-inset 적용: index.html:340, 1357, 1360, 1361, 1362, 1371, 1385, 1409 + viewport-fit=cover(:10)",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "모바일 셸 자체는 약속대로 들어가 있어, 문제는 이 시트가 아니라 그 앞을 막는 서랍과 30×28 상단 버튼이다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "menu-inventory.json 5절 v2 제안 — '메뉴·질문 검색'(menu-search)과 '켜진 자료만'(active-only) 구현됨",
+   "source": "docs/information-access-20260905/menu-inventory.json:257,267 · :271,283 (2026-09-05)",
+   "verdict": "DONE",
+   "evidence": "prototype/v2-three/js/ui-shell.js:713 `<input type=\"search\" data-menu-search … placeholder=\"예: 파고, 무장애, 한국\">`, :714 `<input type=\"checkbox\" data-active-only>켜진 자료만`, 입력 처리 :773-785(패널 전체가 아니라 .mp-body 만 다시 그려 IME 조합을 지키는 처리까지), 검색 매칭 :440-444 phenMatches(이름·질문·속한 레이어 이름·출처). placeholder 예시어도 실제로 걸린다 — '무장애'는 ui-shell.js:143 레이어 이름 '무장애 여행지 목록'·출처 'KTO 무장애 여행 정보'와 일치",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "57개 레이어에서 원하는 것을 찾는 통로는 실제로 작동하므로 여기에 시간을 쓸 필요가 없다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "menu-inventory.json: v1 생활 질문 진입점 5개(지금 날씨 / 지금 어떤 경보 / 바다 활동 / 오늘 어디를 / 오늘 밤 하늘) 구현됨(menu-information.js)",
+   "source": "docs/information-access-20260905/menu-inventory.json:2235,2251,2267,2283,2299 (2026-09-05)",
+   "verdict": "DONE",
+   "evidence": "prototype/js/menu-information.js:2-8 QUESTION_ENTRIES — id weather/alerts/ocean/travel/sky 다섯 항목이 ko·en·subKo·subEn 네 필드를 모두 채운 채 그대로 있다(직접 열어 확인)",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "무료 v1 의 생활 질문 진입은 그대로라, 유료 판단에 영향이 없다.",
+   "domain": "ux"
+  },
+  {
+   "promise": "menu-inventory.json AETHERUS: ISS 수동 위치 입력은 보고서 6절이 '추가로 필요'라 적었지만 이미 구현됨(mission-observer.js)",
+   "source": "docs/information-access-20260905/menu-inventory.json:4363, docs/information-access-20260905/report.md 재검증 절 (2026-09-05)",
+   "verdict": "DONE",
+   "evidence": "prototype/js/space/mission-observer.js:10-18 parseObserverInput() — '위도,경도' 정규식 직접 입력(:12-13)과 지명표 도시 이름 대조(:14-17) 둘 다 처리하고, :2-8 normalizeObserver 가 범위(|lat|≤90·|lon|≤180)까지 검증한다(직접 열어 확인)",
+   "userVisible": "LOW",
+   "fixSize": "SMALL",
+   "whyItMatters": "위치 권한 없이도 ISS 통과를 볼 수 있어, AETHERUS 쪽 접근성에는 구멍이 없다.",
+   "domain": "ux"
+  }
+ ]
+}

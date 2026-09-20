@@ -744,6 +744,13 @@ export class FieldLayer {
     });
   }
 
+  /** 셰이더 면이 **지금 실제로 보이나.** 켜져 있어도 예보 범위 밖·자료 없음이면 거짓이다(hideDrawing).
+   *  무대를 치우는 쪽(main.js starLayers — 구름·윤곽선)이 이것을 본다: 안 보이는 색면 때문에 구름까지 끄면
+   *  화면에 색면도 구름도 없는 맨 지구만 남는다(2026-09-20 작업 E3 ③). */
+  isDrawing() {
+    return !!(this.active && this.renderer && this.renderer.mesh && this.renderer.mesh.visible);
+  }
+
   showDrawing() {
     this.renderer.setVisible(true);
     this.labels.group.visible = this.isoOn;                   // 라벨은 등치선의 숫자다 — 선을 끄면 같이 꺼진다

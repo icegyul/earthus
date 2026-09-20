@@ -316,6 +316,24 @@ export class LiveLayers {
     return this.layers.wind && this.layers.wind.on ? 'wind' : null;
   }
 
+  // 지금 주인공인 색면 — { id, drawing }(없으면 null). drawing 은 **셰이더 면이 실제로 보이는가**다:
+  // 켜져 있어도 예보 범위 밖·자료 없음이면 거짓이다. main.js 가 이것을 보고 구름·윤곽선을 물린다
+  // (안 보이는 색면 때문에 구름까지 끄면 맨 지구만 남는다 — 2026-09-20 작업 E3 ③).
+  // 매 프레임 불린다: 열쇠 배열을 만들지 않고, 돌려주는 객체도 하나를 쥐고 돌려쓴다(폰 발열).
+  starField() {
+    const fields = this._fields;
+    if (!fields) return null;
+    for (const id in fields) {
+      const l = this.layers[id];
+      if (!l || !l.on || !fields[id].active) continue;
+      const out = this._starFieldOut || (this._starFieldOut = { id: null, drawing: false });
+      out.id = id;
+      out.drawing = fields[id].isDrawing();
+      return out;
+    }
+    return null;
+  }
+
   // 누른 자리의 모델값을 범례·카드에 적는다(켜진 색면이 없으면 아무 일도 없다 · 네트워크 0건).
   fieldProbe(lat, lon) { const f = activeField(this); return f ? f.probe(lat, lon) : null; }
 

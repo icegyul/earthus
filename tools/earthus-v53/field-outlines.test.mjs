@@ -94,10 +94,12 @@ test('보일 필요가 없으면 아무것도 짓지 않는다 · 폴리곤이 �
   assert.equal(added[0].visible, false);
 });
 
-test('main.js — 색면이 켜져 있을 때만 윤곽선이 선다(입자만 있을 때는 바탕 지도가 그대로 보인다)', () => {
+test('main.js — 색면이 실제로 그려질 때만 윤곽선이 선다(입자만 있을 때는 바탕 지도가 그대로 보인다)', () => {
   const main = lf(readFileSync(new URL('../../prototype/v2-three/js/main.js', import.meta.url), 'utf8'));
   assert.match(main, /import \{ createFieldOutlines \} from '\.\/field-outlines\.js\?v=1';/);
-  assert.match(main, /fieldOutlines\.setVisible\(star === 'field'\);\s*\n\s*fieldOutlines\.tick\(\);/);
+  // 2026-09-20 작업 E3 ③ — '켜져 있다'와 '그려지고 있다'는 다른 말이다. 예보 범위 밖이면 색면이 안 보이는데
+  // 그 위에 나라 테두리만 남겨 두지 않는다(구름을 물리는 판정과 같은 drawing 을 본다).
+  assert.match(main, /fieldOutlines\.setVisible\(star === 'field' && drawing\);\s*\n\s*fieldOutlines\.tick\(\);/);
   assert.match(main, /getFeatures: \(\) => \(focus\.data && focus\.data\.features\) \|\| null/, '새로 받지 않는다 — 국가 포커스가 받아 둔 폴리곤을 쓴다');
   const mod = lf(readFileSync(new URL('../../prototype/v2-three/js/field-outlines.js', import.meta.url), 'utf8'));
   assert.doesNotMatch(mod.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n'), /\bfetch\(|^\s*import /m, '윤곽선 모듈은 아무것도 받지도 들이지도 않는다');

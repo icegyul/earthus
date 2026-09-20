@@ -60,7 +60,10 @@ test('main.js 가 매 프레임 무대를 정리한다 — 구름 불투명도 �
   const at = main.indexOf('const starLayers = {');
   assert.ok(at > 0);
   const body = main.slice(at, main.indexOf('\n  };', at));
-  assert.match(body, /star === 'field' \? 0 : star === 'wind' \? CLOUD_OPACITY_WIND_ONLY : CLOUD_OPACITY_FULL/, '색면이 있으면 구름을 끈다(0)');
+  // 2026-09-20 작업 E3 ②③ — 끄고 옅게 하고 그대로 두는 세 갈래의 **판정**은 js/cloud-yield.js 가 한다(손이 이기는 규칙 ·
+  // 색면이 실제로 그려지는지). main.js 는 그 판정을 불투명도로 옮기기만 한다 — 조건을 두 벌로 만들지 않는다.
+  assert.match(body, /say\.level === CLOUD_LEVEL\.OFF \? 0 : say\.level === CLOUD_LEVEL\.DIM \? CLOUD_OPACITY_WIND_ONLY : CLOUD_OPACITY_FULL/, '색면이 있으면 구름을 끈다(0)');
+  assert.match(body, /cloudYield\.read\(\{/, '구름 판정을 cloud-yield.js 에 묻지 않는다');
   assert.match(main, /const CLOUD_OPACITY_FULL = clouds\.uniforms\.uOpacity\.value;/, '원래 불투명도를 숫자로 다시 적지 않는다 — CloudManager 가 정한 값을 기억한다');
   // 구름 예보의 비·뇌우 층도 구름과 같은 비율로 물러난다 — 구름만 끄면 색면 위에 보라색 뇌우 표시만 남는다(운영에서 실측)
   assert.match(body, /pu\.value = PRECIP_OPACITY_FULL \* \(CLOUD_OPACITY_FULL > 0 \? u\.value \/ CLOUD_OPACITY_FULL : 1\)/);

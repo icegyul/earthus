@@ -40,7 +40,8 @@ import { timeBus } from './time-bus.js?v=1';
 // 색면 위의 나라·해안 윤곽선 — 새 색면이 바탕 지도의 국경을 덮어 '어디가 한반도인지' 알 수 없었다(js/field-outlines.js).
 import { createFieldOutlines } from './field-outlines.js?v=1';
 // 어느 레이어가 새 셰이더 색면인지 — 바람을 켤 때 이미 깔린 색면이 있으면 풍속 색면을 자동으로 깔지 않는다(기온이 꺼지지 않게).
-import { isFieldLayerId } from './field-layer.js?v=1';
+import { FIELD_DESCRIPTORS, isFieldLayerId } from './field-layer.js?v=1';
+import { CLOUD_LEVEL, createCloudYield } from './cloud-yield.js?v=1';
 // 색면이 지형 위로 떠 있는 높이 — 바람 입자를 같은 높이에 두려고 읽는다(시차 방지).
 import { FIELD_LIFT } from './field-renderer.js?v=1';
 // 지상관측 두 문서(기상청 · GTS)는 공용 저장소(js/surface-obs.js)에서 받는다 — 바람·평년차·기입 모형·내 동네 카드가 같은 문서를 나눠 쓴다.
@@ -3242,13 +3243,26 @@ async function main() {
   const CLOUD_OPACITY_FULL = clouds.uniforms.uOpacity.value;   // 0.92 — CloudManager 가 정한 값을 그대로 기억한다
   const CLOUD_OPACITY_WIND_ONLY = 0.28;
   const PRECIP_OPACITY_FULL = clouds.precip ? clouds.precip.uniforms.uOpacity.value : 0;   // PrecipField 가 정한 값을 기억한다
+  /* 구름을 물릴지 말지는 js/cloud-yield.js 가 정한다(2026-09-20 작업 E3 ②③). 여기서는 그 판정을 불투명도로 옮기기만 한다:
+     ② 사용자가 구름 단추를 직접 누르면 그 손이 이긴다 — 안 그러면 누를 수는 있는데 아무 일도 안 나는 죽은 토글이었다.
+     ③ 색면이 **실제로 그려질 때만** 물린다 — 예보 범위 밖이면 색면도 구름도 없는 맨 지구만 남았다. */
+  const cloudYield = createCloudYield();
   const starLayers = {
     windWasOn: false, autoSpeed: false, busy: false,
+    /** 색면이 구름에게 한 일 한 줄(없으면 ''). 카드·메뉴 줄이 읽어 간다 — 말없이 끄거나 말없이 겹치지 않는다. */
+    note() { return cloudYield.peek().note || ''; },
     tick(dt) {
       const star = liveLayers.starLayer();
-      fieldOutlines.setVisible(star === 'field');
+      const sf = liveLayers.starField();
+      const drawing = !!(sf && sf.drawing);
+      const desc = sf ? FIELD_DESCRIPTORS[sf.id] : null;
+      const say = cloudYield.read({
+        star, drawing, cloudsOn: clouds.mode !== 'off', quantity: desc ? desc.quantity : null, ko: i18n.ko,
+      });
+      // 윤곽선도 색면이 실제로 그려질 때만 — 안 보이는 색면 위에 나라 테두리만 남기지 않는다.
+      fieldOutlines.setVisible(star === 'field' && drawing);
       fieldOutlines.tick();
-      const target = star === 'field' ? 0 : star === 'wind' ? CLOUD_OPACITY_WIND_ONLY : CLOUD_OPACITY_FULL;
+      const target = say.level === CLOUD_LEVEL.OFF ? 0 : say.level === CLOUD_LEVEL.DIM ? CLOUD_OPACITY_WIND_ONLY : CLOUD_OPACITY_FULL;
       const u = clouds.uniforms.uOpacity;
       if (u.value !== target) {
         u.value += (target - u.value) * Math.min(1, dt * 5);
@@ -3280,6 +3294,14 @@ async function main() {
     },
   };
   window.__earthusWind = windLayer;   // 콘솔 확인용: __earthusWind.state()
+  window.__earthusClouds = starLayers;   // 콘솔 확인용: __earthusClouds.note()
+  /* 구름 출처 줄 + 색면이 구름에게 한 일 한 줄. #cloud-note 는 CloudManager 가 제 글로 덮어쓰는 자리라
+     거기에 덧쓰지 않는다 — **읽는 자리**에서 한 줄을 붙인다(읽는 자리가 셋이라 한 벌로 묶는다). */
+  const cloudNoteText = () => {
+    const base = (document.getElementById('cloud-note')?.textContent || '').trim();
+    const say = starLayers.note();
+    return say ? `${base}${base ? ' · ' : ''}${say}` : base;
+  };
   // 지구 위 실측 숫자 — 보임은 tick 에서 기온 레이어('tempgrid')의 켜짐만 읽어 넘기고, '지금'인지는 부품이 시간 버스에서 직접 듣는다.
   // 지평선 흐림은 뉴스 네모칸의 식(newsChipOpacity)을 그대로 넣는다 — 같은 식을 두 벌로 만들지 않는다.
   obsLabels = createObsLabels({
@@ -3978,7 +4000,7 @@ async function main() {
       sunHtml,
       terrainHtml: `과장 ${uniforms.uExagger.value}× · 음영 ${uniforms.uShade.value.toFixed(1)}${uniforms.uIsobath.value > 0.5 ? ` · 등심선 ${uniforms.uIsobathStep.value.toLocaleString('ko-KR')} m` : ''}<br/>전역 z4 + 지역 z5~z9 스트리밍 (AWS Terrarium · Esri 위성)${nightLightSrc ? `<br/>밤면 불빛 · ${nightLightSrc}` : ''}`,
       cloudBadge: cloudBadgeFor(clouds.mode),
-      cloudHtml: document.getElementById('cloud-note').textContent,
+      cloudHtml: cloudNoteText(),                                   // 출처 + 색면이 구름에게 한 일(숨겼다 · 손이 이겼다)
     });
     html += lockedNote || seaPoint ? `<details class="context-details"><summary>배경 지구 · 태양 · 구름</summary>${contextCards}</details>` : contextCards;
     html += '<details class="context-details"><summary>자료 연결·화면 성능 상세</summary>';
@@ -4014,7 +4036,7 @@ async function main() {
       const sel = travel && travel.selected;
       return { on, note: on && sel ? `선택: ${sel.nameKo}` : undefined };
     }
-    const cloudNote = () => document.getElementById('cloud-note').textContent;
+    const cloudNote = () => cloudNoteText();                        // 메뉴 줄 옆 — 구름이 물러났으면 그 줄이 말한다
     if (sid === 'weather') {
       if (id === 'cloud-off') return { on: clouds.mode === 'off' };
       if (id === 'cloud-obs') return { on: clouds.mode === 'obs', note: cloudNote() };
@@ -4536,10 +4558,11 @@ async function main() {
       }
       const setCloud = (m) => {
         markCloudBtn(m);
+        cloudYield.handPicked();      // 메뉴에서 손으로 고른 구름 — 색면이 켜져 있어도 이 손이 이긴다(죽은 토글 금지)
         clouds.set(m).then((ok) => {
           if(!current())return;
           if (!ok) markCloudBtn('off');
-          note(layer.name, document.getElementById('cloud-note').textContent, m==='gfs'?'MODEL_SIGNAL':m==='off'?'DERIVED':'OBSERVED');
+          note(layer.name, cloudNoteText(), m==='gfs'?'MODEL_SIGNAL':m==='off'?'DERIVED':'OBSERVED');
           shell.renderIntel();
           shell.refreshFlyout();
         });
@@ -6121,6 +6144,7 @@ async function main() {
       markCloudBtn(btn.dataset.cloud);
       // 손으로 고른 것만 기억한다. 시간 스크럽의 자동 전환은 기억하지 않는다 —
       // 그건 사용자의 선택이 아니라 그 시각을 보여주기 위한 임시 전환이다.
+      cloudYield.handPicked();   // 같은 이유로 색면도 이 손을 이기지 못한다(2026-09-20 작업 E3 ②)
       try { localStorage.setItem(CLOUD_PREF, btn.dataset.cloud); } catch (e) { /* 저장소가 막힌 환경 */ }
       clouds.set(btn.dataset.cloud).then((ok) => { if (!ok) markCloudBtn('off'); });
     });

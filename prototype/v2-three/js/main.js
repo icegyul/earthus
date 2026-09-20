@@ -39,6 +39,10 @@ const gfsFrames = sharedGfsFrames({ THREE });
 import { timeBus } from './time-bus.js?v=1';
 // 색면 위의 나라·해안 윤곽선 — 새 색면이 바탕 지도의 국경을 덮어 '어디가 한반도인지' 알 수 없었다(js/field-outlines.js).
 import { createFieldOutlines } from './field-outlines.js?v=1';
+// 어느 레이어가 새 셰이더 색면인지 — 바람을 켤 때 이미 깔린 색면이 있으면 풍속 색면을 자동으로 깔지 않는다(기온이 꺼지지 않게).
+import { isFieldLayerId } from './field-layer.js?v=1';
+// 색면이 지형 위로 떠 있는 높이 — 바람 입자를 같은 높이에 두려고 읽는다(시차 방지).
+import { FIELD_LIFT } from './field-renderer.js?v=1';
 // 지상관측 두 문서(기상청 · GTS)는 공용 저장소(js/surface-obs.js)에서 받는다 — 바람·평년차·기입 모형·내 동네 카드가 같은 문서를 나눠 쓴다.
 import { surfaceObs } from './surface-obs.js?v=1';
 // 지구 위 실측 숫자(js/obs-labels.js · W1 ⑦) — 기온 색면이 켜져 있고 타임라인이 '지금'일 때만 관측소 값을 찍는다.
@@ -3200,7 +3204,9 @@ async function main() {
     isOn: () => { const l = liveLayers.layers.wind; return !!(l && l.on); },
     particleScale: () => thermal.budget.particleScale,
     exagger: () => uniforms.uExagger.value,
-    shellRadius: () => liveLayers.airShell().radius,
+    // 입자는 **색면과 같은 지표 높이**에 둔다(FIELD_LIFT). 예전에는 옛 색면의 고정 껍질(과장된 최고봉 위)을 줬는데,
+    // 풍속 색면이 새 렌더러로 지표에 붙으면서 입자만 떠서 그려졌다 — 태풍 소용돌이가 색면의 눈과 어긋났다(2026-09-20 반박 검증).
+    shellRadius: () => 1 + FIELD_LIFT,
     lang: () => i18n.lang,
     // 타임라인·키프레임이 바뀌면 열려 있는 바람 카드(글자 사본)를 지금 상태로 갈아 끼운다 — 안 그러면 카드의 유효 시각이 옛 글로 남는다.
     onChange: () => {
@@ -3247,10 +3253,15 @@ async function main() {
       if (pu) pu.value = PRECIP_OPACITY_FULL * (CLOUD_OPACITY_FULL > 0 ? u.value / CLOUD_OPACITY_FULL : 1);
       const windOn = !!(liveLayers.layers.wind && liveLayers.layers.wind.on);
       const speedOn = !!(liveLayers.layers.windgrid && liveLayers.layers.windgrid.on);
-      windLayer.setColorMode(speedOn ? 'white' : 'speed');
+      // 색면이 깔려 있으면(어느 것이든) 입자는 흰색이다 — 색은 밑의 색면과 범례가 말한다. 아무 색면도 없으면 입자가 풍속 구간색.
+      windLayer.setColorMode(star === 'field' ? 'white' : 'speed');
+      // ⚠️ 색면은 한 번에 하나다(toggleFieldLayer). 그래서 기온을 보는 중에 바람을 켜면서 풍속 색면을 자동으로 깔면
+      //    **기온이 조용히 꺼진다.** 지시서 W3: '입자 토글은 기온·강수 색면 위에서도 유지된다 — 색면 라디오와 무관한 공용 오버레이'.
+      //    그러니 자동으로 까는 것은 **깔린 색면이 하나도 없을 때뿐**이다. 기온 위에서는 흰 입자가 흐른다.
+      const otherFieldOn = liveLayers.activeIds().some((id) => id !== 'windgrid' && isFieldLayerId(id));
       if (windOn !== this.windWasOn && !this.busy) {
         this.windWasOn = windOn;
-        const want = windOn ? !speedOn : (this.autoSpeed && speedOn);
+        const want = windOn ? (!speedOn && !otherFieldOn) : (this.autoSpeed && speedOn);
         if (want) {
           this.busy = true;
           this.autoSpeed = windOn;

@@ -121,6 +121,8 @@ const el = (doc, tag, cls) => { const e = doc.createElement(tag); if (cls) e.cla
  */
 export const createFieldLegend = ({ doc, now = () => Date.now(), getLang = () => i18n.lang } = {}) => {
   let root = null;
+  const owners = new Map();      // 주인 → { args, priority, seq } · 넣은 순서가 곧 최근 순서다
+  let seq = 0;
   let parts = null;
   let lastKey = null;
   let lastArgs = null;
@@ -180,6 +182,23 @@ export const createFieldLegend = ({ doc, now = () => Date.now(), getLang = () =>
     return view;
   };
 
+  // 지금 화면을 가질 주인: priority 가 가장 크고, 같으면 가장 나중에 그린 쪽.
+  const topOwner = () => {
+    let best = null;
+    let key = null;
+    for (const [k, v] of owners) {
+      if (!best || v.priority > best.priority || (v.priority === best.priority && v.seq > best.seq)) { best = v; key = k; }
+    }
+    return key;
+  };
+  const repaint = () => {
+    const k = topOwner();
+    if (k == null) { if (root) root.hidden = true; lastArgs = null; return null; }
+    // lastArgs 는 refresh(언어 전환)가 쓴다 — 주인 스택을 넣으면서 여기서 기억해야 한다(안 하면 언어를 바꿔도 안 바뀐다).
+    lastArgs = owners.get(k).args;
+    return paint(lastArgs);
+  };
+
   return {
     /** 상자를 parent 끝에 붙인다. 두 번 불러도 상자는 하나다(자리만 옮긴다). */
     mount(parent) {
@@ -188,17 +207,32 @@ export const createFieldLegend = ({ doc, now = () => Date.now(), getLang = () =>
       (parent || d.body).appendChild(root);
       return root;
     },
-    /** { scale, title?, source?, run?, valid?, note?, unitAlt? } — 눈금이 없으면 아무것도 지어내지 않고 숨는다. */
-    show(args = {}) {
+    /* 범례는 앱에 하나인데 이것을 그리는 층은 여럿이다(색면 · 바람 입자 · 앞으로 올 것들).
+       2026-09-20 반박 검증에서 나온 것: 색면 층의 off() 가 주인을 안 보고 숨겨서, 바람이 켜진 채 기온을 껐다가
+       바람 범례가 최대 1분(바람 층의 느린 tick) 동안 사라졌다. 반대 방향으로는 나중에 그린 쪽이 남의 제목으로 덮었다.
+       그래서 **주인을 둔다**: show(args, owner, priority) · release(owner).
+         · 같은 순간 주인이 여럿이면 priority 가 큰 쪽이 화면을 갖는다(같으면 나중에 그린 쪽).
+           색면이 바람 입자보다 우선이다 — 색면은 값의 색을 설명하고, 입자의 고지는 그 눈금표의 legendNote 로 따라온다.
+         · release 하면 남은 주인 가운데 가장 센 쪽의 마지막 args 로 **바로 다시 그린다**(비어 있으면 숨긴다). */
+    show(args = {}, owner = 'default', priority = 0) {
       if (!root) this.mount();
-      if (!args.scale) { this.hide(); return null; }
-      lastArgs = args;
-      return paint(args);
+      if (!args.scale) { this.release(owner); return null; }
+      owners.set(owner, { args, priority, seq: seq += 1 });
+      return repaint();
     },
-    /** 숨긴다(떼어 내지 않는다 — 다시 켤 때 같은 자리에 그대로 선다). */
-    hide() { if (root) root.hidden = true; lastArgs = null; },
+    /** 이 주인이 물러난다 — 남은 주인이 있으면 그쪽 범례가 바로 돌아온다. */
+    release(owner = 'default') {
+      owners.delete(owner);
+      return repaint();
+    },
+    /** 지금 화면을 가진 주인(없으면 null) — 쓰는 쪽이 '내 것인가'를 물을 수 있다. */
+    ownerNow() { return topOwner(); },
+    /** 전부 숨긴다(떼어 내지 않는다 — 다시 켤 때 같은 자리에 그대로 선다). */
+    hide() { owners.clear(); if (root) root.hidden = true; lastArgs = null; },
     /** 언어가 바뀐 뒤 같은 내용을 다시 그린다. */
     refresh() { return (lastArgs && root && !root.hidden) ? paint(lastArgs) : null; },
+    /** 지금 주인 수 — 시험과 콘솔용. */
+    owners() { return [...owners.keys()]; },
     get el() { return root; },
   };
 };

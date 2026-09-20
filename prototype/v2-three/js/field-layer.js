@@ -26,7 +26,7 @@
 import * as THREE from '../../vendor/three-r184.module.min.js';
 import { i18n } from './i18n.js?v=11';
 import { timeBus as sharedTimeBus } from './time-bus.js?v=1';
-import { sharedGfsFrames } from './gfs-frames.js?v=1';
+import { decodeByte, sharedGfsFrames } from './gfs-frames.js?v=1';
 import { fieldLegend as sharedLegend } from './field-legend.js?v=1';
 import { bandColor, formatValue, isolineSpec, scaleOf } from './field-scales.js?v=1';
 import { FieldRenderer, halfStepOf } from './field-renderer.js?v=1';
@@ -58,6 +58,38 @@ export const FIELD_DESCRIPTORS = Object.freeze({
 
 // 매니페스트를 이보다 오래 안 읽었으면 다시 읽는다. 같은 런은 3시간마다 다시 구워지고 새 런은 6시간마다 온다(gfs-frames.js) —
 // 페이지를 하루 열어 둔 사람이 어제 런을 계속 보지 않게. 30분이면 조건부 GET 한 번(no-cache)이다.
+// 범례 주인의 세기 — 색면이 바람 입자(5)보다 세다. 색면은 화면에 칠해진 색을 설명하고, 입자의 과장 고지는 그 눈금표의 legendNote 로 따라온다.
+export const LEGEND_PRIORITY_FIELD = 10;
+
+/** 전 해상도 CPU 사본의 **모든 바이트**에서 값의 범위. 두 프레임을 합쳐 본다(화면은 그 사이를 섞으므로 둘 다 화면에 닿는다).
+ *  scalar 는 채널 하나, magnitudeRG 는 두 채널의 크기 — 크기의 최댓값은 채널별 최댓값으로 셈할 수 없어 칸마다 잰다. */
+export function fullRangeOf(pxA, pxB, channels, mode = 'scalar') {
+  let min = Infinity;
+  let max = -Infinity;
+  const look = (px) => {
+    if (!px || !px.data) return;
+    const n = px.channels || 1;
+    const len = px.data.length;
+    if (mode === 'magnitudeRG' && n >= 2 && channels.length >= 2) {
+      for (let i = 0; i + 1 < len; i += n) {
+        const u = decodeByte(channels[0], px.data[i]);
+        const v = decodeByte(channels[1], px.data[i + 1]);
+        const m = Math.hypot(u, v);
+        if (m < min) min = m;
+        if (m > max) max = m;
+      }
+      return;
+    }
+    let lo = 255;
+    let hi = 0;
+    for (let i = 0; i < len; i += n) { const b = px.data[i]; if (b < lo) lo = b; if (b > hi) hi = b; }
+    // 단조 증가 인코딩(linear · log10)이라 바이트의 min/max 가 값의 min/max 다 — 260,000 칸을 값으로 풀지 않는다.
+    for (const b of [lo, hi]) { const x = decodeByte(channels[0], b); if (x < min) min = x; if (x > max) max = x; }
+  };
+  look(pxA);
+  look(pxB);
+  return Number.isFinite(min) ? { min, max } : null;
+}
 export const FIELD_MANIFEST_RELOAD_MS = 30 * 60 * 1000;
 // 켠 뒤 첫 두 프레임을 이보다 오래 못 받으면 '받지 못했다'고 말한다. 그림 받기에는 타임아웃이 없다(THREE.ImageLoader) —
 // 느린 회선에서 요청이 끊기지 않고 멈추면 메뉴가 '켜는 중'에 영영 머문다(main.js 지형 타일 로딩이 같은 이유로 15초 타임아웃을 둔다).
@@ -196,8 +228,9 @@ export const fieldCardLive = (m) => {
   const st = statusText(m.status, { ko });
   if (st) lines.push(esc(st));
   if (m.stats && Number.isFinite(m.stats.min)) {
+    // '이 두 프레임'이라고 적는다 — 화면은 두 프레임 사이를 섞은 값이라 어느 한 프레임의 범위가 아니다.
     lines.push(`${ko ? '모델 범위' : 'Model range'} ${esc(formatValue(m.scale, m.stats.min))} ~ ${esc(formatValue(m.scale, m.stats.max))}`
-      + `<span style="opacity:.7"> (${ko ? '이 프레임 · 전지구' : 'this frame · global'})</span>`);
+      + `<span style="opacity:.7"> (${ko ? '이 두 프레임 · 전지구' : 'these two frames · global'})</span>`);
   }
   if (m.probe) {
     lines.push(`${ko ? '누른 곳' : 'Picked'} ${esc(fmtPoint(m.probe.lat, m.probe.lon))} — <b>${esc(m.probe.text)}</b>`
@@ -383,7 +416,8 @@ export class FieldLayer {
     this.settleFirst();
     if (this.renderer) this.renderer.setVisible(false);
     if (this.labels) { this.labels.clear(); this.labels.group.visible = false; }
-    this.legend.hide();
+    // 범례는 앱에 하나다 — **내 것일 때만** 물러난다. 남은 주인(바람 입자 등)이 있으면 그쪽 범례가 바로 돌아온다.
+    if (this.legend.release) this.legend.release(`field:${this.id}`); else this.legend.hide();
     this.key = null;
     this.probePoint = null;
     this.lastInner = null;
@@ -501,7 +535,10 @@ export class FieldLayer {
     const spec = this.spec;
     this.labels.update(key, () => {
       this.thin = thinField({ pxA, pxB, channels: spec.channels, grid: spec.grid, mode: this.desc.mode }, this.thin);
-      this.stats = { min: this.thin.min, max: this.thin.max };
+      // ⚠️ 카드의 '모델 범위'는 라벨용으로 2° 로 솎은 격자의 **두 프레임 가운데 값** 범위였다 — 화면에 칠한 값이 아니다.
+      //    운영 프레임 실측(2026-09-20 반박 검증): 카드 42.3 °C vs 실제 44.0 °C. 가장 더운 곳을 누르면 카드의 최댓값보다 높았다.
+      //    전 해상도 CPU 사본의 바이트 min/max 에서 두 프레임 각각의 범위를 셈한다(720×361 두 장에 1 ms 안 · 키프레임에만).
+      this.stats = fullRangeOf(pxA, pxB, spec.channels, this.desc.mode);
       const iso = isolineSpec(this.scale, this.isoChoice);
       const levels = labelLevels(iso, this.thin.min, this.thin.max);
       const cap = (this.deps.isPhone ? FIELD_LABEL_CAP.phone : FIELD_LABEL_CAP.desktop) * 2;
@@ -616,7 +653,7 @@ export class FieldLayer {
       scale: this.scale, title: this.desc.title, source: sourceLabel(info),
       run: info ? info.run : null, valid: this.timeBus.validMs(),
       note: blocked ? short : (probeLine || short),
-    });
+    }, `field:${this.id}`, LEGEND_PRIORITY_FIELD);
     const model = this.cardModel(probe);
     const inner = fieldCardInner(model);
     if (inner === this.lastInner) return;                     // 글자가 그대로면 DOM 도 문자열도 건드리지 않는다
@@ -666,6 +703,19 @@ const fieldOf = (host, id) => {
 export async function toggleFieldLayer(host, id) {
   const field = fieldOf(host, id);
   const cur = host.layers[id];
+  // ⚠️ 색면은 한 번에 하나다. 두 색면(기온 + 풍속)은 같은 반지름 · 같은 renderOrder · 불투명 0.8 이라 나중에 만들어진 쪽이
+  //    앞의 것을 덮고, 범례는 하나뿐이라 어느 쪽과도 맞지 않는 색이 화면에 남는다(2026-09-20 반박 검증 · 브라우저 재현).
+  //    '켜기'일 때 다른 색면을 먼저 끈다 — 입자(바람)는 색면이 아니라 그대로 흐른다.
+  if (!(cur && (cur.on || cur.loading))) {
+    for (const other of Object.keys(host._fields || {})) {
+      if (other === id) continue;
+      const oc = host.layers[other];
+      if (!oc || !(oc.on || oc.loading)) continue;
+      host._fields[other].off();
+      if (oc.loading) delete host.layers[other];
+      else { oc.on = false; if (oc.obj) oc.obj.visible = false; }
+    }
+  }
   if (cur && (cur.on || cur.loading)) {                       // 켜져 있거나 켜는 중 — 끈다(받는 중이던 것은 세대 번호가 버린다)
     field.off();
     if (cur.loading) delete host.layers[id]; else { cur.on = false; if (cur.obj) cur.obj.visible = false; }

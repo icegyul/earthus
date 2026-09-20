@@ -779,7 +779,10 @@ test('공용 파일의 배선 — main.js 가 층을 만들어 꽂고 tick·클�
   assert.match(main, /windLayer\.tick\(dt, camera\);/);
   assert.match(main, /windLayer\.readoutAt\(lat, lon\)/);
   assert.match(main, /action === 'wind-intensity'/);
-  assert.match(main, /shellRadius: \(\) => liveLayers\.airShell\(\)\.radius/);
+  // 입자는 색면과 **같은 지표 높이**에 있어야 한다(2026-09-20 반박 검증: 옛 껍질은 과장된 최고봉 위라 입자만 떠서 그려졌다 —
+  // 고도 3,000 km 에서 태풍 소용돌이가 색면의 눈과 약 100 px 어긋났다). 지킬 것은 '색면과 같은 높이'다.
+  assert.match(main, /shellRadius: \(\) => 1 \+ FIELD_LIFT/);
+  assert.match(main, /import \{ FIELD_LIFT \} from '\.\/field-renderer\.js\?v=1';/);
   assert.match(main, /particleScale: \(\) => thermal\.budget\.particleScale/);
   assert.doesNotMatch(main, /'weather\/wind': \['wind', '바람 관측'\]/);
   // v1 의 flow.js 를 끌어오지 않는다.

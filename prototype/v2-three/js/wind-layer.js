@@ -53,7 +53,12 @@ export const WIND_READOUT_STEP_MS = 0.5;
    깊이 시험이 어느 쪽으로 넘어가든 입자가 껍질 뒤로 숨지 않게. 0.0004 = 2.5 km — 전지구 뷰에서 0.1 px 도 안 된다. */
 export const WIND_SHELL_LIFT = 0.0004;
 
-/* 가까이 내려가면 껍질이 카메라보다 **높아진다.** 색면 껍질은 '과장된 최고봉(9 km × 과장) 위'라서 과장 50× 에서 고도 475 km 다 —
+/* ⚠️ 2026-09-20 반박 검증: 입자가 색면보다 **위**에 떠 있었다. 이 주석이 말하는 '색면 껍질'은 옛 buildField 의 고정 껍질
+   (과장된 최고봉 위 · 과장 50× 에서 반지름 1.075 = 해발 478 km)이었는데, 풍속 색면은 이제 새 렌더러라 지표(1 + 0.0012)에 붙는다.
+   그래서 화면 중심에서 떨어진 곳의 입자 무늬가 색면·해안선보다 바깥으로 밀려 그려졌다(고도 3,000 km 에서 10° 떨어진 곳 약 100 px:
+   태풍 소용돌이의 중심이 색면의 눈과 어긋난다). main.js 가 이제 1 + FIELD_LIFT 를 준다 — 아래 카메라 고도 규칙은 그보다 낮아질 때의
+   안전장치로만 남는다(지표 껍질에서는 사실상 걸리지 않는다).
+   가까이 내려가면 껍질이 카메라보다 **높아진다.** 색면 껍질은 '과장된 최고봉(9 km × 과장) 위'라서 과장 50× 에서 고도 475 km 다 —
    그 아래로 줌하면 카메라가 껍질 안으로 들어가 입자가 통째로 사라진다(전지구 색면도 같은 한계다). 바람은 한반도·태풍까지 당겨 보는
    레이어라 그 절벽을 두지 않는다: 입자 반지름은 카메라 고도의 이 비율을 넘지 않는다.
    0.7 인 이유 — main.js tick 이 카메라 둘레(2.5°·5.5° 링) 지형을 카메라 고도의 65% 아래로 묶고(exagCeil = 0.65 × 고도),
@@ -220,7 +225,10 @@ export function windCardHtml(view) {
     + `${view.particleScale < 1 ? ` · 발열 보호 ${view.particleScale}×` : ''}</span></div>`
     + `<div class="seg" role="group" aria-label="입자 강도">${chips}</div>`
     + `<p>${view.metaLine || ''}${view.stale ? ' — 새 런이 12시간 넘게 오지 않았습니다' : ''}</p>`
-    + '<p>입자 색 = 풍속 구간(범례와 같은 표) · 입자 속도와 꼬리 길이는 방향과 상대 세기를 보이기 위한 <b>과장 표현</b>입니다. '
+    // 색면이 깔려 있으면 입자는 흰색이다(main.js starLayers) — 카드가 화면과 다른 말을 하면 안 된다.
+    + `<p>${view.colorMode === 'white'
+      ? '입자는 <b>흰색</b>입니다 — 풍속의 색은 밑에 깔린 색면과 그 범례가 말합니다.'
+      : '입자 색 = 풍속 구간(범례와 같은 표).'} 입자 속도와 꼬리 길이는 방향과 상대 세기를 보이기 위한 <b>과장 표현</b>입니다. `
     + '타임라인을 밀면 5일 예보가 흐르고(유효 시각은 범례에 나옵니다), 지구를 누르면 그 자리의 격자점 바람을 읽습니다.</p>'
     + '<p>출처 NOAA GFS 0.5° · 지상 10 m · 3시간 간격 5일 예보. <b>모델값이며 관측이 아닙니다</b> — 지상 관측은 일기도 기입 모형에 있습니다.</p>'
     + `${CARD_CLOSE}`;
@@ -308,7 +316,9 @@ export function createWindLayer(deps = {}) {
       throw new Error('자료 없음 — 색 눈금표(풍속)의 구간 수가 입자 엔진과 다릅니다');
     }
     const r = shellRadius ? shellRadius() + WIND_SHELL_LIFT : 0;
-    particles = makeParticles(r > 0 ? { maxParticles: cap, radius: r } : { maxParticles: cap });
+    // depthTest 를 끈다 — 입자는 이제 색면과 같은 지표 높이(1 + FIELD_LIFT)에 있어서, 과장된 지형이 그 위로 솟으면
+    // 산이 입자를 가린다(과장 50× 에서 히말라야는 반지름 1.07). 지구 뒤편은 깊이가 아니라 facing(uLimb)이 지운다.
+    particles = makeParticles(r > 0 ? { maxParticles: cap, radius: r, depthTest: false } : { maxParticles: cap, depthTest: false });
     particles.setSpeedColors(scale.colors);          // 엔진의 임시 색(WIND_SPEED_COLORS_TEMP)을 쓰지 않는다
     if (particles.uniforms && particles.uniforms.uBounds) particles.uniforms.uBounds.value = Array.from(scale.breaks);
     particles.setColorMode(colorMode);
@@ -416,14 +426,22 @@ export function createWindLayer(deps = {}) {
     legendArgs.note = blocked
       ? { ko: reason, en: status === 'out-of-range' ? 'Outside the forecast range — no GFS wind frame for this time' : 'No data — GFS 10 m wind frames are unavailable' }
       : undefined;
-    legend.show(legendArgs);
+    // 주인을 밝혀 그린다 — 풍속 색면(세기 10)이 깔려 있으면 그쪽 범례가 화면을 갖고, 색면을 끄면 이 범례가 바로 돌아온다.
+    legend.show(legendArgs, LEGEND_OWNER, LEGEND_PRIORITY_WIND);
     legendOurs = true;
   }
 
   // 다른 색면이 그 사이 범례를 가져갔으면(제목이 우리 것이 아니다) 남의 범례를 끄지 않는다.
+  // 범례 주인 이름과 세기 — 색면(field-layer.js LEGEND_PRIORITY_FIELD = 10)보다 낮다: 색면이 깔리면 색을 설명하는 쪽이 이긴다.
+  // 그때 입자의 '과장 표현' 고지는 사라지지 않는다 — 풍속 눈금표의 legendNote 가 같은 글이라 색면 범례가 그것을 쓴다.
+  const LEGEND_OWNER = 'wind-particles';
+  const LEGEND_PRIORITY_WIND = 5;
+
   function hideLegend() {
     if (!legend || !legendOurs) return;
     legendOurs = false;
+    // 범례에 주인이 생겼다(field-legend.js · 2026-09-20) — 내 것만 놓으면 남은 주인(풍속 색면 등)의 범례가 바로 돌아온다.
+    if (legend.release) { legend.release(LEGEND_OWNER); return; }
     const el = legend.el;
     const shown = el && el.children && el.children[0] ? el.children[0].textContent : null;
     if (shown == null || shown === TITLE.ko || shown === TITLE.en) legend.hide();
@@ -521,8 +539,12 @@ export function createWindLayer(deps = {}) {
 
     /** 다음 묶음의 전환 함수: 풍속 색면이 밑에 깔리면 'white'(입자는 방향만 말한다), 걷히면 'speed'(입자가 풍속 구간색). */
     setColorMode(mode) {
-      colorMode = mode === 'white' ? 'white' : 'speed';
+      const next = mode === 'white' ? 'white' : 'speed';
+      const changed = next !== colorMode;
+      colorMode = next;
       if (particles) particles.setColorMode(colorMode);
+      // 카드가 '입자 색 = 풍속 구간'이라고 적어 두는데 색면 위에서는 입자가 흰색이다 — 바뀌면 떠 있는 카드를 갈아 끼운다.
+      if (changed && on) publish();
       return colorMode;
     },
     get colorMode() { return colorMode; },
@@ -576,6 +598,7 @@ export function createWindLayer(deps = {}) {
         stale: meta.stale,
         statusLine: blocked ? `자료 없음 — ${reason}` : '',
         interp,
+        colorMode,
       });
     },
 

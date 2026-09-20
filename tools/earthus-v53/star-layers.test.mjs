@@ -53,8 +53,31 @@ test('main.js 가 매 프레임 무대를 정리한다 — 구름 불투명도 �
   assert.match(main, /const CLOUD_OPACITY_FULL = clouds\.uniforms\.uOpacity\.value;/, '원래 불투명도를 숫자로 다시 적지 않는다 — CloudManager 가 정한 값을 기억한다');
   // 구름 예보의 비·뇌우 층도 구름과 같은 비율로 물러난다 — 구름만 끄면 색면 위에 보라색 뇌우 표시만 남는다(운영에서 실측)
   assert.match(body, /pu\.value = PRECIP_OPACITY_FULL \* \(CLOUD_OPACITY_FULL > 0 \? u\.value \/ CLOUD_OPACITY_FULL : 1\)/);
-  assert.match(body, /windLayer\.setColorMode\(speedOn \? 'white' : 'speed'\)/);
+  // 색면이 깔려 있으면(기온이든 풍속이든) 입자는 흰색 — 색은 밑의 색면과 범례가 말한다
+  assert.match(body, /windLayer\.setColorMode\(star === 'field' \? 'white' : 'speed'\)/);
+  // 색면은 한 번에 하나라, 기온을 보는 중에 풍속 색면을 자동으로 깔면 기온이 조용히 꺼진다 — 깔린 색면이 없을 때만 깐다
+  assert.match(body, /const otherFieldOn = liveLayers\.activeIds\(\)\.some\(\(id\) => id !== 'windgrid' && isFieldLayerId\(id\)\)/);
+  assert.match(body, /const want = windOn \? \(!speedOn && !otherFieldOn\) : \(this\.autoSpeed && speedOn\);/);
   assert.match(body, /liveLayers\.toggle\('windgrid'\)/);
   // 우리가 같이 켠 것만 같이 끈다 — 사용자가 따로 켠 풍속 색면을 바람을 끌 때 같이 끄면 안 된다
-  assert.match(body, /const want = windOn \? !speedOn : \(this\.autoSpeed && speedOn\);/);
+});
+
+// 2026-09-20 반박 검증 — 색면은 한 번에 하나다. 두 색면은 같은 반지름·같은 renderOrder·불투명 0.8 이라
+// 나중 것이 앞의 것을 덮고, 범례는 하나뿐이라 어느 쪽과도 맞지 않는 색이 화면에 남는다(브라우저에서 재현했다).
+test('색면 켜기는 다른 색면을 끈다 — 입자(바람)는 색면이 아니라 그대로 흐른다', async () => {
+  const { toggleFieldLayer } = await import('../../prototype/v2-three/js/field-layer.js');
+  const off = [];
+  const host = {
+    layers: { tempgrid: { on: true, obj: { visible: true } }, wind: { on: true, obj: { visible: true } } },
+    _fields: {
+      tempgrid: { active: true, off() { off.push('tempgrid'); this.active = false; } },
+      windgrid: { active: false, object: { visible: false }, off() { off.push('windgrid'); }, on: async () => ({ on: true }) },
+    },
+  };
+  const r = await toggleFieldLayer(host, 'windgrid');
+  assert.equal(r.on, true);
+  assert.deepEqual(off, ['tempgrid'], '다른 색면을 끄지 않았다 — 두 색면이 겹쳐 그려진다');
+  assert.equal(host.layers.tempgrid.on, false);
+  assert.equal(host.layers.tempgrid.obj.visible, false);
+  assert.equal(host.layers.wind.on, true, '입자는 색면이 아니다 — 끄면 안 된다');
 });

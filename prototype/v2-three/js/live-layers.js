@@ -421,7 +421,13 @@ export class LiveLayers {
   /** 색면이 켜졌으니 잠기는 땅은 내려온다 — 끄는 갈래와 **같은 세 줄**을 쓴다(두 곳에 적으면 갈라진다). */
   _slrOff() {
     const l = this.layers.slr;
-    if (!l || !l.on) return;
+    if (!l) return;
+    // ⚠️ **받는 중인 것도 내려야 한다**(2026-09-21 재검이 찾은 구멍). ar6.json 은 485 KB 라
+    //    느린 망에서 눈에 띄게 걸린다. 그 사이에 색면을 켜면 예전에는 `!l.on` 에서 그냥 돌아갔고,
+    //    잠시 뒤 build 가 끝나며 l.on = true 가 돼 **둘이 같이 켜졌다** — 이 울타리가 없애려던 바로 그 상태다.
+    //    끄는 길(toggle 의 `l.loading` 갈래)과 같은 방법으로 취소한다: build 가 끝나고 스스로 버린다.
+    if (l.loading) { l.cancelled = true; if (this.layers.slr === l) delete this.layers.slr; return; }
+    if (!l.on) return;
     if (l.obj) l.obj.visible = false;
     l.on = false;
   }

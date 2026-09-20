@@ -336,6 +336,12 @@ export function createPointReadout(deps = {}) {
       const gridDocs = SEA_GRIDS.map((g) => ({ path: g.path, st: docStateOf(g.path) }));
       if (!grid) {
         const failed = gridDocs.filter((d) => d.st === 'failed');
+        /* 2026-09-21 재검이 "격자 쪽도 missing 을 '없다'로 읽는다"고 지적했지만 **여기서는 그대로 둔다.**
+           이 파일이 정한 뜻(위 doc 머리말)에서 missing 은 "물었고 답은 왔는데 우리가 그 자료를 안 갖고 있다"이고,
+           바다 격자는 **두 장을 차례로 보는 구조**다 — 동아시아 0.5° 문서가 그 자리를 안 담는 것은 고장이 아니라
+           정상 경로이고(그래서 전지구 5° 로 내려간다), 그것을 오류로 올리면 한국 밖 바다를 누를 때마다
+           '알 수 없습니다'가 뜬다. 고쳐야 했던 것은 **부이 쪽 문장**이었다(아래 gone 분기) — 거기서는
+           문서가 하나뿐이라 missing 이 곧 '대조하지 못했다'이고, 그것을 '받지 못했다'고 적은 것이 거짓이었다. */
         if (!failed.length) {
           return { lat, lon, none: true, docs: gridDocs,
             reason: ko ? '이 자리는 우리 해양 격자에 값이 없습니다 — 연안 밖 바다를 눌러 보세요.' : 'Our ocean grid holds no value here — try a point further offshore.' };
@@ -403,9 +409,18 @@ export function createPointReadout(deps = {}) {
           ? `실측 — ${BUOY_KM} km 안 파고 관측점(${list[0].name})이 ${BUOY_FRESH_H}시간 넘어 대조에서 뺐습니다.`
           : `Observed — the nearest wave station (${list[0].name}) is older than ${BUOY_FRESH_H} h and was left out.`;
       } else if (!known) {
+        // ⚠️ '못 받았다'와 '우리에게 없다'를 가른다(2026-09-21 재검). 404 는 **답이 온 것**이라
+        //    '받지 못했다'고 적으면 거짓이고, 다시 눌러도 달라지지 않는다. 다시 해 볼 값어치가
+        //    있는 쪽(failed)에서만 '잠시 후 다시'를 권한다.
+        const gone = sea.buoyStatus === 'missing';
+        const file = BUOY_PATH.split('/').pop();
         obs = ko
-          ? `실측 — 기상청 해양관측망 목록(${BUOY_PATH.split('/').pop()})을 받지 못했습니다. ${BUOY_KM} km 안에 파고 관측점이 있는지 모릅니다 — 아래는 격자값뿐입니다.`
-          : `Observed — the KMA station list (${BUOY_PATH.split('/').pop()}) could not be loaded, so whether a wave station lies within ${BUOY_KM} km is unknown. What follows is the grid value only.`;
+          ? (gone
+            ? `실측 — 기상청 해양관측망 목록(${file})이 우리 자료에 없습니다. ${BUOY_KM} km 안에 파고 관측점이 있는지 대조하지 못했습니다 — 아래는 격자값뿐입니다.`
+            : `실측 — 기상청 해양관측망 목록(${file})을 받지 못했습니다. ${BUOY_KM} km 안에 파고 관측점이 있는지 모릅니다 — 아래는 격자값뿐입니다.`)
+          : (gone
+            ? `Observed — the KMA station list (${file}) is not in our data, so we could not check for a wave station within ${BUOY_KM} km. What follows is the grid value only.`
+            : `Observed — the KMA station list (${file}) could not be loaded, so whether a wave station lies within ${BUOY_KM} km is unknown. What follows is the grid value only.`);
       } else {
         obs = ko
           ? `실측 — ${BUOY_KM} km 안에 파고 관측점이 없습니다(기상청 해양관측망은 우리 바다만 덮습니다). 격자값만입니다.`
@@ -434,7 +449,10 @@ export function createPointReadout(deps = {}) {
           ? `타임라인이 지금이 아닙니다 — 파도·수온·해류는 현재 시각 한 장이라 그 시각의 값이 아닙니다${moved ? '.' : '(바람만 예보 프레임입니다).'}`
           : `The timeline is not at now — waves, sea temperature and current are a single present-time snapshot, not values for that hour${moved ? '.' : ' (only the wind is a forecast frame).'}`)}</p>`;
       }
-      if (moved && readMs != null) {
+      // ⚠️ 바람을 **읽지 못한** 카드에는 이 줄을 적지 않는다(2026-09-21 재검). 풍속 줄이 '—' 이고
+      //    출처 줄에 '바람:' 조각도 없는데 그 사이에서 "…프레임에서 읽은 것입니다 · 다시 눌러 주세요"라고
+      //    하면, 읽지도 않은 것을 읽었다고 말하고 눌러도 안 나올 것을 누르라고 시키는 셈이다.
+      if (moved && readMs != null && sea && sea.wind) {
         const shown = fmtValid(timeBus.validMs(), ko);
         drift += `<p>${esc(ko
           ? `이 카드의 바람은 ${fmtValid(readMs, true)} 프레임에서 읽은 것입니다 — 타임라인은 지금 ${shown} 을 가리킵니다. 그 시각의 바람은 지점을 다시 눌러 주세요.`

@@ -208,6 +208,8 @@ export class FieldSymbols {
     this.mask = null;
     this.maskTried = false;
     this.maskInfo = null;
+    this.maskError = null;          // 고도를 읽다 던졌다(교차 출처로 더럽혀진 캔버스 등) — 기호만 없고 색면은 산다
+    this.findError = null;
     this.carry = new Set();           // 직전 키프레임에 **보이던** 중심 객체
     this.visible = false;
     this.shown = { H: 0, L: 0 };
@@ -223,9 +225,18 @@ export class FieldSymbols {
   get ready() { return !!this.mask; }
 
   // 가림판은 한 번만 굽는다. 지형이 아직 안 왔으면(heightAtJs 가 어디서나 0) 다음 키프레임에 다시 해 본다.
+  // ⚠️ heightAtJs 는 첫 호출에서 4096×4096 캔버스를 통째로 읽는다 — 타일이 교차 출처로 더럽혀졌으면 getImageData 가 던진다.
+  //    기호는 색면의 덤이다: 던지면 기호만 없고 색면·등압선은 그대로 살아야 한다(아래 update 의 try 와 한 쌍).
   ensureMask(w, h, grid) {
     if (this.mask || typeof this.heightAt !== 'function') return this.mask;
-    const built = buildHighTerrainMask({ w, h }, this.heightAt, { grid });
+    let built = null;
+    try {
+      built = buildHighTerrainMask({ w, h }, this.heightAt, { grid });
+    } catch (e) {
+      this.maskError = String((e && e.message) || e);
+      this.maskInfo = { high: 0, known: 0, cells: w * h, ok: false };
+      return null;
+    }
     this.maskTried = true;
     this.maskInfo = { high: built.high, known: built.known, cells: built.cells, ok: built.ok };
     if (built.ok) this.mask = built.mask;
@@ -254,11 +265,19 @@ export class FieldSymbols {
     this.builds += 1;
     if (!pxA || !this.decode) { this.setSymbols([]); return true; }
     if (!this.ensureMask(pxA.w, pxA.h, grid)) { this.setSymbols([]); return true; }
-    const a = this.centersFor(hourA, pxA, grid);
-    const b = (pxB && hourB !== hourA) ? this.centersFor(hourB, pxB, grid) : a;
-    const g = gapH > 0 ? gapH : 3;
-    this.pairs = matchCenters(a, b, g * CENTER_MATCH_DEG_PER_HOUR, g * CENTER_MATCH_HPA_PER_HOUR);
-    this.place(this.mix, true);
+    // 기호는 색면의 덤이다 — 여기서 무엇이 잘못돼도 색면과 등압선은 그대로 있어야 한다.
+    // (매니페스트가 전지구가 아닌 격자를 말하면 findPressureCenters 가 던진다 · 디코드 상수가 낯선 꼴이어도 던진다.)
+    try {
+      const a = this.centersFor(hourA, pxA, grid);
+      const b = (pxB && hourB !== hourA) ? this.centersFor(hourB, pxB, grid) : a;
+      const g = gapH > 0 ? gapH : 3;
+      this.pairs = matchCenters(a, b, g * CENTER_MATCH_DEG_PER_HOUR, g * CENTER_MATCH_HPA_PER_HOUR);
+      this.place(this.mix, true);
+    } catch (e) {
+      this.findError = String((e && e.message) || e);
+      this.pairs = [];
+      this.setSymbols([]);
+    }
     return true;
   }
 
@@ -382,6 +401,7 @@ export class FieldSymbols {
   state() {
     return {
       enabled: this.enabled, visible: this.group.visible, ready: this.ready, mask: this.maskInfo,
+      maskError: this.maskError, findError: this.findError,
       symbols: this.count, shown: { ...this.shown }, textures: this.textures.size,
       finds: this.finds, builds: this.builds, mix: this.mix,
     };

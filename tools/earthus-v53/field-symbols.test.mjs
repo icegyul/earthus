@@ -300,6 +300,25 @@ test('끄면 정리한다 — 스프라이트 알파 0 · 짝과 키를 버린�
   assert.equal(sym.pool.length, 0);
 });
 
+test('기호는 색면의 덤이다 — 고도가 던져도, 격자가 낯설어도 던지지 않고 기호만 없다', () => {
+  const f = frame(world([{ lat: 30, lon: 0, sigma: 3, amp: -28 }]));
+  // ① heightAtJs 가 던진다(교차 출처로 더럽혀진 캔버스의 getImageData).
+  const { sym: a } = rig({ heightAt: () => { throw new Error('SecurityError: tainted canvas'); } });
+  assert.doesNotThrow(() => a.update('k', f, null, { grid: GRID, hourA: 0, hourB: 0 }));
+  assert.deepEqual([a.count, a.ready], [0, false]);
+  assert.match(a.state().maskError, /tainted/);
+  // ② 매니페스트가 전지구가 아닌 격자를 말한다 — findPressureCenters 가 던지는 자리다.
+  const { sym: b } = rig();
+  const local = { ni: W, nj: H, lon0: 100, lat0: 60, dLon: 0.1, dLat: 0.1, wraps: false };
+  assert.doesNotThrow(() => b.update('k', f, null, { grid: local, hourA: 0, hourB: 0 }));
+  assert.equal(b.count, 0);
+  assert.match(b.state().findError, /GLOBAL_GRID/);
+  // ③ 디코드 상수가 없다 — 기호를 그리지 않을 뿐이다.
+  const { sym: c } = rig({ decode: null });
+  assert.doesNotThrow(() => c.update('k', f, null, { grid: GRID, hourA: 0, hourB: 0 }));
+  assert.equal(c.count, 0);
+});
+
 test('콘솔 확인용 state() — 가림판·기호 수·보인 수·텍스처 수', () => {
   const { sym } = rig();
   const f = frame(world([{ lat: 30, lon: 0, sigma: 3, amp: -28 }]));   // 카메라 쪽(경도 0)에 둔다

@@ -1010,7 +1010,9 @@ export class FieldLayer {
     if (inner === this.lastInner) return;                     // 글자가 그대로면 DOM 도 문자열도 건드리지 않는다
     // 떠 있는 카드를 제자리에서 고친다. 단추의 모양(켬/끔 · 간격)이 그대로면 시각을 따라 바뀌는 덩어리만 갈아 끼운다 —
     // 재생 중(220ms 마다 한 걸음)에 카드를 통째로 갈면 누르려던 단추가 손가락 밑에서 새 것으로 바뀐다.
-    const shape = `${this.isoOn}|${this.isoChoice}|${this.symbolsOn}|${this.desc.accumHours || ''}|${ko}`;
+    // 기간 칩 줄은 이 덩어리 **밖**이고 커서를 따라 글이 바뀐다('지금 커서에서는 24시간 누적이 3시간치입니다') —
+    // 그 서명(accum.shape)을 모양에 넣지 않으면 타임라인을 밀 때 칩 줄만 옛 글로 굳는다.
+    const shape = `${this.isoOn}|${this.isoChoice}|${this.symbolsOn}|${(model.accum && model.accum.shape) || this.desc.accumHours || ''}|${ko}`;
     const doc = this.deps.doc || (typeof document !== 'undefined' ? document : null);
     if (doc && doc.querySelectorAll) {
       for (const el of doc.querySelectorAll(`[data-field-card="${this.id}"]`)) {

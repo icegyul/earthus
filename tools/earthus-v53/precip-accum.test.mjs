@@ -11,7 +11,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import {
-  ACCUM_CHANNEL, ACCUM_KEYS, accumCardState, accumDescriptorOf, accumStatusText,
+  ACCUM_CHANNEL, ACCUM_KEYS, accumAvailability, accumCardState, accumDescriptorOf, accumStatusText,
   coverageOf, createAccumFrames, encodeAccumBytes, planAccumulation, sumAccumulation,
 } from '../../prototype/v2-three/js/precip-accum.js';
 import { FIELD_DESCRIPTORS, FieldLayer } from '../../prototype/v2-three/js/field-layer.js';
@@ -342,6 +342,58 @@ test('런 시작 직후의 24시간 — 모자란 채로 그리고 카드가 몇
   assert.match(layer.cardHtml(), /24시간을 청했지만/);
   assert.match(layer.cardHtml(), /6시간치/);
   assert.equal(layer.renderer.mesh.visible, true, '모자라다고 화면을 비우지는 않는다 — 있는 만큼은 칠한다');
+  layer.off();
+});
+
+test('24시간 칩은 **누르기 전에** 지금 커서에서 몇 시간치인지 말한다 — 한 런은 제 시작 이전을 모른다', async () => {
+  // 왜 이 시험이 있나: 첫 apcp 구간은 런+3h 에서 끝난다. 그래서 커서가 런+24h 에 닿기 전이면 24시간 칩은 절대
+  // 24시간이 되지 못한다(런+4h 에서 3시간치 · 런+10h 에서 9시간치). GFS 는 6시간마다 돌고 발표까지 4~5시간이
+  // 걸리므로 그 구간이 곧 '그 런이 최신인 내내'다. 눌러 본 뒤에야 알게 하지 않는다.
+  const full = 24;
+  for (const cur of [4, 5.7, 7, 10, 13]) {
+    const a = accumAvailability(FRAMES, T0 + cur * H, full);
+    assert.ok(a && a.short, `런+${cur}h 에서 ${full}시간이 온전하다고 나왔다`);
+    assert.ok(a.coveredH > 0 && a.coveredH < full, `런+${cur}h · ${a.coveredH}시간치`);
+  }
+  assert.equal(accumAvailability(FRAMES, T0 + full * H, full).short, false, `런+${full}h 에서는 온전해진다`);
+  assert.equal(accumAvailability(FRAMES, T0 + 1 * H, 3), null, '첫 구간이 끝나기 전에는 낼 구간이 없다');
+
+  // 화면 — '현재 강우'를 보고 있는 채로(아직 누르지 않았다) 카드가 그 말을 한다.
+  const { layer } = rig(T0 + 4 * H);
+  await layer.on();
+  const st = accumCardState(layer);
+  const shortH = accumAvailability(FRAMES, T0 + 4 * H, full).coveredH;
+  assert.equal(st.avail['24'], shortH, '고지는 화면이 칠할 것과 같은 수다');
+  assert.ok(!('3' in st.avail), '3시간 누적은 그 시각에 온전하다 — 고지가 붙지 않는다');
+  assert.match(layer.cardHtml(), new RegExp(`24시간 누적이 ${shortH}시간치입니다`));
+  assert.match(layer.cardHtml(), /제 시작 이전을 모릅니다/, '왜 모자란지도 적는다');
+
+  // 고른 기간에는 이 고지가 없다 — 상태 줄이 이미 '청했지만 …치밖에'라고 말한다(같은 말을 두 번 적지 않는다).
+  await chip(layer, '24');
+  assert.ok(!/커서에서는 24시간 누적이/.test(layer.cardHtml()));
+  assert.match(layer.cardHtml(), /24시간을 청했지만/);
+  assert.equal(layer.status.a.accum.coveredH, shortH, '고지가 말한 그대로 칠해진다');
+  layer.off();
+});
+
+test('칩 줄의 고지는 타임라인을 밀면 같이 바뀐다 — 시각을 따라 바뀌는 덩어리 밖이라 카드 모양 열쇠가 읽는다', async () => {
+  const { layer, timeBus } = rig(T0 + 4 * H);
+  await layer.on();
+  const at = (h) => accumAvailability(FRAMES, T0 + h * H, 24);
+  const shape0 = accumCardState(layer).shape;
+  assert.match(layer.cardHtml(), new RegExp(`24시간 누적이 ${at(4).coveredH}시간치입니다`));
+
+  timeBus.set(6 * H);                                          // 커서 런+10h
+  await tick(20);
+  const shape1 = accumCardState(layer).shape;
+  assert.notEqual(shape1, shape0, '고지가 달라졌으면 카드 모양 열쇠도 달라진다(안 그러면 칩 줄만 옛 글로 굳는다)');
+  assert.match(layer.cardHtml(), new RegExp(`24시간 누적이 ${at(10).coveredH}시간치입니다`));
+
+  timeBus.set(20 * H);                                         // 커서 런+24h — 이제 온전하다
+  await tick(20);
+  assert.ok(!/커서에서는/.test(layer.cardHtml()), '온전해지면 고지가 사라진다');
+  assert.notEqual(accumCardState(layer).shape, shape1);
+  assert.equal(at(24).short, false);
   layer.off();
 });
 

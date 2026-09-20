@@ -46,6 +46,9 @@ import { scaleOf } from './field-scales.js?v=1';
 /** 카드 칩의 열쇠. 'rate' = 지금 그 시각의 강수율(mm/h) · 나머지는 누적 시간. 순서가 곧 칩 순서다. */
 export const ACCUM_KEYS = Object.freeze(['rate', '3', '24']);
 
+/** 누적이 읽는 원 자료의 필드 이름(구간 누적 mm). 저장소와 '누르기 전 고지'가 같은 것을 봐야 하므로 한 곳에 적는다. */
+export const ACCUM_SOURCE = 'apcp';
+
 // ⚠️ 1시간 칩은 **일부러 없다.** PD 시안 03 의 드롭다운은 '1h Accumulation' 이지만, GFS 가 내놓는 누적 버킷은
 //    3시간이 가장 짧다(매니페스트 fields.apcp.note). 1시간 양은 3시간 버킷을 쪼개 지어내야 나온다 — 값을 지어내지 않는다.
 //    그 자리는 '현재 강우'(mm/h)가 맡는다: 1시간 동안 그 세기가 이어졌다면 mm 의 수가 mm/h 의 수와 같다.
@@ -138,6 +141,62 @@ export function coverageOf(terms) {
   const counts = new Array(hi - lo).fill(0);
   for (const t of list) for (let h = t.window.fromH; h < t.window.toH; h += 1) counts[h - lo] += t.sign;
   return { from: lo, counts };
+}
+
+/**
+ * 시각을 덮는 장 = **그 시각 이하의 마지막 장**. 되돌아보는 누적이라서다(앞을 고르면 아직 오지 않은 비를 이미 온 것처럼 말한다).
+ * 저장소의 bracket 과 '누르기 전 고지'가 같은 장을 고르도록 규칙을 여기 한 번만 적는다. 목록은 시간순이고 비어 있을 수 있다.
+ */
+export function frameAtOrBefore(list, tMs) {
+  if (!Array.isArray(list) || !list.length || !Number.isFinite(tMs) || tMs < list[0].t) return null;
+  let lo = 0;
+  let hi = list.length - 1;
+  while (lo < hi) {
+    const mid = (lo + hi + 1) >> 1;
+    if (list[mid].t <= tMs) lo = mid; else hi = mid - 1;
+  }
+  return list[lo];
+}
+
+/**
+ * 원 자료의 스텝마다 '그 시각까지 hours 시간' 계획을 세운 목록. 계획이 서지 않는 스텝(f000)은 목록에 없다.
+ * 저장소와 '누르기 전 고지'가 **같은 목록**을 봐야 화면과 고지가 어긋나지 않으므로, 원 목록(매니페스트 한 세대에 한 벌인
+ * 얼린 배열)을 열쇠로 기억해 둔다 — 세대가 바뀌면 gfs-frames 가 새 배열을 만들어 이 기억은 저절로 버려진다.
+ */
+const listMemo = new WeakMap();
+const EMPTY_LIST = Object.freeze([]);
+export function accumFrameList(src, hours) {
+  if (!Array.isArray(src) || !src.length || !(hours > 0)) return EMPTY_LIST;
+  let byHours = listMemo.get(src);
+  if (!byHours) { byHours = new Map(); listMemo.set(src, byHours); }
+  const hit = byHours.get(hours);
+  if (hit) return hit;
+  const out = [];
+  for (const f of src) {
+    const plan = planAccumulation(src, f.h, hours);
+    if (!plan) continue;
+    out.push(Object.freeze({
+      h: f.h, t: f.t, url: f.url,
+      window: Object.freeze({ fromH: plan.fromH, toH: plan.toH }),
+      accum: plan,
+    }));
+  }
+  const frozen = Object.freeze(out);
+  byHours.set(hours, frozen);
+  return frozen;
+}
+
+/**
+ * 지금 커서에서 그 기간이 **몇 시간치인가** — 칩을 누르기 전에 말하기 위한 것이다.
+ *   → { hours, coveredH, short } | null(이 시각에서 끝나는 구간이 아직 없다)
+ * 왜 필요한가: 한 런은 제 시작 이전을 모른다. 첫 apcp 구간은 런+3h 에서 끝나므로 커서가 런+4h~런+24h 사이인 동안
+ * '24시간 누적'은 3·6·9…시간치다(운영 매니페스트로 실측). GFS 는 6시간마다 돌고 발표까지 4~5시간이 걸리므로
+ * 그 구간이 곧 '그 런이 최신인 내내'다 — 눌러 본 뒤에야 알게 하지 않는다.
+ */
+export function accumAvailability(src, tMs, hours) {
+  const fr = frameAtOrBefore(accumFrameList(src, hours), tMs);
+  if (!fr) return null;
+  return { hours, coveredH: fr.accum.coveredH, short: fr.accum.short };
 }
 
 /** 바이트 → 값 표 256칸. 260,000 칸을 프레임마다 exp 로 풀면 폰이 뜨겁다 — 표를 한 번 만들어 쓴다. */
@@ -234,18 +293,9 @@ export function createAccumFrames(base, opts = {}) {
     listToken = tok;
     specCache = null;
     lru.clear();                                              // 세대가 바뀌었다 — 옛 원 자료로 구운 장을 새 세대에 쓰지 않는다
-    const src = base.has(sourceId) ? base.framesFor(sourceId) : [];
-    const out = [];
-    for (const f of src) {
-      const plan = planAccumulation(src, f.h, hours);
-      if (!plan) continue;
-      out.push(Object.freeze({
-        h: f.h, t: f.t, url: f.url,
-        window: Object.freeze({ fromH: plan.fromH, toH: plan.toH }),
-        accum: plan,
-      }));
-    }
-    listCache = Object.freeze(out);
+    // 목록 만들기는 모듈 위쪽 accumFrameList 한 곳에만 있다 — 카드의 '누르기 전 고지'가 보는 목록과 화면이 칠하는
+    // 목록이 같아야 둘이 다른 말을 하지 않는다.
+    listCache = accumFrameList(base.has(sourceId) ? base.framesFor(sourceId) : null, hours);
     return listCache;
   }
 
@@ -283,13 +333,7 @@ export function createAccumFrames(base, opts = {}) {
     // ⚠️ gfs-frames.js 의 sampler 는 구간 자료에서 **b** 를 고른다("시각 t 를 덮는 구간은 b 의 것이다"). 여기서는
     //    일부러 **a**(t 이하의 마지막 장)를 고른다 — 되돌아보는 누적이라서다. b 를 고르면 커서가 25:30 일 때 27시
     //    까지의 양을 칠하게 되고, 화면이 아직 오지 않은 1시간 30분의 비를 이미 온 것처럼 말한다. 맞추러 고치지 말 것.
-    let lo = 0;
-    let hi = list.length - 1;
-    while (lo < hi) {
-      const mid = (lo + hi + 1) >> 1;
-      if (list[mid].t <= tMs) lo = mid; else hi = mid - 1;
-    }
-    const a = list[lo];
+    const a = frameAtOrBefore(list, tMs);                     // 그 규칙은 모듈 위쪽에 한 번만 적혀 있다
     return { a, b: a, mix: 0, exact: true, outOfRange: null, gapH: 0 };
   }
 
@@ -436,21 +480,56 @@ export function accumDescriptorOf(baseDesc, hours) {
   return desc;
 }
 
-/** 카드가 읽는 지금 상태. 누적 훅이 없는 레이어(기온·바람·기압·바다)는 null 이라 카드에 이 줄이 통째로 없다. */
+/**
+ * 카드가 읽는 지금 상태. 누적 훅이 없는 레이어(기온·바람·기압·바다)는 null 이라 카드에 이 줄이 통째로 없다.
+ *   avail   **아직 안 고른** 기간마다 '지금 커서에서 몇 시간치인가'. 온전하면 그 칸이 없다.
+ *   shape   이 줄의 글이 달라졌는지 가리는 서명 — field-layer.js 의 카드 모양 열쇠가 이것을 함께 읽는다.
+ *           칩 줄은 시각을 따라 바뀌는 덩어리([data-field-live]) **밖**이라, 서명이 없으면 타임라인을 밀 때
+ *           칩 줄만 옛 글로 남는다(고른 기간의 상태 줄은 갱신되는데 그 옆의 고지는 안 바뀌는 어긋남).
+ */
 export const accumCardState = (layer) => {
   const d = layer && layer.desc;
   if (!d || !d.accum) return null;
   const fr = layer.status && layer.status.a;
+  const key = d.accumHours ? String(d.accumHours) : 'rate';
+  // 고지는 **원 자료**(apcp) 목록에서 센다 — 아직 고르지 않은 기간에는 파생 저장소가 없고, 고지 하나 때문에
+  // 저장소를 미리 만들어 텍스처를 굽지 않는다(폰 메모리).
+  const base = layer.baseFrames || layer.frames;
+  const tMs = layer.timeBus ? layer.timeBus.validMs() : NaN;
+  const src = (base && base.loaded && base.has && base.has(ACCUM_SOURCE)) ? base.framesFor(ACCUM_SOURCE) : null;
+  const avail = {};
+  for (const k of ACCUM_KEYS) {
+    if (k === 'rate' || k === key) continue;                  // 고른 기간은 상태 줄이 이미 말한다 — 두 번 적지 않는다
+    const a = accumAvailability(src, tMs, Number(k));
+    if (!a) avail[k] = 0;                                     // 이 시각에서 끝나는 구간이 아직 없다
+    else if (a.short) avail[k] = a.coveredH;
+  }
   return {
-    key: d.accumHours ? String(d.accumHours) : 'rate',
-    keys: ACCUM_KEYS,
+    key, keys: ACCUM_KEYS, avail,
     plan: (fr && fr.accum) || null,
+    shape: `${key}|${ACCUM_KEYS.map((k) => (k in avail ? avail[k] : '')).join(',')}`,
   };
 };
 
 const chipLabel = (k, ko) => {
   if (k === 'rate') return ko ? '현재 강우' : 'Rate now';
   return ko ? `${k}시간 누적` : `${k} h total`;
+};
+
+/**
+ * '아직 몇 시간치' 고지(순수). avail 은 accumCardState 가 센 것 — 온전한 기간은 칸이 아예 없다.
+ * 왜 이 줄이 있나: 24시간 칩은 **런이 시작하고 24시간이 지나야** 24시간이 된다. 커서가 그 앞이면 눌러도
+ * 3·6·9…시간치가 칠해진다. 지금은 앞 런의 자료를 붙이지 않으므로 고칠 수 있는 것은 '미리 말하는 것'이다.
+ */
+export const accumAheadText = (avail, ko = true) => {
+  const keys = ACCUM_KEYS.filter((k) => k !== 'rate' && avail && k in avail);
+  if (!keys.length) return '';
+  const parts = keys.map((k) => (avail[k] > 0
+    ? (ko ? `${k}시간 누적이 ${avail[k]}시간치입니다` : `the ${k} h total covers only ${avail[k]} h`)
+    : (ko ? `${k}시간 누적은 이 시각에서 끝나는 구간이 아직 없습니다` : `the ${k} h total has no window ending here yet`)));
+  return ko
+    ? `지금 커서에서는 ${parts.join(' · ')} — 한 런은 제 시작 이전을 모릅니다. 타임라인을 앞으로 밀면 구간이 찹니다.`
+    : `At this cursor ${parts.join(' · ')} — a run knows nothing before its own start; move the timeline forward and the window fills.`;
 };
 
 /**
@@ -476,12 +555,16 @@ export const accumCardRow = (m, btn) => {
       ? '이 시각의 값은 6시간 버킷에서 앞 3시간 버킷을 <b>뺀</b> 것입니다 — 앞 구간의 양이 클수록 눈금이 거칠어집니다(그 양의 약 3 %).'
       : 'At this step the amount is a 6 h bucket <b>minus</b> the preceding 3 h bucket — the larger the earlier amount, the coarser this one (about 3 % of it).')
     : '';
+  // 아직 안 고른 기간이 지금 커서에서 몇 시간치인지 **누르기 전에** 적는다. 한 런은 제 시작 이전을 모르므로
+  // 런이 막 나왔을 때(그 런이 최신인 내내다) '24시간 누적'은 3·6·9…시간치다 — 눌러 본 뒤에야 알게 하지 않는다.
+  const ahead = accumAheadText(a.avail, ko);
   const why = ko
     ? '1시간 누적은 없습니다 — GFS 가 내놓는 누적 버킷은 3시간이 가장 짧아 1시간 양은 지어내야 합니다. 그 자리는 현재 강우가 맡습니다.'
     : 'There is no 1 h total — GFS publishes 3 h buckets at the finest, so a 1 h amount would have to be invented. Rate now stands in for it.';
   return `<span style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0 2px">${ko ? '기간' : 'Period'} `
     + `${chips}</span><span style="opacity:.8">${what}</span>`
     + (cut ? `<br/><span style="opacity:.8">${cut}</span>` : '')
+    + (ahead ? `<br/><span style="opacity:.8">${ahead}</span>` : '')
     + `<br/><span style="opacity:.7">${why}</span>`;
 };
 
@@ -520,7 +603,7 @@ function storeFor(layer, hours) {
   let store = layer._accumStores.get(hours);
   if (!store) {
     store = createAccumFrames(layer.baseFrames, {
-      hours, fieldId: layer.baseDesc.fieldId, sourceId: 'apcp',
+      hours, fieldId: layer.baseDesc.fieldId, sourceId: ACCUM_SOURCE,
       THREE: layer.deps.THREE || null,                        // 안 주면 저장소가 제 THREE 를 쓴다
     });
     layer._accumStores.set(hours, store);

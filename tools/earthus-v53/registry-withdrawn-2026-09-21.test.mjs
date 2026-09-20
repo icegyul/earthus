@@ -17,6 +17,7 @@
 // ⚠️ 숫자를 박지 않는다 — 내린 화면이 몇 개인지는 ext-scene.js 의 WITHDRAWN 에서 센다.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 import { WITHDRAWN } from '../../prototype/v2-three/js/ext-scene.js';
 import { PHENOMENA, LAYER_PHENOMENON, phenomenonForLayer } from '../../prototype/v2-three/js/phenomenon-registry.js';
@@ -102,6 +103,39 @@ test('해변·낚시터 장소 목록은 내리지 않았다 — 사라진 것�
   assert.notEqual(spots.label.ko, surf.label.ko, 'ocean/surf 와 hobby/surf 가 같은 현상이 됐다');
   assert.equal(spots.availability, 'ready', '해변·낚시터 장소 목록까지 같이 내려갔다');
   assert.ok(Object.values(spots.capabilities).some(Boolean), '장소 목록이 아무것도 못 하는 현상이 됐다');
+});
+
+/* 내린 현상의 scope 가 '아직 살아 있는 것'을 말할 때, 그 수는 실제로 그려지는 수여야 한다.
+   처음 쓸 때 옛 scope 의 합계(해변 1,027 = 한국 271 + 일본 756)를 그대로 옮겨 적었다 —
+   그 일본 자료를 읽던 것은 **내린 v1 모듈**이고, 살아 있는 ocean/surf 는 한국 파일 둘만 읽는다.
+   없는 것을 있는 척하지 않으려고 고치는 파일에서 그 짓을 하면 안 된다. 그래서 자료에서 센다. */
+const dataCount = (path, key) => {
+  const j = JSON.parse(readFileSync(new URL(`../../prototype/data/${path}`, import.meta.url), 'utf8'));
+  return (j[key] || []).length;
+};
+const LIVE_SRC = readFileSync(new URL('../../prototype/v2-three/js/live-layers.js', import.meta.url), 'utf8');
+
+test('살아 있다고 적은 장소 수가 실제로 그려지는 수와 같다', () => {
+  const kr = { beaches: dataCount('beaches.json', 'beaches'), fishing: dataCount('fishing.json', 'spots') };
+  const jp = { beaches: dataCount('jp/beaches.json', 'beaches'), fishing: dataCount('jp/fishing.json', 'spots') };
+  assert.ok(kr.beaches > 0 && kr.fishing > 0 && jp.beaches > 0 && jp.fishing > 0, '자료 파일을 못 읽었다');
+
+  const surf = PHENOMENA['ocean.surf_conditions'].scope;
+  const fish = PHENOMENA['ocean.fishing_conditions'].scope;
+  assert.ok(surf.includes(`해변 ${kr.beaches}곳`), `서핑 scope 의 한국 해변 수가 자료(${kr.beaches})와 다르다`);
+  assert.ok(fish.includes(`낚시터 ${kr.fishing}곳`), `낚시 scope 의 한국 낚시터 수가 자료(${kr.fishing})와 다르다`);
+  // 일본 자료는 파일로만 남아 있다 — 그렇게 적었는지, 수가 맞는지 함께 본다.
+  assert.ok(surf.includes(`일본 해변 ${jp.beaches}곳`) && /어떤 화면도 그리지 않는다/.test(surf));
+  assert.ok(fish.includes(`일본 낚시터 ${jp.fishing}곳`) && /어떤 화면도 그리지 않는다/.test(fish));
+});
+
+test('그 말이 참이다 — ocean/surf 는 한국 파일 둘만 읽는다', () => {
+  const at = LIVE_SRC.indexOf("case 'surf':");
+  assert.ok(at > 0, "live-layers.js 의 case 'surf' 를 못 찾았다");
+  const body = LIVE_SRC.slice(at, at + 600);
+  assert.match(body, /\.\/data\/beaches\.json/);
+  assert.match(body, /\.\/data\/fishing\.json/);
+  assert.doesNotMatch(body, /jp\//, 'ocean/surf 가 일본 자료도 읽는다 — 그렇다면 scope 를 다시 써야 한다');
 });
 
 test('내리지 않은 취미 화면은 그대로 산다', () => {

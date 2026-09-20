@@ -262,7 +262,7 @@ export const PHENOMENA = Object.freeze({
     availability: 'planned',
     evidenceProfile: '없음 — 화면을 내려 값을 내지 않는다. 근거를 보일 표면 자체가 없다(LAYER_TRUTH 에 hobby/fishing 항목도 없다).',
     temporalMode: '없음 — 내린 화면이라 시간축에 아무것도 싣지 않는다.',
-    scope: '오늘은 아무것도 나오지 않는다. 물때(만조·간조 예측)가 우리 자료 어디에도 없고, 그 값을 내던 길이 Open-Meteo Marine 직호출이었다. 낚시터 1,009곳의 **장소 목록**은 그대로 살아 있다 — 다른 현상(ocean.coastal_spots · 레이어 ocean/surf)이 들고 있고 한국 946곳 + 일본 63곳을 지구에 찍는다. 여기서 사라진 것은 장소가 아니라 그 장소의 물 상태다.',
+    scope: '오늘은 아무것도 나오지 않는다. 물때(만조·간조 예측)가 우리 자료 어디에도 없고, 그 값을 내던 길이 Open-Meteo Marine 직호출이었다. 낚시터의 **장소 목록**은 그대로 살아 있다 — 다른 현상(ocean.coastal_spots · 레이어 ocean/surf)이 한국 낚시터 946곳을 해변 271곳과 함께 지구에 찍는다(prototype/data/fishing.json). 일본 낚시터 63곳(prototype/data/jp/fishing.json)은 파일로 남아 있지만 v2 의 어떤 화면도 그리지 않는다 — 그 파일을 읽던 것이 내린 v1 모듈(prototype/js/fishing.js)이다. 여기서 사라진 것은 장소가 아니라 그 장소의 물 상태다.',
     dataProducts: Object.freeze(['hobby/fishing']),
   }),
   'ocean.sea_ice': Object.freeze({
@@ -373,7 +373,7 @@ export const PHENOMENA = Object.freeze({
     availability: 'planned',
     evidenceProfile: '없음 — 화면을 내려 값을 내지 않는다. 근거를 보일 표면 자체가 없다(LAYER_TRUTH 에 hobby/surf 항목도 없다).',
     temporalMode: '없음 — 내린 화면이라 시간축에 아무것도 싣지 않는다.',
-    scope: '오늘은 아무것도 나오지 않는다. 너울 방향·풍파·주기가 우리 격자에 없고, 그 값을 내던 길이 Open-Meteo Marine 직호출이었다. 해변 1,027곳의 **장소 목록**은 그대로 살아 있다 — 다른 현상(ocean.coastal_spots · 레이어 ocean/surf)이 들고 있고 한국 271곳 + 일본 756곳을 지구에 찍는다. 여기서 사라진 것은 해변이 아니라 그 해변에 드는 너울이다.',
+    scope: '오늘은 아무것도 나오지 않는다. 너울 방향·풍파·주기가 우리 격자에 없고, 그 값을 내던 길이 Open-Meteo Marine 직호출이었다. 해변의 **장소 목록**은 그대로 살아 있다 — 다른 현상(ocean.coastal_spots · 레이어 ocean/surf)이 한국 해변 271곳을 낚시터 946곳과 함께 지구에 찍는다(prototype/data/beaches.json). 일본 해변 756곳(prototype/data/jp/beaches.json)은 파일로 남아 있지만 v2 의 어떤 화면도 그리지 않는다 — 그 파일을 읽던 것이 내린 v1 모듈(prototype/js/beaches.js)이다. 여기서 사라진 것은 해변이 아니라 그 해변에 드는 너울이다.',
     dataProducts: Object.freeze(['hobby/surf']),
   }),
   'ocean.surface_current': Object.freeze({

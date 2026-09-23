@@ -338,11 +338,13 @@ export function initShell(hooks) {
      아직 root 에 붙지 않아 못 찾는다. 그 사이를 이 참조가 잇는다. */
   let navRoot = null;
   const CAP_TAB = { scenario: 'simulation', next: 'forecast', history: 'history' };
+  /* (2026-09-24 정정) PD "인텔리전스 창에 뜨는 메뉴들 아직도 떠 모두 하나로 통합해줘" — 탭 단추가 없어졌다(아래 intel 템플릿).
+     능력 표는 그대로 읽되, 단추를 숨기는 대신 **한 장 시트의 절**이 이 값을 읽어 내용 또는 이유 한 줄을 고른다
+     (AGENTS.md '입구는 같은 자리에 두고 없는 이유를 말한다'). true = 그 절에 실을 능력이 있다. */
+  const secGate = { scenario: false, next: false, history: false };
   function applyCapabilityGating() {
     const ctx = getPhenomenonContext();
     for (const [tab, cap] of Object.entries(CAP_TAB)) {
-      const btn = intel && intel.querySelector(`.intel-tabs [data-tab="${tab}"]`);
-      if (!btn) continue;
       /* 2026-09-09 — `!!ctx &&` 였다. 그래서 **현상을 고르지 않으면 셋이 전부 열렸고**,
          이력은 "현상을 고르면 그 현상의 과거 기록을 봅니다", 시뮬은 "사건 탭에서
          태풍을 고르면 …" 이라는 빈 약속만 냈다(라이브 실측). 능력은 현상의 성질이다 —
@@ -351,9 +353,11 @@ export function initShell(hooks) {
          있을 때 열린다. 파도가 simulation:false 로 정정되며 태풍 해상 가정 장면으로 가는 길이 끊기는 것을 막는다.
          장면 쪽은 SIMULATION 배지를 달지 않는다(main.js getScenario). */
       const hide = !ctx || !ctx.capabilities[cap] && !(tab === 'scenario' && previewSceneFor(ctx.phenomenonId));
-      btn.hidden = hide;
+      // (2026-09-24 정정) 예전: btn.hidden = hide — 탭 단추를 숨겼다. 이제 단추가 없으니 절이 읽을 값만 적는다.
+      secGate[tab] = !hide;
       // 숨긴 탭이 열려 있었으면 사건 탭으로 되돌린다 — 빈 화면을 남기지 않는다.
-      if (hide && curTab === tab) showTab('feed');
+      // (2026-09-24 정정) 되돌리지 않는다. 한 장 시트에서 능력이 없는 절은 **그 자리에 이유 한 줄**로 남으므로 빈 화면이 생기지 않고,
+      //   여기서 사건으로 되돌리면 고른 현상을 보던 사람을 사건 목록으로 끌고 간다(if (hide && curTab === tab) showTab('feed') 를 뺐다).
     }
     applyPanelIdentity(ctx);
   }
@@ -896,8 +900,8 @@ export function initShell(hooks) {
         const want = ACTION_TAB[toStoryPhen.dataset.storyAction] || 'now';
         // 능력이 없는 탭으로는 보내지 않는다. 버튼 자체가 능력이 있을 때만 그려지지만
         // (report-center.storyActionsHtml), 실제 탭이 있는지도 확인한다.
-        const btn = intel.querySelector(`[data-tab="${want}"]`);
-        const target = btn && !btn.hidden ? want : 'now';
+        // (2026-09-24 정정) 탭 단추가 없어졌다 — 단추의 hidden 대신 같은 능력 표(secGate)를 읽는다. 능력이 없으면 값 칸('now')으로 간다.
+        const target = CAP_TAB[want] && !secGate[want] ? 'now' : want;
         showTab(target, 'intent');
         openIntel();
       }
@@ -951,22 +955,22 @@ export function initShell(hooks) {
      본문 안에 있을 때는 ① 표적을 30 이상 못 키웠고(peek 118 에서 빠진다) ② half 에서 본문을 굴리면 손잡이가 같이 밀려
      사라졌다 — 키울 손잡이가 안 보이는 시트가 됐다. 밖에 두면 보이는 띠 24 · 표적 44 · 굴려도 남는다(index.html M1 절).
      누르기·끌기 코드는 그대로다(아래 querySelector 는 #intel 전체에서 찾는다). */
+  /* (2026-09-24 정정) 탭 단추 줄(.intel-tabs — 사건·내 지역·선택 자료·자료의 근거·예보·예정·이력·시뮬레이션)을 걷었다.
+     PD 2026-09-23 "인텔리전스 창은 하나로 통합하면 되겠는데 버튼 누르면 다른 안내화면 나오지 말고" → 09-24 "아직도 떠 모두 하나로
+     통합해줘". 폰(402×714)에서는 그 줄이 두 줄로 접혀 값보다 먼저 섰다. 이제 시트는 **한 장**이다: 머리(무엇을 보고 있나 + ✕) 아래에
+     값 → 자료의 근거 → 예보·예정 → 이력 → 모델 비교 → Intelligence → 시뮬레이션 절이 한 줄로 이어진다(renderIntel · renderSheet).
+     사건·내 지역은 하단 바의 '지금'·'내 지역'이 여는 문맥이다(탭이 아니다). 탭 이름은 절 제목으로 그대로 남는다 — 사람이 찾던 말이다.
+     걷은 단추에 붙어 있던 기록(주석은 사고 기록 — 지우지 않는다):
+       · STEP 55: 3열 그리드에서 '내 장소 · FOR ME' 가 칸을 넘어 옆 탭 글자를 덮었다(실측 375폭).
+         하단 바가 이미 '내 지역'으로 부르고 있으니 같은 말로 맞춘다 — 가는 곳은 그대로다.
+       · PHASE 5 §4 — 이력. 사료를 '지금'처럼 보이지 않게 따로 둔다. (→ 이력 절이 제 제목과 HISTORY 배지를 단다)
+       · 2026-09-07 지시 §18: 사용자가 찾을 수 있는 이름을 먼저 쓴다. "가정 실험/What-if"
+         는 고급 기능 쪽 표현으로 남기고(탭 안 내용·main.js 는 그대로), 탭 이름만 바꾼다. (→ 절 제목 '시뮬레이션') */
   intel.innerHTML = `
     <button type="button" class="sheet-grip" aria-label="${i18n.ko ? '패널 높이 바꾸기' : 'Resize panel'}"><span></span></button>
     <div id="intel-body">
-      <div class="intel-tabs">
-        <button data-tab="feed" class="on">${i18n.ko?'사건':'Feed'}</button>
-        <!-- STEP 55: 3열 그리드에서 '내 장소 · FOR ME' 가 칸을 넘어 옆 탭 글자를 덮었다(실측 375폭).
-             하단 바가 이미 '내 지역'으로 부르고 있으니 같은 말로 맞춘다 — 가는 곳은 그대로다. -->
-        <button data-tab="my">${i18n.ko?'내 지역':'My place'}</button>
-        <button data-tab="now">${i18n.ko?'선택 자료':'Now'}</button>
-        <button data-tab="why">${i18n.ko?'자료의 근거':'Why'}</button>
-        <button data-tab="next">${i18n.ko?'예보·예정':'Next'}</button>
-        <!-- PHASE 5 §4 — 이력. 사료를 '지금'처럼 보이지 않게 따로 둔다. -->
-        <button data-tab="history">${i18n.ko?'이력':'History'}</button>
-        <!-- 2026-09-07 지시 §18: 사용자가 찾을 수 있는 이름을 먼저 쓴다. "가정 실험/What-if"
-             는 고급 기능 쪽 표현으로 남기고(탭 안 내용·main.js 는 그대로), 탭 이름만 바꾼다. -->
-        <button data-tab="scenario">${i18n.ko?'시뮬레이션':'Simulation'}</button>
+      <div class="intel-head">
+        <strong class="ih-title" role="heading" aria-level="2"></strong>
         <button class="ui-x" id="intel-close" aria-label="${i18n.ko?'정보 닫기':'Close information'}">✕</button>
       </div>
       <div id="intel-content"></div>
@@ -1131,6 +1135,16 @@ export function initShell(hooks) {
   let curTab = 'feed';
   // INTEGRATION-3 §11 — '마지막 사용자 의도'. showTab() 아래 설명 참고.
   let tabIntent = 'feed';
+  /* (2026-09-24 정정) 한 장 시트 — curTab 은 이제 **바탕 문맥**만 갖는다: 'feed'(사건 목록 · 사건을 고르면 그 사건의 한 장) ·
+     'my'(내 지역) · 'now'(고른 자료의 값 카드) · 'point'(지점 카드). 예전 탭 이름 중 나머지 넷(why·next·history·scenario)은
+     문맥이 아니라 **한 장 안의 절**이다 — showTab 이 그 절로 굴리고(pendingScroll) 접힌 절을 편다(openSecs).
+     바깥 이름(showTab·openIntel·NAV_FOR_TAB[curTab]·intel.dataset.tab)은 그대로다 — main.js 의 40여 호출부가 쓴다. */
+  const SECTION_TABS = new Set(['why', 'next', 'history', 'scenario']);
+  const openSecs = new Set();      // 편 절·접이 id — 재생 중 220 ms 마다 다시 그려도 사람이 편 것이 접히지 않게
+  let pendingScroll = null;        // 다음 그리기 뒤에 굴러 갈 곳 — 절 id 또는 'top'
+  const feedRoomOpen = () => !!(hooks.feedSelected && hooks.feedSelected());
+  // 지금 시트가 무엇을 그리나 — 'feed'(목록) · 'my' · 'selection'(값 → 근거 → 예보 → 이력 → 비교 → 해석 → 시뮬레이션)
+  const intelCtx = () => (curTab === 'my' ? 'my' : curTab === 'feed' && !feedRoomOpen() ? 'feed' : 'selection');
 
   // 지금 켜져 있는 레이어 — 씬 매니페스트를 한 번 훑어 모은다.
   const activeLayers = () => {
@@ -1185,12 +1199,14 @@ export function initShell(hooks) {
   // 안 끝난 것으로 읽힌다. 아직 없는 것(근거 그래프·불확실성 폭)은 그대로 아직이라고
   // 적되, **이미 가진 것**을 먼저 편다 — 지금 화면이 딛고 선 출처와 진리등급,
   // 그리고 기관이 말한 앞. 그게 EARTHUS 가 파는 것의 본체다.
-  const whyHtml = () => {
+  // (2026-09-24 정정) room = 사건 한 장 안의 근거 절. 사건 방(intel-feed.js roomHtml)이 이미 인과 주장 게이트(WHY)와 EVIDENCE 카드를
+  //   싣고 있어 같은 게이트 문장·'고른 사건' 카드를 한 장에 두 번 세우지 않는다 — 지금 켜 놓은 근거 카드만 더한다.
+  const whyHtml = ({ room = false } = {}) => {
     const rows = activeLayers();
-    const picked = hooks.feedSelected && hooks.feedSelected();
+    const picked = !room && hooks.feedSelected && hooks.feedSelected();
     return `
-      <div class="card"><div class="card-h">${i18n.t('whyTitle')}</div>
-        <div class="card-b">${i18n.t('whyGate')}</div></div>
+      ${room ? '' : `<div class="card"><div class="card-h">${i18n.t('whyTitle')}</div>
+        <div class="card-b">${i18n.t('whyGate')}</div></div>`}
       ${picked ? `<div class="card"><div class="card-h">${i18n.t('eventPicked')}</div>
         <div class="card-b"><b>${picked.title}</b><br/>
         <button class="feed-back" data-action="shell-open-feed" style="margin:8px 0 0">${i18n.t('eventOpen')}</button></div></div>` : ''}
@@ -1198,7 +1214,7 @@ export function initShell(hooks) {
         <div class="card-b">${rows.length
     ? rows.map(evidenceRow).join('')
     : `${i18n.t('whyEmpty')}<br/><button class="feed-back" data-action="shell-open-menu" style="margin:8px 0 0">${i18n.t('openMenu')}</button>`}</div></div>
-      <div class="card"><div class="card-b"><span class="paysub">${i18n.t('whyPro')}</span></div></div>`;
+      ${room ? '' : `<div class="card"><div class="card-b"><span class="paysub">${i18n.t('whyPro')}</span></div></div>`}`;
   };
 
   // 선택 사건의 기관별 +24h/+48h — 사건을 열면 켜진 레이어와 무관하게 NEXT 가 채워진다(지시서 D-3).
@@ -1226,38 +1242,215 @@ export function initShell(hooks) {
       <div class="card"><div class="card-b"><span class="paysub">${i18n.t('nextPro')}</span></div></div>`;
   };
 
+  /* ── 한 장 시트 (2026-09-24 정정) ──────────────────────────────────────────────────────────────────────
+     예전에는 탭 하나 = 화면 하나였다(사건 · 내 지역 · 선택 자료 · 자료의 근거 · 예보·예정 · 이력 · 시뮬레이션).
+     이제 무엇을 골랐으면(현상 · 지점 · 나라 · 바다 · 사건) 그것의 **한 장**이 7단계 문법 순서로 이어진다:
+       ①② 값(값 카드 · 지점 카드 · 사건 방) → ③ 자료의 근거 → ④ 예보·예정 → 이력 → ⑤ 모델 비교 → ⑥ Intelligence → ⑦ 시뮬레이션
+     재료가 없는 절은 자리를 지키고 이유 한 줄을 말한다(지어내지 않는다 · 숨기지 않는다). 긴 절은 접혀 시작하고 '더 보기'가
+     그 자리에서 편다 — 다른 화면으로 가지 않는다. 절은 문자열이 바뀐 것만 다시 쓴다(재생 중 220 ms 마다 와도 단추·이유 한 줄이
+     손가락 밑에서 사라지지 않게 — 아래 지점 카드 기록과 같은 까닭). */
+  let sheetLayout = '';            // 지금 깔린 절 목록 — 바뀌면 뼈대를 새로 깐다
+  const secCache = new Map();      // 절 id → 마지막으로 쓴 글
+  let lastCtxKey = '';             // 문맥이 바뀌면 맨 위부터 보인다
+  const SEC_LABEL = {
+    why: ['자료의 근거', 'Evidence'], next: ['예보·예정', 'Forecast & upcoming'], history: ['이력', 'History'],
+    compare: ['모델 비교', 'Model comparison'], intel: ['Intelligence 해석', 'Intelligence'], scenario: ['시뮬레이션', 'Simulation'],
+  };
+  const secLabel = (id) => safeText(SEC_LABEL[id] ? SEC_LABEL[id][i18n.ko ? 0 : 1] : id);
+  // 접힌 절 — 제목 줄이 곧 '더 보기'다. 편 상태는 openSecs 가 기억한다(toggle 위임).
+  /* (2026-09-24 정정 · 적대 검토) 예전: `${openSecs.has(id) ? ' open' : ''}` 를 글에 구워 넣었다. 그러면 사람이 '더 보기'를 누른 바로
+     다음 그리기(재생 중 220 ms)에서 글이 달라져 절 전체를 innerHTML 로 갈았고, 그 안에서 편 '현재 켜진 자료'(끄기 단추)가 접혔다
+     (402×714 실측: 재생 3 초에 근거 절 12번 교체 · 안쪽 접이 열림 → 닫힘). 이제 글에는 펴짐을 싣지 않고, 그린 뒤 syncFolds 가 openSecs 로 맞춘다. */
+  const foldHtml = (id, body, label = secLabel(id)) => `<details class="is-fold" data-intel-more="${id}"><summary><span class="is-h">${label}</span><span class="is-more" aria-hidden="true">${i18n.ko ? '더 보기' : 'More'}</span><span class="is-less" aria-hidden="true">${i18n.ko ? '접기' : 'Less'}</span></summary><div class="is-b">${body}</div></details>`;
+  // 재료가 없는 절 — 자리를 지키고 이유 한 줄.
+  // (2026-09-24 정정 · 적대 검토) 절 제목은 스크린리더에도 제목이다(role=heading) — 예전 탭 단추 이름이 하던 길잡이를 대신한다.
+  const lineHtml = (id, why) => `<div class="is-h" role="heading" aria-level="3">${secLabel(id)}</div><p class="is-why">${safeText(why)}</p>`;
+  const openHtml = (id, body) => `<div class="is-h" role="heading" aria-level="3">${secLabel(id)}</div>${body}`;
+  // 접이의 펴짐을 사람이 편 대로(openSecs) 맞춘다 — 글을 새로 쓴 절도, 그대로 둔 절도.
+  const syncFolds = () => {
+    intelContent.querySelectorAll('details[data-intel-more]').forEach((d) => {
+      const want = openSecs.has(d.dataset.intelMore);
+      if (d.open !== want) d.open = want;
+    });
+  };
+  // 절 글을 갈 때 그 안의 다른 접이(예: 근거 절의 '현재 켜진 자료')가 펴져 있었으면 편 채로 둔다 — 요약 글로 짝짓는다.
+  //   예전 머리말도 매번 새로 그려져 이 접이가 접혔지만, 그때는 탭 화면 맨 위라 재생 중 손댈 일이 드물었다. 이제는 절 안이다.
+  const writeKeepingDetails = (el, html) => {
+    const keep = new Set([...el.querySelectorAll('details:not([data-intel-more])')].filter((d) => d.open)
+      .map((d) => (d.querySelector(':scope > summary') || {}).textContent));
+    el.innerHTML = html;
+    if (keep.size) el.querySelectorAll('details:not([data-intel-more])').forEach((d) => {
+      if (keep.has((d.querySelector(':scope > summary') || {}).textContent)) d.open = true;
+    });
+  };
+  const headTitleEl = intel.querySelector('.intel-head .ih-title');
+  // 머리 — 무엇을 보고 있나 한 줄 + ✕. 탭 이름을 늘어놓지 않는다.
+  const renderHead = (cx) => {
+    const ko = i18n.ko;
+    let t = '';
+    if (cx === 'feed') t = ko ? '오늘의 지구 사건' : "Today's Earth events";
+    else if (cx === 'my') t = ko ? '내 지역' : 'My place';
+    else if (curTab === 'feed') { const sel = hooks.feedSelected && hooks.feedSelected(); t = sel ? String(sel.title || '') : ''; }
+    // 지점 카드의 머리글(현상 · 좌표)을 머리로 올린다 — 카드 안의 같은 줄은 CSS 가 숨긴다(index.html 한 장 시트 절).
+    else if (curTab === 'point') { const k = intelContent.querySelector('.point-card .pc-kicker'); t = k ? k.textContent.trim() : ''; }
+    else if (selectedMenu) t = ko ? questionForLayer(selectedMenu.s.id, selectedMenu.l.id) || selectedMenu.l.name : selectedMenu.l.name;
+    else { const fs = hooks.getFocusSel && hooks.getFocusSel(); t = fs ? (fs.nameKo || fs.name || '') : (ko ? '선택한 자리' : 'Selection'); }
+    if (headTitleEl && headTitleEl.textContent !== t) headTitleEl.textContent = t;
+    // 고른 현상의 이름이 머리에 섰다는 표시 — 예전 머리말의 <strong>(고른 현상의 질문)을 세던 계측(measure.js t1)이 읽는다.
+    if (headTitleEl) headTitleEl.dataset.phen = cx === 'selection' && selectedMenu ? '1' : '';
+  };
+  // 굴리는 것은 #intel-body 다(overflow-y:auto 인 쪽 — main.js revealNoteCard 기록). 머리는 붙어 있으니 그 높이만큼 덜 굴린다.
+  const scrollToEl = (el) => {
+    // peek(118px · overflow:hidden)에서 굴리면 손잡이·✕ 가 밀려 나가 되돌릴 수 없다 — 먼저 half(main.js revealNoteCard 와 같은 함정).
+    if (intel.dataset.sheet === 'peek') setSheet('half');
+    const head = intel.querySelector('.intel-head');
+    intelBody.scrollTop += el.getBoundingClientRect().top - intelBody.getBoundingClientRect().top - (head ? head.offsetHeight : 0) - 4;
+  };
+  const consumePendingScroll = () => {
+    if (!pendingScroll || !intelOpen) return;
+    const t = pendingScroll;
+    pendingScroll = null;
+    if (t === 'top') { intelBody.scrollTop = 0; return; }
+    const el = intelContent.querySelector(`:scope > [data-intel-sec="${t}"]`);
+    if (!el) return;
+    const d = el.querySelector('details[data-intel-more]');
+    if (d && !d.open) { d.open = true; openSecs.add(d.dataset.intelMore); }
+    scrollToEl(el);
+  };
+  // 지점 카드 아래의 '표시 설정' — 이 색면의 조작(등치선·간격·강수 누적·H/L)이 든 카드를 **같은 값 절 안에** 접어 둔다.
+  //   예전 [표시 설정] 은 'now' 로 옮겨 지점 카드를 조작 카드로 갈아 끼웠다 — PD 가 막은 '버튼 누르면 다른 안내화면'이었다.
+  //   조작 카드의 글은 field-layer.js 가 [data-field-card] 를 찾아 제자리에서 바꾼다 — 여기서 다시 쓰지 않는다.
+  const pointSettingsHtml = () => {
+    const card = hooks.getPointSettings ? hooks.getPointSettings() : '';
+    // 조작 카드의 글은 lockedNote 본문(getNowHtml 의 .card-b 안)으로 쓰이던 것이다 — 같은 틀에 담아야 같은 글자 크기·단추 모양이 된다.
+    return card ? foldHtml('settings', `<div class="card"><div class="card-b">${card}</div></div>`, safeText(i18n.ko ? '표시 설정' : 'Display settings')) : '';
+  };
+  const renderValue = (el, point, room) => {
+    if (!point) {
+      const html = room ? hooks.getFeed() : hooks.getNow();
+      if (secCache.get('now') !== html) { el.innerHTML = html; secCache.set('now', html); }
+      return;
+    }
+    // 2026-09-23 PD — 색면 현상을 고른 채 지구를 누르면 **한 장**(js/point-card.js). 탭 단추가 없는 값이라
+    // 이 갈래가 없으면 마지막 else 로 떨어져 예보·예정 화면이 그려진다.
+    // (2026-09-24 정정) 이제 이 갈래는 한 장 시트의 값 절이다(renderSheet) — 아래에 근거·예보·이력·시뮬레이션 절이 이어진다.
+    // 재생 중에는 220 ms 마다 여기로 온다. 카드를 통째로 갈면 누르던 단추가 손가락 밑에서 바뀌고(click 이 사라진다)
+    // 떠 있던 이유 한 줄(sim-why)도 지워진다 — 같은 카드(data-key)면 시각 따라 바뀌는 덩어리([data-pc-live])만
+    // 제자리에서 바꾼다(field-layer.js:1012 의 [data-field-live] 와 같은 까닭).
+    const html = hooks.getPoint ? hooks.getPoint() : '';
+    const cur = el.querySelector('.point-card[data-key]');
+    const key = (html.match(/data-key="([^"]*)"/) || [])[1];
+    if (cur && key && cur.dataset.key === key) {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      const liveNew = tmp.querySelector('[data-pc-live]');
+      const liveCur = cur.querySelector('[data-pc-live]');
+      if (liveNew && liveCur) { if (liveCur.innerHTML !== liveNew.innerHTML) liveCur.innerHTML = liveNew.innerHTML; } else el.innerHTML = html + pointSettingsHtml();
+    } else {
+      // 새로 누른 자리(카드 번호가 바뀜)면 편 절을 접고 맨 위부터 — 예전 자리의 이력이 펼쳐진 채 남지 않게.
+      if (!cur || !key || String(cur.dataset.key).split('.')[0] !== key.split('.')[0]) { openSecs.clear(); if (!pendingScroll) pendingScroll = 'top'; }
+      el.innerHTML = html + pointSettingsHtml();
+    }
+  };
+  const renderSheet = (p) => {
+    const ko = i18n.ko;
+    const room = curTab === 'feed';     // 사건을 고른 사건 문맥 — 값 절이 사건 방이다
+    const point = curTab === 'point';
+    const ctx = getPhenomenonContext();
+    const name = ctx ? (ko ? ctx.label.ko : ctx.label.en) : '';
+    const secs = [{ id: 'now' }];       // ①② 값 — 문장이 수치보다 앞에 서지 않는다(evidence-first)
+    // ③ 자료의 근거 — 예전 머리말의 출처 줄·능력 줄·선택 장소·켜진 자료(끄기 단추) + 지금 켜 놓은 근거
+    secs.push({ id: 'why', html: foldHtml('why', `<div class="information-context">${p.srcLine}${p.phenomenonLine()}${p.placeLine}${p.timeNote}${p.activeDetails}</div>${whyHtml({ room })}`) });
+    // ④ 예보·예정 — 능력 표(secGate) · 고른 사건의 기관별 다음 위치 · 켜 놓은 예보·특보 중 하나라도 있으면 편다
+    const evNext = eventNextHtml();
+    const fcRows = activeLayers().filter(({ l }) => /FORECAST|WARNING|MODEL/.test(String(l.state)));
+    secs.push({ id: 'next', html: secGate.next || evNext || fcRows.length
+      ? foldHtml('next', nextHtml())
+      : lineHtml('next', ctx
+        ? (ko ? `${name}에는 연결된 예보·예정 자료가 없습니다.` : `No forecast is connected for ${name}.`)
+        : (ko ? '켜 놓은 자료 중 앞을 말하는 것이 없습니다 — 날씨·재해 메뉴의 예보·특보를 켜면 여기에 모입니다.' : 'Nothing on speaks about the future — turn on a forecast or warning and it collects here.')) });
+    // 이력 — 사료는 '지금'과 섞지 않는다(historyHtml)
+    secs.push({ id: 'history', html: secGate.history
+      ? foldHtml('history', historyHtml())
+      : lineHtml('history', ctx
+        ? (ko ? `${name}에는 연결된 지난 기록(사료)이 없습니다.` : `No past record is connected for ${name}.`)
+        : (ko ? '현상을 고르면 그 현상의 과거 기록을 봅니다.' : 'Pick a phenomenon to see its past record.')) });
+    // ⑤ 모델 비교 — 지점 카드는 자기 입구([모델 비교] · 누르면 이유)를 싣는다. 한 장에 두 번 두지 않는다.
+    if (!point) {
+      secs.push({ id: 'compare', html: lineHtml('compare', evNext
+        ? (ko ? '기관·모델별 다음 위치는 위 예보·예정 절의 표에 나란히 둡니다 — 공식 예보와 모델을 합치지 않습니다.' : 'Next positions by agency and model sit side by side in the table under Forecast above — never merged.')
+        : (ko ? '이 선택에는 나란히 비교할 두 번째 모델 자료가 아직 연결되지 않았습니다.' : 'No second model is connected to compare against for this selection yet.')) });
+    }
+    // ⑥ Intelligence — 패킷이 실려 있을 때만(빈 절 금지 · 계약 §C-0). 지점 카드는 같은 패킷의 WHY·NEXT 를 이미 편다.
+    const strip = point ? '' : p.intelStripBlock();
+    // (2026-09-24 정정 · 적대 검토) 예전: if (strip) secs.push(...) — 패킷이 늦게 도착해 띠가 '' → 글로 바뀌면 절 목록(sheetLayout)이
+    //   바뀌어 시트 전체를 새로 깔았다(읽던 자리 0 으로 · 모든 절 다시 쓰기). 자리는 늘 두고, 패킷이 없으면 빈 절(보이는 것 없음)로 둔다.
+    secs.push({ id: 'intel', html: strip ? openHtml('intel', strip) : '' });
+    // ⑦ 시뮬레이션 — 궁금한 점(계산 질문 · 없는 엔진은 누르면 이유) + 가정 장면 입구. 없으면 이유 한 줄.
+    const qs = `${p.simQuestionsHtml()}${p.regionLine()}${p.mapContextQuestions()}`;
+    const fsel = hooks.feedSelected && hooks.feedSelected();
+    const simOk = secGate.scenario || (room && fsel && fsel.kind === 'TC');   // 태풍 사건 = 공식 +24h 기준선 실험(getScenario)
+    const simWhy = ctx
+      ? (ko ? `${name}에는 시뮬레이션 엔진이 없습니다.` : `There is no simulation engine for ${name}.`)
+      : (ko ? '이 선택에는 시뮬레이션 엔진이 연결되어 있지 않습니다.' : 'No simulation engine is connected for this selection.');
+    /* (2026-09-24 정정 · 적대 검토) 예전 식: simOk ? 질문+장면 : qs ? 질문만 : 이유 한 줄.
+       ① 사람이 시뮬레이션을 직접 부른 경우(showTab('scenario') — 태풍 가정 장면 메뉴 · 쓰나미 질문 · FOR ME [시뮬레이션] · 예전 탭)에는
+          예전 시뮬레이션 탭이 능력 표와 무관하게 getScenario() 를 그렸다. 능력 표에 걸려 그 본문(가정 장면 [시나리오 시작 →] · 기준선 안내)이
+          사라지면 길을 잃는다(402×714 실측: 아무것도 고르지 않고 부르면 이유 한 줄뿐이었다) — 부른 사람에게는 그대로 싣는다.
+       ② 능력이 없는데 질문(궁금한 점)만 있으면 '시뮬레이션' 제목 아래 질문만 서서 엔진이 있는 것처럼 읽혔다 — 이유 한 줄을 먼저 둔다. */
+    const simAsked = tabIntent === 'scenario';
+    secs.push({ id: 'scenario', html: simOk || simAsked ? openHtml('scenario', qs + hooks.getScenario())
+      : `${lineHtml('scenario', simWhy)}${qs}` });
+
+    const layout = `${curTab}|${secs.map((x) => x.id).join(',')}`;
+    if (layout !== sheetLayout) {
+      sheetLayout = layout;
+      secCache.clear();
+      intelContent.innerHTML = secs.map((x) => `<section class="intel-sec${x.id === 'now' ? ' intel-sec-value' : ''}" data-intel-sec="${x.id}"></section>`).join('');
+    }
+    /* (2026-09-24 정정 · 적대 검토) 재생 중(220 ms) 자리 붙잡기 — 굴려 내려 이력을 보던 사람 앞에서 글이 100 px 밀렸다(402×714 실측:
+       근거 절을 펴 둔 채 재생하면 이력 절 top 333 → 434). 브라우저의 스크롤 붙잡기(overflow-anchor)는 붙잡은 노드가 innerHTML 로
+       갈리면 놓친다 — 절(<section>) 자체는 갈지 않으니 **보이는 첫 절의 top** 을 쓰기 전후로 재어 그만큼 되돌린다. */
+    let anchor = null, anchorTop = 0;
+    if (intelBody.scrollTop > 0) {
+      const head = intel.querySelector('.intel-head');
+      const vTop = intelBody.getBoundingClientRect().top + (head ? head.offsetHeight : 0);
+      // 보이는 칸 안에서 **시작하는** 첫 절을 붙잡는다 — 위로 걸친 절(예: 편 근거 절)이 제 안에서 자라도 그 아래가 밀리지 않게.
+      //   칸 안에서 시작하는 절이 없으면(긴 절 한가운데를 읽는 중) 걸친 그 절을 붙잡는다.
+      const vBottom = intelBody.getBoundingClientRect().bottom;
+      for (const s of intelContent.children) {
+        const r = s.getBoundingClientRect();
+        if (r.bottom <= vTop) continue;
+        if (!anchor) { anchor = s; anchorTop = r.top; }
+        if (r.top >= vTop && r.top < vBottom) { anchor = s; anchorTop = r.top; break; }
+        if (r.top >= vBottom) break;
+      }
+    }
+    for (const x of secs) {
+      const el = intelContent.querySelector(`:scope > [data-intel-sec="${x.id}"]`);
+      if (!el) continue;
+      if (x.id === 'now') { renderValue(el, point, room); continue; }
+      if (secCache.get(x.id) !== x.html) { writeKeepingDetails(el, x.html); secCache.set(x.id, x.html); }
+    }
+    syncFolds();   // (2026-09-24 정정 · 적대 검토) 펴짐은 글이 아니라 openSecs 가 정한다(위 foldHtml 기록)
+    if (anchor && anchor.isConnected && !pendingScroll) {
+      const d = anchor.getBoundingClientRect().top - anchorTop;
+      if (Math.abs(d) >= 1) intelBody.scrollTop += d;
+    }
+  };
+
   const renderIntel = () => {
     const scrollTop=intelContent.scrollTop;
-    if (curTab === 'feed') {
+    const cx = intelCtx();
+    intel.dataset.ctx = cx;              // CSS·시험이 읽는다 — feed | my | selection
+    const ctxKey = `${cx}|${curTab}`;
+    if (ctxKey !== lastCtxKey) { lastCtxKey = ctxKey; if (!pendingScroll) pendingScroll = 'top'; }
+    // (2026-09-24 정정) 예전 탭 갈래(now · scenario · history · why · point · next)는 위 renderSheet 의 절이 됐다.
+    //   여기서는 사건 목록과 내 지역만 예전처럼 한 번에 그린다.
+    if (cx === 'feed') {
       intelContent.innerHTML = hooks.getFeed();
-    } else if (curTab === 'now') {
-      intelContent.innerHTML = hooks.getNow();
-    } else if (curTab === 'my') {
+    } else if (cx === 'my') {
       intelContent.innerHTML = hooks.getMy ? hooks.getMy() : '';
-    } else if (curTab === 'scenario') {
-      intelContent.innerHTML = hooks.getScenario();
-    } else if (curTab === 'history') {
-      intelContent.innerHTML = historyHtml();
-    } else if (curTab === 'why') {
-      intelContent.innerHTML = whyHtml();
-    } else if (curTab === 'point') {
-      // 2026-09-23 PD — 색면 현상을 고른 채 지구를 누르면 **한 장**(js/point-card.js). 탭 단추가 없는 값이라
-      // 이 갈래가 없으면 마지막 else 로 떨어져 예보·예정 화면이 그려진다.
-      // 재생 중에는 220 ms 마다 여기로 온다. 카드를 통째로 갈면 누르던 단추가 손가락 밑에서 바뀌고(click 이 사라진다)
-      // 떠 있던 이유 한 줄(sim-why)도 지워진다 — 같은 카드(data-key)면 시각 따라 바뀌는 덩어리([data-pc-live])만
-      // 제자리에서 바꾼다(field-layer.js:1012 의 [data-field-live] 와 같은 까닭).
-      const html = hooks.getPoint ? hooks.getPoint() : '';
-      const cur = intelContent.querySelector('.point-card[data-key]');
-      const key = (html.match(/data-key="([^"]*)"/) || [])[1];
-      if (cur && key && cur.dataset.key === key) {
-        const tmp = document.createElement('div');
-        tmp.innerHTML = html;
-        const liveNew = tmp.querySelector('[data-pc-live]');
-        const liveCur = cur.querySelector('[data-pc-live]');
-        if (liveNew && liveCur) { if (liveCur.innerHTML !== liveNew.innerHTML) liveCur.innerHTML = liveNew.innerHTML; } else intelContent.innerHTML = html;
-      } else intelContent.innerHTML = html;
-    } else {
-      intelContent.innerHTML = nextHtml();
     }
     const active=activeLayers();
     const picked=hooks.getFocusSel?.();
@@ -1337,13 +1530,30 @@ export function initShell(hooks) {
       }
       return '';
     };
+    // (2026-09-24 정정) 머리말 조각을 따로 짓는다 — 사건 목록·내 지역에서는 예전처럼 한 덩어리 머리말로, 한 장 시트에서는
+    //   각 절(출처 줄·선택 장소·켜진 자료 → 자료의 근거 · 궁금한 점 → 시뮬레이션 · Intelligence 띠 → Intelligence)로 나눠 싣는다.
+    const srcLine = selectedMenu ? `<div>${safeText(selectedMenu.l.src)} · ${dataBadge(selectedMenu.l.state)}</div>` : '';
+    const placeLine = `<div>${safeText(i18n.ko?'선택 장소':'Selected place')}: ${safeText(picked?.nameKo || picked?.name || (i18n.ko?'지도에서 선택':'Select on the globe'))}</div>`;
+    const timeNote = timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}</p>`:'';
+    const activeDetails = active.length ? `<details><summary>${i18n.ko?'현재 켜진 자료':'Active data'} ${active.length}</summary>${active.map(({s,l})=>`<div class="active-data-row"><span>${safeText(i18n.layer(l.id,l.name,s.id))}<small>${safeText(menuTime(l.id,i18n.ko))}</small></span>${canClearLayer(l.id)?`<button data-action="shell-layer-off" data-scene="${s.id}" data-layer="${l.id}" aria-label="${safeText(l.name)} 끄기">${i18n.ko?'끄기':'Off'}</button>`:''}</div>`).join('')}<button data-action="shell-clear-layers">${i18n.ko?'추가 자료 모두 끄기':'Clear overlays'}</button></details>`:'';
+    if (cx === 'selection') {
+      renderSheet({ srcLine, placeLine, timeNote, activeDetails, phenomenonLine, simQuestionsHtml, regionLine, mapContextQuestions, intelStripBlock });
+      renderHead(cx);
+      intelContent.scrollTop=scrollTop;
+      consumePendingScroll();
+      return;
+    }
+    sheetLayout = '';
     const header=document.createElement('div');header.className='information-context';
-    header.innerHTML=`${selectedMenu ? `<strong>${safeText(i18n.ko ? questionForLayer(selectedMenu.s.id, selectedMenu.l.id) || selectedMenu.l.name : selectedMenu.l.name)}</strong><div>${safeText(selectedMenu.l.src)} · ${dataBadge(selectedMenu.l.state)}</div>${phenomenonLine()}${simQuestionsHtml()}${regionLine()}${intelStripBlock()}`:''}${mapContextQuestions()}<div>${safeText(i18n.ko?'선택 장소':'Selected place')}: ${safeText(picked?.nameKo || picked?.name || (i18n.ko?'지도에서 선택':'Select on the globe'))}</div>${timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}</p>`:''}
-      ${active.length ? `<details><summary>${i18n.ko?'현재 켜진 자료':'Active data'} ${active.length}</summary>${active.map(({s,l})=>`<div class="active-data-row"><span>${safeText(i18n.layer(l.id,l.name,s.id))}<small>${safeText(menuTime(l.id,i18n.ko))}</small></span>${canClearLayer(l.id)?`<button data-action="shell-layer-off" data-scene="${s.id}" data-layer="${l.id}" aria-label="${safeText(l.name)} 끄기">${i18n.ko?'끄기':'Off'}</button>`:''}</div>`).join('')}<button data-action="shell-clear-layers">${i18n.ko?'추가 자료 모두 끄기':'Clear overlays'}</button></details>`:''}`;
+    header.innerHTML=`${selectedMenu ? `<strong>${safeText(i18n.ko ? questionForLayer(selectedMenu.s.id, selectedMenu.l.id) || selectedMenu.l.name : selectedMenu.l.name)}</strong>${srcLine}${phenomenonLine()}${simQuestionsHtml()}${regionLine()}${intelStripBlock()}`:''}${mapContextQuestions()}${placeLine}${timeNote}
+      ${activeDetails}`;
     // 지점 카드는 한 장이다 — 머리말(질문·능력 줄·궁금한 점·선택 장소·켜진 자료)을 그 위에 얹지 않는다.
     // 2026-09-23 PD 가 가리킨 "가장 큰 문제"가 바로 누른 순간 이 머리말과 탭 두 줄이 값보다 먼저 선 것이었다.
-    if (curTab !== 'point') intelContent.prepend(header);
+    // (2026-09-24 정정) 지점 카드·값 카드·사건 방은 이제 renderSheet 가 그린다(위 return) — 이 머리말은 사건 목록·내 지역 문맥에만 선다.
+    intelContent.prepend(header);
+    renderHead(cx);
     intelContent.scrollTop=scrollTop;
+    consumePendingScroll();
   };
 
   // 패널 내 버튼 액션 위임 (예: 시뮬레이션 시작)
@@ -1367,8 +1577,20 @@ export function initShell(hooks) {
       return;
     }
     if (a === 'shell-play5d') { strip.querySelector('#ts-play').click(); return; }
+    // (2026-09-24 정정) 지점 카드의 [표시 설정] — 값 절 안에 접어 둔 조작 카드를 그 자리에서 편다(다른 카드로 갈아 끼우지 않는다).
+    //   접이가 없으면(조작 카드를 못 만든 색면) 예전 길(main.js onAction → '선택 자료' 값 카드)로 떨어진다.
+    if (a === 'point-field-settings') {
+      const d = intelContent.querySelector('details[data-intel-more="settings"]');
+      if (d) { d.open = true; openSecs.add('settings'); scrollToEl(d); return; }
+    }
     if (hooks.onAction) hooks.onAction(a, btn.dataset);
   });
+  // (2026-09-24 정정) 접힌 절의 '더 보기'·'접기' — 사람이 편 것을 기억한다(다시 그려도 그대로). toggle 은 거품이 없어 잡기(capture)로 받는다.
+  intelContent.addEventListener('toggle', (e) => {
+    const d = e.target;
+    if (!d || !d.matches || !d.matches('details[data-intel-more]')) return;
+    if (d.open) openSecs.add(d.dataset.intelMore); else openSecs.delete(d.dataset.intelMore);
+  }, true);
 
   // 카드 안의 슬라이더는 click 이 아니라 input 으로 온다. 같은 onAction 으로 흘려보낸다.
   intel.addEventListener('input', (e) => {
@@ -1406,19 +1628,19 @@ export function initShell(hooks) {
     intelOpen = open;
     // 닫으면 지점 카드 모드도 끝난다 — 다음에 탭 없이 열 때 옛 카드가 되살아나지 않게(위 openIntel 과 같은 사고).
     if (!intelOpen && curTab === 'point') { curTab = 'now'; tabIntent = 'now'; intel.dataset.tab = 'now'; }
+    // (2026-09-24 정정 · 적대 검토) 편 절도 닫으면 잊는다 — 지점에서 편 '자료의 근거'가 다음에 연 나라 카드 아래에 펴진 채 남았다
+    //   (위 'point' 되돌림과 같은 사고의 한 장 시트판 · 402×714 실측). 새로 열면 half 에서 접힌 절로 시작한다.
+    if (!intelOpen) { openSecs.clear(); pendingScroll = null; }
     // 새로 열 때는 half — 지구가 위에 보이는 INFORMATION 단계에서 시작한다(M1 · §C-0).
     if (intelOpen) setSheet('half');
     intel.classList.toggle('open', intelOpen);
     if (intelOpen) renderIntel();
     syncIntelNav();
   };
-  intel.querySelectorAll('.intel-tabs button[data-tab]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      // §11 — 사용자가 직접 고른 것이므로 여기서 의도가 갱신된다.
-      // 이 줄 덕분에 "자료를 기다리는 동안 다른 탭을 눌렀다"가 존중된다.
-      showTab(btn.dataset.tab, 'intent');
-    });
-  });
+  /* (2026-09-24 정정) 탭 단추가 없어져 여기서 걸던 click 도 없다. 걸던 규칙의 기록:
+       §11 — 사용자가 직접 고른 것이므로 여기서 의도가 갱신된다.
+       이 줄 덕분에 "자료를 기다리는 동안 다른 탭을 눌렀다"가 존중된다.
+     한 장 시트에서 '다른 절을 보는 것'은 굴리기·'더 보기'라 의도를 바꾸지 않는다 — 기다리던 자료가 오면 같은 장 안에서 값 절만 바뀐다. */
 
   const closeIntel = () => setIntelOpen(false);
   intel.querySelector('#intel-close').addEventListener('click', closeIntel);
@@ -1561,12 +1783,25 @@ export function initShell(hooks) {
      기본값이 'intent' 인 이유: 기존 호출부는 전부 사용자 제스처다.
      뒤따르는 요청만 호출부에서 'follow' 라고 명시한다.
      돌려주는 값: 실제로 탭을 옮겼으면 true. */
+  /* (2026-09-24 정정) 한 장 시트 — t 가 바탕 문맥(feed · my · now · point)이면 그 문맥으로 옮기고, 절 이름(why · next · history ·
+     scenario)이면 **문맥은 그대로 두고** 그 절을 펴서 굴린다(다른 화면으로 가지 않는다). 사건 목록·내 지역에서 절을 부르면
+     고른 사건이 있으면 그 사건의 한 장, 없으면 값 카드의 한 장으로 간다('forme-sim'·'ocean/typhoonsim'·질문 버튼 등).
+     'follow' 규칙(§11)은 그대로다. 돌려주는 값도 그대로: 받아들였으면 true. */
   const showTab = (t, source) => {
     if (source === 'follow' && t !== tabIntent) return false;
     tabIntent = t;
-    curTab = t;
-    intel.dataset.tab = t;   // CSS 가 읽는다 — 지점 카드('point')일 때 탭 단추 줄을 숨긴다(index.html)
-    intel.querySelectorAll('.intel-tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
+    if (SECTION_TABS.has(t)) {
+      if (curTab === 'my' || (curTab === 'feed' && !feedRoomOpen())) curTab = feedRoomOpen() ? 'feed' : 'now';
+      openSecs.add(t);
+      pendingScroll = t;
+    } else {
+      curTab = t;
+      if (pendingScroll && pendingScroll !== 'top') pendingScroll = null;
+    }
+    // CSS 가 읽는다 — 지점 카드('point')일 때 탭 단추 줄을 숨긴다(index.html)
+    // (2026-09-24 정정) 이제 바탕 문맥만 적는다(절 이름은 적지 않는다). 지점 카드일 때 카드 머리글을 시트 머리로 올린다(index.html) ·
+    //   main.js liftPeekForValue·revealNoteCard 도 읽는다.
+    intel.dataset.tab = curTab;
     if (intelOpen) renderIntel();
     return true;
   };

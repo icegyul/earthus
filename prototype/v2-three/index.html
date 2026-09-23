@@ -752,6 +752,31 @@
      information-access.css 의 #intel .intel-tabs button (1,1,1)·#intel .intel-tabs (1,1,0)을 이긴다(그 파일이 뒤에 읽혀도). */
   #intel[data-tab="point"] .intel-tabs button[data-tab] { display: none; }
   #intel[data-tab="point"] .intel-tabs { min-height: 30px; margin-bottom: 0; }
+  /* (2026-09-24 정정) 한 장 시트 — PD "인텔리전스 창에 뜨는 메뉴들 아직도 떠 모두 하나로 통합해줘". 탭 단추 줄(.intel-tabs)을
+     ui-shell.js 템플릿에서 걷었다 — 바로 위 두 줄과 폰 블록의 peek 탭 규칙은 이제 걸릴 곳이 없다(다른 작업이 같은 줄을 만질 수 있어
+     지우지 않고 둔다). 시트는 머리(.intel-head — 무엇을 보고 있나 한 줄 + ✕) 아래에 절(.intel-sec)이 한 줄로 이어진다:
+     값 → 자료의 근거 → 예보·예정 → 이력 → 모델 비교 → Intelligence → 시뮬레이션. 긴 절은 제목 줄이 곧 '더 보기'인 접이(details)다.
+     머리는 굴려도 남는다(sticky) — ✕ 가 본문과 같이 밀려 나가지 않게. top/margin 음수는 #intel-body 안쪽 여백(12·14)만큼이다.
+     ✕ 표적 44 — 예전에는 information-access.css 의 #intel .intel-tabs button{min-height:44px} 가 주던 것이다.
+     바탕은 불투명(rgb) — 반투명 .97 로 두면 굴려 올라간 글이 머리 밑에서 비쳐 읽혔다(402×714 캡처 실측 · 본문의 backdrop-filter 와 겹친 합성). */
+  #intel .intel-head { position: sticky; top: -12px; z-index: 2; display: flex; align-items: center; gap: 6px;
+    min-height: 44px; margin: -12px -14px 6px; padding: 0 2px 0 14px; background: rgb(9,22,34);
+    border-bottom: 1px solid var(--panel-line); }
+  #intel .intel-head .ih-title { flex: 1; min-width: 0; font-size: 13px; font-weight: 600; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #intel .intel-head #intel-close { flex: none; min-width: 44px; min-height: 44px; font-size: 15px; }
+  /* 지점 카드의 머리글(현상 · 좌표)은 시트 머리가 그대로 옮겨 단다(ui-shell renderHead) — 카드 안의 같은 줄은 숨긴다.
+     그 줄의 margin-top:-26px 은 예전 ✕ 자리 30px 에 올라타던 값이라, 남겨 두면 붙은 머리 밑으로 들어가 가려진다. */
+  #intel[data-tab="point"] .point-card .pc-kicker { display: none; }
+  #intel .intel-sec .is-h { font-size: 11.5px; font-weight: 600; letter-spacing: .4px; color: var(--text-dim); }
+  #intel .intel-sec > .is-h { padding: 10px 0 4px; border-top: 1px solid var(--panel-line); margin-top: 4px; }
+  #intel details.is-fold { border-top: 1px solid var(--panel-line); margin-top: 4px; }
+  #intel details.is-fold > summary { list-style: none; display: flex; align-items: center; gap: 8px; min-height: 44px; cursor: pointer; }
+  #intel details.is-fold > summary::-webkit-details-marker { display: none; }
+  #intel details.is-fold .is-more, #intel details.is-fold .is-less { margin-left: auto; font-size: 11px; color: var(--accent); }
+  #intel details.is-fold .is-less, #intel details.is-fold[open] .is-more { display: none; }
+  #intel details.is-fold[open] .is-less { display: inline; }
+  #intel .is-why { margin: 0 0 8px; font-size: 12px; line-height: 1.5; color: var(--text-dim); }
   .point-card { font-size: 12px; line-height: 1.5; color: var(--text); }
   .point-card .pc-kicker { font-size: 11px; color: var(--text-dim); margin-top: -26px; padding-right: 40px; min-height: 26px; }
   .point-card .pc-value { display: flex; align-items: baseline; gap: 8px; margin: 2px 0 4px; }
@@ -1664,6 +1689,8 @@
        방식으로 탭 단추만 숨기고 ✕ 자리 30px 을 남긴다. 점수 (1,3,1)·(1,2,0)이 information-access.css 를 이긴다. */
     #intel[data-sheet="peek"] .intel-tabs button[data-tab] { display: none; }
     #intel[data-sheet="peek"] .intel-tabs { min-height: 30px; margin-bottom: 0; }
+    /* (2026-09-24 정정) 탭 단추 줄이 없어져 위 두 줄은 걸릴 곳이 없다(한 장 시트 — 위 넓은 화면 절의 기록). peek 118px 에는
+       시트 머리(무엇을 보고 있나 + ✕ · 44)와 첫 절의 첫 줄이 보인다 — 명세 '머리와 첫 카드 머리만' 그대로다. */
     #intel[data-sheet="peek"].open #intel-body { max-height: 118px; overflow: hidden; }
     /* 2026-09-23 B3(PD 승인 "모두 진행해") — 첫 방문 '사건' 시트를 peek 로 연다(main.js openFeedOnce). 그런데 peek 118px 에는
        탭 줄 다음에 머리말(.information-context — '선택 장소: 지도에서 선택' · 켜진 자료, ui-shell.js 가 모든 탭 앞에 붙인다)이
@@ -2002,7 +2029,7 @@
   <div class="err" id="load-err"></div>
 </div>
 
-<script type="module" src="./js/main.js?v=202-motion"></script>
+<script type="module" src="./js/main.js?v=203-onesheet"></script>
 <script src="/js/earth-switch.js" defer></script>
 </body>
 </html>

@@ -31,7 +31,8 @@ async function measure(browser, label, ctxOpts, { warm = false } = {}) {
     else if (/json/.test(ct) || /amazonaws|api\//.test(u)) net.api += len;
   });
   const t = {}; const mark = (k, t0) => { t[k] = R(performance.now() - t0); };
-  const click = (sel, i = 0) => page.evaluate(([s, k]) => { const el = document.querySelectorAll(s)[k]; if (!el) return false; el.scrollIntoView(); el.dispatchEvent(new MouseEvent('click', { bubbles: true })); return true; }, [sel, i]);
+  // (2026-09-24 정정) 인텔리전스 시트가 한 장이 되며 탭 단추([data-tab])가 없어졌다 — [data-tab="…"] 는 같은 문(showTab + openIntel)을 셸 핸들로 부른다.
+  const click = (sel, i = 0) => page.evaluate(([s, k]) => { const m = /^\[data-tab="(\w+)"\]$/.exec(s); if (m) { const sh = window.__earthusShell; if (!sh) return false; sh.showTab(m[1]); sh.openIntel(); return true; } const el = document.querySelectorAll(s)[k]; if (!el) return false; el.scrollIntoView(); el.dispatchEvent(new MouseEvent('click', { bubbles: true })); return true; }, [sel, i]);
   const T0 = performance.now();
   if (warm) { await page.goto(`${SITE}/v2/`, { waitUntil: 'load', timeout: 90000 }); await page.waitForSelector('#bottom-nav button[data-nav="myplace"]', { timeout: 90000 }).catch(() => {}); await page.waitForTimeout(3000); }
   const t0 = performance.now();
@@ -44,7 +45,7 @@ async function measure(browser, label, ctxOpts, { warm = false } = {}) {
       ttfb: n.responseStart - n.requestStart, dcl: n.domContentLoadedEventEnd, load: n.loadEventEnd, fcp: paint['first-contentful-paint'] };
   });
   const lcp = await page.evaluate(() => new Promise((res) => { let v = null; try { const po = new PerformanceObserver((l) => { for (const e of l.getEntries()) v = e.startTime; }); po.observe({ type: 'largest-contentful-paint', buffered: true }); } catch (e) { /* */ } setTimeout(() => res(v), 800); }));
-  for (let k = 0; k < 6; k++) { await click('#bottom-nav button[data-nav="myplace"]'); const open = await page.evaluate(() => { const b = document.querySelector('[data-tab="feed"]'); return !!(b && b.getBoundingClientRect().height > 0); }); if (open) break; await page.waitForTimeout(1500); }
+  for (let k = 0; k < 6; k++) { await click('#bottom-nav button[data-nav="myplace"]'); const open = await page.evaluate(() => !!document.querySelector('#intel.open')); if (open) break; await page.waitForTimeout(1500); }
   let t1 = performance.now(); await click('[data-tab="feed"]');
   await page.waitForFunction(() => document.querySelector('#intel-content .feed-item'), null, { timeout: 90000 }).catch(() => {}); mark('firstFeed', t1);
   await page.waitForFunction(() => !/받는 중/.test((document.querySelector('#intel-content .feed-note') || {}).textContent || ''), null, { timeout: 60000 }).catch(() => {}); mark('eventListSettled', t1);

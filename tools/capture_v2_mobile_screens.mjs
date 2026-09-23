@@ -24,7 +24,8 @@ const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=sw
 const ctx = await browser.newContext({ ...devices['iPhone 13'], locale: 'ko-KR' });
 await ctx.addInitScript(() => { try { localStorage.setItem('earthus.myplace', JSON.stringify({ lat: 35.18, lon: 129.08 })); localStorage.setItem('earthus.seen.intro.v1', '1'); } catch (e) { /* 무시 */ } });
 const page = await ctx.newPage();
-const click = (sel, i = 0) => page.evaluate(([s, k]) => { const el = document.querySelectorAll(s)[k]; if (!el) throw new Error('no ' + s); el.scrollIntoView(); el.dispatchEvent(new MouseEvent('click', { bubbles: true })); }, [sel, i]);
+// (2026-09-24 정정) 인텔리전스 시트가 한 장이 되며 탭 단추([data-tab])가 없어졌다 — [data-tab="…"] 는 같은 문(showTab + openIntel)을 셸 핸들로 부른다(main.js window.__earthusShell).
+const click = (sel, i = 0) => page.evaluate(([s, k]) => { const m = /^\[data-tab="(\w+)"\]$/.exec(s); if (m) { const sh = window.__earthusShell; if (!sh) throw new Error('no shell'); sh.showTab(m[1]); sh.openIntel(); return; } const el = document.querySelectorAll(s)[k]; if (!el) throw new Error('no ' + s); el.scrollIntoView(); el.dispatchEvent(new MouseEvent('click', { bubbles: true })); }, [sel, i]);
 const shot = (name) => page.screenshot({ path: path.join(out, name) });
 const log = { emulated: 'Playwright iPhone 13 (390×844, DPR 3, iOS UA) — 실기기 아님', shots: [], ts: new Date().toISOString() };
 try {
@@ -32,12 +33,13 @@ try {
   await page.waitForSelector('#bottom-nav button[data-nav="myplace"]', { timeout: 90000 });
   await page.waitForTimeout(3000);
   // 패널 토글은 셸 초기화 뒤에야 듣는다 — 탭 줄이 보일 때까지 몇 번 더 누른다
+  // (2026-09-24 정정) 인텔리전스 시트가 한 장이 되며 탭 단추([data-tab])가 없어졌다 — 탭 줄 대신 열린 시트(#intel.open)를 기다린다.
   for (let k = 0; k < 6; k++) {
     await click('#bottom-nav button[data-nav="myplace"]');
-    const ok = await page.waitForSelector('[data-tab="feed"]', { timeout: 5000 }).then(() => true).catch(() => false);
+    const ok = await page.waitForSelector('#intel.open', { timeout: 5000 }).then(() => true).catch(() => false);
     if (ok) break;
   }
-  await page.waitForSelector('[data-tab="feed"]', { timeout: 10000 });
+  await page.waitForSelector('#intel.open', { timeout: 10000 });
   await click('[data-tab="feed"]');
   const waitFeed = () => page.waitForFunction(() => document.querySelector('#intel-content .feed-item') && !/받는 중/.test((document.querySelector('#intel-content .feed-note') || {}).textContent || ''), null, { timeout: 150000 }).catch(() => {});
   await waitFeed();

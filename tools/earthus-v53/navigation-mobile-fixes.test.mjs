@@ -74,7 +74,8 @@ test('자동으로 켠 조각만 문맥 종료에 같이 꺼진다 — 사용자
   assert.match(mainSrc, /if \(focus\.selected\) \{ clearFocusContext\(\); return; \}/);
   assert.match(mainSrc, /const hadSelection = !!focus\.selected;\s*\n\s*clearFocusContext\(\);/);
   // onChange 의 문맥 종료 분기도 같은 정리를 한다.
-  assert.match(mainSrc, /if \(sculptAutoFor && popSculpt\.on\) popSculpt\.toggle\(\);\s*\n\s*sculptAutoFor = null;\s*\n\s*if \(f\) shell\.openIntel\(\);/);
+  // (2026-09-24 정정) 한 장 시트 — 고른 바다의 값 카드로 연다(openIntel('now')). 사이의 주석 줄은 건너뛴다.
+  assert.match(mainSrc, /if \(sculptAutoFor && popSculpt\.on\) popSculpt\.toggle\(\);\s*\n\s*sculptAutoFor = null;\s*\n(?:\s*\/\/[^\n]*\n)*\s*if \(f\) shell\.openIntel\('now'\);/);
 });
 
 test('국가 카드는 인구가 첫 줄이다 — "대한민국 인구 5,170만"이 핵심이다 (§13)', () => {

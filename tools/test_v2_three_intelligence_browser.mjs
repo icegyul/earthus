@@ -40,8 +40,9 @@ try {
   await page.goto(`http://127.0.0.1:${srv.address().port}/v2/`, { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page.waitForSelector('#bottom-nav button[data-nav="myplace"]', { timeout: 90000 });
   await page.click('#bottom-nav button[data-nav="myplace"]');
-  await page.waitForSelector('[data-tab="feed"]', { timeout: 30000 });
-  await page.click('[data-tab="feed"]');
+  // (2026-09-24 정정) 인텔리전스 시트가 한 장이 되며 탭 단추([data-tab])가 없어졌다 — 탭 줄 대신 열린 시트를 기다리고, 사건 문맥은 같은 문(showTab + openIntel)으로 연다.
+  await page.waitForSelector('#intel.open', { timeout: 30000 });
+  await page.evaluate(() => { const sh = window.__earthusShell; sh.showTab('feed'); sh.openIntel(); });
   // 실제 소스가 도착할 때까지 — 카드가 뜨거나, 소스 상태가 실패로 확정될 때까지
   await page.waitForFunction(() => {
     const c = document.querySelector('#intel-content');
@@ -77,10 +78,11 @@ try {
     assert.ok(/발표|issued/.test(room.text) && /수집|retrieved/.test(room.text), 'EVIDENCE_TIME_LINES_MISSING');
     await page.screenshot({ path: path.join(out, 'event-room.png') });
     // 지시서 F — 고른 사건의 최신 공식 +24h 가 기준선이 된다. 없으면 "확인 불가"로 적고 만들지 않는다.
-    await page.evaluate(() => document.querySelector('[data-tab="scenario"]').dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    await page.evaluate(() => { const sh = window.__earthusShell; sh.showTab('scenario'); sh.openIntel(); });   // 한 장 시트의 시뮬레이션 절로(2026-09-24)
     await page.waitForTimeout(600);
     const sc = await page.evaluate(() => {
-      const c = document.querySelector('#intel-content');
+      // (2026-09-24 정정) 한 장 시트 — 시뮬레이션은 사건 방 아래의 절이다. 앞 300 자는 사건 방 글이라 그 절만 읽는다.
+      const c = document.querySelector('#intel-content [data-intel-sec="scenario"]') || document.querySelector('#intel-content');
       const btn = c.querySelector('[data-action="sim-scenario-event"]');
       if (btn) btn.dispatchEvent(new MouseEvent('click', { bubbles: true }));
       return { hasBaseline: !!btn, text: c.textContent.slice(0, 300) };
@@ -100,7 +102,7 @@ try {
     evidence.checks.scenario = sc;
   }
   // 지시서 N-1 — 지진 사건 방에 도달시간 행(있음/계산 대상 아님/조회 불가 중 하나)이 반드시 있다
-  await page.evaluate(() => document.querySelector('[data-tab="feed"]').dispatchEvent(new MouseEvent('click', { bubbles: true })));   // 가정 실험 탭에 있었다
+  await page.evaluate(() => { const sh = window.__earthusShell; sh.showTab('feed'); sh.openIntel(); });   // 가정 실험 탭에 있었다 (2026-09-24: 같은 사건 한 장의 절이었다 — 사건 문맥으로 돌아간다)
   await page.waitForTimeout(500);
   await page.evaluate(() => { const b = document.querySelector('[data-action="feed-back"]'); if (b) b.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
   await page.waitForTimeout(800);
@@ -119,7 +121,7 @@ try {
     assert.ok(eq.noDanger, 'ETA_ROW_SAYS_SAFE');
     await page.screenshot({ path: path.join(out, 'quake-room.png') });
   }
-  await page.evaluate(() => document.querySelector('[data-tab="my"]').dispatchEvent(new MouseEvent('click', { bubbles: true })));
+  await page.evaluate(() => { const sh = window.__earthusShell; sh.showTab('my'); sh.openIntel(); });   // 탭 단추가 없어졌다(2026-09-24) — 하단 '내 지역'과 같은 문
   await page.waitForTimeout(500);
   const my = await page.evaluate(() => document.querySelector('#intel-content').textContent);
   evidence.checks.my = { hasWatchWording: /감시|Watch/.test(my) || /위치|location/i.test(my) };

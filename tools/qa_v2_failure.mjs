@@ -20,12 +20,13 @@ async function scenario(label, routes, run, ctxOpts = {}) {
   for (const [pattern, handler] of routes) await page.route(pattern, handler);
   const bad = [];
   page.on('response', (r) => { if (r.status() >= 500) bad.push(`${r.status()} ${r.url().slice(0, 80)}`); });
-  const click = (sel, i = 0) => page.evaluate(([s, k]) => { const el = document.querySelectorAll(s)[k]; if (!el) return false; el.scrollIntoView(); el.dispatchEvent(new MouseEvent('click', { bubbles: true })); return true; }, [sel, i]);
+  // (2026-09-24 정정) 인텔리전스 시트가 한 장이 되며 탭 단추([data-tab])가 없어졌다 — [data-tab="…"] 는 같은 문(showTab + openIntel)을 셸 핸들로 부른다.
+  const click = (sel, i = 0) => page.evaluate(([s, k]) => { const m = /^\[data-tab="(\w+)"\]$/.exec(s); if (m) { const sh = window.__earthusShell; if (!sh) return false; sh.showTab(m[1]); sh.openIntel(); return true; } const el = document.querySelectorAll(s)[k]; if (!el) return false; el.scrollIntoView(); el.dispatchEvent(new MouseEvent('click', { bubbles: true })); return true; }, [sel, i]);
   const text = () => page.evaluate(() => (document.querySelector('#intel-content') || {}).textContent || '');
   const openFeed = async () => {
     await page.goto(`${SITE}/v2/?fx=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 90000 });
     await page.waitForSelector('#bottom-nav button[data-nav="myplace"]', { timeout: 120000 });
-    for (let k = 0; k < 6; k++) { await click('#bottom-nav button[data-nav="myplace"]'); const open = await page.evaluate(() => { const b = document.querySelector('[data-tab="feed"]'); return !!(b && b.getBoundingClientRect().height > 0); }); if (open) break; await page.waitForTimeout(1500); }
+    for (let k = 0; k < 6; k++) { await click('#bottom-nav button[data-nav="myplace"]'); const open = await page.evaluate(() => !!document.querySelector('#intel.open')); if (open) break; await page.waitForTimeout(1500); }
     await click('[data-tab="feed"]');
     await page.waitForFunction(() => { const c = document.querySelector('#intel-content'); return c && (c.querySelector('.feed-item') || /조회 불가|응답 없음/.test(c.textContent)); }, null, { timeout: 90000 }).catch(() => {});
     await page.waitForFunction(() => !/받는 중/.test((document.querySelector('#intel-content .feed-note') || {}).textContent || ''), null, { timeout: 120000 }).catch(() => {});
@@ -64,8 +65,8 @@ await scenario('gdacs-cache-then-down', [], async ({ page, text, openFeed }) => 
   await page.route(/events\/gdacs-tc\.json/, abort); await page.route(/gdacs\.org/, abort);
   await page.evaluate(() => { const b = document.querySelector('[data-action="feed-retry"]'); if (b) b.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
   await page.reload({ waitUntil: 'domcontentloaded' }); await page.waitForSelector('#bottom-nav button[data-nav="myplace"]', { timeout: 120000 });
-  for (let k = 0; k < 6; k++) { await page.evaluate(() => document.querySelector('#bottom-nav button[data-nav="myplace"]').click()); const open = await page.evaluate(() => { const b = document.querySelector('[data-tab="feed"]'); return !!(b && b.getBoundingClientRect().height > 0); }); if (open) break; await page.waitForTimeout(1500); }
-  await page.evaluate(() => document.querySelector('[data-tab="feed"]').dispatchEvent(new MouseEvent('click', { bubbles: true })));
+  for (let k = 0; k < 6; k++) { await page.evaluate(() => document.querySelector('#bottom-nav button[data-nav="myplace"]').click()); const open = await page.evaluate(() => !!document.querySelector('#intel.open')); if (open) break; await page.waitForTimeout(1500); }
+  await page.evaluate(() => { const sh = window.__earthusShell; sh.showTab('feed'); sh.openIntel(); });   // 탭 단추가 없어졌다(2026-09-24) — 같은 문
   await page.waitForFunction(() => document.querySelector('#intel-content .feed-item') && !/받는 중/.test((document.querySelector('#intel-content .feed-note') || {}).textContent || ''), null, { timeout: 90000 }).catch(() => {});
   const t = await text();
   const tc = await page.evaluate(() => document.querySelectorAll('#intel-content .feed-follow').length);
@@ -131,7 +132,7 @@ await scenario('offline-after-load', [], async ({ page, text, click, openFeed })
   await openFeed();
   await page.context().setOffline(true);
   await page.evaluate(() => { const b = document.querySelector('[data-action="feed-retry"]'); if (b) b.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
-  await page.evaluate(() => { const f = document.querySelector('[data-tab="feed"]'); f && f.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+  await page.evaluate(() => { const f = window.__earthusShell; if (f) { f.showTab('feed'); f.openIntel(); } });   // 탭 단추가 없어졌다(2026-09-24) — 같은 문
   await page.waitForTimeout(8000);
   const t = await text();
   const n = await page.evaluate(() => document.querySelectorAll('#intel-content .feed-item').length);

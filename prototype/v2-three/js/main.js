@@ -4,7 +4,7 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=72-b5';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=73-onesheet';
 import { createSelectionGate } from './information-contract.js';
 // PHASE 4 §9 — 지도에서 고른 사건을 어느 현상으로 읽을지는 레지스트리가 정한다.
 // ⚠️ 2026-09-23: 레지스트리를 여기·report-center.js 는 ?v=4 로, ui-shell.js·intel-questions.js 는 ?v=5 로 불러
@@ -3328,11 +3328,15 @@ async function main() {
   const revealNoteCard = () => {
     const intelEl = document.getElementById('intel');
     const body = document.getElementById('intel-body');
-    const card = document.querySelector('#intel-content > .card');   // 'now' 탭 맨 앞 카드 = lockedNote(getNowHtml)
+    // (2026-09-24 정정) 한 장 시트 — 카드는 이제 #intel-content 의 직계가 아니라 값 절(data-intel-sec="now") 안에 있다.
+    //   예전 선택자('#intel-content > .card')는 null 을 줘 이 함수가 조용히 멈췄다(값 카드가 접힌 채 남는다).
+    const card = document.querySelector('#intel-content [data-intel-sec="now"] .card');   // 'now' 탭 맨 앞 카드 = lockedNote(getNowHtml)
     if (!lockedNote || !intelEl || !body || !card || intelEl.dataset.tab !== 'now') return;
     // peek(118px · overflow:hidden)에서 굴리면 손잡이·✕ 가 위로 밀려 나가고 되돌려 굴릴 수도 없다 — 값을 청했으니 half 로 올린다.
     if (intelEl.dataset.sheet === 'peek') shell.setSheet('half');
-    body.scrollTop += card.getBoundingClientRect().top - body.getBoundingClientRect().top - 8;
+    // (2026-09-24 정정) 시트 머리(.intel-head · 무엇을 보고 있나 + ✕)는 본문 맨 위에 붙어 있다 — 그 높이만큼 덜 굴려 카드 머리가 가리지 않게.
+    const head = document.querySelector('#intel .intel-head');
+    body.scrollTop += card.getBoundingClientRect().top - body.getBoundingClientRect().top - 8 - (head ? head.offsetHeight : 0);
   };
   const popMetricMenu = new PopMetricMenu(i18n, (id) => {
     const metric = POP_POINT_METRIC[id];
@@ -4974,6 +4978,13 @@ async function main() {
     getNow: getNowHtml,
     // 지점 카드(2026-09-23) — ui-shell renderIntel 의 'point' 갈래가 부른다.
     getPoint: getPointHtml,
+    // (2026-09-24) 지점 카드 아래 '표시 설정' 접이 — 이 색면의 조작 카드(등치선·간격·강수 누적·H/L). 아래 'point-field-settings' 와 같은 카드다.
+    //   ui-shell 이 같은 값 절 안에 접어 두고 [표시 설정] 이 그 자리에서 편다(지점 카드를 조작 카드로 갈아 끼우지 않는다 — PD '다른 안내화면 금지').
+    getPointSettings: () => {
+      const pc = pointCard;
+      if (!pc || !FIELD_DESCRIPTORS[pc.fid] || !activeField(liveLayers, pc.fid)) return '';
+      return liveLayers.card(pc.fid) || '';
+    },
     // 추천 질문의 입력 상태 — 파도 계산은 선택한 바다 지점값을 먹는다(없으면 not_evaluable).
     hasSeaInput: () => !!(seaPoint && seaPoint.grid),
     // 지도 직접 클릭 경로의 질문 블록 조건 — 현상 선택 없이도 문맥이 있으면 질문이 붙는다.
@@ -5549,6 +5560,8 @@ async function main() {
   });
   window.__earthusSynop = synop;   // 선언 뒤에 대입한다 — 앞에 두면 TDZ 로 main() 이 통째로 죽는다
   const shell = initShell(shellHooks);
+  // (2026-09-24) 콘솔·QA 대본용 — 탭 단추가 없어져 [data-tab="…"] 를 누르던 대본이 한 장 시트의 절로 가는 문(showTab)을 직접 부른다.
+  window.__earthusShell = shell;
   /* 좌하단 출처 글씨 (index.html #srcNote). 구름 출처 줄(#cloud-note)을 그대로 따라가고,
      늘 있는 지형·기본색 크레딧을 뒤에 붙인다. 박스 없이 글씨만 — 세 지구 공통 규칙(2026-09-06). */
   /* (2026-09-23 정정 · B5 PD 승인) 폰 세로에서는 이 줄이 **맨 앞에 지금 켜진 색면의 출처·런·유효시각**을 말한다 —
@@ -5944,7 +5957,9 @@ async function main() {
       // 문맥 종료(바다 클릭·재클릭 해제) — 자동으로 켠 조각만 같이 끝난다(§15).
       if (sculptAutoFor && popSculpt.on) popSculpt.toggle();
       sculptAutoFor = null;
-      if (f) shell.openIntel();
+      // (2026-09-24 정정) 한 장 시트 — 고른 것(바다·권역·나라)의 값 카드로 연다('now'). 예전에는 탭 없이 열어 보던 탭(대개 '사건')이
+      //   그대로 섰고 나라 카드는 '선택 자료' 탭을 눌러야 보였다 — 탭 단추가 없어진 지금 그 길을 잃지 않게 문맥을 옮긴다.
+      if (f) shell.openIntel('now');
       shell.renderIntel();
       return;
     }
@@ -5953,7 +5968,7 @@ async function main() {
       focusStatsRows = statRow('권역', `${f.nameKo} · ${f.count}개국`)
         + statRow('합계 인구', '불러오는 중…', true)
         + statRow('묶는 기준', '나라 중심 좌표가 이 권역 상자 안에 드는 나라', false);
-      shell.openIntel();
+      shell.openIntel('now');   // (2026-09-24 정정) 위 바다 분기와 같은 까닭 — 권역 카드는 한 장 시트의 값 절이다
       shell.renderIntel();
       const members = countriesInRegion(f.nameEn);
       Promise.all(members.map((m) => liveLayers.countryPop((m.properties || m).code3)))
@@ -6005,7 +6020,7 @@ async function main() {
       + maxHRow
       + statRow('GDP', 'UNAVAILABLE', true)
       + statRow('실시간 데이터', focusLiveRow(f));
-    shell.openIntel();
+    shell.openIntel('now');   // (2026-09-24 정정) 위 바다 분기와 같은 까닭 — 나라 카드(인구·면적·고도)는 한 장 시트의 값 절이다
     shell.renderIntel();
     // 인구는 World Bank 최신 관측값 — 도착하면 그 줄만 다시 그린다
     const iso = (f.properties || f).code3;
@@ -6970,7 +6985,9 @@ async function main() {
       feed.selectById(eventId, orbit);
       const key = layerForEventKind(kind);
       if (key) { const [sid, lid] = key.split('/'); shell.setSelection(sid, lid); }
-      shell.openIntel();
+      // (2026-09-24 정정) 사건 문맥('feed')으로 연다 — 방금 연 사건 방이 한 장 시트의 값 절이 된다. 탭 없이 열면 보던 값 카드('now')가
+      //   그대로 서서, 지구에서 태풍을 눌렀는데 사건이 안 보였다(예전에는 '사건' 탭을 눌러야 했다 — 그 단추가 없어졌다).
+      shell.openIntel('feed');
       shell.renderIntel();
     });
     clouds.uniforms.uSunDir.value.copy(sun);
@@ -7158,7 +7175,7 @@ async function main() {
   // §14 현장 측정판 — 주소에 ?measure=1 이 있을 때만 불러온다. 평소에는 받지도 않는다(2026-09-20 M1).
   try {
     if (new URLSearchParams(location.search).get('measure') === '1') {
-      import('./measure.js?v=1').then((mod) => mod.startMeasure()).catch((e) => console.warn('[measure]', e));
+      import('./measure.js?v=2').then((mod) => mod.startMeasure()).catch((e) => console.warn('[measure]', e));
     }
   } catch (_) { /* 측정판이 없어도 앱은 돈다 */ }
 

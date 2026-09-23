@@ -162,7 +162,8 @@ async function sectionBrowser() {
   page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(m.text()); });
   const badResponses = [];
   page.on('response', (r) => { if (r.status() >= 400) badResponses.push(`${r.status()} ${r.url().replace(/^https?:\/\/[^/]+/, '')}`); });
-  const click = (sel, i = 0) => page.evaluate(([s, k]) => { const el = document.querySelectorAll(s)[k]; if (!el) return false; el.scrollIntoView(); el.dispatchEvent(new MouseEvent('click', { bubbles: true })); return true; }, [sel, i]);
+  // (2026-09-24 정정) 인텔리전스 시트가 한 장이 되며 탭 단추([data-tab])가 없어졌다 — [data-tab="…"] 는 같은 문(showTab + openIntel)을 셸 핸들로 부른다.
+  const click = (sel, i = 0) => page.evaluate(([s, k]) => { const m = /^\[data-tab="(\w+)"\]$/.exec(s); if (m) { const sh = window.__earthusShell; if (!sh) return false; sh.showTab(m[1]); sh.openIntel(); return true; } const el = document.querySelectorAll(s)[k]; if (!el) return false; el.scrollIntoView(); el.dispatchEvent(new MouseEvent('click', { bubbles: true })); return true; }, [sel, i]);
   const text = () => page.evaluate(() => (document.querySelector('#intel-content') || {}).textContent || '');
   const t0 = Date.now();
   try {
@@ -170,9 +171,11 @@ async function sectionBrowser() {
     await page.waitForSelector('#bottom-nav button[data-nav="myplace"]', { timeout: 90000 });
     const tBoot = (Date.now() - t0) / 1000;
     R('E1', '첫 화면(셸 준비)까지 ≤ 20초', tBoot <= 20, `${tBoot.toFixed(1)}초 (헤드리스·소프트웨어 GL)`);
-    for (let k = 0; k < 6; k++) { await click('#bottom-nav button[data-nav="myplace"]'); if (await page.$('[data-tab="feed"]')) break; await page.waitForTimeout(1500); }
-    const tabs = await page.evaluate(() => [...document.querySelectorAll('[data-tab]')].map((b) => b.dataset.tab));
-    R('D1', '인텔리전스 탭 6개(사건·내 장소·선택 자료·근거·예보·가정 실험)', ['feed', 'my', 'now', 'why', 'next', 'scenario'].every((t) => tabs.includes(t)), tabs.join(','));
+    for (let k = 0; k < 6; k++) { await click('#bottom-nav button[data-nav="myplace"]'); if (await page.$('#intel.open')) break; await page.waitForTimeout(1500); }
+    // (2026-09-24 정정) 인텔리전스 시트가 한 장이 되며 탭 단추([data-tab])가 없어졌다. 불변식을 옮겨 적는다: 탭 단추는 0개 · 예전 여섯 탭의 내용은 한 장의 문맥·절로 모두 닿는다
+    //   (사건 = 하단 '지금' · 내 지역 = 하단 '내 지역' · 선택 자료·근거·예보·시뮬레이션 = 한 장의 절).
+    const tabs = await page.evaluate(async () => { const sh = window.__earthusShell; const btn = document.querySelectorAll('#intel button[data-tab], #intel [role="tab"]').length; if (!sh) return { btn, secs: [] }; sh.showTab('now'); sh.openIntel(); await new Promise((r) => setTimeout(r, 400)); const secs = [...document.querySelectorAll('#intel-content > [data-intel-sec]')].map((s) => s.dataset.intelSec); sh.showTab('feed'); return { btn, secs, feed: !!document.querySelector('#bottom-nav [data-nav="feed"]'), my: !!document.querySelector('#bottom-nav [data-nav="myplace"]') }; });
+    R('D1', '인텔리전스 한 장: 탭 단추 0 · 선택 자료·근거·예보·이력·시뮬레이션 절 + 하단 지금·내 지역', tabs.btn === 0 && ['now', 'why', 'next', 'history', 'scenario'].every((t) => tabs.secs.includes(t)) && tabs.feed && tabs.my, `단추 ${tabs.btn} · 절 ${tabs.secs.join(',')}`);
     await click('[data-tab="feed"]');
     const tf = Date.now();
     await page.waitForFunction(() => document.querySelector('#intel-content .feed-item'), null, { timeout: 90000 }).catch(() => {});
@@ -277,16 +280,17 @@ async function sectionBrowser() {
     await mp.goto(`${SITE}/v2/?qa=m${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 60000 });
     await mp.waitForSelector('#bottom-nav button[data-nav="myplace"]', { timeout: 90000 }); await mp.waitForTimeout(2500);
     for (let k = 0; k < 8; k++) {
-      const open = await mp.evaluate(() => { const t = document.querySelector('[data-tab="feed"]'); return !!(t && t.getBoundingClientRect().height > 0); });
+      const open = await mp.evaluate(() => !!document.querySelector('#intel.open'));   // 탭 줄 대신 열린 시트(2026-09-24)
       if (open) break;
       await mp.evaluate(() => { const b = document.querySelector('#bottom-nav button[data-nav="myplace"]'); b && b.click(); });
       await mp.waitForTimeout(2000);
     }
-    const m = await mp.evaluate(() => { const tabs = [...document.querySelectorAll('[data-tab]')]; const r = tabs.map((t) => t.getBoundingClientRect()); const inView = r.filter((b) => b.right <= innerWidth && b.left >= 0 && b.height > 0).length; const small = tabs.filter((t) => t.getBoundingClientRect().height < 32).length; return { tabs: tabs.length, inView, small, scrollW: document.documentElement.scrollWidth, innerW: innerWidth, content: (() => { const c = document.querySelector('#intel-content'); return c ? { sh: c.scrollHeight, ch: c.clientHeight, ov: getComputedStyle(c).overflowY } : null; })() }; });
-    R('F1', '모바일: 탭이 화면 안에 있다', m.tabs >= 6 && m.inView === m.tabs, `${m.inView}/${m.tabs} 보임`);
+    // (2026-09-24 정정) 인텔리전스 시트가 한 장이 되며 탭 단추([data-tab])가 없어졌다 — F1·F3 은 탭 대신 시트 머리의 ✕(닫는 길)와 탭 단추 0개를 본다.
+    const m = await mp.evaluate(() => { const tabs = [...document.querySelectorAll('#intel-close')]; const tabBtns = document.querySelectorAll('#intel button[data-tab], #intel [role="tab"]').length; const r = tabs.map((t) => t.getBoundingClientRect()); const inView = r.filter((b) => b.right <= innerWidth && b.left >= 0 && b.height > 0).length; const small = tabs.filter((t) => t.getBoundingClientRect().height < 32).length; return { tabs: tabs.length, tabBtns, inView, small, scrollW: document.documentElement.scrollWidth, innerW: innerWidth, content: (() => { const c = document.querySelector('#intel-content'); return c ? { sh: c.scrollHeight, ch: c.clientHeight, ov: getComputedStyle(c).overflowY } : null; })() }; });
+    R('F1', '모바일: 탭 단추 0 · 시트 머리 ✕ 가 화면 안에 있다', m.tabBtns === 0 && m.tabs === 1 && m.inView === 1, `단추 ${m.tabBtns} · ✕ ${m.inView}/${m.tabs} 보임`);
     R('F2', '모바일: 가로 스크롤 없음', m.scrollW <= m.innerW, `scrollWidth ${m.scrollW} / viewport ${m.innerW}`);
-    R('F3', '모바일: 탭 버튼 높이 ≥ 32px(터치 타깃)', m.small === 0, `${m.small}개 작음`);
-    await mp.evaluate(() => document.querySelector('[data-tab="feed"]').dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    R('F3', '모바일: ✕ 높이 ≥ 32px(터치 타깃)', m.small === 0, `${m.small}개 작음`);
+    await mp.evaluate(() => { const sh = window.__earthusShell; sh.showTab('feed'); sh.openIntel(); });   // 탭 단추가 없어졌다(2026-09-24) — 같은 문
     await mp.waitForFunction(() => document.querySelector('#intel-content .feed-item'), null, { timeout: 90000 }).catch(() => {});
     const opened = await mp.evaluate(async () => { const it = document.querySelector('#intel-content .feed-item'); if (!it) return null; it.dispatchEvent(new MouseEvent('click', { bubbles: true })); await new Promise((r) => setTimeout(r, 4000)); return !!document.querySelector('.room-src'); });
     R('F4', '모바일: 카드 탭 → 사건 방 열림', opened === true, opened == null ? '카드 없음' : String(opened));

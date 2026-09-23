@@ -112,11 +112,14 @@ export function startMeasure() {
     if (e.target.closest('#earthus-measure')) return;
     const t = m.tasks[cur];
     if (!t || t.state !== 'doing') return;
-    const el = e.target.closest('[data-action],[data-tab]');
+    // (2026-09-24 정정) 인텔리전스 시트가 한 장이 되며 탭 단추([data-tab])가 없어졌다 — '예보·예정' 절의 제목 줄(더 보기)이
+    //   [data-intel-sec="next"] 안에 있다. 둘 다 받는다(예전 기록을 재현하는 화면이 남아 있어도 같은 뜻으로 센다).
+    const el = e.target.closest('[data-action],[data-tab],[data-intel-sec]');
     const a = el && el.dataset.action;
-    const tab = el && el.dataset.tab;
+    const tab = el && (el.dataset.tab || el.dataset.intelSec);
     setTimeout(() => {                                  // 앱이 화면을 바꾼 뒤에 본다
-      if (t.id === 't1' && document.querySelector('.information-context strong')) finish(true);
+      // (2026-09-24 정정) 고른 현상의 이름은 이제 시트 머리(.intel-head .ih-title)에 선다 — 한 장 시트에서는 예전 머리말이 절로 나뉘었다.
+      if (t.id === 't1' && document.querySelector('.information-context strong, #intel .intel-head .ih-title[data-phen="1"]')) finish(true);
       if (t.id === 't3' && (tab === 'next' || (a === 'intel-q' && el.dataset.sec === 'NEXT') || a === 'forme-when')) finish(true);
       if (t.id === 't4' && safeGet(MYPLACE_KEY) && safeGet(MYPLACE_KEY) !== myPlace0) finish(true);
       if (t.id === 't5') {

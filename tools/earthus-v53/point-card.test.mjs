@@ -220,12 +220,28 @@ test('배선 — 누르면 지점 카드, 메뉴에서 색면을 고르면 시�
   assert.match(main, /shell\.openIntel\('point'\)/);
   assert.match(main, /getPoint: getPointHtml,/);
   assert.match(main, /if \(quiet && args\[2\] !== 'UNAVAILABLE'\) stageNote\(/);
-  assert.match(shell, /\} else if \(curTab === 'point'\) \{[\s\S]{0,900}?const html = hooks\.getPoint \? hooks\.getPoint\(\) : '';/);
-  assert.match(shell, /if \(curTab !== 'point'\) intelContent\.prepend\(header\);/);
-  assert.match(shell, /intel\.dataset\.tab = t;/);
-  assert.match(html, /#intel\[data-tab="point"\] \.intel-tabs button\[data-tab\] \{ display: none; \}/);
+  // (2026-09-24 정정) 한 장 시트 — 지점 카드는 이제 시트의 값 절이다(renderValue). 탭 단추 줄 자체가 없어져
+  //   'point 모드에서만 탭 단추를 숨긴다'는 시험을 '어느 모드에도 탭 단추가 없다'로 옮겨 적는다.
+  assert.match(shell, /const renderValue = \(el, point, room\) => \{[\s\S]{0,1400}?const html = hooks\.getPoint \? hooks\.getPoint\(\) : '';/);
+  // 머리말(질문·능력 줄·궁금한 점·선택 장소·켜진 자료)은 여전히 값 위에 서지 않는다 — 한 장 시트(selection)는 머리말을 붙이기 전에 돌아간다.
+  const sel = shell.indexOf("if (cx === 'selection') {");
+  const pre = shell.indexOf('intelContent.prepend(header);');
+  assert.ok(sel > 0 && pre > sel && /return;\s*\n\s*\}/.test(shell.slice(sel, pre)), '한 장 시트 위에 예전 머리말이 선다');
+  assert.match(shell, /intel\.dataset\.tab = curTab;/);
+  // 탭 단추가 없다(폭과 모드에 무관) — ✕ 는 머리(.intel-head)에 있고 머리는 숨기지 않는다.
+  assert.ok(!/<button data-tab=/.test(shell), '탭 단추가 다시 생겼다');
+  assert.match(shell, /<div class="intel-head">[\s\S]{0,200}id="intel-close"/);
+  assert.ok(!/\.intel-head[^{]*\{[^}]*display:\s*none/.test(html), '시트 머리(✕)를 숨긴다');
+  // 지점 카드의 머리글(현상 · 좌표)은 시트 머리로 올라간다 — 카드 안 같은 줄은 숨긴다(두 번 서지 않게).
+  assert.match(html, /#intel\[data-tab="point"\] \.point-card \.pc-kicker \{ display: none; \}/);
+  assert.match(shell, /else if \(curTab === 'point'\) \{ const k = intelContent\.querySelector\('\.point-card \.pc-kicker'\)/);
   // 반박 검증 — 폰에서 모든 모드의 탭을 걷으면 '예보·예정'·'이력'·'선택 자료'(색면 조작)에 갈 길이 없어진다. 지점 카드 모드만.
-  assert.ok(!/\n\s*#intel \.intel-tabs button\[data-tab\] \{ display: none; \}/.test(html));
+  // (2026-09-24 정정) 한 장 시트에서는 그 길이 **같은 장의 절**이다: 지점 카드 아래에 근거·예보·이력·시뮬레이션 절이 이어지고,
+  //   색면 조작(등치선·간격·강수 누적·H/L)은 값 절 안의 '표시 설정' 접이다. 길이 0개가 되지 않았는지 본다.
+  for (const id of ['why', 'next', 'history', 'scenario']) assert.match(shell, new RegExp(`secs\\.push\\(\\{ id: '${id}'`), `${id} 절이 한 장에서 빠졌다`);
+  assert.match(shell, /const pointSettingsHtml = \(\) => \{/);
+  assert.match(main, /getPointSettings: \(\) => \{/);
+  assert.match(shell, /if \(a === 'point-field-settings'\) \{\s*\n\s*const d = intelContent\.querySelector\('details\[data-intel-more="settings"\]'\);/);
   assert.match(shell, /if \(!tab && curTab === 'point'\) tab = 'now';/);
   assert.match(shell, /if \(!intelOpen && curTab === 'point'\) \{ curTab = 'now';/);
   assert.match(shell, /cur\.dataset\.key === key/);
@@ -233,4 +249,48 @@ test('배선 — 누르면 지점 카드, 메뉴에서 색면을 고르면 시�
   assert.match(main, /const POINT_SKIP = new Set\(\['wavefield'\]\);/);
   // ✕ 는 탭 줄 안에 있다 — 줄 전체를 숨기지 않는다
   assert.ok(!/#intel(\[data-tab="point"\])? \.intel-tabs \{[^}]*display: none/.test(html));
+});
+
+test('한 장 시트 — 예전 탭의 내용이 모두 한 장 안에 있다 · 절은 7단계 순서 · 재료 없는 절은 이유 한 줄', () => {
+  const shell = readFileSync(root('prototype/v2-three/js/ui-shell.js'), 'utf8');
+  const sheet = shell.slice(shell.indexOf('const renderSheet = (p) => {'), shell.indexOf('const renderIntel = () => {'));
+  assert.ok(sheet.length > 0, 'renderSheet 가 없다');
+  // 순서: 값 → 자료의 근거 → 예보·예정 → 이력 → 모델 비교 → Intelligence → 시뮬레이션
+  const at = (re) => sheet.search(re);
+  const order = [/const secs = \[\{ id: 'now' \}\]/, /id: 'why'/, /id: 'next'/, /id: 'history'/, /id: 'compare'/, /id: 'intel'/, /id: 'scenario'/].map(at);
+  assert.ok(order.every((i) => i > 0), `절이 빠졌다: ${order}`);
+  assert.deepEqual([...order].sort((a, b) => a - b), order, '절 순서가 7단계 문법과 다르다');
+  // 예전 탭의 화면을 만들던 것들이 전부 한 장에서 불린다(사건·내 지역은 하단 바의 문맥)
+  for (const call of ['whyHtml(', 'nextHtml()', 'historyHtml()', 'hooks.getScenario()', 'hooks.getNow()', 'hooks.getFeed()', 'hooks.getPoint']) {
+    assert.ok(shell.slice(shell.indexOf('/* ── 한 장 시트'), shell.indexOf('const renderIntel = () => {')).includes(call), `${call} 가 한 장에서 빠졌다`);
+  }
+  // 예전 머리말의 조각이 절로 옮겨졌다 — 켜진 자료(끄기 단추)·선택 장소·출처 줄(근거 절) · 궁금한 점(시뮬레이션 절) · Intelligence 띠
+  assert.match(sheet, /\$\{p\.srcLine\}\$\{p\.phenomenonLine\(\)\}\$\{p\.placeLine\}\$\{p\.timeNote\}\$\{p\.activeDetails\}/);
+  assert.match(sheet, /const qs = `\$\{p\.simQuestionsHtml\(\)\}\$\{p\.regionLine\(\)\}\$\{p\.mapContextQuestions\(\)\}`;/);
+  assert.match(sheet, /const strip = point \? '' : p\.intelStripBlock\(\);/);
+  // 재료가 없으면 자리를 지키고 이유 한 줄(lineHtml) — 절을 지우지 않는다(이력·예보·비교·시뮬레이션)
+  for (const id of ['next', 'history', 'compare', 'scenario']) assert.match(sheet, new RegExp(`lineHtml\\('${id}'`), `${id} 의 이유 한 줄이 없다`);
+  // 지점 카드는 한 장에 한 번 — 모델 비교 절은 지점 카드가 자기 입구를 가질 때 두지 않는다
+  assert.match(sheet, /if \(!point\) \{\s*\n\s*secs\.push\(\{ id: 'compare'/);
+  // showTab(절) 은 다른 화면으로 가지 않는다 — 문맥을 두고 그 절을 펴서 굴린다
+  assert.match(shell, /const SECTION_TABS = new Set\(\['why', 'next', 'history', 'scenario'\]\);/);
+  assert.match(shell, /if \(SECTION_TABS\.has\(t\)\) \{[\s\S]{0,200}openSecs\.add\(t\);\s*\n\s*pendingScroll = t;/);
+  // 편 접이는 다시 그려도 그대로(재생 중 220 ms)
+  assert.match(shell, /intelContent\.addEventListener\('toggle', \(e\) => \{/);
+  // (2026-09-24 적대 검토) 펴짐을 글에 구우면 '더 보기'를 누른 다음 그리기에서 절이 통째로 갈려 안쪽 접이(현재 켜진 자료)가 접혔다.
+  //   펴짐은 글 밖(syncFolds)에서 맞추고, 절 글을 갈 때 안쪽 접이의 펴짐을 지킨다.
+  assert.ok(!/const foldHtml = [^\n]*openSecs\.has/.test(shell), '접이 펴짐을 글에 구워 넣는다 — 편 순간 절이 다시 쓰인다');
+  assert.match(sheet, /writeKeepingDetails\(el, x\.html\)/);
+  assert.match(sheet, /\n\s*syncFolds\(\);/);
+  // 닫으면 편 절을 잊는다 — 앞 선택에서 편 절이 다음 선택 아래 펴진 채 남지 않게(sticky 'point' 사고의 한 장판)
+  assert.match(shell, /if \(!intelOpen\) \{ openSecs\.clear\(\); pendingScroll = null; \}/);
+  // 시뮬레이션을 직접 부르면(태풍 가정 장면 · 쓰나미 질문 · FOR ME) 예전 탭처럼 getScenario() 본문이 **나와야** 한다 ·
+  //   능력 없이 질문만 있으면 이유 한 줄이 질문보다 먼저 선다.
+  assert.match(sheet, /const simAsked = tabIntent === 'scenario';/);
+  assert.match(sheet, /simOk \|\| simAsked \? openHtml\('scenario', qs \+ hooks\.getScenario\(\)\)\s*\n\s*: `\$\{lineHtml\('scenario', simWhy\)\}\$\{qs\}`/);
+  // 재생 중 굴려 내려 보던 자리가 밀리지 않는다 — 보이는 칸에서 시작하는 절의 top 을 쓰기 전후로 재어 되돌린다
+  assert.match(sheet, /if \(anchor && anchor\.isConnected && !pendingScroll\) \{\s*\n\s*const d = anchor\.getBoundingClientRect\(\)\.top - anchorTop;\s*\n\s*if \(Math\.abs\(d\) >= 1\) intelBody\.scrollTop \+= d;/);
+  // 절 제목·시트 머리는 스크린리더에도 제목이다
+  assert.match(shell, /const lineHtml = \(id, why\) => `<div class="is-h" role="heading" aria-level="3">/);
+  assert.match(shell, /<strong class="ih-title" role="heading" aria-level="2">/);
 });

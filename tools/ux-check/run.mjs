@@ -256,7 +256,9 @@ async function checkPage(browser, target, device) {
     await page.mouse.click(Math.round(vp.width * 0.62), Math.round(vp.height * 0.58));
     await sleep(3500);
     const card = await page.evaluate(() => { const c = document.querySelector('.point-card'); const big = c && c.querySelector('.pc-big');
-      const tabs = [...document.querySelectorAll('#intel .intel-tabs button[data-tab]')].filter((b) => b.getBoundingClientRect().height > 0).length;
+      // (2026-09-24 정정) 인텔리전스 시트가 한 장이 되며 .intel-tabs 줄 자체가 없어졌다 — 그 줄 이름에 묶여 세면 무엇이 다시 생겨도 0 이 나온다.
+      //   시트 안의 탭 모양 단추를 모두 센다(data-tab 단추 · role=tab).
+      const tabs = [...document.querySelectorAll('#intel button[data-tab], #intel [role="tab"]')].filter((b) => b.getBoundingClientRect().height > 0).length;
       return { shown: !!c && c.getBoundingClientRect().height > 0, value: big ? big.textContent.trim() : null, visibleTabButtons: tabs }; }).catch(() => ({ shown: false }));
     const f = await shot(page, `${id}-point-card`);
     rec.flows.push({ step: '기온 켠 채 지구 누르기 → 지점 카드', ...card, shot: f, ok: !!card.shown && !!card.value && card.visibleTabButtons === 0 });

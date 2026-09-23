@@ -340,7 +340,9 @@ test('하단 바에 Intelligence 칸이 없고 탐색 안의 도메인을 다시
 // ── PHASE 5 §4 — 이력 UI ─────────────────────────────────────────────────────
 test('이력은 능력이 있는 현상에만 탭이 생긴다', () => {
   assert.match(shellSrc, /CAP_TAB = \{ scenario: 'simulation', next: 'forecast', history: 'history' \}/);
-  assert.match(shellSrc, /data-tab="history"/);
+  // (2026-09-24 정정) 인텔리전스 시트가 한 장이 되며 이력은 탭이 아니라 **절**이다. 능력이 있으면 사료를 싣고(historyHtml),
+  //   없으면 자리를 지키고 이유 한 줄을 말한다 — 예전 data-tab="history" 단추 대신 절 id 를 본다.
+  assert.match(shellSrc, /secs\.push\(\{ id: 'history', html: secGate\.history\s*\n?\s*\? foldHtml\('history', historyHtml\(\)\)/);
   assert.match(shellSrc, /const historyHtml = \(\) =>/);
   const hist = Object.entries(reg.PHENOMENA).filter(([, p]) => p.capabilities.history);
   assert.equal(hist.length, 6, 'history 능력 현상 수가 바뀌었다');
@@ -457,7 +459,10 @@ test('보고서 스토리에서 그 현상으로 갈 수 있다', () => {
   assert.match(rcSrc, /data-story-phenomenon="/);
   assert.match(shellSrc, /toStoryPhen\.dataset\.storyPhenomenon\.split\('\/'\)/);
   // 현상으로 옮긴 뒤에는 그 현상의 값을 보여 준다 — 사건 피드가 아니라.
-  assert.match(shellSrc, /data-tab="now"/);
+  // (2026-09-24 정정) 탭 단추(data-tab="now")가 없어졌다 — 같은 뜻을 가는 곳으로 본다: 능력이 없는 행동은 값 절('now')로,
+  //   있으면 그 절(why · scenario)로. 어느 쪽도 'feed' 가 아니다.
+  assert.match(shellSrc, /const ACTION_TAB = \{ phenomenon: 'now', intelligence: 'why', simulation: 'scenario' \};/);
+  assert.match(shellSrc, /const target = CAP_TAB\[want\] && !secGate\[want\] \? 'now' : want;/);
 });
 
 test('리포트에서 그 현상으로 갈 수 있다', () => {

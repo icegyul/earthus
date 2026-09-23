@@ -130,13 +130,25 @@ test('능력 없는 행동은 숨긴다 — 준비 중으로 위장하지 않는
   // 능력이 늘면 CAP_TAB 도 는다. 모양을 통째로 못박지 않고 '있어야 할 짝'만 본다.
   assert.match(shellSrc, /CAP_TAB = \{[^}]*scenario: 'simulation'[^}]*\}/);
   assert.match(shellSrc, /CAP_TAB = \{[^}]*next: 'forecast'[^}]*\}/);
-  assert.match(shellSrc, /btn\.hidden = hide/);
   // 숨긴 탭이 열려 있었으면 되돌린다 — 빈 화면을 남기지 않는다.
-  assert.match(shellSrc, /if \(hide && curTab === tab\) showTab\('feed'\)/);
+  // (2026-09-24 정정) 인텔리전스 시트가 한 장이 되며 탭 단추가 없어졌다(btn.hidden = hide 도 없다).
+  //   같은 능력 표가 이제 절의 내용을 가른다 — 능력이 없으면 **내용 대신 이유 한 줄**, 있으면 그 절의 내용.
+  //   예전 불변식 '숨긴 탭이 열려 있었으면 사건으로 되돌린다(빈 화면 금지)'는 '능력 없는 절은 이유 한 줄로 자리를 지킨다'로 옮겼다 —
+  //   되돌리기(showTab('feed'))는 고른 현상을 보던 사람을 사건 목록으로 끌고 가서 뺐다.
+  assert.match(shellSrc, /secGate\[tab\] = !hide;/);
+  // 코드 줄만 본다(줄 머리에서 시작) — 주석 안의 옛 코드 기록은 남는다(AGENTS.md §4).
+  assert.ok(!/\n\s*if \(hide && curTab === tab\) showTab\('feed'\)/.test(shellSrc), '능력 없는 절이 사람을 사건 목록으로 끌고 간다');
+  assert.match(shellSrc, /secs\.push\(\{ id: 'history', html: secGate\.history\s*\n?\s*\? foldHtml\('history', historyHtml\(\)\)\s*\n?\s*: lineHtml\('history'/);
+  assert.match(shellSrc, /secs\.push\(\{ id: 'next', html: secGate\.next \|\|/);
+  assert.match(shellSrc, /const simOk = secGate\.scenario \|\|/);
+  assert.ok(!/<button data-tab=/.test(shellSrc), '탭 단추가 다시 생겼다');
   assert.ok(!/준비\s*중/.test(shellSrc.slice(shellSrc.indexOf('CAP_TAB'), shellSrc.indexOf('CAP_TAB') + 900)),
     '능력 없는 행동을 "준비 중"으로 표시하고 있다');
+  const sheet = shellSrc.slice(shellSrc.indexOf('const renderSheet = (p) => {'), shellSrc.indexOf('const renderIntel = () => {'));
+  assert.ok(sheet.length > 0 && !/준비\s*중/.test(sheet), '한 장 시트의 이유 한 줄이 "준비 중"으로 위장한다');
 });
 
+// (2026-09-24 정정) '두 탭이 숨겨진다' → 한 장 시트에서는 두 절이 **이유 한 줄**로 자리를 지킨다(위 시험). 능력 값은 그대로 본다.
 test('낙뢰는 시뮬레이션도 예보도 없으므로 두 탭이 모두 숨겨져야 한다', () => {
   const p = reg.PHENOMENA['hazards.lightning'];
   assert.equal(p.capabilities.simulation, false);

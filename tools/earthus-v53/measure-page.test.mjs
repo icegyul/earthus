@@ -14,7 +14,8 @@ const src = lf(readFileSync(root('prototype/v2-three/js/measure.js'), 'utf8'));
 const main = lf(readFileSync(root('prototype/v2-three/js/main.js'), 'utf8'));
 
 test('?measure=1 일 때만 불러온다 — 평소 사용자에게는 한 바이트도 안 간다', () => {
-  assert.match(main, /get\('measure'\) === '1'\) \{\n\s+import\('\.\/measure\.js\?v=1'\)/);
+  // (2026-09-24 정정) ?v= 값은 박지 않는다 — 한 장 시트 때 측정판이 새 절 제목을 읽게 바뀌어 ?v=2 가 됐다. 지키는 것은 '조건부 동적 import'다.
+  assert.match(main, /get\('measure'\) === '1'\) \{\n\s+import\('\.\/measure\.js\?v=[A-Za-z0-9-]+'\)/);
   assert.ok(!/^import .*measure\.js/m.test(main), '정적 import 로 늘 받고 있다');
 });
 

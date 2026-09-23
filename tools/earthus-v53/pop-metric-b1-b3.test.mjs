@@ -182,7 +182,11 @@ test('B1 — 지점이 없을 때 팝업은 조용히 남지 않고 닫힌다', 
 
 test('B3 — peek 에서는 탭 단추와 머리말을 걷어 사건 첫 줄이 보인다(폰 블록 안)', () => {
   const phone = html.slice(html.indexOf('@media (max-width: 720px), (max-height: 520px) and (pointer: coarse) and (orientation: landscape) {'));
-  assert.match(phone, /#intel\[data-sheet="peek"\] \.intel-tabs button\[data-tab\] \{ display: none; \}/, 'A10 — peek 탭 단추');
+  // (2026-09-24 정정) 한 장 시트 — 탭 단추 줄이 템플릿에서 없어졌다(peek 에서 숨기던 규칙은 걸릴 곳이 없다).
+  //   명세 'peek 에는 머리와 첫 카드 머리만'을 이렇게 본다: 탭 단추가 없고 · 시트 머리(무엇을 보고 있나 + ✕)는 peek 에서도 숨지 않는다.
+  assert.ok(!/<button data-tab=/.test(shellSrc), 'A10 — 탭 단추가 다시 생겼다');
+  assert.match(shellSrc, /<div class="intel-head">[\s\S]{0,200}id="intel-close"/);
+  assert.ok(!/\[data-sheet="peek"\][^{]*\.intel-head[^{]*\{[^}]*display:\s*none/.test(html), 'peek 에서 시트 머리(✕)를 숨긴다 — 닫을 길이 없다');
   assert.match(phone, /#intel\[data-sheet="peek"\] #intel-content > \.information-context \{ display: none; \}/,
     "peek 118px 에 머리말('선택 장소: 지도에서 선택')만 서서 사건이 한 줄도 안 보였다");
   // 머리말은 half·full 에서는 그대로다 — 이 규칙 말고는 .information-context 를 숨기지 않는다

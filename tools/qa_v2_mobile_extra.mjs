@@ -17,22 +17,24 @@ async function run(label, device, viewport) {
   const page = await ctx.newPage();
   await page.goto(`${SITE}/v2/?m=${Date.now()}`, { waitUntil: 'domcontentloaded', timeout: 90000 });
   await page.waitForSelector('#bottom-nav button[data-nav="myplace"]', { timeout: 120000 }); await page.waitForTimeout(2500);
-  for (let k = 0; k < 8; k++) { const open = await page.evaluate(() => { const t = document.querySelector('[data-tab="feed"]'); return !!(t && t.getBoundingClientRect().height > 0); }); if (open) break; await page.evaluate(() => { const b = document.querySelector('#bottom-nav button[data-nav="myplace"]'); b && b.click(); }); await page.waitForTimeout(2000); }
+  for (let k = 0; k < 8; k++) { const open = await page.evaluate(() => !!document.querySelector('#intel.open')); if (open) break; await page.evaluate(() => { const b = document.querySelector('#bottom-nav button[data-nav="myplace"]'); b && b.click(); }); await page.waitForTimeout(2000); }
   const geo = await page.evaluate(() => {
     const vw = innerWidth, vh = innerHeight;
     const inView = (el) => { const b = el.getBoundingClientRect(); return b.width > 0 && b.height > 0 && b.left >= -1 && b.right <= vw + 1 && b.top >= -1 && b.bottom <= vh + 1; };
-    const tabs = [...document.querySelectorAll('[data-tab]')];
+    // (2026-09-24 정정) 인텔리전스 시트가 한 장이 되며 탭 단추([data-tab])가 없어졌다 — '탭 6개가 화면 안' 대신 '탭 단추 0 · 시트 머리 ✕ 가 화면 안'을 본다.
+    const tabs = [...document.querySelectorAll('#intel-close')];
+    const tabBtns = document.querySelectorAll('#intel button[data-tab], #intel [role="tab"]').length;
     const small = tabs.filter((t) => Math.min(t.getBoundingClientRect().height, t.getBoundingClientRect().width) < 32).length;
     const fixed = [...document.querySelectorAll('button, [role=button]')].filter((el) => { const cs = getComputedStyle(el); return cs.position === 'fixed' && el.getBoundingClientRect().width > 0; });
     const clipped = fixed.filter((el) => !inView(el)).map((el) => (el.id || el.className || el.textContent).toString().slice(0, 30));
     const body = document.querySelector('#intel-body'); const cs = body ? getComputedStyle(body) : null;
-    return { vw, vh, tabs: tabs.length, tabsIn: tabs.filter(inView).length, small, clipped, scrollW: document.documentElement.scrollWidth, panel: body ? { fits: body.getBoundingClientRect().bottom <= vh + 1, ov: cs.overflowY, sh: body.scrollHeight, ch: body.clientHeight } : null };
+    return { vw, vh, tabBtns, tabs: tabs.length, tabsIn: tabs.filter(inView).length, small, clipped, scrollW: document.documentElement.scrollWidth, panel: body ? { fits: body.getBoundingClientRect().bottom <= vh + 1, ov: cs.overflowY, sh: body.scrollHeight, ch: body.clientHeight } : null };
   });
-  R(`${label}-1`, '탭 6개가 화면 안·터치 타깃 ≥32px', geo.tabs >= 6 && geo.tabsIn === geo.tabs && geo.small === 0, `${geo.tabsIn}/${geo.tabs} · 작은 것 ${geo.small} · ${geo.vw}×${geo.vh}`);
+  R(`${label}-1`, '탭 단추 0 · ✕ 가 화면 안·터치 타깃 ≥32px', geo.tabBtns === 0 && geo.tabs === 1 && geo.tabsIn === 1 && geo.small === 0, `단추 ${geo.tabBtns} · ✕ ${geo.tabsIn}/${geo.tabs} · 작은 것 ${geo.small} · ${geo.vw}×${geo.vh}`);
   R(`${label}-2`, '가로 스크롤 없음', geo.scrollW <= geo.vw, `scrollWidth ${geo.scrollW}/${geo.vw}`);
   R(`${label}-3`, '고정 UI(버튼)가 잘리지 않음', geo.clipped.length === 0, geo.clipped.join(',') || '0');
   R(`${label}-4`, '패널이 화면 안에서 스크롤', geo.panel && geo.panel.fits && /auto|scroll/.test(geo.panel.ov), geo.panel ? `${geo.panel.ov} ${geo.panel.sh}/${geo.panel.ch} fits=${geo.panel.fits}` : '패널 없음');
-  await page.evaluate(() => document.querySelector('[data-tab="feed"]').dispatchEvent(new MouseEvent('click', { bubbles: true })));
+  await page.evaluate(() => { const sh = window.__earthusShell; sh.showTab('feed'); sh.openIntel(); });   // 탭 단추가 없어졌다(2026-09-24) — 같은 문
   await page.waitForFunction(() => document.querySelector('#intel-content .feed-item'), null, { timeout: 90000 }).catch(() => {});
   const opened = await page.evaluate(async () => { const it = document.querySelector('#intel-content .feed-item'); if (!it) return null; it.dispatchEvent(new MouseEvent('click', { bubbles: true })); await new Promise((r) => setTimeout(r, 4000)); return !!document.querySelector('.room-src'); });
   R(`${label}-5`, '카드 탭 → 사건 방', opened === true, String(opened));

@@ -15,11 +15,19 @@
 결과
   s3://<CACHE_BUCKET>/clouds/global.png   LA PNG — L=명암(입체감), A=구름량
   s3://<CACHE_BUCKET>/clouds/meta.json    { time, width, height, north, south }
+  (2026-09-23 추가) 같은 LA 그림의 WebP 변형 두 장 — PNG 는 그대로 두고 **더** 올린다.
+  s3://<CACHE_BUCKET>/clouds/global.webp        3072 폭 · 명암 손실(q80) · 알파 무손실
+  s3://<CACHE_BUCKET>/clouds/global-2048.webp   2048 폭(폰) · 같은 설정
+  meta.json 의 variants 에 이름·바이트·sha256 을 적는다. **variants 에 없으면 앱은 PNG 를 쓴다.**
+  근거·클라이언트 전환 계획: docs/CLOUD-WEBP-PLAN-2026-09-23.md
 """
 
+import hashlib
+import io
 import json
 import os
 import re
+import time
 import warnings
 from datetime import datetime, timedelta, timezone
 
@@ -48,7 +56,37 @@ DST_REGION = os.environ.get("CACHE_REGION") or os.environ.get("AWS_REGION")
 # 필요하다. 2048은 1x 화면에는 충분했지만 2x에서는 확대되어 결이 깨졌다.
 # 원본 가로 4,999px를 넘겨 가짜 화소를 만들지 않고, 통신비와 디테일의 균형인
 # 3,072px로 올린다. 실측 예상 PNG 약 2.5MB이며 시간당 1회 갱신이다.
+# (2026-09-23 정정) 실제 PNG 는 약 2.5MB 가 아니라 5.4~5.5MB 다 — S3 head-object 5,381,747 B,
+#   같은 날 13:00Z 판 5,477,495 B(earthus.net 에서 받아 잰 값). 명암(L) 채널이 들어가며 커졌다.
+#   이 크기가 v1·v2 첫 화면에서 가장 큰 파일이라 아래 WebP 변형(WEBP_*)을 함께 만든다.
 OUT_W = 3072
+
+# ── WebP 변형 (2026-09-23 추가 — docs/PERF-LTE-PLAN-2026-09-23.md V1-6·V1-6b·V2-3) ──
+# PNG 는 한 바이트도 바꾸지 않고 그대로 올린다. 변형은 **더** 올릴 뿐이고, 앱은 meta.json 의
+# variants 에 적힌 것만 쓴다. 인코딩·검증·업로드 중 **예외**가 나도 PNG 경로는 그대로 간다.
+# ⚠️ 단 메모리 초과(OOM)·제한시간 초과는 예외가 아니라 프로세스가 죽는 것이라, 인코딩이 PNG 업로드 앞에 있으므로
+#    그 시각은 PNG·meta 도 나가지 않는다. 배포 전 REPORT 기준선 확인이 조건이다(docs/CLOUD-WEBP-PLAN-2026-09-23.md §5).
+#
+# ⚠️ 알파는 반드시 무손실(alpha_quality=100)이다. 알파가 '구름이 어디 있나'다.
+#    imagery.js 의 "0은 계속 0, 1은 계속 1" 규칙 — 투명(자료 없음·맑음) 화소가 조금이라도
+#    불투명해지면 없는 구름을 그리는 것이다. AVIF 는 그래서 탈락했다(투명 화소의 5.4~10.2 % 가 0 이 아니게 변함).
+#    올리기 전에 되풀어서 알파가 입력과 **한 값도 다르지 않은지** 확인하고, 다르면 그 변형은 올리지 않는다.
+# ⚠️ 명암(L)만 손실(q80)이다. v1 은 L 을 90~255 로 눌러 쓰고(imagery.js CLOUD_LUMA_LUT),
+#    v2 관측 모드는 L 을 사실상 쓰지 않는다(tint = rgb/max → 흰색). 알파 0 아래의 L 은
+#    두 앱 모두 캔버스(premultiplied)를 거치며 이미 0 이 되므로 exact=False(libwebp 가 그 자리 RGB 를 정리)로 둔다.
+# ⚠️ method 는 3 이다. 4 이상이면 libwebp 가 알파 무손실 압축에 'TraceBackwards' 를 켜서
+#    (알파 내부 품질 8×method ≥ 25) 3072 한 장이 3.4초 → 23.6초로 늘고 크기는 7 KB 커졌다
+#    (2026-09-23 로컬 실측, Pillow 12.3.0 · libwebp 1.6.0: m3 3,037,640 B / m4 3,044,886 B / m6 2,981,602 B·173초).
+# ⚠️ 2048 판은 **최종 LA(uint8)** 를 채널별로 줄여 만든다(원본 float 에서 다시 만들지 않는다).
+#    그래야 로컬 시험(aws/gmgsi-clouds/tests)이 운영 global.png 한 장으로 Lambda 와 같은 바이트를 재현한다.
+#    handler.py:44-51 "2048은 Retina 에서 결이 깨졌다"는 데스크톱 이야기다 — 2048 은 폰 전용이고
+#    쓸지 말지는 PD 가 비교판(build/ux-mockups)을 보고 정한다.
+WEBP_QUALITY = 80
+WEBP_ALPHA_QUALITY = 100      # 100 = 알파 무손실. 낮추지 말 것(위 ⚠️).
+WEBP_METHOD = 3
+PHONE_W = 2048
+# PNG 와 같은 캐시 — 자료가 1시간 간격이고, 같은 시각의 PNG 와 WebP 는 같은 그림이다.
+CLOUD_CACHE_CONTROL = "public, max-age=1800"
 
 # 공개 버킷이라 서명 없이 읽는다. 서명해서 보내면 403 이 난다.
 src = boto3.client("s3", config=Config(signature_version=UNSIGNED))
@@ -215,6 +253,86 @@ def fade_edges(a, rows, frac=0.04):
     return a
 
 
+def _shrink_la(la, out_w):
+    """LA uint8 → 가로 out_w. 채널마다 따로 LANCZOS 로 줄인다.
+
+    ⚠️ Pillow 의 LA.resize 는 알파를 곱한(La) 뒤 줄이고 되나눠서, 알파가 낮은 곳의 L 이
+       반올림으로 뭉개진다. 서버의 shrink() 도 채널을 따로 줄이므로 같은 방식으로 한다.
+    ⚠️ LANCZOS 는 음의 꼬리가 있어 0 과 구름 경계 옆에 음수가 생기지만 Pillow 가 0 으로 자른다.
+       '줄이기 전 주변이 전부 0 인 화소는 줄인 뒤에도 0' 은 tests/check_real_png.py 가 실측으로 확인한다."""
+    h, w = la.shape[:2]
+    out_h = max(1, round(out_w * h / w))
+    out = np.empty((out_h, out_w, 2), np.uint8)
+    for c in range(2):
+        im = Image.fromarray(np.ascontiguousarray(la[..., c]), mode="L")
+        out[..., c] = np.asarray(im.resize((out_w, out_h), Image.LANCZOS))
+    return out
+
+
+def _webp_bytes(la):
+    """LA uint8 → WebP 바이트. 명암 손실 q80, 알파 무손실(위 WEBP_* 참고)."""
+    buf = io.BytesIO()
+    Image.fromarray(la, mode="LA").save(
+        buf, format="WEBP", lossless=False,
+        quality=WEBP_QUALITY, alpha_quality=WEBP_ALPHA_QUALITY,
+        method=WEBP_METHOD, exact=False,
+    )
+    return buf.getvalue()
+
+
+def encode_variants(la):
+    """최종 LA(uint8, H×W×2) 한 장으로 WebP 변형 두 장을 만든다. S3·환경변수에 손대지 않는다.
+
+    반환: [{name, key, body, width, height, bytes, sha256, encodeMs, alphaExact}, ...]
+    **알파가 입력과 한 값이라도 다른 변형은 빼고 돌려준다**(로그만 남긴다) — 올리지 않는다.
+    tests/check_real_png.py 와 tests/test_webp_variants.py 가 이 함수를 그대로 부른다."""
+    plans = [("webp", "clouds/global.webp", la)]
+    # 폰 판은 **줄일 때만** 만든다. 늘려서 만든 화소는 가짜 화소다(위 OUT_W 주석의 원칙).
+    if la.shape[1] > PHONE_W:
+        plans.append(("webp2048", "clouds/global-2048.webp", _shrink_la(la, PHONE_W)))
+    out = []
+    for name, key, src_la in plans:
+        t0 = time.perf_counter()
+        body = _webp_bytes(src_la)
+        enc_ms = round((time.perf_counter() - t0) * 1000)
+        # 되풀어서 알파를 비교한다. 브라우저도 같은 libwebp 로 푼다 — 알파는 무손실이라 그대로 나온다.
+        with Image.open(io.BytesIO(body)) as im:
+            im.load()
+            back = np.asarray(im.convert("RGBA"))
+        alpha_exact = (back.shape[:2] == src_la.shape[:2]
+                       and bool(np.array_equal(back[..., 3], src_la[..., 1])))
+        h, w = src_la.shape[:2]
+        print(f"[webp] {key} {w}x{h} {len(body)/1e6:.2f}MB {enc_ms}ms 알파일치={alpha_exact}")
+        if not alpha_exact:
+            print(f"[warn] {key} 알파가 입력과 다르다 — 이 변형은 올리지 않는다(앱은 PNG 를 쓴다)")
+            continue
+        out.append({
+            "name": name, "key": key, "body": body,
+            "width": w, "height": h, "bytes": len(body),
+            "sha256": hashlib.sha256(body).hexdigest(),
+            "encodeMs": enc_ms, "alphaExact": True,
+        })
+    return out
+
+
+def upload_variants(client, bucket, variants):
+    """변형을 올리고 meta.json 의 variants 필드를 돌려준다. 하나라도 실패하면 예외 — 호출한 쪽이 통째로 뺀다."""
+    listed = {}
+    for v in variants:
+        client.put_object(
+            Bucket=bucket, Key=v["key"], Body=v["body"],
+            ContentType="image/webp",
+            CacheControl=CLOUD_CACHE_CONTROL,
+        )
+        listed[v["name"]] = {
+            "key": v["key"], "type": "image/webp",
+            "width": v["width"], "height": v["height"],
+            "bytes": v["bytes"], "sha256": v["sha256"],
+            "quality": WEBP_QUALITY, "alpha": "lossless",
+        }
+    return listed
+
+
 def handler(event, context):
     ir_key = latest_key(SRC_IR)
     obs = obs_time(ir_key)
@@ -283,9 +401,22 @@ def handler(event, context):
     size = os.path.getsize(png)
     print(f"[out] {OUT_W}x{out_h}  {size/1e6:.2f}MB  위도 {south:.2f}~{north:.2f}")
 
+    # (2026-09-23 추가) WebP 변형은 PNG 를 올리기 **전에** 만든다 — 인코딩(수 초)이
+    # 'PNG 는 새것 · meta.json 은 옛것' 사이에 끼면 그 틈이 길어진다. 예외가 나도 PNG 는 그대로 간다(OOM·시간 초과는 위 WEBP_* ⚠️).
+    # (2026-09-23 정정) 순서를 뒤집었다: **PNG·meta 를 먼저 올리고** 그다음 변형을 만든다.
+    #   배포 전 기준선(CloudWatch REPORT 24회)이 Max Memory Used 1,878 MB / 한도 2,048 MB 였다 — 인코딩 +225 MB 면 한도를 넘어
+    #   프로세스가 죽을 수 있고, 위 순서였다면 그 시각 PNG·meta 까지 못 나갔다. 이제 죽어도 잃는 것은 이번 시각의 변형뿐이다
+    #   (meta 에 variants 가 없으면 앱은 PNG 를 쓴다). 'PNG 는 새것·meta 는 옛것' 틈은 예전과 같은 길이로 돌아온다.
+    #   메모리 자체도 memory-mb.txt(3008)로 올렸다(deploy-python.sh).
+    # 원본 크기(3000×4999) 배열은 여기서부터 쓰지 않는다. libwebp 가 인코딩 동안 약 225MB 를 더 잡으므로
+    # (로컬 실측, 프로세스 최고 작업 집합 증가분) 먼저 놓아 준다 — 다른 함수의 OOM 전례가 있다.
+    alpha = lum = ir = lat2d = lon2d = a_small = l_small = None
+    vis = cosz = ha = None
+
+    png_body = open(png, "rb").read()
     dst.put_object(
         Bucket=DST_BUCKET, Key="clouds/global.png",
-        Body=open(png, "rb").read(),
+        Body=png_body,
         ContentType="image/png",
         # 자료가 1시간 간격이라 30분 캐시. 그 사이엔 어차피 같은 그림이다.
         CacheControl="public, max-age=1800",
@@ -297,10 +428,35 @@ def handler(event, context):
         "credit": "NOAA NESDIS GMGSI",
         "format": "la8",   # L=명암, A=구름량
     }
-    dst.put_object(
-        Bucket=DST_BUCKET, Key="clouds/meta.json",
-        Body=json.dumps(meta).encode(),
-        ContentType="application/json",
-        CacheControl="public, max-age=300",
-    )
+    # (2026-09-23 추가) 덧붙이기만 한다 — 기존 키는 그대로라 옛 앱(v1 imagery.js · v2 main.js)은 모른 척 지나간다.
+    meta["png"] = {"key": "clouds/global.png", "bytes": size,
+                   "sha256": hashlib.sha256(png_body).hexdigest()}
+
+    def put_meta(m):
+        dst.put_object(
+            Bucket=DST_BUCKET, Key="clouds/meta.json",
+            Body=json.dumps(m).encode(),
+            ContentType="application/json",
+            CacheControl="public, max-age=300",
+        )
+
+    put_meta(meta)   # ① 변형 없이 — 여기까지가 예전과 같은 결과다
+
+    # ② 변형. 하나라도 실패하면 variants 를 통째로 뺀다 —
+    # meta.json 에 적힌 변형 = 이번 시각에 실제로 올라간 변형. 앱은 적힌 것만 쓴다.
+    variants = []
+    try:
+        variants = encode_variants(la)
+    except Exception as e:   # noqa: BLE001 — 어떤 실패든 PNG 경로를 막지 않는다(PNG·meta 는 이미 나갔다)
+        print(f"[warn] WebP 변형 인코딩 실패 — PNG 만 쓴다: {e!r}")
+    listed = {}
+    if variants:
+        try:
+            listed = upload_variants(dst, DST_BUCKET, variants)
+        except Exception as e:   # noqa: BLE001
+            print(f"[warn] WebP 변형 업로드 실패 — meta 에 적지 않는다(앱은 PNG): {e!r}")
+            listed = {}
+    if listed:
+        meta["variants"] = listed
+        put_meta(meta)   # ③ 변형이 실제로 올라간 뒤에만 적는다
     return {"ok": True, **meta, "bytes": size}

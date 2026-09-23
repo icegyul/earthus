@@ -59,6 +59,16 @@ if [ -f "$DIR/timeout-seconds.txt" ]; then
     || { echo "❌ timeout-seconds.txt는 1~900 정수여야 함"; exit 1; }
 fi
 
+# 2026-09-23: 메모리도 같은 방식으로 함수 폴더의 memory-mb.txt 만 예외로 읽는다(없으면 예전 그대로 2048).
+#   gmgsi-clouds 는 배포 전 기준선 Max Memory Used 1,878 MB / 2,048 MB 였고 WebP 변형 인코딩이 약 225 MB 를 더한다.
+MEMORY=2048
+if [ -f "$DIR/memory-mb.txt" ]; then
+  MEMORY="$(tr -d '[:space:]' < "$DIR/memory-mb.txt")"
+  [[ "$MEMORY" =~ ^[0-9]+$ ]] && [ "$MEMORY" -ge 128 ] && [ "$MEMORY" -le 10240 ] \
+    || { echo "❌ memory-mb.txt는 128~10240 정수여야 함"; exit 1; }
+  echo "▸ 메모리 재지정: ${MEMORY} MB"
+fi
+
 [ -d "$DIR" ] || { echo "❌ ${DIR} 없음"; exit 1; }
 
 ACCOUNT="$(aws sts get-caller-identity --query Account --output text)"
@@ -224,7 +234,7 @@ PY
     ENV_URI="file://$ENVNEW"
   fi
   aws lambda update-function-configuration \
-    --function-name "$FN" --timeout "$TIMEOUT" --memory-size 2048 \
+    --function-name "$FN" --timeout "$TIMEOUT" --memory-size "$MEMORY" \
     --environment "$ENV_URI" \
     --query 'LastModified' --output text >/dev/null
   rm -f "$ENVCUR" "$ENVNEW"
@@ -238,7 +248,7 @@ else
     --role "$ROLE_ARN" \
     --handler handler.handler \
     --zip-file "$ZIP_URI" \
-    --timeout "$TIMEOUT" --memory-size 2048 \
+    --timeout "$TIMEOUT" --memory-size "$MEMORY" \
     --environment "Variables={CACHE_BUCKET=${BUCKET},CACHE_REGION=${BUCKET_REGION}}" \
     --query 'FunctionArn' --output text
 fi

@@ -86,8 +86,10 @@
      그 잔재가 더 지저분해서, 좁은 화면에서는 일단 통째로 숨긴다 — 목록에 다시
      넣으라는 지시가 오면 그때 넣는다. 첫 방문 안내는 각 지구가 이미 자동으로
      한 번 띄우므로 접근로가 아예 없어지는 것은 아니다. */
+  /* (2026-09-23 정정) v1 영어 라벨 'Guide'(main.js paintAppBar)가 빠져 있어, 영어 폰 화면에서만 좌상단에
+     '?' 가 외따로 남아 HUD 단추 자리에 떴다(적대 검토·영어 402×714 캡처로 확인). 라벨이 바뀌면 여기도 같이 바꾼다. */
   var HELP_SEL = '#btn-help,[aria-label="기능 설명"],[aria-label="이게 뭐야"],'
-    + '[aria-label="What is this"],[aria-label="Show the walkthrough again"]';
+    + '[aria-label="What is this"],[aria-label="Show the walkthrough again"],[aria-label="Guide"]';
 
   // 지금 어느 지구인가. 긴 경로부터 본다 — '/' 는 무엇에나 걸리기 때문이다.
   // /v2 는 메뉴엔 없지만 주소창으로 직접 오는 방문은 여전히 있으므로 계속 인식한다.

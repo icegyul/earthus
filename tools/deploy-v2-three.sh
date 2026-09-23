@@ -18,8 +18,13 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 #   작업 트리를 직접 올리지 않는다 — 거름망이 막은 파일은 여기서 멈춘다.
 . "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/../aws/_shared/public-source.sh
 SRC="$(public_dir v2-deploy)"
-BUCKET="${EARTHUS_APP_BUCKET:-earthus-cache-kr}"
-S3_REGION="${EARTHUS_APP_REGION:-us-east-2}"
+# 2026-09-23 — 앱 원본을 서울로 옮겼다(aws/_shared/app-origin.sh). v2 가 쓰는 app/v2/* · app/Intelligence* 는 전부 서울 몫이다
+#   (오하이오에 남는 v2/data/current-earth/ · v2/aetherus/ 는 이 번들에 없다).
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/../aws/_shared/app-origin.sh
+# 목적지는 CloudFront 기본 동작이 **지금** 보는 원본이다(전환 전 오하이오 · 뒤 서울) — 못 읽으면 쓰지 않는다.
+app_resolve "${EARTHUS_CLOUDFRONT_DISTRIBUTION_ID:-E193CZEBLWEB56}" || exit 1
+BUCKET="$APP_BUCKET"
+S3_REGION="$APP_REGION"
 PREFIX="${EARTHUS_APP_PREFIX:-app}"
 DISTRIBUTION_ID="${EARTHUS_CLOUDFRONT_DISTRIBUTION_ID:-E193CZEBLWEB56}"
 PUBLIC_ORIGIN="${PUBLIC_ORIGIN:-https://earthus.net}"
@@ -55,17 +60,20 @@ EOF
 echo '== 1/5 Production target guard =='
 aws sts get-caller-identity >/dev/null
 aws cloudfront get-distribution --id "$DISTRIBUTION_ID" --output json > "$TMP/distribution.json"
-"$PY" - "$TMP/distribution.json" "$BUCKET" <<'PYEOF'
+"$PY" - "$TMP/distribution.json" "$BUCKET" "$S3_REGION" <<'PYEOF'
 import json,sys
 j=json.load(open(sys.argv[1]))
 c=j['Distribution']['DistributionConfig']
 aliases=set((c.get('Aliases') or {}).get('Items') or [])
 assert 'earthus.net' in aliases, f'earthus.net alias missing: {sorted(aliases)}'
 origins=(c.get('Origins') or {}).get('Items') or []
-want=sys.argv[2]+'.s3.us-east-2.amazonaws.com'
-matched=[o for o in origins if o.get('DomainName')==want and o.get('OriginPath')=='/app']
-assert matched, f'expected app origin not found: {want} /app'
-print('PASS CloudFront target', j['Distribution']['Id'], want, '/app')
+# ⚠️ 2026-09-23 서울 이사 — '그런 원본이 있는가'만 보면 거짓 PASS 다(옛 오하이오 원본이 남은 경로 때문에 계속 있다).
+#    기본 동작이 가리키는 원본이 정말 이 버킷·리전인지 본다.
+want=sys.argv[2]+'.s3.'+sys.argv[3]+'.amazonaws.com'
+oid=c['DefaultCacheBehavior']['TargetOriginId']
+o=next((x for x in origins if x.get('Id')==oid), None)
+assert o and o.get('DomainName')==want and o.get('OriginPath')=='/app', f'default behavior does not serve {want}/app (it serves {oid})'
+print('PASS CloudFront target', j['Distribution']['Id'], oid, want, '/app')
 PYEOF
 
 echo '== 2/5 Upload v2-deploy bundle =='

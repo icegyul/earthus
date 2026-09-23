@@ -72,6 +72,10 @@ APP_WRITERS = {
     #    되살리기 전에 부류 검사를 붙일 것 — INTEGRATION-7 인계 E.
     "aws/deploy-orbital-static.sh": (EXEMPT, ("app/orbital/",)),
 
+    # 2026-09-23 앱 원본 서울 이사 — 오하이오 app/ 의 **이미 공개된** 객체를 서울 버킷 app/ 로 복사한다(S3→S3).
+    #   작업 트리를 올리지 않는다. 람다 자리(KEEP_OHIO)와 키 원장 잔존물(public-api/)은 옮기지 않는다.
+    "tools/migrate-app-origin-seoul.sh": (EXEMPT, ("app/",)),
+
     # 람다가 만든 자료. 저장소 파일이 아니다
     "aws/tourism-flow/handler.py": (GENERATED, ("app/tourism/",)),
     "aws/tourism-flow/kto_collector.py": (GENERATED, ("app/tourism/kto/",)),

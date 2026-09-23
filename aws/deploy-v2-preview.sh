@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # EARTHUS 2.0 scoped preview deployment — add-only. Does NOT sync/overwrite EARTHUS 1.0 root assets.
 set -euo pipefail
+# ⛔ 2026-09-23 앱 원본 서울 이사(aws/_shared/app-origin.sh) — 이 스크립트는 목적지를 아직 고치지 않았다.
+#    오하이오 app/ 에 올리면 올림·무효화가 PASS 여도 화면은 바뀌지 않는다(전수 조사: 9개가 그렇게 조용히 성공했다). 고친 뒤 이 두 줄을 지울 것.
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/_shared/app-origin.sh; app_unmigrated_stop "$(basename "$0")"
 BUCKET="${EARTHUS_BUCKET:-earthus-cache-kr}"
 REGION="${EARTHUS_REGION:-us-east-2}"
 PREFIX="${EARTHUS_APP_PREFIX:-app}"

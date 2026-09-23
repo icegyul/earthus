@@ -11,6 +11,9 @@
 # 반사실(REMOVE) 패널은 계산이라 여기 오지 못한다. 내보내기가 그 경로에 읽을 수
 # 있는 거절문을 넣어 두므로 404 대신 문장이 뜬다.
 set -euo pipefail
+# ⛔ 2026-09-23 앱 원본 서울 이사(aws/_shared/app-origin.sh) — 이 스크립트는 목적지를 아직 고치지 않았다.
+#    오하이오 app/ 에 올리면 올림·무효화가 PASS 여도 화면은 바뀌지 않는다(전수 조사: 9개가 그렇게 조용히 성공했다). 고친 뒤 이 두 줄을 지울 것.
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/_shared/app-origin.sh; app_unmigrated_stop "$(basename "$0")"
 
 # 배포 자격증명. v3 키즈 스크립트와 같은 규칙을 쓴다 —
 #  · 내 컴퓨터: 만료되지 않는 IAM 사용자 earthus-deploy 프로파일

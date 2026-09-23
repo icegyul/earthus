@@ -12,10 +12,11 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 #   작업 트리를 직접 올리지 않는다 — 거름망이 막은 파일은 여기서 멈춘다.
 . "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/../aws/_shared/public-source.sh
 
-BUCKET="earthus-cache-kr"
+# 2026-09-23 — 앱 원본을 서울로 옮겼다. 버킷·리전은 경로마다 aws/_shared/app-origin.sh 가 정한다
+#   (코드 → earthus-app-seoul/ap-northeast-2 · 람다가 쓰는 자리 → 오하이오 · 람다가 읽는 app/data 시드 → 두 곳).
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"/../aws/_shared/app-origin.sh
 PREFIX="app"
 DIST="E193CZEBLWEB56"
-REGION="us-east-2"
 export AWS_PROFILE="${AWS_PROFILE:-earthus-deploy}"
 
 [ $# -gt 0 ] || { echo "사용법: bash tools/deploy-v1.sh <파일...>  (prototype/ 기준 경로)"; exit 1; }
@@ -43,14 +44,27 @@ for f in "$@"; do
 done
 
 echo "== 2/3 업로드 =="
+# 목적지는 CloudFront 기본 동작이 **지금** 보는 원본이다(전환 전 오하이오 · 뒤 서울) — 못 읽으면 쓰지 않는다.
+app_resolve "$DIST" || exit 1
 PATHS=()
+# ⚠️ 목적지는 "s3://$BUCKET/$PREFIX/…" 모양 그대로 둔다 — 공개 경계 시험(test_integration4_boundary.py)이
+#    이 모양으로 공개 업로더를 찾는다. 모양을 바꾸면 이 스크립트가 감시 밖으로 빠진다.
+put() {  # $1 = 로컬 파일 · $2 = app/ 아래 경로 (BUCKET · REGION 은 부르기 전에 정한다)
+  aws s3 cp "$1" "s3://$BUCKET/$PREFIX/$2" \
+    --region "$REGION" --content-type "$(ctype "$2")" \
+    --cache-control 'no-cache' --metadata-directive REPLACE --only-show-errors
+}
 for f in "$@"; do
   # 대입으로 받아 실패를 붙잡는다 — 인자 안에서 부르면 빈 문자열로 그대로 간다.
   src="$(public_file "$f")" || exit 1
-  aws s3 cp "$src" "s3://$BUCKET/$PREFIX/$f" \
-    --region "$REGION" --content-type "$(ctype "$f")" \
-    --cache-control 'no-cache' --metadata-directive REPLACE --only-show-errors
-  printf '  올림 %s\n' "$f"
+  read -r BUCKET REGION < <(app_target "$f")
+  put "$src" "$f"
+  printf '  올림 %s → %s\n' "$f" "$BUCKET"
+  if app_also_ohio "$f"; then
+    BUCKET="$APP_OHIO_BUCKET"; REGION="$APP_OHIO_REGION"
+    put "$src" "$f"
+    printf '  올림 %s → %s (람다가 오하이오에서 읽는 시드 — 두 곳)\n' "$f" "$BUCKET"
+  fi
   PATHS+=("/$f")
 done
 

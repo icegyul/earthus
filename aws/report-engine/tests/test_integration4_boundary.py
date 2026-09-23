@@ -207,6 +207,8 @@ BOUNDARY_EXEMPT = {
     "aws/deploy-app.sh":              "build/public-app 을 직접 원본으로 쓴다",
     "aws/deploy-orbital-static.sh":   "build/orbital — 내보내기 산출물이지 작업 트리가 아니다",
     "tools/publish-aetherus-snapshot.sh": "API 호출 결과를 만들어 올린다",
+    # 2026-09-23 — 이미 공개된 app/ 객체를 버킷끼리(오하이오 → 서울) 복사하는 일회성 이사 도구. 작업 트리를 읽지 않는다.
+    "tools/migrate-app-origin-seoul.sh": "S3→S3 복사 — 이미 공개된 객체를 옮길 뿐 작업 트리를 올리지 않는다",
 }
 UPLOAD_RE = re.compile(r"aws\s+s3\s+(cp|sync)")
 PUBLIC_DEST_RE = re.compile(r"s3://[^\"'\s]*(\$\{?BUCKET\}?|earthus-cache-kr)[^\"'\s]*/"

@@ -30,6 +30,17 @@ async function head(url) {
 async function main() {
   const manifest = JSON.parse(await readFile(path.join(OUTPUT, 'manifest.json'), 'utf8'));
   const { bucket, region, distributionId, publicOrigin } = manifest.target;
+  // ⛔ 2026-09-23 앱 원본 서울 이사(aws/_shared/app-origin.sh) — 매니페스트의 목적지가 CloudFront 기본 동작이 **지금** 보는
+  //    버킷과 다르면 멈춘다. 다르면 올림·무효화가 PASS 여도 화면은 바뀌지 않는다(전환 전 전수 조사: 9개가 그렇게 조용히 성공했다).
+  {
+    const cfg = JSON.parse(aws(['cloudfront', 'get-distribution-config', '--id', distributionId, '--output', 'json']).toString('utf8')).DistributionConfig;
+    const oid = cfg.DefaultCacheBehavior.TargetOriginId;
+    const o = cfg.Origins.Items.find(x => x.Id === oid);
+    const live = o ? o.DomainName : '?';
+    if (live !== `${bucket}.s3.${region}.amazonaws.com` || o.OriginPath !== '/app') {
+      throw new Error(`manifest target ${bucket}/${region} is not what CloudFront serves (${live}${o ? o.OriginPath : ''}) — fix target in tools/build_information_release.mjs and rebuild`);
+    }
+  }
   const record = { releaseId: manifest.releaseId, head: manifest.source.head, startedAt: new Date().toISOString(), dryRun: DRY, dependencies: [], backups: [], uploads: [], verified: [], invalidation: null };
 
   console.log(`== 1/5 기존 의존성 ${manifest.existingDependencies.length}개 운영 존재 확인 ==`);

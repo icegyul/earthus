@@ -109,6 +109,18 @@ const prop = (declText, name) => {
 
 const V = rootVars();
 const TAP = px('var(--tap)', V);
+/* (2026-09-23 정정 · B5 PD 승인) 세로 폰의 아래 자리 토큰(--nav-lift · --hud-lift · --hud-h · --nav-reserve)은 이제
+   '@media (max-width: 720px) and (orientation: portrait)' 안의 :root 가 다시 정한다(index.html '폰 세로 아래 자리표').
+   V(첫 :root)만 읽으면 아래 ㉠·㉢·㉣ 이 **눕힌 폰의 뿌리값(158 · 66 · 79)** 으로 셈해 '겉으로 통과하지만 뜻 없는' 시험이 된다.
+   그래서 세로 폰을 재는 시험은 VP(뿌리값 위에 세로 자리표를 덮어 읽은 것)를 쓴다 — 375×812 는 세로다. */
+const PORTRAIT = blocksOf('@media (max-width: 720px) and (orientation: portrait)').join('\n');
+assert.ok(PORTRAIT.length > 0, '세로 폰 자리표 덩어리를 못 찾았다');
+const VP = (() => {
+  const out = { ...V };
+  for (const r of PORTRAIT.matchAll(/:root\s*\{([^{}]*)\}/g))
+    for (const d of r[1].matchAll(/(--[a-z-]+)\s*:\s*([^;]+);/g)) out[d[1]] = d[2].trim();
+  return out;
+})();
 
 // ── 공통 전제 ──────────────────────────────────────────────────────────────
 test('표적 최소치 --tap 은 iOS HIG 의 44px 이상이다', () => {
@@ -126,20 +138,24 @@ test('㉠ 알약 치수는 한 곳(:root --nav-*)에서만 나온다 — 두 군
   const navH = px('var(--nav-h)', V);
   assert.equal(navH, TAP + px('var(--nav-pad)', V) * 2 + 2,
     `--nav-h ${navH} 가 버튼+여백+테두리 합과 다르다`);
-  const reserve = px('var(--nav-reserve)', V);
-  assert.ok(reserve >= px('var(--nav-lift)', V) + navH,
+  const reserve = px('var(--nav-reserve)', VP);
+  assert.ok(reserve >= px('var(--nav-lift)', VP) + navH,
     `--nav-reserve ${reserve} 가 알약이 실제로 먹는 높이보다 작다`);
+  // (2026-09-23 B5) 세로에서는 시트·서랍이 알약 윗변에 **맞붙는다** — 알약이 시트의 맨 아래 줄이다.
+  assert.equal(reserve, px('var(--nav-lift)', VP) + navH, `세로 --nav-reserve ${reserve} 가 알약 윗변과 다르다 — 시트와 알약 사이가 뜨거나 겹친다`);
 });
 
 test('㉠ 패널 바닥이 알약 윗변 위에 있다 — 375×812 에서 셈으로 견준다', () => {
   const nav = decl(PHONE, '#bottom-nav');
   const navH = px('var(--nav-h)', V);
-  const navTop = VH - px(prop(nav, 'bottom'), V) - navH;
-  assert.equal(navTop, 600, `알약 윗변이 ${navTop} — 실측 y600 과 다르다(전제가 바뀌었다)`);
+  const navTop = VH - px(prop(nav, 'bottom'), VP) - navH;
+  // (2026-09-23 정정 · B5) 600 → 658. 알약이 타임라인(10~50) · 출처 줄(56~100) 바로 위(100~154)로 내려왔다 —
+  //   812 − 100 − 54 = 658. 셈(메뉴 바닥 ≤ 알약 윗변)은 아래 그대로다. 402×714 실측 알약 560~614(= 714 − 154).
+  assert.equal(navTop, 658, `알약 윗변이 ${navTop} — B5 자리표의 셈 658 과 다르다(전제가 바뀌었다)`);
 
   const mp = decl(PHONE, '#menu-panel');
-  const top = px(prop(mp, 'top'), V);
-  const maxH = px(prop(mp, 'max-height'), V);
+  const top = px(prop(mp, 'top'), VP);
+  const maxH = px(prop(mp, 'max-height'), VP);
 
   // 패널은 translateY(-50%) 로 제 높이의 절반만큼 올라간다 → 바닥 = top + 높이/2.
   // 높이는 max-height 까지 자랄 수 있으므로 그때가 가장 낮게 내려온 경우다.
@@ -283,11 +299,21 @@ test('㉢ 출처 독 펼치기 ▾ — 표적 44×44, 왼쪽 이웃은 누를 �
   assert.match(clickable[0], /id="hud-more"/);
 
   // 위로 17 번져도 하단 알약 아랫변에 닿지 않는다(#hud 는 2줄이면 79 까지 자란다).
-  const hudBottom = px(prop(decl(PHONE, '#hud'), 'bottom'), V);
-  const hudRowCenter = hudBottom + 79 - 5 - 6;                  // 위쪽 여백 5, 글줄 ≈12 의 한가운데
-  const navUnderside = px(prop(decl(PHONE, '#bottom-nav'), 'bottom'), V);
-  assert.ok(hudRowCenter + t.h / 2 <= navUnderside,
-    `표적 위쪽 끝 ${hudRowCenter + t.h / 2} 가 알약 아랫변 ${navUnderside} 를 넘는다`);
+  /* (2026-09-23 정정 · B5) 세로 폰의 출처 줄은 높이가 --hud-h(= --tap 44)로 **고정**되고 ▾ 표적은 그 상자 안(top 0 · 44)에 딱 맞는다.
+     예전 셈('2줄이면 79' · 위로 17 번짐)은 79 가 이미 틀려 있었다(360 영어 89). 이제 수를 꺼내 견준다:
+       ▾ 표적 = [출처 줄 아랫변, 아랫변 + 44] ⊂ 출처 줄 · 윗변 ≤ 알약 아랫변 · 아랫변 ≥ 타임라인 슬라이더 표적 윗변. */
+  const hudBottom = px(prop(decl(PHONE, '#hud'), 'bottom'), VP);
+  const hudH = px('var(--hud-h)', VP);
+  assert.equal(px(prop(decl(PHONE, '#hud'), 'height'), VP), hudH, '출처 줄 높이가 --hud-h 로 고정돼 있지 않다 — 글이 늘면 알약 밑으로 자란다');
+  assert.ok(hudH >= t.h, `출처 줄 ${hudH} 가 ▾ 표적 ${t.h} 보다 낮다 — 표적이 상자 밖으로 번진다`);
+  assert.equal(px(prop(decl(PHONE, '#hud-more::after'), 'top'), VP), 0, '▾ 표적이 상자 안에서 시작하지 않는다(위로 번진다)');
+  const navUnderside = px(prop(decl(PHONE, '#bottom-nav'), 'bottom'), VP);
+  assert.ok(hudBottom + t.h <= navUnderside,
+    `표적 위쪽 끝 ${hudBottom + t.h} 가 알약 아랫변 ${navUnderside} 를 넘는다`);
+  // 아래로는 타임라인 슬라이더 표적(한 줄 가운데 ± 22)이 있다 — ▾ 표적 아랫변이 그 위에 있어야 한다.
+  const ts = decl(PHONE, '#timestrip');
+  const tsMid = px(prop(ts, 'bottom'), VP) + px(prop(ts, 'height'), VP) / 2;
+  assert.ok(tsMid + TAP / 2 <= hudBottom, `슬라이더 표적 윗변 ${tsMid + TAP / 2} 가 ▾ 표적 아랫변 ${hudBottom} 위로 올라온다`);
 });
 
 /* ── ㉣ 주소창이 펴져 있는 진짜 폰 (2026-09-21 반박 검증) ─────────────────────
@@ -303,18 +329,18 @@ test('㉣ 주소창이 펴져 있어도 메뉴 바닥이 알약 위에 있다 �
   const env = { vh: VIS, lvh: LVH };
 
   const mp = decl(PHONE, '#menu-panel');
-  const bottom = px(prop(mp, 'top'), V, env) + px(prop(mp, 'max-height'), V, env) / 2;
+  const bottom = px(prop(mp, 'top'), VP, env) + px(prop(mp, 'max-height'), VP, env) / 2;
 
   const nav = decl(PHONE, '#bottom-nav');
-  const navTop = VIS - px(prop(nav, 'bottom'), V, env) - px('var(--nav-h)', V, env);
+  const navTop = VIS - px(prop(nav, 'bottom'), VP, env) - px('var(--nav-h)', VP, env);
 
   assert.ok(bottom <= navTop,
     `주소창이 ${LVH - VIS}px 펴져 있을 때 패널 바닥 ${Math.round(bottom)} 이 알약 윗변 ${Math.round(navTop)} 보다 ${Math.round(bottom - navTop)}px 아래다`);
 
   // 주소창이 없는 환경(에뮬레이터·데스크톱)에서도 그대로여야 한다 — 고치면서 다른 화면을 깨지 않았다.
   const same = { vh: LVH, lvh: LVH };
-  const b2 = px(prop(mp, 'top'), V, same) + px(prop(mp, 'max-height'), V, same) / 2;
-  const n2 = LVH - px(prop(nav, 'bottom'), V, same) - px('var(--nav-h)', V, same);
+  const b2 = px(prop(mp, 'top'), VP, same) + px(prop(mp, 'max-height'), VP, same) / 2;
+  const n2 = LVH - px(prop(nav, 'bottom'), VP, same) - px('var(--nav-h)', VP, same);
   assert.ok(b2 <= n2, '주소창이 없을 때조차 깔린다');
 });
 
@@ -624,7 +650,12 @@ test('㉤ 눕힌 화면에는 눕힌 화면의 수를 준다 — 세로 수를 �
   const naive = env.vh - px('var(--nav-reserve)', portrait, env) - 48;
   assert.ok(maxH > naive, `눕힌 메뉴 높이 ${maxH} 가 세로 수를 그대로 쓴 ${naive} 보다 크지 않다 — 가로에 맞는 수를 안 줬다`);
   // 셈의 전제를 적어 둔다: 세로 수를 그대로 쓰면 107px 이었다(보고서의 수).
-  assert.equal(Math.round(naive), 107, `세로 수를 그대로 쓴 높이가 ${naive} — 보고서의 107 과 다르다(전제가 바뀌었다)`);
+  /* (2026-09-23 정정 · B5) 107 은 세로 알약이 158 에 서던 때의 수다. B5 자리표 뒤로 세로 수는 375 − 154 − 48 = 173 이다.
+     이 시험의 뜻('가로에는 가로의 수를 줬나')은 그대로 잠근다 — 가로 수가 한 치도 안 바뀌었는지까지:
+     가로 --nav-reserve = max(60+54, 60+79) + 8 = 147 · 메뉴 높이 375 − 147 − 48 = 180. 세로 자리표가 가로로 새면 여기서 걸린다. */
+  assert.equal(Math.round(naive), 173, `세로 수를 그대로 쓴 높이가 ${naive} — B5 셈 173 과 다르다(전제가 바뀌었다)`);
+  assert.equal(px('var(--nav-reserve)', vars, env), 147, '눕힌 폰의 비켜서는 높이가 바뀌었다 — B5 는 세로만 바꾼다');
+  assert.equal(maxH, 180, `눕힌 메뉴 높이 ${maxH} — 예전 180 과 다르다`);
   // 본문이 줄어들 수 있어야 비로소 스크롤한다 — 가로에서는 잘리는 높이가 늘 모자라다.
   const body = decl(scope, '.mp-body');
   assert.equal(px(prop(body, 'min-height'), vars, env), 0);
@@ -649,4 +680,59 @@ test('㉥ 좁은 가로에서도 출처 글이 알약 앞에서 끊긴다', () =
     assert.ok(hudRight <= navLeft,
       `${vw}×360 에서 출처 독 오른쪽 끝 ${Math.round(hudRight)} 이 알약 왼쪽 ${Math.round(navLeft)} 을 ${Math.round(hudRight - navLeft)}px 넘는다`);
   }
+});
+
+/* ── B5 (2026-09-23 PD 승인 + 정정) 세로 폰 아래 자리표 — 타임라인 → 출처 줄 → 알약 → 시트가 한 사슬이다 ─────────
+   PD 정정: "화면 좌하단 구름출처 에 같이 나오게 하라고 몇번이야기하니" — 출처는 타임라인 안이 아니라 좌하단 제자리.
+   노치·홈 인디케이터(안전영역 34)를 넣어도 사슬이 같이 밀려 겹침 0 이어야 한다.
+   (파일 끝에 둔다 — 위에서 선언되는 has · NAV_COUNT 를 쓴다.) */
+test('B5 세로 폰 — 타임라인·출처 줄·알약·시트가 겹치지 않고 빈틈없이 쌓인다 (402×714 · 360×640 · 안전영역 34)', () => {
+  for (const env of [{ vw: 402, vh: 714 }, { vw: 360, vh: 640 }, { vw: 375, vh: 812, inset: { 'safe-area-inset-bottom': 34 } }]) {
+    const ts = decl(PHONE, '#timestrip');
+    const tsB = px(prop(ts, 'bottom'), VP, env), tsT = tsB + px(prop(ts, 'height'), VP, env);
+    const hudB = px(prop(decl(PHONE, '#hud'), 'bottom'), VP, env), hudT = hudB + px('var(--hud-h)', VP, env);
+    const navB = px(prop(decl(PHONE, '#bottom-nav'), 'bottom'), VP, env), navT = navB + px('var(--nav-h)', VP, env);
+    const reserve = px('var(--nav-reserve)', VP, env);
+    const tag = `${env.vw}×${env.vh}${env.inset ? ' 안전영역 34' : ''}`;
+    assert.ok(tsT <= hudB, `${tag}: 타임라인 윗변 ${tsT} 가 출처 줄 아랫변 ${hudB} 위로 올라온다`);
+    assert.ok(hudT <= navB, `${tag}: 출처 줄 윗변 ${hudT} 가 알약 아랫변 ${navB} 위로 올라온다`);
+    assert.equal(reserve, navT, `${tag}: 시트 바닥 ${reserve} ≠ 알약 윗변 ${navT}`);
+    assert.ok(env.vh - reserve >= env.vh * 0.7, `${tag}: 아래 기물이 화면의 ${Math.round((reserve / env.vh) * 100)}% — 30% 를 넘는다`);
+  }
+  // 오늘(2026-09-23 운영) 아래 기물 212 → 154. 늘리면 이 수부터 다시 본다.
+  assert.equal(px('var(--nav-reserve)', VP), 154);
+});
+
+test('B5 세로 폰 — 알약은 화면 폭 한 줄이고 right 를 쓰지 않는다(landOn 오판 금지)', () => {
+  const nav = decl(PORTRAIT, '#bottom-nav');
+  assert.ok(nav, '세로 자리표에 알약 규칙이 없다');
+  assert.equal(has(nav, 'right'), false, '세로 알약에 right 가 있다 — ㉤ landOn 이 이 화면을 가로로 오판한다');
+  for (const vw of [402, 360, 320]) {
+    const left = px(prop(nav, 'left'), VP, { vw });
+    const w = px(prop(nav, 'width'), VP, { vw });
+    assert.equal(left, 8, `${vw}: 알약 왼쪽 ${left}`);
+    assert.equal(left + w, vw - 8, `${vw}: 알약 오른쪽 끝 ${left + w} — 화면 폭 한 줄이 아니다`);
+    // 다섯 칸이 폭을 나눠 가져도 칸이 44 이상이다(테두리 2 · 여백 --nav-pad×2 · 틈 2×4).
+    const cell = (w - 2 - px('var(--nav-pad)', VP) * 2 - 2 * (NAV_COUNT - 1)) / NAV_COUNT;
+    assert.ok(cell >= TAP, `${vw}: 알약 칸 ${cell.toFixed(1)} < 44`);
+  }
+  // 시트도 같은 폭·같은 왼쪽이다 — 알약이 시트의 맨 아래 줄로 붙는다.
+  const intel = decl(PORTRAIT, '#intel');
+  assert.equal(prop(intel, 'left'), prop(nav, 'left'));
+  assert.equal(prop(intel, 'width'), prop(nav, 'width'));
+});
+
+test('B5 세로 폰 — 출처 줄은 두 줄에서 자르고(≥10px) 켜진 색면 출처 칸을 보인다 · full 시트는 위 도구줄을 안 덮는다', () => {
+  const src = decl(PORTRAIT, '#srcNote');
+  assert.ok(parseFloat(prop(src, 'font-size')) >= 10, '출처 글이 10px 미만');
+  assert.equal(prop(src, '-webkit-line-clamp'), '2', '출처 줄이 두 줄에서 잘리지 않는다 — 높이 셈(--hud-h)이 깨진다');
+  const lh = px(prop(src, 'line-height'), VP);
+  assert.ok(lh * 2 <= px('var(--hud-h)', VP), `두 줄 ${lh * 2} 이 출처 줄 높이를 넘는다`);
+  assert.match(decl(PORTRAIT, '#srcNote .src-field') || '', /display:\s*inline/, '세로 폰에서 색면 출처 칸이 숨어 있다');
+  assert.match(decl(css, '#srcNote .src-field') || '', /display:\s*none/, '넓은 화면에서 색면 출처 칸이 나온다(그 화면은 이번 변경 밖이다)');
+  // full 천장 = 범례 윗변(108) → 도구줄(56~102)을 안 덮는다.
+  const full = decl(PORTRAIT, '#intel[data-sheet="full"].open #intel-body');
+  const bodyMax = px(prop(full, 'max-height'), VP);
+  const top = VH - px('var(--nav-reserve)', VP) - bodyMax - px('var(--grip-h)', VP);
+  assert.ok(top >= 102, `full 시트 윗변 ${top} 이 도구줄 아랫변 102 위로 올라온다`);
 });

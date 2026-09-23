@@ -1,6 +1,9 @@
 // M1 (2026-09-20) — 폰 3단 바텀시트 계약 시험. 계약 §C-0: Context Action 은 새 부품이 아니라 이 시트에 흡수한다.
 // initShell 은 실제 DOM 을 요구하므로 배선은 소스에서 확인한다(다른 v2 시험과 같은 방식).
 // 로컬 실측(375×812): peek 118px · half 31vh(윗변 332px — 지구 위쪽 40% 이상) · full 윗변 88px.
+// (2026-09-23 정정 · B4/B5 PD 승인) 손잡이가 #intel-body 밖(#intel 의 첫 자식)으로 나왔다 — 보이는 띠 24 · 표적 44 · 굴려도 남는다.
+//   세로 폰: 손잡이 24 + 본문(peek 118 · half 28dvh · full 천장 = 범례 윗변 108). 402×714 실측: half 손잡이 336~360 · 본문 360~560 · 알약 560~614.
+//   눕힌 폰: 본문에서 손잡이 띠만큼 빼서 시트 바깥 윗변을 예전 그대로 지킨다(812×375 실측 half 104~228 · full 88~228, 변경 전과 같다).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -35,11 +38,46 @@ test('손잡이는 넓은 화면에서 숨고 좁은 화면에서만 보인다',
   assert.match(narrow, /touch-action: none/, '끌기가 페이지 스크롤로 새면 안 된다');
 });
 
-test('half 는 지구 위쪽 40% 이상을 남긴다 — 31vh 이하', () => {
+test('half 는 지구 위쪽 40% 이상을 남긴다 — 31vh 이하 (세로 폰은 손잡이가 밖이라 본문 28dvh 이하)', () => {
   // 2026-09-23: index.html 이 half 를 31vh → 31dvh 로 바꿨다(이 페이지는 주소창이 안 접혀 vh 가 보이는 높이보다 크다 —
   //   그 파일의 메뉴 패널 기록). dvh 는 보이는 높이라 같은 수면 vh 보다 작거나 같다 — 상한 31 의 뜻은 그대로다.
   const m = html.match(/#intel\[data-sheet="half"\]\.open #intel-body \{ max-height: (\d+)d?vh; \}/);
   assert.ok(m && Number(m[1]) <= 31, `half 가 ${m && m[1]}vh — 34vh 는 812 높이에서 39% 였다`);
+  // (2026-09-23 정정 · B4) 첫 규칙(폰 두 방향 공통)만 보면 세로 폰의 실제 값을 못 본다 — 세로 자리표의 half 를 따로 읽는다.
+  //   손잡이 24 가 본문 **밖**이므로 손잡이 + 본문 ≤ 예전 31dvh 가 되려면 본문은 28dvh 이하여야 한다(402×714 실측: 손잡이 24 + 본문 200 = 224 · 예전 half 229).
+  const portrait = html.slice(html.indexOf('@media (max-width: 720px) and (orientation: portrait)'));
+  const p = portrait.match(/#intel\[data-sheet="half"\]\.open #intel-body \{ max-height: (\d+)d?vh; \}/);
+  assert.ok(p, '세로 폰 자리표에 half 규칙이 없다 — 손잡이 24 가 밖으로 나온 만큼 시트가 커진다');
+  assert.ok(Number(p[1]) <= 28, `세로 half 본문이 ${p[1]}dvh — 손잡이 24 를 더하면 예전 half(31dvh)보다 커진다`);
+  // 눕힌 폰은 본문에서 손잡이 띠를 뺀다 — 시트 바깥 윗변이 예전 그대로다.
+  const land = html.slice(html.indexOf('---------- 눕힌 폰 (2026-09-21'));
+  assert.match(land, /#intel\[data-sheet="half"\]\.open #intel-body \{ max-height: calc\(31dvh - var\(--grip-h\)\); \}/);
+  assert.match(land, /#intel\[data-sheet="peek"\]\.open #intel-body \{ max-height: calc\(118px - var\(--grip-h\)\); \}/);
+  // (2026-09-23 정정 · B5 반박 검증) 이 빼기는 눕힌 폰만이 아니라 세로 자리표가 안 거는 **720 이하의 가로 창 전부**에 걸려야 한다 —
+  //   M1 절은 max-width 720 이면 포인터와 무관하게 걸린다. 좁은 데스크톱 창(700×600)에서 full 윗변이 88 → 64 로 도구줄을 덮었다.
+  const comp = land.slice(0, land.indexOf('#intel[data-sheet="peek"].open #intel-body { max-height: calc(118px - var(--grip-h)); }'));
+  const head = comp.slice(comp.lastIndexOf('@media'));
+  assert.match(head, /^@media \(max-width: 720px\) and \(orientation: landscape\), \(max-height: 520px\) and \(pointer: coarse\) and \(orientation: landscape\) \{/,
+    `손잡이 빼기의 머리글이 가로 창 전부를 덮지 않는다: ${head.slice(0, 120)}`);
+});
+
+test('손잡이는 #intel-body 밖, #intel 의 첫 자식이다 — 본문을 굴려도 남고 표적이 44 다 (B4)', () => {
+  const tpl = shell.slice(shell.indexOf('intel.innerHTML = `'), shell.indexOf('root.appendChild(intel);'));
+  const grip = tpl.indexOf('class="sheet-grip"');
+  const body = tpl.indexOf('<div id="intel-body">');
+  assert.ok(grip > 0 && body > 0, '템플릿에서 손잡이나 본문을 못 찾았다');
+  assert.ok(grip < body, '손잡이가 #intel-body 안에 있다 — half 에서 본문을 굴리면 손잡이가 같이 밀려 사라진다');
+  // 본문 밖으로 나왔으니 닫힌 시트에서 손잡이 혼자 떠 있으면 안 된다.
+  assert.match(html, /#intel:not\(\.open\) \.sheet-grip \{ display: none; \}/);
+  const narrow = html.slice(html.indexOf('M1 (2026-09-20) 3단 바텀시트'));
+  assert.match(narrow, /\.sheet-grip \{ display: block;[^}]*height: var\(--grip-h\);/, '보이는 띠가 --grip-h 가 아니다');
+  // 표적 = 띠 + 위 8 + 아래 12 = 44. 아래 12 는 본문의 안쪽 여백(12)이라 누를 것을 가로채지 않는다.
+  const before = narrow.match(/\.sheet-grip::before \{[^}]*top: -(\d+)px; bottom: -(\d+)px;/);
+  const grip24 = Number((html.match(/--grip-h:\s*(\d+)px/) || [])[1]);
+  assert.ok(before, '손잡이 표적(::before)이 없다');
+  assert.equal(grip24 + Number(before[1]) + Number(before[2]), 44, '손잡이 표적이 44 가 아니다');
+  const bodyPad = html.match(/#intel\.open #intel-body \{[^}]*padding: (\d+)px/);
+  assert.ok(bodyPad && Number(bodyPad[1]) >= Number(before[2]), '표적 아래쪽이 본문 여백을 넘어 탭 줄을 가로챈다');
 });
 
 test('롱프레스를 쓰지 않는다 — 레이어 피커의 "길게 눌러 핀"과 겹친다(§C-0)', () => {

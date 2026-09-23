@@ -944,9 +944,13 @@ export function initShell(hooks) {
      누르면 한 단씩 돌고, 끌면 방향으로 한 단 옮긴다. 넓은 화면에서는 손잡이가 숨고 예전과 같다.
      ⚠️ 롱프레스는 쓰지 않는다 — 레이어 피커의 '길게 눌러 핀'과 겹친다(§C-0). */
   intel.dataset.sheet = 'half';
+  /* (2026-09-23 정정 · B4 PD 승인) 손잡이를 #intel-body **밖**, #intel 의 첫 자식으로 옮겼다.
+     본문 안에 있을 때는 ① 표적을 30 이상 못 키웠고(peek 118 에서 빠진다) ② half 에서 본문을 굴리면 손잡이가 같이 밀려
+     사라졌다 — 키울 손잡이가 안 보이는 시트가 됐다. 밖에 두면 보이는 띠 24 · 표적 44 · 굴려도 남는다(index.html M1 절).
+     누르기·끌기 코드는 그대로다(아래 querySelector 는 #intel 전체에서 찾는다). */
   intel.innerHTML = `
+    <button type="button" class="sheet-grip" aria-label="${i18n.ko ? '패널 높이 바꾸기' : 'Resize panel'}"><span></span></button>
     <div id="intel-body">
-      <button type="button" class="sheet-grip" aria-label="${i18n.ko ? '패널 높이 바꾸기' : 'Resize panel'}"><span></span></button>
       <div class="intel-tabs">
         <button data-tab="feed" class="on">${i18n.ko?'사건':'Feed'}</button>
         <!-- STEP 55: 3열 그리드에서 '내 장소 · FOR ME' 가 칸을 넘어 옆 탭 글자를 덮었다(실측 375폭).

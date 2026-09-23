@@ -120,7 +120,9 @@ test('출처 문구는 기기가 실제로 얹은 단계를 말한다 — 폰 z3
 
 test('캐시 토큰 — 바뀐 모듈은 새 ?v= 로 불린다', () => {
   const html = readFileSync(path.join(V2, 'index.html'), 'utf8');
-  assert.match(html, /src="\.\/js\/main\.js\?v=199-terrain"/);
+  // 2026-09-23 정정: 정확한 토큰을 박으면 다음 변경(200 B5)이 이 시험을 깬다 — 지키려는 것은 '지형을 실은 뒤로 199 아래로 돌아가지 않는다'.
+  const mv = html.match(/src="\.\/js\/main\.js\?v=(\d+)-[a-z0-9-]+"/);
+  assert.ok(mv && Number(mv[1]) >= 199, 'main.js 캐시 토큰이 지형 이전 값이다');
   assert.match(mainSrc, /from '\.\/seafloor\.js\?v=3'/);
   assert.match(mainSrc, /from '\.\/live-layers\.js\?v=40-terrain'/);
   assert.match(mainSrc, /from '\.\/intel-strip\.js\?v=2'/);

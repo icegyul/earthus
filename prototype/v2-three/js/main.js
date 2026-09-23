@@ -4,7 +4,7 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=71-perf';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=72-b5';
 import { createSelectionGate } from './information-contract.js';
 // PHASE 4 §9 — 지도에서 고른 사건을 어느 현상으로 읽을지는 레지스트리가 정한다.
 // ⚠️ 2026-09-23: 레지스트리를 여기·report-center.js 는 ?v=4 로, ui-shell.js·intel-questions.js 는 ?v=5 로 불러
@@ -34,6 +34,8 @@ import { SatLayer } from './sat-layer.js?v=1';
 import { CloudVolume } from './cloud-volume.js?v=4';
 // 바람 층(js/wind-layer.js · 2026-09-20 W3) — GFS 10 m 바람 프레임·시간 버스·입자 엔진·범례를 잇는 접착제. 관측소 막대기를 대신한다.
 import { createWindLayer } from './wind-layer.js?v=1';
+// 좌하단 출처 줄의 글 — 켜진 색면 출처 → 구름 → 지형·지금 바탕 순서를 한 곳에서 정한다(B5 · 2026-09-23 PD 정정).
+import { composeSourceLine, readLegend } from './source-line.js?v=1';
 // 공용 GFS 프레임 저장소 — 매니페스트 하나 · 프레임 캐시 하나 · 시간 하나(js/gfs-frames.js · 2026-09-20 A1).
 // 구름(CloudManager.loadGfs)과 앞으로 올 기온·바람·기압·강수 렌더러(W1~W4)가 이 하나를 나눠 쓴다.
 // 구름이 위성 모드여도 필드 프레임은 떠야 하므로 CloudManager 안이 아니라 모듈 맨 위에 둔다.
@@ -5452,19 +5454,60 @@ async function main() {
   const shell = initShell(shellHooks);
   /* 좌하단 출처 글씨 (index.html #srcNote). 구름 출처 줄(#cloud-note)을 그대로 따라가고,
      늘 있는 지형·기본색 크레딧을 뒤에 붙인다. 박스 없이 글씨만 — 세 지구 공통 규칙(2026-09-06). */
+  /* (2026-09-23 정정 · B5 PD 승인) 폰 세로에서는 이 줄이 **맨 앞에 지금 켜진 색면의 출처·런·유효시각**을 말한다 —
+     PD "화면 좌하단 구름출처 에 같이 나오게 하라고 몇번이야기하니". 글은 위쪽 범례(#field-legend)가 그린 글자를 그대로 읽는다
+     (출처를 두 군데서 따로 지어내지 않는다 — js/source-line.js). 넓은 화면·눕힌 폰은 그 칸(.src-field)을 숨겨 예전 그대로다.
+     기본색 크레딧은 'Natural Earth II' 고정 글자였다 — 바탕을 바꿔도 거짓말을 했다(DEV-DIRECTIVE 지형 ③). 지금 걸린 바탕을 읽는다.
+     ⚠️ BASE_STYLES·baseStyle 은 이 블록보다 한참 아래(setBaseStyle 근처)에서 선언되는 const/let 이다 — 여기서 이름으로 부르면
+        처음 칠할 때 TDZ 로 main() 이 통째로 죽는다(__earthusSynop 기록과 같은 종류). 그래서 window.__earthusBase 를 **칠할 때마다** 읽는다.
+     박스 없이 글씨만 — 폰 세로는 v1 출처 독처럼 두 줄까지 + ▾ (index.html '폰 세로 아래 자리표'). */
   {
     const srcNote = document.getElementById('srcNote');
     const cloudNote = document.getElementById('cloud-note');
+    const baseNow = () => {
+      const b = window.__earthusBase;
+      if (!b || !b.list || !b.get) return undefined;                 // 아직 표가 없다 = 첫 바탕(ne2) 그대로 — source-line 기본값
+      const st = b.list.find((s) => s.id === b.get());
+      const meta = b.meta ? b.meta() : null;
+      return st ? { src: st.src, date: (meta && meta.date) || '' } : undefined;
+    };
+    let lastHtml = null;
+    /* (2026-09-23 정정 · B5 반박 검증) 색면 칸은 index.html 이 세로 폰에서만 보인다 — 그런데 넓은 화면에서도 글을 **숨긴 채 넣고** 있었다.
+       #srcNote 는 aria-live 라, 5일 재생 중 범례 유효시각이 바뀔 때마다 데스크톱에서 출처 줄 전체가 새로 쓰여 화면낭독기가
+       되읽었다(예전엔 구름 글이 바뀔 때만) · ▾ 진단의 '출처' 줄에도 안 보이는 글이 섞였다. 보일 화면에서만 넣는다 — 같은 조건식이다. */
+    const srcFieldMQ = window.matchMedia ? window.matchMedia('(max-width: 720px) and (orientation: portrait)') : null;
     const paintSrc = () => {
       if (!srcNote) return;
-      const cloud = (cloudNote?.textContent || '').trim();
-      const ko = i18n.ko;
-      const fixed = ko ? '<b>AWS Terrarium</b> 지형 · <b>Natural Earth II</b> 기본색' : '<b>AWS Terrarium</b> terrain · <b>Natural Earth II</b> base';
-      srcNote.innerHTML = `${ko ? '출처' : 'Source'}: ${cloud ? `${escUI(cloud)} · ` : ''}${fixed}`;
+      const html = composeSourceLine({
+        field: (!srcFieldMQ || srcFieldMQ.matches) ? readLegend(document.getElementById('field-legend')) : null,
+        cloud: cloudNote?.textContent || '',
+        base: baseNow(),
+        ko: i18n.ko,
+      });
+      if (html === lastHtml) return;                                  // aria-live 가 같은 글을 되읽지 않게
+      lastHtml = html;
+      srcNote.innerHTML = html;
     };
     if (cloudNote) new MutationObserver(paintSrc).observe(cloudNote, { childList: true, characterData: true, subtree: true });
+    // 범례는 처음 show() 될 때에야 body 끝에 붙는다(field-legend.js mount) — 붙을 때까지 body 의 자식만 본다(하위 트리는 안 본다).
+    const watchLegend = (lg) => new MutationObserver(paintSrc)
+      .observe(lg, { childList: true, characterData: true, subtree: true, attributes: true, attributeFilter: ['hidden'] });
+    const lg0 = document.getElementById('field-legend');
+    if (lg0) watchLegend(lg0);
+    else {
+      const waitLegend = new MutationObserver(() => {
+        const lg = document.getElementById('field-legend');
+        if (!lg) return;
+        waitLegend.disconnect();
+        watchLegend(lg);
+        paintSrc();
+      });
+      waitLegend.observe(document.body, { childList: true });
+    }
     paintSrc();
     document.addEventListener('earthus:lang', paintSrc);
+    document.addEventListener('earthus:base', paintSrc);
+    if (srcFieldMQ && srcFieldMQ.addEventListener) srcFieldMQ.addEventListener('change', paintSrc);   // 폰을 세우고 눕힐 때
   }
   askEarth.init();
 
@@ -5944,6 +5987,9 @@ async function main() {
     L.push(`구름  ${clouds.mode}${clouds.mode === 'gfs' && clouds.lastOffsetMs != null ? ` (오프셋 ${Math.round(clouds.lastOffsetMs / 3.6e6)}h 적용)` : ''}`);
     const cn = (document.querySelector('.cloud-note') || {}).textContent || '';
     if (cn) L.push(`      ${cn.replace(/\s+/g, ' ').slice(0, 120)}`);
+    // (2026-09-23 B5) 폰 세로의 좌하단 출처 줄은 두 줄에서 자른다 — ▾ 를 누르면 여기서 전문을 읽고 복사한다.
+    const sn = (document.getElementById('srcNote') || {}).textContent || '';
+    if (sn) L.push(`출처  ${sn.replace(/\s+/g, ' ').trim().replace(/^(출처|Source):\s*/, '')}`);
     const on = liveLayers.activeIds();
     L.push(`레이어 ${on.length ? on.join(', ') : '없음'} (${on.length}개)`);
     const extra = [];
@@ -6271,6 +6317,9 @@ async function main() {
   ];
   let baseStyle = 'ne2';
   const baseCache = { ne2: baseTex };
+  // (2026-09-23 B5) 받은 날짜를 버리고 있었다 — 좌하단 출처 줄이 '지금 걸린 바탕 · 기준일'을 말하려면 남겨야 한다.
+  const baseMeta = {};
+  const baseChanged = () => document.dispatchEvent(new CustomEvent('earthus:base'));
 
   // lagH: 그 산출물이 실제로 공개되기까지 걸리는 시간. 트루컬러는 36시간이면 되지만
   // 밤 불빛(Black Marble VNP46A2)은 보정·갭필을 거쳐 이틀쯤 뒤에 올라온다(실측 2026-09-04:
@@ -6331,6 +6380,7 @@ async function main() {
       baseStyle = id;
       uniforms.uBaseMap.value = baseCache[id];
       uniforms.uHasBase.value = 1;
+      baseChanged();
       shell.refreshFlyout();
       if (note) note(st.ko, `${st.note}<br/>출처 ${st.src}`, st.badge);
       return;
@@ -6339,9 +6389,11 @@ async function main() {
     try {
       const { tex, date, ok } = await loadGibsBase(st);
       baseCache[id] = tex;
+      baseMeta[id] = { date, ok };
       baseStyle = id;
       uniforms.uBaseMap.value = tex;
       uniforms.uHasBase.value = 1;
+      baseChanged();
       shell.refreshFlyout();
       if (note) {
         note(st.ko, `${st.note}<br/>출처 ${st.src} · 기준 ${date} · 타일 ${ok}/50<br/>`
@@ -6352,7 +6404,7 @@ async function main() {
       if (note) note(st.ko, `위성 베이스를 받지 못했습니다 — 기존 베이스를 유지합니다.<br/>${String((e && e.message) || e)}`, 'UNAVAILABLE');
     }
   }
-  window.__earthusBase = { list: BASE_STYLES, get: () => baseStyle, set: setBaseStyle };
+  window.__earthusBase = { list: BASE_STYLES, get: () => baseStyle, set: setBaseStyle, meta: () => baseMeta[baseStyle] || null };
 
   async function setSnow(on) {
     const revision=++snowRevision;

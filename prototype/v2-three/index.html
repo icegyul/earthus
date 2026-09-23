@@ -1333,6 +1333,10 @@
     opacity: 0; transform: translateY(-6px); transition: opacity .35s, transform .35s;
   }
   #sculpt-cap.show { opacity: 1; transform: none; }
+  /* (2026-09-24 정정) 열린 시트 윗변을 넘지 않게 — --sc-room 은 pop-sculpture.js fitCaption 이 시트와 겹칠 때만 건다(없으면 제한 없음).
+     그 자리가 너무 좁으면(full 시트) sc-under 로 걷는다. #sculpt-ui(z 6)가 시트(#intel z 4) 위라 예전에는 캡션이 시트 머리를 덮었다. */
+  #sculpt-cap { max-height: var(--sc-room, none); overflow-y: auto; }
+  #sculpt-cap.show.sc-under { opacity: 0; visibility: hidden; }
   #sculpt-cap .sc-x {
     position: absolute; right: 8px; top: 8px; width: 26px; height: 26px;
     border-radius: 50%; border: 1px solid rgba(255,255,255,0.16);
@@ -1544,6 +1548,8 @@
     /* 모바일 캡션 압축 — 327px 통짜 카드가 지구의 40%를 가리지 않게 한다(2026-09-10 실측).
        순위는 접어 두고, 요약(나라·총인구·범례)만 먼저 보인다. */
     #sculpt-cap { max-height: 42vh; overflow-y: auto; scrollbar-width: none; }
+    /* (2026-09-24 정정) 시트와 겹치면 둘 중 작은 쪽 — 위 42vh 는 그대로 두고 시트 윗변 제한(--sc-room)을 더한다. */
+    #sculpt-cap { max-height: min(42vh, var(--sc-room, 42vh)); }
     #sculpt-cap .sc-rank { display: none; }
     #sculpt-cap .sc-h { display: none; }
     #sculpt-cap.expanded .sc-rank { display: block; }
@@ -2126,7 +2132,7 @@
   <div class="err" id="load-err"></div>
 </div>
 
-<script type="module" src="./js/main.js?v=204-toprow"></script>
+<script type="module" src="./js/main.js?v=205-fix0924"></script>
 <script src="/js/earth-switch.js" defer></script>
 </body>
 </html>

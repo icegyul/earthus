@@ -7,9 +7,9 @@ import { bulletinRecords, bulletinTimesHtml, escapeHtml, sourceTimeLabel, SEA_LE
 // 바다 색면의 육지 가림 — 판정·해안 띠·대체 규칙은 DOM·THREE 없는 순수 함수로 저 파일에 있다(시험이 그대로 부른다).
 import { buildOceanMaskAsync, oceanMaskAlphaRGBA, oceanMaskCardLine, erodedGridNodes } from './ocean-land-mask.js?v=1';
 // W1 셰이더 색면(기온부터) — 프레임 저장소·시간 버스·범례·라벨을 묶는 접착제는 저 파일에 있다. 여기에는 거는 자리만 둔다.
-import { activeField, clearFieldLayers, isFieldLayerId, toggleFieldLayer } from './field-layer.js?v=1';
+import { activeField, clearFieldLayers, isFieldLayerId, toggleFieldLayer } from './field-layer.js?v=2-fix0924';
 // 잠기는 땅(레이어 'slr' · 2026-09-20 E1) — 상승폭 IDW 격자·셰이더·카드는 저 파일에 있다. 여기에도 거는 자리만 둔다.
-import { createFloodOverlay, FLOOD_QUANTITY } from './flood-overlay.js?v=2';   // v=2: 2026-09-23 카드 ③ 지형 해상도를 얹힌 고도맵에서 센다
+import { createFloodOverlay, FLOOD_QUANTITY } from './flood-overlay.js?v=3-fix0924';   // v=2: 2026-09-23 카드 ③ 지형 해상도를 얹힌 고도맵에서 센다
 // 연안 침수 예상도의 전국 색인(레이어 'khoaflood' · 2026-09-20 W6) — 지표를 고른 근거·원반 그리기·솎기·집기는 저 파일에 있다.
 import {
   createFloodDiscs, floodClassLabel, floodDiscSpecs, floodDistrictLoadingNote, floodHiddenNote, floodLegendHtml,
@@ -615,6 +615,11 @@ export class LiveLayers {
     // (2026-09-23 · V2-2 검수) 위 ⚠️ 의 '라벨이 다음 키프레임까지 산 밑' 을 여기서 닫는다 — 켜진 색면의 라벨을 **같은 목록**으로
     //   다시 세우면 setLabels 가 도착한 고도맵으로 높이를 다시 읽는다(field-labels.js · 모듈은 고치지 않는다 · 값은 그대로).
     //   기압 기호(field-symbols)는 지형 전에는 가림판이 없어 그리지 않으므로 다시 세울 것이 없다.
+    //   (2026-09-24 정정) 위 줄은 틀렸다 — '그리지 않은' 채 그 키프레임에 머물러 **다음 키프레임까지** 안 섰다(같은 키프레임에서는
+    //   FieldSymbols.update 가 다시 불리지 않는다). 가림판을 못 구운 층은 여기서 다시 먹인다(field-layer.js onTerrainReady).
+    for (const f of Object.values(this._fields || {})) {
+      try { if (f && typeof f.onTerrainReady === 'function') f.onTerrainReady(); } catch (e) { console.warn('[live-layers] 지형 뒤 기호 다시 세우기 실패', e); }
+    }
     for (const f of Object.values(this._fields || {})) {
       const L = f && f.active && f.labels;
       if (!L || !L.count || !Array.isArray(L.pool)) continue;

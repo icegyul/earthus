@@ -423,8 +423,11 @@ export class IntelFeed {
       return `<div class="card"><div class="card-h">${i18n.ko ? '피드' : 'Feed'} ${this.badge('INSUFFICIENT_DATA')}</div>
         <div class="card-b">${i18n.t('feedError')}</div></div>${this.sourceNote()}`;
     }
+    // (2026-09-24 정정) 목록 머리에 '오늘의 지구 사건'을 또 적지 않는다 — 한 장 시트의 머리(ui-shell.js renderHead · cx 'feed')가 이미 같은 말을 한다
+    //   (1280×800 실측: 사건 목록에서 '오늘의 지구 사건' 2회). 목록은 이 문맥(cx 'feed')에서만 그려진다(ui-shell.js intelCtx) — 머리는 늘 있다.
+    //   여기는 개수만 센다. 지진·태풍 거르개의 머리('지진 (USGS 관측)' 등)는 시트 머리와 다른 말이라 그대로 둔다.
     if (this.state === 'empty') {
-      return `<div class="feed-head">${i18n.ko ? '오늘의 지구 사건' : "Today's Earth events"} <span class="feed-cnt">0</span></div>
+      return `<div class="feed-head">${i18n.ko ? '사건' : 'Events'} <span class="feed-cnt">0</span></div>
         <div class="feed-note">${i18n.ko ? '두 출처 모두 정상 응답 — 수집 범위에 사건이 없습니다.' : 'Both sources responded — no events in scope.'}</div>${this.sourceNote()}`;
     }
     const shown = this.visibleItems();
@@ -448,7 +451,7 @@ export class IntelFeed {
         : '';
     const head = this.kind === 'EQ' ? (ko ? '지진 (USGS 관측)' : 'Earthquakes (USGS observed)')
       : this.kind === 'TC' ? (ko ? '태풍 (GDACS 공식)' : 'Tropical cyclones (GDACS official)')
-      : (ko ? '오늘의 지구 사건' : "Today's Earth events");
+      : (ko ? '사건' : 'Events');   // (2026-09-24 정정) 예전: '오늘의 지구 사건' — 시트 머리와 겹쳤다(위 empty 갈래의 정정 기록)
     const src = this.kind === 'EQ' ? (ko ? '출처: USGS(관측)' : 'Source: USGS (observed)')
       : this.kind === 'TC' ? (ko ? '출처: GDACS(공식 경보)' : 'Source: GDACS (official alerts)')
       : (ko ? '출처: GDACS(공식 경보) · USGS(관측)' : 'Source: GDACS (official alerts) · USGS (observed)');

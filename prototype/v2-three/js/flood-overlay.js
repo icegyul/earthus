@@ -97,7 +97,7 @@ import { bandIndex, defineScale, legendModel, paletteRGBA } from './field-scales
 import { LAND_MASK_RES, sharedLandMask } from './land-mask.js?v=1';
 // 범례는 앱에 하나이고 주인 스택으로 나눠 쓴다 — 색면과 **같은 세기**로 든다(색면 표 밖이라고 약한 것이 아니다).
 import { fieldLegend as sharedFieldLegend } from './field-legend.js?v=1';
-import { LEGEND_PRIORITY_FIELD } from './field-layer.js?v=1';
+import { LEGEND_PRIORITY_FIELD } from './field-layer.js?v=2-fix0924';
 // 화면 좌표로 되돌리는 일은 지구 위 관측 숫자가 이미 하고 있다(obs-labels.js pick) — 같은 식을 두 벌로 만들지 않는다.
 import { projectPx } from './obs-labels.js?v=1';
 // 바다에서 물이 닿는 칸 판(0.25° 욕조 채우기) — 왜 필요한지는 저 파일 머리말이 숫자로 적는다.

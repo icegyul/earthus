@@ -4,7 +4,7 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=73-onesheet';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=74-fix0924';
 import { createSelectionGate } from './information-contract.js';
 // PHASE 4 §9 — 지도에서 고른 사건을 어느 현상으로 읽을지는 레지스트리가 정한다.
 // ⚠️ 2026-09-23: 레지스트리를 여기·report-center.js 는 ?v=4 로, ui-shell.js·intel-questions.js 는 ?v=5 로 불러
@@ -16,14 +16,14 @@ import { layerForEventKind } from './phenomenon-registry.js?v=6';
 const escUI = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
-import { IntelFeed } from './intel-feed.js?v=10';
+import { IntelFeed } from './intel-feed.js?v=11-fix0924';
 import { intelOf, intelSectionHtml, sectionTitle } from './intel-strip.js?v=2';
 import { bannerModel, renderWarningBanner } from './warning-banner.js?v=1';
 import { attachEvidencePopover } from './evidence-popover.js?v=1';
 import { currentTier } from './report-center.js?v=3';
 import { decideCapabilityAccess, lockExplanation, TIER } from './shared/access-mode.js';
 import { evaluateWatch, myZone, loadWatch, saveWatch } from './watch.js?v=1';
-import { LiveLayers, newsChipOpacity } from './live-layers.js?v=41-sameorigin';
+import { LiveLayers, newsChipOpacity } from './live-layers.js?v=42-fix0924';
 import { StationModel } from './station-model.js?v=2';
 import { AskEarth } from './ask-earth.js?v=3';
 import { i18n } from './i18n.js?v=11';
@@ -47,11 +47,11 @@ import { timeBus } from './time-bus.js?v=1';
 // 색면 위의 나라·해안 윤곽선 — 새 색면이 바탕 지도의 국경을 덮어 '어디가 한반도인지' 알 수 없었다(js/field-outlines.js).
 import { createFieldOutlines } from './field-outlines.js?v=1';
 // 어느 레이어가 새 셰이더 색면인지 — 바람을 켤 때 이미 깔린 색면이 있으면 풍속 색면을 자동으로 깔지 않는다(기온이 꺼지지 않게).
-import { FIELD_DESCRIPTORS, activeField, isFieldLayerId } from './field-layer.js?v=1';
+import { FIELD_DESCRIPTORS, activeField, isFieldLayerId } from './field-layer.js?v=2-fix0924';
 // 지점 판독(js/point-readout.js · 2026-09-20 W2) — 누른 자리의 값을 **우리 자료에서만** 읽는다.
 //   전에는 색면이 꺼져 있으면, 그리고 바다를 누르면, 브라우저가 api.open-meteo.com · marine-api.open-meteo.com 을
 //   직접 불렀다. 유료 서비스의 라이선스 노출이었고 화면에 칠한 값과 카드의 값이 달랐다. 이제 같은 프레임·같은 격자를 읽는다.
-import { METRIC_LAYER, seaSourceLine, sharedPointReadout } from './point-readout.js?v=2';
+import { METRIC_LAYER, seaSourceLine, sharedPointReadout } from './point-readout.js?v=3-fix0924';
 const pointReadout = sharedPointReadout({ frames: gfsFrames, timeBus });
 import { CLOUD_LEVEL, createCloudYield } from './cloud-yield.js?v=1';
 // 색면이 지형 위로 떠 있는 높이 — 바람 입자를 같은 높이에 두려고 읽는다(시차 방지).
@@ -63,9 +63,9 @@ import { createObsLabels, obsCardHtml, obsCardTitle } from './obs-labels.js?v=1'
 // 지점 카드(js/point-card.js · 2026-09-23 PD) — 색면 현상을 고른 채 지구를 누르면 뜨는 한 장.
 //   ⚠️ live-layers.js 는 import 문을 하나만 둔다(obs-labels.test — 줄을 나누면 ?v= 가 어긋나는 날 두 번 실린다).
 //   그래서 평년 문서는 point-card.js 가 우리 S3(POINT_BASE)에서 스스로 받는다.
-import { loadPointDays, loadPointNormal, loadPointObs, pointCardHtml, readPointNow } from './point-card.js?v=1';
+import { loadPointDays, loadPointNormal, loadPointObs, pointCardHtml, readPointNow } from './point-card.js?v=2-fix0924';
 let obsLabels = null;   // main() 안에서 만든다. 클릭 핸들러가 그보다 먼저 정의되므로 extScene 처럼 모듈 자리에 둔다
-import { PopSculpture } from './pop-sculpture.js?v=13';
+import { PopSculpture } from './pop-sculpture.js?v=14-fix0924';
 import { PopMetricMenu, POP_POINT_METRIC } from './pop-metric-menu.js?v=3';
 import { QuickMenu } from './quick-menu.js?v=2';
 import { QuakeHistory } from './quake-history.js?v=3';
@@ -3145,10 +3145,34 @@ async function main() {
   //      화면에 칠한 12:00Z 프레임은 23.2 °C 인데 카드는 13:15Z 의 21.1 °C 를 적었다 — 같은 자리, 2.1 °C 차이.
   // marineSelect 와 같은 선택 경쟁 문(selectionGate)을 쓴다: 이전 질의가 늦게 와서
   // 나중 결과를 덮지 않게 한다(지시서 §27 stale).
+  // (2026-09-24 정정) 같은 자리·같은 지표·같은 유효 시각을 두 번 부르면 **한 번만 읽고 카드도 한 장**이다.
+  //   나라를 고른 뒤 팝업 '기온'으로 카드를 세우고 시트의 질문 '이 나라의 지금 날씨는?'(ds.sim 'country-weather')을 누르면
+  //   같은 countryClick 으로 여기가 또 불려, 이미 선 값 카드를 '읽는 중…'으로 허물었다가 같은 글로 다시 세웠다
+  //   (1280×800 실측: 깜빡임 1회 · pointReadout.weather 2회 — 프레임은 저장소 캐시라 네트워크는 0건이었다).
+  //   ① 같은 열쇠의 조회가 날아가는 중이면 그 약속을 돌려준다(예전: 뒤 호출이 앞 호출을 abort 하고 새로 읽었다).
+  //   ② 같은 열쇠의 값 카드가 지금 lockedNote 로 서 있으면 그 카드를 다시 세운다 — '읽는 중' 없이.
+  //   열쇠에 유효 시각(timeBus.validMs)을 넣는다: 카드가 스스로 '그 시각 프레임에서 읽은 값'이라고 말한다(point-readout.js frozen).
+  //   분 단위로 자른다 — '지금'에서는 validMs 가 시계를 따라 매 밀리초 움직여 같은 열쇠가 두 번 나올 수 없었다(첫 시험에서 깜빡임 그대로 1회).
+  //   카드의 '유효' 글도 분까지만 적는다 — 같은 분이면 같은 카드다.
+  //   값을 못 읽은 카드(UNAVAILABLE)는 쥐지 않는다 — '다시 조회'가 정말 다시 읽어야 한다(point-readout.js '실패는 캐시하지 않는다').
+  let pointWeatherFlight = null; // { key, ctrl, current, run } — 날아가는 조회
+  let pointWeatherDone = null;   // { key, title, html, badge } — 마지막으로 세운 값 카드
   let pointWeatherReq = null;
   let pointWeatherLast = null; // { lat, lon, metric } — '다시 조회' 버튼이 쓴다
   const pointWeather = async (lat, lon, metric = 'temperature') => {
     pointWeatherLast = { lat, lon, metric };
+    const wKey = `${Number(lat).toFixed(4)},${Number(lon).toFixed(4)},${metric},${Math.floor(timeBus.validMs() / 60000)}`;
+    const fl = pointWeatherFlight;
+    // selectionGate.next() 보다 **먼저** 본다 — next() 를 부르면 날아가는 그 조회의 current() 가 거짓이 돼 제 결과를 버린다.
+    if (fl && fl.key === wKey && pointWeatherReq === fl.ctrl && !fl.ctrl.signal.aborted && fl.current()) return fl.run;
+    const dn = pointWeatherDone;
+    if (dn && dn.key === wKey && lockedNote && lockedNote.body === dn.html) {
+      selectionGate.next();            // 새 의도다 — 늦게 오는 다른 선택(바다 지점 등)이 이 카드를 덮지 않게
+      if (pointWeatherReq) pointWeatherReq.abort();
+      pointWeatherReq = null;
+      showNote(dn.title, dn.html, dn.badge);
+      return;
+    }
     const current = selectionGate.next();
     // 퀵메뉴의 id 는 quick-menu.js 의 ITEMS 가 정본이다 — 강수는 'rain'('precipitation' 이 아니다).
     // ① 그 색면이 켜져 있으면 화면에 칠해진 프레임의 CPU 사본에서 읽는다 — 네트워크 0건.
@@ -3165,15 +3189,26 @@ async function main() {
     }
     const ctrl = new AbortController();
     pointWeatherReq = ctrl;
-    showNote('지점 값', '<div class="card"><div class="card-h">지점 ' + fmtPt(lat, lon) + '</div><div class="card-b" role="status">예보 프레임에서 읽는 중…</div></div>', 'LOADING');
-    try {
-      const card = await pointReadout.weather(lat, lon, metric);
-      if (pointWeatherReq !== ctrl || ctrl.signal.aborted || !current()) return;
-      showNote(card.title, '<div class="card"><div class="card-h">' + card.title + ' ' + dataBadge(card.badge) + '</div><div class="card-b">' + card.html + '</div></div>', card.badge);
-    } catch (err) {
-      if (pointWeatherReq !== ctrl || ctrl.signal.aborted) return;
-      showNote('지점 값', '<div class="card"><div class="card-h">지점 값 ' + dataBadge('UNAVAILABLE') + '</div><div class="card-b">예보 프레임을 읽지 못했습니다. 잠시 후 다시 시도해 주세요.<br/><button data-action="point-weather-retry">다시 조회</button></div></div>', 'UNAVAILABLE');
-    }
+    // (2026-09-24 정정) showNote 의 본문은 **카드 안쪽 글**이다 — getNowHtml 이 lockedNote 를 제목(card-h)+배지가 달린 카드로 한 번 감싼다.
+    //   예전 세 줄은 본문에 카드를 통째로(<div class="card"><div class="card-h">제목 배지</div>…) 넣어 제목이 두 번 섰다
+    //   (1280×800 실측: 팝업 '기온'·우클릭 퀵메뉴 '기온' 모두 '지점 기온(모델 격자값) 제공자 모델' 두 줄 · 카드 안의 카드).
+    //   색면이 켜진 길(fieldNote.html)은 처음부터 안쪽 글만 넘겨 한 번이었다 — 그 길과 같게 맞춘다.
+    showNote('지점 값', '<div role="status">지점 ' + fmtPt(lat, lon) + ' — 예보 프레임에서 읽는 중…</div>', 'LOADING');
+    const run = (async () => {
+      try {
+        const card = await pointReadout.weather(lat, lon, metric);
+        if (pointWeatherReq !== ctrl || ctrl.signal.aborted || !current()) return;
+        pointWeatherDone = card.badge === 'UNAVAILABLE' ? null : { key: wKey, title: card.title, html: card.html, badge: card.badge };
+        showNote(card.title, card.html, card.badge);
+      } catch (err) {
+        if (pointWeatherReq !== ctrl || ctrl.signal.aborted) return;
+        showNote('지점 값', '예보 프레임을 읽지 못했습니다. 잠시 후 다시 시도해 주세요.<br/><button data-action="point-weather-retry">다시 조회</button>', 'UNAVAILABLE');
+      } finally {
+        if (pointWeatherFlight && pointWeatherFlight.ctrl === ctrl) pointWeatherFlight = null;   // 끝난 조회는 '날아가는 중'이 아니다
+      }
+    })();
+    pointWeatherFlight = { key: wKey, ctrl, current, run };
+    return run;
   };
 
   const seaCardHtml = () => {
@@ -3321,6 +3356,7 @@ async function main() {
   //      그래서 카드 머리를 시트 맨 위로 올린다. 굴리는 것은 #intel-body 다(overflow-y:auto 인 쪽 — #intel-content 가 아니다).
   //      scrollIntoView 는 쓰지 않는다 — 고정 패널이라 페이지까지 끌 수 있다. 머리말을 걷는 근본 처리(중복 질문 '이 나라의
   //      지금 날씨는?' 정리 · 지점 카드 한 장 모드)는 ui-shell 의 일이라 이번 B1 밖이다 — PD 에게 따로 올린다.
+  //      (2026-09-24 정정) 그 질문은 남기고 **같은 조회를 다시 하지 않게** 했다 — pointWeather 머리의 정정 기록(한 번 조회 · 한 장).
   //   ⚠️ 폰에서는 팝업을 걷는다: 누른 자리 위(y − 높이 − 16)에 뜨는 팝업(z 30)이 half 시트 윗변에 걸려 방금 올린 카드 머리를
   //      덮는다(실측 402×714: 가운데(201,357)를 누르면 팝업 y 272~343 · half 시트 윗변 y 265). 값이 답이다. 넓은 화면은 패널이 오른쪽이라 팝업이
   //      지구 위에 뜬다 — 열어 두어 기온·바람·강수를 바로 바꿔 볼 수 있게 한다. (PHONE_MQ 는 아래 뒤쪽 const 지만 main() 안
@@ -5221,7 +5257,13 @@ async function main() {
           shell.gotoScene('aetherus', 'space');
         } else if (ds.sim === 'country-weather') {
           // 국가 클릭 경로의 질문 — 클릭한 그 좌표의 실제 지점 실황으로 답한다.
-          if (countryClick) pointWeather(countryClick.lat, countryClick.lon, 'temperature');
+          // (2026-09-24 정정) 팝업 '기온'과 같은 문 — 같은 자리·같은 시각이면 pointWeather 가 이미 선 카드를 다시 쓴다(한 번 조회 · 한 장).
+          //   질문 단추는 시트 아래쪽(시뮬레이션 절)에 있어 값 카드가 화면 위로 밀려 있다 — 팝업 길처럼 카드 머리를 올려 보인다.
+          if (countryClick) {
+            const run = pointWeather(countryClick.lat, countryClick.lon, 'temperature');
+            revealNoteCard();
+            Promise.resolve(run).then(revealNoteCard, () => {});
+          }
         } else if (ds.sim === 'country-news') {
           shell.showTab('feed');
           shell.openIntel();
@@ -5359,6 +5401,9 @@ async function main() {
       }
     },
     getFocusSel: () => focus.selected,
+    // (2026-09-24 정정 · 적대 검토) 시트 머리가 '지도에서 선택'(아무것도 안 고름)과 '선택한 자리'(값 카드·바다 지점이 서 있음)를 가른다 —
+    //   ui-shell.js renderHead. 우클릭 퀵메뉴 '기온'으로 값 카드를 세웠는데 머리가 '지도에서 선택'이라 고르라고 시켰다(1280×800 실측).
+    hasNowPick: () => !!(lockedNote || seaPoint),
     // 라벨 예산: 정본 scene-orchestrator.buildScenePlan() (씬·기기·열상태·패널 반영)
     labelBudget: () => {
       // 이 셸은 씬 하이라이트가 없으므로 지금 켜져 있는 것으로 씬을 판정한다
@@ -7073,11 +7118,19 @@ async function main() {
   //      LAB 화면(ext-scene)의 표식도 지형 전에 열었으면 고도 0 이다 — 다시 열면 맞는다.
   //   (2026-09-23 정정 · 검수) 색면 라벨은 live-layers onTerrainReady 가 같은 목록으로 다시 세운다. 나라 카드 '최고 고도'·해구 표·
   //      물어보기 문맥의 지면고도는 지형 전에는 숫자를 적지 않는다(0 m 는 지어낸 값이다) — countryMaxHRow · seafloor.terrainReady.
+  //   (2026-09-24 정정) 남아 있던 셋을 닫았다: ① 지형 전에 켠 기압 H·L 기호 — 가림판을 못 구워 비운 채 같은 키프레임에 머물러
+  //      다음 키프레임까지 안 섰다 → live-layers onTerrainReady 가 그 색면을 다시 먹인다(field-layer.js onTerrainReady).
+  //      ② LAB 화면 표식 → 아래 tryIt('extScene'). ③ 인구 '지금 사람' 기둥(buildLive) — rebuild() 가 떼어 버리고 다시 안 세웠다
+  //      (pop-sculpture.js rebuild 의 정정 기록).
   const reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   replaceAfterTerrain = () => {
     const tryIt = (what, fn) => { try { fn(); } catch (e) { console.warn(`[earthus-three] 지형 뒤 다시 세우기 실패(${what})`, e); } };
     tryIt('liveLayers', () => liveLayers.onTerrainReady());
+    // (2026-09-24 정정) '지금 사람'(서울 실시간 · buildLive) 기둥도 다시 선다 — pop-sculpture.js rebuild() 가 이제 켜져 있으면 함께 세운다.
     tryIt('popSculpt', () => { if (popSculpt.doc) popSculpt.rebuild(); });
+    // (2026-09-24 정정) LAB·취미 화면(ext-scene)의 표식 — 위 머리말 ⚠️ '다시 열면 맞는다'로 남겨 둔 것을 닫는다. rebuild() 는 열린 화면이
+    //   없거나 받는 중·오류면 아무것도 안 한다(ext-scene.js). 모듈의 build 가 ctx.surfR → heightAt 로 도착한 고도를 다시 읽는다.
+    tryIt('extScene', () => { if (extScene) extScene.rebuild(); });
     tryIt('quakeHistory', () => {
       // build() 는 points 가 있으면 돌아간다 — 높이 속성(aH)만 도착한 고도맵으로 다시 읽어 갈아 끼운다(원래 0 으로 읽혔다).
       const d = quakeHistory.doc;

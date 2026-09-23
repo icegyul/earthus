@@ -34,7 +34,7 @@
 // 이 파일은 DOM 을 모른다. frames · timeBus · fetch · now 를 주입받는다 —
 // tools/earthus-v53/point-readout.test.mjs 가 가짜를 넣어 **우리 S3 말고 아무 데도 안 간다**를 잠근다.
 
-import { FIELD_DESCRIPTORS, cellLabel, fieldStatusOf, fmtValid, readoutOf, sourceLabel, statusText, timeMeta } from './field-layer.js?v=1';
+import { FIELD_DESCRIPTORS, cellLabel, fieldStatusOf, fmtValid, readoutOf, sourceLabel, statusText, timeMeta } from './field-layer.js?v=2-fix0924';
 import { scaleOf } from './field-scales.js?v=1';
 import { readTicks } from './field-log.js?v=1';
 import { buoysNear } from './for-me-signal.js?v=2';

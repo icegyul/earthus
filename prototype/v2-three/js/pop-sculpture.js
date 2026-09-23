@@ -400,8 +400,46 @@ export class PopSculpture {
     if (this.liveMat) this.liveMat.uniforms.uScale.value = s;
   }
 
+  // (2026-09-24 정정) 열린 Intelligence 시트의 화면 자리 — 라벨·캡션이 그 위에 그려지지 않게 한다.
+  //   #sculpt-ui 는 z 6, 시트(#intel)는 z 4 라 순위 라벨('3위 대구 중구')이 시트 글 위에 그려졌다(402×714 실측: half 에서 3개 · full 에서 5개).
+  //   z 를 내리는 것만으로는 안 된다 — 시트 바탕이 반투명(--panel-bg .82 + blur)이라 라벨이 유령처럼 비친다. 그래서 시트 칸 안의 라벨은 감춘다.
+  //   지구를 끄는 동안(body.is-moving)은 시트가 opacity 0 이다(motion-chrome.css) — 그때는 시트가 없는 것으로 본다.
+  //   읽기(getBoundingClientRect)는 이 프레임의 쓰기보다 먼저 한다 — 레이아웃을 한 번만 흔든다.
+  sheetRect() {
+    const el = typeof document !== 'undefined' ? document.getElementById('intel') : null;
+    if (!el || !el.classList.contains('open') || document.body.classList.contains('is-moving')) return null;
+    const r = el.getBoundingClientRect();
+    return r.height > 0 && r.width > 0 ? r : null;
+  }
+
+  // (2026-09-24 정정) 캡션(나라 이름·총인구·범례·순위)이 시트 윗변을 덮지 않게 한다. 시트와 가로로 겹치고 캡션의 제 높이가 시트 윗변을 넘으면
+  //   윗변 8px 위까지만 쓰게 줄이고(--sc-room · 넘치는 글은 캡션 안에서 굴린다), 그 자리가 CAP_MIN_PX 보다 좁으면(full 시트 — 윗변이 캡션 머리 위)
+  //   캡션을 걷는다(sc-under). 시트를 내리면 같은 프레임 규칙으로 되돌아온다. 넓은 화면은 시트가 오른쪽이라 대개 아무 일도 없다.
+  fitCaption(sheet) {
+    const cap = this.capEl;
+    if (!cap || !cap.classList.contains('show')) return;
+    const CAP_MIN_PX = 120;   // 이름 + 총인구 + 범례 한 벌이 드는 높이(402×714 실측 캡션 요약 224px 중 윗부분)
+    const GAP = 8;
+    let room = null;
+    if (sheet) {
+      const cr = cap.getBoundingClientRect();
+      if (cr.right > sheet.left && cr.left < sheet.right && cr.top < sheet.bottom && cr.top + cap.scrollHeight + 2 > sheet.top - GAP) {
+        room = Math.floor(sheet.top - GAP - cr.top);
+      }
+    }
+    const under = room !== null && room < CAP_MIN_PX;
+    const roomCss = room !== null && !under ? `${room}px` : '';
+    if (this._capRoom !== roomCss) {
+      this._capRoom = roomCss;
+      if (roomCss) cap.style.setProperty('--sc-room', roomCss); else cap.style.removeProperty('--sc-room');
+    }
+    if (cap.classList.contains('sc-under') !== under) cap.classList.toggle('sc-under', under);
+  }
+
   // 매 프레임: 봉우리 라벨을 화면 좌표로 투영 (지구 뒤편은 감춘다)
   updateLabels(camera) {
+    const sheet = this.on ? this.sheetRect() : null;
+    if (this.on) this.fitCaption(sheet);
     if (!this.on || !this.peaks.length) {
       for (const el of this.labelPool) el.style.display = 'none';
       return;
@@ -421,15 +459,26 @@ export class PopSculpture {
       if (this._v.dot(camDir) < 0.15) { el.style.display = 'none'; return; }
       this._v.project(camera);
       if (Math.abs(this._v.x) > 1 || Math.abs(this._v.y) > 1) { el.style.display = 'none'; return; }
-      el.style.display = 'block';
-      el.style.left = `${(this._v.x * 0.5 + 0.5) * W}px`;
-      el.style.top = `${(-this._v.y * 0.5 + 0.5) * H}px`;
+      const sx = (this._v.x * 0.5 + 0.5) * W;
+      const sy = (-this._v.y * 0.5 + 0.5) * H;
       // 셀은 집계 후 1km가 아닐 수 있다 — 실제 셀 면적으로 나눠 km²당 값으로 적는다.
       // 순위를 항상 붙인다 — 이름이 없는 나라도 "몇 번째로 큰가"는 알 수 있게.
       // 이름은 한국만(kr-places.json) — 다른 나라는 지어내지 않고 순위+숫자만 보인다.
       const perKm2 = this.cellAreaKm2 ? p.pop / this.cellAreaKm2 : p.pop;
       const label = p.name ? `${i + 1}위 ${p.name}` : `${i + 1}위`;
-      el.innerHTML = `<i></i><span>${label}</span><em>${(perKm2 / 1000).toFixed(1)}천 명/km²</em>`;
+      const html = `<i></i><span>${label}</span><em>${(perKm2 / 1000).toFixed(1)}천 명/km²</em>`;
+      // (2026-09-24 정정 · 적대 검토) 글이 바뀔 때만 갈아 끼운다 — 아래 폭(_hw)을 한 번 재어 두려고. 예전에는 매 프레임 innerHTML 을 새로 썼다.
+      if (el._html !== html) { el.innerHTML = html; el._html = html; el._hw = 0; }
+      // (2026-09-24 정정) 시트 칸 안이면 감춘다 — 라벨은 점 위로 선다(transform -100%): 밑변 sy 가 시트 윗변 아래면 글이 시트에 걸린다.
+      // (2026-09-24 정정 · 적대 검토) 점(sx)만 보면 모자란다 — 라벨은 가운데 정렬(translate -50%)이라 시트 바로 바깥에 선 점의 글 반쪽이
+      //   시트 위에 그려졌다(1280×800 실측: 오른쪽 패널을 연 채 5개 중 1개가 패널에 걸림). 라벨 폭의 절반(_hw · 처음 보일 때 한 번 잰다,
+      //   재기 전에는 64px 로 본다)만큼 넓혀 본다.
+      const hw = el._hw || 64;
+      if (sheet && sx + hw > sheet.left && sx - hw < sheet.right && sy > sheet.top && sy - 16 < sheet.bottom) { el.style.display = 'none'; return; }
+      el.style.display = 'block';
+      el.style.left = `${sx}px`;
+      el.style.top = `${sy}px`;
+      if (!el._hw) el._hw = Math.ceil(el.offsetWidth / 2);   // 글이 바뀐 뒤 처음 한 번만 레이아웃을 읽는다
     });
     for (let i = this.peaks.length; i < this.labelPool.length; i += 1) this.labelPool[i].style.display = 'none';
   }
@@ -753,5 +802,9 @@ export class PopSculpture {
       if (c.material) c.material.dispose();
     }
     this.build(doc);
+    // (2026-09-24 정정) 위 루프는 '지금 사람' 묶음(liveGroup · buildLive)까지 떼어 낸다 — 그런데 this.liveGroup 을 비우지도, 다시 세우지도
+    //   않아 지형 도착(main.js replaceAfterTerrain)·과장 변경 뒤에는 liveOn 이 참인데 청록 기둥이 없었다(카드는 '실시간 N곳'이라 말한다).
+    //   떼어 낸 묶음의 선은 buildLive 가 disposeGroup 으로 치운다. 도착한 고도로 다시 세운다.
+    if (this.liveOn && this.liveDoc) this.buildLive();
   }
 }

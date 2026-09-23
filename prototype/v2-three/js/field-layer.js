@@ -704,6 +704,21 @@ export class FieldLayer {
     if (this.firstDone) { const f = this.firstDone; this.firstDone = null; f(); }
   }
 
+  /**
+   * (2026-09-24 정정) 지형 고도맵이 도착했다(main.js replaceAfterTerrain → live-layers onTerrainReady). 지형 전에 켠 기압의 H·L 기호는
+   * 가림판을 못 구워(heightAtJs ≡ 0 → ok=false) 비운 채 그 키프레임에 머물렀다 — 같은 키프레임에서는 onTime 이 setMix 만 돌고
+   * (위 '같은 키프레임' 갈래) FieldSymbols.update 도 같은 키·같은 그림이면 돌아가서, **다음 키프레임까지** 기호가 안 섰다.
+   * 두 문을 다 연다: 기호의 쥔 키를 버리고(forget) 이 층의 키도 비워 onTime 이 그림을 다시 받게 한다(프레임 저장소 캐시 — 네트워크 0건).
+   * 기호가 이미 섰거나(ready) 기호 없는 층(기온·바람)이면 아무것도 안 한다.
+   */
+  onTerrainReady() {
+    if (!this.active || !this.symbols || this.symbols.ready) return false;
+    this.symbols.forget();
+    this.key = null;
+    this.onTime();
+    return true;
+  }
+
   // 시간 버스가 부른다. 같은 두 프레임 사이면 섞는 비율만 바꾼다(재생 중 하는 일은 이것뿐이다).
   onTime() {
     if (!this.active) return;                                 // 꺼진 레이어는 프레임을 받지 않는다
@@ -1013,7 +1028,9 @@ export class FieldLayer {
     // 재생 중(220ms 마다 한 걸음)에 카드를 통째로 갈면 누르려던 단추가 손가락 밑에서 새 것으로 바뀐다.
     // 기간 칩 줄은 이 덩어리 **밖**이고 커서를 따라 글이 바뀐다('지금 커서에서는 24시간 누적이 3시간치입니다') —
     // 그 서명(accum.shape)을 모양에 넣지 않으면 타임라인을 밀 때 칩 줄만 옛 글로 굳는다.
-    const shape = `${this.isoOn}|${this.isoChoice}|${this.symbolsOn}|${(model.accum && model.accum.shape) || this.desc.accumHours || ''}|${ko}`;
+    // (2026-09-24 정정) 기호 준비 여부(symbolReady)도 모양에 넣는다 — '지형 고도를 받은 뒤에 섭니다' 줄(symbolCardRow)은 이 덩어리 밖이라,
+    //   지형이 와서 기호가 서도 모양이 같으면 그 줄이 옛 글로 굳었다(onTerrainReady 와 한 쌍).
+    const shape = `${this.isoOn}|${this.isoChoice}|${this.symbolsOn}|${this.symbols ? this.symbols.ready : ''}|${(model.accum && model.accum.shape) || this.desc.accumHours || ''}|${ko}`;
     const doc = this.deps.doc || (typeof document !== 'undefined' ? document : null);
     if (doc && doc.querySelectorAll) {
       for (const el of doc.querySelectorAll(`[data-field-card="${this.id}"]`)) {

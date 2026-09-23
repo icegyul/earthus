@@ -92,7 +92,7 @@ const HINTS = {                       // 설명만 우리가 붙인다 (메뉴�
 };
 const EN_LABEL = {                    // 메뉴 라벨은 한국어라 영어만 따로
   sat: 'Satellites', news: 'News', community: 'LAB', ask: 'Ask', flight: 'Flights',
-  outdoor: 'Hobbies', locate: 'My location', globe: 'Whole Earth', settings: 'Settings',
+  outdoor: 'Hobbies', locate: 'My location', globe: 'Globe', settings: 'Settings',   // globe: 2026-09-23 메뉴바 라벨(i18n m.globe)과 맞춤. 'Whole Earth' 는 위 설명에 남아 검색에 걸린다
 };
 function liveActions() {
   return [...document.querySelectorAll('#menuMain [data-act]')]

@@ -217,7 +217,9 @@ export const i18n = {
     'explore.ocean.status': { ko: '지구에서 바다 지점을 누른 뒤 「여기서 잠수」를 고르면, 검증된 GEBCO 2026 격자로 그 지점의 수심 기둥을 보여줍니다.', en: 'Tap an ocean point on Earth and choose Dive here to see its depth column from the validated GEBCO 2026 grid.' },
     'explore.dive.kicker':  { ko: '심해 / GEBCO 2026', en: 'OCEAN / GEBCO 2026' },
     'explore.home':         { ko: '지구로 돌아가기', en: 'Return to Earth' },
-    'm.globe':    { ko: '전지구로',          en: 'Whole Earth' },
+    // 2026-09-23 PD: 폰 메뉴바 칸이 55px 인데 'Whole Earth' 가 55px 로 꽉 찼다 → 'Globe'. 한국어 '전지구로'처럼 '어디로 가는가'를 말한다
+    //   (누르면 레이어까지 첫 화면으로 되돌리는 동작은 그대로 — main.js onAction('globe')). search.js EN_LABEL 도 같이 바꿨다.
+    'm.globe':    { ko: '전지구로',          en: 'Globe' },
     'm.settings': { ko: '설정',              en: 'Settings' },
     's.account':  { ko: '계정',              en: 'Account' },
     's.login':    { ko: '로그인 / 가입',     en: 'Sign in / up' },

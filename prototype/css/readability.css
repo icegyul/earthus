@@ -47,6 +47,11 @@ body.menu-bar #readabilityPanel{bottom:max(84px,calc(env(safe-area-inset-bottom)
   #readabilityPanel.rd-lean .rd-badge{font-size:7.5px;padding:3px 5px}
   #readabilityPanel.rd-lean .rd-scale i{height:7px}
   #readabilityPanel.rd-lean .rd-scale span{margin-top:3px;font-size:7.5px}
+  /* 2026-09-23: 폰은 이제 처음부터 접혀 열린다(readability.js _scheduleLean) — 펼친 7초가 없어졌으니 출처·시각을
+     접힌 줄에서도 한 줄로 남긴다(v1 원칙: 모든 값에 출처와 시각). 눈금 글자 7.5px 는 읽히지 않아 9px 로 올린다. */
+  #readabilityPanel.rd-lean .rd-grid-meta{display:block;margin:0;font-size:10.5px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #readabilityPanel.rd-lean .rd-badge{font-size:9px}
+  #readabilityPanel.rd-lean .rd-scale span{font-size:9px}
 }
 @media(max-width:430px){#readabilityPanel{right:7px;bottom:max(7px,env(safe-area-inset-bottom));left:7px}.rd-shell{border-radius:12px}.rd-scale{grid-auto-columns:minmax(27px,1fr)}.rd-scale span{font-size:8.5px}.rd-cities li{padding:4px 6px}.rd-cities span{font-size:8.5px}.rd-cities b{font-size:10px}}
 @media(prefers-reduced-motion:reduce){.rd-actions button{transition:none}}

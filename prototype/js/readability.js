@@ -27,6 +27,8 @@ const REFERENCE_ALPHA = Object.freeze({ data: 0.78, read: 0.96 });
 /* 좁은 화면에서 패널이 스스로 접히기까지의 시간. 처음 몇 초는 출처·시각을
    읽을 수 있어야 하고, 그 뒤로는 지도가 주인공이어야 한다. */
 const LEAN_AFTER_MS = 7000;
+/* (2026-09-23 정정) 폰은 이제 처음부터 접는다(_scheduleLean, PD "창 없애고 바로 나오게"). 이 값은 쓰이지 않지만
+   다시 '잠시 펼쳤다 접기'로 돌아갈 때의 기준값이라 남긴다. */
 const GRID_LAYERS = new Set([
   'temp', 'tmax', 'tmin', 'wind', 'windfc', 'humidity', 'tpw', 'rain', 'pressure', 'fog', 'drought',
   'pm25', 'pm10', 'dust', 'aqi', 'uv', 'ozone', 'sst', 'sstanom', 'wave', 'swell', 'current',
@@ -326,11 +328,12 @@ export const readability = {
     this._leanTimer = null;
     this._leanByUser = false;
     if (!this._isNarrow()) { this._setLean(false); return; }
-    this._setLean(false);
-    this._leanTimer = setTimeout(() => {
-      this._leanTimer = null;
-      if (!this._leanByUser) this._setLean(true);
-    }, LEAN_AFTER_MS);
+    /* (2026-09-23 정정) PD: "v1 에서 황사 등 메뉴를 누르면 안내창이 나오고 '판독 모드' 눌러야 나오는데 왜 두 단계로 가?
+       창 없애고 바로 나오게 해". 7초 동안 펼친 패널(폰 402×714 에서 y 345~563)이 지구 아래 절반을 덮어,
+       판독 모드를 누르거나 7초를 기다려야(둘 다 패널을 접는다) 색면이 보였다 — 사람에게는 '두 단계'였다.
+       좁은 화면에서는 **처음부터 접힌 상태**(제목·배지·눈금 + 출처·시각 한 줄)로 연다. 다 펴는 것은 '정보' 단추 하나다.
+       위 LEAN_AFTER_MS 설계("처음 몇 초는 출처·시각")는 접힌 줄에 출처·시각을 남기는 것으로 대신한다(readability.css). */
+    this._setLean(true);
   },
 
   _renderLegend() {

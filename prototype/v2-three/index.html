@@ -1344,6 +1344,13 @@
     font-size: 12px; line-height: 1; cursor: pointer;
   }
   #sculpt-cap .sc-x:hover { background: rgba(255,255,255,0.14); color: #fff; }
+  /* 2026-09-24: ✕·'순위 보기'가 눌리지 않았다 — 부모 #sculpt-ui 의 pointer-events:none 이 단추까지 내려와 탭이 지구로 새고 나라 선택이 풀렸다
+     (작은 고칠 거리 검토 보고). 캡션 전체를 받게 하면 그 아래(화면 높이 최대 42%) 지구 탭이 막히므로 **단추만** 받는다.
+     보일 때만(.show · sc-under 아님 · 지구를 움직이는 중이 아님) — 투명한 단추가 탭을 가로채면 안 된다(퀵메뉴 .qk-item 사고와 같은 종류).
+     ✕ 는 26 px 라 보이지 않는 ::after 로 누르는 자리를 44 px 로. */
+  body:not(.is-moving) #sculpt-cap.show:not(.sc-under) .sc-x,
+  body:not(.is-moving) #sculpt-cap.show:not(.sc-under) .sc-more { pointer-events: auto; }
+  #sculpt-cap .sc-x::after { content: ''; position: absolute; inset: -9px; }
   /* 순위 펼침 버튼 — 데스크톱은 순위가 항상 보이므로 모바일에서만 쓴다 */
   #sculpt-cap .sc-more { display: none; }
   #sculpt-cap b {

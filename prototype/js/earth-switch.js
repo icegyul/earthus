@@ -128,6 +128,15 @@
     '    box-shadow:0 6px 18px rgba(0,0,0,.34);touch-action:manipulation}',
     '  .es-logo:active{background:rgba(20,28,44,.9)}',
     '  .es-logo img{width:100%;height:100%;display:block;object-fit:cover}',
+    // 2026-09-23 UX 자동점검: 폰 표적이 40×40 이라 44px 에 못 미쳤다(중심 +20px 이 #scene 으로 빠졌다).
+    // 크기를 직접 키우지 않는다 — v2 main.js placePanel 이 이 버튼의 rect.bottom 으로 #panel top 을
+    // 잡아 상단 크롬 전체가 따라 내려간다. 대신 보이지 않는 ::after 로 누르는 자리만 사방 3px 넓힌다
+    // (패딩 상자 38 + 6 = 44). getBoundingClientRect 는 ::after 를 포함하지 않으니 위 연쇄가 없다.
+    // overflow:hidden 이면 ::after 가 잘려 효과가 없으므로 visible 로 풀고, 그 대신 아이콘 모서리를
+    // img 에 직접 준다(바깥 11 − 테두리 1 = 10, 이전 클리핑과 같은 모양).
+    '  .es-logo{position:relative;overflow:visible}',
+    '  .es-logo img{border-radius:10px}',
+    '  .es-logo::after{content:"";position:absolute;inset:-3px}',
     '  .es-switch.es-open .es-menu{display:flex}',
     '  .es-menu{position:absolute;top:46px;left:0;flex-direction:column;min-width:184px;',
     '    gap:1px;padding:6px;border-radius:14px;background:rgba(8,14,26,.92);',

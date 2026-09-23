@@ -395,6 +395,11 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
   font:10px ui-monospace,monospace;cursor:pointer;padding:5px 8px;border-radius:8px;
   background:rgba(0,0,0,.48);color:var(--fog);border:1px solid var(--line);opacity:.62;
 }
+/* 2026-09-23 UX 자동점검: 폰 표적이 33×23 이었다(WCAG 24 에 1px 모자람).
+   작고 흐린 모양은 의도다(ui.js:2213 '개발 도구를 켜둔 화면'으로 보이지 않게) — 보이는 크기는 그대로 두고
+   누르는 자리만 보이지 않는 ::after 로 넓힌다 → 약 45×43. display 는 JS 가 inline !important 로 넣으니 건드리지 않는다.
+   ⚠️ -10 에서 멈춘다: -11 이면 위로 지구 전환기 표적(아래끝 51), 아래로 #tcLegend(top 96)에 맞닿는다. */
+#hudShow::after{content:'';position:absolute;inset:-10px -6px}
 /* AETHERUS의 지구 복귀 버튼도 왼쪽 위를 쓴다. HUD가 그 위를 덮으면 우주에서
    돌아갈 수 없으므로 우주 장면에서만 손잡이와 패널을 한 줄 아래로 내린다. */
 /* 우주 화면에서 따로 더 내리던 규칙은 뺐다 — 이제 평상시에도 같은 높이(바 아래)다. */
@@ -491,9 +496,12 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 .wl-seg.s2{ background:rgba(255,255,255,.45); }
 .wl-seg.s3{ background:rgba(255,255,255,.65); }
 .wl-seg.s4{ background:rgba(255,255,255,.9); }
+/* 2026-09-23 UX 자동점검: 9px × 실효 알파 .45(.75 × .6)라 범례가 있는 이유(위 '기준을 눈으로')가 흐려졌다.
+   11px·.8 로 올린다. 150px 폭에 11px 고정폭 '약함 5 15 25 m/s' ≈ 75px 라 들어간다.
+   ⚠️ 이 블록은 파일에 두 번 있고 뒤의 것이 이긴다(아래 'body.is-ambient #windLegend' 위 기록) — 둘을 같이 고친다. 지우지 않는다. */
 .wl-labels{
   display:flex; justify-content:space-between; width:150px; margin-top:5px;
-  font:400 9px ui-monospace,monospace; opacity:.6; letter-spacing:.02em;
+  font:400 11px ui-monospace,monospace; opacity:.8; letter-spacing:.02em;
 }
 
 /* ── 시간별 강수확률 막대 ──
@@ -544,9 +552,12 @@ body.has-warn #banner{ top:calc(env(safe-area-inset-top, 0px) + 54px); }
 .wl-seg.s2{ background:rgba(255,255,255,.45); }
 .wl-seg.s3{ background:rgba(255,255,255,.65); }
 .wl-seg.s4{ background:rgba(255,255,255,.9); }
+/* 2026-09-23 UX 자동점검: 9px × 실효 알파 .45(.75 × .6)라 범례가 있는 이유(위 '기준을 눈으로')가 흐려졌다.
+   11px·.8 로 올린다. 150px 폭에 11px 고정폭 '약함 5 15 25 m/s' ≈ 75px 라 들어간다.
+   ⚠️ 이 블록은 파일에 두 번 있고 뒤의 것이 이긴다(아래 'body.is-ambient #windLegend' 위 기록) — 둘을 같이 고친다. 지우지 않는다. */
 .wl-labels{
   display:flex; justify-content:space-between; width:150px; margin-top:5px;
-  font:400 9px ui-monospace,monospace; opacity:.6; letter-spacing:.02em;
+  font:400 11px ui-monospace,monospace; opacity:.8; letter-spacing:.02em;
 }
 
 /* ══════════ 하단 레이어 스트립 ══════════════════════════════
@@ -1627,19 +1638,23 @@ body.scene-space #tcLoading.on{ opacity:0; transform:translateX(-50%) translateY
 }
 #searchBox.on .sb-panel{ transform:translateY(0); }
 
-.sb-head{ display:flex; align-items:center; gap:9px; padding:12px 13px;
+/* 2026-09-23 UX 자동점검: 검색창을 열면 입력칸 높이가 22px(WCAG 24 미달), ✕ 는 24×28 이었다.
+   머리 줄의 위아래 12px 여백을 눌러도 입력칸에 포커스가 가지 않아, 키보드를 닫았다 다시 누를 때 빗나갔다.
+   여백을 입력칸·✕ 자신의 44px 로 옮긴다 — 머리 줄 높이는 12+28+12 = 4+44+4 = 52 그대로라
+   #searchList 높이 계산은 변하지 않는다. ⚠️ ✕ 만 44 로 키우고 패딩을 그대로 두면 머리 줄이 68 이 된다. */
+.sb-head{ display:flex; align-items:center; gap:9px; padding:4px 4px 4px 13px;
   border-bottom:1px solid var(--line); flex:none; }
 .sb-ico{ color:rgba(255,255,255,.45); flex:none; }
 /* ⚠️ font-size 는 16px 이상이어야 한다. 그보다 작으면 iOS 사파리가
    입력창을 누를 때 화면을 확대해 버린다(자동 줌). */
 #searchInput{
-  flex:1; min-width:0; background:none; border:0; outline:none;
+  flex:1; min-width:0; min-height:44px; background:none; border:0; outline:none;
   color:var(--paper); font:400 16px/1.4 -apple-system,"Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;
 }
 #searchInput::placeholder{ color:rgba(255,255,255,.32); }
 #searchInput::-webkit-search-cancel-button{ display:none; }
 #searchClose{ background:none; border:0; color:rgba(255,255,255,.4);
-  font-size:15px; cursor:pointer; padding:4px 6px; flex:none; }
+  font-size:15px; cursor:pointer; padding:0; min-width:44px; min-height:44px; flex:none; }
 #searchClose:hover{ color:var(--paper); }
 
 #searchList{ overflow-y:auto; overscroll-behavior:contain; padding:6px; }
@@ -2683,8 +2698,10 @@ body.tc-ui-off #fxBar{transform:translateX(-50%) translateY(200%);pointer-events
 body.tc-ui-off #fxChip{opacity:0;pointer-events:none;transition:opacity .2s}
 body.tc-ui-off #tcLegend{opacity:0;pointer-events:none;transition:opacity .2s}
 /* 위치 권한이 없어 기본 위치(인천)를 쓰는 중이라는 표시 (감사 P1-5) */
+/* 2026-09-23 UX 자동점검: .52em × #ambCity 19px = 9.88px 에 .62 라, 이 날씨가 내 위치의 것이 아니라는
+   정직성 표지가 읽히지 않았다. 11px 아래로는 내려가지 않게 한다. 짝: weather-card-v7.css .wcv7-hero-default */
 .amb-default{display:inline-block;margin-left:7px;padding:2px 7px;border-radius:999px;
-  font-size:.52em;font-weight:500;opacity:.62;vertical-align:middle;
+  font-size:max(11px,.52em);font-weight:500;opacity:.62;vertical-align:middle;
   border:1px solid rgba(255,255,255,.28)}
 
 /* 수치 범례 — 화면을 칠한 그 색표를 그대로 띠로 보여준다 (감사 3차) */
@@ -2973,12 +2990,19 @@ body.menu-bar #layerStrip .ly-open:hover{ opacity:1; background:rgba(255,255,255
 @media (max-width:640px){ body.menu-bar #layerStrip{ padding:7px 8px; } body.menu-bar #layerStrip .ly, body.menu-bar #layerStrip .ly-open{ padding:6px 10px; font-size:11.5px; } }
 
 /* 바가 차지한 자리만큼 하단의 다른 것들을 올린다 */
-body.menu-bar.menu-sub-open .amb-bottom{ bottom:max(200px,calc(env(safe-area-inset-bottom) + 186px)); }
+/* 2026-09-23 UX 자동점검 후속: 출처 독이 57→62px 로 커져(v8-shell.css 글씨 11/10px) 독 윗변이 바닥에서 137→142 가 됐다.
+   큰 온도 숫자(.amb-bottom, 바닥 132)는 전에도 독과 5px 겹쳐 있었는데(운영 402×714 실측 amb 512~582 · 독 577) 10px 로 커졌다.
+   온도를 +12 올린다(132→144, 200→212). 독은 메뉴바 바로 위라 내릴 곳이 없다. */
+body.menu-bar.menu-sub-open .amb-bottom{ bottom:max(212px,calc(env(safe-area-inset-bottom) + 198px)); }
 body.menu-bar.menu-sub-open #provenanceDock{ bottom:max(146px,calc(env(safe-area-inset-bottom) + 136px)); }
-body.menu-bar.menu-sub-open #windLegend{ bottom:max(196px,calc(env(safe-area-inset-bottom) + 184px)); }
-body.menu-bar .amb-bottom{ bottom:max(132px,calc(env(safe-area-inset-bottom) + 118px)); }
+/* 2026-09-23 UX 자동점검: 출처 독 글씨(v8-shell.css 크레딧 6.5→10px·요약 8→11px, 두 줄)를 키우면 독 윗변이
+   바닥에서 약 134~142 까지 올라와 바람 범례(바닥 128, 눈금 128~139)와 가로 폭이 겹친다. 독은 메뉴바 바로
+   위라 내릴 곳이 없으므로 범례를 +22 올린다(128→150, 196→218). menu-sub-open 의 196 은 이 변경 전에도
+   독 윗변(146+57=203)과 7px 겹쳐 있던 기존 결함이라 같이 올린다. */
+body.menu-bar.menu-sub-open #windLegend{ bottom:max(218px,calc(env(safe-area-inset-bottom) + 206px)); }
+body.menu-bar .amb-bottom{ bottom:max(144px,calc(env(safe-area-inset-bottom) + 130px)); }
 body.menu-bar #provenanceDock{ bottom:max(80px,calc(env(safe-area-inset-bottom) + 70px)); }
-body.menu-bar #windLegend{ bottom:max(128px,calc(env(safe-area-inset-bottom) + 116px)); }
+body.menu-bar #windLegend{ bottom:max(150px,calc(env(safe-area-inset-bottom) + 138px)); }
 body.menu-bar #mapOff{ bottom:max(80px,calc(env(safe-area-inset-bottom) + 70px)); }
 
 @media (max-width:640px){
@@ -2988,6 +3012,18 @@ body.menu-bar #mapOff{ bottom:max(80px,calc(env(safe-area-inset-bottom) + 70px))
   body.menu-bar #menuSub{ left:max(6px,env(safe-area-inset-left)) !important; right:max(6px,env(safe-area-inset-right)) !important; width:auto; transform:translateY(12px) !important; }
   body.menu-bar #menuSub.open{ transform:translateY(0) !important; }
   body.menu-bar #provenanceDock{ width:min(270px,calc(100vw - 20px)); }
+}
+/* 2026-09-23 UX 자동점검: 하단 메뉴바 라벨이 9.5px 였다. 390px 이상 폰에서만 10px 로 올린다
+   (402 폭 실측: 칸 55px·글자 폭 51px 에 가장 긴 'Intelligence' 가 10px 50.6 으로 들어간다. 10.5px 는 53.1 로 넘친다).
+   390 미만(360 폭 칸 49·글자 폭 45)은 9.5px 에서도 이미 넘쳐 그대로 둔다. 11px·두 줄 라벨은 하단 오프셋 사슬
+   전체가 움직이는 일이라 PD 결정(B6)으로 남긴다.
+   ⚠️ 범위를 (max-width:640px) 까지 반드시 닫는다 — min-width 만 쓰면 같은 특이도·뒤 순서라서
+   641px 이상 데스크톱의 기본 10.5px 까지 10px 로 끌어내린다.
+   ⚠️ 영어 'Whole Earth'(i18n.js 'm.globe')는 9.5px 에서도 51px 을 넘쳤고 10px 에서는 조금 더 넘친다 —
+   문구를 'Globe' 로 바꿀지는 상품 문구라 PD 결정(B6)이다. */
+@media (min-width:390px) and (max-width:640px){
+  body.menu-bar #menuMain .mm-item,
+  body.menu-bar #menuMain .mm-move-item{ font-size:10px; }
 }
 
 /* ══════════ 전체레이어 = 오른쪽 세로 판 (2026-09-06) ══════════
@@ -3040,9 +3076,11 @@ body.menu-bar #menuSub.layers-right #layerStrip .ly.on .ly-sub{ opacity:.7; }
 /* 묶음 사이 옅은 구분선(바탕·기상·대기질·해양) */
 body.menu-bar #menuSub.layers-right #layerStrip .ly-gap{ display:block !important; height:1px; margin:6px 6px; background:var(--line); }
 /* 오른쪽 판일 때는 하단 요소를 올릴 필요가 없다 */
-body.menu-bar.menu-sub-open:has(#menuSub.layers-right) .amb-bottom{ bottom:max(132px,calc(env(safe-area-inset-bottom) + 118px)); }
+/* 2026-09-23: 위 '하단의 다른 것들을 올린다' 블록의 온도 132→144 와 같은 값으로 맞춘다(출처 독 62px). */
+body.menu-bar.menu-sub-open:has(#menuSub.layers-right) .amb-bottom{ bottom:max(144px,calc(env(safe-area-inset-bottom) + 130px)); }
 body.menu-bar.menu-sub-open:has(#menuSub.layers-right) #provenanceDock{ bottom:max(80px,calc(env(safe-area-inset-bottom) + 70px)); }
-body.menu-bar.menu-sub-open:has(#menuSub.layers-right) #windLegend{ bottom:max(128px,calc(env(safe-area-inset-bottom) + 116px)); }
+/* 2026-09-23: 바람 범례 기본값이 128→150 으로 올라가(위 '하단의 다른 것들을 올린다' 블록) 여기도 같은 값으로 맞춘다. */
+body.menu-bar.menu-sub-open:has(#menuSub.layers-right) #windLegend{ bottom:max(150px,calc(env(safe-area-inset-bottom) + 138px)); }
 @media (max-width:640px){
   body.menu-bar #menuSub.layers-right{
     left:auto !important; right:max(6px,env(safe-area-inset-right)) !important;

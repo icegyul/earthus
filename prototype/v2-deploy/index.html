@@ -284,6 +284,17 @@
     text-shadow: 0 1px 4px rgba(0,0,0,.85); }
   #srcNote b { font-weight: 500; color: rgba(239,246,248,.82); }
   @media (max-width: 640px) { #srcNote { max-width: 62vw; font-size: 8.5px; } }
+  /* 2026-09-23 UX 자동 점검: 폰 세로에서 출처 줄이 8.5px 였다 — 출처는 읽히라고 있는 것이다. 10px 로 올리고,
+     글자를 키울 자리는 폭(62vw → 화면 − 52)으로 만든다(줄 수가 늘지 않게). 상한은 10.5px:
+     11px 이면 360 폭에서 독이 4줄(95px)로 자라 윗변(66+95=161)이 알약 아랫변 158 을 넘는다(감사 실측, #hud-line 11px 포함).
+     실측 높이(KO): 402 폭 10px 74 · 10.5px 77 / 360 폭 10px 75 · 10.5px 77 — 이번 변경은 셈·시험으로만 확인했고 화면은 다시 재지 않았다.
+     ⚠️ 세로(orientation: portrait)로만 건다 — 640×360 가로(안드로이드)도 max-width:640 에 걸리는데, 그 칸은 독과
+        알약을 같은 줄에 세우고 아래 '눕힌 폰' 칸이 폭을 좁게 묶는다(1674행 부근). 거기서 글자만 키우면 줄 수가
+        폭증해 --hud-h(79 실측)·--nav-reserve 를 넘고 메뉴 패널 바닥이 독 밑에 깔린다(:root 주석의 사고 유형).
+     ⚠️ 이 규칙은 286행 바로 뒤에 둔다 — phone-reach 시험 ㉥ 는 마지막 #srcNote max-width(눕힌 칸)를 읽는다. */
+  @media (max-width: 640px) and (orientation: portrait) {
+    #srcNote { max-width: calc(100vw - 52px - env(safe-area-inset-left) - env(safe-area-inset-right)); font-size: 10px; }
+  }
   @media (min-width: 1600px) { #srcNote { font-size: 10.5px; } }
 
   #focus-chip {
@@ -530,7 +541,10 @@
        ⚠️ 띄우는 거리(66)는 여기 적지 않는다 — :root 의 --hud-lift 하나가 주인이고
           아래 '좁은 화면 정리' 덩어리가 그 토큰으로 bottom 을 준다. 여기 66 을 다시
           적으면 눕힌 화면에서 토큰을 60 으로 바꿔도 이 줄이 이겨 ① 이 그대로 되돌아온다. */
-    #hud { font-size: 10px; padding: 5px 10px; }
+    /* (2026-09-23 정정) font-size: 10px 를 뺐다 — 고도·과장 줄(#hud-line)이 기본 11px 로 돌아간다. 출처 줄을 10px 로
+       올리면서(286행 뒤 규칙) 폭을 넓혀 줄 수를 지켰고, 독 높이 셈(윗변 ≤ 알약 아랫변 158)은 11px 을 넣고 잰 값이다.
+       여백(padding)은 그대로 둔다. */
+    #hud { padding: 5px 10px; }
   }
   /* 인구 데이터 조각(R-03 포스터 문법) 스타일은 아래쪽 "인구 데이터 조각 — 포스터
      타이포그래피" 블록 하나로 합쳤다(2026-09-08) — 여기 있던 첫 판은 그 블록이 나중에
@@ -1338,14 +1352,21 @@
   /* ---------- 국가 클릭 시 뜨는 지표 미니 메뉴 (pop-metric-menu.js) --------
      인구는 오늘 실제로 세울 수 있어 바로 켜진다. 나머지는 자료가 없어 '준비 중'
      — 죽은 버튼으로 조용히 있지 않고 눌렀을 때 이유를 말한다(.pm-tip). */
+  /* (2026-09-23 정정) 기온·바람·강수는 값(GFS 0.5° 프레임)이 있고 없는 것은 국가 기둥이다. 라벨은 '준비 중'이 아니라
+     '기둥 없음'이다(곧 열린다는 약속이 아니라 지금 상태) — 사유는 pop-metric-menu.js 머리말 정정 줄. */
+  /* (2026-09-23 정정) 라벨 교체는 되돌렸다 — B1(PD 결정) 선택지 ② 그 자체라 승인 전이다. 라벨은 PD 가 정할 때까지
+     '준비 중'/'soon' 이고, 사실대로 고친 것은 눌렀을 때의 사유 문장(A5)뿐이다. */
+  /* 2026-09-23 UX 자동 점검: opacity 0 으로만 숨겨서 **보이지 않는 버튼 다섯 개가 Tab 순서와 스크린리더에 상주**했다
+     (axe 가 메인 화면에서 이 팝업을 잡았다). visibility 로도 숨긴다 — 레이아웃은 남으니 showAt 의 rAF 크기 측정은 그대로고,
+     닫을 때는 페이드(.16s)가 끝난 뒤에 꺼지도록 visibility 만 늦춘다. #quake-cap:not(.show) 와 같은 방식이다. */
   #pop-menu {
     position: fixed; z-index: 30; display: flex; gap: 4px; padding: 5px;
     border-radius: 12px; background: rgba(18,16,20,0.86); backdrop-filter: blur(8px);
     border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 10px 26px rgba(0,0,0,0.4);
-    opacity: 0; transform: translateY(4px) scale(.97); pointer-events: none;
-    transition: opacity .16s, transform .16s;
+    opacity: 0; transform: translateY(4px) scale(.97); pointer-events: none; visibility: hidden;
+    transition: opacity .16s, transform .16s, visibility 0s linear .16s;
   }
-  #pop-menu.show { opacity: 1; transform: none; pointer-events: auto; }
+  #pop-menu.show { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition-delay: 0s; }
   .pm-item {
     position: relative; display: flex; flex-direction: column; align-items: center;
     gap: 2px; width: 56px; padding: 7px 4px 6px; border-radius: 9px; border: 0;
@@ -1358,8 +1379,13 @@
   .pm-item b { font-size: 10.5px; font-weight: 500; }
   .pm-item.pm-soon { color: rgba(255,255,255,0.32); cursor: not-allowed; }
   .pm-item.pm-soon .pm-ic { opacity: .5; }
+  /* 2026-09-23 UX 자동 점검: 8px · 흰색 30% 라 읽히지 않았다 → 10px · 55%. 칸은 56px(안쪽 48) 그대로다.
+     '기둥 없음' 은 10px 로 약 45px 이라 들어가고, 영어 'no column'(약 50px)은 안쪽 48 을 조금 넘어 두 줄로 접히면
+     그 버튼만 키가 커진다 — 줄을 접지 않는다(넘치는 1~2px 은 버튼 안쪽 여백 4px 안에 선다). */
+  /* (2026-09-23 정정) 라벨은 '준비 중'/'soon' 으로 되돌렸다(B1 미승인) — 둘 다 10px 에서 안쪽 48 에 넉넉히 든다.
+     nowrap 은 B1 이 긴 문구를 고를 때를 대비해 남긴다. */
   .pm-item.pm-soon em {
-    font-style: normal; font-size: 8px; letter-spacing: .04em; color: rgba(255,255,255,0.3);
+    font-style: normal; font-size: 10px; letter-spacing: .04em; color: rgba(255,255,255,0.55); white-space: nowrap;
   }
   .pm-tip {
     position: absolute; bottom: calc(100% + 7px); left: 50%; transform: translateX(-50%) translateY(3px);
@@ -1381,14 +1407,19 @@
   #quick-menu .qk-item {
     position: absolute; left: var(--qk-x); top: var(--qk-y);
     transform: translate(-50%, -50%) scale(.4); width: 54px; height: 54px;
-    border-radius: 50%; pointer-events: auto; cursor: pointer;
+    border-radius: 50%; pointer-events: none; visibility: hidden; cursor: pointer;
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
     background: rgba(18,16,20,0.90); backdrop-filter: blur(8px);
     border: 1px solid rgba(255,255,255,0.14); box-shadow: 0 8px 22px rgba(0,0,0,0.42);
     color: rgba(255,255,255,0.78); font: inherit; opacity: 0;
-    transition: transform .18s ease, opacity .18s ease, background .12s;
+    transition: transform .18s ease, opacity .18s ease, background .12s, visibility 0s linear .18s;
   }
-  #quick-menu.show .qk-item { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  /* 2026-09-23 UX 자동 점검: 위 규칙이 닫힌 항목에도 pointer-events:auto 를 줘서, 투명한 원 여섯 개가 **마지막으로 연
+     자리(첫 방문이면 좌상단 0,0 근처)** 에 남아 폰 좌상단의 탭과 드래그를 가로챘다. 그래서 위 규칙은 none + visibility:hidden
+     (닫힌 항목은 못 누르고 트리에서도 빠진다)으로 바꾸고, 누르는 손(auto)은 열렸을 때만 준다. 닫을 때 visibility 는 페이드
+     (.18s)가 끝난 뒤에 꺼진다. transition 은 원래 문자열 **뒤에** visibility 를 덧붙였다 — quick-menu.test.mjs 가 앞부분
+     ('transform .18s ease, opacity .18s ease')을 정규식으로 고정한다. */
+  #quick-menu.show .qk-item { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; visibility: visible; transition-delay: 0s; }
   #quick-menu .qk-item:hover { background: rgba(52,38,48,0.94); color: #ffd7de; }
   #quick-menu .qk-item i { font-style: normal; font-size: 15px; line-height: 1; }
   #quick-menu .qk-item b { font-size: 10px; font-weight: 500; }
@@ -1480,15 +1511,26 @@
           ⚠️ 이 페이지는 html·body 가 overflow:hidden 이라 **주소창이 접히지 않는다** —
              Δ > 0 이 잠깐이 아니라 늘 그렇다. 개발자 도구 에뮬레이션(주소창 없음)에서는
              lvh == 보이는 높이라 **재현되지 않는다**: 내 화면 시험이 못 보는 종류였다. */
+    /* 2026-09-23 PD "창이 너무 많이 떠" · UX 자동 점검: 폰(402×714)에서 서랍이 356×446 — 화면의 55% 를 덮었다
+       (v1 오른쪽 레이어 판은 298×377 · 39%). 폭을 300 으로, 높이를 58dvh 로 묶는다 → 300×414 · 43%.
+       ⚠️ 폭은 아래 .edge-tab 줄과 **반드시 함께** 바꾼다 — 한쪽만 바꾸면 브랜드 손잡이 둘이 서랍에서 떨어져 화면 가운데 뜬다.
+       ⚠️ 높이 단위는 위 기록대로 dvh 다. 가운데 정렬(top)과 넓은 화면의 470 은 그대로 둔다.
+       max-height 는 줄기만 하므로 바닥은 올라갈 뿐이다 — 알약·출처 독 비켜서기(phone-reach 시험 ㉠㉣㉤)는 그대로 선다.
+       눕힌 폰은 min(58dvh ≈ 217, 180) = 180 으로 예전과 같다. */
     #menu-panel {
-      width: min(470px, calc(100vw - 46px));
+      width: min(300px, calc(100vw - 46px));
       top: calc(48px + (100dvh - var(--nav-reserve) - 48px) / 2);
-      max-height: calc(100dvh - var(--nav-reserve) - 48px);
+      max-height: min(58dvh, calc(100dvh - var(--nav-reserve) - 48px));
     }
-    .edge-tab.open, .edge-tab.beside { transform: translateX(min(470px, calc(100vw - 46px))); }
+    .edge-tab.open, .edge-tab.beside { transform: translateX(min(300px, calc(100vw - 46px))); }
     /* ⚠️ 여기서 그냥 display:block 을 주면 메뉴가 닫혀 있어도 투명한 전면 요소가 남아
        모바일에서 지구 터치가 통째로 죽는다(실측 2026-09-02). 열렸을 때만 깐다. */
-    #menu-scrim.on { display: block; }
+    /* 2026-09-23 PD "창이 너무 많이 떠" · UX 자동 점검: 서랍이 열리면 이 막이 화면 전체를 **붙잡아** 지구가 한 점도
+       잡히지 않았다(elementFromPoint 기준 0%). 어두운 막은 초점 표시로 남기고 붙잡기만 뺀다 → 서랍 옆 지구 약 31%.
+       display 는 여전히 .on 일 때만 켜지고(위 2026-09-02 기록 그대로) pointer-events:none 이라 그 사고는 날 수 없다.
+       ⚠️ '닫는 손가락은 고르지 않는다'는 이 막이 하던 일이다 — 그 규칙은 main.js 캔버스 pointerdown 첫머리로 옮겼다
+          (폰에서 서랍이 열려 있으면 닫기만 하고 return). 둘은 한 묶음이다: 이 줄만 있으면 닫는 탭이 나라를 골라 새 창을 띄운다. */
+    #menu-scrim.on { display: block; pointer-events: none; }
     /* 오른쪽 설정·검색 패널도 화면을 넘지 않게.
        ㉡ 252px 이던 것을 300px 로 넓힌다 (2026-09-21). 상단 버튼 여섯을 44px 표적으로
        키우려면 자리가 그만큼 필요하다 — 아래 #chrome 의 셈을 보라. 300 을 넘지 않으니
@@ -1548,11 +1590,21 @@
        가로로 16 씩 번지지만 왼쪽 이웃은 #hud-line(글자 span, 누를 수 없다)이라
        엉뚱한 것이 눌릴 곳이 없다. 세로로 17 씩 번져 위쪽 끝이 바닥에서 156 —
        하단 알약 아랫변 158 아래라 닿지 않는다(닿더라도 #hud z7 > 알약 z6 로 이쪽이 이긴다). */
+    /* (2026-09-23 정정) 이제 위로 17 이 아니라 **위로 6 · 아래로 38** 번진다(top:-6px · translateX 만).
+       출처 줄(#srcNote)을 폰 세로에서 8.5 → 10px 로 키우면서(286행 뒤 규칙) 독이 3~4줄로 자랄 때 표적 윗변이
+       알약 아랫변 158 을 넘어 '지금' 칸 아래쪽 탭을 가로챈다(감사 셈: EN·360 폭 4줄에서 164). 아래쪽은 누를 수 없는
+       글자(#srcNote · pointer-events:none)뿐이라 아래로 번지는 쪽이 안전하다 — 위 '왼쪽 이웃' 논리와 같다.
+       phone-reach 시험 ㉢ 는 표적을 가운데 ±22 로 셈한다(top 을 안 읽는다) — 이제 그 셈은 실제보다 보수적이다. */
     #hud-more { position: relative; }
     #hud-more::after {
-      content: ''; position: absolute; top: 50%; left: 50%;
-      width: var(--tap); height: var(--tap); transform: translate(-50%, -50%);
+      content: ''; position: absolute; top: -6px; left: 50%;
+      width: var(--tap); height: var(--tap); transform: translateX(-50%);
     }
+    /* 2026-09-23 UX 자동 점검: 사건 목록의 별(☆ 팔로우)이 26×26 이라 빗나간 손가락이 행 전체(사건 화면 열기)를 눌렀다.
+       보이는 크기와 배지 열의 폭은 그대로 두고 표적만 사방 9px 넓힌다 → 44×44. 별 둘레 9px 띠는 '행 열기'가 아니라
+       '팔로우'가 된다(의도한 교환). min-width/min-height 로 키우면 배지 열이 18px 넓어져 사건 제목 줄이 더 접힌다. */
+    .feed-follow { position: relative; }
+    .feed-follow::after { content: ''; position: absolute; inset: -9px; }
     /* 좁은 화면에서 패널은 폭을 거의 다 쓰므로 좌하단 출처 상자(#hud)와 하단 메뉴를
        **가로로는 피할 수 없다.** 그래서 #bottom-nav 가 hud 를 피한 방법(158px 로 띄우기)
        을 그대로 따라 세로로 비킨다 — 겹치면 z-index 가 높은 hud·메뉴가 위에 그려져
@@ -1571,7 +1623,10 @@
          half  INFORMATION — 지구 위쪽 40% 이상이 보이게 31vh(812 높이 실측: 34vh 는 39%)
          full  위 크롬(검색 줄) 아래까지
        선택자 우선순위가 위 #intel.open #intel-body 보다 높아서 순서와 무관하게 이긴다. */
-    .sheet-grip { display: block; width: 100%; height: 22px; margin: -8px 0 4px; padding: 8px 0 6px;
+    /* 2026-09-23 UX 자동 점검: 손잡이 표적이 높이 22 였다. 30 으로 키우되 위로 12 를 음수 바깥여백으로 되돌려
+       시트 안쪽 여백(12) 맨 위부터 탭 줄 시작까지의 빈 곳을 다 먹게 한다 — 막대 그림(윗변에서 13~17)과 탭 위치(31)는
+       그대로다(border-box). 44 까지는 제자리에서 못 키운다(peek 118 에서 14 가 빠진다 — PD 결정 B4). */
+    .sheet-grip { display: block; width: 100%; height: 30px; margin: -12px 0 0; padding: 12px 0 14px;
       border: 0; background: none; cursor: grab; touch-action: none; }
     .sheet-grip span { display: block; width: 42px; height: 4px; margin: 0 auto; border-radius: 2px;
       background: rgba(255,255,255,0.38); }
@@ -1579,10 +1634,20 @@
        탭 단추는 **지점 카드 모드에서만** 걷는다(위 #intel[data-tab="point"] 규칙 — 폭과 무관).
        ⚠️ 처음에는 폰에서 모든 모드의 탭을 걷었다 — 반박 검증: 폰에서 '예보·예정'·'이력'으로 가는 길이 0개가 되고,
           색면 카드의 조작(등온선·강수 누적 3h/24h·기압 H/L)이 있는 '선택 자료'에도 닿을 수 없었다. 그래서 되돌렸다. */
+    /* (2026-09-23 정정) peek 에서만 걷는다. half·full 의 탭은 그대로다 — 위 '되돌렸다'의 길 0개 사고는 재현되지 않는다
+       (peek 에서 탭으로 가는 길은 손잡이 한 번 → half).
+       UX 자동 점검(2026-09-23): 손잡이로 내린 peek 가 자기 명세('탭 줄과 첫 카드 머리만')를 못 지켰다 — 118px 안에
+       3열 44px 탭 격자만 보였고, 현상을 골라 탭이 7개면 탭조차 잘렸다. 지점 카드 모드(#intel[data-tab="point"])와 같은
+       방식으로 탭 단추만 숨기고 ✕ 자리 30px 을 남긴다. 점수 (1,3,1)·(1,2,0)이 information-access.css 를 이긴다. */
+    #intel[data-sheet="peek"] .intel-tabs button[data-tab] { display: none; }
+    #intel[data-sheet="peek"] .intel-tabs { min-height: 30px; margin-bottom: 0; }
     #intel[data-sheet="peek"].open #intel-body { max-height: 118px; overflow: hidden; }
-    #intel[data-sheet="half"].open #intel-body { max-height: 31vh; }
+    /* (2026-09-23 정정) half 는 31vh → 31dvh, full 은 100vh → 100dvh. 이 파일이 위(메뉴 패널 기록)에서 금지한 단위를
+       다시 썼다 — 이 페이지는 주소창이 접히지 않아 vh(=lvh)가 보이는 높이보다 늘 크다. 실기기 사파리에서 full 시트
+       윗변이 주소창 높이만큼 더 올라와 위 도구줄을 덮을 수 있었다(UX 자동 점검). m1-bottom-sheet 시험은 d?vh 를 받는다. */
+    #intel[data-sheet="half"].open #intel-body { max-height: 31dvh; }
     #intel[data-sheet="full"].open #intel-body {
-      max-height: calc(100vh - var(--nav-reserve) - 96px - env(safe-area-inset-top)); }
+      max-height: calc(100dvh - var(--nav-reserve) - 96px - env(safe-area-inset-top)); }
     #intel.open #intel-body { transition: max-height .18s ease; }
     @media (prefers-reduced-motion: reduce) { #intel.open #intel-body { transition: none; } }
     /* AETHERUS 전체화면 뷰(태양계·사진관·은하) — 좁은 화면에서 윗줄이 통째로 겹쳤다.
@@ -1809,7 +1874,7 @@
   <div class="err" id="load-err"></div>
 </div>
 
-<script type="module" src="./js/main.js?v=194-pointcard"></script>
+<script type="module" src="./js/main.js?v=195-uxfix"></script>
 <script src="/js/earth-switch.js" defer></script>
 </body>
 </html>

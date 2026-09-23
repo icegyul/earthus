@@ -36,7 +36,9 @@ test('손잡이는 넓은 화면에서 숨고 좁은 화면에서만 보인다',
 });
 
 test('half 는 지구 위쪽 40% 이상을 남긴다 — 31vh 이하', () => {
-  const m = html.match(/#intel\[data-sheet="half"\]\.open #intel-body \{ max-height: (\d+)vh; \}/);
+  // 2026-09-23: index.html 이 half 를 31vh → 31dvh 로 바꿨다(이 페이지는 주소창이 안 접혀 vh 가 보이는 높이보다 크다 —
+  //   그 파일의 메뉴 패널 기록). dvh 는 보이는 높이라 같은 수면 vh 보다 작거나 같다 — 상한 31 의 뜻은 그대로다.
+  const m = html.match(/#intel\[data-sheet="half"\]\.open #intel-body \{ max-height: (\d+)d?vh; \}/);
   assert.ok(m && Number(m[1]) <= 31, `half 가 ${m && m[1]}vh — 34vh 는 812 높이에서 39% 였다`);
 });
 

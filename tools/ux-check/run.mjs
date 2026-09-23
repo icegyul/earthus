@@ -7,6 +7,8 @@
 // ── 무엇을 보나 ────────────────────────────────────────────────────────────────────────────────────
 //   ① 화면: 콘솔 오류 · 실패한 요청 · 가로 넘침 · 떠 있는 창끼리 겹침 · 지구가 실제로 보이는 비율
 //           · 44px 보다 작은 터치 버튼(폰) · 11px 보다 작은 글씨
+//           (2026-09-23) 버튼은 테두리 상자가 아니라 '실제로 눌리는 넓이'(::after 로 넓힌 표적 포함)로 잰다 ·
+//           24px 미만은 WCAG 2.5.8 실패로 따로 센다 · 문장 안 링크는 뺀다 · 눈에 안 보이는 것(투명한 부모 안 · inert)은 재지 않는다
 //   ② 흐름: 하단 메뉴를 하나씩 눌러 무엇이 열리는지 · (v2) 기온 켠 채 지구를 누르면 지점 카드가 뜨는지
 //   ③ axe-core(Deque): WCAG 2 A·AA 접근성 위반
 //   ④ Lighthouse(Google): 모바일 · 느린 4G + CPU×4 흉내 — 성능·접근성·모범 사례 점수와 고칠 거리
@@ -78,23 +80,102 @@ const measureInPage = () => {
     if (t && (t.tagName === 'CANVAS' || t.id === 'cesiumContainer' || t.closest('.cesium-widget'))) globe += 1;
   }
   // ③ 작은 터치 버튼 · ④ 작은 글씨
-  const small = [];
+  // ── (2026-09-23) 1차 점검(09-23)이 낸 오탐을 검사기에서 고친다 — 수정 계획 '검사기 규칙' 1~3 ─────────────────────────
+  //   · vis() 는 요소 '자신'의 opacity 만 본다. 그래서 투명한 부모 안의 자식(닫힌 #pop-menu · inert 인 v1 #searchBox ·
+  //     #quick-menu · 지도 레이어)이 '보이는 작은 버튼·글씨'로 잡혔다 → 아래 shown() 으로 조상까지 본다.
+  //     ⚠️ 이 거름은 ③·④ 에만 건다. axe 에는 걸지 않는다 — axe 가 투명도 0 인 팝업을 그대로 검사했기 때문에
+  //        '안 보이는 국가 지표 팝업이 Tab 순서·스크린리더에 남음'(실제 결함, 계획 A1)을 찾았다. ① 창 겹침도 vis() 그대로 둔다.
+  //   · 테두리 상자만 재서, ::after 로 표적만 44px 로 넓힌 단추(v2 상단 #btn-search·#btn-share·#btn-research 30×28 ·
+  //     #hud-more 12×10 · #ts-now·#ts-play 44×24 — index.html 사고 기록 '보이는 그림은 그대로 두고 표적만 가상요소로 넓힌다')가
+  //     작다고 잡혔다 → 가운데에서 상하좌우로 elementFromPoint 를 떠서 '실제로 눌리는 넓이'를 잰다(가상요소를 누르면 그 요소가 잡힌다).
+  //     한쪽으로만 번지는 표적(예: 아래로만 넓힌 ::after)도 재도록 한 방향에 48px 까지 본다 — ±20 네 점만 보면 그런 표적을 놓친다.
+  //   · v1 크레딧 링크(77×9)는 WCAG 2.5.8 의 '문장 안 링크' 예외다 — 이용 조건상 링크를 없앨 수 없다(ui-source.js:31).
+  const opMemo = new Map();
+  const opacityUp = (el) => { if (!el) return 1; let o = opMemo.get(el);
+    if (o === undefined) { o = (+getComputedStyle(el).opacity) * opacityUp(el.parentElement); opMemo.set(el, o); } return o; };
+  const shown = (el) => {
+    if (el.closest('[inert]')) return false;                                   // 닫힌 v1 #searchBox 는 inert · opacity 0 이었다
+    if (typeof el.checkVisibility === 'function'                               // 새 이름(opacityProperty…)과 옛 이름(checkOpacity…)을 같이 넘긴다
+      && !el.checkVisibility({ opacityProperty: true, visibilityProperty: true, checkOpacity: true, checkVisibilityCSS: true })) return false;
+    return opacityUp(el) >= 0.05;                                              // checkVisibility 는 opacity 가 딱 0 일 때만 거른다 — 사라지는 중(0.01)도 거른다
+  };
+  // 그 점을 누르면 이 요소가 눌리는가 — 요소 자신·자식·가상요소, 그리고 <label> 로 감싼 입력칸은 글자 자리까지 표적이다
+  const mine = (el, x, y) => { if (x < 0 || y < 0 || x >= vw || y >= vh) return false;   // 화면 밖 넓이는 누를 수 없다
+    const t = document.elementFromPoint(x, y); if (!t) return false; if (t === el || el.contains(t)) return true;
+    const lb = t.closest('label'); return !!lb && lb.control === el; };
+  const reach = (el, x, y, dx, dy) => { let n = 0; for (let k = 1; k <= 48; k++) { if (!mine(el, x + dx * k, y + dy * k)) break; n = k; } return n; };
+  // 문장 안 링크(WCAG 2.5.8 Inline 예외): display:inline 인 a[href] 이고, 같은 문단(가장 가까운 inline 아닌 조상)에
+  //   링크·단추가 아닌 글자가 있을 때만. 링크만 늘어선 줄(메뉴·탭)은 '문장'이 아니다 — 다른 링크·단추 안의 글은 세지 않는다.
+  const inSentence = (el) => {
+    if (el.tagName !== 'A' || getComputedStyle(el).display !== 'inline') return false;
+    let blk = el.parentElement;
+    while (blk && blk !== document.body && /^(inline|contents)/.test(getComputedStyle(blk).display)) blk = blk.parentElement;
+    if (!blk || blk === document.body) return false;
+    const tw = document.createTreeWalker(blk, NodeFilter.SHOW_TEXT); let n = 0;
+    for (let t = tw.nextNode(); t; t = tw.nextNode()) {
+      const p = t.parentElement; if (!p || p.closest('a[href], button, [role="button"]')) continue;
+      n += (t.textContent.match(/[\p{L}\p{N}]/gu) || []).length; if (n >= 2) return true;
+    }
+    return false;
+  };
+  const live = [], small = [], coveredSample = [];
+  const targetSkips = { hidden: 0, ariaHidden: 0, noPointer: 0, covered: 0, widened: 0, inline: 0 };   // 무엇을 왜 뺐는지 — 뺀 것이 진짜 결함을 가리지 않았는지 사람이 볼 수 있게
   for (const el of document.querySelectorAll('button, a[href], [role="button"], input, select, summary')) {
     const r = vis(el); if (!r) continue;
-    if (r.width < 44 || r.height < 44) small.push({ label: label(el), text: (el.innerText || el.getAttribute('aria-label') || '').trim().slice(0, 24), w: Math.round(r.width), h: Math.round(r.height) });
+    if (!shown(el)) { targetSkips.hidden += 1; continue; }
+    if (el.closest('[aria-hidden="true"]')) { targetSkips.ariaHidden += 1; continue; }   // 표적만 — aria-hidden 글씨는 눈에는 보이므로 ④ 에서는 빼지 않는다
+    if (getComputedStyle(el).pointerEvents === 'none') { targetSkips.noPointer += 1; continue; }   // 일부러 누를 수 없게 한 것(v1 출처 독 — 지구 조작을 막지 않으려고, app.css:1284)
+    const x0 = Math.max(r.left, 0), x1 = Math.min(r.right, vw), y0 = Math.max(r.top, 0), y1 = Math.min(r.bottom, vh);
+    const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
+    // 가운데를 눌러도 이 요소가 안 잡히면 사람이 누를 수 있는 단추가 아니다(닫힌 창 뒤 · 스크롤로 잘림 · 덮개 아래) — 흐름의 reachable 과 같은 규칙.
+    //   ⚠️ 대가: 늘 덮개 아래 깔린 단추는 크기 검사에서 빠진다 → coveredTargets 에 '무엇이 덮었나'를 남겨 사람이 본다.
+    if (!mine(el, cx, cy)) { targetSkips.covered += 1; if (coveredSample.length < 12) { const cover = document.elementFromPoint(cx, cy); coveredSample.push(`${label(el)} ← ${cover ? label(cover) : '?'}`); } continue; }
+    const t = { el, label: label(el), text: (el.innerText || el.getAttribute('aria-label') || '').trim().slice(0, 24), w: Math.round(r.width), h: Math.round(r.height),
+      hitW: Math.round(r.width), hitH: Math.round(r.height), x0: r.left, x1: r.right, y0: r.top, y1: r.bottom };
+    if (r.width < 44 || r.height < 44) {
+      const L = reach(el, cx, cy, -1, 0), R = reach(el, cx, cy, 1, 0), U = reach(el, cx, cy, 0, -1), D = reach(el, cx, cy, 0, 1);
+      Object.assign(t, { hitW: L + R + 1, hitH: U + D + 1, x0: cx - L, x1: cx + R + 1, y0: cy - U, y1: cy + D + 1 });
+    }
+    live.push(t);
+    if (t.hitW >= 44 && t.hitH >= 44) { if (r.width < 44 || r.height < 44) targetSkips.widened += 1; continue; }   // ::after 로 넓힌 표적 — 통과
+    if (inSentence(el)) { targetSkips.inline += 1; continue; }
+    small.push(t);
   }
+  // WCAG 2.5.8(AA): 24px 미만은 실패 — 단 '간격 예외': 표적 가운데에 지름 24 원을 놓아 다른 표적(또는 다른 작은 표적의 원)에 닿지 않으면 통과.
+  //   (v1 #hudShow 23px 는 주변에 다른 표적이 없어 예외로 넘어간다 — 계획 A18 은 HIG 44 를 채우려는 일이다)
+  //   44 미만(HIG·Material 권고)은 경고, 24 미만이면서 간격 예외도 안 되는 것만 '실패'로 따로 센다.
+  const under = (t) => t.hitW < 24 || t.hitH < 24;
+  for (const t of small) {
+    if (!under(t)) { t.wcag = 'ok'; continue; }
+    const ux = (t.x0 + t.x1) / 2, uy = (t.y0 + t.y1) / 2;
+    const near = live.some((o) => {
+      if (o === t || o.el.contains(t.el) || t.el.contains(o.el)) return false;
+      const dx = Math.max(o.x0 - ux, 0, ux - o.x1), dy = Math.max(o.y0 - uy, 0, uy - o.y1);
+      if (Math.hypot(dx, dy) < 12) return true;
+      return under(o) && Math.hypot((o.x0 + o.x1) / 2 - ux, (o.y0 + o.y1) / 2 - uy) < 24;
+    });
+    t.wcag = near ? 'fail' : 'spacing';
+  }
+  small.sort((a, b) => (a.wcag === 'fail' ? 0 : 1) - (b.wcag === 'fail' ? 0 : 1) || Math.min(a.hitW, a.hitH) - Math.min(b.hitW, b.hitH));
+  const plain = small.map(({ el, x0, x1, y0, y1, ...s }) => s);   // DOM 요소는 page.evaluate 밖으로 못 나간다
   const tiny = [];
+  let tinyHidden = 0;
   for (const el of document.querySelectorAll('body *')) {
     if (!el.childNodes.length || ![...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())) continue;
     const r = vis(el); if (!r) continue;
     const fs = parseFloat(getComputedStyle(el).fontSize);
-    if (fs < 11) tiny.push({ label: label(el), fs, text: el.textContent.trim().slice(0, 30) });
+    if (fs >= 11) continue;
+    // (2026-09-23) 투명한 부모 안 · visibility:hidden · inert — 사람 눈에 안 보이는 글씨는 크기를 따지지 않는다(닫힌 #pop-menu · #quick-menu 안의 글씨 같은 것)
+    if (!shown(el)) { tinyHidden += 1; continue; }
+    tiny.push({ label: label(el), fs, text: el.textContent.trim().slice(0, 30) });
   }
   return {
     panels: top.map((p) => ({ label: p.label, x: Math.round(p.r.left), y: Math.round(p.r.top), w: Math.round(p.r.width), h: Math.round(p.r.height), z: p.z })),
     overlaps, globePct: Math.round((globe / total) * 100),
     overflowX: document.documentElement.scrollWidth > vw + 1 ? document.documentElement.scrollWidth - vw : 0,
-    smallTargets: small, smallTargetCount: small.length, tinyText: tiny.slice(0, 40), tinyTextCount: tiny.length,
+    smallTargets: plain, smallTargetCount: plain.length, tinyText: tiny.slice(0, 40), tinyTextCount: tiny.length,
+    wcagTargets: plain.filter((s) => s.wcag === 'fail'), wcagFailCount: plain.filter((s) => s.wcag === 'fail').length,
+    targetSkips, coveredTargets: coveredSample, tinyHiddenCount: tinyHidden,
   };
 };
 
@@ -220,7 +301,7 @@ async function writeReport() {
     const L = p.layout || {};
     sec.push(`<section><h2>${esc(p.target)} · ${esc(p.device)}</h2>
 <div class="kpis"><div><b>${L.globePct ?? '?'}%</b><span>지구가 보이는 비율</span></div><div><b>${(L.overlaps || []).length}</b><span>창 겹침</span></div>
-<div><b>${L.smallTargetCount ?? '?'}</b><span>44px 미만 버튼</span></div><div><b>${L.tinyTextCount ?? '?'}</b><span>11px 미만 글씨</span></div>
+<div><b>${L.smallTargetCount ?? '?'}</b><span>44px 미만 버튼(눌리는 넓이)</span></div><div><b class="${L.wcagFailCount ? 'r' : ''}">${L.wcagFailCount ?? '?'}</b><span>24px 미만(WCAG 실패)</span></div><div><b>${L.tinyTextCount ?? '?'}</b><span>11px 미만 글씨</span></div>
 <div><b>${(p.axe || []).reduce((n, v) => n + v.count, 0)}</b><span>접근성 위반(axe)</span></div><div><b>${p.pageErrors.length + p.consoleErrors.length}</b><span>JS·콘솔 오류</span></div>
 <div><b>${Math.round(p.loadingGoneMs / 100) / 10}s</b><span>로딩 걷힘(참고)</span></div></div>
 <div class="shots"><figure>${img(p.shots.first)}<figcaption>처음 연 화면</figcaption></figure><figure>${img(p.shots.main)}<figcaption>안내 닫은 뒤</figcaption></figure></div>
@@ -232,7 +313,11 @@ ${L.overflowX ? `<p class="bad">가로 넘침 ${L.overflowX}px</p>` : ''}
 ${(p.axe || []).length ? `<h3>접근성 위반 (axe · WCAG 2 AA)</h3><ul>${p.axe.map((v) => `<li><b>${esc(v.impact)}</b> ${esc(v.help)} — ${v.count}곳 <span class="dim">${esc(v.targets.join(' | '))}</span></li>`).join('')}</ul>` : ''}
 ${p.pageErrors.length || p.consoleErrors.length ? `<h3>오류</h3><ul>${[...p.pageErrors, ...p.consoleErrors].slice(0, 12).map((e) => `<li><code>${esc(e)}</code></li>`).join('')}</ul>` : ''}
 ${p.failedRequests.length ? `<h3>실패한 요청 ${p.failedRequests.length}</h3><ul class="dim">${p.failedRequests.slice(0, 12).map((f) => `<li>${esc(f.why)} ${esc(f.url)}</li>`).join('')}</ul>` : ''}
-${L.smallTargetCount ? `<details><summary>44px 미만 버튼 ${L.smallTargetCount}개</summary><p class="dim">${L.smallTargets.slice(0, 40).map((s) => `${esc(s.label)}「${esc(s.text)}」${s.w}×${s.h}`).join(' · ')}</p></details>` : ''}
+${L.wcagFailCount ? `<h3 class="bad">WCAG 2.5.8 실패 — 눌리는 넓이 24px 미만 · 간격 예외도 안 됨 ${L.wcagFailCount}개</h3><p>${L.wcagTargets.slice(0, 20).map((s) => `<code>${esc(s.label)}</code>「${esc(s.text)}」 눌리는 넓이 ${s.hitW}×${s.hitH}`).join(' · ')}</p>` : ''}
+${L.smallTargetCount ? `<details><summary>44px 미만 버튼 ${L.smallTargetCount}개 (실제로 눌리는 넓이 기준)</summary><p class="dim">${L.smallTargets.slice(0, 40).map((s) => `${esc(s.label)}「${esc(s.text)}」${s.w}×${s.h}${Math.abs(s.hitW - s.w) > 1 || Math.abs(s.hitH - s.h) > 1 ? ` → 눌리는 넓이 ${s.hitW}×${s.hitH}` : ''}${s.wcag === 'fail' ? ' [WCAG 실패]' : s.wcag === 'spacing' ? ' [24 미만 · 간격 예외]' : ''}`).join(' · ')}</p></details>` : ''}
+${L.targetSkips ? `<p class="dim">버튼 검사에서 뺀 것 — 안 보임(투명한 부모 안·inert) ${L.targetSkips.hidden} · aria-hidden ${L.targetSkips.ariaHidden} · pointer-events:none ${L.targetSkips.noPointer} · 가운데가 덮임 ${L.targetSkips.covered} · ::after 로 넓혀 통과 ${L.targetSkips.widened} · 문장 안 링크 ${L.targetSkips.inline} · 안 보이는 작은 글씨 ${L.tinyHiddenCount ?? 0}</p>` : ''}
+${(L.coveredTargets || []).length ? `<details><summary>가운데를 눌러도 안 잡혀 뺀 버튼(무엇이 덮었나) ${L.targetSkips.covered}개</summary><p class="dim">${L.coveredTargets.map((c) => esc(c)).join(' · ')}</p></details>` : ''}
+${L.tinyTextCount ? `<details><summary>11px 미만 글씨 ${L.tinyTextCount}개</summary><p class="dim">${L.tinyText.map((t) => `${esc(t.label)} ${t.fs}px「${esc(t.text)}」`).join(' · ')}</p></details>` : ''}
 </section>`);
   }
   const lh = results.lighthouse.map((l) => `<section><h2>Lighthouse · ${esc(l.url)}</h2>${l.error ? `<p class="bad">${esc(l.error)}</p>` : `

@@ -13,6 +13,11 @@
   top:auto;
   bottom:max(12px,env(safe-area-inset-bottom));
   display:grid;
+  /* 2026-09-23 UX 자동점검: 템플릿 없는 grid 는 트랙을 내용 폭(max-content)으로 잡는다. 그래서
+     .pd-toggle(width:max-content)이 독 폭(폰 270)을 무시하고 512px 로 늘어나, 요약이 한 줄로 뻗어
+     화면 오른쪽 밖에서 잘렸다(운영 402×714 실측, html overflow-x:hidden 이라 안 보였다). 데스크톱도 같았다.
+     트랙을 독 폭에 묶는다 — 그래야 .pd-toggle 의 max-width:100% 와 요약의 두 줄 자르기가 산다. */
+  grid-template-columns:minmax(0,1fr);
   gap:5px;
   width:min(370px,calc(100vw - 82px));
   color:rgba(239,246,248,.82);
@@ -58,6 +63,8 @@
   line-height:1.35;
   text-overflow:ellipsis;
   white-space:normal;   /* 구름 + 날씨 출처가 한 줄을 넘는다 — 두 줄까지 */
+  /* (2026-09-23 정정) 이 '두 줄까지'는 지금까지 한 번도 걸린 적이 없다 — 독의 grid 트랙이 내용 폭으로
+     늘어나 요약이 한 줄로 화면 밖까지 뻗었기 때문이다. 위 #provenanceDock 의 grid-template-columns 로 고쳤다. */
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
 }
 #provenanceDock #srcNote{
@@ -89,12 +96,15 @@
 #provenanceDock .pd-credits a{color:inherit;text-decoration:none;pointer-events:auto}
 #provenanceDock #srcNote a:hover,
 #provenanceDock .pd-credits a:hover{color:rgba(239,246,248,.82);text-decoration:underline}
+/* 2026-09-23 UX 자동점검: 크레딧이 7px(폰 6.5px)에 알파 .34 였다. 화면에 있기는 해도 읽히지 않아
+   이용 조건(ESO CC BY 4.0 '크레딧이 분명', Esri '표기를 표시', 천구 README '좌하단에 항상')의 취지를 못 채웠다.
+   app.css 기록대로 출처 표기는 읽히라고 있는 것이다 → 10px·.55 로 올린다(≥1600 은 11px). */
 #provenanceDock .pd-credits{
   display:grid;
   gap:1px;
   padding-inline:5px;
-  color:rgba(239,246,248,.34);
-  font-size:7px;
+  color:rgba(239,246,248,.55);
+  font-size:10px;
   line-height:1.3;
   pointer-events:auto;
 }
@@ -106,18 +116,22 @@ body:has(#tourismMapUi[aria-hidden="false"]) #provenanceDock{
   bottom:max(88px,calc(env(safe-area-inset-bottom) + 78px));
 }
 
+/* 2026-09-23 UX 자동점검: 폰에서 접힌 독이 보여 주는 유일한 출처 줄(요약)이 8px, 펼친 상세도 8px,
+   크레딧은 6.5px 였다 — app.css 가 스스로 적은 폰 기준선 9px 보다도 작았다. 요약·상세 11px, 크레딧 10px 로 올린다.
+   요약은 위 grid 트랙 고침 덕에 270 폭 안에서 두 줄로 접힌다(실측 258×30, 독 높이는 토글 min-height 44 안).
+   독 윗변이 올라가는 만큼 바람 범례는 app.css 'body.menu-bar #windLegend' 에서 +22 올렸다. */
 @media (max-width:640px){
   #provenanceDock{width:min(270px,calc(100vw - 76px));left:max(8px,env(safe-area-inset-left));top:auto;bottom:max(8px,env(safe-area-inset-bottom))}
   #provenanceDock .pd-toggle{padding:6px 4px}
-  #provenanceDock .pd-summary{font-size:8px}
-  #provenanceDock #srcNote{max-height:24vh;padding:9px;font-size:8px}
-  #provenanceDock .pd-credits{font-size:6.5px}
+  #provenanceDock .pd-summary{font-size:11px}
+  #provenanceDock #srcNote{max-height:24vh;padding:9px;font-size:11px}
+  #provenanceDock .pd-credits{font-size:10px}
 }
 
 @media (min-width:1600px){
   #provenanceDock{left:18px;top:auto;bottom:16px;width:min(430px,34vw)}
   #provenanceDock .pd-summary,#provenanceDock #srcNote{font-size:11px}
-  #provenanceDock .pd-credits{font-size:8.5px}
+  #provenanceDock .pd-credits{font-size:11px}
 }
 
 @media (prefers-reduced-motion:reduce){

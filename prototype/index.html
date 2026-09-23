@@ -108,15 +108,15 @@
 }
 </script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.143.0/Build/Cesium/Widgets/widgets.css">
-<link rel="stylesheet" href="css/app.css?v=20260907-hazard">
-<link rel="stylesheet" href="css/weather-card-v7.css?v=20260908-wcv7-2">
+<link rel="stylesheet" href="css/app.css?v=20260923-uxcheck">
+<link rel="stylesheet" href="css/weather-card-v7.css?v=20260923-uxcheck">
 <link rel="stylesheet" href="css/tourism-flow.css?v=20260821-tourism-density2">
 <link rel="stylesheet" href="css/account.css?v=20260906-v1-lean">
 <link rel="stylesheet" href="css/ask.css?v=20260814-ax1">
 <link rel="stylesheet" href="css/readability.css?v=20260907-topbar">
 <link rel="stylesheet" href="css/safety.css?v=20260812-safety1">
 <link rel="stylesheet" href="css/decision-rail.css?v=20260814-ax2">
-<link rel="stylesheet" href="css/v8-shell.css?v=20260906-srcnote">
+<link rel="stylesheet" href="css/v8-shell.css?v=20260923-uxcheck">
   <!-- ⚠️ AI 학습 거부 — robots.txt 와 같은 방침이다(학습 금지, 인용 허용).
        메타 태그는 자발적 준수라 강제력이 없다. 실제 근거는 이용약관 제11조다. -->
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
@@ -410,8 +410,11 @@
   <div id="banner"></div>
 
   <!-- 오늘의 볼거리 — 첫 화면에서 "할 일"을 준다. 누르면 그곳으로 날아간다.
-       ⚠️ 비어 있으면(자료 못 받음) 아무것도 그리지 않는다. 빈 줄이 보이면 고장으로 읽힌다. -->
-  <div id="spotChips" aria-label="오늘의 볼거리"></div>
+       ⚠️ 비어 있으면(자료 못 받음) 아무것도 그리지 않는다. 빈 줄이 보이면 고장으로 읽힌다.
+       role="group" (2026-09-23 UX 자동점검 axe aria-prohibited-attr): 역할 없는 div 에는 aria-label 을
+       걸 수 없다(ARIA 1.2 generic). group 은 라벨을 허용하고 키보드 계약이 없다 —
+       toolbar(화살표 키 이동 필요)·region(랜드마크가 생김)은 쓰지 않는다. -->
+  <div id="spotChips" role="group" aria-label="오늘의 볼거리"></div>
 
   <!-- 첫 실행 코치마크 — 한 번만 뜬다 (localStorage) -->
   <div id="coach" aria-hidden="true"></div>

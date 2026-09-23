@@ -25,6 +25,10 @@ button:focus-visible,input:focus-visible,summary:focus-visible,a:focus-visible{o
 #intel .intel-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding-right:38px;position:relative}
 #intel .intel-tabs button{letter-spacing:0;white-space:nowrap;min-width:0}
 #intel .intel-tabs #intel-close{position:absolute;right:0;top:0;width:32px}
+/* 2026-09-23 UX 자동 점검: ✕ 표적이 32×44 였다. 보이는 폭·탭 격자는 그대로 두고 표적만 44 로 넓힌다
+   (왼쪽 4 — 옆 탭과 2px 틈이 남는다 · 오른쪽 8 — #intel-body 안쪽 여백 14 안이라 잘리지 않는다).
+   탭 폭을 건드리지 않는 이유: 3열 탭 격자는 이미 겹침 사고가 난 곳이다(ui-shell.js 탭 줄). */
+#intel .intel-tabs #intel-close::after{content:'';position:absolute;top:0;bottom:0;left:-4px;right:-8px}
 #intel .card-b,#intel .travel-catalog{color:#ccdee9}
 #intel .context-details label{display:block;margin:10px 0}#intel .context-details input{display:block;width:100%;box-sizing:border-box;min-height:44px;border:1px solid #567083;border-radius:6px;background:#0b1e2d;color:#e9f4fb;padding:10px;font:inherit}
 #ts-label{font-size:13px;white-space:normal}#ts-range{min-width:70px}

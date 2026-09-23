@@ -4,7 +4,7 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=68-pointcard';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=69-uxfix';
 import { createSelectionGate } from './information-contract.js';
 // PHASE 4 §9 — 지도에서 고른 사건을 어느 현상으로 읽을지는 레지스트리가 정한다.
 import { layerForEventKind } from './phenomenon-registry.js?v=4';
@@ -59,8 +59,8 @@ import { createObsLabels, obsCardHtml, obsCardTitle } from './obs-labels.js?v=1'
 import { loadPointDays, loadPointNormal, loadPointObs, pointCardHtml, readPointNow } from './point-card.js?v=1';
 let obsLabels = null;   // main() 안에서 만든다. 클릭 핸들러가 그보다 먼저 정의되므로 extScene 처럼 모듈 자리에 둔다
 import { PopSculpture } from './pop-sculpture.js?v=13';
-import { PopMetricMenu } from './pop-metric-menu.js?v=1';
-import { QuickMenu } from './quick-menu.js?v=1';
+import { PopMetricMenu } from './pop-metric-menu.js?v=2';
+import { QuickMenu } from './quick-menu.js?v=2';
 import { QuakeHistory } from './quake-history.js?v=3';
 import { initOnboard } from './onboard.js?v=2';
 import { SolarView } from './solar-view.js?v=4';
@@ -2616,6 +2616,19 @@ async function main() {
     }
   });
   canvas.addEventListener('pointerdown', (e) => {
+    // 2026-09-23 PD "창이 너무 많이 떠" · UX 자동 점검: 폰 서랍의 스크림(#menu-scrim)이 화면 전체를 붙잡아 서랍이 열리면
+    //   지구가 0% 였다. index.html 에서 스크림의 붙잡기를 뺐고(pointer-events:none), 스크림이 하던 '닫는 손가락은 고르지
+    //   않는다'를 여기로 옮긴다: 폰에서 서랍이 열려 있으면 이 손가락은 **닫기만** 한다. downAt 을 비워 pointerup 이 나라·바다를
+    //   고르지 않게 하고, 길게 누르기 타이머를 걸기 **전에** 돌아간다. 회전은 OrbitCam 자체 pointerdown 이 그대로 받는다.
+    //   데스크톱은 스크림이 원래 없어(폰 블록에서만 display:block) 동작을 바꾸지 않는다 — 그래서 PHONE_MQ 로 묶는다.
+    //   (shell·PHONE_MQ 는 main() 안의 뒤쪽 const 지만, 그 사이에 최상위 await 가 없어 첫 이벤트 전에 이미 초기화돼 있다 —
+    //    바로 아래 기존 shell.closeFlyout() 호출과 같은 조건이다.)
+    if (shell.isFlyoutOpen() && window.matchMedia && window.matchMedia(PHONE_MQ).matches) {
+      downAt = null;
+      shell.closeFlyout();
+      closeDrawers();
+      return;
+    }
     downAt = { x: e.clientX, y: e.clientY, t: performance.now() };
     shell.closeFlyout(); // 지구를 만지면 메뉴·서랍은 닫힌다
     closeDrawers();
@@ -6584,6 +6597,15 @@ async function main() {
     // 사건을 열고(정본 id), 그 사건이 속한 현상을 패널 선택으로도 맞춘다.
     // 이게 없으면 지도에서 태풍을 눌러도 패널은 무엇을 고른 것인지 모른다.
     feed.updateMarkers(camera, altKm, (eventId, kind) => {
+      // 2026-09-23 적대 검토: 폰 서랍 스크림이 붙잡기를 뺀 뒤(index.html #menu-scrim.on pointer-events:none · 캔버스 pointerdown
+      //   첫머리 가드와 한 묶음), 지구 위 사건 표식(.feed-mark · #feedmarks z3 · pointer-events:auto)은 캔버스를 거치지 않아
+      //   서랍이 열린 채로 눌리면 Intelligence 시트까지 열려 **창 두 개**가 섰다 — PD "창이 너무 많이 떠" 를 도로 키운다.
+      //   캔버스와 같은 규칙: 폰에서 서랍이 열려 있으면 이 탭은 **닫기만** 한다.
+      if (shell.isFlyoutOpen() && window.matchMedia && window.matchMedia(PHONE_MQ).matches) {
+        shell.closeFlyout();
+        closeDrawers();
+        return;
+      }
       feed.selectById(eventId, orbit);
       const key = layerForEventKind(kind);
       if (key) { const [sid, lid] = key.split('/'); shell.setSelection(sid, lid); }

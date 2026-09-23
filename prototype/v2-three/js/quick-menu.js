@@ -43,8 +43,11 @@ export class QuickMenu {
       const btn = e.target.closest('.qk-item');
       if (!btn) return;
       const m = ITEMS.find((x) => x.id === btn.dataset.id);
+      // close() 가 이제 옛 hit 을 버린다(2026-09-23) — 닫기 전에 이번 선택의 hit·좌표를 먼저 쥔다.
+      //   순서(닫고 → onPick)는 그대로다(quick-menu.test.mjs 가 잠근다).
+      const hit = this._hit, x = this._x, y = this._y;
       this.close();
-      if (m) this.onPick(m.id, this._hit, this._x, this._y);
+      if (m) this.onPick(m.id, hit, x, y);
     });
     // 메뉴 밖을 누르면 닫는다(지구를 다시 만지는 것 포함) — pop-metric-menu 와 같은 문.
     document.addEventListener('pointerdown', (e) => {
@@ -72,5 +75,8 @@ export class QuickMenu {
   close() {
     this.visible = false;
     this.el.classList.remove('show');
+    // 2026-09-23 UX 자동 점검: 닫힌 뒤에도 투명한 원(.qk-item)이 옛 자리에서 탭을 받았다(index.html CSS 에서 막았다).
+    //   옛 raycast 결과도 남겨 두지 않는다 — 다음 open() 이 새로 채울 때까지 옛 좌표로 무엇도 실행될 여지가 없게.
+    this._hit = null;
   }
 }

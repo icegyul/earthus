@@ -261,7 +261,7 @@ export const byMarket = (a, b) => {
 export function initShell(hooks) {
   // hooks: { onScene(id), getNow() -> html, camera, getFocusSel(), labelData() -> [{nameKo,lat,lon,rank}] }
   const root = document.body;
-  if(!document.getElementById('information-access-style')){const css=document.createElement('link');css.id='information-access-style';css.rel='stylesheet';css.href=new URL('./information-access.css?v=20260905',import.meta.url).href;document.head.append(css);}
+  if(!document.getElementById('information-access-style')){const css=document.createElement('link');css.id='information-access-style';css.rel='stylesheet';css.href=new URL('./information-access.css?v=20260923-uxfix',import.meta.url).href;document.head.append(css);}
 
   // --- 1.0식 브랜드 메뉴 (PD 지시): 좌측 가장자리 세로 손잡이 + 슬라이드 패널 ---
   // EARTHUS와 AETHERUS는 서로의 카테고리가 아니다 — 각자 독립 손잡이 (1.0 원칙).

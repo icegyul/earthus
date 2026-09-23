@@ -1,0 +1,44 @@
+/* 지구를 움직이는 동안 창·메뉴를 걷어 낸다 — 2026-09-24 PD "화면을 움직이면 모든 창과 메뉴들 사라지고, 멈추면 다시 메뉴가 보이고".
+   body.is-moving · body.mc-back 은 motion-chrome.js 가 건다(손이 지구를 끌기 시작할 때만 — 탭·코드가 옮기는 카메라는 아님).
+
+   걷는 것: 상단 로고(.es-switch)·툴바(#panel) · 고른 나라 칩(#focus-chip) · 좌측 탭(.edge-tab) · 범례(#field-legend)
+            · 하단 알약(#bottom-nav) · 좌하단 출처/HUD(#hud · #srcNote 포함) · 타임라인(#timestrip) · 시트(#intel)
+            · 떠 있는 창(#pop-menu · #quick-menu · #ev-pop · #share-menu) · 지진·인구 조각 자막(#quake-cap · #sculpt-cap)
+            · 특보 띠(#warn-banner).
+   남기는 것: 지구에 붙은 것(#labels · #feedmarks · #route-labels · #sculpt-peaks · 관측 숫자) — 지구의 일부다.
+            #menu-panel · .drawer — 지구를 누르는 순간 이미 닫힌다(main.js canvas pointerdown · A13). 닫히는 미끄러짐을 끊지 않으려고 뺀다.
+            #loading · #intro · 전화면 모드(#simview …) — 창이 아니다.
+   출처: 멈추면 돌아온다. '모든 값에 출처와 시각' 은 멈춘 화면의 약속이다 — 움직이는 동안만 걷는다.
+
+   opacity 만 바꾼다 — display·크기를 건드리면 시트(peek/half/full)가 다시 흐르고 상태가 날아간다.
+   transition 이 아니라 animation 인 이유는 motion-chrome.js 머리말 참고(창들이 이미 제 transition 을 갖고 있다). */
+
+body.is-moving :is(.es-switch, #panel, #focus-chip, .edge-tab, #field-legend, #bottom-nav, #hud, #timestrip, #intel,
+                   #pop-menu, #quick-menu, #ev-pop, #share-menu, #quake-cap, #sculpt-cap, #warn-banner) {
+  animation: mc-hide .18s ease-out forwards;
+}
+/* 숨은 창은 손을 받지 않는다 — 자식이 pointer-events:auto 를 따로 가진 경우(#quick-menu .qk-item · #quake-cap)도 막는다. */
+body.is-moving :is(.es-switch, #panel, #focus-chip, .edge-tab, #field-legend, #bottom-nav, #hud, #timestrip, #intel,
+                   #pop-menu, #quick-menu, #ev-pop, #share-menu, #quake-cap, #sculpt-cap, #warn-banner),
+body.is-moving :is(.es-switch, #panel, #focus-chip, .edge-tab, #field-legend, #bottom-nav, #hud, #timestrip, #intel,
+                   #pop-menu, #quick-menu, #ev-pop, #share-menu, #quake-cap, #sculpt-cap, #warn-banner) * {
+  pointer-events: none !important;
+}
+body.mc-back :is(.es-switch, #panel, #focus-chip, .edge-tab, #field-legend, #bottom-nav, #hud, #timestrip, #intel,
+                 #pop-menu, #quick-menu, #ev-pop, #share-menu, #quake-cap, #sculpt-cap, #warn-banner) {
+  animation: mc-show .18s ease-out;
+}
+/* 'to'·'from' 한쪽만 적는다 — 나머지 끝은 그 창의 제 opacity(0.86 · 숨김 상태 0 …)다. 숨어 있던 창은 돌아와도 숨어 있다. */
+@keyframes mc-hide { to { opacity: 0; } }
+@keyframes mc-show { from { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  body.is-moving :is(.es-switch, #panel, #focus-chip, .edge-tab, #field-legend, #bottom-nav, #hud, #timestrip, #intel,
+                     #pop-menu, #quick-menu, #ev-pop, #share-menu, #quake-cap, #sculpt-cap, #warn-banner) {
+    animation-duration: 0s;   /* forwards 라 끝 상태(opacity 0)가 바로 걸린다 */
+  }
+  body.mc-back :is(.es-switch, #panel, #focus-chip, .edge-tab, #field-legend, #bottom-nav, #hud, #timestrip, #intel,
+                   #pop-menu, #quick-menu, #ev-pop, #share-menu, #quake-cap, #sculpt-cap, #warn-banner) {
+    animation: none;
+  }
+}

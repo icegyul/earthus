@@ -96,6 +96,9 @@ import {
   getRuntime, registerAndMount, broadcastThermal, engineCardHtml, ENGINE_CLASS,
 } from './engine-bridge.js?v=16';
 import { globeAdapter, overlayAdapter, takeoverAdapter } from './engine-adapters.js?v=1';
+// (2026-09-24 PD "화면을 움직이면 모든 창과 메뉴들 사라지고, 멈추면 다시 메뉴가 보이고") 손이 지구를 끄는 동안 창을 걷는다.
+//   TAP_MOVE_PX 는 아래 canvas pointerup 의 '고르기' 문턱과 같은 값이다 — 숨김과 고르기가 서로 다른 문턱을 쓰지 않게.
+import { installMotionChrome, orbitSettled, TAP_MOVE_PX } from './motion-chrome.js?v=1';
 
 const EARTH_RADIUS_M = 6371000;
 
@@ -706,6 +709,9 @@ class OrbitCam {
     this.tiltDrag = false;
     this.touches = new Map();
     this.lastPinch = null;
+    // (2026-09-24) 손이 지구를 끄는 동안 창을 걷는 상태기계 — 누름·움직임·뗌·휠만 알려 주고, 멈춤은 update() 가 알려 준다.
+    //   코드가 옮기는 카메라(fly-to·glide·자동회전)는 여기로 오지 않으므로 창을 숨기지 않는다.
+    this.motion = installMotionChrome();
 
     // 포인터 캡처는 항상 상태를 정한 '뒤에' 잡는다. 앞에서 잡으면 캡처가 실패하는 순간
     // (이미 놓인 포인터 등) 예외가 나면서 드래그 상태가 통째로 설정되지 않는다.
@@ -714,6 +720,7 @@ class OrbitCam {
       // 첫 화면에서만 저절로 돌고, 사용자가 지구를 만지는 순간 자동회전은 끝난다.
       // (드래그 중에만 멈췄다 놓으면 다시 도는 예전 동작은 조작을 방해했다)
       this.autoRotate = false;
+      this.motion.down(e.pointerId, e.clientX, e.clientY);   // (2026-09-24) 누른 자리 — 여기서 TAP_MOVE_PX 넘게 가야 창을 걷는다
       if (e.pointerType === 'touch') this.touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
       // 휠 클릭(가운데 버튼) = 시점 틸트
       if (e.button === 1) {
@@ -734,6 +741,7 @@ class OrbitCam {
     // 손가락을 떼는 처리 — 두 손가락 중 하나만 떼면 남은 손가락으로 회전을 이어받는다.
     // (이어받지 않으면 손가락이 화면에 남아 있는데도 지구가 굳어버린다)
     const lift = (e) => {
+      if (e && e.pointerId != null) this.motion.up(e.pointerId);   // (2026-09-24) 손을 떼도 카메라가 멈출 때까지는 걷힌 채다
       if (e && e.pointerId != null) this.touches.delete(e.pointerId);
       if (this.touches.size < 2) this.lastPinch = null;
       this.tiltDrag = false;
@@ -749,6 +757,8 @@ class OrbitCam {
     dom.addEventListener('pointerup', lift);
     dom.addEventListener('pointercancel', lift);
     dom.addEventListener('pointermove', (e) => {
+      // (2026-09-24) 눌린 포인터만 센다(hover 는 무시) — 한 손가락·두 손가락·가운데 버튼 틸트가 모두 이 한 줄을 지난다.
+      this.motion.move(e.pointerId, e.clientX, e.clientY);
       // 모바일 두 손가락: 벌리면 줌, 함께 위아래로 밀면 시점 틸트.
       // 캔버스에 touch-action:none을 걸어 브라우저 핀치를 껐으므로 줌은 우리가 처리해야 한다.
       if (e.pointerType === 'touch' && this.touches.has(e.pointerId)) {
@@ -793,8 +803,12 @@ class OrbitCam {
     dom.addEventListener('wheel', (e) => {
       e.preventDefault();
       this.autoRotate = false;   // 휠로 줌하는 것도 '만지기 시작'이다
+      const distBefore = this.targetDist;   // (2026-09-24 검토 정정) 아래 wheel() 판정용
       this.targetDist *= Math.exp(e.deltaY * 0.0011);
       this.targetDist = Math.max(this.minDist, Math.min(this.maxDist, this.targetDist));
+      // (2026-09-24) 휠 줌도 '움직이는 중' — 창을 걷는다
+      // (2026-09-24 검토 정정) 최대 확대·축소에 닿아 줌이 안 바뀌는 휠은 창을 걷지 않는다 — 한계에서 휠을 굴리면 창만 깜빡였다.
+      if (this.targetDist !== distBefore) this.motion.wheel();
     }, { passive: false });
     // iOS 사파리는 touch-action:none으로도 페이지 핀치 줌을 막지 못한다(의도적으로 무시한다).
     // 사파리 전용 gesture 이벤트를 막아야 지구 핀치가 페이지 확대와 싸우지 않는다.
@@ -821,6 +835,8 @@ class OrbitCam {
     this.dist += (this.targetDist - this.dist) * k;
 
     this.tilt += (this.targetTilt - this.tilt) * k;
+    // (2026-09-24) 손을 뗀 뒤에도 감쇠로 미끄러지는 동안은 걷힌 채 — 실제로 멈춘 뒤 0.4 s 에 창이 돌아온다.
+    this.motion.tick(dt, orbitSettled(this));
 
     const cp = Math.cos(this.pitch);
     // 지표 조준점 (지구 중심이 아니라 이 점을 본다 — 틸트의 회전 중심)
@@ -2808,9 +2824,16 @@ async function main() {
     if (e.pointerType === 'touch' || e.pointerType === 'pen') {
       const x = e.clientX;
       const y = e.clientY;
+      const pid = e.pointerId;   // (2026-09-24 검토 정정) 아래 motion.longPress 용
       clearTimeout(pressTimer);
       pressTimer = setTimeout(() => {
         longPressFired = true;
+        // (2026-09-24 검토 정정) 길게 누르기 문턱(10px)이 창 걷기 문턱(TAP_MOVE_PX=6)보다 넓어, 7~10px 흔들린 채 누르고 있으면
+        //   창이 걷힌 뒤 퀵메뉴가 열려 **안 보이고 눌리지도 않았다**(실측: #quick-menu show · opacity 0 · pointer-events none).
+        //   메뉴가 열린 **뒤에** 손가락이 6px 넘게 흔들려도 같았다. 길게 누르기가 이긴 손이므로 이 손가락의 걷기 문턱을 길게 누르기
+        //   허용 폭(10px, 위 pointermove)으로 넓히고 걷혀 있었으면 바로 돌려놓는다. 10px 을 넘게 끌면(지구를 돌리면) 그때는 걷는다.
+        //   10px 은 그대로 둔다(기존 길게 누르기 허용 폭을 줄이지 않는다).
+        orbit.motion.longPress(pid, 10);
         quickMenu.open(x, y, raycastGlobe(x, y));
       }, 450);
     }
@@ -2832,7 +2855,13 @@ async function main() {
     const moved = Math.hypot(e.clientX - downAt.x, e.clientY - downAt.y);
     const held = performance.now() - downAt.t;
     downAt = null;
-    if (moved > 6 || held > 400) return;
+    // (2026-09-24 정정) 문턱 6px 을 motion-chrome.js 의 TAP_MOVE_PX(=6) 로 옮겼다 — 같은 값을 '창 걷기'도 쓴다.
+    //   이 값이 둘로 갈리면 '창은 걷혔는데 나라가 골라짐' / '창은 그대로인데 안 골라짐' 이 생긴다. 값은 그대로 6 이다.
+    if (moved > TAP_MOVE_PX || held > 400) return;
+    // (2026-09-24 검토 정정) 휙 끈 뒤 지구가 아직 미끄러지는 동안 탭하면, 고른 지역의 정보창이 걷힌 채로 열려
+    //   카메라가 멈추고(국가 glide 1.4 s 포함) 0.4 s 가 더 지나야 보였다. 탭은 '고르고 정보창을 띄우는' 손이다 — 걷기를 바로 푼다.
+    //   (release: 돌려놓기만 한다 — 다른 손가락이 끄는 중이면 그 손가락은 계속 센다)
+    if (orbit.motion.moving) orbit.motion.release();
     const hit = raycastGlobe(e.clientX, e.clientY);
     if (!hit) { focus.clear(); return; }
     const { lat, lon } = hit;

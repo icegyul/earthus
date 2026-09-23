@@ -42,7 +42,9 @@ test('시뮬레이션은 ESC 사슬의 맨 앞에서 닫힌다 — 버튼만이 
 
 test('모바일 길게 누르기(450ms)로 같은 radial 문을 연다', () => {
   assert.match(mainSrc, /pointerType === 'touch'/, '터치 진입이 없다');
-  assert.match(mainSrc, /setTimeout\(\(\) => \{\s*\n\s*longPressFired = true;\s*\n\s*quickMenu\.open\(x, y, raycastGlobe\(x, y\)\);\s*\n\s*\}, 450\);/,
+  // (2026-09-24 정정) 타이머 안 longPressFired 와 quickMenu.open 사이에 '창 걷기' 해제(orbit.motion.longPress)가 들어갔다 —
+  //   7~10px 흔들린 길게 누르기가 걷힌 창 사이에 안 보이는 퀵메뉴를 열던 결함(motion-chrome.test.mjs). 사이 몇 줄만 허용한다.
+  assert.match(mainSrc, /setTimeout\(\(\) => \{\s*\n\s*longPressFired = true;[\s\S]{0,900}?\n\s*quickMenu\.open\(x, y, raycastGlobe\(x, y\)\);\s*\n\s*\}, 450\);/,
     '길게 누르기 450ms 진입이 없다');
   assert.match(mainSrc, /if \(longPressFired\) \{/, '떼는 손가락이 선택으로 읽히는 걸 막는 가드가 없다');
   assert.match(mainSrc, /Math\.hypot\(e\.clientX - downAt\.x, e\.clientY - downAt\.y\) > 10\)\s*\{\s*\n\s*clearTimeout\(pressTimer\);/,

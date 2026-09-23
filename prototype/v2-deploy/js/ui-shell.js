@@ -1294,7 +1294,13 @@ export function initShell(hooks) {
     // 지점 카드의 머리글(현상 · 좌표)을 머리로 올린다 — 카드 안의 같은 줄은 CSS 가 숨긴다(index.html 한 장 시트 절).
     else if (curTab === 'point') { const k = intelContent.querySelector('.point-card .pc-kicker'); t = k ? k.textContent.trim() : ''; }
     else if (selectedMenu) t = ko ? questionForLayer(selectedMenu.s.id, selectedMenu.l.id) || selectedMenu.l.name : selectedMenu.l.name;
-    else { const fs = hooks.getFocusSel && hooks.getFocusSel(); t = fs ? (fs.nameKo || fs.name || '') : (ko ? '선택한 자리' : 'Selection'); }
+    // (2026-09-24 정정) 아무것도 고르지 않았을 때 '선택한 자리'라고 적었다 — 고른 자리가 없는데 있는 것처럼 읽혔다(1280×800 실측: 빈 시트 머리).
+    //   근거 절의 '선택 장소: 지도에서 선택'(placeLine)과 같은 낱말로 — 지도에서 고르라는 뜻이다.
+    // (2026-09-24 정정 · 적대 검토) 위 정정이 **값 카드가 서 있을 때**까지 '지도에서 선택'으로 바꿨다 — 우클릭 퀵메뉴 '기온'·바다 지점은
+    //   나라(focusSel)를 고르지 않으므로 이 갈래로 온다(1280×800 실측: '지점 기온(모델 격자값)' 카드 위 머리 '지도에서 선택' — 이미 고른 사람에게 고르라고 했다).
+    //   고른 지점이 있으면(main.js hooks.hasNowPick — lockedNote · seaPoint) 예전 낱말 '선택한 자리'를 그대로 쓴다. 카드 제목은 머리로 올리지 않는다(제목 두 번).
+    else { const fs = hooks.getFocusSel && hooks.getFocusSel(); const pk = !fs && hooks.hasNowPick && hooks.hasNowPick();
+      t = fs ? (fs.nameKo || fs.name || '') : pk ? (ko ? '선택한 자리' : 'Selection') : (ko ? '지도에서 선택' : 'Select on the globe'); }
     if (headTitleEl && headTitleEl.textContent !== t) headTitleEl.textContent = t;
     // 고른 현상의 이름이 머리에 섰다는 표시 — 예전 머리말의 <strong>(고른 현상의 질문)을 세던 계측(measure.js t1)이 읽는다.
     if (headTitleEl) headTitleEl.dataset.phen = cx === 'selection' && selectedMenu ? '1' : '';

@@ -27,6 +27,38 @@ for (let v = 0; v < 256; v += 1) {
   CLOUD_LUMA_LUT[v] = 90 + (v * 165 / 255);
 }
 
+/* ── 관측 구름 파일 고르기 (2026-09-23 PD "추천대로 진행") ─────────────────────────
+   Lambda(aws/gmgsi-clouds)가 global.png(5.5MB) 옆에 알파 무손실 WebP 두 벌을 쓰고 meta.json 의 variants 에 적는다.
+   ⚠️ 한 줄 손잡이 — PD 가 폰에서 시험해 보고 정한다(docs/CLOUD-WEBP-PLAN-2026-09-23.md):
+      'split'   PC·태블릿 3072 WebP(3.0MB) + 폰 2048 WebP(1.5MB)   ← 지금(추천)
+      'all3072' 모두 3072 WebP                                     ← PD "두 번째 스타일로 바꿀께"
+      'png'     예전 PNG                                            ← 그래도 이상하면
+   v2 는 prototype/v2-three/js/main.js 의 CLOUD_STYLE 이 같은 손잡이다 — 둘을 같이 바꾼다.
+   variants 가 없으면(Lambda 를 되돌렸거나 그 시각 인코딩이 실패) 무엇을 골라도 PNG 다.
+   ⚠️ 폰 판별은 v2 terrainLite 와 같은 기기 부류(UA 또는 pointer:coarse) — 좁은 PC 창은 폰이 아니다. */
+export const CLOUD_STYLE = 'split';
+const IS_PHONE_DEVICE = typeof navigator !== 'undefined' && (
+  /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '')
+  || (typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches));
+/* 알파 있는 손실 WebP 를 **풀 수** 있나 — 1×1 VP8X+ALPH+VP8 판별 그림(Google 공식).
+   ⚠️ canvas.toDataURL('image/webp') 로 재면 안 된다: 사파리는 WebP 를 풀지만 만들지 못해 iPhone 이 전부 PNG 로 빠진다. */
+let _webpAlphaOk = null;
+const canDecodeWebpAlpha = () => {
+  if (!_webpAlphaOk) _webpAlphaOk = new Promise((ok) => {
+    const img = new Image();
+    img.onload = () => ok(img.width === 1 && img.height === 1);
+    img.onerror = () => ok(false);
+    img.src = 'data:image/webp;base64,UklGRkoAAABXRUJQVlA4WAoAAAAQAAAAAAAAAAAAQUxQSAwAAAARBxAR/Q9ERP8DAABWUDggGAAAABQBAJ0BKgEAAQAAAP4AAA3AAP7mtQAAAA==';
+  });
+  return _webpAlphaOk;
+};
+export const pickCloudFile = (meta, style = CLOUD_STYLE, phone = IS_PHONE_DEVICE) => {
+  if (style === 'png') return 'global.png';
+  const v = (meta && meta.variants) || {};
+  const rec = (style === 'split' && phone && v.webp2048) || v.webp || null;
+  return rec && rec.key ? String(rec.key).split('/').pop() : 'global.png';
+};
+
 export const imagery = {
   base: null, detail: null, truecolor: null, clouds: null, cloudLayers: [], citylight: null, temp: null, aurora: null,
   auroraMeta: null,
@@ -272,22 +304,37 @@ export const imagery = {
 
       /* ⚠️ 1.2MB 다. 예전엔 아무 표시 없이 몇 초를 기다렸다 —
          첫 화면에서 켜지는 레이어라 "구름이 왜 안 나오지"가 된다. */
-      const src = await this._fetchImage(
-        `${API.CLOUDS}/global.png?t=${encodeURIComponent(m.time)}`, '전지구 구름', signal);
-      if (signal.aborted || generation !== this._cloudGeneration || !this._cloudOn) {
-        if (src.startsWith('blob:')) URL.revokeObjectURL(src);
-        return false;
-      }
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
+      /* (2026-09-23 정정) PNG 는 5.4~5.5MB 다(S3 head 5,381,747 B). WebP 변형은 3.04MB(PC)·1.50MB(폰) — 위 CLOUD_STYLE.
+         WebP 를 받거나 풀다 실패하면 **한 번만** PNG 로 다시 받는다. 그다음 실패만 예전처럼 RealEarth 로 간다. */
+      const loadCloud = async (file) => {
+        const src = await this._fetchImage(
+          `${API.CLOUDS}/${file}?t=${encodeURIComponent(m.time)}`, '전지구 구름', signal);
+        if (signal.aborted || generation !== this._cloudGeneration || !this._cloudOn) {
+          if (src.startsWith('blob:')) URL.revokeObjectURL(src);
+          return null;
+        }
+        const im = new Image();
+        im.crossOrigin = 'anonymous';
+        try {
+          await new Promise((ok, no) => {
+            im.onload = ok; im.onerror = () => no(new Error(file));
+            im.src = src;
+          });
+        } finally {
+          if (src.startsWith('blob:')) URL.revokeObjectURL(src);
+        }
+        return im;
+      };
+      const file = (await canDecodeWebpAlpha()) ? pickCloudFile(m) : 'global.png';
+      let img;
       try {
-        await new Promise((ok, no) => {
-          img.onload = ok; img.onerror = () => no(new Error('png'));
-          img.src = src;
-        });
-      } finally {
-        if (src.startsWith('blob:')) URL.revokeObjectURL(src);
+        img = await loadCloud(file);
+      } catch (e) {
+        if (file === 'global.png' || signal.aborted) throw e;
+        console.warn('[clouds] WebP 실패 → PNG 로 다시:', e.message);
+        img = await loadCloud('global.png');
       }
+      if (!img) return false;
       if (signal.aborted || generation !== this._cloudGeneration || !this._cloudOn) return false;
 
       const cv = document.createElement('canvas');
@@ -659,7 +706,8 @@ export const imagery = {
         this._imgBytes(got, total);
       }
       this._imgDone();
-      return URL.createObjectURL(new Blob(chunks, { type: 'image/png' }));
+      // (2026-09-23 정정) 형식을 PNG 로 박지 않고 응답 헤더를 따른다 — 구름 WebP 변형. 천리안 채널도 이 함수를 쓰지만 PNG 는 그대로 PNG 다.
+      return URL.createObjectURL(new Blob(chunks, { type: r.headers.get('content-type') || 'image/png' }));
     } catch (e) {
       this._imgLoading(false);
       throw e;

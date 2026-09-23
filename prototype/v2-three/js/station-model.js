@@ -20,7 +20,7 @@ import * as THREE from '../../vendor/three-r184.module.min.js';
 // 두 관측 문서는 공용 저장소에서 받는다(surface-obs.js · 2026-09-20). 예전에는 여기서 '/wind/kma-aws.json' ·
 // '/wind/gts-global.json' 을 따로 받았다 — 바람 레이어·지구 위 관측 숫자와 같은 1.1 MB 를 메뉴마다 다시 내려받았고,
 // 주소가 페이지 기준 상대경로라 earthus.net(CloudFront) 밖에서는(로컬 개발 서버) 404 였다. 저장소는 S3 를 직접 읽는다.
-import { surfaceObs } from './surface-obs.js?v=1';
+import { surfaceObs } from './surface-obs.js?v=2';
 
 // 고도별 예산. 멀리서 다 찍으면 기호가 서로 겹쳐 아무것도 안 읽힌다.
 const LOD = [

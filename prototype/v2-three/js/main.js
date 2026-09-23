@@ -16,14 +16,14 @@ import { layerForEventKind } from './phenomenon-registry.js?v=6';
 const escUI = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
-import { IntelFeed } from './intel-feed.js?v=9';
+import { IntelFeed } from './intel-feed.js?v=10';
 import { intelOf, intelSectionHtml, sectionTitle } from './intel-strip.js?v=2';
 import { bannerModel, renderWarningBanner } from './warning-banner.js?v=1';
 import { attachEvidencePopover } from './evidence-popover.js?v=1';
 import { currentTier } from './report-center.js?v=3';
 import { decideCapabilityAccess, lockExplanation, TIER } from '../../js/access-mode.js';
 import { evaluateWatch, myZone, loadWatch, saveWatch } from './watch.js?v=1';
-import { LiveLayers, newsChipOpacity } from './live-layers.js?v=40-terrain';
+import { LiveLayers, newsChipOpacity } from './live-layers.js?v=41-sameorigin';
 import { StationModel } from './station-model.js?v=2';
 import { AskEarth } from './ask-earth.js?v=3';
 import { i18n } from './i18n.js?v=11';
@@ -31,7 +31,7 @@ import { i18n } from './i18n.js?v=11';
 // 영어 화면에서 거기만 한국어로 남는다(실측으로 잡았다).
 window.__earthusT = (k) => i18n.t(k);
 import { SatLayer } from './sat-layer.js?v=1';
-import { CloudVolume } from './cloud-volume.js?v=4';
+import { CloudVolume } from './cloud-volume.js?v=5';
 // 바람 층(js/wind-layer.js · 2026-09-20 W3) — GFS 10 m 바람 프레임·시간 버스·입자 엔진·범례를 잇는 접착제. 관측소 막대기를 대신한다.
 import { createWindLayer } from './wind-layer.js?v=1';
 // 좌하단 출처 줄의 글 — 켜진 색면 출처 → 구름 → 지형·지금 바탕 순서를 한 곳에서 정한다(B5 · 2026-09-23 PD 정정).
@@ -39,7 +39,7 @@ import { composeSourceLine, readLegend } from './source-line.js?v=1';
 // 공용 GFS 프레임 저장소 — 매니페스트 하나 · 프레임 캐시 하나 · 시간 하나(js/gfs-frames.js · 2026-09-20 A1).
 // 구름(CloudManager.loadGfs)과 앞으로 올 기온·바람·기압·강수 렌더러(W1~W4)가 이 하나를 나눠 쓴다.
 // 구름이 위성 모드여도 필드 프레임은 떠야 하므로 CloudManager 안이 아니라 모듈 맨 위에 둔다.
-import { sharedGfsFrames } from './gfs-frames.js?v=1';
+import { sharedGfsFrames } from './gfs-frames.js?v=2';
 const gfsFrames = sharedGfsFrames({ THREE });
 // 시간 하나(js/time-bus.js) — 타임라인이 가리키는 시각을 기온·바람·기압·관측 숫자가 전부 여기서 듣는다.
 // 예전에는 구름만 들었다(아래 onTimeOffset → clouds.setForecastOffset). v2 는 5일을 예보하는 서비스라 시간은 하나여야 한다.
@@ -51,13 +51,13 @@ import { FIELD_DESCRIPTORS, activeField, isFieldLayerId } from './field-layer.js
 // 지점 판독(js/point-readout.js · 2026-09-20 W2) — 누른 자리의 값을 **우리 자료에서만** 읽는다.
 //   전에는 색면이 꺼져 있으면, 그리고 바다를 누르면, 브라우저가 api.open-meteo.com · marine-api.open-meteo.com 을
 //   직접 불렀다. 유료 서비스의 라이선스 노출이었고 화면에 칠한 값과 카드의 값이 달랐다. 이제 같은 프레임·같은 격자를 읽는다.
-import { METRIC_LAYER, seaSourceLine, sharedPointReadout } from './point-readout.js?v=1';
+import { METRIC_LAYER, seaSourceLine, sharedPointReadout } from './point-readout.js?v=2';
 const pointReadout = sharedPointReadout({ frames: gfsFrames, timeBus });
 import { CLOUD_LEVEL, createCloudYield } from './cloud-yield.js?v=1';
 // 색면이 지형 위로 떠 있는 높이 — 바람 입자를 같은 높이에 두려고 읽는다(시차 방지).
 import { FIELD_LIFT } from './field-renderer.js?v=1';
 // 지상관측 두 문서(기상청 · GTS)는 공용 저장소(js/surface-obs.js)에서 받는다 — 바람·평년차·기입 모형·내 동네 카드가 같은 문서를 나눠 쓴다.
-import { surfaceObs } from './surface-obs.js?v=1';
+import { surfaceObs } from './surface-obs.js?v=2';
 // 지구 위 실측 숫자(js/obs-labels.js · W1 ⑦) — 기온 색면이 켜져 있고 타임라인이 '지금'일 때만 관측소 값을 찍는다.
 import { createObsLabels, obsCardHtml, obsCardTitle } from './obs-labels.js?v=1';
 // 지점 카드(js/point-card.js · 2026-09-23 PD) — 색면 현상을 고른 채 지구를 누르면 뜨는 한 장.
@@ -75,9 +75,9 @@ import { GalaxyView } from './galaxy-view.js?v=3';
 import { SkyView } from './sky-view.js?v=1';
 import { AetherusLink } from './aetherus-link.js?v=2';
 import { SeaFloor } from './seafloor.js?v=3';
-import { TravelScene } from './travel.js?v=3-information';
+import { TravelScene } from './travel.js?v=4-sameorigin';
 // LAB · 취미 — 1.0 에서 옮겨온 확장 화면 런타임 (2026-09-06). 화면 모듈은 js/ext/ 에서 누를 때 받는다.
-import { ExtScene } from './ext-scene.js?v=1';
+import { ExtScene } from './ext-scene.js?v=2';
 let extScene = null;
 // 익명 이용 집계 — 개인 식별자를 보내지 않는다 (날짜·이벤트명·횟수만). usage.js 주석 참조.
 import { usage } from './usage.js?v=2';
@@ -94,7 +94,7 @@ import {
   installFetchObserver, ThermalGovernor, scenePlan, layerDataState, layerTruthLine,
   refreshProviderHealth, providerCardHtml, providerSnapshot, THERMAL_STATE,
   getRuntime, registerAndMount, broadcastThermal, engineCardHtml, ENGINE_CLASS,
-} from './engine-bridge.js?v=15';
+} from './engine-bridge.js?v=16';
 import { globeAdapter, overlayAdapter, takeoverAdapter } from './engine-adapters.js?v=1';
 
 const EARTH_RADIUS_M = 6371000;
@@ -1417,6 +1417,44 @@ void main() {
 }
 `;
 
+// (2026-09-23) v2 자료 원본 — PD 승인(build/perf-investigation/v2-data-origin.md ② "v2 자료를 v1처럼 같은 출처로").
+//   운영(earthus.net)에서는 같은 출처 경로('/clouds/…' '/events/…')로 받는다. CloudFront /wind/* /events/* /ocean/* /solar/*
+//   /clouds/* /celestrak/* 동작이 오하이오 버킷을 대신 읽는다 — br 압축 · 엣지 캐시 · 이미 열린 earthus.net HTTP/2 연결.
+//   (예전에는 18건을 오하이오 S3 에 직접 받았다: 압축 없음 · 엣지 캐시 없음 · 오하이오와 TLS 를 새로 맺음.)
+//   그 밖(localhost 개발 · node 시험)에서는 예전처럼 S3 직접 — v1 config.js:31 CDN 과 같은 규칙이다.
+//   ⚠️ earthus.net 으로 고정하지 말 것: CloudFront 는 Origin 을 캐시 키에 넣지 않아 CORS 헤더가 붙었다 안 붙었다 한다 → localhost 가 막힌다.
+//   ⚠️ 같은 식이 v2-three/js 의 자료 모듈마다 한 줄씩 있다(공용 모듈을 두면 ?v= 지정자가 어긋나는 날 두 벌이 실린다).
+//      바꿀 때는 endsWith('earthus.net') 로 전부 찾아 같이 바꾼다 — tools/earthus-v53/same-origin-data-2026-09-23.test.mjs 가 본다.
+//   ⚠️ reports/published/ 는 CloudFront 동작이 없다(기본 동작 → 서울 /app → 403). 보고서는 여기를 쓰지 않는다(ui-shell.js reportBase).
+const S3_DIRECT = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
+const DATA_BASE = (typeof location !== 'undefined' && location.hostname.endsWith('earthus.net')) ? '' : S3_DIRECT;
+
+/* ── 관측 구름 파일 고르기 (2026-09-24, PD 2026-09-23 "추천대로 진행") ────────────────────────────
+   Lambda(aws/gmgsi-clouds)가 global.png(5.5MB) 옆에 알파 무손실 WebP 두 벌을 쓰고 meta.json variants 에 적는다.
+   ⚠️ 한 줄 손잡이 — v1 prototype/js/layers/imagery.js 의 CLOUD_STYLE 과 **같은 값**을 둔다(PD 가 폰에서 시험해 보고 정한다):
+      'split'   PC·태블릿 3072 WebP(3.0MB) + 폰 2048 WebP(1.5MB)   ← 지금(추천)
+      'all3072' 모두 3072 WebP                                     ← PD "두 번째 스타일로 바꿀께"
+      'png'     예전 PNG                                            ← 그래도 이상하면
+   variants 가 없으면(Lambda 되돌림·그 시각 인코딩 실패) 무엇을 골라도 PNG. 폰 판별은 아래 terrainLite(clouds.phone). */
+const CLOUD_STYLE = 'split';
+/* 알파 있는 손실 WebP 를 **풀 수** 있나 — 1×1 판별 그림. canvas.toDataURL 로 재면 사파리(풀기만 되고 만들기는 안 됨)가 전부 PNG 로 빠진다. */
+let _webpAlphaOk = null;
+const canDecodeWebpAlpha = () => {
+  if (!_webpAlphaOk) _webpAlphaOk = new Promise((ok) => {
+    const img = new Image();
+    img.onload = () => ok(img.width === 1 && img.height === 1);
+    img.onerror = () => ok(false);
+    img.src = 'data:image/webp;base64,UklGRkoAAABXRUJQVlA4WAoAAAAQAAAAAAAAAAAAQUxQSAwAAAARBxAR/Q9ERP8DAABWUDggGAAAABQBAJ0BKgEAAQAAAP4AAA3AAP7mtQAAAA==';
+  });
+  return _webpAlphaOk;
+};
+const pickCloudFile = (meta, style, phone) => {
+  if (style === 'png') return 'global.png';
+  const v = (meta && meta.variants) || {};
+  const rec = (style === 'split' && phone && v.webp2048) || v.webp || null;
+  return rec && rec.key ? String(rec.key).split('/').pop() : 'global.png';
+};
+
 class CloudManager {
   constructor(scene, earthUniforms, noteEl) {
     this.mode = 'off';
@@ -1549,11 +1587,35 @@ class CloudManager {
     });
   }
 
+  // (2026-09-23) 운영의 같은 출처 구름 그림 — 알려진 어긋남(고치지 않고 적어 둔다 · v2-data-origin.md §1.1).
+  //   CloudFront 캐시 정책(CachingOptimized)은 질의문자열을 캐시 키에 넣지 않는다 — ?t= 는 브라우저 캐시만 가르고 엣지는 못 가른다
+  //   (실측: global.png?t=x 뒤 ?t=y 가 Hit · 같은 Age). 그래서 엣지가 meta(max-age 300·120)는 새 회차를,
+  //   그림(global.png 1800 · gk2a 300)은 지난 회차를 줄 수 있다 — 라벨 시각과 그림이 한 회차 어긋날 수 있다(v1 은 오늘도 그렇다).
+  //   근본 해결은 인프라다(그림 max-age 를 meta 와 같게 · 시각을 넣은 키 · /clouds/* 캐시 키에 t) — PD 의 CloudFront·Lambda 일.
+  //   앱에서 짝을 맞추는 보호막도 짜 봤다가(2026-09-23 구현 작업) 범위 밖이라 뺐다. 그때 잰 것 — 다시 짤 때 같은 길을 밟지 말 것:
+  //   ⚠️ HEAD 로 미리 보기: CloudFront 는 HEAD 를 GET 과 따로 캐시한다(실측: 같은 키 GET Hit 뒤 HEAD Miss·RefreshHit) —
+  //      HEAD 의 Last-Modified 는 GET 이 받을 사본의 것이 아니다. 1바이트 Range GET 도 전체 GET 과 따로 캐시됐다.
+  //      게다가 HEAD 가 오하이오까지 재확인하러 가서 구름 그림 받기가 ≈0.5초 늦게 시작됐다(실측 LTE).
+  //   ⚠️ fetch → blob → <img>: 그림 다 받은 뒤 다음 단계까지가 0.7~1.4초 늘었다(headless 실측 4회).
+  //   ⚠️ <img> 뒤 fetch(cache:'only-if-cached') 로 같은 응답의 Last-Modified 를 meta 와 맞춰 보고 어긋나면 S3 직접으로 다시 받기:
+  //      판단은 됐지만 어긋날 때마다 5.4 MB 를 한 번 더 받는다(LTE ≈+7초) · 정상 갈래를 앱 전체로 검증하지 못했다(Playwright
+  //      가로채기가 HTTP 캐시를 끈다) · iOS Safari 미확인 — 그래서 넣지 않았다.
   async loadGmgsi() {
-    const base = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/clouds';
+    // (2026-09-23 정정) 예전: base = 오하이오 S3 직접 주소 + '/clouds'. 이제 운영은 같은 출처 — 위 주석(라벨·그림 어긋남).
+    const base = `${DATA_BASE}/clouds`;
     const meta = await fetch(`${base}/meta.json`, { cache: 'no-cache' })
       .then((r) => { if (!r.ok) throw new Error(`meta ${r.status}`); return r.json(); });
-    const img = await CloudManager.loadImg(`${base}/global.png?t=${encodeURIComponent(meta.time)}`);
+    // (2026-09-24) WebP 변형을 고른다(위 CLOUD_STYLE). 받거나 풀다 실패하면 **한 번만** PNG 로 다시 받는다.
+    const file = (await canDecodeWebpAlpha()) ? pickCloudFile(meta, CLOUD_STYLE, !!this.phone) : 'global.png';
+    let img;
+    try {
+      img = await CloudManager.loadImg(`${base}/${file}?t=${encodeURIComponent(meta.time)}`);
+    } catch (e) {
+      if (file === 'global.png') throw e;
+      console.warn('[clouds] WebP 실패 → PNG 로 다시:', e.message);
+      img = await CloudManager.loadImg(`${base}/global.png?t=${encodeURIComponent(meta.time)}`);
+    }
+    this.lastCloudFile = file;   // 진단용(__earthus) — 어떤 파일을 골랐나
     const north = meta.north != null ? meta.north : 72.715;
     const south = meta.south != null ? meta.south : -72.737;
     const W = img.width;
@@ -1577,7 +1639,8 @@ class CloudManager {
   // 천리안은 채널이 7개인데 오랫동안 ir112 하나만 썼다.
   // 밤 안개(nightlow)·상층 수증기(wv063)·동아시아 2km(ir112ea)는 받아만 놓고 안 쓰고 있었다.
   async loadGk2a(chId = 'ir112') {
-    const base = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/clouds/gk2a';
+    // (2026-09-23 정정) 예전: base = 오하이오 S3 직접 주소 + '/clouds/gk2a'. 이제 운영은 같은 출처 — loadGmgsi 위 주석(라벨·그림 어긋남).
+    const base = `${DATA_BASE}/clouds/gk2a`;
     const meta = await fetch(`${base}/meta.json`, { cache: 'no-cache' })
       .then((r) => { if (!r.ok) throw new Error(`meta ${r.status}`); return r.json(); });
     const chs = meta.channels || {};
@@ -1627,7 +1690,8 @@ class CloudManager {
 
   // 실측 운정고도(CTH, KMA GK2A L2 · 10분 주기) — 동아시아 창의 구름 높이를 관측값으로
   async loadCth() {
-    const base = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/clouds/gk2a/cth';
+    // (2026-09-23 정정) 운영은 같은 출처(CloudFront /clouds/*) — grid.json 1.87 MB 가 br 로 약 0.54 MB 가 된다(실측).
+    const base = `${DATA_BASE}/clouds/gk2a/cth`;
     const man = await fetch(`${base}/manifest.json`, { cache: 'no-cache' })
       .then((r) => { if (!r.ok) throw new Error(`cth manifest ${r.status}`); return r.json(); });
     if (!man.ready || man.synthetic) throw new Error('CTH not ready');
@@ -1700,7 +1764,9 @@ class CloudManager {
       (maxLa - minLa) / 180,
     );
     this.cthLoaded = true;
-    this.cthValidAt = man.validAt;
+    // (2026-09-23) grid.json 은 자기 validAt 을 싣는다. 엣지에서 manifest(max-age 120)와 grid(300)가 한 회차(10분) 어긋나도
+    //   라벨은 **그린 격자**의 시각을 말한다. 격자에 없으면 예전처럼 manifest 의 시각.
+    this.cthValidAt = grid.validAt || man.validAt;
     return true;
   }
 
@@ -2505,6 +2571,7 @@ async function main() {
   scene.add(atmo);
 
   const clouds = new CloudManager(scene, uniforms, document.getElementById('cloud-note'));
+  clouds.phone = terrainLite;   // 2026-09-24: 구름 폰 판(2048 WebP)을 고르는 기기 부류 — 지형 z3 와 같은 판정
   const backToGlobe = (lat, lon) => {
     orbit.pitch = THREE.MathUtils.degToRad(Math.min(Math.max(lat, -85), 85));
     orbit.targetPitch = orbit.pitch;
@@ -3649,7 +3716,7 @@ async function main() {
       const skyTxt = sky.label;
       let warnTxt = '주변 특보 확인 실패 — 판단하지 않습니다';
       try {
-        const kw = await fetch('https://earthus-cache-kr.s3.us-east-2.amazonaws.com/events/kma-warn.json', { cache: 'no-store' })
+        const kw = await fetch(`${DATA_BASE}/events/kma-warn.json`, { cache: 'no-store' })   // (2026-09-23) 운영은 같은 출처
           .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); });
         const near = (kw.active || []).filter((w) => w.lat != null
           && Math.hypot(w.lat - lat, (w.lon - lon) * Math.cos((lat * Math.PI) / 180)) < 0.55); // ≈60km
@@ -3665,7 +3732,8 @@ async function main() {
   // ---------- MY EARTH (v5.3 축: Feed → Event Room → My Earth) ----------
   // 내 위치 기준 개인 지구 상태 — 하늘·특보·대기질·바람을 한 카드에.
   // 위치는 이 브라우저(localStorage)에만 저장. 모든 값은 관측·공식 발표 그대로 (생성 금지).
-  const S3D = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
+  // (2026-09-23 정정) 예전: 오하이오 S3 직접 주소. 이제 DATA_BASE(운영=같은 출처 · 그 밖=S3 직접, CloudManager 위 주석).
+  const S3D = DATA_BASE;
   let myEarth = { place: null, loading: false, data: null, error: null };
   try { myEarth.place = JSON.parse(localStorage.getItem('earthus.myplace') || 'null'); } catch (_) { /* 무시 */ }
 

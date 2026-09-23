@@ -63,10 +63,11 @@
 // 이 파일은 DOM 을 모른다. THREE · fetch 는 주입받고(시험이 가짜를 넣는다) 계산은 순수 함수로 밖에 냈다.
 
 import { NOW_EPS_MS } from './time-bus.js?v=1';
-import { decodeByte, uvTransformOf } from './gfs-frames.js?v=1';
+import { decodeByte, uvTransformOf } from './gfs-frames.js?v=2';
 import { scaleOf } from './field-scales.js?v=1';
 
-export const GRID_BASE = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
+// (2026-09-23 정정) 운영(earthus.net)은 같은 출처(CloudFront /ocean/* /wind/*) · 그 밖은 S3 직접 — main.js CloudManager 위 DATA_BASE 주석.
+export const GRID_BASE = (typeof location !== 'undefined' && location.hostname.endsWith('earthus.net')) ? '' : 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
 
 // 값 있음/없음을 싣는 채널. 바이트 그대로 읽는다(scale 1 · offset 0) — 1/255 로 풀면 255×(1/255) 이 float32 에서
 // 정확히 1.0 이 아니라 셰이더가 '값 있음'을 놓칠 수 있다. 셰이더도 JS 도 step(127.5, …) 하나로 가른다.

@@ -11,14 +11,15 @@
 //       방문자수는 이동통신 기반이라 관광객이 아니다. 그 문구를 화면에 그대로 둔다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { renderBadge } from './engine-bridge.js?v=15';
+import { renderBadge } from './engine-bridge.js?v=16';
 // ⚠️ 질의문자열(?v=11)까지 다른 모듈과 똑같이 적는다. ES 모듈은 URL 전체로 구분되므로 './i18n.js' 로 들이면
 //    언어 단추(main.js 의 i18n.set)가 닿지 않는 두 번째 사본이 생겨, 이 카드만 옛 언어로 남는다.
 import { i18n } from './i18n.js?v=11';
 import { TRAVEL_CATALOGS, ACCESSIBILITY_LABELS, TRAVEL_INTRO_LABELS, safeSourceUrl, validateTravelCatalog, searchTravelCatalog,
   detailSummaryUrl, validateTravelDetailSummary, providerPlainText, providerHomepage } from './travel-catalog.js';
 
-const S3 = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
+// (2026-09-23 정정) 운영(earthus.net)은 같은 출처 · 그 밖은 S3 직접 — main.js CloudManager 위 DATA_BASE 주석.
+const S3 = (typeof location !== 'undefined' && location.hostname.endsWith('earthus.net')) ? '' : 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
 const DATA_URL = './data/tourism/kto-discovery.json';
 const R_M = 6371000;
 const D2R = Math.PI / 180;

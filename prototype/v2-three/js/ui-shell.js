@@ -4,7 +4,7 @@
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
 import { i18n } from './i18n.js?v=11';
-import { renderBadge, layerBadge } from './engine-bridge.js?v=15';
+import { renderBadge, layerBadge } from './engine-bridge.js?v=16';
 // PHASE 2 STEP 2.4 — 질문을 복합키(scene/layer)로 찾는다. bare id 조회를 새로 만들지 않는다.
 // menu-guide.js 의 MENU_QUESTIONS 는 지우지 않았다 — tools/build_information_inventory.mjs 가
 // 아직 읽고, 레지스트리의 질문이 거기서 왔다. 다만 화면은 이제 레지스트리만 본다.
@@ -619,6 +619,9 @@ export function initShell(hooks) {
   /* PHASE 8 §13 — 발행 저장소의 기준 주소. 운영에서는 S3 다.
      window.EARTHUS_REPORT_BASE 로 바꿀 수 있게 둔 것은 **설정**이지 시험용 자료가 아니다 —
      번들에 가짜 보고서를 넣지 않고도 다른 저장소를 가리켜 확인할 수 있어야 한다. */
+  // (2026-09-23) 다른 v2 자료는 운영에서 같은 출처(earthus.net)로 바꿨지만 여기는 **S3 직접으로 둔다.**
+  //   reports/published/ 에는 CloudFront 동작이 없다 — 기본 동작(서울 /app)으로 가서 403 이 난다(실측: earthus.net/reports/published/index.json → 403).
+  //   같은 출처로 바꾸려면 CloudFront 에 /reports/published/* 동작을 먼저 만들어야 한다(PD 인프라 작업).
   const reportBase = () => (typeof window !== 'undefined' && window.EARTHUS_REPORT_BASE)
     || 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
   let openReport = null;          // 지금 읽고 있는 보고서 본문 (없으면 목록)

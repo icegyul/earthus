@@ -38,10 +38,12 @@ import { FIELD_DESCRIPTORS, cellLabel, fieldStatusOf, fmtValid, readoutOf, sourc
 import { scaleOf } from './field-scales.js?v=1';
 import { readTicks } from './field-log.js?v=1';
 import { buoysNear } from './for-me-signal.js?v=2';
-import { sharedGfsFrames } from './gfs-frames.js?v=1';
+import { sharedGfsFrames } from './gfs-frames.js?v=2';
 import { timeBus as sharedTimeBus } from './time-bus.js?v=1';
 
-export const POINT_BASE = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
+// (2026-09-23 정정) 운영(earthus.net)은 같은 출처 — 위 '우리 S3 밖으로 나가지 않는다'는 그대로다: CloudFront /ocean/* 가 같은 버킷을 읽는다.
+//   그 밖(localhost · node 시험)은 S3 직접 — 시험의 thirdParty(POINT_BASE 로 시작하지 않는 주소) 검사는 node 에서 S3 주소로 돈다.
+export const POINT_BASE = (typeof location !== 'undefined' && location.hostname.endsWith('earthus.net')) ? '' : 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
 
 /** 퀵메뉴 지표 → 색면 레이어 id. 지표 id 의 정본은 quick-menu.js ITEMS 다(강수는 'rain' — 'precipitation' 이 아니다). */
 export const METRIC_LAYER = Object.freeze({

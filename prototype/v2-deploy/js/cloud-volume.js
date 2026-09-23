@@ -10,7 +10,8 @@ import * as THREE from '../vendor/three-r184.module.min.js';
 
 // (배포 번들에서 vendor 경로는 ../vendor 로 재작성된다)
 
-const BASE = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/clouds/gfs/volume/east-asia';
+// (2026-09-23 정정) 운영(earthus.net)은 같은 출처(CloudFront /clouds/*) · 그 밖은 S3 직접 — main.js CloudManager 위 DATA_BASE 주석.
+const BASE = `${(typeof location !== 'undefined' && location.hostname.endsWith('earthus.net')) ? '' : 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com'}/clouds/gfs/volume/east-asia`;
 const R_M = 6371000;
 const COLS = 8; // 32슬라이스 = 8×4 아틀라스
 const ROWS = 4;

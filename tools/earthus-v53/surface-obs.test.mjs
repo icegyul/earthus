@@ -82,7 +82,9 @@ test('HTTP 오류와 시간 초과는 던진다 — 빈 문서를 지어내지 �
 });
 
 test('v2 에서 이 두 파일을 받던 네 자리가 전부 공용 저장소를 쓴다 — import URL 도 글자까지 같다', () => {
-  const IMPORT = "import { surfaceObs } from './surface-obs.js?v=1';";
+  // (2026-09-24 정정) 토큰 값(?v=1)을 박지 않는다 — 같은 출처 전환으로 ?v=2 가 됐다. 지키는 것은 세 파일이 '글자까지 같은' 주소다.
+  const IMPORT = (src('main.js').match(/import \{ surfaceObs \} from '\.\/surface-obs\.js\?v=[A-Za-z0-9-]+';/) || [''])[0];
+  assert.ok(IMPORT, 'main.js 가 공용 저장소를 import 하지 않는다');
   const live = src('live-layers.js');
   const synop = src('station-model.js');
   const main = src('main.js');

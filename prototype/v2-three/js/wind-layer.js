@@ -37,7 +37,7 @@
 // ⚠️ import 주소는 ?v= 까지 다른 모듈과 똑같이 — ES 모듈은 URL 전체로 구분된다(다르면 시간 버스·프레임 캐시가 둘이 된다).
 
 import { timeBus as sharedTimeBus } from './time-bus.js?v=1';
-import { sharedGfsFrames } from './gfs-frames.js?v=1';
+import { sharedGfsFrames } from './gfs-frames.js?v=2';
 import { acceptsArrival, forecastHourAt, sameSpan } from './frame-arrival.js?v=1';
 import { scaleOf, legendModel, bandIndex, KT_PER_MS } from './field-scales.js?v=1';
 import { fieldLegend as sharedLegend, legendMetaLine } from './field-legend.js?v=1';

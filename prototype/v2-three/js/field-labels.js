@@ -26,7 +26,7 @@
 // 계산은 DOM·THREE 없는 순수 함수다(시험이 그대로 부른다). 그리기(FieldLabels)만 THREE 를 쓰고, 캔버스는 주입받을 수 있다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { decodeByte } from './gfs-frames.js?v=1';
+import { decodeByte } from './gfs-frames.js?v=2';
 import { formatValue } from './field-scales.js?v=1';
 
 const D2R = Math.PI / 180;

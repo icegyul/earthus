@@ -124,7 +124,9 @@ test('캐시 토큰 — 바뀐 모듈은 새 ?v= 로 불린다', () => {
   const mv = html.match(/src="\.\/js\/main\.js\?v=(\d+)-[a-z0-9-]+"/);
   assert.ok(mv && Number(mv[1]) >= 199, 'main.js 캐시 토큰이 지형 이전 값이다');
   assert.match(mainSrc, /from '\.\/seafloor\.js\?v=3'/);
-  assert.match(mainSrc, /from '\.\/live-layers\.js\?v=40-terrain'/);
+  // (2026-09-24 정정) 같은 출처 전환으로 41 로 올랐다 — 지키는 것은 '지형 뒤로 40 아래로 돌아가지 않는다'.
+  const lv = mainSrc.match(/from '\.\/live-layers\.js\?v=(\d+)-[a-z0-9-]+'/);
+  assert.ok(lv && Number(lv[1]) >= 40, 'live-layers 토큰이 지형 이전 값이다');
   assert.match(mainSrc, /from '\.\/intel-strip\.js\?v=2'/);
   assert.match(readFileSync(path.join(V2, 'js/live-layers.js'), 'utf8'), /from '\.\/flood-overlay\.js\?v=2'/);
   assert.match(readFileSync(path.join(V2, 'js/intel-strip.js'), 'utf8'), /from '\.\/intel-questions\.js\?v=2'/);

@@ -18,7 +18,9 @@
 // DOM · THREE 를 모른다 — 시험이 가짜 fetch 로 그대로 부른다(tools/earthus-v53/surface-obs.test.mjs).
 
 // CloudFront(earthus.net)는 /clouds/* 외 경로에 CORS 헤더를 안 붙인다 → S3 직접(CORS *). live-layers.js 와 같은 이유 · 같은 주소.
-export const SURFACE_OBS_BASE = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
+// (2026-09-23 정정) 위 CORS 이유는 **교차 출처(localhost 개발)** 에서만 맞다. 운영 v2(earthus.net/v2/)는 같은 출처라 CORS 가 필요 없다 —
+//   운영에서는 '' (같은 출처 · CloudFront /wind/* · br 압축), 그 밖에서는 예전처럼 S3 직접. main.js CloudManager 위 DATA_BASE 주석.
+export const SURFACE_OBS_BASE = (typeof location !== 'undefined' && location.hostname.endsWith('earthus.net')) ? '' : 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
 export const SURFACE_OBS_PATH = Object.freeze({ aws: '/wind/kma-aws.json', gts: '/wind/gts-global.json' });
 export const SURFACE_OBS_TTL_MS = 10 * 60 * 1000;
 // GTS 가 1.1 MB 라 느린 회선에서 오래 걸린다 — live-layers 가 이 파일에 주던 시간(25초)을 그대로 쓴다.

@@ -544,7 +544,12 @@ test('배선 — 공용 파일의 글자: 출처 문구 · 지점 기온 · 누�
   assert.match(main, /'weather\/tempgrid': \['tempgrid', '전지구 기온'\]/);
   // ES 모듈은 URL 전체로 구분된다 — 시간 버스·프레임 저장소를 main.js 와 글자까지 같은 주소로 들인다.
   const layer = read('../../prototype/v2-three/js/field-layer.js');
-  for (const spec of ["'./time-bus.js?v=1'", "'./gfs-frames.js?v=1'"]) {
+  // (2026-09-24 정정) 토큰 값을 박지 않는다 — 지키는 것은 '같은 글자'다. main.js 가 쓰는 지정자를 읽어 field-layer.js 도 그대로인지 본다
+  //   (같은 출처 전환 때 gfs-frames 를 ?v=2 로 올리자 값을 박은 이 시험이 깨졌다 — 모든 importer 는 함께 올렸다).
+  for (const name of ['time-bus', 'gfs-frames']) {
+    const m = main.match(new RegExp(`from '(\\./${name}\\.js\\?v=[A-Za-z0-9-]+)'`));
+    assert.ok(m, `main.js 가 ${name} 를 들이지 않는다`);
+    const spec = `'${m[1]}'`;
     assert.ok(main.includes(`from ${spec}`), `main.js ${spec}`);
     assert.ok(layer.includes(`from ${spec}`), `field-layer.js ${spec}`);
   }

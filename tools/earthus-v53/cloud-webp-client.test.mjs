@@ -43,3 +43,32 @@ test('v1 · WebP 를 받거나 풀다 실패하면 PNG 로 한 번 더 · Blob �
   assert.match(v1, /if \(file === 'global\.png' \|\| signal\.aborted\) throw e;/);
   assert.match(v1, /new Blob\(chunks, \{ type: r\.headers\.get\('content-type'\) \|\| 'image\/png' \}\)/);
 });
+
+// ── v2 (2026-09-24) — 같은 손잡이 · 같은 고르기 · PNG 되받기 ──────────────────────────
+const v2 = readFileSync(new URL('../../prototype/v2-three/js/main.js', import.meta.url), 'utf8');
+const pick2Src = v2.slice(v2.indexOf('const pickCloudFile'), v2.indexOf('class CloudManager {'));
+const pick2 = new Function(`${pick2Src}; return pickCloudFile;`)();
+
+test('v2 · 손잡이 값이 v1 과 같다 — 한쪽만 바꾸면 두 지구가 다른 구름을 받는다', () => {
+  const m1 = v1.match(/export const CLOUD_STYLE = '([a-z0-9]+)';/);
+  const m2 = v2.match(/const CLOUD_STYLE = '([a-z0-9]+)';/);
+  assert.ok(m1 && m2);
+  assert.equal(m2[1], m1[1]);
+});
+
+test('v2 · 고르는 규칙이 v1 과 같다', () => {
+  for (const style of ['split', 'all3072', 'png']) {
+    for (const phone of [true, false]) {
+      assert.equal(pick2(META, style, phone), pickCloudFile(META, style, phone), `${style}/${phone}`);
+      assert.equal(pick2({}, style, phone), 'global.png');
+    }
+  }
+});
+
+test('v2 · WebP 실패하면 PNG 로 한 번 더 · 폰 판별은 지형 z3 와 같은 terrainLite', () => {
+  assert.match(v2, /if \(file === 'global\.png'\) throw e;/);
+  assert.match(v2, /img = await CloudManager\.loadImg\(`\$\{base\}\/global\.png\?t=/);
+  assert.match(v2, /clouds\.phone = terrainLite;/);
+  const probe = v2.slice(v2.indexOf('const canDecodeWebpAlpha'), v2.indexOf('const pickCloudFile'));
+  assert.doesNotMatch(probe, /toDataURL/);
+});

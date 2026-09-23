@@ -171,7 +171,9 @@ export const LAYER_TRUTH = Object.freeze({
   'weather/mysky': { kind: K.OFFICIAL_OBSERVATION, slaMin: 30 },
   'weather/cloud-gfs': { kind: K.PROVIDER_FORECAST, slaMin: 360 },
   'weather/cloud-vol': { kind: K.PROVIDER_FORECAST, slaMin: 360 },
-  'weather/wind': { kind: K.OFFICIAL_OBSERVATION, slaMin: 90 },
+  // 2026-09-20 W3: OFFICIAL_OBSERVATION · 90분이었다(관측소 막대기). 같은 id 가 이제 GFS 10 m 바람 입자다 — 모델 예보다.
+  // 신선도는 예보 목록(clouds/gfs-fc/manifest.json)의 갱신 시각으로 잰다(아래 PATH_MAP). 목록은 3시간마다 다시 구워진다.
+  'weather/wind': { kind: K.PROVIDER_FORECAST, slaMin: 360 },
   'weather/airq': { kind: K.OFFICIAL_OBSERVATION, slaMin: 120 },
   'weather/warn': { kind: K.OFFICIAL_WARNING, slaMin: 60 },
 
@@ -196,7 +198,8 @@ export const LAYER_TRUTH = Object.freeze({
   'people/poptower': { kind: K.PROVIDER_FORECAST, slaMin: null },
 
   // 2026-09-04: 정합성 검사가 배지 누락으로 잡아낸 7건. 동작은 했지만 신선도가 안 보였다.
-  // 일기도 기입 모형은 바람 관측과 같은 관측점(KMA AWS·GTS SYNOP)을 쓴다 — SLA도 같게 둔다.
+  // 일기도 기입 모형은 예전 '바람 관측' 레이어와 같은 관측점(KMA AWS·GTS SYNOP)을 쓴다 — SLA(90분)도 그 관측 주기에서 온 값이다.
+  // (2026-09-20 W3: weather/wind 는 GFS 모델 바람 입자로 바뀌어 더는 관측이 아니다. 지상 관측 레이어는 이제 이것 하나다.)
   'weather/synop': { kind: K.OFFICIAL_OBSERVATION, slaMin: 90 },
   // 관광 5종은 KTO 공개 산출물을 미리 집계해 파일로 싣는다 — 분 단위로 늙지 않는 등재부다.
   // 다만 '오늘 발견'만은 그 등재부에 특보·대기질을 우리가 합쳐 점수를 낸 것이라 등급이 다르다.
@@ -429,7 +432,11 @@ export function scenePlan(sceneId, { thermalState = THERMAL_STATE.NORMAL, panelO
 // ---------------------------------------------------------------------------
 // 5. 데이터 소스 건강 상태 — 지금까지 볼 방법이 아예 없던 것
 // ---------------------------------------------------------------------------
-const S3 = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
+// (2026-09-23 정정) 운영(earthus.net)에서는 같은 출처 — CloudFront 가 HEAD 에도 Last-Modified 를 원본 그대로 준다
+//   (v2 자료 경로 50개 실측: 전부 200 · Last-Modified 가 S3 직접과 같음). 그 밖(localhost · node 시험)은 예전처럼 S3 직접.
+//   규칙은 main.js CloudManager 위 DATA_BASE 주석과 같다(v1 config.js:31).
+//   ⚠️ 엣지가 쥔 사본의 Last-Modified 라서 S3 보다 max-age(120~3600초)만큼 늦을 수 있다 — 화면이 실제로 받는 자료의 시각이 그것이다.
+const S3 = (typeof location !== 'undefined' && location.hostname.endsWith('earthus.net')) ? '' : 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
 
 // 실제로 이 앱이 의존하는 소스. probe가 있으면 HEAD로 갱신 시각을 직접 확인한다.
 export const PROVIDERS = Object.freeze([
@@ -446,7 +453,7 @@ export const PROVIDERS = Object.freeze([
   // 브라우저가 직접 부르는 서드파티 — 캐시 파이프라인 밖이라 HEAD 프로브 없이 호출 결과로만 판단
   { id: 'gdacs', label: 'GDACS 사건', origin: '브라우저 직접', slaMin: 180 },
   { id: 'usgs', label: 'USGS 지진', origin: '브라우저 직접', slaMin: 60 },
-  { id: 'openmeteo', label: 'Open-Meteo (해상·예보)', origin: '브라우저 직접', slaMin: 180 },
+  { id: 'openmeteo', label: 'Open-Meteo (항로 공항 날씨만)', origin: '브라우저 직접', slaMin: 180 },
   { id: 'gibs', label: 'NASA GIBS (눈·얼음)', origin: '브라우저 직접', slaMin: 1440 },
   { id: 'scufn', label: 'GEBCO SCUFN 가제티어', origin: '브라우저 직접', slaMin: null },
   { id: 'celestrak', label: 'CelesTrak TLE', origin: '1.0 S3 캐시', probe: `${S3}/celestrak/catalog.json.gz`, slaMin: 1440 },
@@ -465,10 +472,17 @@ const PATH_MAP = Object.freeze({
   '/events/typhoon-official.json': { layer: 'hazards/tyoff', provider: 'tyoff' },
   '/events/typhoon-ecmwf.json': { layer: 'hazards/tyens', provider: null },
   '/ocean/kma-buoy.json': { layer: 'ocean/kmasea', provider: null },
+  // 2026-09-20 W2: 해상 지점 카드가 marine-api.open-meteo.com 을 직접 부르던 것을 걷어냈다 — 이제 이 두 파일을
+  // 읽는다(point-readout.js). 'ocean/marine' 의 신선도는 제공기관 응답이 아니라 우리 수집 파일의 시각이다.
+  '/ocean/marine.json': { layer: 'ocean/marine', provider: null },
+  '/ocean/marine-ea.json': { layer: 'ocean/marine', provider: null },
   '/ocean/khoa/flood-index.json': { layer: 'ocean/khoaflood', provider: null },
   '/tourism/seoul-flow.json': { layer: 'people/seoul', provider: null },
   '/wind/korea-air-obs.json': { layer: 'weather/airq', provider: 'airq' },
-  '/wind/kma-aws.json': { layer: 'weather/wind', provider: 'kma-aws' },
+  // 2026-09-20 W3: 기상청 AWS 파일의 시각이 'weather/wind' 의 신선도로 적혔다. 바람 레이어는 이제 GFS 모델이라 그 시각은
+  // 남의 것이다 — 같은 관측점을 쓰는 일기도 기입 모형(weather/synop · 위 LAYER_TRUTH 주석)으로 옮긴다. 제공자 건강(kma-aws)은 그대로.
+  '/wind/kma-aws.json': { layer: 'weather/synop', provider: 'kma-aws' },
+  '/clouds/gfs-fc/manifest.json': { layer: 'weather/wind', provider: null },
   '/celestrak/catalog.json.gz': { layer: 'space/sats', provider: 'celestrak' },
   '/clouds/meta.json': { layer: 'weather/cloud-obs', provider: 'gmgsi' },
   '/clouds/gk2a/meta.json': { layer: 'weather/cloud-gk2a', provider: 'gk2a' },
@@ -478,7 +492,10 @@ const HOST_RULES = Object.freeze([
   { host: 'earthus.net/tourism', layer: 'people/seoul' },
   { host: 'gdacs.org', provider: 'gdacs', layer: 'hazards/tc' },
   { host: 'earthquake.usgs.gov', provider: 'usgs', layer: 'hazards/eq' },
-  { host: 'open-meteo.com', provider: 'openmeteo', layer: 'ocean/marine' },
+  // 남은 브라우저 직호출은 js/route.js 의 공항 날씨 하나뿐이다(돌풍·시정·WMO 날씨코드가 우리 GFS 프레임에 없고,
+  // 항로는 최대 7일인데 프레임은 120시간에서 끝난다 — 그 파일 머리말 참조). 그것이 그리는 레이어는 'people/flight' 인데
+  // LAYER_TRUTH 에 항목이 없다(임시 항로는 스스로 DERIVED 라고 밝힌다) — 그래서 layer 는 null 이고 제공자 건강만 센다.
+  { host: 'open-meteo.com', provider: 'openmeteo', layer: null },
   { host: 'gibs.earthdata.nasa.gov', provider: 'gibs', layer: 'land/snow' },
   { host: 'services2.arcgis.com', provider: 'scufn', layer: 'ocean/trenches' },
   { host: 'll.thespacedevs.com', provider: 'spacedevs', layer: 'space/launch' },
@@ -489,6 +506,11 @@ function observeFetch(url, ok, lastModified) {
   if (url.includes('earthus-cache-kr.s3')) {
     const path = url.slice(url.indexOf('.com/') + 4).split('?')[0];
     hit = PATH_MAP[path] || null;
+  } else if (/^\/[^/]/.test(url) || /^https:\/\/(www\.)?earthus\.net\//.test(url)) {
+    // (2026-09-23) 같은 출처 — 운영 v2 는 자료를 '/events/…' 처럼 받는다(위 S3 주석). 위 조건은 S3 주소만 봐서,
+    //   이 갈래가 없으면 신선도(recordSourceTime)와 제공자 건강이 **소리 없이 '미확인'** 이 된다(v2-data-origin.md §3 A ⚠️1).
+    //   PATH_MAP 의 키는 경로라 두 원본(S3 · earthus.net)이 같다.
+    hit = PATH_MAP[url.replace(/^https:\/\/(www\.)?earthus\.net/, '').split('?')[0]] || null;
   }
   if (!hit) hit = HOST_RULES.find((r) => url.includes(r.host)) || null;
   if (!hit) return;

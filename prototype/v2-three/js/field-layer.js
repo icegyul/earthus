@@ -26,8 +26,8 @@
 import * as THREE from '../../vendor/three-r184.module.min.js';
 import { i18n } from './i18n.js?v=11';
 import { timeBus as sharedTimeBus } from './time-bus.js?v=1';
-import { decodeByte, sharedGfsFrames } from './gfs-frames.js?v=1';
-import { sharedGridFrames } from './grid-frames.js?v=1';
+import { decodeByte, sharedGfsFrames } from './gfs-frames.js?v=2';
+import { sharedGridFrames } from './grid-frames.js?v=2';
 import { fieldLegend as sharedLegend } from './field-legend.js?v=1';
 import { bandColor, formatValue, isolineSpec, scaleOf } from './field-scales.js?v=1';
 import { logRangeText, logReadout, readTicks, topBandNote } from './field-log.js?v=1';

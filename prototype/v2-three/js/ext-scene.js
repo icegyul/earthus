@@ -21,7 +21,9 @@
 
 const R_M = 6371000;
 const D2R = Math.PI / 180;
-export const S3 = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
+// (2026-09-23 정정) 운영(earthus.net)은 같은 출처 · 그 밖은 S3 직접 — main.js CloudManager 위 DATA_BASE 주석.
+//   취미·LAB 모듈은 ctx.S3 로 `${ctx.S3}/events/…` 를 만든다 → 운영에서는 '/events/…' 가 된다(ext/CONTRACT.md 의 쓰는 법은 그대로).
+export const S3 = (typeof location !== 'undefined' && location.hostname.endsWith('earthus.net')) ? '' : 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const distKm = (a, b) => {

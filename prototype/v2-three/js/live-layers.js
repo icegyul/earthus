@@ -17,10 +17,13 @@ import {
   FLOOD_DISTRICT_FAIL_NOTE, FLOOD_DISTRICT_TIMEOUT_MS, FLOOD_HEAVY_BYTES, FLOOD_METRIC_KO,
 } from './flood-discs.js?v=1';
 // 지상관측 두 파일(기상청 · GTS)은 공용 저장소에서 받는다 — 바람·평년차·기입 모형·지구 위 관측 숫자가 같은 문서를 나눠 쓴다(surface-obs.js).
-import { surfaceObs } from './surface-obs.js?v=1';
+import { surfaceObs } from './surface-obs.js?v=2';
 
 // CloudFront(earthus.net)는 /clouds/* 외 경로에 CORS 헤더를 안 붙인다 → 1.0처럼 S3 직접 (CORS *)
-const S3 = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
+// (2026-09-23 정정) 위 줄은 **교차 출처(localhost 개발)** 에서만 맞다. '1.0처럼'도 틀렸다 — 1.0(v1 config.js:31)은 운영에서
+//   같은 출처('')를 쓴다. 운영 v2(earthus.net/v2/)도 같은 출처라 CORS 가 필요 없다 → 운영은 '' · 그 밖은 예전처럼 S3 직접.
+//   (Origin 이 캐시 키에 없어 CloudFront 의 CORS 헤더는 붙었다 안 붙었다 한다 — localhost 에서 earthus.net 으로 고정하지 말 것.)
+const S3 = (typeof location !== 'undefined' && location.hostname.endsWith('earthus.net')) ? '' : 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
 
 // NASA GIBS EPSG4326 L3 = 10×5 타일 (2^n이 아니다 — 이걸 틀리면 지도가 어긋난다)
 const loadGibs = (layer, source) => {

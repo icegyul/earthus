@@ -432,7 +432,11 @@ export function scenePlan(sceneId, { thermalState = THERMAL_STATE.NORMAL, panelO
 // ---------------------------------------------------------------------------
 // 5. 데이터 소스 건강 상태 — 지금까지 볼 방법이 아예 없던 것
 // ---------------------------------------------------------------------------
-const S3 = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
+// (2026-09-23 정정) 운영(earthus.net)에서는 같은 출처 — CloudFront 가 HEAD 에도 Last-Modified 를 원본 그대로 준다
+//   (v2 자료 경로 50개 실측: 전부 200 · Last-Modified 가 S3 직접과 같음). 그 밖(localhost · node 시험)은 예전처럼 S3 직접.
+//   규칙은 main.js CloudManager 위 DATA_BASE 주석과 같다(v1 config.js:31).
+//   ⚠️ 엣지가 쥔 사본의 Last-Modified 라서 S3 보다 max-age(120~3600초)만큼 늦을 수 있다 — 화면이 실제로 받는 자료의 시각이 그것이다.
+const S3 = (typeof location !== 'undefined' && location.hostname.endsWith('earthus.net')) ? '' : 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
 
 // 실제로 이 앱이 의존하는 소스. probe가 있으면 HEAD로 갱신 시각을 직접 확인한다.
 export const PROVIDERS = Object.freeze([
@@ -502,6 +506,11 @@ function observeFetch(url, ok, lastModified) {
   if (url.includes('earthus-cache-kr.s3')) {
     const path = url.slice(url.indexOf('.com/') + 4).split('?')[0];
     hit = PATH_MAP[path] || null;
+  } else if (/^\/[^/]/.test(url) || /^https:\/\/(www\.)?earthus\.net\//.test(url)) {
+    // (2026-09-23) 같은 출처 — 운영 v2 는 자료를 '/events/…' 처럼 받는다(위 S3 주석). 위 조건은 S3 주소만 봐서,
+    //   이 갈래가 없으면 신선도(recordSourceTime)와 제공자 건강이 **소리 없이 '미확인'** 이 된다(v2-data-origin.md §3 A ⚠️1).
+    //   PATH_MAP 의 키는 경로라 두 원본(S3 · earthus.net)이 같다.
+    hit = PATH_MAP[url.replace(/^https:\/\/(www\.)?earthus\.net/, '').split('?')[0]] || null;
   }
   if (!hit) hit = HOST_RULES.find((r) => url.includes(r.host)) || null;
   if (!hit) return;

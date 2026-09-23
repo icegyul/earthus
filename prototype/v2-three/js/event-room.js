@@ -9,10 +9,12 @@
 // 값을 생성하지 않는다: 매칭이 안 되면 "찾지 못했다"고 적고, 지시가 없으면 "없다"고 적는다.
 
 import { eventSimilarity, haversineMeters } from '../../js/earthus2/v11/event/event-fusion.js';
-import { renderBadge, layerBadge } from './engine-bridge.js?v=15';
+import { renderBadge, layerBadge } from './engine-bridge.js?v=16';
 import { bulletinContext, bulletinTimesHtml, sourceTimeLabel } from './source-context.js?v=20260905';
 
-const S3 = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
+// (2026-09-23 정정) 운영(earthus.net)은 같은 출처(CloudFront /events/* /ocean/*) · 그 밖은 S3 직접 — main.js CloudManager 위 DATA_BASE 주석.
+//   아래 '없는 객체에 403' 은 CloudFront 를 거쳐도 같다(실측: 없는 키 → 403 Error from cloudfront · 오류 응답 바꿔치기 없음).
+const S3 = (typeof location !== 'undefined' && location.hostname.endsWith('earthus.net')) ? '' : 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
 const SRC = Object.freeze({
   tyoff: `${S3}/events/typhoon-official.json`,
   tyens: `${S3}/events/typhoon-ecmwf.json`,

@@ -4,12 +4,17 @@
 
 import * as THREE from '../vendor/three-r184.module.min.js';
 // 사건 방: 기관 스택 + 진리등급 + 현재→다음→행동 (정본 HAZ-011로 사건 결합)
-import { EventRoom } from './event-room.js?v=3';
+import { EventRoom } from './event-room.js?v=4';
 import { i18n } from './i18n.js?v=11';
 
 // PHASE 1(2026-09-05): 브라우저는 EARTHUS 축약본(Point·카드 필드만, 수십 KB)을 정상 경로로 쓴다.
 // 원본 MAP(1.97 MB · 15~106초)은 축약본도, 마지막 정상 축약본(localStorage)도 없을 때만 폴백이다.
-const GDACS_TC_COMPACT = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/events/gdacs-tc.json';
+// (2026-09-23 정정) 우리 캐시 파일은 운영(earthus.net)에서 같은 출처(CloudFront /events/* /ocean/*) · 그 밖은 S3 직접 —
+//   main.js CloudManager 위 DATA_BASE 주석. 아래 GDACS·USGS 원본 주소는 남의 것이라 그대로다.
+//   ⚠️ gdacs-tc.json · typhoon-official.json 은 Cache-Control: no-cache 라 CloudFront 를 거쳐도 매번 오하이오에 재확인(RefreshHit ≈0.6초)한다 —
+//      짧은 max-age 로 바꾸는 것은 Lambda(gdacs-tc/handler.py:82 · typhoon-official/handler.py:580) 일이다.
+const DATA_BASE = (typeof location !== 'undefined' && location.hostname.endsWith('earthus.net')) ? '' : 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
+const GDACS_TC_COMPACT = `${DATA_BASE}/events/gdacs-tc.json`;
 const GDACS_TC_ORIGIN = 'https://www.gdacs.org/gdacsapi/api/events/geteventlist/MAP?eventtype=TC';
 const GDACS_TC = GDACS_TC_COMPACT;
 const GDACS_LAST_KEY = 'earthus.gdacs.last';
@@ -24,10 +29,10 @@ const GDACS_GEOM = (id, ep) => `https://www.gdacs.org/gdacsapi/api/polygons/getg
 
 const ALERT_RANK = { Red: 0, Orange: 1, Green: 2 };
 // 공개 사건 패킷(지시서 D-1) — cyclone-analog 가 3시간마다 쓴다. Feed 는 GDACS eventid 로 결합한다.
-const EVENTS_INDEX = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/ocean/cyclone-events.json';
+const EVENTS_INDEX = `${DATA_BASE}/ocean/cyclone-events.json`;
 // 지진 인텔 패킷 v1 모음(aws/lab-events → intel_quake.py, 3시간마다). 키 = USGS 사건 id.
-const EQ_INTEL = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com/ocean/earthquake-intel.json';
-const EVENT_PACKET = (id) => `https://earthus-cache-kr.s3.us-east-2.amazonaws.com/ocean/cyclone-events/${id}.json`;
+const EQ_INTEL = `${DATA_BASE}/ocean/earthquake-intel.json`;
+const EVENT_PACKET = (id) => `${DATA_BASE}/ocean/cyclone-events/${id}.json`;
 const FOLLOW_KEY = 'earthus.follow';
 const STATUS_KO = { ACTIVE: '활동 중', WATCH: '주시', RESOLVED: '지난 사건', VERIFYING: '종료 확인 중', PRELIMINARY_REPORT: '잠정 보고', FINAL_REPORT: '최종 보고' };
 const CONF_BADGE = { high: ['live', '신뢰 高'], medium: ['off', '신뢰 中'], low: ['stale', '신뢰 低'] };
@@ -154,7 +159,7 @@ export class IntelFeed {
       } else if (it.kind === 'TC') {
         // KMA·JMA·NHC 공식 발표 타임라인 (1.0 S3 캐시)
         const j = await Promise.race([
-          fetchJson('https://earthus-cache-kr.s3.us-east-2.amazonaws.com/events/typhoon-official.json', { cache: 'no-store', signal }),
+          fetchJson(`${DATA_BASE}/events/typhoon-official.json`, { cache: 'no-store', signal }),
           new Promise((_, rej) => { setTimeout(() => rej(new Error('timeout')), 12000); }),
         ]);
         const name = it.stormName || (it.title || '').replace(i18n.t('tcTitle'), '').trim().toUpperCase().replace(/-\d{2}$/, '');
@@ -624,7 +629,8 @@ export class IntelFeed {
     // D-4: 회차가 가리키는 발표 원문(events/typhoon-official/archive/…) — 이전 발표를 다시 열면 당시 값이 그대로다
     const srcRefs = [['이전', a], ['현재', b]].flatMap(([lab, r]) => Object.entries(r.agencies)
       .filter(([, v]) => v && v.sourceRef)
-      .map(([k, v]) => `<a class="official-out" href="https://earthus-cache-kr.s3.us-east-2.amazonaws.com/${v.sourceRef}" target="_blank" rel="noopener noreferrer">${lab} ${k} ${r.revisionId} ↗</a>`)).join(' · ');
+      // (2026-09-23 정정) 주소는 DATA_BASE — 운영은 같은 출처(실측: events/typhoon-official/archive/… → CloudFront 200 · br · immutable)
+      .map(([k, v]) => `<a class="official-out" href="${DATA_BASE}/${v.sourceRef}" target="_blank" rel="noopener noreferrer">${lab} ${k} ${r.revisionId} ↗</a>`)).join(' · ');
     return `<div class="card"><div class="card-h">이전 발표와 비교 <span class="badge off">회차 ${a.revisionId} ⇄ ${b.revisionId}</span></div>
       <div class="card-b">
         <div class="rev-chips">${chips}</div>

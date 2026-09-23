@@ -60,7 +60,11 @@
 // 이 파일은 DOM · THREE 를 import 하지 않는다. THREE · fetch · 그림 받기 · 픽셀 읽기를 전부 주입받는다 —
 // tools/earthus-v53/gfs-frames.test.mjs 가 가짜를 넣어 그대로 부른다. 계산은 순수 함수로 밖에 냈다.
 
-export const GFS_BASE = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
+// (2026-09-23 정정) 운영(earthus.net)은 같은 출처(CloudFront /clouds/*) · 그 밖(localhost · node 시험)은 S3 직접 — main.js DATA_BASE 주석.
+//   ⚠️ 아래 frameUrlOf 의 ?g= 는 CloudFront 캐시 키에 들어가지 않는다(CachingOptimized). 같은 런 폴더를 다시 쓸 때 엣지는 먼저 쥔
+//      세대를 max-age=86400(immutable) 동안 준다. 2026-09-23 실측: 06Z 런을 10:12Z·13:12Z 두 번 썼는데 41스텝 286개 크기가 전부 같았다
+//      (같은 모델 출력 → 같은 그림). 탈이 나는 것은 **인코딩을 바꾸는 배포**가 런 도중에 나갈 때다 — 그때는 /clouds/gfs-fc/* 무효화를 같이 한다.
+export const GFS_BASE = (typeof location !== 'undefined' && location.hostname.endsWith('earthus.net')) ? '' : 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
 export const GFS_PREFIX = 'clouds/gfs-fc';
 // 예전 main.js loadGfs 가 읽던 바로 그 주소다(aws/gfs-cloud-forecast/tests 가 이 글자를 찾는다).
 const MANIFEST_PATH = 'clouds/gfs-fc/manifest.json';

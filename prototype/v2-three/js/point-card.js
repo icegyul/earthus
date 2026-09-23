@@ -30,7 +30,7 @@ import { scaleOf } from './field-scales.js?v=1';
 import { readTicks } from './field-log.js?v=1';
 import { normalizeSurfaceObs, obsFresh, fmt1, kstLabel } from './obs-labels.js?v=1';
 import { kmBetween } from './for-me-signal.js?v=2';
-import { POINT_BASE } from './point-readout.js?v=1';
+import { POINT_BASE } from './point-readout.js?v=2';
 
 export const POINT_OBS_MAX_KM = 25;          // 격자 vs 실측 — 25 km 안의 관측만 그 자리 값으로 쓴다
 export const POINT_DAY_HOUR_UTC = 6;         // 매일 15시 KST(= 06Z). 런이 00/06/12/18Z · 3시간 스텝이라 늘 정시 한 장에 맞는다

@@ -39,7 +39,7 @@
 // THREE 는 주입받는다 — 텍스처를 굽는 한 줄에만 쓴다.
 
 import * as ThreeModule from '../../vendor/three-r184.module.min.js';
-import { ByteLru, applyValueTextureDefaults, decodeByte } from './gfs-frames.js?v=1';
+import { ByteLru, applyValueTextureDefaults, decodeByte } from './gfs-frames.js?v=2';
 import { shaderValueAt } from './field-renderer.js?v=1';
 import { scaleOf } from './field-scales.js?v=1';
 

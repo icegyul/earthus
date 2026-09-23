@@ -7,6 +7,8 @@
     "serve": "node tools/dev_static_server.mjs 8777"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "lighthouse": "^13.5.0",
     "playwright": "^1.62.1"
   },
   "dependencies": {

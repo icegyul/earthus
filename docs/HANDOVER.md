@@ -327,11 +327,20 @@ prototype/supabase/  SQL·migrations·결제·푸시·관리 Edge Functions
 
 앱은 S3 정적 호스팅 + CloudFront 다. **빌드 단계가 없다** — 파일을 그대로 올린다.
 
+> ⚠️ **2026-09-23 앱 코드 원본을 서울로 옮겼다.** 코드는 `s3://earthus-app-seoul/app/`(**ap-northeast-2**),
+> 자료(`events/` `wind/` `ocean/` `clouds/` …)와 람다가 쓰는 `app/tourism/` · `app/aetherus/` · `app/v2/aetherus/` ·
+> `app/v2/data/current-earth/` 는 그대로 `earthus-cache-kr`(us-east-2)다. 목적지 규칙은 `aws/_shared/app-origin.sh` 한 곳.
+> **v1 은 `bash tools/deploy-v1.sh <파일…>`, v2 는 `tools/build-v2-bundle.sh` → `tools/deploy-v2-three.sh`** 를 쓴다 —
+> 이 둘은 CloudFront 가 지금 보는 원본을 읽어 목적지를 정하고, 람다가 읽는 `app/data/*` 는 두 버킷에 쓴다.
+> 오하이오 `app/` 에 손으로 올리면 올림·무효화가 성공해도 **화면은 바뀌지 않는다**. 아래 손 배포 예시는 서울 기준이다.
+> (Windows PowerShell 에서 셸 스크립트는 `& 'C:\Program Files\Git\bin\bash.exe' tools/…` — 그냥 `bash` 는 WSL 이다.)
+
 ```bash
 # 바뀐 파일만 올린다 (Content-Type 을 반드시 지정 — 안 하면 ES 모듈이 깨진다)
-aws s3 cp prototype/js/파일.js s3://earthus-cache-kr/app/js/파일.js \
-  --content-type "text/javascript; charset=utf-8"
-aws s3 cp prototype/index.html s3://earthus-cache-kr/app/index.html \
+# (2026-09-23 전에는 s3://earthus-cache-kr/app/… --region us-east-2 였다 — SUPERSEDED)
+aws s3 cp prototype/js/파일.js s3://earthus-app-seoul/app/js/파일.js --region ap-northeast-2 \
+  --content-type "text/javascript; charset=utf-8" --cache-control "no-cache"
+aws s3 cp prototype/index.html s3://earthus-app-seoul/app/index.html --region ap-northeast-2 \
   --content-type "text/html; charset=utf-8" --cache-control "no-cache"
 # css → "text/css; charset=utf-8" · manifest → "application/manifest+json"
 # sw.js 는 --cache-control "no-cache" 필수
@@ -341,7 +350,8 @@ aws cloudfront create-invalidation --distribution-id E193CZEBLWEB56 --paths "/js
 ```
 
 - 도메인: earthus.net (Route53 Z100817032EJQGG0WQJZE, CloudFront E193CZEBLWEB56)
-- 버킷: earthus-cache-kr (us-east-2). 앱은 `app/` 프리픽스, 데이터는 `events/` `wind/` `ocean/` 등
+- 버킷: 앱 코드 **earthus-app-seoul (ap-northeast-2)** `app/` · 자료·람다 산출물 earthus-cache-kr (us-east-2) `events/` `wind/` `ocean/` 등
+  (2026-09-23 전에는 앱도 earthus-cache-kr `app/` 였다 — 되돌리기: `tools/migrate-app-origin-seoul.sh rollback`)
 - `aws/deploy-app.sh` 전체 배포 스크립트가 있지만 자동화 환경에선 차단될 수 있다 —
   바뀐 파일만 `aws s3 cp` 하는 방식이 안전하다
 - **배포 후 검증**: `curl -s https://earthus.net/... | grep 바뀐문구` 로 반영 확인까지가 배포다

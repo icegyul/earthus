@@ -78,6 +78,10 @@ CelesTrak rate limit 때문에 **스타링크(10,776)·전체(16,123)는 아예 
 
 ## 앱 호스팅 — 아직 안 올라감
 
+> **SUPERSEDED (2026-09-23)** — 아래는 초기(앱을 S3 직접 주소로 열던 시절) 기록이다. 지금 앱은 earthus.net(CloudFront E193CZEBLWEB56)으로
+> 서빙되고, 앱 코드 원본은 **`s3://earthus-app-seoul/app/`(ap-northeast-2, OAC 전용 · 익명 읽기 없음)** 이다. 목적지 규칙은
+> `aws/_shared/app-origin.sh`, 이사 경위·되돌리기는 `tools/migrate-app-origin-seoul.sh`. 아래 절차를 따라 하지 말 것.
+
 지금 AWS 에 있는 건 **데이터뿐**이다. 앱(HTML/JS/CSS)은 맥의 로컬 서버에서만 돈다.
 
 `aws/deploy-app.sh` 가 `prototype/` 를 `s3://earthus-cache-kr/app/` 로 올린다.

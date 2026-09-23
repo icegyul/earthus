@@ -156,6 +156,10 @@ PYEOF
 
 skipped=0
 for path in "${DEPLOY_FILES[@]}"; do
+  # 2026-09-24 (PERF-LTE-PLAN V2-9): index.html 은 여기서 올리지 않는다 — 정렬상 js/ 보다 **먼저** 올라가, 업로드가 도는 동안
+  #   새 HTML(새 main.js?v=)이 옛 모듈·옛 CSS 와 섞여 나갔다(최대 js/* max-age 60초). 아래 루프 뒤에서 index.html·v2/ 키를
+  #   모든 자산이 올라간 **다음에** 쓴다(원래도 그 자리에서 한 번 더 쓰고 있었다).
+  [[ "$path" == "index.html" ]] && continue
   et="${REMOTE_ETAG[$path]:-}"
   if [[ -n "$et" ]]; then
     if [[ "$et" == *-* ]]; then

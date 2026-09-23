@@ -1356,6 +1356,8 @@
      '기둥 없음'이다(곧 열린다는 약속이 아니라 지금 상태) — 사유는 pop-metric-menu.js 머리말 정정 줄. */
   /* (2026-09-23 정정) 라벨 교체는 되돌렸다 — B1(PD 결정) 선택지 ② 그 자체라 승인 전이다. 라벨은 PD 가 정할 때까지
      '준비 중'/'soon' 이고, 사실대로 고친 것은 눌렀을 때의 사유 문장(A5)뿐이다. */
+  /* (2026-09-23 정정) PD 가 B1 ① 을 골랐다 — 기온·바람·강수는 이제 막히지 않고 누른 지점의 값(pointWeather)을 연다.
+     막힌 것은 습도 하나이고 라벨은 '자료 없음'/'no data' 다(굽는 필드에 습도가 없고 계획도 없다 — '준비 중'은 거짓 약속). */
   /* 2026-09-23 UX 자동 점검: opacity 0 으로만 숨겨서 **보이지 않는 버튼 다섯 개가 Tab 순서와 스크린리더에 상주**했다
      (axe 가 메인 화면에서 이 팝업을 잡았다). visibility 로도 숨긴다 — 레이아웃은 남으니 showAt 의 rAF 크기 측정은 그대로고,
      닫을 때는 페이드(.16s)가 끝난 뒤에 꺼지도록 visibility 만 늦춘다. #quake-cap:not(.show) 와 같은 방식이다. */
@@ -1384,6 +1386,7 @@
      그 버튼만 키가 커진다 — 줄을 접지 않는다(넘치는 1~2px 은 버튼 안쪽 여백 4px 안에 선다). */
   /* (2026-09-23 정정) 라벨은 '준비 중'/'soon' 으로 되돌렸다(B1 미승인) — 둘 다 10px 에서 안쪽 48 에 넉넉히 든다.
      nowrap 은 B1 이 긴 문구를 고를 때를 대비해 남긴다. */
+  /* (2026-09-23 정정) B1 ① — 이 라벨은 이제 습도 버튼에만 서고 '자료 없음'/'no data' 다. 10px 에서 약 45/38px 이라 안쪽 48 에 든다. */
   .pm-item.pm-soon em {
     font-style: normal; font-size: 10px; letter-spacing: .04em; color: rgba(255,255,255,0.55); white-space: nowrap;
   }
@@ -1642,6 +1645,13 @@
     #intel[data-sheet="peek"] .intel-tabs button[data-tab] { display: none; }
     #intel[data-sheet="peek"] .intel-tabs { min-height: 30px; margin-bottom: 0; }
     #intel[data-sheet="peek"].open #intel-body { max-height: 118px; overflow: hidden; }
+    /* 2026-09-23 B3(PD 승인 "모두 진행해") — 첫 방문 '사건' 시트를 peek 로 연다(main.js openFeedOnce). 그런데 peek 118px 에는
+       탭 줄 다음에 머리말(.information-context — '선택 장소: 지도에서 선택' · 켜진 자료, ui-shell.js 가 모든 탭 앞에 붙인다)이
+       서서 **사건은 한 줄도 안 보였다**(실측 402×714) — main.js 첫인상 기록이 펴려던 '오늘의 지구 사건'이 다시 숨었다.
+       위 명세('탭 줄과 첫 카드 머리만')대로 peek 에서는 머리말도 걷는다. half·full 은 그대로다(손잡이 한 번이면 돌아온다).
+       ⚠️ 굴려서(scrollTop) 머리말을 넘기지 않는다 — 손잡이·✕ 도 #intel-body 안이라 같이 밀려 나가고, peek 는 overflow:hidden 이라
+          사람이 되돌려 굴릴 수도 없다(키울 손잡이가 사라지는 함정). */
+    #intel[data-sheet="peek"] #intel-content > .information-context { display: none; }
     /* (2026-09-23 정정) half 는 31vh → 31dvh, full 은 100vh → 100dvh. 이 파일이 위(메뉴 패널 기록)에서 금지한 단위를
        다시 썼다 — 이 페이지는 주소창이 접히지 않아 vh(=lvh)가 보이는 높이보다 늘 크다. 실기기 사파리에서 full 시트
        윗변이 주소창 높이만큼 더 올라와 위 도구줄을 덮을 수 있었다(UX 자동 점검). m1-bottom-sheet 시험은 d?vh 를 받는다. */
@@ -1874,7 +1884,7 @@
   <div class="err" id="load-err"></div>
 </div>
 
-<script type="module" src="./js/main.js?v=195-uxfix"></script>
+<script type="module" src="./js/main.js?v=197-menuv1"></script>
 <script src="/js/earth-switch.js" defer></script>
 </body>
 </html>

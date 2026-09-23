@@ -1,0 +1,109 @@
+/* v2 브랜드 서랍(#menu-panel)의 **모양**만 맡는다 — 2026-09-23.
+   PD: "v2 메뉴야 여기 오른쪽 숫자 안보이게 하고 디자인을 v1 처럼 해달라고 · 벌써 세번째 이야기하고 있어"
+       "우주 카테고리를 보여줄 필요 없지 aetherus 메뉴 바로 보여줘 몇개도 안되는대"
+
+   ⚠️ 왜 세 번이나 되풀이됐나 — 09-14 에 index.html 에서 V1 규격으로 맞췄지만(".mp-title … V1 디자인처럼" 주석),
+      information-access.css 가 **나중에** 로드되며 .mp-item 을 min-height 72px · padding 12px · 15px(!important)로,
+      묶음 제목에 개수(em 13px)와 '＋/−'를 다시 얹었다. 화면은 바뀌지 않았고 코드만 바뀌었다.
+      그래서 이 파일은 ui-shell.js 가 information-access.css **바로 뒤에** 붙인다. 모든 규칙은 #menu-panel 아래로 묶어
+      접근성 파일의 전역 규칙(.mp-item …)을 선택자 무게로 이기고, !important 에는 !important 로 맞선다.
+   ⚠️ 이 파일 뒤에 메뉴 모양을 적는 파일을 새로 만들지 말 것.
+
+   기준값은 v1 오른쪽 레이어 판(#menuSub #layerStrip) 2026-09-23 실측:
+     판 배경 rgba(10,14,20,.74) · 테두리 rgba(242,245,248,.12) · blur 26 · 머리 11px 청록 대문자 자간 1.32px · 여백 12 14 6
+     목록 여백 4 8 10 · 줄 사이 2 · 줄 = grid [42px 아이콘 | 글] 간격 12 · 여백 7 10 · 둥글기 12 · 테두리 1px 투명
+     켜짐 = 테두리 rgba(90,209,232,.5) · 바탕 rgba(90,209,232,.12) · 글 #9fe6f5
+     이름 13px/500 #f2f5f8 · 설명 10.5px/300 #b5c2cf (여기서는 우리 점검기 바닥 11px 로 올린다) */
+
+#menu-panel { background: rgba(10,14,20,0.74); -webkit-backdrop-filter: blur(26px); backdrop-filter: blur(26px); }
+
+/* 머리 — 'EARTHUS / 실데이터로 살아있는 지구' 를 V1 '레이어' 머리 크기로 */
+#menu-panel .mp-head { padding: 10px 6px 6px 14px; border-bottom: 0; }
+#menu-panel .mp-head-copy b { font-size: 11px; letter-spacing: 0.12em; }
+#menu-panel .mp-head-copy small { margin-top: 3px; font-size: 11px; color: rgba(242,245,248,0.55); }
+
+/* '켜진 자료만' — 거르개는 남기되(시험이 지킨다) 줄 하나의 무게로. 누르는 자리는 44px 그대로. */
+#menu-panel .mp-search { padding: 0 14px 2px; background: none; border-bottom: 0; gap: 0; color: rgba(242,245,248,0.7); }
+#menu-panel .mp-search label { font-size: 12px; }
+#menu-panel .mp-active-only { min-height: 44px; gap: 8px; }
+#menu-panel .mp-active-only input { width: 15px; height: 15px; margin: 0; accent-color: #5ad1e8; }
+
+#menu-panel .mp-body { padding: 2px 8px 10px; }
+#menu-panel .mp-sec { padding: 0; border-bottom: 0; }
+#menu-panel .mp-sec + .mp-sec { margin-top: 2px; }
+
+/* ── 묶음 줄 = V1 한 줄 (아이콘 42 · 이름 13/500 · 아래 설명 한 줄) ── 개수·'＋' 없음 */
+#menu-panel .mp-title { padding: 0; font-size: 13px; font-weight: 500; letter-spacing: 0; line-height: 1.2; }
+#menu-panel .mp-title i,
+#menu-panel .mp-title em { display: none; }
+#menu-panel .mp-title button {
+  display: grid; grid-template-columns: 42px minmax(0, 1fr) 14px; column-gap: 12px; align-items: center;
+  width: 100%; min-height: 58px; padding: 7px 10px; border: 1px solid transparent; border-radius: 12px;
+  background: none; color: #f2f5f8; font: inherit; text-align: left; cursor: pointer;
+}
+#menu-panel .mp-title button:hover { background: rgba(255,255,255,0.05); }
+#menu-panel .mp-title button[aria-expanded="true"] { background: rgba(255,255,255,0.04); border-color: rgba(242,245,248,0.10); }
+#menu-panel .mp-title .mp-gico { width: 42px; height: 42px; margin: 0; }
+#menu-panel .mp-title .mp-tname { display: block; min-width: 0; }
+#menu-panel .mp-title .mp-tname small {
+  display: block; margin-top: 3px; font-size: 11px; font-weight: 300; line-height: 1.35; color: #b5c2cf;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* 접힘/펼침 표시 — 글자('＋' '−')가 아니라 작은 꺾쇠. information-access.css 의 content 를 이긴다. */
+#menu-panel .mp-title button[aria-expanded]::after {
+  content: ''; justify-self: center; width: 7px; height: 7px;
+  border-right: 1.5px solid rgba(242,245,248,0.45); border-bottom: 1.5px solid rgba(242,245,248,0.45);
+  transform: rotate(-45deg); transition: transform 0.18s ease;
+}
+#menu-panel .mp-title button[aria-expanded="true"]::after { transform: rotate(45deg) translate(-2px, -2px); }
+
+/* ── 현상 줄 = V1 한 줄 ── */
+#menu-panel .mp-phen { display: flex; flex-wrap: wrap; align-items: center; }
+#menu-panel .mp-item {
+  display: flex; flex-wrap: nowrap; align-items: center; gap: 2px 12px;
+  min-height: 58px !important; padding: 7px 10px !important; font-size: 13px !important;
+  border: 1px solid transparent; border-radius: 12px; opacity: 1; line-height: 1.2; box-shadow: none;
+}
+#menu-panel .mp-item:hover { background: rgba(255,255,255,0.05); }
+#menu-panel .mp-item .mp-ico { width: 42px !important; height: 42px !important; margin: 0; }
+#menu-panel .mp-item .mp-lbl { flex: 1; min-width: 0; font-weight: 500; color: #f2f5f8; }
+#menu-panel .mp-item .mp-lsub {
+  display: block; margin-top: 3px; font-size: 11px; font-weight: 300; line-height: 1.35; color: #b5c2cf;
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+#menu-panel .mp-item .mp-lsub .badge { margin-right: 6px; padding: 1px 5px; font-size: 9px; vertical-align: 1px; }
+#menu-panel .mp-item.on,
+#menu-panel .mp-phen.sel .mp-phen-main {
+  border-color: color-mix(in srgb, var(--sc, #5ad1e8) 50%, transparent);
+  background: color-mix(in srgb, var(--sc, #5ad1e8) 12%, transparent);
+  box-shadow: none;
+}
+#menu-panel .mp-item.on .mp-lbl { color: color-mix(in srgb, var(--sc, #5ad1e8) 55%, #ffffff); }
+#menu-panel .mp-item.locked { opacity: 0.5; }
+
+/* 묶음 안의 현상은 한 칸 들여 계층을 보인다(아이콘 36). 묶음이 하나뿐인 서랍(.mp-flat, AETHERUS)은 들이지 않는다. */
+#menu-panel .mp-sec:not(.mp-flat) .mp-phen { padding-left: 8px; }
+#menu-panel .mp-sec:not(.mp-flat) .mp-item .mp-ico { width: 36px !important; height: 36px !important; }
+
+/* 자료가 여럿인 현상의 펼치기 — 숫자 대신 꺾쇠(ui-shell.js 가 빈 span 을 넣는다). 누르는 자리 44. */
+#menu-panel .mp-expand {
+  flex: none; display: grid; place-items: center; min-width: 36px; min-height: 44px; padding: 0;
+  font-size: 0; color: rgba(242,245,248,0.5); background: none; border-radius: 10px;
+}
+#menu-panel .mp-expand span {
+  width: 7px; height: 7px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor;
+  transform: rotate(45deg) translate(-2px, -2px); transition: transform 0.18s ease;
+}
+#menu-panel .mp-expand[aria-expanded="true"] { color: color-mix(in srgb, var(--sc, #5ad1e8) 70%, #ffffff); }
+#menu-panel .mp-expand[aria-expanded="true"] span { transform: rotate(-135deg) translate(-2px, -2px); }
+
+/* 펼친 안쪽 자료 줄 — 아이콘 없는 작은 줄 */
+#menu-panel .mp-subs { flex: 1 0 100%; margin: 0 0 4px 30px; border-left: 1px solid rgba(242,245,248,0.10); }
+#menu-panel .mp-item.mp-sub { min-height: 44px !important; padding: 6px 10px 6px 12px !important; font-size: 12px !important; border-radius: 10px; }
+#menu-panel .mp-item.mp-sub .mp-lbl { font-weight: 400; color: rgba(242,245,248,0.86); }
+
+#menu-panel .mp-foot { padding: 8px 12px 4px; font-size: 10px; }
+
+@media (prefers-reduced-motion: reduce) {
+  #menu-panel .mp-title button::after, #menu-panel .mp-expand span { transition: none; }
+}

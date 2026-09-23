@@ -16,6 +16,12 @@
 // (2026-09-23 정정) 라벨 교체('준비 중' → '기둥 없음')는 되돌렸다 — 수정 계획의 B1 선택지 ②('막아 두고 문구만 바꾼다.
 //   예: 기둥 없음') 그 자체라 PD 승인 전이다(적대 검토가 잡음). 라벨은 PD 가 B1 을 정할 때까지 '준비 중'/'soon' 이다.
 //   승인된 것(A3·A5)은 그대로 둔다: 사유 문장을 사실대로 고친 것 · aria-describedby 숨긴 사유 · 아이콘 aria-hidden.
+// (2026-09-23 정정) PD 가 B1 선택지 ①('실제 조회로 연다')을 골랐다("모두 진행해"). 기온·바람·강수는 이제 막지 않는다 —
+//   고르면 main.js 가 **누른 그 지점**(countryClick)의 값을 pointWeather 로 읽어 우클릭 퀵메뉴와 같은 지점 카드
+//   (값 · 출처 · 유효 시각)를 세운다. 국가 기둥을 세우는 것이 아니라 지점 값이다 — 기둥은 여전히 인구뿐이다.
+//   위 줄들의 '막아 둔다'·'준비 중'·'기둥 없음' 이야기는 이 세 버튼에 대해서는 끝났다. 막힌 것은 습도 하나이고,
+//   그 라벨은 '준비 중'이 아니라 '자료 없음'이다 — 습도 필드를 굽는 계획이 없으니 곧 열린다는 말은 거짓 약속이다
+//   (ui-shell.js CAP 규칙 "'준비 중'으로 위장하면 사용자는 곧 열린다고 읽는다").
 // 그래서 버튼은 두되, 눌러도 조용히 아무 일도 안 하지 않는다 — 왜 안 되는지를 말한다.
 // 값을 지어내서 채우지 않는다.
 
@@ -24,18 +30,26 @@ const METRICS = [
   // (2026-09-23 정정) 기온·바람·강수의 사유는 머리말 정정 줄대로 고쳤다 — 값은 있고, 국가 기둥이 없다.
   //   옛 문장: 기온 '국가 단위로 잘린 기온 격자가 아직 없습니다' · 바람 '흐름장(화살표)뿐' · 강수 '지점 관측뿐'.
   //   습도 문장은 그대로 둔다(여전히 사실이다).
-  { id: 'temperature', ko: '기온', en: 'Temperature', icon: '◇', ready: false,
-    whyKo: '국가 기둥은 인구 격자로만 세웁니다. 기온은 GFS 0.5° 색면과 지점 값(우클릭·길게 누르기)으로 봅니다',
-    whyEn: 'Country columns are built from the population grid only. See temperature as the GFS 0.5° colour layer or a point value (right-click / long-press)' },
+  // (2026-09-23 정정) B1 ① — 기온·바람·강수는 ready 다. 위 줄의 '고친 사유'는 이 세 버튼에서 쓰이지 않아 걷었다
+  //   (막힌 버튼만 사유를 말한다). 걷은 문장: '국가 기둥은 인구 격자로만 세웁니다. 기온은 GFS 0.5° 색면과 지점 값
+  //   (우클릭·길게 누르기)으로 봅니다' — 바람·강수도 같은 틀. 이제 이 팝업이 그 지점 값을 직접 연다.
+  //   습도 문장은 '국가 단위로 잘린 습도 격자가 아직 없습니다' 였다 — 버튼이 지점 값을 여는 자리가 된 지금은 '격자'가
+  //   아니라 **필드**가 없다는 것이 사실이다(point-readout.js METRIC_ABSENT.humidity 와 같은 말). '아직'도 뺐다 — 계획이 없다.
+  { id: 'temperature', ko: '기온', en: 'Temperature', icon: '◇', ready: true },
   { id: 'humidity', ko: '습도', en: 'Humidity', icon: '◇', ready: false,
-    whyKo: '국가 단위로 잘린 습도 격자가 아직 없습니다', whyEn: 'No country-clipped humidity grid yet' },
-  { id: 'wind', ko: '바람', en: 'Wind', icon: '◇', ready: false,
-    whyKo: '국가 기둥은 인구 격자로만 세웁니다. 바람은 GFS 10 m 바람 색면·입자와 지점 값(우클릭·길게 누르기)으로 봅니다',
-    whyEn: 'Country columns are built from the population grid only. See wind as the GFS 10 m wind layer / particles or a point value (right-click / long-press)' },
-  { id: 'rain', ko: '강수', en: 'Rain', icon: '◇', ready: false,
-    whyKo: '국가 기둥은 인구 격자로만 세웁니다. 강수는 GFS 0.5° 색면과 지점 값(우클릭·길게 누르기)으로 봅니다',
-    whyEn: 'Country columns are built from the population grid only. See rain as the GFS 0.5° colour layer or a point value (right-click / long-press)' },
+    whyKo: '습도는 우리가 굽는 GFS 0.5° 예보 프레임에 없습니다 — 없는 값을 근사해 적지 않습니다',
+    whyEn: 'Our GFS 0.5° frames carry no humidity field — we do not approximate a value we do not hold' },
+  { id: 'wind', ko: '바람', en: 'Wind', icon: '◇', ready: true },
+  { id: 'rain', ko: '강수', en: 'Rain', icon: '◇', ready: true },
 ];
+
+/**
+ * 팝업 지표 id → 지점 값 지표 id (main.js pointWeather · point-readout.js METRIC_LAYER 가 받는 id).
+ * 오른쪽의 정본은 quick-menu.js ITEMS 다 — 강수는 'rain'('precipitation' 이 아니다). 지금은 두 쪽 이름이 같지만
+ * 일부러 표로 적는다: 한쪽 id 를 바꾸면 조용히 '지점 값을 읽는 지표가 아닙니다' 카드로 새지 않고 여기서 드러나게.
+ * 인구는 지점 값이 아니라 국가 기둥이라 이 표에 없다(focus.onChange 가 세운다). 습도는 막혀 있어 없다.
+ */
+export const POP_POINT_METRIC = Object.freeze({ temperature: 'temperature', wind: 'wind', rain: 'rain' });
 
 export class PopMetricMenu {
   constructor(i18n, onPick) {
@@ -56,10 +70,12 @@ export class PopMetricMenu {
     //      hidden 은 이름 계산에서 빠지고, aria-describedby 가 직접 가리키는 노드는 숨어 있어도 설명으로 읽힌다(accname).
     //   라벨 '준비 중'/'soon' → '기둥 없음'/'no column' (머리말 2026-09-23 정정 참고 — 곧 열린다는 약속이 아니라 지금 상태다).
     //   (2026-09-23 정정) 라벨 교체는 되돌렸다 — B1(PD 결정) 영역이다. 머리말 두 번째 정정 줄 참고.
+    //   (2026-09-23 정정) PD 가 B1 ① 을 골랐다 — 이제 막힌 버튼은 습도 하나이고 라벨은 '자료 없음'/'no data' 다(머리말 세 번째 정정 줄).
+    //   '준비 중'은 곧 열린다는 약속으로 읽히는데 습도 필드는 굽는 계획이 없다. 클래스 이름 pm-soon 은 CSS·검사가 잡는 이름이라 그대로 둔다.
     this.el.innerHTML = METRICS.map((m) => `
       <button class="pm-item${m.ready ? '' : ' pm-soon'}" role="menuitemradio"
               data-id="${m.id}" ${m.ready ? '' : `aria-disabled="true" aria-describedby="pm-why-${m.id}"`}>
-        <i class="pm-ic" aria-hidden="true">${m.icon}</i><b>${i18n.ko ? m.ko : m.en}</b>${m.ready ? '' : `<em>${i18n.ko ? '준비 중' : 'soon'}</em><span id="pm-why-${m.id}" hidden>${i18n.ko ? m.whyKo : m.whyEn}</span>`}
+        <i class="pm-ic" aria-hidden="true">${m.icon}</i><b>${i18n.ko ? m.ko : m.en}</b>${m.ready ? '' : `<em>${i18n.ko ? '자료 없음' : 'no data'}</em><span id="pm-why-${m.id}" hidden>${i18n.ko ? m.whyKo : m.whyEn}</span>`}
       </button>`).join('');
     document.body.appendChild(this.el);
     // 2026-09-23 UX 자동 점검(axe critical ×5 aria-required-attr): aria-checked 는 showAt() 에서만 달려

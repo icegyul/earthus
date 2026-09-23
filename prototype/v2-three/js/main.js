@@ -4,7 +4,7 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=69-uxfix';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=70-menuv1';
 import { createSelectionGate } from './information-contract.js';
 // PHASE 4 §9 — 지도에서 고른 사건을 어느 현상으로 읽을지는 레지스트리가 정한다.
 import { layerForEventKind } from './phenomenon-registry.js?v=4';
@@ -59,7 +59,7 @@ import { createObsLabels, obsCardHtml, obsCardTitle } from './obs-labels.js?v=1'
 import { loadPointDays, loadPointNormal, loadPointObs, pointCardHtml, readPointNow } from './point-card.js?v=1';
 let obsLabels = null;   // main() 안에서 만든다. 클릭 핸들러가 그보다 먼저 정의되므로 extScene 처럼 모듈 자리에 둔다
 import { PopSculpture } from './pop-sculpture.js?v=13';
-import { PopMetricMenu } from './pop-metric-menu.js?v=2';
+import { PopMetricMenu, POP_POINT_METRIC } from './pop-metric-menu.js?v=3';
 import { QuickMenu } from './quick-menu.js?v=2';
 import { QuakeHistory } from './quake-history.js?v=3';
 import { initOnboard } from './onboard.js?v=2';
@@ -2822,6 +2822,7 @@ async function main() {
     seaPoint = { lat, lon, loading: true };
     shell.showTab('now');
     shell.openIntel();
+    liftPeekForValue();   // 2026-09-23 B3 적대 검토 — 첫 방문 peek 에 해상 카드가 머리만 걸렸다(아래 liftPeekForValue 기록)
     shell.renderIntel();
     // 우리 해양 격자(ocean/marine-ea.json 0.5° → 밖이면 ocean/marine.json 5°) + GFS 10 m 바람 프레임 +
     // (있으면) 기상청 해양관측망 실측. 전에는 marine-api.open-meteo.com 과 api.open-meteo.com 을 지점마다
@@ -2878,6 +2879,7 @@ async function main() {
       days: null, daysLoading: gfs, ensuring: null,
     };
     shell.openIntel('point');
+    liftPeekForValue();   // 2026-09-23 B3 적대 검토 — peek 118px 에 지점 카드 한 장이 머리만 걸린다(아래 liftPeekForValue 기록)
     const bump = () => { pc.rev += 1; if (pointCard === pc) shell.renderIntel(); };
     if (gfs) {
       loadPointDays({ frames: gfsFrames, fieldId: desc.fieldId, lat, lon, nowMs: Date.now() })
@@ -3109,7 +3111,42 @@ async function main() {
   const popSculpt = new PopSculpture(scene, heightAtJs, () => uniforms.uExagger.value);
   // 클릭 지점에 뜨는 지표 메뉴. 오늘 실제로 세울 수 있는 건 인구뿐이다 — 나머지는
   // 국가 단위 격자가 없어 '준비 중'으로 정직하게 막아 둔다(모듈 안 METRICS 표 참고).
-  const popMetricMenu = new PopMetricMenu(i18n, () => {});
+  // (2026-09-23 정정) PD B1 ①("모두 진행해") — 기온·바람·강수는 막지 않고 **실제 조회로 연다.** 같은 id 가 우클릭
+  //   퀵메뉴에서는 값을 내고 좌클릭 팝업에서는 '준비 중'이던 두 말을 없앤다(UX-CHECK-FIX-PLAN B1). 고르면 누른 그 지점
+  //   (countryClick — 좌클릭은 2763 근처, 우클릭 '인구'는 아래 퀵메뉴 분기에서 세운다)을 pointWeather 로 읽어 퀵메뉴와
+  //   **같은 지점 카드**(값 · 출처 · 유효 시각)를 세운다. 국가 기둥이 아니라 지점 값이다 — 기둥은 여전히 인구뿐이고,
+  //   인구를 고르면 전과 같이 아무것도 더 하지 않는다(조각은 focus.onChange 가 이미 세웠다). 습도는 우리 프레임에
+  //   필드가 없어 모듈이 사유와 함께 막는다. id 는 POP_POINT_METRIC 표로 옮긴다 — 강수는 'rain'(quick-menu.js ITEMS 정본).
+  //   ⚠️ 부르기만 하면 값이 **화면에 안 보였다**(2026-09-23 실측 · 402×714): 나라를 고른 문맥이라 시트 머리말(궁금한 점 셋 ·
+  //      선택 장소 · 켜진 자료, ui-shell.js mapContextQuestions)이 카드 위에 서서 카드 윗변이 y 740 — 화면(714) 밖이었다.
+  //      1280×800 에서도 제목만 패널 바닥에 걸리고 값 줄은 접혀 있었다. 우클릭 퀵메뉴는 나라 문맥이 없어 머리말이 짧아 안 겪는다.
+  //      그래서 카드 머리를 시트 맨 위로 올린다. 굴리는 것은 #intel-body 다(overflow-y:auto 인 쪽 — #intel-content 가 아니다).
+  //      scrollIntoView 는 쓰지 않는다 — 고정 패널이라 페이지까지 끌 수 있다. 머리말을 걷는 근본 처리(중복 질문 '이 나라의
+  //      지금 날씨는?' 정리 · 지점 카드 한 장 모드)는 ui-shell 의 일이라 이번 B1 밖이다 — PD 에게 따로 올린다.
+  //   ⚠️ 폰에서는 팝업을 걷는다: 누른 자리 위(y − 높이 − 16)에 뜨는 팝업(z 30)이 half 시트 윗변에 걸려 방금 올린 카드 머리를
+  //      덮는다(실측 402×714: 가운데(201,357)를 누르면 팝업 y 272~343 · half 시트 윗변 y 265). 값이 답이다. 넓은 화면은 패널이 오른쪽이라 팝업이
+  //      지구 위에 뜬다 — 열어 두어 기온·바람·강수를 바로 바꿔 볼 수 있게 한다. (PHONE_MQ 는 아래 뒤쪽 const 지만 main() 안
+  //      그 사이에 최상위 await 가 없어 첫 클릭 전에 초기화돼 있다 — canvas pointerdown 의 같은 조건 기록 참고.)
+  const revealNoteCard = () => {
+    const intelEl = document.getElementById('intel');
+    const body = document.getElementById('intel-body');
+    const card = document.querySelector('#intel-content > .card');   // 'now' 탭 맨 앞 카드 = lockedNote(getNowHtml)
+    if (!lockedNote || !intelEl || !body || !card || intelEl.dataset.tab !== 'now') return;
+    // peek(118px · overflow:hidden)에서 굴리면 손잡이·✕ 가 위로 밀려 나가고 되돌려 굴릴 수도 없다 — 값을 청했으니 half 로 올린다.
+    if (intelEl.dataset.sheet === 'peek') shell.setSheet('half');
+    body.scrollTop += card.getBoundingClientRect().top - body.getBoundingClientRect().top - 8;
+  };
+  const popMetricMenu = new PopMetricMenu(i18n, (id) => {
+    const metric = POP_POINT_METRIC[id];
+    if (!metric) return;   // 인구 — 조각은 focus.onChange 가 이미 세웠다
+    // 2026-09-23 적대 검토 — 지점이 없으면(두 여는 길 모두 세우지만, 팝업이 떠 있는 동안 다른 손이 문맥을 끝낸 경우)
+    //   모듈이 이미 '기온' 에 aria-checked 를 칠한 뒤라 조용히 돌아가면 '눌렀는데 아무 일도 없는' 팝업이 남는다 — 닫는다.
+    if (!countryClick) { popMetricMenu.hide(); return; }
+    if (window.matchMedia && window.matchMedia(PHONE_MQ).matches) popMetricMenu.hide();
+    const run = pointWeather(countryClick.lat, countryClick.lon, metric);
+    revealNoteCard();                 // '읽는 중…' 카드부터 맨 위에 — 값이 오면 같은 자리에서 바뀐다
+    run.then(revealNoteCard, () => {});
+  });
   // 우클릭 퀵 메뉴 — 게임식 래디얼(지시서 §28·29). 오른쪽 버튼은 궤도 카메라가 안 쓰므로
   // (좌드래그 회전 · 휠클릭 틸트) 자리가 비어 있다. 기준은 국가 중심이 아니라 누른 지점이다.
   // 평소엔 숨고, ESC·바깥 클릭·항목 선택으로 닫힌다.
@@ -3119,6 +3156,9 @@ async function main() {
       if (!hit) return;
       const f = focus.pick(hit.lat, hit.lon);
       if (f && !f.region && !f.ocean) {
+        // 2026-09-23 B1 — 이 길은 countryClick 을 세우지 않았다. 팝업의 기온·바람·강수가 그것을 읽으므로, 비워 두면
+        //   지난번 좌클릭한 **다른 나라의 자리**(또는 null → 무반응)를 읽는다. 좌클릭 경로와 같게 누른 지점을 둔다.
+        countryClick = { lat: hit.lat, lon: hit.lon };
         focus.select(f);
         popMetricMenu.showAt(x, y, 'population');
       } else {
@@ -4206,6 +4246,7 @@ async function main() {
     lockedNote = { title, body, badge };
     shell.showTab('now', source);
     shell.openIntel();
+    liftPeekForValue();
     shell.renderIntel();
   };
   // 2026-09-23 PD — 여는 것만 뺀 showNote. 메뉴에서 색면(기온 등)을 고르면 **지구만 바뀐다**: 카드는 세워 두되 시트는 열지 않는다.
@@ -4213,7 +4254,20 @@ async function main() {
   //   탭 의도('intent'/'follow') 체계는 그대로 쓴다(INTEGRATION-3 §11). 열려 있을 때만 다시 그린다(shell.renderIntel).
   // index.html 의 좁은 화면 블록과 **같은 질의** — 둘이 갈리면 가로 폰에서 한쪽만 폰으로 본다.
   const PHONE_MQ = '(max-width: 720px), (max-height: 520px) and (pointer: coarse) and (orientation: landscape)';
-  const stageNote = (title, body, badge, source) => {
+  // 2026-09-23 B3 적대 검토 — 첫 방문 사건 시트를 peek 로 열자(openFeedOnce), **그 다음 사람이 청한 값이 peek 에 갇혔다.**
+  //   실측 402×714: 첫 방문 peek → 우클릭(길게 누르기) 퀵메뉴 '기온' → 시트 peek 그대로 · 카드 제목만 보이고 °C 줄은 118px 밖.
+  //   바다를 눌러도 같다(해양 카드 머리만). 까닭은 ui-shell.js setIntelOpen 이 **이미 열린 시트에는 일찍 돌아가**(intelOpen === open)
+  //   '열 때 half' 줄에 닿지 않는 것이다 — B3 전에는 첫 시트가 half 라 드러나지 않았다. 뿌리 처리(열린 시트에 새 값이 오면 half)는
+  //   ui-shell 의 일이라 이번 범위 밖이고, 여기서는 **값을 여는 세 문**(showNote · marineSelect · openPointCard)이 openIntel 뒤에 부른다.
+  //   색면 고르기(stageNote)는 부르지 않는다 — 그 길은 '지구만 바뀐다'가 목적이다(위 기록). 'now'·'point' 탭일 때만 올린다 —
+  //   'follow' 로 온 자료가 사람이 보던 사건 탭을 그대로 둔 경우까지 시트를 키우지 않는다. 넓은 화면은 peek 가 없다(PHONE_MQ).
+  const liftPeekForValue = () => {
+    const el = document.getElementById('intel');
+    if (!el || el.dataset.sheet !== 'peek' || !el.classList.contains('open')) return;
+    if (el.dataset.tab !== 'now' && el.dataset.tab !== 'point') return;
+    if (window.matchMedia && window.matchMedia(PHONE_MQ).matches) shell.setSheet('half');
+  };
+  const stageNote =(title, body, badge, source) => {
     lockedNote = { title, body, badge };
     shell.showTab('now', source);
     shell.renderIntel();
@@ -5452,6 +5506,13 @@ async function main() {
       try { localStorage.setItem(INTRO_FEED_KEY, '1'); } catch (e) { /* 사생활 모드 */ }
       shell.showTab('feed');
       shell.openIntel();
+      // 2026-09-23 PD "창이 너무 많이 떠"(UX-CHECK-FIX-PLAN B3 승인 "모두 진행해") — 폰에서는 half 가 아니라 peek 로 편다.
+      //   여는 것 자체(위 첫인상 기록)는 그대로다. 다만 첫 방문 화면에서 half(31dvh) 시트가 지구를 덮어 보이는 지구가 46.7%
+      //   였다(402×714 · tools/ux-check 와 같은 격자로 잼 — peek 로 59%, 시트를 닫으면 71%) — 첫인상이 '예쁜 지구본'도 '사건'도 아닌 반쯤 가린 화면이었다. peek 는 사건 첫 카드
+      //   머리만 보이고(탭 단추와 머리말은 peek 에서 걷힌다 — index.html A10 · B3 규칙), 손잡이 한 번이면 half 다.
+      //   setIntelOpen 이 열 때마다 half 로 되돌리므로 openIntel **뒤에** 둔다. 넓은 화면은 data-sheet 규칙이 폰 블록 안에만
+      //   있어 보이는 것은 같지만, 속성까지 half 그대로 두려고 PHONE_MQ 로 묶는다.
+      if (window.matchMedia && window.matchMedia(PHONE_MQ).matches) shell.setSheet('peek');
       shell.renderIntel();
     };
     setTimeout(openFeedOnce, 2600);

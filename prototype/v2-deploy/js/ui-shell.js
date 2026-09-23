@@ -262,6 +262,11 @@ export function initShell(hooks) {
   // hooks: { onScene(id), getNow() -> html, camera, getFocusSel(), labelData() -> [{nameKo,lat,lon,rank}] }
   const root = document.body;
   if(!document.getElementById('information-access-style')){const css=document.createElement('link');css.id='information-access-style';css.rel='stylesheet';css.href=new URL('./information-access.css?v=20260923-uxfix',import.meta.url).href;document.head.append(css);}
+  /* 2026-09-23 PD "v2 메뉴 오른쪽 숫자 안 보이게 하고 디자인을 v1 처럼" — **세 번째** 요청이었다. 09-14 에 index.html 을 V1 규격으로
+     맞췄지만 information-access.css(마지막에 로드)가 .mp-item 을 72px·15px !important 로, 묶음 제목에 개수와 '＋'를 다시 얹어
+     화면은 그대로였다. 메뉴의 **모양**만 맡는 파일을 그 뒤에 읽혀 V1 오른쪽 레이어 판 실측(줄 7·10px 여백·아이콘 42px·이름 13px/500·
+     설명 한 줄)으로 되돌린다. ⚠️ 이 파일보다 뒤에 메뉴 모양을 적는 파일을 만들지 말 것 — 같은 일이 네 번째로 난다. */
+  if(!document.getElementById('menu-v1look-style')){const css=document.createElement('link');css.id='menu-v1look-style';css.rel='stylesheet';css.href=new URL('./menu-v1look.css?v=1',import.meta.url).href;document.head.append(css);}
 
   // --- 1.0식 브랜드 메뉴 (PD 지시): 좌측 가장자리 세로 손잡이 + 슬라이드 패널 ---
   // EARTHUS와 AETHERUS는 서로의 카테고리가 아니다 — 각자 독립 손잡이 (1.0 원칙).
@@ -288,6 +293,9 @@ export function initShell(hooks) {
      v1 의 오른쪽 상단 버튼처럼". 찾기와 묻기는 상단 돋보기(⌕) 하나가 한다(findTopics 참고).
      '켜진 자료만' 은 검색이 아니라 거르개라 메뉴에 남는다. */
   let activeOnly = false;
+  /* 2026-09-23 PD "우주 카테고리를 보여줄 필요 없지 aetherus 메뉴 바로 보여줘 몇개도 안되는대" — 서랍에 묶음이 하나뿐이면
+     (AETHERUS = 우주 하나) 묶음 제목 줄 없이 현상 줄을 바로 깐다. openPanel 이 그리기 직전에 정한다. */
+  let flatMenu = false;
   let selectedMenu = null;
 
   /* ── PHASE 2 STEP 2.5~2.8 — 선택 문맥과 능력 게이팅 ─────────────────────────
@@ -483,7 +491,9 @@ export function initShell(hooks) {
     // 자료가 여럿이면 펼쳐서 그 안의 레이어를 그대로 켤 수 있다 — 기능은 하나도 안 사라진다.
     const expander = more
       ? '<button class="mp-expand" data-expand="' + entry.id + '" aria-expanded="' + (open ? 'true' : 'false')
-        + '" aria-label="' + safeText(name) + ' ' + (i18n.ko ? '자료 목록' : 'data list') + '">' + entry.members.length + '</button>'
+        + '" aria-label="' + safeText(name) + ' ' + (i18n.ko ? '자료 목록' : 'data list') + '"><span aria-hidden="true"></span></button>'
+        // ↑ 2026-09-23 PD "오른쪽 숫자 안 보이게": 자료 개수(members.length)를 글자로 쓰던 자리를 꺾쇠 그림(menu-v1look.css)으로 바꿨다.
+        //   펼치기 자체는 남는다 — 흡수된 레이어에 가는 길이다(시험 '기능이 사라지지 않는다').
       : '';
     /* 아이콘 (2026-09-12 인수 §3). 이름 앞에 서고, 이름을 대신하지 않는다 —
        지시서 §3 "never replace the whole menu with unlabeled icon-only navigation",
@@ -499,7 +509,10 @@ export function initShell(hooks) {
       + '<button class="mp-item mp-phen-main' + (entry.rep.l.state === 'LOCKED' ? ' locked' : '') + (anyOn ? ' on' : '') + '"'
       + ' data-fscene="' + entry.rep.s.id + '" data-flayer="' + entry.rep.l.id + '"'
       + ' title="' + safeText(i18n.ko ? entry.p.question.ko : entry.p.question.en) + '" aria-pressed="' + anyOn + '">'
-      + ico + '<span class="mp-lbl">' + safeText(name) + '</span>' + rowBadge(entry.rep)
+      // 2026-09-23 V1 줄 문법: 이름 아래 설명 한 줄(V1 .ly-sub 'NOAA GMGSI · 구름 · 지금'). 상태 배지는 오른쪽 끝이 아니라 그 줄 앞에 둔다 —
+      //   오른쪽 끝에 무엇이든 세우면 PD 가 지운 숫자 자리와 같은 잡음이 된다.
+      + ico + '<span class="mp-lbl">' + safeText(name)
+      + '<small class="mp-lsub">' + rowBadge(entry.rep) + (entry.rep.l.src && entry.rep.l.src !== '—' ? safeText(entry.rep.l.src) : '') + '</small></span>'
       + '</button>' + expander
       + (open && more ? '<div class="mp-subs">' + entry.members.map(layerRowHtml).join('') + '</div>' : '')
       + '</div>';
@@ -528,10 +541,17 @@ export function initShell(hooks) {
     const label = i18n.ko ? g.label.ko : g.label.en;
     // '켜진 자료만' 은 접힌 절도 펼친다 — 절이 전부 접힌 채 시작하므로(기본), 거르고도 제목만 남으면
     // 무엇이 켜져 있는지 여전히 안 보인다. (예전에는 검색어가 있을 때 이렇게 펼쳤다.)
+    if (flatMenu) {
+      return '<section class="mp-sec mp-flat" data-section="' + gid + '" style="--sc:' + groupAccent(gid) + '">'
+        + (activeOnly ? '' : chipsFor(gid)) + shown.map(phenomenonRowHtml).join('') + '</section>';
+    }
     const hidden = !activeOnly && collapsedSections.has(gid);
+    // 2026-09-23 PD "오른쪽 숫자 안 보이게" — 묶음 제목 끝의 개수(<em>shown.length</em>)를 뺐다. 대신 V1 줄처럼
+    //   이름 아래에 무엇이 들었는지 한 줄(앞 세 현상 이름)을 둔다. 숫자는 안에 든 것을 말해 주지 않았다.
+    const preview = shown.slice(0, 3).map((e) => (i18n.ko ? e.p.label.ko : e.p.label.en)).join(' · ') + (shown.length > 3 ? ' …' : '');
     return '<section class="mp-sec" data-section="' + gid + '" style="--sc:' + groupAccent(gid) + '">'
       + '<h3 class="mp-title"><button data-collapse="' + gid + '" aria-expanded="' + (hidden ? 'false' : 'true') + '">'
-      + groupIconHtml(gid) + '<i></i>' + safeText(label) + '<em>' + shown.length + '</em></button></h3>'
+      + groupIconHtml(gid) + '<i></i>' + '<span class="mp-tname">' + safeText(label) + '<small>' + safeText(preview) + '</small></span></button></h3>'
       + '<div ' + (hidden ? 'hidden' : '') + '>'
       + (activeOnly ? '' : chipsFor(gid))
       + shown.map(phenomenonRowHtml).join('')
@@ -755,6 +775,7 @@ export function initShell(hooks) {
     // PHASE 4 — 브랜드로 묶음을 고른다. AETHERUS 는 우주 하나(기존 계약 유지, §1).
     // 목록은 레지스트리가 준다 — 여기에 묶음 이름을 손으로 적으면 표가 둘이 된다.
     const groups = isReport ? [] : aeth ? ['space'] : [...EARTHUS_MENU_GROUPS];
+    flatMenu = groups.length === 1;
     panel.classList.toggle('aeth', aeth);
     panel.innerHTML = `
       <div class="mp-head">

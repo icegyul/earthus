@@ -136,8 +136,16 @@ export const FLOOD_OPACITY = 0.62;
  * ⚠️ 옛 카드가 적던 **230,610 km² · 0.17 %** 는 **부풀리기(grow) 전**의 33.7 % 로 센 값이었다(688,744 × 0.337).
  *    지금 코드는 grow 1 을 쓰므로 실제로 칠해지는 것은 이 수다. 판정을 고치면 이 두 줄도 같이 고쳐야 한다.
  */
-export const FLOOD_PAINTED_KM2 = 279614;
-export const FLOOD_PAINTED_PCT = 0.19;
+// (2026-09-24 정정) 수면(0 m · ±0.1 m 안 · FLOOD_WATER_EPS)을 빼는 판정으로 **다시 쟀다**. 같은 세는 법 · 같은 자료(PC 경로 z4)로
+//   옛 규칙을 먼저 돌려 279,614 km² 가 그대로 나오는 것을 확인한 뒤 새 규칙을 돌렸다:
+//   칠해지는 면적 251,555 km² · 육지 149,212,418 km²(그대로) → 0.169 %. 빠진 28,059 km² 는 0 m 수면(호수 · 만 · 연안)이었다.
+//   그중 **빗금**(판이 육지라 하는데 오늘 해수면 아래 · FLOOD_AMBIG)이 107,658 km² 다 — 물빛 면만은 143,897 km².
+//   0.17 로 반올림하지 않는다: 옛 카드의 낡은 수(230,610 km² · 0.17 %)와 글자가 같아져 시험 ⑥ 이 가르는 것을 흐린다.
+export const FLOOD_PAINTED_KM2 = 251555;
+export const FLOOD_PAINTED_PCT = 0.169;
+// (2026-09-24 정정 · 검토) 위 넓이의 43 % 가 **빗금**(물 밑바닥인지 간척지인지 모름)이다 — 같은 측정(위 주석)의 수.
+//   카드가 '칠해지는 땅 251,555 km²'만 적으면 호수 · 만 바닥일 수 있는 107,658 km² 까지 땅으로 단언하게 된다. 그 몫을 같이 적는다.
+export const FLOOD_AMBIG_KM2 = 107658;
 /**
  * **그 수를 어느 칸에서 쟀나.** 위 두 수는 시나리오 하나 · 연도 하나에서 잰 것이다 —
  * 카드가 그 사실을 적지 않으면, 시나리오 4 × 연도 3 = 12칸 가운데 어느 것을 눌러도 같은 숫자가 따라다니며
@@ -158,6 +166,60 @@ export const FLOOD_PAINTED_AT = Object.freeze({ scenario: 'ssp585', year: '2100'
 export const FLOOD_LIFT = FIELD_LIFT / 4;
 /** 물가의 밝은 테 — 굵기(CSS px)와 진하기. 전지구 줌에서 잠기는 땅은 실오라기라 **이 선이 그림의 주인공**이다. */
 export const FLOOD_RIM = Object.freeze({ color: Object.freeze([0.918, 0.988, 1.0]), widthPx: 1.6, alpha: 0.92 });
+
+/**
+ * (2026-09-24 정정) 지형 자료가 **수면으로 평평하게 둔 칸**(0 m · 그 섞임 ±0.1 m 안)은 물이다 — 칠하지 않는다.
+ * 무엇이 잘못돼 있었나: PD 폰(402×714 · 루이지애나 그랜드아일 · 고도 약 430 km) "창도 답답하고 표현 이상하고".
+ *   화면의 옅은 파랑 **네모 덩어리**는 폰차트레인 호 서쪽 · 브레턴 해협 · 챈들러 해협이었다 — 땅이 아니라 **물**이다.
+ *   Terrarium 은 호수 · 얕은 만 · 연안 바다의 상당 부분을 **정확히 0 m** 로 담는다(원 자료의 수면 평탄화 · 해저 자료가 없는 연안).
+ *   옛 판정은 '고도 ≥ 0 이면 육지'라 0 m 수면이 육지가 되었고, 상승폭(1.1~1.5 m)보다 낮으니 '잠기는 땅'으로 칠해졌다.
+ *   네모꼴은 그 수면 조각의 가장자리(원 자료가 이어 붙은 자리)가 그대로 드러난 것이다.
+ *   실측(Terrarium z8 · 28.9~30.5N · 91.0~88.7W · 0.02° 간격): 정확히 0 m 가 777점, 0 < h < 1 m 가 304점이었다.
+ *   땅이 우연히 0.000 m 인 점이 0~1 m 전체보다 2.5배 많을 수는 없다 — 그 0 은 수면의 표시다.
+ *   같은 셈을 네덜란드(51.8~53.2N)에서 하면 0 m 384점이 바덴해 · 제일란트 물길에 모여 있고, 방콕 · 상하이에서는 각 3점뿐이다.
+ * 한 방향으로만 틀린다 — **칠하지 않는 쪽**이다. 해수면 높이의 갯벌 · 습지가 원 자료(정수 m 인 SRTM)에서 0 m 로
+ *   반올림됐다면 그 땅도 빠진다. 카드가 그 사실을 적는다(floodCardInner ③).
+ * 값 — 처음에는 Terrarium 의 가장 작은 눈금(1/256 m)의 절반인 0.002 m 로 **정확히 0** 만 골랐다. 그랬더니 수면 조각의 가장자리에
+ *   3~4 텍셀 폭의 **계단 테두리**가 남았다(브레턴 해협 동쪽 29.72N 가로 자르기 실측: 0 · 0 · −0.004 · +0.004 · +0.008 · −0.016 ·
+ *   −0.027 · +0.047 · +0.105 · −0.18 · −0.75 · −1.0 …). z8 타일은 더 고운 단계를 줄여 만든 것이라 0 m 수면과 −1 m 해저가
+ *   섞인 텍셀이 0 근처에 ± 로 흩어지고, 그중 양수가 '땅'으로 읽혀 칠해졌다.
+ *   같은 z8 표본(루이지애나 28.9~30.5N)의 분포: 정확히 0 777 · (0, 0.1) 202 · (−0.1, 0) 159 · [0.1, 0.25) 51 · [0.25, 0.5) 19 —
+ *   0 을 사이에 두고 ± 가 대칭으로 쌓인 것은 땅의 높이가 아니라 **섞임의 흔적**이다. 그래서 문턱을 0.1 m 로 넓혔다.
+ *   잃는 땅(0 < h < 0.1 m)은 네덜란드 2점 · 방글라데시 해안 11점 · 메콩 하구 3점(같은 간격 표본)뿐이다.
+ *   오늘 해수면에서 0.1 m 안쪽은 이 자료의 수직 오차(수 m) 안의 물가 그 자체라 '땅'이라 단언할 근거가 없다.
+ * 셰이더는 세 채널을 정수로 되돌려 푼다(texelHeight) — 이 문턱이 부동소수 오차와 닿지 않게.
+ */
+export const FLOOD_WATER_EPS = 0.1;
+
+/**
+ * (2026-09-24 정정) 물가의 테는 **멀리서만** 주인공이다 — 확대하면 옅어진다.
+ * 무엇이 잘못돼 있었나: 확대(고도 약 430 km · 지형 z8 텍셀이 폰 화면에서 2~3 px)에서 늪지 고도(0~2 m 가 텍셀마다 뒤섞인다)의
+ *   텍셀 하나하나 둘레마다 흰 테가 돌아 **흰 좁쌀 · ◎ 고리**가 됐다(PD 폰 화면). 테는 전지구 줌에서 실오라기 같은 해안 저지를
+ *   보이게 하려고 세운 것이다(FLOOD_RIM 주석). 확대하면 면이 스스로 보이므로 테가 그리는 것은 자료의 잡음뿐이다.
+ * 고도(km) → 테 진하기에 곱하는 수: far 위에서는 1(옛 그대로), near 아래에서는 min, 그 사이는 부드럽게 잇는다.
+ * ⚠️ 0 으로 끄지 않는다 — 넓게 칠해진 면의 가장자리는 확대해서도 선이 조금 있어야 '여기까지'로 읽힌다.
+ */
+export const FLOOD_RIM_FADE = Object.freeze({ far: 1500, near: 500, min: 0.2 });
+/** 카메라 고도(km) → 테의 진하기(FLOOD_RIM.alpha × 배수). 셰이더의 uRimStyle.y 로 들어간다(onBeforeRender). */
+export const rimAlphaFor = (altKm) => {
+  const { far, near, min } = FLOOD_RIM_FADE;
+  if (!Number.isFinite(altKm)) return FLOOD_RIM.alpha;
+  const t = Math.max(0, Math.min(1, (altKm - near) / (far - near)));
+  const s = t * t * (3 - 2 * t);                    // smoothstep — 줌을 밀 때 테가 툭 끊기지 않게
+  return FLOOD_RIM.alpha * (min + (1 - min) * s);
+};
+
+/**
+ * (2026-09-24 정정) **빗금** — 육지 판은 육지라 하는데 고도는 오늘 해수면보다 낮은 곳.
+ * 무엇이 잘못돼 있었나: 그 칸을 '해수면보다 2 m 이상 낮은 땅'(가장 짙은 파랑)으로 칠했는데, 루이지애나에서 그 칸은
+ *   보른 호 · 폰차트레인 호 동쪽 · 바라타리아 만의 **물 밑바닥**(−1 ~ −3 m)이었다. 1:110m 국가 경계 판이 호수와 만을 품고 있어서다.
+ *   해저 자료가 성긴 측심점을 이어 만든 것이라 둥근 구덩이가 생기고, 그 둘레의 테가 PD 화면의 **짙은 네모 + ◎** 였다.
+ * 왜 지우지 않고 빗금인가: 같은 칸에 **진짜 해수면 아래 땅**도 있다 — 플레볼란트(−3 m) · 뉴올리언스 일부.
+ *   고도 하나로는 호수 바닥과 간척지를 가를 수 없고(둘 다 −1 ~ −6 m), 이 저장소에는 호수 경계 자료가 없다(data/water.json 은 강 · 댐뿐).
+ *   가를 수 없는 것을 가장 짙은 색으로 단언하지도, 조용히 지우지도 않는다 — **'모름'의 표시**로 그리고 범례 · 카드가 뜻을 적는다.
+ * 빗금은 화면 좌표에 긋는다(간격 · 굵기는 CSS px). 깊이 3단 색은 쓰지 않는다 — 물 밑바닥의 깊이를 '잠기는 깊이'로 읽히게 하지 않으려고.
+ */
+export const FLOOD_AMBIG = Object.freeze({ spacingPx: 7, widthPx: 1.3, alpha: 0.7, fill: 0.12 });
 
 /**
  * 구름이 물러나며 화면에 적는 이름(js/cloud-yield.js 의 quantity 자리).
@@ -561,11 +623,34 @@ export const floodBandIndex = (depth) => {
 export const floodRimCoverage = (sub, grad, widthPx) => lineCoverage(sub, grad, widthPx);
 
 /**
+ * (2026-09-24 정정) 셰이더 landWaterAt · landWaterAt9 의 JS 거울(시험용) — 텍셀 값과 무게를 받아 (땅 고도, 물 몫)을 낸다.
+ * 수면 텍셀(|h| ≤ FLOOD_WATER_EPS)의 무게는 물 몫으로 모으고, 땅 고도는 **땅 텍셀끼리만** 섞는다. 땅 텍셀이 없으면 h = 0.
+ */
+export const landWaterMix = (heights, weights, eps = FLOOD_WATER_EPS) => {
+  let water = 0;
+  let landW = 0;
+  let hSum = 0;
+  for (let i = 0; i < heights.length; i += 1) {
+    const w = weights[i];
+    const wet = Math.abs(heights[i]) < eps ? 1 : 0;   // 셰이더: 1 − step(eps, |h|)
+    water += w * wet;
+    landW += w * (1 - wet);
+    hSum += w * (1 - wet) * heights[i];
+  }
+  return { h: landW > 1e-4 ? hSum / landW : 0, water };
+};
+
+/** (2026-09-24 정정) landWaterAt9 의 축 무게 — 2×2 상자로 거른 격자를 겹선형으로 이은 것. g ∈ [0,1) → [(1−g)/2, 1/2, g/2]. */
+export const boxTentWeights = (g) => [(1 - g) / 2, 0.5, g / 2];
+
+/**
  * 한 지점을 칠하나 — 셰이더 main() 과 같은 차례.
  *   deps { heightAt(lat,lon) → m · landAt(lat,lon) → 0|1|null · riseAt(lat,lon) → m · reachAt(lat,lon) → 0|1|null · hasHeight }
  *   → { painted, why, height, rise, depth, band }
  * why: 'noTerrain'(지형을 못 받았다 — 아무것도 말하지 않는다) · 'sea'(바다다) · 'dry'(물보다 높다) ·
  *      'basin'(물보다 낮지만 바다에서 물이 닿지 않는 내륙 저지다 — 사해 · 카스피 저지)
+ * (2026-09-24 정정) 두 갈래를 더했다: 'water'(지형 자료가 수면으로 둔 0 m 칸 — 이미 물) ·
+ *      'unknown'(판이 육지라 하는데 오늘 해수면 아래 — 물 밑바닥인지 간척지인지 모른다 · 빗금으로 칠한다 · ambiguous: true)
  */
 export function floodAt(deps, lat, lon) {
   const { heightAt, landAt = null, riseAt: riseOf, reachAt: reachOf = null, hasHeight = true } = deps || {};
@@ -574,6 +659,9 @@ export function floodAt(deps, lat, lon) {
   const plate = landAt ? landAt(lat, lon) : null;
   // 육지인가 — 바다 색면(field-renderer.js)의 두 단을 뒤집은 것이다. 판이 육지라 하거나 해수면 위면 육지다.
   // 판이 없는 세션(uHasLand = 0)은 고도의 부호만 남는다: 해수면보다 낮은 땅을 바다로 읽는 쪽이 지어내는 것보다 낫다.
+  // (2026-09-24 정정) 지형 자료가 수면으로 평평하게 둔 칸(0 m · 섞임 ±0.1 m 안)은 물이다 — 판이 육지라 해도 칠하지 않는다(FLOOD_WATER_EPS).
+  //   셰이더는 네 텍셀을 직접 읽어 수면 텍셀을 높이에서 빼고 물 몫이 절반을 넘으면 버린다. 이 거울은 받은 고도 하나로 가른다.
+  if (Number.isFinite(h) && Math.abs(h) < FLOOD_WATER_EPS) return { painted: false, why: 'water', height: h };   // 셰이더와 같은 끝(1 − step(eps, |h|))
   const land = (plate === 1) || (Number.isFinite(h) && h >= 0);
   if (!land) return { painted: false, why: 'sea', height: h };
   const rise = riseOf(lat, lon);
@@ -581,6 +669,9 @@ export function floodAt(deps, lat, lon) {
   if (!(depth > 0)) return { painted: false, why: 'dry', height: h, rise, depth };
   // 셰이더와 같은 차례의 마지막 단. 판이 아직 없으면(uHasReach = 0) 가르지 않는다 — 카드가 그 사실을 적는다.
   if (reachOf && reachOf(lat, lon) !== 1) return { painted: false, why: 'basin', height: h, rise, depth };
+  // (2026-09-24 정정) 판이 육지라 해서 들어온 해수면 아래 칸은 **빗금**이다 — 물 밑바닥인지 간척지인지 모른다(FLOOD_AMBIG).
+  //   칠하기는 한다(painted: true · 옛 시험 '간척지는 칠한다' 그대로). 깊이 칸(band)은 그 칸에 쓰지 않는다.
+  if (h < 0) return { painted: true, why: 'unknown', ambiguous: true, height: h, rise, depth, band: null };
   return { painted: true, why: 'wet', height: h, rise, depth, band: floodBandIndex(depth) };
 }
 
@@ -630,6 +721,101 @@ float heightAt(float lon, float lat) {
 // 한 글자도 베끼지 않는다: 두 벌이 생기면 한쪽만 고쳐져 어긋난다(그 파일 머리말 '지형').
 export const FLOOD_VERT = FIELD_VERT;
 
+// (2026-09-24 정정) 잠기는 땅이 읽는 고도 — 네 텍셀을 직접 읽어 **수면 텍셀을 뺀** 겹선형이다.
+// 무엇이 잘못돼 있었나: heightAt 은 텍셀 넷을 GPU 겹선형으로 섞는다. 호수 · 만의 수면(0 m · ±0.1 m 안 · FLOOD_WATER_EPS)과
+//   물가의 땅(예: 5 m)을 섞으면 그 사이에 0 ~ 5 m 인 **가짜 저지 띠**가 생긴다 — 상승폭(1.1~1.5 m)보다 낮은 몫이 칠해지고
+//   테까지 둘러 모든 물가에 흰 좁쌀 띠가 섰다(PD 폰 화면 · 루이지애나).
+// 여기서는 텍셀 가운데 넷을 따로 읽고(선형 거르개라도 가운데를 짚으면 그 텍셀 값 그대로다), 세 채널을 정수로 되돌려 정확히 푼 뒤
+//   수면 텍셀의 무게는 '물 몫'으로 따로 모으고 땅 고도는 **땅 텍셀끼리만** 섞는다. 물 몫이 절반을 넘으면 물이다(FLOOD_FRAG).
+//   → 물과 땅의 경계는 물 몫의 0.5 등치선이라 텍셀 계단 대신 매끈한 선이 되고, 물가의 가짜 저지 띠는 사라진다.
+// ⚠️ main.js 의 heightAt · sampleHeight 는 **건드리지 않는다**(지구의 변위가 쓰는 것이고 시험이 같은 글자를 잠근다).
+//    디테일 창의 섞기(detailFade · 창 안 좌표)는 sampleHeight 와 같은 식을 쓴다.
+export const FLOOD_WATER_GLSL = /* glsl */ `
+float texelHeight(vec3 rgb) {
+  vec3 b = floor(rgb * 255.0 + 0.5);
+  return b.r * 256.0 + b.g + b.b / 256.0 - 32768.0;
+}
+
+vec2 landWaterAt(sampler2D map, vec2 uv, vec2 size) {
+  vec2 tp = uv * size - 0.5;
+  vec2 i0 = floor(tp);
+  vec2 fr = tp - i0;
+  vec2 d = 1.0 / size;
+  vec2 c = (i0 + 0.5) * d;
+  vec4 hv = vec4(
+    texelHeight(texture2D(map, c).rgb),
+    texelHeight(texture2D(map, c + vec2(d.x, 0.0)).rgb),
+    texelHeight(texture2D(map, c + vec2(0.0, d.y)).rgb),
+    texelHeight(texture2D(map, c + d).rgb));
+  vec4 wv = vec4((1.0 - fr.x) * (1.0 - fr.y), fr.x * (1.0 - fr.y), (1.0 - fr.x) * fr.y, fr.x * fr.y);
+  vec4 wet = vec4(1.0) - step(vec4(uWaterEps), abs(hv));
+  float water = dot(wv, wet);
+  float landW = 1.0 - water;
+  float h = landW > 0.0001 ? dot(wv * (vec4(1.0) - wet), hv) / landW : 0.0;
+  return vec2(h, water);
+}
+
+// 디테일 창은 **아홉 텍셀**로 읽는다 — 2×2 상자로 거른 격자를 겹선형으로 잇는 것과 같다(축마다 무게 (1−g)/2 · 1/2 · g/2).
+// (2026-09-24 정정) 왜: 넷만 읽으면 텍셀 하나짜리 늪지 잡음(0~2 m 가 뒤섞인다)과 원 자료 이음매의 한 텍셀 띠(0 m 수면과
+//   해저 사이에 낀 0.x m)가 그대로 칠해져 좁쌀 · 계단 테두리가 됐다(PD 폰 화면 브레턴 해협 둘레).
+//   이 거르개에서 외톨이 텍셀 하나의 몫은 최대 1/4, 한 텍셀 폭 띠는 최대 1/2 이라 물 몫(0.5)과 높이 판정에서 홀로 서지 못한다.
+//   두 텍셀(확대 z8 약 1 km · z9 약 0.5 km)보다 큰 것만 남는다 — 카드 ③ 과 범례 풀이가 그 해상도를 적는다.
+//   한쪽으로만 틀리지 않는다: 마른 땅 속의 외톨이 저지도, 잠기는 땅 속의 외톨이 둔덕도 같이 사라진다.
+vec2 landWaterAt9(sampler2D map, vec2 uv, vec2 size) {
+  vec2 tp = uv * size - 0.5;
+  vec2 k = floor(tp - 0.5);
+  vec2 g = tp - 0.5 - k;
+  vec2 d = 1.0 / size;
+  vec3 wx = vec3((1.0 - g.x) * 0.5, 0.5, g.x * 0.5);
+  vec3 wy = vec3((1.0 - g.y) * 0.5, 0.5, g.y * 0.5);
+  float water = 0.0;
+  float landW = 0.0;
+  float hSum = 0.0;
+  for (int j = 0; j < 3; j++) {
+    for (int i = 0; i < 3; i++) {
+      float w = wx[i] * wy[j];
+      float h = texelHeight(texture2D(map, (k + vec2(float(i), float(j)) + 0.5) * d).rgb);
+      float wet = 1.0 - step(uWaterEps, abs(h));
+      water += w * wet;
+      landW += w * (1.0 - wet);
+      hSum += w * (1.0 - wet) * h;
+    }
+  }
+  return vec2(landW > 0.0001 ? hSum / landW : 0.0, water);
+}
+
+// 육지 판(0/1 · 0.25°)을 네 칸 겹선형으로 이어 0.5 로 자른다 — 곧은 가장자리는 칸 경계 그대로, 모서리 계단만 대각으로 펴진다.
+float landPlateAt(vec2 uv) {
+  vec2 size = vec2(360.0, 180.0) / uLandRes;            // 1440 × 720 (0.25°)
+  vec2 tp = uv * size - 0.5;
+  vec2 i0 = floor(tp);
+  vec2 fr = tp - i0;
+  vec2 d = 1.0 / size;
+  vec2 c = (i0 + 0.5) * d;
+  vec4 pv = vec4(
+    texture2D(uLandMask, c).r,
+    texture2D(uLandMask, c + vec2(d.x, 0.0)).r,
+    texture2D(uLandMask, c + vec2(0.0, d.y)).r,
+    texture2D(uLandMask, c + d).r);
+  vec4 wv = vec4((1.0 - fr.x) * (1.0 - fr.y), fr.x * (1.0 - fr.y), (1.0 - fr.x) * fr.y, fr.x * fr.y);
+  return step(0.5, dot(wv, step(vec4(0.5), pv)));
+}
+
+vec2 floodHeightAt(float lon, float lat) {
+  if (uHasHeight < 0.5) return vec2(0.0);
+  vec2 uv = mercatorUV(lon, lat);
+  vec2 g = landWaterAt(uHeightMap, uv, max(uFloodTexels.xy, vec2(1.0)));
+  float f = detailFade(uv);
+  if (f > 0.0) {
+    float du = fract(uv.x - uDetailRect.x);
+    float dv = uv.y - uDetailRect.y;
+    vec2 duv = vec2(du / uDetailRect.z, dv / uDetailRect.w);
+    g = mix(g, landWaterAt9(uDetailMap, duv, max(uFloodTexels.zw, vec2(1.0))), f);
+  }
+  return g;
+}
+`;
+
 // 프래그먼트. ⚠️ highp — 고도(m)와 상승폭(m)의 차이가 0.01 m 단위이고 mediump 로는 6,371,000 을 못 담는다.
 //   · PI 를 다시 선언하지 않는다 — FIELD_TERRAIN_GLSL 이 이미 선언했다.
 //   · fwidth 는 **discard 앞에서** 부른다: 버려진 이웃 픽셀의 도함수는 정의되지 않는다(물가의 테가 바로 그 자리에 선다).
@@ -655,7 +841,14 @@ uniform vec3 uRimColor;
 uniform vec2 uRimStyle;        // 굵기px · 진하기
 uniform float uPxScale;        // 장치 픽셀비 — 굵기는 CSS px 로 정한다
 uniform float uGradEps;
+uniform vec4 uFloodTexels;     // (2026-09-24) 전역 고도맵 폭 · 높이 · 디테일 창 폭 · 높이(px) — 텍셀 가운데를 짚으려고(onBeforeRender)
+uniform float uWaterEps;       // (2026-09-24) 수면으로 보는 고도의 절댓값 문턱(FLOOD_WATER_EPS)
+uniform vec3 uAmbStyle;        // (2026-09-24) 빗금 간격px · 굵기px · 진하기(FLOOD_AMBIG)
+uniform float uAmbFill;        // (2026-09-24) 빗금 칸 바탕의 옅은 덮개
+uniform float uLandRes;        // (2026-09-24) 육지 판 한 칸(°) — landPlateAt 이 칸 가운데를 짚는다(LAND_MASK_RES)
 varying vec3 vUnit;
+
+${FLOOD_WATER_GLSL}
 
 // field-renderer.js FIELD_FRAG 의 lineCover 와 **같은 글자**다(시험이 대조한다). 레벨의 아래쪽에만 서고 평평한 곳에서는 긋지 않는다.
 float lineCover(float below, float grad, float widthPx) {
@@ -671,13 +864,23 @@ void main() {
   float lon = atan(n.x, n.z);
   vec2 suv = vec2(lon / (2.0 * PI) + 0.5, lat / PI + 0.5);
 
-  float hgt = heightAt(lon, lat);                      // 전역 z4 + 디테일 창 z5~z9 — 과장(uExagger)은 섞지 않는다
+  // (2026-09-24 정정) 고도는 heightAt(GPU 겹선형 한 번) 대신 floodHeightAt 으로 읽는다 — 옛 줄은 heightAt(lon, lat) 한 번이었다.
+  //   옛 줄의 주석(그대로 참이다): 전역 z4 + 디테일 창 z5~z9 — 과장(uExagger)은 섞지 않는다.
+  //   네 텍셀을 직접 읽어 **수면(0 m) 텍셀을 높이에서 빼고** 물 몫을 따로 센다(FLOOD_WATER_GLSL 머리말).
+  //   옛 줄은 호수 · 만의 0 m 를 땅으로 읽었고, 수면과 물가 사이를 섞어 모든 물가에 가짜 저지 띠(흰 테의 좁쌀)를 만들었다.
+  vec2 hw = floodHeightAt(lon, lat);                   // (땅 고도 m · 물 몫 0~1) — 과장(uExagger)은 섞지 않는다
+  float hgt = hw.x;
   float rise = texture2D(uRise, suv).r * 255.0 * uRiseDecode.x + uRiseDecode.y;
   float sub = rise - hgt;                              // 0 보다 크면 물보다 낮다
   float grad = fwidth(sub);                            // ⚠️ 아래의 discard 보다 먼저
 
+  // (2026-09-24 정정) 지형 자료가 수면으로 둔 곳(물 몫이 절반 이상)은 이미 물이다 — 판이 육지라 해도 칠하지 않는다.
+  if (hw.y >= 0.5) discard;
   // 육지인가 — 바다 색면(field-renderer.js)의 두 단을 뒤집은 것이다: 판이 육지라 하거나 해수면 위면 육지다.
-  float plate = uHasLand > 0.5 ? step(0.5, texture2D(uLandMask, suv).r) : 0.0;
+  // (2026-09-24 정정) 판은 오늘 해수면 아래 칸(hgt < 0)에서만 판정을 바꾸므로 그때만 읽고, 네 칸을 겹선형으로 이어 0.5 로 자른다
+  //   (landPlateAt) — 빗금 칸의 가장자리가 0.25° 칸 계단(PD 화면의 네모)으로 서지 않게. 판 텍스처는 바다 색면과 같이 쓰는 것이라
+  //   거르개(NearestFilter)는 건드리지 않고 여기서 직접 읽는다. 옛 줄: step(0.5, texture2D(uLandMask, suv).r) 한 번.
+  float plate = (uHasLand > 0.5 && hgt < 0.0) ? landPlateAt(suv) : 0.0;
   if (max(plate, step(0.0, hgt)) < 0.5) discard;       // 바다다 — 이미 물이라 칠하지 않는다
   if (sub <= 0.0) discard;                             // 물보다 높다
   // 바다에서 물이 닿지 않는 내륙 저지(사해 · 카스피 저지 · 카타라 · 투르판)는 칠하지 않는다.
@@ -688,6 +891,17 @@ void main() {
   vec4 band = texture2D(uPalette, vec2((idx + 0.5) / uBandCount, 0.5));
   float bandA = band.a * uOpacity;
   float rim = lineCover(sub, grad, uRimStyle.x * uPxScale) * uRimStyle.y;
+  // (2026-09-24 정정) 판이 육지라 해서 들어온 **오늘 해수면 아래** 칸 — 물 밑바닥인지 간척지인지 이 자료로 가를 수 없다(FLOOD_AMBIG).
+  //   깊이 3단 색 대신 화면 좌표의 빗금으로 '모름'을 그린다. 테도 긋지 않는다(물 밑바닥 둘레의 테가 PD 화면의 ◎ 였다).
+  if (hgt < 0.0) {
+    float sp = max(uAmbStyle.x * uPxScale, 2.0);
+    float dpx = abs(fract((gl_FragCoord.x + gl_FragCoord.y) / sp) - 0.5) * sp * 0.70710678;   // 대각선까지의 거리(px)
+    float lw = uAmbStyle.y * uPxScale * 0.5;
+    float hatch = (1.0 - smoothstep(lw - 0.5, lw + 0.5, dpx)) * uAmbStyle.z;
+    band = vec4(uRimColor, 1.0);
+    bandA = hatch + uAmbFill * (1.0 - hatch);
+    rim = 0.0;
+  }
   float outA = rim + bandA * (1.0 - rim);
   if (outA < 0.004) discard;
   vec3 rgb = (uRimColor * rim + band.rgb * bandA * (1.0 - rim)) / outA;
@@ -756,6 +970,8 @@ export const plateThinBody = (m, lead = '겹쳐') => {
  * 늘 떠 있는 범례에 넘길 것(순수). run · valid 를 넘기지 않는다 — 이 레이어는 타임라인을 구독하지 않고(머리말),
  * '유효 시각'을 적으면 2100년 전망이 5일 예보처럼 읽힌다. 시나리오·연도는 출처 줄에 글자로 적는다.
  * 풀이 줄(note)은 넘기지 않는다 — 넘기면 눈금표의 legendNote(음수 칸 설명)를 통째로 잃는다(field-legend.js legendView).
+ * (2026-09-24 정정) 잠기는 땅 면이 켜져 있으면 넘긴다 — 그 글(FLOOD_LEGEND_NOTE)이 음수 칸 설명을 **제 안에** 싣는다.
+ *   넓은 화면의 풀이 줄은 24px 두 줄로 잘리므로 글 한 벌이 두 줄 안에 들어야 한다(FLOOD_LEGEND_NOTE 머리말의 실측).
  */
 export const slrLegendArgs = (m) => {
   const sc = FLOOD_SCENARIOS.find((s) => s.id === m.scenario) || FLOOD_SCENARIOS[3];
@@ -763,8 +979,32 @@ export const slrLegendArgs = (m) => {
   //    카드는 닫혀 있을 수 있고 메뉴 줄도 그렇다 — 범례는 이 레이어가 켜져 있는 동안 늘 화면에 있다.
   const body = plateThinBody(m);
   const hid = body ? ` · ${body} 솎음` : '';
-  return { scale: SLR_RISE_SCALE, source: `${SLR_LEGEND_SOURCE} · ${sc.label} · ${m.year}${hid}` };
+  // (2026-09-24 정정) 범례의 띠는 **원판**의 눈금이다. 물빛 면(3단 파랑)과 빗금은 띠에 없어 PD 폰에서 띠의 파랑(0~0.25 m)으로 읽혔다.
+  //   면이 켜져 있을 때만 풀이 한 줄에 그 뜻을 적는다 — 줄을 새로 만들지 않는다(폰은 풀이가 기본 접힘 · 창을 늘리지 않는다).
+  // (2026-09-24 정정 · 검토) 옛 줄은 FLOOD_LEGEND_NOTE 긴 글 뒤에 눈금표의 legendNote 를 **이어 붙였다**:
+  //   `${FLOOD_LEGEND_NOTE.ko} · ${SLR_RISE_SCALE.legendNote.ko}` (en 도 같은 꼴).
+  //   넓은 화면(> 720px · 데스크톱 · 태블릿 · 눕힌 폰)의 풀이 줄은 **24px 두 줄 고정 · 접는 단추 없음**(index.html #field-legend)이라
+  //   실측(1440×900 · 812×375 · 768×1024) 글 높이 48px 가 24px 에 잘려 **뒤에 붙인 음수 칸 설명이 통째로 안 보였다** —
+  //   이 함수 머리말이 막으려던 바로 그 사고다. 이제 FLOOD_LEGEND_NOTE 한 벌이 두 줄 안에 면 · 빗금 · 음수 칸을 다 적는다.
+  const note = m.depth ? { ko: FLOOD_LEGEND_NOTE.ko, en: FLOOD_LEGEND_NOTE.en } : undefined;
+  return { scale: SLR_RISE_SCALE, source: `${SLR_LEGEND_SOURCE} · ${sc.label} · ${m.year}${hid}`, ...(note ? { note } : {}) };
 };
+
+/**
+ * (2026-09-24 정정) 물빛 면 · 빗금의 풀이 — 범례 풀이 줄(폰은 접힘)과 카드가 같은 뜻을 말한다.
+ * 띠(원판 눈금)와 헷갈리지 않게 **색 이름이 아니라 모양**(면 · 빗금)으로 부른다.
+ */
+// (2026-09-24 정정 · 검토) 옛 글(원문 그대로 남긴다):
+//   ko: '물빛 면: 예상 해수면보다 낮아지는 땅(옅을수록 얕음) · 빗금: 이미 해수면 아래라 물인지 간척지인지 모름 · 호수·만 수면(0 m)은 칠하지 않음 · 해안 세부는 지형 격자 두 칸(확대 시 약 0.5~1 km)까지'
+//   en: 'Shaded: land that falls below the projected sea level (lighter = shallower) · Hatched: already below sea level, water or reclaimed land unknown · Lake and bay surfaces (0 m) are not shaded · Coastal detail is limited to two terrain cells (about 0.5–1 km when zoomed in)'
+//   넓은 화면의 풀이 줄(24px 두 줄 · 접는 단추 없음)에 들어가지 않아 잘렸고, 뒤에 붙인 음수 칸 설명(SLR_RISE_SCALE.legendNote)이 안 보였다.
+//   범례는 **색과 무늬를 값으로 되돌리는 것**만 적는다 — 수면(0 m)을 빼는 것 · 격자 두 칸 해상도는 카드(floodCardInner)가 적는다.
+//   글 길이 실측(index.html 의 실제 상자 · 340px · 9.5px): 아래 ko 88자 · en 122자가 1440×900 · 812×375 에서 24px 안에 든다.
+//   ko 옛 글 + 음수 칸 설명(약 190자)은 48px 였다. 글을 늘리면 flood-render-2026-09-24.test.mjs 의 길이 상한이 막는다.
+export const FLOOD_LEGEND_NOTE = Object.freeze({
+  ko: '물빛 면: 예상 해수면보다 낮아지는 땅 · 빗금: 물인지 간척지인지 모름 · 무채색(< 0): 땅이 솟아 상대 해수면이 내려가는 곳(스칸디나비아 · 알래스카)',
+  en: 'Shaded: land below projected sea level · Hatched: water or polder, unknown · Grey (< 0): land rising (Scandinavia, Alaska)',
+});
 
 /** 원판을 누르면 뜨는 카드의 제목 — 관측소 이름과 나라. */
 export const stationCardTitle = (st) => `${st.name || st.id}${st.country ? ` · ${st.country}` : ''}`;
@@ -834,8 +1074,12 @@ export const floodLegendHtml = () => {
     + `<i style="width:14px;height:10px;border-radius:2px;background:${c.color};display:inline-block"></i>${esc(c.label)}</span>`).join('');
   const rim = `<span style="display:inline-flex;align-items:center;gap:4px">`
     + `<i style="width:14px;height:10px;border-radius:2px;background:rgb(${FLOOD_RIM.color.map((v) => Math.round(v * 255)).join(',')});display:inline-block"></i>물가</span>`;
+  // (2026-09-24 정정) 빗금 칸 — 화면의 빗금과 같은 간격 · 색으로 그린다. 뜻은 카드의 ② 가 적는다.
+  const rgb = FLOOD_RIM.color.map((v) => Math.round(v * 255)).join(',');
+  const ambig = `<span style="display:inline-flex;align-items:center;gap:4px">`
+    + `<i style="width:14px;height:10px;border-radius:2px;display:inline-block;background:repeating-linear-gradient(135deg,rgba(${rgb},${FLOOD_AMBIG.alpha}) 0 1.3px,rgba(${rgb},${FLOOD_AMBIG.fill}) 1.3px ${FLOOD_AMBIG.spacingPx / Math.SQRT2}px)"></i>빗금 = 물인지 땅인지 모름</span>`;
   // 이름은 표 한 줄에서 온다 — 범례와 표가 다른 이름을 말할 자리를 남기지 않는다(머리말 '색').
-  return `<span style="display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 2px">${esc(FLOOD_SCALE.name.ko)} ${cells}${rim}</span>`;
+  return `<span style="display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 2px">${esc(FLOOD_SCALE.name.ko)} ${cells}${rim}${ambig}</span>`;
 };
 
 /**
@@ -859,9 +1103,14 @@ export const floodPaintedLine = (m = {}) => {
   const atText = `${at.label} · ${FLOOD_PAINTED_AT.year}년`;
   const now = FLOOD_SCENARIOS.find((s) => s.id === m.scenario);
   const nowText = now && m.year ? `${now.label} · ${m.year}년` : '';
-  const size = `<b>${FLOOD_PAINTED_PCT}%</b>(약 ${FLOOD_PAINTED_KM2.toLocaleString()} km²)`;
+  // (2026-09-24 정정 · 검토) 빗금 몫을 괄호 안에 같이 적는다(FLOOD_AMBIG_KM2). 옛 줄 원문:
+  //   const size = `<b>${FLOOD_PAINTED_PCT}%</b>(약 ${FLOOD_PAINTED_KM2.toLocaleString()} km²)`;
+  const size = `<b>${FLOOD_PAINTED_PCT}%</b>(약 ${FLOOD_PAINTED_KM2.toLocaleString()} km² · 그중 빗금 약 ${FLOOD_AMBIG_KM2.toLocaleString()} km²)`;
+  // (2026-09-24 정정) 네덜란드 간척지는 이제 **빗금**이다 — 고도가 오늘 해수면 아래라 이셀호(물)와 가를 수 없다(FLOOD_AMBIG).
+  //   옛 글은 '네덜란드가 여기서 칠해집니다'였고, 그때 가장 짙은 파랑으로 칠해진 것의 상당 부분은 이셀호 · 바덴해의 물 밑바닥이었다.
+  //   (2026-09-24 정정 · 검토) 옛 줄 원문: + '네덜란드 · 미시시피 하류 · 북유럽 연안이 여기서 칠해집니다. ';
   const head = '<b>물빛 면은 이 지형 자료에서 해수면보다 낮아지는 땅</b>입니다 — '
-    + '네덜란드 · 미시시피 하류 · 북유럽 연안이 여기서 칠해집니다. ';
+    + '미시시피 하류 · 북유럽 연안이 여기서 칠해지고, 이미 해수면 아래인 네덜란드 간척지는 물과 가를 수 없어 빗금으로 둡니다. ';
   const c = m.painted;
   if (c && c.verdict === 'same') {
     return `<span style="opacity:.85">${head}지금 화면(${esc(atText)})에서 칠해지는 땅은 전지구 육지의 ${size}입니다.</span>`;
@@ -943,13 +1192,21 @@ export const floodCardInner = (m) => {
   //    간척지는 지형 자료 자체가 아직 바다라서 칠하지 않는다(아래 floodLandLine 과 같은 사실). 약속을 화면에 맞춘다.
   L.push(`<b>② 방조제 · 배수 · 지반침하를 모릅니다.</b> 제방 뒤의 <b>내륙</b> 저지도 칠해집니다. `
     + `거꾸로 <b>간척지 · 매립지(송도 · 새만금)는 지형 자료가 아직 바다로 담고 있어 칠하지 않습니다.</b>`);
+  // (2026-09-24 정정) PD 폰 화면(루이지애나)의 옅은 네모는 0 m 수면이었고 짙은 네모 + ◎ 는 국가 경계 판 안의 호수 바닥이었다.
+  //   고친 뒤 화면이 무엇을 하는지 카드가 그대로 말한다 — 빼는 것(수면)과 모르는 것(빗금)을 따로.
+  L.push(`<b>호수 · 만 · 연안의 수면</b>(지형 자료가 0 m 로 둔 곳과 그 가장자리 ±0.1 m)은 이미 물이라 칠하지 않습니다 — `
+    + `오늘 해수면에서 0.1 m 안쪽의 갯벌 · 습지도 함께 빠집니다(이 자료의 수직 오차 안이라 땅이라 단언할 근거가 없습니다). `
+    + `<b>빗금</b>은 국가 경계 판이 육지라 하는데 고도가 오늘 해수면보다 낮은 곳입니다 — 간척지(플레볼란트 · 뉴올리언스 일부)와 `
+    + `경계 판에 들어간 호수 · 만의 바닥을 이 지형 자료로는 가를 수 없어 깊이 색 대신 빗금으로 둡니다.`);
   L.push(floodReachLine(m));
   // ⚠️ 같은 검증: '확대할수록 제자리를 찾는다'는 약속은 밀집 해안 도시에서 지켜지지 않았다. 실측(z9 · Terrarium):
   //    도쿄 고토구 11.0 m · 방콕 중심 10.0 m · 상하이 푸둥 7.0 m · 로테르담 7.2 m — 실제 지면은 0~4 m 다.
   //    상승폭 0.75~1.7 m 와 견주면 전부 '마른 땅'이라 확대해도 비어 있다. 지형 해상도가 아니라 자료의 성질이라
   //    ③ 의 고지로는 덮이지 않는다 — 한 줄을 더 적는다. 고치려면 DTM(FABDEM · Copernicus GLO-30 보정본)이 필요하고 그것은 다음 작업이다.
   // (2026-09-23 정정) '약 10 km' 는 PC(z4)의 값이다. 폰은 z3 한 장이라 약 20 km — 얹힌 고도맵에서 센 값(m.terrainKm)을 쓴다.
+  // (2026-09-24 정정) 확대에서는 지형 격자 두 칸보다 작은 것을 판정에 세우지 않는다(FLOOD_WATER_GLSL landWaterAt9) — 그 사실을 한 마디 더 적는다.
   L.push(`<b>③ 지형 해상도가 전지구 약 ${m.terrainKm ? Math.round(m.terrainKm) : 10} km · 확대하면 약 300 m</b> 라 좁은 만 · 제방 · 수로는 보지 못합니다. `
+    + `확대 화면은 격자 두 칸(약 0.5~1 km)보다 작은 얼룩을 칠하지 않습니다 — 그보다 작은 것은 이 자료의 잡음과 가를 수 없습니다. `
     + `또 도시의 고도 자료는 <b>건물 · 제방이 섞인 표면 고도</b>라 밀집 시가지(도쿄 · 방콕 · 상하이 · 뉴올리언스 · 로테르담)는 `
     + `실제 지면보다 몇 m 높게 읽혀 <b>확대해도 칠해지지 않을 수 있습니다.</b>`);
   // 출처 · 기준선 · '중앙값과 17~83%' 는 이제 카드 위쪽(원반 이야기)에 늘 떠 있다 — 같은 문장을 두 번 적지 않는다.
@@ -1092,6 +1349,12 @@ export function createFloodOverlay(doc = {}, deps = {}) {
     uRimStyle: { value: new THREE.Vector2(FLOOD_RIM.widthPx, FLOOD_RIM.alpha) },
     uPxScale: { value: 1 },
     uGradEps: { value: FIELD_GRAD_EPS },
+    // (2026-09-24 정정) 수면 텍셀을 빼고 읽기(FLOOD_WATER_GLSL) · 빗금(FLOOD_AMBIG). 텍셀 폭은 그릴 때마다 얹힌 그림에서 읽는다.
+    uFloodTexels: { value: new THREE.Vector4(4096, 4096, 2560, 2560) },
+    uWaterEps: { value: FLOOD_WATER_EPS },
+    uAmbStyle: { value: new THREE.Vector3(FLOOD_AMBIG.spacingPx, FLOOD_AMBIG.widthPx, FLOOD_AMBIG.alpha) },
+    uAmbFill: { value: FLOOD_AMBIG.fill },
+    uLandRes: { value: LAND_MASK_RES },
   };
   const material = new THREE.ShaderMaterial({
     uniforms, vertexShader: FLOOD_VERT, fragmentShader: FLOOD_FRAG,
@@ -1104,9 +1367,16 @@ export function createFloodOverlay(doc = {}, deps = {}) {
   mesh.frustumCulled = false;                      // 정점이 셰이더에서 올라간다
   // ⚠️ live-layers.disposeObj 가 이 표를 보고 지구의 지오메트리를 건드리지 않는다(같이 쓰는 것이라 여기서도 안 버린다).
   mesh.userData.keepGeometry = !ownsGeometry;
-  mesh.onBeforeRender = (renderer) => {
+  mesh.onBeforeRender = (renderer, _scene, camera) => {
     const pr = renderer && renderer.getPixelRatio ? renderer.getPixelRatio() : 1;
     if (pr > 0) uniforms.uPxScale.value = pr;      // 테 굵기는 CSS px — DPR 2 인 폰에서도 같은 굵기
+    // (2026-09-24 정정) 텍셀 가운데를 짚을 폭 — 폰은 전역 z3 한 장(2048), PC 는 z4(4096), 디테일 창은 2560 이다. 얹힌 그림에서 읽는다.
+    const gi = uniforms.uHeightMap.value && uniforms.uHeightMap.value.image;
+    const di = uniforms.uDetailMap.value && uniforms.uDetailMap.value.image;
+    const tx = uniforms.uFloodTexels.value;
+    tx.set((gi && gi.width) || tx.x, (gi && gi.height) || tx.y, (di && di.width) || tx.z, (di && di.height) || tx.w);
+    // (2026-09-24 정정) 확대하면 테를 옅게 — 늪지 텍셀마다 도는 흰 좁쌀 · ◎ 를 막는다(FLOOD_RIM_FADE). 지구 반지름 = 1.
+    if (camera && camera.position) uniforms.uRimStyle.value.y = rimAlphaFor((camera.position.length() - 1) * KM_PER_RAD);
   };
   mesh.visible = state.depth;                      // 기본 켬(FLOOD_DEPTH_DEFAULT) — 카드의 단추로 끌 수 있다
   const group = new THREE.Group();
@@ -1344,6 +1614,11 @@ export function createFloodOverlay(doc = {}, deps = {}) {
     reachTex = new THREE.DataTexture(reachRGBA(grid), grid.width, grid.height, THREE.RGBAFormat);
     reachTex.minFilter = THREE.NearestFilter;      // 칸 판정이다 — 섞으면 해안에서 경계가 흐려진다(육지 판과 같은 규칙)
     reachTex.magFilter = THREE.NearestFilter;
+    // (2026-09-24 정정) 확대(magFilter)만 선형으로 읽는다 — 셰이더가 여전히 0.5 로 자르므로(uReach < 0.5 → 버림) 흐려지지 않는다.
+    //   가장자리는 칸 경계 그대로이고 **칸 모서리의 계단만** 대각으로 펴진다. PD 폰 화면(고도 약 430 km)에서 28 km 칸의
+    //   계단이 물빛 면의 가장자리를 톱니로 잘랐다. 옛 줄의 걱정(섞으면 흐려진다)은 자르기가 있는 한 일어나지 않는다.
+    //   칸 하나의 판정이 바뀌는 자리는 모서리의 반 칸 안쪽뿐이고, 닫힌 분지(카스피 · 사해)는 이웃이 전부 0 이라 그대로 닫힌다.
+    reachTex.magFilter = THREE.LinearFilter;
     reachTex.wrapS = THREE.RepeatWrapping;
     reachTex.wrapT = THREE.ClampToEdgeWrapping;
     reachTex.generateMipmaps = false;

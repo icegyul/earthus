@@ -9,7 +9,7 @@ import { buildOceanMaskAsync, oceanMaskAlphaRGBA, oceanMaskCardLine, erodedGridN
 // W1 셰이더 색면(기온부터) — 프레임 저장소·시간 버스·범례·라벨을 묶는 접착제는 저 파일에 있다. 여기에는 거는 자리만 둔다.
 import { activeField, clearFieldLayers, isFieldLayerId, toggleFieldLayer } from './field-layer.js?v=2-fix0924';
 // 잠기는 땅(레이어 'slr' · 2026-09-20 E1) — 상승폭 IDW 격자·셰이더·카드는 저 파일에 있다. 여기에도 거는 자리만 둔다.
-import { createFloodOverlay, FLOOD_QUANTITY } from './flood-overlay.js?v=3-fix0924';   // v=2: 2026-09-23 카드 ③ 지형 해상도를 얹힌 고도맵에서 센다
+import { createFloodOverlay, FLOOD_QUANTITY } from './flood-overlay.js?v=4-fix0924';   // v=2: 2026-09-23 카드 ③ 지형 해상도를 얹힌 고도맵에서 센다
 // 연안 침수 예상도의 전국 색인(레이어 'khoaflood' · 2026-09-20 W6) — 지표를 고른 근거·원반 그리기·솎기·집기는 저 파일에 있다.
 import {
   createFloodDiscs, floodClassLabel, floodDiscSpecs, floodDistrictLoadingNote, floodHiddenNote, floodLegendHtml,

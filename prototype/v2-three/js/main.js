@@ -23,7 +23,7 @@ import { attachEvidencePopover } from './evidence-popover.js?v=1';
 import { currentTier } from './report-center.js?v=3';
 import { decideCapabilityAccess, lockExplanation, TIER } from '../../js/access-mode.js';
 import { evaluateWatch, myZone, loadWatch, saveWatch } from './watch.js?v=1';
-import { LiveLayers, newsChipOpacity } from './live-layers.js?v=42-fix0924';
+import { LiveLayers, newsChipOpacity } from './live-layers.js?v=43-fix0924';
 import { StationModel } from './station-model.js?v=2';
 import { AskEarth } from './ask-earth.js?v=3';
 import { i18n } from './i18n.js?v=11';

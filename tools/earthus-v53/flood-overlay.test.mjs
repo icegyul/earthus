@@ -102,12 +102,17 @@ test('합성 지형 계단(0 · 0.5 · 2 m)에서 상승 0.7 m 는 0 과 0.5 칸
     riseAt: () => 0.7,
   };
   const at = (lon) => floodAt(deps, 0, lon);
-  assert.equal(at(-10).painted, true, '0 m 칸은 잠긴다');
+  // (2026-09-24 정정) 0 m 칸은 이제 **물**이다 — 지형 자료가 호수 · 만 · 연안 수면을 정확히 0 m 로 담기 때문이다(FLOOD_WATER_EPS).
+  //   옛 줄: assert.equal(at(-10).painted, true, '0 m 칸은 잠긴다'). 그 판정이 PD 폰 화면(루이지애나)의 옅은 네모 덩어리였다.
+  assert.equal(at(-10).painted, false, '0 m 칸은 수면이다 — 이미 물이라 칠하지 않는다');
+  assert.equal(at(-10).why, 'water');
+  assert.equal(floodAt({ ...deps, heightAt: () => 0.2 }, 0, 0).painted, true, '0.2 m 땅은 잠긴다(수면 문턱 0.1 m 밖)');
   assert.equal(at(0).painted, true, '0.5 m 칸은 잠긴다');
   assert.equal(at(10).painted, false, '2 m 칸은 마른다');
   assert.equal(at(10).why, 'dry');
   // 깊이는 상승폭 − 고도다(값이 아니라 판정이지만, 칸을 고르는 수는 이것이다).
-  assert.equal(Math.round(at(-10).depth * 100), 70);
+  // (2026-09-24 정정) 옛 줄은 0 m 칸의 깊이(70)를 쟀다 — 그 칸은 이제 수면이라 깊이가 없다. 0.2 m 땅으로 같은 셈을 본다.
+  assert.equal(Math.round(floodAt({ ...deps, heightAt: () => 0.2 }, 0, 0).depth * 100), 50);
   assert.equal(Math.round(at(0).depth * 100), 20);
   // 경계는 아래를 포함하지 않는다 — 딱 0.7 m 인 땅은 물에 닿을 뿐 잠기지 않는다(선이 서는 자리다).
   assert.equal(floodAt({ ...deps, heightAt: () => 0.7 }, 0, 0).painted, false);
@@ -124,7 +129,10 @@ test('바다는 칠하지 않고 해수면보다 낮은 육지(간척지)는 칠
   // ② 판이 육지라 하고 고도가 음수 → 간척지·저지다. 잠긴다(욕조식 근사 — 카드가 방조제를 모른다고 말한다)
   const polder = floodAt({ heightAt: () => -3, landAt: () => 1, riseAt: rise }, 52.5, 5.5);
   assert.equal(polder.painted, true);
+  // (2026-09-24 정정) 이 칸은 이제 **빗금**이다(ambiguous · band null) — 고도가 오늘 해수면 아래라 물 밑바닥과 가를 수 없다(FLOOD_AMBIG).
+  //   아래 단언은 깊이 셈(상승폭 − 고도)만 잠근다. 화면은 이 칸에 깊이 색을 쓰지 않는다(flood-render-2026-09-24.test.mjs ②).
   assert.equal(floodBandIndex(polder.depth), 2, '−3 m 땅은 3.8 m 깊이라 가장 깊은 칸이다');
+  assert.equal(polder.ambiguous, true);
   // ③ 판이 없는 세션(판정의 근거가 고도의 부호뿐) → 해수면보다 낮은 땅은 바다로 읽힌다. 지어내지 않는다.
   assert.equal(floodAt({ heightAt: () => -3, landAt: null, riseAt: rise }, 52.5, 5.5).why, 'sea');
   // ④ 판이 없어도 해수면 위 육지는 그대로 판정한다
@@ -337,7 +345,18 @@ test('솎은 수는 화면의 세 곳이 다 말한다 — 늘 떠 있는 범례
   assert.ok(!/솎음/.test(slrLegendArgs(none).source), '솎은 것이 없는데 솎았다고 적는다');
   assert.match(slrLegendArgs(some).source, /겹쳐 137곳 솎음/);
   assert.ok(slrLegendArgs(some).source.includes(SLR_LEGEND_SOURCE), '출처를 잃지 않는다');
-  assert.ok(!('note' in slrLegendArgs(some)), '풀이 줄을 넘기면 눈금표의 음수 칸 설명을 통째로 잃는다');
+  // (2026-09-24 정정) 잠기는 땅 면이 켜져 있으면 풀이 줄을 넘긴다 — 물빛 면 · 빗금은 띠(원판 눈금)에 없어 PD 폰에서 띠의 파랑으로 읽혔다.
+  //   그 대신 눈금표의 음수 칸 설명을 **같이 싣는다**(옛 줄이 막으려던 것은 그 설명을 잃는 것이었다).
+  //   옛 줄: assert.ok(!('note' in slrLegendArgs(some)), '풀이 줄을 넘기면 눈금표의 음수 칸 설명을 통째로 잃는다');
+  assert.ok(!('note' in slrLegendArgs({ ...some, depth: false })), '면이 꺼져 있으면 풀이는 눈금표의 것 그대로다');
+  const withFill = slrLegendArgs({ ...some, depth: true }).note;
+  // (2026-09-24 정정 · 검토) 옛 두 줄은 눈금표 글을 **글자 그대로** 이어 붙였는지 봤다 —
+  //   assert.ok(withFill && withFill.ko.includes(SLR_RISE_SCALE.legendNote.ko), ...) · assert.match(withFill.ko, /수면\(0 m\)은 칠하지 않음/).
+  //   이어 붙인 글은 넓은 화면의 24px 두 줄에서 잘려 음수 칸 설명이 **화면에서** 사라졌다. 이제 뜻(무채색 < 0 · 땅이 솟는 곳)을 본다.
+  assert.ok(withFill && /무채색\(< 0\)/.test(withFill.ko) && /땅이 솟아/.test(withFill.ko) && /스칸디나비아/.test(withFill.ko),
+    '풀이 줄을 넘기면서 눈금표의 음수 칸 설명을 잃는다');
+  assert.match(withFill.en, /Grey \(< 0\)/);
+  assert.match(withFill.ko, /빗금/);
   // ② 카드
   assert.match(floodCardInner(some), /겹쳐서 137곳을 솎았습니다/);
   assert.match(floodCardInner(none), /솎은 것 없음/);
@@ -530,7 +549,11 @@ test('지형 GLSL 은 main.js 의 것과 같은 글자다 — 색면이 읽는 �
     assert.equal(bodyOf(mine, head), bodyOf(MAIN_SRC, head), head);
   }
   // 판정의 고도는 **디테일 창까지 읽는 것**이다 — 카드가 말하는 '확대하면 약 300 m'(z9)가 이 한 줄이다.
-  assert.match(FLOOD_FRAG, /float hgt = heightAt\(lon, lat\);/);
+  // (2026-09-24 정정) 판정의 고도는 이제 floodHeightAt 이다 — 같은 전역맵 + 디테일 창을 읽되 텍셀을 직접 짚어 수면(0 m)을 뺀다.
+  //   옛 줄: assert.match(FLOOD_FRAG, /float hgt = heightAt\(lon, lat\);/). 디테일 창을 읽는다는 약속(카드 ③)은 그대로다.
+  assert.match(FLOOD_FRAG, /vec2 hw = floodHeightAt\(lon, lat\);[^\n]*\n\s*float hgt = hw\.x;/);
+  assert.match(FLOOD_FRAG, /landWaterAt9\(uDetailMap, duv,/, '디테일 창(z5~z9)을 읽지 않는다');
+  assert.match(FLOOD_FRAG, /float f = detailFade\(uv\);/, '디테일 창의 섞기는 main.js 와 같은 detailFade 다');
   // (2026-09-23 정정 · PERF-LTE V2-1) main.js 의 '전역 z4' 는 이제 기기가 실제로 얹은 단계(terrainLevelText · 폰 z3 · PC z4)다.
   //   카드 ③ 도 같이 고쳤다 — 얹힌 고도맵의 폭에서 센 km(m.terrainKm)를 쓴다. 둘이 따로 놀지 않는지를 본다.
   assert.match(MAIN_SRC, /\$\{terrainLevelText\(\)\} \+ 지역 z5~z9/, 'main.js 가 말하는 지형 해상도가 바뀌면 카드의 고지도 같이 고쳐야 한다');
@@ -976,7 +999,11 @@ test('범례는 켜짐을 따라간다 — 끌 때 겹면은 visible 만 뒤집�
   assert.deepEqual(first[1].scale.colors, SLR_RISE_SCALE.colors);
   assert.ok(first[1].source.includes(SLR_LEGEND_SOURCE) && first[1].source.includes('SSP5-8.5'));
   assert.ok(!('run' in first[1]) && !('valid' in first[1]), '유효 시각을 적으면 2100년 전망이 5일 예보로 읽힌다');
-  assert.ok(!('note' in first[1]), '풀이 줄을 넘기면 눈금표의 음수 칸 설명을 통째로 잃는다(field-legend legendView)');
+  // (2026-09-24 정정) 면이 켜져 있으면(기본 켬) 풀이를 넘기되 눈금표의 음수 칸 설명을 함께 싣는다 — 위 '솎은 수' 시험의 정정과 같은 까닭.
+  //   옛 줄: assert.ok(!('note' in first[1]), '풀이 줄을 넘기면 눈금표의 음수 칸 설명을 통째로 잃는다(field-legend legendView)');
+  // (2026-09-24 정정 · 검토) 옛 줄: assert.ok(!first[1].note || first[1].note.ko.includes(SLR_RISE_SCALE.legendNote.ko), ...)
+  //   글자 그대로 이어 붙이면 넓은 화면에서 잘린다(위 '솎은 수' 시험의 정정) — 뜻을 본다.
+  assert.ok(!first[1].note || /무채색\(< 0\)[^·]*땅이 솟아/.test(first[1].note.ko), '풀이 줄을 넘기면서 눈금표의 음수 칸 설명을 잃는다(field-legend legendView)');
   ll.starLayer();
   assert.equal(legend.calls.filter((c) => c[0] === 'show').length, 1, 'setOn 은 바뀔 때만 일한다 — 매 프레임 다시 그리면 폰이 뜨거워진다');
   // 단추를 누르면 범례의 출처 줄이 따라간다.

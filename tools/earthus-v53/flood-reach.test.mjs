@@ -227,7 +227,12 @@ test('겹면이 판을 굽고 셰이더에 물린다 — 다 굽기 전과 뒤�
   assert.equal(f.uniforms.uHasReach.value, 1);
   assert.equal(f.model().reach, 'ready');
   assert.ok(f.uniforms.uReach.value && f.uniforms.uReach.value.isTexture);
-  assert.equal(f.uniforms.uReach.value.magFilter, THREE.NearestFilter, '칸 판정을 섞으면 해안 경계가 흐려진다');
+  // (2026-09-24 정정) 확대(magFilter)만 선형이다 — 셰이더가 0.5 로 자르므로 흐려지지 않고 칸 모서리 계단만 대각으로 펴진다
+  //   (PD 폰 화면 · 고도 약 430 km 에서 28 km 칸의 계단이 물빛 면을 톱니로 잘랐다). 축소는 여전히 가장 가까운 칸이다.
+  //   옛 줄: assert.equal(f.uniforms.uReach.value.magFilter, THREE.NearestFilter, '칸 판정을 섞으면 해안 경계가 흐려진다');
+  assert.equal(f.uniforms.uReach.value.magFilter, THREE.LinearFilter);
+  assert.equal(f.uniforms.uReach.value.minFilter, THREE.NearestFilter);
+  assert.ok(lf(FLOOD_FRAG).includes('texture2D(uReach, suv).r < 0.5) discard;'), '섞은 값을 0.5 로 자르지 않으면 경계가 흐려진다');
   assert.match(f.cardHtml(), /바다와의 연결은 약 \d+ km 격자로만 봅니다/);
   assert.match(f.cardHtml(), /사해 · 카스피 저지 · 카타라/);
   // 판이 실제로 판정에 쓰인다 — 닫힌 분지는 'basin', 해안 저지는 칠한다.

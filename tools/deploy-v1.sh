@@ -29,6 +29,7 @@ ctype() {
     *.json) echo 'application/json; charset=utf-8' ;;
     *.png)  echo 'image/png' ;;
     *.svg)  echo 'image/svg+xml' ;;
+    *.webp) echo 'image/webp' ;;   # 2026-09-23: WebP 자산이 octet-stream 으로 나가지 않게
     *)      echo 'application/octet-stream' ;;
   esac
 }

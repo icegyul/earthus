@@ -91,6 +91,8 @@ content_type(){
     *.svg) echo 'image/svg+xml' ;;
     *.png) echo 'image/png' ;;
     *.jpg|*.jpeg) echo 'image/jpeg' ;;
+    # 2026-09-23: 폰 지형 한 장(assets/terrain/terrarium-z3.webp)이 octet-stream 으로 나갈 뻔했다(HANDOVER §3 Content-Type 필수).
+    *.webp) echo 'image/webp' ;;
     *.txt) echo 'text/plain; charset=utf-8' ;;
     *) echo 'application/octet-stream' ;;
   esac

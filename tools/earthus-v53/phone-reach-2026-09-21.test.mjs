@@ -121,6 +121,12 @@ const VP = (() => {
     for (const d of r[1].matchAll(/(--[a-z-]+)\s*:\s*([^;]+);/g)) out[d[1]] = d[2].trim();
   return out;
 })();
+/* (2026-09-24 정정 · 위 한 줄) 세로 폰은 이제 상단 단추를 전환기 줄에 40×40 타일로 세운다(index.html '위 한 줄').
+   PHONE 은 머리글 앞부분 일치라 세로 덩어리까지 담고 prop() 은 **마지막** 선언을 읽으므로, 아래 ㉡·㉢ 의 '30 칸 · 틈 16 · 여유 2'
+   셈이 세로 값(40 · 8)으로 오독된다. 그 셈은 좁은 가로 창·눕힌 폰의 것이다 — 세로 덩어리를 뺀 글(noPortrait)로 잰다.
+   세로 폰의 같은 뜻(표적 44 · 이웃과 안 겹침 · 폭에 들어감)은 아래 '위 한 줄' 시험들이 따로 잰다. */
+const PORTRAIT_BODIES = blocksOf('@media (max-width: 720px) and (orientation: portrait)');
+const noPortrait = (s) => PORTRAIT_BODIES.reduce((acc, b) => acc.split(b).join(''), s);
 
 // ── 공통 전제 ──────────────────────────────────────────────────────────────
 test('표적 최소치 --tap 은 iOS HIG 의 44px 이상이다', () => {
@@ -219,14 +225,15 @@ test('㉡ 상단 여섯 칸이 폰 폭에 실제로 들어간다 — 넘치면 �
   const visible = [...chrome.matchAll(/<(?:button|a)\b[^>]*>/g)].filter((t) => !/\shidden[\s>]/.test(t[0]));
   assert.equal(visible.length, 6, `상단에 보이는 칸이 ${visible.length}개 — 셈의 전제가 바뀌었다`);
 
-  const box = decl(css, '#chrome button, #chrome a#btn-research');
+  // (2026-09-24 정정) 이 셈은 좁은 가로 창·눕힌 폰의 것이다 — 세로 덩어리를 뺀 글로 읽는다(위 noPortrait 주석).
+  const box = decl(noPortrait(css), '#chrome button, #chrome a#btn-research');
   const w = px(prop(box, 'width'), V);
-  const gap = px(prop(decl(PHONE, '#chrome'), 'gap'), V);
-  const pad = parts(prop(decl(css, '#chrome'), 'padding'));             // "8px 12px"
+  const gap = px(prop(decl(noPortrait(PHONE), '#chrome'), 'gap'), V);
+  const pad = parts(prop(decl(noPortrait(css), '#chrome'), 'padding'));             // "8px 12px"
   const sidePad = px(pad[1] ?? pad[0], V);
 
   for (const vw of [375, 320]) {                                         // 실측 기기 · 가장 좁은 현역 아이폰
-    const panelW = px(prop(decl(PHONE, '#panel'), 'width'), V, { vw });
+    const panelW = px(prop(decl(noPortrait(PHONE), '#panel'), 'width'), V, { vw });
     const inner = panelW - sidePad * 2 - 2;                              // 테두리 1px 둘
     const need = visible.length * w + (visible.length - 1) * gap;
     assert.ok(need <= inner,
@@ -237,7 +244,7 @@ test('㉡ 상단 여섯 칸이 폰 폭에 실제로 들어간다 — 넘치면 �
 // ── ㉢ 44px 미만 표적이 없다 · 넓힌 표적이 이웃과 겹치지 않는다 ──────────────
 // 가상요소로 넓힌 표적의 실제 크기를 꺼내 온다.
 const pseudoBox = (selector) => {
-  const d = decl(PHONE, selector);
+  const d = decl(noPortrait(PHONE), selector);   // (2026-09-24 정정) 세로 덩어리를 뺀다 — 위 noPortrait 주석
   return { w: px(prop(d, 'width'), V), h: px(prop(d, 'height'), V) };
 };
 
@@ -245,9 +252,9 @@ test('㉢ 상단 여섯 칸 — 표적 44×44, 이웃과 2px 떨어져 있다', 
   const t = pseudoBox('#chrome button::after, #chrome a#btn-research::after');
   assert.ok(t.w >= TAP && t.h >= TAP, `상단 표적이 ${t.w}×${t.h}`);
 
-  const box = decl(css, '#chrome button, #chrome a#btn-research');
+  const box = decl(noPortrait(css), '#chrome button, #chrome a#btn-research');
   const vw = px(prop(box, 'width'), V), vh = px(prop(box, 'height'), V);
-  const gap = px(prop(decl(PHONE, '#chrome'), 'gap'), V);
+  const gap = px(prop(decl(noPortrait(PHONE), '#chrome'), 'gap'), V);
 
   // 가로: 표적이 그림 밖으로 (표적−그림)/2 씩 번진다. 두 이웃이 각각 번지므로 틈이 그 둘을 견뎌야 한다.
   const bleedX = (t.w - vw) / 2;
@@ -257,9 +264,134 @@ test('㉢ 상단 여섯 칸 — 표적 44×44, 이웃과 2px 떨어져 있다', 
 
   // 세로: 막대 안쪽 여백보다 덜 번져야 표적이 막대 밖(지구·범례)으로 안 나간다.
   const bleedY = (t.h - vh) / 2;
-  const topPad = px(parts(prop(decl(css, '#chrome'), 'padding'))[0], V);
+  const topPad = px(parts(prop(decl(noPortrait(css), '#chrome'), 'padding'))[0], V);
   assert.ok(bleedY <= topPad,
     `표적이 막대 위아래로 ${bleedY} 번진다 — 안쪽 여백 ${topPad} 를 넘어 밖으로 새어 나간다`);
+});
+
+// ── 위 한 줄 (2026-09-24 · 세로 폰) ──────────────────────────────────────────
+// 전환기 ∧(40×40 · 8,8 — prototype/js/earth-switch.js 좁은 화면 규칙)와 상단 단추가 한 줄에 선다. 전환기는 설정·로그인·도움말을
+// 입양해 가서(ADOPT · HELP_SEL) 상단에 남는 것은 셋이다. 위 ㉡·㉢ 과 같은 뜻을 세로 값으로 잰다: 폭에 들어간다 · 표적 44 · 이웃과 안 겹친다
+// · 표적이 줄 밖(범례)으로 새지 않는다.
+const SWITCH = readFileSync(new URL('../../prototype/js/earth-switch.js', import.meta.url), 'utf8');
+const ES = (() => {
+  const narrow = SWITCH.slice(SWITCH.indexOf("'@media ' + NARROW + '{'"));
+  const top = Number((/\.es-switch\{top:(\d+)px;left:(\d+)px/.exec(narrow) || [])[1]);
+  const left = Number((/\.es-switch\{top:(\d+)px;left:(\d+)px/.exec(narrow) || [])[2]);
+  const size = Number((/\.es-logo\{[^']*'[\s\S]*?width:(\d+)px;height:(\d+)px/.exec(narrow) || [])[1]);
+  assert.ok(top > 0 && left > 0 && size > 0, '전환기 좁은 화면 자리(8,8 · 40)를 earth-switch.js 에서 못 읽었다');
+  return { top, left, size };
+})();
+const adoptedIds = () => ['btn-settings', 'btn-login', 'btn-help'].filter((id) => SWITCH.includes(`#${id}`));
+
+test('위 한 줄 — 세로 폰에서 상단 단추가 전환기 줄에 들어간다(전환기가 있을 때 셋 · 없을 때 여섯)', () => {
+  const chrome = html.slice(html.indexOf('<div id="chrome"'), html.indexOf('</div>', html.indexOf('<div id="chrome"')));
+  const visible = [...chrome.matchAll(/<(?:button|a)\b[^>]*>/g)].filter((t) => !/\shidden[\s>]/.test(t[0]));
+  const adopted = adoptedIds();
+  assert.deepEqual(adopted, ['btn-settings', 'btn-login', 'btn-help'], '전환기가 입양하는 단추가 바뀌었다 — 셈의 전제를 다시 본다');
+  const left = visible.filter((t) => !adopted.some((id) => t[0].includes(`id="${id}"`)));
+  const scope = PORTRAIT;
+  const tile = decl(scope, '#chrome button, #chrome a#btn-research');
+  const w = px(prop(tile, 'width'), VP), h = px(prop(tile, 'height'), VP);
+  const gap = px(prop(decl(scope, '#chrome'), 'gap'), VP);
+  assert.equal(h, ES.size, `타일 높이 ${h} ≠ 전환기 ${ES.size} — 한 줄이 아니다`);
+  assert.match(decl(scope, '#chrome'), /margin-left:\s*var\(--es-row, 0px\)/, '단추 줄이 전환기 폭만큼 비켜 서지 않는다(main.js placePanel 이 --es-row 를 넘긴다)');
+  const main = readFileSync(new URL('../../prototype/v2-three/js/main.js', import.meta.url), 'utf8');
+  assert.match(main, /el\.style\.setProperty\('--es-row', `\$\{Math\.round\(r\.width \+ 8\)\}px`\)/, 'placePanel 이 전환기 폭 + 8 을 넘기지 않는다');
+  assert.ok(main.includes("window.matchMedia('(max-width: 720px) and (orientation: portrait)')"), 'placePanel 의 한 줄 판정이 index.html 세로 머리글과 다른 글자다');
+  for (const vw of [402, 375, 360, 320]) {
+    const rowLeft = ES.left + ES.size + 8;                                   // 전환기 오른쪽 + 8
+    const need3 = left.length * w + (left.length - 1) * gap;
+    assert.ok(rowLeft + need3 <= vw - 8, `${vw}: 전환기 옆 단추 ${left.length}개가 넘친다 — 끝 ${rowLeft + need3} > ${vw - 8}`);
+    // 전환기가 안 뜨면(스크립트 실패) --es-row 가 없어 여섯이 #panel 기본 자리(14)에서 선다 — 그래도 넘치지 않는다.
+    const need6 = visible.length * w + (visible.length - 1) * gap;
+    assert.ok(14 + need6 <= vw - 8, `${vw}: 전환기 없이 여섯이 넘친다 — 끝 ${14 + need6}`);
+  }
+});
+
+test('위 한 줄 — 표적 44 · 이웃 표적과 안 겹친다 · 줄 밖(범례 윗변)으로 새지 않는다 · 빈 상자는 지구를 가로채지 않는다', () => {
+  const t = pseudoBox('#chrome button::after, #chrome a#btn-research::after');
+  assert.ok(t.w >= TAP && t.h >= TAP, `상단 표적이 ${t.w}×${t.h}`);
+  const tile = decl(PORTRAIT, '#chrome button, #chrome a#btn-research');
+  const w = px(prop(tile, 'width'), VP), h = px(prop(tile, 'height'), VP);
+  const gap = px(prop(decl(PORTRAIT, '#chrome'), 'gap'), VP);
+  const bleedX = (t.w - w) / 2, bleedY = (t.h - h) / 2;
+  assert.ok(gap - bleedX * 2 >= 2, `틈 ${gap} − 좌우 번짐 ${bleedX * 2} < 2 — 이웃 표적과 붙거나 겹친다`);
+  // 전환기 표적(::after inset -3 → 44)과 첫 단추 표적 사이도 떨어져 있다.
+  assert.ok((ES.left + ES.size + 3) <= (ES.left + ES.size + 8 - bleedX), '전환기 표적과 첫 단추 표적이 겹친다');
+  // 세로: 줄 윗변은 전환기 윗변(placePanel · r.top). 표적 아랫변이 범례 윗변(--top-reserve) 위에 있어야 범례의 접기 단추를 가로채지 않는다.
+  const rowTop = ES.top;
+  assert.ok(rowTop - bleedY >= 0, `표적 윗변 ${rowTop - bleedY} 이 화면 밖`);
+  const legendTop = px('var(--top-reserve)', VP);
+  assert.ok(rowTop + h + bleedY <= legendTop, `표적 아랫변 ${rowTop + h + bleedY} 이 범례 윗변 ${legendTop} 아래로 샌다`);
+  // 빈 상자(#panel 300 폭 중 단추 줄 오른쪽)는 누를 수 없다 — 누르는 것은 단추 줄·서랍·공유 메뉴뿐이다.
+  assert.match(decl(PORTRAIT, '#panel'), /pointer-events:\s*none/);
+  assert.match(decl(PORTRAIT, '#panel > #chrome, #panel > .drawer, #panel > #share-menu'), /pointer-events:\s*auto/);
+});
+
+test('위 한 줄 — 고른 나라 칩(z7)이 단추 셋을 덮지 않고 같은 줄 끝에 서며, ✕ 는 잘리지 않는다', () => {
+  const chip = decl(PORTRAIT, '#focus-chip');
+  assert.ok(chip, '세로 폰에서 칩 자리가 없다 — 모든 폭의 14,14 에 서서 단추 줄(56~)을 덮는다');
+  const tile = decl(PORTRAIT, '#chrome button, #chrome a#btn-research');
+  const w = px(prop(tile, 'width'), VP), gap = px(prop(decl(PORTRAIT, '#chrome'), 'gap'), VP);
+  const rowEnd = ES.left + ES.size + 8 + 3 * w + 2 * gap;                 // 전환기가 셋을 입양한 뒤 남는 단추 셋의 오른쪽 끝
+  const left = px(prop(chip, 'left'), VP);
+  assert.ok(left >= rowEnd + 2, `칩 왼쪽 ${left} 이 단추 줄 끝 ${rowEnd} 에 붙거나 덮는다`);
+  assert.equal(px(prop(chip, 'top'), VP), ES.top, '칩이 위 한 줄과 다른 높이에 선다');
+  assert.equal(px(prop(chip, 'height'), VP), ES.size);
+  for (const vw of [402, 360, 320]) {
+    const mw = px(prop(chip, 'max-width'), VP, { vw });
+    assert.ok(left + mw <= vw - 8, `${vw}: 칩이 화면 오른쪽 여백을 넘는다(${left + mw})`);
+  }
+  assert.match(decl(PORTRAIT, '#focus-chip .chip-x'), /flex:\s*none/, '✕ 가 줄어들어 잘린다 — 고른 것을 풀 문이 사라진다');
+  assert.doesNotMatch(chip, /text-overflow/, '한 줄 말줄임은 ✕ 까지 자른다');
+});
+
+test('위 한 줄 — 브랜드 손잡이는 가늘게(보이는 띠 ≤ 20) 서고 표적은 44 폭 · 서랍에 붙는 셈은 그대로', () => {
+  const tab = decl(PORTRAIT, '.edge-tab');
+  const w = px(prop(tab, 'width'), VP), h = px(prop(tab, 'height'), VP);
+  assert.ok(w <= 20, `손잡이 띠 ${w} — 지구를 20 넘게 덮는다`);
+  assert.ok(h >= TAP, `손잡이 높이 ${h} < 44`);
+  const hit = decl(PORTRAIT, '.edge-tab::after');
+  assert.ok(px(prop(hit, 'width'), VP) >= TAP, '손잡이 표적 폭이 44 미만');
+  // 서랍에 붙는 셈(translateX = 서랍 폭)은 세로 덩어리에서 건드리지 않는다 — 손잡이가 서랍에서 떨어져 화면 가운데 뜨는 사고(메뉴 패널 주석).
+  assert.ok(!/\.edge-tab\.open/.test(PORTRAIT), '세로 덩어리가 손잡이의 서랍 붙기 셈을 다시 적는다');
+});
+
+// (2026-09-24 반박 검토) 공식 특보 띠(#warn-banner · z30)는 모든 폭에서 top 10 가운데에 선다 — 위 한 줄(8~48)과 같은 높이라
+//   특보가 뜬 동안 ⤴ ⚗ 가 띠에 잡혀 눌리지 않았다(402×714 실측). 세로 폰에서는 위 한 줄 아래 한 칸에 세우고 범례·full 천장이 비킨다.
+//   결과로 잰다: 띠가 단추 줄(표적 포함) 아래에서 시작하고 · 범례는 띠 아래에서 시작하며 · full 천장은 그 범례 윗변과 같다.
+test('위 한 줄 — 공식 특보 띠가 단추 줄을 덮지 않고, 범례·full 천장이 띠 아래로 비킨다', () => {
+  const wb = decl(PORTRAIT, '#warn-banner');
+  assert.ok(wb, '세로 폰에 특보 띠 자리가 없다 — 모든 폭의 top 10 에 서서 위 한 줄 단추를 덮는다');
+  const t = pseudoBox('#chrome button::after, #chrome a#btn-research::after');
+  const tile = decl(PORTRAIT, '#chrome button, #chrome a#btn-research');
+  const rowHitBottom = ES.top + px(prop(tile, 'height'), VP) + (t.h - px(prop(tile, 'height'), VP)) / 2;
+  const top = px(prop(wb, 'top'), VP), h = px(prop(wb, 'height'), VP);
+  assert.ok(top >= rowHitBottom, `특보 띠 윗변 ${top} 이 단추 표적 아랫변 ${rowHitBottom} 위로 올라온다`);
+  assert.match(wb, /transform:\s*none/, '가운데 정렬(translateX)이 남아 left/right 자리가 어긋난다');
+  const lg = /body:has\(#warn-banner\) #field-legend \{ top: calc\((\d+)px \+ env\(safe-area-inset-top\)\)/.exec(html);
+  assert.ok(lg, '특보 띠가 있을 때 범례가 비키지 않는다 — 띠(z30)가 범례 제목·띠를 덮는다');
+  assert.ok(Number(lg[1]) >= top + h, `범례 윗변 ${lg[1]} 이 특보 띠 아랫변 ${top + h} 위에 있다`);
+  const ceil = /body:has\(#warn-banner\) \{ --top-reserve: (\d+)px; \}/.exec(PORTRAIT);
+  assert.ok(ceil, '특보 띠가 있을 때 full 시트 천장이 그대로라 띠가 시트 머리(탭)를 덮는다');
+  assert.equal(Number(ceil[1]), Number(lg[1]), 'full 천장 ≠ 특보 띠가 있을 때의 범례 윗변');
+  // 단추 줄이 여는 것(서랍 · 공유 메뉴)도 띠 아래에서 열린다 — 띠만 옮기면 서랍의 검색 칸·공유 메뉴 첫 줄이 띠(z30) 밑에 깔린다.
+  const panelTop = ES.top, rowH = px(prop(tile, 'height'), VP);
+  const dm = /body:has\(#warn-banner\) #panel > \.drawer \{ margin-top: (\d+)px; \}/.exec(PORTRAIT);
+  assert.ok(dm, '특보 띠가 있을 때 서랍이 띠 밑(56~)에서 열린다');
+  assert.ok(panelTop + rowH + Number(dm[1]) >= top + h, `서랍 윗변 ${panelTop + rowH + Number(dm[1])} 이 띠 아랫변 ${top + h} 위에 있다`);
+  const sm = /body:has\(#warn-banner\) #share-menu \{ top: calc\((\d+)px/.exec(PORTRAIT);
+  assert.ok(sm && Number(sm[1]) >= top + h, '특보 띠가 있을 때 공유 메뉴가 띠 밑에서 열린다');
+});
+
+// (2026-09-24 반박 검토) ⤴ 공유 메뉴는 #panel(position:fixed → 제 쌓임 맥락, z 없음) 안이라 범례(z3) 밑에 칠해진다.
+//   범례가 위 한 줄 바로 아래(56)로 올라오자 메뉴 두 줄이 통째로 범례 밑에 깔렸다(보이지 않는 단추). 메뉴가 열린 동안 범례가 비킨다.
+test('위 한 줄 — 공유 메뉴가 열린 동안 범례가 비켜 선다(메뉴가 범례 밑에 깔리지 않는다)', () => {
+  assert.match(PORTRAIT, /body:has\(#share-menu\.open\) #field-legend \{ visibility: hidden; \}/);
+  const from = html.indexOf('/* ---------- 색면 범례');
+  const legendSec = html.slice(from, html.indexOf('/* ---------- ', from + 10));
+  assert.ok(legendSec.includes('body:has(#share-menu.open) #field-legend'), '범례 선택자는 범례 절에만 적는다(field-legend 시험의 불변식)');
 });
 
 test('㉢ 타임라인 지금·재생 — 표적 44, 가로로는 한 치도 안 번진다', () => {
@@ -731,8 +863,14 @@ test('B5 세로 폰 — 출처 줄은 두 줄에서 자르고(≥10px) 켜진 �
   assert.match(decl(PORTRAIT, '#srcNote .src-field') || '', /display:\s*inline/, '세로 폰에서 색면 출처 칸이 숨어 있다');
   assert.match(decl(css, '#srcNote .src-field') || '', /display:\s*none/, '넓은 화면에서 색면 출처 칸이 나온다(그 화면은 이번 변경 밖이다)');
   // full 천장 = 범례 윗변(108) → 도구줄(56~102)을 안 덮는다.
+  // (2026-09-24 정정 · 위 한 줄) 도구줄이 전환기 줄(8~48)로 올라가 범례 윗변 = 천장이 56 이다. 뜻은 그대로 —
+  //   full 시트 윗변은 ① 위 한 줄 아랫변(전환기 윗변 + 높이) 아래 ② 범례 절의 세로 폰 top 과 같은 수(--top-reserve).
   const full = decl(PORTRAIT, '#intel[data-sheet="full"].open #intel-body');
   const bodyMax = px(prop(full, 'max-height'), VP);
   const top = VH - px('var(--nav-reserve)', VP) - bodyMax - px('var(--grip-h)', VP);
-  assert.ok(top >= 102, `full 시트 윗변 ${top} 이 도구줄 아랫변 102 위로 올라온다`);
+  const rowBottom = ES.top + ES.size;
+  assert.ok(top >= rowBottom, `full 시트 윗변 ${top} 이 위 한 줄 아랫변 ${rowBottom} 위로 올라온다`);
+  const legendTop = /#field-legend \{ top: calc\((\d+)px \+ env\(safe-area-inset-top\)\)/.exec(PORTRAIT);
+  assert.ok(legendTop, '범례 절에 세로 폰 범례 자리가 없다');
+  assert.equal(top, Number(legendTop[1]), `full 천장 ${top} ≠ 범례 윗변 ${legendTop[1]}`);
 });

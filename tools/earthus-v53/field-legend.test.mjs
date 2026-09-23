@@ -250,7 +250,39 @@ test('자리와 크기 — 상자는 고정 크기이고, 폰에서는 아래 �
   assert.match(phone[1], /top: calc\(108px \+ env\(safe-area-inset-top\)\)/, '전환기(8~48)·상단 줄(56~102) 아래');
   const mid = /@media \(max-width: 1109px\) \{\n {4}#field-legend \{([^}]*)\}/.exec(html);
   assert.match(mid[1], /top: 66px; bottom: auto;/, '가운데 타임스트립·하단 바와 겹치는 폭에서는 위로');
+  // (2026-09-24 정정 · 위 한 줄) 위 '폰 규칙'의 108 은 이제 눕힌 좁은 창·720 이하 가로 창의 자리다. 세로 폰은 범례 절 안의
+  //   세로 폰 덩어리가 56 으로 다시 적는다 — 아래 '세로 폰 — 범례는 위 한 줄 아래 56' 시험이 그 자리를 잰다.
   assert.ok(!/bottom: (?!auto)/.test(phone[1]), '폰에서 아래 줄에 서지 않는다');
+});
+
+// (2026-09-24 · 위 한 줄) 세로 폰 — PD 폰 캡처 "창도 답답하고": 범례가 108~197 로 위쪽 셋째 창이었다.
+//   잠그는 결과: 위 한 줄(8~48) 바로 아래 56 에 서고 · 접힘 높이가 줄고 · 눈금 글씨는 10px 이상 · 칸 뼈대(kt 줄 자리)는 레이어와 무관하게 같다
+//   · 출처 줄만 빠진다(좌하단 줄이 같은 글을 쓴다 — b5-source-line 시험이 '나와야 통과'로 잠근다).
+test('세로 폰 — 범례는 위 한 줄 아래 56 에 서고, 접힘 높이가 89 → 65 로 준다(눈금 ≥ 10px · kt 자리 유지)', () => {
+  const html = read('../../prototype/v2-three/index.html');
+  const from = html.indexOf('/* ---------- 색면 범례');
+  const sec = html.slice(from, html.indexOf('/* ---------- ', from + 10));
+  const blk = /@media \(max-width: 720px\) and \(orientation: portrait\) \{([\s\S]*?)\n {2}\}/.exec(sec);
+  assert.ok(blk, '범례 절에 세로 폰 덩어리가 없다');
+  const b = blk[1];
+  const base = /\n {4}#field-legend \{([^}]*)\}/.exec(b)[1];
+  assert.match(base, /top: calc\(56px \+ env\(safe-area-inset-top\)\)/, '위 한 줄(전환기 8~48) 아래 8px');
+  assert.ok(parseFloat(/font-size: ([\d.]+)px/.exec(base)[1]) >= 10, '눈금 글씨가 10px 미만');
+  const rows = (t) => t.trim().split(/\s+/).map((x) => (x === 'auto' ? null : parseInt(x, 10)));
+  const open = rows(/grid-template-rows: ([^;]+);/.exec(base)[1]);
+  const shut = rows(/#field-legend\.fl-collapsed \{ grid-template-rows: ([^;]+); \}/.exec(b)[1]);
+  // 여섯 줄(field-legend.js) 가운데 출처 줄(.fl-meta)이 빠지므로 다섯(펼침 · 끝은 풀이 auto) · 넷(접힘)이다.
+  assert.equal(open.length, 5); assert.equal(open[4], null, '펼친 풀이 줄이 auto 가 아니면 풀이가 잘린다');
+  assert.deepEqual(shut, open.slice(0, 4), '접힘이 풀이 말고 다른 줄을 건드린다');
+  assert.ok(shut.every((n) => n > 0), 'kt 줄(넷째)이 0 이면 바람과 다른 레이어의 상자 높이가 달라진다(W1 reflow 없음)');
+  const pad = /padding: (\d+)px (\d+)px (\d+)px;/.exec(base);
+  const h = shut.reduce((a, c) => a + c, 0) + (shut.length - 1) * 3 + Number(pad[1]) + Number(pad[3]) + 2;
+  assert.equal(h, 65, `세로 폰 접힘 높이 ${h}`);
+  assert.ok(h < 89, '접힘 높이가 예전(89)보다 줄지 않았다');
+  assert.match(b, /#field-legend \.fl-meta \{ display: none; \}/, '출처 줄이 좌하단과 두 번 뜬다');
+  for (const keep of ['.fl-bands', '.fl-ticks', '.fl-alt', '.fl-title', '.fl-note']) {
+    assert.ok(!new RegExp(`\\${keep} \\{[^}]*display: none`).test(b), `${keep} 을 세로 폰에서 숨긴다 — 눈금·단위·제목은 늘 있어야 한다`);
+  }
 });
 
 test('i18n 은 main.js 와 같은 URL 로 들인다 — 질의문자열이 다르면 모듈이 둘이 되어 언어가 따로 논다', () => {

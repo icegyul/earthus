@@ -297,7 +297,12 @@ test('③ 폰에서 범례를 접을 수 있다 — 접으면 풀이 한 줄만 
   const block = phone[1];
   // 접는 규칙이 폰 구간 **안에만** 있다 — 넓은 화면에서는 이름표가 아무 일도 하지 않는다
   assert.ok(/\.fl-collapsed/.test(block), '폰 구간에 접힘 규칙이 없다');
-  assert.equal((css.match(/\.fl-collapsed/g) || []).length, (block.match(/\.fl-collapsed/g) || []).length,
+  // (2026-09-24 정정 · 위 한 줄) 세로 폰 덩어리(@media (max-width: 720px) and (orientation: portrait))도 범례 절 안에 있고 접힘 줄 높이를 다시 적는다 —
+  //   그것도 폰 구간이다. 뜻('넓은 화면에는 접힘 규칙이 없다')은 그대로: 두 폰 덩어리 밖의 .fl-collapsed 는 0 개여야 한다.
+  const portraitBlock = (/@media \(max-width: 720px\) and \(orientation: portrait\) \{([\s\S]*?)\n {2}\}/.exec(css) || [, ''])[1];
+  assert.ok(portraitBlock, '범례 절에 세로 폰 덩어리가 없다');
+  assert.ok(!/fl-collapsed[^{]*\{[^}]*display:\s*none/.test(portraitBlock), '세로 폰 덩어리가 접힘으로 무엇을 숨긴다 — 접어서 숨기는 것은 폰 구간의 풀이 하나뿐이다');
+  assert.equal((css.match(/\.fl-collapsed/g) || []).length, (block.match(/\.fl-collapsed/g) || []).length + (portraitBlock.match(/\.fl-collapsed/g) || []).length,
     '접힘 규칙이 폰 구간 밖에도 있다 — 넓은 화면의 범례까지 접힌다');
   // 숨는 것은 풀이뿐이다. 띠·경계 숫자·단위·출처는 접어도 남는다.
   const hidden = [...block.matchAll(/#field-legend\.fl-collapsed ([^{]+)\{([^}]*)\}/g)]

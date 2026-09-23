@@ -5689,6 +5689,19 @@ async function main() {
     if (!sw) { el.style.left = '14px'; el.style.right = 'auto'; return; }
     const r = sw.getBoundingClientRect();
     el.style.right = 'auto';
+    /* (2026-09-24 정정 · B5 다음 단계 '위 한 줄') 세로 폰에서 아래로 내리니 전환기(8~48) 밑에 도구 상자(56~102)가 한 줄 더 섰다 —
+       전환기가 설정·로그인·도움말을 입양해 가서 상자 300px 에 단추 셋(⌕ ⤴ ⚗)만 남아 거의 빈 상자였다(PD 폰 캡처 "창도 답답하고").
+       세로 폰은 전환기와 **같은 줄**에 선다: 상자는 전환기 윗변에 맞추고, 단추 줄은 전환기 폭 + 8 만큼 비켜 선다(--es-row).
+       상자(#panel)의 왼쪽은 전환기 왼쪽 그대로 둔다 — 그래야 검색·설정 서랍이 예전처럼 화면 왼쪽 8 에서 300 폭으로 열린다.
+       판정은 index.html 세로 자리표와 **같은 글자**의 미디어 질의다(700 이 아니다 — 700~720 세로 창도 같은 줄이어야 CSS 와 맞는다). */
+    const oneRow = !!(window.matchMedia && window.matchMedia('(max-width: 720px) and (orientation: portrait)').matches);
+    if (oneRow) {
+      el.style.left = `${Math.round(r.left)}px`;
+      el.style.top = `${Math.round(r.top)}px`;
+      el.style.setProperty('--es-row', `${Math.round(r.width + 8)}px`);
+      return;
+    }
+    el.style.removeProperty('--es-row');
     if (narrow) {
       // 좁은 화면에서 나란히 두면 둘 다 잘린다 — 전환기 아래로 내린다.
       el.style.left = `${Math.round(r.left)}px`;

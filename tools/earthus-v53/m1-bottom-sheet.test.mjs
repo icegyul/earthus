@@ -3,6 +3,7 @@
 // 로컬 실측(375×812): peek 118px · half 31vh(윗변 332px — 지구 위쪽 40% 이상) · full 윗변 88px.
 // (2026-09-23 정정 · B4/B5 PD 승인) 손잡이가 #intel-body 밖(#intel 의 첫 자식)으로 나왔다 — 보이는 띠 24 · 표적 44 · 굴려도 남는다.
 //   세로 폰: 손잡이 24 + 본문(peek 118 · half 28dvh · full 천장 = 범례 윗변 108). 402×714 실측: half 손잡이 336~360 · 본문 360~560 · 알약 560~614.
+//   (2026-09-24 정정 · 위 한 줄) 도구 줄이 전환기 줄(8~48)로 올라가 범례 윗변 = full 천장이 108 → 56 이다('천장 = 범례 윗변' 규칙은 그대로).
 //   눕힌 폰: 본문에서 손잡이 띠만큼 빼서 시트 바깥 윗변을 예전 그대로 지킨다(812×375 실측 half 104~228 · full 88~228, 변경 전과 같다).
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -45,7 +46,9 @@ test('half 는 지구 위쪽 40% 이상을 남긴다 — 31vh 이하 (세로 폰
   assert.ok(m && Number(m[1]) <= 31, `half 가 ${m && m[1]}vh — 34vh 는 812 높이에서 39% 였다`);
   // (2026-09-23 정정 · B4) 첫 규칙(폰 두 방향 공통)만 보면 세로 폰의 실제 값을 못 본다 — 세로 자리표의 half 를 따로 읽는다.
   //   손잡이 24 가 본문 **밖**이므로 손잡이 + 본문 ≤ 예전 31dvh 가 되려면 본문은 28dvh 이하여야 한다(402×714 실측: 손잡이 24 + 본문 200 = 224 · 예전 half 229).
-  const portrait = html.slice(html.indexOf('@media (max-width: 720px) and (orientation: portrait)'));
+  // (2026-09-24 정정) 세로 폰 머리글은 이제 두 곳에 있다 — 색면 범례 절(범례 규칙은 그 절에만 산다: field-legend 시험)과 '폰 세로 아래 자리표'.
+  //   첫 머리글에서 자르면 범례 절부터 읽혀 아래의 **공통** half(31dvh)를 세로 값으로 오독한다 — 자리표 머리 주석에서 자른다.
+  const portrait = html.slice(html.indexOf('---------- 폰 세로 아래 자리표'));
   const p = portrait.match(/#intel\[data-sheet="half"\]\.open #intel-body \{ max-height: (\d+)d?vh; \}/);
   assert.ok(p, '세로 폰 자리표에 half 규칙이 없다 — 손잡이 24 가 밖으로 나온 만큼 시트가 커진다');
   assert.ok(Number(p[1]) <= 28, `세로 half 본문이 ${p[1]}dvh — 손잡이 24 를 더하면 예전 half(31dvh)보다 커진다`);

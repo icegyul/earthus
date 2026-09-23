@@ -90,3 +90,27 @@ test('세로 폰에서만 색면 칸이 보인다 — 넓은 화면·눕힌 폰�
   const portrait = html.slice(html.indexOf('@media (max-width: 720px) and (orientation: portrait)'), html.indexOf('---------- 눕힌 폰 (2026-09-21'));
   assert.match(portrait, /#srcNote \.src-field \{ display: inline; \}/);
 });
+
+// (2026-09-24 · 위 한 줄) 세로 폰에서는 범례의 출처 줄(.fl-meta)을 CSS 로 숨긴다 — 좌하단 줄이 같은 글을 이미 말하기 때문이다(PD 폰 캡처:
+//   'IPCC AR6 · NASA/JPL · SSP5-8.5 · 2100 · 겹쳐 N곳 솎음' 이 범례와 좌하단에 두 번). 숨겨도 사실이 화면에서 사라지면 안 된다 —
+//   결과로 시험한다: ① 숨기는 화면 = 좌하단이 색면 출처를 쓰는 화면(같은 글자의 질의) ② 숨긴 범례에서도 좌하단 줄에 '겹쳐 N곳 솎음'이 **나와야** 통과.
+test('세로 폰 — 범례의 출처 줄을 숨겨도 좌하단 줄이 그 글(솎은 수 포함)을 그대로 말한다', async () => {
+  const { slrLegendArgs } = await import('../../prototype/v2-three/js/flood-overlay.js');
+  const { legendView } = await import('../../prototype/v2-three/js/field-legend.js');
+  // ① 숨기는 규칙은 범례 절 안의 세로 폰 덩어리 **한 곳**이고, 그 머리글이 main.js 출처 줄 조건식과 같은 글자다.
+  const mq = (main.match(/srcFieldMQ = window\.matchMedia \? window\.matchMedia\('([^']+)'\)/) || [])[1];
+  assert.ok(mq, 'main.js 출처 줄 조건식을 못 찾았다');
+  const from = html.indexOf('/* ---------- 색면 범례');
+  const legendSec = html.slice(from, html.indexOf('/* ---------- ', from + 10));
+  const blk = (legendSec.match(new RegExp(`@media ${mq.replace(/[()]/g, '\\$&')} \\{([\\s\\S]*?)\\n {2}\\}`)) || [])[1];
+  assert.ok(blk, `범례 절에 '${mq}' 덩어리가 없다 — 범례 출처를 숨기는 화면과 좌하단이 쓰는 화면이 어긋난다`);
+  assert.match(blk, /#field-legend \.fl-meta \{ display: none; \}/);
+  assert.equal((html.match(/\.fl-meta \{[^}]*display: none/g) || []).length, 1, '범례 출처 줄을 숨기는 규칙이 다른 화면에도 있다');
+  // ② readLegend 는 상자의 hidden 속성만 본다 — CSS display 와 무관하게 글자를 읽는다(가짜 요소에는 style 이 아예 없다).
+  const v = legendView(slrLegendArgs({ scenario: 'ssp585', year: '2100', clashed: 41, capped: 0 }));
+  assert.match(v.meta, /솎음/, '해수면 범례가 솎은 수를 말하지 않는다 — 시험의 전제가 바뀌었다');
+  const el = { hidden: false, querySelector: (s) => ({ '.fl-title': { textContent: v.title }, '.fl-meta': { textContent: v.meta } }[s] || null) };
+  const t = text(composeSourceLine({ field: readLegend(el), cloud: CLOUD, ko: true }));
+  assert.ok(t.includes(v.meta), `좌하단 줄에 범례 출처가 없다: ${t.slice(0, 120)}`);
+  assert.match(t, /\d+곳 솎음/, "'겹쳐 N곳 솎음' 사실이 좌하단에서 빠졌다");
+});

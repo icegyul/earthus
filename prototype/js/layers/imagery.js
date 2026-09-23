@@ -15,6 +15,18 @@ function ymd(offsetDays = -1) {
   return d.toISOString().slice(0, 10);
 }
 
+/* GMGSI 구름 변환표 — 입력 0~255 한 칸마다 옛 식의 결과를 미리 담아 둔다. (2026-09-23, PERF-LTE-PLAN V1-3)
+   ⚠️ 식은 한 글자도 바꾸지 않았다. 3072×1844 = 566만 화소마다 Math.pow 를 부르던 것을 256번으로 줄였을 뿐이다
+      (실측: 이 변환이 든 긴 작업 497 ms 가 날씨 응답을 뒤로 밀었다).
+   ⚠️ Uint8ClampedArray 다 — ImageData.data 와 같은 배열이라 칸에 넣을 때의 반올림(짝수 쪽)도 옛 대입과 같다.
+      그래서 결과 화소가 옛것과 한 값도 다르지 않다(build/perf-investigation 에서 실제 global.png 로 대조). */
+const CLOUD_ALPHA_LUT = new Uint8ClampedArray(256);   // 알파 0.78 감마 — 0은 계속 0, 255는 계속 255
+const CLOUD_LUMA_LUT = new Uint8ClampedArray(256);    // 명암 90~255 로 누르기
+for (let v = 0; v < 256; v += 1) {
+  CLOUD_ALPHA_LUT[v] = Math.round(255 * Math.pow(v / 255, 0.78));
+  CLOUD_LUMA_LUT[v] = 90 + (v * 165 / 255);
+}
+
 export const imagery = {
   base: null, detail: null, truecolor: null, clouds: null, cloudLayers: [], citylight: null, temp: null, aurora: null,
   auroraMeta: null,
@@ -293,7 +305,9 @@ export const imagery = {
       const d = px.data;
       if (m.format === 'la8') {
         for (let i = 0; i < d.length; i += 4) {
-          const l = 90 + (d[i] * 165 / 255);   // 90~255 로 눌러 탁함 방지
+          /* (2026-09-23 정정) 아래 두 식은 이제 파일 위쪽 CLOUD_LUMA_LUT · CLOUD_ALPHA_LUT 표에 들어 있다.
+             화소마다 계산하지 않고 표를 읽을 뿐 값은 같다. 식을 바꿀 때는 표를 바꾼다. */
+          const l = CLOUD_LUMA_LUT[d[i]];   // 90 + (d[i] * 165 / 255) — 90~255 로 눌러 탁함 방지
           d[i] = d[i + 1] = d[i + 2] = l;
           /* 네 빠른 위성 영상을 같은 동아시아 장면에서 대조했다(2026-08-11).
              NOAA와 천리안 적외의 화소 상관은 0.83이었지만, NOAA의 중간 알파는
@@ -301,11 +315,11 @@ export const imagery = {
 
              ⚠️ 탐지 문턱이나 구름 면적을 바꾸지 않는다. 서버가 이미 구름이라고 낸
              알파만 0.78 감마로 보이기 쉽게 만든다. 0은 계속 0, 1은 계속 1이다. */
-          d[i + 3] = Math.round(255 * Math.pow(d[i + 3] / 255, 0.78));
+          d[i + 3] = CLOUD_ALPHA_LUT[d[i + 3]];   // Math.round(255 * Math.pow(d[i + 3] / 255, 0.78))
         }
       } else {
         for (let i = 0; i < d.length; i += 4) {
-          d[i + 3] = Math.round(255 * Math.pow(d[i] / 255, 0.78));
+          d[i + 3] = CLOUD_ALPHA_LUT[d[i]];       // Math.round(255 * Math.pow(d[i] / 255, 0.78))
           d[i] = d[i + 1] = d[i + 2] = 255;
         }
       }
@@ -317,6 +331,12 @@ export const imagery = {
          ⚠️ 별도 타이머나 애니메이션이 없다. 새 관측 영상이 올 때 한 번만 다시 만든다. */
       const shadowCanvas = this._cloudShadowCanvas(d, cv.width, cv.height, m);
       const rectangle = Cesium.Rectangle.fromDegrees(-180, m.south, 180, m.north);
+      /* ⚠️ (2026-09-23) 아래 두 toDataURL 을 toBlob(→ blob: 주소)으로 바꿔 봤으나 되돌렸다.
+         Chrome 의 toBlob 인코더는 알파가 낮은 화소에서 premultiply 를 되돌리는 반올림이 toDataURL·getImageData 와
+         달라, 같은 캔버스에서 RGB 가 ±1 다른 PNG 가 나왔다(실측: 3072×1844 중 29,568 화소, 알파 12·34·24 쪽, 알파는 같음).
+         Cesium 은 그 PNG 를 premultiplyAlpha:'none' 으로 풀어 그대로 GPU 에 올리므로 화면 화소가 달라진다 —
+         '구름 출력은 화소 하나 다르지 않게' 규칙(PERF-LTE-PLAN V1-3 지시)에 걸려 toDataURL 로 둔다. 위의 변환표(LUT)만 남긴다.
+         인코딩을 아예 없애는 길(캔버스 화소를 Cesium 에 직접 주는 제공자)은 따로 증명이 필요한 후속 과제다. */
       const shadowLayer = viewer.imageryLayers.addImageryProvider(
         new Cesium.SingleTileImageryProvider({
           url: shadowCanvas.toDataURL('image/png'),

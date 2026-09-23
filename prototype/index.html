@@ -7,6 +7,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no, interactive-widget=resizes-content">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#000000">
+<!-- 연결 미리 열기 (2026-09-23, docs/PERF-LTE-PLAN-2026-09-23.md V1-2).
+     폰 LTE 에서 새 서버마다 DNS·TCP·TLS 악수에 왕복 여러 번이 든다 — 첫 요청 전에 미리 연다.
+     · cdn.jsdelivr.net — Cesium.js·satellite.js·Cesium 작업자/자산. (Lighthouse 추정 −307 ms)
+     · api.open-meteo.com — 첫 화면 현재 날씨(layers/weather.js fetchWeather). (Lighthouse 추정 −755 ms)
+     ⚠️ 둘 다 crossorigin 이 있어야 쓰인다. Cesium 스크립트는 crossorigin="anonymous" 이고, 날씨는 fetch() 기본값
+        (자격 증명 없음)이라 **익명 연결**로 나간다. crossorigin 을 빼면 미리 연 연결은 자격 증명용 풀에 들어가 버려진다.
+        (widgets.css 는 crossorigin 없는 요청이라 자기 연결을 따로 연다 — 원래 그랬다.) -->
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://api.open-meteo.com" crossorigin>
 <title>earthus — 지금 지구의 날씨·바다·재난 | Where Earth Becomes One</title>
 <!-- 네이버 서치어드바이저 소유확인 (2026-08-04).
      ⚠️ 네이버는 구글과 달리 **DNS(TXT) 방식이 없다** — 이 태그가 소유 증명이다.
@@ -117,6 +126,123 @@
 <link rel="stylesheet" href="css/safety.css?v=20260812-safety1">
 <link rel="stylesheet" href="css/decision-rail.css?v=20260814-ax2">
 <link rel="stylesheet" href="css/v8-shell.css?v=20260923-uxcheck">
+<!-- 정적 모듈 미리 받기 (2026-09-23, docs/PERF-LTE-PLAN-2026-09-23.md V1-5).
+     main.js 가 정적으로 부르는 모듈 전부다. 이게 없으면 브라우저가 문서 → main.js → 1단 → 2단 → 3단 모듈을
+     **받아 봐야 다음을 알아서** 왕복 5번이 줄을 선다. 여기 적어 두면 문서를 읽는 순간 한꺼번에 받는다.
+     ⚠️ 손으로 고치지 않는다. tools/v1-modulepreload.mjs --write 가 import 그래프에서 만들고,
+        npm test(tools/earthus-v53/v1-modulepreload.test.mjs)가 그래프와 어긋나면 떨어뜨린다.
+     ⚠️ href 는 import 가 가리키는 주소와 ?v= 까지 같아야 한다(main.js:2-3 싱글턴 주석) — 다르면 중복 다운로드만 된다.
+     ⚠️ 스타일시트 뒤에 둔다 — 같은 서버 연결을 CSS(첫 화면 로고·글자)가 먼저 쓰게. -->
+<!-- modulepreload:begin -->
+<link rel="modulepreload" href="js/main.js?v=20260907-hazard">
+<link rel="modulepreload" href="js/viewer.js">
+<link rel="modulepreload" href="js/alarms.js">
+<link rel="modulepreload" href="js/windfield.js">
+<link rel="modulepreload" href="js/mylocation.js">
+<link rel="modulepreload" href="js/layerbar.js">
+<link rel="modulepreload" href="js/search.js">
+<link rel="modulepreload" href="js/onboard.js">
+<link rel="modulepreload" href="js/ui-weather.js">
+<link rel="modulepreload" href="js/weather-earth-sync.js">
+<link rel="modulepreload" href="js/weather-moment-layer.js">
+<link rel="modulepreload" href="js/power.js">
+<link rel="modulepreload" href="js/panels.js">
+<link rel="modulepreload" href="js/intro.js">
+<link rel="modulepreload" href="js/render-quality.js">
+<link rel="modulepreload" href="js/store.js">
+<link rel="modulepreload" href="js/earth-view-state.js">
+<link rel="modulepreload" href="js/earth-route-state.js">
+<link rel="modulepreload" href="js/layers/registry.js">
+<link rel="modulepreload" href="js/layers/imagery.js">
+<link rel="modulepreload" href="js/ui.js">
+<link rel="modulepreload" href="js/i18n.js">
+<link rel="modulepreload" href="js/auth.js">
+<link rel="modulepreload" href="js/config.local.js">
+<link rel="modulepreload" href="js/access-mode.js">
+<link rel="modulepreload" href="js/ui-account.js">
+<link rel="modulepreload" href="js/analytics.js">
+<link rel="modulepreload" href="js/ui-sat.js">
+<link rel="modulepreload" href="js/ui-source.js">
+<link rel="modulepreload" href="js/readability.js">
+<link rel="modulepreload" href="js/decision-rail.js">
+<link rel="modulepreload" href="js/continuous-contours.js">
+<link rel="modulepreload" href="js/warn.js">
+<link rel="modulepreload" href="js/ui-warn.js">
+<link rel="modulepreload" href="js/ui-active.js">
+<link rel="modulepreload" href="js/scene.js">
+<link rel="modulepreload" href="js/space/route-state.js">
+<link rel="modulepreload" href="js/v8/runtime-coordinator.js">
+<link rel="modulepreload" href="js/config.js">
+<link rel="modulepreload" href="js/sky-panorama.js">
+<link rel="modulepreload" href="js/for-me-row.js">
+<link rel="modulepreload" href="js/menu-information.js?v=20260905">
+<link rel="modulepreload" href="js/earthus-icons.js?v=1">
+<link rel="modulepreload" href="js/geoname.js">
+<link rel="modulepreload" href="js/ui-japan.js">
+<link rel="modulepreload" href="js/layers/weather.js">
+<link rel="modulepreload" href="js/kma-fcst.js">
+<link rel="modulepreload" href="js/korea.js">
+<link rel="modulepreload" href="js/place.js">
+<link rel="modulepreload" href="js/safety-gate-ui.js">
+<link rel="modulepreload" href="js/weather-data-v7.js">
+<link rel="modulepreload" href="js/weather-contract-v7.js">
+<link rel="modulepreload" href="js/layers/hazard.js">
+<link rel="modulepreload" href="js/layers/cyclone.js">
+<link rel="modulepreload" href="js/layers/events.js">
+<link rel="modulepreload" href="js/layers/space.js">
+<link rel="modulepreload" href="js/layers/launchpad.js">
+<link rel="modulepreload" href="js/layers/landobs.js">
+<link rel="modulepreload" href="js/layers/ukfc.js">
+<link rel="modulepreload" href="js/layers/coverage.js">
+<link rel="modulepreload" href="js/gridoverlay.js">
+<link rel="modulepreload" href="js/layers/travel.js">
+<link rel="modulepreload" href="js/layers/phenomena.js">
+<link rel="modulepreload" href="js/layers/ocean.js">
+<link rel="modulepreload" href="js/layers/tsunami.js">
+<link rel="modulepreload" href="js/layers/wildfire.js">
+<link rel="modulepreload" href="js/layers/eclipse.js">
+<link rel="modulepreload" href="js/layers/lightning.js">
+<link rel="modulepreload" href="js/layers/regional.js">
+<link rel="modulepreload" href="js/layers/alerts.js">
+<link rel="modulepreload" href="js/layers/airkr.js">
+<link rel="modulepreload" href="js/layers/tourism-flow.js?v=20260821-tourism-density2">
+<link rel="modulepreload" href="js/net.js">
+<link rel="modulepreload" href="js/cloud-shadow.js">
+<link rel="modulepreload" href="js/imagery-layer-group.js">
+<link rel="modulepreload" href="js/safety-actions.js">
+<link rel="modulepreload" href="js/visual-effect-settings.js">
+<link rel="modulepreload" href="js/i18n-sweep.js">
+<link rel="modulepreload" href="js/biometric.js">
+<link rel="modulepreload" href="js/billing.js">
+<link rel="modulepreload" href="js/analytics-contract.js">
+<link rel="modulepreload" href="js/layers/satcat.js">
+<link rel="modulepreload" href="js/v8/provenance-dock.js">
+<link rel="modulepreload" href="js/gridmath.js">
+<link rel="modulepreload" href="js/coastline-reference.js">
+<link rel="modulepreload" href="js/contour-math.js">
+<link rel="modulepreload" href="js/safety-engine.js">
+<link rel="modulepreload" href="js/v8/unified-time.js">
+<link rel="modulepreload" href="js/v8/visual-layer-registry.js">
+<link rel="modulepreload" href="space/skybox/earthus-milky-way/sky-asset-manifest.js">
+<link rel="modulepreload" href="js/jpname.js">
+<link rel="modulepreload" href="js/layers/pointLayer.js">
+<link rel="modulepreload" href="js/jma.js">
+<link rel="modulepreload" href="js/maplabel.js">
+<link rel="modulepreload" href="js/layers/cyclone-geometry.js">
+<link rel="modulepreload" href="js/newsbubble.js">
+<link rel="modulepreload" href="js/launch-schedule.js">
+<link rel="modulepreload" href="js/sky.js">
+<link rel="modulepreload" href="js/eclipsepath.js">
+<link rel="modulepreload" href="js/tourism-flow-contract.js">
+<link rel="modulepreload" href="js/tourism-density-grid.js">
+<link rel="modulepreload" href="js/tourism-density-labels.js">
+<link rel="modulepreload" href="js/korea-admin-reference.js">
+<link rel="modulepreload" href="js/kto-tourism-contract.js">
+<link rel="modulepreload" href="js/layers/tourism-map-style.js">
+<link rel="modulepreload" href="js/cloud-depth-provider.js">
+<link rel="modulepreload" href="js/satellite-tile-cache.js">
+<link rel="modulepreload" href="js/satellite-security.js">
+<!-- modulepreload:end -->
   <!-- ⚠️ AI 학습 거부 — robots.txt 와 같은 방침이다(학습 금지, 인용 허용).
        메타 태그는 자발적 준수라 강제력이 없다. 실제 근거는 이용약관 제11조다. -->
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
@@ -1246,12 +1372,24 @@
 </div>
 
 <script>window.CESIUM_BASE_URL='https://cdn.jsdelivr.net/npm/cesium@1.143.0/Build/Cesium/';</script>
-<script src="https://cdn.jsdelivr.net/npm/cesium@1.143.0/Build/Cesium/Cesium.js"
+<!-- defer (2026-09-23, docs/PERF-LTE-PLAN-2026-09-23.md V1-4).
+     예전에는 동기 스크립트라 Cesium.js 1.67 MB 를 다 받고 실행할 때까지 파서가 여기서 멈췄다 —
+     아래 main.js 와 그 모듈들은 그 뒤에야 요청됐다. defer 면 Cesium 과 모듈을 **같이** 받는다.
+     ⚠️ 실행 순서는 그대로다: defer 스크립트와 type=module 스크립트는 문서 순서대로, 파싱이 끝난 뒤 하나씩 실행된다
+        (HTML 명세 — 같은 목록). 그래서 Cesium → satellite.js → main.js 순서가 보장된다.
+     ⚠️ 이 둘 **사이·앞의 인라인 <script>** 에서 Cesium.·satellite. 을 부르면 안 된다 — 그땐 아직 없다.
+        (2026-09-23 grep: 0건. 위 CESIUM_BASE_URL 은 Cesium 이 읽을 값을 먼저 두는 것이라 앞에 있어야 맞다.)
+     ⚠️ integrity·crossorigin·referrerpolicy 는 그대로 둔다.
+     ⚠️ (2026-09-23 검토 실측) defer 를 붙이면 Chrome 이 Cesium.js 요청 우선순위를 Medium → Low 로 내린다(CDP initialPriority).
+        첫 방문 LTE 에서 Cesium 도착이 약 1.85 → 2.45 s 로 늦었다 — 모듈 108개(High)와 회선을 나눠 쓰기 때문이다.
+        fetchpriority="high" 로 High 로 올려 봤으나 도착·지구 표시 시각이 달라지지 않아(2444 vs 2455 ms) 넣지 않았다.
+        지구 표시(첫 방문)는 전후 차이가 측정 흔들림(±0.5 s) 안이다 — 계획의 "−1.5~2 s" 는 나오지 않았다. -->
+<script src="https://cdn.jsdelivr.net/npm/cesium@1.143.0/Build/Cesium/Cesium.js" defer
         integrity="sha384-6pySA8bzGAn2+aYh8KWmvzl5DRnspbScFYUbrFcu2ayckTxx8gyn+/WNvNbPM9iG"
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <!-- v6는 OMM JSON의 6~9자리 카탈로그 번호를 지원하는 마지막 UMD 배포본이다.
      v7은 ESM 전용이라 빌드 없는 이 앱에서 같은 script 전역으로 교체할 수 없다. -->
-<script src="https://cdn.jsdelivr.net/npm/satellite.js@6.0.2/dist/satellite.min.js"
+<script src="https://cdn.jsdelivr.net/npm/satellite.js@6.0.2/dist/satellite.min.js" defer
         integrity="sha384-J3D70NIZSVUuhQbp4W22OKF/xNWQjCEXmLxpnBp4CNDaQ+TbS1mmDZ2W3wlgqpKj"
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script type="module" src="js/main.js?v=20260907-hazard"></script>

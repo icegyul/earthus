@@ -491,7 +491,12 @@ async function boot() {
   ['changelogSheet', 'settings', 'waitlistSheet', 'consentSheet'].forEach(
     id => document.getElementById(id)?.classList.remove('up'));
 
-  await chrome.init();
+  /* ⚠️ chrome.init() 을 기다리지 않는다. (2026-09-23, PERF-LTE-PLAN V1-1)
+     그 안에서 위치(권한 창)와 날씨 응답을 기다린다. 폰 첫 방문에서 권한 창에 답하기 전까지
+     약속이 끝나지 않아, 아래 계정·출처·특보 초기화가 **통째로 멈춰 있었다.**
+     시계·장소·날씨는 chrome 이 스스로 그린다 — 뒤 초기화 중 chrome 의 결과를 기다리는 것은 없다
+     (ui-weather 는 chrome.place 를 열 때마다 읽는다). 실패는 여기서 붙잡는다 — boot().catch 로 가지 않는다. */
+  chrome.init().catch(e => console.warn('[chrome]', e?.message || e));
   await initAccount();
   await analytics.init();
   satPanel.init();

@@ -52,6 +52,16 @@ export const chrome = {
   isDefault: false,
 
   async init() {
+    /* 시계·날짜는 위치와 무관하다 — 위치를 기다리기 **전에** 그린다. (2026-09-23, PERF-LTE-PLAN V1-1)
+       ⚠️ 예전에는 tick() 이 아래 `await locateUser()` 뒤에 있었다. 폰 첫 방문에서 위치 권한 창이 뜨면
+          사람이 누를 때까지 약속이 끝나지 않는다(권한 창이 떠 있는 동안에는 8초 제한도 흐르지 않는다 —
+          mylocation.js 의 timeout). 그 사이 시계·날짜 자리가 빈 뼈대로 남았다.
+       ⚠️ render() 는 여기서 부르지 않는다. 장소·기본 위치 꼬리표(위 P1-5)는 위치 응답을 받은 뒤에만 정해진다 —
+          먼저 그리면 '위치 이름 확인 중'이나 인천이 틀린 순간에 뜬다. */
+    this.tick();
+    setInterval(() => this.tick(), 20_000);
+    // 언어를 바꾸면 시계도 바로 바꾼다 — 아래 onChange 는 위치·날씨가 끝난 뒤에야 등록된다.
+    i18n.onChange(() => this.tick());
     const loc = await locateUser();
     if (loc) {
       this.place = { name: '', lat: loc.lat, lon: loc.lon };
@@ -60,8 +70,6 @@ export const chrome = {
     } else {
       this.isDefault = true;
     }
-    this.tick();
-    setInterval(() => this.tick(), 20_000);
     await this.loadWeather();
     setInterval(() => this.loadWeather(), 10 * 60_000);
     i18n.onChange(() => { this.tick(); this.render(); });

@@ -118,6 +118,71 @@ function drawBorders(buffer, W, H) {
   }
 }
 
+/* 2026-09-23 (PERF-LTE-PLAN V2-6) — 폰 기본 지도 4096 을 WebP 로.
+ *   node tools/bake_ne2_base_earth.mjs --webp-4096 [--webp-quality=NN] [--png-out=경로]
+ *   ⚠️ JPEG 를 다시 인코딩하지 않는다 — 위 bake()·drawBorders() 로 NE2 원판에서 4096 을 **다시 굽고** 그 무손실 화소를
+ *      WebP 로 싼다(JPEG → WebP 는 손실이 두 번 겹친다). 굽기 식이 그대로인지는 같은 화소를 jpeg-js q88 로 다시 싸서
+ *      영수증의 ne2-base-4096.jpg sha256 과 맞춰 본다 — 다르면 멈춘다(식이 바뀐 채로 새 파일만 나가는 것을 막는다).
+ *   이 모드는 JPG 3장·타일 682장·영수증의 다른 칸을 건드리지 않는다. 영수증에는 outputs['ne2-base-4096.webp'] 한 칸만 더한다.
+ *   WebP 인코더는 파이썬 Pillow(libwebp)다 — node 쪽에 WebP 인코더가 없다(빌드 없이 배포하는 규칙상 새 npm 의존을 늘리지 않는다). */
+const WEBP_4096 = process.argv.includes('--webp-4096');
+if (WEBP_4096) {
+  const { spawnSync } = await import('node:child_process');
+  const os = await import('node:os');
+  const argOf = (k, d) => { const a = process.argv.find((x) => x.startsWith(`--${k}=`)); return a ? a.slice(k.length + 3) : d; };
+  const quality = Number(argOf('webp-quality', '80'));
+  const W = 4096, H = 2048;
+  console.log('bake', W, 'x', H, '(webp 모드)');
+  const rgba = bake(W, H);
+  drawBorders(rgba, W, H);
+  const receiptPath = path.join(OUT_DIR, 'ne2-base.receipt.json');
+  const receipt = JSON.parse(fs.readFileSync(receiptPath, 'utf8'));
+  const jpgAgain = jpeg.encode({ data: rgba, width: W, height: H }, 88).data;
+  const jpgSha = crypto.createHash('sha256').update(jpgAgain).digest('hex');
+  const want = receipt.outputs['ne2-base-4096.jpg'].sha256;
+  if (jpgSha !== want) {
+    console.error(`FAIL 굽기 재현 불일치 — 다시 구운 4096 JPG sha ${jpgSha} ≠ 영수증 ${want}. 식이 바뀌었으면 전체를 다시 구워라.`);
+    process.exit(1);
+  }
+  console.log('PASS 굽기 재현 — 다시 구운 4096 이 배포 중인 ne2-base-4096.jpg 와 한 바이트도 다르지 않다');
+  const pngPath = argOf('png-out', path.join(os.tmpdir(), `ne2-base-4096-lossless-${process.pid}.png`));
+  const png = new PNG({ width: W, height: H });
+  rgba.copy(png.data);
+  fs.writeFileSync(pngPath, PNG.sync.write(png));
+  const outFile = 'ne2-base-4096.webp';
+  const outPath = path.join(OUT_DIR, outFile);
+  const jpgPath = path.join(OUT_DIR, 'ne2-base-4096.jpg');
+  const py = spawnSync(process.platform === 'win32' ? 'python' : 'python3', ['-c', `
+import sys, json, numpy as np, PIL
+from PIL import Image, features
+src, out, jpg, q = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4])
+ref = Image.open(src).convert('RGB')
+ref.save(out, 'WEBP', quality=q, method=6)
+a = np.asarray(ref, dtype=np.float64)
+def psnr(p):
+    b = np.asarray(Image.open(p).convert('RGB'), dtype=np.float64)
+    mse = ((a - b) ** 2).mean()
+    return round(float(10 * np.log10(255 * 255 / mse)), 2)
+print(json.dumps({'pillow': PIL.__version__, 'libwebp': features.version('webp'), 'psnrWebp': psnr(out), 'psnrJpg': psnr(jpg)}))
+`, pngPath, outPath, jpgPath, String(quality)], { encoding: 'utf8' });
+  if (py.status !== 0) { console.error('FAIL WebP 인코딩', py.stderr); process.exit(1); }
+  const info = JSON.parse(py.stdout.trim().split('\n').pop());
+  const data = fs.readFileSync(outPath);
+  receipt.outputs[outFile] = {
+    sha256: crypto.createHash('sha256').update(data).digest('hex'),
+    bytes: data.length,
+    width: W,
+    height: H,
+    generatedAt: new Date().toISOString(),
+    bakedFrom: 'NE2 원판을 같은 bake()·drawBorders() 로 다시 구운 무손실 화소 (ne2-base-4096.jpg 를 다시 싼 것이 아니다 — 같은 화소의 jpeg-js q88 sha 가 영수증과 일치함을 확인)',
+    encoder: `libwebp ${info.libwebp} (Pillow ${info.pillow}) lossy quality=${quality} method=6`,
+    psnrDbVsLossless: { webp: info.psnrWebp, jpg: info.psnrJpg },
+  };
+  fs.writeFileSync(receiptPath, JSON.stringify(receipt, null, 2));
+  console.log(outFile, data.length, 'bytes · PSNR webp', info.psnrWebp, 'dB / jpg', info.psnrJpg, 'dB · 영수증 갱신');
+  process.exit(0);
+}
+
 const receipts = {};
 /* 타일 피라미드: 단일 대형 텍스처는 비스듬 원거리에서 밉맵 평균색으로 washes.
  * geographic scheme z0=2x1 … z4=32x16 (256px), 총 8192 해상 유지. */

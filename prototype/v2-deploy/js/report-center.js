@@ -12,7 +12,9 @@
 // ⚠️ '준비 중' 을 쓰지 않는다. 없으면 왜 없는지 보고서가 말한 사유를 그대로 보여 준다.
 
 import { i18n } from './i18n.js?v=11';
-import { representativeLayerFor, PHENOMENA } from './phenomenon-registry.js?v=4';
+// ⚠️ 2026-09-23: ?v=4 였다 — ui-shell.js 의 ?v=5 와 달라 레지스트리 모듈이 두 벌 떴다(main.js:10 주석). 네 곳을 ?v=5 로 맞춘다.
+// (2026-09-23 정정) 같은 날 V2-1 에서 네 곳을 함께 ?v=6 으로 올렸다(레지스트리 terrain scope 문구).
+import { representativeLayerFor, PHENOMENA } from './phenomenon-registry.js?v=6';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

@@ -4,6 +4,20 @@
 
 import * as THREE from '../vendor/three-r184.module.min.js';
 import { bulletinRecords, bulletinTimesHtml, escapeHtml, sourceTimeLabel, SEA_LEVEL_SCALE_CM, seaLevelFractionCm } from './source-context.js?v=20260905';
+// 바다 색면의 육지 가림 — 판정·해안 띠·대체 규칙은 DOM·THREE 없는 순수 함수로 저 파일에 있다(시험이 그대로 부른다).
+import { buildOceanMaskAsync, oceanMaskAlphaRGBA, oceanMaskCardLine, erodedGridNodes } from './ocean-land-mask.js?v=1';
+// W1 셰이더 색면(기온부터) — 프레임 저장소·시간 버스·범례·라벨을 묶는 접착제는 저 파일에 있다. 여기에는 거는 자리만 둔다.
+import { activeField, clearFieldLayers, isFieldLayerId, toggleFieldLayer } from './field-layer.js?v=1';
+// 잠기는 땅(레이어 'slr' · 2026-09-20 E1) — 상승폭 IDW 격자·셰이더·카드는 저 파일에 있다. 여기에도 거는 자리만 둔다.
+import { createFloodOverlay, FLOOD_QUANTITY } from './flood-overlay.js?v=2';   // v=2: 2026-09-23 카드 ③ 지형 해상도를 얹힌 고도맵에서 센다
+// 연안 침수 예상도의 전국 색인(레이어 'khoaflood' · 2026-09-20 W6) — 지표를 고른 근거·원반 그리기·솎기·집기는 저 파일에 있다.
+import {
+  createFloodDiscs, floodClassLabel, floodDiscSpecs, floodDistrictLoadingNote, floodHiddenNote, floodLegendHtml,
+  floodSizeNote, floodThinRuleNote,
+  FLOOD_DISTRICT_FAIL_NOTE, FLOOD_DISTRICT_TIMEOUT_MS, FLOOD_HEAVY_BYTES, FLOOD_METRIC_KO,
+} from './flood-discs.js?v=1';
+// 지상관측 두 파일(기상청 · GTS)은 공용 저장소에서 받는다 — 바람·평년차·기입 모형·지구 위 관측 숫자가 같은 문서를 나눠 쓴다(surface-obs.js).
+import { surfaceObs } from './surface-obs.js?v=1';
 
 // CloudFront(earthus.net)는 /clouds/* 외 경로에 CORS 헤더를 안 붙인다 → 1.0처럼 S3 직접 (CORS *)
 const S3 = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
@@ -38,14 +52,42 @@ const loadGibs = (layer, source) => {
 };
 const R_M = 6371000;
 
-const fetchJson = (path, timeoutMs = 15000, base = S3) =>
-  Promise.race([
-    fetch(`${base}${path}`, { cache: 'no-store' }).then((r) => {
-      if (!r.ok) throw new Error(`${path} HTTP ${r.status}`);
-      return r.json();
-    }),
-    new Promise((_, rej) => setTimeout(() => rej(new Error(`${path} timeout`)), timeoutMs)),
-  ]);
+/**
+ * JSON 하나. 시간이 다 되면 **요청 자체를 끊는다.**
+ *
+ * ⚠️ 2026-09-21 반박 검증으로 고친 것: 옛 길은 `Promise.race` 로 약속만 먼저 거절했다. 부른 쪽은 그 순간
+ *    '시간 초과'를 받지만 **내려받기는 그대로 살아 있었다** — 연안 침수 시군구 하나가 33 MB 이고 제한이 120초라,
+ *    이동통신망에서 포기했다고 말해 놓고 뒤에서 33 MB 를 마저 받았다. 화면이 제가 한 일을 말하지 않는 자리다.
+ *    이제 AbortController 로 진짜 끊는다. 끊어서 난 탈(AbortError)은 **같은 글자**로 바꿔 돌려준다 —
+ *    부른 쪽이 보는 것은 예전과 같은 `… timeout` 이다.
+ * ⚠️ 타이머는 끝나면 반드시 치운다. 안 그러면 제때 온 응답에도 120초짜리 타이머가 남아 시험(node)이 그만큼 기다린다.
+ */
+export const fetchJson = (path, timeoutMs = 15000, base = S3) => {
+  const url = `${base}${path}`;
+  const AC = globalThis.AbortController;
+  const ctl = typeof AC === 'function' ? new AC() : null;
+  let timer = null;
+  let timedOut = false;
+  const clear = () => { if (timer != null) { clearTimeout(timer); timer = null; } };
+  const body = fetch(url, { cache: 'no-store', ...(ctl ? { signal: ctl.signal } : {}) }).then((r) => {
+    if (!r.ok) throw new Error(`${path} HTTP ${r.status}`);
+    return r.json();
+  });
+  if (typeof setTimeout !== 'function') return body;
+  // 시간이 다 되면 ① 요청을 **끊고**(안 끊으면 33 MB 를 계속 받는다) ② 부른 쪽에게 곧바로 거절을 준다.
+  // 거절을 따로 내는 이유: 끊었을 때 fetch 가 반드시 정착한다는 보장은 환경마다 다르다 — 화면이 영영
+  // '불러오는 중'에 머무는 갈래를 남기지 않는다. 끊기까지 했으므로 뒤에서 받아 두는 일은 없다.
+  const timeout = new Promise((_, rej) => {
+    timer = setTimeout(() => { timedOut = true; if (ctl) ctl.abort(); rej(new Error(`${path} timeout`)); }, timeoutMs);
+    if (timer && typeof timer.unref === 'function') timer.unref();   // 시험에서 타이머가 프로세스를 붙잡지 않게
+  });
+  // 끊어서 난 탈(AbortError)은 **같은 글자**로 바꾼다 — 부른 쪽이 보는 것은 예전과 같은 `… timeout` 이다.
+  body.catch(() => {});                                              // 경주에서 진 쪽의 거부를 아무도 안 받는 일이 없게
+  return Promise.race([body, timeout]).then(
+    (v) => { clear(); return v; },
+    (e) => { clear(); throw timedOut ? new Error(`${path} timeout`) : e; },
+  );
+};
 
 // 발표기관의 유효시각 표기 "YYYYMMDDHHmm" (UTC) → ms
 const parseValidUtc = (v) => {
@@ -225,6 +267,10 @@ void main() {
   #include <colorspace_fragment>
 }`;
 
+// 바다 색면 3종 — 해수면(r=1) 위 고정 껍질에 칠하고, 육지는 가림판(ocean-land-mask.js)으로 비운다.
+// 대기 색면(기온·기압·강수…)은 여기 넣지 않는다: 그쪽은 육지 위에도 값이 있는 것이 맞다.
+const OCEAN_FIELD_IDS = new Set(['sstfield', 'wavefield', 'sstanom']);
+
 export class LiveLayers {
   constructor(scene, heightAt, getExagger, dataBadge) {
     this.group = new THREE.Group();
@@ -235,6 +281,8 @@ export class LiveLayers {
     // id → { on, obj, data, meta:{note, badge, cardHtml}, loading }
     this.layers = {};
     this.lastExagger = getExagger();
+    // 바람 입자 층(js/wind-layer.js · 2026-09-20 W3) — main.js 가 만들어 꽂는다. 없으면 'wind' 는 켜지지 않고 이유를 말한다(fetchFor).
+    this.windLayer = null;
   }
 
   // 지표 반경: 실지형 고도 × 현재 과장 + 살짝 띄움 (마커가 산에 묻히지 않게)
@@ -294,20 +342,151 @@ export class LiveLayers {
     return l && l.meta ? l.meta.cardHtml : '';
   }
 
+  // ---------- W1 셰이더 색면 (js/field-layer.js) ----------
+  // main.js 가 한 번 부른다: 프레임 저장소 · 지구의 지형 uniform 묶음 · 지구 지오메트리 · 폰 여부 · 카드 문자열을 갈아 끼울 자리.
+  provideField(deps) { this._fieldDeps = { ...(this._fieldDeps || {}), ...deps }; }
+  // 색면(기온·풍속 …)이나 바람 입자가 켜져 있나 — main.js 가 이것을 보고 구름을 물린다(시안 01·02 는 구름 없이 색면이 주인공이다).
+  // 'field' = 색면이 있다(구름의 흰 베일이 구간색을 바꿔 범례와 어긋나게 한다 → 구름을 끈다) · 'wind' = 입자만 · null = 없음.
+  starLayer() {
+    // 해수면 상승 전망의 **범례**는 켜짐을 따라간다. 끌 때 toggle 은 겹면을 버리지 않고 visible 만 뒤집으므로
+    // 겹면 스스로는 꺼진 것을 알 수 없다(onBeforeRender 가 안 불린다) — 매 프레임 지나는 자리가 여기뿐이라 여기서 알려 준다.
+    // setOn 은 바뀔 때만 일한다(두 번 불러도 한 번이다).
+    const slrOverlay = this.floodOverlay();
+    if (slrOverlay) slrOverlay.setOn(!!(this.layers.slr && this.layers.slr.on));
+    for (const id of this.activeIds()) if (isFieldLayerId(id)) return 'field';
+    // 잠기는 땅 **색면**이 켜져 있을 때만 색면 대접이다 — 구름(0.92)이 물가의 1.6 px 테를 덮기 때문이다.
+    // ⚠️ 2026-09-20 작업 E4: 원반만 있는 화면에서는 구름을 끄지 않는다(원반은 renderOrder 7 로 구름 위에 선다).
+    //    그 판정은 starField().drawing 이 하므로(색면이 켜졌을 때만 참) 여기서 'field' 를 내도 구름은 그대로 있다 —
+    //    윤곽선·입자 색도 전부 drawing 을 같이 보고 움직인다(main.js starLayers.tick).
+    if (this.layers.slr && this.layers.slr.on) return 'field';
+    return this.layers.wind && this.layers.wind.on ? 'wind' : null;
+  }
+
+  // 지금 주인공인 색면 — { id, drawing }(없으면 null). drawing 은 **셰이더 면이 실제로 보이는가**다:
+  // 켜져 있어도 예보 범위 밖·자료 없음이면 거짓이다. main.js 가 이것을 보고 구름·윤곽선을 물린다
+  // (안 보이는 색면 때문에 구름까지 끄면 맨 지구만 남는다 — 2026-09-20 작업 E3 ③).
+  // 매 프레임 불린다: 열쇠 배열을 만들지 않고, 돌려주는 객체도 하나를 쥐고 돌려쓴다(폰 발열).
+  starField() {
+    const fields = this._fields;
+    if (fields) {
+      for (const id in fields) {
+        const l = this.layers[id];
+        if (!l || !l.on || !fields[id].active) continue;
+        const out = this._starFieldOut || (this._starFieldOut = { id: null, drawing: false });
+        out.id = id;
+        out.drawing = fields[id].isDrawing();
+        return out;
+      }
+    }
+    // 잠기는 땅(slr)은 FIELD_DESCRIPTORS 밖이지만 **화면에서는 색면과 같은 것**이다(위 starLayer 머리말).
+    // 여기서 말해 주지 않으면 starLayer 가 'field' 라 해도 drawing 이 거짓이라 구름이 0.92 그대로 남는다 —
+    // 물가의 1.6 px 테가 흰 구름에 묻혀, 켜도 '구름 낀 지구'가 된다(작업 E1 ④ × E3 ③ 이 만나는 자리).
+    // ⚠️ floodOverlay() 는 '지은 것'을 돌려준다(꺼도 obj 는 남고 visible 만 뒤집힌다) — 켜짐은 따로 본다.
+    const flood = this.layers.slr && this.layers.slr.on ? this.floodOverlay() : null;
+    if (flood) {
+      const out = this._starSlrOut || (this._starSlrOut = { id: 'slr', drawing: false, quantity: FLOOD_QUANTITY });
+      out.drawing = !!flood.drawing;
+      return out;
+    }
+    return null;
+  }
+
+  // 누른 자리의 모델값을 범례·카드에 적는다(켜진 색면이 없으면 아무 일도 없다 · 네트워크 0건).
+  fieldProbe(lat, lon) { const f = activeField(this); return f ? f.probe(lat, lon) : null; }
+
+  // 지점 값 카드 { title, html, badge } — 그 색면이 꺼져 있으면 null(부른 쪽이 제 길로 간다).
+  fieldReadout(id, lat, lon) { const f = activeField(this, id); return f ? f.readoutNote(lat, lon) : null; }
+
+  // 색면 카드의 단추(등온선 켬/끔 · 2°C|5°C). 처리했으면 true.
+  fieldAction(action, ds) { const f = activeField(this, (ds && ds.layer) || null); return f ? f.handleAction(action, ds || {}) : false; }
+
+  /**
+   * ── 색면 배타 묶음에 '잠기는 땅'(slr)도 넣는다 (2026-09-21 반박 검증) ─────────────────────────────────
+   * 무엇이 잘못돼 있었나: slr 은 FIELD_DESCRIPTORS 밖이라 색면끼리의 울타리(field-layer.js toggleFieldLayer)에
+   * 걸리지 않아 **기온 색면과 동시에 켜졌다.** 그런데 화면에서 둘은 같은 것이다 —
+   *   · 잠기는 땅 겹면은 색면과 **같은 renderOrder**(FIELD_RENDER_ORDER)에 반지름만 낮다. 같이 서면 색면이 그것을 덮는다:
+   *     메뉴는 '잠기는 땅 켜짐'이라는데 지구에는 없다.
+   *   · 범례는 앱에 하나인데 둘 다 **같은 세기**(LEGEND_PRIORITY_FIELD)로 든다. 세기가 같으면 나중에 show 한 쪽이
+   *     이기므로(field-legend.js topOwner), 기온 색면이 지구를 덮고 있는데 그 색을 읽을 눈금이 화면에서 사라진 채 머물렀다.
+   *     색면의 publish() 는 매 프레임이 아니라 setStatus·handleAction·probe 때만 도는 탓에 그 상태가 오래갔다.
+   * 그래서 toggleFieldLayer 의 울타리 주석("범례는 하나뿐이라 어느 쪽과도 맞지 않는 색이 화면에 남는다")이
+   * 가리키던 바로 그 자리를 slr 까지 넓힌다. starLayer() 가 이미 "잠기는 땅은 … 화면에서는 색면과 같은 것"이라 적어 두었다.
+   *
+   * 고르지 않은 길: ① 범례 세기를 낮춰 색면에 지게 하기 — 그러면 잠기는 땅이 켜진 채 제 눈금을 잃고, 화면에
+   * 두 색면이 겹치는 것은 그대로다. ② 범례를 둘 세우기 — 상자가 하나뿐이라 field-legend.js(남의 파일)를 고쳐야 한다.
+   * 지키려던 것은 하나다: **화면에 깔린 색을 값으로 되돌릴 눈금이 늘 있다.**
+   * 치르는 값도 적어 둔다: 색면을 켜면 숫자 원판도 같이 내려온다. 원판은 색면 위(renderOrder 7)에 서므로
+   * 원판만 남길 수도 있었지만, 그러면 '잠기는 땅 켜짐'이라는 메뉴 글과 안 보이는 겹면이 또 갈라진다.
+   */
+  /**
+   * 잠기는 땅이 섰으니 색면은 내려온다 — 반대 방향(_slrOff)과 짝이다.
+   *
+   * ⚠️ 2026-09-21 재검이 찾은 구멍: 이 일은 원래 toggle() 안에서 **build('slr') 을 시도하기 전에**
+   *    벌어졌다. 색면을 켜는 갈래는 `if (r && r.on)` 으로 막아 두었는데("켜기에 실패했는데 남의 층을
+   *    내리지 않는다") 이쪽만 무방비였다 — ar6.json 은 485 KB 라 이동통신망에서 실패할 수 있고,
+   *    그러면 기온 색면을 보고 있던 사용자에게 **둘 다 꺼진 빈 지구**가 남았다(main.js 는 UNAVAILABLE
+   *    카드를 띄우지만, 그 카드는 잠기는 땅이 안 왔다고만 말한다 — 기온이 왜 사라졌는지는 아무도 말하지 않는다).
+   *    이제 부르는 쪽이 **선 뒤에** 부른다. 되살리는 길을 고르지 않은 이유: 색면을 되살리려면 field.on()
+   *    이 자료를 다시 받아야 하고, 그 받기가 또 실패할 수 있다 — 실패를 되돌리려다 실패를 하나 더 만든다.
+   *
+   * ⚠️ 내릴 것이 없으면 **약속을 만들지 않는다**(null 을 돌려준다). 부르는 쪽이 그때 await 하면 build() 가
+   *    다음 마이크로태스크로 밀려 '켜는 중에 껐다 다시 켜기'를 재는 시험의 차례가 어긋난다(flood-overlay.test.mjs).
+   */
+  _slrFieldsOff() {
+    const on = Object.keys(this._fields || {}).filter((o) => {
+      const c = this.layers[o];
+      return c && (c.on || c.loading);
+    });
+    if (!on.length) return null;
+    return (async () => { for (const o of on) await toggleFieldLayer(this, o); })();
+  }
+
+  /** 색면이 켜졌으니 잠기는 땅은 내려온다 — 끄는 갈래와 **같은 세 줄**을 쓴다(두 곳에 적으면 갈라진다). */
+  _slrOff() {
+    const l = this.layers.slr;
+    if (!l) return;
+    // ⚠️ **받는 중인 것도 내려야 한다**(2026-09-21 재검이 찾은 구멍). ar6.json 은 485 KB 라
+    //    느린 망에서 눈에 띄게 걸린다. 그 사이에 색면을 켜면 예전에는 `!l.on` 에서 그냥 돌아갔고,
+    //    잠시 뒤 build 가 끝나며 l.on = true 가 돼 **둘이 같이 켜졌다** — 이 울타리가 없애려던 바로 그 상태다.
+    //    끄는 길(toggle 의 `l.loading` 갈래)과 같은 방법으로 취소한다: build 가 끝나고 스스로 버린다.
+    if (l.loading) { l.cancelled = true; if (this.layers.slr === l) delete this.layers.slr; return; }
+    if (!l.on) return;
+    if (l.obj) l.obj.visible = false;
+    l.on = false;
+  }
+
   async toggle(id) {
+    // 셰이더 색면이 맡은 레이어(기온)는 저쪽에서 켜고 끈다. 아래의 build() → fetchFor('tempgrid')(5° 그라데이션) 길로는 가지 않는다 —
+    // GFS 프레임이 없으면 그라데이션으로 물러나지 않고 '자료 없음'과 이유를 돌려준다.
+    if (isFieldLayerId(id)) {
+      const r = await toggleFieldLayer(this, id);
+      if (r && r.on) this._slrOff();      // 색면이 실제로 켜졌을 때만 — 켜기에 실패했는데 남의 층을 내리지 않는다
+      return r;
+    }
     let l = this.layers[id];
     if (l && l.on) {
       l.obj.visible = false;
       l.on = false;
-      if (id === 'khoaflood') { this._floodSel = null; }   // 끄면 근접 허용도 함께 해제
+      // 끄면 근접 허용도, 지구 위 이름표의 선택 표시도 함께 해제한다.
+      // 세대 번호도 올린다 — 받는 중이던 시군구가 꺼진 레이어에 뒤늦게 내려앉지 않게(loadFloodDistrict 머리말).
+      if (id === 'khoaflood') {
+        this._floodSel = null; if (this._floodDiscs) this._floodDiscs.setSelected(null);
+        this._floodReq = (this._floodReq || 0) + 1;
+      }
       return { on: false };
     }
+    if (l && l.loading) { l.cancelled = true; delete this.layers[id]; return { on: false }; }
+    // 여기서부터는 전부 **켜는** 갈래다. 잠기는 땅은 색면과 같이 설 수 없으므로 색면을 내리는데(위 _slrOff
+    // 머리말의 울타리), 그 일은 잠기는 땅이 **실제로 선 뒤에** 한다 — 받다가 실패하면 기온 색면을 보고
+    // 있던 사용자에게 둘 다 꺼진 빈 지구가 남는다(_slrFieldsOff 머리말).
     if (l && l.obj) {
+      // 되살리는 길 — 받을 것이 없어 실패할 자리가 없다. 여기서는 세우기 전에 내려도 같다.
+      const off = id === 'slr' ? this._slrFieldsOff() : null;
+      if (off) await off;
       l.obj.visible = true;
       l.on = true;
       return { on: true, badge: l.meta.badge };
     }
-    if (l && l.loading) { l.cancelled = true; delete this.layers[id]; return { on: false }; }
     l = this.layers[id] = { on: false, loading: true };
     try {
       const built = await this.build(id);
@@ -321,6 +500,9 @@ export class LiveLayers {
       this.group.add(l.obj);
       l.on = true;
       l.loading = false;
+      // 섰다 — 이제서야 색면을 내린다. 취소된 잠기는 땅은 위에서 이미 돌아갔으므로 여기 닿지 않는다.
+      const off = id === 'slr' ? this._slrFieldsOff() : null;
+      if (off) await off;
       return { on: true, badge: l.meta.badge };
     } catch (e) {
       console.warn('[live-layers]', id, e);
@@ -335,6 +517,7 @@ export class LiveLayers {
       if(layer.obj)layer.obj.visible=false;
       layer.on=false;
     }
+    clearFieldLayers(this);   // 셰이더 색면은 보이지 않게만 해서는 안 꺼진다 — 시간 버스 구독을 풀고 범례를 감춘다
     this._floodSel=null;
   }
 
@@ -345,11 +528,16 @@ export class LiveLayers {
     return {
       lightning: 5, warn: 10, kmasea: 10, buoys: 20, airq: 20, wind: 20,
       tsunami: 10, seoul: 10, tyoff: 30, wildfire: 30, news: 30,
-      sstfield: 180, wavefield: 60, current: 60, tyanalog: 60,
+      // sstfield · wavefield 는 여기 없다 — 셰이더 색면으로 옮겨 가 refresh() 가 isFieldLayerId 에서 false 를 낸다.
+      // 남겨 두면 30초 타이머가 아무 일도 못 하는 호출을 3시간·1시간마다 되풀이한다(2026-09-20 반박 검증).
+      // 저장소 스스로 30분마다 다시 읽는다(field-layer.js FIELD_MANIFEST_RELOAD_MS).
+      current: 60, tyanalog: 60,
     };
   }
 
   async refresh(id) {
+    // 셰이더 색면은 스스로 갱신한다(시간 버스 · 세대 교체 · 30분마다 매니페스트). 여기로 오면 build() 가 옛 5° 격자를 받아 그라데이션으로 갈아 끼운다 — 막는다.
+    if (isFieldLayerId(id)) return false;
     const l = this.layers[id];
     if (!l || !l.on || l.loading || l.refreshing) return false;
     l.refreshing = true;
@@ -376,7 +564,12 @@ export class LiveLayers {
   disposeObj(obj) {
     if (!obj) return;
     obj.traverse((c) => {
-      if (c.geometry) c.geometry.dispose();
+      // ⚠️ 지구의 지오메트리를 **같이 쓰는** 면이 있다(잠기는 땅 — 정점이 같아야 지형과 평행하다 · flood-overlay.js).
+      //    표가 붙은 것은 여기서 버리지 않는다: 버리면 켜는 중에 한 번 껐다가 지구가 통째로 사라진다.
+      if (c.geometry && !(c.userData && c.userData.keepGeometry)) c.geometry.dispose();
+      // 겹면(잠기는 땅)은 ShaderMaterial 이라 m.map 이 없다 — 값 텍스처(riseTex)와 색 표(paletteTex)는 uniforms 안에 있어
+      // 아래 갈래가 못 본다. 스스로 버리게 한다(여기가 이 겹면을 버리는 **유일한 자리**다 · buildSlr 머리말).
+      if (c.userData && c.userData.flood) c.userData.flood.dispose();
       if (c.material) {
         const mats = Array.isArray(c.material) ? c.material : [c.material];
         for (const m of mats) {
@@ -406,6 +599,29 @@ export class LiveLayers {
     }, 30000);
   }
 
+  // (2026-09-23 · PERF-LTE V2-2) 지형 고도맵이 뒤늦게 도착했다 — 그 전에 지은 레이어는 고도 0 에 서 있어 50× 부조가 올라오면
+  //   산 밑에 묻힌다. 과장이 바뀐 것과 같은 길로 다시 세운다(onExaggerChanged 는 과장이 같으면 돌아가므로 기억값을 비운다).
+  //   셰이더 색면(바다 색면 sstfield·sstanom·wavefield 포함 — 셋 다 FIELD_DESCRIPTORS 다)·잠기는 땅은 지구 uniform 객체
+  //   (uHeightMap·uHasHeight)를 그대로 물고 있어 저절로 따라온다 — onExaggerChanged 가 건너뛰는 그대로 둔다.
+  //   ⚠️ 남는 것: 색면의 숫자 라벨(field-labels.js setLabels)은 키프레임이 바뀔 때만 고도를 읽는다 — 지형 전에 켠 색면의 라벨은
+  //      다음 키프레임까지 고도 0 자리(산 밑)에 선다. 기호 가림판(field-symbols.js ensureMask)은 지형이 없으면 굽지 않고 다음에 다시 해 본다.
+  //   (2026-09-23 정정 · 검수) 라벨은 이제 아래에서 같은 목록으로 다시 세운다 — '다음 키프레임까지 산 밑'은 더 이상 남지 않는다.
+  onTerrainReady() {
+    this.lastExagger = null;
+    this.onExaggerChanged();
+    // (2026-09-23 · V2-2 검수) 위 ⚠️ 의 '라벨이 다음 키프레임까지 산 밑' 을 여기서 닫는다 — 켜진 색면의 라벨을 **같은 목록**으로
+    //   다시 세우면 setLabels 가 도착한 고도맵으로 높이를 다시 읽는다(field-labels.js · 모듈은 고치지 않는다 · 값은 그대로).
+    //   기압 기호(field-symbols)는 지형 전에는 가림판이 없어 그리지 않으므로 다시 세울 것이 없다.
+    for (const f of Object.values(this._fields || {})) {
+      const L = f && f.active && f.labels;
+      if (!L || !L.count || !Array.isArray(L.pool)) continue;
+      try {
+        const list = L.pool.slice(0, L.count).map((s) => s.userData && s.userData.fieldLabel).filter(Boolean);
+        if (list.length === L.count) L.setLabels(list);
+      } catch (e) { console.warn('[live-layers] 지형 뒤 라벨 다시 세우기 실패', e); }
+    }
+  }
+
   // 지형 과장 변경 → 로드된 레이어를 원본 데이터로 재배치 (재요청 없음)
   onExaggerChanged() {
     const ex = this.getExagger();
@@ -413,6 +629,15 @@ export class LiveLayers {
     this.lastExagger = ex;
     for (const [id, l] of Object.entries(this.layers)) {
       if (!l.obj || !l.data) continue;
+      // 셰이더 색면(js/field-layer.js)은 지형 uniform 을 지구와 **같은 객체로** 물고 있어 과장이 바뀌면 저절로 따라간다.
+      // 여기로 오면 buildFromData 가 옛 그라데이션 껍질을 새로 지어 갈아 끼운다 — 막는다(refresh 와 같은 규칙).
+      if (isFieldLayerId(id)) continue;
+      // 바다 색면은 과장과 무관하다 — 껍질 반지름은 고정(해수면은 과장해도 r=1)이고 육지 가림은
+      // 고도의 부호만 본다. 다시 지으면 슬라이더 한 칸마다 같은 그림을 새로 올릴 뿐이다.
+      if (OCEAN_FIELD_IDS.has(id)) continue;
+      // 잠기는 땅(slr)도 지구의 uniform 묶음을 그대로 물고 있어 과장을 저절로 따라간다. 여기로 오면 1° IDW 격자까지
+      // 다시 구우면서 같은 그림을 새로 올릴 뿐이다(슬라이더 한 칸마다).
+      if (id === 'slr') continue;
       const revision = l.geometryRevision = (l.geometryRevision || 0) + 1;
       this.buildFromData(id, l.data).then((built) => {
         if(this.layers[id] !== l || l.geometryRevision !== revision || l.cancelled) {this.disposeObj(built.obj);return;}
@@ -427,6 +652,9 @@ export class LiveLayers {
   }
 
   async build(id) {
+    // 바다 색면이면 자료를 받는 동안 육지 가림판을 같이 만들기 시작한다(첫 번만 · 이후는 저장된 판).
+    // 실패는 여기서 삼킨다 — oceanFieldLayer 가 같은 약속을 다시 기다리고, 거기서 대체 규칙으로 간다.
+    if (OCEAN_FIELD_IDS.has(id)) this.oceanMask().catch(() => {});
     const data = await this.fetchFor(id);
     return this.buildFromData(id, data);
   }
@@ -498,14 +726,11 @@ export class LiveLayers {
         });
       case 'tyanalog': return fetchJson('/ocean/cyclone-analog.json', 20000);
       case 'airq': return fetchJson('/wind/korea-air-obs.json', 20000);
+      // 바람(2026-09-20 W3): 관측소 JSON 을 받지 않는다 — GFS 10 m 바람 프레임을 입자로 흘린다(js/wind-layer.js).
+      // 목록·프레임이 없으면 load() 가 이유를 던지고, toggle 이 그것을 '자료 없음' 카드로 낸다. 막대기로 물러나지 않는다.
+      // 관측소 자료(wind/kma-aws.json · wind/gts-global.json)는 일기도 기입 모형·평년 대비 기온·내 지역이 저마다 받는다 — 여기서 끊어도 죽지 않는다.
       case 'wind':
-        return Promise.all([
-          fetchJson('/wind/kma-aws.json', 20000).catch(() => null),
-          fetchJson('/wind/gts-global.json', 25000).catch(() => null),
-        ]).then(([aws, gts]) => {
-          if (!aws && !gts) throw new Error('바람 관측 없음');
-          return { aws, gts };
-        });
+        return this.windLayer ? this.windLayer.load() : Promise.reject(new Error('자료 없음 — 바람 입자 층이 연결되지 않았습니다'));
       // ---- 전지구 확장 레이어 (1.0 캐시에 이미 매시간 올라오는 것들) ----
       case 'fireglobal': return fetchJson('/events/wildfire.json', 30000);
       case 'raingrid':
@@ -538,11 +763,18 @@ export class LiveLayers {
             .catch((e) => { this._khoaSl = null; throw e; });
         }
         return this._khoaSl;
-      // 연안 침수 범위 색인 — Lambda khoa-coast({"khoaFlood":true})가 S3 ocean/khoa/ 에 올린다
-      case 'khoaflood': return fetchJson('/ocean/khoa/flood-index.json', 20000);
+      // 연안 침수 범위 색인 — Lambda khoa-coast({"khoaFlood":true})가 S3 ocean/khoa/ 에 올린다.
+      // 원반을 놓을 자리(면적가중 중심점)는 번들 안에 있다 — 없어도 색인만으로 그린다(bbox 중점으로 물러난다).
+      case 'khoaflood': return Promise.all([
+        fetchJson('/ocean/khoa/flood-index.json', 20000),
+        // ⚠️ no-store — 이 파일은 data/* 라 운영에서 max-age=86400 이 붙는다. 수집기가 파일 크기를 바꾼 날
+        //    카드가 **하루 동안 옛 용량**을 말한다(2026-09-21 실측: 33 MB → 4.82 MB 인데 고지는 33 MB).
+        //    3.7 KB 라 비용이 없고, 같은 Promise.all 의 짝(fetchJson)과 신선도가 같아진다.
+        fetch('./data/khoa-flood-anchors.json', { cache: 'no-store' }).then((r) => (r.ok ? r.json() : null)).catch(() => null),
+      ]).then(([idx, anch]) => ({ ...idx, _anchors: (anch && anch.districts) || null }));
       // 평년 대비 기온 — 실황과 평년을 같은 지점 id로 맞춰 뺀다
       case 'tempanom': return Promise.all([
-        fetchJson('/wind/kma-aws.json', 25000),
+        surfaceObs.doc('aws'),
         fetchJson('/wind/kma-normal.json', 30000),
       ]).then(([aws, norm]) => {
         if (!aws || !norm) throw new Error('실황 또는 평년값 없음');
@@ -567,11 +799,13 @@ export class LiveLayers {
       case 'argo': return { obj: this.buildArgo(data), data, meta: this.metaArgo(data) };
       case 'launch': return { obj: this.buildLaunch(data), data, meta: this.metaLaunch(data) };
       case 'kmasea': return { obj: this.buildKmaSea(data), data, meta: this.metaKmaSea(data) };
-      case 'slr': return { obj: this.buildSlr(data), data, meta: this.metaSlr(data) };
+      // 겹면과 그 카드는 **같은 것**이어야 한다 — 지은 겹면을 metaSlr 에 그대로 넘긴다(buildSlr 머리말).
+      case 'slr': { const obj = this.buildSlr(data); return { obj, data, meta: this.metaSlr(obj) }; }
       case 'news': return { obj: this.buildNews(data), data, meta: this.metaNews(data) };
       case 'pop': return { obj: this.buildPop(data), data, meta: this.metaPop(data) };
-      case 'sstfield': return { obj: this.buildField(data, 'sst', SST_RAMP), data, meta: this.metaSst(data) };
-      case 'wavefield': return { obj: this.buildField(data, 'wave', WAVE_RAMP), data, meta: this.metaWave(data) };
+      // 바다 색면 3종(sstfield · wavefield · sstanom)은 육지 가림판을 거쳐 짓는다 — oceanFieldLayer 주석.
+      case 'sstfield': return this.oceanFieldLayer(data, 'sst', SST_RAMP, (d) => this.metaSst(d));
+      case 'wavefield': return this.oceanFieldLayer(data, 'wave', WAVE_RAMP, (d) => this.metaWave(d));
       case 'current': return { obj: this.buildCurrent(data), data, meta: this.metaCurrent(data) };
       case 'surf': return { obj: this.buildSurf(data), data, meta: this.metaSurf(data) };
       case 'tyanalog': return { obj: this.buildTyAnalog(data), data, meta: this.metaTyAnalog(data) };
@@ -589,7 +823,7 @@ export class LiveLayers {
       case 'solaract': return { obj: new THREE.Group(), data, meta: this.metaSolarAct(data) };
       case 'crustal': return { obj: this.buildCrustal(data), data, meta: this.metaCrustal(data) };
       case 'tyens': return { obj: this.buildTyEns(data), data, meta: this.metaTyEns(data) };
-      case 'sstanom': return { obj: this.buildField(data, 'sstAnom', SSTANOM_RAMP), data, meta: this.metaSstAnom(data) };
+      case 'sstanom': return this.oceanFieldLayer(data, 'sstAnom', SSTANOM_RAMP, (d) => this.metaSstAnom(d));
       case 'seaice': return { obj: this.buildGibsShell(data), data, meta: this.metaGibs(data, 'seaice') };
       case 'lst': return { obj: this.buildGibsShell(data), data, meta: this.metaGibs(data, 'lst') };
       case 'aurora': return { obj: this.buildAurora(data), data, meta: this.metaAurora(data) };
@@ -925,26 +1159,103 @@ export class LiveLayers {
       (by[it.region] = by[it.region] || []).push(it);
     }
     this._newsBy = by;
-    const keys = Object.keys(by);
-    if (!keys.length) return g;
-    const maxN = Math.max(...keys.map((k) => by[k].length));
-    keys.forEach((k) => {
-      const [lat, lon] = NEWS_REGION[k];
-      const n = by[k].length;
-      const c = new THREE.Color(0xec7aa6);
-      const p = llToV3(lat, lon, this.surfR(lat, lon, 0.004));
-      const up = p.clone().normalize();
-      const h = 0.006 + (n / maxN) * 0.03;
-      const pos = new Float32Array([p.x, p.y, p.z, p.x + up.x * h, p.y + up.y * h, p.z + up.z * h]);
-      const lg = new THREE.BufferGeometry();
-      lg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-      g.add(new THREE.Line(lg, new THREE.LineBasicMaterial({
-        color: c, transparent: true, opacity: 0.8, depthWrite: false,
-      })));
-    });
-    g.add(this.makePoints(keys.map((k) => ({ lat: NEWS_REGION[k][0], lon: NEWS_REGION[k][1], c: new THREE.Color(0xec7aa6) })),
-      { size: 9, lift: 0.004, additive: true }));
+    // ⚠️ 2026-09-20 PD: v2 에서 막대기 기호 전면 금지(AGENTS.md 'v2 제품 의도', 지시서 people.news 0단계).
+    //   여기는 지역마다 1px 분홍 수직선(높이 = 기사 수)과 분홍 점 하나를 세우고 있었다 —
+    //   지구 위에 분홍 막대기 5개가 서 있을 뿐 '뉴스가 지도에 있다'로 읽히지 않았다. 둘 다 없앴다.
+    //   · 막대가 말하던 것(기사 수)은 높이가 아니라 **숫자**로 말한다 — 네모칸 '동남아 24건'.
+    //   · 점·꼬리·지시선도 달지 않는다. 대표점은 사건이 난 자리가 아니라 우리가 고른 지역의 한가운데다.
+    //     거기에 점을 찍으면 '여기서 났다'로 읽힌다. 네모칸 한가운데를 대표점에 고정하는 것으로 자리를 말한다.
+    //   · 뉴스는 지구 위 네모칸을 유지한다(PD 이전 결정). 좌표 있는 확정 사건의 기사 네모칸(v1 newsbubble.js 이식)과
+    //     누르면 Inspector 목록이 뜨는 것은 지시서 1단계 · W5 의 몫이다 — 여기서는 만들지 않는다.
+    const specs = newsChipSpecs(by);
+    specs.forEach((spec) => g.add(this.makeNewsChip(spec)));
+    // 이번에 쓰지 않은 글자의 텍스처는 푼다 — 건수가 바뀔 때마다 옛 글자가 쌓이지 않게.
+    const live = new Set(specs.map((s) => s.text));
+    for (const [text, entry] of this._newsChipTex || []) {
+      if (live.has(text)) continue;
+      entry.tex.dispose();
+      this._newsChipTex.delete(text);
+    }
     return g;
+  }
+
+  // 지역 뉴스 네모칸 하나. v1 네모칸(prototype/js/newsbubble.js)과 같은 몸통 — 어두운 판 + 색 테두리.
+  // 꼬리는 없다(위 buildNews 주석: 대표점은 사건 위치가 아니다).
+  makeNewsChip(spec) {
+    const { tex, w, h } = this._newsChipTexture(spec.text);
+    const spr = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: tex, transparent: true, depthWrite: false, sizeAttenuation: false,
+      // 깊이 검사를 끈다. 스프라이트는 화면과 나란한 판이고 판 전체가 대표점의 깊이에 놓인다.
+      // 지구 전체를 보는 축척에서는 그 판의 화면 가운데 쪽 절반이 구면 안쪽으로 들어가 잘린다 —
+      // 띄움 0.004 · 화면 가운데서 30° 떨어진 대표점이면 0.008 반경(약 50km)만 안쪽으로 가도 구면 속인데,
+      // 그 축척에서 네모칸 폭은 0.2 반경쯤 된다. 뉴스는 지구 전체를 보며 켜는 레이어라 늘 그 축척이다.
+      // (travel.js·ext-scene.js 의 라벨은 깊이 검사를 켠 채 쓴다 — 가까이서 보는 화면이라 판이 작다.)
+      // ⚠️ 위 셈은 기하로 따진 것이다. 이 작업 세션은 브라우저를 쓸 수 없어 화면으로 확인하지 못했다.
+      // 대신 지평선 너머를 직접 감춘다 — 아래 onBeforeRender.
+      depthTest: false,
+    }));
+    // 화면 높이에 대한 비율이다(sizeAttenuation:false · 시야각 48°) — 900px 화면에서 약 30px.
+    spr.scale.set((w / h) * NEWS_CHIP_SCALE, NEWS_CHIP_SCALE, 1);
+    spr.position.copy(llToV3(spec.lat, spec.lon, this.surfR(spec.lat, spec.lon, 0.004)));
+    spr.renderOrder = 8;          // 색면(2)·구름 위에서 읽혀야 한다
+    spr.frustumCulled = false;    // 절단 판정은 판 크기를 모른다(고정 화면 크기) — 많아야 NEWS_CHIP_MAX 개라 그냥 그린다
+    spr.userData.newsChip = { region: spec.region, count: spec.count, text: spec.text };
+    // tick() 은 카메라를 받지 않는다. 그리기 직전에 카메라를 받아 지구 뒤편·지평선 근처를 흐린다.
+    // visible 을 끄면 이 콜백이 다시 불리지 않아 영영 안 켜진다 — 그래서 불투명도로 한다.
+    spr.onBeforeRender = (_renderer, _scene, camera) => {
+      _chipP.setFromMatrixPosition(spr.matrixWorld);
+      _chipC.setFromMatrixPosition(camera.matrixWorld);
+      spr.material.opacity = newsChipOpacity(_chipP, _chipC);
+    };
+    return spr;
+  }
+
+  // 글자가 같으면 텍스처를 다시 그리지 않는다.
+  // 지형 과장 슬라이더를 끌면 onExaggerChanged 가 켜진 레이어를 통째로 다시 세우는데, 그 길의
+  // disposeDeep 은 텍스처(map)를 풀지 않는다 — 매번 새로 그리면 끄는 동안 텍스처가 쌓인다.
+  // (갱신 길의 disposeObj 는 map 을 푼다. 풀린 텍스처는 다음 그리기 때 다시 올라간다 — dotTex 와 같다.)
+  _newsChipTexture(text) {
+    this._newsChipTex = this._newsChipTex || new Map();
+    const hit = this._newsChipTex.get(text);
+    if (hit) return hit;
+    const S = 2;                  // 레티나에서 또렷하게 — 2배로 그리고 절반 크기로 보인다 (newsbubble.js 와 같다)
+    // ⚠️ 한글 폰트를 반드시 지정한다 — 안 하면 안드로이드·윈도우에서 대체 폰트로 떨어진다 (newsbubble.js 의 교훈)
+    const font = `600 ${13 * S}px "Noto Sans KR", -apple-system, "Apple SD Gothic Neo", system-ui, sans-serif`;
+    const probe = document.createElement('canvas').getContext('2d');
+    probe.font = font;
+    const padX = 11 * S;
+    const lw = 1.6 * S;
+    const c = document.createElement('canvas');
+    c.width = Math.ceil(probe.measureText(text).width + padX * 2);
+    c.height = NEWS_CHIP_PX * S;
+    const x = c.getContext('2d');
+    // 몸통 — 단색 판 + 분홍 테두리(이 레이어의 색 0xec7aa6). 그라데이션을 쓰지 않는다.
+    const r = 9 * S;
+    const bw = c.width - lw;
+    const bh = c.height - lw;
+    x.beginPath();
+    x.moveTo(lw / 2 + r, lw / 2);
+    x.arcTo(lw / 2 + bw, lw / 2, lw / 2 + bw, lw / 2 + bh, r);
+    x.arcTo(lw / 2 + bw, lw / 2 + bh, lw / 2, lw / 2 + bh, r);
+    x.arcTo(lw / 2, lw / 2 + bh, lw / 2, lw / 2, r);
+    x.arcTo(lw / 2, lw / 2, lw / 2 + bw, lw / 2, r);
+    x.closePath();
+    x.fillStyle = 'rgba(10,14,20,0.86)';
+    x.fill();
+    x.lineWidth = lw;
+    x.strokeStyle = 'rgba(236,122,166,0.95)';
+    x.stroke();
+    x.font = font;               // 캔버스 크기를 바꾸면 컨텍스트가 초기화된다 — 폰트를 다시 준다
+    x.textBaseline = 'middle';
+    x.fillStyle = '#eef3f8';
+    x.fillText(text, padX, c.height / 2 + S);
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.minFilter = THREE.LinearFilter;
+    tex.generateMipmaps = false;
+    const entry = { tex, w: c.width, h: c.height };
+    this._newsChipTex.set(text, entry);
+    return entry;
   }
 
   metaNews(d) {
@@ -954,15 +1265,24 @@ export class LiveLayers {
       const list = by[k].slice(0, 3).map((it) => {
         const t = new Date(it.utc);
         const ago = Number.isNaN(t.getTime()) ? '' : `${Math.max(0, Math.round((Date.now() - t.getTime()) / 3600000))}시간 전`;
-        return `&nbsp;&nbsp;<a href="${it.link}" target="_blank" rel="noopener">${(it.title || '').slice(0, 46)}</a> <span style="color:var(--text-dim)">${it.source} · ${ago}</span>`;
+        // ⚠️ 제목·매체·링크는 **남의 RSS 가 준 글자**다 — 그대로 innerHTML 에 넣으면 따옴표 하나로 속성이 열리고
+        //    javascript: 링크도 통과한다(수집기가 태그는 걷어내지만 거기까지다). 쓰나미 카드(buildTsunami 의 기관 원문
+        //    링크)와 같은 규칙: 글자는 escapeHtml, 링크는 http(s) 만. 2026-09-20 막대 제거 작업 중에 발견.
+        const title = escapeHtml((it.title || '').slice(0, 46));
+        const head = /^https?:\/\//i.test(it.link || '')
+          ? `<a href="${escapeHtml(it.link)}" target="_blank" rel="noopener noreferrer">${title}</a>`
+          : title;
+        return `&nbsp;&nbsp;${head} <span style="color:var(--text-dim)">${escapeHtml(it.source || '')} · ${ago}</span>`;
       }).join('<br/>');
-      return `<b>${k}</b> ${by[k].length}건<br/>${list}`;
+      return `<b>${escapeHtml(k)}</b> ${by[k].length}건<br/>${list}`;
     }).join('<br/>');
     const note = `${(d.items || []).length}건 · ${keys.map((k) => `${k} ${by[k].length}`).join(' · ')}`;
+    // 2026-09-20: 이 문장은 '…묶어 세웠습니다(막대 높이 = 기사 수)'였다. 막대를 없앴으므로(buildNews 주석)
+    // 화면에 실제로 있는 것 — 지역마다 네모칸 하나, 그 안의 숫자가 기사 수 — 으로 고쳐 적는다.
     return {
       badge: 'LIVE', note,
-      cardHtml: `세계 각 지역 매체가 지금 내보내는 헤드라인입니다 — 기사에 좌표가 없어 <b>지역 대표점</b>에 묶어 세웠습니다(막대 높이 = 기사 수). 특정 지점의 사건 위치가 아닙니다.<br/>${rows}<br/>`
-        + `출처 ${(d.source || '').slice(0, 120)}<br/>헤드라인·링크만 표시하며 본문은 각 매체에서 확인하세요 · ${(d.generated || '').replace('T', ' ').slice(0, 16)}Z`,
+      cardHtml: `세계 각 지역 매체가 지금 내보내는 헤드라인입니다 — 기사에 좌표가 없어 <b>지역 대표점</b>에 지역마다 네모칸 하나로 묶었습니다(네모칸의 숫자 = 기사 수). 특정 지점의 사건 위치가 아닙니다.<br/>${rows}<br/>`
+        + `출처 ${escapeHtml((d.source || '').slice(0, 120))}<br/>헤드라인·링크만 표시하며 본문은 각 매체에서 확인하세요 · ${escapeHtml((d.generated || '').replace('T', ' ').slice(0, 16))}Z`,
     };
   }
 
@@ -1069,10 +1389,19 @@ export class LiveLayers {
   // 바다는 지오메트리상 정확히 반경 1.0(수심은 변위 없음)이라 1.0012 셸이면 딱 위에 앉는다.
   // opts.radius: 대기 격자는 과장된 지형에 파묻히므로 구름처럼 지형 위에 얹는다.
   //              바다 격자(수온·파고)는 해수면이 정확히 r=1이라 기본값 그대로 쓴다.
+  // ⚠️ 2026-09-20 — 위 두 줄은 '바다 위에서는' 맞지만 육지를 빠뜨린 말이었다. 1.0012 껍질은 지형을
+  //    모른다: 과장 50× 에서 해발 153 m 이하 육지가 껍질 아래에 놓여 물빛에 덮였고(가까이 가면 과장이
+  //    자동으로 낮아져 1,529 m 까지), 값 없는 칸을 알파 0 으로 두는 것만으로는 막히지 않았다 —
+  //    파고 격자는 해안 육지의 점에도 가까운 바다 값을 실어 온다(marine-grid cell_selection=sea).
+  //    그래서 바다 3종은 아래 두 옵션 중 하나를 반드시 받는다(oceanFieldLayer). 대기 격자는 받지 않는다.
+  // opts.alphaMap:   육지 가림판 텍스처(oceanMask). 색 텍스처는 그대로 두고 알파만 곱한다 — 지울 뿐 칠하지 않는다.
+  // opts.erodeNodes: 지형을 못 받아 가림판이 없을 때의 대체 규칙 — 값 없는 칸에 닿은 격자점은 칠하지 않는다.
   buildField(d, key, ramp, opts = {}) {
     const arr = d[key];
     if (!arr) throw new Error(`${key} 격자 없음`);
     const { nx, ny, res, lat0, lon0 } = d;
+    // 경도로 한 바퀴 도는 격자면 이웃 판정도 날짜변경선을 넘어 감는다(동아시아판은 감지 않는다).
+    const open = opts.erodeNodes ? erodedGridNodes(arr, nx, ny, nx * res >= 360 - 1e-6) : null;
     const CW = Math.round(360 / res);
     const CH = Math.round(180 / res);
     const can = document.createElement('canvas');
@@ -1094,11 +1423,13 @@ export class LiveLayers {
         const px = ((Math.floor((lon + 180) / res) % CW) + CW) % CW;
         const c = ramp(v);
         if (!c) continue;              // ramp가 null이면 '칠하지 않음' — 0을 값으로 그리지 않는다
-        const o = (py * CW + px) * 4;
-        img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 235;
+        // 통계는 칠하기 전에 센다 — 카드의 'N칸 · 범위'는 받은 자료의 것이지 화면에 남은 칸의 것이 아니다.
         n += 1;
         if (v < min) min = v;
         if (v > max) max = v;
+        if (open && !open[y * nx + x]) continue;   // 대체 규칙: 해안(값 없는 칸)에 닿은 격자점은 비운다
+        const o = (py * CW + px) * 4;
+        img.data[o] = c[0]; img.data[o + 1] = c[1]; img.data[o + 2] = c[2]; img.data[o + 3] = 235;
       }
     }
     ctx.putImageData(img, 0, 0);
@@ -1113,11 +1444,70 @@ export class LiveLayers {
       new THREE.SphereGeometry(opts.radius || 1.0012, 256, 128),
       new THREE.MeshBasicMaterial({
         map: tex, transparent: true, opacity: opts.opacity || 0.82, depthWrite: false,
+        // 가림판은 세 바다 레이어가 같이 쓰는 한 장이다. disposeObj 는 m.map 만 버리므로
+        // 레이어를 갱신·해제해도 이 판은 남는다 — 여기서 복제하거나 버리지 말 것.
+        alphaMap: opts.alphaMap || null,
       }),
     );
     mesh.rotation.y = -Math.PI / 2; // 구면 UV(경도 0 기준)와 렌더 좌표 정렬
     mesh.renderOrder = 2;
     return mesh;
+  }
+
+  // ---------- 바다 색면의 육지 가림판 (세 레이어 공용 · 한 번만 만든다) ----------
+  // 고도(heightAt = main.js heightAtJs)를 0.25° 칸으로 훑어 '바다로 확인된 칸'만 255 인 텍스처를 만든다.
+  // 415만 점을 한 번에 돌면 휴대폰에서 화면이 멈추므로 8ms 씩 쪼개 돈다(buildOceanMaskAsync).
+  // 지형은 로딩 뒤 바뀌지 않으므로 쓸 수 있는 판은 끝까지 붙들어 둔다. 쓸 수 없는 판(지형 미수신)은
+  // 붙들지 않는다. 지금 흐름에서는 main.js 가 지형 로딩을 기다린 뒤에야 LiveLayers 를 만들므로
+  // 지형이 뒤늦게 오는 일은 없고 대체 규칙이 그 세션 내내 간다 — 붙들지 않는 것은 지형 로딩을
+  // 비동기로 바꾸는 날, 묵은 '지형 없음' 판이 남아 바다가 계속 깎이는 것을 막기 위해서다.
+  // (2026-09-23 정정 · PERF-LTE V2-2) 그날이 왔다 — main.js 는 이제 지형을 기다리지 않고 덮개를 걷는다. 그래서 '지형이 뒤늦게 오는
+  //   일은 없고'는 더 이상 참이 아니다. 지형이 오기 전에 이 판을 부르면 '쓸 수 없는 판'이 나오고 위 규칙대로 붙들지 않으므로
+  //   지형이 온 뒤의 다음 부름이 새로 굽는다 — 이 규칙이 바로 그날을 위해 있던 것이다.
+  // (지형이 통째로 없을 때 다시 훑는 값은 성긴 탐침 648점이라 싸다.)
+  //
+  // 이 판의 값: 육지에 닿은 0.25° 칸과 그 이웃 칸이 비므로 곧은 해안에서 약 15~40 km 까지는 색이 없고,
+  // 섬 하나가 둘레 약 83 km 를 비워 폭 80 km 안쪽의 좁은 바다(대한해협 서수도 · 다도해 · 세토 내해)는
+  // 통째로 색이 없다. 고장이 아니라 이 가림의 정밀도다(ocean-land-mask.js 머리말 '남은 한계').
+  // 더 좁히는 가장 싼 길은 0.125° 칸 × 점 1개(heightAt 횟수는 같고 텍스처만 2880×1440 · 16.6 MB)이고,
+  // 제대로 된 길은 P1 공통 렌더러의 프래그먼트 단위 discard 다(지시서의 다 안).
+  // 돌려주는 것: { info, texture } — texture 가 null 이면 buildField 의 대체 규칙(erodeNodes)으로 간다.
+  oceanMask() {
+    if (this._oceanMask) return this._oceanMask;
+    const job = buildOceanMaskAsync(this.heightAt).then((built) => {
+      const { cells, ...info } = built;            // 칸 배열(1 MB)은 텍스처로 옮기고 놓는다
+      if (!built.usable) {
+        if (this._oceanMask === job) this._oceanMask = null;
+        return { info, texture: null };
+      }
+      const tex = new THREE.DataTexture(oceanMaskAlphaRGBA(built), built.width, built.height, THREE.RGBAFormat);
+      // 행 0 이 남쪽이다(ocean-land-mask.js createOceanMask). DataTexture 의 기본 flipY=false 와 맞물려
+      // 첫 행이 v=0(남극)에 놓인다 — flipY 를 켜면 가림판만 위아래가 뒤집혀 남반구 바다가 사라진다.
+      tex.minFilter = THREE.LinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      tex.wrapS = THREE.RepeatWrapping;            // 색 텍스처와 같은 감김 — 날짜변경선 이음매 없음
+      tex.wrapT = THREE.ClampToEdgeWrapping;
+      tex.generateMipmaps = false;
+      tex.needsUpdate = true;                      // 색이 아니라 알파다 — colorSpace 는 건드리지 않는다
+      return { info, texture: tex };
+    }).catch((e) => {
+      // 가림판이 죽어도 레이어는 죽이지 않는다 — 대체 규칙으로 그린다.
+      console.warn('[live-layers] 바다 가림판 실패', e);
+      if (this._oceanMask === job) this._oceanMask = null;
+      return { info: null, texture: null };
+    });
+    this._oceanMask = job;
+    return job;
+  }
+
+  // 바다 색면 한 장. 가림판을 기다린 뒤 buildField → meta 를 **같은 틱에** 잇는다 —
+  // meta 는 buildField 가 방금 채운 this._fieldStat 을 읽는데, 두 바다 레이어가 동시에 지어질 때
+  // 사이에 await 가 끼면 남의 통계를 읽는다.
+  async oceanFieldLayer(data, key, ramp, metaOf) {
+    const mask = await this.oceanMask();
+    this._oceanMaskInfo = mask.info;               // 카드의 '바다에만 칠합니다' 줄이 읽는다
+    const obj = this.buildField(data, key, ramp, mask.texture ? { alphaMap: mask.texture } : { erodeNodes: true });
+    return { obj, data, meta: metaOf(data) };
   }
 
   // ---------- 전지구 산불 화점 (NASA FIRMS · VIIRS 375m NRT) ----------
@@ -1178,7 +1568,7 @@ export class LiveLayers {
       rain: ['강수', 'mm', '시간당 강수량 — <b>0.1mm 미만은 칠하지 않습니다</b>(안 오는 곳을 비로 그리지 않기 위해)', 'Open-Meteo (GFS/ECMWF)'],
       t: ['기온', '°C', '지상 2m 기온', 'Open-Meteo (GFS/ECMWF)'],
       mslp: ['해면기압', 'hPa', '해면 환산 기압 — 저기압(붉은색)이 폭풍의 자리입니다', 'Open-Meteo (GFS/ECMWF)'],
-      spd: ['풍속', 'm/s', '지상 10m 바람의 세기(방향은 바람 관측 레이어)', 'Open-Meteo (GFS/ECMWF)'],
+      spd: ['풍속', 'm/s', '지상 10m 바람의 세기(방향과 흐름은 바람 흐름 레이어)', 'Open-Meteo (GFS/ECMWF)'],
       pm25: ['초미세먼지 PM2.5', '㎍/㎥', '한국 환경부 4등급 색(좋음·보통·나쁨·매우나쁨) 기준', 'Open-Meteo Air Quality (CAMS)'],
       uv: ['자외선 지수', '', '밤(0)은 칠하지 않습니다', 'Open-Meteo Air Quality (CAMS)'],
     };
@@ -1188,7 +1578,8 @@ export class LiveLayers {
     return {
       badge: 'MODEL', note,
       cardHtml: `<b>전지구 ${ko}</b> — ${Math.round(360 / d.res)}×${Math.round(180 / d.res)} (${d.res}°) 격자 중 값이 있는 <b>${(s.n || 0).toLocaleString()}칸</b>을 칠합니다.<br/>`
-        + `${desc}<br/>관측 범위 ${rng}<br/>`
+        // '관측 범위'라고 적혀 있었다 — 이 카드의 격자는 전부 수치예보 모델값이다(바로 아래 줄이 그렇게 말한다). 모델값을 관측이라 부르지 않는다.
+        + `${desc}<br/>모델 범위 ${rng}<br/>`
         + `이 격자는 <b>관측이 아니라 수치예보 모델값</b>입니다 — 관측이 필요하면 지점 관측 레이어를 쓰세요.<br/>`
         + `지형 과장(${this.getExagger ? Math.round(this.getExagger()) : 1}×) 때문에 산에 파묻히지 않도록 <b>대기층 높이</b>에 얹어 그립니다.<br/>`
         + `출처 ${d.source || src} · 기준시각 ${kstShort(d.time)}`,
@@ -1323,46 +1714,147 @@ export class LiveLayers {
   }
 
   // ---------- 연안 침수 범위 (국립해양조사원 침수 예상도, 시군구별 온디맨드) ----------
+  // 전국 색인은 **누르기 전에 읽혀야 한다**. 2026-09-20 W6 이전에는 시군구마다 점 하나였고,
+  // 그 점의 색은 `count`(침수면 **개수**)의 로그였다 — 개수는 면적도 위험도도 아니다(js/flood-discs.js 머리말).
+  // 지금은 구간색 원반 + 이름이다. 지표·색·자리를 고른 근거는 전부 저 파일에 적혀 있다.
   buildFloodIndex(d) {
     const rows = (d.districts || []).filter((r) => r.count > 0 && r.bbox);
-    const items = rows.map((r) => {
-      const t = Math.min(1, Math.log10(1 + r.count) / 3);
-      return {
-        lat: (r.bbox[1] + r.bbox[3]) / 2,
-        lon: (r.bbox[0] + r.bbox[2]) / 2,
-        c: { r: 0.35 + t * 0.55, g: 0.7 - t * 0.3, b: 1.0 },
-      };
-    });
+    const specs = floodDiscSpecs(rows, d._anchors || null);
     const g = new THREE.Group();
-    g.add(this.makePoints(items, { size: 9, lift: 0.006, opacity: 0.95 }));
+    if (this._floodDiscs) { this._floodDiscs.dispose(); this._floodDiscs = null; }
+    const discs = createFloodDiscs({
+      THREE,
+      specs,
+      surfR: (lat, lon, lift) => this.surfR(lat, lon, lift),
+      ramp: FLOOD_RAMP,               // ⚠️ 면을 칠할 때와 **같은 함수**다(loadFloodDistrict) — 색이 갈라질 자리를 두지 않는다
+      horizonOpacity: newsChipOpacity,
+      llToV3,
+    });
+    g.add(discs.object);
+    this._floodDiscs = discs;
     this._floodDistricts = rows;
+    this._floodAnchorCount = specs.filter((s) => s.anchored).length;
     this._floodSel = null;
     return g;
   }
 
   metaFloodIndex(d) {
     const rows = (this._floodDistricts || []).slice().sort((a, b) => b.count - a.count);
-    const buttons = rows.map((r) =>
-      `<button class="simgo" style="margin:2px 3px 2px 0;padding:8px 12px;min-height:44px;font-size:14px" `
-      + `data-action="flood-district" data-sgg="${escapeHtml(r.sggCd)}">${escapeHtml(r.name)} <i style="opacity:.6">${r.count}</i></button>`).join('');
+    const specs = this._floodDiscs ? this._floodDiscs.specs() : [];
+    const byCode = new Map(specs.map((s) => [s.sggCd, s]));
+    const buttons = rows.map((r) => {
+      const s = byCode.get(r.sggCd);
+      // 용량은 **보이는 글자**로 적는다. title= 는 폰에서 안 뜨는데, 경고가 필요한 쪽이 바로 폰이다.
+      // 무거운 곳만 적는다 — 69개 단추에 전부 붙이면 정작 33 MB 가 묻힌다.
+      const heavy = s && Number.isFinite(s.bytes) && s.bytes >= FLOOD_HEAVY_BYTES ? floodSizeNote(s.bytes) : '';
+      return `<button class="simgo" style="margin:2px 3px 2px 0;padding:8px 12px;min-height:44px;font-size:14px" `
+        + `data-action="flood-district" data-sgg="${escapeHtml(r.sggCd)}">${escapeHtml(r.name)}`
+        + `${s ? ` <i style="opacity:.6">최대 ${escapeHtml(floodClassLabel(s.depthKey))}</i>` : ''}`
+        + `${heavy ? ` <i style="opacity:.75">· ${escapeHtml(heavy)}</i>` : ''}</button>`;
+    }).join('');
     const empty = (d.districts || []).filter((r) => !r.count).map((r) => r.name);
+    // 원반의 색이 무엇인지 — 자료에 실제로 있는 구간만. 색은 면을 칠할 때와 같은 FLOOD_RAMP 다.
+    const legend = floodLegendHtml(specs, FLOOD_RAMP);
+    // ⚠️ 이 카드는 레이어를 세우는 **그 순간** 굳는다 — 아직 한 프레임도 안 그렸으므로 shown() 은 0 이다.
+    //    여기에 지금 개수를 적으면 "0곳만 붙어 있습니다"가 영영 남는다. 여기는 규칙만 적고,
+    //    지금 개수는 그림이 돈 뒤에 만들어지는 시군구 카드(floodDistrictCardHtml)가 말한다.
+    const hidden = floodThinRuleNote(specs.length);
+    /* 기관 설명문(d.note)과 색인이 들고 온 시군구 수가 어긋나면 **화면이 그 사실을 적는다.**
+       남의 문장을 그대로 옮기기만 하면 한 카드가 같은 자리에서 두 수를 말한다(실제로 설명문 70 · 표 69 였다).
+       어느 곳이 빠졌는지는 이 자료로 알 수 없다 — 모르는 것과 없는 것을 가른다.
+       ⚠️ 수를 여기 박지 않는다: 설명문에서 읽어 제 표와 견준다.
+       2026-09-21 수집기가 설명문의 수를 제 표(FLOOD_SGG)에서 세게 고쳐 **지금은 둘이 같고 이 줄은 안 뜬다.**
+       그래도 코드를 남겨 둔다 — 기관이 목록을 늘리거나 줄이는 날 같은 어긋남이 되돌아온다.
+
+       ⚠️⚠️ 2026-09-21 반박 검증 — **견주는 상대를 바꿨다.** 예전에는 `rows.length`(count>0 && bbox 로 거른
+       **자료가 있던** 곳)와 견줬다. 그런데 설명문의 수는 받으러 **간** 시군구 수다 — 설명문 스스로
+       "이번에 실제로 자료가 있는 곳은 coveredCount 에 적습니다" 라고 밝히고 있다. 시도한 수와 성공한
+       수를 견주는 셈이라, 기관 쪽에서 한 곳이 비어 오는 날 아무것도 어긋나지 않았는데 카드가
+       "1곳이 어긋납니다" 라고 적는다. 게다가 그 빈 곳은 바로 아래 '자료가 비어 있는 곳' 줄이 이미
+       이름까지 말한다 — 같은 일을 두 번, 그것도 한 번은 틀리게 말하는 자리였다.
+       이제 **담겨 온 목록의 길이**(같은 뜻)와 견준다. */
+    const said = Number((String(d.note || '').match(/(\d+)\s*곳/) || [])[1]);
+    const listed = (d.districts || []).length;
+    const gapLine = Number.isFinite(said) && said !== listed
+      ? `<b>이 색인에 담겨 온 것은 ${listed}곳입니다</b> — 바로 위 기관 설명문은 ${said}곳이라고 적고 있어 `
+        + `${Math.abs(said - listed)}곳이 어긋납니다. 어느 곳이 빠졌는지는 이 자료에 적혀 있지 않습니다.<br/>`
+      : '';
     return {
       badge: 'PROVIDER_FORECAST',
       note: `${rows.length}곳 자료 · 침수면 ${Number(d.totalPolygons || 0).toLocaleString()}개`,
       cardHtml: `<b>연안 침수 예상도 — 기관 산출 시나리오 자료</b><br/>`
-        + `시군구를 누르면 그 지역의 <b>침수 예상 범위</b>를 볼 수 있습니다. 색은 예상 침수 깊이 구간(m)입니다.<br/>현재 침수 관측이나 이번 태풍의 예보가 아닙니다.<br/>`
+        + `<b>지금 침수도, 이번 태풍의 예보도 아닙니다.</b> 기관이 미리 계산해 둔 <b>가정 상황의 침수 예상 범위</b>입니다.<br/>`
+        + `<b>원반의 색 = ${escapeHtml(FLOOD_METRIC_KO)}</b>입니다 — 그 시군구가 통째로 그만큼 잠긴다는 뜻이 아니고, `
+        + `얼마나 넓게 잠기는지도 아닙니다. <b>원반을 누르면</b> 그 시군구의 침수 예상 면이 뜹니다(면의 색은 원반과 같은 깊이 눈금입니다).<br/>`
+        + `${legend}`
+        + `${hidden ? `${escapeHtml(hidden)}<br/>` : ''}`
         + `<div style="margin:8px 0 6px">${buttons}</div>`
         + `${escapeHtml(d.note || '')}<br/>`
+        + gapLine
         + `${empty.length ? `자료가 비어 있는 곳: ${empty.join(' · ')} — 없는 것을 그리지 않습니다.<br/>` : ''}`
+        // ⚠️ 이 자료는 **가정을 적어 주지 않는다**. 색인에도 시군구 문서에도 해수면 상승폭·재현주기 칸이 없다
+        //    (실측 2026-09-20: generated·sggCd·name·unit·count·classes·bbox·source·license 뿐).
+        //    그러니 '몇 m 오르면'이라고 말할 수 없다 — 모른다고 적는다.
+        + `<b>어떤 가정의 침수인지는 이 자료에 적혀 있지 않습니다</b> — 상승폭도 재현주기도 함께 오지 않습니다. `
+        + `기관이 공표한 예상 범위와 깊이 구간만 그대로 옮깁니다.<br/>`
+        + `<details style="margin-top:10px"><summary>왜 '개수'나 '비율'로 칠하지 않나</summary>`
+        + `색인이 주는 것은 깊이 구간별 <b>폴리곤 개수</b>뿐입니다. 개수는 기관이 면을 어떻게 잘랐나의 부산물이라 `
+        + `면적과 다릅니다 — 69곳을 전부 내려받아 재 보니 <b>61곳에서 개수 비율이 면적 비율을 부풀렸고</b>(평균 +13.9%p), `
+        + `부산 부산진구는 개수로 60.0%가 1.5 m 이상인데 면적으로는 2.7%였습니다. `
+        + `그래서 비율 대신, 면을 어떻게 잘라도 변하지 않는 <b>가장 깊은 구간</b>을 씁니다.<br/>`
+        + `원반의 자리는 침수면의 <b>면적가중 중심점</b>입니다(${this._floodAnchorCount || 0}/${specs.length}곳). `
+        + `시군구 bbox 중점에 찍으면 신안군·여수시처럼 섬이 흩어진 곳에서 바다 한가운데에 놓입니다.`
+        + `</details>`
         + `출처 ${escapeHtml(d.source || '국립해양조사원')} · ${escapeHtml(d.license || '')}<br/>자료 수집 ${escapeHtml(sourceTimeLabel(d.generated))} · 산출 기준시각 ${escapeHtml(sourceTimeLabel(d.referenceAt || d.issuedAt))}`,
     };
   }
 
-  // 시군구 하나의 침수 폴리곤을 받아 채운다. 반환: { name, count, bbox, classes } 또는 null
+  // 지금 화면의 원반을 화면 좌표로 집는다. main.js 의 선택 사슬이 부른다.
+  pickFloodDisc(x, y) {
+    const l = this.layers.khoaflood;
+    if (!l || !l.on || !this._floodDiscs) return null;
+    return this._floodDiscs.pick({ x, y });
+  }
+
+  /** 누르기 전에 화면에 적을 것 — 이름 · 용량 · 받는 중 한 줄 · 못 받았을 때 한 줄.
+   *  지구에서 원반을 누른 길과 카드 단추로 들어간 길이 **여기 하나**에서 글을 받는다(flood-discs.js 가 글을 짓는다). */
+  floodDistrictNotes(code) {
+    const key = String(code);
+    const spec = (this._floodDiscs ? this._floodDiscs.specs() : []).find((s) => String(s.sggCd) === key)
+      || (this._floodDistricts || []).find((r) => String(r.sggCd) === key);
+    // 이름을 모르면 지어내지 않는다 — 그때만 코드를 그대로 쓴다(그 코드가 화면에 나온 유일한 경우다).
+    const name = (spec && spec.name) || key;
+    const bytes = spec && Number.isFinite(spec.bytes) ? spec.bytes : null;
+    return { name, bytes, loading: floodDistrictLoadingNote({ name, bytes }), fail: FLOOD_DISTRICT_FAIL_NOTE };
+  }
+
+  // 시군구 하나의 침수 폴리곤을 받아 채운다.
+  // 반환: { code, name, count, bbox, classes … } · 자료가 아니면 null · **더 나중에 누른 요청이 있으면** { stale: true }.
+  //
+  // ⚠️ 2026-09-21 반박 검증으로 고친 것: await 앞뒤로 '아직 내가 최신인가'를 묻지 않아, 두 시군구를 잇따라 누르면
+  //    **늦게 온 옛 응답**이 _floodMesh · _floodSel · setSelected 를 덮고 main.js 의 .then 이 옛 시군구로 카메라를 날렸다.
+  //    무거운 곳이 33 MB 라 이 차이는 몇 초씩 벌어진다.
+  //    이 저장소에 같은 병의 전례가 있다: buildSlr 이 늦게 온 옛 build 에 겹면을 빼앗겼고(그 머리말), 거기서는
+  //    '공용 자리에 들지 않고 제가 지은 겹면에 붙는' 방식으로 풀었다. 여기서는 자리가 하나뿐이라(_floodMesh 는
+  //    지구에 하나) 그 방식을 그대로 쓸 수 없다 — 대신 **같은 물음**(내가 아직 최신인가)을 세대 번호로 묻는다.
+  //    말은 맞춘다: 늦게 온 쪽은 제 결과를 내놓지 않고 물러난다.
   async loadFloodDistrict(code) {
     const l = this.layers.khoaflood;
     if (!l || !l.on) return null;
-    const d = await fetchJson(`/ocean/khoa/flood/${code}.json`, 30000);
+    const req = this._floodReq = (this._floodReq || 0) + 1;
+    const mine = () => this._floodReq === req && this.layers.khoaflood === l && l.on;
+    // ⚠️ 30초로는 큰 시군구가 못 들어온다. S3 는 이 파일들에 **gzip 을 주지 않는다** —
+    //    실측(2026-09-20, 69곳 전부): 고흥군 33.0 MB · 해남군 24 MB · 여수시 21 MB, 10 MB 넘는 곳이 9곳,
+    //    중앙값 1.95 MB, 69곳 합계 306.6 MB. 이동통신망에서 33 MB 는 30초 안에 안 온다.
+    let d;
+    try {
+      d = await fetchJson(`/ocean/khoa/flood/${code}.json`, FLOOD_DISTRICT_TIMEOUT_MS);
+    } catch (e) {
+      // 늦게 온 **실패**도 늦은 것이다 — 그것으로 지금 화면의 카드를 실패로 덮지 않는다.
+      if (!mine()) return { stale: true };
+      throw e;
+    }
+    if (!mine()) return { stale: true };
     if (!d || !d.features) return null;
     if (this._floodMesh) { l.obj.remove(this._floodMesh); this.disposeObj(this._floodMesh); this._floodMesh = null; }
     const toV2 = (flat) => {
@@ -1414,6 +1906,8 @@ export class LiveLayers {
     l.obj.add(mesh);
     this._floodMesh = mesh;
     this._floodSel = { code, name: d.name, count: d.count, bbox: d.bbox, classes: d.classes, unit: d.unit, source: d.source, generated: d.generated };
+    // 지구 위 이름표를 이 시군구에 고정한다 — 카드는 다음 클릭에 덮이지만 이름표는 면이 떠 있는 내내 남는다.
+    if (this._floodDiscs) this._floodDiscs.setSelected(code);
     return this._floodSel;
   }
 
@@ -1427,8 +1921,13 @@ export class LiveLayers {
     if (!s) return '';
     const cls = Object.entries(s.classes || {}).sort((a, b) => parseFloat(a[0]) - parseFloat(b[0]))
       .map(([k, v]) => `${k}m ${v}면`).join(' · ');
+    // 이 카드는 **누른 뒤에** 만들어진다 — 그림이 이미 여러 번 돌았으므로 지금 개수가 진짜다.
+    // 화면 안 후보 수까지 받아야 '겹쳐서 가렸다'와 '화면 밖·지구 뒤편'을 가를 수 있다(flood-discs.js floodHiddenNote).
+    const hidden = this._floodDiscs
+      ? floodHiddenNote(this._floodDiscs.shown(), this._floodDiscs.onScreen(), this._floodDiscs.total()) : '';
     return `<b>${escapeHtml(s.name)} 침수 예상 범위</b> — 구역 ${s.count.toLocaleString()}개<br/>`
       + `깊이 구간별: ${cls}<br/>`
+      + `${hidden ? `${escapeHtml(hidden)}<br/>` : ''}`
       + `국립해양조사원이 산출한 <b>사전 침수 예상도</b>입니다. 현재 관측된 침수 범위는 아닙니다.<br/>`
       + `출처 ${escapeHtml(s.source || '국립해양조사원')} · 지역 자료 수집 ${escapeHtml(sourceTimeLabel(s.generated))}<br/>`
       + `<details style="margin-top:12px"><summary>지도 표현 방식</summary>지형 높이는 과장된 표현입니다. 각 예상 구역은 수평면으로 표시하며 원자료 경위도를 보존합니다. 깊이는 지도 높이 대신 위 깊이 구간으로 읽으세요.</details>`;
@@ -1709,6 +2208,7 @@ export class LiveLayers {
       cardHtml: `<b>바다가 평년보다 얼마나 뜨거운가</b> — 관측 수온에서 ${d.period || '1991-2020'} 평년값을 뺀 값입니다.<br/>`
         + `붉을수록 평년보다 높고 푸를수록 낮습니다. <b>±0.25°C 안쪽은 칠하지 않습니다</b>(평년과 같다는 뜻).<br/>`
         + `범위 ${rng} · 값 있는 해양 격자 ${(s.n || 0).toLocaleString()}칸 (동아시아 0.5°)<br/>`
+        + `${oceanMaskCardLine(this._oceanMaskInfo)}<br/>`
         + `'26도'보다 '평년보다 3도 높다'가 태풍·폭염을 설명합니다.<br/>`
         + `출처 ${d.source || 'NOAA OISST v2.1'} · ${d.attribution || ''} · 관측일 ${(d.observed || '').slice(0, 10)}`,
     };
@@ -1721,6 +2221,7 @@ export class LiveLayers {
       badge: 'OBSERVED', note,
       cardHtml: `전지구 해수면 온도 — ${(s.n || 0).toLocaleString()}개 해양 격자(1°)를 한색 −2°C → 난색 32°C로 표시합니다. 육지·결측 해역은 칠하지 않습니다.<br/>`
         + `관측 범위 ${Number.isFinite(s.min) ? `${s.min.toFixed(1)}°C ~ ${s.max.toFixed(1)}°C` : '—'}<br/>`
+        + `${oceanMaskCardLine(this._oceanMaskInfo)}<br/>`
         + `출처 ${d.source || 'NOAA OISST v2.1'} · 관측일 ${(d.observed || '').slice(0, 10)} · ${d.sampling || ''}<br/>`
         + `일별 관측 분석장(위성+부이 융합)이며 예보가 아닙니다.`,
     };
@@ -1733,6 +2234,7 @@ export class LiveLayers {
       badge: 'MODEL_SIGNAL', note,
       cardHtml: `전지구 유의파고 — ${(s.n || 0).toLocaleString()}개 해양 격자(5°)를 청 0m → 적 8m로 표시합니다.<br/>`
         + `현재 격자 최고 ${Number.isFinite(s.max) ? `${s.max.toFixed(1)}m` : '—'}<br/>`
+        + `${oceanMaskCardLine(this._oceanMaskInfo)}<br/>`
         + `출처 ${d.source || 'Open-Meteo Marine'} · 기준 ${(d.time || '').replace('T', ' ').slice(0, 16)}Z<br/>`
         + `해상 모델 값입니다 — 관측 지점값은 '해상 관측망'(기상청 193지점)을 보세요.`,
     };
@@ -1835,71 +2337,41 @@ export class LiveLayers {
     };
   }
 
-  // ---------- 해수면 상승 전망 (IPCC AR6 · 전 세계 조위관측소) ----------
-  // 전망(projection)이지 예보가 아니다. 기둥 높이 = 2100년 중앙값 상승폭, 색 = 시나리오 위험도.
-  // 시나리오는 SSP5-8.5(고배출)를 기본 표시하고 카드에서 4개 시나리오를 모두 보여준다.
-  buildSlr(d, scenario = 'ssp585') {
-    const items = (d.items || []).filter((i) => i.s && i.s[scenario] && i.s[scenario]['2100']);
-    this._slrItems = items;
-    this._slrScenario = scenario;
-    const g = new THREE.Group();
-    if (!items.length) return g;
-    const vals = items.map((i) => i.s[scenario]['2100'][0]);
-    const maxV = Math.max(...vals);
-    this._slrMax = maxV;
-    this._slrMean = vals.reduce((a, b) => a + b, 0) / vals.length;
-    const pos = new Float32Array(items.length * 6);
-    const col = new Float32Array(items.length * 6);
-    items.forEach((it, i) => {
-      const v = it.s[scenario]['2100'][0];
-      const f = Math.min(Math.max(v / 1.2, 0), 1); // 1.2m를 상한으로 색 정규화
-      const c = new THREE.Color().setHSL(0.58 - f * 0.58, 0.85, 0.42 + f * 0.16);
-      const p = llToV3(it.lat, it.lon, this.surfR(it.lat, it.lon, 0.0025));
-      const up = p.clone().normalize();
-      const h = 0.003 + f * 0.045;
-      pos[i * 6] = p.x; pos[i * 6 + 1] = p.y; pos[i * 6 + 2] = p.z;
-      pos[i * 6 + 3] = p.x + up.x * h;
-      pos[i * 6 + 4] = p.y + up.y * h;
-      pos[i * 6 + 5] = p.z + up.z * h;
-      col[i * 6] = c.r * 0.25; col[i * 6 + 1] = c.g * 0.25; col[i * 6 + 2] = c.b * 0.25;
-      col[i * 6 + 3] = c.r; col[i * 6 + 4] = c.g; col[i * 6 + 5] = c.b;
-    });
-    const lg = new THREE.BufferGeometry();
-    lg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    lg.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    g.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({
-      vertexColors: true, transparent: true, opacity: 0.92, depthWrite: false,
-    })));
-    g.add(this.makePoints(items.map((it) => {
-      const v = it.s[scenario]['2100'][0];
-      const f = Math.min(Math.max(v / 1.2, 0), 1);
-      return { lat: it.lat, lon: it.lon, c: new THREE.Color().setHSL(0.58 - f * 0.58, 0.85, 0.5) };
-    }), { size: 4, lift: 0.0025, opacity: 0.85 }));
-    return g;
+  // ---------- 해수면 상승 전망 — '잠기는 땅' (IPCC AR6 · 전 세계 조위관측소) ----------
+  // 2026-09-20 작업 E1. 옛 길은 조위관측소 1,016곳에 **수직 막대기**(LineSegments)와 점을 세웠다: 막대기 길이는
+  // 1 m 가 아니라 상승폭에 비례한 '보이기용 길이'(19~306 km)였고, 정작 어디가 잠기는지는 화면에 없었다.
+  // PD: "지금은 해안가에 막대기 나와 — 내가 그 막대기 싫어서 업데이트 진행했던 건데."
+  // 지금은 **지형 고도가 그 자리의 상승폭보다 낮은 육지**를 물빛으로 덮는다(욕조식 근사 · 카드가 네 가지를 고지한다).
+  // 상승폭 IDW 격자 · 셰이더 · 카드 · 단추는 전부 js/flood-overlay.js 에 있다 — 세 작업이 이 파일을 동시에 고친다.
+  // ⚠️ 지은 api 는 인스턴스(this._flood)에 들지 않는다 — 들었더니 느린 망에서 **늦게 온 옛 build 가 화면에 선 겹면을 빼 버렸다**
+  //    (2026-09-20 반박 검증: 켜는 중에 껐다 켜면 메뉴는 켜졌다는데 지구에 아무것도 없고 껐다 켜도 안 돌아온다).
+  //    api 는 그것이 지은 **겹면 자신**(group.userData.flood)에 단다: 장면에 선 겹면과 단추가 잡는 겹면이 갈라질 자리가 없어진다.
+  //    버리는 것은 disposeObj 한 자리뿐이다(옛 build 는 제 겹면만 버린다).
+  buildSlr(d) {
+    // 지형 uniform 묶음·지구 지오메트리·카드 갈아끼우기는 색면이 쓰던 것을 그대로 쓴다(main.js provideField).
+    const flood = createFloodOverlay(d, { ...(this._fieldDeps || {}), heightAt: this.heightAt });
+    flood.object.userData.flood = flood;
+    return flood.object;
   }
 
-  metaSlr(d) {
-    const items = this._slrItems || [];
-    const kr = items.filter((i) => (i.country || '').startsWith('Korea'));
-    const fmtM = (x) => (x == null ? '—' : `${x.toFixed(2)}m`);
-    const line = (it) => {
-      const a = it.s.ssp245 && it.s.ssp245['2100'];
-      const b = it.s.ssp585 && it.s.ssp585['2100'];
-      return `${it.name} — 저감(SSP2-4.5) <b>${fmtM(a && a[0])}</b> · 고배출(SSP5-8.5) <b>${fmtM(b && b[0])}</b>`;
-    };
-    const krTop = [...kr].sort((x, y) => (y.s.ssp585['2100'][0]) - (x.s.ssp585['2100'][0])).slice(0, 5);
-    const worst = [...items].sort((x, y) => (y.s.ssp585['2100'][0]) - (x.s.ssp585['2100'][0])).slice(0, 3);
-    return {
-      badge: 'MODEL_SIGNAL',
-      note: `${items.length.toLocaleString()}개 조위관측소 · 2100년 SSP5-8.5 평균 ${fmtM(this._slrMean)} · 최대 ${fmtM(this._slrMax)}`,
-      cardHtml: `<b>2100년 해수면 상승 전망</b> — 전 세계 조위관측소 ${items.length.toLocaleString()}곳. 기둥 높이·색 = 고배출 시나리오(SSP5-8.5) 중앙값.<br/>`
-        + `<b>한국 ${kr.length}곳</b><br/>${krTop.map((i) => `· ${line(i)}`).join('<br/>')}<br/>`
-        + `세계 최대: ${worst.map((i) => `${i.name} ${fmtM(i.s.ssp585['2100'][0])}`).join(' · ')}<br/>`
-        + `기준선 ${d.baseline || '1995–2014 평균'} · 각 값은 중앙값이며 원자료에는 17~83% 범위가 함께 있습니다.<br/>`
-        + `<b>예보가 아니라 시나리오별 전망입니다.</b> 배출 경로에 따라 값이 달라지며, 지역 침수 여부는 이 값 하나로 판단할 수 없습니다.<br/>`
-        + `출처 ${d.source || 'IPCC AR6 · NASA/JPL'} · ${d.license || 'CC BY 4.0'}`,
-    };
+  // 읽을 때마다 지금 것을 낸다 — 시나리오·연도 단추를 누른 뒤 카드를 다시 열어도 맞는 글이 나온다(색면 레이어와 같은 규칙).
+  // 인수는 **바로 앞의 buildSlr 이 내놓은 그 겹면**이다(buildFromData 의 한 줄) — 카드가 다른 겹면을 말할 수 없다.
+  metaSlr(obj) {
+    const f = obj && obj.userData && obj.userData.flood;
+    return { badge: 'MODEL_SIGNAL', get note() { return f.note(); }, get cardHtml() { return f.cardHtml(); } };
   }
+
+  /** 지금 **장면에 선** 겹면(잠기는 땅). 지은 것이 아니라 켜져 있는 것을 돌려준다 — 콘솔 확인에도 쓴다. */
+  floodOverlay() {
+    const l = this.layers.slr;
+    return (l && l.obj && l.obj.userData && l.obj.userData.flood) || null;
+  }
+
+  /** 해수면 상승 전망 카드의 단추(data-action="slr-scenario" · "slr-year" · "slr-depth"). 처리했으면 true. */
+  slrAction(action, ds) { const f = this.floodOverlay(); return f ? f.handleAction(action, ds || {}) : false; }
+
+  /** 누른 자리의 조위관측소 원반 — { station, title, html, badge } 또는 null(꺼져 있거나 빗나갔다). 인수는 화면 CSS px. */
+  slrPick(hit) { const l = this.layers.slr; if (!l || !l.on) return null; const f = this.floodOverlay(); return f ? f.pick(hit) : null; }
 
   // ---------- 한국 해상 관측망 (KMA 193지점 · OBSERVED) ----------
   // 파고를 보고하는 지점은 파고 색, 파고가 없는 지점은 흐린 점 — 값을 지어내지 않는다.
@@ -2105,150 +2577,86 @@ export class LiveLayers {
     };
   }
 
-  // ---------- 대기질 (에어코리아 673개 측정소 · OBSERVED) ----------
+  // ---------- 대기질 (에어코리아 · OBSERVED) ----------
+  // 개수는 전부 airqDrawable() 하나에서 온다 — **그린 것만 셈한다**(그 머리말에 왜인지 적어 두었다).
   buildAirq(d) {
-    const items = (d.stations || [])
-      .filter((s) => s.lat != null && s.lon != null && s.grade)
+    const items = airqDrawable(d)
       .map((s) => ({ lat: s.lat, lon: s.lon, c: new THREE.Color(AIR_GRADE_COLOR[s.grade] || '#7f95a8') }));
     return this.makePoints(items, { size: 5.5, lift: 0.004 });
   }
 
   metaAirq(d) {
+    const stations = (d && d.stations) || [];
+    const drawn = airqDrawable(d);
     const byG = { 1: 0, 2: 0, 3: 0, 4: 0 };
-    (d.stations || []).forEach((s) => { if (byG[s.grade] != null) byG[s.grade] += 1; });
+    drawn.forEach((s) => { if (byG[s.grade] != null) byG[s.grade] += 1; });
+    // 왜 못 그렸는지는 **갈라서** 적는다. 좌표가 없는 것과 공식 등급이 없는 것은 다른 일이다.
+    const noCoord = stations.filter((s) => s.lat == null || s.lon == null).length;
+    const noGrade = stations.filter((s) => s.lat != null && s.lon != null && !s.grade).length;
+    const dropped = [noCoord ? `좌표 없음 ${noCoord}개소` : '', noGrade ? `등급 없음 ${noGrade}개소` : ''].filter(Boolean).join(' · ');
+    const obs = `관측 ${d.observedKst || '—'} KST · 출처 한국환경공단 에어코리아`;
+    // 자료가 제 상태를 적어 둔 문장. 우리가 이유를 지어내지 않고 **있는 것을 인용한다.**
+    const said = String((d.note && (d.note.ko || d.note)) || '').trim();
+    const quote = said
+      ? `<details style="margin-top:10px"><summary>자료가 스스로 적은 설명</summary>${escapeHtml(said).replace(/\n/g, '<br/>')}</details>`
+      : '';
+    /* ⚠️ 그릴 점이 0이면 **켜진 척하지 않는다**(2026-09-21 반박 검증).
+       2026-09-20 운영 자료는 값 672개소를 다 주면서 좌표를 한 곳도 안 줬다(hasCoordinates:false ·
+       located:0 · noCoordinatesCount:672). 그때 이 카드는 점 하나 없는 지구 앞에서 배지를 'OBSERVED'
+       로 달고 "측정소 0개소를 공식 4등급 색으로 표시" 라고 적은 바로 아래 줄에 "좋음 240 · 보통 404"
+       를 적었다 — 한 카드가 0곳과 240곳을 같이 말했다. 막으려고 둔 장치(coverage()의 빈 Box3 → null
+       → revealLayer 가 카메라를 안 옮긴다)는 조용히 지나갈 뿐 화면에 아무 말도 하지 않는다.
+       ⚠️ 'airq 는 안 된다'를 박지 않는다. 이 갈래는 **지금 자료 상태**만 보므로, 좌표가 돌아오는 날
+          refresh() 가 meta 를 갈아 끼우면서 저절로 OBSERVED 로 돌아온다. */
+    if (!drawn.length) {
+      return {
+        badge: 'INSUFFICIENT_DATA',
+        note: `표시 0개소 · 값은 ${stations.length}개소${dropped ? ` · ${dropped}` : ''} · ${d.observedKst || ''}`,
+        cardHtml: `<b>지구에 찍을 수 있는 측정소가 한 곳도 없어 아무것도 그리지 않았습니다.</b><br/>`
+          + `값은 ${stations.length}개소에서 왔습니다 — 다만 ${dropped || '좌표나 공식 등급이 없어'} 지구 위 자리를 정할 수 없습니다.<br/>`
+          + `없는 자리에 점을 찍지 않습니다. 등급 내역도 적지 않습니다 — 그리지 않은 것의 내역이기 때문입니다.<br/>`
+          + `${quote}${obs}`,
+      };
+    }
     const worst = [...(d.sido || [])].sort((a, b) => (b.pm25 || 0) - (a.pm25 || 0)).slice(0, 3);
-    const note = `${d.located || 0}개소 · 좋음 ${byG[1]} 보통 ${byG[2]} 나쁨 ${byG[3]} 매우나쁨 ${byG[4]} · ${d.observedKst || ''}`;
+    const note = `${drawn.length}개소 · 좋음 ${byG[1]} 보통 ${byG[2]} 나쁨 ${byG[3]} 매우나쁨 ${byG[4]} · ${d.observedKst || ''}`;
     return {
       badge: 'OBSERVED', note,
-      cardHtml: `에어코리아 통합대기환경 등급 — 측정소 ${d.located || 0}개소를 공식 4등급 색(좋음 파랑 → 매우나쁨 빨강)으로 표시.<br/>`
+      cardHtml: `에어코리아 통합대기환경 등급 — 측정소 ${drawn.length}개소를 공식 4등급 색(좋음 파랑 → 매우나쁨 빨강)으로 표시.<br/>`
         + `좋음 ${byG[1]} · 보통 ${byG[2]} · 나쁨 ${byG[3]} · 매우나쁨 ${byG[4]}<br/>`
+        + `${dropped ? `표시하지 않은 곳: ${dropped} — 값은 왔지만 지구 위 자리나 공식 등급이 없어 그리지 않았습니다.<br/>` : ''}`
         + `PM2.5 높은 시도: ${worst.map((s) => `${s.sido} ${s.pm25}㎍`).join(' · ') || '—'}<br/>`
-        + `관측 ${d.observedKst || '—'} KST · 출처 한국환경공단 에어코리아`,
+        + `${obs}`,
     };
   }
 
-  // ---------- 바람 관측 (KMA AWS + 전 세계 GTS · OBSERVED) ----------
-  // 관측소마다 바람이 불어가는 방향으로 선분 — 길이·색 = 풍속. 값 보간·생성 없음.
-  buildWind(d) {
+  // ---------- 바람 (NOAA GFS 0.5° · 지상 10 m · 5일 예보 · MODEL) ----------
+  // 2026-09-20 W3: 여기는 '관측소마다 바람이 불어가는 쪽으로 선분 하나 + 그 선분 위를 왕복하는 점 2개'였다(막대기).
+  //   이류·유선 0건 — PD: "바람은 왜 윈드 애니메이션이 없어? 지역마다 막대기가 나오면 되겠어?" 선분·왕복 점·그 셰이더를 걷었다.
+  //   예전 주석은 "값 보간·생성 없음 · 격자 보간·유선 생성 없음"을 적었다 — 그 말은 관측소 3,000곳에만 맞는다. 바다와 관측 공백
+  //   (중국·몽골·러시아)에는 바람이 아예 없었다. 이제 전지구 모델 격자(GFS)를 입자로 흘리고, **모델값이라고** 카드·범례·배지가 말한다.
+  //   관측소 값을 지구에 찍는 일은 같은 묶음의 다른 작업(관측 숫자)이 한다 — 여기서는 관측소를 그리지 않는다.
+  // 돌려주는 것은 **빈 자리표**다. 입자 물체는 js/wind-layer.js 가 this.group 에 따로 건다: refresh()·onExaggerChanged() 가
+  //   레이어 물체를 dispose 하고 새로 짓는데, 입자 버퍼(폰 3.8 MB · 데스크톱 13.8 MB)를 그 길에 태우면 20분마다·과장 슬라이더
+  //   한 칸마다 GPU 에 다시 올린다. 켜짐/꺼짐은 wind-layer 가 this.layers.wind.on 을 읽어 따라온다(main.js tick 의 windLayer.tick).
+  //   20분 갱신(REFRESH_MIN.wind)은 그대로 둔다 — fetchFor 가 목록을 다시 읽어 새 GFS 런을 알아챈다.
+  buildWind() {
     const g = new THREE.Group();
-    const rows = [];
-    (d.aws && d.aws.stations || []).forEach((s) => {
-      if (s.lat != null && s.wind_ms != null && s.wind_dir != null) {
-        rows.push({ lat: s.lat, lon: s.lon, ws: s.wind_ms, wd: s.wind_dir });
-      }
-    });
-    (d.gts && d.gts.stations || []).forEach((s) => {
-      if (s.lat != null && s.ws != null && s.wd != null) {
-        rows.push({ lat: s.lat, lon: s.lon, ws: s.ws, wd: s.wd });
-      }
-    });
-    this._windN = rows.length;
-    let maxWs = 0;
-    const pos = new Float32Array(rows.length * 6);
-    const col = new Float32Array(rows.length * 6);
-    const up = new THREE.Vector3(0, 1, 0);
-    const east = new THREE.Vector3();
-    const north = new THREE.Vector3();
-    const dir = new THREE.Vector3();
-    rows.forEach((s, i) => {
-      if (s.ws > maxWs) maxWs = s.ws;
-      const r = this.surfR(s.lat, s.lon, 0.0035);
-      const p = llToV3(s.lat, s.lon, r);
-      const n = p.clone().normalize();
-      east.crossVectors(up, n).normalize();
-      north.crossVectors(n, east);
-      // wd = 불어오는 방위 → 화살은 불어가는 쪽(wd+180°)
-      const brg = ((s.wd + 180) * Math.PI) / 180;
-      dir.copy(east).multiplyScalar(Math.sin(brg)).addScaledVector(north, Math.cos(brg));
-      const len = 0.003 + Math.min(s.ws / 25, 1) * 0.011;
-      const c = windColor(s.ws);
-      pos[i * 6] = p.x; pos[i * 6 + 1] = p.y; pos[i * 6 + 2] = p.z;
-      pos[i * 6 + 3] = p.x + dir.x * len;
-      pos[i * 6 + 4] = p.y + dir.y * len;
-      pos[i * 6 + 5] = p.z + dir.z * len;
-      col[i * 6] = c.r * 0.55; col[i * 6 + 1] = c.g * 0.55; col[i * 6 + 2] = c.b * 0.55;
-      col[i * 6 + 3] = c.r; col[i * 6 + 4] = c.g; col[i * 6 + 5] = c.b;
-    });
-    this._windMax = maxWs;
-    const lg = new THREE.BufferGeometry();
-    lg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    lg.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    g.add(new THREE.LineSegments(lg, new THREE.LineBasicMaterial({
-      vertexColors: true, transparent: true, opacity: 0.85, depthWrite: false,
-    })));
-    const items = rows.map((s) => ({ lat: s.lat, lon: s.lon, c: windColor(s.ws) }));
-    g.add(this.makePoints(items, { size: 3, lift: 0.0035, opacity: 0.75 }));
-
-    // 흐름 애니메이션: 관측 선분 위를 입자가 풍속 비례 속도로 흐른다.
-    // 관측 지점의 실측 벡터 위에서만 움직임 — 격자 보간·유선 생성 없음.
-    const P_PER = 2;
-    const nP = rows.length * P_PER;
-    const aStart = new Float32Array(nP * 3);
-    const aDir = new Float32Array(nP * 3);
-    const aPhase = new Float32Array(nP);
-    const aSpeed = new Float32Array(nP);
-    const aColor = new Float32Array(nP * 3);
-    for (let i = 0; i < rows.length; i += 1) {
-      for (let k = 0; k < P_PER; k += 1) {
-        const j = i * P_PER + k;
-        aStart[j * 3] = pos[i * 6];
-        aStart[j * 3 + 1] = pos[i * 6 + 1];
-        aStart[j * 3 + 2] = pos[i * 6 + 2];
-        aDir[j * 3] = pos[i * 6 + 3] - pos[i * 6];
-        aDir[j * 3 + 1] = pos[i * 6 + 4] - pos[i * 6 + 1];
-        aDir[j * 3 + 2] = pos[i * 6 + 5] - pos[i * 6 + 2];
-        aPhase[j] = (i * 0.618 + k / P_PER) % 1;
-        aSpeed[j] = Math.min(rows[i].ws / 25, 1);
-        aColor[j * 3] = col[i * 6 + 3];
-        aColor[j * 3 + 1] = col[i * 6 + 4];
-        aColor[j * 3 + 2] = col[i * 6 + 5];
-      }
-    }
-    const fg = new THREE.BufferGeometry();
-    fg.setAttribute('position', new THREE.BufferAttribute(aStart, 3)); // 기준점 (셰이더에서 이동)
-    fg.setAttribute('aDir', new THREE.BufferAttribute(aDir, 3));
-    fg.setAttribute('aPhase', new THREE.BufferAttribute(aPhase, 1));
-    fg.setAttribute('aSpeed', new THREE.BufferAttribute(aSpeed, 1));
-    fg.setAttribute('aColor', new THREE.BufferAttribute(aColor, 3));
-    const flowMat = new THREE.ShaderMaterial({
-      uniforms: { uTime: { value: 0 } },
-      transparent: true,
-      depthWrite: false,
-      vertexShader: /* glsl */ `
-        attribute vec3 aDir;
-        attribute float aPhase;
-        attribute float aSpeed;
-        attribute vec3 aColor;
-        uniform float uTime;
-        varying vec3 vC;
-        varying float vA;
-        void main() {
-          float t = fract(uTime * (0.10 + aSpeed * 0.45) + aPhase);
-          vec3 p = position + aDir * t;
-          vC = aColor;
-          vA = sin(t * 3.14159) * (0.35 + aSpeed * 0.65);
-          gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
-          gl_PointSize = 3.2;
-        }`,
-      fragmentShader: /* glsl */ `
-        varying vec3 vC;
-        varying float vA;
-        void main() {
-          vec2 d = gl_PointCoord - 0.5;
-          if (dot(d, d) > 0.25) discard;
-          gl_FragColor = vec4(vC, vA);
-          #include <colorspace_fragment>
-        }`,
-    });
-    const flow = new THREE.Points(fg, flowMat);
-    flow.frustumCulled = false;
-    g.add(flow);
-    g.userData.animMats = [flowMat];
+    g.name = 'wind-particles-anchor';
     return g;
   }
 
   // 매 프레임 호출 (main.js tick): 흐름 입자 시간 갱신 + 축척에 안 맞는 격자 페이드
-  tick(nowMs, altKm) {
+  //   camera 는 연안 침수 원반이 쓴다 — 화면에서 겹치는 것을 솎고(줌에 따라 개수가 는다) 집을 자리를 적는다.
+  tick(nowMs, altKm, camera) {
+    const fd = this.layers.khoaflood;
+    if (camera && this._floodDiscs && fd && fd.on) this._floodDiscs.tick(camera);
+    // 해수면 상승 전망의 **숫자 원판**은 스프라이트라 onBeforeRender 가 없다 — 매 프레임 지나는 자리가 여기뿐이다.
+    // 지평선 흐림만 고치고, 카메라가 충분히 움직였을 때에만 다시 솎는다(js/flood-overlay.js SLR_RECULL).
+    if (camera && this.layers.slr && this.layers.slr.on) {
+      const sf = this.floodOverlay();
+      if (sf && sf.tick) sf.tick(camera);
+    }
     for (const l of Object.values(this.layers)) {
       if (l.on && l.obj && l.obj.userData && l.obj.userData.animMats) {
         for (const m of l.obj.userData.animMats) m.uniforms.uTime.value = nowMs * 0.001;
@@ -2291,16 +2699,11 @@ export class LiveLayers {
     }
   }
 
-  metaWind(d) {
-    const nA = (d.aws && d.aws.stations || []).length;
-    const nG = (d.gts && d.gts.count) || (d.gts && d.gts.stations || []).length;
-    const note = `${(this._windN || 0).toLocaleString()}개소 · 입자가 실측 풍속으로 흐름 · 최강 ${this._windMax != null ? this._windMax.toFixed(1) : '—'}m/s`;
-    return {
-      badge: 'OBSERVED', note,
-      cardHtml: `지상 바람 관측 — 관측소 ${(this._windN || 0).toLocaleString()}개소의 실측 풍향·풍속을 선분(불어가는 방향, 색·길이=풍속)으로 표시.<br/>`
-        + `한국 AWS ${nA}개소 (기상청) + 전 세계 지상관측 ${Number(nG).toLocaleString()}개소 (GTS)<br/>`
-        + `입자는 각 관측소의 실측 벡터 위에서만 흐릅니다 — 격자 보간·가상 유선 없음 (관측 없는 곳은 비어 있음)`,
-    };
+  // 바람 카드·배지·메뉴 줄 글(2026-09-20 W3). 예전 카드는 '관측소 N개소의 실측 풍향·풍속을 선분으로'(OBSERVED)였다 —
+  // 이제 GFS 모델 바람이라 그 글은 거짓이 된다. 글은 js/wind-layer.js 가 **읽는 순간의 상태**로 만든다(getter):
+  // 다시 켤 때 toggle 은 처음 받은 meta 를 그대로 쓰므로, 굳은 글자였다면 타임라인·입자 강도·런이 바뀌어도 옛 글이 남는다.
+  metaWind() {
+    return this.windLayer.meta();
   }
 
   // ---------- 산림 감소 2001~2023 (한국 · OBSERVED) ----------
@@ -2927,6 +3330,42 @@ const NEWS_REGION = {
   남미: [-12.0, -58.0],
 };
 
+// ---- 지역 뉴스 네모칸 (2026-09-20 — 분홍 막대·점을 대신한다. buildNews 주석 참조) ----
+// ⚠️ 개수 상한. 네모칸 하나가 텍스처 한 장이다 — v1 에서 라벨 2,843개가 한 번에 켜져 발열이 났다
+//   (prototype/js/newsbubble.js 머리말). 지금은 지역이 5곳이라 닿지 않지만, NEWS_REGION 을 늘리는
+//   사람이 이 줄을 보지 않고도 안전하도록 모바일 상한(지시서: 데스크톱 12 · 모바일 6)에 맞춰 둔다.
+export const NEWS_CHIP_MAX = 6;
+const NEWS_CHIP_PX = 30;          // 네모칸 높이(CSS px 기준으로 그린다)
+const NEWS_CHIP_SCALE = 0.030;    // 화면 높이 대비 — travel.js 라벨(0.026 · 42px)과 같은 셈법
+
+// 어느 지역에 몇 건인지 → 네모칸 목록. 그리기와 떼어 둔 것은 시험이 캔버스 없이 결과를 볼 수 있게 하려는 것이다.
+// 글자는 '지역 이름 + 건수'뿐이다 — 누를 수 없는 동안에는 '▸' 같은 누름 표시를 달지 않는다(없는 기능을 약속하지 않는다).
+export const newsChipSpecs = (by, regions = NEWS_REGION) => Object.keys(by || {})
+  .filter((k) => regions[k] && Array.isArray(by[k]) && by[k].length)
+  .map((k) => ({
+    region: k, count: by[k].length, lat: regions[k][0], lon: regions[k][1], text: `${k} ${by[k].length}건`,
+  }))
+  .sort((a, b) => b.count - a.count)
+  .slice(0, NEWS_CHIP_MAX);
+
+// 네모칸의 불투명도 — 지평선 위에서 1, 지평선에서 0, 지구 뒤편에서 0.
+// 깊이 검사를 껐으므로(makeNewsChip 주석) 지구에 가려져야 할 네모칸을 여기서 직접 감춘다.
+//   보인다 ⇔ 카메라가 그 점의 접평면 위에 있다 ⇔ cosθ > |P| / |C|   (θ = 지구 중심에서 본 두 점 사이 각)
+// 0.3 같은 고정 문턱(travel.js)을 쓰지 않는 이유: 지평선의 cosθ 는 고도에 따라 달라진다
+// (1.2만 km 에서 0.35, 3천 km 에서 0.67) — 고정 문턱이면 낮은 고도에서 지평선 너머 네모칸이 지구를 뚫고 보인다.
+export const newsChipOpacity = (p, cam) => {
+  const pl = Math.hypot(p.x, p.y, p.z);
+  const cl = Math.hypot(cam.x, cam.y, cam.z);
+  if (!pl || !cl) return 0;
+  const horizon = pl / cl;
+  if (horizon >= 1) return 0;     // 카메라가 네모칸보다 낮다 — 그 축척에서 지역 단위 묶음은 읽을 것이 아니다
+  const facing = (p.x * cam.x + p.y * cam.y + p.z * cam.z) / (pl * cl);
+  const t = (facing - horizon) / (1 - horizon);
+  return Math.max(0, Math.min(1, t / 0.18));
+};
+const _chipP = new THREE.Vector3();
+const _chipC = new THREE.Vector3();
+
 // 필드 색 램프 — 정지점 사이 선형 보간 (RGB 0~255 배열 반환)
 const rampFrom = (stops) => (v) => {
   if (v <= stops[0][0]) return stops[0].slice(1);
@@ -3017,17 +3456,27 @@ const WAVE_RAMP = rampFrom([
 // 에어코리아 공식 4등급 색 (좋음/보통/나쁨/매우나쁨)
 const AIR_GRADE_COLOR = { 1: '#3fa7ff', 2: '#4fd06a', 3: '#ffab3d', 4: '#ff4d4d' };
 
-// 풍속(m/s) → 색 (잔잔 연청 → 강풍 빨강)
-const windColor = (ws) => {
-  const x = Math.min(Math.max(ws / 25, 0), 1);
-  const c = new THREE.Color();
-  c.setHSL(0.55 - 0.55 * x, 0.85, 0.44 + 0.14 * x);
-  return c;
-};
+/**
+ * 지구에 **찍을 수 있는** 측정소 — 좌표와 공식 등급이 둘 다 있는 것.
+ *
+ * ⚠️ 2026-09-21 반박 검증: 그리는 쪽(buildAirq)과 말하는 쪽(metaAirq)이 **다른 셈**을 쓰고 있었다.
+ *    그리는 쪽은 좌표·등급이 다 있는 것만 찍는데, 카드는 `d.located`(좌표가 있는 곳)로 개수를 적고
+ *    등급 내역은 또 다른 무리(등급이 있는 전부)에서 셌다. 셋이 갈라져 있어 한 카드가 한 자리에서
+ *    두 수를 말했다 — 운영 자료에서 "672개소를 표시" 라고 적으면서 내역은 642곳을 셌고,
+ *    좌표가 통째로 빠져 오던 날에는 그 차이가 **0 대 672** 였다(점 하나 없는 지구에 '공식 관측' 배지).
+ *    셈을 한 자리로 모은다 — 두 곳에 적으면 언젠가 다시 갈라진다.
+ */
+export const airqDrawable = (d) => (((d && d.stations) || [])
+  .filter((s) => s.lat != null && s.lon != null && s.grade));
+
+// 풍속(m/s) → 색 은 여기 없다(2026-09-20 W3). 관측소 막대기만 쓰던 HSL 연속 램프(windColor)였고 막대기와 함께 걷었다 —
+// 바람 입자의 색은 색 눈금표(js/field-scales.js 의 wind 8칸)에서 온다. 색을 두 곳에 적지 않는다.
 
 function disposeDeep(obj) {
   obj.traverse((o) => {
-    if (o.geometry) o.geometry.dispose();
+    // ⚠️ disposeObj 와 같은 가드다 — 지구의 지오메트리를 **같이 쓰는** 면(잠기는 땅)을 여기서 버리면 지구가 통째로 사라진다.
+    //    지금 이 길로 slr 이 오지 않는 것은 onExaggerChanged 의 한 줄 덕분뿐이라, 그 한 줄이 사라져도 화면이 살아남게 둔다.
+    if (o.geometry && !(o.userData && o.userData.keepGeometry)) o.geometry.dispose();
     if (o.material) {
       (Array.isArray(o.material) ? o.material : [o.material]).forEach((m) => m.dispose());
     }

@@ -106,6 +106,34 @@ export class SeaFloor {
     this.loading = false;
     this.selected = null;
     this.labels = [];
+    // (2026-09-23 · PERF-LTE V2-1) 수심을 읽은 고도맵의 단계 — main.js 가 기기가 실제로 얹은 단계로 고친다
+    //   (폰 z3 한 장 · 적도 약 19.6 km/px / PC z4 · 약 9.8 km/px). 모르면 옛 문구(z4) 그대로.
+    this.terrainLabel = 'Terrarium z4 · 적도 약 9.8 km/px';
+    // (2026-09-23 · V2-2 검수) 고도맵이 얹혔나 — main.js applyTerrain 뒤 replaceAfterTerrain 이 true 로 한다.
+    //   그 전(받는 중 · 못 받음)의 heightAt 은 어디서나 0 이라 표가 해구마다 '0 m' 를 적었다 — 지어낸 값이다. 그동안은 '—'.
+    this.terrainReady = false;
+  }
+
+  // (2026-09-23 · PERF-LTE V2-2) 지형이 늦게 도착하면 그 전에 켠 해구 표의 수심이 전부 0 m 다(heightAt ≡ 0) —
+  //   값을 지어내지 않고, 같은 축선 점에서 도착한 고도맵으로 다시 읽는다. 자료(SCUFN)는 다시 받지 않는다.
+  refreshDepths() {
+    if (!this.trenches) return;
+    for (const t of this.trenches) {
+      let minD = 0;
+      let deepest = null;
+      for (const seg of t.dense) {
+        for (const [la, lo] of seg) {
+          const d = this.heightAt(la, lo);
+          if (d < minD) { minD = d; deepest = { lat: la, lon: lo, d }; }
+        }
+      }
+      t.minD = minD;
+      t.deepest = deepest || { lat: t.anchor.lat, lon: t.anchor.lon, d: 0 };
+    }
+    this.trenches.sort((a, b) => a.minD - b.minD); // 깊은 것부터 (toggle 과 같은 순서)
+    const vis = this.group.visible;
+    this.build();                                   // 해구별 밝기(depthVisualScale)가 수심을 읽는다
+    this.group.visible = vis;
   }
 
   async toggle() {
@@ -274,7 +302,7 @@ export class SeaFloor {
   card() {
     if (!this.trenches) return '';
     const rows = this.trenches.slice(0, 8).map((t) => (
-      `<div class="stat"><span class="k">${t.ko}</span><span class="v">${fmtM(t.minD)}</span></div>`
+      `<div class="stat"><span class="k">${t.ko}</span><span class="v">${fmtM(this.terrainReady ? t.minD : null)}</span></div>`
     )).join('');
     return `<div class="card"><div class="card-h">해구 위치 ${this.dataBadge('OBSERVED')}</div>
       <div class="card-b">
@@ -283,7 +311,7 @@ export class SeaFloor {
         <div class="stats" style="margin-top:8px">${rows}</div>
         <div style="margin-top:8px;opacity:.7;font-size:11px">
           축선 좌표 출처 GEBCO Sub-Committee on Undersea Feature Names (IHO DCDB / NOAA NCEI)<br/>
-          옆의 수심은 이 지구본이 쓰는 고도맵(AWS Terrarium z4 · 적도 약 9.8 km/px)에서 읽은 값이며
+          옆의 수심은 이 지구본이 쓰는 고도맵(AWS ${this.terrainLabel})에서 읽은 값이며
           공식 최심값이 아닙니다.
         </div>
       </div></div>`;
@@ -292,7 +320,7 @@ export class SeaFloor {
   trenchCard(t) {
     return `축선 출처 GEBCO SCUFN 가제티어 (feature ${t.id})<br/>
       축선 최심 정점 ${t.deepest.lat.toFixed(3)}°, ${t.deepest.lon.toFixed(3)}°<br/>
-      그 지점의 고도맵 수심 ${fmtM(t.deepest.d)}
-      <span style="opacity:.7">(Terrarium z4 · 공식 최심값 아님)</span>`;
+      그 지점의 고도맵 수심 ${fmtM(this.terrainReady ? t.deepest.d : null)}${this.terrainReady ? '' : ' (고도맵 아직 없음)'}
+      <span style="opacity:.7">(${this.terrainLabel.split(' · ')[0]} · 공식 최심값 아님)</span>`;
   }
 }

@@ -19,7 +19,7 @@
 // 있어서 여기에는 절 대응표만 옮겨 두고, 시험(tools/earthus-v53/intel-questions.test.mjs)이
 // 정본과 한 글자라도 다르면 깨진다.
 
-import { PHENOMENA } from './phenomenon-registry.js?v=5';
+import { PHENOMENA } from './phenomenon-registry.js?v=6';
 
 export const INTEL_STATUS = Object.freeze({
   AVAILABLE: 'available',

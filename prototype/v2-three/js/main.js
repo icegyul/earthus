@@ -4,21 +4,26 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=70-menuv1';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=71-perf';
 import { createSelectionGate } from './information-contract.js';
 // PHASE 4 §9 — 지도에서 고른 사건을 어느 현상으로 읽을지는 레지스트리가 정한다.
-import { layerForEventKind } from './phenomenon-registry.js?v=4';
+// ⚠️ 2026-09-23: 레지스트리를 여기·report-center.js 는 ?v=4 로, ui-shell.js·intel-questions.js 는 ?v=5 로 불러
+//    브라우저가 **다른 모듈 두 벌**을 만들었다(요청 2건 · 상태 두 벌 — 경고 Set 도 두 개라 같은 경고가 두 번 찍혔다).
+//    ES 모듈은 URL 전체가 키다. 네 곳을 ?v=5 하나로 맞춘다 — 바꿀 때는 네 곳을 같이 바꾼다
+//    (tools/earthus-v53/perf-lte-2026-09-23.test.mjs 가 두 지정자를 막는다).
+// (2026-09-23 정정) 같은 날 V2-1 에서 레지스트리 문구(terrain scope)를 고쳐 네 곳을 함께 ?v=6 으로 올렸다 — 지금 값은 ?v=6.
+import { layerForEventKind } from './phenomenon-registry.js?v=6';
 const escUI = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
 import { IntelFeed } from './intel-feed.js?v=9';
-import { intelOf, intelSectionHtml, sectionTitle } from './intel-strip.js?v=1';
+import { intelOf, intelSectionHtml, sectionTitle } from './intel-strip.js?v=2';
 import { bannerModel, renderWarningBanner } from './warning-banner.js?v=1';
 import { attachEvidencePopover } from './evidence-popover.js?v=1';
-import { currentTier } from './report-center.js?v=2';
+import { currentTier } from './report-center.js?v=3';
 import { decideCapabilityAccess, lockExplanation, TIER } from '../../js/access-mode.js';
 import { evaluateWatch, myZone, loadWatch, saveWatch } from './watch.js?v=1';
-import { LiveLayers, newsChipOpacity } from './live-layers.js?v=39-information';
+import { LiveLayers, newsChipOpacity } from './live-layers.js?v=40-terrain';
 import { StationModel } from './station-model.js?v=2';
 import { AskEarth } from './ask-earth.js?v=3';
 import { i18n } from './i18n.js?v=11';
@@ -67,7 +72,7 @@ import { SolarView } from './solar-view.js?v=4';
 import { GalaxyView } from './galaxy-view.js?v=3';
 import { SkyView } from './sky-view.js?v=1';
 import { AetherusLink } from './aetherus-link.js?v=2';
-import { SeaFloor } from './seafloor.js?v=2';
+import { SeaFloor } from './seafloor.js?v=3';
 import { TravelScene } from './travel.js?v=3-information';
 // LAB · 취미 — 1.0 에서 옮겨온 확장 화면 런타임 (2026-09-06). 화면 모듈은 js/ext/ 에서 누를 때 받는다.
 import { ExtScene } from './ext-scene.js?v=1';
@@ -137,11 +142,35 @@ function subsolarPoint(date) {
 }
 const TERRARIUM_ZOOM = 4; // 16×16 타일 = 4096×4096 웹메르카토르 고도맵
 const TILE_URL = (z, x, y) => `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/${z}/${x}/${y}.png`;
+// (2026-09-23 정정 · PERF-LTE-PLAN V2-1) 위 z4 256장은 이제 **PC 만** 받는다. 폰·태블릿은 우리 번들의 z3 한 장이다.
+//   사고 기록: v2 폰 첫 방문의 덮개가 LTE 에서 24초(2026-09-23 실측 23.97 / 23.74 s) 걸렸고 그중 거의 전부가 이 256장
+//   (18.54 MB · 버지니아 elevation-tiles-prod · HTTP/1.1 연결 6개)이었다. PD "폰에서 너무 오래 걸린다".
+//   z3 한 장 = 같은 버킷의 z3 64장을 앱 캔버스와 **같은 배치**(타일 (x,y) → 화소 (x·256, y·256), x 는 180°W 부터 동쪽,
+//   y=0 이 85.0511°N, flipY=false)로 이은 2048×2048 **무손실** WebP 3,788,772 B. 값은 바꾸지 않았다
+//   (영수증 assets/terrain/terrarium-z3.receipt.json · 만든 것 tools/build-terrain-mosaic.mjs).
+//   ⚠️ 반드시 무손실 · 반드시 1:1 로 그린다 — Terrarium 은 빨강 1 차이가 높이 256 m 차이다. 손실 압축이나 캔버스 확대·축소
+//      (채널마다 따로 보간된다)는 빨강 경계에서 높이를 ±128 m 이상 깨뜨린다. 크기가 다르면 그리지 않고 타일로 돌아간다.
+//   해상도: 적도에서 z3 한 칸 ≈ 19.6 km, z4 ≈ 9.8 km (40,075 km ÷ 2^z·256). 폰 첫 화면(고도 약 12,700 km)에서 화면 1px 이
+//   약 10.9 km 라 음영이 조금 흐려지고, 입체 형태는 메시(1024×512)가 더 거칠어서 달라지지 않는다. 확대하면 z5~z9 창이 그대로 덮는다.
+const TERRAIN_Z3_URL = 'assets/terrain/terrarium-z3.webp';
+const TERRAIN_Z3_SIZE = 2048;
+// 출처 문구가 쓰는 단계별 해상도(적도 기준). 문구는 **기기가 실제로 받은 단계**를 말한다 — 모든 값에 출처 원칙.
+const TERRAIN_LEVEL_KM = { 3: 19.6, 4: 9.8 };
 // 베이스맵은 기기가 감당하는 크기로 고른다.
 // MAX_TEXTURE_SIZE가 4096인 기기에 8192를 올리면 조용히 실패해 지구가 색을 잃는다.
+// (2026-09-23 정정 · PERF-LTE-PLAN V2-6) 4096 판은 이제 WebP 다 — 폰은 전부 이 판을 받는다.
+//   JPG 를 다시 싼 것이 아니라 NE2 원판에서 같은 식으로 다시 구웠다(tools/bake_ne2_base_earth.mjs --webp-4096,
+//   영수증 ne2-base.receipt.json 에 sha·PSNR). 1,266,048 → 440,250 B.
+//   ⚠️ WebP 손실 압축은 색을 2×2 로 묶어(4:2:0) 1px 주황 국경선의 색이 옅어진다(밝기는 남는다). 되돌릴 때는
+//      아래 삼항만 지우면 JPG 로 돌아간다 — JPG 는 지우지 않고 그대로 둔다.
+//   WebP 를 못 여는 옛 브라우저(iOS 13 이하)나 파일이 없을 때는 같은 크기 JPG 로 한 번 더 받는다(fallbackUrl) —
+//   바탕 지도가 없으면 지구가 색을 잃는다(위 줄과 같은 사고).
 const BASEMAP_FOR = (maxTex, mobile) => {
   const px = (!maxTex || maxTex >= 8192) && !mobile ? 8192 : (maxTex >= 4096 ? 4096 : 2048);
-  return { url: `../v2/assets/physical-earth/ne2-base-${px}.jpg`, px };
+  const jpg = `../v2/assets/physical-earth/ne2-base-${px}.jpg`;
+  return px === 4096
+    ? { url: '../v2/assets/physical-earth/ne2-base-4096.webp', fallbackUrl: jpg, px }
+    : { url: jpg, px };
 };
 
 // ---------------------------------------------------------------------------
@@ -213,6 +242,44 @@ async function loadTerrariumHeightCanvas(onProgress) {
   };
   await Promise.all(Array.from({ length: Math.min(12, coords.length) }, worker));
   return { canvas, failed, total };
+}
+
+// (2026-09-23 · PERF-LTE-PLAN V2-1) 폰용 z3 한 장. 같은 출처(우리 번들)라 캔버스가 더럽혀지지 않아 getImageData 가 된다.
+// 캔버스는 **그림 자신의 크기**(2048)로 만들고 (0,0) 에 1:1 로만 그린다 — 크기가 다르면 확대·축소하지 않고 거절한다(위 ⚠️).
+// 시한: 3.8 MB 는 나쁜 LTE(약 1.6 Mbps)에서도 20초 남짓이다. 90초 안에 안 오면 멈춘 것으로 보고 거절한다(부른 쪽이 타일로 간다).
+function loadTerrariumMosaic(url, size = TERRAIN_Z3_SIZE, timeoutMs = 90000) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    let settled = false;
+    const fail = (why) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      img.onload = null;
+      img.onerror = null;
+      reject(new Error(why));
+    };
+    const timer = setTimeout(() => { img.src = ''; fail(`z3 timeout ${timeoutMs} ms`); }, timeoutMs);
+    img.decoding = 'async';
+    img.onload = () => {
+      if (settled) return;
+      if (img.naturalWidth !== size || img.naturalHeight !== size) {
+        fail(`z3 크기 ${img.naturalWidth}×${img.naturalHeight} ≠ ${size}×${size} — 확대·축소하면 높이가 깨지므로 쓰지 않는다`);
+        return;
+      }
+      settled = true;
+      clearTimeout(timer);
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      ctx.imageSmoothingEnabled = false;   // 1:1 이라 보간이 없지만, 혹시라도 섞이지 않게 못 박는다
+      ctx.drawImage(img, 0, 0);
+      resolve({ canvas, failed: 0, total: 1 });
+    };
+    img.onerror = () => fail(`z3 load error ${url}`);
+    img.src = url;
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -287,6 +354,7 @@ float displacementHeight(float lon, float lat) {
 
 const EARTH_VERT = TERRAIN_GLSL + /* glsl */ `
 uniform float uExagger;
+uniform float uTerrainFade;   // 2026-09-23 V2-2: 지형이 늦게 도착하면 0→1 로 0.6 s 에 걸쳐 올린다(평소 1)
 varying vec3 vUnit;
 
 void main() {
@@ -299,7 +367,9 @@ void main() {
   h = mix(h, lat < 0.0 ? 2800.0 : 0.0, poleFade);
   // 바다는 해수면에 고정하고 육지만 밀어올린다 (수심은 색과 등심선으로 표현).
   float disp = max(h, 0.0) / ${EARTH_RADIUS_M.toFixed(1)} * uExagger;
-  vec3 p = vUnit * (1.0 + disp);
+  // (2026-09-23 V2-2) 과장(uExagger)으로 페이드하지 않는다 — uExagger 는 구름 껍질·표식·기둥 높이까지 같이 읽어서
+  //   0 에서 다시 올리면 구름이 내려앉았다 솟고 인구 기둥이 납작해진다. 지구 변위에만 곱한다.
+  vec3 p = vUnit * (1.0 + disp * uTerrainFade);
   gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
 }
 `;
@@ -311,6 +381,7 @@ uniform float uHasDetailImg;
 uniform float uExagger;
 uniform float uShade;
 uniform float uPhotoMix;
+uniform float uTerrainFade;      // 2026-09-23 V2-2: 지형 도착 페이드 0→1 (평소 1). 음영·고도색·바다 반짝임에 곱한다
 uniform float uIsobath;      // 해저 등심선 세기 (0 = 끔)
 uniform float uIsobathStep;  // 등심 간격 (m)
 uniform float uHasBase;
@@ -404,7 +475,7 @@ void main() {
   // 낮은 구릉까지 자갈처럼 번쩍인다. 음영만 완만하게 증가시키고 수면은 구면 법선.
   // 수심은 색·등심선·별도 해저 뷰가 표현하며 수면 반사에 해저 경사를 사용하지 않는다.
   float bumpK = sqrt(max(uExagger, 1.0)) * 2.0 * uShade
-    * smoothstep(0.0, 30.0, h) * (1.0 - poleFade);
+    * smoothstep(0.0, 30.0, h) * (1.0 - poleFade) * uTerrainFade;
   vec3 N = normalize(nGeo - (slopeE * tE + slopeN * tN) * bumpK);
 
   // 조명: uSunDir는 실시간 태양(월드 고정) 또는 수동 모드(화면 기준) — JS에서 매 프레임 계산
@@ -415,10 +486,13 @@ void main() {
   float coast = smoothstep(-15.0, 15.0, h);
   vec3 ground = mix(oceanColor(h), hypsometric(max(h, 0.0)), coast);
 
-  if (uHasBase > 0.5 && uPhotoMix > 0.001) {
+  // (2026-09-23 V2-2) 지형이 오기 전(uTerrainFade=0)에는 바탕 지도만 100% 로 그린다 — 고도 0 으로 칠한 고도색(바다·땅 반반)이
+  //   20% 섞이면 바다가 탁해진다. 지형 전체 실패 때 슬라이더를 100% 로 올리던 것(아래 !hasHeight 분기)과 같은 그림이다.
+  float photoMix = mix(1.0, uPhotoMix, uTerrainFade);
+  if (uHasBase > 0.5 && photoMix > 0.001) {
     vec2 baseUV = vec2(lon / (2.0 * PI) + 0.5, lat / PI + 0.5);
     vec3 baseTex = texture2D(uBaseMap, baseUV).rgb;
-    ground = mix(ground, baseTex, uPhotoMix);
+    ground = mix(ground, baseTex, photoMix);
   }
 
   // 만년빙(Natural Earth 50m glaciated areas + 남극 빙붕). 고도 채색은 그린란드·남극의
@@ -494,7 +568,7 @@ void main() {
     float ndh = clamp(dot(nGeo, halfV), 0.0, 1.0);
     float fresnel = 0.02 + 0.98 * pow(1.0 - max(dot(nGeo, viewDir), 0.0), 5.0);
     float spec = pow(ndh, 110.0) * 0.55 + pow(ndh, 18.0) * 0.045;
-    color += vec3(0.72, 0.86, 1.0) * spec * (0.25 + fresnel) * dayMask;
+    color += vec3(0.72, 0.86, 1.0) * spec * (0.25 + fresnel) * dayMask * uTerrainFade;
   }
 
   // 대기 림 (지표면 쪽) — 밤면은 약하게
@@ -2288,7 +2362,12 @@ async function main() {
   const isMobileUA = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
   const maxTex = (renderer.capabilities && renderer.capabilities.maxTextureSize) || 0;
   const BASEMAP = BASEMAP_FOR(maxTex, isMobileUA);
+  // 2026-09-23 (V2-6): WebP 가 안 열리면 같은 크기 JPG 로 한 번 더 — 그래도 안 되면 예전처럼 null(색 없는 지구).
   const basePromise = new THREE.TextureLoader().loadAsync(BASEMAP.url).catch((err) => {
+    if (!BASEMAP.fallbackUrl) throw err;
+    console.warn('[earthus-three] basemap webp failed → jpg:', err);
+    return new THREE.TextureLoader().loadAsync(BASEMAP.fallbackUrl);
+  }).catch((err) => {
     console.warn('[earthus-three] basemap load failed:', err);
     return null;
   });
@@ -2298,41 +2377,44 @@ async function main() {
     return null;
   });
 
-  loadMsg.textContent = `${i18n.t('loadTerrain')}…`;
+  // (2026-09-23 정정 · PERF-LTE-PLAN V2-2) 덮개는 이제 지형을 기다리지 않는다 — 바탕 지도(음영이 이미 구워져 있다,
+  //   ne2-base.receipt.json "baked shaded relief")와 만년빙 마스크만 오면 지구를 보여 주고, 고도맵은 뒤에서 받아 도착하면 얹는다.
+  //   사고 기록: 예전에는 여기서 `await loadTerrariumHeightCanvas` 로 256장을 다 받을 때까지 덮개가 "지형 데이터 로딩 N/256" 에
+  //   멈춰 있었다(폰 LTE 23.97 s). 지형을 받는 동안 uHasHeight=0 · heightAtJs≡0 · uTerrainFade=0 이다 — 지형 전체 실패와 같은
+  //   평평한 지구이고, 그 상태의 안전성은 이미 실패 경로가 쓰던 것이다. 도착 뒤 처리는 main() 끝의 applyTerrain 이 한다.
+  //   ⚠️ applyTerrain 을 여기서 .then 으로 걸지 않는다 — 아래의 const(detail·liveLayers·toast…)가 아직 초기화 전(TDZ)일 수 있다.
+  //      main() 끝(덮개를 걷는 줄 바로 뒤)에서 건다. 그 사이에 최상위 await 가 basePromise·icePromise 둘뿐이라 약속은 놓치지 않는다.
+  loadMsg.textContent = i18n.ko ? '지구 불러오는 중…' : 'Loading globe…';
   let heightTex = null;
   let hasHeight = 0;
   let baseHeightCanvas = null;
-  try {
-    const { canvas: hCanvas, failed, total } = await loadTerrariumHeightCanvas((done, tot) => {
-      loadFill.style.width = `${Math.round((done / tot) * 100)}%`;
-      loadMsg.textContent = `${i18n.t('loadTerrain')} ${done}/${tot}`;
-    });
-    if (failed < total) {
-      baseHeightCanvas = hCanvas;
-      heightTex = new THREE.CanvasTexture(hCanvas);
-      heightTex.flipY = false;
-      heightTex.wrapS = THREE.RepeatWrapping;
-      heightTex.wrapT = THREE.ClampToEdgeWrapping;
-      heightTex.minFilter = THREE.LinearFilter;
-      heightTex.magFilter = THREE.LinearFilter;
-      heightTex.generateMipmaps = false;
-      heightTex.colorSpace = THREE.NoColorSpace;
-      hasHeight = 1;
-      if (failed > 0) {
-        loadErr.style.display = 'block';
-        loadErr.textContent = `일부 지형 타일(${failed}/${total})을 받지 못해 해당 구역은 평지로 표시됩니다.`;
+  // 폰 판정 = isMobileUA(바탕 지도 4096 WebP · 밤 불빛 2단계와 **같은 기기 부류**) 또는 굵은 포인터(터치가 주 입력).
+  //   굵은 포인터를 더하는 이유: iPadOS 13+ 사파리는 UA 가 'Macintosh' 라 isMobileUA 가 놓치는데, 바로 그 기기가 셀룰러 태블릿이다.
+  //   화면 폭(≤ 820px)은 쓰지 않는다 — 광랜 PC 의 좁은 창이 까닭 없이 흐린 z3 를 받고, 가로로 눕힌 폰(932px 등)은 폭으로는 못 잡는다.
+  //   노트북의 터치스크린은 주 입력이 트랙패드라 (pointer: coarse) 가 아니다 → PC 로 남는다.
+  const terrainLite = isMobileUA || !!(window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+  // 진단용 상태 — __earthus.terrain 으로 본다. z 는 **실제로 얹힌** 단계(폰에서 z3 가 실패해 타일로 갔으면 4).
+  const terrainInfo = { lite: terrainLite, state: 'loading', z: null, failed: 0, total: 0, done: 0, t0: performance.now(), readyMs: null, why: null };
+  // 바탕 지도가 끝난 뒤에 시작한다 — 같이 던지면 3.8 MB(폰)·18.5 MB(PC)가 첫 화면의 0.44~수 MB 와 대역을 나눠 덮개가 늦어진다.
+  //   basePromise 는 거부하지 않는다(위 .catch 가 null 을 돌려준다).
+  const terrainPromise = basePromise.then(async () => {
+    if (terrainLite) {
+      try {
+        const r = await loadTerrariumMosaic(TERRAIN_Z3_URL);
+        return { ...r, z: 3 };
+      } catch (err) {
+        // 번들에 파일이 없거나(배포 전) 못 여는 브라우저 — 예전 길(z4 타일)로 한 번 더. 값을 지어내지 않는다.
+        console.warn('[earthus-three] z3 terrain failed → z4 tiles:', err);
+        terrainInfo.why = String((err && err.message) || err);
       }
-    } else {
-      throw new Error('all tiles failed');
     }
-  } catch (err) {
-    console.error('[earthus-three] terrain load failed:', err);
-    loadErr.style.display = 'block';
-    loadErr.textContent = '지형 데이터를 받지 못했습니다. 색상 텍스처만으로 표시합니다. (네트워크 확인 후 새로고침)';
-  }
+    const r = await loadTerrariumHeightCanvas((done, tot) => { terrainInfo.done = done; terrainInfo.total = tot; });
+    return { ...r, z: TERRARIUM_ZOOM };
+  });
 
   let hasBase = 0;
   const baseTex = await basePromise;
+  loadFill.style.width = '100%';   // (2026-09-23 V2-2) 덮개가 기다리는 것은 이제 바탕 지도까지다 — 지형 N/256 진행은 덮개에 없다
   if (baseTex) {
     baseTex.colorSpace = THREE.SRGBColorSpace;
     baseTex.wrapS = THREE.RepeatWrapping;
@@ -2364,6 +2446,10 @@ async function main() {
     uShade: { value: 0.9 },
     uPhotoMix: { value: hasHeight ? 0.80 : 1.0 },
     uHasHeight: { value: hasHeight },
+    // (2026-09-23 V2-2) 지형 도착 페이드. 받는 동안 0(평평 · 바탕 지도 100%), 도착하면 0.6 s 에 1 로. 지형 전체 실패면 1
+    //   (그때는 uHasHeight=0 이라 변위·음영이 어차피 0 이고, 사진 비율은 예전처럼 슬라이더를 따른다).
+    //   ⚠️ uHasHeight 는 켜고 끄는 문(>0.5 비교)이라 페이드에 쓰지 않는다 — field-renderer·flood-overlay·field-layer 가 같은 객체를 읽는다.
+    uTerrainFade: { value: 0 },
     uHasBase: { value: hasBase },
     uNightMap: { value: null },
     uHasNight: { value: 0 },
@@ -2389,7 +2475,8 @@ async function main() {
     uFocusRect: { value: new THREE.Vector4(0, 0, 1, 1) },
     uFocusAccent: { value: new THREE.Color(0x7FB7F5).convertSRGBToLinear() },
   };
-  const detail = hasHeight ? new DetailTerrain(uniforms, baseHeightCanvas) : null;
+  // (2026-09-23 정정 · V2-2) 지형이 뒤에 오므로 const 가 아니다 — applyTerrain 이 고도맵 캔버스가 다 그려진 뒤에 만든다.
+  let detail = hasHeight ? new DetailTerrain(uniforms, baseHeightCanvas) : null;
 
   const earth = new THREE.Mesh(
     new THREE.SphereGeometry(1, 1024, 512),
@@ -2481,12 +2568,14 @@ async function main() {
   });
   bind('c-shade', 'v-shade', (v) => v.toFixed(1), (v) => { uniforms.uShade.value = v; });
   bind('c-photo', 'v-photo', (v) => `${v}%`, (v) => { uniforms.uPhotoMix.value = v / 100; });
-  if (!hasHeight) {
+  // (2026-09-23 정정 · V2-2) 이 자리에서는 hasHeight 가 늘 0 이다(지형이 뒤에 온다) — 그대로 두면 모든 세션이 사진 100% 가 된다.
+  //   '받는 중'의 바탕 지도 100% 는 셰이더(uTerrainFade=0)가 하고, 이 폴백은 **지형 전체 실패가 확정된 때** applyTerrain 이 부른다.
+  const photoFallbackForNoTerrain = () => {
     // 지형 전체 실패 폴백: 슬라이더 초기 동기화가 0.65로 덮지 않게 100%로 맞춘다
     const photoEl = document.getElementById('c-photo');
     photoEl.value = 100;
     photoEl.dispatchEvent(new Event('input'));
-  }
+  };
 
   let sunAz = 245;
   let sunEl = 64;
@@ -2547,7 +2636,8 @@ async function main() {
     // 팽창 반경을 잡아 두 번 재교차 (한국 폭 ~3°인데 시차가 1~3°라 필수)
     for (let it = 0; it < 2; it += 1) {
       const h = Math.max(heightAtJs(lat, lon), 0);
-      const r1 = 1 + (h / EARTH_RADIUS_M) * uniforms.uExagger.value;
+      // (2026-09-23 · V2-2 검수) 지구 변위는 이제 uTerrainFade 를 곱해 그린다(EARTH_VERT) — 페이드 0.6 s 동안 그린 높이와 맞춘다.
+      const r1 = 1 + (h / EARTH_RADIUS_M) * uniforms.uExagger.value * uniforms.uTerrainFade.value;
       const disc2 = b * b - (ro.lengthSq() - r1 * r1);
       if (disc2 <= 0) break;
       const p2 = ro.clone().addScaledVector(rd, -b - Math.sqrt(disc2));
@@ -2557,7 +2647,17 @@ async function main() {
     return { lat, lon };
   };
 
+  // (2026-09-23 · V2-1) 출처 문구가 쓰는 '지금 얹힌 전역 고도맵' — 기기가 실제로 받은 단계를 말한다(폰 z3 · PC z4 · 폰 z3 실패 → z4).
+  const terrainLevelText = (en = false) => {
+    const z = terrainInfo.z;
+    if (z) return en ? `global z${z} (≈${TERRAIN_LEVEL_KM[z]} km/px at the equator)` : `전역 z${z}${z === 3 ? ' 한 장' : ''}(적도 약 ${TERRAIN_LEVEL_KM[z]} km/px)`;
+    if (terrainInfo.state === 'failed') return en ? 'global height map unavailable' : '전역 고도맵 못 받음';
+    return en ? 'global height map loading' : '전역 고도맵 받는 중';
+  };
+
   // JS쪽 고도 샘플러: 클릭 픽킹의 지형 시차 보정용 (전역 z4 캔버스에서 직접 읽음)
+  // (2026-09-23 정정) 폰은 z3 2048 캔버스다. 지형이 오기 전에는 baseHeightCanvas 가 null 이라 0 을 돌려주고 캐시도 만들지 않는다 —
+  //   applyTerrain 은 **다 그린 캔버스만** baseHeightCanvas 에 넣으므로 아래 '다시 그려지지 않는다' 전제는 그대로 참이다.
   let heightPix = null;   // 캔버스 전체 픽셀을 한 번만 읽어 둔다
   let heightW = 0;
   let heightH = 0;
@@ -3998,7 +4098,7 @@ async function main() {
       focusSel: focus.selected,
       focusStatsHtml: focusStatsRows,
       sunHtml,
-      terrainHtml: `과장 ${uniforms.uExagger.value}× · 음영 ${uniforms.uShade.value.toFixed(1)}${uniforms.uIsobath.value > 0.5 ? ` · 등심선 ${uniforms.uIsobathStep.value.toLocaleString('ko-KR')} m` : ''}<br/>전역 z4 + 지역 z5~z9 스트리밍 (AWS Terrarium · Esri 위성)${nightLightSrc ? `<br/>밤면 불빛 · ${nightLightSrc}` : ''}`,
+      terrainHtml: `과장 ${uniforms.uExagger.value}× · 음영 ${uniforms.uShade.value.toFixed(1)}${uniforms.uIsobath.value > 0.5 ? ` · 등심선 ${uniforms.uIsobathStep.value.toLocaleString('ko-KR')} m` : ''}<br/>${terrainLevelText()} + 지역 z5~z9 스트리밍 (AWS Terrarium · Esri 위성)${nightLightSrc ? `<br/>밤면 불빛 · ${nightLightSrc}` : ''}`,
       cloudBadge: cloudBadgeFor(clouds.mode),
       cloudHtml: cloudNoteText(),                                   // 출처 + 색면이 구름에게 한 일(숨겼다 · 손이 이겼다)
     });
@@ -4621,7 +4721,8 @@ async function main() {
           });
           break;
         case 'land/terrain':
-          note('실지형 3D', 'AWS Terrarium 실고도 — 전역 z4 + 지역 z5~z9 스트리밍. 항상 켜져 있는 기본 씬입니다.', 'LIVE');
+          // (2026-09-23 정정 · V2-1) '전역 z4' 고정 문구 → 이 기기가 실제로 얹은 단계(폰 z3 한 장 · PC z4).
+          note('실지형 3D', `AWS Terrarium 실고도 — ${terrainLevelText()} + 지역 z5~z9 스트리밍. 항상 켜져 있는 기본 씬입니다.`, 'LIVE');
           break;
         case 'land/satdetail':
           note('위성 표면', '고도 4,000km 아래로 줌인하면 실제 위성 이미지가 지형 위로 자동 표시됩니다. 250km 아래는 지역 3D.', 'LIVE');
@@ -4708,7 +4809,7 @@ async function main() {
                  5번째(${(uniforms.uIsobathStep.value * 5).toLocaleString('ko-KR')} m)마다 굵은 주곡선입니다.<br/>
                  줌아웃해서 선이 화면 1픽셀보다 촘촘해지는 구간은 저절로 사라집니다 — 뭉개진 띠 대신 아무것도 안 그립니다.<br/><br/>
                  <span style="opacity:.75">간격은 설정 ▸ 시뮬레이션 · 표현 튜닝의 “등심선 간격”에서 200~2,000 m로 바꿀 수 있습니다.</span><br/>
-                 <span style="opacity:.7;font-size:11px">지형을 변형하지 않습니다. 지구본이 이미 쓰는 고도맵(AWS Terrarium z4 · 적도 약 9.8 km/px)을
+                 <span style="opacity:.7;font-size:11px">지형을 변형하지 않습니다. 지구본이 이미 쓰는 고도맵(AWS Terrarium ${terrainLevelText()})을
                  그대로 읽어 선만 얹습니다 — 그 해상도보다 가는 지형은 등심선에도 나타나지 않습니다.</span>`
               : '해저 등심선을 껐습니다.',
             'OBSERVED');
@@ -5253,7 +5354,9 @@ async function main() {
     const lon = ((THREE.MathUtils.radToDeg(orbit.targetYaw) + 540) % 360) - 180;
     // 화면 한가운데의 실제 값. 이름만 넘기면 모델이 답할 근거가 없다.
     const point = {};
-    const hM = heightAtJs(lat, lon);
+    // (2026-09-23 · V2-2 검수) 지형이 오기 전에는 heightAtJs ≡ 0 이다 — 그대로 넘기면 모델이 '지면고도 0 m' 를 근거로 받는다.
+    //   고도맵이 얹힌 뒤에만 넘긴다.
+    const hM = baseHeightCanvas ? heightAtJs(lat, lon) : NaN;
     if (Number.isFinite(hM)) point['지면고도_m'] = Math.round(hM);
     const cs = clouds.sampleAt(lat, lon);
     if (cs) Object.assign(point, cs);
@@ -5673,7 +5776,29 @@ async function main() {
     });
   };
 
+  // (2026-09-23 · V2-2 검수) 나라 카드의 '최고 고도 (근사)' 한 줄 — bbox 안 20×20 점에서 센 최댓값.
+  //   고도맵이 아직 없으면(받는 중·못 받음) 숫자를 적지 않는다. 0 m 는 지어낸 값이다.
+  let focusMaxHPending = null;
+  const countryMaxHRow = (minLa, maxLa, minLo, maxLo) => {
+    if (!baseHeightCanvas) {
+      return terrainInfo.state === 'failed'
+        ? statRow('최고 고도 (근사)', 'UNAVAILABLE', true)
+        : statRow('최고 고도 (근사)', '지형 받는 중…', true);
+    }
+    let maxH = 0;
+    for (let iy = 0; iy < 20; iy += 1) {
+      for (let ix = 0; ix < 20; ix += 1) {
+        const la = minLa + ((iy + 0.5) / 20) * (maxLa - minLa);
+        const lo = minLo + ((ix + 0.5) / 20) * (maxLo - minLo);
+        const h = heightAtJs(la, lo);
+        if (h > maxH) maxH = h;
+      }
+    }
+    return statRow('최고 고도 (근사)', `${Math.round(maxH).toLocaleString()} m`);
+  };
+
   focus.onChange = (f) => {
+    focusMaxHPending = null;
     if (!f || f.ocean) {
       focusStatsRows = '';
       // 문맥 종료(바다 클릭·재클릭 해제) — 자동으로 켠 조각만 같이 끝난다(§15).
@@ -5724,15 +5849,11 @@ async function main() {
         if (la > maxLa) maxLa = la;
       }
     }
-    let maxH = 0;
-    for (let iy = 0; iy < 20; iy += 1) {
-      for (let ix = 0; ix < 20; ix += 1) {
-        const la = minLa + ((iy + 0.5) / 20) * (maxLa - minLa);
-        const lo = minLo + ((ix + 0.5) / 20) * (maxLo - minLo);
-        const h = heightAtJs(la, lo);
-        if (h > maxH) maxH = h;
-      }
-    }
+    // (2026-09-23 · V2-2 검수) 지형이 뒤에 오므로 그 전에는 heightAtJs ≡ 0 이다 — 예전 식 그대로면 네팔을 눌러도
+    //   '최고 고도 (근사) 0 m' 라고 **지어낸 값**을 적었다. 고도맵이 없으면 이 줄은 '지형 받는 중'(못 받았으면 UNAVAILABLE)이고,
+    //   지형이 도착하면 replaceAfterTerrain 이 같은 나라가 아직 골라져 있을 때 이 줄만 다시 센다(countryMaxHRow).
+    const maxHRow = countryMaxHRow(minLa, maxLa, minLo, maxLo);
+    focusMaxHPending = baseHeightCanvas ? null : { code3: (f.properties || f).code3, minLa, maxLa, minLo, maxLo, row: maxHRow };
     const area = sphericalAreaKm2(polysOf(f));
     // '중심 좌표' 행은 뺐다 (지시서 §5) — 나라를 부르는 건 이름이지 좌표가 아니고,
     // 좌표값은 사용자가 묻거나 근거를 열 때 필요한 것이다. 인구를 첫 줄로 올렸다(§13) —
@@ -5741,7 +5862,7 @@ async function main() {
     focusStatsRows =
       statRow('인구', '불러오는 중…', true)
       + statRow('면적 (근사)', `${Math.round(area).toLocaleString()} km²`)
-      + statRow('최고 고도 (근사)', `${Math.round(maxH).toLocaleString()} m`)
+      + maxHRow
       + statRow('GDP', 'UNAVAILABLE', true)
       + statRow('실시간 데이터', focusLiveRow(f));
     shell.openIntel();
@@ -6155,16 +6276,28 @@ async function main() {
   // 밤 불빛(Black Marble VNP46A2)은 보정·갭필을 거쳐 이틀쯤 뒤에 올라온다(실측 2026-09-04:
   // 최신 공개일 2026-09-02). 이 값을 안 맞추면 매번 빈 날짜를 받아 타일이 통째로 비고,
   // 25장 미만이면 아래에서 예외가 나 폴백으로 떨어진다.
-  async function loadGibsBase(st, dayShift = 0) {
+  // (2026-09-23 정정) '25장' 은 3단계(50장) 기준이다. 이제 문턱은 받은 단계 타일 수의 절반이다(2단계 15장 → 8장).
+  //
+  // ⚠️ 2026-09-23 (PERF-LTE-PLAN V2-5): level 인자를 더했다. 기본값 3 — 위성 베이스(setBaseStyle)는 예전 그대로다.
+  //    폰의 밤 불빛만 2단계를 받는다(아래 setTimeout). 3단계 50장은 2.27 MB · 폭 5120 인데, 폰 텍스처 한도(4096)를
+  //    넘어 three 가 받은 뒤 다시 줄였고, 폰 화면 1px(≈10.9 km)보다 촘촘한 0.07°/px 를 받아 버리고 있었다.
+  //    2단계는 5×3 = 15장 · 0.14°/px(적도 ≈15.6 km) · 2560×1280 이다(실측 0.59 MB).
+  //    ⚠️ 캔버스 높이를 rows×512 로 두면 안 된다 — 2단계 3행(1536 px)은 216° 라 아래 36° 는 남극 밖(투명)이다.
+  //       셰이더는 캔버스 전체를 위도 180° 로 읽는다(lat/PI+0.5). 1536 으로 두면 그림이 위도 방향으로 17% 늘어난다.
+  //       그래서 폭·높이는 타일 수가 아니라 도(°)에서 구하고, 마지막 행은 캔버스 밖으로 잘리게 그린다.
+  async function loadGibsBase(st, dayShift = 0, level = 3) {
     const lagH = st.lagH || 36;
     const date = st.daily
       ? new Date(Date.now() - (lagH + dayShift * 24) * 3600000).toISOString().slice(0, 10)
       : st.date;
-    const cols = 10;
-    const rows = 5;
+    const degPerPx = 0.5625 / (1 << level);        // GIBS EPSG4326 512px 타일: 0단계 0.5625°/px, 단계마다 절반
+    const width = Math.round(360 / degPerPx);       // 3단계 5120 · 2단계 2560
+    const height = Math.round(180 / degPerPx);      // 3단계 2560 · 2단계 1280
+    const cols = Math.ceil(width / 512);            // 3단계 10 · 2단계 5
+    const rows = Math.ceil(height / 512);           // 3단계 5 · 2단계 3 (마지막 행은 절반만 지구)
     const can = document.createElement('canvas');
-    can.width = cols * 512;
-    can.height = rows * 512;
+    can.width = width;
+    can.height = height;
     const ctx = can.getContext('2d');
     ctx.fillStyle = '#04070c';
     ctx.fillRect(0, 0, can.width, can.height);
@@ -6178,9 +6311,9 @@ async function main() {
       img.onerror = () => res();
       // 확장자를 .jpg 로 박아 두고 있었다 — 표에 ext 를 적어 두고도 쓰지 않아서
       // PNG 로만 나오는 산출물(밤 불빛 일별)은 통째로 404 였다.
-      img.src = `https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/${st.layer}/default/${date}/${st.res}/3/${r}/${c}.${st.ext || 'jpg'}`;
+      img.src = `https://gibs.earthdata.nasa.gov/wmts/epsg4326/best/${st.layer}/default/${date}/${st.res}/${level}/${r}/${c}.${st.ext || 'jpg'}`;
     })));
-    if (ok < 25) throw new Error(`GIBS 타일 ${ok}/50`);
+    if (ok < Math.ceil((cols * rows) / 2)) throw new Error(`GIBS 타일 ${ok}/${cols * rows}`);
     const tex = new THREE.CanvasTexture(can);
     tex.wrapS = THREE.RepeatWrapping;
     tex.wrapT = THREE.ClampToEdgeWrapping;
@@ -6188,7 +6321,7 @@ async function main() {
     tex.magFilter = THREE.LinearFilter;
     tex.generateMipmaps = false;
     tex.colorSpace = THREE.SRGBColorSpace;
-    return { tex, date, ok };
+    return { tex, date, ok, level, degPerPx };
   }
 
   async function setBaseStyle(id, note) {
@@ -6520,7 +6653,10 @@ async function main() {
     captureImage,
     orbit,
     uniforms,
-    detail,
+    // (2026-09-23 정정 · V2-2) detail 은 지형이 온 뒤에 생긴다 — 값으로 넣으면 null 이 굳는다. 읽을 때마다 지금 것을 준다.
+    get detail() { return detail; },
+    terrain: terrainInfo,     // 콘솔·시험용: { lite, state, z, failed, total, readyMs, why }
+    heightAt: heightAtJs,     // 콘솔·시험용: __earthus.heightAt(27.99, 86.93) → 에베레스트 근처 고도(m)
     map,
     clouds,
     focus,
@@ -6541,11 +6677,26 @@ async function main() {
   // 콘솔 확인용: __earthus.obs.state() → 왜 찍히는지/안 찍히는지(reasonKo) · __earthus.obs.placed() → 지금 찍힌 지점
   window.__earthus.obs = obsLabels;
 
+  // (2026-09-23 · PERF-LTE V2-2) 지형 도착 페이드 상태. applyTerrain(main() 끝)이 시작 시각을 넣고, 프레임이 0→1 로 올린다.
+  //   0.6 s · smoothstep. 움직임 줄이기(prefers-reduced-motion)면 페이드 없이 바로 1 이다.
+  //   다 올라간 뒤에 표식·기둥을 다시 세운다(replaceAfterTerrain) — 올라가는 도중에 세우면 반쯤 솟은 지형 높이를 쓴다.
+  const TERRAIN_FADE_MS = 600;
+  let terrainFadeT0 = null;
+  let replaceAfterTerrain = () => {};   // main() 끝에서 채운다 — 거기서야 popSculpt·travel·seafloor… 가 다 있다
   let last = performance.now();
   const tickBody = (now) => {
     const dt = Math.min((now - last) / 1000, 0.1);
     last = now;
     thermal.tick(now); // 실측 fps → 정본 THERMAL_STATE (2초 창 평균 · 히스테리시스)
+    if (terrainFadeT0 != null) {
+      const k = Math.min(1, Math.max(0, (now - terrainFadeT0) / TERRAIN_FADE_MS));
+      uniforms.uTerrainFade.value = k * k * (3 - 2 * k);
+      if (k >= 1) {
+        terrainFadeT0 = null;
+        uniforms.uTerrainFade.value = 1;
+        replaceAfterTerrain();
+      }
+    }
     if (map.active) {
       return; // 지도 모드: 3D 렌더 정지 (지도가 자체적으로 DOM 렌더)
     }
@@ -6707,9 +6858,11 @@ async function main() {
     const altTxt = altKm >= 1000
       ? (i18n.ko ? `${(altKm / 1000).toFixed(1)}천` : `${(altKm / 1000).toFixed(1)}k`)
       : String(Math.round(altKm));
+    // (2026-09-23 · V2-2) 지형을 받는 동안에는 과장 대신 그 사실을 적는다 — 평평한 지구에 '과장 50×' 라고 적으면 거짓말이다.
+    const terrainPending = !uniforms.uHasHeight.value && terrainInfo.state === 'loading';
     hudLine.textContent = i18n.ko
-      ? `고도 ${altTxt} km · 과장 ${uniforms.uExagger.value}×`
-      : `alt ${altTxt} km · exag ${uniforms.uExagger.value}×`;
+      ? `고도 ${altTxt} km · ${terrainPending ? '지형 받는 중' : `과장 ${uniforms.uExagger.value}×`}`
+      : `alt ${altTxt} km · ${terrainPending ? 'terrain loading' : `exag ${uniforms.uExagger.value}×`}`;
 
     renderer.render(scene, camera);
   };
@@ -6726,6 +6879,97 @@ async function main() {
 
   loading.classList.add('done');
   requestAnimationFrame(tick);
+
+  // ---------------------------------------------------------------------------
+  // (2026-09-23 · PERF-LTE V2-1·V2-2) 지형 고도맵 도착 → 얹기. 덮개는 이미 걷혔다.
+  //   여기서 거는 이유: 위의 const 들(detail 제외 전부 · toast · liveLayers · popSculpt …)이 모두 초기화된 뒤라야 한다(TDZ).
+  //   고도를 '이미 있다'고 전제하던 자리(v2-data-origin.md §T1 의 29곳)는 이렇게 받는다 —
+  //   · 셰이더(지구·색면·잠기는 땅): uHeightMap·uHasHeight 객체의 value 만 바꾼다(모두 같은 객체를 물고 있다).
+  //   · heightAtJs: 다 그린 캔버스만 baseHeightCanvas 에 넣는다 → 첫 호출에서 한 번 통째로 읽는 캐시가 그대로 맞다.
+  //   · DetailTerrain: 여기서 처음 만든다(전역맵 업스케일 바탕이 이 캔버스다).
+  //   · 클릭 픽킹의 시차 보정(raycastGlobe)·과장 상한(exagCeil)은 매번 heightAtJs 를 부르므로 도착 즉시 맞는다.
+  //   · 지형 전에 지은 표식·기둥·해구 표: 페이드가 끝난 뒤 replaceAfterTerrain 이 다시 세운다.
+  //   · 바다 가림판(live-layers oceanMask)·기압 기호 가림판·잠기는 땅의 도달 판: 지형이 없으면 붙들지 않고 기다리게 이미 짜여 있다.
+  //   ⚠️ 남는 것(고치지 않음): 지형 전에 켠 색면의 숫자 라벨은 다음 키프레임까지 고도 0 자리에 선다(live-layers onTerrainReady 주석).
+  //      LAB 화면(ext-scene)의 표식도 지형 전에 열었으면 고도 0 이다 — 다시 열면 맞는다.
+  //   (2026-09-23 정정 · 검수) 색면 라벨은 live-layers onTerrainReady 가 같은 목록으로 다시 세운다. 나라 카드 '최고 고도'·해구 표·
+  //      물어보기 문맥의 지면고도는 지형 전에는 숫자를 적지 않는다(0 m 는 지어낸 값이다) — countryMaxHRow · seafloor.terrainReady.
+  const reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  replaceAfterTerrain = () => {
+    const tryIt = (what, fn) => { try { fn(); } catch (e) { console.warn(`[earthus-three] 지형 뒤 다시 세우기 실패(${what})`, e); } };
+    tryIt('liveLayers', () => liveLayers.onTerrainReady());
+    tryIt('popSculpt', () => { if (popSculpt.doc) popSculpt.rebuild(); });
+    tryIt('quakeHistory', () => {
+      // build() 는 points 가 있으면 돌아간다 — 높이 속성(aH)만 도착한 고도맵으로 다시 읽어 갈아 끼운다(원래 0 으로 읽혔다).
+      const d = quakeHistory.doc;
+      if (quakeHistory.points && d) {
+        quakeHistory.points.geometry.setAttribute('aH', new THREE.BufferAttribute(quakeHistory.sampleHeights(d.lat, d.lon, d.n), 1));
+      }
+    });
+    tryIt('travel', () => { if (travel.mode && (travel.data || travel.catalog)) travel.build(); });
+    tryIt('seafloor', () => { seafloor.terrainReady = true; seafloor.refreshDepths(); });
+    // (2026-09-23 · V2-2 검수) 지형 전에 고른 나라 카드의 '최고 고도' 줄 — 같은 나라가 아직 골라져 있으면 그 줄만 다시 센다.
+    tryIt('focusMaxH', () => {
+      const p = focusMaxHPending;
+      focusMaxHPending = null;
+      if (!p || !focus.selected || focus.selected.code3 !== p.code3 || !focusStatsRows.includes(p.row)) return;
+      focusStatsRows = focusStatsRows.replace(p.row, countryMaxHRow(p.minLa, p.maxLa, p.minLo, p.maxLo));
+      shell.renderIntel();
+    });
+  };
+  const applyTerrain = ({ canvas: hCanvas, failed, total, z }) => {
+    if (!(failed < total)) throw new Error('all tiles failed');
+    heightTex = new THREE.CanvasTexture(hCanvas);
+    heightTex.flipY = false;
+    heightTex.wrapS = THREE.RepeatWrapping;
+    heightTex.wrapT = THREE.ClampToEdgeWrapping;
+    heightTex.minFilter = THREE.LinearFilter;
+    heightTex.magFilter = THREE.LinearFilter;
+    heightTex.generateMipmaps = false;
+    heightTex.colorSpace = THREE.NoColorSpace;
+    baseHeightCanvas = hCanvas;            // 다 그린 캔버스다 — heightAtJs 가 첫 호출에서 통째로 읽는다
+    hasHeight = 1;
+    uniforms.uHeightMap.value = heightTex;
+    uniforms.uHasHeight.value = 1;
+    // (2026-09-23 · V2-2 검수) 확대 창(z5~z9)이 못 서도 전역 부조는 서야 한다 — 위에서 uHasHeight 를 이미 1 로 올렸으므로
+    //   여기서 던지면 색면은 부조를 타는데 지구는 평평한 채(uTerrainFade 0)로 멈추고 HUD 가 '지형 받는 중'에 영영 선다.
+    try { detail = new DetailTerrain(uniforms, baseHeightCanvas); } catch (e) { detail = null; console.warn('[earthus-three] 확대 창 준비 실패', e); }
+    terrainInfo.state = 'ready';
+    terrainInfo.z = z;
+    terrainInfo.failed = failed;
+    terrainInfo.total = total;
+    terrainInfo.readyMs = Math.round(performance.now());
+    seafloor.terrainLabel = `Terrarium z${z} · 적도 약 ${TERRAIN_LEVEL_KM[z]} km/px`;
+    canvas.setAttribute('data-terrain-level', `z${z}`);
+    if (failed > 0) {
+      // 덮개(#loading)는 이미 .done(opacity 0)이라 #load-err 에 적으면 아무도 못 본다(:5133 의 같은 사고) — 알림으로 띄운다.
+      toast(`일부 지형 타일(${failed}/${total})을 받지 못해 해당 구역은 평지로 표시됩니다.`);
+    }
+    if (reducedMotion) {
+      uniforms.uTerrainFade.value = 1;
+      replaceAfterTerrain();
+    } else {
+      terrainFadeT0 = performance.now();
+    }
+    console.info(`[earthus-three] 지형 z${z} 얹음 · ${terrainInfo.readyMs - Math.round(terrainInfo.t0)} ms 뒤${failed ? ` · 실패 ${failed}/${total}` : ''}`);
+  };
+  terrainPromise.then(applyTerrain).catch((err) => {
+    console.error('[earthus-three] terrain load failed:', err);
+    terrainInfo.state = 'failed';
+    terrainInfo.why = String((err && err.message) || err);
+    canvas.setAttribute('data-terrain-level', 'none');
+    // 예전 실패 경로와 같은 그림: 사진 100%(슬라이더도 100 으로) · 변위·음영 없음. 페이드는 1 로 둬 사진 비율이 슬라이더를 따르게 한다.
+    uniforms.uTerrainFade.value = 1;
+    photoFallbackForNoTerrain();
+    toast('지형 데이터를 받지 못했습니다. 색상 텍스처만으로 표시합니다. (네트워크 확인 후 새로고침)');
+    // (2026-09-23 · V2-2 검수) 받는 중에 고른 나라 카드의 '지형 받는 중…' 줄을 UNAVAILABLE 로 — 영영 '받는 중'이라고 하지 않는다.
+    const p = focusMaxHPending;
+    focusMaxHPending = null;
+    if (p && focusStatsRows.includes(p.row)) {
+      focusStatsRows = focusStatsRows.replace(p.row, countryMaxHRow(p.minLa, p.maxLa, p.minLo, p.maxLo));
+      shell.renderIntel();
+    }
+  });
 
   // 링크로 들어왔다면 그 화면을 되살린다. 국가 데이터가 늦으면 o.c만 맡겨 두고
   // data 도착 시 onData가 같은 문으로 적용한다 — 늦었다고 조용히 버리지 않는다.
@@ -6777,18 +7021,22 @@ async function main() {
   setTimeout(async () => {
     const st = BASE_STYLES.find((s) => s.id === 'night');
     if (!st) return;
+    // 2026-09-23 (PERF-LTE-PLAN V2-5): 폰(또는 텍스처 한도 5120 미만 기기)은 GIBS 2단계 15장을 받는다
+    //   (50장 2.23 MB → 15장 0.59 MB 실측). PC 는 3단계 그대로다. 해상도는 출처 줄에 같이 적는다(모든 값에 출처).
+    const nightLevel = (isMobileUA || (maxTex > 0 && maxTex < 5120)) ? 2 : 3;
     // 일별 불빛 → 하루 더 뒤로 → 2016 합성본 → 2012 합성본. 되는 것 중 가장 새것에서 멈춘다.
     const tries = [
-      () => loadGibsBase(st, 0),
-      () => loadGibsBase(st, 1),
-      ...NIGHT_FALLBACK.map((f) => () => loadGibsBase(f)),
+      () => loadGibsBase(st, 0, nightLevel),
+      () => loadGibsBase(st, 1, nightLevel),
+      ...NIGHT_FALLBACK.map((f) => () => loadGibsBase(f, 0, nightLevel)),
     ];
     for (let i = 0; i < tries.length; i += 1) {
       try {
-        const { tex, date } = await tries[i]();
+        const { tex, date, degPerPx } = await tries[i]();
         uniforms.uNightMap.value = tex;
         uniforms.uHasNight.value = 1;
-        nightLightSrc = i < 2 ? `${st.src} · ${date}` : (NIGHT_FALLBACK[i - 2].ko);
+        const resTxt = `${degPerPx.toFixed(2)}°/px`;
+        nightLightSrc = i < 2 ? `${st.src} · ${date} · ${resTxt}` : `${NIGHT_FALLBACK[i - 2].ko} · ${resTxt}`;
         return;
       } catch (e) { /* 다음 후보로 */ }
     }

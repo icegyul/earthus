@@ -42,6 +42,19 @@
     "ne2-tiles": {
       "tiles": 682,
       "scheme": "geographic 256px z0-z4"
+    },
+    "ne2-base-4096.webp": {
+      "sha256": "f68d8585108361000e7a0f50fbaa24ec19865902431e3d8cd5d60ab22f437027",
+      "bytes": 440250,
+      "width": 4096,
+      "height": 2048,
+      "generatedAt": "2026-09-23T12:56:58.143Z",
+      "bakedFrom": "NE2 원판을 같은 bake()·drawBorders() 로 다시 구운 무손실 화소 (ne2-base-4096.jpg 를 다시 싼 것이 아니다 — 같은 화소의 jpeg-js q88 sha 가 영수증과 일치함을 확인)",
+      "encoder": "libwebp 1.6.0 (Pillow 12.3.0) lossy quality=80 method=6",
+      "psnrDbVsLossless": {
+        "webp": 37.25,
+        "jpg": 39.98
+      }
     }
   }
 }

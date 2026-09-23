@@ -91,7 +91,7 @@
 //
 // 계산은 DOM · THREE 없이 시험할 수 있는 순수 함수다. 셰이더가 하는 일은 floodAt 이 JS 로 그대로 셈한다(시험용 거울).
 
-import * as THREE from '../../vendor/three-r184.module.min.js';
+import * as THREE from '../vendor/three-r184.module.min.js';
 import { FIELD_LIFT, FIELD_GRAD_EPS, FIELD_RENDER_ORDER, FIELD_TERRAIN_GLSL, FIELD_VERT, lineCoverage } from './field-renderer.js?v=1';
 import { bandIndex, defineScale, legendModel, paletteRGBA } from './field-scales.js?v=1';
 import { LAND_MASK_RES, sharedLandMask } from './land-mask.js?v=1';

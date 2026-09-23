@@ -190,7 +190,7 @@ export const PHENOMENA = Object.freeze({
     availability: 'ready',
     evidenceProfile: 'VISUALIZATION_ONLY',
     temporalMode: 'current',
-    scope: '전지구. 실측 고도는 AWS Terrarium 을 z4 전역 + z5~z9 지역으로 스트리밍하고, 고도 4,000km 아래로 내려가면 Esri World Imagery 지표 사진이 그 위에 자동으로 얹히며 250km 아래는 지역 3D 로 바뀐다. 사진은 표면 재질일 뿐이고 입체는 언제나 실측 고도가 만든다(main.js:5493-5494 주석).',
+    scope: '전지구. 실측 고도는 AWS Terrarium 을 전역 한 장(PC 는 z4 · 적도 약 9.8 km/px, 폰·태블릿은 z3 · 약 19.6 km/px) + z5~z9 지역으로 스트리밍하고, 고도 4,000km 아래로 내려가면 Esri World Imagery 지표 사진이 그 위에 자동으로 얹히며 250km 아래는 지역 3D 로 바뀐다. 사진은 표면 재질일 뿐이고 입체는 언제나 실측 고도가 만든다(main.js:5493-5494 주석).',
     dataProducts: Object.freeze(['land/terrain', 'land/satdetail']),
   }),
   'ocean.bathymetry': Object.freeze({

@@ -9,19 +9,19 @@ import { renderBadge, layerBadge } from './engine-bridge.js?v=15';
 // menu-guide.js 의 MENU_QUESTIONS 는 지우지 않았다 — tools/build_information_inventory.mjs 가
 // 아직 읽고, 레지스트리의 질문이 거기서 왔다. 다만 화면은 이제 레지스트리만 본다.
 // (bare id 조회였기 때문에 hobby/surf 가 ocean/surf 의 질문을 그대로 표시하고 있었다.)
-import { questionForLayer, phenomenonForLayer, LAYER_PHENOMENON, reportKindsForPhenomenon, PHENOMENA, representativeLayerFor, MENU_GROUPS, EARTHUS_MENU_GROUPS } from './phenomenon-registry.js?v=5';
+import { questionForLayer, phenomenonForLayer, LAYER_PHENOMENON, reportKindsForPhenomenon, PHENOMENA, representativeLayerFor, MENU_GROUPS, EARTHUS_MENU_GROUPS } from './phenomenon-registry.js?v=6';
 // 2026-09-13 아이콘 시스템 — 표는 v1·v2 공용 모듈 하나뿐이다(지시서 §13).
 // ⚠️ 번들에서는 tools/build-v2-bundle.sh 가 이 경로를 ./earthus-icons.js 로 고쳐 쓰고
 //    모듈을 번들의 js/ 바로 아래에 둔다(그래야 모듈이 그림을 번들 안에서 찾는다).
 import { iconForPhenomenon, iconSrc, iconSrcSet, groupIconSrc, groupIconSrcSet } from './earthus-icons.js?v=2';
 import { menuCoverage, menuTime, canClearLayer, matchesMenu } from './information-contract.js';
 // PHASE 8 §13 — 리포트 센터. 보고서 렌더링은 그쪽 모듈이 한다. 여기서 문장을 만들지 않는다.
-import { reportDocHtml, reportKey, reportIndexKey, reportUrl, reportIdFromUrl, currentTier, DATA_LABEL_TEXT } from './report-center.js?v=2';
+import { reportDocHtml, reportKey, reportIndexKey, reportUrl, reportIdFromUrl, currentTier, DATA_LABEL_TEXT } from './report-center.js?v=3';
 // 지시서 §8·§16 — 궁금한 점(추천 질문)은 시뮬레이션 능력 레지스트리가 정한다.
 // 없는 엔진의 질문 버튼은 여기서도 만들지 않는다. 다만 '왜 없는지'를 말하는 버튼은
 // pop-metric-menu 의 선례처럼 둔다 — 조용히 아무 말도 하지 않는 게 더 큰 거짓말이다.
 import { simEntryFor, questionsForPhenomenon, questionsForCountry, previewSceneFor } from './sim-questions.js?v=2';
-import { intelStripHtml, intelOf } from './intel-strip.js?v=1';
+import { intelStripHtml, intelOf } from './intel-strip.js?v=2';
 const safeText = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 // ---------------------------------------------------------------------------

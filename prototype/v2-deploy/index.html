@@ -1880,11 +1880,13 @@
 <div id="loading">
   <img class="lockup" src="./assets/brand/earthus-lockup-white.svg" alt="EARTHUS — WHERE EARTH BECOMES ONE" />
   <div class="bar"><i id="load-fill"></i></div>
-  <div class="msg" id="load-msg" data-i18n="loadPrep">지형 데이터 로딩 준비…</div>
+  <!-- 2026-09-23 정정(PERF-LTE V2-2): 덮개는 이제 지형을 기다리지 않는다. data-i18n="loadPrep"('지형 데이터 로딩 준비…')을 떼었다 —
+       i18n 이 나중에 이 글자를 되돌려 덮개가 걷힐 때까지 '지형 로딩'이라고 거짓말했다. 영어는 main.js 가 적는다. -->
+  <div class="msg" id="load-msg">지구 불러오는 중…</div>
   <div class="err" id="load-err"></div>
 </div>
 
-<script type="module" src="./js/main.js?v=197-menuv1"></script>
+<script type="module" src="./js/main.js?v=199-terrain"></script>
 <script src="/js/earth-switch.js" defer></script>
 </body>
 </html>

@@ -9,7 +9,7 @@ import { buildOceanMaskAsync, oceanMaskAlphaRGBA, oceanMaskCardLine, erodedGridN
 // W1 셰이더 색면(기온부터) — 프레임 저장소·시간 버스·범례·라벨을 묶는 접착제는 저 파일에 있다. 여기에는 거는 자리만 둔다.
 import { activeField, clearFieldLayers, isFieldLayerId, toggleFieldLayer } from './field-layer.js?v=1';
 // 잠기는 땅(레이어 'slr' · 2026-09-20 E1) — 상승폭 IDW 격자·셰이더·카드는 저 파일에 있다. 여기에도 거는 자리만 둔다.
-import { createFloodOverlay, FLOOD_QUANTITY } from './flood-overlay.js?v=1';
+import { createFloodOverlay, FLOOD_QUANTITY } from './flood-overlay.js?v=2';   // v=2: 2026-09-23 카드 ③ 지형 해상도를 얹힌 고도맵에서 센다
 // 연안 침수 예상도의 전국 색인(레이어 'khoaflood' · 2026-09-20 W6) — 지표를 고른 근거·원반 그리기·솎기·집기는 저 파일에 있다.
 import {
   createFloodDiscs, floodClassLabel, floodDiscSpecs, floodDistrictLoadingNote, floodHiddenNote, floodLegendHtml,
@@ -597,6 +597,29 @@ export class LiveLayers {
         this.refresh(id).then((ok) => { if (ok && onChanged) onChanged(id); });
       }
     }, 30000);
+  }
+
+  // (2026-09-23 · PERF-LTE V2-2) 지형 고도맵이 뒤늦게 도착했다 — 그 전에 지은 레이어는 고도 0 에 서 있어 50× 부조가 올라오면
+  //   산 밑에 묻힌다. 과장이 바뀐 것과 같은 길로 다시 세운다(onExaggerChanged 는 과장이 같으면 돌아가므로 기억값을 비운다).
+  //   셰이더 색면(바다 색면 sstfield·sstanom·wavefield 포함 — 셋 다 FIELD_DESCRIPTORS 다)·잠기는 땅은 지구 uniform 객체
+  //   (uHeightMap·uHasHeight)를 그대로 물고 있어 저절로 따라온다 — onExaggerChanged 가 건너뛰는 그대로 둔다.
+  //   ⚠️ 남는 것: 색면의 숫자 라벨(field-labels.js setLabels)은 키프레임이 바뀔 때만 고도를 읽는다 — 지형 전에 켠 색면의 라벨은
+  //      다음 키프레임까지 고도 0 자리(산 밑)에 선다. 기호 가림판(field-symbols.js ensureMask)은 지형이 없으면 굽지 않고 다음에 다시 해 본다.
+  //   (2026-09-23 정정 · 검수) 라벨은 이제 아래에서 같은 목록으로 다시 세운다 — '다음 키프레임까지 산 밑'은 더 이상 남지 않는다.
+  onTerrainReady() {
+    this.lastExagger = null;
+    this.onExaggerChanged();
+    // (2026-09-23 · V2-2 검수) 위 ⚠️ 의 '라벨이 다음 키프레임까지 산 밑' 을 여기서 닫는다 — 켜진 색면의 라벨을 **같은 목록**으로
+    //   다시 세우면 setLabels 가 도착한 고도맵으로 높이를 다시 읽는다(field-labels.js · 모듈은 고치지 않는다 · 값은 그대로).
+    //   기압 기호(field-symbols)는 지형 전에는 가림판이 없어 그리지 않으므로 다시 세울 것이 없다.
+    for (const f of Object.values(this._fields || {})) {
+      const L = f && f.active && f.labels;
+      if (!L || !L.count || !Array.isArray(L.pool)) continue;
+      try {
+        const list = L.pool.slice(0, L.count).map((s) => s.userData && s.userData.fieldLabel).filter(Boolean);
+        if (list.length === L.count) L.setLabels(list);
+      } catch (e) { console.warn('[live-layers] 지형 뒤 라벨 다시 세우기 실패', e); }
+    }
   }
 
   // 지형 과장 변경 → 로드된 레이어를 원본 데이터로 재배치 (재요청 없음)
@@ -1438,6 +1461,9 @@ export class LiveLayers {
   // 붙들지 않는다. 지금 흐름에서는 main.js 가 지형 로딩을 기다린 뒤에야 LiveLayers 를 만들므로
   // 지형이 뒤늦게 오는 일은 없고 대체 규칙이 그 세션 내내 간다 — 붙들지 않는 것은 지형 로딩을
   // 비동기로 바꾸는 날, 묵은 '지형 없음' 판이 남아 바다가 계속 깎이는 것을 막기 위해서다.
+  // (2026-09-23 정정 · PERF-LTE V2-2) 그날이 왔다 — main.js 는 이제 지형을 기다리지 않고 덮개를 걷는다. 그래서 '지형이 뒤늦게 오는
+  //   일은 없고'는 더 이상 참이 아니다. 지형이 오기 전에 이 판을 부르면 '쓸 수 없는 판'이 나오고 위 규칙대로 붙들지 않으므로
+  //   지형이 온 뒤의 다음 부름이 새로 굽는다 — 이 규칙이 바로 그날을 위해 있던 것이다.
   // (지형이 통째로 없을 때 다시 훑는 값은 성긴 탐침 648점이라 싸다.)
   //
   // 이 판의 값: 육지에 닿은 0.25° 칸과 그 이웃 칸이 비므로 곧은 해안에서 약 15~40 km 까지는 색이 없고,

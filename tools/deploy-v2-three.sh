@@ -37,7 +37,10 @@ PY=python; command -v python3 >/dev/null && PY=python3
 [[ -f "$SRC/index.html" ]] || { echo "missing $SRC/index.html — 번들을 먼저 빌드하세요" >&2; exit 2; }
 for path in js/main.js js/ui-shell.js js/sim-ocean.js js/local-terrain.js js/intel-feed.js \
   vendor/three-r184.module.min.js vendor/three.core.min.js \
-  assets/physical-earth/ne2-base-8192.jpg data/country-reference.json; do
+  assets/physical-earth/ne2-base-8192.jpg data/country-reference.json \
+  assets/terrain/terrarium-z3.webp assets/physical-earth/ne2-base-4096.webp; do
+  # ↑ 2026-09-23: 폰 지형 한 장·폰 기본 지도 WebP 가 빠진 채 나가면 멈추지 않고 z4 타일 256장·8192 JPG 로 조용히 돌아가
+  #   로딩이 변경 전보다 느려진다(적대 검토). 없으면 여기서 멈춘다.
   [[ -f "$SRC/$path" ]] || { echo "missing $SRC/$path" >&2; exit 2; }
 done
 grep -F '../vendor/three-r184.module.min.js' "$SRC/js/main.js" >/dev/null \

@@ -13,7 +13,7 @@
 //   고급(WHY·RELATION/IMPACT·Confidence)       EXPLORER — FREE 는 결과 일부 노출 뒤 잠금 설명
 // 판정은 access-mode.js decideCapabilityAccess 하나로 한다. FREE_OPEN(유료 출시 전)이면 전부 열린다.
 
-import { INTEL_QUESTIONS, sectionStatus, hasIntel, INTEL_ACTION } from './intel-questions.js?v=1';
+import { INTEL_QUESTIONS, sectionStatus, hasIntel, INTEL_ACTION } from './intel-questions.js?v=2';
 import { decideCapabilityAccess, lockExplanation, TIER } from '../../js/access-mode.js';
 
 export const SECTION_TIER = Object.freeze({

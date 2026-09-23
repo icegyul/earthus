@@ -531,7 +531,10 @@ test('지형 GLSL 은 main.js 의 것과 같은 글자다 — 색면이 읽는 �
   }
   // 판정의 고도는 **디테일 창까지 읽는 것**이다 — 카드가 말하는 '확대하면 약 300 m'(z9)가 이 한 줄이다.
   assert.match(FLOOD_FRAG, /float hgt = heightAt\(lon, lat\);/);
-  assert.match(MAIN_SRC, /전역 z4 \+ 지역 z5~z9/, 'main.js 가 말하는 지형 해상도가 바뀌면 카드의 고지도 같이 고쳐야 한다');
+  // (2026-09-23 정정 · PERF-LTE V2-1) main.js 의 '전역 z4' 는 이제 기기가 실제로 얹은 단계(terrainLevelText · 폰 z3 · PC z4)다.
+  //   카드 ③ 도 같이 고쳤다 — 얹힌 고도맵의 폭에서 센 km(m.terrainKm)를 쓴다. 둘이 따로 놀지 않는지를 본다.
+  assert.match(MAIN_SRC, /\$\{terrainLevelText\(\)\} \+ 지역 z5~z9/, 'main.js 가 말하는 지형 해상도가 바뀌면 카드의 고지도 같이 고쳐야 한다');
+  assert.match(read('../../prototype/v2-three/js/flood-overlay.js'), /전지구 약 \$\{m\.terrainKm \? Math\.round\(m\.terrainKm\) : 10\} km/);
   // 정점은 색면과 **같은 것**이다 — 베낀 사본이 아니라 그 값 자체다.
   assert.equal(FLOOD_VERT, FIELD_VERT);
 });

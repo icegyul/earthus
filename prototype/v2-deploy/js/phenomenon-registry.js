@@ -190,7 +190,7 @@ export const PHENOMENA = Object.freeze({
     availability: 'ready',
     evidenceProfile: 'VISUALIZATION_ONLY',
     temporalMode: 'current',
-    scope: '전지구. 실측 고도는 AWS Terrarium 을 z4 전역 + z5~z9 지역으로 스트리밍하고, 고도 4,000km 아래로 내려가면 Esri World Imagery 지표 사진이 그 위에 자동으로 얹히며 250km 아래는 지역 3D 로 바뀐다. 사진은 표면 재질일 뿐이고 입체는 언제나 실측 고도가 만든다(main.js:5493-5494 주석).',
+    scope: '전지구. 실측 고도는 AWS Terrarium 을 전역 한 장(PC 는 z4 · 적도 약 9.8 km/px, 폰·태블릿은 z3 · 약 19.6 km/px) + z5~z9 지역으로 스트리밍하고, 고도 4,000km 아래로 내려가면 Esri World Imagery 지표 사진이 그 위에 자동으로 얹히며 250km 아래는 지역 3D 로 바뀐다. 사진은 표면 재질일 뿐이고 입체는 언제나 실측 고도가 만든다(main.js:5493-5494 주석).',
     dataProducts: Object.freeze(['land/terrain', 'land/satdetail']),
   }),
   'ocean.bathymetry': Object.freeze({
@@ -241,16 +241,28 @@ export const PHENOMENA = Object.freeze({
     scope: '전지구. 고른 지점의 수심 기둥을 GEBCO 0.1° 격자로 내려간다 — 셀 안 15초 원본 576개의 최솟값을 보존한 뒤 인접 셀을 보간한 정보 제품이고, 특정 좌표의 실측 수심이 아니며 항해·해상 안전용이 아니다. 육지 셀이면 육지라고 쓰고 잠수하지 않는다. 생물은 OBIS 5° 해역 기록 수 요약 — 개체수도 현재 분포도 아니다. 특집 잠수는 /data/trenches.json items[0].',
     dataProducts: Object.freeze(['hobby/dive']),
   }),
+  // ── 2026-09-21 내린 화면 셋 (ocean.fishing_conditions · ocean.surf_conditions · weather.paragliding) ──
+  // 무엇이 있었나: 세 현상은 각각 hobby 화면 하나만 산출물로 갖는데, 그 화면이 ext-scene.js 의 ctx.v1() 로
+  //   1.0 모듈을 런타임에 들여와 브라우저에서 Open-Meteo 를 직접 불렀다. 유료 서비스에 비상업 API 라
+  //   그 길을 막았고(ext-scene.js WITHDRAWN · V1_DENY), 그 값들은 우리 격자로는 내지 못한다.
+  //   화면이 내려간 순간 현상의 능력도 전부 사라진다 — 산출물이 그 화면 하나뿐이기 때문이다.
+  // 왜 'planned' 인가: 이 파일의 availability 어휘는 ready · partial · planned 셋뿐이고, 새 낱말을
+  //   여기서 만들면 이것을 읽는 쪽(ui-shell 능력 게이팅 · report-center · main.js askPhenomenon)이
+  //   모르는 값을 받는다. 셋 중 'planned' 는 이미 '오늘 화면에 나오는 자료가 없다'는 뜻으로 쓰이고 있다 —
+  //   ocean.vessel_traffic 은 'AIS 재배포 안 함(정책)' 이라 계획이 아예 없는데도 'planned' 다.
+  //   ⚠️ 그래도 'planned'(예정)는 '내렸다'와 같은 말이 아니다. 'withdrawn' 을 어휘에 더할지는 PD 결정이고,
+  //   더하기 전까지 여기서는 가장 덜 거짓인 값을 고른다. weather.paragliding 은 그 결정이 특히 열려 있다
+  //   (tools/directive-2026-09-20/grammar-matrix.json WIND_DESCRIPTOR: pendingPD — 토글 · v1 이관 · 삭제).
   'ocean.fishing_conditions': Object.freeze({
     domain: 'ocean',
     label: Object.freeze({ ko: '낚시', en: 'Fishing' }),
     short: Object.freeze({ ko: '낚시', en: 'Fishing' }),
     question: Object.freeze({ ko: '물이 얼마나 움직이고, 지금 나가면 위험한가', en: 'How much is the water moving, and is it dangerous to go out now?' }),
-    capabilities: Object.freeze({ current: true, history: false, intelligence: false, forecast: false, simulation: false, evidence: true, report: false }),
-    availability: 'ready',
-    evidenceProfile: 'PROVIDER_FORECAST (legacy state MODEL) mixed with OFFICIAL_OBSERVATION — Open-Meteo Marine tide/wave model next to KMA buoy/AWS measurement and KHOA rip grade; no LAYER_TRUTH entry (truthKind null).',
-    temporalMode: '지금 + 조위 N_DAYS 일 시간별 예보 — 파랑·수온은 current 값(리드타임 없음), 물때만 다일 예보',
-    scope: '낚시터 1,009곳 — 한국 946곳(prototype/data/fishing.json) + 일본 63곳. 방파제·갯바위(섬)·선착장·마리나·항 다섯 종류를 색으로 구분하되 색으로 좋다/나쁘다를 말하지 않는다. 안전을 맨 위에 둔다(너울·바람·이안류). 조황은 우리가 아는 값이 아니므로 무슨 고기가 나오는지 말하지 않는다.',
+    capabilities: Object.freeze({ current: false, history: false, intelligence: false, forecast: false, simulation: false, evidence: false, report: false }),
+    availability: 'planned',
+    evidenceProfile: '없음 — 화면을 내려 값을 내지 않는다. 근거를 보일 표면 자체가 없다(LAYER_TRUTH 에 hobby/fishing 항목도 없다).',
+    temporalMode: '없음 — 내린 화면이라 시간축에 아무것도 싣지 않는다.',
+    scope: '오늘은 아무것도 나오지 않는다. 물때(만조·간조 예측)가 우리 자료 어디에도 없고, 그 값을 내던 길이 Open-Meteo Marine 직호출이었다. 낚시터의 **장소 목록**은 그대로 살아 있다 — 다른 현상(ocean.coastal_spots · 레이어 ocean/surf)이 한국 낚시터 946곳을 해변 271곳과 함께 지구에 찍는다(prototype/data/fishing.json). 일본 낚시터 63곳(prototype/data/jp/fishing.json)은 파일로 남아 있지만 v2 의 어떤 화면도 그리지 않는다 — 그 파일을 읽던 것이 내린 v1 모듈(prototype/js/fishing.js)이다. 여기서 사라진 것은 장소가 아니라 그 장소의 물 상태다.',
     dataProducts: Object.freeze(['hobby/fishing']),
   }),
   'ocean.sea_ice': Object.freeze({
@@ -356,11 +368,12 @@ export const PHENOMENA = Object.freeze({
     label: Object.freeze({ ko: '서핑', en: 'Surf' }),
     short: Object.freeze({ ko: '서핑', en: 'Surf' }),
     question: Object.freeze({ ko: '이 해변에 너울이 들어오는가', en: 'Is the swell reaching this beach?' }),
-    capabilities: Object.freeze({ current: true, history: false, intelligence: false, forecast: false, simulation: false, evidence: true, report: false }),
-    availability: 'ready',
-    evidenceProfile: 'PROVIDER_FORECAST (legacy state MODEL) mixed with OFFICIAL_OBSERVATION — Open-Meteo Marine model values shown next to KMA buoy/AWS measurements and a KHOA rip grade; no LAYER_TRUTH entry exists (truthKind null).',
-    temporalMode: '지금 — 파랑·수온은 Open-Meteo Marine current 값(리드타임 없음), 조위만 2일 시간별. 부이 10분, AWS 바람 10분, 이안류 관측 시각 표기.',
-    scope: '해변 1,027곳 — 한국 271곳(prototype/data/beaches.json) + 일본 756곳(prototype/data/jp/beaches.json). 세 가지만 말한다: 스웰이 들어오는가(스웰 방향 대 해변 방위) · 파면이 깔끔한가(육풍/해풍) · 어떤 파도인가(주기). 점수를 만들지 않고 \'타기 좋습니다\'라고 말하지 않는다. 부이 실측은 120km 이내일 때만 붙이고, 이안류 등급은 국립해양조사원이 매긴 해수욕장 10곳만. 일본 해변은 facing 이 없어 핵심 판단을 못 하며 그 사실을 화면에 적는다.',
+    // 2026-09-21 내린 화면 — 사유와 'planned' 를 고른 까닭은 ocean.fishing_conditions 위의 주석 하나에 적었다.
+    capabilities: Object.freeze({ current: false, history: false, intelligence: false, forecast: false, simulation: false, evidence: false, report: false }),
+    availability: 'planned',
+    evidenceProfile: '없음 — 화면을 내려 값을 내지 않는다. 근거를 보일 표면 자체가 없다(LAYER_TRUTH 에 hobby/surf 항목도 없다).',
+    temporalMode: '없음 — 내린 화면이라 시간축에 아무것도 싣지 않는다.',
+    scope: '오늘은 아무것도 나오지 않는다. 너울 방향·풍파·주기가 우리 격자에 없고, 그 값을 내던 길이 Open-Meteo Marine 직호출이었다. 해변의 **장소 목록**은 그대로 살아 있다 — 다른 현상(ocean.coastal_spots · 레이어 ocean/surf)이 한국 해변 271곳을 낚시터 946곳과 함께 지구에 찍는다(prototype/data/beaches.json). 일본 해변 756곳(prototype/data/jp/beaches.json)은 파일로 남아 있지만 v2 의 어떤 화면도 그리지 않는다 — 그 파일을 읽던 것이 내린 v1 모듈(prototype/js/beaches.js)이다. 여기서 사라진 것은 해변이 아니라 그 해변에 드는 너울이다.',
     dataProducts: Object.freeze(['hobby/surf']),
   }),
   'ocean.surface_current': Object.freeze({
@@ -704,11 +717,12 @@ export const PHENOMENA = Object.freeze({
     label: Object.freeze({ ko: '패러글라이딩', en: 'Paragliding' }),
     short: Object.freeze({ ko: '패러글라이딩', en: 'Paragliding' }),
     question: Object.freeze({ ko: '이 활공장의 바람과 구름 밑면은', en: 'What is the wind and the cloud base at this site?' }),
-    capabilities: Object.freeze({ current: true, history: false, intelligence: false, forecast: false, simulation: false, evidence: true, report: false }),
-    availability: 'partial',
-    evidenceProfile: 'PROVIDER_FORECAST (legacy state MODEL) — Open-Meteo model current values, with an EARTHUS_ANALYSIS cloud-base approximation; no LAYER_TRUTH entry (truthKind null).',
-    temporalMode: '지금만 — Open-Meteo `current` 값 한 시점, 리드타임 없음',
-    scope: '한국 활공장 26곳 — OSM 에 sport=free_flying 로 직접 태그된 것만 쓰고 산 이름을 짐작해 좌표를 붙이지 않는다(문경 단산에서 동명이산 139m 봉우리를 적을 뻔했다). 바람 구간(light/ok/brisk/strong/danger)과 16방위, Espy 근사 구름 밑면. \'날기 좋다\'고 말하지 않는다 — 이륙 가능 여부는 등급·날개·경험에 달렸고 무엇보다 이륙장이 어느 쪽을 보는지 자료에 없다. 좌표는 산 정상이지 이륙장이 아니므로 찾아가는 좌표로 쓰면 안 된다.',
+    // 2026-09-21 내린 화면 — 사유와 'planned' 를 고른 까닭은 ocean.fishing_conditions 위의 주석 하나에 적었다.
+    capabilities: Object.freeze({ current: false, history: false, intelligence: false, forecast: false, simulation: false, evidence: false, report: false }),
+    availability: 'planned',
+    evidenceProfile: '없음 — 화면을 내려 값을 내지 않는다. 근거를 보일 표면 자체가 없다(LAYER_TRUTH 에 hobby/para 항목도 없다).',
+    temporalMode: '없음 — 내린 화면이라 시간축에 아무것도 싣지 않는다.',
+    scope: '오늘은 아무것도 나오지 않는다. 저층 운량·시정·CAPE 가 우리 프레임에 없고, 그 값을 내던 길이 Open-Meteo 직호출이었다. 활공장 26곳의 좌표(OSM sport=free_flying)는 자료 파일에 남아 있지만 지구에 그리지 않는다 — 좌표는 산 정상이지 이륙장이 아니고, 이륙장이 어느 쪽을 보는지는 어느 자료에도 없어서 목록만 띄워도 답이 되지 않는다.',
     dataProducts: Object.freeze(['hobby/para']),
   }),
   'weather.precipitation': Object.freeze({
@@ -719,8 +733,8 @@ export const PHENOMENA = Object.freeze({
     capabilities: Object.freeze({ current: true, history: false, intelligence: false, forecast: true, simulation: false, evidence: true, report: false }),
     availability: 'partial',
     evidenceProfile: 'PROVIDER_FORECAST 2 · OFFICIAL_OBSERVATION 1 — 관측은 weather/radar 하나뿐이고 카드도 그렇게 적는다(\'이 앱에서 지금 실제로 내리는 비를 보는 유일한 화면입니다\', live-layers.js:1235)',
-    temporalMode: '지금(레이더 5분 · 격자 1시간) + 예보 +120h(3시간 간격)',
-    scope: '관측은 한국뿐(기상청 HSR 레이더 합성영상 — 좌표계가 없어 지구본에 얹지 않고 원본 영상 그대로 보여 준다). 전지구 강수는 5° 모델 격자, 예보 프레임은 전지구 0.5°.',
+    temporalMode: '지금(레이더 5분) + 예보 +120h · 격자 3시간(GFS 0.5° 예보 프레임)',
+    scope: '관측은 한국뿐(기상청 HSR 레이더 합성영상 — 좌표계가 없어 지구본에 얹지 않고 원본 영상 그대로 보여 준다). 전지구 강수는 NOAA GFS 0.5° 예보 프레임의 강수율(mm/h)이다 — 5° 한 시각의 선형 램프가 아니다(2026-09-20 작업 D2).',
     dataProducts: Object.freeze(['weather/radar', 'weather/raingrid', 'weather/cloud-gfs']),
   }),
   'weather.pressure': Object.freeze({
@@ -728,11 +742,13 @@ export const PHENOMENA = Object.freeze({
     label: Object.freeze({ ko: '기압', en: 'Pressure' }),
     short: Object.freeze({ ko: '기압', en: 'Pressure' }),
     question: Object.freeze({ ko: '고기압과 저기압은 어디인가', en: 'Where are the highs and the lows?' }),
-    capabilities: Object.freeze({ current: true, history: false, intelligence: false, forecast: false, simulation: false, evidence: true, report: false }),
+    // 2026-09-20 D1 — presgrid 가 Open-Meteo 5° **한 시각**에서 GFS 0.5° 5일 예보로 바뀌었는데 이 줄은 그대로였다.
+    // 레지스트리는 화면이 읽는 정본이라, 예보가 있는데 forecast:false 면 '앞' 탭이 통째로 닫힌다(ui-shell CAP_TAB).
+    capabilities: Object.freeze({ current: true, history: false, intelligence: false, forecast: true, simulation: false, evidence: true, report: false }),
     availability: 'partial',
     evidenceProfile: 'PROVIDER_FORECAST',
-    temporalMode: '지금(1시간 갱신)',
-    scope: '전지구 5°(약 555km) 격자의 해면기압. 등압선용 1°(약 111km) 동아시아 판이 서버에 있으나 v2 는 읽지 않는다.',
+    temporalMode: '지금 + 5일 예보(3시간 프레임 · 런은 6시간마다)',
+    scope: '전지구 0.5°(약 55km) 격자의 해면기압. 4 hPa 등압선과 H/L 중심 기호를 그 판에서 직접 긋는다(1° 동아시아 판은 쓰지 않는다).',
     dataProducts: Object.freeze(['weather/presgrid']),
   }),
   'weather.station_obs': Object.freeze({
@@ -814,9 +830,12 @@ export const PHENOMENA = Object.freeze({
     question: Object.freeze({ ko: '어느 방향으로 얼마나 세게 부나', en: 'Which way and how hard is the wind blowing?' }),
     capabilities: Object.freeze({ current: true, history: false, intelligence: true, forecast: true, simulation: false, evidence: true, report: false }),
     availability: 'partial',
-    evidenceProfile: 'OFFICIAL_OBSERVATION 1 · PROVIDER_FORECAST 1 — 동수이며 대표는 관측(weather/wind)',
-    temporalMode: '지금(관측 10분~1시간, 격자 1시간). 예보 바람은 받아는 오지만 구름을 흘리는 데만 쓴다.',
-    scope: '관측 약 3,000개소(한국 기상청 AWS + 전지구 GTS SYNOP — 중국·몽골·러시아에 관측 공백) + 전지구 5° 모델 격자',
+    // 2026-09-20 W3: 대표 레이어(weather/wind)가 관측소 막대기에서 GFS 10 m 바람 입자로 바뀌었다 — 세 줄을 사실대로 고친다.
+    //   예전: 'OFFICIAL_OBSERVATION 1 · PROVIDER_FORECAST 1 — 대표는 관측' · '지금(관측 10분~1시간, 격자 1시간) — 예보 바람은 구름을
+    //   흘리는 데만 쓴다' · '관측 약 3,000개소 + 전지구 5° 모델 격자'. 지상 관측은 일기도 기입 모형(weather/synop)에 그대로 있다.
+    evidenceProfile: 'PROVIDER_FORECAST 2 — 대표(weather/wind)는 NOAA GFS 0.5° 지상 10 m 바람을 입자로 흘린다. 관측이 아니다',
+    temporalMode: '타임라인이 가리키는 시각(GFS 3시간 프레임 사이를 보간 · 런 시각부터 5일). 5° 격자 색면(weather/windgrid)은 지금 값 하나뿐이다.',
+    scope: '전지구 GFS 0.5°(약 55 km) 지상 10 m 바람 — 태풍 중심의 최대풍속은 무디게 담긴다 + 전지구 5° 모델 격자 색면',
     dataProducts: Object.freeze(['weather/wind', 'weather/windgrid']),
   }),
 });

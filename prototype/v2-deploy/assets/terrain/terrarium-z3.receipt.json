@@ -1,0 +1,672 @@
+{
+  "schemaVersion": "earthus.provider-receipt.v1",
+  "product": "EARTHUS v2 전지구 지형 고도맵 한 장 (AWS Terrain Tiles · Terrarium z3 · 무손실 WebP)",
+  "generatedAt": "2026-09-23T12:37:23.243Z",
+  "generator": "tools/build-terrain-mosaic.mjs",
+  "synthetic": false,
+  "meaning": "Terrarium z3 타일 64장을 앱 캔버스와 같은 배치로 이은 2048×2048 웹메르카토르 고도맵. 값은 바꾸지 않았다.",
+  "source": {
+    "name": "AWS Terrain Tiles (Terrarium)",
+    "bucket": "s3://elevation-tiles-prod (us-east-1)",
+    "urlTemplate": "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png",
+    "sameAsApp": "prototype/v2-three/js/main.js TILE_URL (:139)",
+    "registry": "https://registry.opendata.aws/terrain-tiles/",
+    "managedBy": "Mapzen, a Linux Foundation project",
+    "license": "https://github.com/tilezen/joerd/blob/master/docs/attribution.md",
+    "zoom": 3,
+    "tileCount": 64,
+    "tileSizePx": 256,
+    "sourceBytesTotal": 5155505,
+    "fetchedAt": "2026-09-23T12:37:04.521Z",
+    "tileLastModified": {
+      "oldest": "2017-12-02T02:55:39.000Z",
+      "newest": "2017-12-02T02:55:42.000Z"
+    },
+    "tiles": [
+      {
+        "x": 0,
+        "y": 0,
+        "bytes": 64031,
+        "sha256": "d19385010b7336c1f56fa2c47f4ed1d59b3913566c665d20d849cd93c98c8791",
+        "etag": "\"f75869e4c37583d14b31b5f23a72db61\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:39 GMT"
+      },
+      {
+        "x": 1,
+        "y": 0,
+        "bytes": 64637,
+        "sha256": "6f64defba28b7b9118f2d04ff7867b2fcb244e9d1f684711cbad7efe413aa854",
+        "etag": "\"77eb0103ed83ef5e45e7cd79e532b5ad\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:40 GMT"
+      },
+      {
+        "x": 2,
+        "y": 0,
+        "bytes": 79544,
+        "sha256": "c880ba145043a95db5f0235b7ae6225bdfbed60fed372b426f5b05e74a74fa36",
+        "etag": "\"bb96dda4566f6a878c95a28db893f788\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:40 GMT"
+      },
+      {
+        "x": 3,
+        "y": 0,
+        "bytes": 80472,
+        "sha256": "644bc98df090818a0f8b0b14439821336695d6a9b3d1bf8e1291698bb9057196",
+        "etag": "\"a3a49d13510b28e8a89f22e34e089d4c\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:40 GMT"
+      },
+      {
+        "x": 4,
+        "y": 0,
+        "bytes": 68398,
+        "sha256": "caa9932501fc9912549b6532714089a0f6acba4b8e265d78ac655f966f40f65a",
+        "etag": "\"83427acd04a2373f170fdb2b8a830912\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:40 GMT"
+      },
+      {
+        "x": 5,
+        "y": 0,
+        "bytes": 56555,
+        "sha256": "644b484e3fbda5494cc3df93fbea4f9ee89135cb90a280a3f4c1c5eb913705f7",
+        "etag": "\"38013135f21095f3b72aa0f7efc53956\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:40 GMT"
+      },
+      {
+        "x": 6,
+        "y": 0,
+        "bytes": 61473,
+        "sha256": "9b8ea4372edb983c3bd318edd3e673db7181a9ddd9365d3a509c80791ed79adc",
+        "etag": "\"178047dfa1eafb647b9131cdcb0e42c8\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 7,
+        "y": 0,
+        "bytes": 62115,
+        "sha256": "1f80bb0e7008c9553a234b52f27105df64917d82ceab9861b840a0361c8b4621",
+        "etag": "\"53d9cb470fd8b82ee2f778e11bfe09df\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "bytes": 68854,
+        "sha256": "68d6b75ba3b55456e180ff70cc0738ae04632aa0be90db71f299aeba15f59169",
+        "etag": "\"3848ab49cc1e4bb2ac4e78a1097ff853\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:40 GMT"
+      },
+      {
+        "x": 1,
+        "y": 1,
+        "bytes": 79332,
+        "sha256": "2a63c449dbee5f4e7abee2fdddde354b9e49928f7a88d8ab05ad08565eab5c55",
+        "etag": "\"20297ae4df95a2de69367ae952d569ee\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:40 GMT"
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "bytes": 84711,
+        "sha256": "98606c4e2d1839c2f58edca113aa2aae16c8a10a24e65ce4c0cc4123eaf073a8",
+        "etag": "\"57e4d7d28b96d47c63146277da0f3279\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:40 GMT"
+      },
+      {
+        "x": 3,
+        "y": 1,
+        "bytes": 79765,
+        "sha256": "7d51e018cae2a7ace0009b0aa25fa517af0f42e2322a5ca14766e4e1979502af",
+        "etag": "\"eb1d11f86c3528989c623487953373e8\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 4,
+        "y": 1,
+        "bytes": 74624,
+        "sha256": "a91b7fb4cfe567aa65386051ea3d6ea18400c2a539c7a32cdcd051d770c43911",
+        "etag": "\"8913586e61519b2d603a4760d5f1ab02\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:40 GMT"
+      },
+      {
+        "x": 5,
+        "y": 1,
+        "bytes": 60743,
+        "sha256": "6f3db10794c2f2d8021d0ef1fd49481c656544cb4a9521f5a522e7d3a11513e4",
+        "etag": "\"9c8b8deefcddd1fcb5f3baebc789544e\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:40 GMT"
+      },
+      {
+        "x": 6,
+        "y": 1,
+        "bytes": 76413,
+        "sha256": "9f73258f3bc0693fe2b05a4051c06dbce130bb8007d437504d4e16c591878c35",
+        "etag": "\"7979c74f27d13b3badef7da6474de582\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 7,
+        "y": 1,
+        "bytes": 53390,
+        "sha256": "fa4ad391495829e1ee4707c6b3916938fb2ce2dd27d752563d5f1146c05d5670",
+        "etag": "\"d1aa78c603f465a54405257942c3eafa\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 0,
+        "y": 2,
+        "bytes": 92235,
+        "sha256": "0c3d24dbf8eea8441c7775a923a6399068e56f1aa5299388fca30ac97074260b",
+        "etag": "\"82909d264a5d4e025847b353e78a37cb\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:40 GMT"
+      },
+      {
+        "x": 1,
+        "y": 2,
+        "bytes": 93931,
+        "sha256": "dd42611f206b7a9f79a64d0edfa93db3e14b99811229aab932e002e55382383e",
+        "etag": "\"959a57dbedbd7ed78bfe8ce7b68c3415\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:40 GMT"
+      },
+      {
+        "x": 2,
+        "y": 2,
+        "bytes": 86496,
+        "sha256": "d9c51e870e383d21065af32d6f0d9d3633383019ee61b23e97d8b33054852cd1",
+        "etag": "\"eb08b57345b58212eaa9dc8b69c6bb80\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:40 GMT"
+      },
+      {
+        "x": 3,
+        "y": 2,
+        "bytes": 94995,
+        "sha256": "1824ee34d3a2666daf223edac43368f9e72905bb77da0111dddaff3f09874526",
+        "etag": "\"551fc6a019eaf4f3aa54109347354a32\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:40 GMT"
+      },
+      {
+        "x": 4,
+        "y": 2,
+        "bytes": 86071,
+        "sha256": "004cde04381da31fbc50d036ab3e82ef57acf0dc4d9b0e11f7fb2e13962e8570",
+        "etag": "\"80995ec762770e149158f1282d7b84d3\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 5,
+        "y": 2,
+        "bytes": 80965,
+        "sha256": "2d6df41f1f94f14c89e00a2cf9f1681d76f89ae4fcc2023782d43407a9e54a9e",
+        "etag": "\"206d24fcd3cef5df328912308eb81676\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 6,
+        "y": 2,
+        "bytes": 99467,
+        "sha256": "1fd160d70e3d02d30cd913d6a9464fa60a55841ec654046fedfea0703d5cb60c",
+        "etag": "\"e86089de2cdaac753db2c109982d4d63\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 7,
+        "y": 2,
+        "bytes": 100921,
+        "sha256": "39638103df7397cc29b362189a5a077e4537dde4e2af41b04d1ab83a70761484",
+        "etag": "\"8933a8f03fdb95efaf1e1ccbd0f3404f\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 0,
+        "y": 3,
+        "bytes": 99046,
+        "sha256": "bbbee468a4c7603a0805602e8fb8396411a86fc8f069cae573917a2ba68828c6",
+        "etag": "\"267e5819e0281f2172c116675b7a78ea\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:40 GMT"
+      },
+      {
+        "x": 1,
+        "y": 3,
+        "bytes": 98066,
+        "sha256": "40ef9b008e33fb6572e3d3a18d40b97645c6c55563a04d4866228d00b6e2e32c",
+        "etag": "\"c3b12fa39c042e5b158e5cabb4508ddc\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:40 GMT"
+      },
+      {
+        "x": 2,
+        "y": 3,
+        "bytes": 99295,
+        "sha256": "881eb2e4e7d5dbeb34f95709390ea757e7e8c114871625ae5dd0f15424c2acc6",
+        "etag": "\"d0a6623dce75b4e57eeeb04ac8bbfeed\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:40 GMT"
+      },
+      {
+        "x": 3,
+        "y": 3,
+        "bytes": 98166,
+        "sha256": "46dadbec98d5e1113f6c2eae7eca774786d55e0d485c770a4c4ae8c11209ee76",
+        "etag": "\"251b0da76e79b9c059568c7101441a1a\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:40 GMT"
+      },
+      {
+        "x": 4,
+        "y": 3,
+        "bytes": 95564,
+        "sha256": "6f0ee0cb93d8cd7c4347c5b8556a06f2e0b89b5d2a2bd71e5b73a239cf3ea851",
+        "etag": "\"7408ac7bf35da2f6358e7b4d4cd0e825\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 5,
+        "y": 3,
+        "bytes": 99122,
+        "sha256": "056711ab37d0eac95cdd0d158119b24cf0b9f7473b8a86a7c6d7d5374cabccf4",
+        "etag": "\"66146c085fd8fd3fa90173e164b6cb49\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 6,
+        "y": 3,
+        "bytes": 104004,
+        "sha256": "0e585adea664444c673bd81db5d21cd3ed15eedc3c16885aa16b4419ed37c14a",
+        "etag": "\"4093775eaea37722a5fde83ac74e49f4\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 7,
+        "y": 3,
+        "bytes": 105488,
+        "sha256": "9be49eef9135835fdf0041d44bdef8644f0996b15f56f7d25e06d486c2735433",
+        "etag": "\"06f67304d2a0ff1a7f913364a77e6117\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 0,
+        "y": 4,
+        "bytes": 103467,
+        "sha256": "8b0190999931588aab805bbf6d079a4648690bf115e23c100a765fa6054a94bd",
+        "etag": "\"18380b202a175e9edd6ae46c005904d3\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:42 GMT"
+      },
+      {
+        "x": 1,
+        "y": 4,
+        "bytes": 95918,
+        "sha256": "172fc3701fd37ad252535b698856073ee7a3b122accb7b31f57becdc48ccb193",
+        "etag": "\"b4b6be2081065c7f3566a69ad661d13b\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:42 GMT"
+      },
+      {
+        "x": 2,
+        "y": 4,
+        "bytes": 95790,
+        "sha256": "cab7740d6e4ba3245a9cdda75470a44d0292c8d6a83cd4e571e77c6f0b911d9f",
+        "etag": "\"2d3dc4374e9669d20d91e936ad569af1\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:42 GMT"
+      },
+      {
+        "x": 3,
+        "y": 4,
+        "bytes": 100044,
+        "sha256": "a5ea03cb13778a1d339b671bd593c0b533b1558e8d25b19804cdf6a1508e2a3a",
+        "etag": "\"d04fbb79578387676db22f4f39fef54a\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:42 GMT"
+      },
+      {
+        "x": 4,
+        "y": 4,
+        "bytes": 98128,
+        "sha256": "cb9c89411f8a063fe4bbd530a4df71714b4c84af133eb34d805614d0171beda0",
+        "etag": "\"1e8ef612a53ef8d8ade70b4435cd7d0e\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 5,
+        "y": 4,
+        "bytes": 102949,
+        "sha256": "8ea350840eeb9f1c784126064ee55849cb51bd6ffa2296336098d1d3044c637f",
+        "etag": "\"5c65687a0c24e8ec3d17e3996f4f5c66\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 6,
+        "y": 4,
+        "bytes": 99952,
+        "sha256": "790753a61c08d45ed315925fb2d35e48b134bc3e5b564185784d7407a09a4b57",
+        "etag": "\"33de63703df6372f8e618c5ba503373a\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 7,
+        "y": 4,
+        "bytes": 102591,
+        "sha256": "565128083e13ea0eab4252a9b0d6c7b51d69c19c068962f00c06039ee13c4bb5",
+        "etag": "\"102b01aa413088c71a9e49ba29b1e55c\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 0,
+        "y": 5,
+        "bytes": 97616,
+        "sha256": "0115e7f78c44ee7ab3f5f7fb91ef9417bcc39b0258f20d5d68a236f2d4a9820b",
+        "etag": "\"b07b72153ace398189c2eafdab1525b6\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:42 GMT"
+      },
+      {
+        "x": 1,
+        "y": 5,
+        "bytes": 90434,
+        "sha256": "ff780249611063b7bfde28a7fe70daa50bfc4b3e65b0013eaadd2ba112c120bc",
+        "etag": "\"8a6f046e5217eb7a4510a71ecda5bc97\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:42 GMT"
+      },
+      {
+        "x": 2,
+        "y": 5,
+        "bytes": 95274,
+        "sha256": "ce999da36069d3faa9b701d0d0be338ee4d3aa198e088047a5973e6aebee3151",
+        "etag": "\"e480ef22aa51ef378679b17886dc5ecb\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:42 GMT"
+      },
+      {
+        "x": 3,
+        "y": 5,
+        "bytes": 94991,
+        "sha256": "1bec800674390197b38f3a4e392816101df2a90c5e276dbd7c45debbd4979160",
+        "etag": "\"80bdac45317ca5d9c52a81d59e7af48a\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:42 GMT"
+      },
+      {
+        "x": 4,
+        "y": 5,
+        "bytes": 97198,
+        "sha256": "be6011b7685f152203919bc1fb4962f9e3b975617bade77e25e06047ed1cd2d5",
+        "etag": "\"ffa12e2acfb9e5f135a8da273c822a6e\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 5,
+        "y": 5,
+        "bytes": 93188,
+        "sha256": "991df926537635dc457f00d63e8998111f0f707fee74ca2d50e2c43b14c939ff",
+        "etag": "\"b7011d778da812ad8cbd78fb3a977ef4\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 6,
+        "y": 5,
+        "bytes": 89256,
+        "sha256": "6265ea9433dafb4dad9d3c720f0bc7f7cfeaeb2da58142f916bc051221a1af8b",
+        "etag": "\"c50ffb01c5329838cb05f2975d7831b6\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 7,
+        "y": 5,
+        "bytes": 98244,
+        "sha256": "afe4f3b7689e9467577a81a4b359cc10728f6cb6cb626e3bf750984bb480d905",
+        "etag": "\"f7f401bd3a9bc7e17acdcd24bcd27bcb\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 0,
+        "y": 6,
+        "bytes": 79336,
+        "sha256": "cab37d1eeccdfc4a8cde5cff8fad836b841fd446246f3b7609b750fb63ebfb22",
+        "etag": "\"d38d6acb8f765093ef1831c71c969404\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:42 GMT"
+      },
+      {
+        "x": 1,
+        "y": 6,
+        "bytes": 79268,
+        "sha256": "958e3ce19c8b619ae56411692c4eb6afa70c7faffa5f95ffbbfcd89400cc74b8",
+        "etag": "\"516de296c4759bc20f732303dd1fbc6d\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:42 GMT"
+      },
+      {
+        "x": 2,
+        "y": 6,
+        "bytes": 75636,
+        "sha256": "c505e0c7e254eba98210a313bd034137fe205dfe2f9e4db25dbb352f872d3514",
+        "etag": "\"db69268639c4ed5ec96cd6f01c48e473\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:42 GMT"
+      },
+      {
+        "x": 3,
+        "y": 6,
+        "bytes": 74164,
+        "sha256": "3369b23af25a48157af10cd236b84a24dd7000f85d1871fba7b25d1b5e841d5f",
+        "etag": "\"3104cd05a6fcbbeb5402bb2413ee1e84\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:42 GMT"
+      },
+      {
+        "x": 4,
+        "y": 6,
+        "bytes": 68612,
+        "sha256": "f759a72c4f8e9dcc3508bf4ae1d66caac65ca2a40f3791334fd36a289358b7e5",
+        "etag": "\"2c5da9d1b47593e0a70edfc8cca6f4de\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 5,
+        "y": 6,
+        "bytes": 69506,
+        "sha256": "55a61ac5f35fc1e2ab509b6c501820db09de04886a8756390b8013bcc5ac97a2",
+        "etag": "\"9e3049d3479f34ed1de2857d2d4fb8ea\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:42 GMT"
+      },
+      {
+        "x": 6,
+        "y": 6,
+        "bytes": 54545,
+        "sha256": "2f6a3e2aad5bf905a1ca8f7dd48c1b014b8755fb0cee8f414c9e1bad613c5c41",
+        "etag": "\"5ee88bcda27c66d5549e558794b68fcf\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:42 GMT"
+      },
+      {
+        "x": 7,
+        "y": 6,
+        "bytes": 75982,
+        "sha256": "9778fd0c7ec4d66294b9041e62fa469b15f19c2158cfb5a91dd73edac34fe7bf",
+        "etag": "\"b4220e7b8b2dba9206786143d75463ad\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 0,
+        "y": 7,
+        "bytes": 41218,
+        "sha256": "fd3a716403019b222e918d522d5768b4c58a85fb936f6a7595baee5894200b5c",
+        "etag": "\"86a60c443af4e537ad3171e42b922c2a\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:42 GMT"
+      },
+      {
+        "x": 1,
+        "y": 7,
+        "bytes": 51477,
+        "sha256": "864a92032a542052a6ec00c7f0dbd981aa4cf7b58ae2685d47b21d9688a3796e",
+        "etag": "\"0a939d0af5097eea529eb8a18a557ee5\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:42 GMT"
+      },
+      {
+        "x": 2,
+        "y": 7,
+        "bytes": 55554,
+        "sha256": "b7a834a37da608d29b0ef5ca8df7493cad492f9cc11b50ffd5d9d3201fb33992",
+        "etag": "\"5093df95cfc00c408f5fe073e8dd9cce\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:42 GMT"
+      },
+      {
+        "x": 3,
+        "y": 7,
+        "bytes": 51713,
+        "sha256": "2d13e75d09a13f1ecd19fcf1242e3d56f0a83ec2ba7212cf8a9ddb420ed0a6fb",
+        "etag": "\"b2abe782d4fb91c4c18ecb173cb66289\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:42 GMT"
+      },
+      {
+        "x": 4,
+        "y": 7,
+        "bytes": 42732,
+        "sha256": "e2604947c0f1389ce8d8b6f566140ddcf96502ef8add328b5bbfc8fbeb0b7f05",
+        "etag": "\"d65ce6b678827794611a21073ed8104f\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:42 GMT"
+      },
+      {
+        "x": 5,
+        "y": 7,
+        "bytes": 37959,
+        "sha256": "3f7d3ad396aa7fb5f750a1e788ed49fc0f18894291913fd7fe98a87fddd9a067",
+        "etag": "\"4faaa9a70dacc5f1e4184703bf0e0709\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:42 GMT"
+      },
+      {
+        "x": 6,
+        "y": 7,
+        "bytes": 33552,
+        "sha256": "ab5d8813457456d7b96b658928e4a723b85914383bda5ea121d553baf8504386",
+        "etag": "\"01b3ca12abb13d70949a83f20b46dc70\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      },
+      {
+        "x": 7,
+        "y": 7,
+        "bytes": 60322,
+        "sha256": "37c6f70d4e56bcda62ceff6851612ae3449ab7258398e1795057433587773980",
+        "etag": "\"1940373001a9f0950f2904acb67cc29c\"",
+        "lastModified": "Sat, 02 Dec 2017 02:55:41 GMT"
+      }
+    ]
+  },
+  "encoding": {
+    "scheme": "Terrarium RGB",
+    "decode": "h = R*256 + G + B/256 - 32768 (m)",
+    "step": "R 1 = 256 m · G 1 = 1 m · B 1 = 1/256 m — 손실 압축 금지",
+    "channels": "RGB 8bit, alpha 없음"
+  },
+  "projection": {
+    "crs": "EPSG:3857 Web Mercator (XYZ 타일 체계)",
+    "lonRangeDeg": [
+      -180,
+      180
+    ],
+    "latRangeDeg": [
+      -85.0511287798,
+      85.0511287798
+    ],
+    "uv": "u = (lon+180)/360 · v = 0.5 − ln(tan(π/4 + lat/2)) / 2π (main.js mercatorUV :238-242, heightAtJs :2579-2581)",
+    "rowOrder": "0행 = 북쪽 끝(85.0511°N), 아래로 갈수록 남쪽. 텍스처 flipY=false 로 그대로 올린다(main.js :2313)",
+    "equatorGroundKmPerPx": 19.57
+  },
+  "layout": {
+    "width": 2048,
+    "height": 2048,
+    "rule": "타일 (x,y) → 화소 (x*256, y*256). x 0..7 = 180°W 부터 동쪽, y 0..7 = 북→남. 행 우선.",
+    "sameAsApp": "prototype/v2-three/js/main.js loadTerrariumHeightCanvas: ctx.drawImage(img, x * 256, y * 256) (:192)"
+  },
+  "heights": {
+    "minM": -10020,
+    "minAt": {
+      "lat": 11.265,
+      "lon": 142.295
+    },
+    "maxM": 7796,
+    "maxAt": {
+      "lat": 68.172,
+      "lon": -66.709
+    },
+    "aboveEverestPx": [],
+    "aboveEverestNote": null,
+    "landPixelPct": 41.442,
+    "landPixelPctNote": "메르카토르 화소 수 기준이라 고위도(남극·그린란드)가 부풀려진 값이다. 면적 비율이 아니다.",
+    "bChannelNonZeroPx": 0,
+    "precisionNote": "이 단계 타일은 B 채널이 전부 0 — 값이 정수 m 다.",
+    "probes": [
+      {
+        "name": "그린란드 빙상 정상 부근 72.58N 38.46W",
+        "heightM": 3223,
+        "want": "> 2000",
+        "pass": true
+      },
+      {
+        "name": "에베레스트 부근 27.99N 86.93E",
+        "heightM": 6930,
+        "want": "> 4500",
+        "pass": true
+      },
+      {
+        "name": "마리아나 해구 11.37N 142.59E",
+        "heightM": -10020,
+        "want": "< -5500",
+        "pass": true
+      },
+      {
+        "name": "태평양 한가운데 0N 140W",
+        "heightM": -4324,
+        "want": "< -3000",
+        "pass": true
+      },
+      {
+        "name": "남극 내륙 80S 0E",
+        "heightM": 2339,
+        "want": "> 1500",
+        "pass": true
+      }
+    ],
+    "note": "z3 화소 하나가 적도에서 약 19.6 km 라 봉우리·해구는 원 DEM 보다 얕게 나온다(타일 자체의 값이다)."
+  },
+  "output": {
+    "file": "prototype/v2-three/assets/terrain/terrarium-z3.webp",
+    "format": "WebP lossless (VP8L)",
+    "bytes": 3788772,
+    "sha256": "0ac50d502977856688714a4bf63dcda49d14a6da8045ed80fe90af74c358e9f0",
+    "riffChunks": [
+      "VP8L"
+    ],
+    "encoder": {
+      "pillow": "12.3.0",
+      "libwebp": "1.6.0",
+      "params": {
+        "lossless": true,
+        "quality": 100,
+        "method": 6,
+        "exact": true
+      }
+    }
+  },
+  "losslessCheck": {
+    "result": "PASS",
+    "method": "libwebp 로 다시 풀어(Pillow) pngjs 로 이은 원본과 전 화소 RGB 바이트 비교 + RGB sha256 대조 + RIFF 에 VP8L 존재·VP8 /ICCP 부재",
+    "mismatchedPixels": 0,
+    "rgbSha256": "7deca55d99cc1317b0a1e2534ffdc6f2f4817c3775920116d8dc974fda14d4f0",
+    "rgbaSha256": "16a68a76e2f04ac1b82c2b962059a9bbff2b230956fbcc1bcfbe5d8fc77473da",
+    "browserCheck": "앱에서 캔버스에 1:1 로 그린 뒤 getImageData(0,0,W,W).data 의 sha256 이 rgbaSha256 과 같아야 한다(알파 255)"
+  },
+  "regression": {
+    "against": "build/perf-investigation/z3-mosaic.png",
+    "mismatchedPixels": 0,
+    "result": "PASS",
+    "note": "오늘 받은 타일로 이은 그림이 기존 모자이크와 화소 단위로 같다"
+  },
+  "modifications": "값 변경 없음. 원본 PNG 타일 64장을 한 장으로 이어 무손실 WebP 로 다시 담았다. 모든 화소의 RGB 바이트가 원본과 같음을 확인했다. (GMTED2010 이용 조건 '수정했다면 그 종류를 밝힌다'에 대한 기재)",
+  "attribution": {
+    "required": [
+      "ArcticDEM terrain data DEM(s) were created from DigitalGlobe, Inc., imagery and funded under National Science Foundation awards 1043681, 1559691, and 1542736;",
+      "Australia terrain data © Commonwealth of Australia (Geoscience Australia) 2017;",
+      "Austria terrain data © offene Daten Österreichs – Digitales Geländemodell (DGM) Österreich;",
+      "Canada terrain data contains information licensed under the Open Government Licence – Canada;",
+      "Europe terrain data produced using Copernicus data and information funded by the European Union - EU-DEM layers;",
+      "Global ETOPO1 terrain data U.S. National Oceanic and Atmospheric Administration",
+      "Mexico terrain data source: INEGI, Continental relief, 2016;",
+      "New Zealand terrain data Copyright 2011 Crown copyright (c) Land Information New Zealand and the New Zealand Government (All rights reserved);",
+      "Norway terrain data © Kartverket;",
+      "United Kingdom terrain data © Environment Agency copyright and/or database right 2015. All rights reserved;",
+      "United States 3DEP (formerly NED) and global GMTED2010 and SRTM terrain data courtesy of the U.S. Geological Survey."
+    ],
+    "textSource": "live",
+    "doc": "https://github.com/tilezen/joerd/blob/master/docs/attribution.md",
+    "docSha256": "2ce4d3414b4592d17ad56a5af57feb480686ddcfb0a3e4ea0b566d28cde13567",
+    "fetchedAt": "2026-09-23T12:37:23.245Z",
+    "note": "joerd attribution.md 의 'Required attribution' 첫 블록. 두 번째 블록(Mapzen 호스팅 서비스용)은 '* Mapzen' 한 줄이 더 붙는다 — 이 자산은 AWS 공개 버킷에서 받았다. 앱의 현재 표기는 index.html:1859 'AWS Terrain Tiles (Terrarium)' 한 줄뿐이다."
+  },
+  "buildSeconds": 18.9
+}

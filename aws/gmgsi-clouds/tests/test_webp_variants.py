@@ -154,7 +154,8 @@ class UploadTest(unittest.TestCase):
         self.assertEqual([p["Key"] for p in s3.puts], ["clouds/global.webp", "clouds/global-2048.webp"])
         for p in s3.puts:
             self.assertEqual(p["ContentType"], "image/webp")
-            self.assertEqual(p["CacheControl"], "public, max-age=1800")
+            # (2026-09-24 정정) PNG 와 같은 캐시 — 둘 다 CLOUD_CACHE_CONTROL(5분)이다.
+            self.assertEqual(p["CacheControl"], H.CLOUD_CACHE_CONTROL)
         self.assertEqual(set(listed), {"webp", "webp2048"})
         for name, rec in listed.items():
             self.assertNotIn("body", rec)
@@ -181,7 +182,8 @@ class HandlerSourceTest(unittest.TestCase):
                           r'Body=(?:open\(png, "rb"\)\.read\(\)|png_body),\s*ContentType="image/png",', self.src)
         self.assertIsNotNone(block, "global.png 업로드 형태가 바뀌었다")
         self.assertIn('Image.fromarray(la, mode="LA").save(png, optimize=True)', self.src)
-        self.assertEqual(H.CLOUD_CACHE_CONTROL, "public, max-age=1800")
+        # (2026-09-24 정정) 5분 — CloudFront 가 ?t= 를 무시해 그림이 meta 라벨보다 30분까지 늦던 것을 meta(5분)와 맞췄다.
+        self.assertEqual(H.CLOUD_CACHE_CONTROL, "public, max-age=300")
 
     def test_order_png_then_variants_then_meta(self):
         # (2026-09-23 정정) 순서: PNG → meta(변형 없이) → 변형 인코딩·업로드 → meta(변형 적어) 다시.

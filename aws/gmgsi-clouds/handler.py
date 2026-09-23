@@ -87,6 +87,10 @@ WEBP_METHOD = 3
 PHONE_W = 2048
 # PNG 와 같은 캐시 — 자료가 1시간 간격이고, 같은 시각의 PNG 와 WebP 는 같은 그림이다.
 CLOUD_CACHE_CONTROL = "public, max-age=1800"
+# (2026-09-24 정정) 1800 → 300. CloudFront 는 캐시 키에서 쿼리를 뺀다(Managed-CachingOptimized) — 앱이 붙이는 ?t=<관측시각> 이
+#   엣지에서 무시돼, meta.json(5분 캐시)의 시각 라벨은 새것인데 그림은 최대 30분 옛것이 나갔다(라벨·그림 최대 25분 어긋남, v1 실측).
+#   그림 캐시를 meta 와 같은 5분으로 맞춰 어긋남을 5분 안으로 줄인다. 엣지 재검증(오하이오 왕복 약 0.5 s)만 조금 늘어난다.
+CLOUD_CACHE_CONTROL = "public, max-age=300"
 
 # 공개 버킷이라 서명 없이 읽는다. 서명해서 보내면 403 이 난다.
 src = boto3.client("s3", config=Config(signature_version=UNSIGNED))
@@ -419,7 +423,8 @@ def handler(event, context):
         Body=png_body,
         ContentType="image/png",
         # 자료가 1시간 간격이라 30분 캐시. 그 사이엔 어차피 같은 그림이다.
-        CacheControl="public, max-age=1800",
+        # (2026-09-24 정정) 위 CLOUD_CACHE_CONTROL(5분)로 — 그림과 meta 시각 라벨이 30분까지 어긋났다.
+        CacheControl=CLOUD_CACHE_CONTROL,
     )
     meta = {
         "time": obs, "source": ir_key, "shading": bool(vis_key),

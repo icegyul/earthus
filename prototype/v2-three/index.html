@@ -726,6 +726,34 @@
     color: var(--text-dim); border-radius: 6px; cursor: pointer;
   }
   .intel-tabs button.on { color: var(--accent); border-color: var(--accent); }
+  /* 지점 카드(js/point-card.js · 2026-09-23 PD) — 색면 현상을 고른 채 지구를 누르면 뜨는 한 장.
+     PD 가 가리킨 "가장 큰 문제": 누른 순간 탭 두 줄과 '궁금한 점'이 값보다 먼저 섰다. 이 모드에서는 탭 단추를 숨기고
+     ✕ 자리만 남긴다(✕ 는 .intel-tabs 안에 있다 — 줄 전체를 숨기면 닫기도 사라진다). 선택자 점수 (1,3,1)이
+     information-access.css 의 #intel .intel-tabs button (1,1,1)·#intel .intel-tabs (1,1,0)을 이긴다(그 파일이 뒤에 읽혀도). */
+  #intel[data-tab="point"] .intel-tabs button[data-tab] { display: none; }
+  #intel[data-tab="point"] .intel-tabs { min-height: 30px; margin-bottom: 0; }
+  .point-card { font-size: 12px; line-height: 1.5; color: var(--text); }
+  .point-card .pc-kicker { font-size: 11px; color: var(--text-dim); margin-top: -26px; padding-right: 40px; min-height: 26px; }
+  .point-card .pc-value { display: flex; align-items: baseline; gap: 8px; margin: 2px 0 4px; }
+  .point-card .pc-big { font-size: 30px; font-weight: 600; letter-spacing: -0.5px; color: #fff; line-height: 1.1; }
+  .point-card .pc-big small { font-size: 15px; font-weight: 500; color: var(--text-dim); }
+  .point-card .pc-big.pc-none { color: var(--text-dim); }
+  .point-card .pc-tag { font-size: 10.5px; padding: 1px 7px; border-radius: 8px; border: 1px solid var(--panel-line); color: var(--text-dim); }
+  .point-card .pc-normal { font-size: 12px; margin-bottom: 4px; }
+  .point-card .pc-warm { color: #f0997b; } .point-card .pc-cool { color: #85b7eb; }
+  .point-card .pc-src { font-size: 10.5px; color: var(--text-dim); line-height: 1.55; }
+  .point-card .pc-sec { border-top: 1px solid rgba(255,255,255,0.08); margin-top: 9px; padding-top: 7px; }
+  .point-card .pc-sec h4 { margin: 0 0 4px; font-size: 12.5px; font-weight: 600; color: var(--text); }
+  .point-card .pc-sec .card { margin-bottom: 4px; }
+  .point-card .pc-why { margin: 2px 0 4px; font-size: 11px; line-height: 1.5; color: rgba(255,255,255,0.55); }
+  .point-card .pc-days { display: flex; gap: 5px; margin: 2px 0 4px; }
+  .point-card .pc-day { flex: 1 1 0; min-width: 0; text-align: center; font-size: 10.5px; color: var(--text-dim); }
+  .point-card .pc-day i { display: block; height: 6px; border-radius: 3px; margin: 3px 2px; }
+  .point-card .pc-day b { display: block; font-size: 11.5px; color: var(--text); font-weight: 600; overflow-wrap: anywhere; line-height: 1.25; }
+  .point-card .pc-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .point-card .pc-actions button { flex: 1 1 0; min-height: 36px; font-family: inherit; font-size: 12px; cursor: pointer;
+    background: rgba(74,144,217,0.10); border: 1px solid var(--panel-line); color: var(--text); border-radius: 8px; }
+  .point-card .pc-actions .sq-why { flex-basis: 100%; font-size: 11px; line-height: 1.5; color: rgba(255,255,255,0.55); }
   /* UI FINAL: 카드가 형제로 8장 늘어서면서 카드 사이 여백이 누적된다. 읽기는 그대로 두고 간격만 줄인다. */
   .card { border: 1px solid rgba(120,160,200,0.16); border-radius: 9px; padding: 10px 12px; margin-bottom: 6px; }
   .card-h { font-size: 12.5px; font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 7px; }
@@ -1547,6 +1575,10 @@
       border: 0; background: none; cursor: grab; touch-action: none; }
     .sheet-grip span { display: block; width: 42px; height: 4px; margin: 0 auto; border-radius: 2px;
       background: rgba(255,255,255,0.38); }
+    /* 2026-09-23 PD "여기 창이 가장 큰 문제야" — 누른 순간 탭 두 줄(3열 44 px 격자 · half 의 60%)이 값보다 먼저 섰다.
+       탭 단추는 **지점 카드 모드에서만** 걷는다(위 #intel[data-tab="point"] 규칙 — 폭과 무관).
+       ⚠️ 처음에는 폰에서 모든 모드의 탭을 걷었다 — 반박 검증: 폰에서 '예보·예정'·'이력'으로 가는 길이 0개가 되고,
+          색면 카드의 조작(등온선·강수 누적 3h/24h·기압 H/L)이 있는 '선택 자료'에도 닿을 수 없었다. 그래서 되돌렸다. */
     #intel[data-sheet="peek"].open #intel-body { max-height: 118px; overflow: hidden; }
     #intel[data-sheet="half"].open #intel-body { max-height: 31vh; }
     #intel[data-sheet="full"].open #intel-body {
@@ -1777,7 +1809,7 @@
   <div class="err" id="load-err"></div>
 </div>
 
-<script type="module" src="./js/main.js?v=193-groupicons"></script>
+<script type="module" src="./js/main.js?v=194-pointcard"></script>
 <script src="/js/earth-switch.js" defer></script>
 </body>
 </html>

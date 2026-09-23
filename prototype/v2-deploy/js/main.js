@@ -4,7 +4,7 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=67-groupicons';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=68-pointcard';
 import { createSelectionGate } from './information-contract.js';
 // PHASE 4 §9 — 지도에서 고른 사건을 어느 현상으로 읽을지는 레지스트리가 정한다.
 import { layerForEventKind } from './phenomenon-registry.js?v=4';
@@ -18,7 +18,7 @@ import { attachEvidencePopover } from './evidence-popover.js?v=1';
 import { currentTier } from './report-center.js?v=2';
 import { decideCapabilityAccess, lockExplanation, TIER } from './shared/access-mode.js';
 import { evaluateWatch, myZone, loadWatch, saveWatch } from './watch.js?v=1';
-import { LiveLayers } from './live-layers.js?v=39-information';
+import { LiveLayers, newsChipOpacity } from './live-layers.js?v=39-information';
 import { StationModel } from './station-model.js?v=2';
 import { AskEarth } from './ask-earth.js?v=3';
 import { i18n } from './i18n.js?v=11';
@@ -27,6 +27,37 @@ import { i18n } from './i18n.js?v=11';
 window.__earthusT = (k) => i18n.t(k);
 import { SatLayer } from './sat-layer.js?v=1';
 import { CloudVolume } from './cloud-volume.js?v=4';
+// 바람 층(js/wind-layer.js · 2026-09-20 W3) — GFS 10 m 바람 프레임·시간 버스·입자 엔진·범례를 잇는 접착제. 관측소 막대기를 대신한다.
+import { createWindLayer } from './wind-layer.js?v=1';
+// 공용 GFS 프레임 저장소 — 매니페스트 하나 · 프레임 캐시 하나 · 시간 하나(js/gfs-frames.js · 2026-09-20 A1).
+// 구름(CloudManager.loadGfs)과 앞으로 올 기온·바람·기압·강수 렌더러(W1~W4)가 이 하나를 나눠 쓴다.
+// 구름이 위성 모드여도 필드 프레임은 떠야 하므로 CloudManager 안이 아니라 모듈 맨 위에 둔다.
+import { sharedGfsFrames } from './gfs-frames.js?v=1';
+const gfsFrames = sharedGfsFrames({ THREE });
+// 시간 하나(js/time-bus.js) — 타임라인이 가리키는 시각을 기온·바람·기압·관측 숫자가 전부 여기서 듣는다.
+// 예전에는 구름만 들었다(아래 onTimeOffset → clouds.setForecastOffset). v2 는 5일을 예보하는 서비스라 시간은 하나여야 한다.
+import { timeBus } from './time-bus.js?v=1';
+// 색면 위의 나라·해안 윤곽선 — 새 색면이 바탕 지도의 국경을 덮어 '어디가 한반도인지' 알 수 없었다(js/field-outlines.js).
+import { createFieldOutlines } from './field-outlines.js?v=1';
+// 어느 레이어가 새 셰이더 색면인지 — 바람을 켤 때 이미 깔린 색면이 있으면 풍속 색면을 자동으로 깔지 않는다(기온이 꺼지지 않게).
+import { FIELD_DESCRIPTORS, activeField, isFieldLayerId } from './field-layer.js?v=1';
+// 지점 판독(js/point-readout.js · 2026-09-20 W2) — 누른 자리의 값을 **우리 자료에서만** 읽는다.
+//   전에는 색면이 꺼져 있으면, 그리고 바다를 누르면, 브라우저가 api.open-meteo.com · marine-api.open-meteo.com 을
+//   직접 불렀다. 유료 서비스의 라이선스 노출이었고 화면에 칠한 값과 카드의 값이 달랐다. 이제 같은 프레임·같은 격자를 읽는다.
+import { METRIC_LAYER, seaSourceLine, sharedPointReadout } from './point-readout.js?v=1';
+const pointReadout = sharedPointReadout({ frames: gfsFrames, timeBus });
+import { CLOUD_LEVEL, createCloudYield } from './cloud-yield.js?v=1';
+// 색면이 지형 위로 떠 있는 높이 — 바람 입자를 같은 높이에 두려고 읽는다(시차 방지).
+import { FIELD_LIFT } from './field-renderer.js?v=1';
+// 지상관측 두 문서(기상청 · GTS)는 공용 저장소(js/surface-obs.js)에서 받는다 — 바람·평년차·기입 모형·내 동네 카드가 같은 문서를 나눠 쓴다.
+import { surfaceObs } from './surface-obs.js?v=1';
+// 지구 위 실측 숫자(js/obs-labels.js · W1 ⑦) — 기온 색면이 켜져 있고 타임라인이 '지금'일 때만 관측소 값을 찍는다.
+import { createObsLabels, obsCardHtml, obsCardTitle } from './obs-labels.js?v=1';
+// 지점 카드(js/point-card.js · 2026-09-23 PD) — 색면 현상을 고른 채 지구를 누르면 뜨는 한 장.
+//   ⚠️ live-layers.js 는 import 문을 하나만 둔다(obs-labels.test — 줄을 나누면 ?v= 가 어긋나는 날 두 번 실린다).
+//   그래서 평년 문서는 point-card.js 가 우리 S3(POINT_BASE)에서 스스로 받는다.
+import { loadPointDays, loadPointNormal, loadPointObs, pointCardHtml, readPointNow } from './point-card.js?v=1';
+let obsLabels = null;   // main() 안에서 만든다. 클릭 핸들러가 그보다 먼저 정의되므로 extScene 처럼 모듈 자리에 둔다
 import { PopSculpture } from './pop-sculpture.js?v=13';
 import { PopMetricMenu } from './pop-metric-menu.js?v=1';
 import { QuickMenu } from './quick-menu.js?v=1';
@@ -46,7 +77,7 @@ import { usage } from './usage.js?v=2';
 // FOR ME — 내 동네에 걸린 사건 판정(순수) + v1·v2 공용 부품(동네 저장·딥링크). 지시서 v2.0 STEP 2 (2026-09-07).
 // ⚠️ './shared/for-me-row.js' 는 번들 빌드(tools/build-v2-bundle.sh)가 './shared/for-me-row.js' 로 바꿔 넣는다.
 import { evaluateForMe, summarize, typhoonCard, typhoonChanged, issuesFromPacket, previousIssues, stormFromArchives, historyLine, fmtKst,
-         waveHourlySeries, quakeCardFromEvent, matchCardForRoom } from './for-me-signal.js?v=2';
+         quakeCardFromEvent, matchCardForRoom } from './for-me-signal.js?v=2';
 import { readFromParam, placeLabel, isFormeMenu } from './shared/for-me-row.js';
 import { FlightRoute, routeCardHtml } from './route.js?v=4';
 import { PrecipField } from './precip-field.js?v=5';
@@ -1682,145 +1713,29 @@ class CloudManager {
     return { tex, lum: 0, label: `관측 ${date} · Terra+Aqua+VIIRS 3중 합성·갭 보간 (NASA GIBS)` };
   }
 
-  // 격자 시계열 fetch: {lon0, lat0(북쪽부터), dLon, dLat, lonN, latN} → {cc, pr, sn} Float32Array
-  async fetchForecastGrid(spec, HOURS) {
-    const lats = [];
-    const lons = [];
-    for (let r = 0; r < spec.latN; r += 1) {
-      for (let c = 0; c < spec.lonN; c += 1) {
-        lats.push(spec.lat0 - r * spec.dLat);
-        lons.push(spec.lon0 + c * spec.dLon);
-      }
-    }
-    const n = lats.length;
-    const cc = new Float32Array(n * HOURS);
-    const pr = new Float32Array(n * HOURS);
-    const sn = new Float32Array(n * HOURS);
-    let timeBase = null;
-    const batch = 150;
-    const reqs = [];
-    for (let i = 0; i < n; i += batch) {
-      const la = lats.slice(i, i + batch).join(',');
-      const lo = lons.slice(i, i + batch).join(',');
-      reqs.push(
-        fetch(`https://api.open-meteo.com/v1/gfs?latitude=${la}&longitude=${lo}&hourly=cloud_cover,precipitation,snowfall&forecast_days=5&timezone=UTC`)
-          .then((r) => { if (!r.ok) throw new Error(`open-meteo ${r.status}`); return r.json(); })
-          .then((j) => ({ i, arr: Array.isArray(j) ? j : [j] })),
-      );
-    }
-    for (const { i, arr } of await Promise.all(reqs)) {
-      arr.forEach((p, k) => {
-        const hc = (p.hourly && p.hourly.cloud_cover) || [];
-        const hp = (p.hourly && p.hourly.precipitation) || [];
-        const hs = (p.hourly && p.hourly.snowfall) || [];
-        if (!timeBase && p.hourly && p.hourly.time && p.hourly.time[0]) {
-          timeBase = Date.parse(`${p.hourly.time[0]}:00Z`) || Date.parse(`${p.hourly.time[0]}Z`);
-        }
-        const o = (i + k) * HOURS;
-        for (let h = 0; h < HOURS; h += 1) {
-          cc[o + h] = hc[h] != null ? hc[h] : 0;
-          pr[o + h] = hp[h] != null ? hp[h] : 0;
-          sn[o + h] = hs[h] != null ? hs[h] : 0;
-        }
-      });
-    }
-    return { ...spec, cc, pr, sn, timeBase, wrap: Math.abs(spec.dLon * spec.lonN - 360) < 1 };
-  }
-
-  static sampleGrid(g, field, latDeg, lonDeg, h, HOURS) {
-    const gx = (lonDeg - g.lon0) / g.dLon;
-    const gy = (g.lat0 - latDeg) / g.dLat;
-    if (gy < -0.5 || gy > g.latN - 0.5) return null;
-    let x0f = Math.floor(gx);
-    const fy = Math.max(0, Math.min(1, gy - Math.floor(gy)));
-    const y0 = Math.max(0, Math.min(g.latN - 1, Math.floor(gy)));
-    const y1 = Math.min(g.latN - 1, y0 + 1);
-    let x0;
-    let x1;
-    if (g.wrap) {
-      x0 = ((x0f % g.lonN) + g.lonN) % g.lonN;
-      x1 = (x0 + 1) % g.lonN;
-    } else {
-      if (gx < -0.5 || gx > g.lonN - 0.5) return null;
-      x0 = Math.max(0, Math.min(g.lonN - 1, x0f));
-      x1 = Math.min(g.lonN - 1, x0 + 1);
-      x0f = x0;
-    }
-    const fx = Math.max(0, Math.min(1, gx - x0f));
-    const d = g[field];
-    const v00 = d[(y0 * g.lonN + x0) * HOURS + h];
-    const v10 = d[(y0 * g.lonN + x1) * HOURS + h];
-    const v01 = d[(y1 * g.lonN + x0) * HOURS + h];
-    const v11 = d[(y1 * g.lonN + x1) * HOURS + h];
-    return (v00 * (1 - fx) + v10 * fx) * (1 - fy) + (v01 * (1 - fx) + v11 * fx) * fy;
-  }
-
-  // 프레임 렌더: 구름=흰색 반투명, 비=파랑(강할수록 진함), 눈=연보라. EA 상세격자가 전역을 덮어씀.
-  buildForecastFrame(h) {
-    const { grids, HOURS } = this.gfs;
-    const W2 = 480;
-    const H2 = 240;
-    const can = document.createElement('canvas');
-    can.width = W2;
-    can.height = H2;
-    const ctx = can.getContext('2d');
-    const im = ctx.createImageData(W2, H2);
-    for (let y = 0; y < H2; y += 1) {
-      const lat = 90 - ((y + 0.5) / H2) * 180;
-      for (let x = 0; x < W2; x += 1) {
-        const lon = ((x + 0.5) / W2) * 360 - 180;
-        let cc = null;
-        let pr = null;
-        let sn = null;
-        for (let gi = grids.length - 1; gi >= 0; gi -= 1) {
-          const v = CloudManager.sampleGrid(grids[gi], 'cc', lat, lon, h, HOURS);
-          if (v != null) {
-            cc = v;
-            pr = CloudManager.sampleGrid(grids[gi], 'pr', lat, lon, h, HOURS);
-            sn = CloudManager.sampleGrid(grids[gi], 'sn', lat, lon, h, HOURS);
-            break;
-          }
-        }
-        const p = (y * W2 + x) * 4;
-        let r = 255;
-        let g = 255;
-        let b = 255;
-        let a = Math.pow(Math.max(cc || 0, 0) / 100, 1.5) * 148;
-        if (pr != null && pr >= 0.15) {
-          const pI = Math.min(Math.log10(pr + 1) / Math.log10(9), 1);
-          const snowDom = sn != null && sn > 0.03 && sn * 7 > pr;
-          if (snowDom) {
-            r = 205; g = 210; b = 255; // 눈구름: 연보라빛
-          } else {
-            r = Math.round(60 + (1 - pI) * 90);
-            g = Math.round(130 + (1 - pI) * 60);
-            b = 255; // 비구름: 강할수록 진한 파랑
-          }
-          a = Math.max(a, 115 + pI * 140);
-        }
-        im.data[p] = r;
-        im.data[p + 1] = g;
-        im.data[p + 2] = b;
-        im.data[p + 3] = Math.round(a);
-      }
-    }
-    ctx.putImageData(im, 0, 0);
-    return CloudManager.texDefaults(new THREE.CanvasTexture(can));
-  }
+  // 여기 있던 fetchForecastGrid · sampleGrid · buildForecastFrame 은 걷어냈다(2026-09-20 지시서 W2).
+  // 셋 다 api.open-meteo.com 지점 질의로 만든 12°/4° 격자를 캔버스에 칠하던 폴백이었다 — 브라우저가
+  // 제3자 API 를 직접 때리는 자리였고(유료 서비스의 라이선스 노출), 그려 놓고도 '자료의 성김'이라고
+  // 변명해야 하는 화면이었다. 이제 구름은 우리 GFS 0.5° 프레임 하나뿐이다.
 
   // GFS 예보 프레임 (Lambda gfs-cloud-forecast → S3 clouds/gfs-fc). 41장, 3시간 간격, 5일.
   // 예전 방식은 Open-Meteo 지점 450개(12°, 적도 1,300km)를 질의해 5일치를 통째로 받았다.
   // 그건 뭉개져 보였고 그건 표현이 아니라 자료의 성김이었다. 이제 원자료 격자를 그대로 쓴다.
   async loadGfs() {
-    const S3B = 'https://earthus-cache-kr.s3.us-east-2.amazonaws.com';
-    let mf = null;
-    try {
-      const r = await fetch(`${S3B}/clouds/gfs-fc/manifest.json`, { cache: 'no-cache' });
-      if (r.ok) mf = await r.json();
-    } catch (e) { mf = null; }
+    // 매니페스트는 공용 저장소(js/gfs-frames.js)가 읽는다 — 2026-09-20 A1. 예전에는 여기서 직접 fetch 했고,
+    // 그래서 구름이 GFS 모드일 때만 프레임 목록이 생겼다: 기온·바람·기압 렌더러가 같은 매니페스트를 읽을
+    // 길이 없었고 타임라인이 구름에 묶여 있었다. 주소(clouds/gfs-fc/manifest.json)·no-cache 는 저장소가 그대로 쓴다.
+    // load() 는 던지지 않고, 못 읽으면 null 이다 — 아래 폴백이 예전과 똑같이 돈다.
+    // ⚠️ 구름 텍스처(frameTexAt · texCache · prefetchFrames)는 저장소의 LRU 로 옮기지 **않았다**. 프리페치는
+    //    스크럽이 끊기지 않게 41장을 다 쥐고 있어야 하는데(아래 prefetchFrames 주석), 상한이 있는 캐시에 넣으면
+    //    쥐고 있던 장이 쫓겨나 '프레임 받는 중…'이 되돌아온다. 옮기려면 화면에서 확인하며 따로 한다.
+    const mf = await gfsFrames.load();
     if (!mf || !Array.isArray(mf.steps) || mf.steps.length < 2) {
-      console.warn('[earthus-cloud] GFS 프레임 매니페스트 없음 → 지점 방식으로 물러남');
-      return this.loadGfsPoints();
+      // 예전에는 여기서 Open-Meteo 지점 810개(전지구 12° 450 + 동아시아 4° 360)를 질의해 5일치를 받았다.
+      // 그 길을 걷어냈다(지시서 W2): ① v2 는 유료 서비스인데 그 API 는 비상업 조건이고 ② 12° 칸은 적도에서
+      // 약 1,300 km 라 '구름 덩어리의 위치'조차 못 되는 성김이었다. 못 받으면 **없다고 말한다** —
+      // set(mode) 의 catch 가 메뉴에 이유를 적고 구름을 끈다. 없는 자료를 성긴 격자로 흉내 내지 않는다.
+      throw new Error('GFS 예보 목록(clouds/gfs-fc/manifest.json)을 받지 못했습니다');
     }
     // 텍셀 크기는 매니페스트가 말하는 격자에서 가져온다. 예전엔 1/360, 1/181 로 박혀 있어서
     // Lambda 해상도를 0.5° 로 올려도 보간이 1° 기준으로 돌아 선명해지지 않았다.
@@ -1836,14 +1751,14 @@ class CloudManager {
     // 같은 런은 같은 폴더에 덮어쓴다. 파일 이름이 그대로라 브라우저가 옛 프레임을 계속 썼다 —
     // 해상도를 0.5° 로 올렸는데도 화면에는 1° 이미지가 남아 있었고, 텍셀만 바뀌어
     // 보간이 어긋났다(실측: 격자 720 인데 이미지 360). 생성시각을 붙여 세대를 가른다.
-    const gen = encodeURIComponent(mf.generatedAt || mf.run || '');
-    const q = gen ? `?g=${gen}` : '';
+    // 그 규칙(?g=생성시각, 없으면 런 시각)은 이제 저장소의 frameUrl 이 가진다 — 구름과 필드 프레임이 같은 식으로
+    // 주소를 만들어야 세대가 어긋나지 않는다. 글자는 예전 식과 똑같다(gfs-frames.test.mjs 가 옛 식과 대조한다).
     const frames = mf.steps.map((st) => ({
-      h: st.h, t: Date.parse(st.valid), url: `${S3B}/clouds/gfs-fc/${st.file}${q}`,
-      wind: st.wind ? `${S3B}/clouds/gfs-fc/${st.wind}${q}` : null,
-      precip: st.precip ? `${S3B}/clouds/gfs-fc/${st.precip}${q}` : null,
+      h: st.h, t: Date.parse(st.valid), url: gfsFrames.frameUrl(st.file),
+      wind: st.wind ? gfsFrames.frameUrl(st.wind) : null,
+      precip: st.precip ? gfsFrames.frameUrl(st.precip) : null,
     })).filter((f) => Number.isFinite(f.t) && f.wind).sort((a, b) => a.t - b.t);
-    if (!frames.length) return this.loadGfsPoints();
+    if (!frames.length) throw new Error('이 런에 쓸 수 있는 예보 프레임이 없습니다');
     const stepMs = (mf.stepHours || 3) * 3.6e6;
     this.gfs = {
       frames, stepMs, run: mf.run, texCache: new Map(), mode: 'frames',
@@ -1857,7 +1772,7 @@ class CloudManager {
     const pairA = await this.frameTexAt(i0);
     this.frameTexAt(Math.min(i0 + 1, frames.length - 1));
     const texA = pairA && pairA.cloud;
-    if (!texA) return this.loadGfsPoints();
+    if (!texA) throw new Error('GFS 예보 프레임을 받지 못했습니다');
     const runKo = mf.run ? mf.run.replace('T', ' ').slice(0, 16) + 'Z' : '';
     return {
       tex: texA, lum: 0, frames: true, relief: true,
@@ -1930,47 +1845,6 @@ class CloudManager {
       else console.info('[earthus-cloud] 예보 프레임 %d장 준비 완료', frames.length);
     };
     pump();
-  }
-
-  async loadGfsPoints() {
-    // 5일 예보: 구름+강수(비/눈) 시계열. 1단계 전지구 12°(450지점, 즉시 재생 가능),
-    // 2단계 동아시아 4° 상세(태풍·전선 이동용)가 65초 뒤 자동 합류. 분당 한도(위치당 1콜) 준수.
-    const HOURS = 120;
-    const globalGrid = await this.fetchForecastGrid(
-      { lon0: -174, lat0: 84, dLon: 12, dLat: 12, lonN: 30, latN: 15 }, HOURS,
-    );
-    this.gfs = {
-      grids: [globalGrid],
-      HOURS,
-      timeBase: globalGrid.timeBase || Date.now(),
-      texCache: new Map(),
-    };
-    this.lastOffsetMs = 0;
-    // 동아시아 상세 (70~162E, 2~58N, 4°): 태풍 코어·전선대 이동이 여기서 보인다
-    setTimeout(async () => {
-      try {
-        const ea = await this.fetchForecastGrid(
-          { lon0: 70, lat0: 58, dLon: 4, dLat: 4, lonN: 24, latN: 15 }, HOURS,
-        );
-        if (!this.gfs) return;
-        this.gfs.grids.push(ea);
-        this.gfs.texCache.clear();
-        if (this.mode === 'gfs') this.setForecastOffset(this.lastOffsetMs);
-        if (this.mode === 'gfs') this.noteEl.innerHTML += ' · <b>동아시아 4° 상세 합류</b>';
-      } catch (err) {
-        console.warn('[earthus-cloud] EA 상세 격자 실패:', err.message);
-      }
-    }, 65000);
-    const tex = this.gfsFrameTex(Math.max(0, Math.min(HOURS - 1, Math.floor((Date.now() - this.gfs.timeBase) / 3.6e6))));
-    return { tex, lum: 0, label: 'GFS 5일 예보 · 구름(흰색)·비(파랑)·눈(연보라) · ▶ 재생 (Open-Meteo)'
-      + ' · 전지구 12° 격자(적도 약 1,300km) — 구름 <b>덩어리의 위치</b>이지 모양이 아닙니다' };
-  }
-
-  gfsFrameTex(h) {
-    if (this.gfs.texCache.has(h)) return this.gfs.texCache.get(h);
-    const tex = this.buildForecastFrame(h);
-    this.gfs.texCache.set(h, tex);
-    return tex;
   }
 
   // 타임라인 오프셋(ms) → 예보 프레임 보간. 관측/정적 모드는 무시.
@@ -2054,21 +1928,8 @@ class CloudManager {
         + `<br/><span style="opacity:.75">구름 <b>두께</b>(CWAT)로 그리고 <b>운정 높이</b>만큼 세움(DERIVED: 저·중·고층 비율에서 유도) · 프레임 3시간(NOAA GFS ${rt}, 적도 ${rk}km) · 사이는 700hPa 바람으로 이류한 <b>보간</b>이며 모델 출력이 아닙니다</span>${pending}`;
       return;
     }
-    const hF = Math.max(0, Math.min(this.gfs.HOURS - 1.001, (Date.now() + ms - this.gfs.timeBase) / 3.6e6));
-    const i0 = Math.floor(hF);
-    const texA = this.gfsFrameTex(i0);
-    this.uniforms.uTex.value = texA;
-    this.uniforms.uTexB.value = this.gfsFrameTex(Math.min(i0 + 1, this.gfs.HOURS - 1));
-    this.uniforms.uBlend.value = hF - i0;
-    this.earthUniforms.uCloudTex.value = texA;
-    const valid = new Date(this.gfs.timeBase + hF * 3.6e6);
-    const offH = Math.round((valid.getTime() - Date.now()) / 3.6e6);
-    const ea = this.gfs.grids.length > 1 ? ' · EA 4° 상세' : '';
-    // 성긴 격자를 매끄럽게 그리면 위성사진처럼 보인다 — 그건 없는 상세를 있는 것처럼 만든다.
-    // 해상도를 숫자로 밝혀, 이게 '모양'이 아니라 '덩어리의 위치'임을 알 수 있게 한다.
-    const res = this.gfs.grids.length > 1 ? '전지구 12° + 동아시아 4°' : '전지구 12°';
-    this.noteEl.innerHTML = `<span class="badge model">MODEL</span> GFS 예보 T${offH >= 0 ? '+' : ''}${offH}h · 유효 ${valid.getMonth() + 1}/${valid.getDate()} ${String(valid.getHours()).padStart(2, '0')}시 · 비=파랑 눈=연보라${ea}`
-      + `<br/><span style="opacity:.75">격자 ${res} — 관측 구름보다 수백 배 성깁니다. 뭉개져 보이는 것은 표현이 아니라 자료의 성김입니다.</span>`;
+    // 여기에 있던 지점격자(12°) 가지는 걷어냈다 — Open-Meteo 직호출로 만들던 모드다(아래 loadGfs 주석).
+    // 이제 this.gfs.mode 는 'frames' 뿐이라 위 가지에서 늘 돌아간다.
   }
 
   async set(mode) {
@@ -2793,6 +2654,43 @@ async function main() {
     const hit = raycastGlobe(e.clientX, e.clientY);
     if (!hit) { focus.clear(); return; }
     const { lat, lon } = hit;
+    // 색면(기온)이 켜져 있으면 누른 자리의 모델값을 범례와 그 카드에 적는다 — 프레임의 CPU 사본에서 읽는다(네트워크 0건).
+    // 아래의 선택 흐름(확장 화면·여행·해구·국가·해상)은 그대로 이어진다. 색면이 꺼져 있으면 아무 일도 없다.
+    liveLayers.fieldProbe(lat, lon);
+    // 지구 위 관측 숫자(OBS)를 눌렀으면 그 지점 카드가 먼저다 — 라벨은 무엇보다 위에 그려지므로 누른 사람이 본 것도 그것이다.
+    // 찍혀 있는 라벨만 잡힌다(기온 색면 ON · 타임라인 '지금'). 값·관측 시각·출처는 전부 문서에서 온다.
+    const ob = obsLabels && obsLabels.pick({ x: e.clientX, y: e.clientY });
+    // 2026-09-23 — 기온을 고른 채 OBS 숫자를 눌렀으면 따로 관측 카드를 띄우지 않고 지점 카드 한 장에 그 관측소를 싣는다.
+    //   라벨이 먼저 이긴다는 약속(위 주석)은 그대로다 — 누른 관측소가 카드의 '관측' 줄이 된다.
+    if (ob && pointFieldId() === 'tempgrid') {
+      clearFocusContext();
+      openPointCard(ob.lat, ob.lon, 'tempgrid', { station: ob });
+      return;
+    }
+    if (ob) {
+      focus.clear();
+      const lang = i18n.ko ? 'ko' : 'en';
+      showNote(obsCardTitle(ob, lang), obsCardHtml(ob, { lang }), ob.badge);
+      shell.refreshFlyout();
+      return;
+    }
+    // 두 종류의 원반이 무엇보다 위에 그려진다(둘 다 라벨과 같은 자리) — 그래서 누른 사람이 본 것도 그것이다.
+    // ⚠️ 둘 다 켜져 있을 수 있다(한국 해안). 그때는 **좁은 쪽이 이긴다**: 연안 침수 원반은 이름이 붙은
+    //    시군구 69곳뿐이라 그것을 눌렀다면 그 지역을 보려는 것이고, 조위관측소 원반은 전 세계 1,016곳이다.
+    const fdisc = liveLayers.pickFloodDisc(e.clientX, e.clientY);
+    if (fdisc) {
+      focus.clear();
+      shellHooks.onAction('flood-district', { sgg: fdisc.sggCd });
+      return;
+    }
+    // 해수면 상승 전망의 관측소 원반. 꺼져 있거나 빗나갔으면 null 이라 아래 선택 흐름으로 그대로 흐른다.
+    const slrHit = liveLayers.slrPick({ x: e.clientX, y: e.clientY });
+    if (slrHit) {
+      focus.clear();
+      showNote(slrHit.title, slrHit.html, slrHit.badge);
+      shell.refreshFlyout();
+      return;
+    }
     // 해구 표시가 켜져 있으면 해구선 우선 — 바다 클릭이 해상 실황으로 새지 않게
     // 여행 씬이 켜져 있으면 시군구 비콘 우선 — 근거 5줄 카드
     // 확장 화면(취미)이 켜져 있으면 그 표시가 우선 — 해변·활공장·거북 같은 것을 눌렀을 때
@@ -2826,6 +2724,25 @@ async function main() {
       shell.openIntel();
       shell.renderIntel();
       shell.refreshFlyout();
+      return;
+    }
+    // 2026-09-23 PD — "기온 들어가면 지구가 색으로 바뀌는데 거기서 지역을 누르면 그때 창이 뜨면서 … 그때 인텔리전스 기능이
+    //   나와야 맞지". 색면 현상을 고른 채 누르면 그 현상의 **지점 카드 한 장**(js/point-card.js)이 뜬다.
+    //   예전에는 여기서 아래로 흘러 육지면 국가 선택(인구 조각 자동 · 지표 팝업 · 카메라 이동)이, 바다면 marineSelect 가
+    //   선택 현상을 지우고 **파도 카드**를 띄웠다 — 기온을 골랐는데. 좁은 표시(원반·확장·여행·해구)는 위에서 먼저 이긴다.
+    //   ⚠️ 위 fieldProbe 는 그대로 둔다 — 범례의 '누른 곳' 줄은 그것이 쓴다.
+    const pfid = pointFieldId();
+    if (pfid) {
+      clearFocusContext();
+      openPointCard(lat, lon, pfid);
+      return;
+    }
+    // 바람 층이 켜져 있으면 누른 자리의 모델 바람을 읽는다(js/wind-layer.js readoutAt — 프레임의 CPU 사본에서 · 네트워크 0건).
+    // 꺼져 있으면 null 이라 아래 국가·바다 선택으로 그대로 흐른다.
+    const windPick = windLayer.readoutAt(lat, lon);
+    if (windPick) {
+      clearFocusContext();
+      showNote(windPick.title, windPick.html, windPick.badge);
       return;
     }
     const f = focus.pick(lat, lon);
@@ -2893,31 +2810,126 @@ async function main() {
     shell.showTab('now');
     shell.openIntel();
     shell.renderIntel();
+    // 우리 해양 격자(ocean/marine-ea.json 0.5° → 밖이면 ocean/marine.json 5°) + GFS 10 m 바람 프레임 +
+    // (있으면) 기상청 해양관측망 실측. 전에는 marine-api.open-meteo.com 과 api.open-meteo.com 을 지점마다
+    // 브라우저가 직접 불렀다 — 유료 서비스의 라이선스 노출이었고, 같은 바다를 칠한 파고 색면(wavefield,
+    // 같은 격자)과 카드가 다른 값을 말했다. 없앤 줄은 풍파 높이·너울 방향이다(우리 격자에 없다).
     try {
-      const [m, w] = await Promise.all([
-        fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}&current=wave_height,wave_direction,wave_period,wind_wave_height,swell_wave_height,swell_wave_period,swell_wave_direction&timezone=UTC`, {signal:request.signal})
-          .then((r) => { if (!r.ok) throw new Error(`marine ${r.status}`); return r.json(); }),
-        fetch(`https://api.open-meteo.com/v1/gfs?latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}&current=wind_speed_10m,wind_direction_10m&wind_speed_unit=ms&timezone=UTC`, {signal:request.signal})
-          .then((r) => { if (!r.ok) throw new Error(`wind ${r.status}`); return r.json(); }),
-      ]);
-      if(request !== marineRequest || request.signal.aborted) return;
-      if (!m.current || m.current.wave_height == null) {
-        seaPoint = { lat, lon, error: '해양 데이터 없음 (연안 밖 지점을 클릭하세요)' };
-      } else {
-        seaPoint = { lat, lon, marine: m.current, wind: (w && w.current) || {}, time: m.current.time, windTime:w?.current?.time, retrievedAt:new Date().toISOString() };
-      }
+      const got = await pointReadout.sea(lat, lon);
+      if (request !== marineRequest || request.signal.aborted) return;
+      seaPoint = got;
     } catch (err) {
-      if(request.signal.aborted || request !== marineRequest) return;
-      seaPoint = { lat, lon, error: '해양 모델 자료를 받지 못했습니다. 잠시 후 다시 조회해 주세요.' };
+      if (request.signal.aborted || request !== marineRequest) return;
+      seaPoint = { lat, lon, error: '해양 격자 자료를 받지 못했습니다. 잠시 후 다시 조회해 주세요.' };
     }
     shell.renderIntel();
   }
 
+  // ---------- 지점 카드 (js/point-card.js · 2026-09-23 PD) ----------
+  // 색면 현상(기온 등)을 고른 채 지구를 누르면 그 현상의 한 장이 뜬다: 값 → 출처 → 왜 → 앞으로 5일 → 입구.
+  // 시트의 'point' 모드(ui-shell renderIntel)로 그린다 — 탭 줄·머리말 없이. 값은 그릴 때마다 지금 타임라인 시각으로
+  // 다시 읽는다(재생 중 220 ms 마다 renderIntel) — 누른 순간의 글자로 굽지 않는다(point-readout.js:285 의 한계를 피한다).
+  let pointCard = null;   // { lat, lon, fid, obs, obsSource, obsLoading, anom, normal, normalMiss, days, daysLoading }
+
+  // 지금 누른 자리를 읽을 색면 — 고른 메뉴가 켜진 색면이면 그것. 고른 메뉴가 **없을 때만**(주소 해시로 되살린 색면 등)
+  // 지구에 칠해진 색면으로 떨어진다.
+  // ⚠️ 반박 검증(2026-09-23): 처음에는 고른 메뉴가 꺼졌거나 색면이 아니어도 칠해진 색면으로 떨어졌다 — '해양 모델 · 파고와 바람'
+  //    (바다를 누르면 해상 조회)을 골라도 기온 카드가 떴고, 끈 쓰나미의 능력(시뮬레이션)이 기온 카드에 붙었다.
+  //    고른 메뉴가 있으면 그 메뉴의 길이 이긴다.
+  // ⚠️ 파고(wavefield)는 지점 카드로 보내지 않는다 — 바다를 누르면 marineSelect 가 해상 카드와 파도 장면 입력(seaPoint)을 채운다.
+  //    지점 카드로 가로채면 '이 바다는 어떻게 움직일까?'(⑦ 입구)가 자료 없이 멈췄다.
+  const POINT_SKIP = new Set(['wavefield']);
+  const pointFieldId = () => {
+    const ctx = shell.getPhenomenonContext();
+    const lid = ctx && ctx.layerId;
+    const on = (id) => { try { return !!liveLayers.state(id).on; } catch (e) { return false; } };
+    const ok = (id) => !!id && isFieldLayerId(id) && !POINT_SKIP.has(id) && on(id);
+    if (lid) return ok(lid) ? lid : null;
+    const sf = liveLayers.starField();
+    return sf && ok(sf.id) ? sf.id : null;
+  };
+
+  // 카드 하나의 번호 — ui-shell 이 '같은 카드인지'(재생 중 제자리 갱신)를 이것으로 가른다. 받는 자료가 도착하면 rev 가 오른다.
+  let pointSeq = 0;
+  const openPointCard = (lat, lon, fid, opts = {}) => {
+    // ⚠️ 전역 selectionGate 를 넘기지 않는다 — 반박 검증: 다른 레이어를 받는 중에 지구를 누르면 그 레이어의 카드가
+    //    '여는 중…'에 굳었다. 이 카드의 늦은 응답은 pointCard === pc 로만 거른다.
+    marineRequest?.abort();
+    seaPoint = null;
+    const desc = FIELD_DESCRIPTORS[fid];
+    const gfs = !!(desc && !desc.source);
+    const pc = pointCard = {
+      id: ++pointSeq, rev: 0, lat, lon, fid,
+      obs: null, obsSource: null, obsFailed: null, obsLoading: fid === 'tempgrid', anom: null,
+      normal: null, normalLoading: false, normalChecked: false, normalMiss: false,
+      days: null, daysLoading: gfs, ensuring: null,
+    };
+    shell.openIntel('point');
+    const bump = () => { pc.rev += 1; if (pointCard === pc) shell.renderIntel(); };
+    if (gfs) {
+      loadPointDays({ frames: gfsFrames, fieldId: desc.fieldId, lat, lon, nowMs: Date.now() })
+        .then((d) => { pc.days = d; }, () => { pc.days = { ok: false, days: [] }; })
+        .finally(() => { pc.daysLoading = false; bump(); });
+    }
+    if (fid === 'tempgrid') {
+      loadPointObs({ surfaceObs, lat, lon, station: opts.station || null, nowMs: Date.now() })
+        .then((o) => { Object.assign(pc, o); }, () => { pc.obsFailed = { KMA: true, GTS: true }; })
+        .finally(() => {
+          pc.obsLoading = false;
+          // 관측을 먼저 보인다 — 평년 문서(600 KB)는 그 뒤에 따로. 평년차 레이어가 이미 받아 둔 문서가 있으면 다시 받지 않는다.
+          const site = pc.obs && pc.obs.site;
+          if (site && site.src === 'KMA') {
+            pc.normalLoading = true;
+            const tl = liveLayers.layers && liveLayers.layers.tempanom;
+            const doc = tl && tl.data && tl.data.norm ? tl.data.norm : null;
+            loadPointNormal({ stationId: site.id, nowMs: Date.now(), doc })
+              .then((n) => { pc.normal = n; pc.normalChecked = true; }, () => { pc.normalMiss = true; })
+              .finally(() => { pc.normalLoading = false; bump(); });
+          }
+          bump();
+        });
+    }
+  };
+
+  const getPointHtml = () => {
+    const pc = pointCard;
+    if (!pc) {
+      return `<div class="point-card"><p class="pc-why">${i18n.ko ? '색면을 켠 채 지구를 누르면 그 자리의 값과 해석이 이 한 장에 나옵니다.' : 'With a colour field on, tap the globe to read the value and interpretation here.'}</p></div>`;
+    }
+    const ko = i18n.ko;
+    // 값은 **켜진 색면 객체**에서 — 강수 누적 모드·예보 범위 밖·바다 마스크까지 화면과 같게(point-card.js 머리말).
+    const field = activeField(liveLayers, pc.fid);
+    const now = readPointNow({ field, lat: pc.lat, lon: pc.lon, ko });
+    // 타임라인을 옮긴 순간 그 시각의 장이 아직 없으면 '—' 에 굳지 않게 받아 두고 다시 그린다(반박 검증 — 전에는 상관없는
+    // 다시 그리기가 올 때까지 멈춰 있었다). 같은 시각은 한 번만 청한다.
+    if (now && now.missing && field && field.frames && typeof field.frames.ensure === 'function' && Number.isFinite(now.tMs) && pc.ensuring !== now.tMs) {
+      pc.ensuring = now.tMs;
+      Promise.resolve().then(() => field.frames.ensure(field.desc.fieldId, now.tMs))
+        .then(() => { if (pointCard === pc) { pc.rev += 1; shell.renderIntel(); } }, () => {});
+    }
+    const accum = !!(field && field.baseDesc && field.desc !== field.baseDesc);   // precip-accum.js 가 desc 를 갈아 끼웠다
+    const ctx = shell.getPhenomenonContext();
+    const mine = !!(ctx && ctx.layerId === pc.fid);   // 고른 메뉴가 이 색면일 때만 그 현상의 패킷·능력을 싣는다
+    const pid = mine ? ctx.phenomenonId : null;
+    // 그 현상의 패킷이 이미 받아 둔 문서에 있으면(수온 등) WHY·NEXT 절을 카드 안에 그대로 편다 — 누르면 다른
+    // 카드로 갈아 끼우던 'intel-q' 와 달리 여기서는 펼친 채로 둔다. 기온(tempgrid)은 패킷이 없어 이유 한 줄이 선다.
+    const pk = pid ? intelOf(intelHostFor(pid)) : null;
+    const sec = (s) => (pk ? intelSectionHtml({
+      packet: pk, section: s, i18n, esc: escUI, badge: (k) => dataBadge(k),
+      mode: shellHooks.monetizationMode(), tier: currentTier(),
+    }) : '');
+    return pointCardHtml({ pc, now, key: `${pc.id}.${pc.rev}.${accum ? 'a' : 'r'}`, isNow: timeBus.isNow(),
+      intelWhy: sec('WHY'), intelNext: sec('NEXT'), capabilities: mine ? ctx.capabilities || {} : {}, accum, ko, esc: escUI });
+  };
+
   const fmtPt = (lat, lon) => `${lat >= 0 ? 'N' : 'S'}${Math.abs(lat).toFixed(1)}° ${lon >= 0 ? 'E' : 'W'}${Math.abs(lon).toFixed(1)}°`;
 
-  // 지점 날씨 — 퀵메뉴(기온·습도·바람·강수)가 부르는 실제 값. 국가 단위 격자가 없어
-  // 지표 메뉴에선 '준비 중'이던 지표도, 지점으로 물으면 Open-Meteo(GFS 분석)의 현재값으로
-  // 정직하게 답한다. 출처·유효 시각·조회 시각을 함께 쓴다 — 원칙 §1.
+  // 지점 값 — 퀵메뉴(기온·습도·바람·강수)가 부르는 실제 값. **우리 자료에서만** 읽는다(지시서 W2).
+  //   기온·바람·강수·기압 → 지구에 칠하는 것과 같은 GFS 0.5° 프레임. 습도 → 우리가 굽는 필드에 없어 없다고 말한다.
+  //   전에는 색면이 꺼져 있으면 api.open-meteo.com /v1/forecast 의 current 를 브라우저가 직접 불렀다:
+  //   ① 유료 서비스가 비상업 API 를 사용자 브라우저로 때리는 자리였고
+  //   ② 그 current 는 **지금**이라 타임라인을 밀어 둔 화면과 시각이 아예 달랐다. 2026-09-20 실측(서울):
+  //      화면에 칠한 12:00Z 프레임은 23.2 °C 인데 카드는 13:15Z 의 21.1 °C 를 적었다 — 같은 자리, 2.1 °C 차이.
   // marineSelect 와 같은 선택 경쟁 문(selectionGate)을 쓴다: 이전 질의가 늦게 와서
   // 나중 결과를 덮지 않게 한다(지시서 §27 stale).
   let pointWeatherReq = null;
@@ -2925,27 +2937,29 @@ async function main() {
   const pointWeather = async (lat, lon, metric = 'temperature') => {
     pointWeatherLast = { lat, lon, metric };
     const current = selectionGate.next();
+    // 퀵메뉴의 id 는 quick-menu.js 의 ITEMS 가 정본이다 — 강수는 'rain'('precipitation' 이 아니다).
+    // ① 그 색면이 켜져 있으면 화면에 칠해진 프레임의 CPU 사본에서 읽는다 — 네트워크 0건.
+    // ② 꺼져 있으면 point-readout.js 가 **같은 필드의 프레임만** 받아 같은 순수 함수로 같은 글을 짓는다
+    //    (기온 81 KB · 10 m 바람 226 KB · 강수 110 KB, 두 장이면 그 두 배). 레이어를 켜고 끌 때 같은 자리의
+    //    숫자가 달라지면 그 자체가 두 말이다.
+    const layerId = METRIC_LAYER[metric];
+    const fieldNote = layerId ? liveLayers.fieldReadout(layerId, lat, lon) : null;
+    if (fieldNote) {
+      if (pointWeatherReq) pointWeatherReq.abort();
+      pointWeatherReq = null;
+      showNote(fieldNote.title, fieldNote.html, fieldNote.badge);
+      return;
+    }
     const ctrl = new AbortController();
     pointWeatherReq = ctrl;
-    showNote('지점 실황', `<div class="card"><div class="card-h">지점 ${fmtPt(lat, lon)}</div><div class="card-b" role="status">모델 분석값 조회 중…</div></div>`, 'LOADING');
+    showNote('지점 값', '<div class="card"><div class="card-h">지점 ' + fmtPt(lat, lon) + '</div><div class="card-b" role="status">예보 프레임에서 읽는 중…</div></div>', 'LOADING');
     try {
-      const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,wind_direction_10m&wind_speed_unit=ms&timezone=UTC`, { signal: ctrl.signal });
-      if (!r.ok) throw new Error(`weather ${r.status}`);
-      const j = await r.json();
+      const card = await pointReadout.weather(lat, lon, metric);
       if (pointWeatherReq !== ctrl || ctrl.signal.aborted || !current()) return;
-      const c = j.current || {};
-      const stat = (k, v) => `<div class="stat"><span class="k">${k}</span><span class="v">${v != null ? v : '—'}</span></div>`;
-      showNote('지점 실황', `<div class="card"><div class="card-h">지점 실황(모델 분석) ${dataBadge('MODEL_SIGNAL')}</div>
-        <div class="card-b">
-        ${stat('기온', c.temperature_2m != null ? `${c.temperature_2m} °C` : null)}
-        ${stat('습도', c.relative_humidity_2m != null ? `${c.relative_humidity_2m} %` : null)}
-        ${stat('강수', c.precipitation != null ? `${c.precipitation} mm` : null)}
-        ${stat('바람', c.wind_speed_10m != null ? `${c.wind_speed_10m} m/s` : null)}
-        <p>출처: Open-Meteo (GFS 분석) · 유효 ${c.time || '시각 미제공'} UTC · 조회 ${new Date().toISOString()}</p>
-        </div></div>`, 'MODEL_SIGNAL');
+      showNote(card.title, '<div class="card"><div class="card-h">' + card.title + ' ' + dataBadge(card.badge) + '</div><div class="card-b">' + card.html + '</div></div>', card.badge);
     } catch (err) {
       if (pointWeatherReq !== ctrl || ctrl.signal.aborted) return;
-      showNote('지점 실황', `<div class="card"><div class="card-h">지점 실황 ${dataBadge('UNAVAILABLE')}</div><div class="card-b">모델 값을 받지 못했습니다. 잠시 후 다시 시도해 주세요.<br/><button data-action="point-weather-retry">다시 조회</button></div></div>`, 'UNAVAILABLE');
+      showNote('지점 값', '<div class="card"><div class="card-h">지점 값 ' + dataBadge('UNAVAILABLE') + '</div><div class="card-b">예보 프레임을 읽지 못했습니다. 잠시 후 다시 시도해 주세요.<br/><button data-action="point-weather-retry">다시 조회</button></div></div>', 'UNAVAILABLE');
     }
   };
 
@@ -2957,17 +2971,15 @@ async function main() {
     if (seaPoint.error) {
       return `<div class="card"><div class="card-h">해상 지점 ${dataBadge('UNAVAILABLE')}</div><div class="card-b">${seaPoint.error}<br/><button data-action="marine-retry">다시 조회</button></div></div>`;
     }
-    const m = seaPoint.marine;
-    const w = seaPoint.wind;
-    return `<div class="card"><div class="card-h">해양 모델 · 파고와 바람 ${dataBadge('MODEL_SIGNAL')}</div>
+    if (seaPoint.none) {
+      return `<div class="card"><div class="card-h">해상 지점 ${dataBadge('UNAVAILABLE')}</div><div class="card-b">${seaPoint.reason}</div></div>`;
+    }
+    // 값 줄·실측 대조·출처는 point-readout.js 가 짓는다 — 같은 바다를 칠하는 색면(wavefield)과
+    // **같은 격자·같은 낱말**을 쓰려고. 없앤 줄(풍파·너울 방향)도 거기서 한 번만 말한다.
+    return `<div class="card"><div class="card-h">해양 격자 · 파도와 바람 ${dataBadge('MODEL_SIGNAL')}</div>
       <div class="card-b">
         <div class="stat"><span class="k">지점</span><span class="v">${fmtPt(seaPoint.lat, seaPoint.lon)}</span></div>
-        <div class="stat"><span class="k">유의파고</span><span class="v">${m.wave_height} m</span></div>
-        <div class="stat"><span class="k">너울</span><span class="v">${m.swell_wave_height != null ? `${m.swell_wave_height} m · ${m.swell_wave_period}s` : '—'}</span></div>
-        <div class="stat"><span class="k">풍파</span><span class="v">${m.wind_wave_height != null ? `${m.wind_wave_height} m` : '—'}</span></div>
-        <div class="stat"><span class="k">풍속</span><span class="v">${w.wind_speed_10m != null ? `${w.wind_speed_10m} m/s` : '—'}</span></div>
-        <p>유의파고는 높은 쪽 1/3 파도의 평균 높이입니다.</p>
-        <p>해양: Open-Meteo Marine · 유효 ${seaPoint.time || '시각 미제공'} UTC<br/>바람: Open-Meteo GFS · 유효 ${seaPoint.windTime || '시각 미제공'} UTC<br/>조회 ${seaPoint.retrievedAt}</p>
+        ${pointReadout.seaHtml(seaPoint)}
         <button data-action="marine-buoys">부이 실측과 비교</button>
       </div>
       ${forMeSeaHtml()}
@@ -3014,15 +3026,16 @@ async function main() {
   };
 
   const simNowInfoHtml = () => {
-    const m = seaPoint.marine;
-    const w = seaPoint.wind;
+    const g = seaPoint.grid;
+    const wind = seaPoint.wind;
     return `<div class="card-h">모델 값을 입력한 파도 장면</div>
       <div class="card-b">
         <div class="stat"><span class="k">지점</span><span class="v">${fmtPt(seaPoint.lat, seaPoint.lon)}</span></div>
-        <div class="stat"><span class="k">유의파고</span><span class="v">${m.wave_height} m</span></div>
-        <div class="stat"><span class="k">풍속</span><span class="v">${w.wind_speed_10m != null ? `${w.wind_speed_10m} m/s` : '—'}</span></div>
-        출처 Open-Meteo Marine · ${seaPoint.time || ''}<br/>
-        해양 모델의 파고·풍속을 입력으로 그린 장면 — 기록 남는 계산이 아닙니다
+        <div class="stat"><span class="k">유의파고</span><span class="v">${Number.isFinite(g.wave) ? `${g.wave.toFixed(1)} m` : '—'}</span></div>
+        <div class="stat"><span class="k">풍속 · 10 m</span><span class="v">${wind && Number.isFinite(wind.speed) ? `${wind.speed.toFixed(1)} m/s` : '—'}</span></div>
+        ${seaSourceLine(seaPoint.gridInfo)}<br/>
+        파고·너울은 위 격자값, 바람은 GFS 0.5° 프레임입니다. <b>풍파 높이는 유의파고와 너울에서 유도</b>했고(√(Hs²−너울²)),
+        <b>방향은 파향</b>입니다 — 너울 방향은 우리 격자에 없습니다. 장면일 뿐 기록 남는 계산이 아닙니다
       </div>`;
   };
 
@@ -3030,20 +3043,25 @@ async function main() {
   // 두 경로가 다른 파라미터를 넣으면 어느 쪽이 거짓말인지 알 수 없다.
   const openWaveNow = () => {
     const myRun = ++simRunId;
-    if (!seaPoint || !seaPoint.marine) return;
-    const m = seaPoint.marine;
-    const w = seaPoint.wind;
+    if (!seaPoint || !seaPoint.grid) return;
+    const g = seaPoint.grid;
+    const wind = seaPoint.wind;
     const sun = sunAtPoint(seaPoint.lat, seaPoint.lon);
     // 진입 사이에 다른 질문이 들어오면(연타) 오래된 open 은 버린다.
     if (myRun !== simRunId) return;
+    // ⚠️ 풍파 높이는 우리 격자에 **없다.** 전에는 없으면 유의파고 × 0.6 을 넣었다 — 어디서 온 숫자인지
+    //    아무도 말할 수 없는 값이다. 대신 파 에너지 합(Hs² = 너울² + 풍파²)에서 되돌린다: 표준 관계이고,
+    //    장면 카드가 '유도값'이라고 밝힌다. 너울 방향도 없어 **파향**(wdir)을 쓰고 카드가 그렇게 적는다.
+    const hs = Number.isFinite(g.wave) ? g.wave : 1;
+    const swellH = Number.isFinite(g.swell) ? Math.min(g.swell, hs) : 0;
     sim.open({
-      Hs: m.wave_height != null ? m.wave_height : 1,
-      swellH: m.swell_wave_height != null ? m.swell_wave_height : 0,
-      swellT: m.swell_wave_period != null ? m.swell_wave_period : 8,
-      swellDirDeg: m.swell_wave_direction != null ? m.swell_wave_direction : 0,
-      windWaveH: m.wind_wave_height != null ? m.wind_wave_height : (m.wave_height || 1) * 0.6,
-      windSpeed: w.wind_speed_10m != null ? w.wind_speed_10m : 5,
-      windDirDeg: w.wind_direction_10m != null ? w.wind_direction_10m : 0,
+      Hs: hs,
+      swellH,
+      swellT: Number.isFinite(g.sper) ? g.sper : 8,
+      swellDirDeg: Number.isFinite(g.wdir) ? g.wdir : 0,
+      windWaveH: Math.sqrt(Math.max(0, hs * hs - swellH * swellH)),
+      windSpeed: wind && Number.isFinite(wind.speed) ? wind.speed : 5,
+      windDirDeg: wind && Number.isFinite(wind.dirDeg) ? wind.dirDeg : 0,
       sunElev: sun.elev,
       sunAz: sun.azDeg,
     }, simNowInfoHtml(), '');
@@ -3130,11 +3148,131 @@ async function main() {
   };
 
   const liveLayers = new LiveLayers(scene, heightAtJs, () => uniforms.uExagger.value, dataBadge);
+  // W1·W2 셰이더 색면(js/field-layer.js — 기온부터). 색면이 지형을 따라가도록 지구의 uniform 묶음과 지오메트리를 **그대로** 넘긴다:
+  // 과장이 바뀌면 위 uniforms.uExagger.value 하나만 바뀌고 색면은 같은 객체를 읽는다(지오메트리를 다시 만들지 않는다).
+  // onCard: 타임라인을 밀면 카드의 유효 시각·보간 문구가 바뀐다 — 떠 있는 카드의 원본 문자열에서 그 레이어의 카드만 갈아 끼운다.
+  liveLayers.provideField({
+    frames: gfsFrames, terrain: uniforms, geometry: earth.geometry, isPhone: isMobileUA,
+    onCard: (swap) => { if (lockedNote && typeof lockedNote.body === 'string') lockedNote.body = swap(lockedNote.body); },
+  });
   // 항로 — 항공편 추적이 아니라 '구간을 잇는 표현'이다 (js/route.js 머리말 참조)
   const flightRoute = new FlightRoute(scene, () => uniforms.uExagger.value);
   // 켜 둔 레이어를 원본 갱신 주기에 맞춰 실제로 다시 받는다 (배지만 갱신되던 문제)
   liveLayers.startAutoRefresh(() => { shell.refreshFlyout(); shell.renderIntel(); });
   window.__earthusLive = liveLayers;
+  // 바람 층(W3) — 레이어 id 'wind' 의 실체. 켜고 끄는 주인은 LiveLayers 다(fetchFor·buildWind·metaWind 가 이 층을 부른다).
+  // 입자는 tick 의 windLayer.tick 이 흘린다. 반지름은 풍속 색면과 같은 껍질(airShell) — 시차 방지. 과장이 바뀔 때만 다시 묻는다.
+  const windLayer = createWindLayer({
+    frames: gfsFrames, timeBus, parent: liveLayers.group,
+    isOn: () => { const l = liveLayers.layers.wind; return !!(l && l.on); },
+    particleScale: () => thermal.budget.particleScale,
+    exagger: () => uniforms.uExagger.value,
+    // 입자는 **색면과 같은 지표 높이**에 둔다(FIELD_LIFT). 예전에는 옛 색면의 고정 껍질(과장된 최고봉 위)을 줬는데,
+    // 풍속 색면이 새 렌더러로 지표에 붙으면서 입자만 떠서 그려졌다 — 태풍 소용돌이가 색면의 눈과 어긋났다(2026-09-20 반박 검증).
+    shellRadius: () => 1 + FIELD_LIFT,
+    lang: () => i18n.lang,
+    // 타임라인·키프레임이 바뀌면 열려 있는 바람 카드(글자 사본)를 지금 상태로 갈아 끼운다 — 안 그러면 카드의 유효 시각이 옛 글로 남는다.
+    onChange: () => {
+      if (!lockedNote || !String(lockedNote.body).includes('data-wind-card')) return;
+      lockedNote.body = windLayer.recard(lockedNote.body);
+      shell.renderIntel();
+    },
+  });
+  liveLayers.windLayer = windLayer;
+
+  /* 주인공 레이어(색면 · 바람)가 켜진 동안의 무대 정리 — 2026-09-20, 합친 화면을 직접 보고 넣었다.
+     ① 구름이 물러난다. PD 정본 시안 01·02 는 구름 없이 색면이 주인공이다. 구름 셸(불투명 0.92)은 색면 위에 그려져
+        일본 남쪽 태풍 둘레의 구간색을 흰 베일로 덮었다 — 색이 값인 화면에서 흰 베일은 범례와 다른 색을 만든다.
+        색면이 있으면 0(끈다), 입자만 있으면 옅게 남긴다. 끄면 제자리로 돌아온다. 구름 설정·모드는 건드리지 않는다(불투명도만).
+     ② '바람'을 켜면 풍속 색면(windgrid)이 같이 깔린다 — 시안 02 는 풍속 구간색 위로 흰 유선이 흐른다. 입자만으로는 약한 바람
+        (어두운 파랑)이 밤바다에 묻혀 태풍만 보였다. 우리가 같이 켠 것만 같이 끈다(사용자가 따로 켠 풍속 색면은 그대로 둔다).
+     ③ 색면이 밑에 있으면 입자는 흰색, 없으면 풍속 구간색(wind-layer.setColorMode). */
+  // ④ 색면이 켜져 있으면 나라·해안 윤곽선이 그 위에 선다(field-outlines.js). 폴리곤은 국가 포커스가 이미 받아 둔 것이다 — 새 요청 0건.
+  const fieldOutlines = createFieldOutlines({
+    THREE, parent: scene,
+    getFeatures: () => (focus.data && focus.data.features) || null,
+    surfR: (la, lo, lift) => liveLayers.surfR(la, lo, lift),
+    getExagger: () => uniforms.uExagger.value,
+  });
+  window.__earthusOutlines = fieldOutlines;   // 콘솔 확인용: __earthusOutlines.state()
+  const CLOUD_OPACITY_FULL = clouds.uniforms.uOpacity.value;   // 0.92 — CloudManager 가 정한 값을 그대로 기억한다
+  const CLOUD_OPACITY_WIND_ONLY = 0.28;
+  const PRECIP_OPACITY_FULL = clouds.precip ? clouds.precip.uniforms.uOpacity.value : 0;   // PrecipField 가 정한 값을 기억한다
+  /* 구름을 물릴지 말지는 js/cloud-yield.js 가 정한다(2026-09-20 작업 E3 ②③). 여기서는 그 판정을 불투명도로 옮기기만 한다:
+     ② 사용자가 구름 단추를 직접 누르면 그 손이 이긴다 — 안 그러면 누를 수는 있는데 아무 일도 안 나는 죽은 토글이었다.
+     ③ 색면이 **실제로 그려질 때만** 물린다 — 예보 범위 밖이면 색면도 구름도 없는 맨 지구만 남았다. */
+  const cloudYield = createCloudYield();
+  const starLayers = {
+    windWasOn: false, autoSpeed: false, busy: false,
+    /** 색면이 구름에게 한 일 한 줄(없으면 ''). 카드·메뉴 줄이 읽어 간다 — 말없이 끄거나 말없이 겹치지 않는다. */
+    note() { return cloudYield.peek().note || ''; },
+    tick(dt) {
+      const star = liveLayers.starLayer();
+      const sf = liveLayers.starField();
+      const drawing = !!(sf && sf.drawing);
+      const desc = sf ? FIELD_DESCRIPTORS[sf.id] : null;
+      // 이름은 색면 표에서 온다. 표 밖의 겹면(잠기는 땅)은 제 이름을 들고 온다 — 없으면 '색면'이라고만 적힌다.
+      const quantity = desc ? desc.quantity : (sf && sf.quantity) || null;
+      const say = cloudYield.read({
+        star, drawing, cloudsOn: clouds.mode !== 'off', quantity, ko: i18n.ko,
+      });
+      // 윤곽선도 색면이 실제로 그려질 때만 — 안 보이는 색면 위에 나라 테두리만 남기지 않는다.
+      fieldOutlines.setVisible(star === 'field' && drawing);
+      fieldOutlines.tick();
+      const target = say.level === CLOUD_LEVEL.OFF ? 0 : say.level === CLOUD_LEVEL.DIM ? CLOUD_OPACITY_WIND_ONLY : CLOUD_OPACITY_FULL;
+      const u = clouds.uniforms.uOpacity;
+      if (u.value !== target) {
+        u.value += (target - u.value) * Math.min(1, dt * 5);
+        if (Math.abs(u.value - target) < 0.004) u.value = target;
+      }
+      // 구름 예보의 비·눈·뇌우 층(PrecipField)은 구름의 일부다 — 구름이 물러나면 같이 물러난다. 운영에서 기온을 켠 채 타임라인을 T+72h 로
+      // 밀었더니 구름은 꺼졌는데 필리핀 부근의 보라색 뇌우 표시만 색면 위에 남아 있었다. 비율은 구름과 같게(원래 값 × 구름의 비율).
+      const pu = clouds.precip && clouds.precip.uniforms.uOpacity;
+      if (pu) pu.value = PRECIP_OPACITY_FULL * (CLOUD_OPACITY_FULL > 0 ? u.value / CLOUD_OPACITY_FULL : 1);
+      const windOn = !!(liveLayers.layers.wind && liveLayers.layers.wind.on);
+      const speedOn = !!(liveLayers.layers.windgrid && liveLayers.layers.windgrid.on);
+      // 색면이 깔려 있으면(어느 것이든) 입자는 흰색이다 — 색은 밑의 색면과 범례가 말한다. 아무 색면도 없으면 입자가 풍속 구간색.
+      // ⚠️ 2026-09-20 정정 — '켜져 있으면'이 아니라 **구름·윤곽선과 같은 drawing** 을 본다. 예보 범위 밖이라 색면이 안 보이는데
+      //    입자만 흰색으로 남으면, 색을 말해 줄 것이 화면에 하나도 없는 채로 흰 입자만 흐른다.
+      windLayer.setColorMode(star === 'field' && drawing ? 'white' : 'speed');
+      // ⚠️ 색면은 한 번에 하나다(toggleFieldLayer). 그래서 기온을 보는 중에 바람을 켜면서 풍속 색면을 자동으로 깔면
+      //    **기온이 조용히 꺼진다.** 지시서 W3: '입자 토글은 기온·강수 색면 위에서도 유지된다 — 색면 라디오와 무관한 공용 오버레이'.
+      //    그러니 자동으로 까는 것은 **깔린 색면이 하나도 없을 때뿐**이다. 기온 위에서는 흰 입자가 흐른다.
+      // ⚠️ 배타 묶음과 **같은 넓이**로 물어야 한다(2026-09-21 반박 검증). isFieldLayerId 는 FIELD_DESCRIPTORS 만 보는데
+      //    잠기는 땅(slr)도 같은 묶음이다 — 안 세면 바람을 켤 때 풍속 색면이 자동으로 깔리며 그것을 조용히 내린다.
+      const otherFieldOn = liveLayers.activeIds().some((id) => id !== 'windgrid' && (isFieldLayerId(id) || id === 'slr'));
+      if (windOn !== this.windWasOn && !this.busy) {
+        this.windWasOn = windOn;
+        const want = windOn ? (!speedOn && !otherFieldOn) : (this.autoSpeed && speedOn);
+        if (want) {
+          this.busy = true;
+          this.autoSpeed = windOn;
+          Promise.resolve(liveLayers.toggle('windgrid')).catch(() => {}).then(() => { this.busy = false; shell.refreshFlyout(); });
+        } else if (!windOn) {
+          this.autoSpeed = false;
+        }
+      }
+    },
+  };
+  window.__earthusWind = windLayer;   // 콘솔 확인용: __earthusWind.state()
+  window.__earthusClouds = starLayers;   // 콘솔 확인용: __earthusClouds.note()
+  /* 구름 출처 줄 + 색면이 구름에게 한 일 한 줄. #cloud-note 는 CloudManager 가 제 글로 덮어쓰는 자리라
+     거기에 덧쓰지 않는다 — **읽는 자리**에서 한 줄을 붙인다(읽는 자리가 셋이라 한 벌로 묶는다). */
+  const cloudNoteText = () => {
+    const base = (document.getElementById('cloud-note')?.textContent || '').trim();
+    const say = starLayers.note();
+    return say ? `${base}${base ? ' · ' : ''}${say}` : base;
+  };
+  // 지구 위 실측 숫자 — 보임은 tick 에서 기온 레이어('tempgrid')의 켜짐만 읽어 넘기고, '지금'인지는 부품이 시간 버스에서 직접 듣는다.
+  // 지평선 흐림은 뉴스 네모칸의 식(newsChipOpacity)을 그대로 넣는다 — 같은 식을 두 벌로 만들지 않는다.
+  obsLabels = createObsLabels({
+    THREE, scene, timeBus,
+    getData: () => surfaceObs.both(),
+    surfR: (la, lo) => liveLayers.surfR(la, lo, 0.001),
+    horizonOpacity: newsChipOpacity,
+    isPhone: () => isMobileUA,
+    getExagger: () => uniforms.uExagger.value,
+  });
   seafloor = new SeaFloor(scene, heightAtJs, dataBadge);
   travel = new TravelScene(scene, heightAtJs, () => uniforms.uExagger.value);
   // 확장 화면(LAB·취미)이 쓰는 카메라 이동 — askTools.flyTo 와 같은 식 (경도는 가까운 쪽으로)
@@ -3167,6 +3305,13 @@ async function main() {
   window.__earthusVol = cloudVol;
   const aethLink = new AetherusLink(scene);
   window.__earthusAeth = aethLink;
+  /* 궤도 인텔리전스의 배지 — 코어의 판정(freshness)을 v2 배지 어휘로 옮긴다.
+     2026-09-20: 카드 배지가 'LIVE' 로 못박혀 있었다. 운영 스냅샷이 16일 묵어 코어가 지구에
+     0기를 그리는 동안에도 배지는 LIVE 였다. 새 어휘는 만들지 않는다 — STALE('이전 자료')·
+     UNAVAILABLE('확인 불가')은 engine-bridge 에 이미 있는 낱말이다.
+     자료를 아직 안 받았으면 null 을 준다(메뉴의 고정 배지를 그대로 둔다 — 모르는 상태를 지어내지 않는다). */
+  const AETH_ORBIT_BADGE = { FRESH: 'LIVE', STALE: 'STALE', EMPTY: 'UNAVAILABLE' };
+  const aethOrbitBadge = () => AETH_ORBIT_BADGE[aethLink.core.freshness()] || null;
 
   // ---- 정본 엔진 런타임 등록 (core/engine-runtime.js 계약) ----------------
   // 기존 모듈은 고치지 않고 어댑터로 감싼다. 런타임이 ResourceScope·품질 전파·측정을 맡는다.
@@ -3263,7 +3408,7 @@ async function main() {
     'ocean/khoasl245': ['khoasl245', '우리 바다 해수면 전망 SSP2-4.5'],
     'ocean/khoasl370': ['khoasl370', '우리 바다 해수면 전망 SSP3-7.0'],
     'ocean/khoasl585': ['khoasl585', '우리 바다 해수면 전망 SSP5-8.5'],
-    'ocean/khoaflood': ['khoaflood', '연안 침수 범위'],
+    'ocean/khoaflood': ['khoaflood', '연안 침수 예상도 — 가정 상황'],
     'hazards/lightning': ['lightning', '낙뢰 (최근 60분)'],
     'hazards/wildfire': ['wildfire', '산불 위험지수'],
     'weather/warn': ['warn', '기상 특보'],
@@ -3271,10 +3416,11 @@ async function main() {
     'people/seoul': ['seoul', '서울 실시간 인구'],
     'hazards/tyoff': ['tyoff', '태풍 공식 트랙'],
     'weather/airq': ['airq', '대기질 (에어코리아)'],
-    'weather/wind': ['wind', '바람 관측'],
+    // 2026-09-20 W3: '바람 관측'(관측소 막대기)이었다. 같은 id 가 이제 GFS 10 m 바람 입자다 — id 는 그대로, 이름만 사실대로.
+    'weather/wind': ['wind', '바람 흐름 · GFS 10 m'],
     'space/launch': ['launch', '발사 일정'],
     'ocean/kmasea': ['kmasea', '해상 관측망'],
-    'ocean/slr': ['slr', '해수면 상승 전망 2100'],
+    'ocean/slr': ['slr', '해수면 상승 전망'],
     'people/news': ['news', '지역 뉴스'],
     'people/pop': ['pop', '국가 인구'],
     'ocean/sstfield': ['sstfield', '해수면 온도'],
@@ -3389,29 +3535,12 @@ async function main() {
      규율: 자료 없음 = '판단 불가'(안전 아님) · 시각엔 폭(±6h) · 확률 % 없음 · 없는 항목은 화면에서 뺀다. */
   const forMe = { loading: false, data: null, cards: null, error: null, at: null, view: {}, focusId: null, intel: {}, tracked: new Set(), extraCards: {} };
   const fetchS3T = (path, ms = 15000) => Promise.race([fetchS3(path), new Promise((res) => setTimeout(() => res(null), ms))]);
-  /* 파고 시간별 — Open-Meteo Marine hourly, **내 동네 1점**, 1시간 캐시, 지점당 1요청, 429 면 15분 뒤 재시도 (STEP 3).
-     v2 는 이미 클릭 지점마다 같은 API 를 부른다(marineSelect). 여기는 동네가 바뀌거나 1시간이 지나야만 한 번 더 부른다. */
-  const WAVE_HOURLY_KEY = 'earthus.forme.wavehourly';
-  const loadWaveHourly = async (p) => {
-    const key = `${(+p.lat).toFixed(2)},${(+p.lon).toFixed(2)}`;
-    let cache = null; try { cache = JSON.parse(localStorage.getItem(WAVE_HOURLY_KEY) || 'null'); } catch (_) { cache = null; }
-    const now = Date.now();
-    const same = cache && cache.key === key;
-    if (same && cache.json && now - cache.at < 3600_000) return waveHourlySeries(cache.json);
-    if (same && cache.backoffUntil && now < cache.backoffUntil) return cache.json ? waveHourlySeries(cache.json) : null;
-    try {
-      const r = await fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${(+p.lat).toFixed(3)}&longitude=${(+p.lon).toFixed(3)}&hourly=wave_height,swell_wave_height,wind_wave_height,wave_period&forecast_days=3&timezone=UTC`);
-      if (r.status === 429) {
-        try { localStorage.setItem(WAVE_HOURLY_KEY, JSON.stringify({ key, at: same ? cache.at : 0, json: same ? cache.json : null, backoffUntil: now + 15 * 60_000 })); } catch (_) { /* 저장 불가 */ }
-        return same && cache.json ? waveHourlySeries(cache.json) : null;
-      }
-      if (!r.ok) return null;
-      const json = await r.json();
-      const series = waveHourlySeries(json);
-      if (series) { try { localStorage.setItem(WAVE_HOURLY_KEY, JSON.stringify({ key, at: now, json })); } catch (_) { /* 저장 불가 */ } }
-      return series;
-    } catch (_) { return null; }
-  };
+  /* 시간별 파고(내 동네 1점)는 없앴다 — 2026-09-20 지시서 W2.
+     여기 있던 loadWaveHourly 는 marine-api.open-meteo.com 의 3일 hourly 를 브라우저가 직접 불렀다.
+     ① 유료 서비스가 비상업 API 를 사용자 브라우저로 때리는 자리였고 ② 우리 쪽에 대신 쓸 자료가 없다:
+     aws/marine-grid 는 같은 제공기관을 `current=` 로 부르므로 ocean/marine*.json 은 **한 시각**이다.
+     그래서 파고 카드의 WHEN('언제부터 언제까지 · 최대 몇 m')이 사라진다 — 0 이나 근사치로 채우지 않는다.
+     되살리려면 수집기가 hourly 를 받아 시계열을 싣는 것이 먼저다. */
   const loadForMe = async (p) => {
     forMe.loading = true; forMe.error = null;
     try {
@@ -3423,7 +3552,7 @@ async function main() {
       const data = {}; names.forEach((k, i) => { data[k] = got[i]; });
       // 동네예보(785 KB)는 태풍이 있을 때만 — 강풍 시각(WHY)에만 쓴다
       data.fcst = (data.official?.storms || []).length ? await fetchS3T('/wind/kma-fcst.json', 20000) : null;
-      data.waveHourly = await loadWaveHourly(p);   // 내 동네 1점 시간별 파고 (1시간 캐시)
+      data.waveHourly = null;   // 시간별 파고는 우리 자료에 없다 — 위 주석(2026-09-20 W2)
       if (myEarth.place !== p) return;
       forMe.data = data;
       forMe.extraCards = {};
@@ -3467,10 +3596,13 @@ async function main() {
   const forMeStateLine = (c) => c.state === 'signal' ? '🟠 영향 가능성 있음' : c.state === 'quiet' ? '🟢 지금은 영향 신호 없음' : '⚪ 판단 불가';
   const forMeWhenHtml = (w, c) => {
     if (c.kind === 'wave') {
-      // 파고는 시간별 예보(내 동네 1점)로 창을 만든다 — 태풍의 강풍역 문구를 쓰지 않는다
+      // 파고는 시간별 예보(내 동네 1점)로 창을 만든다 — 태풍의 강풍역 문구를 쓰지 않는다.
+      // ⚠️ (2026-09-20 W2) 아래 두 줄은 **지금은 닿지 않는다**: 시간별 파고를 브라우저가 직접 부르던 길을
+      //    걷어냈고 우리 수집기는 한 시각만 받는다(loadForMe 의 waveHourly 주석). 수집기가 시계열을 실으면
+      //    그대로 되살아난다 — 그래서 지우지 않고 둔다.
       if (w) return `${w.startNow ? '지금부터' : `${fmtKst(w.startMs)} KST`} ~ ${w.openEnd ? '예보 끝(3일) 이후 미확정' : `${fmtKst(w.endMs)} KST`}<br/>최대 <b>${w.peakWave.toFixed(1)} m · ${fmtKst(w.peakMs)} KST</b> (시간별 1점 예보, 폭 ±1h)<div class="forme-src">${escUI(w.agencyKo || '')} · 지금 격자값과 예보 1점은 다른 자료라 값이 다를 수 있습니다</div>`;
       if (c.facts && c.facts.maxWave != null) return `3일 내 임계 초과 예보 없음 · 최대 ${(+c.facts.maxWave).toFixed(1)} m`;
-      return '시간별 예보 응답 없음 — 지금 격자값만으로 판정';
+      return '시간별 파고가 우리 자료에 없습니다 — 지금 격자값만으로 판정합니다(언제부터·얼마나는 말하지 않습니다)';
     }
     if (c.kind === 'quake') return `이미 발생한 사건 — 시각은 발생 시각(${c.basis && c.basis.issueMs ? fmtKst(c.basis.issueMs) + ' KST' : '—'})`;
     if (c.kind === 'tsunami') return '도달시간은 INTELLIGENCE 의 EARTHUS 추정(SIMULATION_ONLY)에만 있습니다';
@@ -3656,7 +3788,7 @@ async function main() {
       const [warn, air, aws, stn, tsuIdx] = await Promise.all([
         fetchS3('/events/kma-warn.json'),
         fetchS3('/wind/korea-air-obs.json'),
-        fetchS3('/wind/kma-aws.json'),
+        surfaceObs.doc('aws').catch(() => null),   // 공용 저장소 — 바람·관측 숫자가 이미 받아 뒀으면 다시 받지 않는다
         myEarth.stations ? Promise.resolve(null) : fetchS3('/events/kma-warn-stations.json'),
         // FOR ME × 시뮬레이션(2026-09-20) — 쓰나미 도달시간 색인(작다, 최근 30일). 실패해도 감시 판정은 그대로 돈다.
         fetchS3('/ocean/tsunami-eta.json').catch(() => null),
@@ -3758,7 +3890,7 @@ async function main() {
     const envCells = [];
     if (d.air && d.air.km < 400) {
       const g = AIR_GRADE_KO[d.air.it.grade] || ['—', '#7f95a8'];
-      envCells.push(`<div class="me-env"><span class="k">💨 대기질<small>${escUI(d.air.it.name)} ${d.air.km}km</small></span><b style="color:${g[1]}">${g[0]} · PM2.5 ${d.air.it.pm25 ?? '—'}㎡</b></div>`);
+      envCells.push(`<div class="me-env"><span class="k">💨 대기질<small>${escUI(d.air.it.name)} ${d.air.km}km</small></span><b style="color:${g[1]}">${g[0]} · PM2.5 ${d.air.it.pm25 ?? '—'} ㎍/㎥</b></div>`);
     } else {
       envCells.push('<div class="me-env"><span class="k">💨 대기질<small>한국 관측망</small></span><b class="na">주변 측정소 없음</b></div>');
     }
@@ -3815,7 +3947,7 @@ async function main() {
       sunHtml,
       terrainHtml: `과장 ${uniforms.uExagger.value}× · 음영 ${uniforms.uShade.value.toFixed(1)}${uniforms.uIsobath.value > 0.5 ? ` · 등심선 ${uniforms.uIsobathStep.value.toLocaleString('ko-KR')} m` : ''}<br/>전역 z4 + 지역 z5~z9 스트리밍 (AWS Terrarium · Esri 위성)${nightLightSrc ? `<br/>밤면 불빛 · ${nightLightSrc}` : ''}`,
       cloudBadge: cloudBadgeFor(clouds.mode),
-      cloudHtml: document.getElementById('cloud-note').textContent,
+      cloudHtml: cloudNoteText(),                                   // 출처 + 색면이 구름에게 한 일(숨겼다 · 손이 이겼다)
     });
     html += lockedNote || seaPoint ? `<details class="context-details"><summary>배경 지구 · 태양 · 구름</summary>${contextCards}</details>` : contextCards;
     html += '<details class="context-details"><summary>자료 연결·화면 성능 상세</summary>';
@@ -3851,7 +3983,7 @@ async function main() {
       const sel = travel && travel.selected;
       return { on, note: on && sel ? `선택: ${sel.nameKo}` : undefined };
     }
-    const cloudNote = () => document.getElementById('cloud-note').textContent;
+    const cloudNote = () => cloudNoteText();                        // 메뉴 줄 옆 — 구름이 물러났으면 그 줄이 말한다
     if (sid === 'weather') {
       if (id === 'cloud-off') return { on: clouds.mode === 'off' };
       if (id === 'cloud-obs') return { on: clouds.mode === 'obs', note: cloudNote() };
@@ -3911,7 +4043,14 @@ async function main() {
     if (live) return liveLayers.state(live[0]);
     if (sid === 'space' && id === 'sats') return satLayer.state('core');
     if (sid === 'space' && id === 'starlink') return satLayer.state('starlink');
-    if (sid === 'space' && id === 'aeth-orbit') return aethLink.state();
+    if (sid === 'space' && id === 'aeth-orbit') {
+      /* 메뉴 줄의 배지는 고정 문자열(LIVE)이다. 코어가 자료를 받아 묵었다고 판정한 뒤에는
+         그 판정으로 낮춘다 — 셸이 st.badge 를 고정 배지보다 먼저 쓴다(ui-shell rowBadge).
+         한 번도 안 켠 동안은 자료를 안 받았으니 알 수 없다 — 고정 배지가 그대로 나간다. */
+      const st = aethLink.state();
+      const badge = aethOrbitBadge();
+      return badge && badge !== 'LIVE' ? { ...st, badge } : st;
+    }
     return {};
   };
 
@@ -4056,6 +4195,16 @@ async function main() {
     shell.openIntel();
     shell.renderIntel();
   };
+  // 2026-09-23 PD — 여는 것만 뺀 showNote. 메뉴에서 색면(기온 등)을 고르면 **지구만 바뀐다**: 카드는 세워 두되 시트는 열지 않는다.
+  //   예전에는 고르는 순간 시트가 half(31vh)로 올라와 지구 아래쪽을 덮었다 — 색이 바뀌는 순간(① 극적으로 보인다)을 가렸다.
+  //   탭 의도('intent'/'follow') 체계는 그대로 쓴다(INTEGRATION-3 §11). 열려 있을 때만 다시 그린다(shell.renderIntel).
+  // index.html 의 좁은 화면 블록과 **같은 질의** — 둘이 갈리면 가로 폰에서 한쪽만 폰으로 본다.
+  const PHONE_MQ = '(max-width: 720px), (max-height: 520px) and (pointer: coarse) and (orientation: landscape)';
+  const stageNote = (title, body, badge, source) => {
+    lockedNote = { title, body, badge };
+    shell.showTab('now', source);
+    shell.renderIntel();
+  };
 
   // 인구 조각 국가 칩 — 격자를 켜고 그 나라가 화면을 채우는 거리로 날아간다.
   // 칩 진입도 국가 문맥 선택이다 — 자동 조각 소유권을 남겨 문맥 종료에 같이 꺼지게 한다.
@@ -4182,10 +4331,24 @@ async function main() {
       // INTEGRATION-3 §11 — 첫 카드는 "사용자가 이 자료를 골랐다"는 뜻이니 탭 의도를 세운다.
       // 그 뒤 자료가 도착해 카드를 갈아 끼우는 것은 의도가 아니다. 그걸 의도로 취급했기 때문에
       // 보고서에서 '분석'으로 들어와도 로딩이 끝나는 순간 '선택 자료'로 끌려갔다.
+      // 2026-09-23 PD — 색면을 고르면 지구만 바뀐다(창은 지역을 눌렀을 때 뜬다 — 지점 카드). 열려 있던 시트는 닫고,
+      //   폰에서는 메뉴 서랍도 닫는다 — 서랍(화면의 55%)이 남아 있으면 바뀐 색도, 누를 자리도 가린다
+      //   (DEV-DIRECTIVE §7.2 '메뉴를 고르면 서랍이 닫히고 지구가 최대 영역을 되찾는다' — 미이행 HIGH 였다).
+      //   ⚠️ 켤 때만이다 — 반박 검증: 끌 때도 돌아서 '현재 켜진 자료 · 끄기'를 누르면 보던 시트가 닫혔다.
+      //   ⚠️ 폰 판정은 index.html 의 폰 블록과 같은 질의여야 한다 — 가로 폰(높이 ≤520)에서 서랍이 안 닫혔다.
+      const liveId = LIVE_LAYER_KEYS[key] && LIVE_LAYER_KEYS[key][0];
+      const quiet = !!liveId && isFieldLayerId(liveId) && !liveLayers.state(liveId).on;
+      if (quiet) {
+        pointCard = null;
+        if (shell.isIntelOpen()) shell.closeIntel();
+        if (window.matchMedia && window.matchMedia(PHONE_MQ).matches) shell.closeFlyout();
+      }
       let noted = false;
       const note = (...args) => {
         if (!current()) return;
-        showNote(args[0], args[1], args[2], noted ? 'follow' : 'intent');
+        // 못 불러왔다는 말(UNAVAILABLE)은 색면이어도 열어서 보인다 — 조용히 실패한 것처럼 보이면 안 된다.
+        if (quiet && args[2] !== 'UNAVAILABLE') stageNote(args[0], args[1], args[2], noted ? 'follow' : 'intent');
+        else showNote(args[0], args[1], args[2], noted ? 'follow' : 'intent');
         noted = true;
       };
       note(layer.name, '선택한 자료를 여는 중…', 'LOADING');
@@ -4285,7 +4448,8 @@ async function main() {
         aethLink.toggle().then((st) => {
           if(!current())return;
           shell.refreshFlyout();
-          if (st.on) note('궤도 인텔리전스', aethLink.card(), 'LIVE');
+          // 배지는 코어의 판정을 따른다 — 'LIVE' 로 못박혀 있어 16일 묵은 스냅샷(지구에 0기)에도 LIVE 였다(2026-09-20).
+          if (st.on) note('궤도 인텔리전스', aethLink.card(), aethOrbitBadge() || 'LIVE');
           else if (st.error) note('궤도 인텔리전스', `AETHERUS 과학 API에 연결하지 못했습니다 — 위치·근접사건을 생성하지 않습니다.<br/>${st.error}`, 'UNAVAILABLE');
           else { lockedNote = null; shell.renderIntel(); }
         });
@@ -4365,10 +4529,11 @@ async function main() {
       }
       const setCloud = (m) => {
         markCloudBtn(m);
+        cloudYield.handPicked();      // 메뉴에서 손으로 고른 구름 — 색면이 켜져 있어도 이 손이 이긴다(죽은 토글 금지)
         clouds.set(m).then((ok) => {
           if(!current())return;
           if (!ok) markCloudBtn('off');
-          note(layer.name, document.getElementById('cloud-note').textContent, m==='gfs'?'MODEL_SIGNAL':m==='off'?'DERIVED':'OBSERVED');
+          note(layer.name, cloudNoteText(), m==='gfs'?'MODEL_SIGNAL':m==='off'?'DERIVED':'OBSERVED');
           shell.renderIntel();
           shell.refreshFlyout();
         });
@@ -4540,8 +4705,10 @@ async function main() {
       }
     },
     getNow: getNowHtml,
+    // 지점 카드(2026-09-23) — ui-shell renderIntel 의 'point' 갈래가 부른다.
+    getPoint: getPointHtml,
     // 추천 질문의 입력 상태 — 파도 계산은 선택한 바다 지점값을 먹는다(없으면 not_evaluable).
-    hasSeaInput: () => !!(seaPoint && seaPoint.marine),
+    hasSeaInput: () => !!(seaPoint && seaPoint.grid),
     // 지도 직접 클릭 경로의 질문 블록 조건 — 현상 선택 없이도 문맥이 있으면 질문이 붙는다.
     hasSeaPoint: () => !!seaPoint,
     hasCountryContext: () => !!(focus.selected && countryClick),
@@ -4575,7 +4742,7 @@ async function main() {
             <div class="paysub">계산이 없다는 것은 위험이 없다는 뜻이 아닙니다 · SIMULATION_ONLY</div>
           </div></div>`;
       }
-      const hasSea = seaPoint && seaPoint.marine;
+      const hasSea = seaPoint && seaPoint.grid;
       const loc = hasSea ? seaPoint : { lat: 34.2, lon: 128.9 };
       const base = scenarioBaseline();
       let head = '';
@@ -4609,6 +4776,24 @@ async function main() {
         </div></div>`;
     },
     onAction: (action, ds, value) => {
+      // 색면 카드의 단추(등온선 켬/끔 · 2°C|5°C) — js/field-layer.js 가 셰이더를 바꾸고 카드 글을 제자리에서 갈아 끼운다(provideField 의 onCard).
+      if (typeof action === 'string' && action.startsWith('field-')) { liveLayers.fieldAction(action, ds); return; }
+      // 지점 카드의 [시뮬레이션 →] — 그 현상에 시뮬레이션 능력이 있을 때만 이 단추가 선다(없으면 sim-why 가 이유를 말한다).
+      if (action === 'point-sim') { shell.openIntel('scenario'); return; }
+      // 지점 카드의 [표시 설정] — 이 색면의 조작(등치선·간격·강수 누적·H/L)이 든 카드를 '선택 자료'로 연다.
+      //   메뉴에서 색면을 고를 때 시트를 열지 않게 되면서, 그 조작에 닿는 길이 이 단추다(반박 검증 2026-09-23).
+      if (action === 'point-field-settings') {
+        const lid = ds.layer;
+        const d = FIELD_DESCRIPTORS[lid];
+        const f = activeField(liveLayers, lid);
+        if (d && f) {
+          lockedNote = { title: (f.desc.title || d.title)[i18n.ko ? 'ko' : 'en'], body: liveLayers.card(lid), badge: d.badge || 'MODEL' };
+          shell.openIntel('now');
+        }
+        return;
+      }
+      // 잠기는 땅 카드의 단추(시나리오 4 × 연도 3) — js/flood-overlay.js 가 상승폭 격자를 다시 굽고 카드 글을 제자리에서 갈아 끼운다.
+      if (typeof action === 'string' && action.startsWith('slr-')) { liveLayers.slrAction(action, ds); shell.refreshFlyout(); return; }
       // 확장 화면(LAB·취미) 카드의 버튼 — data-action="ext:…" 만 여기서 받는다
       const ex = extScene ? extScene.handleAction(action, ds, value) : null;
       if (ex) {
@@ -4684,6 +4869,14 @@ async function main() {
         showNote('해양 모델과 부이 관측',sea+'<p>부이 관측을 불러오는 중…</p>','LOADING');
         loaded.then(st=>{if(current())showNote('해양 모델과 부이 관측',sea+liveLayers.card('buoys'),st.on?'DERIVED':'UNAVAILABLE');shell.refreshFlyout();});return;
       }
+      // 바람 입자 강도 3단(약 ⅓ · 중 ⅔ · 전부) — 실제 입자 수가 바뀐다. lockedNote.body 는 글자 사본이라
+      // 그대로 두면 다시 그릴 때 옛 칩이 켜진 채 돌아온다 — 카드의 바람 부분만 지금 상태로 갈아 끼운다(wind-layer.js recard).
+      if (action === 'wind-intensity') {
+        windLayer.setIntensity(Number(ds.k));
+        if (lockedNote) { lockedNote.body = windLayer.recard(lockedNote.body); shell.renderIntel(); }
+        shell.refreshFlyout();
+        return;
+      }
       if (action === 'loss-year') {
         // 슬라이더는 기하를 다시 만들지 않는다 — 셰이더 유니폼만 바뀐다.
         const y = liveLayers.setLossYear(parseInt(value, 10));
@@ -4708,7 +4901,7 @@ async function main() {
         }, 320);
         return;
       }
-      if (action === 'sim-now' && seaPoint && seaPoint.marine) {
+      if (action === 'sim-now' && seaPoint && seaPoint.grid) {
         openWaveNow();
       } else if (action === 'intel-q') {
         // Intelligence 5절 하나 — 이미 받은 문서의 intel(v1)을 카드로 연다. 계산·요청 없음(계약 §C-0).
@@ -4724,7 +4917,7 @@ async function main() {
         // 여기 오는 질문은 레지스트리가 available 로 표시한 것뿐이다 — 없는 엔진을
         // 부르는 버튼은 애초에 그리지 않는다(sim-why 로 이유만 말한다).
         if (ds.sim === 'wave-now') {
-          if (seaPoint && seaPoint.marine) openWaveNow();
+          if (seaPoint && seaPoint.grid) openWaveNow();
           else showNote('파도 시뮬레이션', `<div class="card"><div class="card-h">파도 시뮬레이션 ${dataBadge('INSUFFICIENT_DATA')}</div><div class="card-b">먼저 바다 지점을 선택하세요 — 바다를 클릭하면 그 지점의 해양 모델 값을 조회해 계산에 넣습니다.</div></div>`, 'INSUFFICIENT_DATA');
         } else if (ds.sim === 'wave-typhoon' || ds.sim === 'tsunami-reach') {
           // 계약 §I P1 요금 정정 — PRO 는 쓰나미 계산(기록 남는 SIMULATION) 한 칸만 막는다. 태풍·빙하호 등
@@ -4825,9 +5018,16 @@ async function main() {
         shell.renderIntel();
       } else if (action === 'flood-district' && ds.sgg) {
         // 시군구 침수 폴리곤을 받아 얹고, 그 위로 비스듬히 내려간다
-        showNote('연안 침수 범위', `${ds.sgg} 침수 예상도를 불러오는 중…`, 'OFFICIAL_OBSERVATION');
+        // 제목은 면 위에 걸리는 머리글이다 — '연안 침수 범위'라고 적으면 지금 잠긴 범위로 읽힌다.
+        // 배지도 관측(OFFICIAL_OBSERVATION)이 아니다: 기관이 미리 산출한 시나리오다.
+        // 이름과 용량은 색인에서 받는다 — 지구에서 원반을 누른 길과 이 카드 단추로 들어온 길이 **같은 글**을 쓴다.
+        // (2026-09-21 반박 검증: 주 경로인 원반 쪽은 시군구 코드 '46770' 만 찍고 33 MB 고지도 없었다.)
+        const fdNote = liveLayers.floodDistrictNotes(ds.sgg);
+        showNote('연안 침수 예상도 — 가정 상황', escUI(fdNote.loading), 'PROVIDER_FORECAST');
         liveLayers.loadFloodDistrict(ds.sgg).then((info) => {
-          if (!info) { showNote('연안 침수 범위', '침수 자료를 불러오지 못했습니다 — 그리지 않습니다.', 'UNAVAILABLE'); return; }
+          // 더 나중에 누른 시군구가 이미 앞서 있다 — 카메라도 카드도 그쪽 것이다. 이것은 실패가 아니라 물러남이다.
+          if (info && info.stale) return;
+          if (!info) { showNote('연안 침수 예상도 — 가정 상황', escUI(fdNote.fail), 'UNAVAILABLE'); return; }
           const [w, sth, e2, n] = info.bbox;
           const lat = (sth + n) / 2;
           const lon = (w + e2) / 2;
@@ -4841,7 +5041,13 @@ async function main() {
           orbit.glide = 1.2;
           orbit.autoRotate = false;
           if (map.active) map.exit();
-          showNote('연안 침수 범위', liveLayers.floodDistrictCardHtml() + '<br/>' + liveLayers.card('khoaflood'), 'PROVIDER_FORECAST');
+          showNote('연안 침수 예상도 — 가정 상황', liveLayers.floodDistrictCardHtml() + '<br/>' + liveLayers.card('khoaflood'), 'PROVIDER_FORECAST');
+        }).catch((e) => {
+          // ⚠️ 2026-09-21 반박 검증: 여기에 .catch 가 없어서 거부가 unhandledrejection → showFatal → #load-err 로 갔는데,
+          //    그 요소의 부모 #loading 은 .done(opacity:0) 이라 **글자는 적히지만 아무도 못 본다.**
+          //    카드는 '…불러오는 중…' 에서 영영 안 바뀌었다. 실패는 그 카드에 적는다.
+          showNote('연안 침수 예상도 — 가정 상황',
+            `${escUI(fdNote.fail)}<br/>${escUI((e && e.message) || e)}`, 'UNAVAILABLE');
         });
       } else if (action === 'feed-follow' && ds.id) {
         usage.track('event.follow');
@@ -4895,6 +5101,8 @@ async function main() {
       if (ms !== 0) clouds.prefetchFrames();
       clouds.setForecastOffset(ms);
       liveLayers.setTimeOffset(ms);
+      // 새 레이어는 여기에 줄을 더하지 않는다 — 시간 버스를 듣는다(time-bus.js). 줄을 하나 빠뜨리면 그 메뉴만 '지금'에 멈춘다.
+      timeBus.set(ms);
       syncCloudToTime(ms);
     },
     // 스트립 문구는 실제 상태에서 만든다. 예전엔 하드코딩이라
@@ -4931,8 +5139,33 @@ async function main() {
   // ---------------------------------------------------------------------------
   // 언어는 i18n 이 정한다 — 기기 언어는 최초 1회 기본값, 사용자가 바꾸면 그 선택이 이긴다.
   const askLang = i18n.lang;
+  /* 레이어 표는 **복합키**(scene/layer)다. 맨 id 로 만들었더니 같은 id 가 두 씬에 있을 때
+     뒤에 오는 씬이 앞을 덮어, 앞 레이어가 이 표에서 통째로 사라졌다 —
+     ocean/surf(해변 271곳·낚시터 946곳 · OBSERVED)가 내린 화면 hobby/surf 에 덮였다
+     (SCENES 순서가 ocean → hobby 라 마지막이 이긴다). 그래서 ocean/surf 를 켜 놓고 물어도
+     스냅샷에 안 들어갔고, openCard('surf') 는 '서핑 — 내린 화면' 제목 아래 해변 목록을 냈다.
+     레지스트리·i18n·ui-shell 이 2026-09 에 같은 이유로 복합키로 옮겼다 — 여기가 남아 있었다. */
   const layerIndex = new Map();
-  for (const sc of SCENES) for (const l of (sc.layers || [])) layerIndex.set(l.id, { sid: sc.id, l });
+  for (const sc of SCENES) for (const l of (sc.layers || [])) layerIndex.set(`${sc.id}/${l.id}`, { sid: sc.id, l });
+  /* 모델에게 주는 이름이 복합키로 바뀌었다(스냅샷의 id 가 곧 도구의 id 다 — aws/earthus-llm
+     handler.py 의 규약도 "id 는 스냅샷의 레이어 id"이고 목록을 따로 박아 두지 않는다).
+     그래도 모델이 맨 id 로 부를 수 있다. 받는 쪽 규칙은 셋이다:
+       ① 복합키가 정확히 맞으면 그것.
+       ② 맨 id 인데 그 id 를 쓰는 씬이 **하나뿐**이면 그것 — 고를 것이 하나라 짐작이 아니다.
+       ③ 맨 id 가 두 씬에 걸치면(surf · vessel) 고르지 않는다. 마지막 승자를 몰래 집던 자리가
+          바로 이 결함이었다. null 을 주면 ask-earth.js 가 '버린 것'으로 적어 화면에 남긴다. */
+  const bareIndex = new Map();
+  for (const key of layerIndex.keys()) {
+    const bare = key.slice(key.indexOf('/') + 1);
+    if (!bareIndex.has(bare)) bareIndex.set(bare, []);
+    bareIndex.get(bare).push(key);
+  }
+  const askLayer = (id) => {
+    const key = String(id || '');
+    if (layerIndex.has(key)) return layerIndex.get(key);
+    const same = bareIndex.get(key);
+    return (same && same.length === 1) ? layerIndex.get(same[0]) : null;
+  };
   const layerOn = (e) => {
     try { return !!(shellHooks.getLayerState(e.sid, e.l) || {}).on; } catch (err) { return false; }
   };
@@ -4940,12 +5173,14 @@ async function main() {
   const askSnapshot = () => {
     const layers = [];
     const available = [];   // 꺼져 있는 레이어 — 모델이 "이걸 켜면 답할 수 있다"고 제안할 때만 쓴다(값은 싣지 않는다)
-    for (const [id, e] of layerIndex) {
+    // 여기 싣는 id 가 곧 모델이 도구에 넣을 id 다(handler.py: "id 는 스냅샷의 레이어 id").
+    // 복합키를 실어야 같은 맨 id 를 쓰는 두 화면이 서로를 가리지 않는다.
+    for (const [key, e] of layerIndex) {
       if (e.l.state === 'LOCKED') continue;
       let st = {};
       try { st = shellHooks.getLayerState(e.sid, e.l) || {}; } catch (err) { st = {}; }
-      if (!st.on) { if (available.length < 40) available.push({ id, label: e.l.name, badge: e.l.state }); continue; }
-      layers.push({ id, label: e.l.name, badge: e.l.state, source: e.l.src, value: st.note });
+      if (!st.on) { if (available.length < 40) available.push({ id: key, label: e.l.name, badge: e.l.state }); continue; }
+      layers.push({ id: key, label: e.l.name, badge: e.l.state, source: e.l.src, value: st.note });
     }
     const lat = THREE.MathUtils.radToDeg(orbit.targetPitch);
     const lon = ((THREE.MathUtils.radToDeg(orbit.targetYaw) + 540) % 360) - 180;
@@ -4989,8 +5224,8 @@ async function main() {
     };
   };
   const askTools = {
-    showLayer: (id) => { const e = layerIndex.get(id); if (e && !layerOn(e)) shellHooks.onLayerAction(e.sid, e.l); },
-    hideLayer: (id) => { const e = layerIndex.get(id); if (e && layerOn(e)) shellHooks.onLayerAction(e.sid, e.l); },
+    showLayer: (id) => { const e = askLayer(id); if (e && !layerOn(e)) shellHooks.onLayerAction(e.sid, e.l); },
+    hideLayer: (id) => { const e = askLayer(id); if (e && layerOn(e)) shellHooks.onLayerAction(e.sid, e.l); },
     flyTo: (lat, lon, altKm) => {
       orbit.targetPitch = THREE.MathUtils.degToRad(lat);
       // 경도는 가까운 쪽으로 돈다 — 안 그러면 지구를 한 바퀴 되감는다.
@@ -5002,9 +5237,19 @@ async function main() {
       orbit.autoRotate = false;
     },
     openCard: (id) => {
-      const e = layerIndex.get(id);
+      const e = askLayer(id);
       if (!e) return;
-      const card = liveLayers.card(id);
+      /* ⚠️ liveLayers 의 카드 표도 맨 id 다(live-layers.js card(id) → this.layers[id]) — 그리고
+         확장 화면(LAB·취미)은 거기 없다. 그래서 hobby/surf 의 카드를 물으면 같은 맨 id 를 쓰는
+         ocean/surf(해변 271곳)의 카드가 남의 제목 아래 나왔다. 확장 화면은 liveLayers 에 묻지 않는다 —
+         지금 켜져 있으면 그 화면이 쓴 카드를 그대로, 아니면 출처만 적는다(없는 값을 지어내지 않는다). */
+      if (e.sid === 'lab' || e.sid === 'hobby') {
+        const live = !!extScene && extScene.active === `${e.sid}/${e.l.id}`;
+        if (live) { showNote(extScene.title, extScene.card(), extScene.badge); extScene.afterRender(); }
+        else showNote(e.l.name, `출처 ${e.l.src}`, e.l.state);
+        return;
+      }
+      const card = liveLayers.card(e.l.id);
       showNote(e.l.name, card || `출처 ${e.l.src}`, e.l.state);
     },
   };
@@ -5027,7 +5272,8 @@ async function main() {
   const askEarth = new AskEarth({
     lang: askLang,
     snapshot: askSnapshot,
-    layerName: (id) => (layerIndex.get(id) ? layerIndex.get(id).l.name : null),
+    // null 이면 ask-earth.js 가 그 제안을 실행하지 않고 '버린 것'에 적는다 — 몰래 다른 화면을 열지 않는다.
+    layerName: (id) => { const e = askLayer(id); return e ? e.l.name : null; },
     tools: askTools,
     captureScene: askCapture,
     restoreScene: askRestore,
@@ -5158,6 +5404,8 @@ async function main() {
   const toggleDrawer = (drawer, btn) => {
     const willOpen = !drawer.classList.contains('open');
     closeDrawers();
+    // 물어보기 서랍도 같은 자리에 뜬다 — ✦ 를 돋보기로 합친 뒤로는 돋보기를 다시 누르면 두 서랍이 겹쳤다.
+    askEarth.close();
     shell.closeFlyout();
     if (willOpen) {
       drawer.classList.add('open');
@@ -5648,6 +5896,7 @@ async function main() {
         const d = document.createElement('div');
         d.className = 'search-hit';
         if (rt.error) {
+          d.classList.add('search-none');
           d.style.color = 'var(--text-dim)';
           d.textContent = `항로 — '${rt.error}' 공항을 찾지 못했습니다`;
           searchResults.appendChild(d);
@@ -5693,6 +5942,16 @@ async function main() {
         }
       }
     }
+    /* 메뉴의 현상도 여기서 찾는다 — 메뉴 안 '메뉴·질문 검색' 칸은 2026-09-20 에 없앴다
+       (PD: "질문검색을 메뉴에서 삭제해 · v1 의 오른쪽 상단처럼"). 찾기와 묻기가 돋보기 하나로 모인다.
+       판정은 메뉴와 같은 것(shell.findTopics → matchesMenu)을 쓴다. 누르면 메뉴 줄을 누른 것과 같은
+       길로 가므로(켜져 있으면 꺼진다) 줄에 '켜기/끄기'를 적는다. 장소보다 먼저 둔다 — '파고'를 친
+       사람이 찾는 것은 공항이 아니다. */
+    const topics = shell.findTopics(q, 5).map((tp) => ({
+      kind: 'topic', tp,
+      label: `◉ ${tp.name} · ${tp.group} — ${tp.on ? (i18n.ko ? '켜져 있음 · 끄기' : 'on · turn off') : (i18n.ko ? '켜기' : 'turn on')}`,
+    }));
+    hits.unshift(...topics);
     for (const h of hits) {
       const d = document.createElement('div');
       d.className = 'search-hit';
@@ -5701,6 +5960,7 @@ async function main() {
         searchResults.innerHTML = '';
         searchInput.value = '';
         closeDrawers();
+        if (h.kind === 'topic') { shell.openTopic(h.tp.sceneId, h.tp.layerId); return; }
         if (h.kind === 'country') { focus.clear(); const cc = centroidOfCountry(h.f); if (cc) countryClick = cc; focus.select(h.f); return; }
         // 공항·시군구는 그 지점 상공으로 — 국가 포커스는 건드리지 않는다
         let ty = THREE.MathUtils.degToRad(h.lon);
@@ -5715,9 +5975,25 @@ async function main() {
     }
     if (!hits.length) {
       const d = document.createElement('div');
-      d.className = 'search-hit';
+      d.className = 'search-hit search-none';   // 누를 것이 아니다 — Enter 가 이 줄을 고르지 않게 표시한다
       d.style.color = 'var(--text-dim)';
-      d.textContent = '일치하는 나라·시군구·도시·공항이 없습니다';
+      d.textContent = i18n.ko ? '일치하는 메뉴·나라·시군구·도시·공항이 없습니다' : 'No matching topic, country, city or airport';
+      searchResults.appendChild(d);
+    }
+    /* 물어보기 — 검색창이 곧 질문창이다 (v1 js/search.js 와 같은 문법, 2026-09-20 PD 지시).
+       무엇을 치든 맨 아래에 "이 문장을 그대로 물어보기" 줄을 둔다. 찾는 것이 없어도 이 줄은 남는다.
+       ⚠️ q 는 소문자로 바꾼 검색용이다 — 질문은 **친 그대로** 보낸다. */
+    const asked = searchInput.value.trim();
+    if (asked) {
+      const d = document.createElement('div');
+      d.className = 'search-hit search-ask';
+      d.textContent = i18n.ko ? `✦ 「${asked}」 물어보기 — 지금 켜 놓은 자료만 근거로 답합니다` : `✦ Ask: “${asked}” — answered only from the data you have on`;
+      d.addEventListener('click', () => {
+        searchResults.innerHTML = '';
+        searchInput.value = '';
+        closeDrawers();
+        askEarth.openWith(asked);
+      });
       searchResults.appendChild(d);
     }
   };
@@ -5725,6 +6001,13 @@ async function main() {
     const q = searchInput.value.trim().toLowerCase();
     if (q && !airports) { loadAirports().then(() => renderHits(searchInput.value.trim().toLowerCase())); }
     renderHits(q);
+  });
+  // Enter = 맨 위 결과. 결과가 물어보기 줄뿐이면 그대로 묻는다 — 돋보기에 문장을 치고 Enter 를 누르는 것이
+  // 이 창의 가장 흔한 쓰임이 된다(메뉴의 질문 검색 칸이 하던 일).
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' || e.isComposing) return;
+    const first = searchResults.querySelector('.search-hit:not(.search-none)');
+    if (first) { e.preventDefault(); first.click(); }
   });
 
   // 눈·얼음 관측 레이어 (P1 계절 컨텍스트): GIBS MODIS NDSI — extent만, 적설 깊이 아님
@@ -5901,6 +6184,7 @@ async function main() {
       markCloudBtn(btn.dataset.cloud);
       // 손으로 고른 것만 기억한다. 시간 스크럽의 자동 전환은 기억하지 않는다 —
       // 그건 사용자의 선택이 아니라 그 시각을 보여주기 위한 임시 전환이다.
+      cloudYield.handPicked();   // 같은 이유로 색면도 이 손을 이기지 못한다(2026-09-20 작업 E3 ②)
       try { localStorage.setItem(CLOUD_PREF, btn.dataset.cloud); } catch (e) { /* 저장소가 막힌 환경 */ }
       clouds.set(btn.dataset.cloud).then((ok) => { if (!ok) markCloudBtn('off'); });
     });
@@ -6175,6 +6459,13 @@ async function main() {
       if (dist) orbit.targetDist = dist;
     },
   };
+  // 공용 GFS 프레임 저장소(js/gfs-frames.js). 콘솔에서: await __earthus.frames.load() → __earthus.frames.info()
+  // 위 객체 안이 아니라 따로 거는 이유: 같은 묶음의 다른 작업이 그 객체에 줄을 더하면 합칠 때 부딪힌다.
+  window.__earthus.frames = gfsFrames;
+  window.__earthus.time = timeBus;   // 콘솔 확인용: __earthus.time.offsetMs · validMs() · isNow()
+  window.__earthus.surfaceObs = surfaceObs;   // 콘솔 확인용: __earthus.surfaceObs.stats() → 관측 문서를 파일마다 실제로 몇 번 받았나
+  // 콘솔 확인용: __earthus.obs.state() → 왜 찍히는지/안 찍히는지(reasonKo) · __earthus.obs.placed() → 지금 찍힌 지점
+  window.__earthus.obs = obsLabels;
 
   let last = performance.now();
   const tickBody = (now) => {
@@ -6271,7 +6562,9 @@ async function main() {
     if (detail) detail.update(orbit.pitch, orbit.yaw, altKm, camera);
     satLayer.update(now);
     aethLink.update(now);
-    liveLayers.tick(now, altKm);
+    liveLayers.tick(now, altKm, camera);   // camera: 연안 침수 원반의 화면 솎기·집기(js/flood-discs.js)
+    windLayer.tick(dt, camera);   // 바람 입자(W3) — 'wind' 레이어가 꺼져 있으면 첫 줄에서 돌아간다(아무것도 하지 않는다)
+    starLayers.tick(dt);          // 색면·바람이 주인공인 동안: 구름이 물러나고 · 바람 밑에 풍속 색면이 깔리고 · 입자는 흰색
     flightRoute.tick(now, camera);
     popSculpt.updateLabels(camera);
     popSculpt.updateScale(altKm);
@@ -6284,6 +6577,9 @@ async function main() {
     buildLabelCandidates();
     shell.updateLabels(camera, altKm);
     synop.update(camera, altKm);
+    // 관측 숫자(OBS): 기온 색면이 켜져 있을 때만. 상태만 읽는다 — tempgrid 를 어떻게 그리는지는 이 줄이 모른다.
+    obsLabels.setVisible(!!liveLayers.state('tempgrid').on);
+    obsLabels.tick(camera);
     // PHASE 4 §9 — 지도 클릭과 메뉴 클릭이 같은 문맥으로 수렴한다.
     // 사건을 열고(정본 id), 그 사건이 속한 현상을 패널 선택으로도 맞춘다.
     // 이게 없으면 지도에서 태풍을 눌러도 패널은 무엇을 고른 것인지 모른다.

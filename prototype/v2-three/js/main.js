@@ -4,7 +4,7 @@
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=67-groupicons';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=68-pointcard';
 import { createSelectionGate } from './information-contract.js';
 // PHASE 4 §9 — 지도에서 고른 사건을 어느 현상으로 읽을지는 레지스트리가 정한다.
 import { layerForEventKind } from './phenomenon-registry.js?v=4';
@@ -40,7 +40,7 @@ import { timeBus } from './time-bus.js?v=1';
 // 색면 위의 나라·해안 윤곽선 — 새 색면이 바탕 지도의 국경을 덮어 '어디가 한반도인지' 알 수 없었다(js/field-outlines.js).
 import { createFieldOutlines } from './field-outlines.js?v=1';
 // 어느 레이어가 새 셰이더 색면인지 — 바람을 켤 때 이미 깔린 색면이 있으면 풍속 색면을 자동으로 깔지 않는다(기온이 꺼지지 않게).
-import { FIELD_DESCRIPTORS, isFieldLayerId } from './field-layer.js?v=1';
+import { FIELD_DESCRIPTORS, activeField, isFieldLayerId } from './field-layer.js?v=1';
 // 지점 판독(js/point-readout.js · 2026-09-20 W2) — 누른 자리의 값을 **우리 자료에서만** 읽는다.
 //   전에는 색면이 꺼져 있으면, 그리고 바다를 누르면, 브라우저가 api.open-meteo.com · marine-api.open-meteo.com 을
 //   직접 불렀다. 유료 서비스의 라이선스 노출이었고 화면에 칠한 값과 카드의 값이 달랐다. 이제 같은 프레임·같은 격자를 읽는다.
@@ -53,6 +53,10 @@ import { FIELD_LIFT } from './field-renderer.js?v=1';
 import { surfaceObs } from './surface-obs.js?v=1';
 // 지구 위 실측 숫자(js/obs-labels.js · W1 ⑦) — 기온 색면이 켜져 있고 타임라인이 '지금'일 때만 관측소 값을 찍는다.
 import { createObsLabels, obsCardHtml, obsCardTitle } from './obs-labels.js?v=1';
+// 지점 카드(js/point-card.js · 2026-09-23 PD) — 색면 현상을 고른 채 지구를 누르면 뜨는 한 장.
+//   ⚠️ live-layers.js 는 import 문을 하나만 둔다(obs-labels.test — 줄을 나누면 ?v= 가 어긋나는 날 두 번 실린다).
+//   그래서 평년 문서는 point-card.js 가 우리 S3(POINT_BASE)에서 스스로 받는다.
+import { loadPointDays, loadPointNormal, loadPointObs, pointCardHtml, readPointNow } from './point-card.js?v=1';
 let obsLabels = null;   // main() 안에서 만든다. 클릭 핸들러가 그보다 먼저 정의되므로 extScene 처럼 모듈 자리에 둔다
 import { PopSculpture } from './pop-sculpture.js?v=13';
 import { PopMetricMenu } from './pop-metric-menu.js?v=1';
@@ -2656,6 +2660,13 @@ async function main() {
     // 지구 위 관측 숫자(OBS)를 눌렀으면 그 지점 카드가 먼저다 — 라벨은 무엇보다 위에 그려지므로 누른 사람이 본 것도 그것이다.
     // 찍혀 있는 라벨만 잡힌다(기온 색면 ON · 타임라인 '지금'). 값·관측 시각·출처는 전부 문서에서 온다.
     const ob = obsLabels && obsLabels.pick({ x: e.clientX, y: e.clientY });
+    // 2026-09-23 — 기온을 고른 채 OBS 숫자를 눌렀으면 따로 관측 카드를 띄우지 않고 지점 카드 한 장에 그 관측소를 싣는다.
+    //   라벨이 먼저 이긴다는 약속(위 주석)은 그대로다 — 누른 관측소가 카드의 '관측' 줄이 된다.
+    if (ob && pointFieldId() === 'tempgrid') {
+      clearFocusContext();
+      openPointCard(ob.lat, ob.lon, 'tempgrid', { station: ob });
+      return;
+    }
     if (ob) {
       focus.clear();
       const lang = i18n.ko ? 'ko' : 'en';
@@ -2713,6 +2724,17 @@ async function main() {
       shell.openIntel();
       shell.renderIntel();
       shell.refreshFlyout();
+      return;
+    }
+    // 2026-09-23 PD — "기온 들어가면 지구가 색으로 바뀌는데 거기서 지역을 누르면 그때 창이 뜨면서 … 그때 인텔리전스 기능이
+    //   나와야 맞지". 색면 현상을 고른 채 누르면 그 현상의 **지점 카드 한 장**(js/point-card.js)이 뜬다.
+    //   예전에는 여기서 아래로 흘러 육지면 국가 선택(인구 조각 자동 · 지표 팝업 · 카메라 이동)이, 바다면 marineSelect 가
+    //   선택 현상을 지우고 **파도 카드**를 띄웠다 — 기온을 골랐는데. 좁은 표시(원반·확장·여행·해구)는 위에서 먼저 이긴다.
+    //   ⚠️ 위 fieldProbe 는 그대로 둔다 — 범례의 '누른 곳' 줄은 그것이 쓴다.
+    const pfid = pointFieldId();
+    if (pfid) {
+      clearFocusContext();
+      openPointCard(lat, lon, pfid);
       return;
     }
     // 바람 층이 켜져 있으면 누른 자리의 모델 바람을 읽는다(js/wind-layer.js readoutAt — 프레임의 CPU 사본에서 · 네트워크 0건).
@@ -2802,6 +2824,103 @@ async function main() {
     }
     shell.renderIntel();
   }
+
+  // ---------- 지점 카드 (js/point-card.js · 2026-09-23 PD) ----------
+  // 색면 현상(기온 등)을 고른 채 지구를 누르면 그 현상의 한 장이 뜬다: 값 → 출처 → 왜 → 앞으로 5일 → 입구.
+  // 시트의 'point' 모드(ui-shell renderIntel)로 그린다 — 탭 줄·머리말 없이. 값은 그릴 때마다 지금 타임라인 시각으로
+  // 다시 읽는다(재생 중 220 ms 마다 renderIntel) — 누른 순간의 글자로 굽지 않는다(point-readout.js:285 의 한계를 피한다).
+  let pointCard = null;   // { lat, lon, fid, obs, obsSource, obsLoading, anom, normal, normalMiss, days, daysLoading }
+
+  // 지금 누른 자리를 읽을 색면 — 고른 메뉴가 켜진 색면이면 그것. 고른 메뉴가 **없을 때만**(주소 해시로 되살린 색면 등)
+  // 지구에 칠해진 색면으로 떨어진다.
+  // ⚠️ 반박 검증(2026-09-23): 처음에는 고른 메뉴가 꺼졌거나 색면이 아니어도 칠해진 색면으로 떨어졌다 — '해양 모델 · 파고와 바람'
+  //    (바다를 누르면 해상 조회)을 골라도 기온 카드가 떴고, 끈 쓰나미의 능력(시뮬레이션)이 기온 카드에 붙었다.
+  //    고른 메뉴가 있으면 그 메뉴의 길이 이긴다.
+  // ⚠️ 파고(wavefield)는 지점 카드로 보내지 않는다 — 바다를 누르면 marineSelect 가 해상 카드와 파도 장면 입력(seaPoint)을 채운다.
+  //    지점 카드로 가로채면 '이 바다는 어떻게 움직일까?'(⑦ 입구)가 자료 없이 멈췄다.
+  const POINT_SKIP = new Set(['wavefield']);
+  const pointFieldId = () => {
+    const ctx = shell.getPhenomenonContext();
+    const lid = ctx && ctx.layerId;
+    const on = (id) => { try { return !!liveLayers.state(id).on; } catch (e) { return false; } };
+    const ok = (id) => !!id && isFieldLayerId(id) && !POINT_SKIP.has(id) && on(id);
+    if (lid) return ok(lid) ? lid : null;
+    const sf = liveLayers.starField();
+    return sf && ok(sf.id) ? sf.id : null;
+  };
+
+  // 카드 하나의 번호 — ui-shell 이 '같은 카드인지'(재생 중 제자리 갱신)를 이것으로 가른다. 받는 자료가 도착하면 rev 가 오른다.
+  let pointSeq = 0;
+  const openPointCard = (lat, lon, fid, opts = {}) => {
+    // ⚠️ 전역 selectionGate 를 넘기지 않는다 — 반박 검증: 다른 레이어를 받는 중에 지구를 누르면 그 레이어의 카드가
+    //    '여는 중…'에 굳었다. 이 카드의 늦은 응답은 pointCard === pc 로만 거른다.
+    marineRequest?.abort();
+    seaPoint = null;
+    const desc = FIELD_DESCRIPTORS[fid];
+    const gfs = !!(desc && !desc.source);
+    const pc = pointCard = {
+      id: ++pointSeq, rev: 0, lat, lon, fid,
+      obs: null, obsSource: null, obsFailed: null, obsLoading: fid === 'tempgrid', anom: null,
+      normal: null, normalLoading: false, normalChecked: false, normalMiss: false,
+      days: null, daysLoading: gfs, ensuring: null,
+    };
+    shell.openIntel('point');
+    const bump = () => { pc.rev += 1; if (pointCard === pc) shell.renderIntel(); };
+    if (gfs) {
+      loadPointDays({ frames: gfsFrames, fieldId: desc.fieldId, lat, lon, nowMs: Date.now() })
+        .then((d) => { pc.days = d; }, () => { pc.days = { ok: false, days: [] }; })
+        .finally(() => { pc.daysLoading = false; bump(); });
+    }
+    if (fid === 'tempgrid') {
+      loadPointObs({ surfaceObs, lat, lon, station: opts.station || null, nowMs: Date.now() })
+        .then((o) => { Object.assign(pc, o); }, () => { pc.obsFailed = { KMA: true, GTS: true }; })
+        .finally(() => {
+          pc.obsLoading = false;
+          // 관측을 먼저 보인다 — 평년 문서(600 KB)는 그 뒤에 따로. 평년차 레이어가 이미 받아 둔 문서가 있으면 다시 받지 않는다.
+          const site = pc.obs && pc.obs.site;
+          if (site && site.src === 'KMA') {
+            pc.normalLoading = true;
+            const tl = liveLayers.layers && liveLayers.layers.tempanom;
+            const doc = tl && tl.data && tl.data.norm ? tl.data.norm : null;
+            loadPointNormal({ stationId: site.id, nowMs: Date.now(), doc })
+              .then((n) => { pc.normal = n; pc.normalChecked = true; }, () => { pc.normalMiss = true; })
+              .finally(() => { pc.normalLoading = false; bump(); });
+          }
+          bump();
+        });
+    }
+  };
+
+  const getPointHtml = () => {
+    const pc = pointCard;
+    if (!pc) {
+      return `<div class="point-card"><p class="pc-why">${i18n.ko ? '색면을 켠 채 지구를 누르면 그 자리의 값과 해석이 이 한 장에 나옵니다.' : 'With a colour field on, tap the globe to read the value and interpretation here.'}</p></div>`;
+    }
+    const ko = i18n.ko;
+    // 값은 **켜진 색면 객체**에서 — 강수 누적 모드·예보 범위 밖·바다 마스크까지 화면과 같게(point-card.js 머리말).
+    const field = activeField(liveLayers, pc.fid);
+    const now = readPointNow({ field, lat: pc.lat, lon: pc.lon, ko });
+    // 타임라인을 옮긴 순간 그 시각의 장이 아직 없으면 '—' 에 굳지 않게 받아 두고 다시 그린다(반박 검증 — 전에는 상관없는
+    // 다시 그리기가 올 때까지 멈춰 있었다). 같은 시각은 한 번만 청한다.
+    if (now && now.missing && field && field.frames && typeof field.frames.ensure === 'function' && Number.isFinite(now.tMs) && pc.ensuring !== now.tMs) {
+      pc.ensuring = now.tMs;
+      Promise.resolve().then(() => field.frames.ensure(field.desc.fieldId, now.tMs))
+        .then(() => { if (pointCard === pc) { pc.rev += 1; shell.renderIntel(); } }, () => {});
+    }
+    const accum = !!(field && field.baseDesc && field.desc !== field.baseDesc);   // precip-accum.js 가 desc 를 갈아 끼웠다
+    const ctx = shell.getPhenomenonContext();
+    const mine = !!(ctx && ctx.layerId === pc.fid);   // 고른 메뉴가 이 색면일 때만 그 현상의 패킷·능력을 싣는다
+    const pid = mine ? ctx.phenomenonId : null;
+    // 그 현상의 패킷이 이미 받아 둔 문서에 있으면(수온 등) WHY·NEXT 절을 카드 안에 그대로 편다 — 누르면 다른
+    // 카드로 갈아 끼우던 'intel-q' 와 달리 여기서는 펼친 채로 둔다. 기온(tempgrid)은 패킷이 없어 이유 한 줄이 선다.
+    const pk = pid ? intelOf(intelHostFor(pid)) : null;
+    const sec = (s) => (pk ? intelSectionHtml({
+      packet: pk, section: s, i18n, esc: escUI, badge: (k) => dataBadge(k),
+      mode: shellHooks.monetizationMode(), tier: currentTier(),
+    }) : '');
+    return pointCardHtml({ pc, now, key: `${pc.id}.${pc.rev}.${accum ? 'a' : 'r'}`, isNow: timeBus.isNow(),
+      intelWhy: sec('WHY'), intelNext: sec('NEXT'), capabilities: mine ? ctx.capabilities || {} : {}, accum, ko, esc: escUI });
+  };
 
   const fmtPt = (lat, lon) => `${lat >= 0 ? 'N' : 'S'}${Math.abs(lat).toFixed(1)}° ${lon >= 0 ? 'E' : 'W'}${Math.abs(lon).toFixed(1)}°`;
 
@@ -4076,6 +4195,16 @@ async function main() {
     shell.openIntel();
     shell.renderIntel();
   };
+  // 2026-09-23 PD — 여는 것만 뺀 showNote. 메뉴에서 색면(기온 등)을 고르면 **지구만 바뀐다**: 카드는 세워 두되 시트는 열지 않는다.
+  //   예전에는 고르는 순간 시트가 half(31vh)로 올라와 지구 아래쪽을 덮었다 — 색이 바뀌는 순간(① 극적으로 보인다)을 가렸다.
+  //   탭 의도('intent'/'follow') 체계는 그대로 쓴다(INTEGRATION-3 §11). 열려 있을 때만 다시 그린다(shell.renderIntel).
+  // index.html 의 좁은 화면 블록과 **같은 질의** — 둘이 갈리면 가로 폰에서 한쪽만 폰으로 본다.
+  const PHONE_MQ = '(max-width: 720px), (max-height: 520px) and (pointer: coarse) and (orientation: landscape)';
+  const stageNote = (title, body, badge, source) => {
+    lockedNote = { title, body, badge };
+    shell.showTab('now', source);
+    shell.renderIntel();
+  };
 
   // 인구 조각 국가 칩 — 격자를 켜고 그 나라가 화면을 채우는 거리로 날아간다.
   // 칩 진입도 국가 문맥 선택이다 — 자동 조각 소유권을 남겨 문맥 종료에 같이 꺼지게 한다.
@@ -4202,10 +4331,24 @@ async function main() {
       // INTEGRATION-3 §11 — 첫 카드는 "사용자가 이 자료를 골랐다"는 뜻이니 탭 의도를 세운다.
       // 그 뒤 자료가 도착해 카드를 갈아 끼우는 것은 의도가 아니다. 그걸 의도로 취급했기 때문에
       // 보고서에서 '분석'으로 들어와도 로딩이 끝나는 순간 '선택 자료'로 끌려갔다.
+      // 2026-09-23 PD — 색면을 고르면 지구만 바뀐다(창은 지역을 눌렀을 때 뜬다 — 지점 카드). 열려 있던 시트는 닫고,
+      //   폰에서는 메뉴 서랍도 닫는다 — 서랍(화면의 55%)이 남아 있으면 바뀐 색도, 누를 자리도 가린다
+      //   (DEV-DIRECTIVE §7.2 '메뉴를 고르면 서랍이 닫히고 지구가 최대 영역을 되찾는다' — 미이행 HIGH 였다).
+      //   ⚠️ 켤 때만이다 — 반박 검증: 끌 때도 돌아서 '현재 켜진 자료 · 끄기'를 누르면 보던 시트가 닫혔다.
+      //   ⚠️ 폰 판정은 index.html 의 폰 블록과 같은 질의여야 한다 — 가로 폰(높이 ≤520)에서 서랍이 안 닫혔다.
+      const liveId = LIVE_LAYER_KEYS[key] && LIVE_LAYER_KEYS[key][0];
+      const quiet = !!liveId && isFieldLayerId(liveId) && !liveLayers.state(liveId).on;
+      if (quiet) {
+        pointCard = null;
+        if (shell.isIntelOpen()) shell.closeIntel();
+        if (window.matchMedia && window.matchMedia(PHONE_MQ).matches) shell.closeFlyout();
+      }
       let noted = false;
       const note = (...args) => {
         if (!current()) return;
-        showNote(args[0], args[1], args[2], noted ? 'follow' : 'intent');
+        // 못 불러왔다는 말(UNAVAILABLE)은 색면이어도 열어서 보인다 — 조용히 실패한 것처럼 보이면 안 된다.
+        if (quiet && args[2] !== 'UNAVAILABLE') stageNote(args[0], args[1], args[2], noted ? 'follow' : 'intent');
+        else showNote(args[0], args[1], args[2], noted ? 'follow' : 'intent');
         noted = true;
       };
       note(layer.name, '선택한 자료를 여는 중…', 'LOADING');
@@ -4562,6 +4705,8 @@ async function main() {
       }
     },
     getNow: getNowHtml,
+    // 지점 카드(2026-09-23) — ui-shell renderIntel 의 'point' 갈래가 부른다.
+    getPoint: getPointHtml,
     // 추천 질문의 입력 상태 — 파도 계산은 선택한 바다 지점값을 먹는다(없으면 not_evaluable).
     hasSeaInput: () => !!(seaPoint && seaPoint.grid),
     // 지도 직접 클릭 경로의 질문 블록 조건 — 현상 선택 없이도 문맥이 있으면 질문이 붙는다.
@@ -4633,6 +4778,20 @@ async function main() {
     onAction: (action, ds, value) => {
       // 색면 카드의 단추(등온선 켬/끔 · 2°C|5°C) — js/field-layer.js 가 셰이더를 바꾸고 카드 글을 제자리에서 갈아 끼운다(provideField 의 onCard).
       if (typeof action === 'string' && action.startsWith('field-')) { liveLayers.fieldAction(action, ds); return; }
+      // 지점 카드의 [시뮬레이션 →] — 그 현상에 시뮬레이션 능력이 있을 때만 이 단추가 선다(없으면 sim-why 가 이유를 말한다).
+      if (action === 'point-sim') { shell.openIntel('scenario'); return; }
+      // 지점 카드의 [표시 설정] — 이 색면의 조작(등치선·간격·강수 누적·H/L)이 든 카드를 '선택 자료'로 연다.
+      //   메뉴에서 색면을 고를 때 시트를 열지 않게 되면서, 그 조작에 닿는 길이 이 단추다(반박 검증 2026-09-23).
+      if (action === 'point-field-settings') {
+        const lid = ds.layer;
+        const d = FIELD_DESCRIPTORS[lid];
+        const f = activeField(liveLayers, lid);
+        if (d && f) {
+          lockedNote = { title: (f.desc.title || d.title)[i18n.ko ? 'ko' : 'en'], body: liveLayers.card(lid), badge: d.badge || 'MODEL' };
+          shell.openIntel('now');
+        }
+        return;
+      }
       // 잠기는 땅 카드의 단추(시나리오 4 × 연도 3) — js/flood-overlay.js 가 상승폭 격자를 다시 굽고 카드 글을 제자리에서 갈아 끼운다.
       if (typeof action === 'string' && action.startsWith('slr-')) { liveLayers.slrAction(action, ds); shell.refreshFlyout(); return; }
       // 확장 화면(LAB·취미) 카드의 버튼 — data-action="ext:…" 만 여기서 받는다

@@ -1094,6 +1094,9 @@ export function initShell(hooks) {
   /* 열기: 탭을 주면 그 탭으로, 안 주면 지금 탭 그대로. 이미 열려 있으면 다시 그린다.
      리포트→현상·리포트→분석·하단바가 전부 이 문으로만 들어온다. */
   function openIntel(tab) {
+    // 2026-09-23 반박 검증 — 지점 카드('point')는 지구를 누른 그 순간의 한 장이다. 탭 없이 여는 길(국가·권역 선택,
+    //   사건 표식, 검색의 나라)이 남아 있던 'point' 로 들어가 **옛 자리의 기온 카드**를 다시 띄웠다 → '선택 자료'로 연다.
+    if (!tab && curTab === 'point') tab = 'now';
     if (tab) showTab(tab, 'intent');
     setIntelOpen(true);
   }
@@ -1209,6 +1212,22 @@ export function initShell(hooks) {
       intelContent.innerHTML = historyHtml();
     } else if (curTab === 'why') {
       intelContent.innerHTML = whyHtml();
+    } else if (curTab === 'point') {
+      // 2026-09-23 PD — 색면 현상을 고른 채 지구를 누르면 **한 장**(js/point-card.js). 탭 단추가 없는 값이라
+      // 이 갈래가 없으면 마지막 else 로 떨어져 예보·예정 화면이 그려진다.
+      // 재생 중에는 220 ms 마다 여기로 온다. 카드를 통째로 갈면 누르던 단추가 손가락 밑에서 바뀌고(click 이 사라진다)
+      // 떠 있던 이유 한 줄(sim-why)도 지워진다 — 같은 카드(data-key)면 시각 따라 바뀌는 덩어리([data-pc-live])만
+      // 제자리에서 바꾼다(field-layer.js:1012 의 [data-field-live] 와 같은 까닭).
+      const html = hooks.getPoint ? hooks.getPoint() : '';
+      const cur = intelContent.querySelector('.point-card[data-key]');
+      const key = (html.match(/data-key="([^"]*)"/) || [])[1];
+      if (cur && key && cur.dataset.key === key) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        const liveNew = tmp.querySelector('[data-pc-live]');
+        const liveCur = cur.querySelector('[data-pc-live]');
+        if (liveNew && liveCur) { if (liveCur.innerHTML !== liveNew.innerHTML) liveCur.innerHTML = liveNew.innerHTML; } else intelContent.innerHTML = html;
+      } else intelContent.innerHTML = html;
     } else {
       intelContent.innerHTML = nextHtml();
     }
@@ -1293,7 +1312,9 @@ export function initShell(hooks) {
     const header=document.createElement('div');header.className='information-context';
     header.innerHTML=`${selectedMenu ? `<strong>${safeText(i18n.ko ? questionForLayer(selectedMenu.s.id, selectedMenu.l.id) || selectedMenu.l.name : selectedMenu.l.name)}</strong><div>${safeText(selectedMenu.l.src)} · ${dataBadge(selectedMenu.l.state)}</div>${phenomenonLine()}${simQuestionsHtml()}${regionLine()}${intelStripBlock()}`:''}${mapContextQuestions()}<div>${safeText(i18n.ko?'선택 장소':'Selected place')}: ${safeText(picked?.nameKo || picked?.name || (i18n.ko?'지도에서 선택':'Select on the globe'))}</div>${timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}</p>`:''}
       ${active.length ? `<details><summary>${i18n.ko?'현재 켜진 자료':'Active data'} ${active.length}</summary>${active.map(({s,l})=>`<div class="active-data-row"><span>${safeText(i18n.layer(l.id,l.name,s.id))}<small>${safeText(menuTime(l.id,i18n.ko))}</small></span>${canClearLayer(l.id)?`<button data-action="shell-layer-off" data-scene="${s.id}" data-layer="${l.id}" aria-label="${safeText(l.name)} 끄기">${i18n.ko?'끄기':'Off'}</button>`:''}</div>`).join('')}<button data-action="shell-clear-layers">${i18n.ko?'추가 자료 모두 끄기':'Clear overlays'}</button></details>`:''}`;
-    intelContent.prepend(header);
+    // 지점 카드는 한 장이다 — 머리말(질문·능력 줄·궁금한 점·선택 장소·켜진 자료)을 그 위에 얹지 않는다.
+    // 2026-09-23 PD 가 가리킨 "가장 큰 문제"가 바로 누른 순간 이 머리말과 탭 두 줄이 값보다 먼저 선 것이었다.
+    if (curTab !== 'point') intelContent.prepend(header);
     intelContent.scrollTop=scrollTop;
   };
 
@@ -1355,6 +1376,8 @@ export function initShell(hooks) {
     if (open) applyCapabilityGating();
     if (intelOpen === open) { if (open) renderIntel(); syncIntelNav(); return; }
     intelOpen = open;
+    // 닫으면 지점 카드 모드도 끝난다 — 다음에 탭 없이 열 때 옛 카드가 되살아나지 않게(위 openIntel 과 같은 사고).
+    if (!intelOpen && curTab === 'point') { curTab = 'now'; tabIntent = 'now'; intel.dataset.tab = 'now'; }
     // 새로 열 때는 half — 지구가 위에 보이는 INFORMATION 단계에서 시작한다(M1 · §C-0).
     if (intelOpen) setSheet('half');
     intel.classList.toggle('open', intelOpen);
@@ -1514,6 +1537,7 @@ export function initShell(hooks) {
     if (source === 'follow' && t !== tabIntent) return false;
     tabIntent = t;
     curTab = t;
+    intel.dataset.tab = t;   // CSS 가 읽는다 — 지점 카드('point')일 때 탭 단추 줄을 숨긴다(index.html)
     intel.querySelectorAll('.intel-tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
     if (intelOpen) renderIntel();
     return true;
@@ -1540,7 +1564,7 @@ export function initShell(hooks) {
     updateLabels,
     // main.js 열네 자리가 이걸 쓴다(바다 클릭·국가 클릭·내 지역 …).
     // 손잡이 click() 합성이던 것을 같은 문(setIntelOpen)으로 돌린다.
-    openIntel: (tab) => { if (tab) showTab(tab, 'intent'); setIntelOpen(true); },
+    openIntel: (tab) => { openIntel(tab); },   // 한 문으로 — 위 openIntel 의 'point' 되돌림을 같이 탄다
     // 추천 질문의 위성 경로 — 우주 씬으로 보내 SGP4 전파를 실제로 보여준다 (sim-q · satellite-track).
     gotoScene,
     // 상단 돋보기가 쓴다 — 메뉴 줄을 누른 것과 **같은 길**로 간다(켜져 있으면 끈다. 그래서 돋보기가

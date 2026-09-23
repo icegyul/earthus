@@ -61,11 +61,15 @@ export const SCENES = [
     layers: [
       { id: 'cloud-off', name: '구름 끄기', state: 'LIVE', src: '—', act: true },
       { id: 'radar', name: '레이더 강수 (지금 내리는 비)', state: 'OBSERVED', src: 'KMA HSR 합성영상 · 5분', act: true },
-      { id: 'raingrid', name: '전지구 강수', state: 'MODEL', src: 'Open-Meteo 격자 5°', act: true },
-      { id: 'tempgrid', name: '전지구 기온', state: 'MODEL', src: 'Open-Meteo 격자 5°', act: true },
-      { id: 'presgrid', name: '전지구 기압', state: 'MODEL', src: 'Open-Meteo 격자 5°', act: true },
-      { id: 'windgrid', name: '전지구 풍속', state: 'MODEL', src: 'Open-Meteo 격자 5°', act: true },
-      { id: 'pm25grid', name: '전지구 초미세먼지', state: 'MODEL', src: 'CAMS 격자 5°', act: true },
+      // 2026-09-20 W4: 'Open-Meteo 격자 5°' 한 시각의 그라데이션이었다. 같은 id 가 이제 GFS 강수율 프레임의 구간색이다 — 출처를 사실대로.
+      // 2026-09-20 E2: 카드에 기간 칩(현재 강우 | 3시간 | 24시간)이 생겼다 — 메뉴가 그 자리에서 무엇을 볼 수 있는지 말한다.
+      { id: 'raingrid', name: '전지구 강수', state: 'MODEL', src: 'NOAA GFS 0.5° · 강수율 mm/h · 3·24시간 누적 mm · 5일 예보 · 3시간 간격', act: true },
+      { id: 'tempgrid', name: '전지구 기온', state: 'MODEL', src: 'NOAA GFS 0.5° · 5일 예보 · 3시간 간격', act: true },
+      { id: 'presgrid', name: '전지구 기압', state: 'MODEL', src: 'NOAA GFS 0.5° · 해면기압 · 5일 예보 · 3시간 간격', act: true },
+      { id: 'windgrid', name: '전지구 풍속', state: 'MODEL', src: 'NOAA GFS 0.5° · 10 m · 5일 예보 · 3시간 간격', act: true },
+      // 2026-09-20 작업 D3 — 네 줄(대기질·수온·편차·파고)이 W1 셰이더 색면으로 옮겨졌다. 격자 크기와 '한 시각'을 사실대로 적는다:
+      // 매끈하게 보간했다고 해상도가 오르는 것이 아니고, 이 자료들은 5일 예보가 아니라 현재 시각 한 장이다.
+      { id: 'pm25grid', name: '전지구 초미세먼지', state: 'MODEL', src: 'CAMS 격자 5°(약 555 km) · 현재 시각 · Open-Meteo 경유', act: true },
       { id: 'uvgrid', name: '전지구 자외선', state: 'MODEL', src: 'CAMS 격자 5°', act: true },
       { id: 'warnworld', name: '미국 기상 특보', state: 'OFFICIAL_FORECAST', src: 'NWS api.weather.gov', act: true },
       { id: 'cloud-obs', name: '구름 실황 (전지구)', state: 'OBSERVED', src: 'NOAA GMGSI', act: true },
@@ -77,7 +81,9 @@ export const SCENES = [
       { id: 'cloud-gfs', name: '비·눈·태풍 5일 예보 ▶', state: 'MODEL_SIGNAL', src: 'GFS·Open-Meteo', act: true },
       { id: 'cloud-vol', name: '구름 3D 볼륨 (동아시아)', state: 'MODEL_SIGNAL', src: 'GFS 복셀 95×69×32', act: true },
       { id: 'tempanom', name: '지금 평년보다 몇 도 (전국)', state: 'DERIVED', src: 'KMA 실황 − 1991~2020 평년', act: true },
-      { id: 'wind', name: '바람 관측 (지상 3천 개소)', state: 'OBSERVED', src: 'KMA AWS·GTS', act: true },
+      // 2026-09-20 W3: '바람 관측 (지상 3천 개소)' · OBSERVED · KMA AWS·GTS 였다(관측소 막대기). 같은 id 가 이제 전지구 입자 흐름이고
+      // 자료는 모델이다 — 이름·상태·출처를 사실대로 고친다. 지상 관측은 바로 아래 '일기도 기입 모형'에 그대로 있다.
+      { id: 'wind', name: '바람 흐름 (전지구 입자 · 5일 예보)', state: 'MODEL', src: 'NOAA GFS 0.5° · 10 m · 5일 예보', act: true },
       { id: 'synop', name: '일기도 기입 모형 (표준 기호)', state: 'OBSERVED', src: 'KMA AWS · GTS SYNOP', act: true },
       { id: 'airq', name: '대기질 (에어코리아)', state: 'OBSERVED', src: '한국환경공단', act: true },
       { id: 'warn', name: '기상 특보 (실황)', state: 'OFFICIAL_FORECAST', src: 'KMA 특보 · 1.0 S3', act: true },
@@ -89,24 +95,27 @@ export const SCENES = [
     glyph: '해',
     accent: '#5FD3C0',
     layers: [
-      { id: 'marine', name: '해양 모델 · 파고와 바람', state: 'MODEL_SIGNAL', src: 'Open-Meteo Marine · GFS 바람', act: true },
+      // 2026-09-20 W2: 브라우저가 지점마다 marine-api 를 직접 부르던 것을 걷어냈다. 이제 같은 자료를 우리 격자에서 읽는다 — 출처를 사실대로.
+      { id: 'marine', name: '해양 격자 · 파도와 바람', state: 'MODEL_SIGNAL', src: 'Open-Meteo Marine 경유 · 0.5°(동아시아)/5° 격자 · 현재 시각 · 바람은 GFS 0.5° 프레임', act: true },
       { id: 'oceanfocus', name: '해양 포커스', state: 'DERIVED', src: '선택 해역 · 연결된 해양 자료', act: true },
       { id: 'typhoonsim', name: '태풍 해상 가정 장면', state: 'DEMO', src: '해양 모델 입력 · 장면 표현(기록 남는 계산 아님)', act: true },
       { id: 'buoys', name: '해양 부이 관측 (수온)', state: 'OBSERVED', src: 'NDBC 등 · 1.0 S3', act: true },
       { id: 'argo', name: 'Argo 플로트 — 잠수 기록', state: 'OBSERVED', src: 'Argo · Ifremer ERDDAP', act: true },
       { id: 'kmasea', name: '해상 관측망 (파고·수온 193지점)', state: 'OBSERVED', src: '기상청 해양관측', act: true },
-      { id: 'sstfield', name: '해수면 온도 (전지구)', state: 'OBSERVED', src: 'NOAA OISST v2.1', act: true },
-      { id: 'sstanom', name: '수온 아노말리 (평년 대비)', state: 'OBSERVED', src: 'OISST − 1991~2020 평년', act: true },
+      { id: 'sstfield', name: '해수면 온도 (전지구)', state: 'OBSERVED', src: 'NOAA OISST v2.1 · 1° 격자(약 110 km) · 하루치 관측', act: true },
+      { id: 'sstanom', name: '수온 아노말리 (평년 대비)', state: 'OBSERVED', src: 'OISST − 1991~2020 평년 · 동아시아 0.5° 격자', act: true },
       /* 2026-09-07 지시 §13: 장기 기후 시나리오는 지금 예보와 섞어 보여주지 않는다.
          longterm 플래그만 얹는다 — LiveLayers 렌더 경로(main.js LIVE_LAYER_KEYS)는 그대로
          'ocean/…' 로 남으므로 데이터·계산은 안 건드리고 화면에만 소제목을 가른다. */
-      { id: 'slr', name: '해수면 상승 전망 2100 (전 세계)', state: 'MODEL_SIGNAL', src: 'IPCC AR6 · NASA', act: true, longterm: true },
+      { id: 'slr', name: '해수면 상승 전망 (전 세계 조위관측소)', state: 'MODEL_SIGNAL', src: 'IPCC AR6 · NASA', act: true, longterm: true },
       { id: 'khoasl126', name: '우리 바다 해수면 전망 · SSP1-2.6 저배출', state: 'MODEL_SIGNAL', src: '국립해양조사원 지역 해양기후 모델 · 0.05°', act: true, longterm: true },
       { id: 'khoasl245', name: '우리 바다 해수면 전망 · SSP2-4.5 중간', state: 'MODEL_SIGNAL', src: '국립해양조사원 지역 해양기후 모델 · 0.05°', act: true, longterm: true },
       { id: 'khoasl370', name: '우리 바다 해수면 전망 · SSP3-7.0 고배출', state: 'MODEL_SIGNAL', src: '국립해양조사원 지역 해양기후 모델 · 0.05°', act: true, longterm: true },
       { id: 'khoasl585', name: '우리 바다 해수면 전망 · SSP5-8.5 최고', state: 'MODEL_SIGNAL', src: '국립해양조사원 지역 해양기후 모델 · 0.05°', act: true, longterm: true },
-      { id: 'khoaflood', name: '연안 침수 범위 — 시군구별 침수 예상도', state: 'MODEL_SIGNAL', src: '국립해양조사원 · 침수 예상도', act: true },
-      { id: 'wavefield', name: '유의파고 (전지구)', state: 'MODEL_SIGNAL', src: 'Open-Meteo Marine', act: true },
+      /* '연안 침수 범위'는 **언제의** 침수인지 안 적었다 — 지금 침수도, 이번 태풍 예보도 아니고
+         기관이 미리 계산해 둔 가정 상황의 예상도다. 이름이 그 사실을 담는다(2026-09-20 W6). */
+      { id: 'khoaflood', name: '연안 침수 예상도 — 가정 상황 (시군구별)', state: 'MODEL_SIGNAL', src: '국립해양조사원 · 사전 산출 침수 예상도(실시간·예보 아님)', act: true, longterm: true },
+      { id: 'wavefield', name: '유의파고 (전지구)', state: 'MODEL_SIGNAL', src: 'Open-Meteo Marine 경유 · 5° 격자(약 555 km) · 현재 시각', act: true },
       { id: 'current', name: '표층 해류', state: 'MODEL_SIGNAL', src: 'Open-Meteo Marine', act: true },
       { id: 'surf', name: '해변 271곳·낚시 946곳', state: 'OBSERVED', src: 'OpenStreetMap ODbL', act: true },
       { id: 'isobath', name: '해저 등심선 (등고선)', state: 'OBSERVED', src: 'AWS Terrarium 고도맵', act: true },
@@ -169,8 +178,8 @@ export const SCENES = [
     glyph: '취',
     accent: '#65d6e7',
     layers: [
-      { id: 'surf', name: '서핑 — 이 해변에 너울이 들어오는가', state: 'MODEL', src: 'Open-Meteo Marine · 기상청 AWS · 해변 1,027곳', act: true },
-      { id: 'fishing', name: '낚시 — 물때와 안전 · 방파제 · 섬', state: 'MODEL', src: 'Open-Meteo Marine · 기상청 · 낚시터 1,009곳', act: true },
+      { id: 'surf', name: '서핑 — 내린 화면(바다를 직접 누르세요)', state: 'UNAVAILABLE', src: '우리 격자에 너울 방향·풍파·물때가 없어 내렸습니다 — ext-scene.js WITHDRAWN', act: true },
+      { id: 'fishing', name: '낚시 — 내린 화면(바다를 직접 누르세요)', state: 'UNAVAILABLE', src: '만조·간조 예측이 어디에도 없어 내렸습니다 — ext-scene.js WITHDRAWN', act: true },
       { id: 'vessel', name: '선박 — 공식 실시간 위치 · 여객선 운항', state: 'OFFICIAL_INFORMATION', src: '해양교통안전정보시스템(MTIS)', act: true },
       { id: 'dive', name: 'Dive · 심해 — GEBCO 수심 기둥과 심해 생물', state: 'DERIVED', src: 'GEBCO 2026 · OBIS', act: true },
       { id: 'trench', name: '해구 — 지구의 가장 깊은 바다', state: 'OBSERVED', src: 'GEBCO 2026 · SCUFN', act: true },
@@ -178,7 +187,7 @@ export const SCENES = [
       { id: 'seabird', name: '바닷새 — 조사한 해에 어디서 몇 마리를 셌나', state: 'HISTORY', src: '국립생물자원관', act: true },
       { id: 'migbird', name: '철새 — 봄에 우리 동네 새가 어디로 갔나', state: 'HISTORY', src: '농림축산검역본부 · 공공누리', act: true },
       { id: 'ecobird', name: '전국 조류 조사 — 어느 5km 칸에 기록이 있나', state: 'HISTORY', src: '국립생태원 EcoBank · data.go.kr', act: true },
-      { id: 'para', name: '패러글라이딩 — 바람 세기와 구름 밑면', state: 'MODEL', src: 'Open-Meteo · 활공장 26곳', act: true },
+      { id: 'para', name: '패러글라이딩 — 내린 화면', state: 'UNAVAILABLE', src: '저층 운량·시정·CAPE 가 우리 프레임에 없어 내렸습니다 — ext-scene.js WITHDRAWN', act: true },
       { id: 'mountain', name: '산 — 정상은 여기보다 얼마나 추운가', state: 'OFFICIAL_FORECAST', src: '기상청 산악예보 · AWS · 등산로 104봉', act: true },
     ],
   },
@@ -215,7 +224,10 @@ export const SCENES = [
     layers: [
       { id: 'sats', name: '위성 추적 (정거장·기상·과학·항법)', state: 'LIVE', src: 'CelesTrak · SGP4', act: true },
       { id: 'starlink', name: '스타링크', state: 'LIVE', src: 'CelesTrak · SGP4', act: true },
-      { id: 'aeth-orbit', name: '궤도 인텔리전스 (우주쓰레기·정본 카탈로그·근접사건)', state: 'LIVE', src: 'AETHERUS API · 서버 SGP4', act: true },
+      /* 출처 줄이 'AETHERUS API · 서버 SGP4' 였다. 운영에는 상시 API 서버가 없다 — 수동으로 발행한
+         정적 스냅샷(/aetherus/*.json)을 읽고, 자리는 그 궤도요소로 브라우저가 직접 SGP4 를 푼다
+         (prototype/js/aetherus/core.js). 없는 서버를 출처로 적고 있었다(2026-09-20). */
+      { id: 'aeth-orbit', name: '궤도 인텔리전스 (우주쓰레기·정본 카탈로그·근접사건)', state: 'LIVE', src: '발행 스냅샷 · 브라우저 SGP4', act: true },
       { id: 'aurora', name: '오로라 예보 (지금 보이는 곳)', state: 'OFFICIAL_FORECAST', src: 'NOAA SWPC OVATION', act: true },
       { id: 'launch', name: '발사 일정 (세계 로켓)', state: 'OFFICIAL_FORECAST', src: 'TheSpaceDevs LL2', act: true },
       { id: 'solaract', name: '오늘의 태양 (실황 관측)', state: 'OBSERVED', src: 'NASA SDO · NOAA SWPC X선', act: true },
@@ -272,7 +284,9 @@ export function initShell(hooks) {
   // 하단바 '우주' 칸으로 서랍을 열었을 때만 켜는 표시 — 같은 AETHERUS 서랍이라도
   // 왼쪽 가장자리 탭으로 열었으면 우주 불을 켜지 않는다(들어온 문이 다르다).
   let spaceDoor = false;
-  let menuQuery = '';
+  /* 메뉴 안 검색 칸(menuQuery)은 2026-09-20 에 없앴다 — PD: "질문검색을 메뉴에서 삭제해 ·
+     v1 의 오른쪽 상단 버튼처럼". 찾기와 묻기는 상단 돋보기(⌕) 하나가 한다(findTopics 참고).
+     '켜진 자료만' 은 검색이 아니라 거르개라 메뉴에 남는다. */
   let activeOnly = false;
   let selectedMenu = null;
 
@@ -437,18 +451,25 @@ export function initShell(hooks) {
   };
 
   // 현상 한 줄이 검색어에 걸리는가 — 이름·질문뿐 아니라 속한 레이어 이름·출처까지 본다.
-  const phenMatches = (entry) => matchesMenu(menuQuery, [
+  // 검색어는 밖(상단 돋보기)에서 온다 — 메뉴 안 검색 칸은 없앴다.
+  const phenMatches = (entry, q) => matchesMenu(q, [
     entry.p.label.ko, entry.p.label.en, entry.p.question.ko, entry.p.question.en,
     entry.members.map((m) => m.l.name).join(' '),
     entry.members.map((m) => m.l.src).join(' '),
   ]);
+
+  /* 메뉴 줄의 배지. 목록에 적힌 고정 문자열(state)이 기본이지만, 레이어가 자기 상태로
+     낮춘 배지(st.badge)를 주면 그것이 먼저다. 2026-09-20: 궤도 인텔리전스는 스냅샷이 16일
+     묵어 지구에 0기를 그리는 동안에도 메뉴 줄은 고정 LIVE 였다. 배지를 주는 레이어가 없으면
+     예전과 똑같이 그린다 — 다른 줄은 하나도 바뀌지 않는다. */
+  const rowBadge = (rec) => dataBadge(layerOnState(rec).badge || rec.l.state);
 
   const layerRowHtml = (rec, sub = true) => {
     const st = layerOnState(rec);
     return '<button class="mp-item' + (sub ? ' mp-sub' : '') + (rec.l.state === 'LOCKED' ? ' locked' : '') + (st.on ? ' on' : '') + '"'
       + ' data-fscene="' + rec.s.id + '" data-flayer="' + rec.l.id + '"'
       + ' title="' + safeText(rec.l.src) + '" aria-pressed="' + (!!st.on) + '">'
-      + '<span class="mp-lbl">' + i18n.layer(rec.l.id, rec.l.name, rec.s.id) + '</span>' + dataBadge(rec.l.state)
+      + '<span class="mp-lbl">' + i18n.layer(rec.l.id, rec.l.name, rec.s.id) + '</span>' + rowBadge(rec)
       + (st.on && st.note ? '<span class="mp-note">' + st.note + '</span>' : '')
       + '</button>';
   };
@@ -458,7 +479,7 @@ export function initShell(hooks) {
     const sel = !!selectedMenu && (selectedMenu.s.id + '/' + selectedMenu.l.id) === entry.rep.key;
     const name = i18n.ko ? entry.p.label.ko : entry.p.label.en;
     const more = entry.members.length > 1;
-    const open = expandedPhenomena.has(entry.id) || !!menuQuery;
+    const open = expandedPhenomena.has(entry.id);
     // 자료가 여럿이면 펼쳐서 그 안의 레이어를 그대로 켤 수 있다 — 기능은 하나도 안 사라진다.
     const expander = more
       ? '<button class="mp-expand" data-expand="' + entry.id + '" aria-expanded="' + (open ? 'true' : 'false')
@@ -478,7 +499,7 @@ export function initShell(hooks) {
       + '<button class="mp-item mp-phen-main' + (entry.rep.l.state === 'LOCKED' ? ' locked' : '') + (anyOn ? ' on' : '') + '"'
       + ' data-fscene="' + entry.rep.s.id + '" data-flayer="' + entry.rep.l.id + '"'
       + ' title="' + safeText(i18n.ko ? entry.p.question.ko : entry.p.question.en) + '" aria-pressed="' + anyOn + '">'
-      + ico + '<span class="mp-lbl">' + safeText(name) + '</span>' + dataBadge(entry.rep.l.state)
+      + ico + '<span class="mp-lbl">' + safeText(name) + '</span>' + rowBadge(entry.rep)
       + '</button>' + expander
       + (open && more ? '<div class="mp-subs">' + entry.members.map(layerRowHtml).join('') + '</div>' : '')
       + '</div>';
@@ -501,21 +522,51 @@ export function initShell(hooks) {
 
   const groupSectionHtml = (gid) => {
     const all = GROUP_INDEX.get(gid) || [];
-    const shown = all.filter((e) => {
-      if (activeOnly && !e.members.some((m) => layerOnState(m).on)) return false;
-      return phenMatches(e);
-    });
+    const shown = all.filter((e) => !activeOnly || e.members.some((m) => layerOnState(m).on));
     if (!shown.length) return '';
     const g = GROUP_BY_ID.get(gid);
     const label = i18n.ko ? g.label.ko : g.label.en;
-    const hidden = !menuQuery && collapsedSections.has(gid);
+    // '켜진 자료만' 은 접힌 절도 펼친다 — 절이 전부 접힌 채 시작하므로(기본), 거르고도 제목만 남으면
+    // 무엇이 켜져 있는지 여전히 안 보인다. (예전에는 검색어가 있을 때 이렇게 펼쳤다.)
+    const hidden = !activeOnly && collapsedSections.has(gid);
     return '<section class="mp-sec" data-section="' + gid + '" style="--sc:' + groupAccent(gid) + '">'
       + '<h3 class="mp-title"><button data-collapse="' + gid + '" aria-expanded="' + (hidden ? 'false' : 'true') + '">'
       + groupIconHtml(gid) + '<i></i>' + safeText(label) + '<em>' + shown.length + '</em></button></h3>'
       + '<div ' + (hidden ? 'hidden' : '') + '>'
-      + (menuQuery || activeOnly ? '' : chipsFor(gid))
+      + (activeOnly ? '' : chipsFor(gid))
       + shown.map(phenomenonRowHtml).join('')
       + '</div></section>';
+  };
+
+  // 거른 결과가 비었을 때 — 남은 거르개는 '켜진 자료만' 하나다. 무엇을 하면 되는지를 말한다.
+  const emptyMenuHtml = () => `<p role="status">${i18n.ko
+    ? '켜진 자료가 없습니다. \'켜진 자료만\' 을 끄면 전체 메뉴가 보입니다.'
+    : 'Nothing is switched on. Untick “Active only” to see every topic.'}</p>`;
+
+  /* 상단 돋보기(⌕)가 메뉴도 찾는다 — 2026-09-20.
+     메뉴 안 검색 칸을 없애면서 '이름으로 현상 찾기'까지 사라지면 안 된다. 같은 판정(phenMatches →
+     matchesMenu)을 밖에서 부르게 낸다 — 판정이 둘이면 돋보기가 찾은 것과 메뉴에 있는 것이 갈라진다.
+     EARTHUS 묶음 전부 + 우주. 돌려주는 것은 그리는 데 필요한 최소한(이름·묶음·대표 레이어)뿐이다. */
+  const findTopics = (q, limit = 6) => {
+    const query = String(q || '').trim();
+    if (!query) return [];
+    const out = [];
+    for (const gid of [...EARTHUS_MENU_GROUPS, 'space']) {
+      const g = GROUP_BY_ID.get(gid);
+      for (const e of GROUP_INDEX.get(gid) || []) {
+        if (!phenMatches(e, query)) continue;
+        out.push({
+          id: e.id,
+          name: i18n.ko ? e.p.label.ko : e.p.label.en,
+          group: g ? (i18n.ko ? g.label.ko : g.label.en) : '',
+          sceneId: e.rep.s.id,
+          layerId: e.rep.l.id,
+          on: e.members.some((m) => layerOnState(m).on),
+        });
+        if (out.length >= limit) return out;
+      }
+    }
+    return out;
   };
 
   /* '지구 표현 · 이동' 절은 2026-09-20 에 없앴다 (PD: "이건 뭔지 모르겠어 메뉴에서 삭제").
@@ -710,10 +761,9 @@ export function initShell(hooks) {
         <div class="mp-head-copy"><b>${isReport ? (i18n.ko ? '리포트' : 'REPORTS') : aeth ? 'AETHERUS' : 'EARTHUS'}</b><small>${isReport ? (i18n.ko ? '사건 분석 · 지구 회고 · 전망' : 'Event analysis · retrospective · outlook') : i18n.t(aeth ? 'mpTagA' : 'mpTagE')}</small></div>
         <button class="ui-x" data-x="1" aria-label="${i18n.ko ? '메뉴 닫기':'Close menu'}">✕</button>
       </div>
-      ${isReport ? '' : `<div class="mp-search"><label>${i18n.ko ? '메뉴·질문 검색':'Find a topic'}<input type="search" data-menu-search value="${safeText(menuQuery)}" placeholder="${i18n.ko ? '예: 파고, 무장애, 한국':'Search topics'}"></label>
-      <label class="mp-active-only"><input type="checkbox" data-active-only ${activeOnly ? 'checked':''}>${i18n.ko ? '켜진 자료만':'Active only'}</label></div>`}
+      ${isReport ? '' : `<div class="mp-search"><label class="mp-active-only"><input type="checkbox" data-active-only ${activeOnly ? 'checked':''}>${i18n.ko ? '켜진 자료만':'Active only'}</label></div>`}
       <div class="mp-body">
-        ${isReport ? reportPanelHtml() : groups.map(groupSectionHtml).join('') || `<p role="status">${i18n.ko ? '조건에 맞는 메뉴가 없습니다. 검색어 또는 필터를 바꿔 주세요.':'No matching topics. Change the search or filter.'}</p>`}
+        ${isReport ? reportPanelHtml() : groups.map(groupSectionHtml).join('') || emptyMenuHtml()}
         ${isReport ? '' : `<div class="mp-foot">${i18n.t('mpFoot')}</div>`}
       </div>`;
     panel.classList.add('open');
@@ -745,14 +795,14 @@ export function initShell(hooks) {
     const body = panel.querySelector('.mp-body');
     const top = body ? body.scrollTop : 0;
     const active = document.activeElement;
-    const restore = active && panel.contains(active) ? {search:active.matches('[data-menu-search]'), start:active.selectionStart, end:active.selectionEnd,scene:active.dataset.fscene,id:active.dataset.flayer,collapse:active.dataset.collapse} : null;
+    const restore = active && panel.contains(active) ? {scene:active.dataset.fscene,id:active.dataset.flayer,collapse:active.dataset.collapse} : null;
     const onChips = [...panel.querySelectorAll('.mp-chip.on')]
       .map((c) => c.dataset.region || c.dataset.pop).filter(Boolean);
     openPanel(openBrand);
     const body2 = panel.querySelector('.mp-body');
     if (body2 && top) body2.scrollTop = top;
-    const restoreEl = restore?.search ? panel.querySelector('[data-menu-search]') : restore?.id ? panel.querySelector(`[data-fscene="${restore.scene}"][data-flayer="${restore.id}"]`) : restore?.collapse ? panel.querySelector(`[data-collapse="${restore.collapse}"]`) : null;
-    if (restoreEl) { restoreEl.focus({preventScroll:true}); if(restore?.search)restoreEl.setSelectionRange(restore.start,restore.end); }
+    const restoreEl = restore?.id ? panel.querySelector(`[data-fscene="${restore.scene}"][data-flayer="${restore.id}"]`) : restore?.collapse ? panel.querySelector(`[data-collapse="${restore.collapse}"]`) : null;
+    if (restoreEl) restoreEl.focus({preventScroll:true});
     for (const key of onChips) {
       const c = panel.querySelector(`.mp-chip[data-region="${key}"], .mp-chip[data-pop="${key}"]`);
       if (c) c.classList.add('on');
@@ -769,18 +819,18 @@ export function initShell(hooks) {
         그러면 **지금 글자를 치고 있는 input 이 글자마다 파괴된다** — 한글은 자모가 조합되는
         도중에 입력 요소가 사라지므로 "ㅎㅏㄴ" 처럼 풀려 버리고, '켜진 자료만' 체크박스는
         누르는 순간 포커스를 잃는다. 값과 커서를 되살려도 조합 중인 IME 는 되살릴 수 없다.
-     그리는 함수는 openPanel 과 같은 것을 쓴다 — 그리는 곳이 둘이면 또 갈라진다. */
+     그리는 함수는 openPanel 과 같은 것을 쓴다 — 그리는 곳이 둘이면 또 갈라진다.
+     (2026-09-20: 검색 칸은 상단 돋보기로 옮겨 없앴다. 위 규칙은 '켜진 자료만' 체크박스에 그대로
+      해당한다 — 패널을 통째로 다시 쓰면 누르는 순간 포커스를 잃는다.) */
   panel.addEventListener('input',e=>{
-    if(e.target.matches('[data-menu-search]')) menuQuery=e.target.value;
-    else if(e.target.matches('[data-active-only]')) activeOnly=e.target.checked;
+    if(e.target.matches('[data-active-only]')) activeOnly=e.target.checked;
     else return;
     const body = panel.querySelector('.mp-body');
     if (!body) return;
     const aeth = openBrand === 'aetherus';
     const groups = aeth ? ['space'] : [...EARTHUS_MENU_GROUPS];
-    // 꼬리말(.mp-foot)도 .mp-body 안에 있다 — 같이 그리지 않으면 검색하는 동안만 사라진다.
-    body.innerHTML = (groups.map(groupSectionHtml).join('')
-      || `<p role="status">${i18n.ko?'조건에 맞는 메뉴가 없습니다. 검색어 또는 필터를 바꿔 주세요.':'No matching topics. Change the search or filter.'}</p>`)
+    // 꼬리말(.mp-foot)도 .mp-body 안에 있다 — 같이 그리지 않으면 거르는 동안만 사라진다.
+    body.innerHTML = (groups.map(groupSectionHtml).join('') || emptyMenuHtml())
       + `<div class="mp-foot">${i18n.t('mpFoot')}</div>`;
   });
   panel.addEventListener('keydown',e=>{if(e.key==='Escape'){const brand=openBrand;closeFlyout();(brand==='aetherus'?tabA:tabE).focus();}});
@@ -1044,6 +1094,9 @@ export function initShell(hooks) {
   /* 열기: 탭을 주면 그 탭으로, 안 주면 지금 탭 그대로. 이미 열려 있으면 다시 그린다.
      리포트→현상·리포트→분석·하단바가 전부 이 문으로만 들어온다. */
   function openIntel(tab) {
+    // 2026-09-23 반박 검증 — 지점 카드('point')는 지구를 누른 그 순간의 한 장이다. 탭 없이 여는 길(국가·권역 선택,
+    //   사건 표식, 검색의 나라)이 남아 있던 'point' 로 들어가 **옛 자리의 기온 카드**를 다시 띄웠다 → '선택 자료'로 연다.
+    if (!tab && curTab === 'point') tab = 'now';
     if (tab) showTab(tab, 'intent');
     setIntelOpen(true);
   }
@@ -1159,6 +1212,22 @@ export function initShell(hooks) {
       intelContent.innerHTML = historyHtml();
     } else if (curTab === 'why') {
       intelContent.innerHTML = whyHtml();
+    } else if (curTab === 'point') {
+      // 2026-09-23 PD — 색면 현상을 고른 채 지구를 누르면 **한 장**(js/point-card.js). 탭 단추가 없는 값이라
+      // 이 갈래가 없으면 마지막 else 로 떨어져 예보·예정 화면이 그려진다.
+      // 재생 중에는 220 ms 마다 여기로 온다. 카드를 통째로 갈면 누르던 단추가 손가락 밑에서 바뀌고(click 이 사라진다)
+      // 떠 있던 이유 한 줄(sim-why)도 지워진다 — 같은 카드(data-key)면 시각 따라 바뀌는 덩어리([data-pc-live])만
+      // 제자리에서 바꾼다(field-layer.js:1012 의 [data-field-live] 와 같은 까닭).
+      const html = hooks.getPoint ? hooks.getPoint() : '';
+      const cur = intelContent.querySelector('.point-card[data-key]');
+      const key = (html.match(/data-key="([^"]*)"/) || [])[1];
+      if (cur && key && cur.dataset.key === key) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        const liveNew = tmp.querySelector('[data-pc-live]');
+        const liveCur = cur.querySelector('[data-pc-live]');
+        if (liveNew && liveCur) { if (liveCur.innerHTML !== liveNew.innerHTML) liveCur.innerHTML = liveNew.innerHTML; } else intelContent.innerHTML = html;
+      } else intelContent.innerHTML = html;
     } else {
       intelContent.innerHTML = nextHtml();
     }
@@ -1243,7 +1312,9 @@ export function initShell(hooks) {
     const header=document.createElement('div');header.className='information-context';
     header.innerHTML=`${selectedMenu ? `<strong>${safeText(i18n.ko ? questionForLayer(selectedMenu.s.id, selectedMenu.l.id) || selectedMenu.l.name : selectedMenu.l.name)}</strong><div>${safeText(selectedMenu.l.src)} · ${dataBadge(selectedMenu.l.state)}</div>${phenomenonLine()}${simQuestionsHtml()}${regionLine()}${intelStripBlock()}`:''}${mapContextQuestions()}<div>${safeText(i18n.ko?'선택 장소':'Selected place')}: ${safeText(picked?.nameKo || picked?.name || (i18n.ko?'지도에서 선택':'Select on the globe'))}</div>${timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}</p>`:''}
       ${active.length ? `<details><summary>${i18n.ko?'현재 켜진 자료':'Active data'} ${active.length}</summary>${active.map(({s,l})=>`<div class="active-data-row"><span>${safeText(i18n.layer(l.id,l.name,s.id))}<small>${safeText(menuTime(l.id,i18n.ko))}</small></span>${canClearLayer(l.id)?`<button data-action="shell-layer-off" data-scene="${s.id}" data-layer="${l.id}" aria-label="${safeText(l.name)} 끄기">${i18n.ko?'끄기':'Off'}</button>`:''}</div>`).join('')}<button data-action="shell-clear-layers">${i18n.ko?'추가 자료 모두 끄기':'Clear overlays'}</button></details>`:''}`;
-    intelContent.prepend(header);
+    // 지점 카드는 한 장이다 — 머리말(질문·능력 줄·궁금한 점·선택 장소·켜진 자료)을 그 위에 얹지 않는다.
+    // 2026-09-23 PD 가 가리킨 "가장 큰 문제"가 바로 누른 순간 이 머리말과 탭 두 줄이 값보다 먼저 선 것이었다.
+    if (curTab !== 'point') intelContent.prepend(header);
     intelContent.scrollTop=scrollTop;
   };
 
@@ -1305,6 +1376,8 @@ export function initShell(hooks) {
     if (open) applyCapabilityGating();
     if (intelOpen === open) { if (open) renderIntel(); syncIntelNav(); return; }
     intelOpen = open;
+    // 닫으면 지점 카드 모드도 끝난다 — 다음에 탭 없이 열 때 옛 카드가 되살아나지 않게(위 openIntel 과 같은 사고).
+    if (!intelOpen && curTab === 'point') { curTab = 'now'; tabIntent = 'now'; intel.dataset.tab = 'now'; }
     // 새로 열 때는 half — 지구가 위에 보이는 INFORMATION 단계에서 시작한다(M1 · §C-0).
     if (intelOpen) setSheet('half');
     intel.classList.toggle('open', intelOpen);
@@ -1464,6 +1537,7 @@ export function initShell(hooks) {
     if (source === 'follow' && t !== tabIntent) return false;
     tabIntent = t;
     curTab = t;
+    intel.dataset.tab = t;   // CSS 가 읽는다 — 지점 카드('point')일 때 탭 단추 줄을 숨긴다(index.html)
     intel.querySelectorAll('.intel-tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
     if (intelOpen) renderIntel();
     return true;
@@ -1490,9 +1564,22 @@ export function initShell(hooks) {
     updateLabels,
     // main.js 열네 자리가 이걸 쓴다(바다 클릭·국가 클릭·내 지역 …).
     // 손잡이 click() 합성이던 것을 같은 문(setIntelOpen)으로 돌린다.
-    openIntel: (tab) => { if (tab) showTab(tab, 'intent'); setIntelOpen(true); },
+    openIntel: (tab) => { openIntel(tab); },   // 한 문으로 — 위 openIntel 의 'point' 되돌림을 같이 탄다
     // 추천 질문의 위성 경로 — 우주 씬으로 보내 SGP4 전파를 실제로 보여준다 (sim-q · satellite-track).
     gotoScene,
+    // 상단 돋보기가 쓴다 — 메뉴 줄을 누른 것과 **같은 길**로 간다(켜져 있으면 끈다. 그래서 돋보기가
+    // 결과 줄에 '켜기/끄기'를 적는다). 길을 따로 내면 메뉴와 돋보기의 동작이 갈라진다.
+    findTopics,
+    openTopic: (sceneId, layerId) => {
+      const scene = SCENES.find((s) => s.id === sceneId);
+      const layer = scene && scene.layers.find((l) => l.id === layerId);
+      if (!layer || !hooks.onLayerAction) return false;
+      selectedMenu = { s: scene, l: layer };
+      applyCapabilityGating();
+      intelContent.scrollTop = 0;
+      hooks.onLayerAction(scene.id, layer);
+      return true;
+    },
   };
 }
 

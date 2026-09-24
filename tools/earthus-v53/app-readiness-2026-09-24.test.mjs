@@ -18,9 +18,9 @@ const REPO = path.resolve(HERE, '..', '..');
 const read = (rel) => readFileSync(path.join(REPO, rel), 'utf8');
 
 const {
-  detectAppContext, stripAppMarker, paymentRoute, allowedProviderKeys, APP_PACKAGE,
+  detectAppContext, stripAppMarker, paymentRoute, allowedProviderKeys, APP_PACKAGE, isAndroidBrowser,
 } = await import('../../prototype/js/app-context.js');
-const { createBackStack, oauthRewindSteps, OVERLAY_STATE_KEY } = await import('../../prototype/js/back-close.js');
+const { createBackStack, createInertBackStack, oauthRewindSteps, OVERLAY_STATE_KEY } = await import('../../prototype/js/back-close.js');
 
 // ── 1. 앱 안 판정 ────────────────────────────────────────────────────────────────────────────────
 const inAppRoute = (ctx, extra = {}) => paymentRoute({ inApp: ctx.inApp, hasDigitalGoods: false, hasNativeBridge: false, ...extra });
@@ -70,9 +70,51 @@ test('일반 브라우저 탭 — 앱 밖이고 웹(토스) 결제 길이 남는
 });
 
 test('PWA 설치본(standalone) — D17 대가: 앱 안으로 본다', () => {
-  const ctx = detectAppContext({ search: '', standalone: true });
+  // (2026-09-24 정정, PD 결정) 안드로이드에서만. 아래 두 시험이 iOS·데스크톱을 따로 본다.
+  const ctx = detectAppContext({ search: '', standalone: true, android: true });
   assert.equal(ctx.inApp, true);
   assert.equal(ctx.entryKind, 'standalone');
+});
+
+// (2026-09-24, PD 결정) standalone 은 안드로이드에서만 '앱 안'이다 — iOS·데스크톱 홈 화면 웹앱은 웹(토스 허용).
+const UA = {
+  iphone: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1',
+  ipad: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15',
+  desktop: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36',
+  android: 'Mozilla/5.0 (Linux; Android 15; SM-S928N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36',
+  samsung: 'Mozilla/5.0 (Linux; Android 14; SM-S918N) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/26.0 Chrome/122.0.0.0 Mobile Safari/537.36',
+};
+const routeFor = (ctx, extra = {}) => paymentRoute({ inApp: ctx.inApp, hasDigitalGoods: false, hasNativeBridge: false, ...extra });
+
+test('standalone — iOS·데스크톱 홈 화면 웹앱은 웹이다: 결제 길 web(토스)이 남는다', () => {
+  for (const [name, ua] of [['iphone', UA.iphone], ['ipad', UA.ipad], ['desktop', UA.desktop]]) {
+    const android = isAndroidBrowser({ userAgent: ua, userAgentData: name === 'desktop' ? { platform: 'Windows' } : undefined });
+    assert.equal(android, false, name);
+    const ctx = detectAppContext({ search: '', standalone: true, android, referrer: '' });
+    assert.equal(ctx.inApp, false, name);
+    assert.equal(ctx.entryKind, 'web', name);
+    assert.equal(routeFor(ctx), 'web', name);
+    assert.ok(allowedProviderKeys(routeFor(ctx)).includes('web'), `${name} — 토스 길이 있어야 한다`);
+  }
+});
+
+test('standalone — 안드로이드 설치본은 앱 안: 결제 길이 blocked/play/native 이고 web 이 없다', () => {
+  for (const nav of [{ userAgent: UA.android }, { userAgent: UA.samsung }, { userAgent: 'x', userAgentData: { platform: 'Android' } }]) {
+    const android = isAndroidBrowser(nav);
+    assert.equal(android, true, JSON.stringify(nav));
+    const ctx = detectAppContext({ search: '', standalone: true, android, referrer: '' });
+    assert.equal(ctx.inApp, true);
+    assert.equal(ctx.entryKind, 'standalone');
+    assert.equal(routeFor(ctx), 'blocked');
+    assert.equal(routeFor(ctx, { hasDigitalGoods: true }), 'play');
+    assert.equal(routeFor(ctx, { hasNativeBridge: true }), 'native');
+    for (const r of ['blocked', 'play', 'native']) assert.equal(allowedProviderKeys(r).includes('web'), false);
+  }
+  // 안드로이드여도 standalone 이 아니면(일반 Chrome 탭) 웹이다
+  assert.equal(detectAppContext({ standalone: false, android: true }).inApp, false);
+  // 런처 표식·우리 referrer 는 기기와 무관하게 그대로 앱 안(바뀌지 않은 신호)
+  assert.equal(detectAppContext({ search: '?src=twa', android: false }).inApp, true);
+  assert.equal(detectAppContext({ referrer: `android-app://${APP_PACKAGE}/`, android: false }).inApp, true);
 });
 
 test('앱 안 결제 길 — Digital Goods → play, 브리지 → native, 둘 다 없음 → blocked. 어느 길에도 web 이 없다', () => {
@@ -93,7 +135,7 @@ test('표식 지우기 — src=twa 만 빠지고 다른 쿼리·해시는 남는
 
 test('billing.js — 결제 길 거름을 쓰고, web 은 앱 안에서 세 겹으로 막히고, play 가 google 보다 앞이다', () => {
   const src = read('prototype/js/billing.js');
-  assert.match(src, /import \{ isInApp, paymentRoute, allowedProviderKeys \} from '\.\/app-context\.js';/);
+  assert.match(src, /import \{ isInApp, paymentRoute, allowedProviderKeys \} from '\.\/app-context\.js\?v=2';/);   // (2026-09-24 정정) ?v=2
   assert.match(src, /const allowed = allowedProviderKeys\(this\.route\(\)\);/);
   assert.match(src, /available: \(\) => !!CONFIG\.CHECKOUT_URL && !isInApp\(\),/);
   assert.match(src, /if \(prov\.key === 'web' && isInApp\(\)\) throw new Error\('NOT_AVAILABLE'\);/);
@@ -107,14 +149,22 @@ test('billing.js — 결제 길 거름을 쓰고, web 은 앱 안에서 세 겹�
 });
 
 test('app-context.js 는 v1 main.js·v2 main.js 의 첫 import 다(주소에 표식이 박히기 전에 지운다)', () => {
+  // (2026-09-24 정정) ?v=2 — app-context.js·back-close.js 가 바뀌었다. back-close.js 안의 import 와 모든 importer 가 같은 지정자여야
+  //   한 문서에 판정이 한 벌이다(v2 번들: shared/back-close.js 의 ./app-context.js?v=2 = main.js 의 ./shared/app-context.js?v=2).
   const v1 = read('prototype/js/main.js').split('\n').filter((l) => /^import /.test(l));
-  assert.equal(v1[0], "import './app-context.js';");
+  assert.equal(v1[0], "import './app-context.js?v=2';");
   const v2 = read('prototype/v2-three/js/main.js').split('\n').filter((l) => /^import /.test(l));
-  assert.equal(v2[0], "import '../../js/app-context.js?v=1';");
+  assert.equal(v2[0], "import '../../js/app-context.js?v=2';");
+  assert.match(read('prototype/js/back-close.js'), /^import \{ isInApp \} from '\.\/app-context\.js\?v=2';$/m);
+  assert.match(read('prototype/js/billing.js'), /from '\.\/app-context\.js\?v=2';/);
   // 한 문서 안에서 back-close 는 한 벌이어야 한다 — v2 의 두 importer 가 같은 지정자
   const shell = read('prototype/v2-three/js/ui-shell.js');
-  assert.match(shell, /from '\.\.\/\.\.\/js\/back-close\.js\?v=1';/);
-  assert.match(read('prototype/v2-three/js/main.js'), /from '\.\.\/\.\.\/js\/back-close\.js\?v=1';/);
+  assert.match(shell, /from '\.\.\/\.\.\/js\/back-close\.js\?v=2';/);
+  assert.match(read('prototype/v2-three/js/main.js'), /from '\.\.\/\.\.\/js\/back-close\.js\?v=2';/);
+  assert.doesNotMatch(read('prototype/v2-three/js/main.js') + shell, /back-close\.js\?v=1'|app-context\.js\?v=1'/);
+  // 바뀐 모듈 사슬의 토큰: ui-shell 76 · main 209
+  assert.match(read('prototype/v2-three/js/main.js'), /from '\.\/ui-shell\.js\?v=76-back0924';/);
+  assert.match(read('prototype/v2-three/index.html'), /<script type="module" src="\.\/js\/main\.js\?v=209-app0924"><\/script>/);
   // 번들이 두 파일을 싣고 경로를 바꾼다
   const build = read('tools/build-v2-bundle.sh');
   assert.match(build, /prototype\/js\/app-context\.js" "\$ROOT\/prototype\/js\/back-close\.js" "\$OUT\/js\/shared\/"/);
@@ -138,6 +188,7 @@ function fakeWindow(url = 'https://earthus.net/') {
     },
     addEventListener(type, fn) { if (type === 'popstate') listeners.push(fn); },
     userBack() { idx -= 1; return fire(); },
+    get listenerCount() { return listeners.length; },
     get idx() { return idx; },
     entries,
   };
@@ -231,11 +282,15 @@ test('뒤로 단추 — 새로 읽은 문서가 옛 표식 칸 위에서 시작�
   assert.deepEqual(win.history.state, { keep: 1 });
 });
 
-test('v1 earth-view-state — 우리 pop 은 장면을 되돌리지 않고, Style(서랍)은 칸을 쌓지 않는다', () => {
+test('v1 earth-view-state — 우리 pop 은 장면을 되돌리지 않고, Style(서랍)은 칸을 쌓지 않는다 — 앱 안에서만', () => {
   const src = read('prototype/js/earth-view-state.js');
   assert.match(src, /if \(backStack\(\)\.consumed\(event\)\) return;/);
-  assert.match(src, /if \(same\(cleanState\(route\), cleanState\(store\.earthView\)\)\) return;/);
-  assert.match(src, /state\.view === 'style' \|\| store\.earthView\.view === 'style' \|\| backStack\(\)\.suppressPush\(\)/);
+  // (2026-09-24 정정, PD 결정) 웹 탭 동작을 바꾸는 세 줄은 backStack().enabled(앱 안)로 묶인다
+  assert.match(src, /if \(backStack\(\)\.enabled && same\(cleanState\(route\), cleanState\(store\.earthView\)\)\) return;/);
+  assert.match(src, /if \(bs\.enabled && \(state\.view === 'style' \|\| store\.earthView\.view === 'style' \|\| bs\.suppressPush\(\)\)\) mode = 'replace';/);
+  assert.match(src, /const quiet = store\.earthView\.view === 'earth'\s*\|\| \(bs\.enabled && \(store\.earthView\.view === 'style' \|\| bs\.suppressPush\(\)\)\);/);
+  // 묶이지 않은 Style 조건이 남아 있으면 웹 탭(데스크톱 포함)의 레이어 고른 뒤 뒤로가 페이지를 떠난다
+  assert.doesNotMatch(src, /\n\s*if \(state\.view === 'style' \|\| store\.earthView\.view === 'style'/);
   const main = read('prototype/js/main.js');
   for (const id of ["'sheet'", "'menu'", "'search'"]) assert.ok(main.includes(`.register(${id}`), id);
 });
@@ -262,7 +317,12 @@ test('OAuth 되감기 — 로그인 시트 칸을 Google 로 바꿨으면 그 �
   // 50칸 상한 근처는 번호가 밀려 위험 — 움직이지 않는다
   assert.equal(oauthRewindSteps({ savedLength: 45, replaced: true, nowLength: 50 }), 0);
   const auth = read('prototype/js/auth.js');
-  assert.match(auth, /skipBrowserRedirect: true/);
+  // (2026-09-24 정정) 이동을 맡는 것은 앱 안에서만 — 웹 탭은 Supabase 가 예전처럼 스스로 떠난다
+  assert.match(auth, /skipBrowserRedirect: inAppBack,/);
+  assert.match(auth, /inAppBack = backStack\(\)\.enabled === true;/);
+  assert.match(auth, /if \(!inAppBack\) return;/);
+  // (2026-09-24 정정, 검수) data 를 받지 않고 data?.url 을 읽어 로그인이 ReferenceError 로 멈췄다
+  assert.match(auth, /const \{ data, error \} = await this\.client\.auth\.signInWithOAuth\(/);
   assert.match(auth, /if \(replaced\) window\.location\.replace\(url\);/);
 });
 
@@ -403,7 +463,7 @@ test('kill-switch — 옛 v2 캐시를 지우고 등록을 풀고, v1 캐시는 
 });
 
 // ── 5. 아이콘·theme-color ──────────────────────────────────────────────────────────────────────
-test('manifest — 전용 maskable, 이름은 그대로, theme-color 세 곳이 한 값', () => {
+test('manifest — 전용 maskable, 이름은 그대로, theme-color 네 곳이 앱과 한 값(#02060c)', () => {
   const m = JSON.parse(read('prototype/manifest.webmanifest'));
   assert.equal(m.short_name, 'earthus');
   const maskable = m.icons.filter((i) => i.purpose === 'maskable');
@@ -411,9 +471,16 @@ test('manifest — 전용 maskable, 이름은 그대로, theme-color 세 곳이 
   assert.ok(m.icons.some((i) => i.src === 'icon-512.png' && i.purpose === 'any'));
   const v1 = read('prototype/index.html').match(/<meta name="theme-color" content="([^"]+)"/)[1];
   const v2 = read('prototype/v2-three/index.html').match(/<meta name="theme-color" content="([^"]+)"/)[1];
-  assert.equal(m.theme_color, v1);
-  assert.equal(v2, v1);
-  assert.equal(m.background_color.toLowerCase(), v1.toLowerCase(), '스플래시 → 상태바 → 첫 화면이 이어진다');
+  // (2026-09-24 정정, PD 결정) 한 값은 #02060c — 안드로이드 앱(twa-manifest themeColor)·v1 manifest 원래 값.
+  //   예전 시험은 background_color 와 같기를 요구했다(#000000) — PD 가 바탕은 그대로 두라고 했다.
+  const off = read('prototype/offline.html').match(/<meta name="theme-color" content="([^"]+)"/)[1];
+  const twa = JSON.parse(read('apps/android-twa/twa-manifest.json'));
+  for (const [where, v] of [['v1 manifest', m.theme_color], ['v1 index', v1], ['v2 index', v2], ['offline', off]]) {
+    assert.equal(v, '#02060c', where);
+  }
+  assert.equal(twa.themeColor.toLowerCase(), '#02060c', '앱과 한 값');
+  assert.equal(twa.navigationColor.toLowerCase(), '#02060c');
+  assert.equal(m.background_color, '#000000', '바탕은 그대로');
   const png = readFileSync(path.join(REPO, 'prototype', 'icon-maskable-512.png'));
   assert.equal(png.readUInt32BE(16), 512);
   assert.equal(png.readUInt32BE(20), 512);
@@ -428,7 +495,7 @@ test('뒤로 단추 — 모듈 주소가 둘이어도(v2 번들 ./shared/ + LAB 
     const a = await import('../../prototype/js/back-close.js?instance=bundle');
     const b = await import('../../prototype/js/back-close.js?instance=v1-auth');
     assert.notEqual(a.backStack, b.backStack, '시험 전제: 모듈이 두 벌이다');
-    const bs = a.backStack();
+    const bs = a.backStack({ inApp: () => true });   // (2026-09-24 정정) node 에는 문서가 없다 — 앱 안을 시험용으로 넣는다
     let open = false;
     bs.register('menu', { isOpen: () => open, close: () => { open = false; } });
     open = true; bs.syncNow();
@@ -449,4 +516,78 @@ test('v2 — 우상단 검색·설정 서랍과 물어보기 서랍도 뒤로 �
   const main = read('prototype/v2-three/js/main.js');
   assert.match(main, /\.register\('drawer', \{\s*isOpen: \(\) => searchDrawer\.classList\.contains\('open'\) \|\| settingsDrawer\.classList\.contains\('open'\),\s*close: \(\) => closeDrawers\(\),/);
   assert.match(main, /\.register\('ask', \{ isOpen: \(\) => !!askBox\?\.classList\.contains\('open'\), close: \(\) => askEarth\.close\(\) \}\)/);
+});
+
+// ── 7. (2026-09-24, PD 결정) 뒤로 단추 = 앱만 · 앱이 스스로 연 시트는 칸을 안 쌓는다 ─────────────────────
+test('웹 탭 — backStack() 은 아무것도 하지 않는다: 서랍을 열어도 칸이 늘지 않고 popstate 를 듣지 않는다', async () => {
+  const win = fakeWindow();
+  win.history.replaceState({ [OVERLAY_STATE_KEY]: 7, keep: 1 }, '', win.location.href);
+  const prev = globalThis.window;
+  globalThis.window = win;
+  try {
+    const m = await import('../../prototype/js/back-close.js?instance=web-tab');
+    const bs = m.backStack({ inApp: () => false });
+    assert.equal(bs.enabled, false);
+    assert.equal(win.__earthusBackStack, bs, '웹 탭의 무동작 한 벌도 문서에 한 벌');
+    let open = false;
+    bs.register('menu', { isOpen: () => open, close: () => { open = false; } }).watch(null).openedByApp('intel');
+    open = true; bs.sync(); bs.syncNow();
+    await tick();
+    assert.equal(win.history.length, 1, '서랍을 열어도 칸이 늘지 않는다(예전과 같다)');
+    assert.deepEqual(win.history.state, { [OVERLAY_STATE_KEY]: 7, keep: 1 }, 'history 를 건드리지 않는다');
+    assert.equal(win.listenerCount, 0, 'popstate 를 듣지 않는다');
+    assert.equal(bs.consumed({ state: null }), false);
+    assert.equal(bs.suppressPush(), false);
+    assert.equal(bs.armedNow(), false);
+    // 같은 문서에서 다른 주소로 읽힌 두 번째 모듈이 불러도(판정이 달라도) 무동작 한 벌을 받는다
+    const m2 = await import('../../prototype/js/back-close.js?instance=web-tab-2');
+    assert.equal(m2.backStack({ inApp: () => true }), bs);
+  } finally {
+    if (prev === undefined) delete globalThis.window; else globalThis.window = prev;
+  }
+  // node 에서 인자 없이 부르면(문서 없음 = 앱 밖) 무동작
+  const m3 = await import('../../prototype/js/back-close.js?instance=node-default');
+  assert.equal(m3.backStack().enabled, false);
+  assert.equal(createInertBackStack().enabled, false);
+});
+
+test('앱 안 — 앱이 스스로 연 시트는 칸을 쌓지 않는다: 첫 화면 뒤로 한 번이 앱을 끝낸다', async () => {
+  const win = fakeWindow();
+  const bs = createBackStack(win);
+  const open = { intel: false, menu: false };
+  bs.register('intel', { isOpen: () => open.intel, close: () => { open.intel = false; } });
+  bs.register('menu', { isOpen: () => open.menu, close: () => { open.menu = false; } });
+  await tick();
+  // 소개를 닫으면 앱이 Intelligence 시트를 편다(openFeedOnce) — 같은 흐름에서 openedByApp
+  open.intel = true; bs.openedByApp('intel');
+  await tick();
+  assert.equal(win.history.length, 1, '앱이 연 시트는 칸을 쌓지 않는다');
+  assert.equal(bs.armedNow(), false);
+  assert.equal(bs.suppressPush(), false);
+  // 사람이 메뉴를 연다 → 칸 하나. 뒤로 → 메뉴만 닫힌다(앱이 연 시트는 그대로), 칸이 다시 쌓이지 않는다
+  open.menu = true; bs.syncNow();
+  assert.equal(win.history.length, 2, '사람이 연 것은 센다');
+  win.userBack();
+  assert.deepEqual(open, { intel: true, menu: false }, '사람이 연 메뉴만 닫힌다');
+  assert.equal(win.idx, 0, '남은 것은 앱이 연 시트뿐 — 칸을 다시 쌓지 않는다. 다음 뒤로는 앱을 끝낸다');
+  // 시트를 닫았다가 사람이 다시 열면 센다
+  open.intel = false; bs.syncNow();
+  open.intel = true; bs.syncNow();
+  assert.equal(win.idx, 1, '사람이 다시 연 시트는 칸 하나');
+  win.userBack();
+  assert.equal(open.intel, false);
+  assert.equal(win.idx, 0);
+  // 사람이 이미 열어 둔 것(칸 있음)을 앱이 다시 열어도 표시를 바꾸지 않는다
+  open.menu = true; bs.syncNow();
+  bs.openedByApp('menu');
+  await tick();
+  assert.equal(bs.armedNow(), true, '사람이 연 칸은 그대로');
+  assert.deepEqual(bs.debug().silent, []);
+});
+
+test('v2 main.js — 앱이 스스로 여는 세 곳(소개 뒤 사건 시트 · ?tab=my · 링크의 나라)이 openedByApp 을 부른다', () => {
+  const main = read('prototype/v2-three/js/main.js');
+  assert.match(main, /shell\.showTab\('feed'\);\s*shell\.openIntel\(\);[\s\S]{0,400}?backStack\(\)\.openedByApp\('intel'\);/);
+  assert.match(main, /shell\.showTab\('my'\); shell\.openIntel\(\);\s*backStack\(\)\.openedByApp\('intel'\);/);
+  assert.match(main, /focus\.select\(f\);[\s\S]{0,300}?backStack\(\)\.openedByApp\('intel'\);\s*return true;/);
 });

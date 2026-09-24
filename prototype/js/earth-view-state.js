@@ -86,7 +86,9 @@ export const earthViewState = {
       if (backStack().consumed(event)) return;
       const route = decodeEarthRoute(location.search) || EMPTY;
       /* (2026-09-24) 주소가 지금 상태와 같으면 되돌릴 것이 없다 — 같은 주소의 칸을 지날 때 장면을 흔들지 않는다. */
-      if (same(cleanState(route), cleanState(store.earthView))) return;
+      /* (2026-09-24 정정, PD 결정 '뒤로 단추 = 앱만') 앱 안에서만 건너뛴다. 웹 탭은 예전 그대로 restore 를 돌린다 —
+         우주·해구 주소(지구 쿼리 없음)에서 지구 칸으로 돌아올 때 sceneMgr.to('earth') 가 빠지면 안 된다. */
+      if (backStack().enabled && same(cleanState(route), cleanState(store.earthView))) return;
       this.restore(route, { history: false, fromPop: true });
     });
     /* (2026-09-24) 뒤로로 서랍·시트를 닫은 뒤, 표식 칸 아래 칸의 주소가 열기 전 것이어도 지금 상태로 맞춘다. */
@@ -205,7 +207,10 @@ export const earthViewState = {
        · Style 로 들어가거나 Style 에서 나올 때는 칸을 쌓지 않는다.
        · 서랍·시트가 열려 있거나 뒤로 때문에 닫는 중이면 칸을 쌓지 않는다 — 그 칸은 표식 칸 위에 쌓여
          뒤로 한 번에 닫히지 않게 만든다. */
-    if (state.view === 'style' || store.earthView.view === 'style' || backStack().suppressPush()) mode = 'replace';
+    /* (2026-09-24 정정, PD 결정 '뒤로 단추 = 앱만') 위 두 줄은 **앱 안에서만** 적용한다. 웹 탭(데스크톱 포함)은 예전 그대로
+       Earth→Style→Data 가 한 칸씩 쌓여, 레이어를 고른 뒤 뒤로가 이전 지구 단계로 돌아간다(페이지를 떠나지 않는다). */
+    const bs = backStack();
+    if (bs.enabled && (state.view === 'style' || store.earthView.view === 'style' || bs.suppressPush())) mode = 'replace';
     return this._commit(state, mode, true);
   },
 
@@ -225,7 +230,10 @@ export const earthViewState = {
       if (!options.keepMenu) this._deps.layerBar.closeMenus?.();   // 2단 갈아타기(keepMenu)는 메뉴를 둔다
       if (options.resetLayers) store.resetLayersToDefaults();
       /* (2026-09-24) Style(서랍)에서 Earth 로 나오는 것은 서랍을 닫는 것이다 — 칸을 쌓지 않는다(위 _transition 주석). */
-      const quiet = store.earthView.view === 'earth' || store.earthView.view === 'style' || backStack().suppressPush();
+      /* (2026-09-24 정정, PD 결정) Style 조건·suppressPush 는 앱 안에서만 — 웹 탭은 예전 그대로 Style→Earth 가 칸을 쌓는다. */
+      const bs = backStack();
+      const quiet = store.earthView.view === 'earth'
+        || (bs.enabled && (store.earthView.view === 'style' || bs.suppressPush()));
       this._commit(EMPTY, quiet ? 'replace' : 'push', true);
     } finally {
       this._restoring = false;

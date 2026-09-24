@@ -15,11 +15,20 @@
 //   C. v2 뒤로 — 메뉴 서랍·Intelligence 시트가 같은 규칙. 해시(카메라)가 옛 자리로 돌아가지 않는다.
 //   D. 오프라인 — SW 가 붙은 뒤 망을 끊으면 /v2/·/Intelligence/ 가 안내 화면(마지막 연 시각 포함)으로 뜬다.
 //   E. kill-switch — 옛 /v2/sw.js 를 등록해 둔 뒤 kill-switch 로 바꾸고 갱신하면 등록이 풀리고 옛 v2 캐시가 지워지며 v1 캐시는 남는다.
+//
+// (2026-09-24 정정, PD 결정 4건) 뒤로 단추 = **앱만** · 앱이 스스로 연 시트는 칸을 안 쌓음 · standalone 은 안드로이드만 · theme-color #02060c.
+//   B·C 는 이제 앱 안(`?src=twa`)에서 본다. 일반 탭은 W 가 본다:
+//   W. 웹 탭 동등성 — 같은 조작을 **이 브랜치 이전 코드**(BASE_COMMIT, 요청 가로채기로 옛 파일을 준다)와 지금 코드에서 돌려
+//      기록(history.length · 지구 단계 · 서랍 · 주소 · 페이지를 떠났는가)이 **같아야** 한다. 데스크톱·폰 둘 다.
+//      데스크톱 v1: 레이어를 고른 뒤 뒤로 = 이전 지구 단계(Style), 한 번 더 = Earth — 페이지를 떠나지 않는다.
+//   A7·A8. iOS UA + standalone → 웹 결제 길('web') / 안드로이드 UA + standalone → 앱 안('blocked').
+//   C6. 앱 안 v2 첫 화면 — 소개를 닫으면 앱이 Intelligence 시트를 스스로 펴도 **뒤로 한 번이 떠난다.**
+//   T. theme-color — v1·v2·offline 문서의 meta 가 #02060c.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { spawn } from 'node:child_process';
+import { spawn, execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
@@ -48,6 +57,19 @@ function startServer(root, port) {
 }
 
 const PHONE = { viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true };
+const DESKTOP = { viewport: { width: 1440, height: 900 } };
+/* (2026-09-24) 이 브랜치 이전 코드 — W 의 기준선. git show 로 읽기만 한다(작업 트리는 건드리지 않는다). */
+const BASE_COMMIT = process.env.EARTHUS_BASE_COMMIT || 'c5b17728';
+const oldFile = (rel) => execFileSync('git', ['-C', REPO, 'show', `${BASE_COMMIT}:prototype/${rel}`], { encoding: 'utf8', maxBuffer: 64 << 20 });
+const IOS_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1';
+const ANDROID_UA = 'Mozilla/5.0 (Linux; Android 15; SM-S928N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Mobile Safari/537.36';
+/* display-mode: standalone 을 흉내 낸다 — Playwright 는 이 미디어 기능을 에뮬레이트하지 못한다. */
+const STANDALONE_INIT = () => {
+  const orig = window.matchMedia.bind(window);
+  window.matchMedia = (q) => (/display-mode:\s*standalone/.test(q)
+    ? { matches: true, media: q, onchange: null, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {}, dispatchEvent() { return false; } }
+    : orig(q));
+};
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
 const salesOpenConfig = () => fs.readFileSync(path.join(REPO, 'prototype', 'js', 'config.local.example.js'), 'utf8')
@@ -172,13 +194,199 @@ try {
     await ctx.close();
   }
 
-  // ── B. v1 뒤로 ─────────────────────────────────────────────────────────────────────────────────
-  {
-    const ctx = await browser.newContext(PHONE);
+  // (2026-09-24, PD 결정) standalone 은 안드로이드에서만 '앱 안' — iOS·데스크톱 홈 화면 웹앱은 웹(토스 허용)
+  for (const [name, opts, want] of [
+    ['A7 iOS UA + standalone', { ...PHONE, userAgent: IOS_UA }, { inApp: false, route: 'web', providers: ['web'], backEnabled: false }],
+    ['A7b 데스크톱 + standalone', { ...DESKTOP }, { inApp: false, route: 'web', providers: ['web'], backEnabled: false }],
+    ['A8 안드로이드 UA + standalone', { ...PHONE, userAgent: ANDROID_UA }, { inApp: true, route: 'blocked', providers: [], backEnabled: true }],
+  ]) {
+    const ctx = await browser.newContext(opts);
+    await ctx.addInitScript(STANDALONE_INIT);
+    await ctx.route('**/js/config.local.js', (route) => route.fulfill({
+      status: 200, contentType: 'text/javascript; charset=utf-8', body: salesOpenConfig(),
+    }));
     const page = await ctx.newPage();
     await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
     await v1Ready(page);
+    const got = await billingState(page);
+    const extra = await page.evaluate(async () => {
+      const m = await import('/js/app-context.js?v=2');
+      return { standalone: window.matchMedia('(display-mode: standalone)').matches, ctx: m.appContext(), backEnabled: window.__earthusBackStack?.enabled === true };
+    });
+    assert.equal(extra.standalone, true, `${name} — 시험 전제: standalone`);
+    assert.deepEqual({ inApp: got.inApp, route: got.route, providers: got.providers, backEnabled: extra.backEnabled }, want, `${name} ${JSON.stringify({ got, extra })}`);
+    pass(name, JSON.stringify({ route: got.route, providers: got.providers, entryKind: extra.ctx.entryKind, android: extra.ctx.signals.android }));
+    await ctx.close();
+  }
+
+  // ── T. theme-color (PD 결정 — 앱과 같은 #02060c) ───────────────────────────────────────────────
+  {
+    const ctx = await browser.newContext({ ...PHONE, serviceWorkers: 'block' });
+    const page = await ctx.newPage();
+    const got = {};
+    for (const p of ['/', '/v2-three/', '/offline.html']) {
+      await page.goto(`${BASE}${p}`, { waitUntil: 'domcontentloaded' });
+      got[p] = await page.evaluate(() => document.querySelector('meta[name="theme-color"]')?.content);
+    }
+    got.manifest = (await (await page.request.get(`${BASE}/manifest.webmanifest`)).json()).theme_color;
+    assert.deepEqual(got, { '/': '#02060c', '/v2-three/': '#02060c', '/offline.html': '#02060c', manifest: '#02060c' });
+    pass('T theme-color — v1·v2·offline·manifest 모두 #02060c', JSON.stringify(got));
+    await ctx.close();
+  }
+
+  // ── W. 웹 탭 동등성 — 이 브랜치 이전 코드와 같은 뒤로 (PD 결정 '뒤로 단추 = 앱만') ─────────────
+  {
+    const V1_OLD = ['main', 'earth-view-state', 'auth', 'billing', 'ui-subscribe'];
+    const routeOld = async (ctx) => {
+      await ctx.route((url) => url.pathname === '/' || url.pathname === '/index.html', (r) => r.fulfill({
+        status: 200, contentType: 'text/html; charset=utf-8', body: oldFile('index.html'),
+      }));
+      for (const f of V1_OLD) {
+        await ctx.route((url) => url.pathname === `/js/${f}.js`, (r) => r.fulfill({
+          status: 200, contentType: 'text/javascript; charset=utf-8', body: oldFile(`js/${f}.js`),
+        }));
+      }
+      await ctx.route((url) => url.pathname === '/v2-three/' || url.pathname === '/v2-three/index.html', (r) => r.fulfill({
+        status: 200, contentType: 'text/html; charset=utf-8', body: oldFile('v2-three/index.html'),
+      }));
+      for (const f of ['main', 'ui-shell']) {
+        await ctx.route((url) => url.pathname === `/v2-three/js/${f}.js`, (r) => r.fulfill({
+          status: 200, contentType: 'text/javascript; charset=utf-8', body: oldFile(`v2-three/js/${f}.js`),
+        }));
+      }
+    };
+    const v1State = async (page) => (!page.url().startsWith(BASE) ? { left: page.url() } : page.evaluate(() => ({
+      len: history.length, view: document.body.dataset.earthView,
+      menu: document.getElementById('menuSub').classList.contains('open'),
+      sheet: !!document.querySelector('#sheet.up, #settings.up, .sheet-panel.up'),
+      search: !!document.getElementById('searchBox')?.classList.contains('on'),
+      url: location.pathname + location.search, marker: !!(history.state && history.state.earthusOverlay),
+    })).catch(() => ({ left: page.url() })));
+    const goBack = async (page, ms = 1500) => { await page.evaluate(() => history.back()).catch(() => { /* 문서를 떠남 */ }); await wait(ms); };
+    const freshV1 = async (ctx) => {
+      const page = await ctx.newPage();
+      await page.goto(`${BASE}/`, { waitUntil: 'domcontentloaded' });
+      await v1Ready(page);
+      return page;
+    };
+    const runV1 = async (ctx) => {
+      const log = {};
+      // ① 지구 서랍 → 레이어(기온) → 뒤로 → 뒤로 (지구 단계 Earth→Style→Data)
+      let page = await freshV1(ctx);
+      log.load = await v1State(page);
+      await page.click('#menuMain [data-open="earth"]');
+      await page.waitForFunction(() => document.getElementById('menuSub').classList.contains('open'));
+      await wait(800);
+      log.earthDrawer = await v1State(page);
+      await page.click('#menuSub button.ly-all-item[data-id="temp"]');
+      await wait(1500);
+      log.layer = await v1State(page);
+      await goBack(page);
+      log.back1 = await v1State(page);
+      await goBack(page);
+      log.back2 = await v1State(page);
+      await page.close();
+      // ② 경보 서랍 → 뒤로
+      page = await freshV1(ctx);
+      await page.click('#menuMain [data-open="alert"]');
+      await page.waitForFunction(() => document.getElementById('menuSub').classList.contains('open'));
+      await wait(800);
+      log.alert = await v1State(page);
+      await goBack(page);
+      log.alertBack = await v1State(page);
+      await page.close();
+      // ③ 인공위성 시트 → 뒤로
+      page = await freshV1(ctx);
+      await page.locator('#menuMain .mm-item', { hasText: '인공위성' }).first().click();
+      await page.waitForFunction(() => !!document.querySelector('#sheet.up, #settings.up, .sheet-panel.up'), null, { timeout: 15000 });
+      await wait(800);
+      log.sheet = await v1State(page);
+      await goBack(page);
+      log.sheetBack = await v1State(page);
+      await page.close();
+      // ④ 검색 → 뒤로
+      page = await freshV1(ctx);
+      await page.click('#searchBtn');
+      await page.waitForFunction(() => document.getElementById('searchBox').classList.contains('on'));
+      await wait(500);
+      log.search = await v1State(page);
+      await goBack(page);
+      log.searchBack = await v1State(page);
+      await page.close();
+      return log;
+    };
+    const v2State = async (page) => (!page.url().startsWith(BASE) ? { left: page.url() } : page.evaluate(() => ({
+      len: history.length,
+      menu: !!document.getElementById('menu-panel')?.classList.contains('open'),
+      intel: !!document.querySelector('#intel')?.classList.contains('open'),
+      marker: !!(history.state && history.state.earthusOverlay),
+    })).catch(() => ({ left: page.url() })));
+    const runV2 = async (ctx) => {
+      const log = {};
+      const page = await ctx.newPage();
+      await page.goto(`${BASE}/v2-three/`, { waitUntil: 'domcontentloaded' });
+      await page.waitForSelector('button[data-nav="explore"]', { timeout: 90000 });
+      await wait(6000);
+      const intro = page.locator('.intro-go');
+      if (await intro.count()) { await intro.first().click(); }
+      await wait(3000);   // 소개를 닫으면 사건 시트가 스스로 펴진다(openFeedOnce · 600 ms 간격)
+      log.afterIntro = await v2State(page);
+      await page.click('button[data-nav="explore"]');
+      await wait(800);
+      log.menu = await v2State(page);
+      await goBack(page, 300);
+      // v2 문서는 떠나는 데 수 초가 걸린다(swiftshader WebGL 정리 실측 ≈5 s) — 떠났는지를 끝까지 기다려 본다
+      await page.waitForURL('about:blank', { timeout: 30000 }).catch(() => { /* 안 떠났으면 아래 기록이 말한다 */ });
+      log.menuBack = await v2State(page);
+      await page.close();
+      return log;
+    };
+    for (const [device, opts] of [['데스크톱', DESKTOP], ['폰', PHONE]]) {
+      const oldCtx = await browser.newContext({ ...opts, serviceWorkers: 'block' });
+      await routeOld(oldCtx);
+      const before = await runV1(oldCtx);
+      const beforeV2 = await runV2(oldCtx);
+      await oldCtx.close();
+      const newCtx = await browser.newContext({ ...opts, serviceWorkers: 'block' });
+      const now = await runV1(newCtx);
+      const nowV2 = await runV2(newCtx);
+      const inert = await (async () => {
+        const p = await freshV1(newCtx);
+        const r = await p.evaluate(() => ({ enabled: window.__earthusBackStack?.enabled }));
+        await p.close();
+        return r;
+      })();
+      await newCtx.close();
+      assert.deepEqual(now, before, `${device} v1 — 예전과 같아야 한다\n지금 ${JSON.stringify(now)}\n예전 ${JSON.stringify(before)}`);
+      assert.deepEqual(nowV2, beforeV2, `${device} v2 — 예전과 같아야 한다\n지금 ${JSON.stringify(nowV2)}\n예전 ${JSON.stringify(beforeV2)}`);
+      assert.equal(inert.enabled, false, '웹 탭의 뒤로 한 벌은 무동작');
+      // 결과로 본다: 경보 서랍·시트·검색은 칸을 만들지 않고, 뒤로는 페이지의 이전 칸(여기서는 about:blank)으로 간다
+      for (const k of ['alert', 'sheet', 'search']) {
+        assert.equal(now[k].len, now.load.len, `${device} ${k} — 여는 것만으로 history.length 가 늘면 안 된다`);
+        assert.equal(now[`${k}Back`].left, 'about:blank', `${device} ${k} 뒤로 = 페이지의 이전 칸`);
+      }
+      // 지구 단계(Earth→Style→Data)는 예전처럼 한 칸씩 — 레이어를 고른 뒤 뒤로 = Style, 한 번 더 = Earth(페이지를 떠나지 않는다)
+      assert.equal(now.earthDrawer.len, now.load.len + 1);
+      assert.equal(now.layer.len, now.load.len + 2);
+      assert.deepEqual([now.back1.view, now.back2.view], ['style', 'earth'], `${device} ${JSON.stringify([now.back1, now.back2])}`);
+      assert.equal(Object.values(now).some((st) => st.marker === true), false, '웹 탭에는 표식 칸이 없다');
+      assert.equal(nowV2.menu.len, nowV2.afterIntro.len, `${device} v2 서랍이 칸을 만들면 안 된다`);
+      assert.equal(nowV2.menu.marker, false);
+      assert.equal(nowV2.menuBack.left, 'about:blank', `${device} v2 웹 탭 — 서랍이 열린 채 뒤로 = 페이지를 떠남(예전 그대로)`);
+      pass(`W ${device} 웹 탭 — v1·v2 뒤로가 이 브랜치 이전과 같다`, JSON.stringify({ v1: now, v2: nowV2 }));
+    }
+  }
+
+  // ── B. v1 뒤로 ─────────────────────────────────────────────────────────────────────────────────
+  // (2026-09-24 정정, PD 결정 '뒤로 단추 = 앱만') 앱 안(런처 표식 ?src=twa)에서 본다. 일반 탭은 위 W 가 본다.
+  {
+    const ctx = await browser.newContext(PHONE);
+    const page = await ctx.newPage();
+    await page.goto(`${BASE}/?src=twa`, { waitUntil: 'domcontentloaded' });
+    await v1Ready(page);
     const url0 = page.url();
+    assert.ok(!url0.includes('src=twa'), '표식이 주소에서 지워져야 한다');
+    assert.equal(await page.evaluate(() => window.__earthusBackStack?.enabled), true, '앱 안에서는 진짜 뒤로 한 벌');
     const len0 = await page.evaluate(() => history.length);
     const menuOpen = () => page.evaluate(() => document.getElementById('menuSub').classList.contains('open'));
     const anyPanel = () => page.evaluate(() => !!document.querySelector('#sheet.up, #settings.up, .sheet-panel.up'));
@@ -244,10 +452,11 @@ try {
   }
 
   // ── C. v2 뒤로 ─────────────────────────────────────────────────────────────────────────────────
+  // (2026-09-24 정정, PD 결정) 앱 안(?src=twa)에서 본다. 앱이 스스로 편 Intelligence 시트는 칸을 쌓지 않는다(C6).
   {
     const ctx = await browser.newContext(PHONE);
     const page = await ctx.newPage();
-    await page.goto(`${BASE}/v2-three/`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`${BASE}/v2-three/?src=twa`, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('button[data-nav="explore"]', { timeout: 90000 });
     await wait(6000);
     const intro = page.locator('.intro-go');
@@ -260,17 +469,24 @@ try {
     await wait(1500);
 
     // 첫 화면: 소개를 닫으면 Intelligence 시트가 스스로 열린다(실측) — 그 시트도 뒤로 한 번에 닫혀야 한다
-    if (!(await intelOpen())) {
-      await page.click('button[data-nav="feed"]');
-      await page.waitForFunction(() => !!document.querySelector('#intel')?.classList.contains('open'), null, { timeout: 15000 });
-      await wait(800);
-    }
-    assert.equal(await marker(), true, '시트가 열리면 표식 칸');
+    // (2026-09-24 정정, 검수) 위 줄의 '그 시트도 뒤로 한 번에 닫혀야 한다'는 PD 결정 ② 전의 기대다 — 아래가 지금 기대다.
+    // (2026-09-24 정정, PD 결정) 앱이 스스로 연 시트는 **칸을 쌓지 않는다** — 첫 화면의 뒤로는 앱을 끝낸다(C6 가 끝까지 본다).
+    //   그래서 여기서는 ✕ 로 닫고, 사람이 단추로 다시 연 시트가 뒤로 한 번에 닫히는지를 본다.
+    await page.waitForFunction(() => !!document.querySelector('#intel')?.classList.contains('open'), null, { timeout: 15000 });
+    await wait(500);
+    assert.equal(await marker(), false, '앱이 스스로 연 시트는 표식 칸이 없어야 한다');
+    await page.click('#intel-close');
+    await wait(600);
+    assert.equal(await intelOpen(), false);
+    await page.click('button[data-nav="feed"]');
+    await page.waitForFunction(() => !!document.querySelector('#intel')?.classList.contains('open'), null, { timeout: 15000 });
+    await wait(800);
+    assert.equal(await marker(), true, '사람이 연 시트는 표식 칸');
     await shot(page, 'C2-v2-intel-open.png');
     await back();
     assert.equal(await intelOpen(), false, '뒤로 한 번에 Intelligence 시트가 닫혀야 한다');
     await shot(page, 'C2-v2-intel-after-back.png');
-    pass('C2 v2 Intelligence 시트 → 뒤로 → 닫힘');
+    pass('C2 v2 앱이 연 시트는 칸 없음 · 사람이 연 Intelligence 시트 → 뒤로 → 닫힘');
 
     // 메뉴 서랍 → 뒤로. 지구가 스스로 돌아 해시(카메라)가 계속 바뀐다 — 뒤로 뒤 해시가 **열기 전 칸의 옛 카메라**로
     // 돌아가지 않는지(=hashchange 가 applyLink 로 카메라를 되돌리지 않는지)를 경도로 본다.
@@ -326,6 +542,30 @@ try {
     await page.evaluate(() => history.back()).catch(() => { /* 문서를 떠나면 실행 맥락이 사라진다 */ });
     await page.waitForURL('about:blank', { timeout: 10000 });
     pass('C4 v2 첫 화면에서 뒤로 → 페이지를 떠남');
+    await ctx.close();
+  }
+
+  // ── C6. 앱 안 v2 첫 화면 — 소개를 닫은 뒤 스스로 펴진 시트가 있어도 뒤로 한 번이 떠난다 (PD 결정 ②) ──
+  {
+    const ctx = await browser.newContext(PHONE);
+    const page = await ctx.newPage();
+    await page.goto(`${BASE}/v2-three/?src=twa`, { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('button[data-nav="explore"]', { timeout: 90000 });
+    await wait(6000);
+    const intro = page.locator('.intro-go');
+    if (await intro.count()) { await intro.first().click(); }
+    await page.waitForFunction(() => !!document.querySelector('#intel')?.classList.contains('open'), null, { timeout: 15000 });
+    await wait(800);
+    const st = await page.evaluate(() => ({
+      intel: document.querySelector('#intel').classList.contains('open'),
+      marker: !!(history.state && history.state.earthusOverlay), len: history.length,
+      enabled: window.__earthusBackStack?.enabled, silent: window.__earthusBackStack?.debug().silent,
+    }));
+    assert.deepEqual({ intel: st.intel, marker: st.marker, enabled: st.enabled, silent: st.silent }, { intel: true, marker: false, enabled: true, silent: ['intel'] }, JSON.stringify(st));
+    await shot(page, 'C6-v2-first-screen-auto-sheet.png');
+    await page.evaluate(() => history.back()).catch(() => { /* 문서를 떠나면 실행 맥락이 사라진다 — 그게 기대한 결과다 */ });
+    await page.waitForURL('about:blank', { timeout: 10000 });
+    pass('C6 v2 앱 안 첫 화면(소개 뒤 시트가 스스로 펴짐) — 뒤로 한 번에 떠남', JSON.stringify(st));
     await ctx.close();
   }
 

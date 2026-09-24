@@ -92,7 +92,13 @@ export const auth = {
   async signIn(provider) {
     if (!PROVIDERS.includes(provider)) throw new Error('허용되지 않은 로그인 방식: ' + provider);
     if (!this.client) throw new Error('AUTH_NOT_CONFIGURED');
-    const { error } = await this.client.auth.signInWithOAuth({
+    /* (2026-09-24 정정, PD 결정 '뒤로 단추 = 앱만') 이동을 우리가 맡는 것(아래 skipBrowserRedirect · replace · 되감기 기록)은
+       **앱 안에서만** 한다. 웹 탭은 예전 그대로 Supabase 가 스스로 location.assign 으로 떠난다. */
+    let inAppBack = false;
+    try { inAppBack = backStack().enabled === true; } catch (_) { inAppBack = false; }
+    /* (2026-09-24 정정, 검수) 전에는 `const { error }` 만 받고 아래에서 data?.url 을 읽어 **ReferenceError(data is not defined)** 로
+       로그인이 웹·앱 모두 멈췄다(브랜치 c8e8fa00). data 를 같이 받는다. */
+    const { data, error } = await this.client.auth.signInWithOAuth({
       provider,
       options: {
         /* ⚠️⚠️ `window.location.origin` 이 아니라 **`location.href`** 다.
@@ -106,10 +112,11 @@ export const auth = {
         scopes: provider === 'apple' ? 'name email' : 'email',
         /* (2026-09-24) 이동은 우리가 한다 — 떠나기 직전 기록 길이를 적고, 로그인 시트의 표식 칸(back-close)이
            지금 칸이면 location.replace 로 그 칸을 Google 로 바꾼다(열린 시트 칸이 기록에 남지 않게). */
-        skipBrowserRedirect: true,
+        skipBrowserRedirect: inAppBack,   // (2026-09-24 정정) 웹 탭은 false — 예전과 같다
       },
     });
     if (error) throw error;
+    if (!inAppBack) return;   // 웹 탭 — Supabase 가 이미 떠났다(예전 그대로). 되감기 기록도 적지 않는다.
     const url = data?.url;
     if (!url) throw new Error('OAUTH_URL_MISSING');
     let replaced = false;

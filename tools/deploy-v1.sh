@@ -30,6 +30,9 @@ ctype() {
     *.png)  echo 'image/png' ;;
     *.svg)  echo 'image/svg+xml' ;;
     *.webp) echo 'image/webp' ;;   # 2026-09-23: WebP 자산이 octet-stream 으로 나가지 않게
+    # (2026-09-24) manifest.webmanifest 가 octet-stream 으로 나갈 뻔했다 — 운영은 application/manifest+json 이다(curl 실측).
+    #   앱(TWA) 준비로 manifest 의 maskable 아이콘·theme_color 를 고쳐 이 파일을 다시 올려야 한다.
+    *.webmanifest) echo 'application/manifest+json' ;;
     *)      echo 'application/octet-stream' ;;
   esac
 }

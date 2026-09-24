@@ -257,7 +257,15 @@ export const subscribeSheet = {
     const salesReady = salesAllowed({ mode: CONFIG.MONETIZATION_MODE,
       salesOpen: CONFIG.SALES_OPEN }) && dataReady;
     const provs = salesReady ? billing.providers() : [];
-    if (!provs.length) {
+    if (salesReady && !provs.length && billing.inApp()) {
+      /* (2026-09-24) 앱 안(안드로이드 TWA)인데 Play 길도 네이티브 브리지도 없다 — 지시서 §3-4.
+         ⚠️⚠️ **링크를 넣지 않는다.** 앱 안에서 웹 결제로 나가는 단추·링크·안내는 Play 정책 위반이다
+            (answer/9858738 · answer/10281818). '웹에서 결제하세요' 같은 유도 문장도 쓰지 않는다.
+         ⚠️ 판매가 닫힌 지금(salesReady=false)은 이 분기에 오지 않는다 — 웹·앱 모두 아래 '결제 준비 중' 그대로다. */
+      const box = el('div', 'pay-pending');
+      box.innerHTML = `<b>${ko ? '앱에서는 결제할 수 없습니다' : 'Payments are not available in the app'}</b>`;
+      body.appendChild(box);
+    } else if (!provs.length) {
       /* ⚠️ 여기가 지금 상태다. 버튼을 눌러도 결제가 안 되므로,
          "곧 됩니다"가 아니라 "무엇이 없어서 안 되는지"를 쓴다. */
       const box = el('div', 'pay-pending');
@@ -301,6 +309,15 @@ export const subscribeSheet = {
        한 문장으로 뭉뚱그려 "자동 갱신됩니다"라고 쓰면 웹 구매자에게 거짓말이 되고,
        반대로 자동갱신인데 안 적으면 앱스토어 심사에서 걸린다. */
     const autoRenew = provs.some(p => p.key === 'apple' || p.key === 'google');
+    /* (2026-09-24) Play 스텁 길(play) — 상품 형태(기간 이용권 / 자동 갱신 구독)는 PD 결정 D1 전이라 **어느 문구도 단정하지 않는다.**
+       자동갱신이라고 쓰면 가-1 에서 거짓이고, 아래 웹 문구(카드 결제)는 앱 안에서 거짓이다.
+       Phase 2 에서 D1 이 정해지면 약관 제8조 제6항의 확인 화면과 함께 이 줄을 고친다. */
+    const playStub = !autoRenew && provs.some(p => p.key === 'play');
+    if (playStub) {
+      body.appendChild(el('p', 'sub-legal', ko
+        ? '앱 결제는 아직 연결되지 않았습니다.'
+        : 'In-app payment is not connected yet.'));
+    } else
     body.appendChild(el('p', 'sub-legal', autoRenew
       ? (ko
         ? '앱스토어·구글플레이 구독은 기간이 끝나기 전에 해지하지 않으면 자동으로 갱신됩니다. 해지는 결제하신 곳에서 언제든 가능하며, 남은 기간까지는 계속 이용하실 수 있습니다. 표시 금액은 부가세 포함입니다.'

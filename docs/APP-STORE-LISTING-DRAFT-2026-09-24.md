@@ -36,7 +36,7 @@ URL: `https://support.google.com/googleplay/android-developer/answer/9859152` (�
 EARTHUS 는 두 가지 서비스를 한 앱에 담았습니다.
 
 ■ EARTHUS — 지금의 지구 (무료)
-지금 이 순간의 지구를 사실 그대로 보여 줍니다. 예보하지 않습니다.
+지금 이 순간의 지구를 사실 그대로 보여 줍니다. 날씨 시트의 앞날 값은 수치모델 예측이며 출처를 함께 표시합니다(기상청 예보가 아닙니다).
 · 3D 지구 위의 최근 위성 구름(NOAA NESDIS GMGSI)
 · 기상청 지상관측 기온·바람, 지금 발효 중인 기상특보
 · 기상청·일본 기상청이 발표한 지진
@@ -44,7 +44,7 @@ EARTHUS 는 두 가지 서비스를 한 앱에 담았습니다.
 
 ■ EARTHUS Intelligence — 예보와 해석 작업 공간
 · 기온·바람·강수·구름·해양·재해·대기질·우주·지형, 그리고 Life·Travel 메뉴
-· 아래 타임라인으로 지금과 5일 예보를 오갑니다. 예보는 모델 이름과 실행 시각을 함께 표시합니다(예: GFS)
+· 아래 타임라인으로 지금과 5일 예보를 오갑니다. 예보는 모델 이름과 실행 시각을 함께 표시합니다(예: GFS) — 수치모델 예측이며 기상청 예보가 아닙니다
 · 값 카드와 출처 카드: 누른 자리의 값, 자료 기관, 시각
 · 지구에 묻기: 화면에 켜 둔 자료를 근거로 질문에 답합니다
 
@@ -58,11 +58,16 @@ EARTHUS 는 두 가지 서비스를 한 앱에 담았습니다.
 ■ 개인정보
 광고가 없습니다. 로그인하지 않아도 지구본과 기상 정보를 볼 수 있습니다.
 개인정보처리방침: {{처리방침 URL}}
+
+■ 출처와 고지
+EARTHUS 는 기상청·일본 기상청·미국 해양대기청(NOAA) 등 어떤 정부 기관과도 관계가 없으며, 정부나 정치 단체를 대표하지 않습니다.
+정보 출처: 기상청 https://www.kma.go.kr · 일본 기상청 https://www.jma.go.jp · NOAA https://www.noaa.gov
 ```
 
 | 문장 | 근거 |
 |---|---|
-| 두 서비스·v1 은 예보하지 않음 | AGENTS.md 표(v1/v2), 지시서 §1-2 |
+| 두 서비스·v1 은 예보하지 않음 | AGENTS.md 표(v1/v2), 지시서 §1-2 — (2026-09-24 정정) v1 날씨 시트는 Open-Meteo 10일 예보·강수확률을 보여 준다(`weather-contract-v7.js:46,51`, 점검 보고서 1-5). PD 결정: 코드는 두고 원칙을 고친다 → '예보하지 않습니다'를 지우고 '수치모델 예측 · 기상청 예보 아님'으로 바꿨다 |
+| 출처와 고지(정부 비대표) | Play 정부 정보 정책 answer/9514050 — 정부 정보를 쓰는 앱은 설명에 출처와 '정부를 대표하지 않음'을 적는다(점검 보고서 P3, PD 2026-09-24 '추천대로') |
 | GMGSI 구름 | 지시서 §0-2, `clouds/meta.json` credit(`verify-feasibility D`) |
 | 기상청 지상관측·특보 | 지시서 §0-1 2 · `events/kma-warn.json` · `wind/kma-aws.json` |
 | 기상청·JMA 지진 | `aws/quake-asia/handler.py:124`, `:160` |
@@ -79,7 +84,7 @@ EARTHUS 는 두 가지 서비스를 한 앱에 담았습니다.
 EARTHUS brings two services together in one app.
 
 ■ EARTHUS — the Earth right now (free)
-Shows the Earth as it is at this moment, fact by fact. It does not forecast.
+Shows the Earth as it is at this moment, fact by fact. Values for coming days in the weather sheet are numerical-model output shown with their source (not official KMA forecasts).
 · Latest satellite clouds on a 3D globe (NOAA NESDIS GMGSI)
 · Korea Meteorological Administration surface observations and weather warnings in effect
 · Earthquakes reported by the Korea Meteorological Administration and the Japan Meteorological Agency
@@ -87,7 +92,7 @@ Shows the Earth as it is at this moment, fact by fact. It does not forecast.
 
 ■ EARTHUS Intelligence — forecast and analysis workspace
 · Temperature, wind, precipitation, clouds, ocean, hazards, air quality, space, terrain, plus Life and Travel
-· Move between now and a 5-day forecast on the timeline; forecasts show the model name and run time (e.g. GFS)
+· Move between now and a 5-day forecast on the timeline; forecasts show the model name and run time (e.g. GFS) — model output, not an official KMA forecast
 · Value and source cards: the value where you tap, the data agency and the time
 · Ask the Earth: answers questions using the data layers you have turned on
 
@@ -101,6 +106,10 @@ Location is used only to show the weather and place name where you are. If you d
 ■ Privacy
 No ads. You can view the globe and weather without signing in.
 Privacy policy: {{privacy policy URL}}
+
+■ Sources and notice
+EARTHUS is not affiliated with, and does not represent, the Korea Meteorological Administration, the Japan Meteorological Agency, NOAA or any government or political entity.
+Sources: https://www.kma.go.kr · https://www.jma.go.jp · https://www.noaa.gov
 ```
 
 ### 1-3. 카테고리·연락처
@@ -164,7 +173,7 @@ Privacy policy: {{privacy policy URL}}
 | 대상 연령 | {{PD 결정}} — 처리방침상 만 14세 미만은 가입 불가·로그인 없이 이용 가능. Play 선택지는 13–15 / 16–17 / 18+ 등 | 13세 미만을 고르면 가족 정책 요건이 붙는다(answer/9859455 대상 연령 항목). 초안 추천: 13세 이상 전체(13–15·16–17·18+) — 14세 미만 가입 차단은 약관으로 |
 | 콘텐츠 등급 설문(IARC) | 폭력·성·약물·도박 없음. **사용자 생성 콘텐츠 있음**(개발 요청 게시판 — 공개 읽기 `schema.sql` `hidden = false` 정책, 신고 기능 C16). 사용자 간 위치 공유 없음. 디지털 구매 없음(지금) | 게시판을 앱 화면에 노출하는지 PD 확인 |
 | 뉴스 앱 여부 | **질문으로 둔다 — 답하지 않았다.** 사실: v1 에 뉴스·이벤트 레이어가 있다(`prototype/js/config.js:60` GDELT, `prototype/js/brief.js:4` news-brief, `prototype/js/newsbubble.js`). Play 의 뉴스 앱 요건은 "뉴스·잡지 카테고리에 올리고 제목·설명 등에서 스스로 뉴스라고 할 때" 적용된다(answer/10523915, 16189314, 2026-09-24 검색) | 추천 초안: 카테고리 '날씨', 설명에 '뉴스'라는 말 없음 → 선언 대상 아닐 가능성. **PD 가 Console 의 선언 질문을 직접 읽고 답한다** |
-| 정부 앱·금융·건강·VPN | 해당 없음 | — |
+| 정부 앱·금융·건강·VPN | 해당 없음 | — (2026-09-24 정정) '정부 앱' **선언**은 해당 없음. 그러나 정부 정보 **고지 요건**(answer/9514050)은 해당 → §1-2 설명 끝 '출처와 고지' 문단으로 채웠다 |
 | 데이터 보안 | 1-5 | — |
 | 개인정보처리방침 URL | {{발행한 HTML 주소}} — 스토어와 **앱 안** 둘 다 링크(answer/9859455) | 앱 안 링크는 웹 설정 화면의 처리방침 링크가 HTML 을 가리키게 바꿔야 한다(Phase 1 웹 배포) |
 | 권한 | `POST_NOTIFICATIONS`(D5, Android 13+) · 위치 위임(D6, 전경만). 배경 위치 없음 → 배경 위치 선언 불필요 | Bubblewrap 이 넣는 실제 권한 목록은 Phase 1 빌드 결과로 다시 확인 |
@@ -190,13 +199,15 @@ Privacy policy: {{privacy policy URL}}
 
 · 최근 위성 구름 관측 한 장(NOAA NESDIS GMGSI)과 관측 시각
 · 지금 태양 위치로 계산한 낮과 밤
-· 고른 도시의 기상청 지상관측 기온·바람, 지금 발효 중인 기상특보, 지난 24시간 한국·일본 기관 발표 지진 — 모두 기관과 시각을 함께
+· 고른 도시의 기상청 지상관측 기온·바람, 지금 발효 중인 기상특보, 지난 24시간 기상청 발표 지진 — 모두 기관과 시각을 함께
 · 자료가 늦으면 '지연'이라고, 오프라인이면 마지막으로 받은 그림과 그 시각을 보여 줍니다
 · 예보는 하지 않습니다. 대응은 기상청 공식 발표를 따르세요
 
 검색창이 없습니다 — 새 탭을 열고 바로 치는 글자는 주소창에 들어갑니다.
 한 번 그리고 멈춥니다(애니메이션 없음). 위치 권한을 쓰지 않습니다 — 도시는 목록에서 고릅니다(1차는 한국 도시).
 개인정보를 모으지 않습니다.
+
+EARTHUS 는 기상청·NOAA 등 어떤 정부 기관과도 관계가 없으며, 정부나 정치 단체를 대표하지 않습니다. 정보 출처: 기상청 https://www.kma.go.kr · NOAA https://www.noaa.gov
 ```
 
 **상세 설명 — English**
@@ -206,13 +217,15 @@ Open a new tab and see one side of the Earth as it is right now.
 
 · The latest satellite cloud image (NOAA NESDIS GMGSI) and its observation time
 · Day and night computed from the Sun's current position
-· For the city you pick: Korea Meteorological Administration temperature and wind, weather warnings in effect, and earthquakes reported by Korean and Japanese agencies in the past 24 hours — each with its agency and time
+· For the city you pick: Korea Meteorological Administration temperature and wind, weather warnings in effect, and earthquakes reported by the Korea Meteorological Administration in the past 24 hours — each with its agency and time
 · Late data is labelled "delayed"; offline, it shows the last image it received and when
 · No forecasts. Follow official announcements.
 
 No search box — what you type in a new tab goes to the address bar.
 Draws once and stops (no animation). No location permission — pick a city from the list (Korean cities first).
 Collects no personal data.
+
+EARTHUS is not affiliated with, and does not represent, the Korea Meteorological Administration, NOAA or any government or political entity. Sources: https://www.kma.go.kr · https://www.noaa.gov
 ```
 
 | 문장 | 근거 |

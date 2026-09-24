@@ -1,0 +1,33 @@
+<!doctype html>
+<!-- EARTHUS 새 탭 설정 (2026-09-24 · 지시서 §4-2 '그 밖') — 내 장소는 도시 목록에서만 고른다(위치 권한 없음, D6). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>EARTHUS</title>
+<link rel="stylesheet" href="newtab.css">
+<script type="module" src="options.js"></script>
+</head>
+<body>
+<main class="options">
+  <h1 data-i18n="optTitle"></h1>
+  <section>
+    <h2><label for="city" data-i18n="optPlace"></label></h2>
+    <select id="city"></select>
+    <p class="help" id="station"></p>
+    <p class="help" data-i18n="optPlaceHelp"></p>
+  </section>
+  <section>
+    <h2 data-i18n="optLines"></h2>
+    <label class="row"><input type="checkbox" id="line-sky"> <span data-i18n="optLineSky"></span></label>
+    <label class="row"><input type="checkbox" id="line-warn"> <span data-i18n="optLineWarn"></span></label>
+    <label class="row"><input type="checkbox" id="line-quake"> <span data-i18n="optLineQuake"></span></label>
+    <label class="row"><input type="checkbox" id="line-tsunami"> <span data-i18n="optLineTsunami"></span></label>
+  </section>
+  <p class="saved" id="saved" hidden data-i18n="optSaved"></p>
+  <p class="help" data-i18n="optLanguage"></p>
+  <p class="help" data-i18n="optPrivacy"></p>
+</main>
+</body>
+</html>

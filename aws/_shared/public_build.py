@@ -65,6 +65,11 @@ DENY_RULES = (
     # ⚠️ 예전에는 README.md 만 막았다. 그래서 v2-three/NEXT_STEPS.md(내부 로드맵),
     #    js/ext/CONTRACT.md, v3-paper/handoff/*.md(인계 문서 17건)가 그대로 공개됐다.
     ("*.md",                "저장소 안쪽 문서. 앱이 읽는 것은 legal/*.ko.md 뿐이다"),
+    # (2026-09-24) tools/build-legal-html.mjs 가 legal/*.md 옆에 .html 을 만든다. '*.md' 규칙은 .html 을
+    #   못 막아서, 법무 확인 전 초안(개인정보처리방침 개정안·계정 삭제 안내 — 자리표시자 {{…}} 가 그대로다)이
+    #   aws/deploy-app.sh 의 전체 동기화 한 번에 공개될 뻔했다(적대적 검토에서 denial_for 로 확인).
+    #   초안은 이름에 'draft' 가 들어간다 — 정본으로 옮겨 이름에서 draft 를 뺀 것만 공개된다.
+    ("legal/*draft*",       "법무 확인 전 법적 문서 초안(.md·.html). 정본 이름으로 옮긴 뒤에만 공개"),
 
     # v3 종이 지구 — **자기 배포 스크립트(aws/deploy-v3-paper.sh)가 빼는 것들**.
     # ⚠️ 실제로 있었던 일: deploy-v3-paper.sh 는 tools/·handoff/·원본 PNG 를 조심스럽게

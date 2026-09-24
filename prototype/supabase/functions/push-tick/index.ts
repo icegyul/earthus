@@ -26,6 +26,12 @@
 
 import webpush from 'npm:web-push@3.6.7';
 import { createClient } from 'jsr:@supabase/supabase-js@2';
+/* (2026-09-24 정정) 알림 본문에 기관·발표/관측 시각(HH:MM KST)이 빠져 있었다
+   (지진 = 장소·깊이뿐, 특보 = 발표 시각 없음, 관광 = ISO 원문). 본문 글자는
+   _shared/push-notification-text.js 의 순수 함수가 만든다 — Node 에서 시험하려고 떼었다
+   (tools/test_push_notification_text.mjs). key·tag·title 은 그대로 둔다: alert_claim 중복
+   방지 열쇠가 바뀌면 이미 보낸 알림이 한 번 더 간다. */
+import { ripBody, quakeBody, warnBody, tourismBody } from '../_shared/push-notification-text.js';
 
 const CDN = Deno.env.get('CDN_BASE') ?? 'https://earthus.net';
 
@@ -163,10 +169,9 @@ Deno.serve(async (req) => {
           //    넣지 않으면 등급이 올라도 조용해서, 더 위험해진 걸 모른다.
           key: `rip:${b.id}:${b.grade}`,
           title: ko ? `이안류 ${b.grade} — ${b.ko}` : `Rip current: ${b.grade} — ${b.ko}`,
-          body: ko
-            ? `${near ? '' : `${t.label} 에서 ${Math.round(d)}km · `}`
-              + `국립해양조사원이 매긴 등급입니다. 들어가도 되는지는 현장 안내를 따르세요.`
-            : `Graded by KHOA. Follow on-site guidance.`,
+          // (2026-09-24 정정) 관측 시각이 없었다 → `국립해양조사원 · 07:55 KST 관측` 을 붙인다.
+          //   거리 표기 규칙(2km 안이면 생략)은 그대로다. near 는 아래 판단과 같은 값이다.
+          body: ripBody({ beach: b, distanceKm: near ? 0 : d, label: t.label, ko }),
           urgent: (b.gradeRank ?? 0) >= 4,
           tag: `rip-${b.id}`,
         });
@@ -179,12 +184,14 @@ Deno.serve(async (req) => {
         if (Number(q.mag) < Number(t.quake_min_mag)) continue;
         const d = km(t.lat, t.lon, q.lat, q.lon);
         if (d > Number(t.quake_max_km)) continue;
-        const place = q.placeEn || q.place || '';
         jobs.push({
           key: `quake:${q.src}:${q.at}`,
           title: ko ? `지진 M${Number(q.mag).toFixed(1)} · ${Math.round(d)}km`
                     : `Quake M${Number(q.mag).toFixed(1)} · ${Math.round(d)} km`,
-          body: `${place}${q.depthKm != null ? ` · ${ko ? '깊이' : 'depth'} ${q.depthKm}km` : ''}`,
+          // (2026-09-24 정정) 전에는 `장소 · 깊이` 뿐이었다 — 누가 언제 발표한 지진인지 없었다.
+          //   이제 `장소 · 깊이 · 일본 기상청 · 12:39 KST 발생`. 기관은 자료의 srcKo/src 를 쓴다.
+          //   ⚠️ 장소 표기는 예전처럼 placeEn 을 먼저 쓴다(한국어 알림도 같다 — 바꾸지 않았다).
+          body: quakeBody({ quake: q, ko }),
           urgent: Number(q.mag) >= 5.0,
           tag: `quake-${q.src}-${q.at}`,
         });
@@ -211,9 +218,9 @@ Deno.serve(async (req) => {
           jobs.push({
             key: `warn:${w.regionId}:${w.kind}:${w.issuedKst}`,
             title: `${w.icon || '⚠️'} ${w.region} ${kind} ${warnLevel(w.level, ko)}`,
-            body: ko
-              ? `${t.label} · 가장 가까운 관측지점 기준 ${best.zoneName}. 기상청 공식 발표를 확인하세요.`
-              : `${t.label} · Approximate KMA zone: ${best.zoneName}. Check the official KMA bulletin.`,
+            // (2026-09-24 정정) 발표 시각이 없었다 → `기상청 · 15:02 KST 발표`(issuedKst = tm_fc).
+            //   어제 발표된 특보면 `9/23 15:02 KST 발표` 처럼 날짜를 붙인다.
+            body: warnBody({ warn: w, label: t.label, zoneName: best.zoneName, ko }),
             urgent: Number(w.levelRank ?? 0) >= 2,
             tag: `warn-${w.regionId}-${w.kind}`,
           });
@@ -234,9 +241,9 @@ Deno.serve(async (req) => {
           // 같은 등급은 3시간 cooldown, 등급이 오르면 rank가 달라져 다시 알린다.
           key: `tourism:${place.code}:rank${rank}:bucket${bucket}`,
           title: ko ? `관광 혼잡 ${level} — ${place.nameKo}` : `Tourism crowd: ${level} — ${place.nameEn || place.nameKo}`,
-          body: ko
-            ? `서울시 공식 현재 등급 · 관측 ${observed}. 운영시간·입장 가능·안전을 뜻하지 않습니다.`
-            : `Official Seoul current level · observed ${observed}. Not an opening, admission or safety decision.`,
+          // (2026-09-24 정정) ISO 원문(`…T06:35:00.000Z`)을 그대로 찍었다 → `서울특별시 · 15:35 KST 관측`.
+          //   observed 변수는 위 판정 흐름을 건드리지 않으려고 남겨 둔다.
+          body: tourismBody({ place, ko }),
           urgent: false,
           tag: `tourism-${place.code}`,
         });

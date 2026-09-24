@@ -1,0 +1,16 @@
+{
+  "version": "1.0",
+  "context": { "eventType": "viewer-request" },
+  "viewer": { "ip": "198.51.100.11" },
+  "request": {
+    "method": "GET",
+    "uri": "/v2/",
+    "querystring": {
+      "tab": { "value": "my" },
+      "q": { "value": "a%26b" },
+      "layer": { "value": "clouds", "multiValue": [ { "value": "clouds" }, { "value": "wind" } ] }
+    },
+    "headers": { "host": { "value": "www.earthus.net" } },
+    "cookies": {}
+  }
+}

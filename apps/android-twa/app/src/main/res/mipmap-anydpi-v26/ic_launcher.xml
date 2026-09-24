@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    EARTHUS 적응형 런처 아이콘 (2026-09-24, 지시서 §3-7).
+    - 배경 = 단색 #0A0A0A (prototype/logo/earthus-appicon.svg 의 바탕 값)
+    - 전경 = v5 모노그램(prototype/logo/earthus-monogram-white.svg)을 크기만 맞춰 래스터화한 것.
+      108dp 캔버스 가운데에 앱아이콘과 같은 비율로 놓았다(보이는 72dp 안에서 획 폭 비율이 earthus-appicon.svg 와 같다).
+      로고는 새로 그리지 않는다(기억 brand-assets-v5-only).
+    - 단색(themed, Android 13+) = 같은 모노그램. 런처가 알파만 써서 테마 색으로 칠한다.
+    Bubblewrap 템플릿의 ic_launcher.xml(흰 바탕 background 층에 maskable 을 넣는 방식)은 쓰지 않는다.
+-->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/ic_launcher_background" />
+    <foreground android:drawable="@mipmap/ic_launcher_foreground" />
+    <monochrome android:drawable="@mipmap/ic_launcher_foreground" />
+</adaptive-icon>

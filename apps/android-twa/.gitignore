@@ -1,0 +1,39 @@
+# EARTHUS 안드로이드 TWA — 이 파일은 프로젝트를 만들기 **전에** 먼저 넣었다 (2026-09-24, 지시서 §3-2).
+# 이유: Bubblewrap 기본값은 프로젝트 폴더 안에 android.keystore 를 만든다. 한 번 커밋되면 키가 저장소 역사에 남는다.
+# 키스토어·비밀번호 파일은 저장소 밖 %USERPROFILE%\.earthus-android\ 에만 둔다.
+
+# 서명 키 — 어떤 이름이든 커밋 금지
+*.keystore
+*.jks
+*.p12
+*.pk8
+keystore*.properties
+*keystore.properties
+signing*.properties
+
+# 로컬 경로(SDK 위치 등) — 기계마다 다르다
+local.properties
+
+# Gradle·빌드 산출물
+.gradle/
+build/
+app/build/
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# 빌드 결과물 — 저장소에 두지 않는다 (산출물은 D:\## APP\EARTHUS v2_APP\build\app-build\android\ )
+*.apk
+*.aab
+*.idsig
+output-metadata.json
+
+# Gradle 의 generateShorcutsFile 작업이 빌드마다 twaManifest.shortcuts 로 다시 쓰는 파일 (2026-09-24 실측:
+# 생성기 사본과 빌드 사본이 달라 빌드할 때마다 추적 파일이 바뀌었다). 빌드가 만들므로 추적하지 않는다.
+app/src/main/res/xml/shortcuts.xml
+
+# Bubblewrap 이 만드는 부산물 — Play 512 아이콘은 store/play-icon-512.png 가 정본이다
+/store_icon.png
+/manifest-checksum.txt

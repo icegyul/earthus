@@ -1,0 +1,7 @@
+# 줄 끝 규칙 (2026-09-24): 기본은 LF.
+# 예외 하나 — Windows 배치(gradlew.bat)는 CRLF. cmd.exe 는 LF 배치에서 goto 레이블을 잘못 찾는 일이 있다.
+* text=auto eol=lf
+*.bat text eol=crlf
+*.png binary
+*.jar binary
+*.webp binary

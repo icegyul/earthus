@@ -1,0 +1,42 @@
+<!doctype html>
+<!--
+  EARTHUS 새 탭 (2026-09-24 · 지시서 APP-ANDROID-CHROME-NEWTAB-DIRECTIVE §0-2 · §4-2)
+  v1(EARTHUS, 무료)의 창구다 — 사실만 말한다. 예보는 없다. '닷새 뒤'는 v2 로 가는 링크의 질문에만 나온다.
+  인라인 스크립트 없음(MV3 CSP). 검색창 없음(검색 경험을 바꾸지 않는다 — 새 탭을 열자마자 친 글자는 주소창으로 간다).
+  문구는 전부 _locales 에서 온다. 아래 글자는 스크립트가 채우기 전의 자리일 뿐이다.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>EARTHUS</title>
+<link rel="stylesheet" href="newtab.css">
+<script type="module" src="newtab.js"></script>
+</head>
+<body>
+<main class="stage">
+  <section class="earth" aria-labelledby="credits">
+    <div class="globe" id="globe">
+      <canvas id="globe-a" class="globe-layer is-on" role="img"></canvas>
+      <canvas id="globe-b" class="globe-layer" aria-hidden="true"></canvas>
+    </div>
+    <p class="status" id="status" hidden></p>
+    <ul class="credits" id="credits">
+      <li id="src-clouds" class="value-el" hidden></li>
+      <li id="src-night" class="value-el" hidden></li>
+      <li id="src-base" class="credit" data-i18n="srcBase"></li>
+    </ul>
+  </section>
+  <section class="side">
+    <p class="place"><span id="place-label"></span> · <a href="#" id="place-change" data-i18n="placeChange"></a></p>
+    <h1 class="facts-heading" data-i18n="factsHeading"></h1>
+    <ul class="facts" id="facts" aria-live="polite"></ul>
+    <nav class="links">
+      <a class="link-earth" id="link-earth" href="https://earthus.net/" target="_self" data-i18n="linkEarth"></a>
+      <a class="link-v2" id="link-v2" href="https://earthus.net/Intelligence" target="_self" data-i18n="linkV2"></a>
+    </nav>
+  </section>
+</main>
+</body>
+</html>

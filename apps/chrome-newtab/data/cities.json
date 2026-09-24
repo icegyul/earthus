@@ -1,0 +1,337 @@
+{
+  "schema": 1,
+  "meaning": "새 탭 '내 장소' 목록. 도시 좌표는 지어내지 않고 같은 이름의 기상청 지상관측 지점 좌표를 그대로 쓴다 — 그래서 가장 가까운 지점 = 그 지점(거리 0).",
+  "source": "https://earthus.net/wind/kma-aws.json (기상청 지상관측, 공공누리 제1유형)",
+  "verifiedAgainst": {
+    "observedKst": "20260924 14:00",
+    "generated": "2026-09-24T06:25:00Z",
+    "stationCount": 97
+  },
+  "defaultCity": "seoul",
+  "cities": [
+    {
+      "id": "seoul",
+      "ko": "서울",
+      "en": "Seoul",
+      "stationId": "108",
+      "stationName": "서울",
+      "lat": 37.5714,
+      "lon": 126.9658
+    },
+    {
+      "id": "busan",
+      "ko": "부산",
+      "en": "Busan",
+      "stationId": "159",
+      "stationName": "부산",
+      "lat": 35.1047,
+      "lon": 129.032
+    },
+    {
+      "id": "incheon",
+      "ko": "인천",
+      "en": "Incheon",
+      "stationId": "112",
+      "stationName": "인천",
+      "lat": 37.4777,
+      "lon": 126.6249
+    },
+    {
+      "id": "daegu",
+      "ko": "대구",
+      "en": "Daegu",
+      "stationId": "143",
+      "stationName": "대구",
+      "lat": 35.878,
+      "lon": 128.653
+    },
+    {
+      "id": "daejeon",
+      "ko": "대전",
+      "en": "Daejeon",
+      "stationId": "133",
+      "stationName": "대전",
+      "lat": 36.372,
+      "lon": 127.3721
+    },
+    {
+      "id": "gwangju",
+      "ko": "광주",
+      "en": "Gwangju",
+      "stationId": "156",
+      "stationName": "광주",
+      "lat": 35.1729,
+      "lon": 126.8916
+    },
+    {
+      "id": "ulsan",
+      "ko": "울산",
+      "en": "Ulsan",
+      "stationId": "152",
+      "stationName": "울산",
+      "lat": 35.5824,
+      "lon": 129.3347
+    },
+    {
+      "id": "sejong",
+      "ko": "세종",
+      "en": "Sejong",
+      "stationId": "239",
+      "stationName": "세종",
+      "lat": 36.4852,
+      "lon": 127.2444
+    },
+    {
+      "id": "suwon",
+      "ko": "수원",
+      "en": "Suwon",
+      "stationId": "119",
+      "stationName": "수원",
+      "lat": 37.2575,
+      "lon": 126.983
+    },
+    {
+      "id": "chuncheon",
+      "ko": "춘천",
+      "en": "Chuncheon",
+      "stationId": "101",
+      "stationName": "춘천",
+      "lat": 37.9026,
+      "lon": 127.7357
+    },
+    {
+      "id": "gangneung",
+      "ko": "강릉",
+      "en": "Gangneung",
+      "stationId": "105",
+      "stationName": "강릉",
+      "lat": 37.7515,
+      "lon": 128.891
+    },
+    {
+      "id": "wonju",
+      "ko": "원주",
+      "en": "Wonju",
+      "stationId": "114",
+      "stationName": "원주",
+      "lat": 37.3375,
+      "lon": 127.9466
+    },
+    {
+      "id": "sokcho",
+      "ko": "속초",
+      "en": "Sokcho",
+      "stationId": "90",
+      "stationName": "속초",
+      "lat": 38.2508,
+      "lon": 128.5647
+    },
+    {
+      "id": "cheongju",
+      "ko": "청주",
+      "en": "Cheongju",
+      "stationId": "131",
+      "stationName": "청주",
+      "lat": 36.6392,
+      "lon": 127.4407
+    },
+    {
+      "id": "chungju",
+      "ko": "충주",
+      "en": "Chungju",
+      "stationId": "127",
+      "stationName": "충주",
+      "lat": 36.9704,
+      "lon": 127.9525
+    },
+    {
+      "id": "cheonan",
+      "ko": "천안",
+      "en": "Cheonan",
+      "stationId": "232",
+      "stationName": "천안",
+      "lat": 36.7622,
+      "lon": 127.2928
+    },
+    {
+      "id": "hongseong",
+      "ko": "홍성",
+      "en": "Hongseong",
+      "stationId": "177",
+      "stationName": "홍성",
+      "lat": 36.6576,
+      "lon": 126.6877
+    },
+    {
+      "id": "seosan",
+      "ko": "서산",
+      "en": "Seosan",
+      "stationId": "129",
+      "stationName": "서산",
+      "lat": 36.7766,
+      "lon": 126.4939
+    },
+    {
+      "id": "jeonju",
+      "ko": "전주",
+      "en": "Jeonju",
+      "stationId": "146",
+      "stationName": "전주",
+      "lat": 35.8409,
+      "lon": 127.1172
+    },
+    {
+      "id": "gunsan",
+      "ko": "군산",
+      "en": "Gunsan",
+      "stationId": "140",
+      "stationName": "군산",
+      "lat": 36.0053,
+      "lon": 126.7613
+    },
+    {
+      "id": "mokpo",
+      "ko": "목포",
+      "en": "Mokpo",
+      "stationId": "165",
+      "stationName": "목포",
+      "lat": 34.8173,
+      "lon": 126.3815
+    },
+    {
+      "id": "yeosu",
+      "ko": "여수",
+      "en": "Yeosu",
+      "stationId": "168",
+      "stationName": "여수",
+      "lat": 34.7393,
+      "lon": 127.7406
+    },
+    {
+      "id": "suncheon",
+      "ko": "순천",
+      "en": "Suncheon",
+      "stationId": "174",
+      "stationName": "순천",
+      "lat": 35.0204,
+      "lon": 127.3694
+    },
+    {
+      "id": "pohang",
+      "ko": "포항",
+      "en": "Pohang",
+      "stationId": "138",
+      "stationName": "포항",
+      "lat": 36.032,
+      "lon": 129.38
+    },
+    {
+      "id": "andong",
+      "ko": "안동",
+      "en": "Andong",
+      "stationId": "136",
+      "stationName": "안동",
+      "lat": 36.5729,
+      "lon": 128.7073
+    },
+    {
+      "id": "gyeongju",
+      "ko": "경주",
+      "en": "Gyeongju",
+      "stationId": "283",
+      "stationName": "경주시",
+      "lat": 35.8175,
+      "lon": 129.2012
+    },
+    {
+      "id": "gumi",
+      "ko": "구미",
+      "en": "Gumi",
+      "stationId": "279",
+      "stationName": "구미",
+      "lat": 36.1305,
+      "lon": 128.3205
+    },
+    {
+      "id": "changwon",
+      "ko": "창원",
+      "en": "Changwon",
+      "stationId": "155",
+      "stationName": "창원",
+      "lat": 35.1702,
+      "lon": 128.5728
+    },
+    {
+      "id": "jinju",
+      "ko": "진주",
+      "en": "Jinju",
+      "stationId": "192",
+      "stationName": "진주",
+      "lat": 35.1638,
+      "lon": 128.04
+    },
+    {
+      "id": "gimhae",
+      "ko": "김해",
+      "en": "Gimhae",
+      "stationId": "253",
+      "stationName": "김해시",
+      "lat": 35.2298,
+      "lon": 128.8907
+    },
+    {
+      "id": "tongyeong",
+      "ko": "통영",
+      "en": "Tongyeong",
+      "stationId": "162",
+      "stationName": "통영",
+      "lat": 34.8454,
+      "lon": 128.4356
+    },
+    {
+      "id": "geoje",
+      "ko": "거제",
+      "en": "Geoje",
+      "stationId": "294",
+      "stationName": "거제",
+      "lat": 34.8882,
+      "lon": 128.6046
+    },
+    {
+      "id": "jeju",
+      "ko": "제주",
+      "en": "Jeju",
+      "stationId": "184",
+      "stationName": "제주",
+      "lat": 33.5141,
+      "lon": 126.5297
+    },
+    {
+      "id": "seogwipo",
+      "ko": "서귀포",
+      "en": "Seogwipo",
+      "stationId": "189",
+      "stationName": "서귀포",
+      "lat": 33.2462,
+      "lon": 126.5653
+    },
+    {
+      "id": "ulleungdo",
+      "ko": "울릉도",
+      "en": "Ulleungdo",
+      "stationId": "115",
+      "stationName": "울릉도",
+      "lat": 37.4813,
+      "lon": 130.8986
+    },
+    {
+      "id": "baengnyeongdo",
+      "ko": "백령도",
+      "en": "Baengnyeongdo",
+      "stationId": "102",
+      "stationName": "백령도",
+      "lat": 37.974,
+      "lon": 124.7124
+    }
+  ]
+}

@@ -75,7 +75,7 @@ We **do not currently sell** paid passes. Before we start selling, we will add p
      automatically on first open and, if granted, sends the coordinates to BigDataCloud/Open-Meteo regardless of the optional in-app
      location consent (inventory C10/C11). Remove the placeholder once the D6 web change (ask only on tap) is live. -->
 - EARTHUS asks for your device's (browser's or app's) location permission when you first open it. If you allow it, we use your device's latitude and longitude to show the weather and a place name for that spot. If you decline, you can use the default place or pick a point by hand and use the other features. 〔C10〕〔C11〕
-  - {{PD choose — A: current code (asks on first open — sentence above as is) / B: after the D6 web change ships (asks only when you tap "My location" — reword the sentence above)}} 〔C10〕
+<!-- (2026-09-24 PD decision) Location placeholder closed with A (current code — asks on first open). The sentence above states it. The D6 web change will not ship. -->
 - We do not store your current-location coordinates on our servers. Your browser sends them directly to the providers in section 6. 〔C10〕〔C11〕
 - Coordinates you **save as an alert place** are stored on our servers as described in C above. 〔C03〕
 

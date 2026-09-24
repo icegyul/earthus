@@ -453,6 +453,8 @@ aws cloudfront create-invalidation --distribution-id E193CZEBLWEB56 --paths "/js
   통신판매업 신고(신고번호) 전에는 열지 않는다. 열 때: config.local.js 의
   `MONETIZATION_MODE=PAID` + SALES_OPEN=true + 약관·처리방침의 자리표시자
   3곳(주소·전화·신고번호) 채우기. 창립 멤버 반값 checkout 검증도 필수다.
+  (2026-09-24 PD) 통신판매업 **신고 완료**(개인사업자). 판매는 여전히 잠겨 있다 — 구독료는 PD 가 나중에 정한다.
+  남은 것은 자리표시자 3곳을 PD 가 채우는 것과 앱 지시서(docs/APP-ANDROID-CHROME-NEWTAB-DIRECTIVE-2026-09-24.md) §3-5 의 판매 전 조건이다.
 - Personal Pro 요금(2026-08-05 결정): **월 ₩5,900/$4.99 · 연 ₩49,000/$39**.
   화면 표시값은 `billing.js`, 실제 청구 정본은 Supabase `plans` 표다 — 둘을 항상 함께 바꾼다.
 - 판매 가능 상태를 만드는 현재 실행 정본은
@@ -464,6 +466,7 @@ aws cloudfront create-invalidation --distribution-id E193CZEBLWEB56 --paths "/js
 
 PD 몫 (자격·전화가 필요한 것):
 - 통신판매업 신고 — 구매안전서비스 이용확인증(스마트스토어 사업자 전환 또는 은행 에스크로)
+  (2026-09-24 PD) 신고 완료.
 - 바다거북 제4유형 라이선스 협의 (국립해양생물자원관 041-950-0831)
 - 철새 원본 GPS 트랙 문의 (검역본부 역학조사과 054-912-0438)
 - 에어코리아 측정소정보 API 활용신청

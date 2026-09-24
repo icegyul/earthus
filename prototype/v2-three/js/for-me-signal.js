@@ -281,6 +281,13 @@ export function typhoonCard(place, storm, ctx = {}) {
      "기관은 강풍역 440 km 안, 앙상블은 100 km 안 통과"처럼 기준이 다르면 서로 어긋난 것처럼 보여 등급이 부당하게 낮아진다. */
   const basisRadiusKm = (() => { const ps = (basisRec?.pts || []).filter(p => p.r); if (!ps.length) return 100; const near = ps.reduce((m, p) => (p.d < m.d ? p : m), ps[0]); return Math.max(100, Math.round(near.r.km)); })();
   const ens = ecStorm ? ensembleNear(place, ecStorm, basisRadiusKm) : null;
+  /* (2026-09-24 · 기상법 §17 · PD (나)) 앙상블 개수 옆 예보 고지(js/forecast-notice.js)가 쓸 모델 이름·실행 시각 — **파일이 말하는 것만**.
+     aws/ecmwf-ingest 는 폭풍 객체가 아니라 문서 머리에 agency('ECMWF') · model('IFS (HRES + ENS)') · run('YYYYMMDDHH')을 싣는다.
+     ensembleNear 의 run(폭풍 객체의 run)이 비면 문서의 run 으로 채운다. 없으면 null — 고지는 그 자리를 뺀다. */
+  if (ens) {
+    ens.run = ens.run || ecmwf?.run || null;
+    ens.model = [ecmwf?.agency, ecmwf?.model].filter(Boolean).join(' ') || null;
+  }
   const near = buoys ? buoysNear(place, buoys, 150, 3, now) : [];
   const reasons = [];
   const evalN = withR.length, yesN = yes.length;

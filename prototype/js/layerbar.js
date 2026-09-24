@@ -1167,7 +1167,7 @@ export const layerBar = {
         + `</span><span class="ly-open-arrow" aria-hidden="true">›</span>`;
       watch.onclick = async () => {
         try {
-          const { alertsSheet } = await import('./ui-alerts.js');
+          const { alertsSheet } = await import('./ui-alerts.js?v=20260924-mapspot');
           this.open = false;
           this.sub = null;
           this._apply?.();

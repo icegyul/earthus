@@ -1,5 +1,7 @@
 // EARTHUS 새 탭 설정 (2026-09-24 · 지시서 §4-2) — 내 장소(도시 목록) · 사실 줄 켜고 끄기.
 //   위치 권한을 쓰지 않는다(D6). 고른 것은 chrome.storage.local.settings 에만 둔다 — 서버로 보내지 않는다.
+// (2026-09-24 정정 · PD 결정 · L4) 쓰나미 줄은 기본 꺼짐이다 — 체크 상자는 DEFAULT_LINES(feeds.js)를 따라 처음에 비어 있다.
+//   켜는 선택지는 남긴다. 저장된 선택이 없으면 꺼짐, 사용자가 켜서 저장했으면 켜짐.
 
 import { DEFAULT_LINES } from './feeds.js';
 

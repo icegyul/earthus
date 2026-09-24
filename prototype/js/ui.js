@@ -2128,7 +2128,7 @@ export const settings = {
       alertBtn.textContent = ko2 ? '앱이 닫혀 있어도 오는 알림 ›' : 'Alerts while the app is closed ›';
       alertBtn.onclick = async () => {
         $('#settings').classList.remove('up');
-        const { alertsSheet } = await import('./ui-alerts.js');
+        const { alertsSheet } = await import('./ui-alerts.js?v=20260924-mapspot');
         alertsSheet.open();
       };
     }

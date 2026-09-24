@@ -11,6 +11,7 @@
 //   17B TRACK      — 경로는 visualType TRACK, truthClass DERIVED
 //   R-11 Dive Replay — 실제 경로는 실선, **추정 경로는 파선**. 항로는 계산이므로 파선이다.
 import * as THREE from '../../vendor/three-r184.module.min.js';
+import { forecastNoticeHtml } from './forecast-notice.js?v=1';
 
 const R_M = 6371000;
 
@@ -426,6 +427,9 @@ export function routeCardHtml(stops, legs, wx, badge) {
     h += `<div style="padding:2px 0 8px">`
       + `<div>${name(l.to)} 도착 예상 <b>${utc(l.arr)}</b></div>`
       + `<div style="color:var(--text-dim)">그때 예보 — ${wxLine(w.at)}</div>`
+      // (2026-09-24 · 기상법 §17 · PD (나)) 도착 시각의 값은 제공자 수치모델 예보다 — 같은 줄 바로 밑에 고정 문구(js/forecast-notice.js).
+      //   Open-Meteo 는 모델 이름·실행 시각을 이 응답에 싣지 않는다(best_match) — 그래서 제공자 이름만 적고 실행 시각은 뺀다.
+      + (w.at ? forecastNoticeHtml({ model: 'Open-Meteo', ko: true, tag: 'div' }) : '')
       + `<div style="color:var(--text-dim)">지금 실황 — ${wxLine(w.now)}</div>`
       + `</div>`;
   });

@@ -262,6 +262,64 @@ async function inViewport(page, vh) {
     await page.close();
   }
 
+  // (2026-09-24 정정 · L4 · PD 결정) 쓰나미 줄 기본 꺼짐 · 지진 줄 기상청 항목만 — 결과로 본다.
+  //   ① 기본 설치(쓰나미 선택 저장 없음)에 24시간 안의 쓰나미 발표를 넣어도 줄이 없다 → 설정에서 켜면 나온다
+  //   ② 창 안에 더 새롭고 큰 JMA 항목 + 기상청 항목 → 기상청 항목이 나오고 JMA 글자는 없다
+  //   ③ 창 안에 JMA 항목만 → '지난 24시간 기상청 발표 지진 없음 · 기상청 HH:MM KST 기준'
+  //   ④ ③ 과 같은데 파일이 60분 넘게 늙음 / 기상청 받기 실패(kmaError) → '지진 자료 지연', '없음' 없음
+  {
+    const JMA_RE = /JMA|일본 기상청|Japan Meteorological|shindo/;
+    const setFeeds = (patch) => run.sw.evaluate(async (p) => {
+      const now = Date.now();
+      const { feeds } = await chrome.storage.local.get('feeds');
+      const agencies = { KMA: { ko: '기상청', en: 'Korea Meteorological Administration' }, JMA: { ko: '일본 기상청', en: 'Japan Meteorological Agency' } };
+      const q = (src, minsAgo, mag, place, early = false) => ({ src, srcKo: src === 'KMA' ? '기상청' : '일본 기상청', at: new Date(now - minsAgo * 60000).toISOString(), atMs: now - minsAgo * 60000, mag, place, placeEn: src === 'JMA' ? 'Off Miyagi' : null, intensity: src === 'KMA' ? '최대진도 Ⅱ' : '5-', early });
+      if (p.tsunami) feeds.tsunami = { ok: true, fetchedAt: now, data: { generatedMs: now - 5 * 60000, source: 'NOAA tsunami.gov', alerts: [{ center: 'PTWC', category: 'Information', updatedMs: now - 30 * 60000, bulletin: 'https://www.tsunami.gov/' }] } };
+      if (p.quake) {
+        const quakes = p.quake.items.map((x) => q(...x));
+        feeds.quakeAsia = { ok: true, fetchedAt: now, data: { generatedMs: now - p.quake.genMinsAgo * 60000, agencies, quakes, kmaError: !!p.quake.kmaError } };
+      }
+      await chrome.storage.local.set({ feeds, lastFetchAt: now });
+    }, patch);
+    const facts = async (shot) => {
+      const { page } = await openTab(run);
+      await sleep(600);
+      const r = await readPage(page);
+      if (shot) await page.screenshot({ path: path.join(OUT, shot).replace(/\\/g, '/') });
+      await page.close();
+      return r.facts;
+    };
+    const line = (fs, id) => { const f = fs.find((x) => x.line === id); return f ? `${f.status}: ${f.text}` : null; };
+    const L = (R.legalL4 = {});
+    await run.sw.evaluate(async () => chrome.storage.local.set({ settings: { cityId: 'seoul' } }));
+    const stored = await run.sw.evaluate(async () => (await chrome.storage.local.get('settings')).settings);
+    await setFeeds({ tsunami: true, quake: { genMinsAgo: 3, items: [['JMA', 20, 6.0, '宮城県沖'], ['KMA', 300, 2.1, '경북 경주시 남남서쪽 9km 지역']] } });
+    const f1 = await facts('chrome-ko-l4-kma-only-tsunami-off.png');
+    L.defaultInstall = { storedSettings: stored, tsunamiLine: line(f1, 'tsunami'), quakeLine: line(f1, 'quake') };
+    await run.sw.evaluate(async () => chrome.storage.local.set({ settings: { cityId: 'seoul', lines: { sky: true, warn: true, quake: true, tsunami: true } } }));
+    const f2 = await facts('chrome-ko-l4-tsunami-on-by-user.png');
+    L.tsunamiTurnedOn = line(f2, 'tsunami');
+    await run.sw.evaluate(async () => chrome.storage.local.set({ settings: { cityId: 'seoul' } }));
+    await setFeeds({ quake: { genMinsAgo: 3, items: [['JMA', 20, 6.0, '宮城県沖'], ['JMA', 200, 4.1, '茨城県沖']] } });
+    const f3 = await facts('chrome-ko-l4-quake-none-kma.png');
+    L.jmaOnlyWindow = line(f3, 'quake');
+    await setFeeds({ quake: { genMinsAgo: 75, items: [['JMA', 20, 6.0, '宮城県沖']] } });
+    L.staleFile = line(await facts(), 'quake');
+    await setFeeds({ quake: { genMinsAgo: 3, kmaError: true, items: [['JMA', 20, 6.0, '宮城県沖']] } });
+    L.kmaFetchFailed = line(await facts('chrome-ko-l4-quake-kma-failed.png'), 'quake');
+    L.checks = {
+      defaultNoTsunami: L.defaultInstall.tsunamiLine === null,
+      kmaItemShownNotJma: /^fresh: M2\.1 · 경북/.test(L.defaultInstall.quakeLine || '') && !JMA_RE.test(L.defaultInstall.quakeLine || ''),
+      tsunamiOnWhenChosen: /^fresh: 쓰나미 · PTWC/.test(L.tsunamiTurnedOn || ''),
+      noneSentence: /^fresh: 지난 24시간 기상청 발표 지진 없음 기상청 \d{2}:\d{2} KST 기준$/.test(L.jmaOnlyWindow || ''),
+      staleNotNone: /^stale: 지진 자료 지연/.test(L.staleFile || '') && !/없음/.test(L.staleFile || ''),
+      kmaFailedNotNone: /^stale: 지진 자료 지연/.test(L.kmaFetchFailed || '') && !/없음/.test(L.kmaFetchFailed || ''),
+      noJmaAnywhere: ![L.defaultInstall.quakeLine, L.jmaOnlyWindow, L.staleFile, L.kmaFetchFailed].some((x) => JMA_RE.test(x || '')),
+    };
+    // 다음 단계(돌아왔을 때 시험)가 쓰는 운영 자료로 되돌린다
+    await run.sw.evaluate(async () => chrome.storage.local.set({ lastFetchAt: 0 }));
+  }
+
   // (2026-09-24 검수 추가) 열어 둔 새 탭으로 돌아왔을 때: 특보 자료가 그 사이 45분을 넘었으면 '없음' 대신 '지연' 이 나와야 통과.
   //   저장소는 바꾸지 않는다(onChanged 로 다시 그려지는 길을 막고 visibilitychange 길만 본다).
   {
@@ -313,6 +371,13 @@ console.log(JSON.stringify({
   shots: Object.fromEntries(Object.entries(ko.shots).map(([k, v]) => [k, v.inViewport])),
   formatChange: ko.formatChange.map((f) => `${f.line}:${f.status}`),
   returnToOpenTab: ko.returnToOpenTab, fcpMedianMs: ko.firstPaint.fcpMedianMs,
+  legalL4: ko.legalL4,
+  liveNoJma: {
+    ko: ko.page.facts.filter((f) => f.line === 'quake').map((f) => f.text),
+    en: result.runs.fr.page.facts.filter((f) => f.line === 'quake').map((f) => f.text),
+    ok: ![...ko.page.facts, ...result.runs.fr.page.facts].some((f) => f.line === 'quake' && /JMA|일본 기상청|Japan Meteorological|shindo/.test(f.text)),
+    tsunamiLines: [...ko.page.facts, ...result.runs.fr.page.facts].filter((f) => f.line === 'tsunami').length,
+  },
   options: ko.options,
   cloudPair: ko.cloudPair,
   firstInstallBeforeData: { status: ko.firstInstall.status, facts: ko.firstInstall.facts.length, httpFromPage: ko.firstInstall.pageHttpRequests.length },

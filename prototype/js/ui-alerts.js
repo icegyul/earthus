@@ -13,7 +13,11 @@
 import { i18n } from './i18n.js';
 import { auth } from './auth.js';
 import { push } from './push.js';
-import { myLocation } from './mylocation.js';
+/* (2026-09-24 정정) 예전에는 여기서 mylocation.js 를 불러 '＋ 지금 내 위치' 단추가 기기 측위 좌표를
+   서버(alert_spots)에 저장했다. 위치정보법 위치기반서비스사업 신고 쟁점(docs/PAID-APP-LAUNCH-REVIEW-2026-09-24.md
+   L5) 때문에 PD 가 길 B(지도 중심 저장만 남김)를 골랐다. ⚠️ 이 파일은 기기 위치를 읽지 않는다 —
+   tools/earthus-v53/alert-spot-map-centre-2026-09-24.test.mjs 가 mylocation·geolocation 참조를 막는다. */
+import { lookupPlace } from './place.js';
 import { toast } from './ui.js';
 import { flyTo, viewCenter } from './viewer.js';
 import { API } from './config.js';
@@ -374,9 +378,33 @@ export const alertsSheet = {
     /* 목록 개수를 확인하지 못했을 때 새 지점을 만들면 실제 서버에는 이미 제한만큼 있어
        SPOT_LIMIT만 나고, 사용자는 왜 안 되는지 알 수 없다. 최신 목록을 받은 뒤에만 연다. */
     if (!this._spotsLoading && !this._spotsError && this._spots.length < max) {
+      /* 화면 중심은 viewer.viewCenter()의 지표 교차점이다. 지명은 lookupPlace 의 **오프라인** 경로
+         (deviceCurrent 없음 → 국가·시군구 참조표)로만 붙인다 — 외부로 좌표를 보내지 않는다.
+         ⚠️ 참조표 두 개가 합쳐 약 830KB 라 처음 열 때 느리다. 단추·좌표를 먼저 그리고 지명은
+            나중에 채운다(render-then-enrich). 그 사이 새 렌더가 시작됐으면 옛 회차는 고치지 않는다(_renderSeq). */
+      const center = viewCenter();
+      let placeText = '';   // 지명 — lookupPlace 가 끝나면 채운다. saveAt 은 누른 순간의 값을 읽는다.
+      let placeLabel = '';  // 확인 창 이름 기본값 — 시군구면 그 이름, 아니면 나라 이름만
+      let placeNear = '';   // 화면·확인 창에 붙일 설명(시군구면 '… 부근', 아니면 describePlace 문장 그대로)
+      const coordText = center ? `${center.lat.toFixed(2)}, ${center.lon.toFixed(2)}` : '';
+
       const saveAt = async (c) => {
-        if (!c) { toast(ko ? '위치를 먼저 확인해 주세요' : 'Location unknown'); return; }
-        const label = prompt(ko ? '이 곳의 이름 (예: 경포해변)' : 'Name this place');
+        if (!c) {
+          toast(ko ? '화면 가운데에 지구가 없습니다 — 지구를 돌려 가운데를 맞춰 주세요'
+                   : 'The map centre is off the globe — rotate the globe first');
+          return;
+        }
+        /* (2026-09-24 정정) 저장 전에 무엇이 저장되는지 말한다: 기기 위치가 아니라 지금 화면 가운데 좌표. */
+        /* (2026-09-24 정정 · 검토) 처음 문구는 "기기 위치(GPS)가 아닙니다"였다. 거짓이 될 수 있었다 —
+           main.js 가 앱을 열자마자 지구를 기기 위치로 날리고(사용자 조작 없음), '내 위치' 단추도 그렇게 한다.
+           그 상태에서 저장하면 지도 가운데 = 기기 위치 근처다(폰 크기 점검: '내 위치' 뒤 저장 → 기기에서 0.6km,
+           build/legal-fix/streamB/review-locate.json). 그래서 값이 아니라 **방식**을 말한다: 기기 위치를 읽지 않고
+           지도 가운데를 저장한다 + 지도가 내 위치에 가 있으면 그 근처가 저장된다. */
+        const coords = `${c.lat.toFixed(4)}, ${c.lon.toFixed(4)}`;
+        const label = prompt(ko
+          ? `저장할 곳 · 지금 보는 지도 가운데\n${coords}${placeNear ? ` (${placeNear})` : ''}\n기기 위치(GPS)를 읽지 않고 지도 가운데 좌표를 저장합니다.\n지도가 '내 위치'에 가 있으면 그 근처 좌표가 저장됩니다.\n\n이 곳의 이름 (예: 경포해변)`
+          : `Place to save · centre of the map you are viewing\n${coords}${placeNear ? ` (${placeNear})` : ''}\nWe do not read your device location (GPS); the map-centre coordinates are saved.\nIf the map is on 'My location', coordinates near you are saved.\n\nName this place`,
+          placeLabel.slice(0, 40));
         if (!label) return;
         try {
           await push.addSpot({ label: label.slice(0, 40), lat: c.lat, lon: c.lon });
@@ -391,31 +419,61 @@ export const alertsSheet = {
 
       /* GPS 위치만 저장할 수 있으면 여행지·가족이 있는 곳처럼 실제로 지켜볼 장소를
          미리 등록할 수 없다. 사용자가 지구를 돌려 고른 화면 중심을 좌표 그대로 저장한다.
-         ⚠️ 화면 중심은 viewer.viewCenter()의 지표 교차점이며 지명을 추측하지 않는다. */
-      const center = viewCenter();
-      const addMap = el('button', 'btn-secondary al-add', center
-        ? (ko
-            ? `＋ 지금 보고 있는 곳 (${center.lat.toFixed(2)}, ${center.lon.toFixed(2)})`
-            : `＋ Watch map centre (${center.lat.toFixed(2)}, ${center.lon.toFixed(2)})`)
-        : (ko ? '＋ 지금 보고 있는 곳' : '＋ Watch map centre'));
+         ⚠️ 화면 중심은 viewer.viewCenter()의 지표 교차점이며 지명을 추측하지 않는다.
+         (2026-09-24 정정) 지명은 추측하지 않되 오프라인 참조표의 '부근' 설명은 붙인다(위 lookupPlace).
+         center 는 위에서 한 번만 읽는다 — 단추 글자·확인 문구·저장값이 모두 같은 좌표다. */
+      const addMap = el('button', 'btn-secondary al-add',
+        ko ? '＋ 지금 보는 곳 저장' : '＋ Save this map spot');
+      addMap.dataset.alertSave = 'map-centre';
+      addMap.disabled = !center;
       /* 버튼에 적힌 좌표와 저장값이 반드시 같아야 한다. 배경 인트로가 천천히 도는 중
          클릭 시점에 다시 읽으면 몇 초 사이 경도가 달라져 보지 않은 곳을 저장한다. */
       addMap.onclick = () => saveAt(center);
       body.appendChild(addMap);
-
-      const addMe = el('button', 'btn-secondary al-add',
-        ko ? '＋ 지금 내 위치' : '＋ Watch my current location');
-      addMe.onclick = async () => {
-        addMe.disabled = true;
-        const c = myLocation.coords || await myLocation.locate(true);
-        addMe.disabled = false;
-        if (!c) {
-          toast(myLocation.reason() || (ko ? '위치를 가져오지 못했습니다' : 'Could not get location'));
-          return;
-        }
-        saveAt(c);
+      /* 무엇이 저장되는지 단추 바로 아래에 적는다. 시트가 지구 가운데를 가릴 수 있어서
+         좌표와 '부근' 지명을 글로 보여 준다. */
+      const what = el('p', 'sky-note al-save-what');
+      what.dataset.alertSaveWhat = '';
+      /* (2026-09-24 정정 · 검토) "기기 위치(GPS)는 저장하지 않습니다"는 앱이 지구를 기기 위치로 옮겨 둔
+         상태(시작 시 자동 · '내 위치' 단추)에서는 거짓이 됐다. 확인 창과 같은 '방식' 문구로 바꿨다(위 saveAt 주석). */
+      const paintWhat = () => {
+        what.innerHTML = center
+          ? (ko
+              ? `저장될 곳 · 지도 가운데 <b>${esc(coordText)}</b>${placeNear ? ` · ${esc(placeNear)}` : ''}<br>`
+                + '기기 위치(GPS)를 읽지 않고 지도 가운데 좌표를 저장합니다. 지도가 \'내 위치\'에 가 있으면(앱을 열 때 자동으로 가기도 합니다) 그 근처 좌표가 저장됩니다. '
+                + '다른 곳을 저장하려면 이 창을 닫고 지구를 돌려 가운데를 맞춘 뒤 다시 여세요.'
+              : `Will save · map centre <b>${esc(coordText)}</b>${placeNear ? ` · ${esc(placeNear)}` : ''}<br>`
+                + 'We do not read your device location (GPS); the map-centre coordinates are saved. If the map is on \'My location\' (it can move there when the app opens), coordinates near you are saved. '
+                + 'To save another place, close this sheet, rotate the globe to centre it, and reopen.')
+          : (ko
+              ? '화면 가운데에 지구가 없습니다. 이 창을 닫고 지구를 돌려 가운데를 맞춘 뒤 다시 여세요.'
+              : 'The map centre is off the globe. Close this sheet, rotate the globe to centre a place, and reopen.');
       };
-      body.appendChild(addMe);
+      paintWhat();
+      body.appendChild(what);
+      if (center) {
+        lookupPlace(center.lat, center.lon).then((place) => {
+          if (seq !== this._renderSeq || !place) return;
+          placeText = String(place.detail || '').trim();
+          /* 시군구 참조(place.city)면 '부산광역시 동구 부근', 그 밖은 describePlace 문장이
+             이미 '…에서 북쪽 12km' 꼴이라 그대로 쓴다('부근'을 겹쳐 붙이지 않는다). */
+          placeLabel = place.city ? placeText : String(place.country || '');
+          placeNear = placeText && place.city ? (ko ? `${placeText} 부근` : `near ${placeText}`) : placeText;
+          paintWhat();
+        }).catch(() => { /* 지명 없이도 좌표로 저장할 수 있다 */ });
+      }
+
+      /* (2026-09-24 정정) 여기 있던 '＋ 지금 내 위치'(Watch my current location) 단추를 뺐다.
+         myLocation.coords || myLocation.locate(true) 로 기기 측위 좌표를 받아 saveAt(c) → push.addSpot 으로
+         Supabase alert_spots 에 계정과 함께 저장했다 = 개인위치정보를 우리 시스템으로 전송.
+         PD 결정(2026-09-24, L5 길 B): 기기 위치는 서버로 보내지 않는다. 지도 중심 저장만 남긴다.
+         '내 위치' 표시(기기 안에서만 쓰는 기능)는 그대로다 — 사용자가 그 단추로 지구를 옮긴 뒤
+         이 단추를 누르면 그 화면 가운데가 저장된다(사용자가 고른 곳).
+         (2026-09-24 정정 · 검토) '사용자가 고른 곳'만은 아니다 — main.js 의 시작 시 myLocation.locate().then(flyTo)
+         가 사용자 조작 없이 지구를 기기 위치로 돌린다. 그 뒤 인트로가 0.22°/s 로 최대 30초 돌거나 첫 터치에 멎으므로,
+         만지지 않고 저장하면 기기 위치에서 수백 m~수백 km 떨어진 좌표가 저장된다(review-default.json: 147km,
+         review-locate.json: 0.6km). 이 길을 막을지(예: 시작 자동 이동 뒤 사용자가 지구를 움직이기 전에는 저장 보류)는
+         PD·변호사 판단 — docs/paid-app-review-2026-09-24/r-law.md 의 '지도 중심 = 사용자의 측위값이 아님' 전제를 흔든다. */
     } else if (!this._spotsLoading && !this._spotsError && this._spots.length >= max) {
       body.appendChild(el('p', 'sky-note', ko
         ? '현재 공개 정책의 지켜볼 곳 상한은 20곳입니다. 안전 알림과 관광 혼잡 알림은 모두 무료입니다.'

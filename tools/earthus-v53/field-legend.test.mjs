@@ -179,7 +179,7 @@ test('레이어를 바꿔도 상자의 뼈대가 같다 — 줄 여섯 개가 �
   legend.show({ scale: scaleOf('temp'), run: RUN, valid: VALID });
   const first = skeleton();
   // 줄 여섯 개 + 접는 단추 하나. 단추는 **줄이 아니다**(index.html 에서 position:absolute) — 그래서 칸 여섯 개 규약이 그대로다.
-  assert.deepEqual(first, ['fl-title', 'fl-bands', 'fl-ticks', 'fl-ticks fl-alt', 'fl-meta', 'fl-note', 'fl-fold']);
+  // (2026-09-24 정정) 예보 고지 줄(.fl-fc)이 풀이 뒤에 하나 더 있다 — 고지가 없으면 hidden 이라 grid 에 칸을 차지하지 않는다(여섯 칸 규약 그대로).  //   고지가 설 때만 상자가 한 줄 자란다(.fl-has-fc) — 아래 '예보 고지' 시험이 잰다.  assert.deepEqual(first, ['fl-title', 'fl-bands', 'fl-ticks', 'fl-ticks fl-alt', 'fl-meta', 'fl-note', 'fl-fc fc-notice', 'fl-fold']);  assert.equal(byClass(root, 'fl-fc').hidden, true, '고지가 없는데 고지 줄이 보인다');
   const rowsBefore = [...root.children];
   for (const id of SCALE_IDS) {
     legend.show({ scale: scaleOf(id), run: RUN, valid: VALID });

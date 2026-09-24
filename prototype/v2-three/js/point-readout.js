@@ -34,12 +34,13 @@
 // 이 파일은 DOM 을 모른다. frames · timeBus · fetch · now 를 주입받는다 —
 // tools/earthus-v53/point-readout.test.mjs 가 가짜를 넣어 **우리 S3 말고 아무 데도 안 간다**를 잠근다.
 
-import { FIELD_DESCRIPTORS, cellLabel, fieldStatusOf, fmtValid, readoutOf, sourceLabel, statusText, timeMeta } from './field-layer.js?v=3-fix0924';
+import { FIELD_DESCRIPTORS, cellLabel, fieldStatusOf, fmtValid, readoutOf, sourceLabel, statusText, timeMeta } from './field-layer.js?v=4-fc0924';
 import { scaleOf } from './field-scales.js?v=1';
 import { readTicks } from './field-log.js?v=1';
-import { buoysNear } from './for-me-signal.js?v=2';
+import { buoysNear } from './for-me-signal.js?v=3-fc0924';
 import { sharedGfsFrames } from './gfs-frames.js?v=2';
 import { timeBus as sharedTimeBus } from './time-bus.js?v=1';
+import { forecastNoticeHtml, isForecastAt } from './forecast-notice.js?v=1';
 
 // (2026-09-23 정정) 운영(earthus.net)은 같은 출처 — 위 '우리 S3 밖으로 나가지 않는다'는 그대로다: CloudFront /ocean/* 가 같은 버킷을 읽는다.
 //   그 밖(localhost · node 시험)은 S3 직접 — 시험의 thirdParty(POINT_BASE 로 시작하지 않는 주소) 검사는 node 에서 S3 주소로 돈다.
@@ -297,6 +298,10 @@ export function createPointReadout(deps = {}) {
       const html = stat(q, r.ok ? r.text : '—') + stat(ko ? '지점' : 'Point', fmtPoint(lat, lon))
         + `<p>${esc(r.ok ? r.note : r.text)}${r.ok ? (ko ? ' — 도시·지점의 관측값이 아닙니다.' : ' — not a city or station observation.') : ''}</p>`
         + `<p>${esc(meta.join(' · '))}${st ? ` · ${esc(st)}` : ''}</p>`
+        // (2026-09-24 · 기상법 §17 · PD (나)) 읽은 시각이 앞(예보)이면 출처 줄 바로 밑에 고정 문구(js/forecast-notice.js). 한 시각짜리·관측 격자는 뺀다.
+        + (r.ok && !(info && info.single) && desc.badge !== 'OBSERVED'
+          && isForecastAt(tMs, tMs - (Number(timeBus.offsetMs) || 0))
+          ? forecastNoticeHtml({ model: info && info.model, run: info && (info.run || info.runMs), ko, esc, tag: 'p' }) : '')
         + frozen
         + `<p style="opacity:.75">${ko ? '지구에 칠하는 것과 같은 프레임에서 읽었습니다 — 제3자 API 조회 없음.' : 'Read from the same frame the globe is painted with — no third-party API call.'}</p>`;
       const gridWord = desc.badge === 'OBSERVED' ? (ko ? '관측 격자값' : 'observed grid value') : (ko ? '모델 격자값' : 'model grid value');
@@ -464,6 +469,10 @@ export function createPointReadout(deps = {}) {
         + `<p>${esc(ko ? '유의파고는 높은 쪽 1/3 파도의 평균 높이입니다.' : 'Significant wave height is the mean of the highest third of the waves.')}</p>`
         + `<p>${esc(obs)}</p>`
         + `<p>${esc(seaSourceLine({ ...sea.gridInfo }, ko))}${windMeta ? `<br/>${esc(`${ko ? '바람' : 'Wind'}: ${windMeta}`)}` : ''}</p>`
+        // (2026-09-24 · 기상법 §17 · PD (나)) 바람을 읽은 시각이 그때의 '지금'보다 앞(예보 프레임)이면 바람 출처 바로 밑에 고정 문구.
+        //   파도·수온·해류는 한 시각짜리라 예보가 아니다 — 이 문구는 바람 줄에만 걸린다(파고 격자에 붙이지 않는다).
+        + (windMeta && readMs != null && Number.isFinite(sea.timeOffsetMs) && isForecastAt(readMs, readMs - sea.timeOffsetMs)
+          ? forecastNoticeHtml({ model: info && info.model, run: info && (info.run || info.runMs), ko, esc, tag: 'p' }) : '')
         + `<p style="opacity:.75">${esc(ko
           ? '풍파 높이와 너울 방향은 우리 해양 격자에 없어 줄을 뺐습니다 — 근사치로 채우지 않습니다.'
           : 'Wind-wave height and swell direction are not in our ocean grid, so those rows are absent — we do not fill them with an approximation.')}</p>`;

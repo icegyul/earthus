@@ -11,6 +11,7 @@
 import { eventSimilarity, haversineMeters } from '../engine-v11/event/event-fusion.js';
 import { renderBadge, layerBadge } from './engine-bridge.js?v=16';
 import { bulletinContext, bulletinTimesHtml, sourceTimeLabel } from './source-context.js?v=20260905';
+import { forecastNoticeHtml } from './forecast-notice.js?v=1';
 
 // (2026-09-23 정정) 운영(earthus.net)은 같은 출처(CloudFront /events/* /ocean/*) · 그 밖은 S3 직접 — main.js CloudManager 위 DATA_BASE 주석.
 //   아래 '없는 객체에 403' 은 CloudFront 를 거쳐도 같다(실측: 없는 키 → 403 Error from cloudfront · 오류 응답 바꿔치기 없음).
@@ -223,7 +224,10 @@ export class EventRoom {
             what: `${esc(ens.model || 'IFS ENS')} 앙상블`,
             kind: 'PROVIDER_FORECAST', layerKey: 'hazards/tyens',
             value: `${mCount ? `<b>${mCount}멤버</b> · ` : ''}예보 +${best.s.shownH || best.s.modelHorizonH || '—'}h`,
-            sub: `런 ${ago(ens.run)} · ${esc(ens.license || '')} — 공식 예보가 아니라 예보가 갈리는 폭`,
+            // (2026-09-24 · 기상법 §17 · PD (나)) 멤버 수는 모델 예보에서 센 것 — 같은 줄 아래 고정 문구(js/forecast-notice.js).
+            //   모델 이름·런은 파일 머리(agency · model · run 'YYYYMMDDHH')가 말하는 것. 공식 트랙 줄(위)에는 붙이지 않는다 — 기관 발표다.
+            sub: `런 ${ago(ens.run)} · ${esc(ens.license || '')} — 공식 예보가 아니라 예보가 갈리는 폭`
+              + forecastNoticeHtml({ model: [ens.agency, ens.model].filter(Boolean).join(' '), run: ens.run, ko: true, tag: 'div' }),
           });
         } else {
           rows.push({ agency: 'ECMWF', what: '앙상블', kind: 'PROVIDER_FORECAST', layerKey: 'hazards/tyens', found: false, value: '이 사건에 대응하는 앙상블 트랙 없음', sub: `모델이 추적 중인 열대저기압 ${(ens.storms || []).length}개` });

@@ -21,10 +21,12 @@ import { reportDocHtml, reportKey, reportIndexKey, reportUrl, reportIdFromUrl, c
 // 없는 엔진의 질문 버튼은 여기서도 만들지 않는다. 다만 '왜 없는지'를 말하는 버튼은
 // pop-metric-menu 의 선례처럼 둔다 — 조용히 아무 말도 하지 않는 게 더 큰 거짓말이다.
 import { simEntryFor, questionsForPhenomenon, questionsForCountry, previewSceneFor } from './sim-questions.js?v=2';
-import { intelStripHtml, intelOf } from './intel-strip.js?v=2';
+import { intelStripHtml, intelOf } from './intel-strip.js?v=3-fc0924';
 // (2026-09-24) 뒤로 단추 — v1 과 같은 파일. 번들에서는 build-v2-bundle.sh 가 ./shared/back-close.js 로 옮긴다.
 // (2026-09-24 정정) ?v=2 — main.js 와 같은 지정자(한 벌). back-close.js 가 바뀌었다(웹 탭 무동작 · 앱이 연 시트).
 import { backStack } from './shared/back-close.js?v=2';
+// 예보 고지 한 문장(2026-09-24 PD (나) · 기상법 §17) — 기관별 다음 위치 표의 모델 줄.
+import { forecastNoticeHtml } from './forecast-notice.js?v=1';
 const safeText = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 // ---------------------------------------------------------------------------
@@ -384,6 +386,8 @@ export function initShell(hooks) {
     intel.setAttribute('aria-label', label);
   }
   let timelineMinutes = 0;
+  // (2026-09-24) 타임스트립 예보 고지의 지금 글(아래 paintTsNotice) — 시트 머리말(renderIntel)도 같은 글을 쓴다. renderIntel 보다 먼저 선언해 둔다(TDZ).
+  let tsNoticeText = '';
   // PHASE 4 §2 — 1차 메뉴는 묶음만 보인다. 묶음을 열어야 현상 목록이 나온다.
   // 처음부터 58줄을 펼쳐 두면 '메뉴를 줄였다'가 화면에서 사실이 아니게 된다.
   // 2026-09-13: 도메인 id 여덟에서 §3.2 묶음 id 로 바뀌었다. 여는 손(gotoScene·data-collapse)은 그대로다.
@@ -1230,7 +1234,11 @@ export function initShell(hooks) {
     return `<div class="card"><div class="card-h">${picked.title} — ${i18n.ko ? '기관별 다음 위치' : 'Next positions by agency'}</div>
       <div class="card-b"><div class="wrap"><table class="room-cmp"><thead><tr><th>기관</th><th>+24h</th><th>+48h</th><th>24h 방향</th></tr></thead><tbody>${rows.map((r) =>
         `<tr><td>${nameKo(r.agency)} ${renderBadge(r.official ? 'OFFICIAL_FORECAST' : 'MODEL_SIGNAL')}</td><td>${cell(r.h24)}</td><td>${cell(r.h48)}</td><td>${r.headingKo || '—'}</td></tr>`).join('')}</tbody></table></div>
-      <div class="room-sub">${i18n.ko ? '공식 예보와 모델을 합치지 않습니다 — 기관마다 발표 시각이 다릅니다' : 'Official forecasts and models are never merged'}</div></div></div>`;
+      <div class="room-sub">${i18n.ko ? '공식 예보와 모델을 합치지 않습니다 — 기관마다 발표 시각이 다릅니다' : 'Official forecasts and models are never merged'}</div>${
+        // (2026-09-24 · 기상법 §17 · PD (나)) 모델 줄(ECMWF — official:false)마다 표 바로 밑에 고정 문구. 기관 줄(KMA·JMA·NHC)은 기관 이름 그대로 — 공식 예보다.
+        // (2026-09-24 정정 · 적대 검토) run 에 r.issued 를 넘겼었다 — 그 값은 ECMWF 파일을 우리가 만든 시각(handler.py ecmwf_doc.generated)이지
+        //   모델 실행 시각이 아니라 고지가 없는 런('14Z')을 지어냈다. 행에 진짜 run 이 없으므로 그 자리를 뺀다(forecast-notice.js: 모르면 뺀다).
+        rows.filter((r) => !r.official).map((r) => forecastNoticeHtml({ model: r.agency, run: null, ko: i18n.ko, esc: safeText, tag: 'div' })).join('')}</div></div>`;
   };
 
   const nextHtml = () => {
@@ -1543,7 +1551,8 @@ export function initShell(hooks) {
     //   각 절(출처 줄·선택 장소·켜진 자료 → 자료의 근거 · 궁금한 점 → 시뮬레이션 · Intelligence 띠 → Intelligence)로 나눠 싣는다.
     const srcLine = selectedMenu ? `<div>${safeText(selectedMenu.l.src)} · ${dataBadge(selectedMenu.l.state)}</div>` : '';
     const placeLine = `<div>${safeText(i18n.ko?'선택 장소':'Selected place')}: ${safeText(picked?.nameKo || picked?.name || (i18n.ko?'지도에서 선택':'Select on the globe'))}</div>`;
-    const timeNote = timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}</p>`:'';
+    // (2026-09-24) 예보 시각이면 같은 문단에 예보 고지 한 문장(js/forecast-notice.js — main.js timeNote 가 칠한 자료의 모델·런으로 지었다).
+    const timeNote = timelineMinutes ? `<p class="information-time">${safeText(i18n.ko?'재생 시간은 일부 예보에 적용됩니다. 다른 자료는 각 원자료 시각에 고정됩니다.':'Playback applies to supported forecasts. Other data keeps its source time.')}${tsNoticeText ? `<br/><span class="fc-notice">${safeText(tsNoticeText)}</span>` : ''}</p>`:'';
     const activeDetails = active.length ? `<details><summary>${i18n.ko?'현재 켜진 자료':'Active data'} ${active.length}</summary>${active.map(({s,l})=>`<div class="active-data-row"><span>${safeText(i18n.layer(l.id,l.name,s.id))}<small>${safeText(menuTime(l.id,i18n.ko))}</small></span>${canClearLayer(l.id)?`<button data-action="shell-layer-off" data-scene="${s.id}" data-layer="${l.id}" aria-label="${safeText(l.name)} 끄기">${i18n.ko?'끄기':'Off'}</button>`:''}</div>`).join('')}<button data-action="shell-clear-layers">${i18n.ko?'추가 자료 모두 끄기':'Clear overlays'}</button></details>`:'';
     if (cx === 'selection') {
       renderSheet({ srcLine, placeLine, timeNote, activeDetails, phenomenonLine, simQuestionsHtml, regionLine, mapContextQuestions, intelStripBlock });
@@ -1673,11 +1682,24 @@ export function initShell(hooks) {
     <button id="ts-now" aria-label="${i18n.ko?'시간을 현재로 되돌리기':'Back to the present time'}">${i18n.t('now')}</button>
     <button id="ts-play" title="${i18n.t('play5d')}" aria-label="${i18n.t('play5d')}">▶</button>
     <input type="range" id="ts-range" aria-label="${i18n.ko?'자료 시간 이동':'Data timeline'}" min="-1440" max="7200" step="30" value="0" />
-    <span id="ts-label">NOW</span>`;
+    <span id="ts-label">NOW</span>
+    <span id="ts-notice" class="fc-notice" role="note" hidden></span>`;
   root.appendChild(strip);
 
   const tsRange = strip.querySelector('#ts-range');
   const tsLabel = strip.querySelector('#ts-label');
+  /* (2026-09-24 · 기상법 §17 · PD (나) — docs/PAID-APP-LAUNCH-REVIEW-2026-09-24.md §00-2) 예보 고지 줄.
+     타임라인이 앞(예보)을 가리키고 지구에 모델 예보가 칠해져 있을 때만 이 막대 안 **둘째 줄**로 선다(main.js timeNote().notice — 문장은
+     js/forecast-notice.js 하나). '지금'·과거·태풍 공식 경로만 켠 때는 숨는다. 그동안 <html> 에 fc-on 을 달아 세로 폰 자리표(index.html)가
+     막대 높이(--ts-h)를 한 줄만큼 키운다 — 출처 줄·알약·시트가 셈대로 같이 오른다(겹침 0). 새 움직임은 없다. */
+  const tsNotice = strip.querySelector('#ts-notice');
+  const paintTsNotice = (text) => {
+    tsNoticeText = text || '';
+    if (tsNotice.textContent !== tsNoticeText) tsNotice.textContent = tsNoticeText;
+    tsNotice.hidden = !tsNoticeText;
+    strip.classList.toggle('fc-on', !!tsNoticeText);
+    document.documentElement.classList.toggle('fc-on', !!tsNoticeText);
+  };
   const fmtOffset = (m) => {
     if (m === 0) return 'NOW';
     const sign = m > 0 ? '+' : '−';
@@ -1688,11 +1710,14 @@ export function initShell(hooks) {
   const applyTime = () => {
     const m = parseInt(tsRange.value, 10);
     timelineMinutes=m;
-    const n = m !== 0 && hooks.timeNote ? hooks.timeNote(m) : null;
+    // (2026-09-24 정정) 시간 버스를 **먼저** 옮기고 문구를 묻는다 — 예보 고지(n.notice)는 색면이 새 시각으로 판정한 결과다.
+    //   예전 순서(문구 → 옮기기)는 짧은 글(short)만 쓸 때는 차이가 없었다(그 글은 시각을 읽지 않는다).
     hooks.onTimeOffset(m * 60000);
+    const n = m !== 0 && hooks.timeNote ? hooks.timeNote(m) : null;
     tsLabel.textContent = m === 0 ? 'NOW'
       : `${fmtOffset(m)} · ${n ? n.short : ''}`;
     strip.title = n ? n.full : '';
+    paintTsNotice(n && n.notice);
     if(intelOpen)renderIntel();
   };
   tsRange.addEventListener('input', applyTime);

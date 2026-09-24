@@ -281,6 +281,13 @@ export function typhoonCard(place, storm, ctx = {}) {
      "기관은 강풍역 440 km 안, 앙상블은 100 km 안 통과"처럼 기준이 다르면 서로 어긋난 것처럼 보여 등급이 부당하게 낮아진다. */
   const basisRadiusKm = (() => { const ps = (basisRec?.pts || []).filter(p => p.r); if (!ps.length) return 100; const near = ps.reduce((m, p) => (p.d < m.d ? p : m), ps[0]); return Math.max(100, Math.round(near.r.km)); })();
   const ens = ecStorm ? ensembleNear(place, ecStorm, basisRadiusKm) : null;
+  /* (2026-09-24 · 기상법 §17 · PD (나)) 앙상블 개수 옆 예보 고지(js/forecast-notice.js)가 쓸 모델 이름·실행 시각 — **파일이 말하는 것만**.
+     aws/ecmwf-ingest 는 폭풍 객체가 아니라 문서 머리에 agency('ECMWF') · model('IFS (HRES + ENS)') · run('YYYYMMDDHH')을 싣는다.
+     ensembleNear 의 run(폭풍 객체의 run)이 비면 문서의 run 으로 채운다. 없으면 null — 고지는 그 자리를 뺀다. */
+  if (ens) {
+    ens.run = ens.run || ecmwf?.run || null;
+    ens.model = [ecmwf?.agency, ecmwf?.model].filter(Boolean).join(' ') || null;
+  }
   const near = buoys ? buoysNear(place, buoys, 150, 3, now) : [];
   const reasons = [];
   const evalN = withR.length, yesN = yes.length;
@@ -454,7 +461,9 @@ export function waveCard(place, grids, buoys, { threshold = 2.0, now = Date.now(
   if (fresh.length && nowWave != null) { const diff = Math.abs(fresh[0].wh - nowWave); reasons.push(`부이 ${fresh[0].name}(${fresh[0].km} km) 실측 ${fresh[0].wh} m · 모델과 ${diff.toFixed(1)} m 차이`); }
   else if (near.length) reasons.push(`부이 ${near[0].name} 관측이 3시간 넘어 대조 제외`); else reasons.push('100 km 안 파고 부이 없음 — 모델만');
   if (hourly) reasons.push(`시간별 예보 ${hourly.length}시간 (${hourlySource})${win && !win.none ? ` · 임계 초과 ${fmtKst(win.startMs)}~${fmtKst(win.endMs)} KST` : win ? ` · 3일 내 최대 ${win.maxWave.toFixed(1)} m (임계 미만)` : ''}`);
-  else reasons.push('시간별 예보 없음 — 지금 격자값만');
+  // (2026-09-20 W2) hourly 는 이제 늘 null 이다 — 브라우저가 제공기관의 hourly 를 직접 부르던 길을 걷어냈고
+  // 우리 수집기(aws/marine-grid)는 current= 로 한 시각만 받는다. '응답이 없다'가 아니라 '자료가 없다'.
+  else reasons.push('시간별 예보 없음 — 우리 해양 격자는 한 시각뿐이라 지금 격자값만으로 본다');
   const grade = (fresh.length && nowWave != null) ? (Math.abs(fresh[0].wh - nowWave) <= 0.5 ? 'high' : 'low') : 'mid';
   const basisText = nowWave != null
     ? `${w.source} ${w.res}° 격자 최대 유의파고 ${nowWave.toFixed(1)} m ${hitNow ? '≥' : '<'} 임계 ${threshold.toFixed(1)} m (${w.time ? fmtKst(parseWhen(w.time)) + ' KST' : ''})${!hitNow && hitLater ? ` · 시간별 예보로 ${fmtKst(win.startMs)} KST 부터 초과` : ''}`
@@ -481,14 +490,17 @@ export function waveCard(place, grids, buoys, { threshold = 2.0, now = Date.now(
   const engine = [];
   if (nowWave != null) engine.push({ name: `해양 모델(${w.source})`, used: true, hit: hitNow, text: `${nowWave.toFixed(1)} m @ ${w.lat.toFixed(1)},${w.lon.toFixed(1)}` });
   else engine.push({ name: '해양 모델 격자', used: false, text: grids ? '내 동네 반경 안 바다 격자 없음' : '격자 응답 없음' });
-  engine.push(hourly ? { name: hourlySource, used: true, hit: hitLater, text: win && !win.none ? `초과 ${fmtKst(win.startMs)}~${fmtKst(win.endMs)} KST` : `3일 내 최대 ${win ? win.maxWave.toFixed(1) : '?'} m` } : { name: '시간별 파고 예보', used: false, text: '응답 없음' });
+  engine.push(hourly ? { name: hourlySource, used: true, hit: hitLater, text: win && !win.none ? `초과 ${fmtKst(win.startMs)}~${fmtKst(win.endMs)} KST` : `3일 내 최대 ${win ? win.maxWave.toFixed(1) : '?'} m` } : { name: '시간별 파고 예보', used: false, text: '우리 자료에 없음 — 해양 수집기가 한 시각(current=)만 받는다' });
   engine.push(near.length ? { name: 'KMA 부이 실측', used: fresh.length > 0, hit: fresh.some(b => b.wh >= threshold), text: `${near[0].name} ${near[0].km} km · ${near[0].wh} m${near[0].fresh ? '' : ' (3시간 넘음)'}` } : { name: 'KMA 부이 실측', used: false, text: '100 km 안 부이 없음' });
   const usedN = engine.filter(e => e.used).length;
   const sameDir = engine.filter(e => e.used && !!e.hit === hit).length;
   return {
     kind: 'wave', id: 'wave', title: '파고 · 내 동네 앞바다', state: hit ? 'signal' : 'quiet',
     basis: { text: basisText, issueMs: w && w.time ? parseWhen(w.time) : null },
-    status: hourly ? '감시 중 · 다음 판정 = 앱 열 때·⟳ 때' : '감시 중 · 시간별 예보 응답 없음', when,
+    // (2026-09-20 W2) 시간별 파고는 **요청 자체를 하지 않는다**(main.js data.waveHourly = null).
+    // 여기가 '응답 없음' 이면 제공기관이 대답을 못 준 것처럼 읽힌다 — 묻지 않은 것과 답이 없는 것은 다르다.
+    // 위 reasons·engine 두 자리와 같은 말을 쓴다(한 곳만 고치면 카드가 두 말을 한다).
+    status: hourly ? '감시 중 · 다음 판정 = 앱 열 때·⟳ 때' : '감시 중 · 시간별 파고 예보는 우리 자료에 없음', when,
     why, timeline, certain: { grade, gradeKo: GRADE[grade], reasons },
     engine, engineSummary: usedN ? `${usedN}개 자료 중 ${sameDir}개 같은 방향` : null,
     facts: { wave: nowWave, threshold, maxWave: win ? win.maxWave : null }, badges: ['MODEL'],

@@ -163,8 +163,12 @@ test('app-context.js 는 v1 main.js·v2 main.js 의 첫 import 다(주소에 표
   assert.match(read('prototype/v2-three/js/main.js'), /from '\.\.\/\.\.\/js\/back-close\.js\?v=2';/);
   assert.doesNotMatch(read('prototype/v2-three/js/main.js') + shell, /back-close\.js\?v=1'|app-context\.js\?v=1'/);
   // 바뀐 모듈 사슬의 토큰: ui-shell 76 · main 209
-  assert.match(read('prototype/v2-three/js/main.js'), /from '\.\/ui-shell\.js\?v=76-back0924';/);
-  assert.match(read('prototype/v2-three/index.html'), /<script type="module" src="\.\/js\/main\.js\?v=209-app0924"><\/script>/);
+  // (2026-09-24 정정) 같은 날 예보 고지(js/forecast-notice.js) 작업이 ui-shell 77 · main 210 으로 한 번 더 올렸다 — 이 시험이 잠그는 것은
+  //   '사슬이 올라갔다'(76 · 209 이상)이지 그 한 값이 아니다. 숫자가 그 뒤로 더 올라가도 통과한다(tools/module-specifier-audit.mjs 가 일치를 본다).
+  const shellTok = /from '\.\/ui-shell\.js\?v=(\d+)-[a-z0-9]+';/.exec(read('prototype/v2-three/js/main.js'));
+  assert.ok(shellTok && Number(shellTok[1]) >= 76, 'ui-shell 토큰이 76 아래로 내려갔다');
+  const mainTok = /<script type="module" src="\.\/js\/main\.js\?v=(\d+)-[a-z0-9]+"><\/script>/.exec(read('prototype/v2-three/index.html'));
+  assert.ok(mainTok && Number(mainTok[1]) >= 209, 'main 토큰이 209 아래로 내려갔다');
   // 번들이 두 파일을 싣고 경로를 바꾼다
   const build = read('tools/build-v2-bundle.sh');
   assert.match(build, /prototype\/js\/app-context\.js" "\$ROOT\/prototype\/js\/back-close\.js" "\$OUT\/js\/shared\/"/);

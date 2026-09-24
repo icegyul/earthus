@@ -40,8 +40,9 @@ import { timeBus as sharedTimeBus } from './time-bus.js?v=1';
 import { sharedGfsFrames } from './gfs-frames.js?v=2';
 import { acceptsArrival, forecastHourAt, sameSpan } from './frame-arrival.js?v=1';
 import { scaleOf, legendModel, bandIndex, KT_PER_MS } from './field-scales.js?v=1';
-import { fieldLegend as sharedLegend, legendMetaLine } from './field-legend.js?v=2-fix0924';
+import { fieldLegend as sharedLegend, legendMetaLine } from './field-legend.js?v=3-fc0924';
 import { WindParticles, particleBudgetFor, particleCountFor, sampleWind, WIND_CALM_MS, WIND_SPEED_BOUNDS_MS } from './wind-particles.js?v=1';
+import { forecastNotice, forecastNoticeHtml, isForecastAt } from './forecast-notice.js?v=1';
 
 const D2R = Math.PI / 180;
 const R2D = 180 / Math.PI;
@@ -487,10 +488,20 @@ export function createWindLayer(deps = {}) {
     try { deps.onChange(); } catch (e) { /* 듣는 쪽의 탈이 바람을 세우면 안 된다 */ }
   }
 
+  /* (2026-09-24 · 기상법 §17 · PD (나)) 흐르는 입자가 **예보 시각**의 GFS 바람이면 고정 문구(js/forecast-notice.js), 아니면 ''.
+     예보 = 입자에 든 유효 시각(lastT)이 저장소의 '지금'보다 한 눈금(60초) 넘게 뒤. 모델 이름·런은 매니페스트가 말하는 것만. */
+  function noticeArgs(info) {
+    if (!info || status === 'out-of-range' || status === 'no-data') return null;
+    if (!isForecastAt(lastT, nowMs())) return null;
+    return { model: info.model, run: info.run || info.runMs, lang: lang() };
+  }
+  const noticeText = (info) => { const a = noticeArgs(info); return a ? forecastNotice(a) : ''; };
+
   function paintLegend() {
     if (!legend || !on) return;
     const info = frames.info ? frames.info() : null;
     const blocked = status === 'out-of-range' || status === 'no-data';
+    legendArgs.notice = noticeText(info);
     legendArgs.source = pendingKey ? `${SOURCE} · 프레임 받는 중` : SOURCE;
     legendArgs.run = info ? info.run : null;
     legendArgs.valid = blocked ? null : lastT;        // 범위 밖 시각을 '유효'라고 적지 않는다
@@ -649,7 +660,9 @@ export function createWindLayer(deps = {}) {
       }
       const m = windReadoutModel({ u: w.u, v: w.v, point: pt, clicked: { lat, lon }, scale });
       const between = br.a !== br.b && br.mix > 0 ? ` · ${fNum(br.a.h)}↔${fNum(br.b.h)} 모델 프레임 사이 보간(${br.gapH}시간 간격)` : '';
-      return { title, badge: 'MODEL', html: windReadoutHtml(m, `${metaOf(lastT)}${between}`), model: m };
+      // (2026-09-24) 예보 시각의 값이면 출처 줄 바로 뒤에 고정 문구 — 같은 카드 안.
+      const fc = noticeArgs(info);
+      return { title, badge: 'MODEL', html: windReadoutHtml(m, `${metaOf(lastT)}${between}`) + (fc ? forecastNoticeHtml({ ...fc, tag: 'p' }) : ''), model: m };
     },
 
     cardHtml() {

@@ -127,32 +127,82 @@ test('특보 있음: 종류와 구역 수가 나온다(높은 단계 먼저, 순
   assert.equal(text(en), 'Weather warnings · Heavy rain warning, zones: 1 · Heat wave advisory, zones: 3 + 1 more · KMA as of 16:02 KST');
 });
 
-test('지진: 24시간 창 안의 가장 최근 항목(기관이 쓴 곳 이름 원문 · 기관 · 진도)', () => {
+// (2026-09-24 정정 · L4) 지진 줄은 기상청 항목만 — JMA 로 대신하지 않는다. 운영 고정 자료(09-24)의 24시간 창 안에는
+//   JMA 항목(岐阜県美濃東部 M3.0 등)만 있고 기상청 항목은 없다(마지막 기상청 항목 09-20). 전에는 이 시험이
+//   'M3.0 · 岐阜県美濃東部 · 12:39 KST · 일본 기상청 · 진도 1' 을 기대했다 — 그 줄이 이제 나오면 안 된다.
+const JMA_WORDS = /JMA|일본 기상청|Japan Meteorological|岐阜|Gifu|shindo/;
+
+test('지진: 창 안에 JMA 항목만 있으면 JMA 로 대신하지 않고 "지난 24시간 기상청 발표 지진 없음 · 기상청 HH:MM KST 기준"', () => {
   const l = quakeLine(liveFeeds().quakeAsia, 'ko', NOW, tKo);
-  assert.equal(text(l), 'M3.0 · 岐阜県美濃東部 · 12:39 KST · 일본 기상청 · 진도 1');
-  assert.equal(l.time, '2026-09-24T03:39:00.000Z');
+  assert.equal(l.status, 'fresh');
+  assert.equal(text(l), '지난 24시간 기상청 발표 지진 없음 · 기상청 16:07 KST 기준');
+  assert.equal(l.time, '2026-09-24T07:07:00.000Z', '기준 시각 = 파일이 기상청 피드를 읽은 시각(generated)');
+  assert.equal(l.source, '기상청');
   const en = quakeLine(liveFeeds().quakeAsia, 'en', NOW, tEn);
-  assert.equal(text(en), 'M3.0 · Eastern Mino, Gifu Prefecture · 12:39 KST · Japan Meteorological Agency · JMA shindo 1');
+  assert.equal(text(en), 'No earthquakes reported by KMA in the last 24 hours · KMA as of 16:07 KST');
+  assert.equal(en.source, 'Korea Meteorological Administration');
+  for (const x of [l, en]) assert.ok(!JMA_WORDS.test(text(x) + ' ' + x.source), text(x));
 });
 
-test('지진: 한국 기상청 항목이 창 안에 있으면 그것을 먼저 쓴다', () => {
+test('지진: 기상청 항목이 창 안에 있으면 그것 — 더 새롭고 더 큰 JMA 항목이 있어도 JMA 는 나오지 않는다', () => {
   const j = clone(fixture('events_quake-asia'));
   j.quakes.push({ src: 'KMA', srcKo: '기상청', kind: '국내지진통보', early: false, at: '2026-09-24T10:00:00+09:00', mag: 2.1, place: '경북 경주시 남남서쪽 9km 지역', intensity: '최대진도 Ⅱ' });
+  j.quakes.unshift({ src: 'JMA', srcKo: '일본 기상청', kind: '震源・震度情報', early: false, at: '2026-09-24T16:05:00+09:00', mag: 6.0, place: '宮城県沖', placeEn: 'Off Miyagi', intensity: '5-' });
   const l = quakeLine(norm('quakeAsia', j), 'ko', NOW, tKo);
   assert.equal(text(l), 'M2.1 · 경북 경주시 남남서쪽 9km 지역 · 10:00 KST · 기상청 · 최대진도 Ⅱ');
+  assert.equal(l.time, '2026-09-24T01:00:00.000Z');
+  const en = quakeLine(norm('quakeAsia', j), 'en', NOW, tEn);
+  assert.equal(text(en), 'M2.1 · 경북 경주시 남남서쪽 9km 지역 · 10:00 KST · Korea Meteorological Administration · max intensity Ⅱ');
+  for (const x of [l, en]) { assert.ok(!JMA_WORDS.test(text(x) + ' ' + x.source)); assert.ok(!text(x).includes('M6.0')); }
 });
 
-test('지진: 창 안에 없으면 "지난 24시간 … 없음 · 기준 시각" 문장', () => {
+test('지진: 어떤 JMA 항목(크기·시각 무관)도 지진 줄에 나오지 않는다', () => {
+  const j = clone(fixture('events_quake-asia'));
+  for (let h = 0; h < 24; h += 3) {
+    j.quakes.unshift({ src: 'JMA', srcKo: '일본 기상청', early: false, at: new Date(NOW - h * 3600 * 1000).toISOString(), mag: 7.0, place: '東京湾', placeEn: 'Tokyo Bay', intensity: '6+' });
+  }
+  for (const [lang, tt] of [['ko', tKo], ['en', tEn]]) {
+    const l = quakeLine(norm('quakeAsia', j), lang, NOW, tt);
+    assert.ok(!JMA_WORDS.test(text(l) + ' ' + l.source) && !/M7\.0|東京|Tokyo/.test(text(l)), text(l));
+  }
+});
+
+test('지진: 창 안에 없으면 "지난 24시간 기상청 발표 지진 없음 · 기상청 HH:MM KST 기준" (자료가 신선할 때만)', () => {
   const j = clone(fixture('events_quake-asia'));
   j.generated = '2026-09-26T07:00:00Z';
   const now = Date.parse('2026-09-26T07:10:00Z');
   const l = quakeLine(norm('quakeAsia', j), 'ko', now, tKo);
-  assert.equal(text(l), '지난 24시간 한·일 기관 발표 지진 없음 · 기상청·JMA 16:00 기준');
+  assert.equal(text(l), '지난 24시간 기상청 발표 지진 없음 · 기상청 16:00 KST 기준');
+  // 같은 자료가 60분을 넘기면 '없음' 이 아니라 '지연'
+  const old = quakeLine(norm('quakeAsia', j), 'ko', Date.parse('2026-09-26T08:01:00Z'), tKo);
+  assert.equal(old.status, 'stale');
+  assert.equal(text(old), '지진 자료 지연 (마지막 16:00)');
+  assert.ok(!text(old).includes('없음'));
+});
+
+test('지진: 파일은 신선해도 기상청 받기가 실패했으면(errors.kma) "없음"이 아니라 "지연"', () => {
+  const j = clone(fixture('events_quake-asia'));
+  j.errors = { kma: 'HTTP Error 403: Forbidden' };
+  j.quakes = j.quakes.filter((q) => q.src !== 'KMA');     // 운영에서 기상청이 죽으면 JMA 항목만 남는다
+  const n = norm('quakeAsia', j);
+  assert.equal(n.ok, true, 'errors 는 형식 변경이 아니다');
+  for (const [lang, tt, want] of [['ko', tKo, '지진 자료 지연 (마지막 16:07)'], ['en', tEn, 'Earthquake data delayed (last 16:07)']]) {
+    const l = quakeLine(n, lang, NOW, tt);
+    assert.equal(l.status, 'stale');
+    assert.equal(text(l), want);
+    assert.ok(!/없음|No earthquakes/.test(text(l)));
+  }
+  // jma 만 실패했거나 errors 가 null 이면 기상청 받기는 성공 — '없음' 문장이 나와야 통과
+  j.errors = { jma: 'timeout' };
+  assert.equal(quakeLine(norm('quakeAsia', j), 'ko', NOW, tKo).status, 'fresh');
+  j.errors = null;
+  assert.equal(text(quakeLine(norm('quakeAsia', j), 'ko', NOW, tKo)), '지난 24시간 기상청 발표 지진 없음 · 기상청 16:07 KST 기준');
 });
 
 test('지진: 조기경보(early)는 사실 카드에 올리지 않는다 · 파일 60분 초과면 지연', () => {
   const j = clone(fixture('events_quake-asia'));
-  j.quakes.unshift({ src: 'JMA', srcKo: '일본 기상청', early: true, at: '2026-09-24T16:10:00+09:00', mag: 6.0, place: 'X', intensity: '5' });
+  // (2026-09-24 정정) 지진 줄이 기상청 항목만 보므로 조기경보 시험도 기상청 조기경보 항목으로 한다.
+  j.quakes.unshift({ src: 'KMA', srcKo: '기상청', kind: '지진조기경보', early: true, at: '2026-09-24T16:10:00+09:00', mag: 6.0, place: 'X', intensity: '최대진도 Ⅵ' });
   assert.ok(!text(quakeLine(norm('quakeAsia', j), 'ko', NOW, tKo)).includes('M6.0'));
   const gen = Date.parse('2026-09-24T07:07:00Z');
   assert.equal(text(quakeLine(liveFeeds().quakeAsia, 'ko', gen + 61 * MIN, tKo)), '지진 자료 지연 (마지막 16:07)');
@@ -168,6 +218,22 @@ test('쓰나미: 일주일 지난 발표는 지금 일처럼 말하지 않는다
   assert.equal(l.hrefText, '원문 보기 →');
   j.alerts[1].bulletin = 'https://evil.example/x';
   assert.equal(tsunamiLine(norm('tsunami', j), 'ko', NOW, tKo).href, null, 'tsunami.gov 밖 주소는 걸지 않는다');
+});
+
+// (2026-09-24 정정 · L4) 쓰나미 줄 기본 꺼짐 — 24시간 창 안의 발표가 있어도 설정으로 켜지 않으면 줄이 없다.
+test('카드 전체: 쓰나미 줄은 기본 꺼짐 — 창 안에 발표가 있어도 저장된 선택이 없으면 안 나오고, 켜면 나온다', () => {
+  const feeds = liveFeeds();
+  const j = clone(fixture('events_tsunami-intl'));
+  j.alerts[1].updated = '2026-09-24T06:50:00Z';
+  feeds.tsunami = norm('tsunami', j);
+  const def = buildFacts(feeds, { city: SEOUL, lang: 'ko', nowMs: NOW, t: tKo });
+  assert.ok(!def.some((l) => l.id === 'tsunami'), '기본 설치: 쓰나미 줄 없음');
+  const noChoice = buildFacts(feeds, { city: SEOUL, lang: 'ko', nowMs: NOW, t: tKo, lines: { sky: true } });
+  assert.ok(!noChoice.some((l) => l.id === 'tsunami'), '쓰나미 선택이 저장되지 않은 설정: 없음');
+  const on = buildFacts(feeds, { city: SEOUL, lang: 'ko', nowMs: NOW, t: tKo, lines: { tsunami: true } });
+  const ts = on.find((l) => l.id === 'tsunami');
+  assert.ok(ts, '설정에서 켜면 나온다');
+  assert.equal(text(ts), '쓰나미 · PTWC 발표 1건 (Information) · 15:50 KST');
 });
 
 test('카드 전체: 특보·지진 줄이 있으면 안전 문구가 붙는다 · 켜고 끄기', () => {

@@ -12,7 +12,7 @@ import * as THREE from '../vendor/three-r184.module.min.js';
 // (2026-09-24) 뒤로 단추 — ui-shell.js 와 **같은 지정자**여야 한 벌이다(ES 모듈은 ?v= 까지 URL 전체가 키).
 // (2026-09-24 정정) ?v=2 — 웹 탭에서는 아무것도 하지 않는 한 벌 · 앱이 스스로 연 시트는 칸을 안 쌓음(PD 결정). ui-shell.js 도 같이 올렸다.
 import { backStack } from './shared/back-close.js?v=2';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=76-back0924';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=77-fc0924';
 import { createSelectionGate } from './information-contract.js';
 // PHASE 4 §9 — 지도에서 고른 사건을 어느 현상으로 읽을지는 레지스트리가 정한다.
 // ⚠️ 2026-09-23: 레지스트리를 여기·report-center.js 는 ?v=4 로, ui-shell.js·intel-questions.js 는 ?v=5 로 불러
@@ -24,14 +24,14 @@ import { layerForEventKind } from './phenomenon-registry.js?v=6';
 const escUI = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
-import { IntelFeed } from './intel-feed.js?v=11-fix0924';
-import { intelOf, intelSectionHtml, sectionTitle } from './intel-strip.js?v=2';
+import { IntelFeed } from './intel-feed.js?v=12-fc0924';
+import { intelOf, intelSectionHtml, sectionTitle } from './intel-strip.js?v=3-fc0924';
 import { bannerModel, renderWarningBanner } from './warning-banner.js?v=1';
 import { attachEvidencePopover } from './evidence-popover.js?v=1';
 import { currentTier } from './report-center.js?v=3';
 import { decideCapabilityAccess, lockExplanation, TIER } from './shared/access-mode.js';
 import { evaluateWatch, myZone, loadWatch, saveWatch } from './watch.js?v=1';
-import { LiveLayers, newsChipOpacity } from './live-layers.js?v=44-fix0924';
+import { LiveLayers, newsChipOpacity } from './live-layers.js?v=45-fc0924';
 import { StationModel } from './station-model.js?v=2';
 import { AskEarth } from './ask-earth.js?v=3';
 import { i18n } from './i18n.js?v=11';
@@ -41,7 +41,7 @@ window.__earthusT = (k) => i18n.t(k);
 import { SatLayer } from './sat-layer.js?v=1';
 import { CloudVolume } from './cloud-volume.js?v=5';
 // 바람 층(js/wind-layer.js · 2026-09-20 W3) — GFS 10 m 바람 프레임·시간 버스·입자 엔진·범례를 잇는 접착제. 관측소 막대기를 대신한다.
-import { createWindLayer } from './wind-layer.js?v=2-fix0924';
+import { createWindLayer } from './wind-layer.js?v=3-fc0924';
 // 좌하단 출처 줄의 글 — 켜진 색면 출처 → 구름 → 지형·지금 바탕 순서를 한 곳에서 정한다(B5 · 2026-09-23 PD 정정).
 import { composeSourceLine, readLegend } from './source-line.js?v=1';
 // 공용 GFS 프레임 저장소 — 매니페스트 하나 · 프레임 캐시 하나 · 시간 하나(js/gfs-frames.js · 2026-09-20 A1).
@@ -52,14 +52,16 @@ const gfsFrames = sharedGfsFrames({ THREE });
 // 시간 하나(js/time-bus.js) — 타임라인이 가리키는 시각을 기온·바람·기압·관측 숫자가 전부 여기서 듣는다.
 // 예전에는 구름만 들었다(아래 onTimeOffset → clouds.setForecastOffset). v2 는 5일을 예보하는 서비스라 시간은 하나여야 한다.
 import { timeBus } from './time-bus.js?v=1';
+// 예보 고지 한 문장(js/forecast-notice.js · 2026-09-24 PD (나) · 기상법 §17) — 구름 줄 · 타임라인 · 내 동네 앙상블 줄이 같은 글자를 쓴다.
+import { forecastNotice, forecastNoticeHtml, isForecastAt } from './forecast-notice.js?v=1';
 // 색면 위의 나라·해안 윤곽선 — 새 색면이 바탕 지도의 국경을 덮어 '어디가 한반도인지' 알 수 없었다(js/field-outlines.js).
 import { createFieldOutlines } from './field-outlines.js?v=1';
 // 어느 레이어가 새 셰이더 색면인지 — 바람을 켤 때 이미 깔린 색면이 있으면 풍속 색면을 자동으로 깔지 않는다(기온이 꺼지지 않게).
-import { FIELD_DESCRIPTORS, activeField, isFieldLayerId } from './field-layer.js?v=3-fix0924';
+import { FIELD_DESCRIPTORS, activeField, isFieldLayerId } from './field-layer.js?v=4-fc0924';
 // 지점 판독(js/point-readout.js · 2026-09-20 W2) — 누른 자리의 값을 **우리 자료에서만** 읽는다.
 //   전에는 색면이 꺼져 있으면, 그리고 바다를 누르면, 브라우저가 api.open-meteo.com · marine-api.open-meteo.com 을
 //   직접 불렀다. 유료 서비스의 라이선스 노출이었고 화면에 칠한 값과 카드의 값이 달랐다. 이제 같은 프레임·같은 격자를 읽는다.
-import { METRIC_LAYER, seaSourceLine, sharedPointReadout } from './point-readout.js?v=4-fix0924';
+import { METRIC_LAYER, seaSourceLine, sharedPointReadout } from './point-readout.js?v=5-fc0924';
 const pointReadout = sharedPointReadout({ frames: gfsFrames, timeBus });
 import { CLOUD_LEVEL, createCloudYield } from './cloud-yield.js?v=1';
 // 색면이 지형 위로 떠 있는 높이 — 바람 입자를 같은 높이에 두려고 읽는다(시차 방지).
@@ -71,7 +73,7 @@ import { createObsLabels, obsCardHtml, obsCardTitle } from './obs-labels.js?v=1'
 // 지점 카드(js/point-card.js · 2026-09-23 PD) — 색면 현상을 고른 채 지구를 누르면 뜨는 한 장.
 //   ⚠️ live-layers.js 는 import 문을 하나만 둔다(obs-labels.test — 줄을 나누면 ?v= 가 어긋나는 날 두 번 실린다).
 //   그래서 평년 문서는 point-card.js 가 우리 S3(POINT_BASE)에서 스스로 받는다.
-import { loadPointDays, loadPointNormal, loadPointObs, pointCardHtml, readPointNow } from './point-card.js?v=3-fix0924';
+import { loadPointDays, loadPointNormal, loadPointObs, pointCardHtml, readPointNow } from './point-card.js?v=4-fc0924';
 let obsLabels = null;   // main() 안에서 만든다. 클릭 핸들러가 그보다 먼저 정의되므로 extScene 처럼 모듈 자리에 둔다
 import { PopSculpture } from './pop-sculpture.js?v=14-fix0924';
 import { PopMetricMenu, POP_POINT_METRIC } from './pop-metric-menu.js?v=3';
@@ -92,9 +94,9 @@ import { usage } from './usage.js?v=2';
 // FOR ME — 내 동네에 걸린 사건 판정(순수) + v1·v2 공용 부품(동네 저장·딥링크). 지시서 v2.0 STEP 2 (2026-09-07).
 // ⚠️ './shared/for-me-row.js' 는 번들 빌드(tools/build-v2-bundle.sh)가 './shared/for-me-row.js' 로 바꿔 넣는다.
 import { evaluateForMe, summarize, typhoonCard, typhoonChanged, issuesFromPacket, previousIssues, stormFromArchives, historyLine, fmtKst,
-         quakeCardFromEvent, matchCardForRoom } from './for-me-signal.js?v=2';
+         quakeCardFromEvent, matchCardForRoom } from './for-me-signal.js?v=3-fc0924';
 import { readFromParam, placeLabel, isFormeMenu } from './shared/for-me-row.js';
-import { FlightRoute, routeCardHtml } from './route.js?v=4';
+import { FlightRoute, routeCardHtml } from './route.js?v=5-fc0924';
 import { PrecipField } from './precip-field.js?v=5';
 import { LightningMarks } from './lightning-marks.js?v=12';
 // 정본 엔진(prototype/js/earthus2/v02)으로 가는 유일한 이음매 — 어휘·신선도·품질 예산의 출처
@@ -1930,7 +1932,8 @@ class CloudManager {
     if (!frames.length) throw new Error('이 런에 쓸 수 있는 예보 프레임이 없습니다');
     const stepMs = (mf.stepHours || 3) * 3.6e6;
     this.gfs = {
-      frames, stepMs, run: mf.run, texCache: new Map(), mode: 'frames',
+      // model — 매니페스트가 말하는 모델 이름(aws/gfs-cloud-forecast handler.py 가 'GFS' 를 싣는다). 예보 고지가 이 글자를 쓴다 — 없으면 뺀다.
+      frames, stepMs, run: mf.run, model: mf.model || '', texCache: new Map(), mode: 'frames',
       HOURS: frames.length, timeBase: frames[0].t,
     };
     this.uniforms.uAdvectSec.value = stepMs / 1000;
@@ -2093,7 +2096,10 @@ class CloudManager {
       const pending = (okA && okB) ? '' : ' · <span style="opacity:.7">프레임 받는 중…</span>';
       const rt = this.gfsResText || '1.00°';
       const rk = this.gfsResKm || 111;
-      this.noteEl.innerHTML = `<span class="badge model">MODEL</span> GFS ${rt} 예보 T${offH >= 0 ? '+' : ''}${offH}h · 유효 ${valid.getMonth() + 1}/${valid.getDate()} ${String(valid.getHours()).padStart(2, '0')}시`
+      // (2026-09-24 · 기상법 §17 · PD (나)) 유효 시각이 지금보다 뒤(예보)면 첫 줄 끝에 고정 문구 — 이 글은 좌하단 출처 줄(source-line.js)이
+      //   textContent 로 그대로 옮긴다. 두 줄 자르기 안에 들도록 둘째 줄(설명) 앞에 둔다. '지금'·과거 프레임에는 붙이지 않는다.
+      const fcHtml = isForecastAt(valid.getTime(), Date.now()) ? ` · ${forecastNoticeHtml({ model: g.model, run: g.run, ko: i18n.ko })} ` : '';
+      this.noteEl.innerHTML = `<span class="badge model">MODEL</span> GFS ${rt} 예보 T${offH >= 0 ? '+' : ''}${offH}h · 유효 ${valid.getMonth() + 1}/${valid.getDate()} ${String(valid.getHours()).padStart(2, '0')}시${fcHtml}`
         + `<br/><span style="opacity:.75">구름 <b>두께</b>(CWAT)로 그리고 <b>운정 높이</b>만큼 세움(DERIVED: 저·중·고층 비율에서 유도) · 프레임 3시간(NOAA GFS ${rt}, 적도 ${rk}km) · 사이는 700hPa 바람으로 이류한 <b>보간</b>이며 모델 출력이 아닙니다</span>${pending}`;
       return;
     }
@@ -3142,8 +3148,10 @@ async function main() {
       packet: pk, section: s, i18n, esc: escUI, badge: (k) => dataBadge(k),
       mode: shellHooks.monetizationMode(), tier: currentTier(),
     }) : '');
+    // nowMs — 시간 버스의 '지금'(예보 고지 판정 · point-card.js). 버스의 유효 시각에서 오프셋을 뺀 값이라 같은 시계다.
     return pointCardHtml({ pc, now, key: `${pc.id}.${pc.rev}.${accum ? 'a' : 'r'}`, isNow: timeBus.isNow(),
-      intelWhy: sec('WHY'), intelNext: sec('NEXT'), capabilities: mine ? ctx.capabilities || {} : {}, accum, ko, esc: escUI });
+      intelWhy: sec('WHY'), intelNext: sec('NEXT'), capabilities: mine ? ctx.capabilities || {} : {}, accum, ko, esc: escUI,
+      nowMs: timeBus.validMs() - timeBus.offsetMs });
   };
 
   const fmtPt = (lat, lon) => `${lat >= 0 ? 'N' : 'S'}${Math.abs(lat).toFixed(1)}° ${lon >= 0 ? 'E' : 'W'}${Math.abs(lon).toFixed(1)}°`;
@@ -3965,6 +3973,8 @@ async function main() {
         + statRow('영향 가능성', c.state === 'signal' ? '있음' : c.state === 'quiet' ? '없음' : '판단 불가', c.state === 'unknown')
         + (forMeWhenBrief(c) ? statRow('언제', forMeWhenBrief(c)) : '')
         + (c.certain ? statRow('얼마나 확실', `<b>${escUI(c.certain.gradeKo)}</b>${ens ? ` · 앙상블 ${ens.n}/${ens.total}` : ''}`) : '')
+        // (2026-09-24 · 기상법 §17 · PD (나)) 앙상블 개수는 모델 예보에서 센 것이다 — 같은 카드 안 바로 밑에 고정 문구(모델·런은 파일이 말하는 것).
+        + (c.certain && ens ? forecastNoticeHtml({ model: ens.model, run: ens.run, ko: i18n.ko, esc: escUI, tag: 'div' }) : '')
         + (changedLine ? statRow('달라진 것', escUI(changedLine)) : '')
         + statRow('상태', escUI(c.status)) + link
         + `<div class="forme-cta">`
@@ -3992,14 +4002,14 @@ async function main() {
       + `<div class="forme-state ${c.state}">${escUI(name)} · ${forMeStateLine(c)}</div>`
       + `<div class="forme-sec"><div class="t">① WHEN — 언제 영향을 받나</div>${forMeWhenHtml(c.when, c)}</div>`
       + (c.why.length ? `<div class="forme-sec"><div class="t">② WHY — 왜 영향을 받나</div>${forMeWhyHtml(c)}</div>` : '');
-    if (c.certain) h += `<div class="forme-sec"><div class="t">③ HOW CERTAIN — 얼마나 확실한가</div>신뢰 등급 <b>${escUI(c.certain.gradeKo)}</b><ul class="forme-why">${c.certain.reasons.map((r) => `<li>${escUI(r)}</li>`).join('')}</ul><div class="forme-src">등급은 기관 일치·앙상블 방향·실측·발표 경과시간으로 정합니다. 확률(%)은 만들지 않습니다.</div></div>`;
+    if (c.certain) h += `<div class="forme-sec"><div class="t">③ HOW CERTAIN — 얼마나 확실한가</div>신뢰 등급 <b>${escUI(c.certain.gradeKo)}</b><ul class="forme-why">${c.certain.reasons.map((r) => `<li>${escUI(r)}</li>`).join('')}</ul><div class="forme-src">등급은 기관 일치·앙상블 방향·실측·발표 경과시간으로 정합니다. 확률(%)은 만들지 않습니다.</div>${c.facts && c.facts.ens ? forecastNoticeHtml({ model: c.facts.ens.model, run: c.facts.ens.run, ko: i18n.ko, esc: escUI, tag: 'div' }) : ''}</div>`;
     if (c.kind === 'cyclone') {
       if (!st || st.loading) h += `<div class="forme-sec"><div class="t">④ WHAT CHANGED — 이전 분석과 무엇이 달라졌나</div>직전 발표를 같은 함수로 다시 계산하는 중…</div>`;
       else if (st.changed) h += `<div class="forme-sec"><div class="t">④ WHAT CHANGED — 이전 분석과 무엇이 달라졌나</div><div class="forme-src">직전 ${escUI(st.prevIssues.map((x) => `${x.agency} ${fmtKst(x.issueMs)}`).join(' · '))} → 현재 ${fmtKst(st.changed.curIssueMs)} KST</div><ul class="forme-why">${st.changed.lines.map((l) => `<li>${escUI(l)}</li>`).join('')}</ul></div>`;
       else if (st.none || st.error) h += `<div class="forme-sec"><div class="t">④ WHAT CHANGED</div>비교 불가 — ${escUI(st.none || st.error)}</div>`;
       else h += `<div class="forme-sec"><div class="t">④ WHAT CHANGED</div>첫 발표 — 비교 대상 없음</div>`;
     }
-    if (c.engine.length) h += `<div class="forme-sec"><div class="t">⑤ WHY ENGINE — 판단에 쓴 근거</div><ul class="forme-eng">${c.engine.map((e) => `<li class="${e.used ? '' : 'off'}"><span>${e.used ? '●' : '○'}</span><span>${escUI(e.name)}</span><span class="forme-src">${escUI(e.text)}${e.used ? '' : ' (미사용)'}</span></li>`).join('')}</ul>${c.engineSummary ? `<div><b>→ ${escUI(c.engineSummary)}</b></div>` : ''}</div>`;
+    if (c.engine.length) h += `<div class="forme-sec"><div class="t">⑤ WHY ENGINE — 판단에 쓴 근거</div><ul class="forme-eng">${c.engine.map((e) => `<li class="${e.used ? '' : 'off'}"><span>${e.used ? '●' : '○'}</span><span>${escUI(e.name)}</span><span class="forme-src">${escUI(e.text)}${e.used ? '' : ' (미사용)'}</span></li>`).join('')}</ul>${c.engineSummary ? `<div><b>→ ${escUI(c.engineSummary)}</b></div>` : ''}${c.facts && c.facts.ens ? forecastNoticeHtml({ model: c.facts.ens.model, run: c.facts.ens.run, ko: i18n.ko, esc: escUI, tag: 'div' }) : ''}</div>`;
     if (c.kind === 'cyclone' && st && !st.loading && st.history && st.history.length) {
       const stTxt = (s) => s === 'signal' ? '영향 가능' : s === 'quiet' ? '신호 없음' : '판단 불가';
       h += `<div class="forme-sec"><div class="t">⑥ MY EVENT HISTORY — 이 사건에 대한 EARTHUS 판단 기록</div><div class="wrap"><table class="forme-hist"><thead><tr><th>발표</th><th>영향</th><th>시작</th><th>최근접</th></tr></thead><tbody>`
@@ -5443,8 +5453,21 @@ async function main() {
     // 관측 구름을 보고 있어도 "예보구름 MODEL"이라고 말했다.
     // 스트립은 좁다. 짧은 말은 눈에, 온전한 말은 title 에 둔다.
     // 다만 '지금이 아닌 것을 지금처럼 보여주는' 경우에는 짧은 쪽에도 경고를 남긴다.
-    timeNote: () => {
+    timeNote: (m = 0) => {
       const ty = liveLayers.state('tyoff').on;
+      /* (2026-09-24 · 기상법 §17 · PD (나)) 타임라인이 **앞**(예보)을 가리키고 지구 위에 모델 예보가 칠해져 있으면 고정 문구 한 줄
+         (js/forecast-notice.js) — ui-shell 이 타임스트립 안 둘째 줄(#ts-notice)에 그대로 적는다. 모델 이름·런은 칠한 자료의 매니페스트에서.
+         태풍 공식 경로(tyoff)만 켜져 있으면 붙이지 않는다 — 그건 기관 발표다(아래 full 이 발표기관을 말한다).
+         ⚠️ ui-shell 은 이 함수를 시간 버스를 옮긴 **뒤에** 부른다(색면의 forecastNoticeText 가 새 시각으로 판정한다). */
+      let notice = '';
+      if (m > 0) {
+        const fieldFc = Object.values(liveLayers._fields || {}).some((f) => f.active && f.isDrawing() && f.forecastNoticeText());
+        if (clouds.mode === 'gfs' || windLayer.on || fieldFc) {
+          const inf = gfsFrames.loaded ? gfsFrames.info() : null;
+          const g = clouds.gfs || {};
+          notice = forecastNotice({ model: (inf && inf.model) || g.model, run: (inf && inf.run) || g.run, ko: i18n.ko });
+        }
+      }
       let short;
       if (clouds.mode === 'gfs') short = ty ? '구름·태풍 예보' : '구름 예보';
       else if (cloudSwitching) short = '예보로 전환 중…';
@@ -5457,8 +5480,9 @@ async function main() {
             : '구름: 관측 실황 — 지금 것이며 이 시각의 구름이 아닙니다',
         ty ? '태풍: 발표기관 공식 예보 경로 위의 그 시각 위치' : '태풍 레이어 꺼짐',
         '그 밖의 관측 레이어(지진·특보·대기질 등)는 현재값 그대로입니다',
+        ...(notice ? [notice] : []),
       ].join('\n');
-      return { short, full };
+      return { short, full, notice };
     },
   };
   // 기입 모형은 DOM 오버레이다(숫자와 기호가 섞여 있어 텍스처로 굽는 것보다 선명하다).

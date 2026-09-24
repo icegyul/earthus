@@ -25,12 +25,13 @@
 //     색면 객체의 sampleAt 은 예보 범위 밖·바다 마스크도 화면과 같게 판정한다.
 //   · 이 파일은 DOM 을 모른다. 색면 객체·프레임 저장소·지상관측 저장소·fetch 는 부른 쪽이 넣는다(시험이 가짜를 넣는다).
 
-import { FIELD_DESCRIPTORS, readoutOf, sourceLabel, timeMeta, cellLabel } from './field-layer.js?v=3-fix0924';
+import { FIELD_DESCRIPTORS, readoutOf, sourceLabel, timeMeta, cellLabel } from './field-layer.js?v=4-fc0924';
 import { scaleOf } from './field-scales.js?v=1';
 import { readTicks } from './field-log.js?v=1';
 import { normalizeSurfaceObs, obsFresh, fmt1, kstLabel } from './obs-labels.js?v=1';
-import { kmBetween } from './for-me-signal.js?v=2';
-import { POINT_BASE } from './point-readout.js?v=4-fix0924';
+import { kmBetween } from './for-me-signal.js?v=3-fc0924';
+import { POINT_BASE } from './point-readout.js?v=5-fc0924';
+import { forecastNoticeHtml, isForecastAt } from './forecast-notice.js?v=1';
 
 export const POINT_OBS_MAX_KM = 25;          // 격자 vs 실측 — 25 km 안의 관측만 그 자리 값으로 쓴다
 export const POINT_DAY_HOUR_UTC = 6;         // 매일 15시 KST(= 06Z). 런이 00/06/12/18Z · 3시간 스텝이라 늘 정시 한 장에 맞는다
@@ -182,7 +183,7 @@ const dayOf = (at) => {
  * intelWhy · intelNext = 그 현상의 패킷이 있으면 WHY · NEXT 절(intel-strip intelSectionHtml) — 없으면 ''.
  * accum = 강수 누적 모드(날짜별 값은 강수율 저장소라 적지 않는다).
  */
-export function pointCardHtml({ pc, now = null, key = '', isNow = true, intelWhy = '', intelNext = '', capabilities = {}, accum = false, ko = true, esc = plainEsc }) {
+export function pointCardHtml({ pc, now = null, key = '', isNow = true, intelWhy = '', intelNext = '', capabilities = {}, accum = false, ko = true, esc = plainEsc, nowMs = Date.now() }) {
   const desc = (now && now.desc) || FIELD_DESCRIPTORS[pc.fid];
   if (!desc) return '';
   const q = desc.quantity ? desc.quantity[ko ? 'ko' : 'en'] : '';
@@ -258,6 +259,11 @@ export function pointCardHtml({ pc, now = null, key = '', isNow = true, intelWhy
     const meta = [sourceLabel(now.info), ...timeMeta(now.info, now.tMs, ko)].join(' · ');
     const cell = obsOk && now.r.ok ? (ko ? ` · 이 칸 ${now.r.text}` : ` · this cell ${now.r.text}`) : '';
     src.push(`${esc(meta)}${esc(cell)}`);
+    // (2026-09-24 · 기상법 §17 · PD (나)) 타임라인이 앞(예보)이면 큰 숫자는 모델 **예보**다 — 출처 줄 바로 밑에 고정 문구(js/forecast-notice.js).
+    //   '지금'·과거 프레임·관측이 크게 선 때는 붙이지 않는다. 한 시각짜리 자료(info.single)는 예보가 없다.
+    if (!obsOk && now.r.ok && !(now.info && now.info.single) && isForecastAt(now.tMs, nowMs)) {
+      src.push(forecastNoticeHtml({ model: now.info && now.info.model, run: now.info && (now.info.run || now.info.runMs), ko, esc }));
+    }
     src.push(esc(ko ? `${cellLabel(now.info && now.info.resolutionDeg, true)} 값 — 도시·지점의 관측값이 아닙니다` : `${cellLabel(now.info && now.info.resolutionDeg, false)} value — not a city or station observation`));
   }
   src.push(...srcNotes.map(esc));
@@ -290,6 +296,8 @@ export function pointCardHtml({ pc, now = null, key = '', isNow = true, intelWhy
     days.push(`<div class="pc-days">${cells}</div>`);
     days.push(`<div class="pc-src">${esc(ko ? `매일 15시(KST) 모델값 · ${[sourceLabel(info), ...timeMeta(info, NaN, true)].join(' · ')}`
       : `Model value at 15:00 KST each day · ${[sourceLabel(info), ...timeMeta(info, NaN, false)].join(' · ')}`)}</div>`);
+    // (2026-09-24 · 기상법 §17 · PD (나)) 이 줄의 날짜들은 전부 앞날(loadPointDays 가 f.t > 지금만 고른다) — 모델 예보다. 같은 절 안에 고정 문구.
+    days.push(forecastNoticeHtml({ model: info && info.model, run: info && (info.run || info.runMs), ko, esc, tag: 'div' }));
     if (pc.days.days.length < POINT_DAYS && Number.isFinite(pc.days.lastT)) {
       const e = new Date(pc.days.lastT + 9 * 3600e3);
       const endK = `${e.getUTCMonth() + 1}/${e.getUTCDate()} ${String(e.getUTCHours()).padStart(2, '0')}:00 KST`;

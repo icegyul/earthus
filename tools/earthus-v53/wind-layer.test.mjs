@@ -982,3 +982,23 @@ test('공용 파일의 배선 — main.js 가 층을 만들어 꽂고 tick·클�
   assert.match(bridge, /'\/clouds\/gfs-fc\/manifest\.json': \{ layer: 'weather\/wind'/);
   assert.doesNotMatch(bridge, /'\/wind\/kma-aws\.json': \{ layer: 'weather\/wind'/, '기상청 AWS 파일의 시각이 GFS 바람의 신선도로 적힌다');
 });
+
+// (2026-09-24 · 기상법 §17 · PD (나) — docs/PAID-APP-LAUNCH-REVIEW-2026-09-24.md §00-2) 예보 시각의 바람에는 범례와 지점 카드에 같은 고지가
+//   **나와야** 하고(모델·런은 매니페스트 것), 타임라인 '지금'에는 **없어야** 한다. 문장은 js/forecast-notice.js 하나.
+test('예보 고지 — 타임라인이 앞이면 범례·지점 카드에 "수치모델 예측 · GFS 런 — 기상청 예보 아님" · 지금이면 없다', async () => {
+  const hz = harness();                                   // '지금' = 런 + 1시간
+  await hz.layer.load();
+  hz.sw.on = true;
+  hz.layer.tick(1 / 30, CAM);
+  const lastLegend = () => hz.legendLog.filter((e) => e.op === 'show').at(-1).args;
+  assert.equal(lastLegend().notice, '', "'지금'의 바람 범례에 예보 고지를 붙였다");
+  assert.ok(!/fc-notice/.test(hz.layer.readoutAt(37.56, 126.97).html), "'지금'의 지점 카드에 예보 고지를 붙였다");
+  hz.bus.set(5 * H);                                      // 유효 = 런 + 6시간 — 모델 예보
+  await hz.layer.settled();
+  hz.layer.tick(1 / 30, CAM);
+  assert.equal(lastLegend().notice, '수치모델 예측 · GFS 09/20 00Z — 기상청 예보 아님');
+  assert.match(hz.layer.readoutAt(37.56, 126.97).html, /<p class="fc-notice" data-fc-notice>수치모델 예측 · GFS 09\/20 00Z — 기상청 예보 아님<\/p>/);
+  hz.bus.set(0);
+  hz.layer.tick(1 / 30, CAM);
+  assert.equal(lastLegend().notice, '', '지금으로 되돌렸는데 고지가 남았다');
+});

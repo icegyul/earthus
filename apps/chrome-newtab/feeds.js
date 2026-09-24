@@ -9,9 +9,17 @@
 //   이 파일이 읽는 키(자료 Lambda 쪽 주석 추가는 PD 확인 뒤 — 지시서 §4-5):
 //     clouds/meta.json        time · credit · north · south · variants.webp2048.{key, sha256}
 //     events/kma-warn.json    observedKst · source · freshnessPolicy.staleAfterMinutes(선택) · active[].{kind, kindEn, level, region}
-//     events/quake-asia.json  generated · sources[].{id, ko, en} · quakes[].{src, srcKo, at, mag, place, placeEn, intensity, early}
+//     events/quake-asia.json  generated · sources[].{id, ko, en} · errors.kma(선택) · quakes[].{src, srcKo, at, mag, place, placeEn, intensity, early}
 //     events/tsunami-intl.json generated · alerts[].{center, category, updated, bulletin}
 //     wind/kma-aws.json       observedKst · source · stations[].{id, name, temp_c, wind_ms, wind_dir}
+//
+// (2026-09-24 정정 · PD 결정 · 법 검토 L4 — docs/PAID-APP-LAUNCH-REVIEW-2026-09-24.md §00-3)
+//   지진관측법 §16①: 기상청장 외의 자는 지진·지진해일 관측 결과·특보를 발표할 수 없다(승인 경로 §16② 는 기상청 서면 질의 중).
+//   그래서 스토어 제출 전에 두 가지를 바꿨다.
+//     ① 쓰나미 줄(NOAA PTWC·NTWC 재전달)은 **기본 꺼짐**이다(DEFAULT_LINES.tsunami = false). 설정에서 켤 수는 있다.
+//     ② 지진 줄은 **기상청 항목만** 쓴다. 전에는 창 안에 기상청 항목이 없으면 JMA 항목으로 대신했다 — 그 대신(폴백)을 없앴다.
+//        기상청 항목이 없으면 '지난 24시간 기상청 발표 지진 없음 · 기상청 HH:MM KST 기준' 을 쓴다(자료가 신선할 때만).
+//   sw.js 는 tsunami-intl.json 을 계속 받는다(약 1 KB) — 설정에서 켜면 곧바로 줄이 나오게. 받는 것은 발표가 아니다(화면에 안 나간다).
 //
 // 지어내지 않는다(AGENTS.md 공통 ①): 값이 없으면 그 조각을 빼고, 조각이 다 없으면 그 줄을 뺀다.
 //   ⚠️ Number(null) === 0 — 결측이 0℃·무풍으로 찍히는 함정(기억 v1-weather-sheet-apple). 그래서 이 파일에는
@@ -176,7 +184,13 @@ export function normalizeQuakeAsia(j) {
   if (miss.length) return bad(miss);
   const agencies = {};
   if (Array.isArray(j.sources)) for (const s of j.sources) if (s && str(s.id)) agencies[s.id] = { ko: str(s.ko), en: str(s.en) };
-  return { ok: true, data: { generatedMs, agencies, quakes } };
+  // (2026-09-24 정정 · 적대 검수) 파일이 신선해도 **기상청 쪽 받기가 실패했을 수 있다.**
+  //   aws/quake-asia/handler.py 는 기상청·JMA 중 한쪽만 살아도 파일을 쓰고 generated 를 새로 찍는다(실패한 쪽은 errors.kma).
+  //   사고가 될 뻔한 것: 기상청 API허브가 용량 초과 403 이면(기억 kma-hub-quota-trap) 파일은 신선한데 기상청 항목이 0건이다 —
+  //   그대로 두면 '지난 24시간 기상청 발표 지진 없음' 이라 말한다. 늙은(=받지 못한) 자료로 '없음' 이라 말하지 않는다.
+  //   errors 는 선택 키다 — 없거나 null 이면 기상청 받기 성공으로 읽는다(형식 변경이 아니다).
+  const kmaError = !!(j.errors && typeof j.errors === 'object' && j.errors.kma);
+  return { ok: true, data: { generatedMs, agencies, quakes, kmaError } };
 }
 
 export function normalizeTsunami(j) {
@@ -347,10 +361,11 @@ export function warnLine(feed, lang, nowMs, t) {
 }
 
 // 규모·진도는 기관이 낸 그대로. 진도는 기관마다 척도가 다르다(JMA 震度 · 기상청 MMI 로마숫자) — 기관 이름과 같이 적는다.
-function intensityText(q, lang, t) {
+// (2026-09-24 정정) 지진 줄이 기상청 항목만 쓰게 되어 숫자 진도(JMA 震度) 갈래와 문구 'quakeIntensity'("JMA shindo $1")를 뺐다.
+//   기상청 진도는 '최대진도 Ⅱ(경남,…)' 처럼 로마숫자 원문이다 — 숫자로 시작하는 값이 오면 기관 원문 그대로 둔다(척도 이름을 지어 붙이지 않는다).
+function intensityText(q, lang) {
   const x = q.intensity;
   if (!x) return null;
-  if (/^\d/.test(x)) return t('quakeIntensity', [x]);
   if (lang !== 'ko') return x.replace(/^최대진도\s*/, 'max intensity ');
   return x;
 }
@@ -360,29 +375,34 @@ export function quakeLine(feed, lang, nowMs, t) {
   if (!feed.ok) return feed.reason === 'format' ? formatLine('quake', t) : null;
   const d = feed.data;
   const gen = fmtKst(d.generatedMs, nowMs);
-  const fileSrc = Object.values(d.agencies).map((a) => (lang === 'ko' ? a.ko : a.en)).filter(Boolean).join(' · ') || 'KMA · JMA';
-  if (freshness(d.generatedMs, nowMs, FRESH_MIN.quakeFile) === 'stale') {
+  // (2026-09-24 정정 · L4) 출처는 기상청 하나다 — 전에는 파일의 기관 전부(기상청 · 일본 기상청)를 이어 붙였다.
+  const kmaAg = d.agencies.KMA || {};
+  const fileSrc = lang === 'ko' ? (kmaAg.ko || '기상청') : (kmaAg.en || 'KMA');
+  // 파일이 늙었거나, 파일은 신선해도 기상청 받기가 실패했으면(errors.kma — normalizeQuakeAsia 정정) '지연'. '없음' 이라 말하지 않는다.
+  if (d.kmaError || freshness(d.generatedMs, nowMs, FRESH_MIN.quakeFile) === 'stale') {
     return { id: 'quake', status: 'stale', parts: [{ t: 's', text: t('quakeStale', [gen]) }], source: fileSrc, time: iso(d.generatedMs) };
   }
   const from = nowMs - QUAKE_WINDOW_H * 3600 * 1000;
-  // 조기경보(early)는 확정 전 값이라 사실 카드에 올리지 않는다. 미래로 튄 시각도 뺀다.
-  const inWin = d.quakes.filter((q) => !q.early && q.atMs >= from && q.atMs <= nowMs + FUTURE_SLACK_MS);
+  // 조기경보(early)는 확정 전 값이라 사실 카드에 올리지 않는다(기상청도 조기경보 항목을 낸다). 미래로 튄 시각도 뺀다.
+  // (2026-09-24 정정 · L4) 기상청(src 'KMA') 항목만 본다. 전에는 기상청 항목이 없으면 JMA 항목으로 대신했다(폴백) — 없앴다.
+  const inWin = d.quakes.filter((q) => q.src === 'KMA' && !q.early && q.atMs >= from && q.atMs <= nowMs + FUTURE_SLACK_MS);
   if (!inWin.length) {
+    // 'HH:MM KST 기준' = 이 파일이 기상청 피드를 읽은 시각(generated). 기상청이 따로 찍은 시각이 아니다 — 파일에 그런 시각이 없다.
     return { id: 'quake', status: 'fresh', parts: [{ t: 'v', text: t('quakeNone') }, { t: 's', text: t('quakeNoneSrc', [gen]) }], source: fileSrc, time: iso(d.generatedMs) };
   }
-  const latest = (arr) => arr.reduce((a, b) => (b.atMs > a.atMs ? b : a));
-  const kma = inWin.filter((q) => q.src === 'KMA');
-  const q = latest(kma.length ? kma : inWin);    // 한국 기상청 항목이 있으면 먼저(지시서 §4-2)
-  const ag = d.agencies[q.src] || {};
-  const agency = lang === 'ko' ? (q.srcKo || ag.ko || q.src) : (ag.en || q.src);
+  const q = inWin.reduce((a, b) => (b.atMs > a.atMs ? b : a));
+  const agency = lang === 'ko' ? (q.srcKo || kmaAg.ko || '기상청') : (kmaAg.en || 'KMA');
+  // (옛 줄 · 기록) const q = latest(kma.length ? kma : inWin);    // 한국 기상청 항목이 있으면 먼저(지시서 §4-2)
+  //   (2026-09-24 정정) '먼저'가 아니라 '만'이다 — 위 inWin 이 이미 기상청 항목만 담는다.
   // 곳 이름: 한국어 화면은 기관이 쓴 원문(JMA 는 일본어 원문 — 우리가 번역해 지어 쓰지 않는다), 영어 화면은 placeEn 이 있으면 그것.
+  //   (2026-09-24 정정) 이제 기상청 항목만 온다 — 기상청 항목에는 보통 placeEn 이 없어 영어 화면에도 한국어 원문 그대로 나간다.
   const place = lang === 'ko' ? (q.place || q.placeEn) : (q.placeEn || q.place);
   const v = [];
   if (q.mag != null) v.push(`M${fixed1(q.mag)}`);
   if (place) v.push(place);
   if (!v.length) return null;
   const s = [`${fmtKst(q.atMs, nowMs)} KST`, agency];
-  const it = intensityText(q, lang, t);
+  const it = intensityText(q, lang);
   if (it) s.push(it);
   return {
     id: 'quake', status: 'fresh',
@@ -411,7 +431,10 @@ export function tsunamiLine(feed, lang, nowMs, t) {
   };
 }
 
-export const DEFAULT_LINES = Object.freeze({ sky: true, warn: true, quake: true, tsunami: true });
+// (2026-09-24 정정 · PD 결정 · L4) tsunami 기본값 true → false. 저장된 선택이 없는 설치는 쓰나미 줄이 안 나온다.
+//   ⚠️ options.js 는 저장할 때 네 줄을 전부 적는다 — 0.1.0 에서 도시를 한 번 바꾼 개발용 프로필에는 tsunami:true 가
+//   '선택'처럼 남아 있을 수 있다. 스토어 제출 전이라 옮김(migration)은 두지 않았다.
+export const DEFAULT_LINES = Object.freeze({ sky: true, warn: true, quake: true, tsunami: false });
 
 /**
  * 사실 카드 전체. feeds = 저장된 정규화 결과 { kmaAws, kmaWarn, quakeAsia, tsunami } (각 {ok,data}|{ok:false,reason}).

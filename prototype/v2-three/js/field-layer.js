@@ -28,7 +28,7 @@ import { i18n } from './i18n.js?v=11';
 import { timeBus as sharedTimeBus } from './time-bus.js?v=1';
 import { decodeByte, sharedGfsFrames } from './gfs-frames.js?v=2';
 import { sharedGridFrames } from './grid-frames.js?v=2';
-import { fieldLegend as sharedLegend } from './field-legend.js?v=2-fix0924';
+import { fieldLegend as sharedLegend } from './field-legend.js?v=3-fc0924';
 import { bandColor, formatValue, isolineSpec, scaleOf } from './field-scales.js?v=1';
 import { logRangeText, logReadout, readTicks, topBandNote } from './field-log.js?v=1';
 import { FieldRenderer, halfStepOf } from './field-renderer.js?v=2-fix0924';
@@ -36,6 +36,7 @@ import { landMaskCardLine, sharedLandMask } from './land-mask.js?v=1';
 import { FIELD_LABEL_CAP, FieldLabels, labelLevels, labelText, pickLabelSpots, thinField } from './field-labels.js?v=1';
 import { FieldSymbols, SYMBOL_CAP, symbolCardRow } from './field-symbols.js?v=1';
 import { accumAction, accumCardRow, accumCardState, accumLegendNote, accumStatusText, accumValidMs } from './precip-accum.js?v=2-fix0924';
+import { forecastNotice, isForecastAt } from './forecast-notice.js?v=1';
 
 // 레이어 id → 무엇을 어떻게 그리나. 레이어 id·현상 id 는 개명하지 않는다(현상 레지스트리 규칙) — 'tempgrid' 그대로다.
 //   fieldId   프레임 저장소의 필드(gfs-frames.js) · scaleId  색 눈금표(field-scales.js)
@@ -377,6 +378,8 @@ export const fieldCardLive = (m) => {
   const ko = m.ko !== false;
   const meta = [sourceLabel(m.info), ...timeMeta(m.info, m.validMs, ko)];
   const lines = [esc(meta.join(' · '))];
+  // (2026-09-24) 예보 시각이면 출처·런·유효 줄 바로 밑에 고정 문구(js/forecast-notice.js · 층의 forecastNoticeText 가 판정했다).
+  if (m.notice) lines.push(`<span class="fc-notice">${esc(m.notice)}</span>`);
   const st = statusText(m.status, { ko });
   if (st) lines.push(esc(st));
   if (m.stats && Number.isFinite(m.stats.min)) {
@@ -910,6 +913,21 @@ export class FieldLayer {
    * 지점 값 카드(main.js pointWeather 가 부른다). 레이어가 꺼져 있으면 null — 부른 쪽이 제 길로 간다.
    * → { title, html, badge } · html 은 카드 안쪽 글. 프레임의 CPU 사본에서 읽는다 — 네트워크 호출 0건.
    */
+  /**
+   * (2026-09-24 · 기상법 §17 · PD (나)) 지금 칠한 것이 **모델 예보**면 고정 문구(js/forecast-notice.js), 아니면 ''.
+   *   예보 = 유효 시각(누적이면 그 구간의 끝)이 지금보다 한 눈금(60초) 넘게 뒤. 타임라인 '지금'의 모델 칸값 · 과거 프레임은 예보가 아니다.
+   *   한 시각짜리 자료(info.single — Open-Meteo 5° 해양·대기질 · OISST)와 관측 분석장(badge OBSERVED)은 예보가 없다.
+   *   모델 이름·실행 시각은 저장소가 말하는 것(매니페스트 model · run)만 쓴다 — 없으면 그 자리를 뺀다.
+   */
+  forecastNoticeText(info = this.frames.info ? this.frames.info() : null) {
+    if (!this.active || !info || info.single || this.desc.badge === 'OBSERVED') return '';
+    const bus = this.timeBus;
+    const valid = accumValidMs(this) ?? bus.validMs();
+    const nowMs = bus.validMs() - (Number(bus.offsetMs) || 0);      // 시간 버스의 시계 — 시험이 고정한 시계를 그대로 쓴다
+    if (!isForecastAt(valid, nowMs)) return '';
+    return forecastNotice({ model: info.model, run: info.run || info.runMs, ko: this.ko });
+  }
+
   readoutNote(lat, lon) {
     if (!this.active) return null;
     const ko = this.ko;
@@ -920,10 +938,13 @@ export class FieldLayer {
     const q = this.desc.quantity[ko ? 'ko' : 'en'];
     const stat = (k, v) => `<div class="stat"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span></div>`;
     const meta = [sourceLabel(info), ...timeMeta(info, this.timeBus.validMs(), ko)];
+    const fcNotice = this.forecastNoticeText(info);
     const st = statusText(this.status, { ko, short: true });
     const html = stat(q, r.ok ? r.text : '—') + stat(ko ? '지점' : 'Point', fmtPoint(lat, lon))
       + `<p>${esc(r.ok ? r.note : r.text)}${r.ok ? (ko ? ' — 도시·지점의 관측값이 아닙니다.' : ' — not a city or station observation.') : ''}</p>`
       + `<p>${esc(meta.join(' · '))}${st ? ` · ${esc(st)}` : ''}</p>`
+      // (2026-09-24) 예보 시각의 값이면 출처 줄 바로 아래 고정 문구 — 같은 카드 안(js/forecast-notice.js).
+      + (fcNotice ? `<p class="fc-notice">${esc(fcNotice)}</p>` : '')
       + `<p style="opacity:.75">${ko ? '화면에 칠해진 프레임에서 읽었습니다 — 네트워크 조회 없음.' : 'Read from the frame on screen — no network request.'}</p>`;
     // 성질 도장은 descriptor 가 말한다 — 관측 분석장(OISST)에 'MODEL_SIGNAL' 을 찍지 않는다.
     // ⚠️ 삼항으로 가르면 안 된다: 'OBSERVED 가 아니면 MODEL_SIGNAL' 이라 대기질(descriptor · 메뉴 모두 'MODEL')만
@@ -959,6 +980,8 @@ export class FieldLayer {
       cellWord: this.cellWord(info),
       // 누적은 타임라인의 시각이 아니라 **그 구간의 끝**을 유효 시각으로 말한다(precip-accum.js accumValidMs).
       validMs: this.active ? (accumValidMs(this) ?? this.timeBus.validMs()) : null,
+      // (2026-09-24) 예보 고지 — 켜져 있고 예보 시각일 때만 찬다(forecastNoticeText).
+      notice: this.active ? this.forecastNoticeText(info) : '',
       // 기간 칩의 지금 상태. 누적 훅이 없는 레이어는 null 이라 카드에 그 줄이 통째로 없다.
       accum: accumCardState(this),
       status: this.status, isoOn: this.isoOn, isoChoice: this.isoChoice, choices: this.choices,
@@ -1020,6 +1043,10 @@ export class FieldLayer {
       //    D3 가 'single' 줄을 더하면서 run·valid·note 를 통째로 다시 적어, D2 가 세워 둔 포화 고지가 화면에서 사라졌다).
       //    누적은 short 가 늘 차 있어(구간 문구) scaleNote 를 밀어냈다 — 그 갈래에서는 둘을 이어 넘긴다.
       note: blocked ? short : (probeLine || accumLegendNote(this, short) || short || this.scaleNote()),
+      // (2026-09-24) 예보 시각이면 범례 마지막 줄에 고정 문구(폰 접힘에서도 남는다 · index.html .fl-has-fc).
+      //   범위 밖 · 자료 없음은 칠한 것이 없으니(hideDrawing) 비운다. '받는 중'은 비우지 않는다 — 재생 중 프레임을 받을 때마다 줄이 섰다 사라지면
+      //   상자가 220ms 마다 한 줄씩 들썩인다(그동안 화면에는 앞 프레임의 예보가 그대로 칠해져 있다).
+      notice: (this.status.kind === 'outOfRange' || this.status.kind === 'nodata') ? '' : this.forecastNoticeText(info),
     }, `field:${this.id}`, LEGEND_PRIORITY_FIELD);
     const model = this.cardModel(probe);
     const inner = fieldCardInner(model);

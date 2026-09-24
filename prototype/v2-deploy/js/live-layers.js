@@ -7,9 +7,9 @@ import { bulletinRecords, bulletinTimesHtml, escapeHtml, sourceTimeLabel, SEA_LE
 // 바다 색면의 육지 가림 — 판정·해안 띠·대체 규칙은 DOM·THREE 없는 순수 함수로 저 파일에 있다(시험이 그대로 부른다).
 import { buildOceanMaskAsync, oceanMaskAlphaRGBA, oceanMaskCardLine, erodedGridNodes } from './ocean-land-mask.js?v=1';
 // W1 셰이더 색면(기온부터) — 프레임 저장소·시간 버스·범례·라벨을 묶는 접착제는 저 파일에 있다. 여기에는 거는 자리만 둔다.
-import { activeField, clearFieldLayers, isFieldLayerId, toggleFieldLayer } from './field-layer.js?v=3-fix0924';
+import { activeField, clearFieldLayers, isFieldLayerId, toggleFieldLayer } from './field-layer.js?v=4-fc0924';
 // 잠기는 땅(레이어 'slr' · 2026-09-20 E1) — 상승폭 IDW 격자·셰이더·카드는 저 파일에 있다. 여기에도 거는 자리만 둔다.
-import { createFloodOverlay, FLOOD_QUANTITY } from './flood-overlay.js?v=5-fix0924';   // v=2: 2026-09-23 카드 ③ 지형 해상도를 얹힌 고도맵에서 센다
+import { createFloodOverlay, FLOOD_QUANTITY } from './flood-overlay.js?v=6-fc0924';   // v=2: 2026-09-23 카드 ③ 지형 해상도를 얹힌 고도맵에서 센다
 // 연안 침수 예상도의 전국 색인(레이어 'khoaflood' · 2026-09-20 W6) — 지표를 고른 근거·원반 그리기·솎기·집기는 저 파일에 있다.
 import {
   createFloodDiscs, floodClassLabel, floodDiscSpecs, floodDistrictLoadingNote, floodHiddenNote, floodLegendHtml,
@@ -18,6 +18,7 @@ import {
 } from './flood-discs.js?v=1';
 // 지상관측 두 파일(기상청 · GTS)은 공용 저장소에서 받는다 — 바람·평년차·기입 모형·지구 위 관측 숫자가 같은 문서를 나눠 쓴다(surface-obs.js).
 import { surfaceObs } from './surface-obs.js?v=2';
+import { forecastNoticeHtml } from './forecast-notice.js?v=1';
 
 // CloudFront(earthus.net)는 /clouds/* 외 경로에 CORS 헤더를 안 붙인다 → 1.0처럼 S3 직접 (CORS *)
 // (2026-09-23 정정) 위 줄은 **교차 출처(localhost 개발)** 에서만 맞다. '1.0처럼'도 틀렸다 — 1.0(v1 config.js:31)은 운영에서
@@ -2203,7 +2204,9 @@ export class LiveLayers {
         + `${storms.length ? `대상 ${names}<br/>` : '지금 추적 중인 태풍이 없습니다.<br/>'}`
         + `앙상블 ${((storms[0] || {}).ensemble || {}).totalMembers || 51}개 중 파일에 담긴 멤버만 그립니다 · 예보 구간 ${d.capH || 120}시간<br/>`
         + `<b>공식 예보가 아닙니다</b> — 공식 진로는 '태풍 공식 트랙'(KMA·JMA·NHC)을 보세요.<br/>`
-        + `출처 ${d.source || 'ECMWF Open Data'} · ${d.license || ''} · 런 ${d.run || ''}`,
+        + `출처 ${d.source || 'ECMWF Open Data'} · ${d.license || ''} · 런 ${d.run || ''}`
+        // (2026-09-24 · 기상법 §17 · PD (나)) 앙상블 선은 모델 예보다 — 카드 끝에 고정 문구(js/forecast-notice.js). 모델·런은 파일 머리의 것.
+        + forecastNoticeHtml({ model: [d.agency, d.model].filter(Boolean).join(' '), run: d.run, ko: true, tag: 'div' }),
     };
   }
 

@@ -4,7 +4,7 @@
 
 import * as THREE from '../../vendor/three-r184.module.min.js';
 // 사건 방: 기관 스택 + 진리등급 + 현재→다음→행동 (정본 HAZ-011로 사건 결합)
-import { EventRoom } from './event-room.js?v=4';
+import { EventRoom } from './event-room.js?v=5-fc0924';
 import { i18n } from './i18n.js?v=11';
 
 // PHASE 1(2026-09-05): 브라우저는 EARTHUS 축약본(Point·카드 필드만, 수십 KB)을 정상 경로로 쓴다.

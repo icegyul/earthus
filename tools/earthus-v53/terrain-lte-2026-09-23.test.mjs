@@ -127,7 +127,9 @@ test('캐시 토큰 — 바뀐 모듈은 새 ?v= 로 불린다', () => {
   // (2026-09-24 정정) 같은 출처 전환으로 41 로 올랐다 — 지키는 것은 '지형 뒤로 40 아래로 돌아가지 않는다'.
   const lv = mainSrc.match(/from '\.\/live-layers\.js\?v=(\d+)-[a-z0-9-]+'/);
   assert.ok(lv && Number(lv[1]) >= 40, 'live-layers 토큰이 지형 이전 값이다');
-  assert.match(mainSrc, /from '\.\/intel-strip\.js\?v=2'/);
+  // (2026-09-24 정정) 예보 고지(js/forecast-notice.js)로 intel-strip 이 3-fc0924 가 됐다 — 지키는 것은 '지형 뒤로 2 아래로 돌아가지 않는다'.
+  const is = mainSrc.match(/from '\.\/intel-strip\.js\?v=(\d+)(?:-[a-z0-9-]+)?'/);
+  assert.ok(is && Number(is[1]) >= 2, 'intel-strip 토큰이 지형 이전 값이다');
   // (2026-09-24 정정) field-layer 토큰 연쇄로 flood-overlay 가 3 이 됐다 — 지키는 것은 '지형 뒤로 2 아래로 돌아가지 않는다'.
   const fo = readFileSync(path.join(V2, 'js/live-layers.js'), 'utf8').match(/from '\.\/flood-overlay\.js\?v=(\d+)(?:-[a-z0-9-]+)?'/);
   assert.ok(fo && Number(fo[1]) >= 2, 'flood-overlay 토큰이 지형 이전 값이다');

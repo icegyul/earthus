@@ -20,15 +20,16 @@
 //   ⚠️ W5 에서 Inspector 가 생기면 mount(inspector 안의 자리) 로 옮기고 index.html 의 position 규칙을 걷는다.
 //
 // ── 쓰는 법 (첫 배선은 바람 층 js/wind-layer.js — 2026-09-20 W3 · 색면의 범례는 W1 FieldRenderer 가 잇는다) ───────────────
-//   import { fieldLegend } from './field-legend.js?v=2-fix0924';
+//   import { fieldLegend } from './field-legend.js?v=3-fc0924';
 //   import { scaleOf } from './field-scales.js?v=1';        // ⚠️ 질의문자열까지 이 파일의 import 와 똑같이(ES 모듈은 URL 전체로 구분된다)
 //   fieldLegend.mount(document.body);                        // 한 번. 다시 불러도 상자는 하나다
 //   fieldLegend.show({ scale: scaleOf('temp'), source: 'MODEL · GFS 0.5°',
 //                      run: manifest.run, valid: step.valid });          // ISO 글자 · Date · ms 아무거나
 //   fieldLegend.show({ scale: scaleOf('precip'), unitAlt: true, … });    // 누적을 고르면 단위가 mm 로
+//   fieldLegend.show({ …, notice: forecastNotice({ model, run }) });   // (2026-09-24) 모델 예보를 보일 때만 — 문장은 js/forecast-notice.js 하나
 //   fieldLegend.hide();                                       // 색면을 끄면
 //   fieldLegend.refresh();                                    // 언어를 바꾼 뒤(main.js applyI18n)
-//   콘솔에서 한 번 보기: 이 모듈을 동적으로 들여 demo('wind') 를 부른다 — 주소는 페이지 기준 js/field-legend.js?v=2-fix0924 이다.
+//   콘솔에서 한 번 보기: 이 모듈을 동적으로 들여 demo('wind') 를 부른다 — 주소는 페이지 기준 js/field-legend.js?v=3-fc0924 이다.
 //   ⚠️ 여기에 import 식을 글자 그대로 적지 마라: 번들 무결성 검사(tools/build-v2-bundle.sh 4/4)가 주석 속 import 도 읽어
 //      이 파일 기준 상대경로(js/js/…)로 풀고 '없는 import'로 빌드를 떨어뜨린다(2026-09-20 실측 — 배포 직전에 걸렸다).
 //   타임라인을 밀 때마다 show() 를 불러도 된다 — 눈금·단위·언어가 같으면 칸을 다시 만들지 않고 시각 글자만 바꾼다.
@@ -65,6 +66,9 @@ const TEXT = {
  *    접힌 상자는 어느 레이어든 제목 · 띠 · 첫 단위 눈금 세 줄이라 높이가 같다(W1). 규칙은 index.html 세로 폰 범례 구간에 있다.
  */
 export const LEGEND_COLLAPSED_CLASS = 'fl-collapsed';
+/** (2026-09-24) 예보 고지 줄(.fl-fc)이 서 있을 때 상자에 붙는 이름표 — index.html 이 이 이름표일 때만 grid 에 줄 하나를 더한다.
+ *  고지가 없으면(관측 · '지금') 상자는 예전 높이 그대로다(W1 'reflow 없음' — 레이어를 바꿀 때의 규칙은 그대로 선다). */
+export const LEGEND_NOTICE_CLASS = 'fl-has-fc';
 
 // 입자 풀이 — 바람 눈금의 legendNote 와 같은 글이다. 기온·강수 색면 위에 입자를 켰을 때(W3) show({ note }) 로 넘기라고 내놓는다.
 export const PARTICLE_NOTE = Object.freeze({ ...scaleOf('wind').legendNote });
@@ -107,7 +111,7 @@ export const legendMetaLine = ({ source, run, valid, lang = 'ko', now } = {}) =>
  *   ticks    경계 숫자. pos = 띠 왼쪽 끝에서의 비율(0~1). 첫 칸의 아래 경계가 있으면(강수 0.1) pos 0 이다
  *   altTicks 둘째 단위 줄(풍속 kt) — mode 'both' 인 눈금만. 없으면 null 이고 줄은 비워 둔 채 자리를 지킨다
  */
-export const legendView = ({ scale, title, source, run, valid, note, unitAlt, lang = 'ko', now } = {}) => {
+export const legendView = ({ scale, title, source, run, valid, note, notice, unitAlt, lang = 'ko', now } = {}) => {
   if (!scale) return null;
   const ko = lang !== 'en';
   const alt = scale.altUnit || null;
@@ -131,6 +135,9 @@ export const legendView = ({ scale, title, source, run, valid, note, unitAlt, la
     meta: meta.text,
     stale: meta.stale,
     note: pick(note) || pick(scale.legendNote),
+    // (2026-09-24) 예보 고지 — 부른 쪽이 '지금 보이는 것이 모델 예보다'라고 판정해 js/forecast-notice.js 의 문장을 넘길 때만 찬다.
+    //   범례는 판정하지 않는다(무엇이 예보인지는 자료를 쥔 층이 안다). 비면 그 줄은 숨는다.
+    notice: pick(notice),
   };
 };
 
@@ -148,11 +155,12 @@ export const createFieldLegend = ({ doc, now = () => Date.now(), getLang = () =>
   let lastArgs = null;
 
   let collapsed = true;                            // 폰 기본값 — 근거는 LEGEND_COLLAPSED_CLASS 주석
+  let hasNotice = false;                           // (2026-09-24) 예보 고지 줄이 서 있나 — 그때만 상자가 한 줄 자란다(index.html .fl-has-fc)
 
   /** 접힘을 상자의 이름표 하나로 말한다. 넓은 화면에서는 이 이름표에 걸린 규칙이 없어 아무 일도 안 난다. */
   const applyFold = () => {
     if (!root) return;
-    root.className = collapsed ? `field-legend ${LEGEND_COLLAPSED_CLASS}` : 'field-legend';
+    root.className = (collapsed ? `field-legend ${LEGEND_COLLAPSED_CLASS}` : 'field-legend') + (hasNotice ? ` ${LEGEND_NOTICE_CLASS}` : '');
     if (!parts || !parts.fold) return;
     const T = TEXT[getLang() === 'en' ? 'en' : 'ko'];
     parts.fold.textContent = collapsed ? '▾' : '▴';        // 글자는 textContent 로만(이 파일 규약)
@@ -173,6 +181,9 @@ export const createFieldLegend = ({ doc, now = () => Date.now(), getLang = () =>
       alt: el(d, 'div', 'fl-ticks fl-alt'),
       meta: el(d, 'div', 'fl-meta'),
       note: el(d, 'div', 'fl-note'),
+      // (2026-09-24) 예보 고지 줄 — 풀이 줄 **뒤**(grid 의 마지막 줄)다. 풀이는 폰에서 접히지만 이 줄은 접혀도 남는다:
+      //   예보를 보는 동안 '기상청 예보가 아니다'는 한 번 읽고 치울 설명이 아니라 지금 화면의 성질이다(기상법 §17 · PD 2026-09-24 (나)).
+      fc: el(d, 'div', 'fl-fc fc-notice'),
       // 접는 단추 — **줄 바깥**이다(index.html 에서 position:absolute). 줄로 끼면 칸 여섯 개 규약이 깨진다.
       fold: el(d, 'button', 'fl-fold'),
     };
@@ -180,7 +191,8 @@ export const createFieldLegend = ({ doc, now = () => Date.now(), getLang = () =>
     parts.fold.setAttribute('type', 'button');
     // addEventListener 가 아니라 onclick 이다 — 두 번 매달릴 수 없고, 시험의 가짜 DOM 이 그대로 부를 수 있다.
     parts.fold.onclick = (ev) => { if (ev && ev.preventDefault) ev.preventDefault(); collapsed = !collapsed; applyFold(); };
-    for (const k of ['title', 'bands', 'ticks', 'alt', 'meta', 'note', 'fold']) root.appendChild(parts[k]);
+    parts.fc.hidden = true;
+    for (const k of ['title', 'bands', 'ticks', 'alt', 'meta', 'note', 'fc', 'fold']) root.appendChild(parts[k]);
     applyFold();
   };
 
@@ -217,6 +229,9 @@ export const createFieldLegend = ({ doc, now = () => Date.now(), getLang = () =>
     parts.meta.textContent = view.meta;
     parts.meta.className = view.stale ? 'fl-meta fl-stale' : 'fl-meta';
     parts.note.textContent = view.note;
+    parts.fc.textContent = view.notice;
+    parts.fc.hidden = !view.notice;
+    hasNotice = !!view.notice;
     // 풀이가 없는 눈금이 있다(기온 · 해면기압 · 유의파고 · PM2.5). 그때는 접는 단추를 두지 않는다 —
     // 펼쳐도 아무것도 안 나오는 단추는 **죽은 토글**이다(이 저장소의 규칙 · flood-overlay.js 머리말).
     parts.fold.hidden = !view.note;

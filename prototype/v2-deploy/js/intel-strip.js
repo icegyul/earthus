@@ -15,6 +15,7 @@
 
 import { INTEL_QUESTIONS, sectionStatus, hasIntel, INTEL_ACTION } from './intel-questions.js?v=2';
 import { decideCapabilityAccess, lockExplanation, TIER } from './shared/access-mode.js';
+import { forecastNoticeHtml, isModelForecastKind } from './forecast-notice.js?v=1';
 
 export const SECTION_TIER = Object.freeze({
   WHAT: TIER.FREE, NEXT: TIER.FREE, EVIDENCE: TIER.FREE,
@@ -182,8 +183,16 @@ export const intelSectionHtml = ({ packet, section, i18n, esc = plainEsc, badge 
     for (const n of (packet.next && packet.next.items) || []) {
       const peak = n.peak && Number.isFinite(n.peak.windMs) ? ` · ${ko ? '최대' : 'peak'} ${esc(n.peak.windMs)} m/s ${esc(n.peak.gradeKo || '')}` : '';
       const kindTxt = (NEXT_KIND[n.kind] || NEXT_KIND.OFFICIAL_FORECAST)[ko ? 0 : 1];
+      // (2026-09-24 · 기상법 §17 · PD (나)) 기관 발표(OFFICIAL_FORECAST)는 기관 이름·발표 시각 그대로 둔다 — 공식 예보다.
+      //   예보 제공자 모델(PROVIDER_FORECAST)·EARTHUS 통계 모형(EARTHUS_FORECAST)은 같은 줄 아래 고정 문구(js/forecast-notice.js):
+      //   모델 = 패킷이 싣는 source, 실행 시각 = 패킷의 issuedAt(모르면 뺀다).
+      // (2026-09-24 정정 · 적대 검토) issuedAt 은 **실행 시각이 아니다**. ECMWF 줄의 issuedAt 은 aws/cyclone-analog handler.py 가
+      //   ecmwf_doc.generated(우리 수집기가 파일을 만든 시각 · 예 14:40 UTC)를 싣는다 — 그걸 run 으로 넘기자 고지가 'ECMWF 모델 09/19 14Z' 라고
+      //   **없는 14Z 런**을 말했다(ECMWF 는 00/06/12/18Z). 패킷에 진짜 run 이 실리지 않으므로 실행 시각 자리는 뺀다(forecast-notice.js 규칙:
+      //   모르면 뺀다). 발표 시각은 바로 위 줄('발표 …')이 그대로 말한다.
+      const fc = isModelForecastKind(n.kind) ? forecastNoticeHtml({ model: n.source, run: null, ko, esc, tag: 'div' }) : '';
       out.push(row(n.source, `${esc(n.headingKo || '')}${n.horizonH ? ` · +${esc(n.horizonH)}h` : ''}${peak} ${badge(n.kind)}`,
-        `<div class="paysub">${ko ? '발표' : 'issued'} ${esc(fmtAt(n.issuedAt))} · ${esc(kindTxt)}</div>`));
+        `<div class="paysub">${ko ? '발표' : 'issued'} ${esc(fmtAt(n.issuedAt))} · ${esc(kindTxt)}</div>${fc}`));
     }
   } else if (section === 'IMPACT') {
     const rel = packet.related || [];

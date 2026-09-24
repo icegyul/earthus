@@ -43,6 +43,9 @@ cp "$ROOT/prototype/js/for-me-row.js" "$ROOT/prototype/js/usage.js" "$OUT/js/sha
 # 요금 판정 정본(access-mode.js) — Intelligence 띠(intel-strip.js, 2026-09-20 P1)가 잠금 판정을 여기서 한다.
 # 사본을 만들지 않고 v1 과 같은 파일을 싣는다(import 없음 · 순수 함수).
 cp "$ROOT/prototype/js/access-mode.js" "$OUT/js/shared/"
+# (2026-09-24) 앱(TWA) 준비 — 앱 안 판정(app-context.js)과 뒤로 단추(back-close.js)도 v1 과 같은 파일을 싣는다
+#   (지시서 §3-4 · §3-8-1). 둘 다 import 없는 순수 모듈이다. 사본을 따로 만들면 v1·v2 판정이 갈라진다.
+cp "$ROOT/prototype/js/app-context.js" "$ROOT/prototype/js/back-close.js" "$OUT/js/shared/"
 # EARTHUS 아이콘 시스템 — v1·v2 공용. 표(earthus-icons.js)도 그림(assets/earthus-icons/)도 한 벌뿐이다.
 # ⚠️ shared/ 가 아니라 js/ 바로 아래에 둔다. 모듈이 그림 위치를 import.meta.url 기준
 #    '../assets/earthus-icons/' 로 풀기 때문이다 — js/ 에 있어야 그게 번들 루트의 assets/ 를
@@ -62,6 +65,8 @@ while IFS= read -r -d '' f; do
     -e 's#\.\./\.\./js/for-me-row\.js#./shared/for-me-row.js#g' \
     -e 's#\.\./\.\./js/usage\.js#./shared/usage.js#g' \
     -e 's#\.\./\.\./js/access-mode\.js#./shared/access-mode.js#g' \
+    -e 's#\.\./\.\./js/app-context\.js#./shared/app-context.js#g' \
+    -e 's#\.\./\.\./js/back-close\.js#./shared/back-close.js#g' \
     -e 's#\.\./\.\./js/earthus-icons\.js#./earthus-icons.js#g' \
     -e 's#\.\./v2/assets/#./assets/#g' \
     -e "s#'\.\./data/#'./data/#g" \

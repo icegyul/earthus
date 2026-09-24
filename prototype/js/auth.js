@@ -9,6 +9,16 @@ import { CONFIG } from './config.local.js';
 import { biometric } from './biometric.js';
 import { TIER, tierAtLeast, normalizeTier } from './access-mode.js';
 
+import { backStack, oauthRewindSteps } from './back-close.js';
+
+/* (2026-09-24) 로그인에서 돌아온 뒤 뒤로 한 번이 Google 화면으로 가지 않게 (지시서 §3-8-1 · Phase 1 기준 4).
+   웹 코드는 Google 이 쌓은 칸을 지울 수 없다. 대신 떠나기 직전 기록 길이를 적어 두고, 돌아온 문서가
+   history.go(-n) 로 **떠나기 전 칸**으로 돌아간다(Google 칸은 '앞으로' 쪽에 남는다 — 뒤로로는 안 닿는다).
+   ⚠️ 돌아온 문서에서만 움직인다 — 주소에 OAuth 응답 흔적(code=·access_token=·error=)이 있고, 기록이 15분 안일 때. */
+const OAUTH_DEPARTURE_KEY = 'earthus.oauthDeparture';
+const OAUTH_RETURN_HINT = typeof location !== 'undefined'
+  && /[?&#](?:code|access_token|error)=/.test(`${location.search}${location.hash}`);
+
 const PROVIDERS = ['google', 'apple'];   // 이 둘만. 이메일/비밀번호 가입 없음.
 const OWNER_EMAILS = new Set(['contentsdalur@gmail.com']);
 
@@ -48,6 +58,9 @@ export const auth = {
        세션이 있는지 없는지만 알면 문제를 가르는 데 충분하다. */
     console.info('[auth] 세션', data?.session ? '있음' : '없음',
       error ? '· 오류: ' + error.message : '');
+    /* (2026-09-24) OAuth 에서 막 돌아온 문서면 떠나기 전 칸으로 돌아간다 — 세션은 이미 저장소에 붙었다.
+       그 칸이 새로 읽히며 로그인 상태로 그려진다. 1.5초 안에 이동이 안 되면(막힘) 평소대로 이어 간다. */
+    if (this._rewindAfterOAuth()) await new Promise(resolve => setTimeout(resolve, 1500));
     await this._apply(data?.session ?? null);
 
     this.client.auth.onAuthStateChange((evt, session) => {
@@ -91,9 +104,39 @@ export const auth = {
         redirectTo: window.location.href,
         // Apple 은 최초 1회만 이름/이메일을 준다. 그 이후엔 안 준다.
         scopes: provider === 'apple' ? 'name email' : 'email',
+        /* (2026-09-24) 이동은 우리가 한다 — 떠나기 직전 기록 길이를 적고, 로그인 시트의 표식 칸(back-close)이
+           지금 칸이면 location.replace 로 그 칸을 Google 로 바꾼다(열린 시트 칸이 기록에 남지 않게). */
+        skipBrowserRedirect: true,
       },
     });
     if (error) throw error;
+    const url = data?.url;
+    if (!url) throw new Error('OAUTH_URL_MISSING');
+    let replaced = false;
+    try { replaced = backStack().armedNow(); } catch (_) { replaced = false; }
+    try {
+      sessionStorage.setItem(OAUTH_DEPARTURE_KEY,
+        JSON.stringify({ savedLength: history.length, replaced, at: Date.now() }));
+    } catch (_) { /* 저장소가 막히면 돌아온 뒤 되감기만 빠진다 — 로그인 자체는 된다 */ }
+    if (replaced) window.location.replace(url);
+    else window.location.assign(url);
+  },
+
+  /* (2026-09-24) OAuth 에서 돌아온 문서면 떠나기 전 칸으로 되감는다. 움직였으면 true. */
+  _rewindAfterOAuth() {
+    let rec = null;
+    try {
+      rec = JSON.parse(sessionStorage.getItem(OAUTH_DEPARTURE_KEY) || 'null');
+      sessionStorage.removeItem(OAUTH_DEPARTURE_KEY);   // 한 번만 쓴다 — 남아 있으면 다음 로그인이 엉뚱하게 되감긴다
+    } catch (_) { rec = null; }
+    if (!rec || !OAUTH_RETURN_HINT || !(Date.now() - Number(rec.at) < 15 * 60 * 1000)) return false;
+    const steps = oauthRewindSteps({
+      savedLength: Number(rec.savedLength), replaced: rec.replaced === true, nowLength: history.length,
+    });
+    if (steps < 1) return false;
+    console.info('[auth] 로그인 뒤 떠나기 전 화면으로 되감기', steps, '칸');
+    history.go(-steps);
+    return true;
   },
 
   async signOut() {

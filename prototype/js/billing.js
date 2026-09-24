@@ -17,6 +17,9 @@ import { auth } from './auth.js';
 import { CONFIG } from './config.local.js';
 import { i18n } from './i18n.js';
 import { salesAllowed, TIER } from './access-mode.js';
+/* (2026-09-24) 앱 안(안드로이드 TWA) 판정 — 앱 안에서는 토스(web)를 **어떤 경로로도** 고르지 않는다.
+   지시서 §3-4 · D17. 판정 규칙과 그 이유는 app-context.js 머리 주석에 있다. */
+import { isInApp, paymentRoute, allowedProviderKeys } from './app-context.js';
 
 /* ── 요금제 ────────────────────────────────────────────────────
    ⚠️ 가격은 config.local.js 에서 덮어쓸 수 있게 둔다.
@@ -265,6 +268,15 @@ const PROVIDERS = {
     available: () => typeof window.webkit?.messageHandlers?.iap !== 'undefined',
     start: plan => window.webkit.messageHandlers.iap.postMessage({ productId: plan.id }),
   },
+  /* (2026-09-24) Play 결제 — Chrome TWA 의 Digital Goods API 길. **Phase 2 전까지 스텁이다.**
+     ⚠️ 상품 형태(기간 이용권 / 자동 갱신 구독, 지시서 D1)가 정해지지 않았다. 여기서 시트를 흉내 내지 않는다 —
+        누르면 '아직 연결되지 않았다'고 정직하게 말한다(NOT_CONFIGURED). 판매가 닫힌 지금은 이 단추가 화면에 나오지 않는다.
+     ⚠️ google 보다 **앞에** 둔다 — subscribe() 가 providerKey 없이 부르면 list[0](객체 삽입 순서)을 고른다. */
+  play: {
+    ko: 'Google Play', en: 'Google Play',
+    available: () => 'getDigitalGoodsService' in window,
+    start: () => { throw new Error('NOT_CONFIGURED'); },
+  },
   google: {
     ko: 'Google Play', en: 'Google Play',
     available: () => typeof window.AndroidBilling?.purchase === 'function',
@@ -276,8 +288,11 @@ const PROVIDERS = {
        ⚠️ 클라이언트가 금액을 정해 보내면 위변조가 가능하다 —
           그래서 우리가 서버에 보내는 것은 **planId 뿐**이고, 금액은 서버가 정한다.
        CONFIG.CHECKOUT_URL 이 그 서버 엔드포인트(Supabase Edge Function)다. */
-    available: () => !!CONFIG.CHECKOUT_URL,
+    // (2026-09-24) 앱 안이면 설정이 있어도 쓰지 않는다 — providers() 의 결제 길 거름과 겹쳐 두는 두 번째 문이다.
+    available: () => !!CONFIG.CHECKOUT_URL && !isInApp(),
     start: async (plan) => {
+      // (2026-09-24) 세 번째 문 — 누가 PROVIDERS.web.start 를 직접 불러도 앱 안에서는 토스를 부르지 않는다.
+      if (isInApp()) throw new Error('NOT_AVAILABLE');
       // ⚠️ 로그인 토큰을 반드시 보낸다. 없으면 서버가 누구의 주문인지 모른다.
       const token = await auth.accessToken?.();
       if (!token) throw new Error('NOT_SIGNED_IN');
@@ -332,12 +347,27 @@ function loadToss() {
 export const billing = {
   /** 지금 이 기기에서 쓸 수 있는 결제 수단. 없으면 빈 배열. */
   providers() {
+    /* (2026-09-24) 먼저 결제 길을 정하고(앱 밖 web / 앱 안 play·native·blocked), 그 길에 허락된 수단만 남긴다.
+       앱 안인데 두 길이 다 없으면 빈 배열 → ui-subscribe 가 '앱에서는 결제할 수 없습니다'(링크 없음)를 그린다. */
+    const allowed = allowedProviderKeys(this.route());
     return Object.entries(PROVIDERS)
+      .filter(([k]) => allowed.includes(k))
       .filter(([, p]) => { try { return p.available(); } catch { return false; } })
       .map(([k, p]) => ({ key: k, ...p }));
   },
 
   ready() { return this.providers().length > 0; },
+
+  /** (2026-09-24) 'web' | 'play' | 'native' | 'blocked' — app-context.js paymentRoute() */
+  route() {
+    let hasDigitalGoods = false, hasNativeBridge = false;
+    try { hasDigitalGoods = 'getDigitalGoodsService' in window; } catch (_) { hasDigitalGoods = false; }
+    try { hasNativeBridge = typeof window.AndroidBilling?.purchase === 'function'; } catch (_) { hasNativeBridge = false; }
+    return paymentRoute({ inApp: isInApp(), hasDigitalGoods, hasNativeBridge });
+  },
+
+  /** (2026-09-24) 앱 안인가 — ui-subscribe 가 '앱에서는 결제할 수 없습니다'를 고를 때 쓴다. */
+  inApp() { return isInApp(); },
 
   price(planKey) {
     const p = PLANS[planKey];
@@ -397,6 +427,8 @@ export const billing = {
     const list = this.providers();
     const prov = providerKey ? list.find(p => p.key === providerKey) : list[0];
     if (!prov) throw new Error('NOT_AVAILABLE');
+    // (2026-09-24) providerKey='web' 을 직접 넘겨도 앱 안이면 여기서 막는다(list 에 이미 없지만 문을 겹쳐 둔다).
+    if (prov.key === 'web' && isInApp()) throw new Error('NOT_AVAILABLE');
     return PROVIDERS[prov.key].start(plan);
   },
 

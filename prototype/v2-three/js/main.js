@@ -3,8 +3,14 @@
 // 실제 고도 데이터(AWS Terrarium 타일)를 정점 변위 + 픽셀 단위 법선 음영으로 직접 렌더링한다.
 // 위성/기본색 텍스처는 보조 색상일 뿐이며, 입체감은 전부 고도 데이터에서 나온다.
 
+// (2026-09-24) 앱 안(TWA) 표식 — **가장 먼저** 평가한다. App Link 로 /v2/…?src=twa 에 바로 들어오면 v1 코드가 돌지 않아
+//   표식이 sessionStorage 에 안 적히고, 그 뒤 v1 으로 넘어가면 '앱 밖'으로 판정돼 토스를 고를 수 있었다(지시서 §3-4).
+//   v1 과 같은 파일이다. 번들에서는 build-v2-bundle.sh 가 ./shared/app-context.js 로 옮긴다.
+import '../../js/app-context.js?v=1';
 import * as THREE from '../../vendor/three-r184.module.min.js';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=74-fix0924';
+// (2026-09-24) 뒤로 단추 — ui-shell.js 와 **같은 지정자**여야 한 벌이다(ES 모듈은 ?v= 까지 URL 전체가 키).
+import { backStack } from '../../js/back-close.js?v=1';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=75-back0924';
 import { createSelectionGate } from './information-contract.js';
 // PHASE 4 §9 — 지도에서 고른 사건을 어느 현상으로 읽을지는 레지스트리가 정한다.
 // ⚠️ 2026-09-23: 레지스트리를 여기·report-center.js 는 ?v=4 로, ui-shell.js·intel-questions.js 는 ?v=5 로 불러
@@ -5804,6 +5810,21 @@ async function main() {
     if (toggleDrawer(searchDrawer, btnSearch)) document.getElementById('c-search').focus();
   });
   btnSettings.addEventListener('click', () => toggleDrawer(settingsDrawer, btnSettings));
+  /* (2026-09-24, 검수) 안드로이드 뒤로 단추 — 우상단 검색·설정 서랍과 물어보기 서랍도 뒤로 한 번에 닫힌다(지시서 §3-8-1).
+     ui-shell.js 가 메뉴 서랍·Intelligence 시트만 알려서, 이 서랍들이 열린 채 뒤로를 누르면 앱이 끝났다.
+     닫는 길은 ✕·단추와 같은 함수다(closeDrawers · askEarth.close). */
+  {
+    const askBox = document.getElementById('ask-drawer');
+    backStack()
+      .register('drawer', {
+        isOpen: () => searchDrawer.classList.contains('open') || settingsDrawer.classList.contains('open'),
+        close: () => closeDrawers(),
+      })
+      .register('ask', { isOpen: () => !!askBox?.classList.contains('open'), close: () => askEarth.close() })
+      .watch(searchDrawer, { subtree: false })
+      .watch(settingsDrawer, { subtree: false });
+    if (askBox) backStack().watch(askBox, { subtree: false });
+  }
 
   // 첫 방문 안내 — 처음 온 사람에게 조작법과 어디에 뭐가 있는지 한 번만 알려준다
   const onboard = initOnboard();
@@ -6747,9 +6768,15 @@ async function main() {
     if (h === lastLink) return;
     lastLink = h;
     // replaceState — 뒤로가기 기록을 카메라 움직임으로 더럽히지 않는다
-    history.replaceState(null, '', h);
+    // (2026-09-24 정정) state 를 null 로 덮으면 뒤로 단추용 표식 칸(back-close.js)이 1.2초마다 지워져
+    //   ✕ 로 닫아도 칸이 남았다 — 지금 칸의 state 를 그대로 둔다.
+    history.replaceState(history.state, '', h);
   };
   setInterval(writeLink, 1200);
+  /* (2026-09-24) 뒤로로 서랍·시트를 닫으면 표식 칸 아래 칸의 해시는 **열기 전 카메라**다. 그대로 두면 뒤따르는
+     hashchange 가 applyLink 로 카메라를 옛 자리로 날린다. popstate 안에서 지금 카메라로 해시를 다시 써 두면
+     hashchange 처리기는 h === lastLink 로 그냥 돌아간다(아래 hashchange 주석). */
+  backStack().onConsumedPop(() => { lastLink = ''; writeLink(); });
 
   const parseLink = () => {
     const h = (location.hash || '').replace(/^#/, '');

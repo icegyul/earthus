@@ -1,4 +1,10 @@
 // 진입점
+/* (2026-09-24) 앱 안(TWA) 판정은 **가장 먼저** 평가한다 — 주소의 `src=twa` 를 적고 지운다.
+   이보다 늦으면 earth-route-state 가 location.href 를 바탕으로 쓰는 지구 주소마다 표식이 박힌다.
+   (ES 모듈은 import 순서대로 평가된다 — 이 줄을 아래로 옮기지 말 것.) */
+import './app-context.js';
+/* (2026-09-24) 뒤로 단추로 서랍·시트 닫기 — earth-view-state 보다 먼저 popstate(capture)를 잡는다. */
+import { backStack } from './back-close.js';
 /* viewer.js는 여러 모듈이 공유하는 싱글턴이다. 이 import 하나에만 버전을 붙이면
    scene/viewer 인스턴스가 둘로 갈라져 power 초기화 전에 undefined가 된다. */
 import { initViewer, viewer, scene, cameraHeight, onCameraIdle, flyTo, setAmbientView, fitGlobeHeight } from './viewer.js';
@@ -12,7 +18,7 @@ import { weatherPanel } from './ui-weather.js';
 import { createWeatherEarthSync } from './weather-earth-sync.js';
 import { createWeatherMomentLayer } from './weather-moment-layer.js';
 import { power } from './power.js';
-import { panels } from './panels.js';
+import { panels, OPEN_PANELS } from './panels.js';
 import { intro } from './intro.js';
 import { renderQuality } from './render-quality.js';
 import { store } from './store.js';
@@ -320,6 +326,23 @@ async function boot() {
   });
   activeBar.init();       // 지금 켜진 레이어 줄 (감사 3차)
   search.init();          // ⌘K · 우상단 돋보기
+  /* (2026-09-24) 안드로이드 뒤로 단추 — 열린 서랍·시트·검색은 뒤로 한 번에 닫힌다(지시서 §3-8-1).
+     여는 곳이 수십 군데라 여는 쪽을 고치지 않고 class 변화를 지켜본다(panels.js 배타성과 같은 방식).
+     · 시트: panels.closeTop() — Esc 와 같은 길이라 onClose 정리(지도 표시 걷기)가 그대로 돈다.
+       keep-open(서핑·낚시 지도 화면)도 뒤로로는 닫는다 — keep-open 은 '바깥 탭으로 안 닫힘'일 뿐이다.
+     · 서랍(2단 #menuSub): close-menu 이벤트 — ✕ 와 같은 길(style-closed 까지)이다.
+     · 검색: search.close() */
+  backStack()
+    .register('sheet', { isOpen: () => !!document.querySelector(OPEN_PANELS), close: () => panels.closeTop() })
+    .register('menu', {
+      isOpen: () => !!document.getElementById('menuSub')?.classList.contains('open'),
+      close: () => document.dispatchEvent(new CustomEvent('earthus:close-menu')),
+    })
+    .register('search', {
+      isOpen: () => !!document.getElementById('searchBox')?.classList.contains('on'),
+      close: () => search.close(),
+    })
+    .watch(document.body);
   /* ⚠️ 오늘의 볼거리 칩(최고 파고·수온·기온)은 **첫 화면에서 뺐다.**
      받은 지시: "밑에 최고파도 최고 수온 그런거 다 빼줘. 처음 보자마자
                  아름다운 지구와 기초 정보만 보여주고 싶어."

@@ -15,33 +15,31 @@
  *     시작하면 그 화성 세션 복원에 필요한 exact catalog/detail texture만 제한 저장한다.
  */
 
-/* (2026-09-24) 오프라인 안내 화면(offline.html)을 SHELL 에 넣으면서 이름을 올렸다 — 이름이 같으면 install 이
-   다시 돌지 않아 새 파일이 캐시에 안 들어간다. 옛 이름은 아래 LEGACY_CACHES 에 넣어 활성화 때 옮기고 지운다. */
-const CACHE = 'earthus-shell-2026-09-24-offline';
-const LEGACY_CACHES = new Set([
-  'earthus-shell-2026-09-07-scope',              // 2026-09-24 오프라인 안내 화면 추가 전 캐시
-  'earthus-shell-2026-08-21-tourism-density2',   // 2026-09-07 scope 수정 전 캐시 — 활성화 때 지운다
-  'earthus-shell-2026-08-21-tourism-density1',
-  'earthus-shell-2026-08-20-weather-tourism1',
-  'earthus-shell-2026-08-20-hobby-ocean1',
-  'earthus-shell-2026-08-13-publicui1',
-  'earthus-shell-2026-07-28c',
-  'earthus-shell-2026-08-12-session1',
-  'earthus-shell-2026-08-13-visualrelease1',
-]);
+importScripts('./seo-geo-sw-routes.js');
+
+// ⚠️ V2와 production은 CacheStorage를 공유한다. V1 cache를 열거나 지우지 않는다.
+const V2_CACHE_PREFIX = 'earthus-v2-';
+const CACHE = `${V2_CACHE_PREFIX}2026-08-28-device1`;
+const V2_BASE = '/v2/';
+const v2Path = path => V2_BASE + path.replace(/^\//, '');
+const isV2Url = url => url?.origin === self.location.origin && url.pathname.startsWith(V2_BASE);
+const isOldV2Cache = key => key.startsWith(V2_CACHE_PREFIX) && key !== CACHE;
+// CacheStorage.match()는 다른 앱 cache까지 조회하므로 현재 V2 cache만 조회한다.
+const matchV2Cache = (request, options) => caches.open(CACHE).then(cache => cache.match(request, options));
 const SKY_FALLBACK = './space/skybox/earthus-milky-way/panorama-2048.28125627e27567e3.webp';
-/* (2026-09-24) 오프라인 안내 화면과 그 화면이 쓰는 로고 한 장. 둘 다 없으면 install 이 통째로 실패한다(addAll). */
-const OFFLINE_PAGE = './offline.html';
-const OFFLINE_ASSETS = new Set(['/offline.html', '/logo/earthus-wordmark-white.svg']);
-const SHELL = ['./index.html', './manifest.webmanifest', SKY_FALLBACK, OFFLINE_PAGE, './logo/earthus-wordmark-white.svg'];
-/* 화면 이동이 네트워크 오류로 실패했을 때만 오프라인 안내 화면을 준다. 서버가 404·500 을 준 것은 오프라인이 아니다 —
-   그 응답을 그대로 보여 준다(fetch 는 HTTP 오류에서 reject 하지 않는다). */
-const offlineResponse = () => caches.match(OFFLINE_PAGE, { ignoreSearch: true })
-  .then((r) => r || new Response('<!doctype html><meta charset="utf-8"><title>EARTHUS</title><p>오프라인 · Offline</p>',
-    { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } }));
+const SHELL = ['./index.html', './intro.html', './provenance.html', './manifest.webmanifest', SKY_FALLBACK];
+// Registry-generated paths keep crawler disclosure and offline cache behavior
+// aligned without making the Service Worker an authorization mechanism.
+const SEO_GEO_NON_CACHEABLE_PATHS = new Set((self.EARTHUS_SEO_GEO_NON_CACHEABLE_PATHS || []).map(v2Path));
+const SEO_GEO_NON_CACHEABLE_PREFIXES = (self.EARTHUS_SEO_GEO_NON_CACHEABLE_PREFIXES || []).map(v2Path);
+const SEO_GEO_EXACT_DOCUMENT_PATHS = new Set([
+  ...(self.EARTHUS_SEO_GEO_EXACT_DOCUMENT_PATHS || []).map(v2Path), v2Path('/index.html'),
+]);
+const isNonCacheableSeoGeoPath = path => SEO_GEO_NON_CACHEABLE_PATHS.has(path)
+  || SEO_GEO_NON_CACHEABLE_PREFIXES.some(prefix => path.startsWith(prefix));
 const SESSION_DEPENDENCY_PATHS = new Set([
-  '/data/celestial-bodies.json',
-  '/space/planets/detail/mars.webp',
+  v2Path('/data/celestial-bodies.json'),
+  v2Path('/space/planets/detail/mars.webp'),
 ]);
 const isSessionDependency = url => SESSION_DEPENDENCY_PATHS.has(url.pathname);
 
@@ -71,19 +69,21 @@ self.addEventListener('activate', (e) => {
       const current = await caches.open(CACHE);
       // 기존 세션이 warm한 same-origin 앱 코드만 새 cache로 옮긴 뒤 옛 cache를 지운다.
       // 새 install이 넣은 index/manifest는 덮지 않고, 데이터·타일·외부 응답은 복사하지 않는다.
-      for (const key of keys.filter(candidate => LEGACY_CACHES.has(candidate))) {
+      for (const key of keys.filter(isOldV2Cache)) {
         const legacy = await caches.open(key);
         const requests = await legacy.keys();
         for (const request of requests) {
           const url = new URL(request.url);
-          if (url.origin !== self.location.origin
+          if (!isV2Url(url)
+            || isNonCacheableSeoGeoPath(url.pathname)
+            || (url.pathname.endsWith('.html') && (!SEO_GEO_EXACT_DOCUMENT_PATHS.has(url.pathname) || url.search || url.hash))
             || (!/\.(?:js|css|html|webmanifest)$/i.test(url.pathname) && !isSessionDependency(url))
             || await current.match(request)) continue;
           const response = await legacy.match(request);
           if (response) await current.put(request, response);
         }
       }
-      await Promise.all(keys.filter(key => key !== CACHE && LEGACY_CACHES.has(key))
+      await Promise.all(keys.filter(isOldV2Cache)
         .map(key => caches.delete(key)));
     })
       .then(() => self.clients.claim())
@@ -96,43 +96,26 @@ self.addEventListener('fetch', (e) => {
 
   let url;
   try { url = new URL(req.url); } catch { return; }
-  if (url.origin !== self.location.origin) return;   // CDN·NASA 타일·외부 API 는 통과
-  /* ⚠️ 이 워커의 범위가 사이트 루트라 다른 지구(/v2 Intelligence, /v3·/wonder 종이 지구, 개발 폴더)의 요청도 여기로 온다.
-     2026-09-07 실측: /v3 의 모듈 스크립트 fetch 가 한 번 실패하자 아래 폴백이 **v1 index.html** 을 돌려줘
-     "module script … MIME type text/html" 오류로 종이 지구가 0% 에서 멈췄다. 다른 지구는 손대지 않는다. */
-  const otherEarth = ['/v2','/v3','/Intelligence','/wonder','/v2-three','/v3-paper','/v3-kids','/v2-deploy'].some(p => url.pathname === p || url.pathname.toLowerCase().startsWith(p.toLowerCase() + '/'));
-  /* (2026-09-24 정정) 다른 지구도 **화면 이동(navigate)이 네트워크 오류로 실패할 때만** 오프라인 안내 화면을 준다.
-     안드로이드 앱(TWA) 안에서 v2 를 열다 망이 끊기면 Chrome 오류 화면(공룡)이 떴다(지시서 §3-2 오프라인 · §3-8-2).
-     ⚠️ 위 사고 기록은 그대로 유효하다 — 모듈·스타일·자료 요청은 여전히 손대지 않고, 화면 이동의 성공 응답도
-        캐시에 넣지 않는다(v2 앱 코드를 v1 캐시에 담지 않는다). 폴백은 스크립트가 아니라 문서에만 준다. */
-  if (otherEarth && req.mode === 'navigate') {
-    e.respondWith(fetch(req).catch(() => offlineResponse()));
-    return;
-  }
-  if (otherEarth) return;
-
-  /* (2026-09-24) 오프라인 안내 화면이 쓰는 로고 — 네트워크가 되면 늘 새로 받고, 끊겼을 때만 install 때 넣어 둔 것을 쓴다. */
-  if (OFFLINE_ASSETS.has(url.pathname) && req.mode !== 'navigate') {
-    e.respondWith(fetch(req).catch(() => caches.match(req, { ignoreSearch: true })));
-    return;
-  }
+  if (!isV2Url(url)) return;   // production root·공유 API·CDN·NASA 타일은 통과
+  if (isNonCacheableSeoGeoPath(url.pathname)) return;
 
   /* 천구는 content-hash라 오래 캐시해도 stale code가 되지 않는다. 오프라인에서 6K/4K를
      못 받으면 install 때 검증해 둔 2K로 내려 첫 지구의 검은 배경만 남는 일을 막는다. */
   if (req.destination === 'image'
       && url.pathname.includes('/space/skybox/earthus-milky-way/panorama-')) {
-    e.respondWith(fetch(req).catch(() => caches.match(SKY_FALLBACK)));
+    e.respondWith(fetch(req).catch(() => matchV2Cache(SKY_FALLBACK)));
     return;
   }
 
   // 앱 코드(화면·스크립트·스타일)만 다룬다. 데이터 JSON 등은 통과.
   const dest = req.destination;
-  const isAppCode = req.mode === 'navigate'
-    || dest === 'document' || dest === 'script' || dest === 'style';
+  const isDocument = req.mode === 'navigate' || dest === 'document';
+  if (isDocument && (!SEO_GEO_EXACT_DOCUMENT_PATHS.has(url.pathname) || url.search || url.hash)) return;
+  const isAppCode = isDocument || dest === 'script' || dest === 'style';
   if (!isAppCode && isSessionDependency(url)) {
     e.respondWith(
       fetch(req, { cache: 'no-cache' })
-        .catch(() => caches.match(req))
+        .catch(() => matchV2Cache(req))
         .then(response => response || new Response('', { status: 503, statusText: 'Session dependency unavailable' }))
     );
     return;
@@ -149,13 +132,10 @@ self.addEventListener('fetch', (e) => {
         caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
         return res;
       })
-      .catch(() => caches.match(req).then(
-        /* index.html 폴백은 화면 이동(navigate)에만. 스크립트·스타일에 HTML 을 주면 MIME 오류로 앱이 멈춘다. */
-        (r) => r || (req.mode === 'navigate' ? caches.match('./index.html', { ignoreSearch: true }) : undefined))
-        /* (2026-09-24) 그래도 없으면(캐시가 비었거나 지워짐) 빈 오류 대신 오프라인 안내 화면. 화면 이동에만.
-           ⚠️ v1 화면 이동은 위의 캐시된 문서가 먼저다 — AETHERUS 현장 세션 체크포인트(아래 message 처리기)가
-              그 문서로 세션을 되살린다. 오프라인 안내로 바꾸면 그 기능을 지운다. */
-        .then((r) => r || (req.mode === 'navigate' ? offlineResponse() : r)))
+      .catch(() => matchV2Cache(req).then(
+        (r) => r || ((url.pathname === V2_BASE || url.pathname === v2Path('/index.html'))
+          ? matchV2Cache('./index.html', { ignoreSearch: true })
+          : new Response('', { status: 503, statusText: 'Document unavailable offline' }))))
   );
 });
 
@@ -169,10 +149,15 @@ self.addEventListener('message', (e) => {
   const resources = [...new Set(Array.isArray(e.data.resources) ? e.data.resources : [])]
     .slice(0, 160)
     .map(value => {
-      try { return new URL(String(value), self.location.origin); } catch (_) { return null; }
+      try { return new URL(String(value), self.registration.scope); } catch (_) { return null; }
     })
-    .filter(url => url?.origin === self.location.origin
-      && (/\.(?:js|css|html|webmanifest)$/i.test(url.pathname) || isSessionDependency(url)));
+    .filter(url => {
+      if (!isV2Url(url) || isNonCacheableSeoGeoPath(url.pathname)) return false;
+      if (isSessionDependency(url) || /\.(?:js|css|webmanifest)$/i.test(url.pathname)) return true;
+      // Canonical documents have no user/query state in a session cache. A
+      // private callback or route query must never become a cache key.
+      return SEO_GEO_EXACT_DOCUMENT_PATHS.has(url.pathname) && !url.search && !url.hash;
+    });
 
   e.waitUntil((async () => {
     const cache = await caches.open(CACHE);
@@ -246,7 +231,7 @@ self.addEventListener('notificationclick', (e) => {
        누를 때마다 창이 늘어나면 사용자가 앱을 정리하다 알림을 끈다. */
     const list = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
     for (const c of list) {
-      if (c.url.includes(self.location.origin)) {
+      if (isV2Url(new URL(c.url))) {
         await c.focus();
         try { c.postMessage({ type: 'earthus:push-open', url }); } catch (_) { }
         return;
@@ -265,6 +250,7 @@ self.addEventListener('pushsubscriptionchange', (e) => {
        열려 있는 창에 알려 주고, 창이 없으면 다음 실행 때 화면이 다시 등록한다
        (push.js 가 켤 때마다 현재 구독을 서버와 맞춘다). */
     for (const c of list) {
+      if (!isV2Url(new URL(c.url))) continue;
       try { c.postMessage({ type: 'earthus:push-resubscribe' }); } catch (_) { }
     }
   })());

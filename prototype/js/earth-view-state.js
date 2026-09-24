@@ -6,6 +6,7 @@
 import { LAYER_DEFS } from './config.js';
 import { store } from './store.js';
 import { decodeEarthRoute, writeEarthRoute } from './earth-route-state.js';
+import { backStack } from './back-close.js';
 
 const EMPTY = Object.freeze({
   view: 'earth', layer: null, at: null, model: null, point: null,
@@ -78,10 +79,18 @@ export const earthViewState = {
       if (this._restoring || store.earthView.view !== 'evidence') return;
       this._transition({ ...store.earthView, view: 'data', point: null });
     });
-    window.addEventListener('popstate', () => {
+    window.addEventListener('popstate', (event) => {
+      /* (2026-09-24) 서랍·시트를 닫으려고 누른 뒤로(back-close.js)는 지구 장면을 되돌리지 않는다.
+         예전 그대로 restore(fromPop) 를 돌리면 시트 하나 닫으려다 레이어가 초기화되고 우주 장면에서 끌려 나왔다
+         (restore → sceneMgr.to('earth') + resetLayersToDefaults). 주소는 back-close 훅이 지금 상태로 다시 쓴다. */
+      if (backStack().consumed(event)) return;
       const route = decodeEarthRoute(location.search) || EMPTY;
+      /* (2026-09-24) 주소가 지금 상태와 같으면 되돌릴 것이 없다 — 같은 주소의 칸을 지날 때 장면을 흔들지 않는다. */
+      if (same(cleanState(route), cleanState(store.earthView))) return;
       this.restore(route, { history: false, fromPop: true });
     });
+    /* (2026-09-24) 뒤로로 서랍·시트를 닫은 뒤, 표식 칸 아래 칸의 주소가 열기 전 것이어도 지금 상태로 맞춘다. */
+    backStack().onConsumedPop(() => writeEarthRoute(store.earthView, 'replace'));
 
     const route = decodeEarthRoute(location.search);
     if (deps.foreignRouteActive) {
@@ -189,7 +198,14 @@ export const earthViewState = {
     if (same(state, store.earthView)) return state;
     /* 같은 단계 안에서 레이어·지점만 바뀌는 동안 방문기록을 수십 칸 만들지 않는다.
        Earth→Style→Data→Evidence처럼 의미 단계가 바뀔 때만 뒤로가기 한 칸을 만든다. */
-    const mode = store.earthView.view === state.view ? 'replace' : requestedMode;
+    let mode = store.earthView.view === state.view ? 'replace' : requestedMode;
+    /* (2026-09-24) 안드로이드 뒤로 단추(지시서 §3-8-1). Style 은 **서랍이 열린 상태**다 — 그 뒤로 칸은 이제
+       back-close.js 의 표식 칸 하나가 맡는다. 여기서도 칸을 쌓으면 서랍을 열고 ✕ 로 닫기만 해도 칸이 둘 남아
+       첫 화면에서 뒤로가 서랍을 다시 열었다(Earth→Style push, Style→Earth push).
+       · Style 로 들어가거나 Style 에서 나올 때는 칸을 쌓지 않는다.
+       · 서랍·시트가 열려 있거나 뒤로 때문에 닫는 중이면 칸을 쌓지 않는다 — 그 칸은 표식 칸 위에 쌓여
+         뒤로 한 번에 닫히지 않게 만든다. */
+    if (state.view === 'style' || store.earthView.view === 'style' || backStack().suppressPush()) mode = 'replace';
     return this._commit(state, mode, true);
   },
 
@@ -208,7 +224,9 @@ export const earthViewState = {
       this._deps.sourceNote?.setPoint?.(null, null);
       if (!options.keepMenu) this._deps.layerBar.closeMenus?.();   // 2단 갈아타기(keepMenu)는 메뉴를 둔다
       if (options.resetLayers) store.resetLayersToDefaults();
-      this._commit(EMPTY, store.earthView.view === 'earth' ? 'replace' : 'push', true);
+      /* (2026-09-24) Style(서랍)에서 Earth 로 나오는 것은 서랍을 닫는 것이다 — 칸을 쌓지 않는다(위 _transition 주석). */
+      const quiet = store.earthView.view === 'earth' || store.earthView.view === 'style' || backStack().suppressPush();
+      this._commit(EMPTY, quiet ? 'replace' : 'push', true);
     } finally {
       this._restoring = false;
     }

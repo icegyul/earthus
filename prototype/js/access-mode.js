@@ -89,6 +89,62 @@ export function salesAllowed({ mode, salesOpen } = {}) {
   return normalizeMonetizationMode(mode) === MONETIZATION_MODE.PAID && salesOpen === true;
 }
 
+/* ── 판매 개시 조건 (2026-09-24 추가 — docs/PAID-APP-LAUNCH-REVIEW-2026-09-24.md §1-5 · §4 · §00-4) ──
+   ⚠️ 예전 판매 스위치(billing.js · ui-subscribe.js)는 Open-Meteo·GVP 두 값만 봤다.
+      점검 보고서가 찾은 나머지 관문(기상예보업 등록 · Esri 인증 · Gemini 연령 조항 · 에코뱅크 · 지역 뉴스 RSS ·
+      v2 서버 등급 판정 · Play 결제)은 SALES_OPEN 하나만 켜면 그대로 지나갈 수 있었다.
+   ⚠️ 여기 목록이 **정본 하나**다. billing.js(결제 시작)와 ui-subscribe.js(결제 단추)가 같은 목록을 읽는다 —
+      두 곳에 따로 적으면 한쪽만 고쳐지는 날이 온다.
+   ⚠️ 값은 config.local.js 의 **PD 선언**이다. 이 코드는 아무것도 검증하지 않는다 — true 로 바꾸기 전에
+      reason 에 적은 일이 실제로 끝났는지 사람이 확인한다. 서버 쪽 최종 관문은 checkout 함수의 SALES_ENABLED 다.
+   ⚠️ 운영 config.local.js 에 값이 없으면(undefined) **막힌 것**으로 읽는다(=== true 만 통과). 오타도 막힌다.
+   ⚠️ 기상청 서면 질의는 조건에 넣지 않았다 — 2026-09-24 PD: 질의를 보내지 않는다(AGENTS.md). */
+export const SALES_PRECONDITIONS = Object.freeze([
+  Object.freeze({ key: 'WEATHER_BUSINESS_REGISTERED', ref: 'L1',
+    ko: '기상예보업 등록 — 기상산업진흥법 제6조(상근 기상예보사 1명). 등록 전 유료 예보·확률은 미등록 사업',
+    en: 'Weather forecasting business registration (Meteorological Industry Promotion Act art. 6)' }),
+  Object.freeze({ key: 'OPEN_METEO_COMMERCIAL_READY', ref: 'D1',
+    ko: 'Open-Meteo 상업 이용 — 유료 키(customer-api)·셀프호스팅 전환 또는 GFS·ECMWF 로 대체 완료. 무료 API 는 비상업 전용',
+    en: 'Open-Meteo commercial route (paid key, self-hosted, or replaced) — the free API is non-commercial' }),
+  Object.freeze({ key: 'ESRI_AUTH_TILES_READY', ref: 'D2',
+    ko: 'Esri 타일 인증 — ArcGIS Location Platform 키로 전환(또는 대체)하고 "Powered by Esri"·제공자 표기',
+    en: 'Esri tiles authenticated (ArcGIS Location Platform key) or replaced, with attribution' }),
+  Object.freeze({ key: 'GVP_COMMERCIAL_READY', ref: 'D6',
+    ko: '스미소니언 GVP — 상업 이용 서면 허가 또는 유료 화면에서 주간 화산 보고 제외',
+    en: 'Smithsonian GVP commercial permission, or weekly reports removed from paid screens' }),
+  Object.freeze({ key: 'GEMINI_AGE_CLAUSE_RESOLVED', ref: 'D4',
+    ko: 'Gemini 18세 조항 — 성인 확인 계정에만 열기 · 다른 LLM 경로 · 가입 연령 상향 중 하나를 적용(변호사 확인)',
+    en: 'Gemini under-18 clause resolved (adult-only, another LLM route, or raised sign-up age)' }),
+  Object.freeze({ key: 'ECOBANK_CLEARED', ref: 'D13',
+    ko: '국립생태원 에코뱅크 — 서면 확인(제3자 권리 포함) 또는 유료 앱에서 제외',
+    en: 'NIE EcoBank written clearance, or removed from the paid app' }),
+  Object.freeze({ key: 'NEWS_RSS_CLEARED', ref: 'D12',
+    ko: '지역 뉴스 RSS — 매체별 이용 조건 확인(RNZ "personal use only" 포함)',
+    en: 'Regional news RSS terms cleared per outlet (incl. RNZ personal-use-only)' }),
+  Object.freeze({ key: 'V2_SERVER_TIER_LIVE', ref: '§3-5-1',
+    ko: 'v2 등급 서버 판정 운영 — 지금 v2 는 브라우저 localStorage 등급을 믿는다',
+    en: 'Server-side v2 tier check live (v2 currently trusts client localStorage)' }),
+  Object.freeze({ key: 'PLAY_BILLING_LIVE', ref: 'P4',
+    ko: 'Google Play 결제 운영 — 선불형 상품 · 서버 영수증 검증 · 3일 안 확인(acknowledge) · 환불 시 권한 회수',
+    en: 'Google Play billing live (prepaid products, server receipt check, acknowledge within 3 days, revoke on refund)' }),
+]);
+
+/** 아직 true 가 아닌 판매 조건들. 빈 배열이면 조건은 모두 찼다.
+    ⚠️ config 가 없거나 값이 true 가 아니면 막힌 것으로 센다(fail-closed). */
+export function salesPreconditionsBlocking(config) {
+  const c = config && typeof config === 'object' ? config : {};
+  return SALES_PRECONDITIONS.filter(p => c[p.key] !== true);
+}
+
+/** 판매를 실제로 열어도 되는가 — salesAllowed(모드·SALES_OPEN) 와 조건 목록을 **둘 다** 본다.
+    { ready, salesOpen, blocking } — salesOpen 은 모드·스위치만 본 값(막힌 이유를 적을지 가를 때 쓴다). */
+export function salesReadiness({ mode, salesOpen, config } = {}) {
+  const open = salesAllowed({ mode, salesOpen });
+  const blocking = salesPreconditionsBlocking(config);
+  return Object.freeze({ ready: open && blocking.length === 0, salesOpen: open,
+    blocking: Object.freeze(blocking.map(p => p.key)) });
+}
+
 export function subscriptionUiAllowed({ mode, showSubscribe } = {}) {
   return normalizeMonetizationMode(mode) === MONETIZATION_MODE.PAID && showSubscribe === true;
 }

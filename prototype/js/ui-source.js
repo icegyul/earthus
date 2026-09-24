@@ -87,11 +87,16 @@ const SRC = {
               url: 'https://www.nco.ncep.noaa.gov/pmb/products/gfs/', every: 360 },
   tmax:     { ko: 'Open-Meteo — 내일 예보', en: 'Open-Meteo — tomorrow’s forecast', every: 60 },
   tmin:     { ko: 'Open-Meteo — 내일 예보', en: 'Open-Meteo — tomorrow’s forecast', every: 60 },
-  wind:     { ko: 'Open-Meteo (GFS/ECMWF)', en: 'Open-Meteo (GFS/ECMWF)', every: 60 },
+  /* (2026-09-24 정정) 동아시아 1° 보강판(wind/wind-ea.json · 등압선 pressure-ea.json)의 원천이 Open-Meteo → NOAA/NCEP GFS 0.5°(NOMADS)로 바뀐다
+     (aws/pressure-grid · docs/OPEN-METEO-REPLACEMENT-MAP-2026-09-24.md S1). 전지구 5° 판(wind-grid)은 아직 Open-Meteo 다 — 둘 다 적는다(sstanom 과 같은 꼴).
+     ⚠️ 이 줄은 pressure-grid Lambda 를 배포한 **뒤에** v1 과 함께 올린다. 먼저 올리면 아직 Open-Meteo 인 값을 NOAA 라고 적게 된다. */
+  wind:     { ko: '동아시아 확대: NOAA/NCEP GFS 0.5° (NOMADS) · 전지구: Open-Meteo (GFS/ECMWF)',
+              en: 'East Asia: NOAA/NCEP GFS 0.5° (NOMADS); global: Open-Meteo (GFS/ECMWF)', every: 60 },
   windfc:   { ko: 'Open-Meteo — 내일 예보', en: 'Open-Meteo — tomorrow’s forecast', every: 60 },
   fog:      { ko: 'Open-Meteo — 시정', en: 'Open-Meteo — visibility', every: 60 },
   drought:  { ko: 'Open-Meteo — 토양수분', en: 'Open-Meteo — soil moisture', every: 60 },
-  pressure: { ko: 'Open-Meteo — 해면기압', en: 'Open-Meteo — mean sea-level pressure', every: 60 },
+  pressure: { ko: '등압선·동아시아 확대: NOAA/NCEP GFS 0.5° (NOMADS) · 전지구: Open-Meteo — 해면기압',
+              en: 'Isobars & East Asia: NOAA/NCEP GFS 0.5° (NOMADS); global: Open-Meteo — mean sea-level pressure', every: 60 },
   rain:     { ko: 'Open-Meteo — 강수량(mm/h)', en: 'Open-Meteo — precipitation', every: 60 },
   pm25:     { ko: 'Copernicus CAMS (Open-Meteo 경유)', en: 'Copernicus CAMS via Open-Meteo', every: 60 },
   pm10:     { ko: 'Copernicus CAMS (Open-Meteo 경유)', en: 'Copernicus CAMS via Open-Meteo', every: 60 },

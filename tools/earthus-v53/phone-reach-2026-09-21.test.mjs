@@ -770,16 +770,49 @@ test('㉤③ 노치 기기를 눕히면 좌우 안전영역을 실제로 피한�
   }
 });
 
-test('㉤ 데스크톱·태블릿은 한 치도 안 건드린다 — 기본 규칙 그대로여야 한다', () => {
+/* (2026-09-24 정정 · 출시 전 UX Stream A) 이 시험은 '폰 규칙이 데스크톱·태블릿으로 새지 않는다'를 **옛 수 그대로**(메뉴 top 50% · 100vh − 96 ·
+   알약 84 · 독 12)로 잠갔다. 그런데 그 옛 수 자체가 넓은 화면의 결함이었다 — 리포트를 열면 메뉴 바닥이 출처 독 밑에 깔렸고
+   (1280×800 410×45 · 1110 재생 중 359×93), 태블릿은 독이 막대·알약과 겹쳤다(768×1024 82×54 · 44×13). 넓은 화면은 이제 제 자리표가 있다
+   (index.html :root '넓은 화면 아래 자리표' · '중간 폭 아래 자리표'). 그래서 뜻을 둘로 나눠 잠근다:
+     ① 폰 규칙이 새지 않는다 — 알약이 오른쪽에 붙지 않고, 폰 토큰(--nav-reserve)을 메뉴가 읽지 않는다.
+     ② 넓은 화면의 수가 **셈으로** 겹침 0 이다 — 메뉴 천장은 상단 도구줄(14 + 46) 아래, 바닥은 출처 독·알약 윗변 위.
+   독 높이 · 막대 높이 · 알약 높이는 main.js 가 재어 <html> 에 덮어쓰는 수다 — 여기서는 :root 기본값(79 · 40 · 64)으로 셈한다. */
+test('㉤ 데스크톱·태블릿 — 폰 규칙이 새지 않고, 넓은 화면 자리표가 셈으로 겹침 0 이다', () => {
   for (const s of SCREENS.filter((x) => !x.phone)) {
     const scope = scopeAt(s);
     const vars = rootVarsOf(scope);
     const mp = decl(scope, '#menu-panel');
-    assert.equal(px(prop(mp, 'top'), vars, s), s.vh / 2, `${s.n}: 메뉴 패널이 화면 한가운데를 떠났다`);
-    assert.equal(px(prop(mp, 'max-height'), vars, s), s.vh - 96, `${s.n}: 메뉴 패널 높이가 기본값이 아니다`);
-    assert.equal(px(prop(decl(scope, '#bottom-nav'), 'bottom'), vars, s), 84, `${s.n}: 알약이 기본 자리를 떠났다`);
-    assert.equal(px(prop(decl(scope, '#hud'), 'bottom'), vars, s), 12, `${s.n}: 출처 독이 기본 자리를 떠났다`);
+    // ① 폰 규칙이 새지 않는다
     assert.equal(has(decl(scope, '#bottom-nav'), 'right'), false, `${s.n}: 알약이 가운데를 떠나 오른쪽에 붙었다`);
+    assert.doesNotMatch(prop(mp, 'max-height'), /--nav-reserve/, `${s.n}: 메뉴가 폰 토큰(--nav-reserve)을 읽는다`);
+    // ② 메뉴 = 천장과 바닥 사이 남은 영역의 한가운데 · 높이는 그 영역
+    const topR = px('var(--menu-top-reserve)', vars, s), botR = px('var(--menu-bottom-reserve)', vars, s);
+    const top = px(prop(mp, 'top'), vars, s), maxH = px(prop(mp, 'max-height'), vars, s);
+    assert.equal(maxH, s.vh - topR - botR, `${s.n}: 메뉴 높이 ${maxH} 가 천장·바닥 사이 ${s.vh - topR - botR} 와 다르다`);
+    assert.equal(top, topR + maxH / 2, `${s.n}: 메뉴가 남은 영역의 한가운데(${topR + maxH / 2})를 떠났다`);
+    assert.ok(top - maxH / 2 >= 14 + 46 + 8, `${s.n}: 메뉴 천장 ${top - maxH / 2} 가 상단 도구줄(60) 아래 8 보다 위다`);
+    const menuBottom = top + maxH / 2;
+    // 출처 독 윗변
+    const hudBottom = px(prop(decl(scope, '#hud'), 'bottom'), vars, s);
+    const hudTop = s.vh - hudBottom - px('var(--hud-live-h)', vars, s);
+    assert.ok(menuBottom <= hudTop - 8, `${s.n}: 메뉴 바닥 ${menuBottom} 이 출처 독 윗변 ${hudTop} − 8 아래로 내려간다`);
+    // 알약 윗변 — 알약(가운데 · 폭 ≤ 340)이 메뉴(0~470) 아래로 들어오는 폭(< 1300)이면 그것도 피한다
+    const navBottom = px(prop(decl(scope, '#bottom-nav'), 'bottom'), vars, s);
+    const navTop = s.vh - navBottom - px('var(--nav-live-h)', vars, s);
+    if (s.vw < 1300) assert.ok(menuBottom <= navTop - 8, `${s.n}: 메뉴 바닥 ${menuBottom} 이 알약 윗변 ${navTop} − 8 아래로 내려간다`);
+    if (s.vw >= 1110) {
+      // 넓은 화면: 알약 84 · 독 12 는 그대로(아래 한 줄: 독 | 막대 | 범례) — 독 글은 최대 폭 막대의 왼쪽 끝 − 8 에서 끊긴다
+      assert.equal(navBottom, 84, `${s.n}: 알약이 기본 자리를 떠났다`);
+      assert.equal(hudBottom, 12, `${s.n}: 출처 독이 기본 자리를 떠났다`);
+      const tsMax = px('var(--ts-max)', vars, s);
+      const hudRight = 14 + px(prop(decl(scope, '#srcNote'), 'max-width'), vars, s) + 26;
+      assert.ok(hudRight <= s.vw / 2 - tsMax / 2 - 8, `${s.n}: 출처 독 오른쪽 ${hudRight} 이 막대(최대 ${tsMax}) 왼쪽 − 8 을 넘는다`);
+      assert.ok(s.vw / 2 + tsMax / 2 <= s.vw - 14 - 340 - 8, `${s.n}: 최대 폭 막대가 오른쪽 아래 범례(340)에 닿는다`);
+    } else {
+      // 중간 폭: 한 기둥 — 막대 → 독(막대 위 6) → 알약(독 위 6)
+      assert.equal(hudBottom, 12 + px('var(--ts-live-h)', vars, s) + 6, `${s.n}: 출처 독이 타임라인 위 6 에 서지 않는다`);
+      assert.equal(navBottom, hudBottom + px('var(--hud-live-h)', vars, s) + 6, `${s.n}: 알약이 출처 독 위 6 에 서지 않는다`);
+    }
   }
 });
 
@@ -792,14 +825,23 @@ test('㉤ 눕힌 화면에는 눕힌 화면의 수를 준다 — 세로 수를 �
   // 세로 규칙의 비켜서는 높이(--nav-reserve)를 그대로 썼다면 얼마였나 — 그 값보다 커야 한다.
   const portrait = rootVarsOf(scopeAt({ vw: 375, vh: 812, pointer: 'coarse' }));
   const naive = env.vh - px('var(--nav-reserve)', portrait, env) - 48;
-  assert.ok(maxH > naive, `눕힌 메뉴 높이 ${maxH} 가 세로 수를 그대로 쓴 ${naive} 보다 크지 않다 — 가로에 맞는 수를 안 줬다`);
+  /* (2026-09-24 정정 · Stream A) 눕힌 메뉴 천장이 48 → 68 로 내려갔다(상단 도구줄을 덮었다). 견주는 '세로 수를 그대로 쓴 높이'도 같은 천장으로 셈한다 —
+     뜻('가로에는 가로의 비켜서는 높이 147 을 줬나')은 그대로다: 375 − 154 − 68 = 153 < 375 − 147 − 68 = 160. */
+  const naiveSameCeil = env.vh - px('var(--nav-reserve)', portrait, env) - 68;
+  assert.ok(maxH > naiveSameCeil, `눕힌 메뉴 높이 ${maxH} 가 세로 수를 그대로 쓴 ${naiveSameCeil}(천장 68) 보다 크지 않다 — 가로에 맞는 수를 안 줬다`);
+  // (2026-09-24 정정) 아래 줄은 천장 48 일 때의 견줌이었다 — 위 naiveSameCeil 견줌으로 옮겼다(천장이 서로 다르면 뜻 없는 비교다).
+  // assert.ok(maxH > naive, …)  — 옛 줄
   // 셈의 전제를 적어 둔다: 세로 수를 그대로 쓰면 107px 이었다(보고서의 수).
   /* (2026-09-23 정정 · B5) 107 은 세로 알약이 158 에 서던 때의 수다. B5 자리표 뒤로 세로 수는 375 − 154 − 48 = 173 이다.
      이 시험의 뜻('가로에는 가로의 수를 줬나')은 그대로 잠근다 — 가로 수가 한 치도 안 바뀌었는지까지:
      가로 --nav-reserve = max(60+54, 60+79) + 8 = 147 · 메뉴 높이 375 − 147 − 48 = 180. 세로 자리표가 가로로 새면 여기서 걸린다. */
   assert.equal(Math.round(naive), 173, `세로 수를 그대로 쓴 높이가 ${naive} — B5 셈 173 과 다르다(전제가 바뀌었다)`);
   assert.equal(px('var(--nav-reserve)', vars, env), 147, '눕힌 폰의 비켜서는 높이가 바뀌었다 — B5 는 세로만 바꾼다');
-  assert.equal(maxH, 180, `눕힌 메뉴 높이 ${maxH} — 예전 180 과 다르다`);
+  /* (2026-09-24 정정 · Stream A 실측) 180 은 천장 48 일 때의 수다. 그 천장이 상단 도구줄(14~60)을 12px 덮어 ⌕·⤴ 표적이 33 으로 줄었다 —
+     눕힌 폰 덩어리가 천장을 68(도구줄 아래 8)로 내렸다: 375 − 147 − 68 = 160. 세로 수가 새지 않았는지(위 173 · 아래 147)는 그대로 잠근다. */
+  assert.equal(maxH, 160, `눕힌 메뉴 높이 ${maxH} — 천장 68 셈 160 과 다르다`);
+  const mpTop = px(prop(decl(scope, '#menu-panel'), 'top'), vars, env);
+  assert.ok(mpTop - maxH / 2 >= 14 + 46 + 8, `눕힌 메뉴 천장 ${mpTop - maxH / 2} 가 상단 도구줄(60) 아래 8 보다 위다`);
   // 본문이 줄어들 수 있어야 비로소 스크롤한다 — 가로에서는 잘리는 높이가 늘 모자라다.
   const body = decl(scope, '.mp-body');
   assert.equal(px(prop(body, 'min-height'), vars, env), 0);

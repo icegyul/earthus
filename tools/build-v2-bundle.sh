@@ -48,6 +48,9 @@ cp "$ROOT/prototype/js/access-mode.js" "$OUT/js/shared/"
 # (2026-09-24 정정) back-close.js 는 이제 ./app-context.js?v=2 를 import 한다(웹 탭 무동작 판정, PD 결정). 둘이 같은 shared/ 에
 #   있어야 그 상대 경로가 풀리고, v2 main.js 의 ./shared/app-context.js?v=2 와 같은 주소(한 벌)가 된다.
 cp "$ROOT/prototype/js/app-context.js" "$ROOT/prototype/js/back-close.js" "$OUT/js/shared/"
+# (2026-09-24, Phase 2) v2 잠금 카드 → v1 구독 화면 주소 규칙(subscribe-route.js). ./access-mode.js 를 import 하므로
+#   access-mode.js 와 같은 shared/ 에 둔다 — v2 의 ./shared/access-mode.js 와 같은 주소(한 벌)가 된다.
+cp "$ROOT/prototype/js/subscribe-route.js" "$OUT/js/shared/"
 # EARTHUS 아이콘 시스템 — v1·v2 공용. 표(earthus-icons.js)도 그림(assets/earthus-icons/)도 한 벌뿐이다.
 # ⚠️ shared/ 가 아니라 js/ 바로 아래에 둔다. 모듈이 그림 위치를 import.meta.url 기준
 #    '../assets/earthus-icons/' 로 풀기 때문이다 — js/ 에 있어야 그게 번들 루트의 assets/ 를
@@ -69,6 +72,7 @@ while IFS= read -r -d '' f; do
     -e 's#\.\./\.\./js/access-mode\.js#./shared/access-mode.js#g' \
     -e 's#\.\./\.\./js/app-context\.js#./shared/app-context.js#g' \
     -e 's#\.\./\.\./js/back-close\.js#./shared/back-close.js#g' \
+    -e 's#\.\./\.\./js/subscribe-route\.js#./shared/subscribe-route.js#g' \
     -e 's#\.\./\.\./js/earthus-icons\.js#./earthus-icons.js#g' \
     -e 's#\.\./v2/assets/#./assets/#g' \
     -e "s#'\.\./data/#'./data/#g" \

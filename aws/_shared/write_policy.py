@@ -80,6 +80,9 @@ APP_WRITERS = {
     "aws/tourism-flow/handler.py": (GENERATED, ("app/tourism/",)),
     "aws/tourism-flow/kto_collector.py": (GENERATED, ("app/tourism/kto/",)),
     "aws/tourism-flow/kto_details.py": (GENERATED, ("app/tourism/kto/details/",)),
+    # (2026-09-24) v1 '명소' OSM 정리본 — Overpass 응답을 칸 파일로 만든다. 저장소 파일이 아니다.
+    #   /tourism/* 가 오하이오 app/tourism/ 을 보므로(aws/_shared/app-origin.sh APP_KEEP_OHIO) 여기 쓴다.
+    "aws/travel-poi/handler.py": (GENERATED, ("app/tourism/poi/",)),
     "aws/current-earth-snow-ice/index.mjs":
         (GENERATED, ("app/v2/data/current-earth/",)),
     # API 호출 결과를 만들어 올린다. 작업 트리 파일이 아니다

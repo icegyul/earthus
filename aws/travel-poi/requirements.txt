@@ -1,0 +1,2 @@
+# boto3는 Lambda 런타임 제공. 외부 의존성 없음(urllib 만 쓴다).
+# ⚠️ 이 파일이 없으면 deploy-python.sh 가 h5py·numpy·Pillow 30MB 를 기본으로 끼워 넣는다. 지우지 말 것.

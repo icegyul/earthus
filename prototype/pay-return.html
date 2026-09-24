@@ -102,6 +102,15 @@ if (fail) {
           ? '이 주문은 이미 반영되어 있습니다. 중복 청구되지 않았습니다.'
           : '이용권이 계정에 적용되었습니다.'],
         [['주문번호', orderId], ...(ends ? [['이용 기간', `${ends}까지`]] : [])]);
+      /* (2026-09-24, Phase 2 · 지시서 §3-5-2) v2 잠금 카드에서 왔으면 '돌아가기'가 그 v2 화면 그대로를 가리킨다.
+         구독 화면(ui-subscribe open)이 같은 탭 sessionStorage 에 적어 둔 경로 — 같은 출처 경로만 받는다(safeBackPath). */
+      try {
+        const { safeBackPath } = await import('./js/subscribe-route.js');
+        const back = safeBackPath(sessionStorage.getItem('earthus.subscribeBack'));
+        sessionStorage.removeItem('earthus.subscribeBack');
+        const a = c.querySelector('a.btn');
+        if (back && a) { a.setAttribute('href', back); a.textContent = '보던 화면으로 돌아가기'; }
+      } catch (_) { /* 돌아갈 곳을 모르면 지구 첫 화면 — 예전과 같다 */ }
     } catch (e) {
       const code = e.message || 'UNKNOWN';
       if (code === 'NOT_SIGNED_IN') {

@@ -144,7 +144,10 @@ export const fxTimeline = {
     /* 자료를 기다리는 동안 태풍 레이어를 끄거나 다른 시각으로 옮겼다면 이 적용은 폐기한다.
        그렇지 않으면 hide()가 실황으로 닫은 뒤 늦게 도착한 예보가 chip을 다시 켠다. */
     if (setToken !== this._setToken) return;
-    const st = d?.steps?.[this._i];
+    /* (2026-09-24 정정) 칸 번호로 steps[i] 를 집지 않는다 — 스텝의 h(예보 시간)로 찾는다.
+       원천이 NOAA GFS(NOMADS)로 바뀐 뒤 fx-grid 는 받지 못한 스텝을 **빼고** 쓴다(stepsMissing).
+       칸 번호로 집으면 +24h 가 빠진 날 '+24시간' 칸에 +30h 격자가 조용히 그려진다. 없으면 아래 else 로 간다. */
+    const st = d?.steps?.find(s => s && s.h === this._i * STEP_H) || null;
     if (st) {
       isobars.setOverride(st, d);
       windField.override = { lat0: d.lat0, lon0: d.lon0, res: d.res,
@@ -156,9 +159,12 @@ export const fxTimeline = {
     }
     cyclones.setFxTime(this._i * STEP_H);
     imagery.setFxDim(true);
+    /* (2026-09-24 정정) 모델 이름을 박지 않는다 — 옛 문구 "모델(GFS·ECMWF)" 은 Open-Meteo 시절 값이었다.
+       fx-ea.json 이 NOAA GFS 로 바뀌면 문서에 model(gfs_0p50) 이 실린다. 없으면(옛 파일) 옛 문구 그대로. */
+    const mdl = d?.model ? 'NOAA GFS' : 'GFS·ECMWF';
     this._chip.textContent = ko
-      ? `예보 보기 ${this._label(this._i)} — 모델(GFS·ECMWF)과 기관 통보문 값 · 실황 아님`
-      : `Forecast view ${this._label(this._i)} — model + agency values, not observation`;
+      ? `예보 보기 ${this._label(this._i)} — 모델(${mdl})과 기관 통보문 값 · 실황 아님`
+      : `Forecast view ${this._label(this._i)} — model (${mdl}) + agency values, not observation`;
     this._chip.classList.add('on');
     power.animate(500);
   },

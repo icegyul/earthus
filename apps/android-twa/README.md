@@ -2,6 +2,7 @@
 
 > 2026-09-24 · 지시서 [`docs/APP-ANDROID-CHROME-NEWTAB-DIRECTIVE-2026-09-24.md`](../../docs/APP-ANDROID-CHROME-NEWTAB-DIRECTIVE-2026-09-24.md) §3-1·§3-2·§3-6·§3-7 · Phase 1 개발 몫.
 > PD 결정(2026-09-24): 개인사업자 · 앱 이름 `EARTHUS` · 패키지 `net.earthus.app` · 알림 포함 · 위치는 '내 위치'를 누를 때만 · 위젯 없음 · **Play 결제(Phase 2)는 구독료 결정 뒤로 보류.**
+> (2026-09-24 정정) PD 결정 — 2027-01-01 유료 시작, 무료 앱 + Play 선불형 기간 이용권. playBilling 을 켰다(가격은 Console 상품이 갖는다 — 앱은 가격을 모른다). 판매 스위치는 여전히 닫혀 있다.
 
 ## 화면에서 무엇이 보이나
 
@@ -44,7 +45,9 @@
 | App Links | `https://earthus.net/*`, 단 `/admin.html`·`/studio.html`·`/legal/*` 제외 | 매니페스트 제외(`uri-relative-filter-group`)는 **Android 15(API 35)+ 에서만** 된다. 14 이하에서는 세 경로도 앱으로 오므로 `LauncherActivity.launchTwa()` 가 브라우저 Custom Tab(주소창 있음)으로 돌려 연다. ⚠️ 14 이하에서는 링크를 누를 때 '이 앱으로 열기'가 먼저 잡히므로 한 번 앱을 거쳐 간다(실기기 확인 필요) |
 | targetSdk / compileSdk | 36 | 2026-08-31 부터 필수 |
 | minSdk | 21 | Bubblewrap 기본값 그대로. **D21(최소 버전·WebGL 필터) 미결** — 실기기 결과로 PD 가 정한다 |
+|  | (2026-09-24 정정) **23** | Play 결제 라이브러리 `billing:1.2.0` 이 minSdk 23 을 요구해 21 로는 빌드가 멈췄다(manifest merger 실측). `overrideLibrary` 로 낮추지 않았다(Android 5.x 런타임 실패 위험). 23 보다 올릴지는 여전히 D21 |
 | Play 결제 | **없음** | Phase 2 보류. `twa-manifest.json` `_todo_phase2_playBilling`·`app/build.gradle`·`DelegationService.java` 에 TODO 자리 |
+|  | (2026-09-24 정정) **켜짐** | PD 결정(2027-01-01 유료 · 무료 앱 + Play 선불형 기간 이용권)으로 `features.playBilling` 을 켜고 다시 만들었다 — `billing:1.2.0`(PBL 8+)·`PaymentActivity`·`PaymentService`·`DigitalGoodsRequestHandler`. 판매는 웹 `SALES_OPEN`·서버 `SALES_ENABLED` 가 계속 닫는다. 웹 쪽: `prototype/js/play-billing.js`·`billing.js`, 서버: `prototype/supabase/functions/play-verify`·`play-rtdn` |
 | 위젯 | 없음 | D8 |
 
 ## 준비 (한 번)
@@ -141,6 +144,10 @@ node --test apps\android-twa\tools\make-assetlinks.test.mjs
    ```
    그리고 2번의 `aws s3 cp` · 무효화 · `curl` 을 다시.
 5. (Phase 2, 구독료 결정 뒤) `twa-manifest.json` 에 `"playBilling": {"enabled": true}` → 다시 만들기 → 빌드.
+   (2026-09-24 정정) 켜서 다시 만들었다. PD 몫은 **업로드 키로 서명한 AAB 를 다시 올리는 것**과 Play Console 상품 8개 등록이다 —
+   상품 구조: 구독 상품 8개(`earthus.pro.monthly`·`.yearly`·`earthus.intelligence.monthly`·`.yearly` + 각 `.founding`),
+   상품마다 **선불형(prepaid) 기본 요금제 하나, 오퍼 없음**(결제 라이브러리가 첫 오퍼를 고르기 때문 — `play-billing-core.js` 머리 주석).
+   `.founding` 가격 = 같은 상품 정가의 정확히 50%(약관 제8조 제7항).
 
 ## 이 앱이 스스로 하지 않는 것 (다른 스트림·PD 몫)
 

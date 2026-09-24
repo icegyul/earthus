@@ -55,7 +55,7 @@ android {
     namespace "net.earthus.app"
     defaultConfig {
         applicationId "net.earthus.app"
-        minSdkVersion 21
+        minSdkVersion 23
         targetSdkVersion 36
         versionCode 1
         versionName "1.0.0"
@@ -230,13 +230,15 @@ repositories {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    // TODO(Phase 2 결제 — 구독료 결정 뒤, 2026-09-24 PD 보류): Play 결제는 twa-manifest.json 의
-    //   features.playBilling 을 켜고 tools/generate-project.mjs 로 다시 만든다. 그러면 여기에
-    //   'com.google.androidbrowserhelper:billing:1.2.0'(billingclient 8.3.0, PBL 8+ 충족)이 붙는다. 손으로 넣지 말 것.
+    // Play 결제(Phase 2, 2026-09-24 PD 결정 — 선불형 기간 이용권): twa-manifest.json 의 features.playBilling 으로
+    //   Bubblewrap 이 아래에 'com.google.androidbrowserhelper:billing:1.2.0'(billingclient 8.3.0, PBL 8+ 충족)을 붙였다. 손으로 고치지 말 것.
+    //   (2026-09-24 정정) 예전 'TODO(Phase 2 결제 — 구독료 결정 뒤, PD 보류)' 문구는 이 생성으로 풀렸다.
     // 앱 안 표식 규칙(EntryMarker) 단위 시험
     testImplementation 'junit:junit:4.13.2'
     
         implementation 'com.google.androidbrowserhelper:locationdelegation:1.1.2'
+    
+        implementation 'com.google.androidbrowserhelper:billing:1.2.0'
     
         implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.6.2'
     

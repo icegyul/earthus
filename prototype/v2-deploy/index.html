@@ -66,6 +66,20 @@
        <style> 끝 '폰 세로 아래 자리표' 의 :root 가 같은 이름을 다시 정한다 — 타임라인 → 출처 줄 → 알약 → 시트를 한 사슬로 셈한다.
        --hud-h 79('2줄일 때 실측')는 이미 틀려 있었다: 360 폭 영어에서 #hud 는 89 였다(B5 제안서 §0). 세로에서는 높이를 셈으로 고정한다. */
     --grip-h: 24px;                                /* 바텀시트 손잡이의 보이는 띠(표적은 --tap) — 폰 두 방향 공통 */
+    /* ---------- 넓은 화면 아래 자리표 (2026-09-24 · 출시 전 UX Stream A) ----------
+       무엇이 잘못돼 있었나(1110~1920 실측): ① 리포트·탐색을 열면 메뉴 패널(화면 한가운데 · 100vh − 96) 바닥이 좌하단 출처 독(#hud · z7) 밑에 깔렸다
+       (1280×800 410×45 · 1110 재생 중 359×93) — 위로는 상단 도구줄(#panel · 14~60)과 12px, 1110~1253 폭에서는 알약과 72×64 겹쳤다.
+       ② 1110~1279 폭에서 출처 독(폭 30vw)이 가운데 타임라인과 가로로 겹쳤다(1110 19×40 · 재생 중 고지 줄이 서면 57×56).
+       자리의 주인을 여기 둔다. --hud-live-h · --ts-live-h 는 main.js 가 실제 높이를 재어 <html> 에 덮어쓴다(이 값은 재기 전 기본값이다).
+       세로 폰·눕힌 폰은 아래 제 덩어리가 제 수를 쓴다 — 이 토큰들을 읽지 않는다. */
+    --hud-live-h: 79px;                            /* 출처 독의 실제 높이(main.js 가 잰다 · 기본은 위 --hud-h 와 같은 2줄 실측) */
+    --ts-live-h: 40px;                             /* 타임라인의 실제 높이(main.js · 예보 고지 줄이 서면 56) */
+    --menu-top-reserve: 68px;                      /* 상단 도구줄(#panel 14 + 46 = 60) 아래 8 — 메뉴 패널 천장 */
+    --nav-live-h: 64px;                            /* 넓은 화면 알약의 실제 높이(main.js 가 잰다 · 기본은 실측 64) */
+    --desk-nav-top: calc(84px + var(--nav-live-h) + 8px);   /* 넓은 화면 알약 윗변 = bottom 84 + 높이 + 8 (우측 패널 #intel bottom 156 과 같은 수) */
+    /* 메뉴 패널 바닥 = 출처 독 윗변 − 8. 알약이 패널 아래로 들어오는 폭(< 1300)에서는 알약 윗변도 같이 피한다 — 둘 중 높은 쪽. */
+    --menu-bottom-reserve: max(calc(12px + var(--hud-live-h) + 8px), var(--desk-nav-top));
+    --ts-max: calc(100vw - 24px);                  /* 타임라인 최대 폭 — 넓은 화면 덩어리가 좁힌다 */
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   /* 모바일: 창이 밀리지 않게. overscroll-behavior가 당겨서 새로고침·고무줄 튕김을 막는다 */
@@ -311,7 +325,9 @@
      ⚠️ 1110 아래는 뺀다: 눕힌 폰(812×375)은 독과 알약을 같은 줄에 세우고 --hud-h 셈이 9px 로 잰 값이다(위 '세로로만 건다' 주석과
         같은 사고 유형). 태블릿(768×1024)은 **이미** 독이 타임스트립(81×54)·알약(43×13)과 겹쳐 있다(전 실측 · 이번 변경 전부터) —
         글을 키우면 독이 위로 자라 알약과의 겹침이 커진다. 태블릿 자리표를 먼저 고친 뒤에 올린다(남은 일).
-     세로 폰(≤ 720)은 이 규칙 밖이다 — 위 10px · 아래 '폰 세로 아래 자리표'의 10.5/10 그대로. */
+     세로 폰(≤ 720)은 이 규칙 밖이다 — 위 10px · 아래 '폰 세로 아래 자리표'의 10.5/10 그대로.
+     (2026-09-24 정정 · Stream A) 위 '태블릿 자리표를 먼저 고친 뒤에 올린다(남은 일)'를 했다 — '중간 폭 아래 자리표'(#ts-notice 뒤)가 독을 막대 위로 올리고 11px 로 올린다.
+       넓은 화면의 30vw 폭 상한도 이제 그 옆 '넓은 화면 아래 한 줄' 덩어리가 막대 최대 폭으로 다시 셈한다. */
   @media (min-width: 1110px) {
     #srcNote { font-size: 11px; }
   }
@@ -450,6 +466,12 @@
     position: fixed; left: 0; top: 50%; z-index: 5; width: min(470px, calc(100vw - 46px));
     transform: translateY(-50%) translateX(-102%);
     max-height: calc(100vh - 96px); display: flex; flex-direction: column;
+    /* (2026-09-24 정정 · Stream A) 위 top:50% · 100vh − 96 은 넓은 화면에서 출처 독·알약·상단 도구줄을 몰랐다(:root '넓은 화면 아래 자리표').
+       천장(--menu-top-reserve)과 바닥(--menu-bottom-reserve) 사이 남은 영역의 한가운데에 세우고 높이도 그 영역으로 자른다 —
+       바닥 = top + 높이/2 ≤ 100dvh − 바닥 여유 가 셈으로 선다(폰 ㉠ 과 같은 셈). 짧은 메뉴는 여전히 가운데에 뜬다.
+       폰(세로·눕힌)은 아래 폰 덩어리가 top·max-height 를 다시 적는다 — 그 셈은 그대로다. */
+    top: calc(var(--menu-top-reserve) + (100dvh - var(--menu-top-reserve) - var(--menu-bottom-reserve)) / 2);
+    max-height: calc(100dvh - var(--menu-top-reserve) - var(--menu-bottom-reserve));
     background: rgba(10,14,20,0.78); backdrop-filter: blur(26px);
     border: 1px solid var(--panel-line); border-left: 0; border-radius: 0 14px 14px 0;
     transition: transform 0.42s cubic-bezier(0.22,1,0.36,1);
@@ -898,6 +920,58 @@
      width 0 + min-width 100% — 폭 셈에는 0 으로 들어가고(막대는 조작 줄 폭 그대로) 그려질 때는 그 폭을 다 쓴다. */
   #ts-notice { flex: 1 0 100%; width: 0; min-width: 100%; order: 9; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #ts-notice[hidden] { display: none; }
+  /* (2026-09-24 · Stream A) 넓은 화면(≥ 1110 — 범례가 오른쪽 아래 구석에 서는 폭)의 아래 한 줄: 출처 독 | 타임라인 | 범례.
+     (2026-09-24 정정) 이 덩어리는 기본 #timestrip 규칙 **뒤**에 둔다 — 앞에 두면 같은 특정도의 기본 max-width(100vw − 24)가 이겨 최대 폭이 안 걸린다(첫 실측).
+     무엇이 잘못돼 있었나: 위 'STEP 55 — 시간 막대 앞에서 끊는다'의 30vw 는 1280 에서 막대 폭이 402 일 때만 맞았다.
+       1110 에서는 독 오른쪽 373 > 막대 왼쪽 354(19×40), 5일 재생 중에는 막대 글(T+11:00 · 구름 예보)이 길어져 막대가 478 로 넓어지며
+       1280 에서도 23×56 겹쳤다. 막대가 넓어지는 만큼 범례(오른쪽 354)와도 닿는다(1110 재생 중).
+     그래서 막대에 **최대 폭**(--ts-max = 두 구석 상자 사이 · 460 상한)을 주고, 출처 글은 그 최대 폭 막대의 왼쪽 끝 − 8 에서 끊는다
+       (독 = 왼쪽 14 + 글 + 안쪽 여백 24 + 테두리 2 → 글 ≤ 50vw − --ts-max/2 − 8 − 40). 막대가 좁아져야 하면 슬라이더가 먼저 준다(최소 90).
+       시간 글은 한 줄로 두고 넘치면 말줄임 — 전문은 막대의 title(main.js timeNote().full)에 있다.
+     ⚠️ 폭이 줄면 출처 글은 줄 수가 늘어 독이 위로 자란다 — 메뉴 패널 바닥은 main.js 가 잰 --hud-live-h 로 따라 오른다(:root 자리표).
+     ⚠️ information-access.css 가 #ts-label 을 white-space:normal 로 덮는다(나중에 붙는 파일) — 여기서는 #timestrip #ts-label 로 이긴다. */
+  @media (min-width: 1110px) {
+    :root { --ts-max: min(460px, calc(100vw - 724px)); }
+    /* (2026-09-24 정정 · 첫 실측) flex 로 두면 고지 줄 때문에 켠 flex-wrap(.fc-on) 이 슬라이더를 줄이지 않고 시간 글을 **둘째 줄로 넘겨**
+       막대가 76 으로 자랐다(1110 영어 재생 중 · 알약과 342×4). 격자로 칸을 고정한다: 지금 · ▶ · 슬라이더(90~220) · 시간 글(다 보인다 — 슬라이더가 먼저 준다) / 고지 줄(한 줄 전체).
+       막대 폭은 예전처럼 내용이 정하고(가운데 정렬 그대로) --ts-max 에서 멈춘다 — 그 때 슬라이더가 먼저 준다. */
+    /* (2026-09-24 정정 · Stream A 반박 검토 실측) 시간 글 칸 minmax(min-content, max-content) 는 nowrap 글에서 최소 = 최대라 **줄지 못했다** —
+       구름 '정적'(또는 관측 · 1시간 안)으로 막대를 끌면 글이 'T−1일 0h · ⚠ 구름은 관측값 (이 시각 아님)'(13px · 243) 이 되어
+       1110 에서 막대(362~748) 밖 805 까지 삐져나가 오른쪽 아래 범례(756~)와 49 겹쳤다(한·영 · 1180 영어도 막대 밖 2). 위 '넘치면 말줄임'이 실제로 걸리게 한다:
+       슬라이더 칸을 minmax(90px, 1fr) 로 — 격자는 유연 칸(fr)을 맨 나중에 채우므로 시간 글 칸(0 ~ max-content)이 먼저 제 폭까지 자라고,
+       남는 폭만 슬라이더가 가진다(슬라이더 자체 폭 220 상한은 input 의 width 220 · max-width 100%). 모자라면 슬라이더가 90 까지 먼저 줄고, 그다음 시간 글이 말줄임 — 전문은 막대의 title.
+       ⚠️ 시간 글 칸을 minmax(0, max-content) + 슬라이더 minmax(90px, 220px) 로 두면 격자가 남는 폭을 두 칸에 **똑같이** 나눠 짧은 글('T−1일 0h · 구름 예보')까지 잘린다(셈 85 < 119). */
+    #timestrip { max-width: var(--ts-max); display: grid; grid-template-columns: auto auto minmax(90px, 1fr) minmax(0, max-content); column-gap: 10px; row-gap: 3px; align-items: center; }
+    #timestrip input[type="range"] { width: 220px; max-width: 100%; min-width: 0; }
+    #timestrip #ts-label { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    /* 고지 줄(기상법 §17 — '기상청 예보 아님')은 말줄임으로 자르지 않는다 — 막대가 좁아진 폭에서 영어 문장이 넘치면 한 줄 더 접힌다. */
+    #ts-notice { grid-column: 1 / -1; white-space: normal; overflow: visible; }
+    #srcNote { max-width: min(30vw, 400px, calc(50vw - var(--ts-max) / 2 - 48px)); }
+  }
+  /* 알약(가운데 · 폭 ≈ 314~340)이 메뉴 패널(왼쪽 0~470) 아래로 들어오지 않는 폭 — 메뉴 바닥은 출처 독만 피한다. */
+  @media (min-width: 1300px) {
+    :root { --menu-bottom-reserve: calc(12px + var(--hud-live-h) + 8px); }
+  }
+  /* (2026-09-24 · Stream A) 중간 폭(721~1109 · 폰이 아닌 화면 — 태블릿 768×1024 · 1024×768 · 좁힌 노트북 창) 아래 자리표.
+     무엇이 잘못돼 있었나(768×1024 실측): 이 폭은 범례가 위로 올라가 아래 줄이 출처 독 | 타임라인 두 칸인데, 30vw 출처 독이 가운데 막대 앞에서 못 끊겨
+       독 × 막대 82×54 · 독 × 알약 44×13(재생 중 78×76 · 44×52 · 막대 × 알약 314×4)이 겹쳤다 — '태블릿 자리표를 먼저 고친 뒤'(위 11px 주석의 남은 일).
+       가로로는 셋(독 · 막대 · 알약)이 들어갈 폭이 없다. 그래서 세로 폰처럼 **한 기둥**으로 쌓는다 — 수는 main.js 가 잰 실제 높이다:
+         타임라인 bottom 12 (그대로)  →  출처 독 bottom 12 + 막대 + 6  →  알약 bottom 독 윗변 + 6  →  우측 패널·메뉴 바닥 = 알약 윗변 + 8
+       출처 글은 막대 위라 가로로 비킬 필요가 없다 — 폭 min(62vw, 520) · 11px(넓은 화면과 같은 크기).
+       우측 패널(#intel)은 알약이 오른 만큼 오르고, 위로는 범례(top 66 · 높이 ≤ 132) 아래 8 에서 멈춘다 — 예전에는 범례를 덮었다.
+     ⚠️ 눕힌 폰(높이 ≤ 520 · 터치)은 이 덩어리 밖이다 — 제 덩어리('눕힌 폰')가 독·알약을 같은 줄에 세운다. 마우스 창은 높이와 무관하게 걸린다. */
+  @media (min-width: 721px) and (max-width: 1109px) and (pointer: fine), (min-width: 721px) and (max-width: 1109px) and (min-height: 521px) {
+    :root {
+      --mid-hud-lift: calc(12px + var(--ts-live-h) + 6px);
+      --mid-nav-lift: calc(var(--mid-hud-lift) + var(--hud-live-h) + 6px);
+      --desk-nav-top: calc(var(--mid-nav-lift) + var(--nav-live-h) + 8px);
+    }
+    #hud { bottom: var(--mid-hud-lift); }
+    #srcNote { max-width: min(62vw, 520px); font-size: 11px; }
+    #bottom-nav { bottom: var(--mid-nav-lift); }
+    #intel { bottom: var(--desk-nav-top); }
+    #intel.open #intel-body { max-height: min(62vh, calc(100dvh - var(--desk-nav-top) - 8px - 206px)); }
+  }
 
   /* ---------- 색면 범례 (W1 · js/field-legend.js — 칸·숫자·단위는 js/field-scales.js 의 표에서 나온다) ----------
      자리: 넓은 화면은 오른쪽 아래 구석 — 우측 패널 #intel 이 bottom 156 에서 시작하므로 그 아래 136px 가 빈다.
@@ -946,6 +1020,12 @@
     #field-legend { top: 66px; bottom: auto; }
     /* 이 폭에서는 검색·설정 서랍이 범례 자리까지 온다 — 서랍이 열린 동안은 범례가 비켜 선다(서랍을 읽는 중이다). */
     body:has(.drawer.open) #field-legend { visibility: hidden; }
+  }
+  /* (2026-09-24 · Stream A 실측) 메뉴 서랍(왼쪽 0~470 · 폰 0~300)도 이 폭에서는 위쪽 범례 자리와 가로로 겹친다 — 태블릿 768×1024 에서 56×33(재생 중 56×49),
+     세로 폰 402×714 에서 292×5(재생 중 292×28). 위 검색·설정 서랍과 같은 규칙으로 서랍이 열린 동안만 범례가 비켜 선다.
+     832 = 서랍 470 + 범례 340 + 오른쪽 14 + 틈 8 — 그보다 넓으면 둘이 나란히 들어가므로 숨기지 않는다. 눕힌 폰(높이 ≤ 520)은 범례와 서랍이 안 겹쳐(실측) 뺀다. */
+  @media (max-width: 831px) and (min-height: 521px), (max-width: 831px) and (orientation: portrait) {
+    body:has(#menu-panel.open) #field-legend { visibility: hidden; }
   }
   /* 폰(≤ 720): 범례가 지구 위쪽을 116px 가리고, 풀이 줄이 24px 안에서 세 줄로 접혀 잘렸다(2026-09-21 PD 실측 ③).
      ⚠️ 접어서 숨기는 것은 **풀이 한 줄뿐**이다 — 띠 · 경계 숫자 · 단위 · 출처 · 런 · 유효시각은 접어도 남는다.
@@ -1275,6 +1355,8 @@
   .feed-title { font-size: 12px; color: var(--text); }
   .feed-sub { font-size: 10px; color: var(--text-dim); }
   .feed-note { font-size: 9.5px; color: var(--text-dim); margin-top: 8px; line-height: 1.5; }
+  /* (2026-09-24 정정 · Stream A 실측) 우측 '오늘의 지구 사건' 첫 화면의 안내 글이 9.5px 였다 — 넓은 화면 기본 상태에서 보이는 글 중 유일하게 10px 미만. */
+  .feed-note { font-size: 10px; }
   .feed-back {
     background: none; border: none; color: var(--accent); font-size: 11px;
     cursor: pointer; margin-bottom: 8px; font-family: inherit; padding: 0;
@@ -2070,6 +2152,22 @@
        겹치지 않지만, 그 한 기기에서 안 보인다고 없는 결함이 되지는 않는다.
        독의 왼쪽 끝(52) + 아이콘(26) + 알약 폭(298) + 오른쪽 여백(8) + 사이 간격(8)을 화면에서 빼고 남는 만큼만 준다. */
     #srcNote { max-width: min(62vw, calc(100vw - 52px - 26px - 298px - 8px - 8px - env(safe-area-inset-left) - env(safe-area-inset-right))); }
+    /* (2026-09-24 · Stream A 실측 812×375 · 이 덩어리의 맨 끝에 둔다 — phone-reach 셈기가 바로 붙은 두 #menu-panel 규칙 중 둘째를 못 읽는다) 메뉴 천장이 48 이라 상단 도구줄(#panel · 14~60 · 왼쪽 219~)의 아랫단 12px 를 81 폭 덮었다 —
+       서랍이 열린 동안 ⌕·⤴ 표적이 44 → 33 으로 줄었다(메뉴 z5 가 위). 천장을 도구줄 아래 8(68)로 내린다: 메뉴 높이 180 → 160(본문은 스크롤된다).
+       세로 폰은 도구줄이 전환기 줄(8~48)로 올라가 이 일이 없다 — 이 덩어리(눕힌 폰)만 바꾼다. */
+    #menu-panel {
+      top: calc(68px + (100dvh - var(--nav-reserve) - 68px) / 2);
+      max-height: min(58dvh, calc(100dvh - var(--nav-reserve) - 68px));
+    }
+    /* (2026-09-24 · Stream A 실측 812×375) 브랜드 손잡이 둘(42×118 · 화면 한가운데 기준 −128 · +10)이 이 높이에서는 아래 줄과 부딪혔다:
+       서랍을 열면 AETHERUS 손잡이가 서랍 오른쪽(x 300~342 · y 197~315)으로 옮겨 가 출처 독(y 258~315)과 42×57 겹쳤고,
+       5일 재생 중 고지 줄로 타임라인이 자라면(윗변 309) 닫힌 손잡이와 34×7 겹쳤다. 그동안 첫 방문 시트가 열려 손잡이가 숨어(위 폰 덩어리
+       body:has(#intel.open) .edge-tab) 드러나지 않았을 뿐이다 — 시트를 닫은 사람은 늘 이 화면을 봤다.
+       손잡이를 메뉴 서랍과 같은 띠(천장 68 ~ 바닥 --nav-reserve)에 반씩 세운다 — 그 띠는 셈으로 출처 독·타임라인·알약 위다(서랍 ㉤② 셈).
+       높이가 77(고지 줄이 서면 69)로 줄어 글자를 세워 쓰면 'AETHERUS' 가 안 들어간다 — 이 칸에서만 글자를 눕혀 쓴다(크기 10px 그대로). */
+    #brand-tab-e { top: 68px; height: calc((100dvh - var(--nav-reserve) - 74px) / 2); }
+    #brand-tab-a { top: calc(74px + (100dvh - var(--nav-reserve) - 74px) / 2); height: calc((100dvh - var(--nav-reserve) - 74px) / 2); }
+    .edge-tab span { text-orientation: mixed; letter-spacing: 0.15em; }
   }
   /* (2026-09-23 B4) 손잡이가 본문 밖으로 나와(M1 절) 시트 바깥 높이가 --grip-h 만큼 커진다. 눕힌 폰은 B5 자리표 밖이다 —
      본문에서 손잡이 띠만큼 빼서 시트 바깥 윗변(peek 118 · half 31dvh · full 도구줄 아래 96)을 예전 그대로 지킨다.
@@ -2221,7 +2319,16 @@
   <div class="err" id="load-err"></div>
 </div>
 
-<script type="module" src="./js/main.js?v=210-fc0924"></script>
+<script>
+/* (2026-09-24, Phase 2 · 지시서 §3-5) v2 요금 스위치의 **자리**. 지금 값은 판매 전 그대로다(화면·요청 변화 없음).
+   v2 에는 config.local.js 가 없어서 main.js monetizationMode · entitlement-client · subscribe-route 가 이 전역을 읽는다.
+   ⚠️ 판매를 여는 날 v1 config.local.js(MONETIZATION_MODE·SALES_OPEN·SHOW_SUBSCRIBE)와 **같은 날 같은 값**으로 바꾸고,
+      ENTITLEMENT_URL 에 https://<프로젝트>.supabase.co/functions/v1/entitlement 를 넣는다. 한쪽만 바꾸면 v1 은 팔고 v2 는 잠그지 않는다. */
+window.EARTHUS_CONFIG = window.EARTHUS_CONFIG || {
+  MONETIZATION_MODE: 'FREE_OPEN', SALES_OPEN: false, SHOW_SUBSCRIBE: false, ENTITLEMENT_URL: '',
+};
+</script>
+<script type="module" src="./js/main.js?v=212-pl0924"></script>
 <script src="/js/earth-switch.js" defer></script>
 </body>
 </html>

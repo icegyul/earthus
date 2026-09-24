@@ -3,6 +3,7 @@
 > 읽기 전용 실측이다. 근거는 git grep, aws lambda get-policy/get-function-configuration, aws events describe-rule, CloudWatch filter-log-events, 그리고 open-meteo.com 약관·가격 페이지(2026-09-20 조회)다.
 > 사다리 문서 §2 V-7의 "20+ Lambda"를 정정한다.
 > 상태: **PD 결정 대기** — 돈(유료 키)·계정(CAMS ADS)·스케줄 변경이 걸려 있어 야간 실행에서 추천안만 적고 실행하지 않았다(§5).
+> (2026-09-24 정정) 소비자별 대체 지도와 진행 상태는 `docs/OPEN-METEO-REPLACEMENT-MAP-2026-09-24.md` 로 이어진다 — pressure-grid·fx-grid 는 NOAA GFS 로 코드 교체 완료(배포 대기).
 
 ## 1. 결론
 

@@ -15,7 +15,14 @@ import { TIER } from './access-mode.js';
 import { i18n } from './i18n.js';
 import { CONFIG } from './config.local.js';
 import { toast } from './ui.js';
-import { salesAllowed, subscriptionUiAllowed } from './access-mode.js';
+import { salesAllowed, subscriptionUiAllowed, tierRank, salesReadiness, SALES_PRECONDITIONS } from './access-mode.js';
+/* (2026-09-24, Phase 2) 결제 전 확인 화면(약관 제8조 제3항·제6항)의 내용과 v2 → v1 → v2 복귀 주소 규칙. */
+import { purchaseConfirmation } from './play-billing.js';
+import { safeBackPath } from './subscribe-route.js';
+
+/* 돌아갈 v2 주소를 토스 결제창 왕복(pay-return.html) 너머까지 들고 간다 — 탭 하나의 수명(sessionStorage).
+   ⚠️ localStorage 에 두지 않는다: 다른 탭·다음 방문이 엉뚱한 화면으로 튕겨 가면 안 된다. */
+export const SUBSCRIBE_BACK_KEY = 'earthus.subscribeBack';
 
 const $ = s => document.querySelector(s);
 const el = (t, c, h) => { const n = document.createElement(t); if (c) n.className = c; if (h != null) n.innerHTML = h; return n; };
@@ -47,12 +54,21 @@ export const subscribeSheet = {
   plan: 'yearly',
   seats: undefined,          // undefined=아직 안 물어봄 · null=못 셈 · 숫자=남은 자리
 
-  open(reason) {
+  /* (2026-09-24 정정) 형식이 open(reason, {planKey, back}) 으로 늘었다 — v2 잠금 카드의 `/?subscribe=…&back=…` 가
+     등급(상품 키)을 미리 고르고, 결제가 끝나면 back(v2 화면 그대로)으로 돌아간다. 지시서 §3-5-2. */
+  open(reason, opts = {}) {
     /* ⚠️⚠️ **마지막 방어선.** 진입점을 다 지워도 딥링크·옛 코드가 부를 수 있다.
        여기서 막으면 어느 경로로 와도 안 열린다. (2026-08-06) */
     if (!subscriptionUiAllowed({ mode: CONFIG.MONETIZATION_MODE,
       showSubscribe: CONFIG.SHOW_SUBSCRIBE })) return;
     this._reason = reason || null;
+    this._confirm = null;
+    if (opts.planKey && PLANS[opts.planKey]) this.plan = opts.planKey;
+    this._back = safeBackPath(opts.back) || null;
+    try {
+      if (this._back) sessionStorage.setItem(SUBSCRIBE_BACK_KEY, this._back);
+      else sessionStorage.removeItem(SUBSCRIBE_BACK_KEY);
+    } catch (_) { /* 저장소가 막혀도 앱 안 Play 길은 this._back 으로 돌아간다 */ }
     $('#subSheet').classList.add('up');
     this.render();
     /* ⚠️ 창립회원 요금제를 없앴다 (받은 결정). 좌석을 셀 일이 없어 조회도 뺀다.
@@ -73,11 +89,19 @@ export const subscribeSheet = {
     /* ⚠️ 'earthus Pro' 였다 — 등급명에서 PRO 를 떼면서 여기만 남으면 없는 상품명이 된다. */
     $('#subTitle').textContent = ko ? 'earthus 구독' : 'earthus subscription';
 
+    /* (2026-09-24, Phase 2) 결제 전 확인 화면 — 앱 안 Play 길에서 '구독하기'를 누르면 여기로 온다. */
+    if (this._confirm) { this.renderConfirm(body, ko); return; }
+
     if (this._reason) {
       body.appendChild(el('p', 'sp-lead', this._reason));
     }
 
     /* 이미 구독 중이면 안내만 */
+    /* (2026-09-24 정정) 기간 이용권은 이어 붙일 수 있다(약관 제8조 제3항) — 앱 안 Play 길(play·native)에서는 안내 뒤에
+       **같은 등급 이상**의 연장·올리기를 보여 준다. 웹(토스)·앱 밖은 예전처럼 안내만 하고 끝난다(판매 전이라 둘 다 지금은 안 보인다).
+       낮은 등급은 내놓지 않는다 — 남은 높은 등급을 잃는 조합이라 서버도 거절한다(TIER_DOWNGRADE_WHILE_ACTIVE). */
+    const inAppRoute = ['play', 'native'].includes(billing.route());
+    const curRank = tierRank(auth.tier?.());
     if (billing.isPaid()) {
       body.appendChild(el('div', 'sub-active', ko
         ? '✦ 구독 중입니다. 모든 레이어가 열려 있습니다.'
@@ -85,14 +109,37 @@ export const subscribeSheet = {
       body.appendChild(el('p', 'sky-note', ko
         ? '구독 관리·해지는 결제하신 곳(App Store · Google Play · 결제사)에서 하실 수 있습니다.'
         : 'Manage or cancel where you purchased (App Store, Google Play, or the payment provider).'));
-      return;
+      if (!inAppRoute) return;
     }
 
     /* ── 요금제 선택 ── */
+    /* (2026-09-24 정정) 고른 상품의 등급을 따라 월·연 두 칸을 보여 준다 — 예전엔 EXPLORER 두 칸(yearly·monthly)뿐이라
+       v2 PRO 잠금에서 온 사람(/?subscribe=pro)이 PRO 를 고를 수 없었다. 등급 전환 칩을 위에 둔다. */
+    // 이미 PRO 를 가진 사람에게 EXPLORER 가 기본으로 잡혀 있으면(연간 기본값) 서버가 결제 뒤에 거절한다 — 먼저 올려 둔다.
+    if (billing.isPaid() && tierRank(PLANS[this.plan]?.tier) < curRank && PLANS.intelYearly) this.plan = 'intelYearly';
+    const tierOfPlan = PLANS[this.plan]?.tier || TIER.EXPLORER;
+    const tierKeys = [TIER.EXPLORER, TIER.INTELLIGENCE]
+      .filter(t => billing.plansOf(t).some(([, p]) => !p.soon && p.krw != null))
+      .filter(t => !billing.isPaid() || tierRank(t) >= curRank);
+    if (tierKeys.length > 1) {
+      const chips = el('div', 'plan-picker tier-picker');
+      tierKeys.forEach(t => {
+        const b = el('button', 'plan' + (t === tierOfPlan ? ' on' : ''),
+          `<div class="pl-name">${ko ? TIER_NAMES[t].ko : TIER_NAMES[t].en}</div>`);
+        b.onclick = () => {
+          const pick = billing.plansOf(t).find(([k]) => /yearly$/i.test(k)) || billing.plansOf(t)[0];
+          if (pick) { this.plan = pick[0]; this.render(); }
+        };
+        chips.appendChild(b);
+      });
+      body.appendChild(chips);
+    }
     const save = billing.yearlySavingPct();
+    const yKey = tierOfPlan === TIER.INTELLIGENCE ? 'intelYearly' : 'yearly';
+    const mKey = tierOfPlan === TIER.INTELLIGENCE ? 'intelMonthly' : 'monthly';
     const opts = [
-      ['yearly', ko ? '연간' : 'Yearly', save > 0 ? (ko ? `${save}% 절약` : `save ${save}%`) : ''],
-      ['monthly', ko ? '월간' : 'Monthly', ''],
+      [yKey, ko ? '연간' : 'Yearly', save > 0 && yKey === 'yearly' ? (ko ? `${save}% 절약` : `save ${save}%`) : ''],
+      [mKey, ko ? '월간' : 'Monthly', ''],
     ];
     /* 창립회원 — ⚠️ **남은 자리가 있다고 확인됐을 때만** 보여준다.
        못 셌을 때(null) 보여주면 마감된 상품을 파는 것이 될 수 있다. */
@@ -252,10 +299,19 @@ export const subscribeSheet = {
        **된다고 여는 것과 열어도 되는 것은 다르다.**
        ⚠️ 신고번호만으로는 부족하다. Open-Meteo 무료 호스팅 API는 비상업 전용이고,
           Smithsonian GVP도 상업 이용은 사전 허가가 필요하다. 둘 다 검증하지 않으면 안 열린다. */
+    /* (2026-09-24 정정) dataReady 는 Open-Meteo·GVP 둘만 봤다. 이제 판매 조건 목록 전체를 본다 —
+       정본은 access-mode.js SALES_PRECONDITIONS(기상예보업 등록·Esri·Gemini·에코뱅크·뉴스 RSS·v2 서버 등급·Play 결제 포함).
+       이름(dataReady)은 아래 분기가 그대로 쓰므로 남긴다. 뜻은 '판매 조건이 모두 찼다'로 넓어졌다. */
+    const gate = salesReadiness({ mode: CONFIG.MONETIZATION_MODE, salesOpen: CONFIG.SALES_OPEN, config: CONFIG });
     const dataReady = CONFIG.OPEN_METEO_COMMERCIAL_READY === true
-      && CONFIG.GVP_COMMERCIAL_READY === true;
+      && CONFIG.GVP_COMMERCIAL_READY === true
+      && gate.blocking.length === 0;
     const salesReady = salesAllowed({ mode: CONFIG.MONETIZATION_MODE,
       salesOpen: CONFIG.SALES_OPEN }) && dataReady;
+    if (gate.salesOpen && !gate.ready) {
+      // SALES_OPEN 을 켰는데 조건이 남았다 — 결제 단추를 만들지 않고, 무엇이 막았는지 콘솔에 남긴다.
+      try { console.warn('[판매 스위치] 결제 단추를 내림 — 아직 true 가 아닌 조건:', gate.blocking.join(', ')); } catch (_) { /* 콘솔 없음 */ }
+    }
     const provs = salesReady ? billing.providers() : [];
     if (salesReady && !provs.length && billing.inApp()) {
       /* (2026-09-24) 앱 안(안드로이드 TWA)인데 Play 길도 네이티브 브리지도 없다 — 지시서 §3-4.
@@ -271,12 +327,17 @@ export const subscribeSheet = {
       const box = el('div', 'pay-pending');
       const dataBlocked = salesAllowed({ mode: CONFIG.MONETIZATION_MODE,
         salesOpen: CONFIG.SALES_OPEN }) && !dataReady;
+      /* (2026-09-24 정정) 막힌 조건을 목록에서 그대로 읽어 적는다(짧은 이름 = reason 의 ' — ' 앞).
+         예전 문구는 Open-Meteo·GVP 둘만 적어서, 다른 조건이 남아도 두 가지만 남은 것처럼 읽혔다.
+         ⚠️ 이 문구는 SALES_OPEN=true 일 때만 보인다 — 판매가 닫힌 지금은 아래 '통신판매업 신고' 문구 그대로다. */
+      const blockedNames = SALES_PRECONDITIONS.filter(p => gate.blocking.includes(p.key))
+        .map(p => (ko ? p.ko.split(' — ')[0] : p.en.split(' (')[0]));
       box.innerHTML = `<b>${ko ? '결제 준비 중' : 'Payments in preparation'}</b>`
         + `<p>${dataBlocked
           ? (ko
-            ? '유료 판매 공개 조건 · 상업 이용 기상 API · GVP 화산 자료 허가 검증<br>'
+            ? `유료 판매 공개 조건 확인 중 · ${blockedNames.join(' · ')}<br>`
               + '<b>지금 보시는 기능은 모두 무료입니다.</b>'
-            : 'We are validating a weather API route licensed for commercial use and commercial permission for GVP volcano data. Paid sales stay closed until both are ready.<br>'
+            : `Paid sales stay closed until these are ready: ${blockedNames.join(' · ')}.<br>`
               + '<b>Everything you see now is free.</b>')
           : (ko
       ? '통신판매업 신고 절차 진행 중 · 완료 후 유료 판매 시작<br>'
@@ -308,15 +369,30 @@ export const subscribeSheet = {
        앱스토어·플레이 결제는 자동갱신이지만, 웹(PG)은 지금 **자동갱신 없는 이용권**이다.
        한 문장으로 뭉뚱그려 "자동 갱신됩니다"라고 쓰면 웹 구매자에게 거짓말이 되고,
        반대로 자동갱신인데 안 적으면 앱스토어 심사에서 걸린다. */
-    const autoRenew = provs.some(p => p.key === 'apple' || p.key === 'google');
+    /* (2026-09-24 정정, Phase 2) Google Play 는 **선불형 기간 이용권**으로 판다(PD 결정 — 자동 갱신 없음, 약관 제8조 제2항 그대로).
+       그래서 'google'(네이티브 브리지)·'play'(Digital Goods)는 더 이상 자동 갱신 쪽이 아니다. 자동 갱신은 App Store 만 남는다.
+       ⚠️ 아래 원래 줄(apple || google)은 지우지 않고 사고 기록으로 둔다 — 실제 판정은 그 다음 줄이다. */
+    // const autoRenew = provs.some(p => p.key === 'apple' || p.key === 'google');
+    const autoRenew = provs.some(p => p.key === 'apple');
+    const playPrepaid = provs.some(p => p.key === 'play' || p.key === 'google');
     /* (2026-09-24) Play 스텁 길(play) — 상품 형태(기간 이용권 / 자동 갱신 구독)는 PD 결정 D1 전이라 **어느 문구도 단정하지 않는다.**
        자동갱신이라고 쓰면 가-1 에서 거짓이고, 아래 웹 문구(카드 결제)는 앱 안에서 거짓이다.
        Phase 2 에서 D1 이 정해지면 약관 제8조 제6항의 확인 화면과 함께 이 줄을 고친다. */
-    const playStub = !autoRenew && provs.some(p => p.key === 'play');
-    if (playStub) {
+    /* (2026-09-24 정정) D1 이 정해졌다(선불형 기간 이용권). 위 '어느 문구도 단정하지 않는다'·'아직 연결되지 않았습니다'는 옛 상태다.
+       앱 안 Play 길의 고지는 아래 playPrepaid 문구이고, 제3·6항의 자세한 내용은 결제 직전 확인 화면(renderConfirm)이 보여 준다. */
+    //   (옛 스텁 문구 '앱 결제는 아직 연결되지 않았습니다 / In-app payment is not connected yet.' 는 이 정정으로 내렸다.)
+    // (2026-09-24 정정, 브라우저 실측) 앱 안인데 결제 길이 없을 때('앱에서는 결제할 수 없습니다') 아래 else 가
+    //   '카드 결제 · …' 고지를 붙이고 있었다 — 앱 안에서 카드 결제를 안내하는 셈이라 Play 정책상 위험하다. 그때는 고지를 싣지 않는다.
+    // (2026-09-24 정정, 적대 검토) 위 정정은 salesReady 일 때만 막았다 — 판매는 열었는데 자료 상업 조건(dataReady)이 아직이면
+    //   salesReady=false 라 앱 안에서도 '카드 결제 · …' 고지가 다시 붙었다(브라우저 실측: src=twa + PAID + SHOW_SUBSCRIBE).
+    //   앱 안에서 결제 수단이 없으면 **어떤 경우든** 고지를 싣지 않는다.
+    // if (salesReady && !provs.length && billing.inApp()) {
+    if (!provs.length && billing.inApp()) {
+      /* 고지 없음 — 결제할 수단이 없다 */
+    } else if (playPrepaid) {
       body.appendChild(el('p', 'sub-legal', ko
-        ? '앱 결제는 아직 연결되지 않았습니다.'
-        : 'In-app payment is not connected yet.'));
+        ? 'Google Play 결제 · 기간형 이용권 · 자동갱신 없음 · 기간 종료 후 무료 전환 · 기간 중 재결제 시 남은 기간 뒤에 이어 붙음 · 결제 금액은 Google Play 화면에 표시'
+        : 'Google Play payment · fixed-term pass · manual renewal · free tier after expiry · repurchase is added after the remaining term · amount shown by Google Play'));
     } else
     body.appendChild(el('p', 'sub-legal', autoRenew
       ? (ko
@@ -325,6 +401,37 @@ export const subscribeSheet = {
       : (ko
         ? '카드 결제 · 기간형 이용권 · 자동갱신 없음 · 기간 종료 후 무료 전환 · 기간 중 재결제 시 종료일 연장 · 부가세 포함'
         : 'Card payment · fixed-term pass · manual renewal · free tier after expiry · repurchase extends the end date · VAT included where applicable')));
+  },
+
+  /* (2026-09-24, Phase 2) 결제 전 확인 화면 — 약관 제8조 제3항·제6항. 내용은 play-billing.js purchaseConfirmation() 이 정한다.
+     ⚠️ '확인했습니다'를 눌러야만 Play 시트가 열린다. 이 화면 없이 시트로 바로 가는 길을 만들지 않는다. */
+  renderConfirm(body, ko) {
+    const c = this._confirm;
+    const plan = PLANS[this.plan];
+    const pro = plan?.tier === TIER.INTELLIGENCE;
+    const name = TIER_NAMES[plan?.tier] || TIER_NAMES[TIER.EXPLORER];
+    const m = purchaseConfirmation({
+      plan, tierName: ko ? name.ko : name.en, ko, founding: c.founding, playPrice: c.playPrice,
+      // PRO 는 EXPLORER 전체를 포함한다 — 아직 제공되지 않는 기능도 둘을 합쳐 적는다.
+      features: pro ? [...EXPLORER_FEATURES, ...INTELLIGENCE_FEATURES] : EXPLORER_FEATURES,
+    });
+    body.appendChild(el('h4', null, m.title));
+    const ul = el('ul', 'feat-list');
+    // 글은 textContent 로 넣는다 — 가격 문자열이 Play 에서 온다(innerHTML 로 넣지 않는다).
+    m.lines.forEach(t => { const li = el('li', 'yes'); li.textContent = t; ul.appendChild(li); });
+    body.appendChild(ul);
+    if (m.notProvidedHead) {
+      body.appendChild(el('h4', null, m.notProvidedHead));
+      const ul2 = el('ul', 'feat-list');
+      m.notProvided.forEach(t => { const li = el('li', 'soon'); li.textContent = t; ul2.appendChild(li); });
+      body.appendChild(ul2);
+    }
+    const ok = el('button', 'btn-primary', m.confirm);
+    ok.onclick = () => { if (this._confirm) { this._confirm.accepted = true; this.go(c.providerKey); } };
+    const back = el('button', 'btn-secondary', m.cancel);
+    back.onclick = () => { this._confirm = null; this.render(); };
+    body.appendChild(ok);
+    body.appendChild(back);
   },
 
   async go(providerKey) {
@@ -339,8 +446,38 @@ export const subscribeSheet = {
         : 'Sign in so your subscription follows you across devices.');
       return;
     }
+    /* (2026-09-24, Phase 2) 앱 안 Play 길 — Play 결제 시트에는 우리 문구를 넣을 수 없다. 그래서 시트 **바로 앞**에
+       약관 제8조 제3항(이어 붙임)·제6항(미제공 기능·제공 시기 미확정)을 확인하는 화면을 한 번 거친다(지시서 §3-3). */
+    if ((providerKey === 'play' || providerKey === 'google') && !this._confirm?.accepted) {
+      const founding = !!auth.isFounding?.();
+      this._confirm = { providerKey, founding, playPrice: null };
+      this.render();
+      // Play 가 알려 주는 가격을 기다렸다가 다시 그린다 — 못 받으면 '다음 화면에 표시'(지어내지 않는다).
+      billing.playPrice(this.plan, { founding }).then((price) => {
+        if (price && this._confirm && this._confirm.providerKey === providerKey) {
+          this._confirm.playPrice = price;
+          this.render();
+        }
+      }).catch(() => {});
+      return;
+    }
+    const founding = !!this._confirm?.founding;
+    this._confirm = null;
     try {
-      await billing.subscribe(this.plan, providerKey);
+      const out = await billing.subscribe(this.plan, providerKey, { founding });
+      /* (2026-09-24) 앱 안 Play 결제는 여기서 끝난다(토스는 pay-return.html 로 떠난다). 서버가 적은 값을 다시 읽었다. */
+      if (providerKey === 'play' || providerKey === 'google') {
+        if (out && out.pending) {
+          toast(ko ? '결제 확인을 기다리고 있습니다 — 완료되면 앱을 다시 열 때 반영됩니다'
+                   : 'Waiting for payment confirmation — it applies next time you open the app');
+        } else {
+          toast(ko ? '이용권이 계정에 적용되었습니다' : 'Your pass is now on your account');
+        }
+        const back = this._back;
+        try { sessionStorage.removeItem(SUBSCRIBE_BACK_KEY); } catch (_) { /* 무시 */ }
+        if (back && !(out && out.pending)) { setTimeout(() => location.replace(back), 900); return; }
+        this.render();
+      }
     } catch (e) {
       /* ⚠️ 실패 이유를 뭉뚱그리지 않는다. "결제 실패"만 뜨면 사용자는
          카드 문제인지 우리 문제인지 알 수 없어 같은 시도를 반복한다. */
@@ -349,9 +486,24 @@ export const subscribeSheet = {
         NOT_CONFIGURED: ['결제 수단이 아직 연결되지 않았습니다', 'Payments are not connected yet'],
         DATA_LICENSE_NOT_READY: ['결제 준비 조건 · 상업 이용 가능한 기상 자료 경로 확인',
                                  'Payments stay closed until the commercial weather-data route is verified'],
+        // (2026-09-24) 판매 조건 목록(access-mode.js SALES_PRECONDITIONS) 중 하나라도 남으면 이 코드다.
+        SALES_PRECONDITION_BLOCKED: ['결제 준비 중 · 유료 판매 공개 조건 확인 중',
+                                     'Payments stay closed until every launch condition is met'],
         NOT_SIGNED_IN:  ['로그인이 필요합니다', 'Please sign in first'],
         SOLD_OUT:       ['창립회원 모집이 마감되었습니다', 'Founding membership is sold out'],
         UNKNOWN_PLAN:   ['판매하지 않는 상품입니다', 'That plan is not on sale'],
+        // (2026-09-24, Phase 2) Play 길의 이유들 — 서버(play-verify)가 준 코드. 거절된 구매는 Play 가 3일 안에 자동 환불한다.
+        CANCELLED:      ['결제를 취소했습니다', 'Payment cancelled'],
+        FOUNDING_NOT_ELIGIBLE: ['창립 멤버 할인 대상이 아닙니다 — 결제는 Google Play 가 3일 안에 자동으로 환불합니다',
+                                'Not eligible for the founding price — Google Play refunds it automatically within 3 days'],
+        TIER_DOWNGRADE_WHILE_ACTIVE: ['더 높은 등급 이용권이 남아 있어 붙일 수 없습니다 — Google Play 가 3일 안에 자동 환불합니다',
+                                      'A higher tier is still active — Google Play refunds this within 3 days'],
+        NOT_PREPAID:    ['판매 형태가 다른 상품입니다 — Google Play 가 3일 안에 자동 환불합니다',
+                         'Unexpected product type — Google Play refunds it within 3 days'],
+        TOKEN_BOUND_TO_OTHER_ACCOUNT: ['다른 계정에 이미 적용된 구매입니다', 'This purchase is already on another account'],
+        PLAY_UNREACHABLE: ['Google Play 확인이 늦어지고 있습니다 — 다시 결제하지 마세요. 앱을 다시 열면 자동으로 확인합니다',
+                           'Google Play did not answer — do not pay again; it is checked again when you reopen the app'],
+        SALES_CLOSED:   ['유료 판매는 아직 시작하지 않았습니다', 'Paid sales have not started yet'],
         PG_SDK_BLOCKED: ['결제 모듈을 불러오지 못했습니다. 광고 차단 확장을 잠시 꺼주세요',
                          'Could not load the payment module — try disabling ad blockers'],
       };

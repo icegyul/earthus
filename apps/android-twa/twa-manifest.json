@@ -4,6 +4,7 @@
   "_comment_themeColor_2": "(2026-09-24 정정) 웹도 #02060c 로 통일했다(v1 meta · v1 manifest · v2 meta, 커밋 529ceb76) — 위의 'index.html 의 #000000 · v2 의 #030608'은 옛 값이다. 앱과 웹이 같은 색이다.",
   "_comment_icons": "iconUrl·monochromeIconUrl 의 'local:' 은 tools/generate-project.mjs 가 prototype/logo/*.svg 를 래스터화한 파일을 가리킨다. 로고는 새로 그리지 않는다(기억 brand-assets-v5-only). maskableIconUrl 은 일부러 비운다 — Bubblewrap 템플릿은 maskable 을 흰 바탕 background 층에 넣는다. 적응형 아이콘은 스크립트가 따로 쓴다(전경=v5 모노그램, 배경=#0A0A0A).",
   "_todo_phase2_playBilling": "TODO(Phase 2 결제 — 구독료 결정 뒤): features 에 \"playBilling\": {\"enabled\": true} 를 넣고 다시 생성한다. 그러면 com.google.androidbrowserhelper:billing 의존성·PaymentActivity·PaymentService·DigitalGoodsRequestHandler 가 붙는다. 2026-09-24 PD 결정으로 지금은 넣지 않는다.",
+  "_todo_phase2_playBilling_2": "(2026-09-24 정정) 위 TODO 는 풀렸다 — PD 결정(2027-01-01 유료 시작 · 무료 앱 + Play 선불형 기간 이용권 · 가격은 미정)으로 features.playBilling 을 켰다. 가격이 아직 없어도 켜도 되는 이유: 앱에 가격은 없고 Play Console 상품(8개)이 가격을 갖는다. 판매는 웹 SALES_OPEN·서버 SALES_ENABLED 가 계속 닫고 있어 결제 단추는 나오지 않는다. Play 상품 구조(상품 하나에 선불형 기본 요금제 하나, 오퍼 없음)의 이유는 prototype/supabase/functions/_shared/play-billing-core.js 머리 주석.",
   "packageId": "net.earthus.app",
   "host": "earthus.net",
   "name": "EARTHUS",
@@ -25,7 +26,8 @@
   "splashScreenFadeOutDuration": 300,
   "appVersion": "1.0.0",
   "appVersionCode": 1,
-  "minSdkVersion": 21,
+  "_comment_minSdk": "(2026-09-24 정정, Phase 2) 21 → 23. Play 결제 라이브러리 com.google.androidbrowserhelper:billing:1.2.0 이 minSdk 23 을 선언해서 21 로는 빌드가 멈췄다(Gradle manifest merger 실측). tools:overrideLibrary 로 억지로 낮추면 결제 코드가 Android 5.x 에서 런타임에 죽을 수 있어 쓰지 않았다. D21(최소 버전) 중 '하한 23'은 이 제약으로 정해진 것이고, 그보다 올릴지는 여전히 PD 결정이다.",
+  "minSdkVersion": 23,
   "shortcuts": [],
   "generatorApp": "bubblewrap-core-1.25.0+earthus-generate-project",
   "webManifestUrl": "https://earthus.net/manifest.webmanifest",
@@ -33,6 +35,9 @@
   "fallbackType": "customtabs",
   "features": {
     "locationDelegation": {
+      "enabled": true
+    },
+    "playBilling": {
       "enabled": true
     }
   },

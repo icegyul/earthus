@@ -85,6 +85,15 @@ export const CONFIG = {
         이 파일은 브라우저로 그대로 내려갑니다.                            */
   CHECKOUT_URL: '',   // 예: https://xxxx.supabase.co/functions/v1/checkout
   CONFIRM_URL:  '',   // 예: https://xxxx.supabase.co/functions/v1/payment-confirm
+  /* (2026-09-24, Phase 2) 앱 안(안드로이드 TWA) Google Play 결제 — 선불형 기간 이용권.
+       PLAY_VERIFY_URL  Play 구매 토큰을 서버가 Google 에 다시 확인한다 → functions/v1/play-verify
+     ⚠️ 비어 있으면 앱 안 결제 단추는 Play 시트를 **열지 않는다**(돈을 받은 뒤 검증할 곳이 없으면 안 된다).
+     ⚠️ 서비스 계정 JSON 은 여기 넣지 않는다 — supabase secrets PLAY_SERVICE_ACCOUNT_JSON 에만.
+       PLAY_PRODUCTS    (선택) Play Console 에 다른 id 로 올렸을 때만. 기본 규칙 = plans id, 창립은 '<id>.founding'.
+                        예: { 'earthus.pro.monthly.founding': 'earthus.pro.monthly.founding' }
+     ⚠️ 서버 대응표의 정본은 DB play_products 다 — 여기를 바꾸면 그 표도 같은 날 바꾼다. */
+  PLAY_VERIFY_URL: '',  // 예: https://xxxx.supabase.co/functions/v1/play-verify
+  // PLAY_PRODUCTS: {},
   /* PD가 "유료서비스 시작하자"라고 명시하기 전까지 FREE_OPEN 고정.
      FREE_OPEN에서는 준비된 기능을 모두 무료로 열고 결제는 닫는다.
      권리·안전·개인정보·provider 미준비 gate는 이 값과 관계없이 유지한다. */
@@ -111,6 +120,20 @@ export const CONFIG = {
      GVP 또는 적용 권리자의 상업 이용 허가를 받고 화산 데이터 경로를
      재검증한 뒤에만 true. */
   GVP_COMMERCIAL_READY: false,
+  /* ── 판매 개시 조건 (2026-09-24 추가 — docs/PAID-APP-LAUNCH-REVIEW-2026-09-24.md §1-5·§4) ──
+     ⚠️ 위 두 값(Open-Meteo·GVP)과 아래 일곱 값이 **모두 true** 여야 SALES_OPEN 이 효력을 갖는다.
+        하나라도 false 면 결제 단추가 나오지 않고, 콘솔에 막은 조건 이름이 남는다.
+        목록의 정본은 js/access-mode.js SALES_PRECONDITIONS 다(이유 문장도 거기에 있다).
+     ⚠️ 이 값들은 **PD 의 선언**이다. 코드는 아무것도 확인하지 않는다 — 일이 실제로 끝난 뒤에만 true.
+        서버 쪽 최종 관문은 checkout 함수의 SALES_ENABLED 다(이 파일은 브라우저로 내려간다).
+     ⚠️ 운영 config.local.js 에 이 줄이 없으면 막힌 것으로 읽는다(fail-closed). */
+  WEATHER_BUSINESS_REGISTERED: false,  // 기상예보업 등록(기상산업진흥법 제6조, 상근 기상예보사 1명) — L1
+  ESRI_AUTH_TILES_READY: false,        // Esri 타일 ArcGIS 키 인증 전환(또는 대체) + 표기 — D2
+  GEMINI_AGE_CLAUSE_RESOLVED: false,   // Gemini 18세 조항 해결(성인 한정·다른 LLM·가입 연령) — D4
+  ECOBANK_CLEARED: false,              // 국립생태원 에코뱅크 서면 확인 또는 유료 앱에서 제외 — D13
+  NEWS_RSS_CLEARED: false,             // 지역 뉴스 RSS 매체별 이용 조건 확인 — D12
+  V2_SERVER_TIER_LIVE: false,          // v2 등급 서버 판정 운영(지금은 localStorage) — 지시서 §3-5-1
+  PLAY_BILLING_LIVE: false,            // Play 선불형 결제·영수증 검증·acknowledge·환불 회수 운영 — P4
 
   /* ── 웹푸시 (알림) ─────────────────────────────────────────
      ⚠️⚠️ **공개키만 여기 넣습니다.** 이 파일은 브라우저로 그대로 내려갑니다 —

@@ -12,7 +12,7 @@ import * as THREE from '../../vendor/three-r184.module.min.js';
 // (2026-09-24) 뒤로 단추 — ui-shell.js 와 **같은 지정자**여야 한 벌이다(ES 모듈은 ?v= 까지 URL 전체가 키).
 // (2026-09-24 정정) ?v=2 — 웹 탭에서는 아무것도 하지 않는 한 벌 · 앱이 스스로 연 시트는 칸을 안 쌓음(PD 결정). ui-shell.js 도 같이 올렸다.
 import { backStack } from '../../js/back-close.js?v=2';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=77-fc0924';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=78-pb0924';
 import { createSelectionGate } from './information-contract.js';
 // PHASE 4 §9 — 지도에서 고른 사건을 어느 현상으로 읽을지는 레지스트리가 정한다.
 // ⚠️ 2026-09-23: 레지스트리를 여기·report-center.js 는 ?v=4 로, ui-shell.js·intel-questions.js 는 ?v=5 로 불러
@@ -25,11 +25,14 @@ const escUI = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<'
 import { OceanSim } from './sim-ocean.js?v=6';
 import { LocalTerrain } from './local-terrain.js?v=1';
 import { IntelFeed } from './intel-feed.js?v=12-fc0924';
-import { intelOf, intelSectionHtml, sectionTitle } from './intel-strip.js?v=3-fc0924';
+import { intelOf, intelSectionHtml, sectionTitle } from './intel-strip.js?v=4-pb0924';
 import { bannerModel, renderWarningBanner } from './warning-banner.js?v=1';
 import { attachEvidencePopover } from './evidence-popover.js?v=1';
-import { currentTier } from './report-center.js?v=3';
+import { currentTier } from './report-center.js?v=4';
 import { decideCapabilityAccess, lockExplanation, TIER } from '../../js/access-mode.js';
+// (2026-09-24, Phase 2) 잠금 카드 → v1 구독 → 이 화면 복귀 · 등급 서버 판정(판매 개시 뒤에만 요청)
+import { upgradeLineHtml } from '../../js/subscribe-route.js';
+import { refreshEntitlement, onEntitlementChange } from './entitlement-client.js?v=1';
 import { evaluateWatch, myZone, loadWatch, saveWatch } from './watch.js?v=1';
 import { LiveLayers, newsChipOpacity } from './live-layers.js?v=45-fc0924';
 import { StationModel } from './station-model.js?v=2';
@@ -4622,7 +4625,17 @@ async function main() {
     onScene: () => { lockedNote = null; },
     onRegion: goRegion,
     onPopCountry: goPopCountry,
-    onFlyoutOpened: () => { closeDrawers(); },
+    onFlyoutOpened: () => {
+      closeDrawers();
+      /* (2026-09-24 · 출시 전 UX Stream A 실측) 첫 안내를 닫으면 Intelligence 시트(#intel)가 저절로 열린다 — 그 채로 하단 '리포트'·'탐색'을 누르면
+         폰(402×714)에서 서랍이 시트를 292×93, 태블릿(768×1024)에서 196×643 덮었다(서랍 폭 470 + 시트 폭 480 이 화면에 안 들어간다).
+         두 창이 나란히 들어가지 않는 폭(< 1024 · 폰은 방향 무관)에서는 서랍을 여는 순간 시트를 닫는다 — 위 사건 표식의 '폰에서 창 두 개 금지'와 같은 규칙.
+         넓은 화면(≥ 1024)은 서랍(0~512)과 시트(오른쪽 14 · 폭 480)가 나란히 선다 — 그대로 둔다. */
+      //   ⚠️ shell 은 이 훅 표 아래에서 const 로 선언된다 — initShell 도중(링크 복원 등)에 불리면 TDZ 다. 그때는 시트도 아직 안 열렸으니 건너뛴다.
+      try {
+        if (shell.isIntelOpen() && window.matchMedia && window.matchMedia(`(max-width: 1023px), ${PHONE_MQ}`).matches) shell.closeIntel();
+      } catch { /* initShell 전 — 닫을 시트가 없다 */ }
+    },
     onPlay: () => {
       // ▶ 재생은 예보 시간축 — 관측/정적 구름은 미래가 없으니 모델로 자동 전환
       if (clouds.mode !== 'gfs') {
@@ -5262,7 +5275,10 @@ async function main() {
               requiredTier: TIER.INTELLIGENCE });
             if (!acc.allowed) {
               const l = lockExplanation({ cap: '쓰나미 도달시간 계산', requiredTier: TIER.INTELLIGENCE, ko: i18n.ko });
-              showNote('쓰나미 도달시간 — PRO', `<div class="card"><div class="card-b"><b>${escUI(l.what)}</b><br/>${escUI(l.why)}<br/>${escUI(l.adds)}<br/><span class="paysub">${escUI(l.upgrade)}</span><br/><span class="paysub">공식 쓰나미 정보(PTWC·JMA·기상청)는 항상 무료입니다.</span></div></div>`, 'SIMULATION_ONLY');
+              // (2026-09-24, Phase 2 · 지시서 §3-5-2) 판매가 열렸을 때만 'PRO 구독 화면으로 →' 링크(/?subscribe=pro&back=지금 화면).
+              //   닫혀 있으면 예전 문구 그대로다(upgradeLineHtml 이 l.upgrade 를 같은 paysub 로 감싼다).
+              const up = upgradeLineHtml({ config: window.EARTHUS_CONFIG, tier: 'pro', loc: location, ko: i18n.ko, esc: escUI, upgradeText: l.upgrade });
+              showNote('쓰나미 도달시간 — PRO', `<div class="card"><div class="card-b"><b>${escUI(l.what)}</b><br/>${escUI(l.why)}<br/>${escUI(l.adds)}<br/>${up}<br/><span class="paysub">공식 쓰나미 정보(PTWC·JMA·기상청)는 항상 무료입니다.</span></div></div>`, 'SIMULATION_ONLY');
               return;
             }
           }
@@ -5699,6 +5715,32 @@ async function main() {
     document.addEventListener('earthus:base', paintSrc);
     if (srcFieldMQ && srcFieldMQ.addEventListener) srcFieldMQ.addEventListener('change', paintSrc);   // 폰을 세우고 눕힐 때
   }
+  /* (2026-09-24 · 데스크톱 겹침 · 출시 전 UX Stream A) 좌하단 출처 독(#hud)과 타임라인(#timestrip)의 **실제 높이**를 <html> 의
+     --hud-live-h · --ts-live-h 로 알린다. index.html 의 넓은 화면 자리표가 이 둘로 메뉴 패널 바닥(리포트·탐색)과
+     중간 폭(721~1109)의 출처 독·알약·우측 패널 자리를 셈한다.
+     무엇이 잘못돼 있었나: 메뉴 패널은 화면 한가운데(100vh − 96)에 섰고 출처 독은 바닥 12 에서 글 줄 수만큼 **위로** 자란다(3~6줄 = 81~129px).
+       둘 다 제 셈만 해서 리포트를 열면 패널 바닥이 독(z7) 밑에 깔렸다(1280×800 실측 410×45 · 1110 재생 중 359×93).
+       출처 글은 언어·재생·레이어마다 줄 수가 달라 CSS 로는 높이를 알 수 없다 — 그래서 잰 값을 준다(세로 폰은 높이를 셈으로 고정하므로 이 값을 읽지 않는다).
+     ⚠️ 값이 오기 전(첫 칠 전)에는 index.html :root 의 기본값(79 · 40)이 쓰인다. */
+  {
+    const rootEl = document.documentElement;
+    const hudEl = document.getElementById('hud');
+    const tsEl = document.getElementById('timestrip');
+    const navEl = document.getElementById('bottom-nav');   // 알약 높이(--nav-live-h) — 64 를 두 군데 적지 않으려고 잰다
+    const putH = (name, el) => {
+      if (!el) return;
+      const h = Math.ceil(el.getBoundingClientRect().height);
+      if (h > 0 && rootEl.style.getPropertyValue(name) !== `${h}px`) rootEl.style.setProperty(name, `${h}px`);
+    };
+    const measureDock = () => { putH('--hud-live-h', hudEl); putH('--ts-live-h', tsEl); putH('--nav-live-h', navEl); };
+    if (window.ResizeObserver) {
+      const ro = new ResizeObserver(measureDock);
+      if (hudEl) ro.observe(hudEl);
+      if (tsEl) ro.observe(tsEl);
+      if (navEl) ro.observe(navEl);
+    }
+    measureDock();
+  }
   askEarth.init();
 
   // ---------------------------------------------------------------------------
@@ -5797,6 +5839,10 @@ async function main() {
   // 계정은 EARTHUS(v1)에만 있다. auth 가 config.local·biometric·access-mode·store·
   // billing 에 묶여 있어 여기로 통째로 끌어오면 무거워진다 — 계정이 사는 곳으로 보낸다.
   // 로그인이 끝나면 back 으로 이 지구에 돌아온다(v1 main.js 가 처리).
+  /* (2026-09-24, Phase 2 · 지시서 §3-5-1) 등급은 서버가 정한다 — 판매 개시(PAID) 뒤에만 entitlement 함수에 묻고,
+     답이 오면 Intelligence 판을 다시 그린다. FREE_OPEN(지금)에서는 refreshEntitlement 가 요청 없이 바로 끝난다. */
+  onEntitlementChange(() => { try { shell.renderIntel(); } catch (_) { /* 판이 아직 없으면 다음 그리기에 반영 */ } });
+  refreshEntitlement().catch(() => {});
   const btnLogin = document.getElementById('btn-login');
   if (btnLogin) {
     btnLogin.onclick = () => {
@@ -5870,6 +5916,10 @@ async function main() {
     const openFeedOnce = () => {
       const intro = document.getElementById('intro');
       if (intro && intro.classList.contains('show')) { setTimeout(openFeedOnce, 600); return; }
+      /* (2026-09-24 · Stream A 실측) 안내를 닫자마자 하단 '리포트'·'탐색'을 누르면 이 시트가 2.6 초 뒤 서랍 **위에** 저절로 열려
+         폰(402×714)에서 서랍과 292×93 겹쳤다(onFlyoutOpened 의 '서랍을 열면 시트를 닫는다'는 먼저 열린 시트만 닫는다).
+         두 창이 나란히 안 들어가는 폭에서는 서랍이 닫힐 때까지 안내와 똑같이 기다린다 — 위 '두 개를 한꺼번에 띄우지 않는다'. */
+      if (shell.isFlyoutOpen() && window.matchMedia && window.matchMedia(`(max-width: 1023px), ${PHONE_MQ}`).matches) { setTimeout(openFeedOnce, 600); return; }
       try { localStorage.setItem(INTRO_FEED_KEY, '1'); } catch (e) { /* 사생활 모드 */ }
       shell.showTab('feed');
       shell.openIntel();

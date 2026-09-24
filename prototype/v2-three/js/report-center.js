@@ -15,6 +15,9 @@ import { i18n } from './i18n.js?v=11';
 // ⚠️ 2026-09-23: ?v=4 였다 — ui-shell.js 의 ?v=5 와 달라 레지스트리 모듈이 두 벌 떴다(main.js:10 주석). 네 곳을 ?v=5 로 맞춘다.
 // (2026-09-23 정정) 같은 날 V2-1 에서 네 곳을 함께 ?v=6 으로 올렸다(레지스트리 terrain scope 문구).
 import { representativeLayerFor, PHENOMENA } from './phenomenon-registry.js?v=6';
+// (2026-09-24, Phase 2) 등급 서버 판정 — currentTier 가 localStorage 를 믿지 않게.
+import { resolveTier, serverTierSnapshot } from './entitlement-client.js?v=1';
+import { tierAtLeast, TIER, isFreeOpenMode } from '../../js/access-mode.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -98,12 +101,19 @@ export const FREE_SECTIONS = new Set([
 ]);
 
 // 현재 등급. 서버가 알려 주기 전까지는 free 다 — 모르면서 pro 라고 하지 않는다.
+// (2026-09-24 정정, Phase 2 · 지시서 §3-5-1) 위 줄과 달리 아래 옛 코드는 localStorage `earthus.tier` 를 그대로 믿었다 —
+//   누구나 적어 넣을 수 있는 값이라 판매를 열면 결제 우회가 된다. 이제 판정은 entitlement-client.resolveTier 하나다:
+//   FREE_OPEN(지금)에서는 예전 값을 그대로 돌려주고(화면 변화 없음 — 그때는 access-mode 가 어차피 전부 연다),
+//   PAID 에서는 서버(entitlement 함수)가 준 등급만, 못 받으면 free.
 export const currentTier = () => {
+  let legacy = 'free';
   try {
-    return (window.EARTHUS_TIER || localStorage.getItem('earthus.tier') || 'free').toLowerCase();
+    legacy = (window.EARTHUS_TIER || localStorage.getItem('earthus.tier') || 'free').toLowerCase();
   } catch (_) {
-    return 'free';
+    legacy = 'free';
   }
+  const cfg = (typeof window !== 'undefined' && window.EARTHUS_CONFIG) || null;
+  return resolveTier({ mode: cfg && cfg.MONETIZATION_MODE, legacyTier: legacy, server: serverTierSnapshot() });
 };
 
 // ── 스토리 카드 ─────────────────────────────────────────────────────────────
@@ -173,7 +183,19 @@ export const storyActionsHtml = (story, phenomenonId, layerKey, ko) => {
 const sectionHtml = (sec, report, ko, tier) => {
   const label = DATA_LABEL_TEXT[sec.dataLabel];
   const free = FREE_SECTIONS.has(sec.id);
-  const gated = tier !== 'pro' && !free;
+  // (2026-09-24 정정, Phase 2) 아래 옛 줄은 글자 'pro' 만 열었다. 서버 등급 id 는 'intelligence'(화면 이름 PRO)라서
+  //   판매를 열면 PRO 를 산 사람도 영영 잠겼다. id 'intelligence' 이상을 PRO 로 읽는다('pro' 별칭은 남긴다).
+  //   ⚠️ 정본(PRODUCT-STRUCTURE-AND-TIERS §3)은 'EXPLORER = Report' 인데 이 잠금 문구는 'PRO 에서 이어집니다'다 —
+  //      어느 등급이 리포트 상세를 여는지는 PD 확인 대상이다(이번에 화면 문구는 바꾸지 않았다).
+  // const gated = tier !== 'pro' && !free;
+  // (2026-09-24 정정, 적대 검토) 아래 넓힌 규칙을 FREE_OPEN(지금)에도 적용하고 있었다 — v1 이 localStorage 에 적어 둔 등급이
+  //   'intelligence' 인 브라우저에서 판매 전인데도 리포트 상세가 열렸다(판매 전 화면 변화). 넓힌 규칙은 판매 개시(PAID) 뒤에만,
+  //   FREE_OPEN 에서는 옛 줄 그대로 판정한다. 그때의 tier 는 resolveTier 가 돌려준 **서버** 등급이다.
+  const cfg = (typeof window !== 'undefined' && window.EARTHUS_CONFIG) || null;
+  const paidTierOk = isFreeOpenMode(cfg && cfg.MONETIZATION_MODE)
+    ? tier === 'pro'
+    : (tier === 'pro' || tierAtLeast(tier, TIER.INTELLIGENCE));
+  const gated = !paidTierOk && !free;
   const title = ko ? sec.titleKo : (sec.titleEn || sec.titleKo);
   const stories = (report.stories || []).filter((s) => (sec.storyRefs || []).includes(s.storyId));
 

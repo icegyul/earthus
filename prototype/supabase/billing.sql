@@ -91,6 +91,8 @@ on conflict (id) do update
 create table if not exists public.orders (
   id             text primary key,             -- 우리가 만든 주문번호 (PG 에 그대로 보낸다)
   user_id        uuid not null references auth.users(id) on delete cascade,
+  -- (2026-09-24 정정) cascade 라서 계정을 지우면 결제 기록도 사라진다(전자상거래법 5년 보존 위반).
+  --   삭제 직전 retained_orders 로 옮기는 트리거: migrations/20260924120000_account_deletion_retains_legal_records.sql
   plan_id        text not null references public.plans(id),
   -- ⚠️⚠️ 금액은 **최소 단위(minor unit)** 로 저장한다. 통화마다 다르다:
   --      KRW 는 소수점이 없어 amount = 원 그대로 (29000 = 29,000원)

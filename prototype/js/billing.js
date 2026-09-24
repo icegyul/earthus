@@ -16,10 +16,13 @@
 import { auth } from './auth.js';
 import { CONFIG } from './config.local.js';
 import { i18n } from './i18n.js';
-import { salesAllowed, TIER } from './access-mode.js';
+import { salesAllowed, salesReadiness, TIER } from './access-mode.js';
 /* (2026-09-24) 앱 안(안드로이드 TWA) 판정 — 앱 안에서는 토스(web)를 **어떤 경로로도** 고르지 않는다.
    지시서 §3-4 · D17. 판정 규칙과 그 이유는 app-context.js 머리 주석에 있다. */
 import { isInApp, paymentRoute, allowedProviderKeys } from './app-context.js?v=2';
+/* (2026-09-24, Phase 2) 앱 안 Play 결제의 순수 부품 — 상품 id(8개)·결제 전 확인 화면 내용·Play 시트·복원. */
+import { playProductIdFor, purchaseViaDigitalGoods, purchaseViaNativeBridge, playItemDetails,
+  formatPlayPrice, restorePlayPurchases } from './play-billing.js';
 
 /* ── 요금제 ────────────────────────────────────────────────────
    ⚠️ 가격은 config.local.js 에서 덮어쓸 수 있게 둔다.
@@ -272,15 +275,42 @@ const PROVIDERS = {
      ⚠️ 상품 형태(기간 이용권 / 자동 갱신 구독, 지시서 D1)가 정해지지 않았다. 여기서 시트를 흉내 내지 않는다 —
         누르면 '아직 연결되지 않았다'고 정직하게 말한다(NOT_CONFIGURED). 판매가 닫힌 지금은 이 단추가 화면에 나오지 않는다.
      ⚠️ google 보다 **앞에** 둔다 — subscribe() 가 providerKey 없이 부르면 list[0](객체 삽입 순서)을 고른다. */
+  /* (2026-09-24 정정, Phase 2) 위 '스텁이다 · NOT_CONFIGURED' 는 옛 상태다. D1 은 PD 가 정했다 — **선불형 기간 이용권**
+     (자동 갱신 없음, 약관 제8조 제2항 그대로). 이제 start 는 Digital Goods API + Payment Request 로 Play 시트를 열고,
+     받은 purchaseToken 을 서버(play-verify)가 Google 에 다시 확인한 **뒤에만** 시트를 'success' 로 닫는다.
+     ⚠️ 판매가 닫힌 지금은 여전히 화면에 나오지 않는다 — subscribe() 첫 줄의 salesAllowed 와 ui-subscribe 의 salesReady 가 막는다.
+     ⚠️ 시트를 열기 **전에** 검증 주소·로그인을 확인한다. 돈을 받은 뒤에 '검증할 곳이 없다'가 되면 안 된다. */
   play: {
     ko: 'Google Play', en: 'Google Play',
     available: () => 'getDigitalGoodsService' in window,
-    start: () => { throw new Error('NOT_CONFIGURED'); },
+    start: async (plan, opts = {}) => {
+      if (!CONFIG.PLAY_VERIFY_URL) throw new Error('NOT_CONFIGURED');
+      if (!(await auth.accessToken?.())) throw new Error('NOT_SIGNED_IN');
+      const productId = billing.playProductId(plan, opts);
+      const r = await purchaseViaDigitalGoods(window, productId);
+      try {
+        const v = await billing.confirmPlay({ productId, purchaseToken: r.purchaseToken });
+        await r.response.complete(v && v.pending ? 'unknown' : 'success').catch(() => {});
+        return v;
+      } catch (e) {
+        await r.response.complete('fail').catch(() => {});
+        throw e;
+      }
+    },
   },
+  /* (2026-09-24 정정) 네이티브 브리지 길 — 토큰을 받으면 Play 시트 길과 **같은** 서버 검증을 거친다.
+     ⚠️ TWA 는 Chrome·삼성 인터넷에 JS 객체를 심을 수 없어서 window.AndroidBilling 은 지금 어디서도 생기지 않는다
+        (play-billing.js 머리 주석). 삼성 인터넷 기본 폰은 '앱에서는 결제할 수 없습니다'가 뜬다 — 지어낸 브리지를 만들지 않았다. */
   google: {
     ko: 'Google Play', en: 'Google Play',
     available: () => typeof window.AndroidBilling?.purchase === 'function',
-    start: plan => window.AndroidBilling.purchase(plan.id),
+    start: async (plan, opts = {}) => {
+      if (!CONFIG.PLAY_VERIFY_URL) throw new Error('NOT_CONFIGURED');
+      if (!(await auth.accessToken?.())) throw new Error('NOT_SIGNED_IN');
+      const productId = billing.playProductId(plan, opts);
+      const r = await purchaseViaNativeBridge(window, productId);
+      return billing.confirmPlay({ productId, purchaseToken: r.purchaseToken });
+    },
   },
   web: {
     ko: '카드 · 간편결제', en: 'Card / wallet',
@@ -407,7 +437,9 @@ export const billing = {
    * 구독 시작. 성공하면 결제창으로 넘어간다.
    * @throws {Error} 'NOT_AVAILABLE' — 결제 수단이 아직 연결되지 않음
    */
-  async subscribe(planKey, providerKey) {
+  /* (2026-09-24 정정) 형식이 subscribe(planKey, providerKey, opts) 로 늘었다 — opts.founding 은 **화면 표시용 선택**이다
+     (창립 멤버에게 반값 상품을 내민다). 자격은 서버(play-verify · apply_play_purchase)가 profiles.founding_member 로 다시 본다. */
+  async subscribe(planKey, providerKey, opts = {}) {
     /* ⚠️⚠️ Open-Meteo는 **자료(CC BY 4.0)**와 **호스팅 API 이용권**이 다르다.
        무료 api.open-meteo.com은 비상업 전용이다. 여러 화면·Lambda가 아직 그
        엔드포인트를 쓰므로, 유료 customer-api 전환 또는 셀프호스팅을 검증했다는
@@ -416,11 +448,26 @@ export const billing = {
     if (!salesAllowed({ mode: CONFIG.MONETIZATION_MODE, salesOpen: CONFIG.SALES_OPEN })) {
       throw new Error('NOT_AVAILABLE');
     }
+    /* (2026-09-24 정정) 판정과 콘솔 경고를 옛 두 줄(Open-Meteo·GVP) **앞으로** 올렸다 — 뒤에 두면 그 둘이 false 일 때
+       DATA_LICENSE_NOT_READY 로 먼저 멈춰서 무엇이 막았는지 콘솔에 남지 않았다(아홉 조건 중 둘이 빠짐). 오류 코드는 그대로다. */
+    const gate = salesReadiness({ mode: CONFIG.MONETIZATION_MODE, salesOpen: CONFIG.SALES_OPEN, config: CONFIG });
+    if (!gate.ready) {
+      // 무엇이 막았는지 콘솔에 남긴다 — 'NOT_AVAILABLE' 하나로 뭉뚱그리면 어느 조건이 남았는지 아무도 모른다.
+      try { console.warn('[판매 스위치] 결제 시작을 막음 — 아직 true 가 아닌 조건:', gate.blocking.join(', ')); } catch (_) { /* 콘솔 없음 */ }
+    }
     if (CONFIG.OPEN_METEO_COMMERCIAL_READY !== true) {
       throw new Error('DATA_LICENSE_NOT_READY');
     }
     if (CONFIG.GVP_COMMERCIAL_READY !== true) {
       throw new Error('DATA_LICENSE_NOT_READY');
+    }
+    /* (2026-09-24 정정) 위 두 값만 보면 기상예보업 등록·Esri 인증·Gemini 연령 조항·에코뱅크·뉴스 RSS·
+       v2 서버 등급 판정·Play 결제가 안 끝나도 결제가 시작됐다(유료 출시 점검 §1-5).
+       조건 목록의 정본은 access-mode.js SALES_PRECONDITIONS 하나다 — 여기서 따로 적지 않는다.
+       위 두 줄(Open-Meteo·GVP)은 그 목록에도 들어 있다. 옛 오류 코드를 기대하는 곳이 있어 그대로 둔다.
+       (2026-09-24 정정) gate 계산과 콘솔 경고는 위(옛 두 줄 앞)로 옮겼다 — 여기서는 멈추기만 한다. */
+    if (!gate.ready) {
+      throw Object.assign(new Error('SALES_PRECONDITION_BLOCKED'), { blocking: gate.blocking });
     }
     const plan = PLANS[planKey];
     if (!plan) throw new Error('UNKNOWN_PLAN');
@@ -429,7 +476,52 @@ export const billing = {
     if (!prov) throw new Error('NOT_AVAILABLE');
     // (2026-09-24) providerKey='web' 을 직접 넘겨도 앱 안이면 여기서 막는다(list 에 이미 없지만 문을 겹쳐 둔다).
     if (prov.key === 'web' && isInApp()) throw new Error('NOT_AVAILABLE');
-    return PROVIDERS[prov.key].start(plan);
+    return PROVIDERS[prov.key].start(plan, opts);
+  },
+
+  /* ── (2026-09-24, Phase 2) 앱 안 Play 결제 ────────────────────────────────────────────── */
+
+  /** 상품 키 또는 상품 행 → Play 상품 id(8개 규칙, CONFIG.PLAY_PRODUCTS 로 덮어쓰기). */
+  playProductId(planOrKey, { founding = false } = {}) {
+    const plan = typeof planOrKey === 'string' ? PLANS[planOrKey] : planOrKey;
+    return playProductIdFor(plan, { founding: founding === true, overrides: CONFIG.PLAY_PRODUCTS || null });
+  },
+
+  /** Play 가 알려준 가격 문자열(결제 전 확인 화면용). 못 받으면 null — 가격을 지어내지 않는다. */
+  async playPrice(planKey, { founding = false } = {}) {
+    const id = this.playProductId(planKey, { founding });
+    if (!id) return null;
+    return formatPlayPrice(await playItemDetails(window, id), i18n.lang === 'ko' ? 'ko-KR' : 'en-US');
+  },
+
+  /**
+   * Play 구매 토큰을 서버가 확인하게 한다 — 서버가 Google 에 다시 묻고, 상품·창립 자격을 보고, 권한을 적고, acknowledge 한다.
+   * ⚠️ 화면은 스스로 'paid' 라고 우기지 않는다. 끝나면 auth.refresh() 로 서버 값을 다시 읽는다.
+   * @returns {{ok:true, tier, ends, already}|{pending:true}}
+   */
+  async confirmPlay({ productId, purchaseToken }) {
+    if (!CONFIG.PLAY_VERIFY_URL) throw new Error('NOT_CONFIGURED');
+    const token = await auth.accessToken?.();
+    if (!token) throw new Error('NOT_SIGNED_IN');
+    const r = await fetch(CONFIG.PLAY_VERIFY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ productId, purchaseToken }),
+    });
+    const j = await r.json().catch(() => ({}));
+    if (r.status === 202) return { pending: true };
+    if (!r.ok) throw Object.assign(new Error(j.error || `play-verify ${r.status}`), { detail: j });
+    await auth.refresh?.();
+    return j;
+  },
+
+  /** 앱을 다시 열었을 때 — Play 에 남은 구매를 서버로 다시 보낸다(서버 멱등). 앱 밖·판매 전·로그인 전에는 아무것도 안 한다. */
+  async restorePlay() {
+    if (!isInApp() || this.route() !== 'play' || !CONFIG.PLAY_VERIFY_URL) return { checked: 0, results: [] };
+    if (!salesAllowed({ mode: CONFIG.MONETIZATION_MODE, salesOpen: CONFIG.SALES_OPEN })) return { checked: 0, results: [] };
+    if (!(await auth.accessToken?.())) return { checked: 0, results: [] };
+    const known = Object.values(PLANS).flatMap(p => [this.playProductId(p), this.playProductId(p, { founding: true })]);
+    return restorePlayPurchases(window, (p) => this.confirmPlay(p), { knownProductIds: known });
   },
 
   /* 창립회원 남은 자리. ⚠️ 못 세면 0 이 아니라 **null** 이다 —

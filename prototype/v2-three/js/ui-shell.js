@@ -16,12 +16,12 @@ import { questionForLayer, phenomenonForLayer, LAYER_PHENOMENON, reportKindsForP
 import { iconForPhenomenon, iconSrc, iconSrcSet, groupIconSrc, groupIconSrcSet } from '../../js/earthus-icons.js?v=2';
 import { menuCoverage, menuTime, canClearLayer, matchesMenu } from './information-contract.js';
 // PHASE 8 §13 — 리포트 센터. 보고서 렌더링은 그쪽 모듈이 한다. 여기서 문장을 만들지 않는다.
-import { reportDocHtml, reportKey, reportIndexKey, reportUrl, reportIdFromUrl, currentTier, DATA_LABEL_TEXT } from './report-center.js?v=3';
+import { reportDocHtml, reportKey, reportIndexKey, reportUrl, reportIdFromUrl, currentTier, DATA_LABEL_TEXT } from './report-center.js?v=4';
 // 지시서 §8·§16 — 궁금한 점(추천 질문)은 시뮬레이션 능력 레지스트리가 정한다.
 // 없는 엔진의 질문 버튼은 여기서도 만들지 않는다. 다만 '왜 없는지'를 말하는 버튼은
 // pop-metric-menu 의 선례처럼 둔다 — 조용히 아무 말도 하지 않는 게 더 큰 거짓말이다.
 import { simEntryFor, questionsForPhenomenon, questionsForCountry, previewSceneFor } from './sim-questions.js?v=2';
-import { intelStripHtml, intelOf } from './intel-strip.js?v=3-fc0924';
+import { intelStripHtml, intelOf } from './intel-strip.js?v=4-pb0924';
 // (2026-09-24) 뒤로 단추 — v1 과 같은 파일. 번들에서는 build-v2-bundle.sh 가 ./shared/back-close.js 로 옮긴다.
 // (2026-09-24 정정) ?v=2 — main.js 와 같은 지정자(한 벌). back-close.js 가 바뀌었다(웹 탭 무동작 · 앱이 연 시트).
 import { backStack } from '../../js/back-close.js?v=2';

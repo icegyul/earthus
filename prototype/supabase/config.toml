@@ -46,3 +46,16 @@ verify_jwt = true
 [functions.forecast-v8]
 # Earthus 자체 예보 payload는 유료 전용이다. 게이트웨이 JWT + 함수 내부 entitlement를 통과해야 한다.
 verify_jwt = true
+
+[functions.play-verify]
+# (2026-09-24) 앱 안 Play 구매 검증. 사용자 JWT 필수 + 함수 안 SALES_ENABLED 문 + Google API 재확인.
+verify_jwt = true
+
+[functions.play-rtdn]
+# (2026-09-24) Play RTDN(Pub/Sub push). Pub/Sub 는 Supabase JWT 를 못 붙인다 → 함수 안 PLAY_RTDN_TOKEN 공유 비밀 대조 필수.
+#   알림 본문은 믿지 않고 Google API 로 다시 확인한 결과로만 권한을 거둔다(_shared/play-billing-core.js handleRtdn).
+verify_jwt = false
+
+[functions.entitlement]
+# (2026-09-24) v2 등급 서버 판정 — 본인 것만 읽는다(earthus_my_entitlement). 판정 실패는 FREE.
+verify_jwt = true

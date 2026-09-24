@@ -152,8 +152,11 @@ if (manifestJson.maskableIconUrl) {
 if (manifestJson.fallbackType !== 'customtabs') {
   throw new Error('fallbackType 은 customtabs 만 — webview 폴백은 Google 로그인·Play 결제가 안 된다(R10)');
 }
-if (manifestJson.features && manifestJson.features.playBilling) {
-  console.warn('주의: playBilling 이 켜져 있다 — Phase 2(결제)는 2026-09-24 PD 결정으로 보류 중이다.');
+// (2026-09-24 정정, Phase 2) 아래 '보류 중' 경고는 옛 상태다 — PD 결정(2027-01-01 유료 · 무료 앱 + Play 선불형 기간 이용권)으로
+//   playBilling 을 켰다. 판매 자체는 웹 스위치(SALES_OPEN)·서버 스위치(SALES_ENABLED)가 계속 닫고 있다.
+const PLAY_BILLING = !!(manifestJson.features && manifestJson.features.playBilling && manifestJson.features.playBilling.enabled);
+if (PLAY_BILLING) {
+  console.log('playBilling 켜짐 — billing 1.2.0 · PaymentActivity · PaymentService · DigitalGoodsRequestHandler 가 붙는다.');
 }
 const twaManifest = new TwaManifest(manifestJson);
 const generator = new TwaGenerator();
@@ -295,7 +298,15 @@ gradle = replaceOnce(gradle, /buildTypes \{\s*release \{\s*minifyEnabled true\s*
     }`,
   'app/build.gradle buildTypes');
 gradle = replaceOnce(gradle, /dependencies \{\s*implementation fileTree\(include: \['\*\.jar'\], dir: 'libs'\)/,
-  `dependencies {
+  PLAY_BILLING
+    ? `dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    // Play 결제(Phase 2, 2026-09-24 PD 결정 — 선불형 기간 이용권): twa-manifest.json 의 features.playBilling 으로
+    //   Bubblewrap 이 아래에 'com.google.androidbrowserhelper:billing:1.2.0'(billingclient 8.3.0, PBL 8+ 충족)을 붙였다. 손으로 고치지 말 것.
+    //   (2026-09-24 정정) 예전 'TODO(Phase 2 결제 — 구독료 결정 뒤, PD 보류)' 문구는 이 생성으로 풀렸다.
+    // 앱 안 표식 규칙(EntryMarker) 단위 시험
+    testImplementation 'junit:junit:4.13.2'`
+    : `dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     // TODO(Phase 2 결제 — 구독료 결정 뒤, 2026-09-24 PD 보류): Play 결제는 twa-manifest.json 의
     //   features.playBilling 을 켜고 tools/generate-project.mjs 로 다시 만든다. 그러면 여기에
@@ -319,7 +330,15 @@ write('build.gradle', rootGradle);
 // 4-f. DelegationService — Phase 2 자리 표시
 let delegation = read('app/src/main/java/net/earthus/app/DelegationService.java');
 delegation = replaceOnce(delegation, /public class DelegationService extends/,
-  `/**
+  PLAY_BILLING ? `/**
+ * 알림·위치 위임 + Play 결제 서비스 (Bubblewrap 생성).
+ * 지금 붙은 것: 알림 위임(enableNotifications) + 위치 위임(LocationDelegationExtraCommandHandler)
+ *   + DigitalGoodsRequestHandler(웹의 Digital Goods API → Play 결제, features.playBilling — 2026-09-24 PD 결정 Phase 2).
+ * (2026-09-24 정정) 예전 'TODO(Phase 2 결제 — 구독료 결정 뒤, PD 보류)'는 이 생성으로 풀렸다. 손으로 넣지 말 것.
+ * ⚠️ 삼성 인터넷 기본 기기용 네이티브 Billing 브리지(지시서 §3-1 c)는 만들지 않았다 — TWA 는 Chrome·삼성 인터넷 안의 웹에
+ *   JS 객체를 심을 수 없다(웹 prototype/js/play-billing.js 머리 주석). 그 기기에서는 웹이 '앱에서는 결제할 수 없습니다'를 보인다.
+ */
+public class DelegationService extends` : `/**
  * 알림·위치 위임 서비스 (Bubblewrap 생성).
  * 지금 붙은 것: 알림 위임(enableNotifications) + 위치 위임(LocationDelegationExtraCommandHandler).
  * TODO(Phase 2 결제 — 구독료 결정 뒤, 2026-09-24 PD 보류): playBilling 을 켜면 생성기가 여기에

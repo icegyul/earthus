@@ -31,6 +31,8 @@ import { i18n } from './i18n.js';
 import { auth } from './auth.js';
 import { CONFIG } from './config.local.js';   // ⚠️ config.js 가 아니다 — CONFIG 는 여기 있다
 import { subscriptionUiAllowed } from './access-mode.js';
+// (2026-09-24, Phase 2) v2 잠금 → v1 구독 → v2 복귀 주소 규칙 · 앱 안 Play 구매 복원
+import { parseSubscribeRequest, subscribeLinkAllowed } from './subscribe-route.js';
 import { initAccount, loginSheet, consentSheet, accountSheet,
          legalView, waitlistUI } from './ui-account.js';
 import { analytics } from './analytics.js';
@@ -786,7 +788,28 @@ function bindAccountUI() {
   {
     const q = new URLSearchParams(location.search);
     const back = q.get('back');
-    if (back && /^\/[a-z0-9/-]*$/i.test(back)) {
+    /* (2026-09-24, Phase 2 · 지시서 §3-5-2) `/?subscribe=<explorer|pro>&back=<v2 주소>` — v2 잠금 카드에서 온 구독 길.
+       이때의 back 은 **결제가 끝난 뒤** 돌아갈 곳이다(ui-subscribe 가 처리). 로그인만 끝나도 돌려보내는 아래 규칙에
+       걸리면 결제 전에 v2 로 튕겨 간다 — 그래서 subscribe 가 있으면 아래 로그인 복귀를 건너뛴다.
+       ⚠️ 판매가 닫혀 있으면(SHOW_SUBSCRIBE·SALES_OPEN) 아무것도 하지 않는다 — 지금 운영 화면은 달라지지 않는다. */
+    const subReq = parseSubscribeRequest(location.search);
+    //    주소의 subscribe·back 은 일부러 남긴다 — 로그인(OAuth)이 이 주소(location.href)로 돌아오므로, 지우면 로그인 뒤 구독 길을 잃는다.
+    //    결제가 끝나 back 으로 떠나면 사라진다(location.replace).
+    if (subReq && subscribeLinkAllowed(CONFIG)) {
+      setTimeout(async () => {
+        const { subscribeSheet } = await import('./ui-subscribe.js');
+        subscribeSheet.open(null, { planKey: subReq.planKey, back: subReq.back });
+      }, 400);
+    }
+    /* (2026-09-24, Phase 2) 앱 안 Play — 로그인이 붙으면 한 번, Play 에 남은 구매를 서버로 다시 보낸다(검증·acknowledge 복원).
+       billing.restorePlay 가 앱 밖·판매 전·검증 주소 없음이면 아무것도 하지 않는다 → 지금은 네트워크 요청 0건. */
+    let playRestored = false;
+    auth.onChange(() => {
+      if (!auth.user || playRestored) return;
+      playRestored = true;
+      import('./billing.js').then(m => m.billing.restorePlay()).catch(() => {});
+    });
+    if (back && !subReq && /^\/[a-z0-9/-]*$/i.test(back)) {
       auth.onChange(() => { if (auth.user) location.replace(back); });
     }
     if (q.get('popup') === '1' && window.opener) {

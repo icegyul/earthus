@@ -15,6 +15,7 @@
 
 import { INTEL_QUESTIONS, sectionStatus, hasIntel, INTEL_ACTION } from './intel-questions.js?v=2';
 import { decideCapabilityAccess, lockExplanation, TIER } from '../../js/access-mode.js';
+import { upgradeLineHtml } from '../../js/subscribe-route.js';
 import { forecastNoticeHtml, isModelForecastKind } from './forecast-notice.js?v=1';
 
 export const SECTION_TIER = Object.freeze({
@@ -118,9 +119,13 @@ export const intelStripHtml = ({ phenomenonId, packet, i18n, esc = plainEsc, bad
     + qs + '</div>';
 };
 
+// (2026-09-24 정정, Phase 2 · 지시서 §3-5-2) 마지막 줄이 판매가 열렸을 때만 'EXPLORER 구독 화면으로 →' 링크가 된다
+//   (/?subscribe=explorer&back=<지금 v2 주소 그대로>). 판매가 닫혀 있으면 예전 문구(l.upgrade) 그대로 — 지금 화면은 같다.
 const lockBlock = (section, ko, esc) => {
   const l = lockExplanation({ cap: sectionTitle(section, ko), requiredTier: TIER.EXPLORER, ko });
-  return `<div class="card"><div class="card-b"><b>${esc(l.what)}</b><br/>${esc(l.why)}<br/>${esc(l.adds)}<br/><span class="paysub">${esc(l.upgrade)}</span></div></div>`;
+  const up = upgradeLineHtml({ config: globalThis.EARTHUS_CONFIG, tier: 'explorer', loc: globalThis.location || null,
+    ko, esc, upgradeText: l.upgrade });
+  return `<div class="card"><div class="card-b"><b>${esc(l.what)}</b><br/>${esc(l.why)}<br/>${esc(l.adds)}<br/>${up}</div></div>`;
 };
 
 // 절 하나의 본문 — intel-q 를 누르면 main.js 가 이것을 카드로 연다.

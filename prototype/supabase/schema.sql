@@ -98,6 +98,8 @@ create policy "consents_select_own" on public.consents
 create policy "consents_insert_own" on public.consents
   for insert with check (auth.uid() = user_id);
 -- update/delete 정책 없음 = 아무도 못 고치고 못 지운다 (이력 보존)
+-- (2026-09-24 정정) 사실이 아니었다 — user_id 의 on delete cascade 가 계정 삭제 때 이 표를 지운다(RLS 는 cascade 를 막지 못한다).
+--   보존은 migrations/20260924120000_account_deletion_retains_legal_records.sql 이 삭제 직전에 retained_consents 로 옮겨서 한다.
 
 -- 선택 이용행태 분석의 event table·RLS·허용목록 trigger·철회 삭제·내보내기는
 -- migrations/20260814193000_earthus_usage_analytics.sql 이 정본이다.
@@ -148,6 +150,9 @@ begin
   -- 동의 이력은 법적 보존 필요가 있을 수 있으므로 개인 식별자만 끊는다.
   -- (완전 삭제가 필요하면 아래 주석을 해제)
   -- delete from public.consents where user_id = uid;
+  -- (2026-09-24 정정) 위 줄을 주석으로 막아도 동의 이력은 지워졌다 — 아래 auth.users 삭제의 cascade 가 지운다.
+  --   결제 주문(orders, billing.sql)도 같다. 법정 보존(전자상거래법 5년·동의 3년)은
+  --   migrations/20260924120000_account_deletion_retains_legal_records.sql 의 auth.users BEFORE DELETE 트리거가 한다(PD 적용 대기).
 
   delete from public.profiles where id = uid;
   delete from auth.users where id = uid;   -- on delete cascade 로 나머지 정리

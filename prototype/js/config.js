@@ -106,7 +106,12 @@ export const API = {
   SAT_HISTORY: CDN + '/celestrak/history-14d.json.gz',
   KP:          'https://services.swpc.noaa.gov/json/planetary_k_index_1m.json',
   AURORA:      'https://services.swpc.noaa.gov/json/ovation_aurora_latest.json',
+  // (2026-09-24 정정) v1 '명소'(layers/travel.js)는 더 이상 이 주소를 부르지 않는다 — 아래 TRAVEL_POI 를 읽는다.
+  //   상수는 남긴다(다른 도구가 참고할 수 있다). 브라우저에서 공용 Overpass 를 새로 부르지 말 것.
   OVERPASS:    'https://overpass-api.de/api/interpreter',
+  // 명소 정적 파일 — Lambda(aws/travel-poi)가 하루 1회 5°칸으로 만든다. S3 키는 app/tourism/poi/ (CloudFront /tourism/* → 오하이오).
+  //   © OpenStreetMap contributors · ODbL 1.0 — 색인(index.json)의 attribution 과 ui-source.js poi 줄에 있다.
+  TRAVEL_POI:  CDN + '/tourism/poi',
   SDO_IMG:     'https://sdo.gsfc.nasa.gov/assets/img/latest/latest_1024_0193.jpg',
 };
 

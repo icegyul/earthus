@@ -13,7 +13,7 @@ import { ukForecast } from './ukfc.js';
 import { coverage } from './coverage.js';
 import { windField } from '../windfield.js';
 import { gridOverlay } from '../gridoverlay.js';
-import { poi } from './travel.js';
+import { poi } from './travel.js?v=20260924-poi-static';
 import { phenomena } from './phenomena.js';
 import { buoys } from './ocean.js';
 import { tsunami } from './tsunami.js';

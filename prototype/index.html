@@ -136,7 +136,7 @@
      ⚠️ href 는 import 가 가리키는 주소와 ?v= 까지 같아야 한다(main.js:2-3 싱글턴 주석) — 다르면 중복 다운로드만 된다.
      ⚠️ 스타일시트 뒤에 둔다 — 같은 서버 연결을 CSS(첫 화면 로고·글자)가 먼저 쓰게. -->
 <!-- modulepreload:begin -->
-<link rel="modulepreload" href="js/main.js?v=20260924-mapspot">
+<link rel="modulepreload" href="js/main.js?v=20260924-prelaunch">
 <link rel="modulepreload" href="js/app-context.js?v=2">
 <link rel="modulepreload" href="js/back-close.js">
 <link rel="modulepreload" href="js/viewer.js">
@@ -163,6 +163,7 @@
 <link rel="modulepreload" href="js/auth.js">
 <link rel="modulepreload" href="js/config.local.js">
 <link rel="modulepreload" href="js/access-mode.js">
+<link rel="modulepreload" href="js/subscribe-route.js">
 <link rel="modulepreload" href="js/ui-account.js">
 <link rel="modulepreload" href="js/analytics.js">
 <link rel="modulepreload" href="js/ui-sat.js">
@@ -199,7 +200,7 @@
 <link rel="modulepreload" href="js/layers/ukfc.js">
 <link rel="modulepreload" href="js/layers/coverage.js">
 <link rel="modulepreload" href="js/gridoverlay.js">
-<link rel="modulepreload" href="js/layers/travel.js">
+<link rel="modulepreload" href="js/layers/travel.js?v=20260924-poi-static">
 <link rel="modulepreload" href="js/layers/phenomena.js">
 <link rel="modulepreload" href="js/layers/ocean.js">
 <link rel="modulepreload" href="js/layers/tsunami.js">
@@ -235,6 +236,7 @@
 <link rel="modulepreload" href="js/layers/cyclone-geometry.js">
 <link rel="modulepreload" href="js/newsbubble.js">
 <link rel="modulepreload" href="js/launch-schedule.js">
+<link rel="modulepreload" href="js/layers/poi-static.js">
 <link rel="modulepreload" href="js/sky.js">
 <link rel="modulepreload" href="js/eclipsepath.js">
 <link rel="modulepreload" href="js/tourism-flow-contract.js">
@@ -246,6 +248,7 @@
 <link rel="modulepreload" href="js/cloud-depth-provider.js">
 <link rel="modulepreload" href="js/satellite-tile-cache.js">
 <link rel="modulepreload" href="js/satellite-security.js">
+<link rel="modulepreload" href="js/play-billing.js">
 <!-- modulepreload:end -->
   <!-- ⚠️ AI 학습 거부 — robots.txt 와 같은 방침이다(학습 금지, 인용 허용).
        메타 태그는 자발적 준수라 강제력이 없다. 실제 근거는 이용약관 제11조다. -->
@@ -1396,7 +1399,7 @@
 <script src="https://cdn.jsdelivr.net/npm/satellite.js@6.0.2/dist/satellite.min.js" defer
         integrity="sha384-J3D70NIZSVUuhQbp4W22OKF/xNWQjCEXmLxpnBp4CNDaQ+TbS1mmDZ2W3wlgqpKj"
         crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script type="module" src="js/main.js?v=20260924-mapspot"></script>
+<script type="module" src="js/main.js?v=20260924-prelaunch"></script>
 <!-- 홈 화면 설치용 서비스워커. 등록 실패해도 앱은 그대로 동작한다. -->
 <script>
   if ('serviceWorker' in navigator) {

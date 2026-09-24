@@ -78,6 +78,9 @@ const salesOpenConfig = () => fs.readFileSync(path.join(REPO, 'prototype', 'js',
   .replace('SALES_OPEN: false,', 'SALES_OPEN: true,')
   .replace('OPEN_METEO_COMMERCIAL_READY: false,', 'OPEN_METEO_COMMERCIAL_READY: true,')
   .replace('GVP_COMMERCIAL_READY: false,', 'GVP_COMMERCIAL_READY: true,')
+  // (2026-09-24 정정) 판매 조건이 아홉으로 늘었다(access-mode.js SALES_PRECONDITIONS). 둘만 켜면 결제 길 시험이
+  //   'SALES_PRECONDITION_BLOCKED' 에서 멈춘다 — 이 시험은 결제 길(앱 안/밖)을 보는 것이라 조건은 모두 켠다.
+  .replace(/\b(WEATHER_BUSINESS_REGISTERED|ESRI_AUTH_TILES_READY|GEMINI_AGE_CLAUSE_RESOLVED|ECOBANK_CLEARED|NEWS_RSS_CLEARED|V2_SERVER_TIER_LIVE|PLAY_BILLING_LIVE):\s*false,/g, '$1: true,')
   .replace(/SHOW_SUBSCRIBE:\s*false,/, 'SHOW_SUBSCRIBE: true,');
 
 async function v1Ready(page) {

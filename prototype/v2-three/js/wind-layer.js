@@ -40,7 +40,7 @@ import { timeBus as sharedTimeBus } from './time-bus.js?v=1';
 import { sharedGfsFrames } from './gfs-frames.js?v=2';
 import { acceptsArrival, forecastHourAt, sameSpan } from './frame-arrival.js?v=1';
 import { scaleOf, legendModel, bandIndex, KT_PER_MS } from './field-scales.js?v=1';
-import { fieldLegend as sharedLegend, legendMetaLine } from './field-legend.js?v=1';
+import { fieldLegend as sharedLegend, legendMetaLine } from './field-legend.js?v=2-fix0924';
 import { WindParticles, particleBudgetFor, particleCountFor, sampleWind, WIND_CALM_MS, WIND_SPEED_BOUNDS_MS } from './wind-particles.js?v=1';
 
 const D2R = Math.PI / 180;

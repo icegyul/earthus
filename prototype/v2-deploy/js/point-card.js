@@ -25,12 +25,12 @@
 //     색면 객체의 sampleAt 은 예보 범위 밖·바다 마스크도 화면과 같게 판정한다.
 //   · 이 파일은 DOM 을 모른다. 색면 객체·프레임 저장소·지상관측 저장소·fetch 는 부른 쪽이 넣는다(시험이 가짜를 넣는다).
 
-import { FIELD_DESCRIPTORS, readoutOf, sourceLabel, timeMeta, cellLabel } from './field-layer.js?v=2-fix0924';
+import { FIELD_DESCRIPTORS, readoutOf, sourceLabel, timeMeta, cellLabel } from './field-layer.js?v=3-fix0924';
 import { scaleOf } from './field-scales.js?v=1';
 import { readTicks } from './field-log.js?v=1';
 import { normalizeSurfaceObs, obsFresh, fmt1, kstLabel } from './obs-labels.js?v=1';
 import { kmBetween } from './for-me-signal.js?v=2';
-import { POINT_BASE } from './point-readout.js?v=3-fix0924';
+import { POINT_BASE } from './point-readout.js?v=4-fix0924';
 
 export const POINT_OBS_MAX_KM = 25;          // 격자 vs 실측 — 25 km 안의 관측만 그 자리 값으로 쓴다
 export const POINT_DAY_HOUR_UTC = 6;         // 매일 15시 KST(= 06Z). 런이 00/06/12/18Z · 3시간 스텝이라 늘 정시 한 장에 맞는다

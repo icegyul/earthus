@@ -764,7 +764,8 @@ test('입자 색과 경계가 색 눈금표(field-scales wind)에서 온다 — 
   assert.doesNotMatch(src, /#[0-9a-fA-F]{6}\b/, 'wind-layer.js 에 색이 적혀 있다');
   assert.doesNotMatch(src, /\[\s*1\s*,\s*5\s*,\s*10\s*,\s*20/, 'wind-layer.js 에 풍속 경계가 적혀 있다');
   // v1(prototype/js) 을 런타임에 끌어오지 않는다.
-  for (const m of src.matchAll(/^import .* from '([^']+)';$/gm)) assert.match(m[1], /^\.\/[a-z-]+\.js\?v=\d+$/, m[1]);
+  // (2026-09-24 정정) 예전 정규식은 ?v= 뒤를 숫자만 받았다 — 연쇄 올림 토큰(2-fix0924)에서 뜻(로컬 ./ 모듈만)과 무관하게 깨졌다.
+  for (const m of src.matchAll(/^import .* from '([^']+)';$/gm)) assert.match(m[1], /^\.\/[a-z-]+\.js\?v=\d+(-[a-z0-9]+)?$/, m[1]);
 });
 
 test("범례 — m/s + kt 두 줄 · 'MODEL · GFS 0.5° · 런 · 유효' · 입자 과장 고지 · 런이 12시간 넘게 늙으면 '지연'", async () => {
@@ -953,7 +954,8 @@ test('카드에 적힌 것이 바뀌면 알린다(onChange) — 꺼져 있을 �
 
 test('공용 파일의 배선 — main.js 가 층을 만들어 꽂고 tick·클릭·칩을 잇는다. 출처 문구는 사실대로다', () => {
   const main = read('../../prototype/v2-three/js/main.js');
-  assert.match(main, /import \{ createWindLayer \} from '\.\/wind-layer\.js\?v=1';/);
+  // (2026-09-24 정정) 예전: ?v=1 로 못박았다 — 번호를 올릴 때마다 배선과 무관하게 깨졌다. 배선(이 import 가 있다)만 잡는다.
+  assert.match(main, /import \{ createWindLayer \} from '\.\/wind-layer\.js\?v=\d+(-[a-z0-9]+)?';/);
   assert.match(main, /liveLayers\.windLayer = windLayer;/);
   assert.match(main, /windLayer\.tick\(dt, camera\);/);
   assert.match(main, /windLayer\.readoutAt\(lat, lon\)/);
@@ -961,7 +963,8 @@ test('공용 파일의 배선 — main.js 가 층을 만들어 꽂고 tick·클�
   // 입자는 색면과 **같은 지표 높이**에 있어야 한다(2026-09-20 반박 검증: 옛 껍질은 과장된 최고봉 위라 입자만 떠서 그려졌다 —
   // 고도 3,000 km 에서 태풍 소용돌이가 색면의 눈과 약 100 px 어긋났다). 지킬 것은 '색면과 같은 높이'다.
   assert.match(main, /shellRadius: \(\) => 1 \+ FIELD_LIFT/);
-  assert.match(main, /import \{ FIELD_LIFT \} from '\.\/field-renderer\.js\?v=1';/);
+  // (2026-09-24 정정) ?v=1 못박기를 풀었다 — 확대 흐림(uZoomFade)으로 field-renderer 번호가 올랐다. 뜻은 'main 이 FIELD_LIFT 를 이 모듈에서 읽는다'.
+  assert.match(main, /import \{ FIELD_LIFT \} from '\.\/field-renderer\.js\?v=\d+(-[a-z0-9]+)?';/);
   assert.match(main, /particleScale: \(\) => thermal\.budget\.particleScale/);
   assert.doesNotMatch(main, /'weather\/wind': \['wind', '바람 관측'\]/);
   // v1 의 flow.js 를 끌어오지 않는다.

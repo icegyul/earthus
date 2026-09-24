@@ -28,14 +28,14 @@ import { i18n } from './i18n.js?v=11';
 import { timeBus as sharedTimeBus } from './time-bus.js?v=1';
 import { decodeByte, sharedGfsFrames } from './gfs-frames.js?v=2';
 import { sharedGridFrames } from './grid-frames.js?v=2';
-import { fieldLegend as sharedLegend } from './field-legend.js?v=1';
+import { fieldLegend as sharedLegend } from './field-legend.js?v=2-fix0924';
 import { bandColor, formatValue, isolineSpec, scaleOf } from './field-scales.js?v=1';
 import { logRangeText, logReadout, readTicks, topBandNote } from './field-log.js?v=1';
-import { FieldRenderer, halfStepOf } from './field-renderer.js?v=1';
+import { FieldRenderer, halfStepOf } from './field-renderer.js?v=2-fix0924';
 import { landMaskCardLine, sharedLandMask } from './land-mask.js?v=1';
 import { FIELD_LABEL_CAP, FieldLabels, labelLevels, labelText, pickLabelSpots, thinField } from './field-labels.js?v=1';
 import { FieldSymbols, SYMBOL_CAP, symbolCardRow } from './field-symbols.js?v=1';
-import { accumAction, accumCardRow, accumCardState, accumLegendNote, accumStatusText, accumValidMs } from './precip-accum.js?v=1';
+import { accumAction, accumCardRow, accumCardState, accumLegendNote, accumStatusText, accumValidMs } from './precip-accum.js?v=2-fix0924';
 
 // 레이어 id → 무엇을 어떻게 그리나. 레이어 id·현상 id 는 개명하지 않는다(현상 레지스트리 규칙) — 'tempgrid' 그대로다.
 //   fieldId   프레임 저장소의 필드(gfs-frames.js) · scaleId  색 눈금표(field-scales.js)

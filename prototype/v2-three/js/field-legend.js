@@ -20,7 +20,7 @@
 //   ⚠️ W5 에서 Inspector 가 생기면 mount(inspector 안의 자리) 로 옮기고 index.html 의 position 규칙을 걷는다.
 //
 // ── 쓰는 법 (첫 배선은 바람 층 js/wind-layer.js — 2026-09-20 W3 · 색면의 범례는 W1 FieldRenderer 가 잇는다) ───────────────
-//   import { fieldLegend } from './field-legend.js?v=1';
+//   import { fieldLegend } from './field-legend.js?v=2-fix0924';
 //   import { scaleOf } from './field-scales.js?v=1';        // ⚠️ 질의문자열까지 이 파일의 import 와 똑같이(ES 모듈은 URL 전체로 구분된다)
 //   fieldLegend.mount(document.body);                        // 한 번. 다시 불러도 상자는 하나다
 //   fieldLegend.show({ scale: scaleOf('temp'), source: 'MODEL · GFS 0.5°',
@@ -28,7 +28,7 @@
 //   fieldLegend.show({ scale: scaleOf('precip'), unitAlt: true, … });    // 누적을 고르면 단위가 mm 로
 //   fieldLegend.hide();                                       // 색면을 끄면
 //   fieldLegend.refresh();                                    // 언어를 바꾼 뒤(main.js applyI18n)
-//   콘솔에서 한 번 보기: 이 모듈을 동적으로 들여 demo('wind') 를 부른다 — 주소는 페이지 기준 js/field-legend.js?v=1 이다.
+//   콘솔에서 한 번 보기: 이 모듈을 동적으로 들여 demo('wind') 를 부른다 — 주소는 페이지 기준 js/field-legend.js?v=2-fix0924 이다.
 //   ⚠️ 여기에 import 식을 글자 그대로 적지 마라: 번들 무결성 검사(tools/build-v2-bundle.sh 4/4)가 주석 속 import 도 읽어
 //      이 파일 기준 상대경로(js/js/…)로 풀고 '없는 import'로 빌드를 떨어뜨린다(2026-09-20 실측 — 배포 직전에 걸렸다).
 //   타임라인을 밀 때마다 show() 를 불러도 된다 — 눈금·단위·언어가 같으면 칸을 다시 만들지 않고 시각 글자만 바꾼다.
@@ -59,6 +59,10 @@ const TEXT = {
  *    풀이만 접는 근거: 풀이는 눈금표에 박힌 **고정된 설명문**이라 자료가 바뀌어도 그대로고(legendNote), 한 번 읽으면 된다.
  *    반대로 출처·유효시각은 프레임마다 바뀌는 **사실**이라 접으면 화면이 거짓말을 하게 된다.
  * 넓은 화면에서는 이 이름표가 아무 일도 하지 않는다 — 접는 규칙은 index.html 의 폰 구간(≤ 720px) 안에만 있다.
+ * (2026-09-24 정정) 세로 폰(≤ 720px · portrait)에서는 위 '풀이 한 줄뿐'이 더 이상 맞지 않는다:
+ *    · 출처·런·유효시각 줄(.fl-meta)은 fc74c9da 부터 범례에서 빠져 **좌하단 출처 줄**(source-line.js)로 옮겨 갔다 — 화면에서 사라진 것이 아니다.
+ *    · 둘째 단위 줄(kt, .fl-alt)도 접힘에서 빠진다(PD "이 창 더 얇고 작게" · 접힘 65 → 46). ▾ 로 펼치면 나온다.
+ *    접힌 상자는 어느 레이어든 제목 · 띠 · 첫 단위 눈금 세 줄이라 높이가 같다(W1). 규칙은 index.html 세로 폰 범례 구간에 있다.
  */
 export const LEGEND_COLLAPSED_CLASS = 'fl-collapsed';
 

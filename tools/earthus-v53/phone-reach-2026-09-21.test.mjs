@@ -295,7 +295,19 @@ test('위 한 줄 — 세로 폰에서 상단 단추가 전환기 줄에 들어�
   const w = px(prop(tile, 'width'), VP), h = px(prop(tile, 'height'), VP);
   const gap = px(prop(decl(scope, '#chrome'), 'gap'), VP);
   assert.equal(h, ES.size, `타일 높이 ${h} ≠ 전환기 ${ES.size} — 한 줄이 아니다`);
-  assert.match(decl(scope, '#chrome'), /margin-left:\s*var\(--es-row, 0px\)/, '단추 줄이 전환기 폭만큼 비켜 서지 않는다(main.js placePanel 이 --es-row 를 넘긴다)');
+  // (2026-09-24 정정 · UX 자동 점검 '#panel × nav.es-switch 100%') 비켜 서는 일이 단추 줄(#chrome)에서 **상자(#panel)** 로 옮겨 갔다 —
+  //   상자가 로고 밑 8 에서 시작해 로고를 통째로 품고 있었다. 예전 단언: #chrome 에 margin-left: var(--es-row, 0px).
+  const panelDecl = decl(scope, '#panel');
+  assert.match(panelDecl, /margin-left:\s*var\(--es-row, 0px\)/, '상자가 전환기 폭만큼 비켜 서지 않는다(main.js placePanel 이 --es-row 를 넘긴다) — 상자가 로고와 겹친다');
+  assert.match(panelDecl, /width:\s*calc\(min\(300px, calc\(100vw - 28px\)\) - var\(--es-row, 0px\)\)/, '상자 폭이 비킨 만큼 줄지 않는다 — 오른쪽 끝이 예전보다 밖으로 나간다');
+  assert.match(decl(scope, '#panel > .drawer'), /margin-left:\s*calc\(-1 \* var\(--es-row, 0px\)\)/, '서랍이 상자를 따라 오른쪽으로 밀려 연다 — 예전 자리(왼쪽 8 · 폭 300)로 되돌리지 않는다');
+  assert.doesNotMatch(decl(scope, '#chrome'), /margin-left:\s*var\(--es-row/, '단추 줄과 상자가 둘 다 비켜 서면 단추가 두 번 밀린다');
+  // 셈: 상자 왼쪽 = 전환기 왼쪽 + (전환기 폭 + 8) = 단추 줄 왼쪽 → 상자와 로고(전환기)는 가로로 겹치지 않는다.
+  // (2026-09-24 반박 검토) 이 자리의 예전 단언 `ES.left + (ES.size + 8) >= ES.left + ES.size` 는 늘 참(8 ≥ 0)이라 아무것도 잠그지 않았다.
+  //   셈이 서려면 상자와 단추 줄 사이에 **다른 여백이 끼지 않아야** 한다 — 상자에 padding-left 가 생기거나 단추 줄의 padding 이 0 이 아니면
+  //   단추가 56 · 104 · 152 에서 밀린다(표적 셈 아래 rowLeft 가 틀린다). 그것을 잠근다.
+  assert.doesNotMatch(panelDecl, /padding(-left)?\s*:/, '상자(#panel)에 안쪽 여백이 생겼다 — 단추 줄이 전환기 폭 + 8 보다 더 밀린다');
+  assert.match(decl(scope, '#chrome'), /(^|[;\s])padding:\s*0;/, '단추 줄(#chrome)의 안쪽 여백이 0 이 아니다 — 첫 단추가 상자 왼쪽(로고 오른쪽 + 8)에서 시작하지 않는다');
   const main = readFileSync(new URL('../../prototype/v2-three/js/main.js', import.meta.url), 'utf8');
   assert.match(main, /el\.style\.setProperty\('--es-row', `\$\{Math\.round\(r\.width \+ 8\)\}px`\)/, 'placePanel 이 전환기 폭 + 8 을 넘기지 않는다');
   assert.ok(main.includes("window.matchMedia('(max-width: 720px) and (orientation: portrait)')"), 'placePanel 의 한 줄 판정이 index.html 세로 머리글과 다른 글자다');

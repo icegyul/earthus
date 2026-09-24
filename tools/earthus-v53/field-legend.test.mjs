@@ -258,7 +258,9 @@ test('자리와 크기 — 상자는 고정 크기이고, 폰에서는 아래 �
 // (2026-09-24 · 위 한 줄) 세로 폰 — PD 폰 캡처 "창도 답답하고": 범례가 108~197 로 위쪽 셋째 창이었다.
 //   잠그는 결과: 위 한 줄(8~48) 바로 아래 56 에 서고 · 접힘 높이가 줄고 · 눈금 글씨는 10px 이상 · 칸 뼈대(kt 줄 자리)는 레이어와 무관하게 같다
 //   · 출처 줄만 빠진다(좌하단 줄이 같은 글을 쓴다 — b5-source-line 시험이 '나와야 통과'로 잠근다).
-test('세로 폰 — 범례는 위 한 줄 아래 56 에 서고, 접힘 높이가 89 → 65 로 준다(눈금 ≥ 10px · kt 자리 유지)', () => {
+// (2026-09-24 정정 · PD "이 창 더 얇고 작게") 접힘 65 → 46. kt 줄(.fl-alt)은 접힘에서만 빠진다 — W1 'reflow 없음'은 '접힌 상자는 어느 레이어든
+//   같은 세 줄(제목 · 띠 · 첫 단위 눈금)'로 다시 적는다. 접는 단추(▾)의 표적은 상자 안쪽 높이(46 − 테두리 2 = 44) 그대로 44×44 다.
+test('세로 폰 — 범례는 위 한 줄 아래 56 에 서고, 접힘 높이가 89 → 65 → 46 으로 준다(눈금 ≥ 10px · 접힌 뼈대는 레이어와 무관 · ▾ 표적 44)', () => {
   const html = read('../../prototype/v2-three/index.html');
   const from = html.indexOf('/* ---------- 색면 범례');
   const sec = html.slice(from, html.indexOf('/* ---------- ', from + 10));
@@ -273,14 +275,29 @@ test('세로 폰 — 범례는 위 한 줄 아래 56 에 서고, 접힘 높이�
   const shut = rows(/#field-legend\.fl-collapsed \{ grid-template-rows: ([^;]+); \}/.exec(b)[1]);
   // 여섯 줄(field-legend.js) 가운데 출처 줄(.fl-meta)이 빠지므로 다섯(펼침 · 끝은 풀이 auto) · 넷(접힘)이다.
   assert.equal(open.length, 5); assert.equal(open[4], null, '펼친 풀이 줄이 auto 가 아니면 풀이가 잘린다');
-  assert.deepEqual(shut, open.slice(0, 4), '접힘이 풀이 말고 다른 줄을 건드린다');
-  assert.ok(shut.every((n) => n > 0), 'kt 줄(넷째)이 0 이면 바람과 다른 레이어의 상자 높이가 달라진다(W1 reflow 없음)');
+  // (2026-09-24 정정) 예전: 접힘 = open.slice(0, 4) — kt 줄(넷째)이 비어도 자리를 지켰다. 이제 접힘은 첫 세 줄이고, 빠지는 넷째는 kt 줄이다.
+  assert.deepEqual(shut, open.slice(0, 3), '접힘이 제목 · 띠 · 눈금 말고 다른 줄을 남기거나 건드린다');
+  assert.ok(shut.every((n) => n > 0), '접힌 세 줄 가운데 0 인 줄이 있다 — 제목·띠·눈금은 늘 보여야 한다');
+  // 접힘에서 kt 줄은 **모든 레이어에서** 빠진다(이름표 하나에 건 규칙) → 접힌 상자 높이는 바람이든 기온이든 같다(W1 'reflow 없음').
+  assert.match(b, /\n {4}#field-legend\.fl-collapsed \.fl-alt \{ display: none; \}/, '접힘에서 kt 줄이 남아 빈 줄이 상자를 키운다');
+  assert.ok(!/\n {4}#field-legend \.fl-alt \{[^}]*display: none/.test(b), 'kt 줄을 펼침에서도 숨긴다 — ▾ 를 눌러도 둘째 단위가 없다');
   const pad = /padding: (\d+)px (\d+)px (\d+)px;/.exec(base);
-  const h = shut.reduce((a, c) => a + c, 0) + (shut.length - 1) * 3 + Number(pad[1]) + Number(pad[3]) + 2;
-  assert.equal(h, 65, `세로 폰 접힘 높이 ${h}`);
-  assert.ok(h < 89, '접힘 높이가 예전(89)보다 줄지 않았다');
+  const gap = Number((/row-gap: (\d+)px;/.exec(base) || [, 3])[1]);          // (2026-09-24 정정) 예전 셈은 줄 간격 3 을 박아 두었다 — CSS 에서 읽는다
+  const h = shut.reduce((a, c) => a + c, 0) + (shut.length - 1) * gap + Number(pad[1]) + Number(pad[3]) + 2;
+  assert.equal(h, 46, `세로 폰 접힘 높이 ${h}`);
+  assert.ok(h <= 46 && h < 65, '접힘 높이가 PD 요청(더 얇게 · ≤ 46)을 넘는다 — 예전 89 → 65 에서 한 번 더 줄였다');
+  // ▾ 표적: 상자는 overflow:hidden 이라 표적이 상자 밖으로 못 번진다 — 상자 안쪽 높이(h − 테두리 2)가 44 이상이어야 표적 44 가 선다.
+  const fold = /\n {4}#field-legend \.fl-fold \{([^}]*)\}/.exec(b);
+  assert.ok(fold, '세로 폰에서 접는 단추 자리가 없다');
+  const fw = Number((/width: (\d+)px;/.exec(fold[1]) || [])[1]), fh = Number((/height: (\d+)px;/.exec(fold[1]) || [])[1]);
+  assert.ok(fw >= 44 && fh >= 44, `▾ 표적이 ${fw}×${fh} — 44 미만`);
+  assert.ok(fh <= h - 2, `▾ 표적 ${fh} 이 상자 안쪽 ${h - 2} 보다 커서 잘린다`);
+  assert.match(fold[1], /top: 0;/, '표적이 상자 윗변에서 시작하지 않으면 아래가 잘린다');
+  // (2026-09-24 반박 검토) 44×44 표적은 띠 마지막 칸·눈금 위를 덮는다 — 누를 때 브라우저 탭 하이라이트가 그 네모를 통째로 칠해 색 칸이 가려졌다.
+  assert.match(fold[1], /-webkit-tap-highlight-color: transparent;/, '▾ 를 누르면 44×44 탭 하이라이트가 띠 마지막 칸·눈금을 덮는다');
   assert.match(b, /#field-legend \.fl-meta \{ display: none; \}/, '출처 줄이 좌하단과 두 번 뜬다');
-  for (const keep of ['.fl-bands', '.fl-ticks', '.fl-alt', '.fl-title', '.fl-note']) {
+  // (2026-09-24 정정) .fl-alt 는 위에서 따로 본다(접힘에서만 숨는다). 나머지는 이 덩어리가 어느 상태에서도 숨기지 않는다.
+  for (const keep of ['.fl-bands', '.fl-ticks', '.fl-title', '.fl-note']) {
     assert.ok(!new RegExp(`\\${keep} \\{[^}]*display: none`).test(b), `${keep} 을 세로 폰에서 숨긴다 — 눈금·단위·제목은 늘 있어야 한다`);
   }
 });

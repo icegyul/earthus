@@ -40,7 +40,7 @@
 
 import * as ThreeModule from '../../vendor/three-r184.module.min.js';
 import { ByteLru, applyValueTextureDefaults, decodeByte } from './gfs-frames.js?v=2';
-import { shaderValueAt } from './field-renderer.js?v=1';
+import { shaderValueAt } from './field-renderer.js?v=2-fix0924';
 import { scaleOf } from './field-scales.js?v=1';
 
 /** 카드 칩의 열쇠. 'rate' = 지금 그 시각의 강수율(mm/h) · 나머지는 누적 시간. 순서가 곧 칩 순서다. */

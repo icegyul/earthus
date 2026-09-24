@@ -23,7 +23,7 @@ import { attachEvidencePopover } from './evidence-popover.js?v=1';
 import { currentTier } from './report-center.js?v=3';
 import { decideCapabilityAccess, lockExplanation, TIER } from '../../js/access-mode.js';
 import { evaluateWatch, myZone, loadWatch, saveWatch } from './watch.js?v=1';
-import { LiveLayers, newsChipOpacity } from './live-layers.js?v=43-fix0924';
+import { LiveLayers, newsChipOpacity } from './live-layers.js?v=44-fix0924';
 import { StationModel } from './station-model.js?v=2';
 import { AskEarth } from './ask-earth.js?v=3';
 import { i18n } from './i18n.js?v=11';
@@ -33,7 +33,7 @@ window.__earthusT = (k) => i18n.t(k);
 import { SatLayer } from './sat-layer.js?v=1';
 import { CloudVolume } from './cloud-volume.js?v=5';
 // 바람 층(js/wind-layer.js · 2026-09-20 W3) — GFS 10 m 바람 프레임·시간 버스·입자 엔진·범례를 잇는 접착제. 관측소 막대기를 대신한다.
-import { createWindLayer } from './wind-layer.js?v=1';
+import { createWindLayer } from './wind-layer.js?v=2-fix0924';
 // 좌하단 출처 줄의 글 — 켜진 색면 출처 → 구름 → 지형·지금 바탕 순서를 한 곳에서 정한다(B5 · 2026-09-23 PD 정정).
 import { composeSourceLine, readLegend } from './source-line.js?v=1';
 // 공용 GFS 프레임 저장소 — 매니페스트 하나 · 프레임 캐시 하나 · 시간 하나(js/gfs-frames.js · 2026-09-20 A1).
@@ -47,15 +47,15 @@ import { timeBus } from './time-bus.js?v=1';
 // 색면 위의 나라·해안 윤곽선 — 새 색면이 바탕 지도의 국경을 덮어 '어디가 한반도인지' 알 수 없었다(js/field-outlines.js).
 import { createFieldOutlines } from './field-outlines.js?v=1';
 // 어느 레이어가 새 셰이더 색면인지 — 바람을 켤 때 이미 깔린 색면이 있으면 풍속 색면을 자동으로 깔지 않는다(기온이 꺼지지 않게).
-import { FIELD_DESCRIPTORS, activeField, isFieldLayerId } from './field-layer.js?v=2-fix0924';
+import { FIELD_DESCRIPTORS, activeField, isFieldLayerId } from './field-layer.js?v=3-fix0924';
 // 지점 판독(js/point-readout.js · 2026-09-20 W2) — 누른 자리의 값을 **우리 자료에서만** 읽는다.
 //   전에는 색면이 꺼져 있으면, 그리고 바다를 누르면, 브라우저가 api.open-meteo.com · marine-api.open-meteo.com 을
 //   직접 불렀다. 유료 서비스의 라이선스 노출이었고 화면에 칠한 값과 카드의 값이 달랐다. 이제 같은 프레임·같은 격자를 읽는다.
-import { METRIC_LAYER, seaSourceLine, sharedPointReadout } from './point-readout.js?v=3-fix0924';
+import { METRIC_LAYER, seaSourceLine, sharedPointReadout } from './point-readout.js?v=4-fix0924';
 const pointReadout = sharedPointReadout({ frames: gfsFrames, timeBus });
 import { CLOUD_LEVEL, createCloudYield } from './cloud-yield.js?v=1';
 // 색면이 지형 위로 떠 있는 높이 — 바람 입자를 같은 높이에 두려고 읽는다(시차 방지).
-import { FIELD_LIFT } from './field-renderer.js?v=1';
+import { FIELD_LIFT } from './field-renderer.js?v=2-fix0924';
 // 지상관측 두 문서(기상청 · GTS)는 공용 저장소(js/surface-obs.js)에서 받는다 — 바람·평년차·기입 모형·내 동네 카드가 같은 문서를 나눠 쓴다.
 import { surfaceObs } from './surface-obs.js?v=2';
 // 지구 위 실측 숫자(js/obs-labels.js · W1 ⑦) — 기온 색면이 켜져 있고 타임라인이 '지금'일 때만 관측소 값을 찍는다.
@@ -63,7 +63,7 @@ import { createObsLabels, obsCardHtml, obsCardTitle } from './obs-labels.js?v=1'
 // 지점 카드(js/point-card.js · 2026-09-23 PD) — 색면 현상을 고른 채 지구를 누르면 뜨는 한 장.
 //   ⚠️ live-layers.js 는 import 문을 하나만 둔다(obs-labels.test — 줄을 나누면 ?v= 가 어긋나는 날 두 번 실린다).
 //   그래서 평년 문서는 point-card.js 가 우리 S3(POINT_BASE)에서 스스로 받는다.
-import { loadPointDays, loadPointNormal, loadPointObs, pointCardHtml, readPointNow } from './point-card.js?v=2-fix0924';
+import { loadPointDays, loadPointNormal, loadPointObs, pointCardHtml, readPointNow } from './point-card.js?v=3-fix0924';
 let obsLabels = null;   // main() 안에서 만든다. 클릭 핸들러가 그보다 먼저 정의되므로 extScene 처럼 모듈 자리에 둔다
 import { PopSculpture } from './pop-sculpture.js?v=14-fix0924';
 import { PopMetricMenu, POP_POINT_METRIC } from './pop-metric-menu.js?v=3';
@@ -99,6 +99,7 @@ import { globeAdapter, overlayAdapter, takeoverAdapter } from './engine-adapters
 // (2026-09-24 PD "화면을 움직이면 모든 창과 메뉴들 사라지고, 멈추면 다시 메뉴가 보이고") 손이 지구를 끄는 동안 창을 걷는다.
 //   TAP_MOVE_PX 는 아래 canvas pointerup 의 '고르기' 문턱과 같은 값이다 — 숨김과 고르기가 서로 다른 문턱을 쓰지 않게.
 import { installMotionChrome, orbitSettled, TAP_MOVE_PX } from './motion-chrome.js?v=1';
+import { zoomDist } from './zoom-rate.js?v=1';   // (2026-09-24) 핀치·휠 줌 — 지표 가까이서 폭주하던 속도를 고도 기준으로
 
 const EARTH_RADIUS_M = 6371000;
 
@@ -771,7 +772,8 @@ class OrbitCam {
           const midY = (a.y + b.y) / 2;
           if (this.lastPinch) {
             if (dist > 8 && this.lastPinch.dist > 8) {
-              this.targetDist *= this.lastPinch.dist / dist;
+              // (2026-09-24 정정) 예전: this.targetDist *= this.lastPinch.dist / dist — 637 km 에서 1.25배만 벌려도 127 km 로 떨어졌다(zoom-rate.js 머리말).
+              this.targetDist = zoomDist(this.targetDist, this.lastPinch.dist / dist);
               this.targetDist = Math.max(this.minDist, Math.min(this.maxDist, this.targetDist));
             }
             // 대칭 핀치는 중점이 제자리라 틸트와 섞이지 않는다
@@ -804,7 +806,8 @@ class OrbitCam {
       e.preventDefault();
       this.autoRotate = false;   // 휠로 줌하는 것도 '만지기 시작'이다
       const distBefore = this.targetDist;   // (2026-09-24 검토 정정) 아래 wheel() 판정용
-      this.targetDist *= Math.exp(e.deltaY * 0.0011);
+      // (2026-09-24 정정) 예전: this.targetDist *= Math.exp(e.deltaY * 0.0011) — 637 km 에서 휠 한 칸이면 하한(127 km)까지 갔다.
+      this.targetDist = zoomDist(this.targetDist, Math.exp(e.deltaY * 0.0011));
       this.targetDist = Math.max(this.minDist, Math.min(this.maxDist, this.targetDist));
       // (2026-09-24) 휠 줌도 '움직이는 중' — 창을 걷는다
       // (2026-09-24 검토 정정) 최대 확대·축소에 닿아 줌이 안 바뀌는 휠은 창을 걷지 않는다 — 한계에서 휠을 굴리면 창만 깜빡였다.
@@ -5738,7 +5741,10 @@ async function main() {
        전환기가 설정·로그인·도움말을 입양해 가서 상자 300px 에 단추 셋(⌕ ⤴ ⚗)만 남아 거의 빈 상자였다(PD 폰 캡처 "창도 답답하고").
        세로 폰은 전환기와 **같은 줄**에 선다: 상자는 전환기 윗변에 맞추고, 단추 줄은 전환기 폭 + 8 만큼 비켜 선다(--es-row).
        상자(#panel)의 왼쪽은 전환기 왼쪽 그대로 둔다 — 그래야 검색·설정 서랍이 예전처럼 화면 왼쪽 8 에서 300 폭으로 열린다.
-       판정은 index.html 세로 자리표와 **같은 글자**의 미디어 질의다(700 이 아니다 — 700~720 세로 창도 같은 줄이어야 CSS 와 맞는다). */
+       판정은 index.html 세로 자리표와 **같은 글자**의 미디어 질의다(700 이 아니다 — 700~720 세로 창도 같은 줄이어야 CSS 와 맞는다).
+       (2026-09-24 정정 · UX 점검 '겹침 #panel × 로고') '상자의 왼쪽은 전환기 왼쪽 그대로'는 이제 틀리다 — 빈 상자가 로고 밑에 깔려
+       점검기가 겹침으로 셌다. index.html 이 --es-row 여백을 단추 줄(#chrome)에서 상자(#panel)로 옮겨 상자가 로고 오른쪽(56)에서 시작하고,
+       검색·설정 서랍은 음수 여백으로 예전 자리(왼쪽 8 · 폭 300)에서 그대로 열린다. 이 JS 는 그대로다(윗변만 맞춘다). */
     const oneRow = !!(window.matchMedia && window.matchMedia('(max-width: 720px) and (orientation: portrait)').matches);
     if (oneRow) {
       el.style.left = `${Math.round(r.left)}px`;

@@ -23,7 +23,7 @@ import {
 } from '../../prototype/v2-three/js/slr-plates.js';
 import { createFieldLegend, legendView } from '../../prototype/v2-three/js/field-legend.js';
 import { FIELD_DESCRIPTORS } from '../../prototype/v2-three/js/field-layer.js';
-import { scaleOf } from '../../prototype/v2-three/js/field-scales.js';
+import { scaleOf, FIELD_SCALES } from '../../prototype/v2-three/js/field-scales.js';
 import { resetSharedLandMask } from '../../prototype/v2-three/js/land-mask.js';
 
 const here = (rel) => new URL(rel, import.meta.url);
@@ -301,7 +301,17 @@ test('③ 폰에서 범례를 접을 수 있다 — 접으면 풀이 한 줄만 
   //   그것도 폰 구간이다. 뜻('넓은 화면에는 접힘 규칙이 없다')은 그대로: 두 폰 덩어리 밖의 .fl-collapsed 는 0 개여야 한다.
   const portraitBlock = (/@media \(max-width: 720px\) and \(orientation: portrait\) \{([\s\S]*?)\n {2}\}/.exec(css) || [, ''])[1];
   assert.ok(portraitBlock, '범례 절에 세로 폰 덩어리가 없다');
-  assert.ok(!/fl-collapsed[^{]*\{[^}]*display:\s*none/.test(portraitBlock), '세로 폰 덩어리가 접힘으로 무엇을 숨긴다 — 접어서 숨기는 것은 폰 구간의 풀이 하나뿐이다');
+  // (2026-09-24 정정 · PD "이 창 더 얇고 작게") 세로 폰 덩어리는 접힘에서 **둘째 단위 환산 줄(.fl-alt · 풍속 kt) 하나**를 더 뺀다 — 비어 있어도
+  //   11px 자리를 지키던 줄이다. 뜻은 그대로다: 첫 단위의 띠 · 경계 숫자 · 단위 · 제목은 접어도 남고, kt 는 ▾ 로 펴면 돌아온다.
+  //   예전 단언: 세로 폰 덩어리의 fl-collapsed 가 숨기는 것은 0 개. 이제: 정확히 .fl-alt 하나.
+  const portraitHidden = [...portraitBlock.matchAll(/#field-legend\.fl-collapsed ([^{]+)\{([^}]*)\}/g)]
+    .filter(([, , body]) => /display:\s*none/.test(body))
+    .map(([, sel]) => sel.trim());
+  assert.deepEqual(portraitHidden, ['.fl-alt'], `세로 폰 접힘이 숨기는 것이 ${portraitHidden.join(' · ') || '없음'} 이다 — kt 환산 줄 말고는 숨기지 않는다`);
+  for (const keep of ['.fl-bands', '.fl-title']) {
+    assert.ok(!new RegExp(`fl-collapsed[^{]*\\${keep}`).test(portraitBlock), `세로 폰에서 ${keep} 을 접어서 숨긴다`);
+  }
+  assert.ok(!/fl-collapsed \.fl-ticks(?!\.fl-alt)\s*\{/.test(portraitBlock), '세로 폰에서 첫 단위 눈금 줄을 접어서 숨긴다');
   assert.equal((css.match(/\.fl-collapsed/g) || []).length, (block.match(/\.fl-collapsed/g) || []).length + (portraitBlock.match(/\.fl-collapsed/g) || []).length,
     '접힘 규칙이 폰 구간 밖에도 있다 — 넓은 화면의 범례까지 접힌다');
   // 숨는 것은 풀이뿐이다. 띠·경계 숫자·단위·출처는 접어도 남는다.
@@ -409,4 +419,19 @@ test('③ 접는 단추 — 기본은 접힘이고, 누르면 뒤집히며, 읽�
   assert.notEqual(fold.getAttribute('aria-label'), ko, '언어를 바꿔도 단추 이름이 한국어 그대로다');
   legend.folded(true);
   assert.equal(fold.getAttribute('aria-expanded'), 'false');
+});
+
+// (2026-09-24 반박 검토 · PD "이 창 더 얇고 작게") 세로 폰의 접힌 범례는 둘째 단위 환산 줄(kt)을 뺀다 — 그 줄로 가는 길은 ▾ 하나뿐이다.
+//   그런데 ▾ 는 풀이(note)가 없는 눈금에서는 아예 숨는다(field-legend.js '죽은 토글' 규칙). 오늘 둘째 단위를 같이 보이는 눈금(mode 'both')은
+//   풍속 하나이고 풍속에는 입자 과장 고지(legendNote)가 있어 ▾ 가 선다. 새 'both' 눈금이 풀이 없이 들어오면 폰에서 kt 가 **닿을 길 없이** 사라진다.
+test('세로 폰 — 둘째 단위를 같이 보이는 눈금은 풀이가 있어 ▾ 로 kt 줄에 닿는다', () => {
+  const both = Object.values(FIELD_SCALES).filter((s) => s.altUnit && s.altUnit.mode === 'both');
+  assert.ok(both.length >= 1, "둘째 단위 'both' 눈금이 하나도 없다 — 이 시험의 전제가 바뀌었다");
+  for (const scale of both) {
+    for (const lang of ['ko', 'en']) {
+      const v = legendView({ scale, title: 'x', source: 's', lang, now: Date.now() });
+      assert.ok(v.altTicks && v.altTicks.length, `${scale.id} 의 둘째 단위 눈금이 없다`);
+      assert.ok(v.note, `${scale.id} (${lang}) 에 풀이가 없어 ▾ 가 숨는다 — 세로 폰 접힘에서 ${v.altUnit} 줄에 닿을 길이 없다`);
+    }
+  }
 });

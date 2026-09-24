@@ -78,7 +78,15 @@ test('손잡이는 #intel-body 밖, #intel 의 첫 자식이다 — 본문을 �
   const before = narrow.match(/\.sheet-grip::before \{[^}]*top: -(\d+)px; bottom: -(\d+)px;/);
   const grip24 = Number((html.match(/--grip-h:\s*(\d+)px/) || [])[1]);
   assert.ok(before, '손잡이 표적(::before)이 없다');
-  assert.equal(grip24 + Number(before[1]) + Number(before[2]), 44, '손잡이 표적이 44 가 아니다');
+  // (2026-09-24 정정 · UX 자동 점검 '97×43') 딱 44 로 짠 표적은 손잡이 윗변이 소수점에 서면 화면 픽셀로 43 이 잡혔다 — 위로 2 를 더 번져 46.
+  //   예전 단언: 띠 + 위 + 아래 === 44. 이제: ≥ 46(반올림 한 번을 견딘다) · full 에서는 위 8 그대로(아래 단언).
+  assert.ok(grip24 + Number(before[1]) + Number(before[2]) >= 46, `손잡이 표적이 ${grip24 + Number(before[1]) + Number(before[2])} — 반올림 하나에 44 아래로 떨어진다`);
+  // full 시트 윗변은 --top-reserve(56)다. 위로 10 을 번지면 46 — 위 한 줄 단추(그림 8~48)의 보이는 아랫변을 시트(z4)가 가로챈다.
+  //   full 에서는 8 로 두어 48(단추 그림 아랫변)에서 멈춘다.
+  const full = narrow.match(/#intel\[data-sheet="full"\] \.sheet-grip::before \{ top: -(\d+)px; \}/);
+  assert.ok(full, 'full 시트에서 손잡이 표적이 위 한 줄 단추를 가로챈다(덮어 쓰는 규칙이 없다)');
+  assert.ok(56 - Number(full[1]) >= 48, `full 에서 손잡이 표적 윗변 ${56 - Number(full[1])} 이 단추 그림 아랫변 48 위로 올라간다`);
+  assert.ok(grip24 + Number(full[1]) + Number(before[2]) >= 44, 'full 에서 손잡이 표적이 44 미만');
   const bodyPad = html.match(/#intel\.open #intel-body \{[^}]*padding: (\d+)px/);
   assert.ok(bodyPad && Number(bodyPad[1]) >= Number(before[2]), '표적 아래쪽이 본문 여백을 넘어 탭 줄을 가로챈다');
 });

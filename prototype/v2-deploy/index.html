@@ -301,7 +301,20 @@
   @media (max-width: 640px) and (orientation: portrait) {
     #srcNote { max-width: calc(100vw - 52px - env(safe-area-inset-left) - env(safe-area-inset-right)); font-size: 10px; }
   }
-  @media (min-width: 1600px) { #srcNote { font-size: 10.5px; } }
+  /* (2026-09-24 정정 · UX 자동 점검 20260924-1152) 넓은 화면의 출처 줄이 9px 였다 — 11px 미만 글씨가 20 → 23 으로 늘었다
+     (출처 줄이 .src-main · .src-sep · .src-credit 세 칸으로 갈라져 한 줄이 세 번 잡혔다). 출처는 읽히라고 있는 것이다('모든 값에 출처와 시각').
+     데스크톱(≥ 1110 — 범례가 오른쪽 아래 구석에 서는 폭, 아래 '색면 범례' 절)은 11px · ≥ 1600 은 11.5px.
+     폭 상한(min(30vw, 400) — STEP 55 '타임스트립 앞에서 끊는다')은 그대로라 글이 커지면 줄이 늘고 상자는 **위로** 자란다(bottom 12 고정)
+     — 그 위·옆에 무엇이 있는지는 1280·1440·1920 실측으로 쟀다(겹침 0).
+     ⚠️ 1110 아래는 뺀다: 눕힌 폰(812×375)은 독과 알약을 같은 줄에 세우고 --hud-h 셈이 9px 로 잰 값이다(위 '세로로만 건다' 주석과
+        같은 사고 유형). 태블릿(768×1024)은 **이미** 독이 타임스트립(81×54)·알약(43×13)과 겹쳐 있다(전 실측 · 이번 변경 전부터) —
+        글을 키우면 독이 위로 자라 알약과의 겹침이 커진다. 태블릿 자리표를 먼저 고친 뒤에 올린다(남은 일).
+     세로 폰(≤ 720)은 이 규칙 밖이다 — 위 10px · 아래 '폰 세로 아래 자리표'의 10.5/10 그대로. */
+  @media (min-width: 1110px) {
+    #srcNote { font-size: 11px; }
+  }
+  /* (2026-09-24 정정) 이 줄은 10.5px 였다 — 9px 기본일 때의 한 단 위였다. 기본이 11 이 되며 한 단 위도 11.5 로 올린다. */
+  @media (min-width: 1600px) { #srcNote { font-size: 11.5px; } }
 
   #focus-chip {
     position: fixed; top: 14px; left: 14px; z-index: 7;
@@ -914,7 +927,9 @@
   }
   /* 폰(≤ 720): 범례가 지구 위쪽을 116px 가리고, 풀이 줄이 24px 안에서 세 줄로 접혀 잘렸다(2026-09-21 PD 실측 ③).
      ⚠️ 접어서 숨기는 것은 **풀이 한 줄뿐**이다 — 띠 · 경계 숫자 · 단위 · 출처 · 런 · 유효시각은 접어도 남는다.
-        (접힘 89px · 펼침은 풀이 줄이 auto 라 글이 더 이상 잘리지 않는다. 기본은 접힘 — js/field-legend.js 의 근거.) */
+        (접힘 89px · 펼침은 풀이 줄이 auto 라 글이 더 이상 잘리지 않는다. 기본은 접힘 — js/field-legend.js 의 근거.)
+     (2026-09-24 정정) 위 '풀이 한 줄뿐'은 이제 **세로 폰에서는** 틀리다 — 세로 폰 덩어리(아래 '세로 폰 — PD 폰 캡처' 절)는 접힘에서
+        둘째 단위 환산 줄(kt)도 뺀다(PD "이 창 더 얇고 작게" · 접힘 65 → 46). ▾ 로 펴면 돌아온다. 이 덩어리(≤ 720 전체 · 눕힌 좁은 창 포함)는 그대로 풀이 하나다. */
   @media (max-width: 720px) {
     #field-legend { left: 8px; right: 8px; width: auto; top: calc(108px + env(safe-area-inset-top)); height: auto; grid-template-rows: 14px 10px 12px 12px 12px auto; }
     #field-legend .fl-title { padding-right: 26px; }
@@ -938,13 +953,29 @@
             둘 중 하나만 바꾸면 출처가 화면에서 사라진다('모든 값에 출처와 시각'). 눕힌 폰·태블릿·데스크톱은 이 덩어리 밖이다.
        · 줄 높이: 제목 13 · 띠 8 · 눈금 11 · 둘째 단위(kt) 11 — kt 줄은 비어도 자리를 지킨다(W1 'reflow 없음' 그대로).
          눈금 글씨 9.5 → 10px. 접힘 높이 89 → 65 [셈: 13+8+11+11 + 3×3 + 6+5 + 2].
-       · 출처 줄이 빠지면 grid 는 풀이(.fl-note)를 다섯째 칸으로 당긴다 — 그래서 여기 줄 목록은 다섯 칸(펼침)·넷(접힘)이다. */
+       · 출처 줄이 빠지면 grid 는 풀이(.fl-note)를 다섯째 칸으로 당긴다 — 그래서 여기 줄 목록은 다섯 칸(펼침)·넷(접힘)이다.
+     (2026-09-24 정정 · PD 폰 캡처 "이 창 더 얇고 작게 만들어줘 모바일에서 은근 크게 보여") 접힘 65px 가 아직 컸다 —
+       386×65 안에 제목 · 띠 8 · 눈금 · **빈 kt 줄 11**(바람이 아니면 늘 비어 있다)이 섰다. 접힘 65 → 46 [셈: 13+6+12 + 2×2 + 5+4 + 2]:
+       · kt 줄(.fl-alt)은 **접힘에서만** 뺀다 — 펼치면(▾) 그대로 있다. W1 'reflow 없음'은 그대로 선다: 접힌 상자는 이제 어느 레이어든
+         같은 세 줄(제목 · 띠 · 첫 단위 눈금)이라 높이가 같다. 숨는 것은 둘째 단위 **환산**(m/s 옆 kt)뿐 — 첫 단위의 숫자·단위·띠·제목은 남는다.
+       · 띠 8 → 6 · 줄 간격 3 → 2 · 안쪽 여백 6/5 → 5/4 · 눈금 줄 11 → 12(글씨 10px 그대로 — 줄 높이만 글자에 맞춘다).
+       · 접는 단추(▾)는 그림 자리(제목 줄 오른쪽 끝)를 그대로 두고 **표적만** 44×44 로 키운다 — 상자 안쪽(테두리 안) 높이가 딱 44 다.
+         상자는 overflow:hidden 이라 표적을 상자 밖으로 번지게 할 수 없다 — 그래서 상자 높이를 46 에 맞췄다(44 + 테두리 2).
+         예전 표적은 24×20 이었다(실측). 표적이 띠·눈금의 오른쪽 끝 34px 를 덮지만 그 둘은 누르는 것이 아니다(상자는 pointer-events:none).
+       (2026-09-24 반박 검토 정정) 바로 위 '그 둘은 누르는 것이 아니다'는 띠에는 반만 맞다 — 띠(.fl-bands)는 칸마다 title 툴팁을 받으려고
+         pointer-events:auto 다. 세로 폰에서는 마지막 칸(오른쪽 끝 34px)의 툴팁이 이 표적 밑에 깔린다 — 폰에는 hover 가 없어 받아들인다. */
   @media (max-width: 720px) and (orientation: portrait) {
-    #field-legend { top: calc(56px + env(safe-area-inset-top)); padding: 6px 10px 5px; font-size: 10px; line-height: 11px; grid-template-rows: 13px 8px 11px 11px auto; }
-    #field-legend.fl-collapsed { grid-template-rows: 13px 8px 11px 11px; }
+    #field-legend { top: calc(56px + env(safe-area-inset-top)); padding: 5px 10px 4px; font-size: 10px; line-height: 12px; row-gap: 2px; grid-template-rows: 13px 6px 12px 12px auto; }
+    #field-legend.fl-collapsed { grid-template-rows: 13px 6px 12px; }
+    #field-legend.fl-collapsed .fl-alt { display: none; }
     #field-legend .fl-title { font-size: 11px; line-height: 13px; }
     #field-legend .fl-meta { display: none; }
-    #field-legend .fl-fold { top: 2px; }
+    /* (2026-09-24 정정 · 첫 촬영) 단추는 글자를 **세로 가운데**에 둔다(브라우저 기본) — 표적을 44 로 키우자 ▾ 가 제목 줄에서 띠 줄(상자 윗변 +25)로
+       내려앉아 기온 띠의 마지막 칸 위에 떴다. flex 로 위·오른쪽에 붙여 그림 자리(제목 줄 오른쪽 끝)를 예전 그대로 지킨다.
+       (2026-09-24 반박 검토) 표적 44×44 는 띠 마지막 칸 · 눈금 '3 m' 위를 덮는다 — 누르면 브라우저 기본 탭 하이라이트(안드로이드 크롬
+         rgba(51,181,229,.4))가 **그 44×44 네모 전체**를 파랗게 칠해 색 칸과 숫자가 순간 가려졌다(360 영어 해수면 캡처 · 예전 24×20 표적은 제목 줄 안에서만 번쩍였다).
+         하이라이트만 끈다 — 누른 결과는 ▾ ↔ ▴ 글자와 상자 높이가 바로 보여 준다. 키보드 포커스 테두리(information-access.css focus-visible)는 그대로다. */
+    #field-legend .fl-fold { top: 0; right: 0; width: 44px; height: 44px; padding: 5px 14px 0 0; line-height: 13px; display: flex; align-items: flex-start; justify-content: flex-end; border-radius: 0 9px 0 0; -webkit-tap-highlight-color: transparent; }
     /* (2026-09-24 반박 검토) 공식 특보 띠가 떠 있는 동안에는 띠가 위 한 줄 아래 한 칸(56~96)을 쓴다 — 범례는 그 아래 104 로 비킨다
        (띠 자리는 '폰 세로 아래 자리표'의 '공식 특보 띠' 주석 · 범례 선택자는 이 절에만 적는다). */
     body:has(#warn-banner) #field-legend { top: calc(104px + env(safe-area-inset-top)); }
@@ -1712,7 +1743,14 @@
        닫힌 시트에서는 손잡이도 없다(#intel:not(.open) — 본문 밖으로 나와 #intel-body 의 display:none 을 더는 따라가지 않는다). */
     .sheet-grip { display: block; position: relative; z-index: 1; flex: none; width: 100%; height: var(--grip-h); margin: 0; padding: 0;
       border: 1px solid var(--panel-line); border-bottom: 0; border-radius: 12px 12px 0 0; background: rgba(9,22,34,.97); cursor: grab; touch-action: none; }
-    .sheet-grip::before { content: ''; position: absolute; left: 0; right: 0; top: -8px; bottom: -12px; }
+    /* (2026-09-24 정정 · UX 자동 점검 20260924-1152 'button.sheet-grip 386×24 → 눌리는 넓이 97×43') 셈은 24 + 8 + 12 = 44 인데
+       손잡이 윗변이 소수점(시트 높이가 dvh 셈이다)에 서면 화면 픽셀로는 43 이 잡혔다 — 딱 44 로 짠 표적은 반올림 하나에 44 아래로 떨어진다.
+       위(지구 쪽)로 2 를 더 번지게 해 46 으로 둔다. 아래 12 는 본문 안쪽 여백이라 더 못 늘린다(탭 줄을 가로챈다 — m1 시험).
+       보이는 띠(--grip-h 24)·시트 단계(peek·half·full 높이)는 그대로다 — 표적만 커진다.
+       ⚠️ full 에서는 예전 8 그대로 둔다: full 시트 윗변은 --top-reserve(56)라 위로 10 이면 46 — 위 한 줄 단추(⌕ ⤴ ⚗ · 그림 8~48)의
+          **보이는 아랫변 2px** 를 시트(z4)가 가로챈다. 8 이면 48 로, 단추 그림 바로 아래(표적의 안 보이는 번짐 48~50)까지만 닿는다(예전과 같다). */
+    .sheet-grip::before { content: ''; position: absolute; left: 0; right: 0; top: -10px; bottom: -12px; }
+    #intel[data-sheet="full"] .sheet-grip::before { top: -8px; }
     #intel:not(.open) .sheet-grip { display: none; }
     #intel.open #intel-body { border-top: 0; border-top-left-radius: 0; border-top-right-radius: 0; }
     .sheet-grip span { display: block; width: 42px; height: 4px; margin: 0 auto; border-radius: 2px;
@@ -1873,11 +1911,21 @@
            위아래로도 2 씩 번진다(6~50) — 위는 화면 끝, 아래는 범례 윗변 56 보다 6px 위라 아무것도 가로채지 않는다.
          · #panel 은 폭 300 을 그대로 둔다(서랍이 그 폭으로 열린다). 대신 **빈 자리는 누를 수 없게** 한다 —
            단추 줄 오른쪽의 빈 상자가 지구 끌기를 가로채지 않게. 누르는 것은 단추 줄 · 서랍 · 공유 메뉴뿐이다.
-           (#menu-scrim · #share-toast 는 제 pointer-events 를 스스로 적어 두어 상속과 무관하다.) */
-    #panel { pointer-events: none; }
+           (#menu-scrim · #share-toast 는 제 pointer-events 를 스스로 적어 두어 상속과 무관하다.)
+       (2026-09-24 정정 · UX 자동 점검 20260924-1152 '#panel × nav.es-switch 겹침 100%') 빈 자리를 누를 수 없게는 했지만 **상자 자체**는
+         여전히 전환기 밑 8 에서 시작해 로고(8~48)를 통째로 품었다 — 눈에는 안 보여도 '창 두 개가 겹친다'는 사실은 남았고, 다음에
+         누가 #panel 에 배경·z-index 를 주면 로고가 그 밑에 깔린다. 비켜 세우는 일을 단추 줄(#chrome margin-left)에서 **상자**로 옮긴다:
+           · #panel 은 margin-left: --es-row 로 로고 오른쪽(8 + 40 + 8 = 56)에서 시작하고, 폭도 그만큼 줄인다(오른쪽 끝은 예전 그대로).
+           · 서랍(.drawer)은 margin-left 를 음수 --es-row 로 되돌려 **예전 자리 그대로**(왼쪽 8 · 폭 300) 연다 — 블록의 auto 폭은
+             (상자 폭 − 음수 여백)이라 줄인 만큼 도로 넓어진다. 공유 메뉴(#share-menu)는 position:fixed 라 상자 자리와 무관하다.
+           · 단추 줄의 margin-left 는 0 이 된다 — 단추 셋의 자리(56 · 104 · 152)와 표적(44×44)은 한 치도 안 바뀐다(전후 실측).
+           · 전환기가 없으면(스크립트 실패) --es-row 가 없어 셋 다 0 이다 — 예전과 똑같이 #panel 기본 자리에서 선다. */
+    #panel { pointer-events: none; margin-left: var(--es-row, 0px); width: calc(min(300px, calc(100vw - 28px)) - var(--es-row, 0px)); }
+    #panel > .drawer { margin-left: calc(-1 * var(--es-row, 0px)); }
     #panel > #chrome, #panel > .drawer, #panel > #share-menu { pointer-events: auto; }
     #chrome {
-      width: max-content; margin-left: var(--es-row, 0px); padding: 0; gap: 8px;
+      /* (2026-09-24 정정) margin-left: var(--es-row, 0px) 는 위 #panel 로 옮겼다 — 상자가 로고와 겹치지 않게. */
+      width: max-content; padding: 0; gap: 8px;
       background: none; border: 0; border-radius: 0; backdrop-filter: none; -webkit-backdrop-filter: none;
     }
     #chrome button, #chrome a#btn-research {
@@ -2139,7 +2187,7 @@
   <div class="err" id="load-err"></div>
 </div>
 
-<script type="module" src="./js/main.js?v=206-flood"></script>
+<script type="module" src="./js/main.js?v=207-legend-zoom"></script>
 <script src="/js/earth-switch.js" defer></script>
 </body>
 </html>

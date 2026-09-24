@@ -114,6 +114,23 @@ export const FIELD_LIFT = 0.0012;
 //      ② 지형 결은 바탕색이 아니라 **음영 계수**로 준다(아래 FIELD_SHADE). 색조는 그대로 두고 밝기만 깎는다.
 export const FIELD_OPACITY = 0.92;
 
+// 확대하면 구간색을 옅게 한다 — 2026-09-24 PD 결정("색 옅게+위성").
+//   실측(폰 402×714, 기온 층): 127 km 까지 확대하면 화면이 주황 한 칸으로 덮여 볼 것이 없었다 — 격자(GFS 0.5° ≈ 55 km)보다
+//   화면이 좁아지면 색은 한 가지뿐이다. 그 고도에서는 지구가 이미 위성 상세 창(Esri z7~z9)을 깔고 있으므로 색을 걷어 그것을 보인다.
+//   fromKm 위에서는 1(= 위 FIELD_OPACITY 그대로 · 범례 색) · toKm 아래에서는 min · 사이는 고도의 로그로 부드럽게.
+//   ⚠️ 옅어진 구간에서는 화면 색이 범례 색과 정확히 같지 않다(바탕이 비친다) — 그 고도의 값은 숫자 라벨·지점 카드로 읽는다.
+//      등치선(흰 선)은 옅게 하지 않는다(셰이더에서 uZoomFade 는 bandA 에만 곱한다).
+export const FIELD_ZOOM_FADE = Object.freeze({ fromKm: 600, toKm: 150, min: 0.3 });
+
+/** 카메라 고도(km) → 구간색에 곱할 계수(min~1). */
+export function zoomFadeFor(altKm, f = FIELD_ZOOM_FADE) {
+  if (!(altKm < f.fromKm)) return 1;
+  if (altKm <= f.toKm) return f.min;
+  const t = (Math.log(altKm) - Math.log(f.toKm)) / (Math.log(f.fromKm) - Math.log(f.toKm));
+  const s = t * t * (3 - 2 * t);
+  return f.min + (1 - f.min) * s;
+}
+
 // 지형 결 — 구간색에 곱하는 계수. 셰이더가 전역 고도맵으로 경사 음영을 셈해 **평평한 구와의 차이만** 깎는다:
 //   평지에서는 정확히 1(= 범례 색 그대로) · 해가 등진 비탈에서만 어두워진다 · 밤면은 양쪽이 다 0 이라 손대지 않는다.
 //   k  차이에 곱하는 세기 · min  아무리 깎여도 여기까지(색을 못 알아볼 만큼 어두워지지 않게)
@@ -472,6 +489,7 @@ uniform float uBreaks[FIELD_MAX_BREAKS];
 uniform sampler2D uPalette;  // 1×N · NearestFilter · sRGB 바이트 그대로
 uniform float uBandCount;
 uniform float uOpacity;
+uniform float uZoomFade;     // (2026-09-24) 확대하면 구간색만 옅게 — FIELD_ZOOM_FADE
 uniform float uIsoOn;
 uniform float uIsoInterval;
 uniform float uIsoMajor;
@@ -676,7 +694,7 @@ void main() {
   float idx = 0.0;
   for (int i = 0; i < FIELD_MAX_BREAKS; i++) idx += step(uBreaks[i], vs);
   vec4 band = texture2D(uPalette, vec2((idx + 0.5) / uBandCount, 0.5));
-  float bandA = band.a * uOpacity;
+  float bandA = band.a * uOpacity * uZoomFade;   // (2026-09-24) uZoomFade — 확대하면 위성 지도가 비치게(FIELD_ZOOM_FADE)
   // 지형 결은 **바탕색을 섞어** 내지 않는다(그러면 밑에 무엇이 있느냐에 따라 같은 값이 다른 색으로 칠해져 범례와 어긋난다).
   // 색조는 그대로 두고 밝기만 깎는 계수 하나로 준다 — 평지에서는 1 이라 화면의 색 = 범례의 색이다.
   band.rgb *= terrainShade(n, lon, lat);
@@ -755,6 +773,7 @@ export class FieldRenderer {
       uPalette: { value: null },
       uBandCount: { value: 1 },
       uOpacity: { value: opacity },
+      uZoomFade: { value: 1 },   // 그리기 직전(onBeforeRender)에 카메라 고도로 정한다 — setOpacity 와 따로 둬 서로 덮어쓰지 않는다
       uIsoOn: { value: 0 },
       uIsoInterval: { value: 0 },
       uIsoMajor: { value: 0 },
@@ -802,6 +821,8 @@ export class FieldRenderer {
     this.mesh.onBeforeRender = (renderer, _scene, camera) => {
       const pr = renderer && renderer.getPixelRatio ? renderer.getPixelRatio() : 1;
       if (pr > 0) this.uniforms.uPxScale.value = pr;
+      // (2026-09-24) 카메라 고도(지구 반지름 1 = 6371 km) → 확대 흐림. 카메라가 없으면(시험) 1 그대로.
+      if (camera && camera.position) this.uniforms.uZoomFade.value = zoomFadeFor((camera.position.length() - 1) * 6371);
       if (this.onFrame) this.onFrame(camera);
     };
     this.palette = null;

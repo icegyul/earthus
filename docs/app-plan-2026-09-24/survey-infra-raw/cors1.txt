@@ -1,0 +1,252 @@
+=== https://earthus.net/clouds/meta.json
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 902
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, HEAD
+Access-Control-Expose-Headers: Content-Length, Content-Encoding, Last-Modified, ETag
+Access-Control-Max-Age: 86400
+Last-Modified: Thu, 24 Sep 2026 05:45:25 GMT
+Cache-Control: public, max-age=300
+X-Cache: Miss from cloudfront
+BYTES_ON_WIRE=902 TIME=0.572376
+=== https://earthus-cache-kr.s3.us-east-2.amazonaws.com/clouds/meta.json
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, HEAD
+Access-Control-Expose-Headers: Content-Length, Content-Encoding, Last-Modified, ETag
+Access-Control-Max-Age: 86400
+Vary: Origin, Access-Control-Request-Headers, Access-Control-Request-Method
+Last-Modified: Thu, 24 Sep 2026 05:45:25 GMT
+Cache-Control: public, max-age=300
+Content-Type: application/json
+Content-Length: 902
+BYTES_ON_WIRE=902 TIME=0.655038
+=== https://earthus.net/clouds/global-2048.webp
+HTTP/1.1 200 OK
+Content-Type: image/webp
+Content-Length: 1505406
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, HEAD
+Access-Control-Expose-Headers: Content-Length, Content-Encoding, Last-Modified, ETag
+Access-Control-Max-Age: 86400
+Last-Modified: Thu, 24 Sep 2026 05:45:25 GMT
+Cache-Control: public, max-age=300
+X-Cache: Miss from cloudfront
+BYTES_ON_WIRE=1505406 TIME=1.624620
+=== https://earthus-cache-kr.s3.us-east-2.amazonaws.com/clouds/global-2048.webp
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, HEAD
+Access-Control-Expose-Headers: Content-Length, Content-Encoding, Last-Modified, ETag
+Access-Control-Max-Age: 86400
+Vary: Origin, Access-Control-Request-Headers, Access-Control-Request-Method
+Last-Modified: Thu, 24 Sep 2026 05:45:25 GMT
+Cache-Control: public, max-age=300
+Content-Type: image/webp
+Content-Length: 1505406
+BYTES_ON_WIRE=1505406 TIME=1.635377
+=== https://earthus.net/clouds/gfs-fc/manifest.json
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Last-Modified: Thu, 24 Sep 2026 04:12:19 GMT
+Content-Encoding: br
+Cache-Control: public, max-age=300
+Vary: Accept-Encoding
+X-Cache: RefreshHit from cloudfront
+BYTES_ON_WIRE=6026 TIME=0.572308
+=== https://earthus-cache-kr.s3.us-east-2.amazonaws.com/clouds/gfs-fc/manifest.json
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, HEAD
+Access-Control-Expose-Headers: Content-Length, Content-Encoding, Last-Modified, ETag
+Access-Control-Max-Age: 86400
+Vary: Origin, Access-Control-Request-Headers, Access-Control-Request-Method
+Last-Modified: Thu, 24 Sep 2026 04:12:19 GMT
+Cache-Control: public, max-age=300
+Content-Type: application/json; charset=utf-8
+Content-Length: 31489
+BYTES_ON_WIRE=31489 TIME=0.857560
+=== https://earthus.net/clouds/gfs-fc/2026092400/t000.png
+HTTP/1.1 200 OK
+Content-Type: image/png
+Content-Length: 81468
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, HEAD
+Access-Control-Expose-Headers: Content-Length, Content-Encoding, Last-Modified, ETag
+Access-Control-Max-Age: 86400
+Last-Modified: Thu, 24 Sep 2026 04:10:35 GMT
+Cache-Control: public, max-age=86400, immutable
+X-Cache: Miss from cloudfront
+BYTES_ON_WIRE=81468 TIME=0.964665
+=== https://earthus-cache-kr.s3.us-east-2.amazonaws.com/clouds/gfs-fc/2026092400/t000.png
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, HEAD
+Access-Control-Expose-Headers: Content-Length, Content-Encoding, Last-Modified, ETag
+Access-Control-Max-Age: 86400
+Vary: Origin, Access-Control-Request-Headers, Access-Control-Request-Method
+Last-Modified: Thu, 24 Sep 2026 04:10:35 GMT
+Cache-Control: public, max-age=86400, immutable
+Content-Type: image/png
+Content-Length: 81468
+BYTES_ON_WIRE=81468 TIME=1.071690
+=== https://earthus.net/clouds/gfs-fc/2026092400/c000.png
+HTTP/1.1 200 OK
+Content-Type: image/png
+Content-Length: 214671
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, HEAD
+Access-Control-Expose-Headers: Content-Length, Content-Encoding, Last-Modified, ETag
+Access-Control-Max-Age: 86400
+Last-Modified: Thu, 24 Sep 2026 04:10:33 GMT
+Cache-Control: public, max-age=86400, immutable
+X-Cache: Miss from cloudfront
+BYTES_ON_WIRE=214671 TIME=1.117401
+=== https://earthus-cache-kr.s3.us-east-2.amazonaws.com/clouds/gfs-fc/2026092400/c000.png
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, HEAD
+Access-Control-Expose-Headers: Content-Length, Content-Encoding, Last-Modified, ETag
+Access-Control-Max-Age: 86400
+Vary: Origin, Access-Control-Request-Headers, Access-Control-Request-Method
+Last-Modified: Thu, 24 Sep 2026 04:10:33 GMT
+Cache-Control: public, max-age=86400, immutable
+Content-Type: image/png
+Content-Length: 214671
+BYTES_ON_WIRE=214671 TIME=1.366547
+=== https://earthus.net/events/kma-warn.json
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Last-Modified: Thu, 24 Sep 2026 06:02:22 GMT
+Content-Encoding: br
+Cache-Control: public, max-age=300
+Vary: Accept-Encoding
+X-Cache: Hit from cloudfront
+Age: 47
+BYTES_ON_WIRE=852 TIME=0.049149
+=== https://earthus-cache-kr.s3.us-east-2.amazonaws.com/events/kma-warn.json
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, HEAD
+Access-Control-Expose-Headers: Content-Length, Content-Encoding, Last-Modified, ETag
+Access-Control-Max-Age: 86400
+Vary: Origin, Access-Control-Request-Headers, Access-Control-Request-Method
+Last-Modified: Thu, 24 Sep 2026 06:02:22 GMT
+Cache-Control: public, max-age=300
+Content-Type: application/json; charset=utf-8
+Content-Length: 1319
+BYTES_ON_WIRE=1319 TIME=0.657778
+=== https://earthus.net/events/typhoon-official.json
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, HEAD
+Access-Control-Expose-Headers: Content-Length, Content-Encoding, Last-Modified, ETag
+Access-Control-Max-Age: 86400
+Last-Modified: Thu, 24 Sep 2026 05:25:51 GMT
+Cache-Control: no-cache
+Content-Encoding: br
+Vary: Accept-Encoding
+X-Cache: Miss from cloudfront
+BYTES_ON_WIRE=1918 TIME=0.597546
+=== https://earthus-cache-kr.s3.us-east-2.amazonaws.com/events/typhoon-official.json
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, HEAD
+Access-Control-Expose-Headers: Content-Length, Content-Encoding, Last-Modified, ETag
+Access-Control-Max-Age: 86400
+Vary: Origin, Access-Control-Request-Headers, Access-Control-Request-Method
+Last-Modified: Thu, 24 Sep 2026 05:25:51 GMT
+Cache-Control: no-cache
+Content-Type: application/json; charset=utf-8
+Content-Length: 8594
+BYTES_ON_WIRE=8594 TIME=0.632235
+=== https://earthus.net/events/quake-asia.json
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Last-Modified: Thu, 24 Sep 2026 05:57:03 GMT
+Content-Encoding: br
+Cache-Control: public, max-age=60
+Vary: Accept-Encoding
+X-Cache: Hit from cloudfront
+Age: 47
+BYTES_ON_WIRE=2773 TIME=0.042245
+=== https://earthus-cache-kr.s3.us-east-2.amazonaws.com/events/quake-asia.json
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, HEAD
+Access-Control-Expose-Headers: Content-Length, Content-Encoding, Last-Modified, ETag
+Access-Control-Max-Age: 86400
+Vary: Origin, Access-Control-Request-Headers, Access-Control-Request-Method
+Last-Modified: Thu, 24 Sep 2026 05:57:03 GMT
+Cache-Control: public, max-age=60
+Content-Type: application/json; charset=utf-8
+Content-Length: 22674
+BYTES_ON_WIRE=22674 TIME=0.629613
+=== https://earthus.net/wind/kma-aws.json
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Last-Modified: Thu, 24 Sep 2026 05:25:40 GMT
+Cache-Control: public, max-age=600
+Content-Encoding: br
+Vary: Accept-Encoding
+X-Cache: Hit from cloudfront
+Age: 37
+BYTES_ON_WIRE=8033 TIME=0.040304
+=== https://earthus-cache-kr.s3.us-east-2.amazonaws.com/wind/kma-aws.json
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, HEAD
+Access-Control-Expose-Headers: Content-Length, Content-Encoding, Last-Modified, ETag
+Access-Control-Max-Age: 86400
+Vary: Origin, Access-Control-Request-Headers, Access-Control-Request-Method
+Last-Modified: Thu, 24 Sep 2026 05:25:40 GMT
+Cache-Control: public, max-age=600
+Content-Type: application/json; charset=utf-8
+Content-Length: 46041
+BYTES_ON_WIRE=46041 TIME=0.853410
+=== https://earthus.net/ocean/earthquake-intel.json
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Last-Modified: Thu, 24 Sep 2026 03:41:41 GMT
+Content-Encoding: br
+Cache-Control: public, max-age=900
+Vary: Accept-Encoding
+X-Cache: RefreshHit from cloudfront
+BYTES_ON_WIRE=5211 TIME=0.579243
+=== https://earthus-cache-kr.s3.us-east-2.amazonaws.com/ocean/earthquake-intel.json
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, HEAD
+Access-Control-Expose-Headers: Content-Length, Content-Encoding, Last-Modified, ETag
+Access-Control-Max-Age: 86400
+Vary: Origin, Access-Control-Request-Headers, Access-Control-Request-Method
+Last-Modified: Thu, 24 Sep 2026 03:41:41 GMT
+Cache-Control: public, max-age=900
+Content-Type: application/json; charset=utf-8
+Content-Length: 98247
+BYTES_ON_WIRE=98247 TIME=1.035880
+=== https://earthus.net/celestrak/catalog.json.gz
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 1629306
+Last-Modified: Wed, 23 Sep 2026 18:01:22 GMT
+Content-Encoding: gzip
+Cache-Control: public, max-age=3600
+X-Cache: Hit from cloudfront
+Age: 2595
+BYTES_ON_WIRE=1629306 TIME=0.088989
+=== https://earthus-cache-kr.s3.us-east-2.amazonaws.com/celestrak/catalog.json.gz
+HTTP/1.1 200 OK
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Methods: GET, HEAD
+Access-Control-Expose-Headers: Content-Length, Content-Encoding, Last-Modified, ETag
+Access-Control-Max-Age: 86400
+Vary: Origin, Access-Control-Request-Headers, Access-Control-Request-Method
+Last-Modified: Wed, 23 Sep 2026 18:01:22 GMT
+Cache-Control: public, max-age=3600
+Content-Encoding: gzip
+Content-Type: application/json
+Content-Length: 1629306
+BYTES_ON_WIRE=1629306 TIME=1.799242

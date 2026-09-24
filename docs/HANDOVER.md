@@ -454,6 +454,7 @@ aws cloudfront create-invalidation --distribution-id E193CZEBLWEB56 --paths "/js
   `MONETIZATION_MODE=PAID` + SALES_OPEN=true + 약관·처리방침의 자리표시자
   3곳(주소·전화·신고번호) 채우기. 창립 멤버 반값 checkout 검증도 필수다.
   (2026-09-24 PD) 통신판매업 **신고 완료**(개인사업자). 판매는 여전히 잠겨 있다 — 구독료는 PD 가 나중에 정한다.
+  (2026-09-24 PD) **유료 시작 = 2027-01-01.** 기상사업자 등록이 12월에 가능해서, 그때까지는 무료로 제공하며 시험한다.
   남은 것은 자리표시자 3곳을 PD 가 채우는 것과 앱 지시서(docs/APP-ANDROID-CHROME-NEWTAB-DIRECTIVE-2026-09-24.md) §3-5 의 판매 전 조건이다.
 - Personal Pro 요금(2026-08-05 결정): **월 ₩5,900/$4.99 · 연 ₩49,000/$39**.
   화면 표시값은 `billing.js`, 실제 청구 정본은 Supabase `plans` 표다 — 둘을 항상 함께 바꾼다.

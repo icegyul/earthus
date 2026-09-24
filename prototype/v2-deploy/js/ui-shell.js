@@ -22,6 +22,9 @@ import { reportDocHtml, reportKey, reportIndexKey, reportUrl, reportIdFromUrl, c
 // pop-metric-menu 의 선례처럼 둔다 — 조용히 아무 말도 하지 않는 게 더 큰 거짓말이다.
 import { simEntryFor, questionsForPhenomenon, questionsForCountry, previewSceneFor } from './sim-questions.js?v=2';
 import { intelStripHtml, intelOf } from './intel-strip.js?v=2';
+// (2026-09-24) 뒤로 단추 — v1 과 같은 파일. 번들에서는 build-v2-bundle.sh 가 ./shared/back-close.js 로 옮긴다.
+// (2026-09-24 정정) ?v=2 — main.js 와 같은 지정자(한 벌). back-close.js 가 바뀌었다(웹 탭 무동작 · 앱이 연 시트).
+import { backStack } from './shared/back-close.js?v=2';
 const safeText = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 // ---------------------------------------------------------------------------
@@ -1650,6 +1653,15 @@ export function initShell(hooks) {
 
   const closeIntel = () => setIntelOpen(false);
   intel.querySelector('#intel-close').addEventListener('click', closeIntel);
+  /* (2026-09-24) 안드로이드 뒤로 단추(지시서 §3-8-1) — 열린 메뉴 서랍·Intelligence 시트는 뒤로 한 번에 닫힌다.
+     여는 곳(openPanel·openIntel·링크 복원·Inspector 단추)이 여럿이라 class 변화를 지켜본다 — v1 과 같은 back-close.js.
+     닫는 길은 ✕ 와 같은 함수다(closeFlyout · setIntelOpen(false)) — 닫을 때 치우는 것(지점 카드·편 절)이 그대로 돈다.
+     주소(#v=… 해시)는 main.js 의 onConsumedPop 훅이 지금 카메라로 다시 쓴다. */
+  backStack()
+    .register('menu', { isOpen: () => panel.classList.contains('open'), close: () => closeFlyout() })
+    .register('intel', { isOpen: () => intel.classList.contains('open'), close: () => setIntelOpen(false) });
+  backStack().watch(panel, { subtree: false });
+  backStack().watch(intel, { subtree: false });
 
 
   // --- 하단 타임 스트립 (§19.7): 태양 위치는 진짜 재계산(LIVE), 관측 구름은 STALE ---

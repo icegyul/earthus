@@ -45,6 +45,8 @@ cp "$ROOT/prototype/js/for-me-row.js" "$ROOT/prototype/js/usage.js" "$OUT/js/sha
 cp "$ROOT/prototype/js/access-mode.js" "$OUT/js/shared/"
 # (2026-09-24) 앱(TWA) 준비 — 앱 안 판정(app-context.js)과 뒤로 단추(back-close.js)도 v1 과 같은 파일을 싣는다
 #   (지시서 §3-4 · §3-8-1). 둘 다 import 없는 순수 모듈이다. 사본을 따로 만들면 v1·v2 판정이 갈라진다.
+# (2026-09-24 정정) back-close.js 는 이제 ./app-context.js?v=2 를 import 한다(웹 탭 무동작 판정, PD 결정). 둘이 같은 shared/ 에
+#   있어야 그 상대 경로가 풀리고, v2 main.js 의 ./shared/app-context.js?v=2 와 같은 주소(한 벌)가 된다.
 cp "$ROOT/prototype/js/app-context.js" "$ROOT/prototype/js/back-close.js" "$OUT/js/shared/"
 # EARTHUS 아이콘 시스템 — v1·v2 공용. 표(earthus-icons.js)도 그림(assets/earthus-icons/)도 한 벌뿐이다.
 # ⚠️ shared/ 가 아니라 js/ 바로 아래에 둔다. 모듈이 그림 위치를 import.meta.url 기준

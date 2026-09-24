@@ -23,7 +23,8 @@ import { reportDocHtml, reportKey, reportIndexKey, reportUrl, reportIdFromUrl, c
 import { simEntryFor, questionsForPhenomenon, questionsForCountry, previewSceneFor } from './sim-questions.js?v=2';
 import { intelStripHtml, intelOf } from './intel-strip.js?v=2';
 // (2026-09-24) 뒤로 단추 — v1 과 같은 파일. 번들에서는 build-v2-bundle.sh 가 ./shared/back-close.js 로 옮긴다.
-import { backStack } from '../../js/back-close.js?v=1';
+// (2026-09-24 정정) ?v=2 — main.js 와 같은 지정자(한 벌). back-close.js 가 바뀌었다(웹 탭 무동작 · 앱이 연 시트).
+import { backStack } from '../../js/back-close.js?v=2';
 const safeText = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 // ---------------------------------------------------------------------------

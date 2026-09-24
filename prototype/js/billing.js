@@ -19,7 +19,7 @@ import { i18n } from './i18n.js';
 import { salesAllowed, TIER } from './access-mode.js';
 /* (2026-09-24) 앱 안(안드로이드 TWA) 판정 — 앱 안에서는 토스(web)를 **어떤 경로로도** 고르지 않는다.
    지시서 §3-4 · D17. 판정 규칙과 그 이유는 app-context.js 머리 주석에 있다. */
-import { isInApp, paymentRoute, allowedProviderKeys } from './app-context.js';
+import { isInApp, paymentRoute, allowedProviderKeys } from './app-context.js?v=2';
 
 /* ── 요금제 ────────────────────────────────────────────────────
    ⚠️ 가격은 config.local.js 에서 덮어쓸 수 있게 둔다.

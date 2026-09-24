@@ -10,6 +10,9 @@
 //      첫 로드에서 sessionStorage 에 적고 history.replaceState 로 주소에서 지운다(쿼리가 referrer 로 새지 않게).
 //      ⚠️ localStorage 에 두면 안 된다 — TWA 는 Chrome 과 저장소를 공유하므로 일반 탭 웹 사용자까지 '앱 안'이 된다.
 //   2) matchMedia('(display-mode: standalone)') — 대가: 크롬에서 PWA 로 설치한 사람도 토스를 못 쓴다(D17 에서 받았다).
+//      (2026-09-24 정정, PD 결정) **안드로이드에서만** 앱 안 신호로 센다. iOS 사파리 '홈 화면에 추가'·데스크톱 설치 웹앱도
+//      standalone 이 참인데, 그들은 Play 앱이 아니라 웹이다 — 토스 결제가 허용된다(PD: "iOS·데스크톱 홈 화면 웹앱은 web").
+//      안드로이드 판정 = navigator.userAgentData?.platform === 'Android' 또는 UA 에 'Android'.
 //   3) document.referrer 가 `android-app://net.earthus.app` 로 시작 — 공식 확인 못 한 보조 신호다.
 //      ⚠️ 우리 패키지(D3)만 본다. `android-app://` 전체를 보면 Gmail 앱에서 누른 링크가 **일반 Chrome 탭**으로 열려도
 //         '앱 안'이 되어 웹 결제가 막힌다.
@@ -29,19 +32,24 @@ const MARKER_VALUE = 'twa';
 
 /** 순수 판정 — DOM 없이 시험할 수 있게 입력을 모두 인자로 받는다.
  *  @param {{search?:string, sessionValue?:string|null, standalone?:boolean, referrer?:string}} env
+ *  (2026-09-24 정정) 위 형식에 android?:boolean 이 더해졌다 — {search, sessionValue, standalone, android, referrer}.
+ *  (2026-09-24 정정) android — standalone 은 android 가 참일 때만 '앱 안'이다(머리 주석 신호 2).
  *  @returns {{inApp:boolean, entryKind:'twa'|'standalone'|'web', signals:object, marker:boolean}} */
 export function detectAppContext(env = {}) {
   let marker = false;
   try { marker = new URLSearchParams(env.search || '').get(MARKER_PARAM) === MARKER_VALUE; } catch (_) { marker = false; }
   const sessionFlag = env.sessionValue === MARKER_VALUE;
   const standalone = env.standalone === true;
+  const android = env.android === true;
+  // (2026-09-24 정정, PD 결정) iOS·데스크톱 홈 화면 웹앱의 standalone 은 '웹'이다 — 안드로이드에서만 센다.
+  const standaloneApp = standalone && android;
   const referrer = typeof env.referrer === 'string' ? env.referrer : '';
   const androidReferrer = referrer === `android-app://${APP_PACKAGE}`
     || referrer.startsWith(`android-app://${APP_PACKAGE}/`);
-  const signals = { marker, sessionFlag, standalone, androidReferrer };
+  const signals = { marker, sessionFlag, standalone, android, androidReferrer };
   const twa = marker || sessionFlag || androidReferrer;
-  const inApp = twa || standalone;
-  return { inApp, entryKind: twa ? 'twa' : standalone ? 'standalone' : 'web', signals, marker };
+  const inApp = twa || standaloneApp;
+  return { inApp, entryKind: twa ? 'twa' : standaloneApp ? 'standalone' : 'web', signals, marker };
 }
 
 /** 주소에서 `src=twa` 하나만 뺀다. 다른 쿼리(?tc= · ?station= · FOR ME 의 ?tab=my&event=)와 #해시는 그대로 둔다. */
@@ -79,6 +87,13 @@ export function allowedProviderKeys(route) {
       이후 모든 지구 주소에 `src=twa` 가 박혀 공유 링크로 새어 나간다. */
 let _ctx = { inApp: false, entryKind: 'web', signals: {}, marker: false };
 
+/** (2026-09-24, PD 결정) 안드로이드 기기인가 — standalone 신호를 셀지 정한다. UA-CH 가 없는 브라우저(삼성 인터넷 옛판·파이어폭스)는 UA 문자열로 본다. */
+export function isAndroidBrowser(nav = typeof navigator !== 'undefined' ? navigator : null) {
+  if (!nav) return false;
+  try { if (nav.userAgentData?.platform === 'Android') return true; } catch (_) { /* 무시 */ }
+  return /Android/i.test(String(nav.userAgent || ''));
+}
+
 function readSession() {
   try { return window.sessionStorage.getItem(APP_SESSION_KEY); } catch (_) { return null; }
 }
@@ -91,6 +106,7 @@ function initInBrowser() {
     search: location.search,
     sessionValue: readSession(),
     standalone,
+    android: isAndroidBrowser(),
     referrer: typeof document !== 'undefined' ? document.referrer : '',
   });
   if (_ctx.signals.marker || _ctx.signals.androidReferrer) {

@@ -2,7 +2,7 @@
 /* (2026-09-24) 앱 안(TWA) 판정은 **가장 먼저** 평가한다 — 주소의 `src=twa` 를 적고 지운다.
    이보다 늦으면 earth-route-state 가 location.href 를 바탕으로 쓰는 지구 주소마다 표식이 박힌다.
    (ES 모듈은 import 순서대로 평가된다 — 이 줄을 아래로 옮기지 말 것.) */
-import './app-context.js';
+import './app-context.js?v=2';
 /* (2026-09-24) 뒤로 단추로 서랍·시트 닫기 — earth-view-state 보다 먼저 popstate(capture)를 잡는다. */
 import { backStack } from './back-close.js';
 /* viewer.js는 여러 모듈이 공유하는 싱글턴이다. 이 import 하나에만 버전을 붙이면

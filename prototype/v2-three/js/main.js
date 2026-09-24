@@ -6,11 +6,13 @@
 // (2026-09-24) 앱 안(TWA) 표식 — **가장 먼저** 평가한다. App Link 로 /v2/…?src=twa 에 바로 들어오면 v1 코드가 돌지 않아
 //   표식이 sessionStorage 에 안 적히고, 그 뒤 v1 으로 넘어가면 '앱 밖'으로 판정돼 토스를 고를 수 있었다(지시서 §3-4).
 //   v1 과 같은 파일이다. 번들에서는 build-v2-bundle.sh 가 ./shared/app-context.js 로 옮긴다.
-import '../../js/app-context.js?v=1';
+// (2026-09-24 정정) ?v=2 — app-context.js 가 바뀌었다(standalone 은 안드로이드만). back-close.js 안의 import 와 **같은 지정자**여야 판정이 한 벌이다.
+import '../../js/app-context.js?v=2';
 import * as THREE from '../../vendor/three-r184.module.min.js';
 // (2026-09-24) 뒤로 단추 — ui-shell.js 와 **같은 지정자**여야 한 벌이다(ES 모듈은 ?v= 까지 URL 전체가 키).
-import { backStack } from '../../js/back-close.js?v=1';
-import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=75-back0924';
+// (2026-09-24 정정) ?v=2 — 웹 탭에서는 아무것도 하지 않는 한 벌 · 앱이 스스로 연 시트는 칸을 안 쌓음(PD 결정). ui-shell.js 도 같이 올렸다.
+import { backStack } from '../../js/back-close.js?v=2';
+import { initShell, buildNowCards, dataBadge, OPEN_COUNTRIES, SCENES } from './ui-shell.js?v=76-back0924';
 import { createSelectionGate } from './information-contract.js';
 // PHASE 4 §9 — 지도에서 고른 사건을 어느 현상으로 읽을지는 레지스트리가 정한다.
 // ⚠️ 2026-09-23: 레지스트리를 여기·report-center.js 는 ?v=4 로, ui-shell.js·intel-questions.js 는 ?v=5 로 불러
@@ -5847,6 +5849,9 @@ async function main() {
       try { localStorage.setItem(INTRO_FEED_KEY, '1'); } catch (e) { /* 사생활 모드 */ }
       shell.showTab('feed');
       shell.openIntel();
+      /* (2026-09-24, PD 결정) 이 시트는 **앱이 스스로** 편다 — 사람이 누른 것이 아니다. 뒤로 단추 칸을 쌓지 않는다.
+         그래서 앱 안 첫 화면에서 뒤로 한 번이 시트가 아니라 앱을 끝낸다. openIntel **바로 뒤**여야 한다(맞추기가 마이크로태스크). */
+      backStack().openedByApp('intel');
       // 2026-09-23 PD "창이 너무 많이 떠"(UX-CHECK-FIX-PLAN B3 승인 "모두 진행해") — 폰에서는 half 가 아니라 peek 로 편다.
       //   여는 것 자체(위 첫인상 기록)는 그대로다. 다만 첫 방문 화면에서 half(31dvh) 시트가 지구를 덮어 보이는 지구가 46.7%
       //   였다(402×714 · tools/ux-check 와 같은 격자로 잼 — peek 로 59%, 시트를 닫으면 71%) — 첫인상이 '예쁜 지구본'도 '사건'도 아닌 반쯤 가린 화면이었다. peek 는 사건 첫 카드
@@ -6800,6 +6805,9 @@ async function main() {
     const cc = centroidOfCountry(f);
     if (cc) countryClick = cc;
     focus.select(f);
+    /* (2026-09-24, PD 결정) 링크(#…&c=KOR)가 연 나라 카드 시트는 앱이 연 것이다 — 뒤로 칸을 쌓지 않는다.
+       (focus.onChange 가 같은 흐름에서 openIntel('now') 을 부른다. 사람이 이미 열어 둔 시트면 바꾸지 않는다.) */
+    backStack().openedByApp('intel');
     return true;
   };
   // 링크 국가의 늦은 적용 — data 도착 한 번만 본다. 폴링·슬립 없음.
@@ -7250,6 +7258,7 @@ async function main() {
     if (q.get('tab') === 'my') {
       forMe.focusId = q.get('event') || null;
       shell.showTab('my'); shell.openIntel();
+      backStack().openedByApp('intel');   // (2026-09-24, PD 결정) 주소(?tab=my)로 연 시트 — 앱이 연 것, 뒤로 칸을 쌓지 않는다
       if (myEarth.place) refreshMyEarth(); else shell.renderIntel();
     }
   } catch (_) { /* 주소가 이상해도 앱은 돈다 */ }

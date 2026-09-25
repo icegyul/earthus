@@ -5,7 +5,7 @@ import { execFileSync } from 'node:child_process';
 import { PleosEarthusRendererFinal } from '../pleos/PLEOS_EARTHUS_RENDERER_FINAL.mjs';
 import { AetherusScreenFinal } from '../web_mobile/AETHERUS_SCREEN_WEB_MOBILE_FINAL.mjs';
 import { assertPleosRegistration } from '../pleos/PRODUCT_TARGET_PLEOS_FINAL.mjs';
-import { createTarget, PRODUCTS, PLATFORMS, targetMatrix } from '../../../v37/09_SCREEN_RENDERER_V37/core/PRODUCT_TARGET_V37.mjs';
+import { createTarget, PRODUCTS, PLATFORMS, targetMatrix } from '../../09_SCREEN_RENDERER_V37/core/PRODUCT_TARGET_V37.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '../..');

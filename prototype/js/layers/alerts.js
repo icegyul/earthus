@@ -66,6 +66,13 @@ export const alerts = {
     const items = [];
     const sources = [];
     let noCoords = 0;
+    /* ⚠️⚠️ 받지 못한 원천을 센다 (2026-09-25 V38.1 감사).
+       예전에는 세 원천의 실패를 각각 catch 에서 삼켜 registry 가 'ok' 로 기록했다.
+       기상청을 못 받아도 한국 위에 점이 없을 뿐이라 "특보 없음"으로 읽혔다 —
+       안전 레이어의 실패 문구(ui-source.js)가 한 번도 뜨지 않았다. */
+    const failed = [];
+    let expired = 0;
+    const nowMs = Date.now();
 
     /* ── 한국 기상특보 ─────────────────────────────────── */
     try {
@@ -114,6 +121,7 @@ export const alerts = {
       });
     } catch (e) {
       console.warn('[경보] 한국 —', e.message);
+      failed.push('KMA');
     }
 
     /* ── 그 밖의 나라 (지금은 브라질 INMET) ─────────────── */
@@ -140,6 +148,7 @@ export const alerts = {
       });
     } catch (e) {
       console.warn('[경보] 지역 —', e.message);
+      failed.push('INMET');
     }
 
     /* ── 미국 (NWS) ─────────────────────────────────────── */
@@ -149,6 +158,11 @@ export const alerts = {
       const j = await r.json();
       if (j.count) sources.push({ name: j.source, license: j.license, count: j.count });
       (j.alerts || []).forEach((a, i) => {
+        /* ⚠️ 해제 예정 시각이 지난 경보는 활성으로 그리지 않는다.
+           수집기(aws/world-alerts)는 NWS 가 빈 목록을 주면 이전 파일을 그대로 두므로,
+           파일에 남은 경보가 이미 끝났을 수 있다. 끝난 것을 '지금 걸려 있음'으로 보이면 안 된다. */
+        const exp = Date.parse(a.expires);
+        if (Number.isFinite(exp) && exp < nowMs) { expired++; return; }
         if (a.lat == null || a.lon == null) { noCoords++; return; }
         const d = {};
         d[ko ? '종류' : 'Type'] = ko ? a.kind : a.kindEn;
@@ -169,6 +183,7 @@ export const alerts = {
       if (j.unplaced) noCoords += j.unplaced;
     } catch (e) {
       console.warn('[경보] 미국 —', e.message);
+      failed.push('NWS');
     }
 
     // 종류별 집계 — 화면에서 "무엇이 몇 건"을 말할 수 있게
@@ -179,13 +194,16 @@ export const alerts = {
     });
 
     this.meta = {
-      sources, byKind, count: items.length, noCoords,
+      sources, byKind, count: items.length, noCoords, failed, expired,
       /* ⚠️ 어디까지 덮는지 분명히 적는다. 비어 있는 나라는 '경보가 없다'가 아니다. */
       coverage: ko
         ? '자료 범위 · 한국 기상청 · 미국 NWS · 브라질 INMET'
         : 'Coverage · Korea KMA · United States NWS · Brazil INMET',
     };
     this.layer.setData(items);
+    /* 받은 것은 그대로 그리고, 못 받은 원천이 있으면 실패로 올린다.
+       registry.run 이 status='error' 로 기록해야 "특보 연결 실패 · 마지막 수신"이 화면에 뜬다. */
+    if (failed.length) throw new Error(`ALERT_SOURCE_FAILED:${failed.join(',')}`);
     return items.length;
   },
 };

@@ -1,0 +1,8 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>EARTHUS V37 Screen Renderer</title><link rel="stylesheet" href="../styles/SCREEN_RENDERER_V37.css"></head><body><div id="app"></div><script type="module">
+import { EarthusScreenRendererV37 } from '../core/EARTHUS_SCREEN_RENDERER_V37.mjs';
+const app=document.getElementById('app');
+const r=new EarthusScreenRendererV37({product:'EARTHUS',platform:'PLEOS',layout:'PLEOS'});
+r.openDock('weather');
+app.innerHTML=r.renderHTML();
+for(const b of app.querySelectorAll('[data-dock]')) b.addEventListener('click',()=>{r.openDock(b.dataset.dock); app.innerHTML=r.renderHTML();});
+</script></body></html>

@@ -1,0 +1,12 @@
+{
+  "version": "2026-09-25-v28",
+  "renderer": "renderer_v28/POI_RENDERER_V28.mjs",
+  "spatialIndex": "spatial_v24/SPATIAL_GRID_INDEX.json",
+  "poiMaster": "spatial_v24/POI_MASTER.json",
+  "regionLink": "region_v28/POI_REGION_PIP_V28.json",
+  "regionLinkMethod": "POINT_IN_POLYGON",
+  "polygonBuildSource": "https://github.com/DevMinGeonPark/mapcn-kr/blob/main/data/sido.json",
+  "networkAtRuntime": false,
+  "productionPolygonEmbedded": false,
+  "note": "Run BUILD_SIDO_POLYGON_V28.mjs on a connected build machine before production packaging."
+}

@@ -1,0 +1,11 @@
+{
+  "version": "2026-09-25-v24",
+  "indexType": "latlon-uniform-grid",
+  "cellDegrees": 0.05,
+  "poiCount": 57,
+  "cellCount": 48,
+  "runtimeNetworkRequired": false,
+  "queryPolicy": "viewport + zoom + category; candidate cells first, exact bbox second",
+  "source": "bundled/poi_v22",
+  "sha256": "f484accdfe2b66cad3f02eb7743586b519a3cf703cca1d1919ea2494a0d34606"
+}

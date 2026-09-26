@@ -66,7 +66,7 @@ V38.1 과 V7 은 서로 다른 제품을 말한다. 한 번호 체계로 섞으�
 
 | # | 질문 | 왜 막히나 | 권고 |
 |---|---|---|---|
-| **D-5** | V7 의 "V2" 는 어느 코드인가? | V7 은 `prototype/index.html`(Cesium) 을 V2 의 브라우저 셸로 적고 파일 계획도 전부 `prototype/js/` 에 둔다(IFP-00~07). 저장소 정본은 v1 = `prototype/` Cesium, **v2 = `prototype/v2-three/` Three.js**(AGENTS.md). V7 의 기준 커밋 3370220(main)은 지금 브랜치의 조상이 아니고, V7 이 가리키는 `codex/v13-research-simulation-foundation` 브랜치와 `prototype/js/simulation/research-simulation.js` 는 로컬·원격 목록에 없다 | **새 연구 브라우저를 `prototype/research/` 별도 진입점으로 두고 Cesium 을 쓴다.** 이유: V7 의 4D 결과·3D Tiles·terrain 요구가 Cesium 기능이고, PD 가 "Simulation 은 브라우저로 따로"라고 했다. v1·v2 는 건드리지 않고 공용 모듈(`js/earthus2/v02/core/*`, `research.js`)만 재사용 |
+| **D-5** | V7 의 "V2" 는 어느 코드인가? | V7 은 `prototype/index.html`(Cesium) 을 V2 의 브라우저 셸로 적고 파일 계획도 전부 `prototype/js/` 에 둔다(IFP-00~07). 저장소 정본은 v1 = `prototype/` Cesium, **v2 = `prototype/v2-three/` Three.js**(AGENTS.md). V7 의 기준 커밋 3370220(main)은 지금 브랜치의 조상이 아니고, V7 이 가리키는 `codex/v13-research-simulation-foundation` 브랜치와 `prototype/js/simulation/research-simulation.js` 는 로컬·원격 목록에 없다 | (가) **새 연구 브라우저를 `prototype/research/` 별도 진입점으로 두고 Cesium 을 쓴다.** 이유: V7 의 4D 결과·3D Tiles·terrain 요구가 Cesium 기능이고, PD 가 "Simulation 은 브라우저로 따로"라고 했다. v1·v2 는 건드리지 않고 공용 모듈(`js/earthus2/v02/core/*`, `research.js`)만 재사용. ⚠️ **대가: 세 번째 지구 코드가 생긴다** — 2026-09-14 PD 결정 "지구는 v1·v2 둘만"(WONDER·v3 제거)을 다시 여는 선택이다. (나) 대안: V7 연구·Simulation 을 **v2 의 ⑦ Simulation 작업 공간**(AGENTS.md 7단계 문법에 이미 있는 자리)에 붙인다 — 지구는 둘로 유지, 대신 Cesium 이 아닌 Three.js 위에서 4D 결과·지형을 직접 만들어야 한다. 권고는 (가)지만 PD 가 고른다 |
 | **D-6** | V7 화면 구조(좌 Project 사이드바 · 우 AI Aside)를 어디에 적용하나 | v2 정본은 좌 11메뉴 · 우 Inspector · 하단 타임라인(2026-09-20). V7 을 v2 에 씌우면 정면 충돌 | D-5 권고대로면 **연구 브라우저에만** 적용, v2 는 그대로 |
 | **D-7** | 요금제 이름 | V7: Free/Explorer/Research/Professional. 정본(09-14): FREE/EXPLORER(Report)/PRO(Simulation) + RESEARCH/ENTERPRISE(계약) | 정본 이름 유지, V7 Research→**PRO**, V7 Professional→**RESEARCH·ENTERPRISE** 로 매핑 |
 | **D-8** | 연구 트랙(RS)과 지금 열린 작업의 순서 | AGENTS.md 의 지금 작업 = 계약 §I R0→P0→P1+M1+T→§14→S-A. V7 은 "P0 부터, 한강 홍수가 최우선". 둘 다 동시에는 못 한다 | Pleos(PL)·v1 Intelligence(IN) 먼저 → RS P0·P1 은 R0 완료 후. 2027-01-01 유료 전환에 필요한 것(§8)이 우선 |
@@ -127,6 +127,7 @@ V38.1 과 V7 은 서로 다른 제품을 말한다. 한 번호 체계로 섞으�
   - DRIVING/RESTRICTED/UNKNOWN 에서 허용 = `MAP, CURRENT_WEATHER, DISASTER_ALERT, DIRECTIONS` 뿐, 나머지·UNKNOWN_ACTION 은 BLOCK
   - PARKED 에서도 `RESERVATION`·`COUPON` 은 BLOCK(실제 기능 없음, DT 참조)
   - 우선순위 `SAFETY > SYSTEM > CURRENT_ENVIRONMENT > USER_SELECTION > LOCAL_DISCOVERY > COMMERCIAL`: 기상청 특보 중이면 여가·상업 발견 억제
+- ⚠️ 1차(주차 전용, §PL3)에서는 앱이 주행 선언을 하지 않으므로 **PARKED 가 아닌 모든 상태 = 전부 BLOCK** 으로 설정한다(`DRIVING_ALLOWLIST_ENABLED=false`). 위 네 가지 허용은 Pleos 가 DO 자격을 확인해 준 2차에서만 켠다. V38.1 §14 의 ALLOW 테스트 4건은 2차 계약으로 유지하고, 1차 설정에서는 같은 4건이 BLOCK 인지도 시험한다.
 - **실행 함수에서 재검증:** 버튼 숨김과 별도로, 각 동작 핸들러가 실행 직전에 `decide()` 를 부른다(`guardAction(action, fn)` 래퍼).
 - 테스트 `tools/test_pleos_safety.mjs`(node:test, `npm test` 에 추가): V38.1 §14 Safety 14건 그대로 + 별칭 우회 시도 + 특보 override.
 - **완료 기준:** 14건+ 전부 실제 실행 PASS, 모르는 이름이 한 건이라도 ALLOW 되면 FAIL.

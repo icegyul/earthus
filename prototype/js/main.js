@@ -62,6 +62,7 @@ import { decodeAetherusRoute, replaceAetherusRoute } from './space/route-state.j
 import { trenchCards } from './ocean/trenchcards.js';
 import { trenchGlobe } from './ocean/trenchglobe.js';
 import { createV8Runtime } from './v8/runtime-coordinator.js';
+import { createSimulationRuntime } from './simulation/research-simulation.js';
 
 /* 늦게 불러오는 바다거북 모듈을 붙잡아 두는 곳.
    ⚠️⚠️ **모듈 바깥에 둔다.** 켜는 쪽은 boot(), 끄는 쪽(OFF·HAS_MARKS)은
@@ -241,6 +242,8 @@ async function boot() {
   /* v8 엔진은 기존 store·레이어를 복제하지 않고 실제 상태만 정규화한다.
      진단 손잡이는 값 수정 기능 없이 snapshot만 노출한다. */
   const v8Runtime = createV8Runtime({ eventTarget: document }).init(store);
+  // Simulation은 기존 V1/V2 메뉴를 대체하지 않고 additive research layer로만 연결한다.
+  const simulationRuntime = createSimulationRuntime({ eventTarget: document }).init();
   window.__e = window.__e || {};
   window.__e.v8 = Object.freeze({ snapshot: () => v8Runtime.snapshot() });
   earthViewState.init({

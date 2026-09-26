@@ -181,7 +181,7 @@
 
 - 부품: `prototype/js/intel-card.js`(카드) + `prototype/js/intel-sentences/`(도메인 7 규칙). 뼈대 = v1 `narrative.js` 규칙(**숫자 없으면 문장 없음**). v2 패킷(태풍·지진·SST·기온 편차)은 같은 카드에 싣는다.
 - 문장 재료: 지금 상태 · 왜 · 앞으로 · 알아둘 점 — **근거가 있는 것만.** 앞으로 = 기상청 예보 전달(국내) / 모델명·실행 시각·"기상청 예보 아님"(해외·모델). 재난 = 특보 전달 + 공식 행동요령 인용.
-- v2 만: 앙상블 확률 %("51개 중 38개")·원인 문장(측정된 조건 + 확립된 기작이 패킷에 있을 때).
+- v2 만: 앙상블 확률 %(예: "51개 중 38개")·원인 문장(측정된 조건 + 확립된 기작이 패킷에 있을 때). ⚠️ ECMWF IFS 50r1(2026-05)부터 오픈데이터 앙상블 파일은 섭동 50 개, 컨트롤은 `oper` 로 따로 — 분모를 50+1 로 맞춰 센다.
 - Pleos 주행 중(2차에서만): 2문장 이하.
 - **완료 기준(결과):** 7 도크 × 주요 항목에서 근거가 있는 입력이면 **문장이 반드시 나온다**(빈 카드 FAIL) · 근거 없으면 0문장 · 특보 문장에 자체 주의 표현 0 · 한·영 같은 개수 · v1 과 v2 가 같은 입력에 같은 문장.
 
@@ -207,17 +207,31 @@
 | 12 | 한강 홍수(연구): 실제 사건 재현 → 관측 비교 → 재현 패키지 | V7 흐름 · DTM + 모델 라이선스 선행 | S | 없음 | 재난(연구) |
 공통: 모든 결과 = `SIMULATION_ONLY` 표시 · 입력·가정·한계 패킷 · 모델명·버전 · 재현 가능(계약 §E `SimulationRunRecord` 재사용).
 
-**⚠️ 지금 조사로 부족한 것 (요소별 빈칸 — P4 전에 채울 조사)**
-| 요소 | 조사된 것 | 빈칸 |
-|---|---|---|
-| 땅 | 지형 바람·산사태·그림자·가시권·산불 엔진 | **맨땅 DTM**(국내 5 m 공개 제한, Copernicus 는 DSM) · 산사태 검증 사례 |
-| 물 | 쓰나미·해안 범람·표류·하천 홍수 엔진 | **상업 가능한 해류·해양 강제력**(지금 Open-Meteo 5° 비상업) · 하천 홍수 입력(서울 자료 상업 금지) |
-| **얼음** | 자료만(눈 덮임·해빙) · GLOF(09-14 조사) | **계산 엔진 조사 없음** — 적설·융설, 해빙 표류, 눈사태, 빙하호 |
-| **태풍** | 유사 태풍·ENS·가정 실험 설계 | **파라메트릭 바람장(Holland 류)·폭풍해일(GeoClaw 해일 모드) 조사 없음** |
-| 대기 | 궤적·확산 | **화산재 확산 · 폭염/도시 열** 없음 |
-| 지진 | 쓰나미 연결(Okada) | **지진동(흔들림 지도) 계산** 없음 — 여진 모형은 채점 실패로 내렸다 |
-| 공통 | 라이선스 | **엔진별 검증 사례(독립 채점)** · **계산 비용·시간**(서버·GPU) · 계산 해상도 자료(GFS 0.25°/0.5°) 연결 |
-→ 다음 조사: **요소 × (엔진 · 입력 자료와 상업 조건 · 검증 사례 · 실행 위치·비용 · 7단계 칸) 행렬** 한 장. 계약 §N 물리 5기준(교과서 물리·입력 보유·독립 채점·CPU 초 단위·안전 판단 승격 금지)으로 각 칸을 판정.
+**요소별 빈칸 → 대안 (2026-09-27 조사 반영 · 상세: `docs/research/V2-GAP-ENGINES-2026-09-27.md`, `docs/research/COMMERCIAL-DATA-SOURCES-2026-09-27.md`)**
+실행: B=브라우저 자체 구현 · S=서버. 노력 S/M/L.
+| 요소 | 빈칸 | **대안 (권고 → 보조)** | 라이선스 | 노력 |
+|---|---|---|---|---|
+| 땅 | 맨땅 DTM (Copernicus 는 DSM, 국내 5 m 공개 제한) | **GEDTM30 전지구 맨땅 30 m** → 한국 정밀이 필요하면 NGII 5 m 보안심사 병행 · FABDEM·FathomDEM 은 유료 계약 없이는 불가 | CC BY 4.0 | M |
+| 땅 | 산사태 계산·검증 | **강우 임계 자체 구현 + 산림청 산사태위험지도** → NASA LHASA(서버 또는 결과 받기) · TRIGRS(퍼블릭 도메인) | 제한 없음 / NOSA-1.3 | S / M |
+| 물 | 해류·파랑 강제력 (Open-Meteo 5° 비상업) | **CMEMS GLO PHY(해류, SMOC) · GLO WAV 1/12°(너울 1·2차 분리)** → ECMWF wave 0.25° · NOAA RTOFS 1/12° | CMEMS(상업 파생 가능, 2028-06-30 까지 무료) / CC BY / NOAA | M |
+| 물 | 하천 홍수 입력 | 서울 자료(PD 결정: 2차 가공 진행) + **K-water**(상업 가능) + KMA AWS · 하천 유량 예보·앙상블은 **GloFAS/EFAS** | 제한 없음 / CC BY(확인 중) | M |
+| 물 | 폭풍해일 | **GeoClaw 해일 모드** → SCHISM | BSD-3 / Apache-2.0 | M / L |
+| 얼음 | 적설·융설 | **도일법(degree-day) 자체 구현(WebGPU)** → FSM2 · openamundsen(분산) | 자체 / MIT | S / M |
+| 얼음 | 해빙 표류 | **자유 표류(바람·해류) 자체 구현** → Icepack(기둥 열역학) | 자체 / BSD-3 | S / L |
+| 얼음 | 눈사태 도달 | **알파-베타 경험식 자체 구현** → AvaFrame(EUPL — 온라인 제공 시 소스 공개 의무, PD 판단) | 자체 / EUPL-1.2 | S / M |
+| 얼음 | 빙하·빙하호 | **OGGM(+PyGEM)** · 빙하호 붕괴는 GeoClaw(09-14 조사) | BSD-3·MIT | M |
+| 태풍 | 가정 태풍 바람장 | **Holland 파라메트릭 자체 구현(JS/WebGPU)** → CLIMADA 로 교차검증(서버) | 자체 / GPL-3(서버) | S / M |
+| 태풍 | 확률 | **ECMWF ENS 진로(오픈데이터)** → STORM 합성 진로 · ⚠️ IFS 50r1(2026-05)부터 앙상블 파일 = 섭동 50 + 컨트롤 별도(`oper`) — "51개 중 N개" 근거는 50+1 로 다시 셈 | CC BY 4.0 / CC0 | S / M |
+| 대기 | 화산재 | **Ash3d(USGS)** → FALL3D(서버) | CC0 / GPL-3 | M / L |
+| 대기 | 폭염·체감 | **jsthermalcomfort(브라우저 그대로)** → thermofeel(서버) · 도시 열지도는 SOLWEIG(서버, 건물 DSM 필요) | MIT / Apache-2.0 / GPL-3 | S / L |
+| 지진 | 실제 지진 흔들림 | **USGS ShakeMap 결과 피드 받기**(직접 설치 금지 — 의존성이 AGPL OpenQuake) | 미국 공공 | S |
+| 지진 | 가상 지진 흔들림 | **pygmm + Vs30** → OpenSHA | MIT / BSD-3 | M |
+| 지진 | 쓰나미 원(단층 변위) | **Okada 식 JS 포팅(clawpack dtopotools)** → cutde | BSD-3 / MIT | S / M |
+| 공통 | 계산 해상도 입력 | **GFS 0.25°(기존 파이프라인 해상도만 올림) + ECMWF IFS 0.25°**(모델 비교 ⑤ 겸) | NOAA / CC BY 4.0 | S~M |
+| 공통 | 검증 사례 | NTHMP 쓰나미 벤치마크 · IBTrACS 태풍 · ESA CCI 눈·해빙 · 산림청 산사태 이력 · USGS ShakeMap 과거 사례 — 엔진마다 1건 이상 재현 | 대부분 공개(일부 확인 중) | M |
+| 공통 | 계산 비용 | 엔진별 시험 실행 1회로 실측 → 비용 단위 정의(V7-08 순서: 실측 → 가격) | — | S |
+**피할 것:** ShakeMap 자체 설치·OpenQuake(AGPL) · Delft3D FM(AGPL 포함) · ElmFire(판매 금지) · HYSPLIT(재배포 금지) · GPL/EUPL 을 설치형 앱·브라우저에 번들.
+**브라우저에서 바로 쓸 수 있는 것**: jsthermalcomfort 뿐 — 나머지(Holland·Okada·자유 표류·도일법·알파-베타)는 짧은 공식이라 **JS/WebGPU 로 직접 작성**한다.
 
 ### 7-2. 사용자 AI 연결 — 계산형 MCP
 - **빈자리(조사 결과):** 지도·지구 MCP 는 Felt·Cesium·Esri·Mapbox·CARTO·Planet 이 이미 냈지만 **전부 조회·지도 그리기·SQL** 이다. **사용자 AI 가 3D 지형 위 계산을 설정·실행·비교하는 MCP 는 없다.** (sparkgeo geo-mcp 목록 2026-09-24)
@@ -239,6 +253,20 @@
 | 비교(스와이프) | 두 시점·두 모델·두 시나리오를 좌우로 | `scenario-compare.js` 일부 |
 | 이야기(리포트) | 사건 하나를 3D 장면 순서로 저장·공유(URL 상태) | 리포트 센터 있음 |
 | 내보내기 | 3D 장면 이미지·영상, 계산 결과 데이터 | 일부 |
+
+### 7-5. Open-Meteo 대체 — 상업적으로 쓸 수 있는 자료 (상세: `docs/research/COMMERCIAL-DATA-SOURCES-2026-09-27.md` §G)
+| 지금 Open-Meteo 로 하는 일 | 대안 (권고) | 라이선스 | 비용 | 노력 |
+|---|---|---|---|---|
+| 전지구 기온·바람·습도·기압 격자(5°) | **GFS 0.25°**(기존 파이프라인 해상도만 올림) + 비교용 **ECMWF IFS 0.25°** | NOAA 자유 / CC BY 4.0 | 무료(저장·Lambda 만) | 하 |
+| 5일 타임라인 전 필드 | 같은 GRIB 을 3시간 프레임으로(GFS 3h, ECMWF 3h/6h) | 같음 | 무료 | 하~중 |
+| 확률 %(앙상블) | **ECMWF ENS 50 멤버 + 컨트롤(oper)** · 보조 GEFS | CC BY 4.0 / NOAA | 무료 | 중 |
+| 파고·너울·주기 | **CMEMS GLO WAV 1/12°**(너울 1·2차 분리) · 대안 ECMWF wave 0.25° — GFS-Wave JPEG2000 문제도 우회 | CMEMS / CC BY 4.0 | 무료(~2028-06-30) | 중 |
+| 해류 | **CMEMS GLO PHY(SMOC)** · 대안 NOAA RTOFS | CMEMS / NOAA | 무료 | 중 |
+| 대기질 격자 | **CAMS 전지구 예보 직접(ADS)** + 한국 지점 에어코리아 실측 | CC BY / 공공누리 3유형(변경 금지 — 보간 격자 해당 여부 서면 확인) | 무료 | 중 |
+| UV | CAMS UV 변수 · 국내 기상청 생활지수 | CC BY / 공공누리 | 무료 | 중 |
+| v1 날씨 시트 해외 10~14일 | **당장: Open-Meteo 상업 구독 $29/월**(코드 변경 0) → **장기: ECMWF IFS 15일 지점 추출** | 유료 허가 / CC BY 4.0 | $29 → 0 | 0 / 중 |
+| 2D 바탕 지도 | **Protomaps PMTiles 직접 호스팅** | ODbL | 저장·전송비 | 중 |
+출처 카드 문구(초안): "NOAA GFS · Contains modified ECMWF open data (CC BY 4.0) · E.U. Copernicus Marine Service · CAMS (Copernicus) · © OpenStreetMap contributors · NASA · 기상청·한국환경공단·국립해양조사원 공공누리".
 
 ### 7-4. 경쟁사에서 배울 것 / 다를 것 (요약 — 상세 조사 파일 §D)
 | 누구 | 돈 받는 곳 | 배울 것 | EARTHUS 가 다를 곳 |
@@ -263,11 +291,13 @@
 |---|---|---|
 | 바탕 지표(주간) | NASA Blue Marble NG (월별, 500 m) | NASA 공공 — 가능 |
 | 밤 불빛 | NASA Black Marble | NASA 공공 — 가능 |
-| 지형 | Copernicus DEM GLO-30/90 → 타일 피라미드 / AWS Terrarium | Copernicus 라이선스 조건 확인(§1-4) · Terrarium 출처 표기 |
+| 지형(표면) | Copernicus DEM GLO-30/90 → 타일 피라미드 / AWS Terrarium | Copernicus "F" 판 상업 가능 · 고정 출처 문구 + 앱 약관에 면책 문장 |
+| 지형(맨땅) | **GEDTM30** | CC BY 4.0 — 상업·맨땅·무료를 다 채우는 유일한 후보 |
+| 10 m 위성 바탕(선택) | **s2cloudless 2016판** | CC BY — 2018년판 이후는 비상업(상업은 EOX 유료 계약) |
 | 수심 | GEBCO 2026 | 출처 표기, 항해용 금지 문구 |
 | 경계·지명 | Natural Earth | 공공 |
-| 지도(평면) | OSM 기반 벡터 타일(자체 생성) | ODbL 표기 |
-| ❌ 넣지 않음 | **Esri 위성 영상**(인증·캐시 조건 — 유료 점검 D2) · Google 계열 · Open-Meteo 자료 재배포 | |
+| 지도(평면) | **Protomaps PMTiles 직접 호스팅**(OSM 기반, S3+CloudFront) | ODbL 표기 — 미리 받기 가능 |
+| ❌ 넣지 않음 → 대안 | Esri·Google·Mapbox·네이버·카카오·OSMF 공개 타일(미리 받기 금지 또는 기기 캐시만) → **Protomaps + NASA + s2cloudless 2016** 으로 대체 · Open-Meteo 자료 재배포 → §7-5 | |
 - 크기 예산(초안): 기본 팩 ≤ 2 GB(전지구 z0~8 + 지형 z0~7), 지역 팩(한·일·대 z9~12) 선택 설치. **실측 후 확정.**
 
 ### 8-3. Living Earth 급 품질 목표 (V38.1 Globe Renderer + 07-26 인수인계 기준)

@@ -352,3 +352,84 @@ Release State 5단계(DESIGNED → IMPLEMENTED → VERIFIED → RESEARCH-READY �
 1. 이 계획서 승인 (트랙 PL·DT·IN·GR 착수)
 2. §3 D-5 ~ D-8 답 (트랙 RS·SP 착수 조건)
 3. PD 가 partnership@pleos.ai 에 `docs/pleos/VERIFIED_POLICY.md` §6 질문 7개 발송 (PL4 착수 조건)
+
+---
+
+## 15. 메뉴 통합 — v1 = v2 같은 메뉴 + 둘 다 자연어 안내 (2026-09-27 PD 요청 · 검증 결과 · 코딩 없음)
+
+**PD 요청:** "v1 과 v2 메뉴를 통합할 거야. 개발지시서대로 메뉴 통합 리스트가 맞는지 검증하고, v1·v2 메뉴 둘 다 똑같이 나오게, 인텔리전스 자연어 안내가 둘 다 나와야 한다."
+**지시서의 통합 목록** = `ui_PLEOS/08_UI_ADAPTER_V36/core/EARTHUS_UI_ADAPTER_V36.mjs` `DOCKS` 7 × `PANEL_BY_DOCK` 4 = 28칸 (V38.1 본문의 Earth·Weather·Satellite·Ocean·Atmosphere/Air·Disaster·Local 과 일치).
+**검증 방법:** 운영 화면 직접 측정(earthus.net · earthus.net/v2, 2026-09-27 00:3x) + v1·v2 코드 대조(파일:행).
+
+### 15-1. 지금 실제로 보이는 메뉴
+| | v1 (earthus.net) | v2 (earthus.net/v2) |
+|---|---|---|
+| 1차 메뉴 | 하단 바: 전체레이어 · 인공위성 · 경보·재난 · Intelligence · 지구 · 내 위치 · 전지구로 (`index.html:634-736`) | 왼쪽 서랍 묶음 6: 대기 · 바다 · 재해 · 눈·얼음 · 대기질·관측 · 생태·사람·여행 (`phenomenon-registry.js:1077-1145`) + 하단 탭 5: 지금 · 탐색 · 내 지역 · 리포트 · 우주 (`ui-shell.js:1073-1079`) + EARTHUS/AETHERUS 세로 탭 |
+| 레이어 | `CATEGORIES_LEAN`(`layerbar.js:553-562`) 바탕·기상·대기질·해양만. 구름 위성 4 · 기상 6 · 대기 7 · 바다 5 | `SCENES`(`ui-shell.js:38-244`) 9 장면 |
+| 숨김/뒷문 | 읽고 분석·활동 섹션 hidden, 숨긴 레이어도 **검색으로는 전부 열림**(`search.js:318`), `volcano`·`stations`·`orbits` 는 정의만 있고 입구 없음 | — |
+| ⚠️ 문서와 다름 | — | **AGENTS.md 의 '좌측 11메뉴 레일'은 코드에 없다**(DEV-DIRECTIVE 2026-09-20 서술만). 화면은 09-13 §3.2 묶음 6개 |
+
+### 15-2. 28칸 검증표
+V=보임 · I=간접(시트 안) · S=검색으로만 · H=숨김 · A=없음 · 문장=지금 자연어 문장이 나오는가
+
+| 도크·칸 | v1 | v2 | 문장 v1/v2 | 판정 |
+|---|---|---|---|---|
+| earth·world | V 전지구로 | V globe | ✗/✗ | 유지 |
+| earth·city | A (검색뿐) | A (검색·인구탑) | ✗/✗ | **정의 필요** — '도시 찾기(검색)'로 할지 |
+| earth·time | A (시계 표시만, 태풍 스크러버) | V 타임라인 | ✗/✗ | **칸에서 뺌 → 모든 메뉴 공통 하단 타임라인**(AGENTS.md 규칙). v1 에 타임라인 신설 필요 |
+| earth·day-night | 항상 켜짐(토글 없음) | V 실제 태양·타임라인 따름 | ✗/✗ | 유지(토글) |
+| weather·current | V 시트+기온·습도·바람 | V 기온 GFS·AWS 실측 | **✓**(narrative·weather-summary)/△(기온 편차 패킷만) | 유지 |
+| weather·forecast | I 14일 탭 | V GFS 5일·3시간 | 예보 메모/✗ | 유지 — v1 은 기상청 단기예보 전달(R-FC), v2 는 모델명·실행 시각 |
+| weather·hourly | I 24시간 띠 | **A**(수집기 kma-fcst 는 있음) | ✗/✗ | **forecast 안으로 합침** |
+| weather·region | A (koreaPanel 간접) | A (내 지역) | ✗/✗ | **local·nearby 와 겹침 → 합침** |
+| satellite·clouds | V 위성 4종 | V GMGSI·GK2A | 캡션/✗ | 유지 |
+| satellite·radar | I koreaPanel 안 사진+프레임 | 카드 안 사진만 | ✗/✗ | **위성이 아님 → weather·'강수 레이더(한국)'로 옮김.** 지구 위 겹침은 두 앱 다 없음(좌표 맞춘 레이더 자료 필요) |
+| satellite·infrared | 부분(밤 자동 IR, 전용 채널 S) | V GK2A IR·수증기·안개 | 캡션/✗ | 유지 |
+| satellite·time-playback | A | GFS **모델** 재생만, 관측 위성 되감기 없음 | ✗/✗ | **공통 타임라인에 흡수.** 관측 영상 되감기는 이력 프레임 저장부터(kma-radar 만 이력 있음) |
+| ocean·wave | V 파고·너울 | V (Open-Meteo 5°) | 한 단어 해상 등급/△(For-Me) | 유지 — Open-Meteo 상업 조건(유료 점검 D1) |
+| ocean·water-temp | V SST·편차 | V OISST·Argo·부이 | 캡션/**✓**(SST 패킷) | 유지 |
+| ocean·wind | 기상에 있음 | 기상(대기)에 있음 | — | **중복 → 뺌**(해상풍이 따로 필요하면 나중) |
+| ocean·currents | V (Open-Meteo 5°) | V (Open-Meteo 5°, 모델 신호) | 캡션/✗ | 유지 — 모델 배지 필수, '조류'라 부르지 않음 |
+| air·pm10 | V | **A**(자료 air.json 있음) | 캡션/✗ | 유지 — v2 에 추가 |
+| air·pm2.5 | V + 실측 673소 | V CAMS·에어코리아 | 캡션/✗ | 유지 |
+| air·uv | V | V(옛 5° 램프) | 캡션/✗ | 유지 |
+| air·pressure | 기상에 있음 | 대기에 있음 | ✗/✗ | **대기질이 아님 → weather 로 옮김** |
+| disaster·alerts | V 기상경보·지금 일어난 일 | V KMA·NWS·쓰나미 | 목록만/✗ | 유지 — 문장은 R-DIS(특보 전달·공식 행동요령만) |
+| disaster·typhoon | V | V 공식 진로·ENS·유사 태풍 | 고정 설명/**✓** | 유지 |
+| disaster·earthquake | V (USGS) | V | USGS 문구 전달/**✓** | 유지 |
+| disaster·wildfire | V (FIRMS) | V FIRMS·산림청 | ✗/✗(레지스트리만 true) | 유지 |
+| local·nearby | V 내 위치 | V 내 지역 | **✓**/△(For-Me) | 유지 |
+| local·korea | I koreaPanel | A | ✗/✗ | **정의 필요** — v1 koreaPanel(기상청 97지점·레이더·특보·생활)을 '한국 상세'로 공용화 |
+| local·travel | H | V (KTO) | 근거 문구/✗ | 유지 — v1 숨김 해제 |
+| local·content | A (뉴스는 경보 안) | V 뉴스·리포트 | 뉴스 요약/✗ | **정의 필요** — '소식'(뉴스) 로 할지 |
+
+**요약:** 28칸 중 그대로 쓸 수 있는 칸 17 · 옮김/합침/뺌 8(time·time-playback·hourly·region·radar·ocean wind·pressure, day-night 토글화) · 정의 필요 3(city·korea·content).
+**자연어 문장이 지금 나오는 칸:** v1 = weather·current, local·nearby (+예보 메모) / v2 = typhoon·earthquake·water-temp·기온 편차 (+For-Me 파도·쓰나미). **나머지 20여 칸은 두 앱 모두 문장이 없다.**
+**카드 순서:** v2 는 지금 수치 → 출처 → WHY → NEXT(`point-card.js:195-279`, `ui-shell.js:1378` "문장이 수치보다 앞에 서지 않는다") — D-2 에 따라 **문장 → 수치 → 출처로 뒤집어야 한다.**
+
+### 15-3. 28칸 밖인데 두 앱에 있는 것 — 어디 둘지 정해야 함
+| 항목 | v1 | v2 | 초안 |
+|---|---|---|---|
+| 낙뢰 · 쓰나미 · 화산/각국 재해 · 열돔 | V (경보·재난) | V (재해) | disaster 에 추가 |
+| 황사·먼지 · 오존 · 대기질(유럽) | V | 일부 | air 에 추가 |
+| 습도 · 수증기 · 토양 수분 | V | 일부 | weather 에 추가 |
+| 우주(AETHERUS: 궤도·우주쓰레기·발사·오로라·태양계) | V 인공위성 | V 우주 탭·AETHERUS 서랍 | **7 도크 밖, EARTHUS/AETHERUS 탭으로 분리**(웹·모바일만, Pleos 제외) |
+| 눈·얼음 · 해수면 상승·침수 · 지형·수심·해구·심해 | 일부(심해 장면) | V | 정해야 함 — earth 또는 ocean 에 넣을지, 새 도크(8번째)를 둘지 |
+| 생태(숲·철새·바다거북) · 인구 · 혼잡 · 밤의 불빛 | 일부 숨김 | V | 정해야 함 — local 에 넣을지 |
+| 취미(서핑·낚시·산·패러) · LAB · 항공편 | H | V | 정해야 함 |
+| Compare · Simulation · 리포트 | — | V | **v2 만의 깊이**(7단계 ⑤·⑦) — 메뉴 틀은 같게, 이 입구만 v2 에 |
+
+### 15-4. 개발 방법 (코딩은 목록 확정 뒤)
+1. **공통 메뉴 정의 하나:** `prototype/js/menu-canon.js`(가칭, 얼린 ES 모듈) — 도크·칸·이름(한·영)·순서·아이콘(아이콘 시스템 v1.2)·연결 레이어 id(v1 id / v2 id)·자료 출처(앱별)·자료 없음 사유. v1 `layerbar.js` 와 v2 `ui-shell.js` 가 **둘 다 이 파일만 읽어** 같은 메뉴를 그린다(v2 는 이미 `/js/` 공용 모듈을 쓰는 규약 — 메모리 v2-ext-scene). 레이어 id 는 개명하지 않는다(메모리 v2-phenomenon-registry).
+2. **자연어 카드 공통 부품:** `prototype/js/intel-sentences/`(도메인 7 규칙) + `intel-card.js`(문장 → 수치 → 출처·시각, ⓘ 자세히). v1 `narrative.js` 규칙(숫자 없으면 문장 없음)을 뼈대로, v2 패킷(태풍·지진·SST·기온 편차)은 같은 카드에 싣는다. 규칙 R-DIS·R-FC 적용.
+3. **시험(결과로):** 28칸(확정본) 각각 — v1·v2 메뉴 목록이 같은가(자동 비교), 근거가 있는 입력에서 문장이 **나오는가**, 근거 없으면 문장이 없는가, 특보 문장에 자체 주의 표현이 없는가.
+4. **배포:** v1 → v2 순서, 운영 화면에서 두 메뉴를 같은 방법(이번 측정 스크립트)으로 다시 재서 같음을 증명.
+5. Pleos 는 이 통합 메뉴를 그대로 쓰되 AETHERUS 탭·v2 깊이 입구가 없다.
+
+### 15-5. PD 와 정할 것
+1. "똑같이"의 범위 — 권고: **메뉴 틀·이름·순서·자연어 카드는 같게, 깊이(5일 예보 재생·Compare·Simulation·리포트)는 v2 만.**
+2. 28칸 판정(옮김 8 · 정의 3) 받을지
+3. 15-3 표의 '정해야 함' 항목 위치 (8번째 도크를 둘지 포함)
+4. 우주 = EARTHUS/AETHERUS 탭 분리(지금 v2 방식) 로 갈지
+5. v1 에 하단 타임라인을 새로 둘지 (earth·time 을 공통 타임라인으로 옮기면 필요)
+6. AGENTS.md 의 '좌측 11메뉴'·'v1 과 v2 는 다른 서비스' 문구를 통합 메뉴 결정에 맞게 고칠지

@@ -185,3 +185,56 @@ export function listSimulationModels(domain = null) {
 export const SimulationStatus = STATUS;
 export const SimulationGates = GATES;
 export const SimulationCapabilities = DOMAIN_CAPABILITIES;
+
+
+export function createSimulationRuntime({ eventTarget = document } = {}) {
+  let initialized = false;
+  let plan = null;
+  let readiness = null;
+  const listeners = new Set();
+
+  const emit = type => {
+    const detail = { type, plan: plan ? clone(plan) : null, readiness: readiness ? clone(readiness) : null };
+    listeners.forEach(listener => listener(detail));
+    if (typeof CustomEvent === 'function') {
+      eventTarget?.dispatchEvent?.(new CustomEvent('earthus:simulation', { detail }));
+    }
+  };
+
+  const api = {
+    init() {
+      initialized = true;
+      emit('simulation.runtime.ready');
+      return api;
+    },
+    setPlan(input) {
+      plan = createSimulationPlan(input);
+      emit('simulation.plan.changed');
+      return clone(plan);
+    },
+    setReadiness(checks) {
+      readiness = evaluateDataReadiness(checks);
+      emit('simulation.readiness.changed');
+      return clone(readiness);
+    },
+    canRun() {
+      return canRunSimulation(plan, readiness);
+    },
+    subscribe(listener) {
+      if (typeof listener !== 'function') throw new TypeError('listener must be a function');
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    snapshot() {
+      return {
+        initialized,
+        schemaVersion: SCHEMA_VERSION,
+        plan: plan ? clone(plan) : null,
+        readiness: readiness ? clone(readiness) : null,
+        canRun: canRunSimulation(plan, readiness),
+      };
+    },
+  };
+
+  return Object.freeze(api);
+}
